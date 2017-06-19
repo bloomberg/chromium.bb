@@ -91,10 +91,10 @@ EarconEngine = function() {
   this.reverbConvolver_ = null;
 
   /**
-    * @type {Object<string, AudioBuffer>} A map between the name of an
-    *     audio data file and its loaded AudioBuffer.
-    * @private
-    */
+   * @type {Object<string, AudioBuffer>} A map between the name of an
+   *     audio data file and its loaded AudioBuffer.
+   * @private
+   */
   this.buffers_ = {};
 
   /**
@@ -121,28 +121,24 @@ EarconEngine = function() {
   // Initialization: load the base sound data files asynchronously.
   var allSoundFilesToLoad = EarconEngine.SOUNDS.concat(EarconEngine.REVERBS);
   allSoundFilesToLoad.forEach((function(sound) {
-    var url = EarconEngine.BASE_URL + sound + '.wav';
-    this.loadSound(sound, url);
-  }).bind(this));
+                                var url =
+                                    EarconEngine.BASE_URL + sound + '.wav';
+                                this.loadSound(sound, url);
+                              }).bind(this));
 };
 
 /**
  * @type {Array<string>} The list of sound data files to load.
  * @const
  */
-EarconEngine.SOUNDS = [
-  'control',
-  'selection',
-  'selection_reverse',
-  'skim',
-  'static'];
+EarconEngine.SOUNDS =
+    ['control', 'selection', 'selection_reverse', 'skim', 'static'];
 
 /**
  * @type {Array<string>} The list of reverb data files to load.
  * @const
  */
-EarconEngine.REVERBS = [
-  'small_room_2'];
+EarconEngine.REVERBS = ['small_room_2'];
 
 /**
  * @type {number} The scale factor for one half-step.
@@ -174,12 +170,12 @@ EarconEngine.prototype.loadSound = function(name, url) {
 
   // Decode asynchronously.
   request.onload = (function() {
-    this.context_.decodeAudioData(
-        /** @type {!ArrayBuffer} */ (request.response),
-        (function(buffer) {
-          this.buffers_[name] = buffer;
-        }).bind(this));
-  }).bind(this);
+                     this.context_.decodeAudioData(
+                         /** @type {!ArrayBuffer} */ (request.response),
+                         (function(buffer) {
+                           this.buffers_[name] = buffer;
+                         }).bind(this));
+                   }).bind(this);
   request.send();
 };
 
@@ -276,7 +272,7 @@ EarconEngine.prototype.play = function(sound, opt_properties) {
   if (!opt_properties) {
     // This typecast looks silly, but the Closure compiler doesn't support
     // optional fields in record types very well so this is the shortest hack.
-    opt_properties = /** @type {undefined} */({});
+    opt_properties = /** @type {undefined} */ ({});
   }
 
   var pitch = this.masterPitch;
@@ -327,13 +323,11 @@ EarconEngine.prototype.onButton = function() {
  */
 EarconEngine.prototype.onTextField = function() {
   this.play('static', {gain: this.clickVolume});
-  this.play('static', {time: this.baseDelay * 1.5,
-                       gain: this.clickVolume * 0.5});
+  this.play(
+      'static', {time: this.baseDelay * 1.5, gain: this.clickVolume * 0.5});
   this.play(this.controlSound, {pitch: 4});
-  this.play(this.controlSound,
-            {pitch: 4,
-             time: this.baseDelay * 1.5,
-             gain: 0.5});
+  this.play(
+      this.controlSound, {pitch: 4, time: this.baseDelay * 1.5, gain: 0.5});
 };
 
 /**
@@ -343,14 +337,10 @@ EarconEngine.prototype.onPopUpButton = function() {
   this.play('static', {gain: this.clickVolume});
 
   this.play(this.controlSound);
-  this.play(this.controlSound,
-            {time: this.baseDelay * 3,
-             gain: 0.2,
-             pitch: 12});
-  this.play(this.controlSound,
-            {time: this.baseDelay * 4.5,
-             gain: 0.2,
-             pitch: 12});
+  this.play(
+      this.controlSound, {time: this.baseDelay * 3, gain: 0.2, pitch: 12});
+  this.play(
+      this.controlSound, {time: this.baseDelay * 4.5, gain: 0.2, pitch: 12});
 };
 
 /**
@@ -387,22 +377,13 @@ EarconEngine.prototype.onSelect = function() {
 EarconEngine.prototype.onSlider = function() {
   this.play('static', {gain: this.clickVolume});
   this.play(this.controlSound);
-  this.play(this.controlSound,
-            {time: this.baseDelay,
-             gain: 0.5,
-             pitch: 2});
-  this.play(this.controlSound,
-            {time: this.baseDelay * 2,
-             gain: 0.25,
-             pitch: 4});
-  this.play(this.controlSound,
-            {time: this.baseDelay * 3,
-             gain: 0.125,
-             pitch: 6});
-  this.play(this.controlSound,
-            {time: this.baseDelay * 4,
-             gain: 0.0625,
-             pitch: 8});
+  this.play(this.controlSound, {time: this.baseDelay, gain: 0.5, pitch: 2});
+  this.play(
+      this.controlSound, {time: this.baseDelay * 2, gain: 0.25, pitch: 4});
+  this.play(
+      this.controlSound, {time: this.baseDelay * 3, gain: 0.125, pitch: 6});
+  this.play(
+      this.controlSound, {time: this.baseDelay * 4, gain: 0.0625, pitch: 8});
 };
 
 /**
@@ -480,8 +461,7 @@ EarconEngine.prototype.generateSinusoidal = function(properties) {
 
     if (properties.endFreq) {
       osc.frequency.setValueAtTime(
-          properties.freq * (i + 1),
-          this.context_.currentTime + time);
+          properties.freq * (i + 1), this.context_.currentTime + time);
       osc.frequency.exponentialRampToValueAtTime(
           properties.endFreq * (i + 1),
           this.context_.currentTime + properties.dur);
@@ -504,8 +484,7 @@ EarconEngine.prototype.generateSinusoidal = function(properties) {
   envelopeNode.gain.linearRampToValueAtTime(
       1, this.context_.currentTime + time + properties.attack);
   envelopeNode.gain.setValueAtTime(
-          1, this.context_.currentTime + time +
-             properties.dur - properties.decay);
+      1, this.context_.currentTime + time + properties.dur - properties.decay);
   envelopeNode.gain.linearRampToValueAtTime(
       0, this.context_.currentTime + time + properties.dur);
 
@@ -600,20 +579,24 @@ EarconEngine.prototype.onChromeVoxOff = function() {
 EarconEngine.prototype.onAlert = function() {
   var freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, this.alertPitch - 2);
   var freq2 = 220 * Math.pow(EarconEngine.HALF_STEP, this.alertPitch - 3);
-  this.generateSinusoidal({attack: 0.02,
-                           decay: 0.07,
-                           dur: 0.15,
-                           gain: 0.3,
-                           freq: freq1,
-                           overtones: 3,
-                           overtoneFactor: 0.1});
-  this.generateSinusoidal({attack: 0.02,
-                           decay: 0.07,
-                           dur: 0.15,
-                           gain: 0.3,
-                           freq: freq2,
-                           overtones: 3,
-                           overtoneFactor: 0.1});
+  this.generateSinusoidal({
+    attack: 0.02,
+    decay: 0.07,
+    dur: 0.15,
+    gain: 0.3,
+    freq: freq1,
+    overtones: 3,
+    overtoneFactor: 0.1
+  });
+  this.generateSinusoidal({
+    attack: 0.02,
+    decay: 0.07,
+    dur: 0.15,
+    gain: 0.3,
+    freq: freq2,
+    overtones: 3,
+    overtoneFactor: 0.1
+  });
 };
 
 /**
@@ -623,14 +606,16 @@ EarconEngine.prototype.onWrap = function() {
   this.play('static', {gain: this.clickVolume * 0.3});
   var freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, this.wrapPitch - 8);
   var freq2 = 220 * Math.pow(EarconEngine.HALF_STEP, this.wrapPitch + 8);
-  this.generateSinusoidal({attack: 0.01,
-                           decay: 0.1,
-                           dur: 0.15,
-                           gain: 0.3,
-                           freq: freq1,
-                           endFreq: freq2,
-                           overtones: 1,
-                           overtoneFactor: 0.1});
+  this.generateSinusoidal({
+    attack: 0.01,
+    decay: 0.1,
+    dur: 0.15,
+    gain: 0.3,
+    freq: freq1,
+    endFreq: freq2,
+    overtones: 1,
+    overtoneFactor: 0.1
+  });
 };
 
 /**
@@ -641,34 +626,30 @@ EarconEngine.prototype.onWrap = function() {
 EarconEngine.prototype.generateProgressTickTocks_ = function() {
   while (this.progressTime_ < this.context_.currentTime + 3.0) {
     var t = this.progressTime_ - this.context_.currentTime;
-    this.progressSources_.push(
-        [this.progressTime_,
-         this.play('static',
-                   {gain: 0.5 * this.progressGain_,
-                    time: t})]);
-    this.progressSources_.push(
-        [this.progressTime_,
-         this.play(this.controlSound,
-                   {pitch: 20,
-                    time: t,
-                    gain: this.progressGain_})]);
+    this.progressSources_.push([
+      this.progressTime_,
+      this.play('static', {gain: 0.5 * this.progressGain_, time: t})
+    ]);
+    this.progressSources_.push([
+      this.progressTime_,
+      this.play(
+          this.controlSound, {pitch: 20, time: t, gain: this.progressGain_})
+    ]);
 
     if (this.progressGain_ > this.progressFinalGain) {
       this.progressGain_ *= this.progressGain_Decay;
     }
     t += 0.5;
 
-    this.progressSources_.push(
-        [this.progressTime_,
-         this.play('static',
-                   {gain: 0.5 * this.progressGain_,
-                    time: t})]);
-    this.progressSources_.push(
-        [this.progressTime_,
-         this.play(this.controlSound,
-                   {pitch: 8,
-                    time: t,
-                    gain: this.progressGain_})]);
+    this.progressSources_.push([
+      this.progressTime_,
+      this.play('static', {gain: 0.5 * this.progressGain_, time: t})
+    ]);
+    this.progressSources_.push([
+      this.progressTime_,
+      this.play(
+          this.controlSound, {pitch: 8, time: t, gain: this.progressGain_})
+    ]);
 
     if (this.progressGain_ > this.progressFinalGain) {
       this.progressGain_ *= this.progressGain_Decay;
@@ -679,7 +660,8 @@ EarconEngine.prototype.generateProgressTickTocks_ = function() {
 
   var removeCount = 0;
   while (removeCount < this.progressSources_.length &&
-      this.progressSources_[removeCount][0] < this.context_.currentTime - 0.2) {
+         this.progressSources_[removeCount][0] <
+             this.context_.currentTime - 0.2) {
     removeCount++;
   }
   this.progressSources_.splice(0, removeCount);
@@ -698,8 +680,8 @@ EarconEngine.prototype.startProgress = function() {
   this.progressGain_ = 0.5;
   this.progressTime_ = this.context_.currentTime;
   this.generateProgressTickTocks_();
-  this.progressIntervalID_ = window.setInterval(
-      this.generateProgressTickTocks_.bind(this), 1000);
+  this.progressIntervalID_ =
+      window.setInterval(this.generateProgressTickTocks_.bind(this), 1000);
 };
 
 /**

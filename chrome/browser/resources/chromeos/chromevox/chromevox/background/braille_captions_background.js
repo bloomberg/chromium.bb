@@ -64,28 +64,25 @@ cvox.BrailleCaptionsBackground.isEnabled = function() {
  * @param {number} rows Number of rows to display.
  * @param {number} columns Number of columns to display.
  */
-cvox.BrailleCaptionsBackground.setContent = function(text, cells,
-    brailleToText, offsetsForSlices, rows, columns) {
+cvox.BrailleCaptionsBackground.setContent = function(
+    text, cells, brailleToText, offsetsForSlices, rows, columns) {
   var self = cvox.BrailleCaptionsBackground;
   // Convert the cells to Unicode braille pattern characters.
   var byteBuf = new Uint8Array(cells);
   var brailleChars = '';
 
   for (var i = 0; i < byteBuf.length; ++i) {
-    brailleChars += String.fromCharCode(
-        self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
+    brailleChars +=
+        String.fromCharCode(self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
   }
-  var groups = this.groupBrailleAndText(brailleChars, text, brailleToText,
-      offsetsForSlices);
+  var groups = this.groupBrailleAndText(
+      brailleChars, text, brailleToText, offsetsForSlices);
   if (cvox.ChromeVox.isChromeOS) {
     var data = {groups: groups, rows: rows, cols: columns};
     (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
   } else {
-    cvox.ExtensionBridge.send({
-      message: 'BRAILLE_CAPTION',
-      text: text,
-      brailleChars: brailleChars
-    });
+    cvox.ExtensionBridge.send(
+        {message: 'BRAILLE_CAPTION', text: text, brailleChars: brailleChars});
   }
 };
 
@@ -94,16 +91,16 @@ cvox.BrailleCaptionsBackground.setContent = function(text, cells,
  * @param {number} rows Number of rows to display.
  * @param {number} columns Number of columns to display.
  */
-cvox.BrailleCaptionsBackground.setImageContent = function(cells, rows,
-    columns) {
+cvox.BrailleCaptionsBackground.setImageContent = function(
+    cells, rows, columns) {
   var self = cvox.BrailleCaptionsBackground;
   // Convert the cells to Unicode braille pattern characters.
   var byteBuf = new Uint8Array(cells);
   var brailleChars = '';
 
   for (var i = 0; i < byteBuf.length; ++i) {
-    brailleChars += String.fromCharCode(
-        self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
+    brailleChars +=
+        String.fromCharCode(self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
   }
 
   var groups = [['Image', brailleChars]];
@@ -121,8 +118,8 @@ cvox.BrailleCaptionsBackground.setImageContent = function(cells, rows,
  *    the second is the text offset.
  * @return {Array} The groups of braille and texts to be displayed.
  */
-cvox.BrailleCaptionsBackground.groupBrailleAndText = function(brailleChars,
-    text, brailleToText, offsets) {
+cvox.BrailleCaptionsBackground.groupBrailleAndText = function(
+    brailleChars, text, brailleToText, offsets) {
   var brailleBuf = '';
   var groups = [];
   var textIndex = 0;
@@ -135,9 +132,8 @@ cvox.BrailleCaptionsBackground.groupBrailleAndText = function(brailleChars,
   for (var i = 0; i < brailleChars.length; ++i) {
     var textSliceIndex = calculateTextIndex(i);
     if (i != 0 && textSliceIndex != textIndex) {
-      groups.push([text.substr(textIndex,
-          textSliceIndex - textIndex),
-          brailleBuf]);
+      groups.push(
+          [text.substr(textIndex, textSliceIndex - textIndex), brailleBuf]);
       brailleBuf = '';
       textIndex = textSliceIndex;
     }
@@ -163,9 +159,8 @@ cvox.BrailleCaptionsBackground.setActive = function(newValue) {
     if (self.stateCallback_) {
       self.stateCallback_();
     }
-    var msg = newValue ?
-        Msgs.getMsg('braille_captions_enabled') :
-        Msgs.getMsg('braille_captions_disabled');
+    var msg = newValue ? Msgs.getMsg('braille_captions_enabled') :
+                         Msgs.getMsg('braille_captions_disabled');
     cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.QUEUE);
     cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(msg));
   }
@@ -184,8 +179,8 @@ cvox.BrailleCaptionsBackground.getVirtualDisplayState = function(callback) {
       var rows = items['virtualBrailleRows'];
       chrome.storage.local.get({'virtualBrailleColumns': 40}, function(items) {
         var columns = items['virtualBrailleColumns'];
-        callback({available: true, textRowCount: rows,
-          textColumnCount: columns});
+        callback(
+            {available: true, textRowCount: rows, textColumnCount: columns});
       });
     });
   } else {

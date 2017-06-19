@@ -49,7 +49,7 @@ cvox.TableWalker.prototype.next = function(sel) {
  */
 cvox.TableWalker.prototype.sync = function(sel) {
   return this.goTo_(sel, goog.bind(function(position) {
-      return this.tt.goToCell(position);
+    return this.tt.goToCell(position);
   }, this));
 };
 
@@ -68,9 +68,8 @@ cvox.TableWalker.prototype.getDescription = function(prevSel, sel) {
   this.tt.goToCell(position);
   var descs = cvox.DescriptionUtil.getCollectionDescription(prevSel, sel);
   if (descs.length == 0) {
-    descs.push(new cvox.NavDescription({
-      annotation: Msgs.getMsg('empty_cell')
-    }));
+    descs.push(
+        new cvox.NavDescription({annotation: Msgs.getMsg('empty_cell')}));
   }
   return descs;
 };
@@ -179,8 +178,8 @@ cvox.TableWalker.prototype.goToColLastCell = function(sel) {
  */
 cvox.TableWalker.prototype.nextRow = function(sel) {
   return this.goTo_(sel, goog.bind(function(position) {
-    return this.tt.goToCell([position[0] + (sel.isReversed() ? -1 : 1),
-                              position[1]]);
+    return this.tt.goToCell(
+        [position[0] + (sel.isReversed() ? -1 : 1), position[1]]);
   }, this));
 };
 
@@ -193,8 +192,8 @@ cvox.TableWalker.prototype.nextRow = function(sel) {
  */
 cvox.TableWalker.prototype.nextCol = function(sel) {
   return this.goTo_(sel, goog.bind(function(position) {
-    return this.tt.goToCell([position[0],
-                              position[1] + (sel.isReversed() ? -1 : 1)]);
+    return this.tt.goToCell(
+        [position[0], position[1] + (sel.isReversed() ? -1 : 1)]);
   }, this));
 };
 
@@ -204,9 +203,9 @@ cvox.TableWalker.prototype.nextCol = function(sel) {
  * @export
  */
 cvox.TableWalker.prototype.announceHeaders = function(sel) {
-  cvox.ChromeVox.tts.speak(this.getHeaderText_(sel),
-                           cvox.QueueMode.FLUSH,
-                           cvox.AbstractTts.PERSONALITY_ANNOTATION);
+  cvox.ChromeVox.tts.speak(
+      this.getHeaderText_(sel), cvox.QueueMode.FLUSH,
+      cvox.AbstractTts.PERSONALITY_ANNOTATION);
   return sel;
 };
 
@@ -217,9 +216,7 @@ cvox.TableWalker.prototype.announceHeaders = function(sel) {
  */
 cvox.TableWalker.prototype.speakTableLocation = function(sel) {
   cvox.ChromeVox.navigationManager.speakDescriptionArray(
-      this.getLocationDescription_(sel),
-      cvox.QueueMode.FLUSH,
-      null);
+      this.getLocationDescription_(sel), cvox.QueueMode.FLUSH, null);
   return sel;
 };
 
@@ -258,8 +255,7 @@ cvox.TableWalker.prototype.getHeaderText_ = function(sel) {
     return Msgs.getMsg('not_inside_table');
   }
   return (
-      this.getRowHeaderText_(position) +
-      ' ' +
+      this.getRowHeaderText_(position) + ' ' +
       this.getColHeaderText_(position));
 };
 
@@ -279,9 +275,8 @@ cvox.TableWalker.prototype.getLocationDescription_ = function(sel) {
   if (locationInfo == null) {
     return null;
   }
-  return [new cvox.NavDescription({
-    text: Msgs.getMsg('table_location', locationInfo)
-  })];
+  return [new cvox.NavDescription(
+      {text: Msgs.getMsg('table_location', locationInfo)})];
 };
 
 /**
@@ -299,14 +294,14 @@ cvox.TableWalker.prototype.getRowHeaderText_ = function(position) {
     var firstCellInRow = this.tt.getCellAt([position[0], 0]);
     rowHeaderText += cvox.DomUtil.collapseWhitespace(
         cvox.DomUtil.getValue(firstCellInRow) + ' ' +
-            cvox.DomUtil.getName(firstCellInRow));
+        cvox.DomUtil.getName(firstCellInRow));
     return Msgs.getMsg('row_header') + rowHeaderText;
   }
 
   for (var i = 0; i < rowHeaders.length; ++i) {
     rowHeaderText += cvox.DomUtil.collapseWhitespace(
         cvox.DomUtil.getValue(rowHeaders[i]) + ' ' +
-            cvox.DomUtil.getName(rowHeaders[i]));
+        cvox.DomUtil.getName(rowHeaders[i]));
   }
   if (rowHeaderText == '') {
     return Msgs.getMsg('empty_row_header');
@@ -336,7 +331,7 @@ cvox.TableWalker.prototype.getColHeaderText_ = function(position) {
   for (var i = 0; i < colHeaders.length; ++i) {
     colHeaderText += cvox.DomUtil.collapseWhitespace(
         cvox.DomUtil.getValue(colHeaders[i]) + ' ' +
-            cvox.DomUtil.getName(colHeaders[i]));
+        cvox.DomUtil.getName(colHeaders[i]));
   }
   if (colHeaderText == '') {
     return Msgs.getMsg('empty_row_header');
@@ -358,11 +353,10 @@ cvox.TableWalker.prototype.getLocationInfo = function(sel) {
   }
   // + 1 to account for 0-indexed
   return [
-    position[0] + 1,
-    this.tt.rowCount,
-    position[1] + 1,
-    this.tt.colCount
-  ].map(function(x) {return Msgs.getNumber(x);});
+    position[0] + 1, this.tt.rowCount, position[1] + 1, this.tt.colCount
+  ].map(function(x) {
+    return Msgs.getNumber(x);
+  });
 };
 
 /**
@@ -396,8 +390,8 @@ cvox.TableWalker.prototype.goTo_ = function(sel, f) {
   if (!f(position)) {
     return null;
   }
-  return cvox.CursorSelection.fromNode(this.tt.getCell()).
-      setReversed(sel.isReversed());
+  return cvox.CursorSelection.fromNode(this.tt.getCell())
+      .setReversed(sel.isReversed());
 };
 
 /**

@@ -19,8 +19,7 @@ goog.require('cvox.NodeStateUtil');
  * Create the namespace
  * @constructor
  */
-cvox.AriaUtil = function() {
-};
+cvox.AriaUtil = function() {};
 
 
 /**
@@ -31,41 +30,41 @@ cvox.AriaUtil = function() {
  * @type {Object<string>}
  */
 cvox.AriaUtil.WIDGET_ROLE_TO_NAME = {
-  'alert' : 'role_alert',
-  'alertdialog' : 'role_alertdialog',
-  'button' : 'role_button',
-  'checkbox' : 'role_checkbox',
-  'columnheader' : 'role_columnheader',
-  'combobox' : 'role_combobox',
-  'dialog' : 'role_dialog',
-  'grid' : 'role_grid',
-  'gridcell' : 'role_gridcell',
-  'link' : 'role_link',
-  'listbox' : 'role_listbox',
-  'log' : 'role_log',
-  'marquee' : 'role_marquee',
-  'menu' : 'role_menu',
-  'menubar' : 'role_menubar',
-  'menuitem' : 'role_menuitem',
-  'menuitemcheckbox' : 'role_menuitemcheckbox',
-  'menuitemradio' : 'role_menuitemradio',
-  'option' : 'role_option',
-  'progressbar' : 'role_progressbar',
-  'radio' : 'role_radio',
-  'radiogroup' : 'role_radiogroup',
-  'rowheader' : 'role_rowheader',
-  'scrollbar' : 'role_scrollbar',
-  'slider' : 'role_slider',
-  'spinbutton' : 'role_spinbutton',
-  'status' : 'role_status',
-  'tab' : 'role_tab',
-  'tablist' : 'role_tablist',
-  'tabpanel' : 'role_tabpanel',
-  'textbox' : 'role_textbox',
-  'timer' : 'role_timer',
-  'toolbar' : 'role_toolbar',
-  'tooltip' : 'role_tooltip',
-  'treeitem' : 'role_treeitem'
+  'alert': 'role_alert',
+  'alertdialog': 'role_alertdialog',
+  'button': 'role_button',
+  'checkbox': 'role_checkbox',
+  'columnheader': 'role_columnheader',
+  'combobox': 'role_combobox',
+  'dialog': 'role_dialog',
+  'grid': 'role_grid',
+  'gridcell': 'role_gridcell',
+  'link': 'role_link',
+  'listbox': 'role_listbox',
+  'log': 'role_log',
+  'marquee': 'role_marquee',
+  'menu': 'role_menu',
+  'menubar': 'role_menubar',
+  'menuitem': 'role_menuitem',
+  'menuitemcheckbox': 'role_menuitemcheckbox',
+  'menuitemradio': 'role_menuitemradio',
+  'option': 'role_option',
+  'progressbar': 'role_progressbar',
+  'radio': 'role_radio',
+  'radiogroup': 'role_radiogroup',
+  'rowheader': 'role_rowheader',
+  'scrollbar': 'role_scrollbar',
+  'slider': 'role_slider',
+  'spinbutton': 'role_spinbutton',
+  'status': 'role_status',
+  'tab': 'role_tab',
+  'tablist': 'role_tablist',
+  'tabpanel': 'role_tabpanel',
+  'textbox': 'role_textbox',
+  'timer': 'role_timer',
+  'toolbar': 'role_toolbar',
+  'tooltip': 'role_tooltip',
+  'treeitem': 'role_treeitem'
 };
 
 
@@ -76,29 +75,29 @@ cvox.AriaUtil.WIDGET_ROLE_TO_NAME = {
  * @type {Object<string>}
  */
 cvox.AriaUtil.STRUCTURE_ROLE_TO_NAME = {
-  'article' : 'role_article',
-  'application' : 'role_application',
-  'banner' : 'role_banner',
-  'columnheader' : 'role_columnheader',
-  'complementary' : 'role_complementary',
-  'contentinfo' : 'role_contentinfo',
-  'definition' : 'role_definition',
-  'directory' : 'role_directory',
-  'document' : 'role_document',
-  'form' : 'role_form',
-  'group' : 'role_group',
-  'heading' : 'role_heading',
-  'img' : 'role_img',
-  'list' : 'role_list',
-  'listitem' : 'role_listitem',
-  'main' : 'role_main',
-  'math' : 'role_math',
-  'navigation' : 'role_navigation',
-  'note' : 'role_note',
-  'region' : 'role_region',
-  'rowheader' : 'role_rowheader',
-  'search' : 'role_search',
-  'separator' : 'role_separator'
+  'article': 'role_article',
+  'application': 'role_application',
+  'banner': 'role_banner',
+  'columnheader': 'role_columnheader',
+  'complementary': 'role_complementary',
+  'contentinfo': 'role_contentinfo',
+  'definition': 'role_definition',
+  'directory': 'role_directory',
+  'document': 'role_document',
+  'form': 'role_form',
+  'group': 'role_group',
+  'heading': 'role_heading',
+  'img': 'role_img',
+  'list': 'role_list',
+  'listitem': 'role_listitem',
+  'main': 'role_main',
+  'math': 'role_math',
+  'navigation': 'role_navigation',
+  'note': 'role_note',
+  'region': 'role_region',
+  'rowheader': 'role_rowheader',
+  'search': 'role_search',
+  'separator': 'role_separator'
 };
 
 
@@ -106,38 +105,49 @@ cvox.AriaUtil.STRUCTURE_ROLE_TO_NAME = {
  * @type {Array<Object>}
  */
 cvox.AriaUtil.ATTRIBUTE_VALUE_TO_STATUS = [
-  { name: 'aria-autocomplete', values:
-      {'inline' : 'aria_autocomplete_inline',
-       'list' : 'aria_autocomplete_list',
-       'both' : 'aria_autocomplete_both'} },
-  { name: 'aria-checked', values:
-      {'true' : 'checked_true',
-       'false' : 'checked_false',
-       'mixed' : 'checked_mixed'} },
-  { name: 'aria-disabled', values:
-      {'true' : 'aria_disabled_true'} },
-  { name: 'aria-expanded', values:
-      {'true' : 'aria_expanded_true',
-       'false' : 'aria_expanded_false'} },
-  { name: 'aria-invalid', values:
-      {'true' : 'aria_invalid_true',
-       'grammar' : 'aria_invalid_grammar',
-       'spelling' : 'aria_invalid_spelling'} },
-  { name: 'aria-multiline', values:
-      {'true' : 'aria_multiline_true'} },
-  { name: 'aria-multiselectable', values:
-      {'true' : 'aria_multiselectable_true'} },
-  { name: 'aria-pressed', values:
-      {'true' : 'aria_pressed_true',
-       'false' : 'aria_pressed_false',
-       'mixed' : 'aria_pressed_mixed'} },
-  { name: 'aria-readonly', values:
-      {'true' : 'aria_readonly_true'} },
-  { name: 'aria-required', values:
-      {'true' : 'aria_required_true'} },
-  { name: 'aria-selected', values:
-      {'true' : 'aria_selected_true',
-       'false' : 'aria_selected_false'} }
+  {
+    name: 'aria-autocomplete',
+    values: {
+      'inline': 'aria_autocomplete_inline',
+      'list': 'aria_autocomplete_list',
+      'both': 'aria_autocomplete_both'
+    }
+  },
+  {
+    name: 'aria-checked',
+    values: {
+      'true': 'checked_true',
+      'false': 'checked_false',
+      'mixed': 'checked_mixed'
+    }
+  },
+  {name: 'aria-disabled', values: {'true': 'aria_disabled_true'}}, {
+    name: 'aria-expanded',
+    values: {'true': 'aria_expanded_true', 'false': 'aria_expanded_false'}
+  },
+  {
+    name: 'aria-invalid',
+    values: {
+      'true': 'aria_invalid_true',
+      'grammar': 'aria_invalid_grammar',
+      'spelling': 'aria_invalid_spelling'
+    }
+  },
+  {name: 'aria-multiline', values: {'true': 'aria_multiline_true'}},
+  {name: 'aria-multiselectable', values: {'true': 'aria_multiselectable_true'}},
+  {
+    name: 'aria-pressed',
+    values: {
+      'true': 'aria_pressed_true',
+      'false': 'aria_pressed_false',
+      'mixed': 'aria_pressed_mixed'
+    }
+  },
+  {name: 'aria-readonly', values: {'true': 'aria_readonly_true'}},
+  {name: 'aria-required', values: {'true': 'aria_required_true'}}, {
+    name: 'aria-selected',
+    values: {'true': 'aria_selected_true', 'false': 'aria_selected_false'}
+  }
 ];
 
 
@@ -274,9 +284,8 @@ cvox.AriaUtil.isButton = function(node) {
     return true;
   }
   if (node.tagName == 'INPUT') {
-    return (node.type == 'submit' ||
-            node.type == 'reset' ||
-            node.type == 'button');
+    return (
+        node.type == 'submit' || node.type == 'reset' || node.type == 'button');
   }
   return false;
 };
@@ -365,7 +374,7 @@ cvox.AriaUtil.getStateMsgs = function(targetNode, primary) {
   }
 
   for (var i = 0, attr; attr = cvox.AriaUtil.ATTRIBUTE_VALUE_TO_STATUS[i];
-      i++) {
+       i++) {
     var value = targetNode.getAttribute(attr.name);
     var msgId = attr.values[value];
     if (msgId) {
@@ -373,7 +382,7 @@ cvox.AriaUtil.getStateMsgs = function(targetNode, primary) {
     }
   }
   if (targetNode.getAttribute('role') == 'grid') {
-      return cvox.AriaUtil.getGridState_(targetNode, targetNode);
+    return cvox.AriaUtil.getGridState_(targetNode, targetNode);
   }
 
   var role = cvox.AriaUtil.getRoleAttribute(targetNode);
@@ -430,12 +439,8 @@ cvox.AriaUtil.getStateMsgs = function(targetNode, primary) {
     currentDescendant = cvox.AriaUtil.getActiveDescendant(parentControl);
   } else {
     role = cvox.AriaUtil.getRoleAttribute(targetNode);
-    if (role == 'option' ||
-        role == 'menuitem' ||
-        role == 'menuitemcheckbox' ||
-        role == 'menuitemradio' ||
-        role == 'radio' ||
-        role == 'tab' ||
+    if (role == 'option' || role == 'menuitem' || role == 'menuitemcheckbox' ||
+        role == 'menuitemradio' || role == 'radio' || role == 'tab' ||
         role == 'treeitem') {
       currentDescendant = targetNode;
       parentControl = targetNode.parentElement;
@@ -452,7 +457,7 @@ cvox.AriaUtil.getStateMsgs = function(targetNode, primary) {
 
   if (parentControl &&
       (cvox.AriaUtil.isCompositeControl(parentControl) ||
-          cvox.AriaUtil.getRoleAttribute(parentControl) == 'treeitem') &&
+       cvox.AriaUtil.getRoleAttribute(parentControl) == 'treeitem') &&
       currentDescendant) {
     var parentRole = cvox.AriaUtil.getRoleAttribute(parentControl);
     var descendantRoleList;
@@ -462,9 +467,7 @@ cvox.AriaUtil.getStateMsgs = function(targetNode, primary) {
         descendantRoleList = ['option'];
         break;
       case 'menu':
-        descendantRoleList = ['menuitem',
-                             'menuitemcheckbox',
-                             'menuitemradio'];
+        descendantRoleList = ['menuitem', 'menuitemcheckbox', 'menuitemradio'];
         break;
       case 'radiogroup':
         descendantRoleList = ['radio'];
@@ -495,8 +498,8 @@ cvox.AriaUtil.getStateMsgs = function(targetNode, primary) {
       }
 
       if (listLength == undefined || currentIndex == undefined) {
-        var descendants = cvox.AriaUtil.getNextLevel(parentControl,
-            descendantRoleList);
+        var descendants =
+            cvox.AriaUtil.getNextLevel(parentControl, descendantRoleList);
         if (listLength == undefined) {
           listLength = descendants.length;
         }
@@ -537,7 +540,7 @@ cvox.AriaUtil.getGridState_ = function(targetNode, parentControl) {
       for (var k = 0; k < gridcells.length; k++) {
         if (gridcells[k] == activeDescendant) {
           return /** @type {cvox.NodeState} */ (
-                  [['role_gridcell_pos', j + 1, k + 1]]);
+              [['role_gridcell_pos', j + 1, k + 1]]);
         }
       }
     }
@@ -598,7 +601,7 @@ cvox.AriaUtil.getNextLevel = function(parentControl, role) {
  * @return {Array<Element>} The array of matching nodes.
  */
 cvox.AriaUtil.getNextLevelItems = function(current, role) {
-  if (current.nodeType != 1) { // If reached a node that is not an element.
+  if (current.nodeType != 1) {  // If reached a node that is not an element.
     return [];
   }
   if (role.indexOf(cvox.AriaUtil.getRoleAttribute(current)) != -1) {
@@ -810,9 +813,9 @@ cvox.AriaUtil.getAriaRelevant = function(node, change) {
   var tokens = value.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '').split(' ');
 
   if (change == 'all') {
-    return (tokens.indexOf('additions') >= 0 &&
-            tokens.indexOf('text') >= 0 &&
-            tokens.indexOf('removals') >= 0);
+    return (
+        tokens.indexOf('additions') >= 0 && tokens.indexOf('text') >= 0 &&
+        tokens.indexOf('removals') >= 0);
   } else {
     return (tokens.indexOf(change) >= 0);
   }
@@ -858,22 +861,22 @@ cvox.AriaUtil.getLiveRegions = function(node) {
  * @return {boolean} Whether or not the node is an ARIA landmark.
  */
 cvox.AriaUtil.isLandmark = function(node) {
-    if (!node || !node.getAttribute) {
-      return false;
-    }
-    var role = cvox.AriaUtil.getRoleAttribute(node);
-    switch (role) {
-      case 'application':
-      case 'banner':
-      case 'complementary':
-      case 'contentinfo':
-      case 'form':
-      case 'main':
-      case 'navigation':
-      case 'search':
-        return true;
-    }
+  if (!node || !node.getAttribute) {
     return false;
+  }
+  var role = cvox.AriaUtil.getRoleAttribute(node);
+  switch (role) {
+    case 'application':
+    case 'banner':
+    case 'complementary':
+    case 'contentinfo':
+    case 'form':
+    case 'main':
+    case 'navigation':
+    case 'search':
+      return true;
+  }
+  return false;
 };
 
 
@@ -884,16 +887,16 @@ cvox.AriaUtil.isLandmark = function(node) {
  * @return {boolean} Whether or not the node is an ARIA grid.
  */
 cvox.AriaUtil.isGrid = function(node) {
-    if (!node || !node.getAttribute) {
-      return false;
-    }
-    var role = cvox.AriaUtil.getRoleAttribute(node);
-    switch (role) {
-      case 'grid':
-      case 'treegrid':
-        return true;
-    }
+  if (!node || !node.getAttribute) {
     return false;
+  }
+  var role = cvox.AriaUtil.getRoleAttribute(node);
+  switch (role) {
+    case 'grid':
+    case 'treegrid':
+      return true;
+  }
+  return false;
 };
 
 

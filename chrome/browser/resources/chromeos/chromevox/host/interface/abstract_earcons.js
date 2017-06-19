@@ -74,8 +74,7 @@ cvox.EarconDescription = {
 /**
  * @constructor
  */
-cvox.AbstractEarcons = function() {
-};
+cvox.AbstractEarcons = function() {};
 
 
 /**
@@ -92,16 +91,14 @@ cvox.AbstractEarcons.enabled = true;
  * @param {Object=} opt_location A location associated with the earcon such as a
  * control's bounding rectangle.
  */
-cvox.AbstractEarcons.prototype.playEarcon = function(earcon, opt_location) {
-};
+cvox.AbstractEarcons.prototype.playEarcon = function(earcon, opt_location) {};
 
 
 /**
  * Cancels the specified earcon sound.
  * @param {cvox.Earcon} earcon An earcon identifier.
  */
-cvox.AbstractEarcons.prototype.cancelEarcon = function(earcon) {
-};
+cvox.AbstractEarcons.prototype.cancelEarcon = function(earcon) {};
 
 
 /**

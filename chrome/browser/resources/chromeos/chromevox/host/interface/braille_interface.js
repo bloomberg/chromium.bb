@@ -18,15 +18,14 @@ goog.require('cvox.NavBraille');
 /**
  * @interface
  */
-cvox.BrailleInterface = function() { };
+cvox.BrailleInterface = function() {};
 
 /**
  * Sends the given params to the Braille display for output.
  * @param {!cvox.NavBraille} params Parameters to send to the
  * platform braille service.
  */
-cvox.BrailleInterface.prototype.write =
-    function(params) { };
+cvox.BrailleInterface.prototype.write = function(params) {};
 
 /**
  * Takes an image in the form of a data url and outputs it to a Braille
@@ -34,22 +33,21 @@ cvox.BrailleInterface.prototype.write =
  * @param {!string} imageDataUrl The image to output, in the form of a
  * dataUrl.
  */
-cvox.BrailleInterface.prototype.writeRawImage =
-    function(imageDataUrl) { };
+cvox.BrailleInterface.prototype.writeRawImage = function(imageDataUrl) {};
 
 /**
  * Freeze whatever is on the braille display until the next call to thaw().
  */
-cvox.BrailleInterface.prototype.freeze = function() { };
+cvox.BrailleInterface.prototype.freeze = function() {};
 
 
 /**
  * Un-freeze the braille display so that it can be written to again.
  */
-cvox.BrailleInterface.prototype.thaw = function() { };
+cvox.BrailleInterface.prototype.thaw = function() {};
 
 
 /**
  * @return {!cvox.BrailleDisplayState} The current display state.
  */
-cvox.BrailleInterface.prototype.getDisplayState = function() { };
+cvox.BrailleInterface.prototype.getDisplayState = function() {};

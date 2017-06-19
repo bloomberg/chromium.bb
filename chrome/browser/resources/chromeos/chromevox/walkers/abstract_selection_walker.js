@@ -28,7 +28,7 @@ cvox.AbstractSelectionWalker = function() {
   cvox.AbstractWalker.call(this);
   this.objWalker_ = new cvox.BareObjectWalker();
   this.tc_ = cvox.TraverseContent.getInstance();
-  this.grain /** @protected */ = ''; // child must override
+  this.grain /** @protected */ = '';  // child must override
 };
 goog.inherits(cvox.AbstractSelectionWalker, cvox.AbstractWalker);
 
@@ -38,8 +38,8 @@ goog.inherits(cvox.AbstractSelectionWalker, cvox.AbstractWalker);
 cvox.AbstractSelectionWalker.prototype.next = function(sel) {
   var r = sel.isReversed();
   this.tc_.syncToCursorSelection(sel.clone().setReversed(false));
-  var ret = r ? this.tc_.prevElement(this.grain) :
-      this.tc_.nextElement(this.grain);
+  var ret =
+      r ? this.tc_.prevElement(this.grain) : this.tc_.nextElement(this.grain);
   if (ret == null) {
     // Unfortunately, we can't trust TraverseContent; fall back to ObjectWalker.
     return this.objWalker_.next(sel);
@@ -54,7 +54,7 @@ cvox.AbstractSelectionWalker.prototype.next = function(sel) {
   // object walker.
   if (objSel &&
       (retSel.end.node.constructor.name != 'Text' ||
-          objSel.end.node.constructor.name != 'Text') &&
+       objSel.end.node.constructor.name != 'Text') &&
       !cvox.DomUtil.isDescendantOfNode(retSel.end.node, sel.end.node) &&
       !cvox.DomUtil.isDescendantOfNode(retSel.end.node, objSel.end.node)) {
     return objSel;
@@ -74,15 +74,14 @@ cvox.AbstractSelectionWalker.prototype.sync = function(sel) {
     // Find the deepest visible node; written specifically here because we want
     // to move across siblings if necessary and take the deepest node which can
     // be BODY.
-    while (node &&
-        cvox.DomUtil.directedFirstChild(node, r) &&
-        !cvox.TraverseUtil.treatAsLeafNode(node)) {
+    while (node && cvox.DomUtil.directedFirstChild(node, r) &&
+           !cvox.TraverseUtil.treatAsLeafNode(node)) {
       var child = cvox.DomUtil.directedFirstChild(node, r);
 
       // Find the first visible child.
       while (child) {
-        if (cvox.DomUtil.isVisible(child,
-            {checkAncestors: false, checkDescendants: false})) {
+        if (cvox.DomUtil.isVisible(
+                child, {checkAncestors: false, checkDescendants: false})) {
           node = child;
           break;
         } else {
@@ -123,7 +122,7 @@ cvox.AbstractSelectionWalker.prototype.sync = function(sel) {
 
   if (objSel &&
       (newSel.end.node.constructor.name != 'Text' ||
-          objSel.end.node.constructor.name != 'Text') &&
+       objSel.end.node.constructor.name != 'Text') &&
       !cvox.DomUtil.isDescendantOfNode(newSel.end.node, sel.end.node) &&
       !cvox.DomUtil.isDescendantOfNode(newSel.end.node, objSel.end.node)) {
     return objSel;
@@ -136,8 +135,7 @@ cvox.AbstractSelectionWalker.prototype.sync = function(sel) {
  */
 cvox.AbstractSelectionWalker.prototype.getDescription = function(prevSel, sel) {
   var description = cvox.DescriptionUtil.getDescriptionFromAncestors(
-      cvox.DomUtil.getUniqueAncestors(prevSel.end.node, sel.start.node),
-      true,
+      cvox.DomUtil.getUniqueAncestors(prevSel.end.node, sel.start.node), true,
       cvox.ChromeVox.verbosity);
   description.text = sel.getText() || description.text;
   return [description];

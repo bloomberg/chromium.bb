@@ -17,8 +17,7 @@ goog.require('cvox.MathJaxInterface');
  * @constructor
  * @implements {cvox.MathJaxInterface}
  */
-cvox.AbstractMathJax = function() {
-};
+cvox.AbstractMathJax = function() {};
 
 
 /**
@@ -69,8 +68,8 @@ cvox.AbstractMathJax.prototype.configMediaWiki = goog.abstractMethod;
  * an id string.
  */
 cvox.AbstractMathJax.prototype.getAllTexs = function(callback) {
-  var allTexs = document.
-      querySelectorAll(cvox.DomUtil.altMathQuerySelector('tex'));
+  var allTexs =
+      document.querySelectorAll(cvox.DomUtil.altMathQuerySelector('tex'));
   for (var i = 0, tex; tex = allTexs[i]; i++) {
     this.getTex(callback, tex);
   }
@@ -83,8 +82,8 @@ cvox.AbstractMathJax.prototype.getAllTexs = function(callback) {
  * an id string.
  */
 cvox.AbstractMathJax.prototype.getAllAsciiMaths = function(callback) {
-  var allAsciiMaths = document.
-      querySelectorAll(cvox.DomUtil.altMathQuerySelector('asciimath'));
+  var allAsciiMaths =
+      document.querySelectorAll(cvox.DomUtil.altMathQuerySelector('asciimath'));
   for (var i = 0, tex; tex = allAsciiMaths[i]; i++) {
     this.getAsciiMath(callback, tex);
   }

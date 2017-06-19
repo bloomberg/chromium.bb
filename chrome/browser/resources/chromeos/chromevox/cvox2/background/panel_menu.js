@@ -51,12 +51,12 @@ PanelMenu = function(menuMsg) {
   this.items_ = [];
 
   /**
-    * The return value from window.setTimeout for a function to update the
-    * scroll bars after an item has been added to a menu. Used so that we
-    * don't re-layout too many times.
-    * @type {?number}
-    * @private
-    */
+   * The return value from window.setTimeout for a function to update the
+   * scroll bars after an item has been added to a menu. Used so that we
+   * don't re-layout too many times.
+   * @type {?number}
+   * @private
+   */
   this.updateScrollbarsTimeout_ = null;
 
   /**
@@ -85,20 +85,24 @@ PanelMenu.prototype = {
     this.menuElement.appendChild(menuItem.element);
 
     // Sync the active index with focus.
-    menuItem.element.addEventListener('focus', (function(index, event) {
-      this.activeIndex_ = index;
-    }).bind(this, this.items_.length - 1), false);
+    menuItem.element.addEventListener(
+        'focus', (function(index, event) {
+                   this.activeIndex_ = index;
+                 }).bind(this, this.items_.length - 1),
+        false);
 
     // Update the container height, adding a scroll bar if necessary - but
     // to avoid excessive layout, schedule this once per batch of adding
     // menu items rather than after each add.
     if (!this.updateScrollbarsTimeout_) {
-      this.updateScrollbarsTimeout_ = window.setTimeout((function() {
-        var menuBounds = this.menuElement.getBoundingClientRect();
-        var maxHeight = window.innerHeight - menuBounds.top;
-        this.menuContainerElement.style.maxHeight = maxHeight + 'px';
-        this.updateScrollbarsTimeout_ = null;
-      }).bind(this), 0);
+      this.updateScrollbarsTimeout_ = window.setTimeout(
+          (function() {
+            var menuBounds = this.menuElement.getBoundingClientRect();
+            var maxHeight = window.innerHeight - menuBounds.top;
+            this.menuContainerElement.style.maxHeight = maxHeight + 'px';
+            this.updateScrollbarsTimeout_ = null;
+          }).bind(this),
+          0);
     }
 
     return menuItem;
@@ -139,9 +143,11 @@ PanelMenu.prototype = {
     this.menuBarItemElement.classList.remove('active');
     this.activeIndex_ = -1;
 
-    window.setTimeout((function() {
-      this.menuContainerElement.style.visibility = 'hidden';
-    }).bind(this), 0);
+    window.setTimeout(
+        (function() {
+          this.menuContainerElement.style.visibility = 'hidden';
+        }).bind(this),
+        0);
   },
 
   /**
@@ -221,8 +227,7 @@ PanelMenu.prototype = {
       return;
 
     var query = String.fromCharCode(evt.charCode).toLowerCase();
-    for (var i = this.activeIndex_ + 1;
-         i != this.activeIndex_;
+    for (var i = this.activeIndex_ + 1; i != this.activeIndex_;
          i = (i + 1) % this.items_.length) {
       if (this.items_[i].text.toLowerCase().indexOf(query) == 0) {
         this.activateItem(i);
@@ -283,12 +288,11 @@ PanelNodeMenu.prototype = {
       return;
     }
 
-    this.walker_ = new AutomationTreeWalker(
-        root,
-        constants.Dir.FORWARD,
-        {visit: function(node) {
-           return !AutomationPredicate.shouldIgnoreNode(node);
-        }});
+    this.walker_ = new AutomationTreeWalker(root, constants.Dir.FORWARD, {
+      visit: function(node) {
+        return !AutomationPredicate.shouldIgnoreNode(node);
+      }
+    });
     this.nodeCount_ = 0;
     this.selectNext_ = false;
     this.findMoreNodes_();
@@ -315,12 +319,13 @@ PanelNodeMenu.prototype = {
         output.withSpeech(range, range, Output.EventType.NAVIGATE);
         var label = output.toString();
         this.addMenuItem(label, '', '', (function() {
-          var savedNode = node;
-          return function() {
-            chrome.extension.getBackgroundPage().ChromeVoxState
-                .instance['navigateToRange'](cursors.Range.fromNode(savedNode));
-          };
-        }()));
+                           var savedNode = node;
+                           return function() {
+                             chrome.extension.getBackgroundPage()
+                                 .ChromeVoxState.instance['navigateToRange'](
+                                     cursors.Range.fromNode(savedNode));
+                           };
+                         }()));
 
         if (this.selectNext_) {
           this.activateItem(this.items_.length - 1);

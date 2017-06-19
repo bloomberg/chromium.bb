@@ -49,9 +49,8 @@ cvox.BrailleTextHandler.prototype.changed = function(
     if (element) {
       spannable.setSpan(element, 0, line.length);
     }
-    content = new cvox.NavBraille({text: spannable,
-                                   startIndex: start,
-                                   endIndex: end});
+    content = new cvox.NavBraille(
+        {text: spannable, startIndex: start, endIndex: end});
   } else {
     if (cvox.ChromeVox.navigationManager) {
       content = cvox.ChromeVox.navigationManager.getBraille();

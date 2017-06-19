@@ -35,8 +35,7 @@ goog.require('cvox.UserEventDetail');
 /**
  * @constructor
  */
-cvox.ChromeVoxEventWatcher = function() {
-};
+cvox.ChromeVoxEventWatcher = function() {};
 
 /**
  * The maximum amount of time to wait before processing events.
@@ -194,13 +193,13 @@ cvox.ChromeVoxEventWatcher.init = function(doc) {
   cvox.ChromeVoxEventWatcher.readyCallbacks_ = new Array();
 
 
-/**
- * tracks whether we've received two or more key up's while pass through mode
- * is active.
- * @type {boolean}
- * @private
- */
-cvox.ChromeVoxEventWatcher.secondPassThroughKeyUp_ = false;
+  /**
+   * tracks whether we've received two or more key up's while pass through mode
+   * is active.
+   * @type {boolean}
+   * @private
+   */
+  cvox.ChromeVoxEventWatcher.secondPassThroughKeyUp_ = false;
 
   /**
    * Whether or not the ChromeOS Search key (keyCode == 91) is being held.
@@ -271,7 +270,8 @@ cvox.ChromeVoxEventWatcher.addEvent = function(evt) {
   }
   if (!cvox.ChromeVoxEventWatcher.queueProcessingScheduled_) {
     cvox.ChromeVoxEventWatcher.queueProcessingScheduled_ = true;
-    window.setTimeout(cvox.ChromeVoxEventWatcher.processQueue_,
+    window.setTimeout(
+        cvox.ChromeVoxEventWatcher.processQueue_,
         cvox.ChromeVoxEventWatcher.WAIT_TIME_MS_);
   }
 };
@@ -314,8 +314,8 @@ cvox.ChromeVoxEventWatcher.maybeCallReadyCallbacks_ = function() {
     window.setTimeout(function() {
       cvox.ChromeVoxEventWatcher.readyCallbackRunning_ = false;
       if (!cvox.ChromeVoxEventWatcher.hasPendingEvents_() &&
-             !cvox.ChromeVoxEventWatcher.queueProcessingScheduled_ &&
-             cvox.ChromeVoxEventWatcher.readyCallbacks_.length > 0) {
+          !cvox.ChromeVoxEventWatcher.queueProcessingScheduled_ &&
+          cvox.ChromeVoxEventWatcher.readyCallbacks_.length > 0) {
         cvox.ChromeVoxEventWatcher.readyCallbacks_.shift()();
         cvox.ChromeVoxEventWatcher.maybeCallReadyCallbacks_();
       }
@@ -331,55 +331,55 @@ cvox.ChromeVoxEventWatcher.maybeCallReadyCallbacks_ = function() {
  */
 cvox.ChromeVoxEventWatcher.addEventListeners_ = function(doc) {
   // We always need key down listeners to intercept activate/deactivate.
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'keydown', cvox.ChromeVoxEventWatcher.keyDownEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'keydown', cvox.ChromeVoxEventWatcher.keyDownEventWatcher, true);
 
   // If ChromeVox isn't active, skip all other event listeners.
   if (!cvox.ChromeVox.isActive || cvox.ChromeVox.entireDocumentIsHidden) {
     return;
   }
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'keypress', cvox.ChromeVoxEventWatcher.keyPressEventWatcher, true);
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'keyup', cvox.ChromeVoxEventWatcher.keyUpEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'keypress', cvox.ChromeVoxEventWatcher.keyPressEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'keyup', cvox.ChromeVoxEventWatcher.keyUpEventWatcher, true);
   // Listen for our own events to handle public user commands if the web app
   // doesn't do it for us.
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      cvox.UserEventDetail.Category.JUMP,
-      cvox.ChromeVoxUserCommands.handleChromeVoxUserEvent,
-      false);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, cvox.UserEventDetail.Category.JUMP,
+      cvox.ChromeVoxUserCommands.handleChromeVoxUserEvent, false);
 
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'focus', cvox.ChromeVoxEventWatcher.focusEventWatcher, true);
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'blur', cvox.ChromeVoxEventWatcher.blurEventWatcher, true);
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'change', cvox.ChromeVoxEventWatcher.changeEventWatcher, true);
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'copy', cvox.ChromeVoxEventWatcher.clipboardEventWatcher, true);
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'cut', cvox.ChromeVoxEventWatcher.clipboardEventWatcher, true);
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'paste', cvox.ChromeVoxEventWatcher.clipboardEventWatcher, true);
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'select', cvox.ChromeVoxEventWatcher.selectEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'focus', cvox.ChromeVoxEventWatcher.focusEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'blur', cvox.ChromeVoxEventWatcher.blurEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'change', cvox.ChromeVoxEventWatcher.changeEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'copy', cvox.ChromeVoxEventWatcher.clipboardEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'cut', cvox.ChromeVoxEventWatcher.clipboardEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'paste', cvox.ChromeVoxEventWatcher.clipboardEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'select', cvox.ChromeVoxEventWatcher.selectEventWatcher, true);
 
   // TODO(dtseng): Experimental, see:
   // https://developers.google.com/chrome/whitepapers/pagevisibility
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc, 'webkitvisibilitychange',
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'webkitvisibilitychange',
       cvox.ChromeVoxEventWatcher.visibilityChangeWatcher, true);
   cvox.ChromeVoxEventWatcher.events_ = new Array();
   cvox.ChromeVoxEventWatcher.queueProcessingScheduled_ = false;
 
   // Handle mouse events directly without going into the events queue.
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'mouseover', cvox.ChromeVoxEventWatcher.mouseOverEventWatcher, true);
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'mouseout', cvox.ChromeVoxEventWatcher.mouseOutEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'mouseover', cvox.ChromeVoxEventWatcher.mouseOverEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'mouseout', cvox.ChromeVoxEventWatcher.mouseOutEventWatcher, true);
 
   // With the exception of non-Android, click events go through the event queue.
-  cvox.ChromeVoxEventWatcher.addEventListener_(doc,
-      'click', cvox.ChromeVoxEventWatcher.mouseClickEventWatcher, true);
+  cvox.ChromeVoxEventWatcher.addEventListener_(
+      doc, 'click', cvox.ChromeVoxEventWatcher.mouseClickEventWatcher, true);
 
   cvox.ChromeVoxEventWatcher.mutationObserver_ =
       new window.WebKitMutationObserver(
@@ -441,8 +441,8 @@ cvox.ChromeVoxEventWatcher.cleanup = function(doc) {
  *     before they're sent to targets beneath it in the DOM tree.
  * @private
  */
-cvox.ChromeVoxEventWatcher.addEventListener_ = function(doc, type,
-    listener, useCapture) {
+cvox.ChromeVoxEventWatcher.addEventListener_ = function(
+    doc, type, listener, useCapture) {
   cvox.ChromeVoxEventWatcher.listeners_.push(
       {'type': type, 'listener': listener, 'useCapture': useCapture});
   doc.addEventListener(type, listener, useCapture);
@@ -464,8 +464,8 @@ cvox.ChromeVoxEventWatcher.getLastFocusedNode = function() {
  */
 cvox.ChromeVoxEventWatcher.setLastFocusedNode_ = function(element) {
   cvox.ChromeVoxEventWatcher.lastFocusedNode = element;
-  cvox.ChromeVoxEventWatcher.lastFocusedNodeValue = !element ? null :
-      cvox.DomUtil.getControlValueAndStateString(element);
+  cvox.ChromeVoxEventWatcher.lastFocusedNodeValue =
+      !element ? null : cvox.DomUtil.getControlValueAndStateString(element);
 };
 
 /**
@@ -482,8 +482,7 @@ cvox.ChromeVoxEventWatcher.mutationHandler = function(mutations) {
   cvox.ChromeVox.navigationManager.updateIndicatorIfChanged();
 
   cvox.LiveRegions.processMutations(
-      mutations,
-      function(assertive, navDescriptions) {
+      mutations, function(assertive, navDescriptions) {
         var evt = new window.Event('LiveRegion');
         evt.navDescriptions = navDescriptions;
         evt.assertive = assertive;
@@ -519,8 +518,7 @@ cvox.ChromeVoxEventWatcher.mouseClickEventWatcher = function(evt) {
     // happens in a focused text field).
     cvox.Focuser.setFocus(cvox.ChromeVox.navigationManager.getCurrentNode());
     cvox.ChromeVox.tts.speak(
-        Msgs.getMsg('element_clicked'),
-        cvox.ChromeVoxEventWatcher.queueMode_(),
+        Msgs.getMsg('element_clicked'), cvox.ChromeVoxEventWatcher.queueMode_(),
         cvox.AbstractTts.PERSONALITY_ANNOTATION);
     var targetNode = cvox.ChromeVox.navigationManager.getCurrentNode();
     // If the targetNode has a defined onclick function, just call it directly
@@ -558,7 +556,7 @@ cvox.ChromeVoxEventWatcher.mouseOverEventWatcher = function(evt) {
   }
 
   if (cvox.DomUtil.isDescendantOfNode(
-      cvox.ChromeVoxEventWatcher.announcedMouseOverNode, evt.target)) {
+          cvox.ChromeVoxEventWatcher.announcedMouseOverNode, evt.target)) {
     return true;
   }
 
@@ -580,24 +578,23 @@ cvox.ChromeVoxEventWatcher.mouseOverEventWatcher = function(evt) {
 
   // Only focus and announce if the mouse stays over the same target
   // for longer than the given delay.
-  cvox.ChromeVoxEventWatcher.mouseOverTimeoutId = window.setTimeout(
-      function() {
-        cvox.ChromeVoxEventWatcher.mouseOverTimeoutId = null;
-        if (evt.target != cvox.ChromeVoxEventWatcher.pendingMouseOverNode) {
-          return;
-        }
+  cvox.ChromeVoxEventWatcher.mouseOverTimeoutId = window.setTimeout(function() {
+    cvox.ChromeVoxEventWatcher.mouseOverTimeoutId = null;
+    if (evt.target != cvox.ChromeVoxEventWatcher.pendingMouseOverNode) {
+      return;
+    }
 
-        cvox.Memoize.scope(function() {
-          cvox.ChromeVoxEventWatcher.shouldFlushNextUtterance = true;
-          cvox.ChromeVox.navigationManager.stopReading(true);
-          var target = /** @type {Node} */(evt.target);
-          cvox.Focuser.setFocus(target);
-          cvox.ChromeVox.navigationManager.syncToNode(
-              target, true, cvox.ChromeVoxEventWatcher.queueMode_());
+    cvox.Memoize.scope(function() {
+      cvox.ChromeVoxEventWatcher.shouldFlushNextUtterance = true;
+      cvox.ChromeVox.navigationManager.stopReading(true);
+      var target = /** @type {Node} */ (evt.target);
+      cvox.Focuser.setFocus(target);
+      cvox.ChromeVox.navigationManager.syncToNode(
+          target, true, cvox.ChromeVoxEventWatcher.queueMode_());
 
-          cvox.ChromeVoxEventWatcher.announcedMouseOverNode = target;
-        });
-      }, mouseoverDelayMs);
+      cvox.ChromeVoxEventWatcher.announcedMouseOverNode = target;
+    });
+  }, mouseoverDelayMs);
 
   return true;
 };
@@ -637,7 +634,7 @@ cvox.ChromeVoxEventWatcher.focusEventWatcher = function(evt) {
     cvox.ChromeVoxEventWatcher.addEvent(evt);
   } else if (evt.target && evt.target.nodeType == Node.ELEMENT_NODE) {
     cvox.ChromeVoxEventWatcher.setLastFocusedNode_(
-        /** @type {Element} */(evt.target));
+        /** @type {Element} */ (evt.target));
   }
   return true;
 };
@@ -651,8 +648,7 @@ cvox.ChromeVoxEventWatcher.focusHandler = function(evt) {
   if (!cvox.ChromeVox.documentHasFocus()) {
     return;
   }
-  if (evt.target &&
-      evt.target.hasAttribute &&
+  if (evt.target && evt.target.hasAttribute &&
       evt.target.getAttribute('aria-hidden') == 'true' &&
       evt.target.getAttribute('chromevoxignoreariahidden') != 'true') {
     cvox.ChromeVoxEventWatcher.setLastFocusedNode_(null);
@@ -660,7 +656,7 @@ cvox.ChromeVoxEventWatcher.focusHandler = function(evt) {
     return;
   }
   if (evt.target && evt.target != window) {
-    var target = /** @type {Element} */(evt.target);
+    var target = /** @type {Element} */ (evt.target);
     var parentControl = cvox.DomUtil.getSurroundingControl(target);
     if (parentControl &&
         parentControl == cvox.ChromeVoxEventWatcher.lastFocusedNode) {
@@ -670,7 +666,7 @@ cvox.ChromeVoxEventWatcher.focusHandler = function(evt) {
 
     if (parentControl) {
       cvox.ChromeVoxEventWatcher.setLastFocusedNode_(
-          /** @type {Element} */(parentControl));
+          /** @type {Element} */ (parentControl));
     } else {
       cvox.ChromeVoxEventWatcher.setLastFocusedNode_(target);
     }
@@ -762,8 +758,7 @@ cvox.ChromeVoxEventWatcher.doKeyDownEventWatcher_ = function(evt) {
   }
 
   // Store some extra ChromeVox-specific properties in the event.
-  evt.searchKeyHeld =
-      cvox.ChromeVox.searchKeyHeld && cvox.ChromeVox.isActive;
+  evt.searchKeyHeld = cvox.ChromeVox.searchKeyHeld && cvox.ChromeVox.isActive;
   evt.stickyMode = cvox.ChromeVox.isStickyModeOn() && cvox.ChromeVox.isActive;
   evt.keyPrefix = cvox.ChromeVox.keyPrefixOn && cvox.ChromeVox.isActive;
 
@@ -843,11 +838,12 @@ cvox.ChromeVoxEventWatcher.keyPressEventWatcher = function(evt) {
   // skips potentially costly computations (especially for content editable).
   // This is done deliberately for the sake of responsiveness and in some cases
   // (e.g. content editable), to have characters echoed properly.
-  if (cvox.ChromeVoxEditableTextBase.eventTypingEcho && (speakChar &&
-          cvox.DomPredicates.editTextPredicate([document.activeElement])) &&
+  if (cvox.ChromeVoxEditableTextBase.eventTypingEcho &&
+      (speakChar &&
+       cvox.DomPredicates.editTextPredicate([document.activeElement])) &&
       document.activeElement.type !== 'password') {
-    cvox.ChromeVox.tts.speak(String.fromCharCode(evt.charCode),
-                             cvox.QueueMode.FLUSH);
+    cvox.ChromeVox.tts.speak(
+        String.fromCharCode(evt.charCode), cvox.QueueMode.FLUSH);
   }
   cvox.ChromeVoxEventWatcher.addEvent(evt);
   if (cvox.ChromeVoxEventWatcher.eventToEat &&
@@ -880,9 +876,8 @@ cvox.ChromeVoxEventWatcher.changeEventWatcher = function(evt) {
 cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
   // Don't announce anything unless this document has focus and the
   // editable element that's the target of the clipboard event is visible.
-  var targetNode = /** @type {Node} */(evt.target);
-  if (!cvox.ChromeVox.documentHasFocus() ||
-      !targetNode ||
+  var targetNode = /** @type {Node} */ (evt.target);
+  if (!cvox.ChromeVox.documentHasFocus() || !targetNode ||
       !cvox.DomUtil.isVisible(targetNode) ||
       cvox.AriaUtil.isHidden(targetNode)) {
     return true;
@@ -890,16 +885,15 @@ cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
 
   var text = '';
   switch (evt.type) {
-  case 'paste':
-    text = evt.clipboardData.getData('text');
-    break;
-  case 'copy':
-  case 'cut':
-    text = window.getSelection().toString();
-    break;
+    case 'paste':
+      text = evt.clipboardData.getData('text');
+      break;
+    case 'copy':
+    case 'cut':
+      text = window.getSelection().toString();
+      break;
   }
-  cvox.ChromeVox.tts.speak(
-      Msgs.getMsg(evt.type, [text]), cvox.QueueMode.QUEUE);
+  cvox.ChromeVox.tts.speak(Msgs.getMsg(evt.type, [text]), cvox.QueueMode.QUEUE);
   cvox.ChromeVox.navigationManager.clearPageSel();
   return true;
 };
@@ -957,8 +951,7 @@ cvox.ChromeVoxEventWatcher.getInitialVisibility = function() {
  *    representing the description of the live region changes.
  * @private
  */
-cvox.ChromeVoxEventWatcher.speakLiveRegion_ = function(
-    assertive, messages) {
+cvox.ChromeVoxEventWatcher.speakLiveRegion_ = function(assertive, messages) {
   var queueMode = cvox.ChromeVoxEventWatcher.queueMode_();
   var descSpeaker = new cvox.NavigationSpeaker();
   descSpeaker.speakDescriptionArray(messages, queueMode, null);
@@ -970,8 +963,7 @@ cvox.ChromeVoxEventWatcher.speakLiveRegion_ = function(
  */
 cvox.ChromeVoxEventWatcher.setUpTextHandler = function() {
   var currentFocus = document.activeElement;
-  if (currentFocus &&
-      currentFocus.hasAttribute &&
+  if (currentFocus && currentFocus.hasAttribute &&
       currentFocus.getAttribute('aria-hidden') == 'true' &&
       currentFocus.getAttribute('chromevoxignoreariahidden') != 'true') {
     currentFocus = null;
@@ -1002,17 +994,19 @@ cvox.ChromeVoxEventWatcher.setUpTextHandler = function() {
       cvox.ChromeVoxEventWatcher.currentTextControl = currentFocus;
       cvox.ChromeVoxEventWatcher.currentTextHandler =
           new cvox.ChromeVoxEditableHTMLInput(currentFocus, cvox.ChromeVox.tts);
-    } else if ((currentFocus.constructor == HTMLTextAreaElement) &&
+    } else if (
+        (currentFocus.constructor == HTMLTextAreaElement) &&
         cvox.ChromeVoxEventWatcher.shouldEchoKeys) {
       cvox.ChromeVoxEventWatcher.currentTextControl = currentFocus;
       cvox.ChromeVoxEventWatcher.currentTextHandler =
           new cvox.ChromeVoxEditableTextArea(currentFocus, cvox.ChromeVox.tts);
-    } else if (currentFocus.isContentEditable ||
-               currentFocus.getAttribute('role') == 'textbox') {
+    } else if (
+        currentFocus.isContentEditable ||
+        currentFocus.getAttribute('role') == 'textbox') {
       cvox.ChromeVoxEventWatcher.currentTextControl = currentFocus;
       cvox.ChromeVoxEventWatcher.currentTextHandler =
-          new cvox.ChromeVoxEditableContentEditable(currentFocus,
-              cvox.ChromeVox.tts);
+          new cvox.ChromeVoxEditableContentEditable(
+              currentFocus, cvox.ChromeVox.tts);
     }
 
     if (cvox.ChromeVoxEventWatcher.currentTextControl) {
@@ -1134,9 +1128,8 @@ cvox.ChromeVoxEventWatcher.handleControlChanged = function(control) {
   }
 
   var activeDescendant = cvox.AriaUtil.getActiveDescendant(control);
-  if ((parentControl &&
-      parentControl != control &&
-      document.activeElement == control)) {
+  if ((parentControl && parentControl != control &&
+       document.activeElement == control)) {
     // Sync ChromeVox to the newly selected control.
     cvox.ChromeVox.navigationManager.syncToNode(
         activeDescendant || control, true,
@@ -1145,17 +1138,15 @@ cvox.ChromeVoxEventWatcher.handleControlChanged = function(control) {
     announceChange = false;
   } else if (activeDescendant) {
     cvox.ChromeVox.navigationManager.updateSelToArbitraryNode(
-        activeDescendant,
-        true);
+        activeDescendant, true);
 
     announceChange = true;
   }
 
   if (newValue && announceChange &&
       !cvox.ChromeVoxEventSuspender.areEventsSuspended()) {
-    cvox.ChromeVox.tts.speak(newValue,
-                             cvox.ChromeVoxEventWatcher.queueMode_(),
-                             null);
+    cvox.ChromeVox.tts.speak(
+        newValue, cvox.ChromeVoxEventWatcher.queueMode_(), null);
     cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(newValue));
   }
 };
@@ -1173,7 +1164,7 @@ cvox.ChromeVoxEventWatcher.handleControlAction = function(evt) {
   var control = evt.target;
 
   if (control.tagName == 'SELECT' && (control.size <= 1) &&
-      (evt.keyCode == 13 || evt.keyCode == 32)) { // Enter or Space
+      (evt.keyCode == 13 || evt.keyCode == 32)) {  // Enter or Space
     // TODO (dmazzoni, clchen): Remove this workaround once accessibility
     // APIs make browser based popups accessible.
     //
@@ -1246,29 +1237,26 @@ cvox.ChromeVoxEventWatcher.handleDialogFocus = function(target) {
 
   if (cvox.ChromeVox.navigationManager.currentDialog && !dialog) {
     if (!cvox.DomUtil.isDescendantOfNode(
-        document.activeElement,
-        cvox.ChromeVox.navigationManager.currentDialog)) {
+            document.activeElement,
+            cvox.ChromeVox.navigationManager.currentDialog)) {
       cvox.ChromeVox.navigationManager.currentDialog = null;
 
       cvox.ChromeVoxEventWatcher.speakAnnotationWithCategory_(
-          Msgs.getMsg('exiting_dialog'),
-          cvox.TtsCategory.NAV);
+          Msgs.getMsg('exiting_dialog'), cvox.TtsCategory.NAV);
       return true;
     }
   } else {
     if (dialog) {
       cvox.ChromeVox.navigationManager.currentDialog = dialog;
       cvox.ChromeVoxEventWatcher.speakAnnotationWithCategory_(
-          Msgs.getMsg('entering_dialog'),
-          cvox.TtsCategory.NAV);
+          Msgs.getMsg('entering_dialog'), cvox.TtsCategory.NAV);
 
       if (role == 'alertdialog') {
         var dialogDescArray =
             cvox.DescriptionUtil.getFullDescriptionsFromChildren(null, dialog);
         var descSpeaker = new cvox.NavigationSpeaker();
-        descSpeaker.speakDescriptionArray(dialogDescArray,
-                                          cvox.QueueMode.QUEUE,
-                                          null);
+        descSpeaker.speakDescriptionArray(
+            dialogDescArray, cvox.QueueMode.QUEUE, null);
       }
       return true;
     }
@@ -1294,9 +1282,7 @@ cvox.ChromeVoxEventWatcher.speakAnnotationWithCategory_ = function(
   }
   properties['category'] = category;
   cvox.ChromeVox.tts.speak(
-      text,
-      cvox.ChromeVoxEventWatcher.queueMode_(),
-      properties);
+      text, cvox.ChromeVoxEventWatcher.queueMode_(), properties);
 };
 
 /**
@@ -1388,10 +1374,10 @@ cvox.ChromeVoxEventWatcher.doProcessQueue_ = function() {
   if (lastFocusIndex >= 0 &&
       cvox.ChromeVoxEventWatcherUtil.shouldWaitToProcess(
           lastFocusTimestamp,
-          cvox.ChromeVoxEventWatcher.firstUnprocessedEventTime,
-          currentTime)) {
-    window.setTimeout(cvox.ChromeVoxEventWatcher.processQueue_,
-                      cvox.ChromeVoxEventWatcher.WAIT_TIME_MS_);
+          cvox.ChromeVoxEventWatcher.firstUnprocessedEventTime, currentTime)) {
+    window.setTimeout(
+        cvox.ChromeVoxEventWatcher.processQueue_,
+        cvox.ChromeVoxEventWatcher.WAIT_TIME_MS_);
     return;
   }
 
@@ -1438,7 +1424,7 @@ cvox.ChromeVoxEventWatcher.handleEvent_ = function(evt) {
       break;
     case 'click':
       cvox.ChromeVox.navigationManager.syncToNode(
-          /** @type {Node} */(evt.target), true);
+          /** @type {Node} */ (evt.target), true);
       break;
     case 'focus':
       cvox.ChromeVoxEventWatcher.focusHandler(evt);
@@ -1467,19 +1453,18 @@ cvox.ChromeVoxEventWatcher.handleEvent_ = function(evt) {
  */
 cvox.ChromeVoxEventWatcher.setUpTimeHandler_ = function() {
   var currentFocus = document.activeElement;
-  if (currentFocus &&
-      currentFocus.hasAttribute &&
+  if (currentFocus && currentFocus.hasAttribute &&
       currentFocus.getAttribute('aria-hidden') == 'true' &&
       currentFocus.getAttribute('chromevoxignoreariahidden') != 'true') {
     currentFocus = null;
   }
-  if (currentFocus.constructor == HTMLInputElement &&
-      currentFocus.type && (currentFocus.type == 'time')) {
+  if (currentFocus.constructor == HTMLInputElement && currentFocus.type &&
+      (currentFocus.type == 'time')) {
     cvox.ChromeVoxEventWatcher.currentTimeHandler =
         new cvox.ChromeVoxHTMLTimeWidget(currentFocus, cvox.ChromeVox.tts);
-    } else {
-      cvox.ChromeVoxEventWatcher.currentTimeHandler = null;
-    }
+  } else {
+    cvox.ChromeVoxEventWatcher.currentTimeHandler = null;
+  }
   return (null != cvox.ChromeVoxEventWatcher.currentTimeHandler);
 };
 
@@ -1491,8 +1476,7 @@ cvox.ChromeVoxEventWatcher.setUpTimeHandler_ = function() {
  */
 cvox.ChromeVoxEventWatcher.setUpMediaHandler_ = function() {
   var currentFocus = document.activeElement;
-  if (currentFocus &&
-      currentFocus.hasAttribute &&
+  if (currentFocus && currentFocus.hasAttribute &&
       currentFocus.getAttribute('aria-hidden') == 'true' &&
       currentFocus.getAttribute('chromevoxignoreariahidden') != 'true') {
     currentFocus = null;
@@ -1501,9 +1485,9 @@ cvox.ChromeVoxEventWatcher.setUpMediaHandler_ = function() {
       (currentFocus.constructor == HTMLAudioElement)) {
     cvox.ChromeVoxEventWatcher.currentMediaHandler =
         new cvox.ChromeVoxHTMLMediaWidget(currentFocus, cvox.ChromeVox.tts);
-    } else {
-      cvox.ChromeVoxEventWatcher.currentMediaHandler = null;
-    }
+  } else {
+    cvox.ChromeVoxEventWatcher.currentMediaHandler = null;
+  }
   return (null != cvox.ChromeVoxEventWatcher.currentMediaHandler);
 };
 
@@ -1514,21 +1498,18 @@ cvox.ChromeVoxEventWatcher.setUpMediaHandler_ = function() {
  */
 cvox.ChromeVoxEventWatcher.setUpDateHandler_ = function() {
   var currentFocus = document.activeElement;
-  if (currentFocus &&
-      currentFocus.hasAttribute &&
+  if (currentFocus && currentFocus.hasAttribute &&
       currentFocus.getAttribute('aria-hidden') == 'true' &&
       currentFocus.getAttribute('chromevoxignoreariahidden') != 'true') {
     currentFocus = null;
   }
-  if (currentFocus.constructor == HTMLInputElement &&
-      currentFocus.type &&
-      ((currentFocus.type == 'date') ||
-      (currentFocus.type == 'month') ||
-      (currentFocus.type == 'week'))) {
+  if (currentFocus.constructor == HTMLInputElement && currentFocus.type &&
+      ((currentFocus.type == 'date') || (currentFocus.type == 'month') ||
+       (currentFocus.type == 'week'))) {
     cvox.ChromeVoxEventWatcher.currentDateHandler =
         new cvox.ChromeVoxHTMLDateWidget(currentFocus, cvox.ChromeVox.tts);
-    } else {
-      cvox.ChromeVoxEventWatcher.currentDateHandler = null;
-    }
+  } else {
+    cvox.ChromeVoxEventWatcher.currentDateHandler = null;
+  }
   return (null != cvox.ChromeVoxEventWatcher.currentDateHandler);
 };

@@ -22,7 +22,7 @@ goog.require('cvox.Serializer');
 /**
  * @constructor
  */
-cvox.InitGlobals = function() { };
+cvox.InitGlobals = function() {};
 
 
 /**
@@ -34,9 +34,9 @@ cvox.InitGlobals.initGlobals = function() {
   }
 
   cvox.ChromeVox.tts = new cvox.CompositeTts()
-      .add(cvox.HostFactory.getTts())
-      .add(cvox.History.getInstance())
-      .add(cvox.ConsoleTts.getInstance());
+                           .add(cvox.HostFactory.getTts())
+                           .add(cvox.History.getInstance())
+                           .add(cvox.ConsoleTts.getInstance());
 
   if (!cvox.ChromeVox.braille) {
     cvox.ChromeVox.braille = cvox.HostFactory.getBraille();

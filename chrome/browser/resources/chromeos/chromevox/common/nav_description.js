@@ -58,11 +58,10 @@ cvox.NavDescription = function(kwargs) {
  * @return {boolean} true if this description is empty.
  */
 cvox.NavDescription.prototype.isEmpty = function() {
-  return (this.context.length == 0 &&
-          this.earcons.length == 0 &&
-          this.text.length == 0 &&
-          this.userValue.length == 0 &&
-          this.annotation.length == 0);
+  return (
+      this.context.length == 0 && this.earcons.length == 0 &&
+      this.text.length == 0 && this.userValue.length == 0 &&
+      this.annotation.length == 0);
 };
 
 
@@ -71,11 +70,10 @@ cvox.NavDescription.prototype.isEmpty = function() {
  */
 cvox.NavDescription.prototype.toString = function() {
   return 'NavDescription(context="' + this.context + '" ' +
-         ' text="' + this.text + '" ' +
-         ' userValue="' + this.userValue + '" ' +
-         ' annotation="' + this.annotation +
-         (this.category ? '" category="' + this.category + '")' : '') +
-         '")';
+      ' text="' + this.text + '" ' +
+      ' userValue="' + this.userValue + '" ' +
+      ' annotation="' + this.annotation +
+      (this.category ? '" category="' + this.category + '")' : '') + '")';
 };
 
 
@@ -117,9 +115,8 @@ cvox.NavDescription.prototype.speak = function(
     queueMode = cvox.QueueMode.QUEUE;
   }
 
-  speakArgs.push([this.text,
-                  queueMode,
-                  this.personality ? this.personality : {}]);
+  speakArgs.push(
+      [this.text, queueMode, this.personality ? this.personality : {}]);
   queueMode = cvox.QueueMode.QUEUE;
 
   if (this.userValue) {
@@ -156,8 +153,6 @@ cvox.NavDescription.prototype.speak = function(
  * @return {boolean} True if equal.
  */
 cvox.NavDescription.prototype.equals = function(that) {
-  return this.context == that.context &&
-      this.text == that.text &&
-      this.userValue == that.userValue &&
-      this.annotation == that.annotation;
+  return this.context == that.context && this.text == that.text &&
+      this.userValue == that.userValue && this.annotation == that.annotation;
 };

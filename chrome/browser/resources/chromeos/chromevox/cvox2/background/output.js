@@ -115,244 +115,88 @@ Output.SPACE = ' ';
  * @private
  */
 Output.ROLE_INFO_ = {
-  alert: {
-    msgId: 'role_alert'
-  },
-  alertDialog: {
-    msgId: 'role_alertdialog',
-    outputContextFirst: true
-  },
-  article: {
-    msgId: 'role_article',
-    inherits: 'abstractContainer'
-  },
-  application: {
-    msgId: 'role_application',
-    inherits: 'abstractContainer'
-  },
-  banner: {
-    msgId: 'role_banner',
-    inherits: 'abstractContainer'
-  },
-  button: {
-    msgId: 'role_button',
-    earconId: 'BUTTON'
-  },
-  buttonDropDown: {
-    msgId: 'role_button',
-    earconId: 'BUTTON'
-  },
-  checkBox: {
-    msgId: 'role_checkbox'
-  },
-  columnHeader: {
-    msgId: 'role_columnheader',
-    inherits: 'cell'
-  },
-  comboBox: {
-    msgId: 'role_combobox',
-    earconId: 'LISTBOX'
-  },
-  complementary: {
-    msgId: 'role_complementary',
-    inherits: 'abstractContainer'
-  },
-  contentInfo: {
-    msgId: 'role_contentinfo',
-    inherits: 'abstractContainer'
-  },
-  date: {
-    msgId: 'input_type_date',
-    inherits: 'abstractContainer'
-  },
-  definition: {
-    msgId: 'role_definition',
-    inherits: 'abstractContainer'
-  },
-  dialog: {
-    msgId: 'role_dialog',
-    outputContextFirst: true
-  },
-  directory: {
-    msgId: 'role_directory',
-    inherits: 'abstractContainer'
-  },
-  document: {
-    msgId: 'role_document',
-    inherits: 'abstractContainer'
-  },
-  form: {
-    msgId: 'role_form',
-    inherits: 'abstractContainer'
-  },
-  grid: {
-    msgId: 'role_grid'
-  },
-  group: {
-    msgId: 'role_group',
-    inherits: 'abstractContainer'
-  },
+  alert: {msgId: 'role_alert'},
+  alertDialog: {msgId: 'role_alertdialog', outputContextFirst: true},
+  article: {msgId: 'role_article', inherits: 'abstractContainer'},
+  application: {msgId: 'role_application', inherits: 'abstractContainer'},
+  banner: {msgId: 'role_banner', inherits: 'abstractContainer'},
+  button: {msgId: 'role_button', earconId: 'BUTTON'},
+  buttonDropDown: {msgId: 'role_button', earconId: 'BUTTON'},
+  checkBox: {msgId: 'role_checkbox'},
+  columnHeader: {msgId: 'role_columnheader', inherits: 'cell'},
+  comboBox: {msgId: 'role_combobox', earconId: 'LISTBOX'},
+  complementary: {msgId: 'role_complementary', inherits: 'abstractContainer'},
+  contentInfo: {msgId: 'role_contentinfo', inherits: 'abstractContainer'},
+  date: {msgId: 'input_type_date', inherits: 'abstractContainer'},
+  definition: {msgId: 'role_definition', inherits: 'abstractContainer'},
+  dialog: {msgId: 'role_dialog', outputContextFirst: true},
+  directory: {msgId: 'role_directory', inherits: 'abstractContainer'},
+  document: {msgId: 'role_document', inherits: 'abstractContainer'},
+  form: {msgId: 'role_form', inherits: 'abstractContainer'},
+  grid: {msgId: 'role_grid'},
+  group: {msgId: 'role_group', inherits: 'abstractContainer'},
   heading: {
     msgId: 'role_heading',
   },
   image: {
     msgId: 'role_img',
   },
-  inputTime: {
-    msgId: 'input_type_time',
-    inherits: 'abstractContainer'
-  },
-  link: {
-    msgId: 'role_link',
-    earconId: 'LINK'
-  },
-  listBox: {
-    msgId: 'role_listbox',
-    earconId: 'LISTBOX'
-  },
-  listBoxOption: {
-    msgId: 'role_listitem',
-    earconId: 'LIST_ITEM'
-  },
-  listItem: {
-    msgId: 'role_listitem',
-    earconId: 'LIST_ITEM'
-  },
+  inputTime: {msgId: 'input_type_time', inherits: 'abstractContainer'},
+  link: {msgId: 'role_link', earconId: 'LINK'},
+  listBox: {msgId: 'role_listbox', earconId: 'LISTBOX'},
+  listBoxOption: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
+  listItem: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
   log: {
     msgId: 'role_log',
   },
-  main: {
-    msgId: 'role_main',
-    inherits: 'abstractContainer'
-  },
+  main: {msgId: 'role_main', inherits: 'abstractContainer'},
   marquee: {
     msgId: 'role_marquee',
   },
-  math: {
-    msgId: 'role_math',
-    inherits: 'abstractContainer'
-  },
-  menu: {
-    msgId: 'role_menu',
-    outputContextFirst: true
-  },
+  math: {msgId: 'role_math', inherits: 'abstractContainer'},
+  menu: {msgId: 'role_menu', outputContextFirst: true},
   menuBar: {
     msgId: 'role_menubar',
   },
-  menuItem: {
-    msgId: 'role_menuitem'
-  },
-  menuItemCheckBox: {
-    msgId: 'role_menuitemcheckbox'
-  },
-  menuItemRadio: {
-    msgId: 'role_menuitemradio'
-  },
-  menuListOption: {
-    msgId: 'role_menuitem'
-  },
-  menuListPopup: {
-    msgId: 'role_menu'
-  },
-  meter: {
-    msgId: 'role_meter',
-    inherits: 'abstractRange'
-  },
-  navigation: {
-    msgId: 'role_navigation',
-    inherits: 'abstractContainer'
-  },
-  note: {
-    msgId: 'role_note',
-    inherits: 'abstractContainer'
-  },
-  progressIndicator: {
-    msgId: 'role_progress_indicator',
-    inherits: 'abstractRange'
-  },
-  popUpButton: {
-    msgId: 'role_button',
-    earconId: 'POP_UP_BUTTON'
-  },
-  radioButton: {
-    msgId: 'role_radio'
-  },
+  menuItem: {msgId: 'role_menuitem'},
+  menuItemCheckBox: {msgId: 'role_menuitemcheckbox'},
+  menuItemRadio: {msgId: 'role_menuitemradio'},
+  menuListOption: {msgId: 'role_menuitem'},
+  menuListPopup: {msgId: 'role_menu'},
+  meter: {msgId: 'role_meter', inherits: 'abstractRange'},
+  navigation: {msgId: 'role_navigation', inherits: 'abstractContainer'},
+  note: {msgId: 'role_note', inherits: 'abstractContainer'},
+  progressIndicator:
+      {msgId: 'role_progress_indicator', inherits: 'abstractRange'},
+  popUpButton: {msgId: 'role_button', earconId: 'POP_UP_BUTTON'},
+  radioButton: {msgId: 'role_radio'},
   radioGroup: {
     msgId: 'role_radiogroup',
   },
-  rootWebArea: {
-    outputContextFirst: true
-  },
-  row: {
-    msgId: 'role_row',
-    inherits: 'abstractContainer'
-  },
-  rowHeader: {
-    msgId: 'role_rowheader',
-    inherits: 'cell'
-  },
-  scrollBar: {
-    msgId: 'role_scrollbar',
-    inherits: 'abstractRange'
-  },
-  search: {
-    msgId: 'role_search',
-    inherits: 'abstractContainer'
-  },
-  separator: {
-    msgId: 'role_separator',
-    inherits: 'abstractContainer'
-  },
-  slider: {
-    msgId: 'role_slider',
-    inherits: 'abstractRange',
-    earconId: 'SLIDER'
-  },
+  rootWebArea: {outputContextFirst: true},
+  row: {msgId: 'role_row', inherits: 'abstractContainer'},
+  rowHeader: {msgId: 'role_rowheader', inherits: 'cell'},
+  scrollBar: {msgId: 'role_scrollbar', inherits: 'abstractRange'},
+  search: {msgId: 'role_search', inherits: 'abstractContainer'},
+  separator: {msgId: 'role_separator', inherits: 'abstractContainer'},
+  slider: {msgId: 'role_slider', inherits: 'abstractRange', earconId: 'SLIDER'},
   spinButton: {
     msgId: 'role_spinbutton',
     inherits: 'abstractRange',
     earconId: 'LISTBOX'
   },
-  status: {
-    msgId: 'role_status'
-  },
-  tab: {
-    msgId: 'role_tab'
-  },
-  tabList: {
-    msgId: 'role_tablist'
-  },
-  tabPanel: {
-    msgId: 'role_tabpanel'
-  },
-  textBox: {
-    msgId: 'input_type_text',
-    earconId: 'EDITABLE_TEXT'
-  },
-  textField: {
-    msgId: 'input_type_text',
-    earconId: 'EDITABLE_TEXT'
-  },
-  time: {
-    msgId: 'tag_time',
-    inherits: 'abstractContainer'
-  },
-  timer: {
-    msgId: 'role_timer'
-  },
-  toolbar: {
-    msgId: 'role_toolbar'
-  },
-  toggleButton: {
-    msgId: 'role_button',
-    inherits: 'checkBox'
-  },
-  tree: {
-    msgId: 'role_tree'
-  },
-  treeItem: {
-    msgId: 'role_treeitem'
-  }
+  status: {msgId: 'role_status'},
+  tab: {msgId: 'role_tab'},
+  tabList: {msgId: 'role_tablist'},
+  tabPanel: {msgId: 'role_tabpanel'},
+  textBox: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
+  textField: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
+  time: {msgId: 'tag_time', inherits: 'abstractContainer'},
+  timer: {msgId: 'role_timer'},
+  toolbar: {msgId: 'role_toolbar'},
+  toggleButton: {msgId: 'role_button', inherits: 'checkBox'},
+  tree: {msgId: 'role_tree'},
+  treeItem: {msgId: 'role_treeitem'}
 };
 
 /**
@@ -420,17 +264,13 @@ Output.PRESSED_STATE_MAP = {
  */
 Output.RULES = {
   navigate: {
-    'default': {
-      speak: '$name $value $state $role $description',
-      braille: ''
-    },
+    'default': {speak: '$name $value $state $role $description', braille: ''},
     abstractContainer: {
       enter: '$nameFromNode $role $state $description',
       leave: '@exited_container($role)'
     },
     abstractRange: {
-      speak:
-          '$if($valueForRange, $valueForRange, $value) ' +
+      speak: '$if($valueForRange, $valueForRange, $value) ' +
           '$if($minValueForRange, @aria_value_min($minValueForRange)) ' +
           '$if($maxValueForRange, @aria_value_max($maxValueForRange)) ' +
           '$name $role $description $state'
@@ -445,37 +285,25 @@ Output.RULES = {
     },
     cell: {
       enter: '@cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex, ' +
-      '$tableCellRowIndex), ' +
-      '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
-      '$tableCellColumnIndex)) $node(tableColumnHeader)',
+          '$tableCellRowIndex), ' +
+          '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
+          '$tableCellColumnIndex)) $node(tableColumnHeader)',
       speak: '$name @cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex, ' +
-      '$tableCellRowIndex), ' +
-      '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
-      '$tableCellColumnIndex)) $node(tableColumnHeader) $state'
+          '$tableCellRowIndex), ' +
+          '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
+          '$tableCellColumnIndex)) $node(tableColumnHeader) $state'
     },
     checkBox: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
-             '$name $role $checked $description $state'
+          '$name $role $checked $description $state'
     },
-    client: {
-      speak: '$name'
-    },
-    date: {
-      enter: '$nameFromNode $role $description'
-    },
-    dialog: {
-      enter: '$nameFromNode $role $description'
-    },
-    genericContainer: {
-      enter: '$nameFromNode',
-      speak: '$nameOrTextContent $description'
-    },
-    embeddedObject: {
-      speak: '$name'
-    },
-    grid: {
-      enter: '$nameFromNode $role $description'
-    },
+    client: {speak: '$name'},
+    date: {enter: '$nameFromNode $role $description'},
+    dialog: {enter: '$nameFromNode $role $description'},
+    genericContainer:
+        {enter: '$nameFromNode', speak: '$nameOrTextContent $description'},
+    embeddedObject: {speak: '$name'},
+    grid: {enter: '$nameFromNode $role $description'},
     group: {
       enter: '$nameFromNode $state $description',
       speak: '$nameOrDescendants $value $state $description',
@@ -493,12 +321,8 @@ Output.RULES = {
       speak: '$if($name, $name, $urlFilename) ' +
           '$value $state $role $description',
     },
-    inlineTextBox: {
-      speak: '$name='
-    },
-    inputTime: {
-      enter: '$nameFromNode $role $description'
-    },
+    inlineTextBox: {speak: '$name='},
+    inputTime: {enter: '$nameFromNode $role $description'},
     link: {
       enter: '$nameFromNode= $role $state',
       speak: '$name $value $state ' +
@@ -545,9 +369,7 @@ Output.RULES = {
       speak: '$name @role_menuitem ' +
           '@describe_index($indexInParent, $parentChildCount) $description'
     },
-    paragraph: {
-      speak: '$descendants'
-    },
+    paragraph: {speak: '$descendants'},
     popUpButton: {
       speak: '$value $name $role @aria_has_popup ' +
           '$state $description'
@@ -557,25 +379,12 @@ Output.RULES = {
           '$if($checked, @describe_radio_selected($name), ' +
           '@describe_radio_unselected($name)) $description'
     },
-    radioGroup: {
-      enter: '$name $role $description'
-    },
-    rootWebArea: {
-      enter: '$name',
-      speak: '$if($name, $name, $docUrl)'
-    },
-    region: {
-      speak: '$nameOrTextContent'
-    },
-    row: {
-      enter: '$node(tableRowHeader)'
-    },
-    rowHeader: {
-      speak: '$nameOrTextContent $state'
-    },
-    staticText: {
-      speak: '$name='
-    },
+    radioGroup: {enter: '$name $role $description'},
+    rootWebArea: {enter: '$name', speak: '$if($name, $name, $docUrl)'},
+    region: {speak: '$nameOrTextContent'},
+    row: {enter: '$node(tableRowHeader)'},
+    rowHeader: {speak: '$nameOrTextContent $state'},
+    staticText: {speak: '$name='},
     switch: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
           '$if($checked, @describe_switch_on($name), ' +
@@ -591,27 +400,19 @@ Output.RULES = {
           '$if($ariaColumnCount, $ariaColumnCount, $tableColumnCount)) ' +
           '$node(tableHeader)'
     },
-    tableHeaderContainer: {
-      speak: '$nameOrTextContent $state $description'
-    },
+    tableHeaderContainer: {speak: '$nameOrTextContent $state $description'},
     textField: {
       speak: '$name $value $if($multiline, @tag_textarea, $if(' +
           '$inputType, $inputType, $role)) $description $state',
       braille: ''
     },
-        timer: {
-      speak: '$nameFromNode $descendants $value $state $description'
-    },
+    timer: {speak: '$nameFromNode $descendants $value $state $description'},
     toggleButton: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
           '$name $role $pressed $description $state'
     },
-    toolbar: {
-      enter: '$name $role $description'
-    },
-    tree: {
-      enter: '$name $role @@list_with_items($countChildren(treeItem))'
-    },
+    toolbar: {enter: '$name $role $description'},
+    tree: {enter: '$name $role @@list_with_items($countChildren(treeItem))'},
     treeItem: {
       enter: '$role $expanded $collapsed ' +
           '@describe_index($indexInParent, $parentChildCount) ' +
@@ -626,21 +427,14 @@ Output.RULES = {
       speak: '@describe_window($name) $earcon(OBJECT_OPEN)'
     }
   },
-  menuStart: {
-    'default': {
-      speak: '@chrome_menu_opened($name)  $earcon(OBJECT_OPEN)'
-    }
-  },
-  menuEnd: {
-    'default': {
-      speak: '@chrome_menu_closed $earcon(OBJECT_CLOSE)'
-    }
-  },
+  menuStart:
+      {'default': {speak: '@chrome_menu_opened($name)  $earcon(OBJECT_OPEN)'}},
+  menuEnd: {'default': {speak: '@chrome_menu_closed $earcon(OBJECT_CLOSE)'}},
   menuListValueChanged: {
     'default': {
       speak: '$value $name ' +
           '$find({"state": {"selected": true, "invisible": false}}, ' +
-              '@describe_index($indexInParent, $parentChildCount)) '
+          '@describe_index($indexInParent, $parentChildCount)) '
     }
   },
   alert: {
@@ -661,12 +455,10 @@ Output.SpeechProperties = function() {};
  * Custom actions performed while rendering an output string.
  * @constructor
  */
-Output.Action = function() {
-};
+Output.Action = function() {};
 
 Output.Action.prototype = {
-  run: function() {
-  }
+  run: function() {}
 };
 
 /**
@@ -744,7 +536,7 @@ Output.forceModeForNextSpeechUtterance_;
  * Calling this will make the next speech utterance use |mode| even if it would
  * normally queue or do a category flush. This differs from the |withQueueMode|
  * instance method as it can apply to future output.
-   * @param {cvox.QueueMode} mode
+ * @param {cvox.QueueMode} mode
  */
 Output.forceModeForNextSpeechUtterance = function(mode) {
   Output.forceModeForNextSpeechUtterance_ = mode;
@@ -757,7 +549,7 @@ Output.forceModeForNextSpeechUtterance = function(mode) {
  * 'false'|undefined -> false
  */
 Output.isTruthy = function(node, attrib) {
-  switch(attrib) {
+  switch (attrib) {
     case 'checked':
       return node.checked && node.checked !== 'false';
     default:
@@ -790,7 +582,7 @@ Output.prototype = {
     return this;
   },
 
-    /**
+  /**
    * Specify ranges for aurally styled speech.
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
@@ -842,7 +634,7 @@ Output.prototype = {
     return this;
   },
 
-    /**
+  /**
    * Specify the same ranges for aurally styled speech and braille.
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
@@ -905,8 +697,7 @@ Output.prototype = {
    * @return {!Output} |this| for chaining
    */
   format: function(formatStr, opt_node) {
-    return this
-        .formatForSpeech(formatStr, opt_node)
+    return this.formatForSpeech(formatStr, opt_node)
         .formatForBraille(formatStr, opt_node);
   },
 
@@ -972,8 +763,9 @@ Output.prototype = {
 
     for (var i = 0; i < this.speechBuffer_.length; i++) {
       var buff = this.speechBuffer_[i];
-      var speechProps = /** @type {Object} */(
-          buff.getSpanInstanceOf(Output.SpeechProperties)) || {};
+      var speechProps = /** @type {Object} */ (
+                            buff.getSpanInstanceOf(Output.SpeechProperties)) ||
+          {};
 
       speechProps.category = this.speechCategory_;
 
@@ -992,16 +784,14 @@ Output.prototype = {
       if (i == this.speechBuffer_.length - 1)
         speechProps['endCallback'] = this.speechEndCallback_;
 
-      cvox.ChromeVox.tts.speak(
-          buff.toString(), queueMode, speechProps);
+      cvox.ChromeVox.tts.speak(buff.toString(), queueMode, speechProps);
       queueMode = cvox.QueueMode.QUEUE;
     }
 
     // Braille.
     if (this.brailleBuffer_.length) {
       var buff = this.mergeBraille_(this.brailleBuffer_);
-      var selSpan =
-          buff.getSpanInstanceOf(Output.SelectionSpan);
+      var selSpan = buff.getSpanInstanceOf(Output.SelectionSpan);
       var startIndex = -1, endIndex = -1;
       if (selSpan) {
         var valueStart = buff.getSpanStart(selSpan);
@@ -1012,11 +802,8 @@ Output.prototype = {
         buff.setSpan(new cvox.ValueSelectionSpan(), startIndex, endIndex);
       }
 
-      var output = new cvox.NavBraille({
-        text: buff,
-        startIndex: startIndex,
-        endIndex: endIndex
-      });
+      var output = new cvox.NavBraille(
+          {text: buff, startIndex: startIndex, endIndex: endIndex});
 
       cvox.ChromeVox.braille.write(output);
     }
@@ -1119,12 +906,10 @@ Output.prototype = {
           var selectedText = '';
           if (node.textSelStart !== undefined) {
             options.annotation.push(new Output.SelectionSpan(
-                node.textSelStart || 0,
-                node.textSelEnd || 0));
+                node.textSelStart || 0, node.textSelEnd || 0));
 
-            selectedText =
-                node.value.substring(node.textSelStart || 0,
-                                     node.textSelEnd || 0);
+            selectedText = node.value.substring(
+                node.textSelStart || 0, node.textSelEnd || 0);
           }
           options.annotation.push(token);
           if (selectedText && !this.formatOptions_.braille) {
@@ -1155,7 +940,7 @@ Output.prototype = {
 
             // Hack to not speak the filename if it's ridiculously long.
             if (filename.length >= 30)
-            filename = filename.substring(0, 16) + '...';
+              filename = filename.substring(0, 16) + '...';
           }
           this.append_(buff, filename, options);
         } else if (token == 'nameFromNode') {
@@ -1190,9 +975,11 @@ Output.prototype = {
         } else if (token == 'parentChildCount') {
           if (node.parent) {
             options.annotation.push(token);
-            var count = node.parent.children.filter(function(child) {
-              return node.role == child.role;
-            }).length;
+            var count = node.parent.children
+                            .filter(function(child) {
+                              return node.role == child.role;
+                            })
+                            .length;
             this.append_(buff, String(count));
           }
         } else if (token == 'checked') {
@@ -1210,7 +997,7 @@ Output.prototype = {
             Object.getOwnPropertyNames(node.state).forEach(function(s) {
               var stateInfo = Output.STATE_INFO_[s];
               if (stateInfo && !stateInfo.isRoleSpecific && stateInfo.on)
-              this.format_(node, '@' + stateInfo.on.msgId, buff);
+                this.format_(node, '@' + stateInfo.on.msgId, buff);
             }.bind(this));
           }
         } else if (token == 'find') {
@@ -1218,7 +1005,7 @@ Output.prototype = {
           if (tree.firstChild) {
             var jsonQuery = tree.firstChild.value;
             node = node.find(
-                /** @type {chrome.automation.FindParams}*/(
+                /** @type {chrome.automation.FindParams}*/ (
                     JSON.parse(jsonQuery)));
             var formatString = tree.firstChild.nextSibling;
             if (node)
@@ -1278,8 +1065,8 @@ Output.prototype = {
           if (this.formatOptions_.braille)
             msgId = msgId + '_brl';
           this.append_(buff, Msgs.getMsg(msgId), options);
-        } else if (token == 'tableCellRowIndex' ||
-            token == 'tableCellColumnIndex') {
+        } else if (
+            token == 'tableCellRowIndex' || token == 'tableCellColumnIndex') {
           var value = node[token];
           if (value == undefined)
             return;
@@ -1295,13 +1082,13 @@ Output.prototype = {
           if (node.name) {
             this.format_(node, '$name', buff);
           } else {
-            var walker = new AutomationTreeWalker(node,
-                Dir.FORWARD,
-                {visit: AutomationPredicate.leafOrStaticText,
-                 leaf: AutomationPredicate.leafOrStaticText});
+            var walker = new AutomationTreeWalker(node, Dir.FORWARD, {
+              visit: AutomationPredicate.leafOrStaticText,
+              leaf: AutomationPredicate.leafOrStaticText
+            });
             var outputStrings = [];
             while (walker.next().node &&
-                walker.phase == AutomationTreeWalkerPhase.DESCENDANT) {
+                   walker.phase == AutomationTreeWalkerPhase.DESCENDANT) {
               if (walker.node.name)
                 outputStrings.push(walker.node.name);
             }
@@ -1324,10 +1111,10 @@ Output.prototype = {
           if (this.formatOptions_.speech && resolvedInfo.earconId) {
             options.annotation.push(
                 new Output.EarconAction(resolvedInfo.earconId),
-                                        node.location || undefined);
+                node.location || undefined);
           }
-          var msgId =
-              this.formatOptions_.braille ? resolvedInfo.msgId + '_brl' :
+          var msgId = this.formatOptions_.braille ?
+              resolvedInfo.msgId + '_brl' :
               resolvedInfo.msgId;
           var msg = Msgs.getMsg(msgId);
           this.append_(buff, msg, options);
@@ -1345,15 +1132,16 @@ Output.prototype = {
             if (!this.formatOptions_.speech)
               return;
 
-            options.annotation.push(
-                new Output.EarconAction(tree.firstChild.value,
-                                        node.location || undefined));
+            options.annotation.push(new Output.EarconAction(
+                tree.firstChild.value, node.location || undefined));
             this.append_(buff, '', options);
           } else if (token == 'countChildren') {
             var role = tree.firstChild.value;
-            var count = node.children.filter(function(e) {
-              return e.role == role;
-            }).length;
+            var count = node.children
+                            .filter(function(e) {
+                              return e.role == role;
+                            })
+                            .length;
             this.append_(buff, String(count));
           }
         }
@@ -1395,7 +1183,8 @@ Output.prototype = {
         try {
           if (this.formatOptions_.braille)
             msg = Msgs.getMsg(msgId + '_brl', msgArgs) || msg;
-        } catch(e) {}
+        } catch (e) {
+        }
 
         if (!msg) {
           console.error('Could not get message ' + msgId);
@@ -1481,16 +1270,13 @@ Output.prototype = {
     }.bind(this);
 
     var unit = range.isInlineText() ? cursors.Unit.TEXT : cursors.Unit.NODE;
-    while (cursor.node &&
-        range.end.node &&
-        AutomationUtil.getDirection(cursor.node, range.end.node) ==
-        Dir.FORWARD) {
+    while (cursor.node && range.end.node &&
+           AutomationUtil.getDirection(cursor.node, range.end.node) ==
+               Dir.FORWARD) {
       var node = cursor.node;
       rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
       prevNode = node;
-      cursor = cursor.move(unit,
-                           cursors.Movement.DIRECTIONAL,
-                           Dir.FORWARD);
+      cursor = cursor.move(unit, cursors.Movement.DIRECTIONAL, Dir.FORWARD);
 
       // Reached a boundary.
       if (cursor.node == prevNode)
@@ -1525,10 +1311,10 @@ Output.prototype = {
       }
       return rest.concat(contextFirst.reverse());
     }
-    var prevUniqueAncestors = byContextFirst(AutomationUtil.getUniqueAncestors(
-        node, prevNode));
-    var uniqueAncestors = byContextFirst(AutomationUtil.getUniqueAncestors(
-        prevNode, node));
+    var prevUniqueAncestors =
+        byContextFirst(AutomationUtil.getUniqueAncestors(node, prevNode));
+    var uniqueAncestors =
+        byContextFirst(AutomationUtil.getUniqueAncestors(prevNode, node));
 
     // First, look up the event type's format block.
     // Navigate is the default event.
@@ -1549,12 +1335,10 @@ Output.prototype = {
     // Hash the roles we've entered.
     var enteredRoleSet = {};
     for (var j = uniqueAncestors.length - 1, hashNode;
-         (hashNode = uniqueAncestors[j]);
-         j--)
+         (hashNode = uniqueAncestors[j]); j--)
       enteredRoleSet[hashNode.role] = true;
 
-    for (var i = 0, formatPrevNode;
-         (formatPrevNode = prevUniqueAncestors[i]);
+    for (var i = 0, formatPrevNode; (formatPrevNode = prevUniqueAncestors[i]);
          i++) {
       // This prevents very repetitive announcements.
       if (enteredRoleSet[formatPrevNode.role] ||
@@ -1571,8 +1355,7 @@ Output.prototype = {
     var originalBuff = buff;
     var enterRole = {};
     for (var j = uniqueAncestors.length - 1, formatNode;
-         (formatNode = uniqueAncestors[j]);
-         j--) {
+         (formatNode = uniqueAncestors[j]); j--) {
       var roleBlock = getMergedRoleBlock(formatNode.role);
       if (roleBlock.enter) {
         if (enterRole[formatNode.role])
@@ -1611,9 +1394,8 @@ Output.prototype = {
     var roleBlock = eventBlock[node.role] || {};
     var parentRole = (Output.ROLE_INFO_[node.role] || {}).inherits;
     var parentRoleBlock = eventBlock[parentRole || ''] || {};
-    var speakFormat = roleBlock.speak ||
-        parentRoleBlock.speak ||
-        eventBlock['default'].speak;
+    var speakFormat =
+        roleBlock.speak || parentRoleBlock.speak || eventBlock['default'].speak;
 
     this.format_(node, speakFormat, buff, prevNode);
 
@@ -1649,8 +1431,8 @@ Output.prototype = {
       var selStart = node.textSelStart;
       var selEnd = node.textSelEnd;
 
-      if (selStart !== undefined &&
-          selEnd >= rangeStart && selStart <= rangeEnd) {
+      if (selStart !== undefined && selEnd >= rangeStart &&
+          selStart <= rangeEnd) {
         // Editable text selection.
 
         // |rangeStart| and |rangeEnd| are indices set by the caller and are
@@ -1692,8 +1474,7 @@ Output.prototype = {
     if (!this.outputContextFirst_)
       this.ancestry_(node, prevNode, type, buff);
 
-    var loc =
-        range.start.node.boundsForRange(rangeStart, rangeEnd);
+    var loc = range.start.node.boundsForRange(rangeStart, rangeEnd);
     if (loc)
       this.locations_.push(loc);
   },
@@ -1709,8 +1490,8 @@ Output.prototype = {
     opt_options = opt_options || {isUnique: false, annotation: []};
 
     // Reject empty values without meaningful annotations.
-    if ((!value || value.length == 0) && opt_options.annotation.every(
-        function(a) {
+    if ((!value || value.length == 0) &&
+        opt_options.annotation.every(function(a) {
           return !(a instanceof Output.Action) &&
               !(a instanceof Output.SelectionSpan);
 
@@ -1724,8 +1505,8 @@ Output.prototype = {
 
     // |isUnique| specifies an annotation that cannot be duplicated.
     if (opt_options.isUnique) {
-      var annotationSansNodes = opt_options.annotation.filter(
-          function(annotation) {
+      var annotationSansNodes =
+          opt_options.annotation.filter(function(annotation) {
             return !(annotation instanceof Output.NodeSpan);
           });
 
@@ -1816,8 +1597,8 @@ Output.prototype = {
 
       // Keep track of if there's an inline node associated with
       // |cur|.
-      var hasInlineNode = cur.getSpansInstanceOf(Output.NodeSpan)
-          .some(function(s) {
+      var hasInlineNode =
+          cur.getSpansInstanceOf(Output.NodeSpan).some(function(s) {
             if (!s.node)
               return false;
             return s.node.display == 'inline' ||
@@ -1837,7 +1618,8 @@ Output.prototype = {
       if (result.length == 0 ||
           (hasInlineNode && prevHasInlineNode && isName && prevIsName))
         separator = '';
-      else if (result.toString()[result.length - 1] == Output.SPACE ||
+      else if (
+          result.toString()[result.length - 1] == Output.SPACE ||
           cur.toString()[0] == Output.SPACE)
         separator = '';
       else
@@ -1872,8 +1654,8 @@ Output.prototype = {
       while (earconFinder = ancestors.pop()) {
         var info = Output.ROLE_INFO_[earconFinder.role];
         if (info && info.earconId) {
-          return new Output.EarconAction(info.earconId,
-                                         node.location || undefined);
+          return new Output.EarconAction(
+              info.earconId, node.location || undefined);
           break;
         }
         earconFinder = earconFinder.parent;

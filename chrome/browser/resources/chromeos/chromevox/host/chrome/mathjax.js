@@ -122,10 +122,9 @@ cvox.ChromeMathJax.prototype.postMsg = function(data, callback, args) {
 cvox.ChromeMathJax.prototype.portSetup = function(event) {
   if (event.data == 'cvox.MathJaxPortSetup') {
     this.port = event.ports[0];
-    this.port.onmessage =
-        goog.bind(
-            function(event) {this.dispatchMessage(event.data);},
-            this);
+    this.port.onmessage = goog.bind(function(event) {
+      this.dispatchMessage(event.data);
+    }, this);
     return false;
   }
   return true;
@@ -144,11 +143,11 @@ cvox.ChromeMathJax.prototype.dispatchMessage = function(message) {
     case 'NodeMml':
       method = this.convertMarkupToDom;
       argNames = ['mathml', 'elementId'];
-    break;
+      break;
     case 'Active':
       method = this.applyBoolean;
       argNames = ['status'];
-    break;
+      break;
   }
 
   if (!method) {
@@ -157,9 +156,9 @@ cvox.ChromeMathJax.prototype.dispatchMessage = function(message) {
   var callback = this.retrieveCallback_(message['id']);
   var args = message['args'];
   if (callback && method) {
-    method.apply(this,
-                 [callback].concat(
-                     argNames.map(function(x) {return args[x];})));
+    method.apply(this, [callback].concat(argNames.map(function(x) {
+      return args[x];
+    })));
   }
 };
 
@@ -168,9 +167,8 @@ cvox.ChromeMathJax.prototype.dispatchMessage = function(message) {
  * Converts a Boolean string to boolean value and applies a callback function.
  * @param {function(boolean)} callback A function with one argument.
  * @param {boolean} bool A truth value.
-  */
-cvox.ChromeMathJax.prototype.applyBoolean = function(
-    callback, bool) {
+ */
+cvox.ChromeMathJax.prototype.applyBoolean = function(callback, bool) {
   callback(bool);
 };
 
@@ -188,21 +186,22 @@ cvox.ChromeMathJax.prototype.isMathjaxActive = function(callback) {
 
   var fetch = goog.bind(function() {
     retries++;
-    try {this.postMsg('Active',
-                      function(result) {
-                        if (result) {
-                          callback(result);
-                        } else if (retries < 5) {
-                          setTimeout(fetch, 1000);
-                        }
-                      });
-        } catch (x) {  // Error usually means that the port is not ready yet.
-          if (retries < 5) {
-            setTimeout(fetch, 1000);
-          } else {
-            throw x;
-          }}},
-                        this);
+    try {
+      this.postMsg('Active', function(result) {
+        if (result) {
+          callback(result);
+        } else if (retries < 5) {
+          setTimeout(fetch, 1000);
+        }
+      });
+    } catch (x) {  // Error usually means that the port is not ready yet.
+      if (retries < 5) {
+        setTimeout(fetch, 1000);
+      } else {
+        throw x;
+      }
+    }
+  }, this);
 
   fetch();
 };
@@ -219,8 +218,7 @@ cvox.ChromeMathJax.prototype.getAllJax = function(callback) {
 /**
  * @override
  */
-cvox.ChromeMathJax.prototype.registerSignal = function(
-    callback, signal) {
+cvox.ChromeMathJax.prototype.registerSignal = function(callback, signal) {
   this.postMsg('RegSig', callback, {sig: signal});
 };
 
@@ -231,16 +229,14 @@ cvox.ChromeMathJax.prototype.registerSignal = function(
 cvox.ChromeMathJax.prototype.injectScripts = function() {
   var retries = 0;
 
-  var fetch = goog.bind(
-      function() {
-        retries++;
-        if (this.port) {
-          this.postMsg('InjectScripts', function() {});
-        } else if (retries < 10) {
-          setTimeout(fetch, 500);
-        }
-      },
-      this);
+  var fetch = goog.bind(function() {
+    retries++;
+    if (this.port) {
+      this.postMsg('InjectScripts', function() {});
+    } else if (retries < 10) {
+      setTimeout(fetch, 500);
+    }
+  }, this);
 
   fetch();
 };
@@ -250,7 +246,7 @@ cvox.ChromeMathJax.prototype.injectScripts = function() {
  * @override
  */
 cvox.ChromeMathJax.prototype.configMediaWiki = function() {
-  this.postMsg('ConfWikipedia', function() { });
+  this.postMsg('ConfWikipedia', function() {});
 };
 
 
@@ -281,5 +277,4 @@ cvox.ChromeMathJax.prototype.getAsciiMath = function(callback, asciiMathNode) {
 
 
 /** Export platform constructor. */
-cvox.HostFactory.mathJaxConstructor =
-    cvox.ChromeMathJax;
+cvox.HostFactory.mathJaxConstructor = cvox.ChromeMathJax;

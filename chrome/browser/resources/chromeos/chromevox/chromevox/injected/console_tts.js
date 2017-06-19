@@ -47,7 +47,9 @@ cvox.ConsoleTts.prototype.speak = function(textString, queueMode, properties) {
 };
 
 /** @override */
-cvox.ConsoleTts.prototype.isSpeaking = function() { return false; };
+cvox.ConsoleTts.prototype.isSpeaking = function() {
+  return false;
+};
 
 /** @override */
 cvox.ConsoleTts.prototype.stop = function() {
@@ -57,13 +59,13 @@ cvox.ConsoleTts.prototype.stop = function() {
 };
 
 /** @override */
-cvox.ConsoleTts.prototype.addCapturingEventListener = function(listener) { };
+cvox.ConsoleTts.prototype.addCapturingEventListener = function(listener) {};
 
 /** @override */
-cvox.ConsoleTts.prototype.increaseOrDecreaseProperty = function() { };
+cvox.ConsoleTts.prototype.increaseOrDecreaseProperty = function() {};
 
 /** @override */
-cvox.ConsoleTts.prototype.propertyToPercentage = function() { };
+cvox.ConsoleTts.prototype.propertyToPercentage = function() {};
 
 /**
  * Sets the enabled bit.
@@ -74,7 +76,7 @@ cvox.ConsoleTts.prototype.setEnabled = function(enabled) {
 };
 
 /** @override */
-cvox.ConsoleTts.prototype.getDefaultProperty = function(property) { };
+cvox.ConsoleTts.prototype.getDefaultProperty = function(property) {};
 
 /** @override */
-cvox.ConsoleTts.prototype.toggleSpeechOnOrOff = function() { };
+cvox.ConsoleTts.prototype.toggleSpeechOnOrOff = function() {};

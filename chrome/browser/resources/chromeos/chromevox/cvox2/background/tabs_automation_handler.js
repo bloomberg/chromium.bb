@@ -29,8 +29,8 @@ TabsAutomationHandler = function(tabRoot) {
 
   // When the root is focused, simulate what happens on a load complete.
   if (tabRoot.state[StateType.FOCUSED]) {
-    var event = new CustomAutomationEvent(
-        EventType.LOAD_COMPLETE, tabRoot, 'page');
+    var event =
+        new CustomAutomationEvent(EventType.LOAD_COMPLETE, tabRoot, 'page');
     this.onLoadComplete(event);
   }
 };
@@ -46,8 +46,8 @@ TabsAutomationHandler.prototype = {
   /** @override */
   onLoadComplete: function(evt) {
     var focused = evt.target.find({state: {focused: true}}) || evt.target;
-    var event = new CustomAutomationEvent(
-        EventType.FOCUS, focused, evt.eventFrom);
+    var event =
+        new CustomAutomationEvent(EventType.FOCUS, focused, evt.eventFrom);
     this.onFocus(event);
   }
 };

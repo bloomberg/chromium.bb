@@ -103,11 +103,8 @@ cvox.ContentEditableExtractor.prototype.update = function(element) {
       continue;
     }
 
-    if (lastBottom !== null &&
-        rect.bottom != lastBottom &&
-        textSize > 0 &&
-        text.substr(-1).match(/\S/) &&
-        c.match(/\S/)) {
+    if (lastBottom !== null && rect.bottom != lastBottom && textSize > 0 &&
+        text.substr(-1).match(/\S/) && c.match(/\S/)) {
       text += '\n';
       textSize++;
     }
@@ -120,8 +117,7 @@ cvox.ContentEditableExtractor.prototype.update = function(element) {
       }
     }
 
-    if (!setStart &&
-        selectionStartIndex == -1 &&
+    if (!setStart && selectionStartIndex == -1 &&
         endCursor.node == selectionStart.node &&
         endCursor.index >= selectionStart.index) {
       if (endCursor.index > selectionStart.index) {
@@ -130,8 +126,7 @@ cvox.ContentEditableExtractor.prototype.update = function(element) {
         setStart = true;
       }
     }
-    if (!setEnd &&
-        selectionEndIndex == -1 &&
+    if (!setEnd && selectionEndIndex == -1 &&
         endCursor.node == selectionEnd.node &&
         endCursor.index >= selectionEnd.index) {
       if (endCursor.index > selectionEnd.index) {

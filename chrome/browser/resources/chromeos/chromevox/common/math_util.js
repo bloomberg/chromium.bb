@@ -34,8 +34,9 @@ cvox.MathUtil.isMathmlNodeOfClass_ = function(node, tags) {
 cvox.MathUtil.isMathjaxNodeOfClass_ = function(node, tags) {
   if (node.tagName == 'SPAN') {
     var classes = node.className.split(' ');
-    return classes.some(function(x)
-                        {return tags.indexOf(x.toUpperCase()) != -1;});
+    return classes.some(function(x) {
+      return tags.indexOf(x.toUpperCase()) != -1;
+    });
   }
   return false;
 };
@@ -50,9 +51,10 @@ cvox.MathUtil.isMathjaxNodeOfClass_ = function(node, tags) {
  * @return {boolean} True if node has a tag name included in tags.
  */
 cvox.MathUtil.isMathNodeOfClass_ = function(node, tags) {
-  return (node.nodeType == Node.ELEMENT_NODE &&
-          (cvox.MathUtil.isMathmlNodeOfClass_(node, tags) ||
-           cvox.MathUtil.isMathjaxNodeOfClass_(node, tags)));
+  return (
+      node.nodeType == Node.ELEMENT_NODE &&
+      (cvox.MathUtil.isMathmlNodeOfClass_(node, tags) ||
+       cvox.MathUtil.isMathjaxNodeOfClass_(node, tags)));
 };
 
 
@@ -84,9 +86,10 @@ cvox.MathUtil.isToken = function(element) {
  * Array of MathML Layout Schemata.
  * @type {!Array<string>}
  */
-cvox.MathUtil.LAYOUT_LIST = ['MROW', 'MFRAC', 'MSQRT', 'MROOT', 'MSTYLE',
-                             'MERROR', 'MPADDED', 'MPHANTOM', 'MFENCED',
-                             'MENCLOSE'];
+cvox.MathUtil.LAYOUT_LIST = [
+  'MROW', 'MFRAC', 'MSQRT', 'MROOT', 'MSTYLE', 'MERROR', 'MPADDED', 'MPHANTOM',
+  'MFENCED', 'MENCLOSE'
+];
 
 
 /**
@@ -115,8 +118,10 @@ cvox.MathUtil.isLayout = function(element) {
  * Array of MathML Script Schemata.
  * @type {!Array<string>}
  */
-cvox.MathUtil.SCRIPT_LIST = ['MSUB', 'MSUP', 'MSUBSUP', 'MUNDER', 'MOVER',
-                             'MUNDEROVER', 'MMULTISCRIPTS', 'MPRESCRIPTS'];
+cvox.MathUtil.SCRIPT_LIST = [
+  'MSUB', 'MSUP', 'MSUBSUP', 'MUNDER', 'MOVER', 'MUNDEROVER', 'MMULTISCRIPTS',
+  'MPRESCRIPTS'
+];
 
 
 /**
@@ -145,8 +150,8 @@ cvox.MathUtil.isScript = function(element) {
  * Array of MathML Table and Matrix tokens.
  * @type {!Array<string>}
  */
-cvox.MathUtil.TABLES_LIST = ['MTABLE', 'MLABELEDTR', 'MTR', 'MTD',
-                             'MALIGNGROUP', 'MALIGNMARK'];
+cvox.MathUtil.TABLES_LIST =
+    ['MTABLE', 'MLABELEDTR', 'MTR', 'MTD', 'MALIGNGROUP', 'MALIGNMARK'];
 
 
 /**
@@ -170,8 +175,9 @@ cvox.MathUtil.isTables = function(element) {
  * Array of MathML Elementary Layout Schemata.
  * @type {!Array<string>}
  */
-cvox.MathUtil.ELEMENTARY_LIST = ['MSTACK', 'MLONGDIV', 'MSGROUP', 'MSROW',
-                                 'MSCARRIES', 'MSCARRY', 'MSLINE'];
+cvox.MathUtil.ELEMENTARY_LIST = [
+  'MSTACK', 'MLONGDIV', 'MSGROUP', 'MSROW', 'MSCARRIES', 'MSCARRY', 'MSLINE'
+];
 
 
 /**
@@ -189,8 +195,8 @@ cvox.MathUtil.ELEMENTARY_LIST = ['MSTACK', 'MLONGDIV', 'MSGROUP', 'MSROW',
  * @return {boolean} True if element is a elementary schema.
  */
 cvox.MathUtil.isElementary = function(element) {
-  return cvox.MathUtil.isMathNodeOfClass_(element,
-                                          cvox.MathUtil.ELEMENTARY_LIST);
+  return cvox.MathUtil.isMathNodeOfClass_(
+      element, cvox.MathUtil.ELEMENTARY_LIST);
 };
 
 
@@ -199,12 +205,13 @@ cvox.MathUtil.isElementary = function(element) {
  * This is a union of all other token lists.
  * @type {!Array<string>}
  */
-cvox.MathUtil.MATHML_TAG_LIST = [cvox.MathUtil.TOKEN_LIST,
-                                 cvox.MathUtil.LAYOUT_LIST,
-                                 cvox.MathUtil.SCRIPT_LIST,
-                                 cvox.MathUtil.TABLES_LIST,
-                                 cvox.MathUtil.ELEMENTARY_LIST].reduce(
-                                     function(x, y) { return x.concat(y); });
+cvox.MathUtil.MATHML_TAG_LIST = [
+  cvox.MathUtil.TOKEN_LIST, cvox.MathUtil.LAYOUT_LIST,
+  cvox.MathUtil.SCRIPT_LIST, cvox.MathUtil.TABLES_LIST,
+  cvox.MathUtil.ELEMENTARY_LIST
+].reduce(function(x, y) {
+  return x.concat(y);
+});
 
 
 /**
@@ -213,8 +220,8 @@ cvox.MathUtil.MATHML_TAG_LIST = [cvox.MathUtil.TOKEN_LIST,
  * @return {boolean} True if element has a valid MathML tag.
  */
 cvox.MathUtil.isMathmlTag = function(element) {
-  return cvox.MathUtil.isMathNodeOfClass_(element,
-                                          cvox.MathUtil.MATHML_TAG_LIST);
+  return cvox.MathUtil.isMathNodeOfClass_(
+      element, cvox.MathUtil.MATHML_TAG_LIST);
 };
 
 
@@ -223,8 +230,8 @@ cvox.MathUtil.isMathmlTag = function(element) {
  * These are elements that can occur in the other token lists.
  * @type {!Array<string>}
  */
-cvox.MathUtil.WHITESPACE_LIST = ['MSROW', 'MROW', 'MSPACE',
-                                 'MPHANTOM', 'MPADDED'];
+cvox.MathUtil.WHITESPACE_LIST =
+    ['MSROW', 'MROW', 'MSPACE', 'MPHANTOM', 'MPADDED'];
 
 
 /**
@@ -234,8 +241,8 @@ cvox.MathUtil.WHITESPACE_LIST = ['MSROW', 'MROW', 'MSPACE',
  * @return {boolean} True if element is a whitespace node.
  */
 cvox.MathUtil.isWhitespace = function(element) {
-  return cvox.MathUtil.isMathNodeOfClass_(element,
-                                          cvox.MathUtil.WHITESPACE_LIST);
+  return cvox.MathUtil.isMathNodeOfClass_(
+      element, cvox.MathUtil.WHITESPACE_LIST);
 };
 
 
@@ -246,8 +253,9 @@ cvox.MathUtil.isWhitespace = function(element) {
  * @return {boolean} True if element is a non-whitespace node.
  */
 cvox.MathUtil.isNotWhitespace = function(element) {
-  return (cvox.MathUtil.isMathmlTag(element) &&
-          !cvox.MathUtil.isWhitespace(element));
+  return (
+      cvox.MathUtil.isMathmlTag(element) &&
+      !cvox.MathUtil.isWhitespace(element));
 };
 
 
@@ -259,5 +267,7 @@ cvox.MathUtil.isNotWhitespace = function(element) {
  * @return {Array} Union of a and b.
  */
 cvox.MathUtil.union = function(a, b) {
-  return a.concat(b.filter(function(x) {return a.indexOf(x) < 0;}));
+  return a.concat(b.filter(function(x) {
+    return a.indexOf(x) < 0;
+  }));
 };

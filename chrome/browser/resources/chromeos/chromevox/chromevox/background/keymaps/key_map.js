@@ -68,18 +68,10 @@ cvox.KeyMap.KEYMAP_PATH = 'chromevox/background/keymaps/';
  * @const
  */
 cvox.KeyMap.AVAILABLE_MAP_INFO = {
-'keymap_classic': {
-    'file': 'classic_keymap.json'
-  },
-'keymap_flat': {
-    'file': 'flat_keymap.json'
-  },
-'keymap_next': {
-    'file': 'next_keymap.json'
-  },
-'keymap_experimental': {
-    'file': 'experimental.json'
-  }
+  'keymap_classic': {'file': 'classic_keymap.json'},
+  'keymap_flat': {'file': 'flat_keymap.json'},
+  'keymap_next': {'file': 'next_keymap.json'},
+  'keymap_experimental': {'file': 'experimental.json'}
 };
 
 
@@ -228,12 +220,12 @@ cvox.KeyMap.prototype.keyForCommand = function(command) {
     return [this.commandToKey_[command]];
   } else {
     var keySequenceArray = [];
-     for (var i = 0; i < this.bindings_.length; i++) {
+    for (var i = 0; i < this.bindings_.length; i++) {
       var binding = this.bindings_[i];
-       if (binding.command == command) {
-         keySequenceArray.push(binding.sequence);
-       }
-     }
+      if (binding.command == command) {
+        keySequenceArray.push(binding.sequence);
+      }
+    }
   }
   return (keySequenceArray.length > 0) ? keySequenceArray : [];
 };
@@ -256,8 +248,8 @@ cvox.KeyMap.prototype.merge = function(inputMap) {
     if (command == 'toggleStickyMode') {
       // TODO(dtseng): More uglyness because of sticky key.
       continue;
-    } else if (key && command &&
-               !this.hasKey(key) && !this.hasCommand(command)) {
+    } else if (
+        key && command && !this.hasKey(key) && !this.hasCommand(command)) {
       this.bind_(command, key);
     } else {
       cleanMerge = false;
@@ -307,10 +299,7 @@ cvox.KeyMap.prototype.bind_ = function(command, newKey) {
     }
   }
   if (!bound) {
-    var binding = {
-      'command': command,
-      'sequence': newKey
-    };
+    var binding = {'command': command, 'sequence': newKey};
     this.bindings_.push(binding);
     this.commandToKey_[binding.command] = binding.sequence;
   }
@@ -323,9 +312,9 @@ cvox.KeyMap.prototype.bind_ = function(command, newKey) {
  * @return {!cvox.KeyMap} The default key map.
  */
 cvox.KeyMap.fromDefaults = function() {
-  return /** @type {!cvox.KeyMap} */ (
-    cvox.KeyMap.fromPath(cvox.KeyMap.KEYMAP_PATH +
-        cvox.KeyMap.AVAILABLE_MAP_INFO['keymap_classic'].file));
+  return /** @type {!cvox.KeyMap} */ (cvox.KeyMap.fromPath(
+      cvox.KeyMap.KEYMAP_PATH +
+      cvox.KeyMap.AVAILABLE_MAP_INFO['keymap_classic'].file));
 };
 
 
@@ -334,7 +323,8 @@ cvox.KeyMap.fromDefaults = function() {
  * @return {cvox.KeyMap} The Next key map.
  */
 cvox.KeyMap.fromNext = function() {
-  return cvox.KeyMap.fromPath(cvox.KeyMap.KEYMAP_PATH +
+  return cvox.KeyMap.fromPath(
+      cvox.KeyMap.KEYMAP_PATH +
       cvox.KeyMap.AVAILABLE_MAP_INFO['keymap_next'].file);
 };
 
@@ -350,7 +340,7 @@ cvox.KeyMap.fromJSON = function(json) {
     var commandsAndKeySequences =
         /** @type {Array<Object<{command: string,
          *                       sequence: cvox.KeySequence}>>} */
-    (JSON.parse(json).bindings);
+        (JSON.parse(json).bindings);
     commandsAndKeySequences = commandsAndKeySequences.filter(function(value) {
       return value.sequence.platformFilter === undefined ||
           cvox.PlatformUtil.matchesPlatform(value.sequence.platformFilter);
@@ -371,7 +361,7 @@ cvox.KeyMap.fromJSON = function(json) {
       return null;
     } else {
       commandsAndKeySequences[i].sequence = /** @type {cvox.KeySequence} */
-        (cvox.KeySequence.deserialize(commandsAndKeySequences[i].sequence));
+          (cvox.KeySequence.deserialize(commandsAndKeySequences[i].sequence));
     }
   }
   return new cvox.KeyMap(commandsAndKeySequences);

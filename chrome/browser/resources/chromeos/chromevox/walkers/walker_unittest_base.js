@@ -15,10 +15,7 @@ CvoxWalkerUnitTestBase.prototype = {
   __proto__: ChromeVoxUnitTestBase.prototype,
 
   /** @override */
-  closureModuleDeps: [
-    'TestMsgs',
-    'cvox.CursorSelection'
-  ],
+  closureModuleDeps: ['TestMsgs', 'cvox.CursorSelection'],
 
   /**
    * Common set up for all walker test cases.
@@ -162,9 +159,11 @@ CvoxWalkerUnitTestBase.CMD_WHITELIST = ['next', 'sync', 'nextRow', 'nextCol'];
  * @type {Array.string}
  * @const
  */
-CvoxWalkerUnitTestBase.DESC_WHITELIST = ['selText', 'selNodeId',
-'selParentNodeId', 'selStartIndex', 'selEndIndex', 'selReversed', 'descText',
-'descContext', 'descAnnotation', 'descUserValue', 'descPersonality'];
+CvoxWalkerUnitTestBase.DESC_WHITELIST = [
+  'selText', 'selNodeId', 'selParentNodeId', 'selStartIndex', 'selEndIndex',
+  'selReversed', 'descText', 'descContext', 'descAnnotation', 'descUserValue',
+  'descPersonality'
+];
 
 /**
  * Adds common walker tests
@@ -176,9 +175,9 @@ CvoxWalkerUnitTestBase.addCommonTests = function(testFixture) {
    * not null.
    */
   TEST_F(testFixture, 'testSyncToPage', function() {
-    this.loadDoc(function() {/*!
+    this.loadDoc(function() { /*!
       <div><p id="a">a</p></div>
-    */});
+    */ });
     var ret = this.walker.begin();
     assertNotEquals(null, ret);
     ret = this.walker.begin({reversed: true});
@@ -191,7 +190,7 @@ CvoxWalkerUnitTestBase.addCommonTests = function(testFixture) {
    * for TableWalker, sync can return null. Override if it doesn't work yet.
    */
   TEST_F(testFixture, 'testSyncInvariant', function() {
-    this.loadDoc(function() {/*!
+    this.loadDoc(function() { /*!
       <div id="outer">
         <p id="a">a</p>
         <p id="b">b</p>
@@ -201,9 +200,8 @@ CvoxWalkerUnitTestBase.addCommonTests = function(testFixture) {
         <p id="e">e</p>
         <h1 id="B">h1</h1>
       </div>
-    */});
-    var sel = cvox.CursorSelection.fromNode(
-        $('outer').firstChild);
+    */ });
+    var sel = cvox.CursorSelection.fromNode($('outer').firstChild);
     var sync = this.walker.sync(sel);
     var syncsync = this.walker.sync(sync);
     assertEquals(true, sync.equals(syncsync));

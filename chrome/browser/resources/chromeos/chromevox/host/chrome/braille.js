@@ -63,10 +63,12 @@ cvox.ChromeBraille.prototype.write = function(params) {
   this.updateLastContentId_();
   var outParams = params.toJson();
 
-  var message = {'target': 'BRAILLE',
-                 'action': 'write',
-                 'params': outParams,
-                 'contentId' : this.lastContentId_};
+  var message = {
+    'target': 'BRAILLE',
+    'action': 'write',
+    'params': outParams,
+    'contentId': this.lastContentId_
+  };
 
   cvox.ExtensionBridge.send(message);
 };
@@ -98,8 +100,8 @@ cvox.ChromeBraille.prototype.getDisplayState = function() {
 
 /** @private */
 cvox.ChromeBraille.prototype.updateLastContentId_ = function() {
-  this.lastContentId_ = cvox.ExtensionBridge.uniqueId() + '.' +
-      this.nextLocalId_++;
+  this.lastContentId_ =
+      cvox.ExtensionBridge.uniqueId() + '.' + this.nextLocalId_++;
 };
 
 
@@ -110,8 +112,7 @@ cvox.ChromeBraille.prototype.updateLastContentId_ = function() {
  *                                  if available.
  * @private
  */
-cvox.ChromeBraille.prototype.onKeyEvent_ = function(brailleEvt,
-                                                                content) {
+cvox.ChromeBraille.prototype.onKeyEvent_ = function(brailleEvt, content) {
   var command = cvox.ChromeVoxUserCommands.commands[brailleEvt.command];
   if (command) {
     command({event: brailleEvt, content: content});

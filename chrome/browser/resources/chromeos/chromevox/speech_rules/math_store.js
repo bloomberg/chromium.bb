@@ -30,7 +30,7 @@ cvox.MathStore = function() {
   this.dynamicCstrAttribs = [
     cvox.SpeechRule.DynamicCstrAttrib.DOMAIN,
     cvox.SpeechRule.DynamicCstrAttrib.STYLE
-    ];
+  ];
 
   /**
    * @override
@@ -51,9 +51,9 @@ cvox.MathStore.prototype.defineRule = function(
   var dynamicCstr = this.parseDynamicConstraint(dynamic);
   var cstrList = Array.prototype.slice.call(arguments, 4);
   // We can not use goog.base due to variable number of constraint arguments.
-  var rule = cvox.MathStore.superClass_.defineRule.apply(
-      this, [name, dynamicCstr[cvox.SpeechRule.DynamicCstrAttrib.STYLE],
-             action, query].concat(cstrList));
+  var rule = cvox.MathStore.superClass_.defineRule.apply(this, [
+    name, dynamicCstr[cvox.SpeechRule.DynamicCstrAttrib.STYLE], action, query
+  ].concat(cstrList));
   // In the superclass the dynamic constraint only contains style annotations.
   // We now set the proper dynamic constraint that contains in addition a
   // a domain attribute/value pair.
@@ -103,12 +103,9 @@ cvox.MathStore.createDynamicConstraint = function(domain, style) {
 cvox.MathStore.prototype.defineUniqueRuleAlias = function(
     name, dynamic, query, cstr) {
   var dynamicCstr = this.parseDynamicConstraint(dynamic);
-  var rule = this.findRule(
-    goog.bind(
-      function(rule) {
-        return rule.name == name &&
-          this.testDynamicConstraints(dynamicCstr, rule);},
-      this));
+  var rule = this.findRule(goog.bind(function(rule) {
+    return rule.name == name && this.testDynamicConstraints(dynamicCstr, rule);
+  }, this));
   if (!rule) {
     throw new cvox.SpeechRule.OutputError(
         'Rule named ' + name + ' with style ' + dynamic + ' does not exist.');
@@ -125,11 +122,12 @@ cvox.MathStore.prototype.defineUniqueRuleAlias = function(
  */
 cvox.MathStore.prototype.defineRuleAlias = function(name, query, cstr) {
   var rule = this.findRule(function(rule) {
-    return rule.name == name;});
+    return rule.name == name;
+  });
   if (!rule) {
     throw new cvox.SpeechRule.OutputError(
-      'Rule with named ' + name + ' does not exist.');
-    }
+        'Rule with named ' + name + ' does not exist.');
+  }
   this.addAlias_(rule, query, Array.prototype.slice.call(arguments, 2));
 };
 
@@ -141,17 +139,17 @@ cvox.MathStore.prototype.defineRuleAlias = function(name, query, cstr) {
  * @param {...string} cstr Additional static precondition constraints.
  */
 cvox.MathStore.prototype.defineRulesAlias = function(name, query, cstr) {
-  var rules = this.findAllRules(function(rule) {return rule.name == name;});
+  var rules = this.findAllRules(function(rule) {
+    return rule.name == name;
+  });
   if (rules.length == 0) {
     throw new cvox.SpeechRule.OutputError(
         'Rule with name ' + name + ' does not exist.');
   }
   var cstrList = Array.prototype.slice.call(arguments, 2);
-  rules.forEach(goog.bind(
-                  function(rule) {
-                    this.addAlias_(rule, query, cstrList);
-                  },
-                  this));
+  rules.forEach(goog.bind(function(rule) {
+    this.addAlias_(rule, query, cstrList);
+  }, this));
 };
 
 
@@ -164,8 +162,8 @@ cvox.MathStore.prototype.defineRulesAlias = function(name, query, cstr) {
  */
 cvox.MathStore.prototype.addAlias_ = function(rule, query, cstrList) {
   var prec = new cvox.SpeechRule.Precondition(query, cstrList);
-  var newRule = new cvox.SpeechRule(
-      rule.name, rule.dynamicCstr, prec, rule.action);
+  var newRule =
+      new cvox.SpeechRule(rule.name, rule.dynamicCstr, prec, rule.action);
   newRule.name = rule.name;
   this.addRule(newRule);
 };
@@ -217,14 +215,14 @@ cvox.MathStore.prototype.evaluateString_ = function(str) {
           // Dealing with surrogate pairs.
           var chr = rest[0];
           var code = chr.charCodeAt(0);
-          if (0xD800 <= code && code <= 0xDBFF &&
-              rest.length > 1 && !isNaN(rest.charCodeAt(1))) {
+          if (0xD800 <= code && code <= 0xDBFF && rest.length > 1 &&
+              !isNaN(rest.charCodeAt(1))) {
             descs.push(this.evaluate_(rest.slice(0, 2)));
             rest = rest.substring(2);
           } else {
             descs.push(this.evaluate_(rest[0]));
             rest = rest.substring(1);
-            }
+          }
         }
       }
     }
@@ -245,15 +243,14 @@ cvox.MathStore.prototype.evaluate_ = function(text) {
   if (cvox.ChromeVox.host['mathMap']) {
     // VS: Change this for android!
     return cvox.ChromeVox.host['mathMap'].evaluate(
-        text,
-        cvox.TraverseMath.getInstance().domain,
+        text, cvox.TraverseMath.getInstance().domain,
         cvox.TraverseMath.getInstance().style);
   }
-  return new cvox.NavMathDescription(
-      {'text': text,
-       'domain': cvox.TraverseMath.getInstance().domain,
-       'style': cvox.TraverseMath.getInstance().style
-      });
+  return new cvox.NavMathDescription({
+    'text': text,
+    'domain': cvox.TraverseMath.getInstance().domain,
+    'style': cvox.TraverseMath.getInstance().style
+  });
 };
 
 
@@ -264,5 +261,7 @@ cvox.MathStore.prototype.evaluate_ = function(text) {
  * @private
  */
 cvox.MathStore.removeEmpty_ = function(strs) {
-  return strs.filter(function(str) {return str;});
+  return strs.filter(function(str) {
+    return str;
+  });
 };

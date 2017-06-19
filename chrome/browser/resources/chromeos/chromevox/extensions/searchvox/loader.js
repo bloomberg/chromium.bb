@@ -13,8 +13,7 @@ goog.require('cvox.SearchContextMenu');
 /**
  * @constructor
  */
-cvox.SearchLoader = function() {
-};
+cvox.SearchLoader = function() {};
 
 /**
  * Called when document ready state changes.

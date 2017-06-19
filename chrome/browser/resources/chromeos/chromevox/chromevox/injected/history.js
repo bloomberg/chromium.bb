@@ -300,8 +300,7 @@ cvox.History.prototype.enterUserCommand = function(functionName) {
         'User command ' + functionName + ' overlaps current event',
         this.currentEvent_);
   }
-  this.currentEvent_ = new cvox.HistoryEvent()
-      .withUserCommand(functionName);
+  this.currentEvent_ = new cvox.HistoryEvent().withUserCommand(functionName);
   this.events_.push(this.currentEvent_);
 };
 
@@ -335,20 +334,22 @@ cvox.History.prototype.speak = function(str, mode, props) {
 
 
 /** @override */
-cvox.History.prototype.isSpeaking = function() { return false; };
+cvox.History.prototype.isSpeaking = function() {
+  return false;
+};
 /** @override */
-cvox.History.prototype.stop = function() { };
+cvox.History.prototype.stop = function() {};
 /** @override */
-cvox.History.prototype.addCapturingEventListener = function(listener) { };
+cvox.History.prototype.addCapturingEventListener = function(listener) {};
 /** @override */
-cvox.History.prototype.increaseOrDecreaseProperty =
-    function(propertyName, increase) { };
+cvox.History.prototype.increaseOrDecreaseProperty = function(
+    propertyName, increase) {};
 /** @override */
-cvox.History.prototype.propertyToPercentage = function(property) { };
+cvox.History.prototype.propertyToPercentage = function(property) {};
 /** @override */
-cvox.History.prototype.getDefaultProperty = function(property) { };
+cvox.History.prototype.getDefaultProperty = function(property) {};
 /** @override */
-cvox.History.prototype.toggleSpeechOnOrOff = function() { };
+cvox.History.prototype.toggleSpeechOnOrOff = function() {};
 
 
 /** TODO: add doc comment. */
@@ -367,14 +368,20 @@ cvox.History.dumpJs = function() {
 cvox.History.prototype.dumpJsOutput_ = function(opt_skipCommands) {
   var skipMap = {};
   if (opt_skipCommands) {
-    opt_skipCommands.forEach(function(e) { skipMap[e] = 1; });
+    opt_skipCommands.forEach(function(e) {
+      skipMap[e] = 1;
+    });
   }
   // TODO: pretty print
-  return ['/*DOC: += ',
-          this.nodeBreadcrumb_.dumpWalkedDom().innerHTML, '*/\n']
+  return ['/*DOC: += ', this.nodeBreadcrumb_.dumpWalkedDom().innerHTML, '*/\n']
       .concat(this.events_
-          .filter(function(e) { return ! (e.userCommand_ in skipMap); })
-          .map(function(e) { return e.outputJs(); })).join('');
+                  .filter(function(e) {
+                    return !(e.userCommand_ in skipMap);
+                  })
+                  .map(function(e) {
+                    return e.outputJs();
+                  }))
+      .join('');
 };
 
 
@@ -393,11 +400,11 @@ cvox.History.sendToFeedback = function() {
 
   var runFeedbackScript = document.createElement('script');
   runFeedbackScript.type = 'text/javascript';
-  runFeedbackScript.innerHTML =
-      'userfeedback.api.startFeedback(' +
-          '{ productId: \'76092\' }, ' +
-          '{ cvoxHistory: ' + cvox.ChromeVoxJSON.stringify(
-              cvox.ChromeVoxJSON.stringify(output)) + ' });';
+  runFeedbackScript.innerHTML = 'userfeedback.api.startFeedback(' +
+      '{ productId: \'76092\' }, ' +
+      '{ cvoxHistory: ' +
+      cvox.ChromeVoxJSON.stringify(cvox.ChromeVoxJSON.stringify(output)) +
+      ' });';
 
   feedbackScript.onload = function() {
     document.body.appendChild(runFeedbackScript);

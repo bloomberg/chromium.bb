@@ -85,20 +85,19 @@ cvox.NavigationManager.prototype.reset = function() {
    * @type {!Array<Object>}
    * @private
    */
-  this.shifterTypes_ = [cvox.NavigationShifter,
-                        cvox.TableShifter,
-                        cvox.MathShifter];
+  this.shifterTypes_ =
+      [cvox.NavigationShifter, cvox.TableShifter, cvox.MathShifter];
 
   /**
    * @type {!Array<!cvox.AbstractShifter>}
-  */
+   */
   this.shifterStack_ = [];
 
   /**
    * The active shifter.
    * @type {!cvox.AbstractShifter}
    * @private
-  */
+   */
   this.shifter_ = new cvox.NavigationShifter();
 
   // NOTE(deboer): document.activeElement can not be null (c.f.
@@ -416,11 +415,10 @@ cvox.NavigationManager.prototype.syncToNode = function(
   }
 
   if (opt_speakNode) {
-    this.speakDescriptionArray(this.getDescription(),
-                               /** @type {cvox.QueueMode} */ (opt_queueMode),
-                               null,
-                               null,
-                               cvox.TtsCategory.NAV);
+    this.speakDescriptionArray(
+        this.getDescription(),
+        /** @type {cvox.QueueMode} */ (opt_queueMode), null, null,
+        cvox.TtsCategory.NAV);
   }
 
   cvox.ChromeVox.braille.write(this.getBraille());
@@ -438,8 +436,9 @@ cvox.NavigationManager.prototype.clearPageSel = function(opt_announce) {
   var hasSel = !!this.pageSel_;
   if (hasSel && opt_announce) {
     var announcement = Msgs.getMsg('clear_page_selection');
-    cvox.ChromeVox.tts.speak(announcement, cvox.QueueMode.FLUSH,
-                             cvox.AbstractTts.PERSONALITY_ANNOTATION);
+    cvox.ChromeVox.tts.speak(
+        announcement, cvox.QueueMode.FLUSH,
+        cvox.AbstractTts.PERSONALITY_ANNOTATION);
   }
   this.pageSel_ = null;
   return hasSel;
@@ -452,7 +451,8 @@ cvox.NavigationManager.prototype.clearPageSel = function(opt_announce) {
  * @return {boolean} Whether selection is on or off after this call.
  */
 cvox.NavigationManager.prototype.togglePageSel = function() {
-  this.pageSel_ = this.pageSel_ ? null :
+  this.pageSel_ = this.pageSel_ ?
+      null :
       new cvox.PageSelection(this.curSel_.setReversed(false));
   return !!this.pageSel_;
 };
@@ -489,8 +489,8 @@ cvox.NavigationManager.prototype.getDescription = function() {
   }
 
   // Selected content.
-  var desc = this.pageSel_ ? this.pageSel_.getDescription(
-          this.shifter_, this.prevSel_, this.curSel_) :
+  var desc = this.pageSel_ ?
+      this.pageSel_.getDescription(this.shifter_, this.prevSel_, this.curSel_) :
       this.shifter_.getDescription(this.prevSel_, this.curSel_);
   var earcons = [];
 
@@ -517,7 +517,7 @@ cvox.NavigationManager.prototype.getDescription = function() {
   }
   if (earcons.length > 0 && desc.length > 0) {
     earcons.forEach(function(earcon) {
-        desc[0].pushEarcon(earcon);
+      desc[0].pushEarcon(earcon);
     });
   }
   return desc;
@@ -543,8 +543,7 @@ cvox.NavigationManager.prototype.performAction = function(name) {
     case 'enterShifter':
     case 'enterShifterSilently':
       for (var i = this.shifterTypes_.length - 1, shifterType;
-           shifterType = this.shifterTypes_[i];
-           i--) {
+           shifterType = this.shifterTypes_[i]; i--) {
         var shifter = shifterType.create(this.curSel_);
         if (shifter && shifter.getName() != this.shifter_.getName()) {
           this.shifterStack_.push(this.shifter_);
@@ -574,14 +573,13 @@ cvox.NavigationManager.prototype.performAction = function(name) {
       this.sync();
       this.exitedShifter_ = true;
       break;
-      default:
-        if (this.shifter_.hasAction(name)) {
-          return this.updateSel(
-              this.shifter_.performAction(name, this.curSel_));
-        } else {
-          return false;
-        }
-    }
+    default:
+      if (this.shifter_.hasAction(name)) {
+        return this.updateSel(this.shifter_.performAction(name, this.curSel_));
+      } else {
+        return false;
+      }
+  }
   return true;
 };
 
@@ -688,10 +686,7 @@ cvox.NavigationManager.prototype.ensureNotSubnavigating = function() {
  * @param {string=} opt_category Optional category for all descriptions.
  */
 cvox.NavigationManager.prototype.speakDescriptionArray = function(
-    descriptionArray,
-    initialQueueMode,
-    completionFunction,
-    opt_personality,
+    descriptionArray, initialQueueMode, completionFunction, opt_personality,
     opt_category) {
   if (opt_personality) {
     descriptionArray.forEach(function(desc) {
@@ -718,8 +713,7 @@ cvox.NavigationManager.prototype.speakDescriptionArray = function(
  */
 cvox.NavigationManager.prototype.updatePosition = function(node) {
   var msg = cvox.ChromeVox.position;
-  msg[document.location.href] =
-      cvox.DomUtil.elementToPoint(node);
+  msg[document.location.href] = cvox.DomUtil.elementToPoint(node);
 
   cvox.ChromeVox.host.sendToBackgroundPage({
     'target': 'Prefs',
@@ -754,8 +748,8 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
       if (this.isReversed()) {
         msg = Msgs.getMsg('wrapped_to_bottom');
       }
-      cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.QUEUE,
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
+      cvox.ChromeVox.tts.speak(
+          msg, cvox.QueueMode.QUEUE, cvox.AbstractTts.PERSONALITY_ANNOTATION);
     }
     return;
   }
@@ -780,11 +774,9 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
         opt_prefix, queueMode, cvox.AbstractTts.PERSONALITY_ANNOTATION);
     queueMode = cvox.QueueMode.QUEUE;
   }
-  this.speakDescriptionArray(descriptionArray,
-                             queueMode,
-                             opt_callback || null,
-                             null,
-                             cvox.TtsCategory.NAV);
+  this.speakDescriptionArray(
+      descriptionArray, queueMode, opt_callback || null, null,
+      cvox.TtsCategory.NAV);
 
   cvox.ChromeVox.braille.write(this.getBraille());
 
@@ -814,7 +806,7 @@ cvox.NavigationManager.prototype.navigate = function(
   this.ensureNotSubnavigating();
   if (opt_granularity !== undefined &&
       (opt_granularity !== this.getGranularity() ||
-          this.shifterStack_.length > 0)) {
+       this.shifterStack_.length > 0)) {
     this.setGranularity(opt_granularity, true);
     this.sync();
   }
@@ -899,17 +891,17 @@ cvox.NavigationManager.prototype.isReading = function() {
  */
 cvox.NavigationManager.prototype.startCallbackReading_ =
     cvox.ChromeVoxEventSuspender.withSuspendedEvents(function(queueMode) {
-  this.finishNavCommand('', true, queueMode, goog.bind(function() {
-    if (this.prevReadingSel_ == this.curSel_) {
-      this.stopReading();
-      return;
-    }
-    this.prevReadingSel_ = this.curSel_;
-    if (this.next_(true) && this.keepReading_) {
-      this.startCallbackReading_(cvox.QueueMode.QUEUE);
-    }
-  }, this));
-});
+      this.finishNavCommand('', true, queueMode, goog.bind(function() {
+        if (this.prevReadingSel_ == this.curSel_) {
+          this.stopReading();
+          return;
+        }
+        this.prevReadingSel_ = this.curSel_;
+        if (this.next_(true) && this.keepReading_) {
+          this.startCallbackReading_(cvox.QueueMode.QUEUE);
+        }
+      }, this));
+    });
 
 
 /**
@@ -920,18 +912,18 @@ cvox.NavigationManager.prototype.startCallbackReading_ =
  */
 cvox.NavigationManager.prototype.startNonCallbackReading_ =
     cvox.ChromeVoxEventSuspender.withSuspendedEvents(function(queueMode) {
-  if (!this.keepReading_) {
-    return;
-  }
+      if (!this.keepReading_) {
+        return;
+      }
 
-  if (!cvox.ChromeVox.tts.isSpeaking()) {
-    this.finishNavCommand('', true, queueMode, null);
-    if (!this.next_(true)) {
-      this.keepReading_ = false;
-    }
-  }
-  window.setTimeout(goog.bind(this.startNonCallbackReading_, this), 1000);
-});
+      if (!cvox.ChromeVox.tts.isSpeaking()) {
+        this.finishNavCommand('', true, queueMode, null);
+        if (!this.next_(true)) {
+          this.keepReading_ = false;
+        }
+      }
+      window.setTimeout(goog.bind(this.startNonCallbackReading_, this), 1000);
+    });
 
 
 /**
@@ -947,8 +939,7 @@ cvox.NavigationManager.prototype.getFullDescription = function() {
     return this.pageSel_.getFullDescription();
   }
   return [cvox.DescriptionUtil.getDescriptionFromAncestors(
-      cvox.DomUtil.getAncestors(this.curSel_.start.node),
-      true,
+      cvox.DomUtil.getAncestors(this.curSel_.start.node), true,
       cvox.ChromeVox.verbosity)];
 };
 
@@ -1200,7 +1191,7 @@ cvox.NavigationManager.prototype.tryIframe_ = function(node) {
   if (node == null || node.tagName != 'IFRAME' || !node.src) {
     return false;
   }
-  var iframeElement = /** @type {HTMLIFrameElement} */(node);
+  var iframeElement = /** @type {HTMLIFrameElement} */ (node);
 
   var iframeId = undefined;
   for (var id in this.iframeIdMap) {
@@ -1228,10 +1219,7 @@ cvox.NavigationManager.prototype.tryIframe_ = function(node) {
     }
   }
 
-  var message = {
-    'command': 'enterIframe',
-    'id': iframeId
-  };
+  var message = {'command': 'enterIframe', 'id': iframeId};
   cvox.ChromeVox.serializer.storeOn(message);
   cvox.Interframe.sendMessageToIFrame(message, iframeElement);
   return true;
@@ -1244,9 +1232,8 @@ cvox.NavigationManager.prototype.tryIframe_ = function(node) {
  * @param {boolean=} opt_skipIframe True to skip iframes.
  */
 cvox.NavigationManager.prototype.syncToBeginning = function(opt_skipIframe) {
-  var ret = this.shifter_.begin(this.curSel_, {
-      reversed: this.curSel_.isReversed()
-  });
+  var ret =
+      this.shifter_.begin(this.curSel_, {reversed: this.curSel_.isReversed()});
   if (!opt_skipIframe && this.tryIframe_(ret && ret.start.node)) {
     return;
   }

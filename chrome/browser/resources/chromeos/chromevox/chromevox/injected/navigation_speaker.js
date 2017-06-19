@@ -110,7 +110,7 @@ cvox.NavigationSpeaker.structuredElement = function(annon) {
   switch (annon) {
     case 'table':
     case 'Math':
-    return true;
+      return true;
   }
   return false;
 };
@@ -128,10 +128,8 @@ cvox.NavigationSpeaker.prototype.reorderAnnotations = function(
   for (var i = 0; i < descriptionArray.length; i++) {
     var descr = descriptionArray[i];
     if (cvox.NavigationSpeaker.structuredElement(descr.annotation)) {
-      descs.push(new cvox.NavDescription({
-        text: '',
-        annotation: descr.annotation
-      }));
+      descs.push(
+          new cvox.NavDescription({text: '', annotation: descr.annotation}));
       descr.annotation = '';
     }
     descs.push(descr);

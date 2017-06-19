@@ -165,8 +165,9 @@ cvox.NavigationShifter.prototype.getGranularityMsg = function() {
 cvox.NavigationShifter.prototype.makeMoreGranular = function() {
   goog.base(this, 'makeMoreGranular');
   this.currentWalkerIndex_ = Math.max(this.currentWalkerIndex_ - 1, 0);
-  if (!cvox.NavigationShifter.allowSentence && this.currentWalkerIndex_ ==
-      cvox.NavigationShifter.GRANULARITIES.SENTENCE) {
+  if (!cvox.NavigationShifter.allowSentence &&
+      this.currentWalkerIndex_ ==
+          cvox.NavigationShifter.GRANULARITIES.SENTENCE) {
     this.currentWalkerIndex_--;
   }
   this.currentWalker_ = this.walkers_[this.currentWalkerIndex_];
@@ -179,8 +180,9 @@ cvox.NavigationShifter.prototype.makeLessGranular = function() {
   goog.base(this, 'makeLessGranular');
   this.currentWalkerIndex_ =
       Math.min(this.currentWalkerIndex_ + 1, this.walkers_.length - 1);
-  if (!cvox.NavigationShifter.allowSentence && this.currentWalkerIndex_ ==
-      cvox.NavigationShifter.GRANULARITIES.SENTENCE) {
+  if (!cvox.NavigationShifter.allowSentence &&
+      this.currentWalkerIndex_ ==
+          cvox.NavigationShifter.GRANULARITIES.SENTENCE) {
     this.currentWalkerIndex_++;
   }
   this.currentWalker_ = this.walkers_[this.currentWalkerIndex_];
@@ -246,12 +248,8 @@ cvox.NavigationShifter.prototype.reset_ = function() {
   this.characterWalker_ = new cvox.CharacterWalker();
 
   this.walkers_ = [
-      this.characterWalker_,
-      this.wordWalker_,
-      this.lineWalker_,
-      this.sentenceWalker_,
-      this.objectWalker_,
-      this.groupWalker_
+    this.characterWalker_, this.wordWalker_, this.lineWalker_,
+    this.sentenceWalker_, this.objectWalker_, this.groupWalker_
   ];
   this.currentWalkerIndex_ = this.walkers_.indexOf(this.groupWalker_);
 

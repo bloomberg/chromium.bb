@@ -12,8 +12,7 @@ goog.provide('cvox.SearchConstants');
 /**
  * @constructor
  */
-cvox.SearchConstants = function() {
-};
+cvox.SearchConstants = function() {};
 
 /**
  * Keycodes.

@@ -147,7 +147,7 @@ cvox.AuralStyleConverter.convertStyle = function(style) {
  * Gets the aural style for a node.
  * @param {Node} node The node.
  * @return {Object} The aural style, converted to tts properties.
-*/
+ */
 cvox.AuralStyleUtil.getStyleForNode = function(node) {
   var style = cvox.AuralStyleUtil.defaultStyles[node.tagName];
   if (!style) {
@@ -161,49 +161,19 @@ cvox.AuralStyleUtil.getStyleForNode = function(node) {
  * A list of default aural styles.
  */
 cvox.AuralStyleUtil.defaultStyles = {
-  'ARTICLE': {
-    PITCH: -0.1
-  },
-  'ASIDE': {
-    PITCH: -0.1
-  },
-  'FOOTER': {
-    PITCH: -0.1
-  },
-  'H1': {
-    PITCH: -0.3
-  },
-  'H2': {
-    PITCH: -0.25
-  },
-  'H3': {
-    PITCH: -0.2
-  },
-  'H4': {
-    PITCH: -0.15
-  },
-  'H5': {
-    PITCH: -0.1
-  },
-  'H6': {
-    PITCH: -0.05
-  },
-  'HEADER': {
-    PITCH: -0.1
-  },
-  'HGROUP': {
-    PITCH: -0.1
-  },
-  'MARK': {
-    PITCH: -0.1
-  },
-  'NAV': {
-    PITCH: -0.1
-  },
-  'SECTION': {
-    PITCH: -0.1
-  },
-  'TIME': {
-    PITCH: -0.1
-  }
+  'ARTICLE': {PITCH: -0.1},
+  'ASIDE': {PITCH: -0.1},
+  'FOOTER': {PITCH: -0.1},
+  'H1': {PITCH: -0.3},
+  'H2': {PITCH: -0.25},
+  'H3': {PITCH: -0.2},
+  'H4': {PITCH: -0.15},
+  'H5': {PITCH: -0.1},
+  'H6': {PITCH: -0.05},
+  'HEADER': {PITCH: -0.1},
+  'HGROUP': {PITCH: -0.1},
+  'MARK': {PITCH: -0.1},
+  'NAV': {PITCH: -0.1},
+  'SECTION': {PITCH: -0.1},
+  'TIME': {PITCH: -0.1}
 };

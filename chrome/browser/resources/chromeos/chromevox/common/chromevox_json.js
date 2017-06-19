@@ -43,23 +43,19 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
     }
 
     if (typeof Date.prototype.toJSON !== 'function') {
-
       Date.prototype.toJSON = function(key) {
 
         return isFinite(this.valueOf()) ?
-                   this.getUTCFullYear() + '-' +
-                f(this.getUTCMonth() + 1) + '-' +
-                f(this.getUTCDate()) + 'T' +
-                f(this.getUTCHours()) + ':' +
-                f(this.getUTCMinutes()) + ':' +
-                f(this.getUTCSeconds()) + 'Z' : 'null';
+            this.getUTCFullYear() + '-' + f(this.getUTCMonth() + 1) + '-' +
+                f(this.getUTCDate()) + 'T' + f(this.getUTCHours()) + ':' +
+                f(this.getUTCMinutes()) + ':' + f(this.getUTCSeconds()) + 'Z' :
+            'null';
       };
 
-      Boolean.prototype.toJSON =
-      Number.prototype.toJSON =
-      String.prototype.toJSON = function(key) {
-        return /** @type {string} */ (this.valueOf());
-      };
+      Boolean.prototype.toJSON = Number.prototype.toJSON =
+          String.prototype.toJSON = function(key) {
+            return /** @type {string} */ (this.valueOf());
+          };
     }
 
     var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
@@ -79,40 +75,39 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
 
 
     function quote(string) {
-
       // If the string contains no control characters, no quote characters, and
       // no backslash characters, then we can safely slap some quotes around it.
       // Otherwise we must also replace the offending characters with safe
       // escape sequences.
 
       escapable.lastIndex = 0;
-      return escapable.test(string) ?
-          '"' + string.replace(escapable, function(a) {
-               var c = meta[a];
-               return typeof c === 'string' ? c :
-                   '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-             }) + '"' :
-             '"' + string + '"';
+      return escapable.test(string) ? '"' +
+              string.replace(
+                  escapable,
+                  function(a) {
+                    var c = meta[a];
+                    return typeof c === 'string' ? c :
+                                                   '\\u' +
+                            ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+                  }) +
+              '"' :
+                                      '"' + string + '"';
     }
 
 
     function str(key, holder) {
-
       // Produce a string from holder[key].
 
-      var i,          // The loop counter.
-          k,          // The member key.
-          v,          // The member value.
-          length,
-          mind = gap,
-          partial,
-          value = holder[key];
+      var i,  // The loop counter.
+          k,  // The member key.
+          v,  // The member value.
+          length, mind = gap, partial, value = holder[key];
 
       // If the value has a toJSON method, call it to obtain a replacement
       // value.
 
       if (value && typeof value === 'object' &&
-              typeof value.toJSON === 'function') {
+          typeof value.toJSON === 'function') {
         value = value.toJSON(key);
       }
 
@@ -140,8 +135,8 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
           // the remote chance that this gets fixed someday.
           return String(value);
 
-          // If the type is 'object', we might be dealing with an object or an
-          // array or null.
+        // If the type is 'object', we might be dealing with an object or an
+        // array or null.
 
         case 'object':
 
@@ -161,7 +156,6 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
           // Is the value an array?
 
           if (Object.prototype.toString.apply(value) === '[object Array]') {
-
             // The value is an array. Stringify every element. Use null as a
             // placeholder for non-JSON values.
 
@@ -173,11 +167,11 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
             // Join all of the elements together, separated with commas, and
             // wrap them in brackets.
 
-            v = partial.length === 0 ? '[]' :
-                    gap ? '[\n' + gap +
-                            partial.join(',\n' + gap) + '\n' +
-                                mind + ']' :
-                          '[' + partial.join(',') + ']';
+            v = partial.length === 0 ?
+                '[]' :
+                gap ?
+                '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']' :
+                '[' + partial.join(',') + ']';
             gap = mind;
             return v;
           }
@@ -197,7 +191,6 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
               }
             }
           } else {
-
             // Otherwise, iterate through all of the keys in the object.
             for (k in value) {
               if (Object.hasOwnProperty.call(value, k)) {
@@ -212,9 +205,11 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
           // Join all of the member texts together, separated with commas,
           // and wrap them in braces.
 
-          v = partial.length === 0 ? '{}' :
-              gap ? '{\n' + gap + partial.join(',\n' + gap) + '\n' +
-                      mind + '}' : '{' + partial.join(',') + '}';
+          v = partial.length === 0 ?
+              '{}' :
+              gap ?
+              '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}' :
+              '{' + partial.join(',') + '}';
           gap = mind;
           return v;
       }
@@ -263,7 +258,7 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
         rep = replacer;
         if (replacer && typeof replacer !== 'function' &&
             (typeof replacer !== 'object' ||
-            typeof replacer.length !== 'number')) {
+             typeof replacer.length !== 'number')) {
           throw new Error('JSON.stringify');
         }
 
@@ -291,7 +286,6 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
         var j;
 
         function walk(holder, key) {
-
           // The walk method is used to recursively walk the resulting structure
           // so that modifications can be made.
 
@@ -321,8 +315,7 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
         cx.lastIndex = 0;
         if (cx.test(text)) {
           text = text.replace(cx, function(a) {
-            return '\\u' +
-                ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+            return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
           });
         }
 
@@ -340,11 +333,12 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
         // remaining characters are only whitespace or ']' or ',' or ':' or '{'
         // or '}'. If that is so, then the text is safe for eval.
 
-        if (/^[\],:{}\s]*$/.
-        test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@').
-        replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
-        replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
-
+        if (/^[\],:{}\s]*$/.test(
+                text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+                    .replace(
+                        /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
+                        ']')
+                    .replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
           // In the third stage we use the eval function to compile the text
           // into a JavaScript structure. The '{' operator is subject to a
           // syntactic ambiguity in JavaScript: it can begin a block or an

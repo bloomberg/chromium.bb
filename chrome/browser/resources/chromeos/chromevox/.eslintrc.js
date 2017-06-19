@@ -5,7 +5,7 @@
 module.exports = {
   'env': {
     'browser': true,
-    'es6': true
+    'es6': true,
   },
   'rules': {
     // Override restrictions for document.getElementById usage since,

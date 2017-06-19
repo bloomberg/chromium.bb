@@ -70,7 +70,7 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   // TODO(dtseng): Leaking state about multiple key maps here until we have a
   // class to manage multiple key maps. Also, this doesn't belong as a pref;
   // should just store in local storage.
-  'currentKeyMap' : cvox.KeyMap.DEFAULT_KEYMAP,
+  'currentKeyMap': cvox.KeyMap.DEFAULT_KEYMAP,
   'cvoxKey': '',
   'earcons': true,
   'focusFollowsMouse': false,
@@ -111,7 +111,7 @@ cvox.ChromeVoxPrefs.prototype.init = function(pullFromLocalStorage) {
  * Switches to another key map.
  * @param {string} selectedKeyMap The id of the keymap in
  * cvox.KeyMap.AVAIABLE_KEYMAP_INFO.
-*/
+ */
 cvox.ChromeVoxPrefs.prototype.switchToKeyMap = function(selectedKeyMap) {
   // Switching key maps potentially affects the key codes that involve
   // sequencing. Without resetting this list, potentially stale key
@@ -184,8 +184,8 @@ cvox.ChromeVoxPrefs.prototype.resetKeys = function() {
  * @param {boolean} sendPrefs Whether to send the prefs.
  * @param {boolean} sendKeyBindings Whether to send the key bindings.
  */
-cvox.ChromeVoxPrefs.prototype.sendPrefsToAllTabs =
-    function(sendPrefs, sendKeyBindings) {
+cvox.ChromeVoxPrefs.prototype.sendPrefsToAllTabs = function(
+    sendPrefs, sendKeyBindings) {
   var context = this;
   var message = {};
   if (sendPrefs) {
@@ -211,9 +211,8 @@ cvox.ChromeVoxPrefs.prototype.sendPrefsToAllTabs =
  * @param {Port} port The port representing the connection to a content script.
  */
 cvox.ChromeVoxPrefs.prototype.sendPrefsToPort = function(port) {
-  port.postMessage({
-    'keyBindings': this.keyMap_.toJSON(),
-    'prefs': this.getPrefs()});
+  port.postMessage(
+      {'keyBindings': this.keyMap_.toJSON(), 'prefs': this.getPrefs()});
 };
 
 

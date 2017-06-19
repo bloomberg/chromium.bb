@@ -47,9 +47,7 @@ cvox.ValueSpan.prototype.toJson = function() {
 
 
 Spannable.registerSerializableSpan(
-    cvox.ValueSpan,
-    'cvox.ValueSpan',
-    cvox.ValueSpan.fromJson,
+    cvox.ValueSpan, 'cvox.ValueSpan', cvox.ValueSpan.fromJson,
     cvox.ValueSpan.prototype.toJson);
 
 
@@ -57,8 +55,7 @@ Spannable.registerSerializableSpan(
  * Attached to the selected text within a value.
  * @constructor
  */
-cvox.ValueSelectionSpan = function() {
-};
+cvox.ValueSelectionSpan = function() {};
 
 
 Spannable.registerStatelessSerializableSpan(

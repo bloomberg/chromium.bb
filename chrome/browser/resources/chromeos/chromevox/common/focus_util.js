@@ -15,8 +15,7 @@ goog.provide('cvox.FocusUtil');
  * Utilities for managing focus.
  * @constructor
  */
-cvox.FocusUtil = function() {
-};
+cvox.FocusUtil = function() {};
 
 /**
  * Maps whether an input element of specified type accepts text selection or
@@ -31,29 +30,29 @@ cvox.FocusUtil = function() {
  * @type {Object}
  */
 cvox.FocusUtil.INPUT_TYPE_ACCEPTS_SELECTION_TABLE = {
-  'hidden' : false,
-  'text' : true,
-  'search' : true,
-  'tel' : true,
-  'url' : true,
-  'email' : true,
-  'password' : true,
-  'datetime' : false,
-  'date' : false,
-  'month' : false,
-  'week' : false,
-  'time' : false,
-  'datetime-local' : false,
-  'number' : false,
-  'range' : false,
-  'color' : false,
-  'checkbox' : false,
-  'radio' : false,
-  'file' : false,
-  'submit' : false,
-  'image' : false,
-  'reset' : false,
-  'button' : false
+  'hidden': false,
+  'text': true,
+  'search': true,
+  'tel': true,
+  'url': true,
+  'email': true,
+  'password': true,
+  'datetime': false,
+  'date': false,
+  'month': false,
+  'week': false,
+  'time': false,
+  'datetime-local': false,
+  'number': false,
+  'range': false,
+  'color': false,
+  'checkbox': false,
+  'radio': false,
+  'file': false,
+  'submit': false,
+  'image': false,
+  'reset': false,
+  'button': false
 };
 
 /**

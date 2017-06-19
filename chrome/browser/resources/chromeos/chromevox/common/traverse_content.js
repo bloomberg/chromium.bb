@@ -118,12 +118,11 @@ cvox.TraverseContent.kParagraph = 'paragraph';
  * @type {Array<string>}
  * @const
  */
-cvox.TraverseContent.kAllGrains =
-    [cvox.TraverseContent.kParagraph,
-     cvox.TraverseContent.kSentence,
-     cvox.TraverseContent.kLine,
-     cvox.TraverseContent.kWord,
-     cvox.TraverseContent.kCharacter];
+cvox.TraverseContent.kAllGrains = [
+  cvox.TraverseContent.kParagraph, cvox.TraverseContent.kSentence,
+  cvox.TraverseContent.kLine, cvox.TraverseContent.kWord,
+  cvox.TraverseContent.kCharacter
+];
 
 /**
  * Set the current position to match the current WebKit selection.
@@ -383,11 +382,7 @@ cvox.TraverseContent.prototype.movePrev = function(grain) {
  *     it should break a sentence or line.
  */
 cvox.TraverseContent.prototype.getBreakTags = function() {
-  return {
-    'A': this.breakAtLinks,
-    'BR': true,
-    'HR': true
-  };
+  return {'A': this.breakAtLinks, 'BR': true, 'HR': true};
 };
 
 /**
@@ -409,7 +404,7 @@ cvox.TraverseContent.prototype.nextElement = function(grain, domObj) {
   var result = this.moveNext(grain);
   if (result != null &&
       (!cvox.DomUtil.isDescendantOfNode(
-          this.startCursor_.node, this.currentDomObj) ||
+           this.startCursor_.node, this.currentDomObj) ||
        !cvox.DomUtil.isDescendantOfNode(
            this.endCursor_.node, this.currentDomObj))) {
     return null;
@@ -438,7 +433,7 @@ cvox.TraverseContent.prototype.prevElement = function(grain, domObj) {
   var result = this.movePrev(grain);
   if (result != null &&
       (!cvox.DomUtil.isDescendantOfNode(
-          this.startCursor_.node, this.currentDomObj) ||
+           this.startCursor_.node, this.currentDomObj) ||
        !cvox.DomUtil.isDescendantOfNode(
            this.endCursor_.node, this.currentDomObj))) {
     return null;

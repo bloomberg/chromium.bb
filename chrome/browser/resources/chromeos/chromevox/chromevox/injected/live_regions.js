@@ -21,8 +21,7 @@ goog.require('cvox.NavigationSpeaker');
 /**
  * @constructor
  */
-cvox.LiveRegions = function() {
-};
+cvox.LiveRegions = function() {};
 
 /**
  * @type {Date}
@@ -62,7 +61,7 @@ cvox.LiveRegions.MAX_DISCARD_DUPS_MS = 2000;
 
 /**
  * @type {Date}
-*/
+ */
 cvox.LiveRegions.lastAnnouncedTime = null;
 
 /**
@@ -92,10 +91,7 @@ cvox.LiveRegions.init = function(pageLoadTime, queueMode, disableSpeak) {
   var regions = cvox.AriaUtil.getLiveRegions(document.body);
   for (var i = 0; i < regions.length; i++) {
     cvox.LiveRegions.handleOneChangedNode(
-        regions[i],
-        regions[i],
-        false,
-        false,
+        regions[i], regions[i], false, false,
         function(assertive, navDescriptions) {
           if (!assertive && queueMode == cvox.QueueMode.FLUSH) {
             queueMode = cvox.QueueMode.QUEUE;
@@ -121,8 +117,8 @@ cvox.LiveRegions.init = function(pageLoadTime, queueMode, disableSpeak) {
         for (var j = 0, description; description = structs[j]; j++) {
           descriptions.push(new cvox.NavDescription(description));
         }
-        new cvox.NavigationSpeaker()
-            .speakDescriptionArray(descriptions, message['queueMode'], null);
+        new cvox.NavigationSpeaker().speakDescriptionArray(
+            descriptions, message['queueMode'], null);
       }
     }
   });
@@ -310,8 +306,7 @@ cvox.LiveRegions.announceChangeIfVisible = function(
  * @param {function(boolean, Array<cvox.NavDescription>)} handler
  *     Callback function to be called for each live region found.
  */
-cvox.LiveRegions.announceChange = function(
-    node, liveRoot, isRemoval, handler) {
+cvox.LiveRegions.announceChange = function(node, liveRoot, isRemoval, handler) {
   // If this node is in an atomic container, announce the whole container.
   // This includes aria-atomic, but also ARIA controls and other nodes
   // whose ARIA roles make them leaves.
@@ -335,9 +330,10 @@ cvox.LiveRegions.announceChange = function(
   if (isRemoval) {
     navDescriptions = [cvox.DescriptionUtil.getDescriptionFromAncestors(
         [node], true, cvox.ChromeVox.verbosity)];
-    navDescriptions = [new cvox.NavDescription({
-      context: Msgs.getMsg('live_regions_removed'), text: ''
-    })].concat(navDescriptions);
+    navDescriptions = [
+      new cvox.NavDescription(
+          {context: Msgs.getMsg('live_regions_removed'), text: ''})
+    ].concat(navDescriptions);
   }
 
   if (navDescriptions.length == 0) {
@@ -380,12 +376,12 @@ cvox.LiveRegions.announceChange = function(
 
   var assertive = cvox.AriaUtil.getAriaLive(liveRoot) == 'assertive';
   if (cvox.Interframe.isIframe() && !cvox.ChromeVox.documentHasFocus()) {
-    cvox.Interframe.sendMessageToParentWindow(
-        {'command': 'speakLiveRegion',
-         'content': JSON.stringify(navDescriptions),
-         'queueMode': assertive ? 0 : 1,
-         'src': window.location.href }
-        );
+    cvox.Interframe.sendMessageToParentWindow({
+      'command': 'speakLiveRegion',
+      'content': JSON.stringify(navDescriptions),
+      'queueMode': assertive ? 0 : 1,
+      'src': window.location.href
+    });
     return;
   }
 
@@ -415,10 +411,8 @@ cvox.LiveRegions.announceChange = function(
         allStrings.push(desc.userValue);
       }
     });
-    navDescriptions = [new cvox.NavDescription({
-      text: allStrings.join(', '),
-      category: cvox.TtsCategory.LIVE
-    })];
+    navDescriptions = [new cvox.NavDescription(
+        {text: allStrings.join(', '), category: cvox.TtsCategory.LIVE})];
   }
 
   handler(assertive, navDescriptions);
@@ -435,8 +429,7 @@ cvox.LiveRegions.announceChange = function(
  *     at this node.
  */
 cvox.LiveRegions.getNavDescriptionsRecursive = function(node) {
-  if (cvox.AriaUtil.getAriaAtomic(node) ||
-      cvox.DomUtil.isLeafNode(node)) {
+  if (cvox.AriaUtil.getAriaAtomic(node) || cvox.DomUtil.isLeafNode(node)) {
     var description = cvox.DescriptionUtil.getDescriptionFromAncestors(
         [node], true, cvox.ChromeVox.verbosity);
     if (!description.isEmpty()) {
@@ -445,6 +438,7 @@ cvox.LiveRegions.getNavDescriptionsRecursive = function(node) {
       return [];
     }
   }
-  return cvox.DescriptionUtil.getFullDescriptionsFromChildren(null,
+  return cvox.DescriptionUtil.getFullDescriptionsFromChildren(
+      null,
       /** @type {!Element} */ (node));
 };

@@ -26,46 +26,44 @@ goog.inherits(cvox.TestMathJax, cvox.AbstractMathJax);
 /**
  * @override
  */
-cvox.TestMathJax.prototype.isMathjaxActive = function(callback) { };
+cvox.TestMathJax.prototype.isMathjaxActive = function(callback) {};
 
 
 /**
  * @override
  */
-cvox.TestMathJax.prototype.getAllJax = function(callback) { };
+cvox.TestMathJax.prototype.getAllJax = function(callback) {};
 
 
 /**
  * @override
  */
-cvox.TestMathJax.prototype.registerSignal = function(
-    callback, signal) { };
+cvox.TestMathJax.prototype.registerSignal = function(callback, signal) {};
 
 
 /**
  * @override
  */
-cvox.TestMathJax.prototype.injectScripts = function() { };
+cvox.TestMathJax.prototype.injectScripts = function() {};
 
 
 /**
  * @override
  */
-cvox.TestMathJax.prototype.configMediaWiki = function() { };
+cvox.TestMathJax.prototype.configMediaWiki = function() {};
 
 
 /**
  * @override
  */
-cvox.TestMathJax.prototype.getTex = function(callback, texNode) { };
+cvox.TestMathJax.prototype.getTex = function(callback, texNode) {};
 
 
 /**
  * @override
  */
-cvox.TestMathJax.prototype.getAsciiMath = function(callback, asciiMathNode) { };
+cvox.TestMathJax.prototype.getAsciiMath = function(callback, asciiMathNode) {};
 
 
 /** Export platform constructor. */
-cvox.HostFactory.mathJaxConstructor =
-    cvox.TestMathJax;
+cvox.HostFactory.mathJaxConstructor = cvox.TestMathJax;

@@ -22,8 +22,7 @@ goog.require('cvox.CommandStore');
  * Class to manage the panel.
  * @constructor
  */
-Panel = function() {
-};
+Panel = function() {};
 
 /**
  * @enum {string}
@@ -84,8 +83,8 @@ Panel.init = function() {
   /** @type {Panel.Mode} @private */
   this.mode_ = Panel.Mode.COLLAPSED;
 
-  var blockedSessionQuery = location.search.match(
-      /[?&]?blockedUserSession=(true|false)/);
+  var blockedSessionQuery =
+      location.search.match(/[?&]?blockedUserSession=(true|false)/);
   /**
    * Whether the panel is loaded for blocked user session - e.g. on sign-in or
    * lock screen.
@@ -137,7 +136,7 @@ Panel.init = function() {
 
   window.addEventListener('message', function(message) {
     var command = JSON.parse(message.data);
-    Panel.exec(/** @type {PanelCommand} */(command));
+    Panel.exec(/** @type {PanelCommand} */ (command));
   }, false);
 
   if (this.isUserSessionBlocked_) {
@@ -153,8 +152,8 @@ Panel.init = function() {
   $('close').addEventListener('click', Panel.onClose, false);
 
   $('tutorial_next').addEventListener('click', Panel.onTutorialNext, false);
-  $('tutorial_previous').addEventListener(
-      'click', Panel.onTutorialPrevious, false);
+  $('tutorial_previous')
+      .addEventListener('click', Panel.onTutorialPrevious, false);
   $('close_tutorial').addEventListener('click', Panel.onCloseTutorial, false);
 
   document.addEventListener('keydown', Panel.onKeyDown, false);
@@ -223,9 +222,8 @@ Panel.exec = function(command) {
       if (this.speechElement_.innerHTML != '') {
         this.speechElement_.innerHTML += '&nbsp;&nbsp;';
       }
-      this.speechElement_.innerHTML += '<span class="usertext">' +
-                                       escapeForHtml(command.data) +
-                                       '</span>';
+      this.speechElement_.innerHTML +=
+          '<span class="usertext">' + escapeForHtml(command.data) + '</span>';
       break;
     case PanelCommandType.ADD_ANNOTATION_SPEECH:
       if (this.speechElement_.innerHTML != '') {
@@ -288,8 +286,8 @@ Panel.setMode = function(mode) {
   if (this.mode_ == mode)
     return;
 
-  if (this.isUserSessionBlocked_ &&
-      mode != Panel.Mode.COLLAPSED && mode != Panel.Mode.FOCUSED)
+  if (this.isUserSessionBlocked_ && mode != Panel.Mode.COLLAPSED &&
+      mode != Panel.Mode.FOCUSED)
     return;
   this.mode_ = mode;
 
@@ -349,7 +347,8 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     'help_commands': chromevoxMenu,
 
     'braille': null,
-    'developer': null};
+    'developer': null
+  };
 
   // Get the key map from the background page.
   var bkgnd = chrome.extension.getBackgroundPage();
@@ -390,8 +389,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     var menu = category ? categoryToMenu[category] : null;
     if (binding.title && menu) {
       menu.addMenuItem(
-          binding.title,
-          binding.keySeq,
+          binding.title, binding.keySeq,
           BrailleCommandHandler.getDotShortcut(binding.command, true),
           function() {
             var CommandHandler =
@@ -410,11 +408,14 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
           var title = tabs[j].title;
           if (tabs[j].active && windows[i].id == lastFocusedWindow.id)
             title += ' ' + Msgs.getMsg('active_tab');
-          tabsMenu.addMenuItem(title, '', '', (function(win, tab) {
-            bkgnd.chrome.windows.update(win.id, {focused: true}, function() {
-              bkgnd.chrome.tabs.update(tab.id, {active: true});
-            });
-          }).bind(this, windows[i], tabs[j]));
+          tabsMenu.addMenuItem(
+              title, '', '', (function(win, tab) {
+                               bkgnd.chrome.windows.update(
+                                   win.id, {focused: true}, function() {
+                                     bkgnd.chrome.tabs.update(
+                                         tab.id, {active: true});
+                                   });
+                             }).bind(this, windows[i], tabs[j]));
         }
       }
     });
@@ -427,11 +428,12 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
       });
 
   var roleListMenuMapping = [
-    { menuTitle: 'role_heading', predicate: AutomationPredicate.heading },
-    { menuTitle: 'role_landmark', predicate: AutomationPredicate.landmark },
-    { menuTitle: 'role_link', predicate: AutomationPredicate.link },
-    { menuTitle: 'role_form', predicate: AutomationPredicate.formField },
-    { menuTitle: 'role_table', predicate: AutomationPredicate.table }];
+    {menuTitle: 'role_heading', predicate: AutomationPredicate.heading},
+    {menuTitle: 'role_landmark', predicate: AutomationPredicate.landmark},
+    {menuTitle: 'role_link', predicate: AutomationPredicate.link},
+    {menuTitle: 'role_form', predicate: AutomationPredicate.formField},
+    {menuTitle: 'role_table', predicate: AutomationPredicate.table}
+  ];
 
   var node = bkgnd.ChromeVoxState.instance.getCurrentRange().start.node;
   for (var i = 0; i < roleListMenuMapping.length; ++i) {
@@ -593,14 +595,16 @@ Panel.onUpdateBraille = function(data) {
         }
         var bottomCell2 = row2.insertCell(-1);
         bottomCell2.id = i + '-brailleCell2';
-        bottomCell2.setAttribute('data-companionIDs',
-            i + '-textCell ' + i + '-brailleCell');
-        bottomCell.setAttribute('data-companionIDs',
-            bottomCell.getAttribute('data-companionIDs') +
-            ' ' + i + '-brailleCell2');
-        topCell.setAttribute('data-companionID2',
-            bottomCell.getAttribute('data-companionIDs') +
-            ' ' + i + '-brailleCell2');
+        bottomCell2.setAttribute(
+            'data-companionIDs', i + '-textCell ' + i + '-brailleCell');
+        bottomCell.setAttribute(
+            'data-companionIDs',
+            bottomCell.getAttribute('data-companionIDs') + ' ' + i +
+                '-brailleCell2');
+        topCell.setAttribute(
+            'data-companionID2',
+            bottomCell.getAttribute('data-companionIDs') + ' ' + i +
+                '-brailleCell2');
 
         bottomCell2.className = 'unhighlighted-cell';
         bottomCell = bottomCell2;
@@ -846,11 +850,9 @@ Panel.closeMenusAndRestoreFocus = function() {
 
   var bkgnd = chrome.extension.getBackgroundPage();
   bkgnd.chrome.automation.getDesktop(function(desktop) {
-    onFocus = /** @type {function(chrome.automation.AutomationEvent)} */(
+    onFocus = /** @type {function(chrome.automation.AutomationEvent)} */ (
         onFocus.bind(this, desktop));
-    desktop.addEventListener(chrome.automation.EventType.FOCUS,
-                             onFocus,
-                             true);
+    desktop.addEventListener(chrome.automation.EventType.FOCUS, onFocus, true);
 
     // Make sure all menus are cleared to avoid bogous output when we re-open.
     Panel.clearMenus();

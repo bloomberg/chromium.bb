@@ -43,8 +43,8 @@ cvox.AbstractNodeWalker.prototype.next = function(sel) {
     return null;
   }
   do {
-    node = cvox.DomUtil.directedNextLeafLikeNode(node, r,
-        goog.bind(this.stopNodeDescent, this));
+    node = cvox.DomUtil.directedNextLeafLikeNode(
+        node, r, goog.bind(this.stopNodeDescent, this));
     if (!node) {
       return null;
     }
@@ -85,7 +85,7 @@ cvox.AbstractNodeWalker.prototype.privateSync_ = function(sel) {
   var node = sel.start.node;
 
   while (node != document.body && node.parentNode &&
-      this.stopNodeDescent(node.parentNode)) {
+         this.stopNodeDescent(node.parentNode)) {
     node = node.parentNode;
   }
 
@@ -96,7 +96,7 @@ cvox.AbstractNodeWalker.prototype.privateSync_ = function(sel) {
   var n = cvox.CursorSelection.fromNode(node);
   if (!cvox.DomUtil.hasContent(node)) {
     n = this.next(/** @type {!cvox.CursorSelection} */
-        (cvox.CursorSelection.fromNode(node)).setReversed(r));
+                  (cvox.CursorSelection.fromNode(node)).setReversed(r));
   }
   if (n) {
     return n.setReversed(r);

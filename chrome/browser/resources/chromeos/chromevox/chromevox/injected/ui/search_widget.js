@@ -52,7 +52,7 @@ cvox.SearchWidget = function() {
   /**
    * @type {boolean}
    * @private
-  */
+   */
   this.hasMatch_ = false;
   goog.base(this);
 };
@@ -118,33 +118,27 @@ cvox.SearchWidget.prototype.hide = function(opt_noSync) {
     this.active = false;
   }
 
-  cvox.$m('choice_widget_exited').
-      andPause().
-      andMessage(this.getNameMsg()).
-      speakFlush();
+  cvox.$m('choice_widget_exited')
+      .andPause()
+      .andMessage(this.getNameMsg())
+      .speakFlush();
 
   if (!this.hasMatch_ || !opt_noSync) {
-    cvox.ChromeVox.navigationManager.updateSelToArbitraryNode(
-        this.initialNode);
+    cvox.ChromeVox.navigationManager.updateSelToArbitraryNode(this.initialNode);
   }
   cvox.ChromeVoxEventSuspender.withSuspendedEvents(goog.bind(
       cvox.ChromeVox.navigationManager.syncAll,
       cvox.ChromeVox.navigationManager))(true);
   cvox.ChromeVox.navigationManager.speakDescriptionArray(
-      cvox.ChromeVox.navigationManager.getDescription(),
-      cvox.QueueMode.QUEUE,
-      null,
-      cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
+      cvox.ChromeVox.navigationManager.getDescription(), cvox.QueueMode.QUEUE,
+      null, cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
 
   // Update on Braille too.
   // TODO: Use line granularity in search so we can simply call
   // cvox.ChromeVox.navigationManager.getBraille().write() instead.
   var text = this.textFromCurrentDescription_();
-  cvox.ChromeVox.braille.write(new cvox.NavBraille({
-    text: text,
-    startIndex: 0,
-    endIndex: 0
-  }));
+  cvox.ChromeVox.braille.write(
+      new cvox.NavBraille({text: text, startIndex: 0, endIndex: 0}));
 
   goog.base(this, 'hide', true);
 };
@@ -174,7 +168,7 @@ cvox.SearchWidget.prototype.onKeyDown = function(evt) {
     return false;
   }
   var searchStr = this.txtNode_.value;
-  if (evt.keyCode == 8) { // Backspace
+  if (evt.keyCode == 8) {  // Backspace
     if (searchStr.length > 0) {
       searchStr = searchStr.substring(0, searchStr.length - 1);
       this.txtNode_.value = searchStr;
@@ -184,15 +178,15 @@ cvox.SearchWidget.prototype.onKeyDown = function(evt) {
           this.initialNode);
       cvox.ChromeVox.navigationManager.syncAll();
     }
-  } else if (evt.keyCode == 40) { // Down arrow
+  } else if (evt.keyCode == 40) {  // Down arrow
     this.next_(searchStr, false);
-  } else if (evt.keyCode == 38) { // Up arrow
+  } else if (evt.keyCode == 38) {  // Up arrow
     this.next_(searchStr, true);
-  } else if (evt.keyCode == 13) { // Enter
+  } else if (evt.keyCode == 13) {  // Enter
     this.hide(true);
-  } else if (evt.keyCode == 27) { // Escape
+  } else if (evt.keyCode == 27) {  // Escape
     this.hide(false);
-  } else if (evt.ctrlKey && evt.keyCode == 67) { // ctrl + c
+  } else if (evt.ctrlKey && evt.keyCode == 67) {  // ctrl + c
     this.toggleCaseSensitivity_();
   } else {
     return goog.base(this, 'onKeyDown', evt);
@@ -225,8 +219,7 @@ cvox.SearchWidget.prototype.onKeyPress = function(evt) {
  * Called when navigation occurs.
  * Override this method to react to navigation caused by user input.
  */
-cvox.SearchWidget.prototype.onNavigate = function() {
-};
+cvox.SearchWidget.prototype.onNavigate = function() {};
 
 
 /**
@@ -309,8 +302,7 @@ cvox.SearchWidget.prototype.createTextAreaNode_ = function() {
   textNode.style['color'] = '#fff';
   textNode.style['background-color'] = 'rgba(0, 0, 0, 0.7)';
   textNode.style['vertical-align'] = 'middle';
-  textNode.addEventListener('textInput',
-    this.handleSearchChanged_, false);
+  textNode.addEventListener('textInput', this.handleSearchChanged_, false);
   return textNode;
 };
 
@@ -323,13 +315,11 @@ cvox.SearchWidget.prototype.toggleCaseSensitivity_ = function() {
   if (this.caseSensitive_) {
     cvox.SearchWidget.caseSensitive_ = false;
     cvox.ChromeVox.tts.speak(
-        Msgs.getMsg('ignoring_case'),
-        cvox.QueueMode.FLUSH, null);
+        Msgs.getMsg('ignoring_case'), cvox.QueueMode.FLUSH, null);
   } else {
     this.caseSensitive_ = true;
     cvox.ChromeVox.tts.speak(
-        Msgs.getMsg('case_sensitive'),
-        cvox.QueueMode.FLUSH, null);
+        Msgs.getMsg('case_sensitive'), cvox.QueueMode.FLUSH, null);
   }
 };
 
@@ -363,14 +353,13 @@ cvox.SearchWidget.prototype.getNextResult_ = function(searchStr) {
     var descriptions = cvox.ChromeVox.navigationManager.getDescription();
     for (var i = 0; i < descriptions.length; i++) {
       var targetStr = this.caseSensitive_ ? descriptions[i].text :
-          descriptions[i].text.toLowerCase();
+                                            descriptions[i].text.toLowerCase();
       var targetIndex = targetStr.indexOf(searchStr);
 
       // Surround search hit with pauses.
       if (targetIndex != -1 && targetStr.length > searchStr.length) {
-        descriptions[i].text =
-            cvox.DomUtil.collapseWhitespace(
-                targetStr.substring(0, targetIndex)) +
+        descriptions[i].text = cvox.DomUtil.collapseWhitespace(
+                                   targetStr.substring(0, targetIndex)) +
             ', ' + searchStr + ', ' +
             targetStr.substring(targetIndex + searchStr.length);
         descriptions[i].text =
@@ -381,8 +370,8 @@ cvox.SearchWidget.prototype.getNextResult_ = function(searchStr) {
       }
     }
     cvox.ChromeVox.navigationManager.setReversed(r);
-  } while (cvox.ChromeVox.navigationManager.navigate(true,
-      cvox.NavigationShifter.GRANULARITIES.OBJECT));
+  } while (cvox.ChromeVox.navigationManager.navigate(
+      true, cvox.NavigationShifter.GRANULARITIES.OBJECT));
   return null;
 };
 
@@ -458,14 +447,12 @@ cvox.SearchWidget.prototype.outputSearchResult_ = function(result, searchStr) {
       cvox.ChromeVox.navigationManager))(true);
 
   cvox.ChromeVox.navigationManager.speakDescriptionArray(
-      result,
-      cvox.QueueMode.FLUSH,
-      null,
+      result, cvox.QueueMode.FLUSH, null,
       cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
 
-  cvox.ChromeVox.tts.speak(Msgs.getMsg('search_help_item'),
-                           cvox.QueueMode.QUEUE,
-                           cvox.AbstractTts.PERSONALITY_ANNOTATION);
+  cvox.ChromeVox.tts.speak(
+      Msgs.getMsg('search_help_item'), cvox.QueueMode.QUEUE,
+      cvox.AbstractTts.PERSONALITY_ANNOTATION);
 
   // Output to Braille.
   // TODO: Use line granularity in search so we can simply call
@@ -488,8 +475,7 @@ cvox.SearchWidget.prototype.outputSearchResultToBraille_ = function(searchStr) {
   // position to be at the end of search query string
   // (consistent with editing text in a field).
   var text = this.textFromCurrentDescription_();
-  var targetStr = this.caseSensitive_ ? text :
-          text.toLowerCase();
+  var targetStr = this.caseSensitive_ ? text : text.toLowerCase();
   searchStr = this.caseSensitive_ ? searchStr : searchStr.toLowerCase();
   var targetIndex = targetStr.indexOf(searchStr);
   if (targetIndex == -1) {

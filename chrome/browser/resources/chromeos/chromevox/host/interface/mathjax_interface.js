@@ -13,7 +13,7 @@ goog.provide('cvox.MathJaxInterface');
 /**
  * @interface
  */
-cvox.MathJaxInterface = function() { };
+cvox.MathJaxInterface = function() {};
 
 
 /**
@@ -21,7 +21,7 @@ cvox.MathJaxInterface = function() { };
  * @param {function(boolean)} callback A function with the active status as
  *    argument.
  */
-cvox.MathJaxInterface.prototype.isMathjaxActive = function(callback) { };
+cvox.MathJaxInterface.prototype.isMathjaxActive = function(callback) {};
 
 
 /**
@@ -30,7 +30,7 @@ cvox.MathJaxInterface.prototype.isMathjaxActive = function(callback) { };
  * @param {function(Node, string)} callback A function taking a node and an id
  * string.
  */
-cvox.MathJaxInterface.prototype.getAllJax = function(callback) { };
+cvox.MathJaxInterface.prototype.getAllJax = function(callback) {};
 
 
 /**
@@ -40,20 +40,20 @@ cvox.MathJaxInterface.prototype.getAllJax = function(callback) { };
  * string.
  * @param {string} signal The Mathjax signal to fire the callback.
  */
-cvox.MathJaxInterface.prototype.registerSignal = function(callback, signal) { };
+cvox.MathJaxInterface.prototype.registerSignal = function(callback, signal) {};
 
 
 /**
  * Injects some minimalistic MathJax script into the page to translate LaTeX
  * expressions.
  */
-cvox.MathJaxInterface.prototype.injectScripts = function() { };
+cvox.MathJaxInterface.prototype.injectScripts = function() {};
 
 
 /**
  * Loads configurations for MediaWiki pages (e.g., Wikipedia).
  */
-cvox.MathJaxInterface.prototype.configMediaWiki = function() { };
+cvox.MathJaxInterface.prototype.configMediaWiki = function() {};
 
 
 /**
@@ -63,7 +63,7 @@ cvox.MathJaxInterface.prototype.configMediaWiki = function() { };
  * an id string.
  * @param {Node} texNode Node with img tag and tex or latex class.
  */
-cvox.MathJaxInterface.prototype.getTex = function(callback, texNode) { };
+cvox.MathJaxInterface.prototype.getTex = function(callback, texNode) {};
 
 
 /**
@@ -74,4 +74,4 @@ cvox.MathJaxInterface.prototype.getTex = function(callback, texNode) { };
  *     inlineformula, or displayformula.
  */
 cvox.MathJaxInterface.prototype.getAsciiMath = function(
-    callback, asciiMathNode) { };
+    callback, asciiMathNode) {};

@@ -10,8 +10,7 @@
 goog.provide('cvox.SearchUtil');
 
 /** Utility functions. */
-cvox.SearchUtil = function() {
-};
+cvox.SearchUtil = function() {};
 
 /**
  * Extracts the first URL from an element.
@@ -156,29 +155,35 @@ cvox.SearchUtil.clickElem = function(
   // Send a mousedown (or simply a double click if requested).
   var evt = document.createEvent('MouseEvents');
   var evtType = opt_double ? 'dblclick' : 'mousedown';
-  evt.initMouseEvent(evtType, true, true, document.defaultView,
-                     1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
+  evt.initMouseEvent(
+      evtType, true, true, document.defaultView, 1, 0, 0, 0, 0, false, false,
+      shiftKey, false, 0, null);
   // Mark any events we generate so we don't try to process our own events.
   evt.fromCvox = true;
   try {
     targetNode.dispatchEvent(evt);
-  } catch (e) {}
-  //Send a mouse up
+  } catch (e) {
+  }
+  // Send a mouse up
   evt = document.createEvent('MouseEvents');
-  evt.initMouseEvent('mouseup', true, true, document.defaultView,
-                     1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
+  evt.initMouseEvent(
+      'mouseup', true, true, document.defaultView, 1, 0, 0, 0, 0, false, false,
+      shiftKey, false, 0, null);
   // Mark any events we generate so we don't try to process our own events.
   evt.fromCvox = true;
   try {
     targetNode.dispatchEvent(evt);
-  } catch (e) {}
-  //Send a click
+  } catch (e) {
+  }
+  // Send a click
   evt = document.createEvent('MouseEvents');
-  evt.initMouseEvent('click', true, true, document.defaultView,
-                     1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
+  evt.initMouseEvent(
+      'click', true, true, document.defaultView, 1, 0, 0, 0, 0, false, false,
+      shiftKey, false, 0, null);
   // Mark any events we generate so we don't try to process our own events.
   evt.fromCvox = true;
   try {
     targetNode.dispatchEvent(evt);
-  } catch (e) {}
+  } catch (e) {
+  }
 };

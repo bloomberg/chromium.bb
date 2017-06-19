@@ -121,10 +121,9 @@ cvox.DomPredicates.comboBoxPredicate = function(nodes) {
 cvox.DomPredicates.editTextPredicate = function(nodes) {
   for (var i = 0; i < nodes.length; i++) {
     if ((nodes[i].getAttribute && nodes[i].getAttribute('role') == 'textbox') ||
-        nodes[i].tagName == 'TEXTAREA' ||
-        nodes[i].isContentEditable ||
+        nodes[i].tagName == 'TEXTAREA' || nodes[i].isContentEditable ||
         (nodes[i].tagName == 'INPUT' &&
-        cvox.DomUtil.isInputTypeText(nodes[i]))) {
+         cvox.DomUtil.isInputTypeText(nodes[i]))) {
       return nodes[i];
     }
   }
@@ -139,8 +138,7 @@ cvox.DomPredicates.editTextPredicate = function(nodes) {
  */
 cvox.DomPredicates.headingPredicate = function(nodes) {
   for (var i = 0; i < nodes.length; i++) {
-    if (nodes[i].getAttribute &&
-        nodes[i].getAttribute('role') == 'heading') {
+    if (nodes[i].getAttribute && nodes[i].getAttribute('role') == 'heading') {
       return nodes[i];
     }
     switch (nodes[i].tagName) {
@@ -257,8 +255,7 @@ cvox.DomPredicates.tablePredicate = function(nodes) {
 cvox.DomPredicates.cellPredicate = function(nodes) {
   for (var i = nodes.length - 1; i >= 0; --i) {
     var node = nodes[i];
-    if (node.tagName == 'TD' ||
-        node.tagName == 'TH' ||
+    if (node.tagName == 'TD' || node.tagName == 'TH' ||
         (node.getAttribute && node.getAttribute('role') == 'gridcell')) {
       return node;
     }
@@ -291,8 +288,7 @@ cvox.DomPredicates.visitedLinkPredicate = function(nodes) {
 cvox.DomPredicates.listPredicate = function(nodes) {
   for (var i = 0; i < nodes.length; i++) {
     if ((nodes[i].getAttribute && nodes[i].getAttribute('role') == 'list') ||
-        nodes[i].tagName == 'UL' ||
-        nodes[i].tagName == 'OL') {
+        nodes[i].tagName == 'UL' || nodes[i].tagName == 'OL') {
       return nodes[i];
     }
   }
@@ -397,8 +393,7 @@ cvox.DomPredicates.sectionPredicate = function(nodes) {
     if (cvox.AriaUtil.isLandmark(nodes[i])) {
       return nodes[i];
     }
-    if (nodes[i].getAttribute &&
-        nodes[i].getAttribute('role') == 'heading') {
+    if (nodes[i].getAttribute && nodes[i].getAttribute('role') == 'heading') {
       return nodes[i];
     }
     switch (nodes[i].tagName) {
@@ -454,8 +449,7 @@ cvox.DomPredicates.captionPredicate = function(nodes) {
  */
 cvox.DomPredicates.articlePredicate = function(nodes) {
   for (var i = 0; i < nodes.length; i++) {
-    if ((nodes[i].getAttribute &&
-            nodes[i].getAttribute('role') == 'article') ||
+    if ((nodes[i].getAttribute && nodes[i].getAttribute('role') == 'article') ||
         nodes[i].tagName == 'ARTICLE') {
       return nodes[i];
     }
@@ -470,8 +464,7 @@ cvox.DomPredicates.articlePredicate = function(nodes) {
  */
 cvox.DomPredicates.mediaPredicate = function(nodes) {
   for (var i = 0; i < nodes.length; i++) {
-    if (nodes[i].tagName == 'AUDIO' ||
-        nodes[i].tagName == 'VIDEO') {
+    if (nodes[i].tagName == 'AUDIO' || nodes[i].tagName == 'VIDEO') {
       return nodes[i];
     }
   }

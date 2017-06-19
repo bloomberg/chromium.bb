@@ -84,11 +84,7 @@ cvox.BrailleKeyEvent.keyCodeToLegacyCode = function(code) {
  */
 cvox.BrailleKeyEvent.keyCodeToCharValue = function(keyCode) {
   /** @const */
-  var SPECIAL_CODES = {
-    'Backspace': 0x08,
-    'Tab': 0x09,
-    'Enter': 0x0A
-  };
+  var SPECIAL_CODES = {'Backspace': 0x08, 'Tab': 0x09, 'Enter': 0x0A};
   // Note, the Chrome virtual keyboard falls back on the first character of the
   // key code if the key is not one of the above.  Do the same here.
   return SPECIAL_CODES[keyCode] || keyCode.charCodeAt(0);
@@ -201,20 +197,20 @@ cvox.BrailleKeyEvent.legacyKeyCodeMap_ = {
 };
 
 (function() {
-  // Add 0-9.
-  for (var i = '0'.charCodeAt(0); i < '9'.charCodeAt(0); ++i) {
-    cvox.BrailleKeyEvent.legacyKeyCodeMap_[String.fromCharCode(i)] = i;
-  }
+// Add 0-9.
+for (var i = '0'.charCodeAt(0); i < '9'.charCodeAt(0); ++i) {
+  cvox.BrailleKeyEvent.legacyKeyCodeMap_[String.fromCharCode(i)] = i;
+}
 
-  // Add A-Z.
-  for (var i = 'A'.charCodeAt(0); i < 'Z'.charCodeAt(0); ++i) {
-    cvox.BrailleKeyEvent.legacyKeyCodeMap_[String.fromCharCode(i)] = i;
-  }
+// Add A-Z.
+for (var i = 'A'.charCodeAt(0); i < 'Z'.charCodeAt(0); ++i) {
+  cvox.BrailleKeyEvent.legacyKeyCodeMap_[String.fromCharCode(i)] = i;
+}
 
-  // Add the F1 to F12 keys.
-  for (var i = 0; i < 12; ++i) {
-    cvox.BrailleKeyEvent.legacyKeyCodeMap_['F' + (i + 1)] = 112 + i;
-  }
+// Add the F1 to F12 keys.
+for (var i = 0; i < 12; ++i) {
+  cvox.BrailleKeyEvent.legacyKeyCodeMap_['F' + (i + 1)] = 112 + i;
+}
 })();
 
 

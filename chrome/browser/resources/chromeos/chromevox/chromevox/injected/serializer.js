@@ -15,7 +15,7 @@ goog.require('cvox.ChromeVoxEventWatcher');
 /**
  * @constructor
  */
-cvox.Serializer = function() { };
+cvox.Serializer = function() {};
 
 /**
  * Stores state variables in a provided object.

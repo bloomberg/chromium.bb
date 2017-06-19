@@ -44,8 +44,8 @@ cvox.DescriptionUtil.COLLECTION_NODE_TYPE = {
  * itself and its surrounding control if it has one.
  * @return {cvox.NavDescription} The description of the control.
  */
-cvox.DescriptionUtil.getControlDescription =
-    function(control, opt_changedAncestors) {
+cvox.DescriptionUtil.getControlDescription = function(
+    control, opt_changedAncestors) {
   var ancestors = [control];
   if (opt_changedAncestors && (opt_changedAncestors.length > 0)) {
     ancestors = opt_changedAncestors;
@@ -145,8 +145,8 @@ cvox.DescriptionUtil.getDescriptionFromAncestors = function(
       // it for larger ancestry changes.
       if (context.length > 0 ||
           (annotation.length > 0 && node.childElementCount > 1)) {
-        context = roleText + ' ' + cvox.DomUtil.getState(node, false) +
-                  ' ' + context;
+        context =
+            roleText + ' ' + cvox.DomUtil.getState(node, false) + ' ' + context;
       } else {
         if (annotation.length > 0) {
           annotation +=
@@ -185,25 +185,24 @@ cvox.DescriptionUtil.getDescriptionFromAncestors = function(
  * @return {!Array<cvox.NavDescription>} The description of the navigation
  * action.
  */
-cvox.DescriptionUtil.getDescriptionFromNavigation =
-    function(prevNode, node, recursive, verbosity) {
+cvox.DescriptionUtil.getDescriptionFromNavigation = function(
+    prevNode, node, recursive, verbosity) {
   if (!prevNode || !node) {
     return [];
   }
 
   // Specialized math descriptions.
-  if (cvox.DomUtil.isMath(node) &&
-      !cvox.AriaUtil.isMath(node)) {
+  if (cvox.DomUtil.isMath(node) && !cvox.AriaUtil.isMath(node)) {
     return cvox.DescriptionUtil.getMathDescription(node);
   }
 
   // Next, check to see if the current node is a collection type.
   if (cvox.DescriptionUtil.COLLECTION_NODE_TYPE[node.tagName]) {
     return cvox.DescriptionUtil.getCollectionDescription(
-        /** @type {!cvox.CursorSelection} */(
+        /** @type {!cvox.CursorSelection} */ (
             cvox.CursorSelection.fromNode(prevNode)),
-        /** @type {!cvox.CursorSelection} */(
-            cvox.CursorSelection.fromNode(node)));
+        /** @type {!cvox.CursorSelection} */
+        (cvox.CursorSelection.fromNode(node)));
   }
 
   // Now, generate a description for all other elements.
@@ -215,8 +214,7 @@ cvox.DescriptionUtil.getDescriptionFromNavigation =
     var prevDesc = cvox.DescriptionUtil.getDescriptionFromAncestors(
         prevAncestors, recursive, verbosity);
     if (prevDesc.context && !desc.context) {
-      desc.context =
-          Msgs.getMsg('exited_container', [prevDesc.context]);
+      desc.context = Msgs.getMsg('exited_container', [prevDesc.context]);
     }
   }
   return [desc];
@@ -276,8 +274,7 @@ cvox.DescriptionUtil.getRawDescriptions_ = function(prevSel, sel) {
   while (cvox.DomUtil.isDescendantOfNode(node, sel.start.node)) {
     var ancestors = cvox.DomUtil.getUniqueAncestors(prevNode, node);
     // Specialized math descriptions.
-    if (cvox.DomUtil.isMath(node) &&
-        !cvox.AriaUtil.isMath(node)) {
+    if (cvox.DomUtil.isMath(node) && !cvox.AriaUtil.isMath(node)) {
       descriptions =
           descriptions.concat(cvox.DescriptionUtil.getMathDescription(node));
     } else {
@@ -305,8 +302,8 @@ cvox.DescriptionUtil.getRawDescriptions_ = function(prevSel, sel) {
  * @param {!Node} node The target element.
  * @return {!Array<!cvox.NavDescription>} The descriptions.
  */
-cvox.DescriptionUtil.getFullDescriptionsFromChildren =
-    function(prevnode, node) {
+cvox.DescriptionUtil.getFullDescriptionsFromChildren = function(
+    prevnode, node) {
   var descriptions = [];
   if (!node) {
     return descriptions;
@@ -362,10 +359,8 @@ cvox.DescriptionUtil.insertCollectionDescription_ = function(descriptions) {
   // <annotation> collection with <n> items. Currently only enabled
   // for links, but support should be added for any other type that
   // makes sense.
-  if (descriptions.length >= 3 &&
-      descriptions[0].context.length == 0 &&
-      annotations.length == 1 &&
-      annotations[0].length > 0 &&
+  if (descriptions.length >= 3 && descriptions[0].context.length == 0 &&
+      annotations.length == 1 && annotations[0].length > 0 &&
       cvox.DescriptionUtil.isAnnotationCollection_(annotations[0])) {
     var commonAnnotation = annotations[0];
     var firstContext = descriptions[0].context;
@@ -379,8 +374,7 @@ cvox.DescriptionUtil.insertCollectionDescription_ = function(descriptions) {
       text: '',
       annotation: Msgs.getMsg(
           'collection',
-          [commonAnnotation,
-           Msgs.getNumber(descriptions.length)])
+          [commonAnnotation, Msgs.getNumber(descriptions.length)])
     }));
   }
 };

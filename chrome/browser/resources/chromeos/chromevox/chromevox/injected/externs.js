@@ -17,7 +17,7 @@ MathJax.Callback;
  * @param {Array<*>} args
  * @param {string} err
  */
-MathJax.Callback.After = function(args, err) { };
+MathJax.Callback.After = function(args, err) {};
 
 
 /**
@@ -40,11 +40,11 @@ MathJax.RootElement.prototype;
 /**
  * @param {string} name
  */
-MathJax.RootElement.prototype.toMathML = function(name) { };
+MathJax.RootElement.prototype.toMathML = function(name) {};
 
 /**
  */
-MathJax.RootElement.prototype.toMathMLattributes = function() { };
+MathJax.RootElement.prototype.toMathMLattributes = function() {};
 
 
 /**
@@ -55,11 +55,11 @@ MathJax.Hub;
 /**
  * @param {string} id
  */
-MathJax.Hub.getJaxFor = function(id) { };
+MathJax.Hub.getJaxFor = function(id) {};
 
 /**
  */
-MathJax.Hub.getAllJax = function() { };
+MathJax.Hub.getAllJax = function() {};
 
 /**
  * @type {{PreProcessor: Function,
@@ -88,7 +88,7 @@ MathJax.ElementJax.prototype.mml;
 /**
  * @param {?string} mml MathML expression.
  */
-MathJax.ElementJax.mml = function(mml) { };
+MathJax.ElementJax.mml = function(mml) {};
 
 
 /**
@@ -108,7 +108,7 @@ MathJax.ElementJax.mml.mfenced.prototype;
 /**
  * @param {string} err
  */
-MathJax.ElementJax.mml.merror = function(err) { };
+MathJax.ElementJax.mml.merror = function(err) {};
 
 
 /**
@@ -143,7 +143,7 @@ MathJax.HTML;
  * @param {Object<string>} attribs
  * @param {Array<string>} text
  */
-MathJax.HTML.Element = function(tag, attribs, text) { };
+MathJax.HTML.Element = function(tag, attribs, text) {};
 
 
 /**

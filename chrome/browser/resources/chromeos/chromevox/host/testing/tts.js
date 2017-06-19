@@ -37,15 +37,13 @@ cvox.TestTts.prototype.sentinelText_ = '@@@STOP@@@';
  * @override
  */
 cvox.TestTts.prototype.speak = function(text, queueMode, opt_properties) {
-  this.utterances_.push({text: text,
-                         queueMode: queueMode,
-                         properties: opt_properties});
+  this.utterances_.push(
+      {text: text, queueMode: queueMode, properties: opt_properties});
   if (opt_properties && opt_properties['endCallback'] != undefined) {
     var len = this.utterances_.length;
     // 'After' is a sentinel value in the tests that tells TTS to stop and
     // ends callbacks being called.
-    if (this.utterances_[len - 1].text !=
-        this.sentinelText_) {
+    if (this.utterances_[len - 1].text != this.sentinelText_) {
       opt_properties['endCallback']();
     }
   }
@@ -105,15 +103,17 @@ cvox.TestTts.prototype.getSpeechQueueOutput = function() {
       case cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH:
         queue = queue.filter(function(u) {
           return (utterance.properties && utterance.properties.category) &&
-                 (!u.properties ||
-                      u.properties.category != utterance.properties.category);
+              (!u.properties ||
+               u.properties.category != utterance.properties.category);
         });
         break;
     }
     queue.push(utterance);
   }
 
-  return queue.map(function(u) { return u.text; });
+  return queue.map(function(u) {
+    return u.text;
+  });
 };
 
 /**

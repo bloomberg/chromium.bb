@@ -51,8 +51,7 @@ Msgs.getMsg = function(messageId, opt_subs) {
   var message = Msgs.Untranslated[messageId.toUpperCase()];
   if (message !== undefined)
     return Msgs.applySubstitutions_(message, opt_subs);
-  message = chrome.i18n.getMessage(
-      Msgs.NAMESPACE_ + messageId, opt_subs);
+  message = chrome.i18n.getMessage(Msgs.NAMESPACE_ + messageId, opt_subs);
   if (message == undefined || message == '') {
     throw new Error('Invalid ChromeVox message id: ' + messageId);
   }
@@ -105,8 +104,8 @@ Msgs.getNumber = function(num) {
  */
 Msgs.getLocaleDisplayName = function(locale) {
   if (!Msgs.localeNameDict_) {
-    Msgs.localeNameDict_ = /** @type {!Object<string>} */(
-        JSON.parse(this.getMsg('locale_dict')));
+    Msgs.localeNameDict_ =
+        /** @type {!Object<string>} */ (JSON.parse(this.getMsg('locale_dict')));
   }
   var name = Msgs.localeNameDict_[locale];
   if (!name) {

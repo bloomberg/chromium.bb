@@ -74,11 +74,12 @@ cvox.LibLouis.prototype.attachToElement = function(elem) {
   if (!goog.isNull(this.tablesDir_)) {
     embed.setAttribute('tablesdir', this.tablesDir_);
   }
-  embed.addEventListener('load', goog.bind(this.onInstanceLoad_, this),
-      false /* useCapture */);
-  embed.addEventListener('error', goog.bind(this.onInstanceError_, this),
-      false /* useCapture */);
-  embed.addEventListener('message', goog.bind(this.onInstanceMessage_, this),
+  embed.addEventListener(
+      'load', goog.bind(this.onInstanceLoad_, this), false /* useCapture */);
+  embed.addEventListener(
+      'error', goog.bind(this.onInstanceError_, this), false /* useCapture */);
+  embed.addEventListener(
+      'message', goog.bind(this.onInstanceMessage_, this),
       false /* useCapture */);
   elem.appendChild(embed);
   this.embedElement_ = /** @type {!HTMLEmbedElement} */ (embed);
@@ -124,7 +125,7 @@ cvox.LibLouis.prototype.getTranslator = function(tableNames, callback) {
     callback(null /* translator */);
     return;
   }
-  this.rpc_('CheckTable', { 'table_names': tableNames }, function(reply) {
+  this.rpc_('CheckTable', {'table_names': tableNames}, function(reply) {
     if (reply['success']) {
       var translator = new cvox.LibLouis.Translator(this, tableNames);
       callback(translator);
@@ -143,8 +144,7 @@ cvox.LibLouis.prototype.getTranslator = function(tableNames, callback) {
  * @param {function(!Object)} callback Callback to receive the reply.
  * @private
  */
-cvox.LibLouis.prototype.rpc_ =
-    function(command, message, callback) {
+cvox.LibLouis.prototype.rpc_ = function(command, message, callback) {
   if (!this.isAttached()) {
     throw Error('Cannot send RPC: liblouis instance not loaded');
   }
@@ -193,8 +193,8 @@ cvox.LibLouis.prototype.onInstanceMessage_ = function(e) {
   var message = /** @type {!Object} */ (JSON.parse(e.data));
   var messageId = message['in_reply_to'];
   if (!goog.isDef(messageId)) {
-    window.console.warn('liblouis Native Client module sent message with no ID',
-        message);
+    window.console.warn(
+        'liblouis Native Client module sent message with no ID', message);
     return;
   }
   if (goog.isDef(message['error'])) {
@@ -244,7 +244,7 @@ cvox.LibLouis.Translator.prototype.translate = function(text, callback) {
     callback(null /*cells*/, null /*textToBraille*/, null /*brailleToText*/);
     return;
   }
-  var message = { 'table_names': this.tableNames_, 'text': text };
+  var message = {'table_names': this.tableNames_, 'text': text};
   this.instance_.rpc_('Translate', message, function(reply) {
     var cells = null;
     var textToBraille = null;
@@ -272,8 +272,7 @@ cvox.LibLouis.Translator.prototype.translate = function(text, callback) {
  * @param {!ArrayBuffer} cells Cells to be translated.
  * @param {function(?string)} callback Callback for result.
  */
-cvox.LibLouis.Translator.prototype.backTranslate =
-    function(cells, callback) {
+cvox.LibLouis.Translator.prototype.backTranslate = function(cells, callback) {
   if (!this.instance_.isAttached()) {
     callback(null /*text*/);
     return;

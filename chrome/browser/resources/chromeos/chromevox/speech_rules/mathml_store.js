@@ -39,6 +39,6 @@ cvox.MathmlStore.prototype.defineMathmlRule = function(name, domain, rule) {
  * @param {string} name Rule name which corresponds to the MathML tag name.
  * @param {string} rule String version of the speech rule.
  */
-cvox.MathmlStore.prototype.defineDefaultMathmlRule = function(name,  rule) {
+cvox.MathmlStore.prototype.defineDefaultMathmlRule = function(name, rule) {
   this.defineRule(name, 'default.default', rule, 'self::mathml:' + name);
 };

@@ -10,9 +10,8 @@ goog.provide('cvox.InjectedScriptLoader');
 
 
 
-
 /** @constructor */
-cvox.InjectedScriptLoader = function() { };
+cvox.InjectedScriptLoader = function() {};
 
 
 /**
@@ -41,8 +40,8 @@ cvox.InjectedScriptLoader.fetchCode = function(files, done) {
         var debugSrc = src.replace('closure/../', '');
         // The 'chromevox' id is only used in the DevTools instead of a long
         // extension id.
-        scriptText += '\n//# sourceURL= chrome-extension://chromevox/' +
-            debugSrc + '\n';
+        scriptText +=
+            '\n//# sourceURL= chrome-extension://chromevox/' + debugSrc + '\n';
         code[src] = scriptText;
         waiting--;
         if (waiting == 0) {
@@ -54,5 +53,7 @@ cvox.InjectedScriptLoader.fetchCode = function(files, done) {
     xhr.send(null);
   };
 
-  files.forEach(function(f) { loadScriptAsCode(f); });
+  files.forEach(function(f) {
+    loadScriptAsCode(f);
+  });
 };

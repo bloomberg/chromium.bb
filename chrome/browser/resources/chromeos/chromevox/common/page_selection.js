@@ -39,8 +39,8 @@ cvox.PageSelection = function(sel) {
  * @param {!cvox.CursorSelection} curSel Current CursorSelection in navigation.
  * @return {Array<cvox.NavDescription>} The new description.
  */
-cvox.PageSelection.prototype.getDescription =
-    function(navShifter, prevSel, curSel) {
+cvox.PageSelection.prototype.getDescription = function(
+    navShifter, prevSel, curSel) {
   var desc = [];
   if (this.sel_.isReversed() != curSel.isReversed()) {
     // A shrinking selection.
@@ -55,8 +55,7 @@ cvox.PageSelection.prototype.getDescription =
     if (!this.wasBegin_ && this.sel_.absEquals(curSel.clone().normalize())) {
       // A selection has inverted across the start cursor. Describe it.
       var prevDesc = navShifter.getDescription(curSel, prevSel);
-      prevDesc[0].annotation =
-          Msgs.getMsg('describe_unselected');
+      prevDesc[0].annotation = Msgs.getMsg('describe_unselected');
       prevDesc[0].pushEarcon(cvox.Earcon.SELECTION_REVERSE);
       prevDesc[0].pushEarcon(cvox.Earcon.WRAP);
       desc = prevDesc.concat(desc);
@@ -74,9 +73,10 @@ cvox.PageSelection.prototype.getDescription =
  * @return {Array<cvox.NavDescription>} The new description.
  */
 cvox.PageSelection.prototype.getFullDescription = function() {
-  return [new cvox.NavDescription(
-      {text: window.getSelection().toString(),
-       context: Msgs.getMsg('selection_is')})];
+  return [new cvox.NavDescription({
+    text: window.getSelection().toString(),
+    context: Msgs.getMsg('selection_is')
+  })];
 };
 
 
@@ -99,7 +99,8 @@ cvox.PageSelection.prototype.extend = function(sel) {
     // PageSelection to the end of "sel". In the second case, shrink/extend this
     // PageSelection to the start of "sel".
     this.sel_.end = this.sel_.isReversed() == sel.isReversed() ?
-        sel.end.clone() : sel.start.clone();
+        sel.end.clone() :
+        sel.start.clone();
   }
   this.sel_.select();
   this.wasBegin_ = false;

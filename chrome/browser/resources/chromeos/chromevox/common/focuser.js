@@ -73,15 +73,14 @@ cvox.Focuser.setFocus = function(targetNode, opt_focusDescendants) {
           targetNode.focus();
           cvox.ChromeVoxEventSuspender.exitSuspendEvents();
         }, 0);
-      }
-      else {
+      } else {
         window.setTimeout(function() {
-            targetNode.focus();
+          targetNode.focus();
         }, 0);
       }
     }
-  } else if (document.activeElement &&
-             document.activeElement.tagName != 'BODY') {
+  } else if (
+      document.activeElement && document.activeElement.tagName != 'BODY') {
     document.activeElement.blur();
   }
 
@@ -103,7 +102,7 @@ cvox.Focuser.setFocus = function(targetNode, opt_focusDescendants) {
  * @param {Node} targetNode The node that is being focused.
  * @return {boolean} True if enterSuspendEvents should be called.
  */
-cvox.Focuser.shouldEnterSuspendEvents_ = function(targetNode){
+cvox.Focuser.shouldEnterSuspendEvents_ = function(targetNode) {
   if (targetNode.constructor && targetNode.constructor == HTMLVideoElement) {
     return false;
   }

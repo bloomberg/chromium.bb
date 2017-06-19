@@ -35,8 +35,7 @@ goog.require('cvox.TtsBackground');
  * interprets them.
  * @constructor
  */
-cvox.ChromeVoxBackground = function() {
-};
+cvox.ChromeVoxBackground = function() {};
 
 
 /**
@@ -47,8 +46,8 @@ cvox.ChromeVoxBackground = function() {
 cvox.ChromeVoxBackground.setPref = function(pref, value, announce) {
   if (pref == 'active' && value != cvox.ChromeVox.isActive) {
     if (cvox.ChromeVox.isActive) {
-      cvox.ChromeVox.tts.speak(Msgs.getMsg('chromevox_inactive'),
-                               cvox.QueueMode.FLUSH);
+      cvox.ChromeVox.tts.speak(
+          Msgs.getMsg('chromevox_inactive'), cvox.QueueMode.FLUSH);
       chrome.accessibilityPrivate.setNativeAccessibilityEnabled(true);
     } else {
       chrome.accessibilityPrivate.setNativeAccessibilityEnabled(false);
@@ -57,12 +56,11 @@ cvox.ChromeVoxBackground.setPref = function(pref, value, announce) {
     cvox.AbstractEarcons.enabled = !!value;
   } else if (pref == 'sticky' && announce) {
     if (value) {
-      cvox.ChromeVox.tts.speak(Msgs.getMsg('sticky_mode_enabled'),
-                               cvox.QueueMode.FLUSH);
+      cvox.ChromeVox.tts.speak(
+          Msgs.getMsg('sticky_mode_enabled'), cvox.QueueMode.FLUSH);
     } else {
       cvox.ChromeVox.tts.speak(
-          Msgs.getMsg('sticky_mode_disabled'),
-          cvox.QueueMode.FLUSH);
+          Msgs.getMsg('sticky_mode_disabled'), cvox.QueueMode.FLUSH);
     }
   } else if (pref == 'typingEcho' && announce) {
     var announceStr = '';
@@ -89,8 +87,8 @@ cvox.ChromeVoxBackground.setPref = function(pref, value, announce) {
     cvox.BrailleCaptionsBackground.setActive(!!value);
   } else if (pref == 'position') {
     cvox.ChromeVox.position =
-        /** @type {Object<string, cvox.Point>} */(JSON.parse(
-            /** @type {string} */(value)));
+        /** @type {Object<string, cvox.Point>} */ (JSON.parse(
+            /** @type {string} */ (value)));
   }
   window['prefs'].setPref(pref, value);
   cvox.ChromeVoxBackground.readPrefs();
@@ -143,9 +141,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
   /**
    * @type {cvox.TtsInterface}
    */
-  this.tts = new cvox.CompositeTts()
-      .add(this.backgroundTts_)
-      .add(consoleTts);
+  this.tts = new cvox.CompositeTts().add(this.backgroundTts_).add(consoleTts);
 
   this.addBridgeListener();
 
@@ -172,18 +168,15 @@ cvox.ChromeVoxBackground.prototype.init = function() {
 
   // Set up a message passing system for goog.provide() calls from
   // within the content scripts.
-  chrome.extension.onMessage.addListener(
-      function(request, sender, callback) {
-        if (request['srcFile']) {
-          var srcFile = request['srcFile'];
-          cvox.InjectedScriptLoader.fetchCode(
-              [srcFile],
-              function(code) {
-                callback({'code': code[srcFile]});
-              });
-        }
-        return true;
+  chrome.extension.onMessage.addListener(function(request, sender, callback) {
+    if (request['srcFile']) {
+      var srcFile = request['srcFile'];
+      cvox.InjectedScriptLoader.fetchCode([srcFile], function(code) {
+        callback({'code': code[srcFile]});
       });
+    }
+    return true;
+  });
 
   var self = this;
 
@@ -197,14 +190,12 @@ cvox.ChromeVoxBackground.prototype.init = function() {
 
   if (localStorage['active'] == 'false') {
     // Warn the user when the browser first starts if ChromeVox is inactive.
-    this.tts.speak(Msgs.getMsg('chromevox_inactive'),
-                   cvox.QueueMode.QUEUE);
+    this.tts.speak(Msgs.getMsg('chromevox_inactive'), cvox.QueueMode.QUEUE);
   } else if (cvox.PlatformUtil.matchesPlatform(cvox.PlatformFilter.WML)) {
     // Introductory message.
-    this.tts.speak(Msgs.getMsg('chromevox_intro'),
-                   cvox.QueueMode.QUEUE);
-    cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(
-        Msgs.getMsg('intro_brl')));
+    this.tts.speak(Msgs.getMsg('chromevox_intro'), cvox.QueueMode.QUEUE);
+    cvox.ChromeVox.braille.write(
+        cvox.NavBraille.fromText(Msgs.getMsg('intro_brl')));
   }
 };
 
@@ -222,10 +213,9 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
     listOfFiles = ['chromeVoxChromePageScript.js'];
   } else {
     listOfFiles = [
-        'closure/closure_preinit.js',
-        'closure/base.js',
-        'deps.js',
-        'chromevox/injected/loader.js'];
+      'closure/closure_preinit.js', 'closure/base.js', 'deps.js',
+      'chromevox/injected/loader.js'
+    ];
   }
 
   var stageTwo = function(code) {
@@ -239,10 +229,7 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
        */
       var executeScript = goog.bind(function(code) {
         chrome.tabs.executeScript(
-            tab.id,
-            {'code': code,
-             'allFrames': true},
-            goog.bind(function() {
+            tab.id, {'code': code, 'allFrames': true}, goog.bind(function() {
               if (!chrome.extension.lastError) {
                 return;
               }
@@ -251,8 +238,9 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
               }
               sawError = true;
               console.error('Could not inject into tab', tab);
-              this.tts.speak('Error starting ChromeVox for ' +
-                  tab.title + ', ' + tab.url, cvox.QueueMode.QUEUE);
+              this.tts.speak(
+                  'Error starting ChromeVox for ' + tab.title + ', ' + tab.url,
+                  cvox.QueueMode.QUEUE);
             }, this));
       }, this);
 
@@ -268,12 +256,15 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
       //
       // Also, set some variables so that Closure deps work correctly and so
       // that ChromeVox knows not to announce feedback as if a page just loaded.
-      executeScript('try { window.disableChromeVox(); } catch(e) { }\n' +
+      executeScript(
+          'try { window.disableChromeVox(); } catch(e) { }\n' +
           'window.INJECTED_AFTER_LOAD = true;\n' +
           'window.CLOSURE_NO_DEPS = true\n');
 
       // Now inject the ChromeVox content script code into the tab.
-      listOfFiles.forEach(function(file) { executeScript(code[file]); });
+      listOfFiles.forEach(function(file) {
+        executeScript(code[file]);
+      });
     }
   };
 
@@ -290,41 +281,38 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
  */
 cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
   if (msg['action'] == 'speak') {
-    this.tts.speak(msg['text'],
-                   /** cvox.QueueMode */msg['queueMode'],
-                   msg['properties']);
+    this.tts.speak(
+        msg['text'],
+        /** cvox.QueueMode */ msg['queueMode'], msg['properties']);
   } else if (msg['action'] == 'stop') {
     this.tts.stop();
   } else if (msg['action'] == 'increaseOrDecrease') {
     this.tts.increaseOrDecreaseProperty(msg['property'], msg['increase']);
     var property = msg['property'];
     var engine = this.backgroundTts_;
-    var valueAsPercent = Math.round(
-        this.backgroundTts_.propertyToPercentage(property) * 100);
+    var valueAsPercent =
+        Math.round(this.backgroundTts_.propertyToPercentage(property) * 100);
     var announcement;
     switch (msg['property']) {
-    case cvox.AbstractTts.RATE:
-      announcement = Msgs.getMsg('announce_rate',
-                                                [valueAsPercent]);
-      break;
-    case cvox.AbstractTts.PITCH:
-      announcement = Msgs.getMsg('announce_pitch',
-                                                [valueAsPercent]);
-      break;
-    case cvox.AbstractTts.VOLUME:
-      announcement = Msgs.getMsg('announce_volume',
-                                                [valueAsPercent]);
-      break;
+      case cvox.AbstractTts.RATE:
+        announcement = Msgs.getMsg('announce_rate', [valueAsPercent]);
+        break;
+      case cvox.AbstractTts.PITCH:
+        announcement = Msgs.getMsg('announce_pitch', [valueAsPercent]);
+        break;
+      case cvox.AbstractTts.VOLUME:
+        announcement = Msgs.getMsg('announce_volume', [valueAsPercent]);
+        break;
     }
     if (announcement) {
-      this.tts.speak(announcement,
-                     cvox.QueueMode.FLUSH,
-                     cvox.AbstractTts.PERSONALITY_ANNOTATION);
+      this.tts.speak(
+          announcement, cvox.QueueMode.FLUSH,
+          cvox.AbstractTts.PERSONALITY_ANNOTATION);
     }
   } else if (msg['action'] == 'cyclePunctuationEcho') {
-    this.tts.speak(Msgs.getMsg(
-            this.backgroundTts_.cyclePunctuationEcho()),
-                   cvox.QueueMode.FLUSH);
+    this.tts.speak(
+        Msgs.getMsg(this.backgroundTts_.cyclePunctuationEcho()),
+        cvox.QueueMode.FLUSH);
   }
 };
 
@@ -350,88 +338,91 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
     var action = msg['action'];
 
     switch (target) {
-    case 'OpenTab':
-      var destination = {url: msg['url']};
-      chrome.tabs.create(destination);
-      break;
-    case 'KbExplorer':
-      var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
-      chrome.tabs.create(explorerPage);
-      break;
-    case 'HelpDocs':
-      var helpPage = {url: 'http://chromevox.com/tutorial/index.html'};
-      chrome.tabs.create(helpPage);
-      break;
-    case 'Options':
-      if (action == 'open') {
-        var optionsPage = {url: 'chromevox/background/options.html'};
-        chrome.tabs.create(optionsPage);
-      }
-      break;
-    case 'Data':
-      if (action == 'getHistory') {
-        var results = {};
-        chrome.history.search({text: '', maxResults: 25}, function(items) {
-          items.forEach(function(item) {
-            if (item.url) {
-              results[item.url] = true;
-            }
+      case 'OpenTab':
+        var destination = {url: msg['url']};
+        chrome.tabs.create(destination);
+        break;
+      case 'KbExplorer':
+        var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
+        chrome.tabs.create(explorerPage);
+        break;
+      case 'HelpDocs':
+        var helpPage = {url: 'http://chromevox.com/tutorial/index.html'};
+        chrome.tabs.create(helpPage);
+        break;
+      case 'Options':
+        if (action == 'open') {
+          var optionsPage = {url: 'chromevox/background/options.html'};
+          chrome.tabs.create(optionsPage);
+        }
+        break;
+      case 'Data':
+        if (action == 'getHistory') {
+          var results = {};
+          chrome.history.search({text: '', maxResults: 25}, function(items) {
+            items.forEach(function(item) {
+              if (item.url) {
+                results[item.url] = true;
+              }
+            });
+            port.postMessage({'history': results});
           });
+        }
+        break;
+      case 'Prefs':
+        if (action == 'getPrefs') {
+          this.prefs.sendPrefsToPort(port);
+        } else if (action == 'setPref') {
+          var pref = /** @type {string} */ (msg['pref']);
+          var announce = !!msg['announce'];
+          cvox.ChromeVoxBackground.setPref(pref, msg['value'], announce);
+        }
+        break;
+      case 'Math':
+        // TODO (sorge): Put the change of styles etc. here!
+        if (msg['action'] == 'getDomains') {
           port.postMessage({
-            'history': results
+            'message': 'DOMAINS_STYLES',
+            'domains': this.backgroundTts_.mathmap.allDomains,
+            'styles': this.backgroundTts_.mathmap.allStyles
           });
-        });
-      }
-      break;
-    case 'Prefs':
-      if (action == 'getPrefs') {
-        this.prefs.sendPrefsToPort(port);
-      } else if (action == 'setPref') {
-        var pref = /** @type {string} */(msg['pref']);
-        var announce = !!msg['announce'];
-        cvox.ChromeVoxBackground.setPref(
-            pref, msg['value'], announce);
-      }
-      break;
-    case 'Math':
-      // TODO (sorge): Put the change of styles etc. here!
-      if (msg['action'] == 'getDomains') {
-        port.postMessage({'message': 'DOMAINS_STYLES',
-                          'domains': this.backgroundTts_.mathmap.allDomains,
-                          'styles': this.backgroundTts_.mathmap.allStyles});
-      }
-      break;
-    case 'TTS':
-      if (msg['startCallbackId'] != undefined) {
-        msg['properties']['startCallback'] = function(opt_cleanupOnly) {
-          port.postMessage({'message': 'TTS_CALLBACK',
-                            'cleanupOnly': opt_cleanupOnly,
-                            'id': msg['startCallbackId']});
-        };
-      }
-      if (msg['endCallbackId'] != undefined) {
-        msg['properties']['endCallback'] = function(opt_cleanupOnly) {
-          port.postMessage({'message': 'TTS_CALLBACK',
-                            'cleanupOnly': opt_cleanupOnly,
-                            'id': msg['endCallbackId']});
-        };
-      }
-      try {
-        this.onTtsMessage(msg);
-      } catch (err) {
-        console.log(err);
-      }
-      break;
-    case 'EARCON':
-      this.onEarconMessage(msg);
-      break;
-    case 'BRAILLE':
-      try {
-        this.backgroundBraille_.onBrailleMessage(msg);
-      } catch (err) {
-        console.log(err);
-      }
-      break;
+        }
+        break;
+      case 'TTS':
+        if (msg['startCallbackId'] != undefined) {
+          msg['properties']['startCallback'] = function(opt_cleanupOnly) {
+            port.postMessage({
+              'message': 'TTS_CALLBACK',
+              'cleanupOnly': opt_cleanupOnly,
+              'id': msg['startCallbackId']
+            });
+          };
+        }
+        if (msg['endCallbackId'] != undefined) {
+          msg['properties']['endCallback'] = function(opt_cleanupOnly) {
+            port.postMessage({
+              'message': 'TTS_CALLBACK',
+              'cleanupOnly': opt_cleanupOnly,
+              'id': msg['endCallbackId']
+            });
+          };
+        }
+        try {
+          this.onTtsMessage(msg);
+        } catch (err) {
+          console.log(err);
+        }
+        break;
+      case 'EARCON':
+        this.onEarconMessage(msg);
+        break;
+      case 'BRAILLE':
+        try {
+          this.backgroundBraille_.onBrailleMessage(msg);
+        } catch (err) {
+          console.log(err);
+        }
+        break;
     }
   }, this));
 };
@@ -458,11 +449,11 @@ cvox.ChromeVoxBackground.prototype.isIncognito_ = function() {
  * Handles the onIntroduceChromeVox event.
  */
 cvox.ChromeVoxBackground.prototype.onIntroduceChromeVox = function() {
-  cvox.ChromeVox.tts.speak(Msgs.getMsg('chromevox_intro'),
-                           cvox.QueueMode.QUEUE,
-                           {doNotInterrupt: true});
-  cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(
-      Msgs.getMsg('intro_brl')));
+  cvox.ChromeVox.tts.speak(
+      Msgs.getMsg('chromevox_intro'), cvox.QueueMode.QUEUE,
+      {doNotInterrupt: true});
+  cvox.ChromeVox.braille.write(
+      cvox.NavBraille.fromText(Msgs.getMsg('intro_brl')));
 };
 
 
@@ -479,22 +470,21 @@ cvox.ChromeVoxBackground.prototype.getCurrentVoice = function() {
 // so that other background pages can access it. Also export the prefs object
 // for access by the options page.
 (function() {
-  var background = new cvox.ChromeVoxBackground();
-  background.init();
-  window['speak'] = goog.bind(background.tts.speak, background.tts);
-  ChromeVoxState.backgroundTts = background.backgroundTts_;
+var background = new cvox.ChromeVoxBackground();
+background.init();
+window['speak'] = goog.bind(background.tts.speak, background.tts);
+ChromeVoxState.backgroundTts = background.backgroundTts_;
 
-  // Export the prefs object for access by the options page.
-  window['prefs'] = background.prefs;
+// Export the prefs object for access by the options page.
+window['prefs'] = background.prefs;
 
-  // Export the braille translator manager for access by the options page.
-  window['braille_translator_manager'] =
-      background.backgroundBraille_.getTranslatorManager();
+// Export the braille translator manager for access by the options page.
+window['braille_translator_manager'] =
+    background.backgroundBraille_.getTranslatorManager();
 
-  window['getCurrentVoice'] =
-      background.getCurrentVoice.bind(background);
+window['getCurrentVoice'] = background.getCurrentVoice.bind(background);
 
-  // Export injection for ChromeVox Next.
-  cvox.ChromeVox.injectChromeVoxIntoTabs =
-      background.injectChromeVoxIntoTabs.bind(background);
+// Export injection for ChromeVox Next.
+cvox.ChromeVox.injectChromeVoxIntoTabs =
+    background.injectChromeVoxIntoTabs.bind(background);
 })();

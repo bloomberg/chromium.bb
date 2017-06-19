@@ -19,8 +19,9 @@ function assertUndefined(a) {
  */
 function assertNotNullNorUndefined(obj, opt_message) {
   if (obj === undefined || obj === null) {
-    throw new Error('Can\'t be null or undefined: ' + (opt_message || '') +
-        '\n' + 'Actual: ' + obj);
+    throw new Error(
+        'Can\'t be null or undefined: ' + (opt_message || '') + '\n' +
+        'Actual: ' + obj);
   }
 }
 
@@ -36,8 +37,8 @@ function assertException(msg, fn, error) {
     fn();
   } catch (e) {
     if (error && e.name != error) {
-      throw new Error('Expected to throw ' + error + ' but threw ' + e.name +
-          ' - ' + msg);
+      throw new Error(
+          'Expected to throw ' + error + ' but threw ' + e.name + ' - ' + msg);
     }
     return;
   }
@@ -61,8 +62,9 @@ function assertEqualStringArrays(array1, array2) {
     }
   }
   if (!same) {
-    throw new Error('Expected ' + JSON.stringify(array1) +
-                    ', got ' + JSON.stringify(array2));
+    throw new Error(
+        'Expected ' + JSON.stringify(array1) + ', got ' +
+        JSON.stringify(array2));
   }
 }
 
@@ -74,8 +76,9 @@ function assertEqualStringArrays(array1, array2) {
  */
 function assertEqualsJSON(expected, actual, opt_message) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-    throw new Error((opt_message ? opt_message + '\n' : '') +
-        'Expected ' + JSON.stringify(expected) + '\n' +
+    throw new Error(
+        (opt_message ? opt_message + '\n' : '') + 'Expected ' +
+        JSON.stringify(expected) + '\n' +
         'Got      ' + JSON.stringify(actual));
   }
 }

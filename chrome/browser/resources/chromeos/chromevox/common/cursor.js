@@ -53,7 +53,6 @@ cvox.Cursor.prototype.copyFrom = function(otherCursor) {
  * @return {boolean} True if equal.
  */
 cvox.Cursor.prototype.equals = function(rhs) {
-  return this.node == rhs.node &&
-      this.index == rhs.index &&
+  return this.node == rhs.node && this.index == rhs.index &&
       this.text == rhs.text;
 };

@@ -105,8 +105,8 @@ LiveRegions.prototype = {
     var removals = relevant.indexOf('removals') >= 0;
     var all = relevant.indexOf('all') >= 0;
 
-    if (all || (additions &&
-        (type == 'nodeCreated' || type == 'subtreeCreated'))) {
+    if (all ||
+        (additions && (type == 'nodeCreated' || type == 'subtreeCreated'))) {
       this.outputLiveRegionChange_(node, null);
     }
 

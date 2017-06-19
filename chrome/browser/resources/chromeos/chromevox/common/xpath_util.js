@@ -15,8 +15,7 @@ goog.provide('cvox.XpathUtil');
  * Utilities for simplifying working with xpaths
  * @constructor
  */
-cvox.XpathUtil = function() {
- };
+cvox.XpathUtil = function() {};
 
 
 /**
@@ -25,7 +24,7 @@ cvox.XpathUtil = function() {
  * @private
  */
 cvox.XpathUtil.nameSpaces_ = {
-  'xhtml' : 'http://www.w3.org/1999/xhtml',
+  'xhtml': 'http://www.w3.org/1999/xhtml',
   'mathml': 'http://www.w3.org/1998/Math/MathML'
 };
 
@@ -52,18 +51,15 @@ cvox.XpathUtil.resolveNameSpace = function(prefix) {
 cvox.XpathUtil.evalXPath = function(expression, rootNode) {
   try {
     var xpathIterator = rootNode.ownerDocument.evaluate(
-      expression,
-      rootNode,
-      cvox.XpathUtil.resolveNameSpace,
-      XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-      null); // no existing results
+        expression, rootNode, cvox.XpathUtil.resolveNameSpace,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null);  // no existing results
   } catch (err) {
     return [];
   }
   var results = [];
   // Convert result to JS array
-  for (var xpathNode = xpathIterator.iterateNext();
-       xpathNode;
+  for (var xpathNode = xpathIterator.iterateNext(); xpathNode;
        xpathNode = xpathIterator.iterateNext()) {
     results.push(xpathNode);
   }
@@ -78,18 +74,16 @@ cvox.XpathUtil.evalXPath = function(expression, rootNode) {
 cvox.XpathUtil.getLeafNodes = function(rootNode) {
   try {
     var xpathIterator = rootNode.ownerDocument.evaluate(
-      './/*[count(*)=0]',
-      rootNode,
-      null, // no namespace resolver
-      XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-      null); // no existing results
+        './/*[count(*)=0]', rootNode,
+        null,  // no namespace resolver
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null);  // no existing results
   } catch (err) {
     return [];
   }
   var results = [];
   // Convert result to JS array
-  for (var xpathNode = xpathIterator.iterateNext();
-       xpathNode;
+  for (var xpathNode = xpathIterator.iterateNext(); xpathNode;
        xpathNode = xpathIterator.iterateNext()) {
     results.push(xpathNode);
   }
@@ -118,11 +112,9 @@ cvox.XpathUtil.xpathSupported = function() {
 cvox.XpathUtil.evaluateBoolean = function(expression, rootNode) {
   try {
     var xpathResult = rootNode.ownerDocument.evaluate(
-        expression,
-        rootNode,
-        cvox.XpathUtil.resolveNameSpace,
+        expression, rootNode, cvox.XpathUtil.resolveNameSpace,
         XPathResult.BOOLEAN_TYPE,
-        null); // no existing results
+        null);  // no existing results
   } catch (err) {
     return false;
   }
@@ -140,11 +132,9 @@ cvox.XpathUtil.evaluateBoolean = function(expression, rootNode) {
 cvox.XpathUtil.evaluateString = function(expression, rootNode) {
   try {
     var xpathResult = rootNode.ownerDocument.evaluate(
-        expression,
-        rootNode,
-        cvox.XpathUtil.resolveNameSpace,
+        expression, rootNode, cvox.XpathUtil.resolveNameSpace,
         XPathResult.STRING_TYPE,
-        null); // no existing results
+        null);  // no existing results
   } catch (err) {
     return '';
   }

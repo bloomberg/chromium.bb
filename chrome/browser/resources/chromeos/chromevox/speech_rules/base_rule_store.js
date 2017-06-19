@@ -71,14 +71,13 @@ cvox.BaseRuleStore.prototype.lookupRule = function(node, dynamic) {
       (node.nodeType != Node.ELEMENT_NODE && node.nodeType != Node.TEXT_NODE)) {
     return null;
   }
-  var matchingRules = this.speechRules_.filter(
-      goog.bind(
-          function(rule) {
-            return this.testDynamicConstraints(dynamic, rule) &&
-                this.testPrecondition_(/** @type {!Node} */ (node), rule);},
-          this));
+  var matchingRules = this.speechRules_.filter(goog.bind(function(rule) {
+    return this.testDynamicConstraints(dynamic, rule) &&
+        this.testPrecondition_(/** @type {!Node} */ (node), rule);
+  }, this));
   return (matchingRules.length > 0) ?
-    this.pickMostConstraint_(dynamic, matchingRules) : null;
+      this.pickMostConstraint_(dynamic, matchingRules) :
+      null;
 };
 
 
@@ -98,8 +97,7 @@ cvox.BaseRuleStore.prototype.defineRule = function(
     if (err.name == 'RuleError') {
       console.log('Rule Error ', prec, '(' + dynamic + '):', err.message);
       return null;
-    }
-    else {
+    } else {
       throw err;
     }
   }
@@ -182,13 +180,13 @@ cvox.BaseRuleStore.prototype.initialize = goog.abstractMethod;
 cvox.BaseRuleStore.prototype.removeDuplicates = function(rule) {
   for (var i = this.speechRules_.length - 1, oldRule;
        oldRule = this.speechRules_[i]; i--) {
-         if (oldRule != rule &&
-             cvox.BaseRuleStore.compareDynamicConstraints_(
-                 oldRule.dynamicCstr, rule.dynamicCstr) &&
-                     cvox.BaseRuleStore.comparePreconditions_(oldRule, rule)) {
-           this.speechRules_.splice(i, 1);
-         }
-       }
+    if (oldRule != rule &&
+        cvox.BaseRuleStore.compareDynamicConstraints_(
+            oldRule.dynamicCstr, rule.dynamicCstr) &&
+        cvox.BaseRuleStore.comparePreconditions_(oldRule, rule)) {
+      this.speechRules_.splice(i, 1);
+    }
+  }
 };
 
 
@@ -199,8 +197,7 @@ cvox.BaseRuleStore.prototype.removeDuplicates = function(rule) {
  * @param {string} funcName A function name.
  * @return {Array<Node>} The list of resulting nodes.
  */
-cvox.BaseRuleStore.prototype.applyCustomQuery = function(
-    node, funcName) {
+cvox.BaseRuleStore.prototype.applyCustomQuery = function(node, funcName) {
   var func = this.customQueries.lookup(funcName);
   return func ? func(node) : null;
 };
@@ -258,19 +255,17 @@ cvox.BaseRuleStore.prototype.applyConstraint = function(node, expr) {
  * @return {boolean} True if the preconditions apply to the node.
  * @protected
  */
-cvox.BaseRuleStore.prototype.testDynamicConstraints = function(
-    dynamic, rule) {
+cvox.BaseRuleStore.prototype.testDynamicConstraints = function(dynamic, rule) {
   // We allow a default value for each dynamic constraints attribute.
   // The idea is that when we can not find a speech rule matching the value for
   // a particular attribute in the dynamic constraintwe choose the one that has
   // the value 'default'.
   var allKeys = /** @type {Array<cvox.SpeechRule.DynamicCstrAttrib>} */ (
       Object.keys(dynamic));
-  return allKeys.every(
-      function(key) {
-        return dynamic[key] == rule.dynamicCstr[key] ||
-            rule.dynamicCstr[key] == 'default';
-      });
+  return allKeys.every(function(key) {
+    return dynamic[key] == rule.dynamicCstr[key] ||
+        rule.dynamicCstr[key] == 'default';
+  });
 };
 
 
@@ -309,7 +304,8 @@ cvox.BaseRuleStore.prototype.countMatchingDynamicConstraintValues_ = function(
   for (var i = 0, key; key = this.dynamicCstrAttribs[i]; i++) {
     if (dynamic[key] == rule.dynamicCstr[key]) {
       result++;
-    } else break;
+    } else
+      break;
   }
   return result;
 };
@@ -325,23 +321,23 @@ cvox.BaseRuleStore.prototype.countMatchingDynamicConstraintValues_ = function(
  * @private
  */
 cvox.BaseRuleStore.prototype.pickMostConstraint_ = function(dynamic, rules) {
-  rules.sort(goog.bind(
-      function(r1, r2) {
-        var count1 = this.countMatchingDynamicConstraintValues_(dynamic, r1);
-        var count2 = this.countMatchingDynamicConstraintValues_(dynamic, r2);
-        // Rule one is a better match, don't swap.
-        if (count1 > count2) {
-          return -1;
-        }
-        // Rule two is a better match, swap.
-        if (count2 > count1) {
-          return 1;
-        }
-        // When same number of dynamic constraint attributes matches for
-        // both rules, compare length of static constraints.
-        return (r2.precondition.constraints.length -
-            r1.precondition.constraints.length);},
-      this));
+  rules.sort(goog.bind(function(r1, r2) {
+    var count1 = this.countMatchingDynamicConstraintValues_(dynamic, r1);
+    var count2 = this.countMatchingDynamicConstraintValues_(dynamic, r2);
+    // Rule one is a better match, don't swap.
+    if (count1 > count2) {
+      return -1;
+    }
+    // Rule two is a better match, swap.
+    if (count2 > count1) {
+      return 1;
+    }
+    // When same number of dynamic constraint attributes matches for
+    // both rules, compare length of static constraints.
+    return (
+        r2.precondition.constraints.length -
+        r1.precondition.constraints.length);
+  }, this));
   return rules[0];
 };
 
@@ -356,10 +352,9 @@ cvox.BaseRuleStore.prototype.pickMostConstraint_ = function(dynamic, rules) {
 cvox.BaseRuleStore.prototype.testPrecondition_ = function(node, rule) {
   var prec = rule.precondition;
   return this.applyQuery(node, prec.query) === node &&
-      prec.constraints.every(
-          goog.bind(function(cstr) {
-                      return this.applyConstraint(node, cstr);},
-                    this));
+      prec.constraints.every(goog.bind(function(cstr) {
+        return this.applyConstraint(node, cstr);
+      }, this));
 };
 
 
@@ -372,8 +367,7 @@ cvox.BaseRuleStore.prototype.testPrecondition_ = function(node, rule) {
  * @return {boolean} True if the dynamic constraints are equal.
  * @private
  */
-cvox.BaseRuleStore.compareDynamicConstraints_ = function(
-    cstr1, cstr2) {
+cvox.BaseRuleStore.compareDynamicConstraints_ = function(cstr1, cstr2) {
   if (Object.keys(cstr1).length != Object.keys(cstr2).length) {
     return false;
   }
@@ -394,8 +388,7 @@ cvox.BaseRuleStore.compareDynamicConstraints_ = function(
  * @return {boolean} True if the static constraints are equal.
  * @private
  */
-cvox.BaseRuleStore.compareStaticConstraints_ = function(
-    cstr1, cstr2) {
+cvox.BaseRuleStore.compareStaticConstraints_ = function(cstr1, cstr2) {
   if (cstr1.length != cstr2.length) {
     return false;
   }
@@ -420,7 +413,7 @@ cvox.BaseRuleStore.comparePreconditions_ = function(rule1, rule2) {
   var prec2 = rule2.precondition;
   if (prec1.query != prec2.query) {
     return false;
-    }
+  }
   return cvox.BaseRuleStore.compareStaticConstraints_(
       prec1.constraints, prec2.constraints);
 };

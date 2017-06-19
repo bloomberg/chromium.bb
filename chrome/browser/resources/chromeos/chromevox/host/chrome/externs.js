@@ -46,8 +46,8 @@ chrome.virtualKeyboardPrivate.VirtualKeyboardEvent;
  * @param {chrome.virtualKeyboardPrivate.VirtualKeyboardEvent} keyEvent
  * @param {Function=} opt_callback
  */
-chrome.virtualKeyboardPrivate.sendKeyEvent =
-    function(keyEvent, opt_callback) {};
+chrome.virtualKeyboardPrivate.sendKeyEvent = function(keyEvent, opt_callback) {
+};
 /**
  * @type {Object}
  */

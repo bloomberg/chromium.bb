@@ -74,8 +74,7 @@ cvox.NavigationHistory.prototype.update = function(newNode) {
   }
 
   // If list is too long, pop the last (oldest) item.
-  if (this.history_.length >
-      cvox.NavigationHistory.MAX_HISTORY_LEN_) {
+  if (this.history_.length > cvox.NavigationHistory.MAX_HISTORY_LEN_) {
     this.history_.pop();
   }
 
@@ -100,7 +99,7 @@ cvox.NavigationHistory.prototype.becomeInvalid = function(node) {
   // changing very quickly. Be defensive here and allow the default
   // navigation action by returning true.
   if (!this.arrivedValid_) {
-    this.arrivedValid_ = true; // Reset flag.
+    this.arrivedValid_ = true;  // Reset flag.
     return false;
   }
 

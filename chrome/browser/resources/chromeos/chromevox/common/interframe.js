@@ -22,8 +22,7 @@ goog.require('cvox.DomUtil');
 /**
  * @constructor
  */
-cvox.Interframe = function() {
-};
+cvox.Interframe = function() {};
 
 /**
  * The prefix of all interframe messages.
@@ -86,8 +85,7 @@ cvox.Interframe.init = function() {
     if (typeof event.data === 'string' &&
         event.data.startsWith(cvox.Interframe.IF_MSG_PREFIX)) {
       var suffix = event.data.substr(cvox.Interframe.IF_MSG_PREFIX.length);
-      var message = /** @type {Object} */ (
-          cvox.ChromeVoxJSON.parse(suffix));
+      var message = /** @type {Object} */ (cvox.ChromeVoxJSON.parse(suffix));
       if (message['command'] == cvox.Interframe.SET_ID) {
         cvox.Interframe.id = message['id'];
         message['command'] = cvox.Interframe.ACK_SET_ID;
@@ -160,8 +158,7 @@ cvox.Interframe.sendMessageToIFrame = function(message, iframe) {
   if (iframe.hasAttribute('id') &&
       document.getElementById(iframe.id) == iframe) {
     // Ideally, try to send it based on the iframe's existing id.
-    script.innerHTML =
-        'document.getElementById(decodeURI(\'' +
+    script.innerHTML = 'document.getElementById(decodeURI(\'' +
         encodeURI(iframe.id) + '\')).contentWindow.postMessage(decodeURI(\'' +
         encodeURI(encodedMessage) + '\'), \'*\');';
   } else {
@@ -173,8 +170,7 @@ cvox.Interframe.sendMessageToIFrame = function(message, iframe) {
       iframe.className += ' ' + styleName;
     }
 
-    script.innerHTML =
-        'document.getElementsByClassName(decodeURI(\'' +
+    script.innerHTML = 'document.getElementsByClassName(decodeURI(\'' +
         encodeURI(styleName) +
         '\'))[0].contentWindow.postMessage(decodeURI(\'' +
         encodeURI(encodedMessage) + '\'), \'*\');';
@@ -208,8 +204,7 @@ cvox.Interframe.sendMessageToParentWindow = function(message) {
   // the page context.
   var encodedMessage = cvox.Interframe.IF_MSG_PREFIX +
       cvox.ChromeVoxJSON.stringify(message, null, null);
-  window.location.href =
-      'javascript:window.parent.postMessage(\'' +
+  window.location.href = 'javascript:window.parent.postMessage(\'' +
       encodeURI(encodedMessage) + '\', \'*\');';
 };
 

@@ -51,7 +51,7 @@ cvox.NodeBreadcrumb.prototype.tagCurrentNode = function() {
   var cvTag;
   var currentNode = cvox.ChromeVox.navigationManager.getCurrentNode();
   while (currentNode && !currentNode.hasAttribute) {
-      currentNode = currentNode.parentNode;
+    currentNode = currentNode.parentNode;
   }
   if (!currentNode) {
     cvTag = -1;
@@ -157,9 +157,10 @@ cvox.NodeBreadcrumb.prototype.dumpWalkedDom = function() {
 cvox.NodeBreadcrumb.getCurrentNodeTag = function() {
   var currentNode = cvox.ChromeVox.navigationManager.getCurrentNode();
   while (currentNode && !currentNode.hasAttribute) {
-      currentNode = currentNode.parentNode;
+    currentNode = currentNode.parentNode;
   }
-  if (currentNode && currentNode.hasAttribute(cvox.NodeBreadcrumb.TOUCHED_TAG)) {
+  if (currentNode &&
+      currentNode.hasAttribute(cvox.NodeBreadcrumb.TOUCHED_TAG)) {
     return currentNode.getAttribute(cvox.NodeBreadcrumb.TOUCHED_TAG);
   } else {
     return -1;

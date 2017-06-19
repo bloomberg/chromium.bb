@@ -31,11 +31,7 @@ cvox.AbstractTts = function() {
    *         volume: number}}
    * @protected
    */
-  this.propertyDefault = {
-    'rate': 0.5,
-    'pitch': 0.5,
-    'volume': 0.5
-  };
+  this.propertyDefault = {'rate': 0.5, 'pitch': 0.5, 'volume': 0.5};
 
   /**
    * Min value for TTS properties.
@@ -44,11 +40,7 @@ cvox.AbstractTts = function() {
    *         volume: number}}
    * @protected
    */
-  this.propertyMin = {
-    'rate': 0.0,
-    'pitch': 0.0,
-    'volume': 0.0
-  };
+  this.propertyMin = {'rate': 0.0, 'pitch': 0.0, 'volume': 0.0};
 
   /**
    * Max value for TTS properties.
@@ -57,11 +49,7 @@ cvox.AbstractTts = function() {
    *         volume: number}}
    * @protected
    */
-  this.propertyMax = {
-    'rate': 1.0,
-    'pitch': 1.0,
-    'volume': 1.0
-  };
+  this.propertyMax = {'rate': 1.0, 'pitch': 1.0, 'volume': 1.0};
 
   /**
    * Step value for TTS properties.
@@ -70,11 +58,7 @@ cvox.AbstractTts = function() {
    *         volume: number}}
    * @protected
    */
-  this.propertyStep = {
-    'rate': 0.1,
-    'pitch': 0.1,
-    'volume': 0.1
-  };
+  this.propertyStep = {'rate': 0.1, 'pitch': 0.1, 'volume': 0.1};
 
 
   /** @private */
@@ -124,24 +108,23 @@ cvox.AbstractTts.prototype.isSpeaking = function() {
 
 
 /** @override */
-cvox.AbstractTts.prototype.stop = function() {
+cvox.AbstractTts.prototype.stop = function() {};
+
+
+/** @override */
+cvox.AbstractTts.prototype.addCapturingEventListener = function(listener) {};
+
+
+/** @override */
+cvox.AbstractTts.prototype.increaseOrDecreaseProperty = function(
+    propertyName, increase) {
+  var min = this.propertyMin[propertyName];
+  var max = this.propertyMax[propertyName];
+  var step = this.propertyStep[propertyName];
+  var current = this.ttsProperties[propertyName];
+  current = increase ? current + step : current - step;
+  this.ttsProperties[propertyName] = Math.max(Math.min(current, max), min);
 };
-
-
-/** @override */
-cvox.AbstractTts.prototype.addCapturingEventListener = function(listener) { };
-
-
-/** @override */
-cvox.AbstractTts.prototype.increaseOrDecreaseProperty =
-    function(propertyName, increase) {
-      var min = this.propertyMin[propertyName];
-      var max = this.propertyMax[propertyName];
-      var step = this.propertyStep[propertyName];
-      var current = this.ttsProperties[propertyName];
-      current = increase ? current + step : current - step;
-      this.ttsProperties[propertyName] = Math.max(Math.min(current, max), min);
-    };
 
 /**
  * Converts an engine property value to a percentage from 0.00 to 1.00.
@@ -150,7 +133,7 @@ cvox.AbstractTts.prototype.increaseOrDecreaseProperty =
  */
 cvox.AbstractTts.prototype.propertyToPercentage = function(property) {
   return (this.ttsProperties[property] - this.propertyMin[property]) /
-         Math.abs(this.propertyMax[property] - this.propertyMin[property]);
+      Math.abs(this.propertyMax[property] - this.propertyMin[property]);
 };
 
 /**
@@ -233,23 +216,22 @@ cvox.AbstractTts.prototype.mergeProperties = function(properties) {
 cvox.AbstractTts.prototype.preprocess = function(text, properties) {
   if (text.length == 1 && text >= 'A' && text <= 'Z') {
     for (var prop in cvox.AbstractTts.PERSONALITY_CAPITAL)
-    properties[prop] = cvox.AbstractTts.PERSONALITY_CAPITAL[prop];
+      properties[prop] = cvox.AbstractTts.PERSONALITY_CAPITAL[prop];
   }
 
   // Substitute all symbols in the substitution dictionary. This is pretty
   // efficient because we use a single regexp that matches all symbols
   // simultaneously.
   text = text.replace(
-      cvox.AbstractTts.substitutionDictionaryRegexp_,
-      function(symbol) {
+      cvox.AbstractTts.substitutionDictionaryRegexp_, function(symbol) {
         return ' ' + cvox.AbstractTts.SUBSTITUTION_DICTIONARY[symbol] + ' ';
       });
 
   // Handle single characters that we want to make sure we pronounce.
   if (text.length == 1) {
     return cvox.AbstractTts.CHARACTER_DICTIONARY[text] ?
-        (new goog.i18n.MessageFormat(Msgs.getMsg(
-                cvox.AbstractTts.CHARACTER_DICTIONARY[text])))
+        (new goog.i18n.MessageFormat(
+             Msgs.getMsg(cvox.AbstractTts.CHARACTER_DICTIONARY[text])))
             .format({'COUNT': 1}) :
         text.toUpperCase();
   }
@@ -259,8 +241,7 @@ cvox.AbstractTts.prototype.preprocess = function(text, properties) {
   // simultaneously, and it calls a function with each match, which we can
   // use to look up the replacement in our dictionary.
   text = text.replace(
-      cvox.AbstractTts.pronunciationDictionaryRegexp_,
-      function(word) {
+      cvox.AbstractTts.pronunciationDictionaryRegexp_, function(word) {
         return cvox.AbstractTts.PRONUNCIATION_DICTIONARY[word.toLowerCase()];
       });
 
@@ -468,7 +449,7 @@ cvox.AbstractTts.PRONUNCIATION_DICTIONARY = {
   'gmail': 'gee mail',
   'gtalk': 'gee talk',
   'http': 'H T T P',
-  'https' : 'H T T P S',
+  'https': 'H T T P S',
   'igoogle': 'eye google',
   'pagerank': 'page-rank',
   'username': 'user-name',
@@ -563,9 +544,11 @@ cvox.AbstractTts.repetitionRegexp_ =
  */
 cvox.AbstractTts.repetitionReplace_ = function(match) {
   var count = match.length;
-  return ' ' + (new goog.i18n.MessageFormat(Msgs.getMsg(
-      cvox.AbstractTts.CHARACTER_DICTIONARY[match[0]])))
-          .format({'COUNT': count}) + ' ';
+  return ' ' +
+      (new goog.i18n.MessageFormat(
+           Msgs.getMsg(cvox.AbstractTts.CHARACTER_DICTIONARY[match[0]])))
+          .format({'COUNT': count}) +
+      ' ';
 };
 
 

@@ -108,10 +108,10 @@ AutomationTreeWalker = function(node, dir, opt_restrictions) {
   };
   /** @type {AutomationPredicate.Unary} @private */
   this.leafPred_ = restrictions.leaf ? restrictions.leaf :
-      AutomationTreeWalker.falsePredicate_;
+                                       AutomationTreeWalker.falsePredicate_;
   /** @type {AutomationPredicate.Unary} @private */
   this.rootPred_ = restrictions.root ? restrictions.root :
-      AutomationTreeWalker.falsePredicate_;
+                                       AutomationTreeWalker.falsePredicate_;
   /** @const {boolean} @private */
   this.skipInitialAncestry_ = restrictions.skipInitialAncestry || false;
   /** @const {boolean} @private */
@@ -194,8 +194,7 @@ AutomationTreeWalker.prototype = {
 
       // Exit if we encounter a root-like node and are not searching descendants
       // of the initial node.
-      if (searchNode.parent &&
-          this.rootPred_(searchNode.parent) &&
+      if (searchNode.parent && this.rootPred_(searchNode.parent) &&
           this.phase_ != AutomationTreeWalkerPhase.DESCENDANT)
         break;
 

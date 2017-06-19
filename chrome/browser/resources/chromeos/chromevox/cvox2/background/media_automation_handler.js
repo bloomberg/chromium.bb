@@ -36,10 +36,10 @@ MediaAutomationHandler = function() {
   chrome.automation.getDesktop(function(node) {
     BaseAutomationHandler.call(this, node);
 
-    this.addListener_(EventType.MEDIA_STARTED_PLAYING,
-                      this.onMediaStartedPlaying);
-    this.addListener_(EventType.MEDIA_STOPPED_PLAYING,
-                      this.onMediaStoppedPlaying);
+    this.addListener_(
+        EventType.MEDIA_STARTED_PLAYING, this.onMediaStartedPlaying);
+    this.addListener_(
+        EventType.MEDIA_STOPPED_PLAYING, this.onMediaStoppedPlaying);
   }.bind(this));
 };
 

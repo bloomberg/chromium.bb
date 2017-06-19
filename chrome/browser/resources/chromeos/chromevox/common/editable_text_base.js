@@ -275,8 +275,7 @@ cvox.ChromeVoxEditableTextBase.prototype.isWordBreakChar = function(ch) {
  * should trigger description.
  */
 cvox.ChromeVoxEditableTextBase.prototype.shouldDescribeChange = function(evt) {
-  if (evt.value == this.value &&
-      evt.start == this.start &&
+  if (evt.value == this.value && evt.start == this.start &&
       evt.end == this.end) {
     return false;
   }
@@ -291,8 +290,8 @@ cvox.ChromeVoxEditableTextBase.prototype.shouldDescribeChange = function(evt) {
  * user action.
  * @param {Object=} opt_personality Personality used to speak text.
  */
-cvox.ChromeVoxEditableTextBase.prototype.speak =
-    function(str, opt_triggeredByUser, opt_personality) {
+cvox.ChromeVoxEditableTextBase.prototype.speak = function(
+    str, opt_triggeredByUser, opt_personality) {
   if (!str) {
     return;
   }
@@ -336,15 +335,18 @@ cvox.ChromeVoxEditableTextBase.prototype.changed = function(evt) {
  * stays the same.
  * @param {cvox.TextChangeEvent} evt The text change event.
  */
-cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
-    function(evt) {
+cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged = function(
+    evt) {
   // TODO(deboer): Factor this into two function:
   //   - one to determine the selection event
   //   - one to speak
 
   if (this.isPassword) {
-    this.speak((new goog.i18n.MessageFormat(Msgs.getMsg('bullet'))
-        .format({'COUNT': 1})), evt.triggeredByUser);
+    this.speak(
+        (new goog.i18n.MessageFormat(Msgs.getMsg('bullet')).format({
+          'COUNT': 1
+        })),
+        evt.triggeredByUser);
     return;
   }
   if (evt.start == evt.end) {
@@ -352,8 +354,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
     if (this.start != this.end) {
       // It was previously a selection, so just announce 'unselected'.
       this.speak(Msgs.getMsg('Unselected'), evt.triggeredByUser);
-    } else if (this.getLineIndex(this.start) !=
-        this.getLineIndex(evt.start)) {
+    } else if (this.getLineIndex(this.start) != this.getLineIndex(evt.start)) {
       // Moved to a different line; read it.
       var lineValue = this.getLine(this.getLineIndex(evt.start));
       if (lineValue == '') {
@@ -364,67 +365,70 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
         lineValue = Msgs.getMsg('text_box_whitespace');
       }
       this.speak(lineValue, evt.triggeredByUser);
-    } else if (this.start == evt.start + 1 ||
-        this.start == evt.start - 1) {
+    } else if (this.start == evt.start + 1 || this.start == evt.start - 1) {
       // Moved by one character; read it.
       if (!cvox.ChromeVoxEditableTextBase.useIBeamCursor) {
         if (evt.start == this.value.length) {
           if (cvox.ChromeVox.verbosity == cvox.VERBOSITY_VERBOSE) {
-            this.speak(Msgs.getMsg('end_of_text_verbose'),
-                       evt.triggeredByUser);
+            this.speak(Msgs.getMsg('end_of_text_verbose'), evt.triggeredByUser);
           } else {
-            this.speak(Msgs.getMsg('end_of_text_brief'),
-                       evt.triggeredByUser);
+            this.speak(Msgs.getMsg('end_of_text_brief'), evt.triggeredByUser);
           }
         } else {
-          this.speak(this.value.substr(evt.start, 1),
-                     evt.triggeredByUser,
-                     {'phoneticCharacters': evt.triggeredByUser});
+          this.speak(
+              this.value.substr(evt.start, 1), evt.triggeredByUser,
+              {'phoneticCharacters': evt.triggeredByUser});
         }
       } else {
-        this.speak(this.value.substr(Math.min(this.start, evt.start), 1),
-            evt.triggeredByUser,
-            {'phoneticCharacters': evt.triggeredByUser});
+        this.speak(
+            this.value.substr(Math.min(this.start, evt.start), 1),
+            evt.triggeredByUser, {'phoneticCharacters': evt.triggeredByUser});
       }
     } else {
       // Moved by more than one character. Read all characters crossed.
-      this.speak(this.value.substr(Math.min(this.start, evt.start),
-          Math.abs(this.start - evt.start)), evt.triggeredByUser);
+      this.speak(
+          this.value.substr(
+              Math.min(this.start, evt.start),
+              Math.abs(this.start - evt.start)),
+          evt.triggeredByUser);
     }
   } else {
     // It's currently a selection.
-    if (this.start + 1 == evt.start &&
-        this.end == this.value.length &&
+    if (this.start + 1 == evt.start && this.end == this.value.length &&
         evt.end == this.value.length) {
       // Autocomplete: the user typed one character of autocompleted text.
       this.speak(this.value.substr(this.start, 1), evt.triggeredByUser);
       this.speak(this.value.substr(evt.start));
     } else if (this.start == this.end) {
       // It was previously a cursor.
-      this.speak(this.value.substr(evt.start, evt.end - evt.start),
-                 evt.triggeredByUser);
+      this.speak(
+          this.value.substr(evt.start, evt.end - evt.start),
+          evt.triggeredByUser);
       this.speak(Msgs.getMsg('selected'));
     } else if (this.start == evt.start && this.end < evt.end) {
-      this.speak(this.value.substr(this.end, evt.end - this.end),
-                 evt.triggeredByUser);
+      this.speak(
+          this.value.substr(this.end, evt.end - this.end), evt.triggeredByUser);
       this.speak(Msgs.getMsg('added_to_selection'));
     } else if (this.start == evt.start && this.end > evt.end) {
-      this.speak(this.value.substr(evt.end, this.end - evt.end),
-                 evt.triggeredByUser);
+      this.speak(
+          this.value.substr(evt.end, this.end - evt.end), evt.triggeredByUser);
       this.speak(Msgs.getMsg('removed_from_selection'));
     } else if (this.end == evt.end && this.start > evt.start) {
-      this.speak(this.value.substr(evt.start, this.start - evt.start),
-                 evt.triggeredByUser);
+      this.speak(
+          this.value.substr(evt.start, this.start - evt.start),
+          evt.triggeredByUser);
       this.speak(Msgs.getMsg('added_to_selection'));
     } else if (this.end == evt.end && this.start < evt.start) {
-      this.speak(this.value.substr(this.start, evt.start - this.start),
-                 evt.triggeredByUser);
+      this.speak(
+          this.value.substr(this.start, evt.start - this.start),
+          evt.triggeredByUser);
       this.speak(Msgs.getMsg('removed_from_selection'));
     } else {
       // The selection changed but it wasn't an obvious extension of
       // a previous selection. Just read the new selection.
-      this.speak(this.value.substr(evt.start, evt.end - evt.start),
-                 evt.triggeredByUser);
+      this.speak(
+          this.value.substr(evt.start, evt.end - evt.start),
+          evt.triggeredByUser);
       this.speak(Msgs.getMsg('selected'));
     }
   }
@@ -441,8 +445,11 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     personality = cvox.AbstractTts.PERSONALITY_DELETED;
   }
   if (this.isPassword) {
-    this.speak((new goog.i18n.MessageFormat(Msgs.getMsg('bullet'))
-        .format({'COUNT': 1})), evt.triggeredByUser, personality);
+    this.speak(
+        (new goog.i18n.MessageFormat(Msgs.getMsg('bullet')).format({
+          'COUNT': 1
+        })),
+        evt.triggeredByUser, personality);
     return;
   }
 
@@ -478,9 +485,8 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     // breakers).
     // TODO(dtseng): Think about a more reliable way to do this.
     if (!(cvox.ChromeVoxEditableContentEditable &&
-            this instanceof cvox.ChromeVoxEditableContentEditable) ||
-        newLen < len ||
-        this.isWordBreakChar(evt.value[newLen - 1] || '')) {
+          this instanceof cvox.ChromeVoxEditableContentEditable) ||
+        newLen < len || this.isWordBreakChar(evt.value[newLen - 1] || '')) {
       this.describeTextChangedHelper(
           evt, prefixLen, suffixLen, autocompleteSuffix, personality);
     }
@@ -493,16 +499,13 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
   // a word or line.
   prefixLen = evt.start;
   suffixLen = newLen - evtEnd;
-  if (this.start == this.end &&
-      evt.start == evtEnd &&
+  if (this.start == this.end && evt.start == evtEnd &&
       evtValue.substr(0, prefixLen) == value.substr(0, prefixLen) &&
-      evtValue.substr(newLen - suffixLen) ==
-          value.substr(len - suffixLen)) {
+      evtValue.substr(newLen - suffixLen) == value.substr(len - suffixLen)) {
     // Forward deletions causes reading of the character immediately to the
     // right of the caret or the deleted text depending on the iBeam cursor
     // setting.
-    if (this.start == evt.start &&
-        this.end == evt.end &&
+    if (this.start == evt.start && this.end == evt.end &&
         !cvox.ChromeVoxEditableTextBase.useIBeamCursor) {
       this.speak(evt.value[evt.start], evt.triggeredByUser);
     } else {
@@ -525,8 +528,8 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     // The user added text either to the beginning or the end.
     if (evtValue.length > value.length) {
       if (evtValue.startsWith(value)) {
-        this.speak(evtValue[evtValue.length - 1], evt.triggeredByUser,
-                   personality);
+        this.speak(
+            evtValue[evtValue.length - 1], evt.triggeredByUser, personality);
         return;
       } else if (evtValue.indexOf(value) == 1) {
         this.speak(evtValue[0], evt.triggeredByUser, personality);
@@ -548,8 +551,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
   if (this.multiline) {
     // Fall back to announce deleted but omit the text that was deleted.
     if (evt.value.length < this.value.length) {
-      this.speak(Msgs.getMsg('text_deleted'),
-                 evt.triggeredByUser, personality);
+      this.speak(Msgs.getMsg('text_deleted'), evt.triggeredByUser, personality);
     }
     // The below is a somewhat loose way to deal with non-standard
     // insertions/deletions. Intentionally skip for multiline since deletion
@@ -570,8 +572,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
   // Otherwise, look for the common prefix and suffix, but back up so
   // that we can speak complete words, to be minimally confusing.
   prefixLen = 0;
-  while (prefixLen < len &&
-         prefixLen < newLen &&
+  while (prefixLen < len && prefixLen < newLen &&
          value[prefixLen] == evtValue[prefixLen]) {
     prefixLen++;
   }
@@ -580,8 +581,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
   }
 
   suffixLen = 0;
-  while (suffixLen < (len - prefixLen) &&
-         suffixLen < (newLen - prefixLen) &&
+  while (suffixLen < (len - prefixLen) && suffixLen < (newLen - prefixLen) &&
          value[len - suffixLen - 1] == evtValue[newLen - suffixLen - 1]) {
     suffixLen++;
   }
@@ -622,9 +622,8 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChangedHelper = function(
     utterance = inserted;
   } else if (insertedLen == 1) {
     if ((cvox.ChromeVox.typingEcho == cvox.TypingEcho.WORD ||
-            cvox.ChromeVox.typingEcho == cvox.TypingEcho.CHARACTER_AND_WORD) &&
-        this.isWordBreakChar(inserted) &&
-        prefixLen > 0 &&
+         cvox.ChromeVox.typingEcho == cvox.TypingEcho.CHARACTER_AND_WORD) &&
+        this.isWordBreakChar(inserted) && prefixLen > 0 &&
         !this.isWordBreakChar(evt.value.substr(prefixLen - 1, 1))) {
       // Speak previous word.
       var index = prefixLen;
@@ -635,14 +634,15 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChangedHelper = function(
         utterance = evt.value.substr(index, prefixLen + 1 - index);
       } else {
         utterance = inserted;
-        triggeredByUser = false; // Implies QUEUE_MODE_QUEUE.
+        triggeredByUser = false;  // Implies QUEUE_MODE_QUEUE.
       }
-    } else if (cvox.ChromeVox.typingEcho == cvox.TypingEcho.CHARACTER ||
+    } else if (
+        cvox.ChromeVox.typingEcho == cvox.TypingEcho.CHARACTER ||
         cvox.ChromeVox.typingEcho == cvox.TypingEcho.CHARACTER_AND_WORD) {
       // This particular case is handled in event watcher. See the key press
       // handler for more details.
-      utterance = cvox.ChromeVoxEditableTextBase.eventTypingEcho ? '' :
-          inserted;
+      utterance =
+          cvox.ChromeVoxEditableTextBase.eventTypingEcho ? '' : inserted;
     }
   } else if (deletedLen > 1 && !autocompleteSuffix) {
     utterance = deleted + ', deleted';
@@ -667,7 +667,9 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChangedHelper = function(
  * @return {boolean} True if the action was handled.
  */
 cvox.ChromeVoxEditableTextBase.prototype.moveCursorToNextCharacter =
-    function() { return false; };
+    function() {
+  return false;
+};
 
 
 /**
@@ -675,39 +677,45 @@ cvox.ChromeVoxEditableTextBase.prototype.moveCursorToNextCharacter =
  * @return {boolean} True if the action was handled.
  */
 cvox.ChromeVoxEditableTextBase.prototype.moveCursorToPreviousCharacter =
-    function() { return false; };
+    function() {
+  return false;
+};
 
 
 /**
  * Moves the cursor forward by one word.
  * @return {boolean} True if the action was handled.
  */
-cvox.ChromeVoxEditableTextBase.prototype.moveCursorToNextWord =
-    function() { return false; };
+cvox.ChromeVoxEditableTextBase.prototype.moveCursorToNextWord = function() {
+  return false;
+};
 
 
 /**
  * Moves the cursor backward by one word.
  * @return {boolean} True if the action was handled.
  */
-cvox.ChromeVoxEditableTextBase.prototype.moveCursorToPreviousWord =
-    function() { return false; };
+cvox.ChromeVoxEditableTextBase.prototype.moveCursorToPreviousWord = function() {
+  return false;
+};
 
 
 /**
  * Moves the cursor forward by one line.
  * @return {boolean} True if the action was handled.
  */
-cvox.ChromeVoxEditableTextBase.prototype.moveCursorToNextLine =
-    function() { return false; };
+cvox.ChromeVoxEditableTextBase.prototype.moveCursorToNextLine = function() {
+  return false;
+};
 
 
 /**
  * Moves the cursor backward by one line.
  * @return {boolean} True if the action was handled.
  */
-cvox.ChromeVoxEditableTextBase.prototype.moveCursorToPreviousLine =
-    function() { return false; };
+cvox.ChromeVoxEditableTextBase.prototype.moveCursorToPreviousLine = function() {
+  return false;
+};
 
 
 /**
@@ -715,7 +723,9 @@ cvox.ChromeVoxEditableTextBase.prototype.moveCursorToPreviousLine =
  * @return {boolean} True if the action was handled.
  */
 cvox.ChromeVoxEditableTextBase.prototype.moveCursorToNextParagraph =
-    function() { return false; };
+    function() {
+  return false;
+};
 
 
 /**
@@ -723,7 +733,9 @@ cvox.ChromeVoxEditableTextBase.prototype.moveCursorToNextParagraph =
  * @return {boolean} True if the action was handled.
  */
 cvox.ChromeVoxEditableTextBase.prototype.moveCursorToPreviousParagraph =
-    function() { return false; };
+    function() {
+  return false;
+};
 
 
 /******************************************/

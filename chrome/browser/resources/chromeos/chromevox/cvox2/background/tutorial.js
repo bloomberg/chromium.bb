@@ -23,7 +23,8 @@ Tutorial = function() {
   this.page_;
 
   this.page = sessionStorage['tutorial_page_pos'] !== undefined ?
-      sessionStorage['tutorial_page_pos'] : 0;
+      sessionStorage['tutorial_page_pos'] :
+      0;
 };
 
 /**
@@ -39,11 +40,11 @@ Tutorial.buildEarconPage_ = function(container) {
     var prevEarcon;
     var playEarcon = function(earcon) {
       if (prevEarcon) {
-        chrome.extension.getBackgroundPage()['cvox']['ChromeVox'][
-            'earcons']['cancelEarcon'](prevEarcon);
+        chrome.extension.getBackgroundPage()['cvox']['ChromeVox']['earcons']
+                                            ['cancelEarcon'](prevEarcon);
       }
-      chrome.extension.getBackgroundPage()['cvox']['ChromeVox'][
-          'earcons']['playEarcon'](earcon);
+      chrome.extension.getBackgroundPage()['cvox']['ChromeVox']['earcons']
+                                          ['playEarcon'](earcon);
       prevEarcon = earcon;
     }.bind(this, earconId);
     earconElement.addEventListener('focus', playEarcon, false);
@@ -61,59 +62,64 @@ Tutorial.buildEarconPage_ = function(container) {
  */
 Tutorial.PAGES = [
   [
-    { msgid: 'tutorial_welcome_heading', heading: true },
-    { msgid: 'tutorial_welcome_text' },
-    { msgid: 'tutorial_enter_to_advance', repeat: true },
+    {msgid: 'tutorial_welcome_heading', heading: true},
+    {msgid: 'tutorial_welcome_text'},
+    {msgid: 'tutorial_enter_to_advance', repeat: true},
   ],
   [
-    { msgid: 'tutorial_on_off_heading', heading: true },
-    { msgid: 'tutorial_control' },
-    { msgid: 'tutorial_on_off' },
-    { msgid: 'tutorial_enter_to_advance', repeat: true },
+    {msgid: 'tutorial_on_off_heading', heading: true},
+    {msgid: 'tutorial_control'},
+    {msgid: 'tutorial_on_off'},
+    {msgid: 'tutorial_enter_to_advance', repeat: true},
   ],
   [
-    { msgid: 'tutorial_modifier_heading', heading: true },
-    { msgid: 'tutorial_modifier' },
-    { msgid: 'tutorial_chromebook_search', chromebookOnly: true },
-    { msgid: 'tutorial_any_key' },
-    { msgid: 'tutorial_enter_to_advance', repeat: true },
+    {msgid: 'tutorial_modifier_heading', heading: true},
+    {msgid: 'tutorial_modifier'},
+    {msgid: 'tutorial_chromebook_search', chromebookOnly: true},
+    {msgid: 'tutorial_any_key'},
+    {msgid: 'tutorial_enter_to_advance', repeat: true},
   ],
   [
-    { msgid: 'tutorial_basic_navigation_heading', heading: true },
-    { msgid: 'tutorial_basic_navigation' },
-    { msgid: 'tutorial_click_next' },
+    {msgid: 'tutorial_basic_navigation_heading', heading: true},
+    {msgid: 'tutorial_basic_navigation'},
+    {msgid: 'tutorial_click_next'},
   ],
   [
-    { msgid: 'tutorial_jump_heading', heading: true },
-    { msgid: 'tutorial_jump' },
-    { msgid: 'tutorial_jump_second_heading', heading: true },
-    { msgid: 'tutorial_jump_wrap_heading', heading: true },
-    { msgid: 'tutorial_click_next' },
+    {msgid: 'tutorial_jump_heading', heading: true},
+    {msgid: 'tutorial_jump'},
+    {msgid: 'tutorial_jump_second_heading', heading: true},
+    {msgid: 'tutorial_jump_wrap_heading', heading: true},
+    {msgid: 'tutorial_click_next'},
   ],
   [
-    { msgid: 'tutorial_menus_heading', heading: true },
-    { msgid: 'tutorial_menus' },
-    { msgid: 'tutorial_click_next' },
+    {msgid: 'tutorial_menus_heading', heading: true},
+    {msgid: 'tutorial_menus'},
+    {msgid: 'tutorial_click_next'},
   ],
   [
-    { msgid: 'tutorial_chrome_shortcuts_heading', heading: true },
-    { msgid: 'tutorial_chrome_shortcuts' },
-    { msgid: 'tutorial_chromebook_ctrl_forward', chromebookOnly: true }
+    {msgid: 'tutorial_chrome_shortcuts_heading', heading: true},
+    {msgid: 'tutorial_chrome_shortcuts'},
+    {msgid: 'tutorial_chromebook_ctrl_forward', chromebookOnly: true}
   ],
   [
-    { msgid: 'tutorial_earcon_page_title', heading: true },
-    { msgid: 'tutorial_earcon_page_body' },
-    { custom: Tutorial.buildEarconPage_ }
+    {msgid: 'tutorial_earcon_page_title', heading: true},
+    {msgid: 'tutorial_earcon_page_body'}, {custom: Tutorial.buildEarconPage_}
   ],
   [
-    { msgid: 'tutorial_learn_more_heading', heading: true },
-    { msgid: 'tutorial_learn_more' },
-    { msgid: 'next_command_reference',
-      link: 'http://www.chromevox.com/next_keyboard_shortcuts.html' },
-    { msgid: 'chrome_keyboard_shortcuts',
-      link: 'https://support.google.com/chromebook/answer/183101?hl=en' },
-    { msgid: 'touchscreen_accessibility',
-      link: 'https://support.google.com/chromebook/answer/6103702?hl=en' },
+    {msgid: 'tutorial_learn_more_heading', heading: true},
+    {msgid: 'tutorial_learn_more'},
+    {
+      msgid: 'next_command_reference',
+      link: 'http://www.chromevox.com/next_keyboard_shortcuts.html'
+    },
+    {
+      msgid: 'chrome_keyboard_shortcuts',
+      link: 'https://support.google.com/chromebook/answer/183101?hl=en'
+    },
+    {
+      msgid: 'touchscreen_accessibility',
+      link: 'https://support.google.com/chromebook/answer/6103702?hl=en'
+    },
   ],
 ];
 
@@ -126,7 +132,7 @@ Tutorial.prototype = {
   onKeyDown: function(evt) {
     if (document.activeElement &&
         (document.activeElement.id == 'tutorial_previous' ||
-        document.activeElement.id == 'tutorial_next'))
+         document.activeElement.id == 'tutorial_next'))
       return true;
 
     if (evt.key == 'Enter')
@@ -141,7 +147,8 @@ Tutorial.prototype = {
   /** Open the last viewed page in the tutorial. */
   lastViewedPage: function() {
     this.page = sessionStorage['tutorial_page_pos'] !== undefined ?
-        sessionStorage['tutorial_page_pos'] : 0;
+        sessionStorage['tutorial_page_pos'] :
+        0;
     if (this.page == -1)
       this.page = 0;
     this.showCurrentPage_();
@@ -152,8 +159,8 @@ Tutorial.prototype = {
     delete sessionStorage['tutorial_page_pos'];
     this.page = -1;
     this.showPage_([
-      { msgid: 'update_56_title', heading: true },
-      { msgid: 'update_56_intro' },
+      {msgid: 'update_56_title', heading: true},
+      {msgid: 'update_56_intro'},
       {
         list: true,
         items: [
@@ -162,7 +169,7 @@ Tutorial.prototype = {
           {msgid: 'update_56_item_3', listItem: true},
         ],
       },
-      { msgid: 'update_56_OUTTRO' },
+      {msgid: 'update_56_OUTTRO'},
     ]);
   },
 

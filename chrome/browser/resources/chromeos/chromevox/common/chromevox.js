@@ -16,49 +16,31 @@ goog.provide('cvox.ChromeVox');
 // us to group all of the forward declarations for each file without
 // having them overwrite the mapping in deps.js
 goog.addDependency(
-    '../host/interface/abstract_host.js',
-    ['cvox.AbstractHost'],
+    '../host/interface/abstract_host.js', ['cvox.AbstractHost'], []);
+
+goog.addDependency(
+    '../host/interface/tts_interface.js', ['cvox.TtsInterface'], []);
+
+goog.addDependency(
+    '../host/interface/braille_interface.js', ['cvox.BrailleInterface'], []);
+
+goog.addDependency(
+    '../host/interface/mathjax_interface.js', ['cvox.MathJaxInterface'], []);
+
+goog.addDependency('../chromevox/messages/msgs.js', ['Msgs'], []);
+
+goog.addDependency(
+    '../host/interface/abstract_earcons.js', ['cvox.AbstractEarcons'], []);
+
+goog.addDependency(
+    '../chromevox/common/key_sequence.js', ['cvox.KeySequence'], []);
+
+goog.addDependency(
+    '../chromevox/injected/navigation_manager.js', ['cvox.NavigationManager'],
     []);
 
 goog.addDependency(
-    '../host/interface/tts_interface.js',
-    ['cvox.TtsInterface'],
-    []);
-
-goog.addDependency(
-    '../host/interface/braille_interface.js',
-    ['cvox.BrailleInterface'],
-    []);
-
-goog.addDependency(
-    '../host/interface/mathjax_interface.js',
-    ['cvox.MathJaxInterface'],
-    []);
-
-goog.addDependency(
-    '../chromevox/messages/msgs.js',
-    ['Msgs'],
-    []);
-
-goog.addDependency(
-    '../host/interface/abstract_earcons.js',
-    ['cvox.AbstractEarcons'],
-    []);
-
-goog.addDependency(
-    '../chromevox/common/key_sequence.js',
-    ['cvox.KeySequence'],
-    []);
-
-goog.addDependency(
-    '../chromevox/injected/navigation_manager.js',
-    ['cvox.NavigationManager'],
-    []);
-
-goog.addDependency(
-    '../chromevox/injected/serializer.js',
-    ['cvox.Serializer'],
-    []);
+    '../chromevox/injected/serializer.js', ['cvox.Serializer'], []);
 
 // Constants
 /**
@@ -202,8 +184,7 @@ cvox.ChromeVox.markInUserCommand = function() {};
  * @param {boolean=} speakNode If true, speaks out the node.
  * @param {number=} opt_queueMode The queue mode to use for speaking.
  */
-cvox.ChromeVox.syncToNode = function(
-    targetNode, speakNode, opt_queueMode) {};
+cvox.ChromeVox.syncToNode = function(targetNode, speakNode, opt_queueMode) {};
 
 /**
  * Provide a way for modules that can't depend on cvox.ChromeVoxUserCommands

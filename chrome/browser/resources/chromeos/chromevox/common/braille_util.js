@@ -36,11 +36,7 @@ cvox.BrailleUtil.ITEM_SEPARATOR = ' ';
  * @type {!Array<string>}
  */
 cvox.BrailleUtil.CONTAINER = [
-  'tag_h1_brl',
-  'tag_h2_brl',
-  'tag_h3_brl',
-  'tag_h4_brl',
-  'tag_h5_brl',
+  'tag_h1_brl', 'tag_h2_brl', 'tag_h3_brl', 'tag_h4_brl', 'tag_h5_brl',
   'tag_h6_brl'
 ];
 
@@ -180,13 +176,13 @@ cvox.BrailleUtil.getValue = function(node) {
     var spannable = new Spannable(value, valueSpan);
     if (node === document.activeElement &&
         cvox.DomUtil.doesInputSupportSelection(node)) {
-      var selectionStart = cvox.BrailleUtil.clamp_(
-          node.selectionStart, 0, spannable.length);
-      var selectionEnd = cvox.BrailleUtil.clamp_(
-          node.selectionEnd, 0, spannable.length);
-      spannable.setSpan(new cvox.ValueSelectionSpan(),
-                        Math.min(selectionStart, selectionEnd),
-                        Math.max(selectionStart, selectionEnd));
+      var selectionStart =
+          cvox.BrailleUtil.clamp_(node.selectionStart, 0, spannable.length);
+      var selectionEnd =
+          cvox.BrailleUtil.clamp_(node.selectionEnd, 0, spannable.length);
+      spannable.setSpan(
+          new cvox.ValueSelectionSpan(), Math.min(selectionStart, selectionEnd),
+          Math.max(selectionStart, selectionEnd));
     }
     return spannable;
   } else if (node instanceof HTMLTextAreaElement) {
@@ -203,9 +199,9 @@ cvox.BrailleUtil.getValue = function(node) {
           node.selectionStart - lineStart, 0, spannable.length);
       var selectionEnd = cvox.BrailleUtil.clamp_(
           node.selectionEnd - lineStart, 0, spannable.length);
-      spannable.setSpan(new cvox.ValueSelectionSpan(),
-                        Math.min(selectionStart, selectionEnd),
-                        Math.max(selectionStart, selectionEnd));
+      spannable.setSpan(
+          new cvox.ValueSelectionSpan(), Math.min(selectionStart, selectionEnd),
+          Math.max(selectionStart, selectionEnd));
     }
     return spannable;
   } else {
@@ -231,8 +227,8 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
   opt_override = opt_override ? opt_override : {};
   var roleMsg = opt_override.roleMsg ||
       (node ? cvox.DomUtil.getRoleMsg(node, cvox.VERBOSITY_VERBOSE) : '');
-  var template = cvox.BrailleUtil.TEMPLATE[roleMsg] ||
-      cvox.BrailleUtil.TEMPLATE['base'];
+  var template =
+      cvox.BrailleUtil.TEMPLATE[roleMsg] || cvox.BrailleUtil.TEMPLATE['base'];
   var state = opt_override.state;
   if (!state) {
     if (node) {
@@ -244,8 +240,7 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
   }
   var role = opt_override.role || '';
   if (!role && roleMsg) {
-    role = Msgs.getMsg(roleMsg + '_brl') ||
-        Msgs.getMsg(roleMsg);
+    role = Msgs.getMsg(roleMsg + '_brl') || Msgs.getMsg(roleMsg);
   }
 
   var templated = new Spannable();
@@ -274,8 +269,8 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
     // should be placed on the empty space after the empty value.
     if (!component.toString() && template[i + 1] == ' ' &&
         (!(component instanceof Spannable) ||
-        !/**@type {Spannable}*/(component).getSpanInstanceOf(
-            cvox.ValueSelectionSpan))) {
+         !/**@type {Spannable}*/ (component).getSpanInstanceOf(
+             cvox.ValueSelectionSpan))) {
       i++;
     }
   }
@@ -293,8 +288,8 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
  * @param {number=} opt_textOffset Start offset of text.
  * @return {!Spannable} The value spannable.
  */
-cvox.BrailleUtil.createValue = function(text, opt_selStart, opt_selEnd,
-                                        opt_textOffset) {
+cvox.BrailleUtil.createValue = function(
+    text, opt_selStart, opt_selEnd, opt_textOffset) {
   var spannable = new Spannable(text, new cvox.ValueSpan(opt_textOffset || 0));
   if (goog.isDef(opt_selStart)) {
     opt_selEnd = goog.isDef(opt_selEnd) ? opt_selEnd : opt_selStart;
@@ -328,22 +323,22 @@ cvox.BrailleUtil.createValue = function(text, opt_selStart, opt_selEnd,
 cvox.BrailleUtil.click = function(braille, opt_displayPosition) {
   var handled = false;
   var spans = braille.text.getSpans(opt_displayPosition || 0);
-  var node = spans.filter(function(n) { return n instanceof Node; })[0];
+  var node = spans.filter(function(n) {
+    return n instanceof Node;
+  })[0];
   if (node) {
     if (goog.isDef(opt_displayPosition) &&
         (cvox.DomUtil.isInputTypeText(node) ||
-            node instanceof HTMLTextAreaElement)) {
-      var valueSpan = spans.filter(
-          function(s) {
-            return s instanceof cvox.ValueSpan;
-          })[0];
+         node instanceof HTMLTextAreaElement)) {
+      var valueSpan = spans.filter(function(s) {
+        return s instanceof cvox.ValueSpan;
+      })[0];
       if (valueSpan) {
         if (document.activeElement !== node) {
           cvox.Focuser.setFocus(node);
         }
         var cursorPosition = opt_displayPosition -
-            braille.text.getSpanStart(valueSpan) +
-            valueSpan.offset;
+            braille.text.getSpanStart(valueSpan) + valueSpan.offset;
         cvox.ChromeVoxEventWatcher.setUpTextHandler();
         node.selectionStart = node.selectionEnd = cursorPosition;
         cvox.ChromeVoxEventWatcher.handleTextChanged(true);
@@ -353,8 +348,8 @@ cvox.BrailleUtil.click = function(braille, opt_displayPosition) {
   }
   if (!handled) {
     cvox.DomUtil.clickElem(
-        node || cvox.ChromeVox.navigationManager.getCurrentNode(),
-        false, false, false, true);
+        node || cvox.ChromeVox.navigationManager.getCurrentNode(), false, false,
+        false, true);
   }
 };
 

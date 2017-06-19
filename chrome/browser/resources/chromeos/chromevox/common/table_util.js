@@ -37,10 +37,11 @@ cvox.TableUtil.checkIfHeader = function(cell) {
    * interest of providing meaningful header information for all tables, here
    * we take the position that <TD> elements can act as headers.
    */
-  return ((cell.tagName == 'TH') ||
-      cell.hasAttribute('scope') || (cell.hasAttribute('role') &&
-          ((cell.getAttribute('role') == 'rowheader') ||
-              (cell.getAttribute('role') == 'columnheader'))));
+  return (
+      (cell.tagName == 'TH') || cell.hasAttribute('scope') ||
+      (cell.hasAttribute('role') &&
+       ((cell.getAttribute('role') == 'rowheader') ||
+        (cell.getAttribute('role') == 'columnheader'))));
 };
 
 
@@ -60,15 +61,12 @@ cvox.TableUtil.determineColGroups = function(colGroups) {
   }
   // A colgroup has either a series of col element children or a span
   // attribute. If it has col children, ignore the span attribute
-  for (var colGroupCtr = 0; colGroupCtr < colGroups.length;
-       colGroupCtr++) {
-
+  for (var colGroupCtr = 0; colGroupCtr < colGroups.length; colGroupCtr++) {
     var currentColGroup = colGroups[colGroupCtr];
 
     var childCols = cvox.TableUtil.getColNodes(currentColGroup);
     if (childCols.length > 0) {
-      for (var colNodeCtr = 0; colNodeCtr < childCols.length;
-          colNodeCtr++) {
+      for (var colNodeCtr = 0; colNodeCtr < childCols.length; colNodeCtr++) {
         var colElement = childCols[colNodeCtr];
 
         if (colElement.hasAttribute('span')) {
@@ -120,8 +118,10 @@ cvox.TableUtil.pushIfNotContained = function(givenArray, givenElement) {
  * @return {Array} An array of all the child rows of the active table.
  */
 cvox.TableUtil.getChildRows = function(table) {
-  return cvox.XpathUtil.evalXPath('child::tbody/tr | child::thead/tr | ' +
-      'child::*[attribute::role="row"]', table);
+  return cvox.XpathUtil.evalXPath(
+      'child::tbody/tr | child::thead/tr | ' +
+          'child::*[attribute::role="row"]',
+      table);
 };
 
 
@@ -133,10 +133,12 @@ cvox.TableUtil.getChildRows = function(table) {
  * @return {Array} An array of all the child cells of the given row node.
  */
 cvox.TableUtil.getChildCells = function(rowNode) {
-  return cvox.XpathUtil.evalXPath('child::td | child::th | ' +
-      'child::*[attribute::role="gridcell"] |' +
-      'child::*[attribute::role="rowheader"] |' +
-      'child::*[attribute::role="columnheader"]', rowNode);
+  return cvox.XpathUtil.evalXPath(
+      'child::td | child::th | ' +
+          'child::*[attribute::role="gridcell"] |' +
+          'child::*[attribute::role="rowheader"] |' +
+          'child::*[attribute::role="columnheader"]',
+      rowNode);
 };
 
 
@@ -176,4 +178,3 @@ cvox.TableUtil.getColGroups = function(table) {
 cvox.TableUtil.getColNodes = function(colGroupNode) {
   return cvox.XpathUtil.evalXPath('child::col', colGroupNode);
 };
-

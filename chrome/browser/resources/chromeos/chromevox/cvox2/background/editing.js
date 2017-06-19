@@ -74,12 +74,11 @@ function TextFieldTextEditHandler(node) {
   editing.TextEditHandler.call(this, node);
 
   chrome.automation.getDesktop(function(desktop) {
-    var useRichText = editing.useRichText &&
-        node.state.richlyEditable;
+    var useRichText = editing.useRichText && node.state.richlyEditable;
 
     /** @private {!AutomationEditableText} */
-    this.editableText_ = useRichText ?
-        new AutomationRichEditableText(node) : new AutomationEditableText(node);
+    this.editableText_ = useRichText ? new AutomationRichEditableText(node) :
+                                       new AutomationEditableText(node);
   }.bind(this));
 }
 
@@ -90,11 +89,9 @@ TextFieldTextEditHandler.prototype = {
   onEvent: function(evt) {
     if (evt.type !== EventType.TEXT_CHANGED &&
         evt.type !== EventType.TEXT_SELECTION_CHANGED &&
-        evt.type !== EventType.VALUE_CHANGED &&
-        evt.type !== EventType.FOCUS)
+        evt.type !== EventType.VALUE_CHANGED && evt.type !== EventType.FOCUS)
       return;
-    if (!evt.target.state.focused ||
-        !evt.target.state.editable ||
+    if (!evt.target.state.focused || !evt.target.state.editable ||
         evt.target != this.node_)
       return;
 
@@ -115,12 +112,8 @@ function AutomationEditableText(node) {
   var start = node.textSelStart;
   var end = node.textSelEnd;
   cvox.ChromeVoxEditableTextBase.call(
-      this,
-      node.value || '',
-      Math.min(start, end),
-      Math.max(start, end),
-      node.state[StateType.PROTECTED] /**password*/,
-      cvox.ChromeVox.tts);
+      this, node.value || '', Math.min(start, end), Math.max(start, end),
+      node.state[StateType.PROTECTED] /**password*/, cvox.ChromeVox.tts);
   /** @override */
   this.multiline = node.state[StateType.MULTILINE] || false;
   /** @type {!AutomationNode} @private */
@@ -142,9 +135,7 @@ AutomationEditableText.prototype = {
       this.lineBreaks_ = [];
 
     var textChangeEvent = new cvox.TextChangeEvent(
-        newValue,
-        this.node_.textSelStart || 0,
-        this.node_.textSelEnd || 0,
+        newValue, this.node_.textSelStart || 0, this.node_.textSelEnd || 0,
         true /* triggered by user */);
     this.changed(textChangeEvent);
     this.outputBraille_();
@@ -241,18 +232,15 @@ AutomationRichEditableText.prototype = {
       return;
 
     var cur = new editing.EditableLine(
-        root.anchorObject, root.anchorOffset || 0,
-        root.focusObject, root.focusOffset || 0);
+        root.anchorObject, root.anchorOffset || 0, root.focusObject,
+        root.focusOffset || 0);
     var prev = this.line_;
     this.line_ = cur;
 
     if (prev.equals(cur)) {
       // Collapsed cursor.
       this.changed(new cvox.TextChangeEvent(
-          cur.text || '',
-          cur.startOffset || 0,
-          cur.endOffset || 0,
-          true));
+          cur.text || '', cur.startOffset || 0, cur.endOffset || 0, true));
       this.brailleCurrentRichLine_();
 
       // Finally, queue up any text markers/styles at bounds.
@@ -324,9 +312,9 @@ AutomationRichEditableText.prototype = {
 
     if (msgs.length) {
       msgs.forEach(function(msg) {
-        cvox.ChromeVox.tts.speak(Msgs.getMsg(msg),
-                                 cvox.QueueMode.QUEUE,
-                                 cvox.AbstractTts.PERSONALITY_ANNOTATION);
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg(msg), cvox.QueueMode.QUEUE,
+            cvox.AbstractTts.PERSONALITY_ANNOTATION);
       });
     }
   },
@@ -349,9 +337,9 @@ AutomationRichEditableText.prototype = {
 
     if (msgs.length) {
       msgs.forEach(function(msg) {
-        cvox.ChromeVox.tts.speak(Msgs.getMsg(msg),
-                                 cvox.QueueMode.QUEUE,
-                                 cvox.AbstractTts.PERSONALITY_ANNOTATION);
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg(msg), cvox.QueueMode.QUEUE,
+            cvox.AbstractTts.PERSONALITY_ANNOTATION);
       });
     }
   },
@@ -364,9 +352,7 @@ AutomationRichEditableText.prototype = {
     value.setSpan(
         new cvox.ValueSelectionSpan(), cur.startOffset, cur.endOffset);
     cvox.ChromeVox.braille.write(new cvox.NavBraille(
-        {text: value,
-         startIndex: cur.startOffset,
-         endIndex: cur.endOffset}));
+        {text: value, startIndex: cur.startOffset, endIndex: cur.endOffset}));
   },
 
   /** @override */
@@ -456,7 +442,7 @@ editing.observer_ = new editing.EditingChromeVoxStateObserver();
  * An EditableLine encapsulates all data concerning a line in the automation
  * tree necessary to provide output.
  * @constructor
-  */
+ */
 editing.EditableLine = function(startNode, startIndex, endNode, endIndex) {
   /** @private {!Cursor} */
   this.start_ = new Cursor(startNode, startIndex);
@@ -596,7 +582,8 @@ editing.EditableLine.prototype = {
         // Also, annotate this span if it is associated with line containre.
         if (parent == this.startContainer_)
           this.value_.setSpan(parent, prevLen, len);
-      } catch (e) {}
+      } catch (e) {
+      }
     }
   },
 
@@ -671,7 +658,7 @@ editing.EditableLine.prototype = {
     // staying the same.
     return otherLine.lineStartContainer_ == this.lineStartContainer_ &&
         otherLine.localLineStartContainerOffset_ ==
-            this.localLineStartContainerOffset_;
+        this.localLineStartContainerOffset_;
   }
 };
 

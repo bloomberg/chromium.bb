@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE(['assert_additions.js']);
-GEN_INCLUDE(['common.js',
-    'callback_helper.js']);
+GEN_INCLUDE(['common.js', 'callback_helper.js']);
 
 /**
  * Base test fixture for ChromeVox unit tests.
@@ -123,7 +122,7 @@ ChromeVoxUnitTestBase.prototype = {
     cvox.ChromeVoxEventWatcher.addReadyCallback(this.newCallback(function() {
       func.apply(this, calmArguments);
     }));
-    return this; // for chaining.
+    return this;  // for chaining.
   },
 
   /**
@@ -132,10 +131,10 @@ ChromeVoxUnitTestBase.prototype = {
    * @return {ChromeVoxUnitTestBase} this.
    */
   assertSpoken: function(expectedText) {
-    assertEquals(expectedText,
-                 cvox.ChromeVoxTester.testTts().getUtterancesAsString());
+    assertEquals(
+        expectedText, cvox.ChromeVoxTester.testTts().getUtterancesAsString());
     cvox.ChromeVoxTester.clearUtterances();
-    return this; // for chaining.
+    return this;  // for chaining.
   },
 
   /**
@@ -154,11 +153,11 @@ ChromeVoxUnitTestBase.prototype = {
     for (var i = 0; i < expectedList.length; i++) {
       var text = expectedList[i][0];
       var queueMode = expectedList[i][1];
-      this.assertSingleUtterance_(text, queueMode,
-                                  ulist[i].text, ulist[i].queueMode);
+      this.assertSingleUtterance_(
+          text, queueMode, ulist[i].text, ulist[i].queueMode);
     }
     cvox.ChromeVoxTester.clearUtterances();
-    return this; // for chaining.
+    return this;  // for chaining.
   },
 
   assertSingleUtterance_: function(
@@ -174,7 +173,7 @@ ChromeVoxUnitTestBase.prototype = {
    */
   setFocus: function(id) {
     $(id).focus();
-    return this; // for chaining.
+    return this;  // for chaining.
   },
 
   /**
@@ -184,7 +183,7 @@ ChromeVoxUnitTestBase.prototype = {
    */
   userCommand: function(command) {
     cvox.ChromeVoxUserCommands.commands[command]();
-    return this; // for chaining.
+    return this;  // for chaining.
   },
 
   /**

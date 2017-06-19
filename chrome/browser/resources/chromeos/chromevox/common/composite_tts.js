@@ -40,8 +40,8 @@ cvox.CompositeTts.prototype.add = function(tts) {
 /**
  * @override
  */
-cvox.CompositeTts.prototype.speak =
-    function(textString, queueMode, properties) {
+cvox.CompositeTts.prototype.speak = function(
+    textString, queueMode, properties) {
   this.ttsEngines_.forEach(function(engine) {
     engine.speak(textString, queueMode, properties);
   });
@@ -83,8 +83,8 @@ cvox.CompositeTts.prototype.addCapturingEventListener = function(listener) {
 /**
  * @override
  */
-cvox.CompositeTts.prototype.increaseOrDecreaseProperty =
-    function(propertyName, increase) {
+cvox.CompositeTts.prototype.increaseOrDecreaseProperty = function(
+    propertyName, increase) {
   this.ttsEngines_.forEach(function(engine) {
     engine.increaseOrDecreaseProperty(propertyName, increase);
   });

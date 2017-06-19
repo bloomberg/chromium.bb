@@ -93,11 +93,11 @@ cvox.ChromeVoxHTMLDateWidget = function(dateElem, tts) {
   for (var i = 0; i < this.maxPos_; i++) {
     var evt = document.createEvent('KeyboardEvent');
     evt.initKeyboardEvent(
-          'keydown', true, true, window, 'Left', 0, false, false, false, false);
+        'keydown', true, true, window, 'Left', 0, false, false, false, false);
     this.dateElem_.dispatchEvent(evt);
     evt = document.createEvent('KeyboardEvent');
     evt.initKeyboardEvent(
-          'keyup', true, true, window, 'Left', 0, false, false, false, false);
+        'keyup', true, true, window, 'Left', 0, false, false, false, false);
     this.dateElem_.dispatchEvent(evt);
   }
 
@@ -130,7 +130,7 @@ cvox.ChromeVoxHTMLDateWidget.prototype.forceInitTime_ = function() {
   // start at 1.
   var monthString = currentDate.getMonth() + 1 + '';
   if (monthString.length < 2) {
-    monthString = '0' + monthString; // Month format is MM.
+    monthString = '0' + monthString;  // Month format is MM.
   }
   var dayString = currentDate.getDate() + '';
 
@@ -151,7 +151,7 @@ cvox.ChromeVoxHTMLDateWidget.prototype.forceInitTime_ = function() {
       var weekString =
           Math.ceil((((currentDate - yearStart) / 86400000) + 1) / 7) + '';
       if (weekString.length < 2) {
-        weekString = '0' + weekString; // Week format is WXX.
+        weekString = '0' + weekString;  // Week format is WXX.
       }
       weekString = 'W' + weekString;
       valueString = yearString + '-' + weekString;
@@ -231,8 +231,8 @@ cvox.ChromeVoxHTMLDateWidget.prototype.update_ = function(shouldSpeakLabel) {
   }
 
   if (week != this.pWeek_) {
-    changeMessage = changeMessage +
-        Msgs.getMsg('datewidget_week') + week + '\n';
+    changeMessage =
+        changeMessage + Msgs.getMsg('datewidget_week') + week + '\n';
     this.pWeek_ = week;
   }
 

@@ -108,9 +108,11 @@ cvox.PanStrategy.prototype = {
    * braille and text indices of the current slice.
    */
   get offsetsForSlices() {
-    return {brailleOffset: this.viewPort_.firstRow * this.displaySize_.columns,
-     textOffset: this.brailleToText[this.viewPort_.firstRow *
-         this.displaySize_.columns]};
+    return {
+      brailleOffset: this.viewPort_.firstRow * this.displaySize_.columns,
+      textOffset: this.brailleToText
+                      [this.viewPort_.firstRow * this.displaySize_.columns]
+    };
   },
 
   /**
@@ -124,8 +126,8 @@ cvox.PanStrategy.prototype = {
    * @return {number} The number of lines in the wrappedBuffer.
    */
   get wrappedLineCount() {
-     return Math.ceil(this.wrappedBuffer_.byteLength /
-         this.displaySize_.columns);
+    return Math.ceil(
+        this.wrappedBuffer_.byteLength / this.displaySize_.columns);
   },
 
   /**
@@ -144,9 +146,10 @@ cvox.PanStrategy.prototype = {
    *    bounds of the viewport.
    */
   getCurrentBrailleViewportContents: function() {
-    var buf = this.panStrategyWrapped_ ?
-        this.wrappedBuffer_ : this.fixedBuffer_;
-    return buf.slice(this.viewPort_.firstRow * this.displaySize_.columns,
+    var buf =
+        this.panStrategyWrapped_ ? this.wrappedBuffer_ : this.fixedBuffer_;
+    return buf.slice(
+        this.viewPort_.firstRow * this.displaySize_.columns,
         (this.viewPort_.lastRow + 1) * this.displaySize_.columns);
   },
 
@@ -188,8 +191,8 @@ cvox.PanStrategy.prototype = {
    */
   setDisplaySize: function(rowCount, columnCount) {
     this.displaySize_ = {rows: rowCount, columns: columnCount};
-    this.setContent(this.textBuffer_, this.fixedBuffer_,
-        this.fixedBrailleToText_, 0);
+    this.setContent(
+        this.textBuffer_, this.fixedBuffer_, this.fixedBrailleToText_, 0);
   },
 
   /**
@@ -202,8 +205,8 @@ cvox.PanStrategy.prototype = {
    * @param {number} targetPosition Target position.  The viewport is changed
    *     to overlap this position.
    */
-  setContent: function(textBuffer, translatedContent, fixedBrailleToText,
-                  targetPosition) {
+  setContent: function(
+      textBuffer, translatedContent, fixedBrailleToText, targetPosition) {
     this.viewPort_.firstRow = 0;
     this.viewPort_.lastRow = this.displaySize_.rows - 1;
     this.fixedBrailleToText_ = fixedBrailleToText;
@@ -219,18 +222,19 @@ cvox.PanStrategy.prototype = {
     var cellsPadded = 0;
     var index;
     for (index = 0; index < translatedContent.byteLength + cellsPadded;
-        index++) {
+         index++) {
       // Is index at the beginning of a new line?
       if (index != 0 && index % this.displaySize_.columns == 0) {
         if (view[index - cellsPadded] == 0) {
           // Delete all empty cells at the beginning of this line.
           while (index - cellsPadded < view.length &&
-              view[index - cellsPadded] == 0) {
+                 view[index - cellsPadded] == 0) {
             cellsPadded--;
           }
           index--;
           lastBreak = index;
-        } else if (view[index - cellsPadded - 1] != 0 &&
+        } else if (
+            view[index - cellsPadded - 1] != 0 &&
             lastBreak % this.displaySize_.columns != 0) {
           // If first cell is not empty, we need to move the whole word down to
           // this line and padd to previous line with 0's, from |lastBreak| to
@@ -275,8 +279,8 @@ cvox.PanStrategy.prototype = {
    * @return {boolean} {@code true} if the viewport was changed.
    */
   next: function() {
-    var contentLength = this.panStrategyWrapped_ ?
-        this.wrappedLineCount : this.fixedLineCount;
+    var contentLength =
+        this.panStrategyWrapped_ ? this.wrappedLineCount : this.fixedLineCount;
     var newStart = this.viewPort_.lastRow + 1;
     var newEnd;
     if (newStart + this.displaySize_.rows - 1 < contentLength) {
@@ -297,8 +301,8 @@ cvox.PanStrategy.prototype = {
    * @return {boolean} {@code true} if the viewport was changed.
    */
   previous: function() {
-    var contentLength = this.panStrategyWrapped_ ?
-        this.wrappedLineCount : this.fixedLineCount;
+    var contentLength =
+        this.panStrategyWrapped_ ? this.wrappedLineCount : this.fixedLineCount;
     if (this.viewPort_.firstRow > 0) {
       var newStart, newEnd;
       if (this.viewPort_.firstRow < this.displaySize_.rows) {
@@ -324,8 +328,9 @@ cvox.PanStrategy.prototype = {
   panToPosition_: function(position) {
     if (this.displaySize_.rows * this.displaySize_.columns > 0) {
       this.viewPort_ = {firstRow: -1, lastRow: -1};
-      while (this.next() && (this.viewPort_.lastRow + 1) *
-          this.displaySize_.columns <= position) {
+      while (this.next() &&
+             (this.viewPort_.lastRow + 1) * this.displaySize_.columns <=
+                 position) {
         // Nothing to do.
       }
     } else {
