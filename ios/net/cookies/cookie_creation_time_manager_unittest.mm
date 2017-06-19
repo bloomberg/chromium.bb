@@ -11,6 +11,10 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace net {
 
 class CookieCreationTimeManagerTest : public testing::Test {

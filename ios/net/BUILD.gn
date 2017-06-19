@@ -75,6 +75,7 @@ source_set("net") {
 }
 
 test("ios_net_unittests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":net",
     "//base",

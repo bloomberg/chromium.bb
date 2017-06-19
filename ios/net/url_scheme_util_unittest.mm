@@ -10,6 +10,10 @@
 #import "testing/gtest_mac.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace net {
 
 const char* kSchemeTestData[] = {
