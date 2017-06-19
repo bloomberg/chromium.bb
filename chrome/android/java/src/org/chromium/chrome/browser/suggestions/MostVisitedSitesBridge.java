@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import android.text.TextUtils;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -39,7 +37,7 @@ public class MostVisitedSitesBridge
 
                 @Override
                 public boolean isNewTabPageUsedAsHomePage() {
-                    return TextUtils.equals(getHomePageUrl(), UrlConstants.NTP_URL);
+                    return NewTabPage.isNTPUrl(getHomePageUrl());
                 }
 
                 @Override
