@@ -10,22 +10,9 @@ namespace {
 
 const int kDefaultBackgroundChildPurgeCandidatePeriodSeconds = 30;
 
-MemoryState CalculateMemoryStateForProcess(MemoryCondition condition,
-                                           bool is_visible) {
-  // The current heuristics for state calculation:
-  // - Foregrounded(visible) processes: THROTTLED when condition is CRITICAL,
-  //   otherwise NORMAL.
-  // - Backgrounded(invisible) processes: THROTTLED when condition is
-  //   WARNING/CRITICAL, otherwise NORMAL.
-  switch (condition) {
-    case MemoryCondition::NORMAL:
-      return MemoryState::NORMAL;
-    case MemoryCondition::WARNING:
-      return is_visible ? MemoryState::NORMAL : MemoryState::THROTTLED;
-    case MemoryCondition::CRITICAL:
-      return MemoryState::THROTTLED;
-  }
-  NOTREACHED();
+MemoryState CalculateMemoryStateForProcess(MemoryCondition condition) {
+  if (condition == MemoryCondition::CRITICAL)
+    return MemoryState::THROTTLED;
   return MemoryState::NORMAL;
 }
 
@@ -38,10 +25,6 @@ MemoryCoordinatorDefaultPolicy::MemoryCoordinatorDefaultPolicy(
 }
 
 MemoryCoordinatorDefaultPolicy::~MemoryCoordinatorDefaultPolicy() {}
-
-void MemoryCoordinatorDefaultPolicy::OnWarningCondition() {
-  TryToPurgeMemoryFromChildren(PurgeTarget::BACKGROUNDED);
-}
 
 void MemoryCoordinatorDefaultPolicy::OnCriticalCondition() {
   coordinator_->DiscardTab();
@@ -61,15 +44,6 @@ void MemoryCoordinatorDefaultPolicy::OnConditionChanged(MemoryCondition prev,
     // Set NORMAL state to all clients/processes.
     coordinator_->SetBrowserMemoryState(MemoryState::NORMAL);
     SetMemoryStateToAllChildren(MemoryState::NORMAL);
-  } else if (next == MemoryCondition::WARNING) {
-    // Set NORMAL state to foreground proceses and clients in the browser
-    // process. Set THROTTLED state to background processes.
-    coordinator_->SetBrowserMemoryState(MemoryState::NORMAL);
-    for (auto& iter : coordinator_->children()) {
-      auto state =
-          iter.second.is_visible ? MemoryState::NORMAL : MemoryState::THROTTLED;
-      coordinator_->SetChildMemoryState(iter.first, state);
-    }
   } else if (next == MemoryCondition::CRITICAL) {
     // Set THROTTLED state to all clients/processes.
     coordinator_->SetBrowserMemoryState(MemoryState::THROTTLED);
@@ -93,8 +67,8 @@ void MemoryCoordinatorDefaultPolicy::OnChildVisibilityChanged(
         base::TimeDelta::FromSeconds(
             kDefaultBackgroundChildPurgeCandidatePeriodSeconds);
   }
-  MemoryState new_state = CalculateMemoryStateForProcess(
-      coordinator_->GetMemoryCondition(), is_visible);
+  MemoryState new_state =
+      CalculateMemoryStateForProcess(coordinator_->GetMemoryCondition());
   coordinator_->SetChildMemoryState(render_process_id, new_state);
 }
 

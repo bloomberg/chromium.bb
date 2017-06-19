@@ -38,8 +38,7 @@ using MemoryState = base::MemoryState;
 // to purge memory, and scheduling tab discarding.
 enum class MemoryCondition : int {
   NORMAL = 0,
-  WARNING = 1,
-  CRITICAL = 2,
+  CRITICAL = 1,
 };
 
 // MemoryCoordinatorImpl is an implementation of MemoryCoordinator.
@@ -55,8 +54,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
    public:
     virtual ~Policy() {}
 
-    // Called periodically while the memory condition is WARNING.
-    virtual void OnWarningCondition() {}
     // Called periodically while the memory condition is CRITICAL.
     virtual void OnCriticalCondition() {}
     // Called when the current MemoryCondition has changed.
