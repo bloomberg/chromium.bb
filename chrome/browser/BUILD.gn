@@ -1172,6 +1172,8 @@ split_static_library("browser") {
     "safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h",
     "safe_browsing/chrome_cleaner/reporter_runner_win.cc",
     "safe_browsing/chrome_cleaner/reporter_runner_win.h",
+    "safe_browsing/chrome_cleaner/settings_resetter_win.cc",
+    "safe_browsing/chrome_cleaner/settings_resetter_win.h",
     "safe_browsing/chrome_cleaner/srt_chrome_prompt_impl.cc",
     "safe_browsing/chrome_cleaner/srt_chrome_prompt_impl.h",
     "safe_browsing/chrome_cleaner/srt_client_info_win.cc",

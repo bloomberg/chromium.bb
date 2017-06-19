@@ -31,6 +31,7 @@ const wchar_t kCleanerSubKey[] = L"Cleaner";
 const wchar_t kScanTimesSubKey[] = L"ScanTimes";
 
 // Registry value names.
+const wchar_t kCleanupCompletedValueName[] = L"cleanup-completed";
 const wchar_t kEndTimeValueName[] = L"EndTime";
 const wchar_t kEngineErrorCodeValueName[] = L"EngineErrorCode";
 const wchar_t kExitCodeValueName[] = L"ExitCode";

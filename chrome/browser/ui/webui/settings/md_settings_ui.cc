@@ -182,7 +182,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature) &&
       safe_browsing::ChromeCleanerController::ShouldShowCleanupInSettingsUI()) {
-    AddSettingsPageUIHandler(base::MakeUnique<ChromeCleanupHandler>());
+    AddSettingsPageUIHandler(base::MakeUnique<ChromeCleanupHandler>(profile));
     html_source->AddBoolean("chromeCleanupEnabled", true);
   }
 #endif  // defined(OS_WIN)

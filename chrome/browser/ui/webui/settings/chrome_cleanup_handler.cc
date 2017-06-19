@@ -53,8 +53,8 @@ std::string IdleReasonToString(
 
 }  // namespace
 
-ChromeCleanupHandler::ChromeCleanupHandler()
-    : controller_(ChromeCleanerController::GetInstance()) {}
+ChromeCleanupHandler::ChromeCleanupHandler(Profile* profile)
+    : controller_(ChromeCleanerController::GetInstance()), profile_(profile) {}
 
 ChromeCleanupHandler::~ChromeCleanupHandler() {
   controller_->RemoveObserver(this);
@@ -146,7 +146,7 @@ void ChromeCleanupHandler::HandleStartCleanup(const base::ListValue* args) {
   DCHECK_EQ(0U, args->GetSize());
 
   controller_->ReplyWithUserResponse(
-      ChromeCleanerController::UserResponse::kAccepted);
+      profile_, ChromeCleanerController::UserResponse::kAccepted);
 }
 
 }  // namespace settings

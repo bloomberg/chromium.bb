@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "base/base_switches.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
@@ -33,11 +34,14 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_controller.h"
 #include "chrome/browser/shell_integration.h"
@@ -367,6 +371,19 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
       base::Bind(&VerifyInstallation));
 
   InitializeChromeElf();
+
+  // Reset settings for the current profile if it's tagged to be reset after a
+  // complete run of the Chrome Cleanup tool.
+  if (safe_browsing::PostCleanupSettingsResetter::IsEnabled()) {
+    // Using last opened profiles, because we want to find reset the profile
+    // that was open in the last Chrome run, which may not be open yet in
+    // the current run.
+    safe_browsing::PostCleanupSettingsResetter().ResetTaggedProfiles(
+        g_browser_process->profile_manager()->GetLastOpenedProfiles(),
+        base::BindOnce(&base::DoNothing),
+        base::MakeUnique<
+            safe_browsing::PostCleanupSettingsResetter::Delegate>());
+  }
 
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
     content::BrowserThread::PostAfterStartupTask(

@@ -12,6 +12,8 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
+class Profile;
+
 namespace settings {
 
 // Chrome Cleanup settings page UI handler.
@@ -19,7 +21,7 @@ class ChromeCleanupHandler
     : public SettingsPageUIHandler,
       public safe_browsing::ChromeCleanerController::Observer {
  public:
-  ChromeCleanupHandler();
+  explicit ChromeCleanupHandler(Profile* profile);
   ~ChromeCleanupHandler() override;
 
   // SettingsPageUIHandler implementation.
@@ -55,6 +57,8 @@ class ChromeCleanupHandler
 
   // Raw pointer to a singleton. Must outlive this object.
   safe_browsing::ChromeCleanerController* controller_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanupHandler);
 };

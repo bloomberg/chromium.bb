@@ -79,6 +79,9 @@ extern const wchar_t kCleanerSubKey[];
 // The suffix for registry key paths where scan times will be written to.
 extern const wchar_t kScanTimesSubKey[];
 
+// Registry value names that indicate if a cleanup has completed.
+extern const wchar_t kCleanupCompletedValueName[];
+
 // Registry value names where metrics are written to.
 extern const wchar_t kEndTimeValueName[];
 extern const wchar_t kEngineErrorCodeValueName[];

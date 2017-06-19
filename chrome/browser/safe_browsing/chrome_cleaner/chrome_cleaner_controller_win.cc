@@ -19,9 +19,13 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/installer/util/scoped_token_privilege.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
@@ -116,6 +120,21 @@ bool ChromeCleanerControllerDelegate::IsMetricsAndCrashReportingEnabled() {
   return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 }
 
+void ChromeCleanerControllerDelegate::TagForResetting(Profile* profile) {
+  if (PostCleanupSettingsResetter::IsEnabled())
+    PostCleanupSettingsResetter().TagForResetting(profile);
+}
+
+void ChromeCleanerControllerDelegate::ResetTaggedProfiles(
+    std::vector<Profile*> profiles,
+    base::OnceClosure continuation) {
+  if (PostCleanupSettingsResetter::IsEnabled()) {
+    PostCleanupSettingsResetter().ResetTaggedProfiles(
+        std::move(profiles), std::move(continuation),
+        base::MakeUnique<PostCleanupSettingsResetter::Delegate>());
+  }
+}
+
 // static
 ChromeCleanerController* ChromeCleanerController::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -178,6 +197,7 @@ void ChromeCleanerController::Scan(
 }
 
 void ChromeCleanerController::ReplyWithUserResponse(
+    Profile* profile,
     UserResponse user_response) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(prompt_user_callback_);
@@ -191,6 +211,7 @@ void ChromeCleanerController::ReplyWithUserResponse(
     case UserResponse::kAccepted:
       acceptance = PromptAcceptance::ACCEPTED;
       new_state = State::kCleaning;
+      delegate_->TagForResetting(profile);
       break;
     case UserResponse::kDenied:  // Fallthrough
     case UserResponse::kDismissed:
@@ -397,8 +418,11 @@ void ChromeCleanerController::OnCleanerProcessDone(
   }
 
   if (process_status.exit_code == kRebootNotRequiredExitCode) {
-    idle_reason_ = IdleReason::kCleaningSucceeded;
-    SetStateAndNotifyObservers(State::kIdle);
+    delegate_->ResetTaggedProfiles(
+        g_browser_process->profile_manager()->GetLoadedProfiles(),
+        base::BindOnce(&ChromeCleanerController::OnSettingsResetCompleted,
+                       base::Unretained(this)));
+    ResetCleanerDataAndInvalidateWeakPtrs();
     return;
   }
 
@@ -418,6 +442,11 @@ void ChromeCleanerController::InitiateReboot() {
     for (auto& observer : observer_list_)
       observer.OnRebootFailed();
   }
+}
+
+void ChromeCleanerController::OnSettingsResetCompleted() {
+  idle_reason_ = IdleReason::kCleaningSucceeded;
+  SetStateAndNotifyObservers(State::kIdle);
 }
 
 }  // namespace safe_browsing
