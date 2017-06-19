@@ -32,4 +32,11 @@
 //  Post: Application phase is APPLICATION_FOREGROUNDED.
 @interface CompleteForegrounding : NSObject<ApplicationStep>
 @end
+
+// Performs preparation steps for UIDebuggingInformationOverlay.
+//  Pre:  Application phase is APPLICATION_FOREGROUNDED.
+//  Post: Application phase is (still) APPLICATION_FOREGROUNDED.
+@interface DebuggingInformationOverlay : NSObject<ApplicationStep>
+@end
+
 #endif  // IOS_CLEAN_CHROME_APP_STEPS_LAUNCH_TO_FOREGROUND_H_

@@ -110,6 +110,7 @@
     [[PrepareForUI alloc] init],
     [[CompleteForegrounding alloc] init],
     [[RootCoordinator alloc] init],
+    [[DebuggingInformationOverlay alloc] init],
   ]];
 }
 
