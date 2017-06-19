@@ -19,12 +19,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
-#include "chrome/common/channel_info.h"
+#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_modes.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/version_info/version_info.h"
 #include "net/base/load_flags.h"
@@ -40,21 +42,14 @@ namespace safe_browsing {
 namespace {
 
 base::FilePath::StringType CleanerTempDirectoryPrefix() {
-  base::FilePath::StringType common_prefix = FILE_PATH_LITERAL("ChromeCleaner");
-  switch (chrome::GetChannel()) {
-    case version_info::Channel::UNKNOWN:
-      return common_prefix + FILE_PATH_LITERAL("_0_");
-    case version_info::Channel::CANARY:
-      return common_prefix + FILE_PATH_LITERAL("_1_");
-    case version_info::Channel::DEV:
-      return common_prefix + FILE_PATH_LITERAL("_2_");
-    case version_info::Channel::BETA:
-      return common_prefix + FILE_PATH_LITERAL("_3_");
-    case version_info::Channel::STABLE:
-      return common_prefix + FILE_PATH_LITERAL("_4_");
-  }
-  NOTREACHED();
-  return common_prefix + FILE_PATH_LITERAL("_0_");
+  // Create a temporary directory name prefix like "ChromeCleaner_4_", where
+  // "Chrome" is the product name and the 4 refers to the install mode of the
+  // browser.
+  int install_mode = install_static::InstallDetails::Get().install_mode_index();
+  return base::StringPrintf(
+      FILE_PATH_LITERAL("%" PRFilePath "%" PRFilePath "_%d_"),
+      install_static::kProductPathName, FILE_PATH_LITERAL("Cleaner"),
+      install_mode);
 }
 
 // Class that will attempt to download the Chrome Cleaner executable and call a
