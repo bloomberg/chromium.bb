@@ -14510,6 +14510,7 @@
             "pyro-release",
             "quawks-release",
             "reef-release",
+            "reef-uni-release",
             "reks-release",
             "relm-release",
             "rikku-release",
@@ -19362,6 +19363,85 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "reef-uni-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "reef-uni"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "reef-uni-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "reef-uni"
+        ]
+    },
+    "reef-uni-full": {
+        "_template": "full",
+        "boards": [
+            "reef-uni"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "reef-uni-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "reef-uni"
+        ]
+    },
+    "reef-uni-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "reef-uni"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "reef-uni-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "reef-uni"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "reef-uni-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "reef-uni"
+        ],
+        "buildslave_type": "baremetal",
+        "models": [
+            "reef-uni",
+            "reef-uni",
+            "reef-uni",
+            "reef-uni"
+        ]
+    },
+    "reef-uni-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "reef-uni"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "reef-uni-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "reef-uni"
+        ]
     },
     "reef-unittest-stress": {
         "_template": "unittest_stress",

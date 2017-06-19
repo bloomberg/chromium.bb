@@ -1406,5 +1406,32 @@
       ]
     }
   ],
-  "release_branch": false
+  "release_branch": false,
+  "reference_board_unified_builds": [
+    {
+      "name": "reef-uni",
+      "reference_board_name": "reef-uni",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "reef-uni",
+          "name": "sand"
+        },
+        {
+          "board_name": "reef-uni",
+          "name": "pyro"
+        },
+        {
+          "board_name": "reef-uni",
+          "name": "snappy"
+        },
+        {
+          "board_name": "reef-uni",
+          "name": "nasher"
+        }
+      ]
+    }
+  ]
 }
