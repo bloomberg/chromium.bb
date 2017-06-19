@@ -6,7 +6,7 @@
 
 [
   Constructor(optional ScrollStateInit scrollStateInit),
-  RuntimeEnabled = ScrollCustomization,
+  RuntimeEnabled = ScrollCustomization
 ] interface ScrollState
 {
     readonly attribute double deltaX;

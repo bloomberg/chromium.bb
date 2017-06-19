@@ -30,6 +30,6 @@
 
 [
     NamedConstructor=Name(),
-    ConstructorCallWith=Document,
+    ConstructorCallWith=Document
 ] interface TestInterfaceEventTarget : EventTarget {
 };

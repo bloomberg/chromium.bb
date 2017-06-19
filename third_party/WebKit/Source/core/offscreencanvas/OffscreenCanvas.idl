@@ -8,7 +8,7 @@
     Constructor([EnforceRange] unsigned long width, [EnforceRange] unsigned long height),
     Exposed=(Window,Worker),
     RuntimeEnabled=ExperimentalCanvasFeatures,
-    MeasureAs=OffscreenCanvas,
+    MeasureAs=OffscreenCanvas
 ] interface OffscreenCanvas : EventTarget {
     [EnforceRange] attribute unsigned long width;
     [EnforceRange] attribute unsigned long height;

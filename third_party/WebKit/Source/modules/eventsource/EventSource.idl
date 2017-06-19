@@ -37,7 +37,7 @@
     Constructor(DOMString url, optional EventSourceInit eventSourceInitDict),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
-    RaisesException=Constructor,
+    RaisesException=Constructor
 ] interface EventSource : EventTarget {
     readonly attribute DOMString url;
     readonly attribute boolean withCredentials;

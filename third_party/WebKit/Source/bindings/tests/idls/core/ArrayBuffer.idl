@@ -5,7 +5,7 @@
 // https://www.khronos.org/registry/typedarray/specs/latest/#ARRAYBUFFER
 
 [
-    ImplementedAs=TestArrayBuffer,
+    ImplementedAs=TestArrayBuffer
 ] interface ArrayBuffer {
     readonly attribute unsigned long byteLength;
 };

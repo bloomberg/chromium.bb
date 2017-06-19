@@ -13,7 +13,7 @@ enum PaymentComplete {
 // https://w3c.github.io/browser-payment-api/#paymentresponse-interface
 
 [
-    RuntimeEnabled=PaymentRequest,
+    RuntimeEnabled=PaymentRequest
 ] interface PaymentResponse {
     serializer = {attribute};
 

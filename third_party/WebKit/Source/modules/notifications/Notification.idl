@@ -47,7 +47,7 @@ enum NotificationPermission {
     Exposed=(Window,Worker),
     MeasureAs=NotificationCreated,
     RaisesException=Constructor,
-    RuntimeEnabled=Notifications,
+    RuntimeEnabled=Notifications
 ] interface Notification : EventTarget {
     [CallWith=ScriptState, MeasureAs=NotificationPermission] static readonly attribute NotificationPermission permission;
 

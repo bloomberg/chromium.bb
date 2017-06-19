@@ -6,7 +6,7 @@
 
 [
     Exposed=(Window,Worker),
-    RuntimeEnabled=PushMessaging,
+    RuntimeEnabled=PushMessaging
 ] partial interface ServiceWorkerRegistration {
     readonly attribute PushManager pushManager;
 };

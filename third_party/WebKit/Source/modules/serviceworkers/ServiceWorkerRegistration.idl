@@ -6,7 +6,7 @@
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface ServiceWorkerRegistration : EventTarget {
     readonly attribute ServiceWorker? installing;
     readonly attribute ServiceWorker? waiting;

@@ -34,7 +34,7 @@
     Constructor,
     ConstructorCallWith=Document,
     RuntimeEnabled=XSLT,
-    MeasureAs=XSLTProcessor,
+    MeasureAs=XSLTProcessor
 ] interface XSLTProcessor {
 
     void importStylesheet(Node style);

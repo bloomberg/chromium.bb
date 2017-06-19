@@ -5,7 +5,7 @@
 // https://w3c.github.io/webvr/#interface-vrframedata
 [
     OriginTrialEnabled=WebVR,
-    Constructor,
+    Constructor
 ] interface VRFrameData {
     readonly attribute Float32Array leftProjectionMatrix;
     readonly attribute Float32Array leftViewMatrix;

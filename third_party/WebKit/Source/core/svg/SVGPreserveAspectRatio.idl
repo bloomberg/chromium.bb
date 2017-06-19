@@ -27,7 +27,7 @@
 
 [
     DependentLifetime,
-    ImplementedAs=SVGPreserveAspectRatioTearOff,
+    ImplementedAs=SVGPreserveAspectRatioTearOff
 ] interface SVGPreserveAspectRatio {
     // Alignment types
     const unsigned short SVG_PRESERVEASPECTRATIO_UNKNOWN = 0;

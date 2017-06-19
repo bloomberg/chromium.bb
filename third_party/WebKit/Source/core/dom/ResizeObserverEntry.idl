@@ -5,7 +5,7 @@
 // https://wicg.github.io/ResizeObserver/#resize-observer-entry-interface
 
 [
-    RuntimeEnabled=ResizeObserver,
+    RuntimeEnabled=ResizeObserver
 ] interface ResizeObserverEntry {
     readonly attribute Element target;
     // FIXME(atotic): should return DOMReadOnlyRect once GeometryInterfaces land

@@ -26,7 +26,7 @@
 // https://w3c.github.io/touch-events/#touchevent-interface
 
 [
-    Constructor(DOMString type, optional TouchEventInit eventInitDict),
+    Constructor(DOMString type, optional TouchEventInit eventInitDict)
 ] interface TouchEvent : UIEvent {
     readonly attribute TouchList touches;
     readonly attribute TouchList targetTouches;

@@ -12,7 +12,7 @@
     DependentLifetime,
     MeasureAs=PresentationRequestConstructor,
     RaisesException=Constructor,
-    RuntimeEnabled=Presentation,
+    RuntimeEnabled=Presentation
 ] interface PresentationRequest : EventTarget {
     [CallWith=ScriptState, MeasureAs=PresentationRequestStart] Promise<PresentationConnection> start();
     [CallWith=ScriptState, MeasureAs=PresentationRequestReconnect] Promise<PresentationConnection> reconnect(DOMString id);

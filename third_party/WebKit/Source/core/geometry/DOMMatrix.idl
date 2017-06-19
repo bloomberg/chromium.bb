@@ -9,7 +9,7 @@
     RaisesException=Constructor,
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
-    RuntimeEnabled=GeometryInterfaces,
+    RuntimeEnabled=GeometryInterfaces
 ] interface DOMMatrix : DOMMatrixReadOnly {
     [RaisesException, NewObject] static DOMMatrix fromMatrix(optional DOMMatrixInit other);
     [RaisesException, NewObject] static DOMMatrix fromFloat32Array(Float32Array array32);

@@ -20,7 +20,7 @@
 // https://html.spec.whatwg.org/multipage/browsers.html#the-hashchangeevent-interface
 
 [
-    Constructor(DOMString type, optional HashChangeEventInit eventInitDict),
+    Constructor(DOMString type, optional HashChangeEventInit eventInitDict)
     // TODO(foolip): Exposed=(Window,Worker)
 ] interface HashChangeEvent : Event {
     readonly attribute DOMString oldURL;

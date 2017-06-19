@@ -6,7 +6,7 @@
 
 [
     Exposed=(Window,Worker),
-    RuntimeEnabled=ExperimentalCanvasFeatures,
+    RuntimeEnabled=ExperimentalCanvasFeatures
 ] interface OffscreenCanvasRenderingContext2D {
     // back-reference to the canvas
     [ImplementedAs=offscreenCanvasForBinding] readonly attribute OffscreenCanvas canvas;

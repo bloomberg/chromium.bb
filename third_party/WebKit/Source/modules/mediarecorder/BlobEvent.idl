@@ -5,7 +5,7 @@
 // https://w3c.github.io/mediacapture-record/MediaRecorder.html#blob-event
 
 [
-    Constructor(DOMString type, BlobEventInit eventInitDict),
+    Constructor(DOMString type, BlobEventInit eventInitDict)
 ]
 interface BlobEvent : Event {
     [SameObject] readonly attribute Blob data;

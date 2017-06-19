@@ -29,7 +29,7 @@
 [
     CustomConstructor,
     Exposed=(Window,Worker),
-    Measure,
+    Measure
 ] interface MessageChannel {
     readonly attribute MessagePort port1;
     readonly attribute MessagePort port2;

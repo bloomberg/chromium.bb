@@ -32,7 +32,7 @@
 
 [
     Constructor(DOMString type, optional CloseEventInit eventInitDict),
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface CloseEvent : Event {
     readonly attribute boolean wasClean;
     readonly attribute unsigned short code;

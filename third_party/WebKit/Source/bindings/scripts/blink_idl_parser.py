@@ -275,15 +275,15 @@ class BlinkIDLParser(IDLParser):
         """ExtendedAttributeList : '[' ExtendedAttribute ',' error"""
         p[0] = self.BuildError(p, "ExtendedAttributeList")
 
-    # [b50] Allow optional trailing comma
-    # Blink-only, marked as WONTFIX in Web IDL spec:
-    # https://www.w3.org/Bugs/Public/show_bug.cgi?id=22156
+    # Historically we allowed trailing comma but now it's a syntax error.
     def p_ExtendedAttributes(self, p):
         """ExtendedAttributes : ',' ExtendedAttribute ExtendedAttributes
                               | ','
                               |"""
         if len(p) > 3:
             p[0] = ListFromConcat(p[2], p[3])
+        elif len(p) == 2:
+            p[0] = self.BuildError(p, 'ExtendedAttributes')
 
     # [b51] Add ExtendedAttributeStringLiteral and ExtendedAttributeStringLiteralList
     def p_ExtendedAttribute(self, p):

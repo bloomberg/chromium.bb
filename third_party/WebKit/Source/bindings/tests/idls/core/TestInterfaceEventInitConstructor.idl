@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    Constructor(DOMString type, TestInterfaceEventInit testInterfaceEventInit),
+    Constructor(DOMString type, TestInterfaceEventInit testInterfaceEventInit)
 ] interface TestInterfaceEventInitConstructor : Event {
     readonly attribute DOMString readonlyStringAttribute;
 };

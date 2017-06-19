@@ -36,7 +36,7 @@
     DependentLifetime,
     Constructor,
     ConstructorCallWith=ExecutionContext,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface FileReader : EventTarget {
     // async read methods
     [RaisesException] void readAsArrayBuffer(Blob blob);

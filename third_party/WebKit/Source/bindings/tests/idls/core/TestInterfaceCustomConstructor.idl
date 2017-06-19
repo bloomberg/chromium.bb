@@ -31,6 +31,6 @@
 [
     CustomConstructor,
     CustomConstructor(TestInterfaceEmpty testInterfaceEmptyArg),
-    CustomConstructor(double doubleArg, optional double optionalDoubleArg),
+    CustomConstructor(double doubleArg, optional double optionalDoubleArg)
 ] interface TestInterfaceCustomConstructor {
 };

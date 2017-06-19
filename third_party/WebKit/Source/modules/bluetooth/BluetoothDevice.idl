@@ -8,7 +8,7 @@
 
 [
     DependentLifetime,
-    RuntimeEnabled=WebBluetooth,
+    RuntimeEnabled=WebBluetooth
 ] interface BluetoothDevice : EventTarget
 // Implement ServiceEventHandlers interface: http://crbug.com/421670
 // : ServiceEventHandlers

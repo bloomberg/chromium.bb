@@ -12,7 +12,7 @@
     Exposed=(Window,Worker),
     ActiveScriptWrappable,
     DependentLifetime,
-    Measure,
+    Measure
 ] interface BroadcastChannel : EventTarget {
     readonly attribute DOMString name;
 

@@ -31,7 +31,7 @@
 [
     LegacyTreatAsPartialInterface, // Conflicts with default implements behavior
     NoInterfaceObject, // Always used on target of 'implements'
-    RuntimeEnabled=Implements2FeatureName, // conflicts with [RuntimeEnabled] on member
+    RuntimeEnabled=Implements2FeatureName // conflicts with [RuntimeEnabled] on member
 ] interface TestImplements2 {
     static attribute DOMString implements2StaticStringAttribute;
     attribute DOMString implements2StringAttribute;

@@ -9,7 +9,7 @@
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22702
 
 [
-    Constructor(DOMString type, optional ApplicationCacheErrorEventInit eventInitDict),
+    Constructor(DOMString type, optional ApplicationCacheErrorEventInit eventInitDict)
 ] interface ApplicationCacheErrorEvent : Event {
     readonly attribute DOMString reason;
     readonly attribute DOMString url;

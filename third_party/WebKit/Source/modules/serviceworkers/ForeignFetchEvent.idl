@@ -7,7 +7,7 @@
     Constructor(DOMString type, ForeignFetchEventInit eventInitDict),
     ConstructorCallWith=ScriptState,
     Exposed=ServiceWorker,
-    OriginTrialEnabled=ForeignFetch,
+    OriginTrialEnabled=ForeignFetch
 ] interface ForeignFetchEvent : ExtendableEvent {
     [SameObject] readonly attribute Request request;
     readonly attribute USVString origin;

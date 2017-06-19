@@ -15,7 +15,7 @@ callback DecodeSuccessCallback = void (AudioBuffer decodedData);
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
+    DependentLifetime
 ] interface BaseAudioContext : EventTarget {
     // All rendered audio ultimately connects to destination, which represents the audio hardware.
     readonly attribute AudioDestinationNode destination;

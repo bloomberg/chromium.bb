@@ -6,7 +6,7 @@
 // TODO(suzyh): Use enums instead of DOMStrings where specced
 
 [
-    RuntimeEnabled=WebAnimationsAPI,
+    RuntimeEnabled=WebAnimationsAPI
 ] interface AnimationEffectTimingReadOnly {
     readonly attribute double delay;
     readonly attribute double endDelay;

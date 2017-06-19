@@ -11,7 +11,7 @@
     DependentLifetime,
     MeasureAs=ImageCaptureConstructor,
     RaisesException=Constructor,
-    RuntimeEnabled=ImageCapture,
+    RuntimeEnabled=ImageCapture
 ] interface ImageCapture {
     [ImplementedAs=videoStreamTrack] readonly attribute MediaStreamTrack track;
 

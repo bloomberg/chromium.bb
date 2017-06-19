@@ -21,7 +21,7 @@
 // https://w3c.github.io/DOM-Parsing/#the-xmlserializer-interface
 
 [
-    Constructor,
+    Constructor
 ] interface XMLSerializer {
     DOMString serializeToString(Node root);
 };

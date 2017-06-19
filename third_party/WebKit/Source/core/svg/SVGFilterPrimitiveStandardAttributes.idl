@@ -27,7 +27,7 @@
 // https://drafts.fxtf.org/filters/#InterfaceSVGFilterPrimitiveStandardAttributes
 
 [
-    NoInterfaceObject, // Always used on target of 'implements'
+    NoInterfaceObject // Always used on target of 'implements'
 ] interface SVGFilterPrimitiveStandardAttributes {
     [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedLength x;
     [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedLength y;

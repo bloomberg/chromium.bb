@@ -29,7 +29,7 @@
     Constructor(DOMString type, optional CustomEventInit eventInitDict),
     ConstructorCallWith=ScriptState,
     DependentLifetime,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface CustomEvent : Event {
     [CallWith=ScriptState] readonly attribute any detail;
 

@@ -27,7 +27,7 @@
 
 [
     Constructor,
-    Measure,
+    Measure
 ] interface XPathEvaluator {
     [Measure, RaisesException] XPathExpression createExpression(DOMString expression, optional XPathNSResolver? resolver = null);
 

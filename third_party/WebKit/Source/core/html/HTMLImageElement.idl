@@ -23,7 +23,7 @@
 [
     ActiveScriptWrappable,
     ConstructorCallWith=Document,
-    NamedConstructor=Image(optional unsigned long width, optional unsigned long height),
+    NamedConstructor=Image(optional unsigned long width, optional unsigned long height)
 ] interface HTMLImageElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString alt;
     [CEReactions, Reflect, URL] attribute DOMString src;

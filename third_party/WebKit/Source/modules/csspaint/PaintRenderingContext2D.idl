@@ -6,7 +6,7 @@
 
 [
     Exposed=PaintWorklet,
-    RuntimeEnabled=CSSPaintAPI,
+    RuntimeEnabled=CSSPaintAPI
 ] interface PaintRenderingContext2D {
     // state
     void save(); // push state on state stack

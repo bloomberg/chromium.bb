@@ -31,7 +31,7 @@
 
 [
     LegacyTreatAsPartialInterface,
-    NoInterfaceObject, // Always used on target of 'implements'
+    NoInterfaceObject // Always used on target of 'implements'
 ] interface GlobalEventHandlers {
     attribute EventHandler onabort;
     attribute EventHandler onblur;

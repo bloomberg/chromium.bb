@@ -5,7 +5,7 @@
 // https://w3c.github.io/web-animations/#the-animationeffecttiming-interface
 
 [
-    RuntimeEnabled=WebAnimationsAPI,
+    RuntimeEnabled=WebAnimationsAPI
 ] interface AnimationEffectTiming : AnimationEffectTimingReadOnly {
     attribute double delay;
     attribute double endDelay;

@@ -8,7 +8,7 @@
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    RuntimeEnabled=CompositorWorker,
+    RuntimeEnabled=CompositorWorker
 ] interface CompositorWorker : EventTarget {
     attribute EventHandler onmessage;
     [PostMessage, RaisesException] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);

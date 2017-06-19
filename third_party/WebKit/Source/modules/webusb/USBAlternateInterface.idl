@@ -7,7 +7,7 @@
 [
     Constructor(USBInterface deviceInterface, octet alternateSetting),
     RaisesException=Constructor,
-    RuntimeEnabled=WebUSB,
+    RuntimeEnabled=WebUSB
 ] interface USBAlternateInterface {
     readonly attribute octet alternateSetting;
     readonly attribute octet interfaceClass;

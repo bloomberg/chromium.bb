@@ -28,7 +28,7 @@
 
 [
     Custom=LegacyCallAsFunction,
-    DependentLifetime,
+    DependentLifetime
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter Element (unsigned long index);

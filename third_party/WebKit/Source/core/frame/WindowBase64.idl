@@ -29,7 +29,7 @@
 
 [
     NoInterfaceObject, // Always used on target of 'implements'
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface WindowBase64 {
     [RaisesException] DOMString btoa(DOMString btoa);
     [RaisesException] DOMString atob(DOMString atob);

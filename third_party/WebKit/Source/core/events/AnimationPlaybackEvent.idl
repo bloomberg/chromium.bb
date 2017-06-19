@@ -6,7 +6,7 @@
 
 [
     Constructor(DOMString type, optional AnimationPlaybackEventInit eventInitDict),
-    RuntimeEnabled=WebAnimationsAPI,
+    RuntimeEnabled=WebAnimationsAPI
 ] interface AnimationPlaybackEvent : Event {
     readonly attribute double? currentTime;
     readonly attribute double? timelineTime;

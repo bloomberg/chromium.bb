@@ -37,7 +37,7 @@ enum IDBTransactionMode {
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface IDBTransaction : EventTarget {
 
     // Properties

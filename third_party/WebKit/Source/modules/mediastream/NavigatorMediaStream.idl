@@ -22,7 +22,7 @@
 partial interface Navigator {
     [RaisesException,
      RuntimeEnabled=GetUserMedia,
-     MeasureAs=GetUserMediaLegacy,
+     MeasureAs=GetUserMediaLegacy
     ] void getUserMedia(MediaStreamConstraints constraints,
                         NavigatorUserMediaSuccessCallback successCallback,
                         NavigatorUserMediaErrorCallback errorCallback);

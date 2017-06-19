@@ -5,7 +5,7 @@
 // https://www.khronos.org/registry/typedarray/specs/latest/#ARRAYBUFFERVIEW
 
 [
-    ImplementedAs=TestArrayBufferView,
+    ImplementedAs=TestArrayBufferView
 ] interface ArrayBufferView {
     readonly attribute ArrayBuffer buffer;
     readonly attribute unsigned long byteOffset;

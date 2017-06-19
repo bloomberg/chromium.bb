@@ -35,7 +35,7 @@ enum MediaStreamTrackState {
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
+    DependentLifetime
 ] interface MediaStreamTrack : EventTarget {
     readonly attribute DOMString kind;
     readonly attribute DOMString id;

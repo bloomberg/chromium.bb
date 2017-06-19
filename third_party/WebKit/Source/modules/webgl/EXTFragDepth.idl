@@ -27,6 +27,6 @@
 
 [
     DependentLifetime,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface EXTFragDepth {
 };

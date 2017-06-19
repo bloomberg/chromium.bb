@@ -22,7 +22,7 @@
 // https://dom.spec.whatwg.org/#interface-htmlcollection
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
     getter Element? item(unsigned long index);

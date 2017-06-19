@@ -33,7 +33,7 @@
 [
     DependentLifetime,
     DoNotCheckConstants,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface ANGLEInstancedArrays {
     const unsigned long VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE = 0x88FE;
 

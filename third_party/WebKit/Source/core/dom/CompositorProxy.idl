@@ -7,7 +7,7 @@
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,CompositorWorker),
     RaisesException=Constructor,
-    RuntimeEnabled=CompositorWorker,
+    RuntimeEnabled=CompositorWorker
 ] interface CompositorProxy {
     readonly attribute boolean initialized;
     [RaisesException] attribute double opacity;

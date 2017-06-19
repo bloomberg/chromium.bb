@@ -21,7 +21,7 @@
 // https://dev.w3.org/csswg/cssom/#the-cssstylesheet-interface
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule? ownerRule;
     [SameObject] readonly attribute CSSRuleList cssRules;

@@ -8,7 +8,7 @@
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
+    DependentLifetime
 ] interface MediaDevices : EventTarget {
     [RuntimeEnabled=OnDeviceChange] attribute EventHandler ondevicechange;
     [CallWith=ScriptState, MeasureAs=MediaDevicesEnumerateDevices] Promise<sequence<MediaDeviceInfo>> enumerateDevices();

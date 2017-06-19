@@ -31,7 +31,7 @@
 // This test files starts with 'SVG' because /^SVG/ is used as a check
 // for SVG interfaces (to use SVGNames for [Reflect] attributes)
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface SVGTestInterface {
     [Reflect] attribute DOMString type; // Test SVGNames namespace
 };

@@ -15,7 +15,7 @@ enum PermissionState {
     ActiveScriptWrappable,
     DependentLifetime,
     Exposed=(Window,Worker),
-    RuntimeEnabled=Permissions,
+    RuntimeEnabled=Permissions
 ] interface PermissionStatus : EventTarget {
     readonly attribute PermissionState state;
              attribute EventHandler onchange;

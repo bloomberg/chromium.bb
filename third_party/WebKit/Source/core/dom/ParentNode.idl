@@ -32,7 +32,7 @@
 
 [
     LegacyTreatAsPartialInterface,
-    NoInterfaceObject, // Always used on target of 'implements'
+    NoInterfaceObject // Always used on target of 'implements'
 ] interface ParentNode {
     [SameObject, PerWorldBindings] readonly attribute HTMLCollection children;
     [PerWorldBindings] readonly attribute Element? firstElementChild;

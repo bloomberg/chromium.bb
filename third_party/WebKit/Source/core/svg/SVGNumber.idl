@@ -24,7 +24,7 @@
 
 [
     DependentLifetime,
-    ImplementedAs=SVGNumberTearOff,
+    ImplementedAs=SVGNumberTearOff
 ] interface SVGNumber {
     [RaisesException=Setter] attribute float value;
 };

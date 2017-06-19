@@ -6,6 +6,6 @@
 
 [
     ImplementedAs=DOMInt16Array,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface Int16Array : ArrayBufferView {
 };

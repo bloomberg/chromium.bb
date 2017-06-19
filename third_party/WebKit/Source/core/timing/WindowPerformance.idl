@@ -7,7 +7,7 @@
 // TODO(foolip): This should be a GlobalPerformance interface implemented by
 // Window and WorkerGlobalScope.
 [
-    ImplementedAs=DOMWindowPerformance,
+    ImplementedAs=DOMWindowPerformance
 ] partial interface Window {
     [Replaceable] readonly attribute Performance performance;
 };

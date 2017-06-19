@@ -34,7 +34,7 @@
 // The more *minor* extended attribute should be put in this file.
 
 [
-    WebAgentAPI,
+    WebAgentAPI
 ] interface TestInterface3 {
     // iterable<V> needs a "length" property accompanying the indexed property
     // getter below.

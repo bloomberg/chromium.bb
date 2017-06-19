@@ -7,7 +7,7 @@
 [
     DependentLifetime,
     NoInterfaceObject,
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] interface WebGLCompressedTextureS3TCsRGB {
     /* Compressed Texture Formats */
     const unsigned long COMPRESSED_SRGB_S3TC_DXT1_EXT        = 0x8C4C;

@@ -6,7 +6,7 @@
 
 [
     NoInterfaceObject,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface NavigatorConcurrentHardware {
     readonly attribute unsigned long long hardwareConcurrency;
 };

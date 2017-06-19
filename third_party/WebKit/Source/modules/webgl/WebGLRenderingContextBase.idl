@@ -44,7 +44,7 @@ typedef unrestricted float GLclampf;
     // FIXME: [DoNotCheckConstants] should be applied to members and not need to
     // be put on implementing interface
     // DoNotCheckConstants, // need to put on implementing interface
-    NoInterfaceObject, // Always used on target of 'implements'
+    NoInterfaceObject // Always used on target of 'implements'
 ] interface WebGLRenderingContextBase {
 
     [ImplementedAs=getHTMLOrOffscreenCanvas] readonly attribute (HTMLCanvasElement or OffscreenCanvas) canvas;

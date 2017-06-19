@@ -26,7 +26,7 @@
 // https://drafts.fxtf.org/filters/#InterfaceSVGFEBlendElement
 
 [
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] interface SVGFEBlendElement : SVGElement {
 
     // Blend Mode Types

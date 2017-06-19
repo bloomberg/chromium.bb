@@ -11,7 +11,7 @@ typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString>) Heade
 [
     Constructor(optional HeadersInit init),
     Exposed=(Window,Worker),
-    RaisesException=Constructor,
+    RaisesException=Constructor
 ] interface Headers {
     [RaisesException] void append(ByteString name, ByteString value);
     [ImplementedAs=remove, RaisesException] void delete(ByteString key);

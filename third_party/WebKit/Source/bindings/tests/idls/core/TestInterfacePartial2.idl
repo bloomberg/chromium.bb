@@ -29,7 +29,7 @@
  */
 
 [
-    ImplementedAs=TestInterfacePartial2Implementation, // Conflicts with default partial interface class name
+    ImplementedAs=TestInterfacePartial2Implementation // Conflicts with default partial interface class name
 ] partial interface TestInterface {
     const unsigned short PARTIAL2_UNSIGNED_SHORT = 0;
 

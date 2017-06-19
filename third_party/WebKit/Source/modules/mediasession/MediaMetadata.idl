@@ -8,7 +8,7 @@
     ConstructorCallWith=ScriptState,
     Constructor(optional MediaMetadataInit metadata),
     RaisesException=Constructor,
-    RuntimeEnabled=MediaSession,
+    RuntimeEnabled=MediaSession
 ] interface MediaMetadata {
     attribute DOMString title;
     attribute DOMString artist;

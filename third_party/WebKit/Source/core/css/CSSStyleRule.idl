@@ -21,7 +21,7 @@
 // https://dev.w3.org/csswg/cssom/#the-cssstylerule-interface
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface CSSStyleRule : CSSRule {
     attribute DOMString selectorText;
     [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;

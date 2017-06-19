@@ -50,7 +50,7 @@ typedef (Node or (sequence<long> or Event) or (XMLHttpRequest or DOMString)? or 
 typedef (ULongLong or (BooleanType or TestCallbackInterfaceType)) UnionWithTypedef;
 
 [
-    Constructor(String stringArg),
+    Constructor(String stringArg)
 ] interface TestTypedefs {
     attribute ULongLong uLongLongAttribute;
     attribute T tAttribute;

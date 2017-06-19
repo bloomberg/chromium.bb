@@ -7,7 +7,7 @@
 [
     RuntimeEnabled=PaymentApp,
     ConstructorCallWith=ExecutionContext,
-    DependentLifetime,
+    DependentLifetime
 ] interface PaymentManager {
     readonly attribute PaymentInstruments instruments;
 };

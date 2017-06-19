@@ -5,7 +5,7 @@
 // https://wicg.github.io/IntersectionObserver/#intersection-observer-entry
 
 [
-    RuntimeEnabled=IntersectionObserver,
+    RuntimeEnabled=IntersectionObserver
 ] interface IntersectionObserverEntry {
     readonly attribute DOMHighResTimeStamp time;
     // TODO(szager): |rootBounds| should not be nullable and it,

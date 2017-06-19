@@ -38,7 +38,7 @@ typedef (File or USVString) FormDataEntryValue;
 [
     Constructor(optional HTMLFormElement form),
     Exposed=(Window,Worker),
-    LegacyInterfaceTypeChecking,
+    LegacyInterfaceTypeChecking
 ] interface FormData {
     void append(USVString name, USVString value);
     [CallWith=ScriptState] void append(USVString name, Blob value, optional USVString filename);

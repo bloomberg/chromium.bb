@@ -6,7 +6,7 @@
 
 [
     DependentLifetime,
-    RuntimeEnabled=AudioVideoTracks,
+    RuntimeEnabled=AudioVideoTracks
 ] interface AudioTrackList : EventTarget {
   readonly attribute unsigned long length;
   getter AudioTrack (unsigned long index);

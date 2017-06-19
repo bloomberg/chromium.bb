@@ -31,7 +31,7 @@
 [
     CheckSecurity=Receiver,
     DependentLifetime,
-    Unforgeable,
+    Unforgeable
 ] interface Location {
     // |assign| is *NOT* cross-origin accessible in the spec, but it needs
     // the Incumbent realm when navigating the page.  See the below link.

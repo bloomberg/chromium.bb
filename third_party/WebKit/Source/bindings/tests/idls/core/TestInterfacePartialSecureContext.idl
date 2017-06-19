@@ -5,7 +5,7 @@
 [
     SecureContext,
     Exposed=(Window,Worker),
-    ImplementedAs=TestInterfacePartialSecureContext, // Conflicts with default partial interface class name
+    ImplementedAs=TestInterfacePartialSecureContext // Conflicts with default partial interface class name
 ] partial interface TestInterface {
     void partialSecureContextMethod();
     attribute bool partialSecureContextAttribute;

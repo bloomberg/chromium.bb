@@ -30,7 +30,7 @@
     Constructor(USVString url, optional USVString base),
     Exposed=(Window,Worker),
     ImplementedAs=DOMURL,
-    RaisesException=Constructor,
+    RaisesException=Constructor
 ] interface URL {
     // TODO(foolip): Implement domainToASCII() and domainToUnicode().
     // crbug.com/493908

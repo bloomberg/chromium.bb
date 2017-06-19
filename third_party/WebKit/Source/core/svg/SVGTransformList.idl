@@ -28,7 +28,7 @@
 
 [
     DependentLifetime,
-    ImplementedAs=SVGTransformListTearOff,
+    ImplementedAs=SVGTransformListTearOff
 ] interface SVGTransformList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

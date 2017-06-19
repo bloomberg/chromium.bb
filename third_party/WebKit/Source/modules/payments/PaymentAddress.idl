@@ -5,7 +5,7 @@
 // https://w3c.github.io/browser-payment-api/#paymentaddress-interface
 
 [
-    RuntimeEnabled=PaymentRequest,
+    RuntimeEnabled=PaymentRequest
 ] interface PaymentAddress {
     serializer = {attribute};
     readonly attribute DOMString country;

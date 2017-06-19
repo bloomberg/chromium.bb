@@ -45,7 +45,7 @@ enum CanvasFillRule { "nonzero", "evenodd" };
 enum ImageSmoothingQuality {"low", "medium", "high"};
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface CanvasRenderingContext2D {
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;

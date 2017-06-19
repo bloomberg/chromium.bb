@@ -5,7 +5,7 @@
 // https://w3c.github.io/web-animations/#extensions-to-the-document-interface
 
 [
-    RuntimeEnabled=WebAnimationsAPI,
+    RuntimeEnabled=WebAnimationsAPI
 ] partial interface Document {
     readonly attribute DocumentTimeline timeline;
 };

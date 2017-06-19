@@ -26,7 +26,7 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGAnimatedLength
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface SVGAnimatedLength {
     readonly attribute SVGLength baseVal;
     readonly attribute SVGLength animVal;

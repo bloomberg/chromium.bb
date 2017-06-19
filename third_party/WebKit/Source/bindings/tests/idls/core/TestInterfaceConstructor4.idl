@@ -6,6 +6,6 @@
 // argument.
 [
     Constructor(TestInterfaceConstructor4 testInterface4Arg),
-    Constructor(USVString usvStringArg),
+    Constructor(USVString usvStringArg)
 ] interface TestInterfaceConstructor4 {
 };

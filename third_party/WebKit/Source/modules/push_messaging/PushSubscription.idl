@@ -11,7 +11,7 @@ enum PushEncryptionKeyName {
 
 [
     Exposed=(Window,Worker),
-    RuntimeEnabled=PushMessaging,
+    RuntimeEnabled=PushMessaging
 ] interface PushSubscription {
     readonly attribute USVString endpoint;
     readonly attribute DOMTimeStamp? expirationTime;

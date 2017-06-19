@@ -30,7 +30,7 @@
     Constructor,
     ConstructorCallWith=ExecutionContext,
     DependentLifetime,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface SpeechRecognition : EventTarget {
     // recognition parameters
     attribute SpeechGrammarList grammars;

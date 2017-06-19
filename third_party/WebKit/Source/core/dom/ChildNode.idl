@@ -24,7 +24,7 @@
 
 [
     LegacyTreatAsPartialInterface,
-    NoInterfaceObject, // Always used on target of 'implements'
+    NoInterfaceObject // Always used on target of 'implements'
 ] interface ChildNode {
     [Unscopable, RaisesException, CEReactions, CustomElementCallbacks, RuntimeEnabled=DOMConvenienceAPI] void before((Node or DOMString) ... nodes);
     [Unscopable, RaisesException, CEReactions, CustomElementCallbacks, RuntimeEnabled=DOMConvenienceAPI] void after((Node or DOMString)... nodes);

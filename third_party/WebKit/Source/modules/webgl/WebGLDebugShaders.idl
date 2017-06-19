@@ -27,7 +27,7 @@
 
 [
     DependentLifetime,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface WebGLDebugShaders {
     DOMString? getTranslatedShaderSource(WebGLShader shader);
 };

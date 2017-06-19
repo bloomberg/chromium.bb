@@ -6,7 +6,7 @@
 
 [
     Exposed=(Window,Worker),
-    RuntimeEnabled=PushMessaging,
+    RuntimeEnabled=PushMessaging
 ] interface PushManager {
     [SameObject, SaveSameObject]
     static readonly attribute FrozenArray<DOMString> supportedContentEncodings;

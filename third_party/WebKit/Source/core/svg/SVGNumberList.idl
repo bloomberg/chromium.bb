@@ -28,7 +28,7 @@
 
 [
     DependentLifetime,
-    ImplementedAs=SVGNumberListTearOff,
+    ImplementedAs=SVGNumberListTearOff
 ] interface SVGNumberList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

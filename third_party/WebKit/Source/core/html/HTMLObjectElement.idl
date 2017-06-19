@@ -23,7 +23,7 @@
 // TODO(yukishiino): HTMLObjectElement should not have [OverrideBuiltins].
 [
     OverrideBuiltins,
-    ActiveScriptWrappable,
+    ActiveScriptWrappable
 ] interface HTMLObjectElement : HTMLElement {
     [CEReactions, Reflect, URL] attribute DOMString data;
     [CEReactions, Reflect] attribute DOMString type;

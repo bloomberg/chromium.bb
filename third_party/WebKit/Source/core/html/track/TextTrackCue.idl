@@ -26,7 +26,7 @@
 // https://html.spec.whatwg.org/#texttrackcue
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface TextTrackCue : EventTarget {
     readonly attribute TextTrack? track;
 

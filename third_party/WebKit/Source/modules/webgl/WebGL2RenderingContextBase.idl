@@ -8,7 +8,7 @@ typedef long long GLint64;
 typedef unsigned long long GLuint64;
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface WebGL2RenderingContextBase {
     const GLenum READ_BUFFER                                   = 0x0C02;
     const GLenum UNPACK_ROW_LENGTH                             = 0x0CF2;

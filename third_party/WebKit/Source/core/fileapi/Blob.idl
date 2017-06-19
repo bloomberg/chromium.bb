@@ -35,7 +35,7 @@ typedef (ArrayBuffer or ArrayBufferView or Blob or USVString) BlobPart;
     Constructor(optional sequence<BlobPart> blobParts, optional BlobPropertyBag options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface Blob {
     readonly attribute unsigned long long size;
     readonly attribute DOMString type;

@@ -27,7 +27,7 @@
 
 [
     Exposed=Window,
-    Constructor(DOMString type, MediaStreamTrackEventInit eventInitDict),
+    Constructor(DOMString type, MediaStreamTrackEventInit eventInitDict)
 ] interface MediaStreamTrackEvent : Event {
    [SameObject] readonly attribute MediaStreamTrack track;
 };

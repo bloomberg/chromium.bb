@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    Constructor(DOMString str),
+    Constructor(DOMString str)
 ] interface TestInterfaceGarbageCollected : EventTarget { // Inherit from EventTarget to test order of internal fields
     attribute TestInterfaceGarbageCollected attr1;
     void func(TestInterfaceGarbageCollected arg);
