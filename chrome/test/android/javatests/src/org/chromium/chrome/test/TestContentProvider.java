@@ -17,6 +17,8 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import org.chromium.base.annotations.MainDex;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -47,6 +49,7 @@ import java.util.Map;
  * The second one is moving the TestContentProvider to the ChromeTestSuport apk. This
  * seems a lot better path than above.
  */
+@MainDex
 public class TestContentProvider extends ContentProvider {
     private static final String ANDROID_DATA_FILE_PATH = "android/";
     private static final String AUTHORITY = "org.chromium.chrome.test.TestContentProvider";
