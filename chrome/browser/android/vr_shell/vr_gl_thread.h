@@ -74,7 +74,8 @@ class VrGLThread : public base::Thread,
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
   void SetLoadProgress(float progress) override;
   void SetLoading(bool loading) override;
-  void SetSecurityLevel(security_state::SecurityLevel level) override;
+  void SetSecurityInfo(security_state::SecurityLevel level,
+                       bool malware) override;
   void SetURL(const GURL& gurl) override;
   void SetWebVrMode(bool enabled, bool auto_presented) override;
   void SetWebVrSecureOrigin(bool secure) override;

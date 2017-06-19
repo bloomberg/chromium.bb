@@ -47,8 +47,6 @@ class CONTENT_EXPORT VrWebContentsObserver
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
 
-  void SetSecurityLevel();
-
   // This class does not own the UI interface.
   UiInterface* ui_interface_;
   VrShell* vr_shell_;

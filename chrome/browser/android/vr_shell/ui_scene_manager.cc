@@ -641,9 +641,10 @@ void UiSceneManager::SetURL(const GURL& gurl) {
   transient_url_bar_->SetURL(gurl);
 }
 
-void UiSceneManager::SetSecurityLevel(security_state::SecurityLevel level) {
-  url_bar_->SetSecurityLevel(level);
-  transient_url_bar_->SetSecurityLevel(level);
+void UiSceneManager::SetSecurityInfo(security_state::SecurityLevel level,
+                                     bool malware) {
+  url_bar_->SetSecurityInfo(level, malware);
+  transient_url_bar_->SetSecurityInfo(level, malware);
 }
 
 void UiSceneManager::SetLoading(bool loading) {

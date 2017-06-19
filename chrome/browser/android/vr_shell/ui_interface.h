@@ -28,7 +28,8 @@ class UiInterface {
   virtual void SetWebVrMode(bool enabled, bool auto_presented) = 0;
   virtual void SetURL(const GURL& url) = 0;
   virtual void SetFullscreen(bool enabled) = 0;
-  virtual void SetSecurityLevel(security_state::SecurityLevel level) = 0;
+  virtual void SetSecurityInfo(security_state::SecurityLevel level,
+                               bool fails_malware_check) = 0;
   virtual void SetIncognito(bool enabled) = 0;
   virtual void SetWebVrSecureOrigin(bool secure) = 0;
   virtual void SetLoading(bool loading) = 0;

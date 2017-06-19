@@ -171,11 +171,12 @@ void VrGLThread::SetLoading(bool loading) {
                                                 weak_scene_manager_, loading));
 }
 
-void VrGLThread::SetSecurityLevel(security_state::SecurityLevel level) {
+void VrGLThread::SetSecurityInfo(security_state::SecurityLevel level,
+                                 bool malware) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&UiSceneManager::SetSecurityLevel,
-                                     weak_scene_manager_, level));
+                          base::Bind(&UiSceneManager::SetSecurityInfo,
+                                     weak_scene_manager_, level, malware));
 }
 
 void VrGLThread::SetURL(const GURL& gurl) {
