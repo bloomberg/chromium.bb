@@ -1,3 +1,6 @@
+# Test case for Consistency between for and back trans with capsword
+# and punctuation/math (see also #361)
+
 table: |
   include tables/unicode.dis
   punctuation . 3
