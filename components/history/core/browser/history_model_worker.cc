@@ -63,7 +63,7 @@ syncer::ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {
   return syncer::GROUP_HISTORY;
 }
 
-bool HistoryModelWorker::IsOnModelThread() {
+bool HistoryModelWorker::IsOnModelSequence() {
   // Ideally HistoryService would expose a way to check whether this is the
   // history DB thread. Since it doesn't, just return true to bypass a CHECK in
   // the sync code.

@@ -11,15 +11,15 @@
 namespace syncer {
 
 // Implementation of ModelSafeWorker for passive types.  All work is
-// done on the same thread DoWorkAndWaitUntilDone (i.e., the sync
-// thread).
+// done on the same sequence DoWorkAndWaitUntilDone is called on (i.e. the same
+// sequence Sync runs on).
 class PassiveModelWorker : public ModelSafeWorker {
  public:
   PassiveModelWorker();
 
   // ModelSafeWorker implementation.
   ModelSafeGroup GetModelSafeGroup() override;
-  bool IsOnModelThread() override;
+  bool IsOnModelSequence() override;
 
  private:
   ~PassiveModelWorker() override;

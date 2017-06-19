@@ -30,7 +30,7 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
 
   // syncer::ModelSafeWorker implementation.
   syncer::ModelSafeGroup GetModelSafeGroup() override;
-  bool IsOnModelThread() override;
+  bool IsOnModelSequence() override;
 
  private:
   ~HistoryModelWorker() override;
