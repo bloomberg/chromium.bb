@@ -258,18 +258,16 @@ Position NextRootInlineBoxCandidatePosition(
   while (next_node && InSameLine(*next_node, visible_position))
     next_node = NextLeafWithSameEditability(next_node, kContentIsEditable);
 
-  while (next_node && !next_node->IsShadowRoot()) {
-    if (HighestEditableRoot(FirstPositionInOrBeforeNode(next_node),
+  for (Node* runner = next_node; runner && !runner->IsShadowRoot();
+       runner = NextLeafWithSameEditability(runner, editable_type)) {
+    if (HighestEditableRoot(FirstPositionInOrBeforeNode(runner),
                             editable_type) != highest_root)
       break;
 
-    Position pos;
-    pos = Position::EditingPositionOf(next_node, CaretMinOffset(next_node));
-
-    if (IsVisuallyEquivalentCandidate(pos))
-      return pos;
-
-    next_node = NextLeafWithSameEditability(next_node, editable_type);
+    const Position& candidate =
+        Position::EditingPositionOf(runner, CaretMinOffset(runner));
+    if (IsVisuallyEquivalentCandidate(candidate))
+      return candidate;
   }
   return Position();
 }
