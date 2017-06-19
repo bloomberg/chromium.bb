@@ -5,10 +5,7 @@
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 
 #include "base/logging.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#import "base/mac/scoped_nsobject.h"
 
 @interface CRWWKScriptMessageRouter ()<WKScriptMessageHandler>
 
@@ -16,22 +13,22 @@
 - (void)tryRemoveScriptMessageHandlerForName:(NSString*)messageName
                                      webView:(WKWebView*)webView;
 
-@property(nonatomic, weak, readwrite)
-    WKUserContentController* userContentController;
-
 @end
 
 @implementation CRWWKScriptMessageRouter {
   // Two level map of registed message handlers. Keys are message names and
   // values are more maps (where keys are web views and values are handlers).
-  NSMutableDictionary* _handlers;
+  base::scoped_nsobject<NSMutableDictionary> _handlers;
+  // Wrapped WKUserContentController.
+  base::scoped_nsobject<WKUserContentController> _userContentController;
 }
-
-// Wrapped WKUserContentController.
-@synthesize userContentController = _userContentController;
 
 #pragma mark -
 #pragma mark Interface
+
+- (WKUserContentController*)userContentController {
+  return _userContentController.get();
+}
 
 - (instancetype)init {
   NOTREACHED();
@@ -42,8 +39,8 @@
     (WKUserContentController*)userContentController {
   DCHECK(userContentController);
   if ((self = [super init])) {
-    _handlers = [[NSMutableDictionary alloc] init];
-    _userContentController = userContentController;
+    _handlers.reset([[NSMutableDictionary alloc] init]);
+    _userContentController.reset([userContentController retain]);
   }
   return self;
 }
@@ -103,11 +100,12 @@
 - (void)tryRemoveScriptMessageHandlerForName:(NSString*)messageName
                                      webView:(WKWebView*)webView {
   NSMapTable* webViewToHandlerMap = [_handlers objectForKey:messageName];
-  NS_VALID_UNTIL_END_OF_SCOPE id handler =
-      [webViewToHandlerMap objectForKey:webView];
+  id handler = [webViewToHandlerMap objectForKey:webView];
   if (!handler)
     return;
-
+  // Extend the lifetime of |handler| so removeScriptMessageHandlerForName: can
+  // be called from inside of |handler|.
+  [[handler retain] autorelease];
   if (webViewToHandlerMap.count == 1) {
     [_handlers removeObjectForKey:messageName];
     [_userContentController removeScriptMessageHandlerForName:messageName];
