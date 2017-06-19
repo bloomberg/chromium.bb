@@ -384,8 +384,7 @@ void UrlBarTexture::ApplyUrlStyling(
     render_text->ApplyColor(getSchemeColor(security_level, color_scheme),
                             scheme_range);
     if (security_level == SecurityLevel::DANGEROUS) {
-      render_text->ApplyStyle(gfx::TextStyle::DIAGONAL_STRIKE, true,
-                              scheme_range);
+      render_text->ApplyStyle(gfx::TextStyle::STRIKE, true, scheme_range);
     }
   }
 }
