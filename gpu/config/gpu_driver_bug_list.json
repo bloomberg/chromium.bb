@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.14",
+  "version": "10.15",
   "entries": [
     {
       "id": 1,
@@ -1053,10 +1053,7 @@
     {
       "id": 116,
       "description": "Adreno 420 support for EXT_multisampled_render_to_texture is buggy on Android < 5.1",
-      "comment": [
-        "Disabling EXT_multisampled_render_to_texture triggers the explicit multisample resolve path, which is broken on Adreno 4xx/5xx."
-      ],
-      "cr_bugs": [490379, 696126],
+      "cr_bugs": [490379],
       "os": {
         "type": "android",
         "version": {
@@ -1067,9 +1064,6 @@
       "gl_renderer": "Adreno \\(TM\\) 4.*",
       "disabled_extensions": [
         "GL_EXT_multisampled_render_to_texture"
-      ],
-      "features": [
-        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
@@ -1744,10 +1738,7 @@
     {
       "id": 174,
       "description": "Adreno 4xx support for EXT_multisampled_render_to_texture is buggy on Android 7.0",
-      "comment": [
-        "Disabling EXT_multisampled_render_to_texture triggers the explicit multisample resolve path, which is broken on Adreno 4xx/5xx."
-      ],
-      "cr_bugs": [612474, 696126],
+      "cr_bugs": [612474],
       "os": {
         "type": "android",
         "version": {
@@ -1760,18 +1751,12 @@
       "gl_renderer": "Adreno \\(TM\\) 4.*",
       "disabled_extensions": [
         "GL_EXT_multisampled_render_to_texture"
-      ],
-      "features": [
-        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
       "id": 175,
       "description": "Adreno 5xx support for EXT_multisampled_render_to_texture is buggy on Android < 7.0",
-      "comment": [
-        "Disabling EXT_multisampled_render_to_texture triggers the explicit multisample resolve path, which is broken on Adreno 4xx/5xx."
-      ],
-      "cr_bugs": [612474, 696126],
+      "cr_bugs": [612474],
       "os": {
         "type": "android",
         "version": {
@@ -1782,9 +1767,6 @@
       "gl_renderer": "Adreno \\(TM\\) 5.*",
       "disabled_extensions": [
         "GL_EXT_multisampled_render_to_texture"
-      ],
-      "features": [
-        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
@@ -2172,10 +2154,7 @@
     {
       "id": 205,
       "description": "Adreno 5xx support for EXT_multisampled_render_to_texture is buggy on Android 7.1",
-      "comment": [
-        "Disabling EXT_multisampled_render_to_texture triggers the explicit multisample resolve path, which is broken on Adreno 4xx/5xx."
-      ],
-      "cr_bugs": [663811, 696126],
+      "cr_bugs": [663811],
       "os": {
         "type": "android",
         "version": {
@@ -2186,9 +2165,6 @@
       "gl_renderer": "Adreno \\(TM\\) 5.*",
       "disabled_extensions": [
         "GL_EXT_multisampled_render_to_texture"
-      ],
-      "features": [
-        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
@@ -2507,6 +2483,18 @@
       "device_id": ["0x22B0", "0x22B1", "0x22B2", "0x22B3"],
       "features": [
         "disable_d3d11"
+      ]
+    },
+    {
+      "id": 231,
+      "description": "Multisampled color renderbuffers can't be resized on Qualcomm 4xx/5xx",
+      "cr_bugs": [696126],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno \\(TM\\) [45].*",
+      "features": [
+        "multisample_renderbuffer_resize_emulation"
       ]
     },
     {

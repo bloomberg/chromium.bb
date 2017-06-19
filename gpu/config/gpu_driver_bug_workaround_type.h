@@ -23,6 +23,8 @@
          avoid_egl_image_target_texture_reuse)               \
   GPU_OP(AVOID_ONE_COMPONENT_EGL_IMAGES,                     \
          avoid_one_component_egl_images)                     \
+  GPU_OP(AVOID_STENCIL_BUFFERS,                              \
+         avoid_stencil_buffers)                              \
   GPU_OP(BROKEN_EGL_IMAGE_REF_COUNTING,                      \
          broken_egl_image_ref_counting)                      \
   GPU_OP(CLEAR_ALPHA_IN_READPIXELS,                          \
@@ -71,6 +73,8 @@
          disable_larger_than_screen_overlays)                \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
+  GPU_OP(DISABLE_NON_EMPTY_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES, \
+         disable_non_empty_post_sub_buffers_for_onscreen_surfaces) \
   GPU_OP(DISABLE_NV12_DXGI_VIDEO,                            \
          disable_nv12_dxgi_video)                            \
   GPU_OP(DISABLE_OVERLAY_CA_LAYERS,                          \
@@ -83,6 +87,8 @@
          disable_program_caching_for_transform_feedback)     \
   GPU_OP(DISABLE_PROGRAM_DISK_CACHE,                         \
          disable_program_disk_cache)                         \
+  GPU_OP(DISABLE_SOFTWARE_TO_ACCELERATED_CANVAS_UPGRADE,     \
+         disable_software_to_accelerated_canvas_upgrade)     \
   GPU_OP(DISABLE_TEXTURE_CUBE_MAP_SEAMLESS,                  \
          disable_texture_cube_map_seamless)                  \
   GPU_OP(DISABLE_TEXTURE_STORAGE,                            \
@@ -93,6 +99,8 @@
          disable_multisampling_color_mask_usage)             \
   GPU_OP(DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE,              \
          disable_webgl_rgb_multisampling_usage)              \
+  GPU_OP(DISALLOW_LARGE_INSTANCED_DRAW,                      \
+         disallow_large_instanced_draw)                      \
   GPU_OP(DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT,           \
          dont_remove_invariant_for_fragment_input)           \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
@@ -145,6 +153,8 @@
          max_vertex_uniform_vectors_256)                     \
   GPU_OP(MSAA_IS_SLOW,                                       \
          msaa_is_slow)                                       \
+  GPU_OP(MULTISAMPLE_RENDERBUFFER_RESIZE_EMULATION,          \
+         multisample_renderbuffer_resize_emulation)          \
   GPU_OP(NEEDS_OFFSCREEN_BUFFER_WORKAROUND,                  \
          needs_offscreen_buffer_workaround)                  \
   GPU_OP(PACK_PARAMETERS_WORKAROUND_WITH_PACK_BUFFER,        \
@@ -199,6 +209,8 @@
          unpack_overlapping_rows_separately_unpack_buffer)   \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,          \
          use_client_side_arrays_for_stream_buffers)          \
+  GPU_OP(USE_GPU_DRIVER_WORKAROUND_FOR_TESTING,              \
+         use_gpu_driver_workaround_for_testing)              \
   GPU_OP(USE_INTERMEDIARY_FOR_COPY_TEXTURE_IMAGE,            \
          use_intermediary_for_copy_texture_image)            \
   GPU_OP(USE_NON_ZERO_SIZE_FOR_CLIENT_SIDE_STREAM_BUFFERS,   \
@@ -213,16 +225,6 @@
          validate_multisample_buffer_allocation)             \
   GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
          wake_up_gpu_before_drawing)                         \
-  GPU_OP(USE_GPU_DRIVER_WORKAROUND_FOR_TESTING,              \
-         use_gpu_driver_workaround_for_testing)              \
-  GPU_OP(DISALLOW_LARGE_INSTANCED_DRAW,                      \
-         disallow_large_instanced_draw)                      \
-  GPU_OP(DISABLE_SOFTWARE_TO_ACCELERATED_CANVAS_UPGRADE,     \
-         disable_software_to_accelerated_canvas_upgrade)     \
-  GPU_OP(DISABLE_NON_EMPTY_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES, \
-         disable_non_empty_post_sub_buffers_for_onscreen_surfaces) \
-  GPU_OP(AVOID_STENCIL_BUFFERS,                              \
-         avoid_stencil_buffers)                              \
 // clang-format on
 
 namespace gpu {

@@ -103,6 +103,7 @@ void Renderbuffer::SetInfoAndInvalidate(GLsizei samples,
   width_ = width;
   height_ = height;
   cleared_ = false;
+  allocated_ = true;
   for (auto& point : framebuffer_attachment_points_) {
     point.first->UnmarkAsComplete();
   }
@@ -127,12 +128,40 @@ Renderbuffer::Renderbuffer(RenderbufferManager* manager,
       client_id_(client_id),
       service_id_(service_id),
       cleared_(true),
+      allocated_(false),
       has_been_bound_(false),
       samples_(0),
       internal_format_(GL_RGBA4),
       width_(0),
       height_(0) {
   manager_->StartTracking(this);
+}
+
+bool Renderbuffer::RegenerateAndBindBackingObjectIfNeeded() {
+  if (!allocated_ || !has_been_bound_ || samples_ == 0) {
+    // Not needed - won't trigger bug (multisample_renderbuffer_resize_broken).
+    return false;
+  }
+
+  GLint original_fbo = 0;
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_fbo);
+
+  glDeleteRenderbuffersEXT(1, &service_id_);
+  service_id_ = 0;
+  glGenRenderbuffersEXT(1, &service_id_);
+  glBindRenderbufferEXT(GL_RENDERBUFFER, service_id_);
+
+  // Attach new renderbuffer to all framebuffers
+  for (auto& point : framebuffer_attachment_points_) {
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, point.first->service_id());
+    glFramebufferRenderbufferEXT(GL_DRAW_FRAMEBUFFER, point.second,
+                                 GL_RENDERBUFFER, service_id_);
+  }
+
+  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, original_fbo);
+
+  allocated_ = false;
+  return true;
 }
 
 void Renderbuffer::AddFramebufferAttachmentPoint(Framebuffer* framebuffer,
