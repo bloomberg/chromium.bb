@@ -61,6 +61,9 @@ class ViewStack : public views::BoundsAnimatorObserver,
   // Returns the top state of the stack, used in tests.
   views::View* top() { return stack_.back().get(); }
 
+  // Marks all views, except the topmost, as invisible.
+  void HideCoveredViews();
+
   void UpdateAnimatorBounds(
       views::BoundsAnimator* animator, const gfx::Rect& target);
 
