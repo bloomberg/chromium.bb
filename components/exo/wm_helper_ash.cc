@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/memory/singleton.h"
@@ -24,9 +23,9 @@ WMHelperAsh::WMHelperAsh() {
   ash::Shell::Get()->AddShellObserver(this);
   ash::Shell::Get()->activation_client()->AddObserver(this);
   // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
-  if (ash::ShellPort::Get()->GetAshConfig() != ash::Config::MUS)
+  if (ash::Shell::GetAshConfig() != ash::Config::MUS)
     ash::Shell::Get()->cursor_manager()->AddObserver(this);
-  ash::ShellPort::Get()->AddDisplayObserver(this);
+  ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
@@ -39,9 +38,9 @@ WMHelperAsh::~WMHelperAsh() {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->RemoveObserver(this);
-  ash::ShellPort::Get()->RemoveDisplayObserver(this);
+  ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
-  if (ash::ShellPort::Get()->GetAshConfig() != ash::Config::MUS)
+  if (ash::Shell::GetAshConfig() != ash::Config::MUS)
     ash::Shell::Get()->cursor_manager()->RemoveObserver(this);
   ash::Shell::Get()->activation_client()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
@@ -73,14 +72,14 @@ aura::Window* WMHelperAsh::GetFocusedWindow() const {
 
 ui::CursorSetType WMHelperAsh::GetCursorSet() const {
   // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
-  if (ash::ShellPort::Get()->GetAshConfig() == ash::Config::MUS)
+  if (ash::Shell::GetAshConfig() == ash::Config::MUS)
     return ui::CURSOR_SET_NORMAL;
   return ash::Shell::Get()->cursor_manager()->GetCursorSet();
 }
 
 const display::Display& WMHelperAsh::GetCursorDisplay() const {
   // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
-  if (ash::ShellPort::Get()->GetAshConfig() == ash::Config::MUS) {
+  if (ash::Shell::GetAshConfig() == ash::Config::MUS) {
     static const display::Display display;
     return display;
   }

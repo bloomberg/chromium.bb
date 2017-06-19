@@ -827,7 +827,6 @@ component("ash") {
     "wm/workspace/workspace_window_resizer.h",
     "wm/workspace_controller.cc",
     "wm/workspace_controller.h",
-    "wm_display_observer.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

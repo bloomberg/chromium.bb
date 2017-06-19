@@ -166,7 +166,7 @@ ScreenOrientationController::ScreenOrientationController()
 ScreenOrientationController::~ScreenOrientationController() {
   Shell::Get()->RemoveShellObserver(this);
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
-  ShellPort::Get()->RemoveDisplayObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto& windows : lock_info_map_)
     windows.first->RemoveObserver(this);
@@ -317,7 +317,7 @@ void ScreenOrientationController::OnMaximizeModeStarted() {
   if (!rotation_locked_)
     LoadDisplayRotationProperties();
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
-  ShellPort::Get()->AddDisplayObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 
   if (!display::Display::HasInternalDisplay())
     return;
@@ -328,7 +328,7 @@ void ScreenOrientationController::OnMaximizeModeStarted() {
 
 void ScreenOrientationController::OnMaximizeModeEnding() {
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
-  ShellPort::Get()->RemoveDisplayObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   if (!display::Display::HasInternalDisplay())
     return;
   if (current_rotation_ != user_rotation_)

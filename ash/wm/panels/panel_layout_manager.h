@@ -9,11 +9,11 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
-#include "ash/wm_display_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -54,7 +54,7 @@ class ASH_EXPORT PanelLayoutManager
     : public aura::LayoutManager,
       public wm::WindowStateObserver,
       public ::wm::ActivationChangeObserver,
-      public WmDisplayObserver,
+      public WindowTreeHostManager::Observer,
       public ShellObserver,
       public aura::WindowObserver,
       public keyboard::KeyboardControllerObserver,

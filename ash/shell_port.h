@@ -50,7 +50,6 @@ class RootWindowController;
 struct ShellInitParams;
 class WindowCycleEventFilter;
 class WindowResizer;
-class WmDisplayObserver;
 class WorkspaceEventHandler;
 
 enum class Config;
@@ -177,9 +176,6 @@ class ASH_EXPORT ShellPort {
   virtual std::unique_ptr<KeyboardUI> CreateKeyboardUI() = 0;
 
   virtual std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() = 0;
-
-  virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
-  virtual void RemoveDisplayObserver(WmDisplayObserver* observer) = 0;
 
   // If |events| is PointerWatcherEventTypes::MOVES,
   // PointerWatcher::OnPointerEventObserved() is called for pointer move events.

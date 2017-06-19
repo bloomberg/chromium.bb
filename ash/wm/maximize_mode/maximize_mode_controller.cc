@@ -138,7 +138,7 @@ MaximizeModeController::MaximizeModeController()
   // IsMaximizeModeWindowManagerEnabled to check for the existence of the
   // controller.
   if (IsEnabled()) {
-    ShellPort::Get()->AddDisplayObserver(this);
+    Shell::Get()->window_tree_host_manager()->AddObserver(this);
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   }
   chromeos::PowerManagerClient* power_manager_client =
@@ -152,7 +152,7 @@ MaximizeModeController::~MaximizeModeController() {
   Shell::Get()->RemoveShellObserver(this);
 
   if (IsEnabled()) {
-    ShellPort::Get()->RemoveDisplayObserver(this);
+    Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
