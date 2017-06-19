@@ -1,21 +1,18 @@
 'use strict';
 promise_test(() => {
   let promise;
-  return setBluetoothFakeAdapter('TwoHeartRateServicesAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => {
-      return gattServer
-        .CALLS([
-          getPrimaryService('heart_rate')|
-          getPrimaryServices()|
-          getPrimaryServices('heart_rate')[UUID]])
+  return getHealthThermometerDevice({
+      filters: [{services: ['health_thermometer']}]})
+    .then(([device]) => {
+      return device.gatt.CALLS([
+        getPrimaryService('health_thermometer')|
+        getPrimaryServices()|
+        getPrimaryServices('health_thermometer')[UUID]])
         // Convert to array if necessary.
         .then(s => {
           let services = [].concat(s);
-          gattServer.disconnect();
-          return gattServer.connect()
+          device.gatt.disconnect();
+          return device.gatt.connect()
             .then(() => services);
         });
     })
@@ -29,7 +26,7 @@ promise_test(() => {
           'InvalidStateError');
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
-            service.getCharacteristic('body_sensor_location'),
+            service.getCharacteristic('measurement_interval'),
             error));
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
@@ -37,7 +34,7 @@ promise_test(() => {
             error));
         promises = promises.then(() =>
           assert_promise_rejects_with_message(
-            service.getCharacteristics('body_sensor_location'),
+            service.getCharacteristics('measurement_interval'),
             error));
       }
       return promises;
