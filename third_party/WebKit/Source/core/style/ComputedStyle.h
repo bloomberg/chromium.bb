@@ -1058,16 +1058,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(rare_non_inherited_data_, scroll_behavior_, b);
   }
 
-  // scroll-snap-type
-  static ScrollSnapType InitialScrollSnapType() { return ScrollSnapType(); }
-  ScrollSnapType GetScrollSnapType() const {
-    return rare_non_inherited_data_->scroll_snap_data_->scroll_snap_type_;
-  }
-  void SetScrollSnapType(const ScrollSnapType& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
-                   scroll_snap_type_, b);
-  }
-
   // scroll-padding-block-start
   const Length& ScrollPaddingBlockStart() const {
     return IsHorizontalWritingMode() ? ScrollPaddingTop() : ScrollPaddingLeft();
