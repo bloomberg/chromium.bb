@@ -7,7 +7,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
