@@ -14,6 +14,7 @@
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/events/event_handler.h"
 
 namespace gfx {
 class Rect;
@@ -28,6 +29,7 @@ class ArcVoiceInteractionFrameworkService
     : public ArcService,
       public mojom::VoiceInteractionFrameworkHost,
       public ui::AcceleratorTarget,
+      public ui::EventHandler,
       public InstanceHolder<
           mojom::VoiceInteractionFrameworkInstance>::Observer {
  public:
@@ -42,6 +44,9 @@ class ArcVoiceInteractionFrameworkService
   // ui::AcceleratorTarget overrides.
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
+
+  // ui::EventHandler overrides.
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // mojom::VoiceInteractionFrameworkHost overrides.
   void CaptureFocusedWindow(
@@ -85,6 +90,8 @@ class ArcVoiceInteractionFrameworkService
 
  private:
   void SetMetalayerVisibility(bool visible);
+
+  void CallAndResetMetalayerCallback();
 
   bool InitiateUserInteraction();
 
