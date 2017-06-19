@@ -448,11 +448,6 @@ public class LocaleManager {
      * @return Whether we still have to check for whether search engine dialog is necessary.
      */
     public boolean needToCheckForSearchEnginePromo() {
-        if (ChromeFeatureList.isInitialized()
-                && !ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.SEARCH_ENGINE_PROMO_EXISTING_DEVICE)) {
-            return false;
-        }
         int state = SEARCH_ENGINE_PROMO_SHOULD_CHECK;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
