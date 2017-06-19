@@ -33,6 +33,12 @@
 
 namespace net {
 
+namespace test {
+
+class HttpStreamFactoryImplJobPeer;
+
+}  // namespace test
+
 class ClientSocketHandle;
 class HttpAuthController;
 class HttpNetworkSession;
@@ -252,7 +258,7 @@ class HttpStreamFactoryImpl::Job {
   void LogHistograms() const;
 
  private:
-  friend class HttpStreamFactoryImplJobPeer;
+  friend class test::HttpStreamFactoryImplJobPeer;
 
   enum State {
     STATE_START,

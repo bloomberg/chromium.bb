@@ -47,6 +47,8 @@ using ::testing::Invoke;
 
 namespace net {
 
+namespace test {
+
 namespace {
 
 const char kServerHostname[] = "www.example.com";
@@ -274,11 +276,11 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
   HttpStreamFactoryImpl::JobController* job_controller_ = nullptr;
   std::unique_ptr<HttpStreamFactoryImpl::Request> request_;
   std::unique_ptr<SequencedSocketData> tcp_data_;
-  std::unique_ptr<test::MockQuicData> quic_data_;
+  std::unique_ptr<MockQuicData> quic_data_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockClock clock_;
-  test::MockRandom random_generator_{0};
-  test::QuicTestPacketMaker client_maker_{
+  MockRandom random_generator_{0};
+  QuicTestPacketMaker client_maker_{
       HttpNetworkSession::Params().quic_supported_versions[0], 0, &clock_,
       kServerHostname, Perspective::IS_CLIENT};
 
@@ -435,8 +437,7 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   std::unique_ptr<ProxyService> proxy_service =
       ProxyService::CreateFixedFromPacResult(
           "HTTPS badproxy:99; HTTPS badfallbackproxy:98; DIRECT");
-  std::unique_ptr<TestProxyDelegate> test_proxy_delegate =
-      base::MakeUnique<TestProxyDelegate>();
+  auto test_proxy_delegate = base::MakeUnique<TestProxyDelegate>();
   TestProxyDelegate* test_proxy_delegate_raw = test_proxy_delegate.get();
 
   // Before starting the test, verify that there are no proxies marked as bad.
@@ -458,7 +459,7 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
         ProxyServer::FromPacString("QUIC badproxy:99"));
   }
 
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
 
   // When retrying the job using the second proxy (badFallback:98),
   // alternative job must not be created. So, socket data for only the
@@ -467,21 +468,21 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   socket_data_proxy_main_job_2.set_connect_data(MockConnect(ASYNC, mock_error));
   session_deps_.socket_factory->AddSocketDataProvider(
       &socket_data_proxy_main_job_2);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   // First request would use DIRECT, and succeed.
   StaticSocketDataProvider socket_data_direct_first_request;
   socket_data_direct_first_request.set_connect_data(MockConnect(ASYNC, OK));
   session_deps_.socket_factory->AddSocketDataProvider(
       &socket_data_direct_first_request);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   // Second request would use DIRECT, and succeed.
   StaticSocketDataProvider socket_data_direct_second_request;
   socket_data_direct_second_request.set_connect_data(MockConnect(ASYNC, OK));
   session_deps_.socket_factory->AddSocketDataProvider(
       &socket_data_direct_second_request);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   // Now request a stream. It should succeed using the DIRECT.
   HttpRequestInfo request_info;
@@ -661,7 +662,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, CancelJobsBeforeBinding) {
   // Use COLD_START to make the alt job pending.
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, OK);
 
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
@@ -690,7 +691,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, CancelJobsBeforeBinding) {
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddConnect(ASYNC, ERR_FAILED);
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(ASYNC, ERR_FAILED));
@@ -721,15 +722,15 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        AltJobFailsAfterMainJobSucceeds) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(ASYNC, ERR_FAILED);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
 
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(SYNCHRONOUS, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -767,7 +768,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 // Regression test for crbug.com/678768.
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        AltJobSucceedsMainJobBlockedControllerDestroyed) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data_->AddRead(ASYNC, OK);
 
@@ -846,7 +847,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 // JobController will be cleaned up.
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        OrphanedJobCompletesControllerDestroyed) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   // Use cold start and complete alt job manually.
   crypto_client_stream_factory_.set_handshake_mode(
@@ -854,8 +855,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -899,7 +900,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        AltJobSucceedsAfterMainJobFailed) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   // Use cold start and complete alt job manually.
   crypto_client_stream_factory_.set_handshake_mode(
@@ -947,13 +948,13 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        MainJobSucceedsAfterAltJobFailed) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddConnect(SYNCHRONOUS, ERR_FAILED);
 
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   base::HistogramTester histogram_tester;
   HttpRequestInfo request_info;
@@ -991,12 +992,12 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 // then the alternative service is not marked as broken.
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        MainJobSucceedsAfterConnectionChanged) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddConnect(SYNCHRONOUS, ERR_NETWORK_CHANGED);
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   base::HistogramTester histogram_tester;
 
@@ -1033,7 +1034,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 // Get load state after main job fails and before alternative job succeeds.
 TEST_F(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
   // Use COLD_START to complete alt job manually.
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
@@ -1078,15 +1079,15 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
 
 TEST_F(HttpStreamFactoryImplJobControllerTest, ResumeMainJobWhenAltJobStalls) {
   // Use COLD_START to stall alt job.
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
 
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1428,12 +1429,12 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPAlternativeProxy) {
 // Verifies that if the alternative proxy server job fails immediately, the
 // main job is not blocked.
 TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddConnect(SYNCHRONOUS, ERR_FAILED);
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   UseAlternativeProxy();
 
@@ -1478,12 +1479,12 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Use COLD_START to make the alt job pending.
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   UseAlternativeProxy();
 
@@ -1527,7 +1528,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        PreconnectToHostWithValidAltSvc) {
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data_->AddRead(ASYNC, OK);
 
@@ -1595,9 +1596,9 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
   tcp_data_ = base::MakeUnique<SequencedSocketData>(reads, arraysize(reads),
                                                     nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(ASYNC, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  ssl_data->next_proto = kProtoHTTP2;
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ssl_data.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.com");
@@ -1652,28 +1653,28 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
 TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
   // First socket connect hang.
-  auto hangdata = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
-  hangdata->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
-  session_deps_.socket_factory->AddSocketDataProvider(hangdata.get());
+  SequencedSocketData hangdata(nullptr, 0, nullptr, 0);
+  hangdata.set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+  session_deps_.socket_factory->AddSocketDataProvider(&hangdata);
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
-  std::vector<std::unique_ptr<SequencedSocketData>> socket_data;
-  std::vector<std::unique_ptr<SSLSocketDataProvider>> ssl_socket_data;
+  std::list<SequencedSocketData> socket_data;
+  std::list<SSLSocketDataProvider> ssl_socket_data;
   // kNumRequests - 1 will resume themselves after a delay. There will be
   // kNumRequests - 1 sockets opened.
   for (int i = 0; i < kNumRequests - 1; i++) {
     // Only the first one needs a MockRead because subsequent sockets are
     // not used to establish a SpdySession.
-    auto tcp_data =
-        i == 0 ? base::MakeUnique<SequencedSocketData>(reads, arraysize(reads),
-                                                       nullptr, 0)
-               : base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
-    tcp_data->set_connect_data(MockConnect(ASYNC, OK));
-    auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-    ssl_data->next_proto = kProtoHTTP2;
-    session_deps_.socket_factory->AddSocketDataProvider(tcp_data.get());
-    session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
-    socket_data.push_back(std::move(tcp_data));
-    ssl_socket_data.push_back(std::move(ssl_data));
+    if (i == 0) {
+      socket_data.emplace_back(reads, arraysize(reads), nullptr, 0);
+    } else {
+      socket_data.emplace_back(nullptr, 0, nullptr, 0);
+    }
+    socket_data.back().set_connect_data(MockConnect(ASYNC, OK));
+    session_deps_.socket_factory->AddSocketDataProvider(&socket_data.back());
+    ssl_socket_data.emplace_back(ASYNC, OK);
+    ssl_socket_data.back().next_proto = kProtoHTTP2;
+    session_deps_.socket_factory->AddSSLSocketDataProvider(
+        &ssl_socket_data.back());
   }
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1719,36 +1720,33 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
-  EXPECT_TRUE(hangdata->AllReadDataConsumed());
+  EXPECT_TRUE(hangdata.AllReadDataConsumed());
   for (const auto& data : socket_data) {
-    EXPECT_TRUE(data->AllReadDataConsumed());
-    EXPECT_TRUE(data->AllWriteDataConsumed());
+    EXPECT_TRUE(data.AllReadDataConsumed());
+    EXPECT_TRUE(data.AllWriteDataConsumed());
   }
 }
 
 TEST_F(JobControllerLimitMultipleH2Requests,
        MultipleRequestsFirstRequestCanceled) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
-  auto first_socket = base::MakeUnique<SequencedSocketData>(
-      reads, arraysize(reads), nullptr, 0);
-  first_socket->set_connect_data(MockConnect(ASYNC, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  ssl_data->next_proto = kProtoHTTP2;
-  session_deps_.socket_factory->AddSocketDataProvider(first_socket.get());
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
-  std::vector<std::unique_ptr<SequencedSocketData>> socket_data;
-  std::vector<std::unique_ptr<SSLSocketDataProvider>> ssl_socket_data;
+  SequencedSocketData first_socket(reads, arraysize(reads), nullptr, 0);
+  first_socket.set_connect_data(MockConnect(ASYNC, OK));
+  SSLSocketDataProvider first_ssl_data(ASYNC, OK);
+  first_ssl_data.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSocketDataProvider(&first_socket);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&first_ssl_data);
+  std::list<SequencedSocketData> socket_data;
+  std::list<SSLSocketDataProvider> ssl_socket_data;
   // kNumRequests - 1 will be resumed when the first request is canceled.
   for (int i = 0; i < kNumRequests - 1; i++) {
-    auto tcp_data =
-        base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
-    tcp_data->set_connect_data(MockConnect(ASYNC, OK));
-    auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-    ssl_data->next_proto = kProtoHTTP2;
-    session_deps_.socket_factory->AddSocketDataProvider(tcp_data.get());
-    session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
-    socket_data.push_back(std::move(tcp_data));
-    ssl_socket_data.push_back(std::move(ssl_data));
+    socket_data.emplace_back(nullptr, 0, nullptr, 0);
+    socket_data.back().set_connect_data(MockConnect(ASYNC, OK));
+    session_deps_.socket_factory->AddSocketDataProvider(&socket_data.back());
+    ssl_socket_data.emplace_back(ASYNC, OK);
+    ssl_socket_data.back().next_proto = kProtoHTTP2;
+    session_deps_.socket_factory->AddSSLSocketDataProvider(
+        &ssl_socket_data.back());
   }
 
   HttpRequestInfo request_info;
@@ -1792,10 +1790,10 @@ TEST_F(JobControllerLimitMultipleH2Requests,
   }
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
-  EXPECT_TRUE(first_socket->AllReadDataConsumed());
+  EXPECT_TRUE(first_socket.AllReadDataConsumed());
   for (const auto& data : socket_data) {
-    EXPECT_TRUE(data->AllReadDataConsumed());
-    EXPECT_TRUE(data->AllWriteDataConsumed());
+    EXPECT_TRUE(data.AllReadDataConsumed());
+    EXPECT_TRUE(data.AllWriteDataConsumed());
   }
 }
 
@@ -1803,9 +1801,9 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultiplePreconnects) {
   // Make sure there is only one socket connect.
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(ASYNC, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  ssl_data->next_proto = kProtoHTTP2;
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ssl_data.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.com");
@@ -1836,21 +1834,19 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultiplePreconnects) {
 
 TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
   // First socket is an HTTP/1.1 socket.
-  auto first_socket =
-      base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
-  first_socket->set_connect_data(MockConnect(ASYNC, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  session_deps_.socket_factory->AddSocketDataProvider(first_socket.get());
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SequencedSocketData first_socket(nullptr, 0, nullptr, 0);
+  first_socket.set_connect_data(MockConnect(ASYNC, OK));
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSocketDataProvider(&first_socket);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
   // Second socket is an HTTP/2 socket.
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
-  auto second_socket = base::MakeUnique<SequencedSocketData>(
-      reads, arraysize(reads), nullptr, 0);
-  second_socket->set_connect_data(MockConnect(ASYNC, OK));
-  auto second_ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  second_ssl_data->next_proto = kProtoHTTP2;
-  session_deps_.socket_factory->AddSocketDataProvider(second_socket.get());
-  session_deps_.socket_factory->AddSSLSocketDataProvider(second_ssl_data.get());
+  SequencedSocketData second_socket(reads, arraysize(reads), nullptr, 0);
+  second_socket.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps_.socket_factory->AddSocketDataProvider(&second_socket);
+  SSLSocketDataProvider second_ssl_data(ASYNC, OK);
+  second_ssl_data.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&second_ssl_data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1891,24 +1887,24 @@ TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
   }
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
-  EXPECT_TRUE(first_socket->AllReadDataConsumed());
-  EXPECT_FALSE(second_socket->AllReadDataConsumed());
+  EXPECT_TRUE(first_socket.AllReadDataConsumed());
+  EXPECT_FALSE(second_socket.AllReadDataConsumed());
 }
 
 // Tests that HTTP/2 throttling logic only applies to non-QUIC jobs.
 TEST_F(JobControllerLimitMultipleH2Requests, QuicJobNotThrottled) {
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
-  quic_data_ = base::MakeUnique<test::MockQuicData>();
+  quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
   tcp_data_ = base::MakeUnique<SequencedSocketData>(reads, arraysize(reads),
                                                     nullptr, 0);
 
   tcp_data_->set_connect_data(MockConnect(ASYNC, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  ssl_data->next_proto = kProtoHTTP2;
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ssl_data.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1963,15 +1959,15 @@ TEST_P(HttpStreamFactoryImplJobControllerMisdirectedRequestRetry,
   const bool enable_ip_based_pooling = ::testing::get<0>(GetParam());
   const bool enable_alternative_services = ::testing::get<1>(GetParam());
   if (enable_alternative_services) {
-    quic_data_ = base::MakeUnique<test::MockQuicData>();
+    quic_data_ = base::MakeUnique<MockQuicData>();
     quic_data_->AddConnect(SYNCHRONOUS, OK);
     quic_data_->AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
     quic_data_->AddRead(ASYNC, OK);
   }
   tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -2050,20 +2046,18 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(HttpStreamFactoryImplJobControllerPreconnectTest,
        LimitEarlyPreconnects) {
-  std::vector<std::unique_ptr<SequencedSocketData>> providers;
-  std::vector<std::unique_ptr<SSLSocketDataProvider>> ssl_providers;
+  std::list<SequencedSocketData> providers;
+  std::list<SSLSocketDataProvider> ssl_providers;
   const int kNumPreconects = 5;
   MockRead reads[] = {MockRead(ASYNC, OK)};
   // If experiment is not enabled, there are 5 socket connects.
   const size_t actual_num_connects = GetParam() ? 1 : kNumPreconects;
   for (size_t i = 0; i < actual_num_connects; ++i) {
-    auto data = base::MakeUnique<SequencedSocketData>(reads, arraysize(reads),
-                                                      nullptr, 0);
-    auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
-    session_deps_.socket_factory->AddSocketDataProvider(data.get());
-    session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
-    providers.push_back(std::move(data));
-    ssl_providers.push_back(std::move(ssl_data));
+    providers.emplace_back(reads, arraysize(reads), nullptr, 0);
+    session_deps_.socket_factory->AddSocketDataProvider(&providers.back());
+    ssl_providers.emplace_back(ASYNC, OK);
+    session_deps_.socket_factory->AddSSLSocketDataProvider(
+        &ssl_providers.back());
   }
   Initialize();
   Preconnect(kNumPreconects);
@@ -2074,5 +2068,7 @@ TEST_P(HttpStreamFactoryImplJobControllerPreconnectTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
+
+}  // namespace test
 
 }  // namespace net
