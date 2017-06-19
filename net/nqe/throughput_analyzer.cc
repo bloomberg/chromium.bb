@@ -16,10 +16,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
-#if defined(OS_ANDROID)
-#include "net/android/traffic_stats.h"
-#endif  // OS_ANDROID
-
 namespace net {
 
 class HostResolver;
@@ -259,12 +255,6 @@ void ThroughputAnalyzer::SetUseSmallResponsesForTesting(
 
 int64_t ThroughputAnalyzer::GetBitsReceived() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-#if defined(OS_ANDROID)
-  int64_t rx_bytes;
-  if (android::traffic_stats::GetCurrentUidRxBytes(&rx_bytes))
-    return static_cast<uint64_t>(rx_bytes * 8);
-#endif
   return NetworkActivityMonitor::GetInstance()->GetBytesReceived() * 8;
 }
 
