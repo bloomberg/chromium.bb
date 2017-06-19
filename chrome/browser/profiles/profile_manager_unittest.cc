@@ -320,8 +320,10 @@ TEST_F(ProfileManagerTest, UserProfileLoading) {
       ProfileManager::GetActiveUserProfile()->IsSameProfile(signin_profile));
   EXPECT_TRUE(
       ProfileManager::GetPrimaryUserProfile()->IsSameProfile(signin_profile));
-  EXPECT_TRUE(
-      ProfileManager::GetLastUsedProfile()->IsSameProfile(signin_profile));
+
+  // GetLastUsedProfile() after login but before a user profile is loaded is
+  // fatal.
+  EXPECT_DEATH_IF_SUPPORTED(ProfileManager::GetLastUsedProfile(), ".*");
 
   // Simulate UserSessionManager loads the profile.
   Profile* const user_profile =

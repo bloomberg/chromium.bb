@@ -109,7 +109,8 @@ class MagnificationManagerImpl
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
   void ActiveUserChanged(const user_manager::User* active_user) override {
-    SetProfile(ProfileManager::GetActiveUserProfile());
+    if (active_user && active_user->is_profile_created())
+      SetProfile(ProfileManager::GetActiveUserProfile());
   }
 
  private:

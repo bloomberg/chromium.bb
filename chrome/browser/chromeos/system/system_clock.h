@@ -53,7 +53,7 @@ class SystemClock : public chromeos::LoginState::Observer,
                const content::NotificationDetails& details) override;
 
   // user_manager::UserManager::UserSessionStateObserver overrides
-  void ActiveUserChanged(const user_manager::User* user) override;
+  void ActiveUserChanged(const user_manager::User* active_user) override;
 
  private:
   // Should be the same as CrosSettings::ObserverSubscription.
