@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #import "ios/showcase/common/protocol_alerter.h"
@@ -19,54 +20,34 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SCPaymentsEditorCoordinator ()<
-    PaymentRequestEditViewControllerDataSource,
-    PaymentRequestEditViewControllerValidator>
+@interface SCPaymentsEditorMediator
+    : NSObject<PaymentRequestEditViewControllerDataSource,
+               PaymentRequestEditViewControllerValidator>
 
-@property(nonatomic, strong)
-    PaymentRequestEditViewController* paymentRequestEditViewController;
-
-@property(nonatomic, strong) ProtocolAlerter* alerter;
-
+// The reference to the province field.
 @property(nonatomic, strong) EditorField* province;
+
+// The consumer for this object.
+@property(nonatomic, weak) id<PaymentRequestEditConsumer> consumer;
 
 @end
 
-@implementation SCPaymentsEditorCoordinator
+@implementation SCPaymentsEditorMediator
 
 @synthesize state = _state;
-@synthesize baseViewController = _baseViewController;
-@synthesize paymentRequestEditViewController =
-    _paymentRequestEditViewController;
-@synthesize alerter = _alerter;
 @synthesize province = _province;
+@synthesize consumer = _consumer;
 
-- (void)start {
-  self.alerter = [[ProtocolAlerter alloc] initWithProtocols:@[
-    @protocol(PaymentRequestEditViewControllerDelegate)
-  ]];
-  self.alerter.baseViewController = self.baseViewController;
+- (void)setConsumer:(id<PaymentRequestEditConsumer>)consumer {
+  _consumer = consumer;
+  [self.consumer setEditorFields:[self editorFields]];
+}
 
-  self.paymentRequestEditViewController =
-      [[PaymentRequestEditViewController alloc]
-          initWithStyle:CollectionViewControllerStyleAppBar];
-  [self.paymentRequestEditViewController setTitle:@"Add info"];
-  [self.paymentRequestEditViewController setEditorFields:[self editorFields]];
-  [self.paymentRequestEditViewController setDataSource:self];
-  [self.paymentRequestEditViewController
-      setDelegate:static_cast<id<PaymentRequestEditViewControllerDelegate>>(
-                      self.alerter)];
-  [self.paymentRequestEditViewController setValidatorDelegate:self];
-  [self.paymentRequestEditViewController loadModel];
-  // Set the options for the province field after the model is loaded.
+- (void)loadProvinces {
   NSArray<NSString*>* options = @[ @"Ontario", @"Quebec" ];
   self.province.value = options[1];
   self.province.enabled = YES;
-  [self.paymentRequestEditViewController setOptions:options
-                                     forEditorField:self.province];
-  [self.baseViewController
-      pushViewController:self.paymentRequestEditViewController
-                animated:YES];
+  [self.consumer setOptions:options forEditorField:self.province];
 }
 
 #pragma mark - Helper methods
@@ -134,6 +115,54 @@
                  (PaymentRequestEditViewController*)controller
                                 validateField:(EditorField*)field {
   return (!field.value.length && field.isRequired) ? @"Field is required" : nil;
+}
+
+@end
+
+@interface SCPaymentsEditorCoordinator ()
+
+@property(nonatomic, strong)
+    PaymentRequestEditViewController* paymentRequestEditViewController;
+
+@property(nonatomic, strong) SCPaymentsEditorMediator* mediator;
+
+@property(nonatomic, strong) ProtocolAlerter* alerter;
+
+@end
+
+@implementation SCPaymentsEditorCoordinator
+
+@synthesize baseViewController = _baseViewController;
+@synthesize paymentRequestEditViewController =
+    _paymentRequestEditViewController;
+@synthesize mediator = _mediator;
+@synthesize alerter = _alerter;
+
+- (void)start {
+  self.alerter = [[ProtocolAlerter alloc] initWithProtocols:@[
+    @protocol(PaymentRequestEditViewControllerDelegate)
+  ]];
+  self.alerter.baseViewController = self.baseViewController;
+
+  self.paymentRequestEditViewController =
+      [[PaymentRequestEditViewController alloc]
+          initWithStyle:CollectionViewControllerStyleAppBar];
+  [self.paymentRequestEditViewController setTitle:@"Add info"];
+  self.mediator = [[SCPaymentsEditorMediator alloc] init];
+  [self.mediator setConsumer:self.paymentRequestEditViewController];
+  [self.paymentRequestEditViewController setDataSource:self.mediator];
+  [self.paymentRequestEditViewController
+      setDelegate:static_cast<id<PaymentRequestEditViewControllerDelegate>>(
+                      self.alerter)];
+  [self.paymentRequestEditViewController setValidatorDelegate:self.mediator];
+  [self.paymentRequestEditViewController loadModel];
+
+  // Set the options for the province field after the model is loaded.
+  [self.mediator loadProvinces];
+
+  [self.baseViewController
+      pushViewController:self.paymentRequestEditViewController
+                animated:YES];
 }
 
 @end
