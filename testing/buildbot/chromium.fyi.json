@@ -12018,8 +12018,8 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "hard_timeout": 900,
-          "shards": 6
+          "hard_timeout": 6000,
+          "shards": 15
         }
       }
     ]
@@ -12055,8 +12055,8 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "hard_timeout": 900,
-          "shards": 6
+          "hard_timeout": 6000,
+          "shards": 15
         }
       }
     ]
