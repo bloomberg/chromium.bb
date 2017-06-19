@@ -65,7 +65,6 @@ import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -99,8 +98,7 @@ public class CustomTabActivity extends ChromeActivity {
     private static final int WEBCONTENTS_STATE_NO_WEBCONTENTS = 0;
     private static final int WEBCONTENTS_STATE_PRERENDERED_WEBCONTENTS = 1;
     private static final int WEBCONTENTS_STATE_SPARE_WEBCONTENTS = 2;
-    private static final int WEBCONTENTS_STATE_TRANSFERRED_WEBCONTENTS = 3;
-    private static final int WEBCONTENTS_STATE_MAX = 4;
+    private static final int WEBCONTENTS_STATE_MAX = 3;
 
     private static CustomTabContentHandler sActiveContentHandler;
 
@@ -576,15 +574,28 @@ public class CustomTabActivity extends ChromeActivity {
 
     private Tab createMainTab() {
         CustomTabsConnection connection = CustomTabsConnection.getInstance(getApplication());
-        WebContents webContents = takeWebContents(connection);
-
-        int assignedTabId = IntentUtils.safeGetIntExtra(
-                getIntent(), IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
-        int parentTabId = IntentUtils.safeGetIntExtra(
-                getIntent(), IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
-        Tab tab = new Tab(assignedTabId, parentTabId, false, this, getWindowAndroid(),
+        String url = getUrlToLoad();
+        String referrerUrl = connection.getReferrer(mSession, getIntent());
+        Tab tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
                 TabLaunchType.FROM_EXTERNAL_APP, null, null);
         tab.setAppAssociatedWith(connection.getClientPackageNameForSession(mSession));
+
+        int webContentsStateOnLaunch = WEBCONTENTS_STATE_NO_WEBCONTENTS;
+        WebContents webContents = connection.takePrerenderedUrl(mSession, url, referrerUrl);
+        mUsingPrerender = webContents != null;
+        if (mUsingPrerender) webContentsStateOnLaunch = WEBCONTENTS_STATE_PRERENDERED_WEBCONTENTS;
+        if (!mUsingPrerender) {
+            webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
+            if (webContents != null) webContentsStateOnLaunch = WEBCONTENTS_STATE_SPARE_WEBCONTENTS;
+        }
+        RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
+                webContentsStateOnLaunch, WEBCONTENTS_STATE_MAX);
+        if (webContents == null) {
+            webContents = WebContentsFactory.createWebContentsWithWarmRenderer(false, false);
+        }
+        if (!mUsingPrerender) {
+            connection.resetPostMessageHandlerForSession(mSession, webContents);
+        }
         tab.initialize(
                 webContents, getTabContentManager(),
                 new CustomTabDelegateFactory(
@@ -599,52 +610,6 @@ public class CustomTabActivity extends ChromeActivity {
 
         initializeMainTab(tab);
         return tab;
-    }
-
-    private WebContents takeWebContents(CustomTabsConnection connection) {
-        mUsingPrerender = true;
-        int webContentsStateOnLaunch = WEBCONTENTS_STATE_PRERENDERED_WEBCONTENTS;
-        WebContents webContents = takePrerenderedWebContents(connection);
-
-        if (webContents == null) {
-            mUsingPrerender = false;
-            webContents = takeAsyncWebContents();
-            if (webContents != null) {
-                webContentsStateOnLaunch = WEBCONTENTS_STATE_TRANSFERRED_WEBCONTENTS;
-            } else {
-                webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
-                if (webContents != null) {
-                    webContentsStateOnLaunch = WEBCONTENTS_STATE_SPARE_WEBCONTENTS;
-                } else {
-                    webContents =
-                            WebContentsFactory.createWebContentsWithWarmRenderer(false, false);
-                    webContentsStateOnLaunch = WEBCONTENTS_STATE_NO_WEBCONTENTS;
-                }
-            }
-        }
-
-        RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
-                webContentsStateOnLaunch, WEBCONTENTS_STATE_MAX);
-
-        if (!mUsingPrerender) {
-            connection.resetPostMessageHandlerForSession(mSession, webContents);
-        }
-
-        return webContents;
-    }
-
-    private WebContents takePrerenderedWebContents(CustomTabsConnection connection) {
-        String url = getUrlToLoad();
-        String referrerUrl = connection.getReferrer(mSession, getIntent());
-        return connection.takePrerenderedUrl(mSession, url, referrerUrl);
-    }
-
-    private WebContents takeAsyncWebContents() {
-        int assignedTabId = IntentUtils.safeGetIntExtra(
-                getIntent(), IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
-        AsyncTabParams asyncParams = AsyncTabParamsManager.remove(assignedTabId);
-        if (asyncParams == null) return null;
-        return asyncParams.getWebContents();
     }
 
     private void initializeMainTab(Tab tab) {
