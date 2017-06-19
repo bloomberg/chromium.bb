@@ -43,6 +43,9 @@ class ModuleInspector {
   // Removes the throttling.
   void IncreaseInspectionPriority();
 
+  // Returns true if ModuleInspector is not doing anything right now.
+  bool IsIdle();
+
  private:
   // Starts inspecting the module at the front of the queue.
   void StartInspectingModule();

@@ -51,9 +51,12 @@ void ModuleInspector::IncreaseInspectionPriority() {
   inspection_task_priority_ = base::TaskPriority::USER_VISIBLE;
 }
 
+bool ModuleInspector::IsIdle() {
+  return queue_.empty();
+}
+
 void ModuleInspector::StartInspectingModule() {
   ModuleInfoKey module_key = queue_.front();
-  queue_.pop();
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
@@ -68,6 +71,10 @@ void ModuleInspector::StartInspectingModule() {
 void ModuleInspector::OnInspectionFinished(
     const ModuleInfoKey& module_key,
     std::unique_ptr<ModuleInspectionResult> inspection_result) {
+  // Pop first, because the callback may want to know if there is any work left
+  // to be done, which is caracterized by a non-empty queue.
+  queue_.pop();
+
   on_module_inspected_callback_.Run(module_key, std::move(inspection_result));
 
   // Continue the work.

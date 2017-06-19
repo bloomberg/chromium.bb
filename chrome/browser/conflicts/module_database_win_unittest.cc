@@ -10,35 +10,16 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/simple_thread.h"
+#include "base/time/time.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-// A simple mechanism for running a single task on a separate thread.
-class SingleTaskRunner : public base::SimpleThread {
- public:
-  explicit SingleTaskRunner(base::Closure task)
-      : base::SimpleThread("SingleTaskRunner"), task_(std::move(task)) {}
-
-  // Runs the provided task and exits.
-  void Run() override { task_.Run(); }
-
- private:
-  base::Closure task_;
-  DISALLOW_COPY_AND_ASSIGN(SingleTaskRunner);
-};
-
-// Launches a thread and runs a single task on it.
-void RunTask(base::Closure task) {
-  SingleTaskRunner task_runner(std::move(task));
-  task_runner.Start();
-  task_runner.Join();
-}
 
 constexpr uint32_t kPid1 = 1234u;
 constexpr uint32_t kPid2 = 2345u;
@@ -81,18 +62,17 @@ class ModuleDatabaseTest : public testing::Test {
   ModuleDatabaseTest()
       : dll1_(kDll1),
         dll2_(kDll2),
-        module_database_(base::MakeUnique<ModuleDatabase>(
-            base::SequencedTaskRunnerHandle::Get())) {}
+        module_database_(base::SequencedTaskRunnerHandle::Get()) {}
 
   const ModuleDatabase::ModuleMap& modules() {
-    return module_database_->modules_;
+    return module_database_.modules_;
   }
 
   const ModuleDatabase::ProcessMap& processes() {
-    return module_database_->processes_;
+    return module_database_.processes_;
   }
 
-  ModuleDatabase* module_database() { return module_database_.get(); }
+  ModuleDatabase* module_database() { return &module_database_; }
 
   static uint32_t ProcessTypeToBit(content::ProcessType process_type) {
     return ModuleDatabase::ProcessTypeToBit(process_type);
@@ -108,7 +88,16 @@ class ModuleDatabaseTest : public testing::Test {
         [module_id](const auto& x) { return module_id == x.first; });
   }
 
-  void RunSchedulerUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunSchedulerUntilIdle() {
+    // Call ScopedTaskEnvironment::RunUntilIdle() when it supports mocking time.
+    base::TaskScheduler::GetInstance()->FlushForTesting();
+    mock_time_task_runner_->RunUntilIdle();
+  }
+
+  void FastForwardToModuleDatabaseIdle() {
+    RunSchedulerUntilIdle();
+    mock_time_task_runner_->FastForwardBy(ModuleDatabase::kIdleTimeout);
+  }
 
   const base::FilePath dll1_;
   const base::FilePath dll2_;
@@ -117,7 +106,9 @@ class ModuleDatabaseTest : public testing::Test {
   // Must be before |module_database_|.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  std::unique_ptr<ModuleDatabase> module_database_;
+  base::ScopedMockTimeMessageLoopTaskRunner mock_time_task_runner_;
+
+  ModuleDatabase module_database_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleDatabaseTest);
 };
@@ -347,17 +338,17 @@ TEST_F(ModuleDatabaseTest, TasksAreBounced) {
 
   // Run similar tasks on another thread with another module. These should be
   // bounced.
-  RunTask(base::Bind(&ModuleDatabase::OnModuleLoad,
-                     base::Unretained(module_database()), kPid2, kCreateTime2,
-                     dll2_, kSize1, kTime1, kGoodAddress1));
-  EXPECT_EQ(1u, modules().size());
-  base::RunLoop().RunUntilIdle();
+  base::PostTask(FROM_HERE, base::Bind(&ModuleDatabase::OnModuleLoad,
+                                       base::Unretained(module_database()),
+                                       kPid2, kCreateTime2, dll2_, kSize1,
+                                       kTime1, kGoodAddress1));
+  RunSchedulerUntilIdle();
   EXPECT_EQ(2u, modules().size());
 
-  RunTask(base::Bind(&ModuleDatabase::OnProcessEnded,
-                     base::Unretained(module_database()), kPid2, kCreateTime2));
-  EXPECT_EQ(1u, processes().size());
-  base::RunLoop().RunUntilIdle();
+  base::PostTask(FROM_HERE, base::Bind(&ModuleDatabase::OnProcessEnded,
+                                       base::Unretained(module_database()),
+                                       kPid2, kCreateTime2));
+  RunSchedulerUntilIdle();
   EXPECT_EQ(0u, processes().size());
 }
 
@@ -544,10 +535,18 @@ class DummyObserver : public ModuleDatabaseObserver {
     new_module_count_++;
   }
 
+  void OnModuleDatabaseIdle() override {
+    on_module_database_idle_called_ = true;
+  }
+
   int new_module_count() { return new_module_count_; }
+  bool on_module_database_idle_called() {
+    return on_module_database_idle_called_;
+  }
 
  private:
   int new_module_count_ = 0;
+  bool on_module_database_idle_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DummyObserver);
 };
@@ -577,4 +576,56 @@ TEST_F(ModuleDatabaseTest, Observers) {
   EXPECT_EQ(1, after_load_observer.new_module_count());
 
   module_database()->RemoveObserver(&after_load_observer);
+}
+
+// Tests the idle cycle of the ModuleDatabase.
+TEST_F(ModuleDatabaseTest, IsIdle) {
+  module_database()->OnProcessStarted(kPid1, kCreateTime1,
+                                      content::PROCESS_TYPE_BROWSER);
+
+  // ModuleDatabase starts busy.
+  EXPECT_FALSE(module_database()->IsIdle());
+
+  // Can't fast forward to idle because a module load event is needed.
+  FastForwardToModuleDatabaseIdle();
+  EXPECT_FALSE(module_database()->IsIdle());
+
+  // A load module event starts the timer.
+  module_database()->OnModuleLoad(kPid1, kCreateTime1, dll1_, kSize1, kTime1,
+                                  kGoodAddress1);
+  EXPECT_FALSE(module_database()->IsIdle());
+
+  FastForwardToModuleDatabaseIdle();
+  EXPECT_TRUE(module_database()->IsIdle());
+
+  // A new shell extension resets the timer.
+  module_database()->OnShellExtensionEnumerated(dll1_, kSize1, kTime1);
+  EXPECT_FALSE(module_database()->IsIdle());
+
+  FastForwardToModuleDatabaseIdle();
+  EXPECT_TRUE(module_database()->IsIdle());
+
+  // Adding an observer while idle immediately calls OnModuleDatabaseIdle().
+  DummyObserver is_idle_observer;
+  module_database()->AddObserver(&is_idle_observer);
+  EXPECT_TRUE(is_idle_observer.on_module_database_idle_called());
+
+  module_database()->RemoveObserver(&is_idle_observer);
+
+  // Make the ModuleDabatase busy.
+  module_database()->OnModuleLoad(kPid2, kCreateTime2, dll2_, kSize2, kTime2,
+                                  kGoodAddress2);
+  EXPECT_FALSE(module_database()->IsIdle());
+
+  // Adding an observer while busy doesn't.
+  DummyObserver is_busy_observer;
+  module_database()->AddObserver(&is_busy_observer);
+  EXPECT_FALSE(is_busy_observer.on_module_database_idle_called());
+
+  // Fast forward will call OnModuleDatabaseIdle().
+  FastForwardToModuleDatabaseIdle();
+  EXPECT_TRUE(module_database()->IsIdle());
+  EXPECT_TRUE(is_busy_observer.on_module_database_idle_called());
+
+  module_database()->RemoveObserver(&is_busy_observer);
 }
