@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_inspector_win.h"
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
@@ -44,6 +46,11 @@ class ModuleDatabase {
   using ProcessMap = std::map<ProcessInfoKey, ProcessInfoData>;
   using ProcessInfo = ProcessMap::value_type;
 
+  // The Module Database becomes idle after this timeout expires without any
+  // module events.
+  static constexpr base::TimeDelta kIdleTimeout =
+      base::TimeDelta::FromSeconds(10);
+
   // A ModuleDatabase is by default bound to a provided sequenced task runner.
   // All calls must be made in the context of this task runner, unless
   // otherwise noted. For calls from other contexts this task runner is used to
@@ -58,6 +65,11 @@ class ModuleDatabase {
   // global instance and deliberately leaked, unless manually cleaned up. This
   // has no locking and should be called when Chrome is single threaded.
   static void SetInstance(std::unique_ptr<ModuleDatabase> module_database);
+
+  // Returns true if the ModuleDatabase is idle. This means that no modules are
+  // currently being inspected, and no new module events have been observed in
+  // the last 10 seconds.
+  bool IsIdle();
 
   // Indicates that process with the given type has started. This must be called
   // before any calls to OnModuleEvent or OnModuleUnload. Must be called in the
@@ -101,7 +113,8 @@ class ModuleDatabase {
   // Adds or removes an observer.
   // Note that when adding an observer, OnNewModuleFound() will immediately be
   // called once for all modules that are already loaded before returning to the
-  // caller.
+  // caller. In addition, if the ModuleDatabase is currently idle,
+  // OnModuleDatabaseIdle() will also be invoked.
   // Must be called in the same sequence as |task_runner_|, and all
   // notifications will be sent on that same task runner.
   void AddObserver(ModuleDatabaseObserver* observer);
@@ -167,6 +180,12 @@ class ModuleDatabase {
       const ModuleInfoKey& module_key,
       std::unique_ptr<ModuleInspectionResult> inspection_result);
 
+  // If the ModuleDatabase is truly idle, calls EnterIdleState().
+  void OnDelayExpired();
+
+  // Notifies the observers that ModuleDatabase is now idle.
+  void EnterIdleState();
+
   // The task runner to which this object is bound.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -183,6 +202,11 @@ class ModuleDatabase {
   base::ObserverList<ModuleDatabaseObserver> observer_list_;
 
   ThirdPartyMetricsRecorder third_party_metrics_;
+
+  // Indicates if the ModuleDatabase has started processing module load events.
+  bool has_started_processing_;
+
+  base::Timer idle_timer_;
 
   // Weak pointer factory for this object. This is used when bouncing
   // incoming events to |task_runner_|.
