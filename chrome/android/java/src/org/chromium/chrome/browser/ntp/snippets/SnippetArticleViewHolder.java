@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -88,6 +89,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private final UiConfig mUiConfig;
     private final ThumbnailProvider mThumbnailProvider;
 
+    private final LinearLayout mTextLayout;
     private final TextView mHeadlineTextView;
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
@@ -119,23 +121,29 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     public SnippetArticleViewHolder(SuggestionsRecyclerView parent,
             ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
             UiConfig uiConfig) {
-        super(R.layout.new_tab_page_snippets_card, parent, uiConfig, contextMenuManager);
+        super(ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)
+                        ? R.layout.new_tab_page_snippets_card_large_thumbnail
+                        : R.layout.new_tab_page_snippets_card,
+                parent, uiConfig, contextMenuManager);
 
         mUiDelegate = uiDelegate;
         mUiConfig = uiConfig;
         mThumbnailProvider = uiDelegate.getThumbnailProvider();
 
-        mThumbnailView = (TintedImageView) itemView.findViewById(R.id.article_thumbnail);
-        mThumbnailSize =
-                itemView.getResources().getDimensionPixelSize(R.dimen.snippets_thumbnail_size);
-
+        mTextLayout = (LinearLayout) itemView.findViewById(R.id.text_layout);
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
         mArticleAgeTextView = (TextView) itemView.findViewById(R.id.article_age);
+        mThumbnailView = (TintedImageView) itemView.findViewById(R.id.article_thumbnail);
         mPublisherBar = itemView.findViewById(R.id.publisher_bar);
         mOfflineBadge = (ImageView) itemView.findViewById(R.id.offline_icon);
 
+        boolean useLargeThumbnailLayout =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL);
+        mThumbnailSize = itemView.getResources().getDimensionPixelSize(useLargeThumbnailLayout
+                        ? R.dimen.snippets_thumbnail_size_large
+                        : R.dimen.snippets_thumbnail_size);
         mThumbnailFootprintPx = mThumbnailSize
                 + itemView.getResources().getDimensionPixelSize(R.dimen.snippets_thumbnail_margin);
         mUseFaviconService = CardsVariationParameters.isFaviconServiceEnabled();
@@ -255,6 +263,9 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         boolean showDescription = shouldShowDescription(horizontalStyle, verticalStyle, layout);
         boolean showThumbnail = shouldShowThumbnail(layout);
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
+            mTextLayout.setMinimumHeight(showThumbnail ? mThumbnailSize : 0);
+        }
         mHeadlineTextView.setVisibility(showHeadline ? View.VISIBLE : View.GONE);
         mHeadlineTextView.setMaxLines(getHeaderMaxLines(horizontalStyle, verticalStyle, layout));
         mArticleSnippetTextView.setVisibility(showDescription ? View.VISIBLE : View.GONE);
@@ -277,8 +288,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             publisherBarParams.topMargin = 0;
         }
 
-        ApiCompatibilityUtils.setMarginEnd(
-                publisherBarParams, showThumbnail ? mThumbnailFootprintPx : 0);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
+            ApiCompatibilityUtils.setMarginEnd(
+                    publisherBarParams, showThumbnail ? mThumbnailFootprintPx : 0);
+        }
         mPublisherBar.setLayoutParams(publisherBarParams);
     }
 

@@ -2361,6 +2361,13 @@ const char kEnableContentSuggestionsCategoriesDescription[] =
     "If enabled, the content suggestions will be grouped by categories or "
     "topics. Only remote content suggestions are shown when this is enabled.";
 
+const char kEnableContentSuggestionsLargeThumbnailName[] =
+    "Large thumbnails layout for content suggestions cards.";
+
+const char kEnableContentSuggestionsLargeThumbnailDescription[] =
+    "If enabled, the content suggestions cards will use large thumbnails and "
+    "some related adjustments.";
+
 const char kEnableContentSuggestionsSettingsName[] =
     "Show content suggestions settings.";
 

@@ -57,6 +57,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomeExpandButton,
     &kChromeHomeSwipeLogic,
     &kContentSuggestionsCategories,
+    &kContentSuggestionsLargeThumbnail,
     &kContentSuggestionsSettings,
     &kContentSuggestionsShowSummary,
     &kContextualSearchSingleActions,
@@ -145,6 +146,9 @@ const base::Feature kChromeHomeSwipeLogic{"ChromeHomeSwipeLogic",
 
 const base::Feature kContentSuggestionsCategories{
     "ContentSuggestionsCategories", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContentSuggestionsLargeThumbnail{
+    "ContentSuggestionsLargeThumbnail", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsSettings{
     "ContentSuggestionsSettings", base::FEATURE_DISABLED_BY_DEFAULT};

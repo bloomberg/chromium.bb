@@ -22434,6 +22434,7 @@ from previous Chrome versions.
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
+  <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
   <int value="-493551777" label="StaleWhileRevalidate2:disabled"/>
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
   <int value="-488779992" label="blink-settings"/>
@@ -22552,6 +22553,7 @@ from previous Chrome versions.
   <int value="-70595606" label="ash-enable-unified-desktop"/>
   <int value="-68877684" label="BackgroundVideoTrackOptimization:enabled"/>
   <int value="-68225452" label="enable-translate-new-ux"/>
+  <int value="-59401847" label="ContentSuggestionsLargeThumbnail:disabled"/>
   <int value="-58242474" label="ash-disable-swipe-to-close-in-overview-mode"/>
   <int value="-57986995" label="DisablePostScriptPrinting:enabled"/>
   <int value="-55944747" label="disable-child-account-detection"/>

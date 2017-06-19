@@ -252,7 +252,7 @@ public class ArticleSnippetsTest {
         Bitmap bitmap = BitmapFactory.decodeResource(mActivityTestRule.getActivity().getResources(),
                 R.drawable.signin_promo_illustration);
         int thumbnailSize = mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
-                R.dimen.snippets_thumbnail_size);
+                R.dimen.snippets_thumbnail_size_large);
         Bitmap thumbnail = ThumbnailUtils.extractThumbnail(
                 bitmap, thumbnailSize, thumbnailSize, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
         shortSnippet.setThumbnailBitmap(mUiDelegate.getReferencePool().put(thumbnail));
