@@ -2381,8 +2381,9 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyColumnRuleWidth:
       return ZoomAdjustedPixelValue(style.ColumnRuleWidth(), style);
     case CSSPropertyColumnSpan:
-      return CSSIdentifierValue::Create(style.GetColumnSpan() ? CSSValueAll
-                                                              : CSSValueNone);
+      return CSSIdentifierValue::Create(
+          static_cast<unsigned>(style.GetColumnSpan()) ? CSSValueAll
+                                                       : CSSValueNone);
     case CSSPropertyWebkitColumnBreakAfter:
       return ValueForWebkitColumnBreakBetween(style.BreakAfter());
     case CSSPropertyWebkitColumnBreakBefore:

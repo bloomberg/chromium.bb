@@ -868,7 +868,7 @@ bool LayoutMultiColumnFlowThread::DescendantIsValidColumnSpanner(
 
   // The spec says that column-span only applies to in-flow block-level
   // elements.
-  if (descendant->Style()->GetColumnSpan() != kColumnSpanAll ||
+  if (descendant->Style()->GetColumnSpan() != EColumnSpan::kAll ||
       !descendant->IsBox() || descendant->IsInline() ||
       descendant->IsFloatingOrOutOfFlowPositioned())
     return false;

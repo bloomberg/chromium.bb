@@ -925,7 +925,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return nullptr;
   }
   bool IsColumnSpanAll() const {
-    return Style()->GetColumnSpan() == kColumnSpanAll && SpannerPlaceholder();
+    return Style()->GetColumnSpan() == EColumnSpan::kAll &&
+           SpannerPlaceholder();
   }
 
   // We include isLayoutButton() in this check, because buttons are

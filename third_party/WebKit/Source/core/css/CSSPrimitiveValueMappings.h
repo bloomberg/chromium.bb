@@ -145,51 +145,51 @@ inline CSSReflectionDirection CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(ColumnFill column_fill)
+inline CSSIdentifierValue::CSSIdentifierValue(EColumnFill column_fill)
     : CSSValue(kIdentifierClass) {
   switch (column_fill) {
-    case kColumnFillAuto:
+    case EColumnFill::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kColumnFillBalance:
+    case EColumnFill::kBalance:
       value_id_ = CSSValueBalance;
       break;
   }
 }
 
 template <>
-inline ColumnFill CSSIdentifierValue::ConvertTo() const {
+inline EColumnFill CSSIdentifierValue::ConvertTo() const {
   if (value_id_ == CSSValueBalance)
-    return kColumnFillBalance;
+    return EColumnFill::kBalance;
   if (value_id_ == CSSValueAuto)
-    return kColumnFillAuto;
+    return EColumnFill::kAuto;
   NOTREACHED();
-  return kColumnFillBalance;
+  return EColumnFill::kBalance;
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(ColumnSpan column_span)
+inline CSSIdentifierValue::CSSIdentifierValue(EColumnSpan column_span)
     : CSSValue(kIdentifierClass) {
   switch (column_span) {
-    case kColumnSpanAll:
+    case EColumnSpan::kAll:
       value_id_ = CSSValueAll;
       break;
-    case kColumnSpanNone:
+    case EColumnSpan::kNone:
       value_id_ = CSSValueNone;
       break;
   }
 }
 
 template <>
-inline ColumnSpan CSSIdentifierValue::ConvertTo() const {
+inline EColumnSpan CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAll:
-      return kColumnSpanAll;
+      return EColumnSpan::kAll;
     default:
       NOTREACHED();
     // fall-through
     case CSSValueNone:
-      return kColumnSpanNone;
+      return EColumnSpan::kNone;
   }
 }
 

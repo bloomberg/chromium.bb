@@ -4266,7 +4266,7 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
       IsWritingModeRoot() || Style()->Display() == EDisplay::kFlowRoot ||
       Style()->ContainsPaint() || Style()->ContainsLayout() ||
       Style()->SpecifiesColumns() ||
-      Style()->GetColumnSpan() == kColumnSpanAll) {
+      Style()->GetColumnSpan() == EColumnSpan::kAll) {
     // The specs require this object to establish a new formatting context.
     return true;
   }

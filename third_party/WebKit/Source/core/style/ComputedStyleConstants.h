@@ -91,9 +91,9 @@ enum PseudoId {
                          (1 << (kPseudoIdBackdrop - kFirstPublicPseudoId))
 };
 
-enum ColumnFill { kColumnFillBalance, kColumnFillAuto };
+enum class EColumnFill { kBalance, kAuto };
 
-enum ColumnSpan { kColumnSpanNone = 0, kColumnSpanAll };
+enum class EColumnSpan { kNone = 0, kAll };
 
 enum OutlineIsAuto { kOutlineIsAutoOff = 0, kOutlineIsAutoOn };
 
