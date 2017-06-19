@@ -1,5 +1,25 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.3.0 (2017-09-04)
+For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/13?closed=1][the list of closed
+issues]].
+
+** New features
+** Bug fixes
+*** Back translation
+- UEB grade 2
+  - Fix back-translation of whole word contractions followed by other
+    contractions thanks to James Teh.
+  - Fix back-translation for contractions followed by punctuation
+    thanks to James Teh.
+** Other changes
+** Braille table improvements
+** License changes
+** Backwards incompatible changes
+** New, renamed or removed tables
+*** New
+*** Renamed
+*** Removed
 * Noteworthy changes in release 3.2.0 (2017-06-06)
 Aside from the usual improvements to Braille tables this release
 focuses on improving the internal infrastructure. Numerous bugs have
