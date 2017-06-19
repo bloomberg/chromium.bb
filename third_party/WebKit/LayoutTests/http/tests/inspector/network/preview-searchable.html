@@ -60,9 +60,12 @@ function test()
         callback();
     }
 
+
     function trySearches(request, searches, callback)
     {
-        InspectorTest.addSniffer(Network.RequestPreviewView.prototype, "_previewViewHandledForTest", previewViewHandled.bind(this, searches, callback));
+        InspectorTest.addSniffer(Network.RequestPreviewView.prototype, "_showPreviewView", async function() {
+            previewViewHandled(searches, callback, await this._previewViewPromise);
+        });
         var networkPanel = UI.panels.network;
         networkPanel._showRequest(request);
         var itemView = networkPanel._networkItemView;
