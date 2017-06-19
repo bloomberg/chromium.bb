@@ -30,6 +30,7 @@
 
 #include <memory>
 #include "platform/wtf/PtrUtil.h"
+#include "public/web/WebAXEnums.h"
 
 namespace blink {
 
@@ -73,5 +74,63 @@ AXObjectCache* ScopedAXObjectCache::Get() {
   DCHECK(cache);
   return cache;
 }
+
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enum: " #a)
+
+STATIC_ASSERT_ENUM(kWebAXEventActiveDescendantChanged,
+                   AXObjectCache::kAXActiveDescendantChanged);
+STATIC_ASSERT_ENUM(kWebAXEventAlert, AXObjectCache::kAXAlert);
+STATIC_ASSERT_ENUM(kWebAXEventAriaAttributeChanged,
+                   AXObjectCache::kAXAriaAttributeChanged);
+STATIC_ASSERT_ENUM(kWebAXEventAutocorrectionOccured,
+                   AXObjectCache::kAXAutocorrectionOccured);
+STATIC_ASSERT_ENUM(kWebAXEventBlur, AXObjectCache::kAXBlur);
+STATIC_ASSERT_ENUM(kWebAXEventCheckedStateChanged,
+                   AXObjectCache::kAXCheckedStateChanged);
+STATIC_ASSERT_ENUM(kWebAXEventChildrenChanged,
+                   AXObjectCache::kAXChildrenChanged);
+STATIC_ASSERT_ENUM(kWebAXEventClicked, AXObjectCache::kAXClicked);
+STATIC_ASSERT_ENUM(kWebAXEventDocumentSelectionChanged,
+                   AXObjectCache::kAXDocumentSelectionChanged);
+STATIC_ASSERT_ENUM(kWebAXEventExpandedChanged,
+                   AXObjectCache::kAXExpandedChanged);
+STATIC_ASSERT_ENUM(kWebAXEventFocus, AXObjectCache::kAXFocusedUIElementChanged);
+STATIC_ASSERT_ENUM(kWebAXEventHide, AXObjectCache::kAXHide);
+STATIC_ASSERT_ENUM(kWebAXEventHover, AXObjectCache::kAXHover);
+STATIC_ASSERT_ENUM(kWebAXEventInvalidStatusChanged,
+                   AXObjectCache::kAXInvalidStatusChanged);
+STATIC_ASSERT_ENUM(kWebAXEventLayoutComplete, AXObjectCache::kAXLayoutComplete);
+STATIC_ASSERT_ENUM(kWebAXEventLiveRegionChanged,
+                   AXObjectCache::kAXLiveRegionChanged);
+STATIC_ASSERT_ENUM(kWebAXEventLoadComplete, AXObjectCache::kAXLoadComplete);
+STATIC_ASSERT_ENUM(kWebAXEventLocationChanged,
+                   AXObjectCache::kAXLocationChanged);
+STATIC_ASSERT_ENUM(kWebAXEventMenuListItemSelected,
+                   AXObjectCache::kAXMenuListItemSelected);
+STATIC_ASSERT_ENUM(kWebAXEventMenuListItemUnselected,
+                   AXObjectCache::kAXMenuListItemUnselected);
+STATIC_ASSERT_ENUM(kWebAXEventMenuListValueChanged,
+                   AXObjectCache::kAXMenuListValueChanged);
+STATIC_ASSERT_ENUM(kWebAXEventRowCollapsed, AXObjectCache::kAXRowCollapsed);
+STATIC_ASSERT_ENUM(kWebAXEventRowCountChanged,
+                   AXObjectCache::kAXRowCountChanged);
+STATIC_ASSERT_ENUM(kWebAXEventRowExpanded, AXObjectCache::kAXRowExpanded);
+STATIC_ASSERT_ENUM(kWebAXEventScrollPositionChanged,
+                   AXObjectCache::kAXScrollPositionChanged);
+STATIC_ASSERT_ENUM(kWebAXEventScrolledToAnchor,
+                   AXObjectCache::kAXScrolledToAnchor);
+STATIC_ASSERT_ENUM(kWebAXEventSelectedChildrenChanged,
+                   AXObjectCache::kAXSelectedChildrenChanged);
+STATIC_ASSERT_ENUM(kWebAXEventSelectedTextChanged,
+                   AXObjectCache::kAXSelectedTextChanged);
+STATIC_ASSERT_ENUM(kWebAXEventShow, AXObjectCache::kAXShow);
+STATIC_ASSERT_ENUM(kWebAXEventTextChanged, AXObjectCache::kAXTextChanged);
+STATIC_ASSERT_ENUM(kWebAXEventTextInserted, AXObjectCache::kAXTextInserted);
+STATIC_ASSERT_ENUM(kWebAXEventTextRemoved, AXObjectCache::kAXTextRemoved);
+STATIC_ASSERT_ENUM(kWebAXEventValueChanged, AXObjectCache::kAXValueChanged);
+
+#undef STATIC_ASSERT_ENUM
 
 }  // namespace blink
