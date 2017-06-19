@@ -19,7 +19,7 @@ const CSSValue* CSSPropertyAPIAnimationName::parseSingleValue(
   // Allow quoted name if this is an alias property.
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyAnimationNameUtils::ConsumeAnimationName, range, &context,
-      local_context.GetUseAliasParsing());
+      local_context.UseAliasParsing());
 }
 
 }  // namespace blink

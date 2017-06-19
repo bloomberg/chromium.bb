@@ -197,8 +197,8 @@ const CSSValue* CSSPropertyAPITransform::parseSingleValue(
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   do {
-    CSSValue* parsed_transform_value = ConsumeTransformValue(
-        range, &context, local_context.GetUseAliasParsing());
+    CSSValue* parsed_transform_value =
+        ConsumeTransformValue(range, &context, local_context.UseAliasParsing());
     if (!parsed_transform_value)
       return nullptr;
     list->Append(*parsed_transform_value);
