@@ -145,7 +145,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
     self.assertEquals(test['args'], [
         'regular', '-v', '--upload-results', '--output-format=chartjson',
         '--browser=android-webview',
-        '--webview-embedded-apk=../../out/Release/apks/SystemWebViewShell.apk'])
+        '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk'])
     self.assertEquals(test['isolate_name'], 'telemetry_perf_webview_tests')
 
   def testGenerateTelemetryTestsBlacklistedReferenceBuildTest(self):
