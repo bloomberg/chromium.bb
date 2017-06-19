@@ -18,6 +18,22 @@ config("config") {
     defines += [
       "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS",
       "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS",
+
+      # This resets the visibility to default only for the various
+      # flavors of operator new and operator delete.  These symbols
+      # are weak and get overriden by Chromium-provided ones, but if
+      # these symbols had hidden visibility, this would make the
+      # Chromium symbols hidden too because elf visibility rules
+      # require that linkers use the least visible form when merging,
+      # and if this is hidden, then when we merge it with tcmalloc's
+      # operator new, hidden visibility would win. However, tcmalloc
+      # needs a visible operator new to also override operator new
+      # references from system libraries.
+      # TODO(lld): Ask lld for a --force-public-visibility flag or
+      # similar to that overrides the default elf merging rules, and
+      # make tcmalloc's gn config pass that to all its dependencies,
+      # then remove this override here.
+      "_LIBCPP_OVERRIDABLE_FUNC_VIS=__attribute__((__visibility__(\"default\")))",
     ]
   }
   cflags = [
