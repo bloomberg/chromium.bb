@@ -170,13 +170,13 @@ TEST_F(UrlEmphasisTest, DangerousHttpsHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(8, 16)));
   EXPECT_CALL(mock_, ApplyColor(kWarningColor, gfx::Range(0, 5)));
-  EXPECT_CALL(mock_, ApplyStyle(gfx::TextStyle::DIAGONAL_STRIKE, true,
-                                gfx::Range(0, 5)));
+  EXPECT_CALL(mock_,
+              ApplyStyle(gfx::TextStyle::STRIKE, true, gfx::Range(0, 5)));
   EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(8, 16)));
   EXPECT_CALL(mock_, ApplyColor(kIncognitoWarningColor, gfx::Range(0, 5)));
-  EXPECT_CALL(mock_, ApplyStyle(gfx::TextStyle::DIAGONAL_STRIKE, true,
-                                gfx::Range(0, 5)));
+  EXPECT_CALL(mock_,
+              ApplyStyle(gfx::TextStyle::STRIKE, true, gfx::Range(0, 5)));
   Verify("https://host.com/page", SecurityLevel::DANGEROUS,
          "https://host.com/page");
 }
