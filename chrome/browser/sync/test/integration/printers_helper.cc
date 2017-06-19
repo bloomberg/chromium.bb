@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 
 using sync_datatype_helper::test;
 
@@ -72,12 +72,10 @@ chromeos::PrintersManager* GetPrinterStore(content::BrowserContext* context) {
       chromeos::PrintersManagerFactory::GetForBrowserContext(context);
 
   // TODO(sync): crbug.com/709094: Remove all of this once the bug is fixed.
-  // Must wait for ModelTypeStore initialization.
-  // Since PrintersManagerFactory::BuildServiceInstanceFor() uses
-  // content::BrowserThread::GetBlockingPool() to schedule ModelTypeStore
-  // initialization, tests need to wait for initialization to be completed and
-  // sent ModelTypeStore to UI thread.
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  // Must wait for ModelTypeStore initialization. It is fairly difficult to get
+  // to the particular SequencedTaskRunner created inside of ModelTypeStoreImpl,
+  // so run everything!
+  content::RunAllBlockingPoolTasksUntilIdle();
   // Wait for UI thread task completion to make sure PrintersSyncBridge received
   // ModelTypeStore.
   base::RunLoop().RunUntilIdle();
