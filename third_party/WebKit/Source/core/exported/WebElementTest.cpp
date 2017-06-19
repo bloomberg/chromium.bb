@@ -4,12 +4,12 @@
 
 #include "public/web/WebElement.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
