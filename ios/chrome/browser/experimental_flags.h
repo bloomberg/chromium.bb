@@ -100,6 +100,9 @@ bool IsSuggestionsUIEnabled();
 // Whether Sign-in promo is enabled.
 bool IsSigninPromoEnabled();
 
+// Whether Bookmark reordering is enabled.
+bool IsBookmarkReorderingEnabled();
+
 // Whether Google Native App Launcher is enabled.
 bool IsNativeAppLauncherEnabled();
 

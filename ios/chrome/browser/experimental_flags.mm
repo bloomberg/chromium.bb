@@ -267,6 +267,18 @@ bool IsSigninPromoEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+bool IsBookmarkReorderingEnabled() {
+  // Check if the experimental flag is forced on or off.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableBookmarkReordering))
+    return true;
+  if (command_line->HasSwitch(switches::kDisableBookmarkReordering))
+    return false;
+
+  // By default, disable it.
+  return false;
+}
+
 bool IsNativeAppLauncherEnabled() {
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:@"NativeAppLauncherEnabled"];
