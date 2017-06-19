@@ -13,8 +13,8 @@
 
 async_test(function(t) {
   var canvas = document.getElementById('canvas');
-  var context = canvas.getContext("2d");
-  context.fillStyle = "red";
+  var context = canvas.getContext('2d');
+  context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
   var stream = canvas.captureStream();
 
@@ -25,7 +25,7 @@ async_test(function(t) {
       return new ImageCapture(stream.getVideoTracks()[0]);
     },
     error => {
-      assert_unreached("Error creating MockImageCapture: " + error);
+      assert_unreached('Error creating MockImageCapture: ' + error);
     })
     .then(capturer => {
       assert_true(typeof capturer.getPhotoCapabilities == 'function');
@@ -58,7 +58,7 @@ async_test(function(t) {
       t.done();
     })
     .catch(error => {
-      assert_unreached("Error during getPhotoCapabilities(): " + error.message);
+      assert_unreached('Error during getPhotoCapabilities(): ' + error.message);
     });
 
 }, 'exercises ImageCapture.getPhotoCapabilities()');

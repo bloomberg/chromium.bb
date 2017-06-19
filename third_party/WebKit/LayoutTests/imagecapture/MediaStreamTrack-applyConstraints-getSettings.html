@@ -14,13 +14,13 @@
 
 async_test(function(t) {
   var canvas = document.getElementById('canvas');
-  var context = canvas.getContext("2d");
-  context.fillStyle = "red";
+  var context = canvas.getContext('2d');
+  context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
 
-  const constraints = { advanced : [{ whiteBalanceMode : "single-shot",
-                                      exposureMode     : "continuous",
-                                      focusMode        : "single-shot",
+  const constraints = { advanced : [{ whiteBalanceMode : 'single-shot',
+                                      exposureMode     : 'continuous',
+                                      focusMode        : 'single-shot',
 
                                       pointsOfInterest : [{x : 0.1, y : 0.2},
                                                           {x : 0.3, y : 0.4}],
@@ -45,7 +45,7 @@ async_test(function(t) {
       theMock = mock;
     },
     error => {
-      assert_unreached("Error creating MockImageCapture: " + error);
+      assert_unreached('Error creating MockImageCapture: ' + error);
     })
     .then(() => {
       // |stream| must be created _after_ |mock| is constructed to give the
@@ -99,7 +99,7 @@ async_test(function(t) {
       t.done();
     })
     .catch(error => {
-      assert_unreached("Error applying constraints: " + error.message);
+      assert_unreached('Error applying constraints: ' + error.message);
     });
 
 }, 'exercises an applyConstraints() - getSettings() cycle');

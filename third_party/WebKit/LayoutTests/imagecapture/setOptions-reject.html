@@ -9,8 +9,8 @@
 <script>
 
 var canvas = document.getElementById('canvas');
-var context = canvas.getContext("2d");
-context.fillStyle = "red";
+var context = canvas.getContext('2d');
+context.fillStyle = 'red';
 context.fillRect(0, 0, 10, 10);
 
 // This test verifies that ImageCapture.setOptions() rejects if any passed
@@ -28,7 +28,7 @@ var makePromiseTest = function(getOption) {
         return new ImageCapture(stream.getVideoTracks()[0]);
       },
       error => {
-        assert_unreached("Error creating MockImageCapture: " + error);
+        assert_unreached('Error creating MockImageCapture: ' + error);
       })
       .then(capturer => {
         theCapturer = capturer;
@@ -36,7 +36,7 @@ var makePromiseTest = function(getOption) {
       })
       .then(c => {
         const options = getOption(theMock.state());
-        return promise_rejects(t, "NotSupportedError",
+        return promise_rejects(t, 'NotSupportedError',
                                theCapturer.setOptions(options));
       });
   });
@@ -48,7 +48,7 @@ const optionsGenerators = [
   capabilities => ({ imageHeight: capabilities.height.min - 1 }),
   capabilities => ({ imageWidth: capabilities.width.max + 1 }),
   capabilities => ({ imageWidth: capabilities.width.min - 1 }),
-  capabilities => ({ fillLightMode: "off" }),
+  capabilities => ({ fillLightMode: 'off' }),
 ];
 
 for (key in optionsGenerators) {
