@@ -17342,6 +17342,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="WelcomePage_SignInClicked">
+  <owner>tmartino@chromium.org</owner>
+  <description>
+    The user clicked the Sign In button on the Welcome page, starting the
+    authentication flow.
+  </description>
+</action>
+
 <action name="Win10WelcomePage_SetAsDefaultBrowser">
   <owner>pmonette@chromium.org</owner>
   <description>
