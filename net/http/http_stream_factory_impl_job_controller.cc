@@ -174,8 +174,10 @@ LoadState HttpStreamFactoryImpl::JobController::GetLoadState() const {
 }
 
 void HttpStreamFactoryImpl::JobController::OnRequestComplete() {
-  CancelJobs();
   DCHECK(request_);
+
+  RemoveRequestFromSpdySessionRequestMap();
+  CancelJobs();
   request_ = nullptr;
   if (bound_job_) {
     if (bound_job_->job_type() == MAIN) {
@@ -600,6 +602,8 @@ bool HttpStreamFactoryImpl::JobController::ShouldWait(Job* job) {
 void HttpStreamFactoryImpl::JobController::SetSpdySessionKey(
     Job* job,
     const SpdySessionKey& spdy_session_key) {
+  DCHECK(!job->using_quic());
+
   if (is_preconnect_ || IsJobOrphaned(job))
     return;
 
@@ -609,6 +613,8 @@ void HttpStreamFactoryImpl::JobController::SetSpdySessionKey(
 
 void HttpStreamFactoryImpl::JobController::
     RemoveRequestFromSpdySessionRequestMapForJob(Job* job) {
+  DCHECK(!job->using_quic());
+
   if (is_preconnect_ || IsJobOrphaned(job))
     return;
 
@@ -867,7 +873,6 @@ void HttpStreamFactoryImpl::JobController::BindJob(Job* job) {
 
 void HttpStreamFactoryImpl::JobController::CancelJobs() {
   DCHECK(request_);
-  RemoveRequestFromSpdySessionRequestMap();
   if (job_bound_)
     return;
   if (alternative_job_)
@@ -905,6 +910,8 @@ void HttpStreamFactoryImpl::JobController::OnJobSucceeded(Job* job) {
   // |job| should only be nullptr if we're being serviced by a late bound
   // SpdySession (one that was not created by a job in our |jobs_| set).
   if (!job) {
+    // TODO(xunjieli): This seems to be dead code. Remove it. crbug.com/475060.
+    CHECK(false);
     DCHECK(!bound_job_);
     // NOTE(willchan): We do *NOT* call OrphanUnboundJob() here. The reason is
     // because we *WANT* to cancel the unnecessary Jobs from other requests if
@@ -1268,7 +1275,8 @@ int HttpStreamFactoryImpl::JobController::ReconsiderProxyAfterError(Job* job,
       origin_url, request_info_.method, error, &proxy_info_, io_callback_,
       &pac_request_, session_->context().proxy_delegate, net_log_);
   if (rv == OK || rv == ERR_IO_PENDING) {
-    RemoveRequestFromSpdySessionRequestMap();
+    if (!job->using_quic())
+      RemoveRequestFromSpdySessionRequestMap();
     // Abandon all Jobs and start over.
     job_bound_ = false;
     bound_job_ = nullptr;
