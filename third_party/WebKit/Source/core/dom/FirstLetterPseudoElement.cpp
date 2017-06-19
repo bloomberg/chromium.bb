@@ -195,7 +195,7 @@ FirstLetterPseudoElement::~FirstLetterPseudoElement() {
 }
 
 void FirstLetterPseudoElement::UpdateTextFragments() {
-  String old_text = remaining_text_layout_object_->CompleteText();
+  String old_text(remaining_text_layout_object_->CompleteText());
   DCHECK(old_text.Impl());
 
   unsigned length = FirstLetterPseudoElement::FirstLetterLength(old_text);

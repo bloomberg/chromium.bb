@@ -44,7 +44,7 @@ AtomicString::AtomicString(const UChar* chars)
           chars,
           chars ? LengthOfNullTerminatedString(chars) : 0)) {}
 
-PassRefPtr<StringImpl> AtomicString::AddSlowCase(StringImpl* string) {
+RefPtr<StringImpl> AtomicString::AddSlowCase(StringImpl* string) {
   DCHECK(!string->IsAtomic());
   return AtomicStringTable::Instance().Add(string);
 }
@@ -74,7 +74,7 @@ AtomicString AtomicString::DeprecatedLower() const {
   RefPtr<StringImpl> new_impl = impl->LowerUnicode();
   if (LIKELY(new_impl == impl))
     return *this;
-  return AtomicString(new_impl.Release());
+  return AtomicString(String(std::move(new_impl)));
 }
 
 AtomicString AtomicString::LowerASCII() const {
@@ -84,7 +84,7 @@ AtomicString AtomicString::LowerASCII() const {
   RefPtr<StringImpl> new_impl = impl->LowerASCII();
   if (LIKELY(new_impl == impl))
     return *this;
-  return AtomicString(new_impl.Release());
+  return AtomicString(String(std::move(new_impl)));
 }
 
 AtomicString AtomicString::UpperASCII() const {

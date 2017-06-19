@@ -41,7 +41,7 @@ void LayoutTextCombine::StyleDidChange(StyleDifference diff,
   UpdateIsCombined();
 }
 
-void LayoutTextCombine::SetTextInternal(PassRefPtr<StringImpl> text) {
+void LayoutTextCombine::SetTextInternal(RefPtr<StringImpl> text) {
   LayoutText::SetTextInternal(std::move(text));
 
   UpdateIsCombined();

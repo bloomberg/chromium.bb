@@ -230,14 +230,14 @@ class WTF_EXPORT AtomicString {
  private:
   String string_;
 
-  ALWAYS_INLINE static PassRefPtr<StringImpl> Add(StringImpl* r) {
+  ALWAYS_INLINE static RefPtr<StringImpl> Add(StringImpl* r) {
     if (!r || r->IsAtomic())
       return r;
     return AddSlowCase(r);
   }
-  static PassRefPtr<StringImpl> AddSlowCase(StringImpl*);
+  static RefPtr<StringImpl> AddSlowCase(StringImpl*);
 #if OS(MACOSX)
-  static PassRefPtr<StringImpl> Add(CFStringRef);
+  static RefPtr<StringImpl> Add(CFStringRef);
 #endif
 };
 

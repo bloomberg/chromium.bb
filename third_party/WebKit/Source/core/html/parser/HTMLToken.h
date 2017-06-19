@@ -118,7 +118,7 @@ class HTMLToken {
 
     void AppendToName(UChar c) { name_.push_back(c); }
 
-    PassRefPtr<StringImpl> Value8BitIfNecessary() const {
+    RefPtr<StringImpl> Value8BitIfNecessary() const {
       return StringImpl::Create8BitIfPossible(value_);
     }
     String Value() const { return String(value_); }

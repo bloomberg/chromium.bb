@@ -177,10 +177,10 @@ int CodePointCompareIgnoringASCIICase(const String& a, const char* b) {
 }
 
 template <typename CharType>
-PassRefPtr<StringImpl> InsertInternal(PassRefPtr<StringImpl> impl,
-                                      const CharType* characters_to_insert,
-                                      unsigned length_to_insert,
-                                      unsigned position) {
+RefPtr<StringImpl> InsertInternal(RefPtr<StringImpl> impl,
+                                  const CharType* characters_to_insert,
+                                  unsigned length_to_insert,
+                                  unsigned position) {
   if (!length_to_insert)
     return impl;
 
@@ -208,7 +208,7 @@ PassRefPtr<StringImpl> InsertInternal(PassRefPtr<StringImpl> impl,
                           impl->Characters16() + position,
                           impl->length() - position);
 
-  return new_impl.Release();
+  return new_impl;
 }
 
 void String::insert(const StringView& string, unsigned position) {

@@ -84,7 +84,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   virtual bool IsTextFragment() const;
   virtual bool IsWordBreak() const;
 
-  virtual PassRefPtr<StringImpl> OriginalText() const;
+  virtual RefPtr<StringImpl> OriginalText() const;
 
   void ExtractTextBox(InlineTextBox*);
   void AttachTextBox(InlineTextBox*);
@@ -180,7 +180,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   // TODO(kojii): setTextInternal() is temporarily public for NGInlineNode.
   // This will be back to protected when NGInlineNode can paint directly.
-  virtual void SetTextInternal(PassRefPtr<StringImpl>);
+  virtual void SetTextInternal(RefPtr<StringImpl>);
 
   virtual void TransformText();
 

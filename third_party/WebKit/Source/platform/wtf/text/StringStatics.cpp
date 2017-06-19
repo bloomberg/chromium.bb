@@ -65,7 +65,7 @@ void AtomicString::Init() {
 }
 
 template <unsigned charactersCount>
-PassRefPtr<StringImpl> AddStaticASCIILiteral(
+RefPtr<StringImpl> AddStaticASCIILiteral(
     const char (&characters)[charactersCount]) {
   unsigned length = charactersCount - 1;
   unsigned hash = StringHasher::ComputeHashAndMaskTop8Bits(

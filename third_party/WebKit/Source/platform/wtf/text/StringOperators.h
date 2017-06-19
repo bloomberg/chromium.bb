@@ -61,12 +61,12 @@ StringAppend<StringType1, StringType2>::operator String() const {
     RefPtr<StringImpl> result =
         StringImpl::CreateUninitialized(length(), buffer);
     WriteTo(buffer);
-    return result.Release();
+    return result;
   }
   UChar* buffer;
   RefPtr<StringImpl> result = StringImpl::CreateUninitialized(length(), buffer);
   WriteTo(buffer);
-  return result.Release();
+  return result;
 }
 
 template <typename StringType1, typename StringType2>
