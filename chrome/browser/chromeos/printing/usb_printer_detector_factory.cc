@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printer_detector/usb_printer_detector_factory.h"
+#include "chrome/browser/chromeos/printing/usb_printer_detector_factory.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/printer_detector/usb_printer_detector.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/usb_printer_detector.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
