@@ -1418,6 +1418,18 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
   return last_visible.DeprecatedComputePosition();
 }
 
+// Returns true if |box| at |text_offset| can not continue on next line.
+static bool CanNotContinueOnNextLine(const LayoutText& text_layout_object,
+                                     InlineBox* box,
+                                     unsigned text_offset) {
+  InlineTextBox* const last_text_box = text_layout_object.LastTextBox();
+  if (box == last_text_box)
+    return true;
+  return LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()) ==
+             text_layout_object &&
+         ToInlineTextBox(box)->Start() >= text_offset;
+}
+
 // The text continues on the next line only if the last text box is not on this
 // line and none of the boxes on this line have a larger start offset.
 static bool DoesContinueOnNextLine(const LayoutText& text_layout_object,
@@ -1427,21 +1439,13 @@ static bool DoesContinueOnNextLine(const LayoutText& text_layout_object,
   DCHECK_NE(box, last_text_box);
   for (InlineBox* runner = box->NextLeafChild(); runner;
        runner = runner->NextLeafChild()) {
-    if (runner == last_text_box)
-      return false;
-    if (LineLayoutAPIShim::LayoutObjectFrom(runner->GetLineLayoutItem()) ==
-            text_layout_object &&
-        ToInlineTextBox(runner)->Start() >= text_offset)
+    if (CanNotContinueOnNextLine(text_layout_object, runner, text_offset))
       return false;
   }
 
   for (InlineBox* runner = box->PrevLeafChild(); runner;
        runner = runner->PrevLeafChild()) {
-    if (runner == last_text_box)
-      return false;
-    if (LineLayoutAPIShim::LayoutObjectFrom(runner->GetLineLayoutItem()) ==
-            text_layout_object &&
-        ToInlineTextBox(runner)->Start() >= text_offset)
+    if (CanNotContinueOnNextLine(text_layout_object, runner, text_offset))
       return false;
   }
 
