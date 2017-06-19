@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/V8GCController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/compositorworker/AbstractAnimationWorkletThread.h"
@@ -41,7 +42,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebFrame.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -100,7 +100,7 @@ void WebLeakDetectorImpl::PrepareForLeakDetection(WebFrame* frame) {
   //
   // Stop the spellchecker to prevent this.
   if (frame->IsWebLocalFrame()) {
-    WebLocalFrameImpl* local_frame = ToWebLocalFrameImpl(frame);
+    WebLocalFrameBase* local_frame = ToWebLocalFrameBase(frame);
     local_frame->GetFrame()->GetSpellChecker().PrepareForLeakDetection();
   }
 

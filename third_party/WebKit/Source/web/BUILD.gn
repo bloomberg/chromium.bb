@@ -58,7 +58,6 @@ component("web") {
     "WebFrameWidgetImpl.h",
     "WebHitTestResult.cpp",
     "WebKit.cpp",
-    "WebLeakDetector.cpp",
     "WebLocalFrameImpl.cpp",
     "WebLocalFrameImpl.h",
     "WebPagePopupImpl.cpp",
