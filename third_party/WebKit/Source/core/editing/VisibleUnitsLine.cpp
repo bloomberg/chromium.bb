@@ -95,9 +95,7 @@ Node* PreviousLeafWithSameEditability(Node* node, EditableType editable_type) {
   return nullptr;
 }
 
-Node* NextLeafWithSameEditability(
-    Node* node,
-    EditableType editable_type = kContentIsEditable) {
+Node* NextLeafWithSameEditability(Node* node, EditableType editable_type) {
   if (!node)
     return nullptr;
 
