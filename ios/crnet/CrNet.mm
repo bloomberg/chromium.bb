@@ -9,6 +9,10 @@
 #import "ios/net/crn_http_protocol_handler.h"
 #import "ios/crnet/crnet_environment.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 static CrNetEnvironment* g_chrome_net = NULL;
 
 static BOOL g_http2_enabled = YES;
