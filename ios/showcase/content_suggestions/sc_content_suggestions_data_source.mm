@@ -28,6 +28,9 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
 @interface SCContentSuggestionsDataSource ()<ContentSuggestionsImageFetcher>
 
+// Section Info of type Logo header. Created lazily.
+@property(nonatomic, strong)
+    ContentSuggestionsSectionInformation* logoHeaderSection;
 // Section Info of type MostVisited. Created lazily.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* mostVisitedSection;
@@ -43,6 +46,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 @implementation SCContentSuggestionsDataSource
 
 @synthesize dataSink = _dataSink;
+@synthesize logoHeaderSection = _logoHeaderSection;
 @synthesize mostVisitedSection = _mostVisitedSection;
 @synthesize readingListSection = _readingListSection;
 @synthesize articleSection = _articleSection;
@@ -61,7 +65,8 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
 - (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
   return @[
-    self.mostVisitedSection, self.readingListSection, self.articleSection
+    self.logoHeaderSection, self.mostVisitedSection, self.readingListSection,
+    self.articleSection
   ];
 }
 
@@ -103,6 +108,9 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
       }
       return items;
     }
+    case ContentSuggestionsSectionLogo: {
+      return @[];
+    }
     case ContentSuggestionsSectionUnknown:
       return @[];
   }
@@ -130,6 +138,10 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 - (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
 }
 
+- (UIView*)headerView {
+  return nil;
+}
+
 #pragma mark - ContentSuggestionsImageFetcher
 
 - (void)fetchImageForSuggestion:
@@ -142,11 +154,27 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
 #pragma mark - Property
 
+- (ContentSuggestionsSectionInformation*)logoHeaderSection {
+  if (!_logoHeaderSection) {
+    _logoHeaderSection = [[ContentSuggestionsSectionInformation alloc]
+        initWithSectionID:ContentSuggestionsSectionLogo];
+    _logoHeaderSection.showIfEmpty = YES;
+    _logoHeaderSection.layout = ContentSuggestionsSectionLayoutCustom;
+    _logoHeaderSection.title = nil;
+    _logoHeaderSection.footerTitle = nil;
+    _logoHeaderSection.emptyText = nil;
+  }
+  return _logoHeaderSection;
+}
+
 - (ContentSuggestionsSectionInformation*)mostVisitedSection {
   if (!_mostVisitedSection) {
     _mostVisitedSection = [[ContentSuggestionsSectionInformation alloc]
         initWithSectionID:ContentSuggestionsSectionMostVisited];
     _mostVisitedSection.layout = ContentSuggestionsSectionLayoutCustom;
+    _mostVisitedSection.title = nil;
+    _mostVisitedSection.footerTitle = nil;
+    _mostVisitedSection.emptyText = nil;
   }
   return _mostVisitedSection;
 }

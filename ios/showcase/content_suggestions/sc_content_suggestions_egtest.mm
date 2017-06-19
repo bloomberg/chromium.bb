@@ -35,13 +35,18 @@ id<GREYMatcher> TextBeginsWith(NSString* text) {
                     matcher, nil);
 }
 
-// Select the cell with the |ID| by scrolling the collection.
-GREYElementInteraction* CellWithID(NSString* ID) {
+// Select the cell with the |matcher| by scrolling the collection.
+GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   return [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(ID),
-                                          grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:grey_allOf(matcher, grey_sufficientlyVisible(),
+                                          nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
       onElementWithMatcher:grey_kindOfClass([UICollectionView class])];
+}
+
+// Select the cell with the |ID| by scrolling the collection.
+GREYElementInteraction* CellWithID(NSString* ID) {
+  return CellWithMatcher(grey_accessibilityID(ID));
 }
 
 // Returns the string displayed when the Reading List section is empty.
@@ -63,14 +68,12 @@ NSString* ReadingListEmptySection() {
 // Tests launching ContentSuggestionsViewController.
 - (void)testLaunch {
   showcase_utils::Open(@"ContentSuggestionsViewController");
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE)]
+  [CellWithMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
+      IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE))
       assertWithMatcher:grey_interactable()];
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabelId(
-                     IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [CellWithMatcher(chrome_test_util::StaticTextWithAccessibilityLabelId(
+      IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER))
+      assertWithMatcher:grey_notNil()];
   showcase_utils::Close();
 }
 
