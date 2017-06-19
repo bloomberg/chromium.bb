@@ -8,6 +8,8 @@
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -43,7 +45,8 @@ PaymentRequestItemList::Item::Item(PaymentRequestSpec* spec,
 PaymentRequestItemList::Item::~Item() {}
 
 std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
-  std::unique_ptr<views::View> content = CreateContentView();
+  base::string16 accessible_content;
+  std::unique_ptr<views::View> content = CreateContentView(&accessible_content);
 
   const gfx::Insets row_insets(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
@@ -104,8 +107,14 @@ std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
     edit_button->set_ink_drop_base_color(icon_color);
     edit_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     edit_button->set_id(static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
+    edit_button->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT));
     layout->AddView(edit_button);
   }
+
+  row->SetAccessibleName(
+      l10n_util::GetStringFUTF16(IDS_PAYMENTS_ROW_ACCESSIBLE_NAME_FORMAT,
+                                 accessible_content, base::string16()));
 
   return std::move(row);
 }

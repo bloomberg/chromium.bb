@@ -98,7 +98,9 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     return std::move(card_icon_view);
   }
 
-  std::unique_ptr<views::View> CreateContentView() override {
+  std::unique_ptr<views::View> CreateContentView(
+      base::string16* accessible_content) override {
+    DCHECK(accessible_content);
     std::unique_ptr<views::View> card_info_container =
         base::MakeUnique<views::View>();
     card_info_container->set_can_process_events_within_subtree(false);
@@ -117,15 +119,21 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     base::string16 sublabel = instrument_->GetSublabel();
     if (!sublabel.empty())
       card_info_container->AddChildView(new views::Label(sublabel));
+    base::string16 missing_info;
     if (!instrument_->IsCompleteForPayment()) {
+      missing_info = instrument_->GetMissingInfoLabel();
       std::unique_ptr<views::Label> missing_info_label =
-          base::MakeUnique<views::Label>(instrument_->GetMissingInfoLabel(),
+          base::MakeUnique<views::Label>(missing_info,
                                          CONTEXT_DEPRECATED_SMALL);
       missing_info_label->SetEnabledColor(
           missing_info_label->GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_LinkEnabled));
       card_info_container->AddChildView(missing_info_label.release());
     }
+
+    *accessible_content = l10n_util::GetStringFUTF16(
+        IDS_PAYMENTS_PROFILE_LABELS_ACCESSIBLE_FORMAT, label, sublabel,
+        missing_info);
 
     return card_info_container;
   }

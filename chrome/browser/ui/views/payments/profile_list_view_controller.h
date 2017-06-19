@@ -53,9 +53,11 @@ class ProfileListViewController : public PaymentRequestSheetController {
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Returns a representation of the given profile appropriate for display
-  // in this context.
+  // in this context. Populates |accessible_string|, which shouldn't be null,
+  // with the screen reader string representing the returned label.
   virtual std::unique_ptr<views::View> GetLabel(
-      autofill::AutofillProfile* profile) = 0;
+      autofill::AutofillProfile* profile,
+      base::string16* accessible_string) = 0;
 
   virtual void SelectProfile(autofill::AutofillProfile* profile) = 0;
 
