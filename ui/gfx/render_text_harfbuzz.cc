@@ -173,7 +173,6 @@ size_t FindRunBreakingCharacter(const base::string16& text,
 // Consider 3 characters with the script values {Kana}, {Hira, Kana}, {Kana}.
 // Without script extensions only the first script in each set would be taken
 // into account, resulting in 3 runs where 1 would be enough.
-// TODO(ckocagil): Write a unit test for the case above.
 int ScriptInterval(const base::string16& text,
                    size_t start,
                    size_t length,
@@ -187,9 +186,6 @@ int ScriptInterval(const base::string16& text,
   *script = scripts[0];
 
   while (char_iterator.Advance()) {
-    // Special handling to merge white space into the previous run.
-    if (u_isUWhiteSpace(char_iterator.get()))
-      continue;
     ScriptSetIntersect(char_iterator.get(), scripts, &scripts_size);
     if (scripts_size == 0U)
       return char_iterator.array_pos();
