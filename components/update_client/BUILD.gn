@@ -8,6 +8,7 @@ static_library("update_client") {
   sources = [
     "action_runner.cc",
     "action_runner.h",
+    "action_runner_win.cc",
     "background_downloader_win.cc",
     "background_downloader_win.h",
     "component.cc",

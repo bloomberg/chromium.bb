@@ -16,6 +16,8 @@
 #include "components/update_client/component_unpacker.h"
 
 namespace base {
+class CommandLine;
+class Process;
 class SequencedTaskRunner;
 }
 
@@ -36,8 +38,13 @@ class ActionRunner {
 
  private:
   void Unpack();
-
   void UnpackComplete(const ComponentUnpacker::Result& result);
+
+  void RunCommand(const base::CommandLine& cmdline);
+
+  base::CommandLine MakeCommandLine(const base::FilePath& unpack_path) const;
+
+  void WaitForCommand(base::Process process);
 
   const Component& component_;
   const scoped_refptr<base::SequencedTaskRunner>& task_runner_;
