@@ -163,7 +163,15 @@ void ChromeWebClient::PostBrowserURLRewriterCreation(
 
 NSString* ChromeWebClient::GetEarlyPageScript(
     web::BrowserState* browser_state) const {
-  return GetPageScript(@"chrome_bundle");
+  NSString* chrome_page_script = GetPageScript(@"chrome_bundle");
+
+  if (!experimental_flags::IsPaymentRequestEnabled())
+    return chrome_page_script;
+
+  NSString* kScriptTemplate = @"%@; %@";
+  return [NSString stringWithFormat:kScriptTemplate,
+                                    GetPageScript(@"payment_request"),
+                                    chrome_page_script];
 }
 
 void ChromeWebClient::AllowCertificateError(

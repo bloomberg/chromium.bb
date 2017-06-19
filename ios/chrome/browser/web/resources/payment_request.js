@@ -8,8 +8,6 @@
  * to https://www.w3.org/TR/payment-request/. Note: This is a work in progress.
  */
 
-goog.provide('__crWeb.paymentRequestManager');
-
 /**
  * This class implements the DOM level 2 EventTarget interface. The
  * Implementation is copied form src/ui/webui/resources/js/cr/event_target.js.

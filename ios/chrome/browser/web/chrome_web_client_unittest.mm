@@ -8,9 +8,12 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -70,9 +73,8 @@ TEST_F(ChromeWebClientTest, UserAgent) {
   EXPECT_EQ(0u, product_str.find("CriOS/"));
 }
 
-// Tests that ChromeWebClient provides print script and does not provide
-// windowOpenFix script for WKWebView.
-TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScript) {
+// Tests that ChromeWebClient provides print script for WKWebView.
+TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPrint) {
   // Chrome scripts rely on __gCrWeb object presence.
   web::TestBrowserState browser_state;
   WKWebView* web_view = web::BuildWKWebView(CGRectZero, &browser_state);
@@ -83,6 +85,26 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScript) {
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object",
               web::ExecuteJavaScript(web_view, @"typeof __gCrWeb.print"));
+}
+
+// Tests that ChromeWebClient does not provide payment request script for
+// WKWebView unless the feature is enabled.
+TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequest) {
+  // Chrome scripts rely on __gCrWeb object presence.
+  web::TestBrowserState browser_state;
+  WKWebView* web_view = web::BuildWKWebView(CGRectZero, &browser_state);
+  web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
+
+  web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
+  NSString* script = web_client.Get()->GetEarlyPageScript(&browser_state);
+  web::ExecuteJavaScript(web_view, script);
+  EXPECT_NSEQ(@"undefined", web::ExecuteJavaScript(
+                                web_view, @"typeof window.PaymentRequest"));
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnablePaymentRequest, std::string());
+  script = web_client.Get()->GetEarlyPageScript(&browser_state);
+  web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"function", web::ExecuteJavaScript(
                                web_view, @"typeof window.PaymentRequest"));
 }
