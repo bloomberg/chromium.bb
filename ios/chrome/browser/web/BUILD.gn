@@ -181,8 +181,17 @@ js_compile_bundle("chrome_bundle") {
   closure_entry_point = "__crWeb.chromeBundle"
   sources = [
     "resources/chrome_bundle.js",
-    "resources/payment_request.js",
     "resources/print.js",
+  ]
+
+  deps = [
+    ":payment_request",
+  ]
+}
+
+js_compile_unchecked("payment_request") {
+  sources = [
+    "resources/payment_request.js",
   ]
 }
 
@@ -281,6 +290,7 @@ source_set("unit_tests_internal") {
     "//base/test:test_support",
     "//components/content_settings/core/browser",
     "//components/infobars/core",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/content_settings:content_settings",
     "//ios/chrome/browser/find_in_page",
