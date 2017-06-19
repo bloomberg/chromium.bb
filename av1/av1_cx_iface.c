@@ -1213,10 +1213,10 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       }
     }
 
-    size_t size;
+    size_t frame_size;
     unsigned int lib_flags = 0;
     while (cx_data_sz >= ctx->cx_data_sz / 2 &&
-           -1 != av1_get_compressed_data(cpi, &lib_flags, &size, cx_data,
+           -1 != av1_get_compressed_data(cpi, &lib_flags, &frame_size, cx_data,
                                          &dst_time_stamp, &dst_end_time_stamp,
                                          !img)) {
 #if CONFIG_REFERENCE_BUFFER
@@ -1225,14 +1225,14 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         return AOM_CODEC_ERROR;
       }
 #endif
-      if (size) {
+      if (frame_size) {
         // Pack invisible frames with the next visible frame
         if (!cpi->common.show_frame) {
           if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
-          ctx->pending_cx_data_sz += size;
-          ctx->pending_frame_sizes[ctx->pending_frame_count++] = size;
-          cx_data += size;
-          cx_data_sz -= size;
+          ctx->pending_cx_data_sz += frame_size;
+          ctx->pending_frame_sizes[ctx->pending_frame_count++] = frame_size;
+          cx_data += frame_size;
+          cx_data_sz -= frame_size;
 
           continue;
         }
@@ -1247,9 +1247,9 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);
 
         if (ctx->pending_cx_data) {
-          ctx->pending_frame_sizes[ctx->pending_frame_count++] = size;
-          ctx->pending_cx_data_sz += size;
-          size += write_superframe_index(ctx);
+          ctx->pending_frame_sizes[ctx->pending_frame_count++] = frame_size;
+          ctx->pending_cx_data_sz += frame_size;
+          frame_size += write_superframe_index(ctx);
           pkt.data.frame.buf = ctx->pending_cx_data;
           pkt.data.frame.sz = ctx->pending_cx_data_sz;
           ctx->pending_cx_data = NULL;
@@ -1257,14 +1257,14 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           ctx->pending_frame_count = 0;
         } else {
           pkt.data.frame.buf = cx_data;
-          pkt.data.frame.sz = size;
+          pkt.data.frame.sz = frame_size;
         }
         pkt.data.frame.partition_id = -1;
 
         aom_codec_pkt_list_add(&ctx->pkt_list.head, &pkt);
 
-        cx_data += size;
-        cx_data_sz -= size;
+        cx_data += frame_size;
+        cx_data_sz -= frame_size;
       }
     }
   }
