@@ -41,23 +41,17 @@ using AudioDeviceCaptureCapabilities =
 // values specified in the basic constraint set, or using default
 // implementation-specific values.
 // The result includes the following properties:
-//  * Device. A device is chosen using the device_id, sample_rate, sample_size,
-//    and channel_count constraints. If multiple devices satisfy the constraints
-//    preference is given to the default device (system defined or chosen by
-//    user preferences). If the default device is not included in the valid
-//    candidates, the first valid device in the list obtained by querying the
-//    system capabilities is chosen. For content capture, no real audio input
-//    devices are used and the sample_rate, sample_size and channel_count
-//    constraints are ignored. In content capture, the deviceId constraint is
-//    supported and is interpreted by the system as a string that indicates,
-//    for example, which tab to capture. Validation for that "device" ID is
-//    performed by the getUserMedia implementation. To decide between content
-//    or device capture, the value of the special media_stream_source constraint
-//    is used.
+//  * Device. A device can be chosen using the device_id constraint.
+//    For device capture, the validity of device IDs is checked by
+//    SelectSettings since the list of allowed device IDs is known in advance.
+//    For content capture, all device IDs are considered valid by
+//    SelectSettings. Actual validation is performed by the getUserMedia
+//    implementation.
 //  * Audio features: the hotword_enabled, disable_local_echo and
 //    render_to_associated_sink constraints can be used to enable the
 //    corresponding audio feature. If not specified, their default value is
-//    false.
+//    false, except for disable_local_echo, whose default value is false only
+//    for desktop capture.
 //  * Audio processing. The remaining constraints are used to control audio
 //    processing. This is how audio-processing properties are set for device
 //    capture(see the content::AudioProcessingProperties struct) :
@@ -93,6 +87,8 @@ using AudioDeviceCaptureCapabilities =
 //    Moreover, the echo_cancellation constraint influences most other
 //    audio-processing properties for which no explicit value is provided in
 //    their corresponding constraints.
+// TODO(guidou): Add support for other standard constraints such as sampleRate,
+// channelCount and groupId. http://crbug.com/731170
 AudioCaptureSettings CONTENT_EXPORT
 SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
                            const blink::WebMediaConstraints& constraints);

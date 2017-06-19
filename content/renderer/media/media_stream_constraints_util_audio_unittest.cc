@@ -68,27 +68,12 @@ class MediaStreamConstraintsUtilAudioTest
     capabilities_.push_back(std::move(device));
 
     device = ::mojom::AudioInputDeviceCapabilities::New();
-    device->device_id = "mono_phone_device";
-    device->parameters = media::AudioParameters(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_MONO,
-        media::AudioParameters::kTelephoneSampleRate, 16, 1000);
-    capabilities_.push_back(std::move(device));
-
-    device = ::mojom::AudioInputDeviceCapabilities::New();
     device->device_id = "hw_echo_canceller_device";
     device->parameters = media::AudioParameters(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
         media::CHANNEL_LAYOUT_STEREO,
         media::AudioParameters::kAudioCDSampleRate, 24, 1000);
     device->parameters.set_effects(media::AudioParameters::ECHO_CANCELLER);
-    capabilities_.push_back(std::move(device));
-
-    device = ::mojom::AudioInputDeviceCapabilities::New();
-    device->device_id = "octagonal_device";
-    device->parameters = media::AudioParameters(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_OCTAGONAL, 100000, 8, 1000);
     capabilities_.push_back(std::move(device));
 
     device = ::mojom::AudioInputDeviceCapabilities::New();
@@ -101,10 +86,8 @@ class MediaStreamConstraintsUtilAudioTest
     capabilities_.push_back(std::move(device));
 
     default_device_ = capabilities_[0].get();
-    mono_phone_device_ = capabilities_[1].get();
-    hw_echo_canceller_device_ = capabilities_[2].get();
-    octagonal_device_ = capabilities_[3].get();
-    geometry_device_ = capabilities_[4].get();
+    hw_echo_canceller_device_ = capabilities_[1].get();
+    geometry_device_ = capabilities_[2].get();
   }
 
  protected:
@@ -323,10 +306,8 @@ class MediaStreamConstraintsUtilAudioTest
   MockConstraintFactory constraint_factory_;
   AudioDeviceCaptureCapabilities capabilities_;
   const mojom::AudioInputDeviceCapabilities* default_device_ = nullptr;
-  const mojom::AudioInputDeviceCapabilities* mono_phone_device_ = nullptr;
   const mojom::AudioInputDeviceCapabilities* hw_echo_canceller_device_ =
       nullptr;
-  const mojom::AudioInputDeviceCapabilities* octagonal_device_ = nullptr;
   const mojom::AudioInputDeviceCapabilities* geometry_device_ = nullptr;
   const std::vector<media::Point> kMicPositions = {{8, 8, 8}, {4, 4, 4}};
 };
@@ -496,361 +477,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidDeviceID) {
       CheckGeometryDefaults(result);
     }
   }
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidSampleRate) {
-  constraint_factory_.basic().sample_rate.SetExact(
-      media::AudioParameters::kTelephoneSampleRate);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    CheckDevice(*mono_phone_device_, result);
-  } else {
-    // Content capture ignores the sample_rate constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-// SampleRate, SampleSize, ChannelCount tests check that numeric device-related
-// constraints are handled correctly.
-TEST_P(MediaStreamConstraintsUtilAudioTest, ExactInvalidSampleRate) {
-  constraint_factory_.basic().sample_rate.SetExact(666);
-  auto result = SelectSettings();
-  if (IsDeviceCapture()) {
-    EXPECT_FALSE(result.HasValue());
-    EXPECT_EQ(std::string(constraint_factory_.basic().sample_rate.GetName()),
-              std::string(result.failed_constraint_name()));
-  } else {
-    // Content capture ignores the sample_rate constraint.
-    EXPECT_TRUE(result.HasValue());
-    EXPECT_TRUE(result.device_id().empty());
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    CheckGeometryDefaults(result);
-  }
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, MinValidSampleRate) {
-  constraint_factory_.basic().sample_rate.SetMin(80000);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one with a large-enough sample rate.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the sample_rate constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, MaxValidSampleRate) {
-  constraint_factory_.basic().sample_rate.SetMax(10000);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The mono device is the only one with a small-enough sample rate.
-    CheckDevice(*mono_phone_device_, result);
-  } else {
-    // Content capture ignores the sample_rate constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, RangeValidSampleRate) {
-  constraint_factory_.basic().sample_rate.SetMin(1000);
-  constraint_factory_.basic().sample_rate.SetMax(10000);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The mono device is the only one with a sample rate in the range.
-    CheckDevice(*mono_phone_device_, result);
-  } else {
-    // Content capture ignores the sample_rate constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, InvalidRangeSampleRate) {
-  constraint_factory_.basic().sample_rate.SetMin(9000);
-  constraint_factory_.basic().sample_rate.SetMax(10000);
-  auto result = SelectSettings();
-  if (IsDeviceCapture()) {
-    EXPECT_FALSE(result.HasValue());
-    EXPECT_EQ(std::string(constraint_factory_.basic().sample_rate.GetName()),
-              std::string(result.failed_constraint_name()));
-  } else {
-    // Content capture ignores the sample_rate constraint.
-    EXPECT_TRUE(result.HasValue());
-    EXPECT_TRUE(result.device_id().empty());
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    CheckGeometryDefaults(result);
-  }
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, IdealSampleRate) {
-  constraint_factory_.basic().sample_rate.SetIdeal(10000);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The mono device is the one a sample rate closest to ideal.
-    CheckDevice(*mono_phone_device_, result);
-  } else {
-    // Content capture ignores the sample_rate constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-// Sample size tests.
-TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidSampleSize) {
-  constraint_factory_.basic().sample_size.SetExact(8);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the sample_size constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, ExactInvalidSampleSize) {
-  constraint_factory_.basic().sample_size.SetExact(666);
-  auto result = SelectSettings();
-  if (IsDeviceCapture()) {
-    EXPECT_FALSE(result.HasValue());
-    EXPECT_EQ(std::string(constraint_factory_.basic().sample_size.GetName()),
-              std::string(result.failed_constraint_name()));
-  } else {
-    // Content capture ignores the sample_size constraint.
-    EXPECT_TRUE(result.HasValue());
-    EXPECT_TRUE(result.device_id().empty());
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    CheckGeometryDefaults(result);
-  }
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, MinValidSampleSize) {
-  constraint_factory_.basic().sample_size.SetMin(20);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The device with echo canceller is the only one with a sample size that
-    // is greater than the requested minimum.
-    CheckDevice(*hw_echo_canceller_device_, result);
-    CheckBoolDefaults(AudioSettingsBoolMembers(),
-                      {&AudioProcessingProperties::enable_sw_echo_cancellation},
-                      result);
-  } else {
-    // Content capture ignores the sample_size constraint.
-    EXPECT_TRUE(result.device_id().empty());
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-  }
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, MaxValidSampleSize) {
-  constraint_factory_.basic().sample_size.SetMax(10);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one with a small-enough sample size.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the sample_size constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, RangeValidSampleSize) {
-  constraint_factory_.basic().sample_size.SetMin(3);
-  constraint_factory_.basic().sample_size.SetMax(15);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one with a sample size in the range.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the sample_size constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, InvalidRangeSampleSize) {
-  constraint_factory_.basic().sample_size.SetMin(10);
-  constraint_factory_.basic().sample_size.SetMax(15);
-  auto result = SelectSettings();
-  if (IsDeviceCapture()) {
-    EXPECT_FALSE(result.HasValue());
-    EXPECT_EQ(std::string(constraint_factory_.basic().sample_size.GetName()),
-              std::string(result.failed_constraint_name()));
-  } else {
-    // Content capture ignores the sample_size constraint.
-    EXPECT_TRUE(result.HasValue());
-    EXPECT_TRUE(result.device_id().empty());
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    CheckGeometryDefaults(result);
-  }
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, IdealSampleSize) {
-  constraint_factory_.basic().sample_size.SetIdeal(10);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the one a sample size closest to ideal.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the sample_size constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-// ChannelCount tests.
-TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidChannelCount) {
-  constraint_factory_.basic().channel_count.SetExact(8);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the channel_count constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, ExactInvalidChannelCount) {
-  constraint_factory_.basic().channel_count.SetExact(666);
-  auto result = SelectSettings();
-  if (IsDeviceCapture()) {
-    EXPECT_FALSE(result.HasValue());
-    EXPECT_EQ(std::string(constraint_factory_.basic().channel_count.GetName()),
-              std::string(result.failed_constraint_name()));
-  } else {
-    // Content capture ignores the channel_count constraint.
-    EXPECT_TRUE(result.HasValue());
-    EXPECT_TRUE(result.device_id().empty());
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    CheckGeometryDefaults(result);
-  }
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, MinValidChannelCount) {
-  constraint_factory_.basic().channel_count.SetMin(7);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The device with echo canceller is the only one with a channel count that
-    // is greater than the requested minimum.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the channel_count constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, MaxValidChannelCount) {
-  constraint_factory_.basic().channel_count.SetMax(1);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one with a small-enough channel count.
-    CheckDevice(*mono_phone_device_, result);
-  } else {
-    // Content capture ignores the channel_count constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, RangeValidChannelCount) {
-  constraint_factory_.basic().channel_count.SetMin(3);
-  constraint_factory_.basic().channel_count.SetMax(15);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one with a channel count in the range.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the channel_count constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, InvalidRangeChannelCount) {
-  constraint_factory_.basic().channel_count.SetMin(3);
-  constraint_factory_.basic().channel_count.SetMax(7);
-  auto result = SelectSettings();
-  if (IsDeviceCapture()) {
-    EXPECT_FALSE(result.HasValue());
-    EXPECT_EQ(std::string(constraint_factory_.basic().channel_count.GetName()),
-              std::string(result.failed_constraint_name()));
-  } else {
-    // Content capture ignores the channel_count constraint.
-    EXPECT_TRUE(result.HasValue());
-    EXPECT_TRUE(result.device_id().empty());
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    CheckGeometryDefaults(result);
-  }
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest, IdealChannelCount) {
-  constraint_factory_.basic().channel_count.SetIdeal(6);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the one the number of channels closest to ideal.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores the channel_count constraint.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
 }
 
 // Tests the echoCancellation constraint with a device without hardware echo
@@ -1126,19 +752,11 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
 
 // Test advanced constraints sets that can be satisfied.
 TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedCompatibleConstraints) {
-  constraint_factory_.AddAdvanced().sample_size.SetExact(8);
   constraint_factory_.AddAdvanced().render_to_associated_sink.SetExact(true);
   constraint_factory_.AddAdvanced().goog_audio_mirroring.SetExact(true);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one that matches the first advanced
-    // constraint set.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores device-related constraints.
-    EXPECT_TRUE(result.device_id().empty());
-  }
+  CheckDeviceDefaults(result);
   CheckBoolDefaults({&AudioCaptureSettings::render_to_associated_sink},
                     {&AudioProcessingProperties::goog_audio_mirroring}, result);
   CheckGeometryDefaults(result);
@@ -1146,101 +764,49 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedCompatibleConstraints) {
   EXPECT_TRUE(result.audio_processing_properties().goog_audio_mirroring);
 }
 
-// Test that an advanced constraint set that cannot be satisfied is ignored.
-TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedSelfConflictingConstraint) {
-  auto& advanced = constraint_factory_.AddAdvanced();
-  advanced.sample_size.SetExact(8);
-  advanced.sample_rate.SetExact(8);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  // The advanced constraint is self conflicting and ignored. The default
-  // device is selected.
-  CheckDeviceDefaults(result);
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
-// Test that an advanced constraint set that contradicts a previous constraint
-// set with a device-related constraint is ignored.
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       AdvancedConflictingDeviceConstraint) {
-  constraint_factory_.AddAdvanced().sample_size.SetExact(8);
-  constraint_factory_.AddAdvanced().sample_size.SetExact(
-      media::AudioParameters::kAudioCDSampleRate);
-  auto result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one that matches the first advanced
-    // constraint set. The second set is ignored.
-    CheckDevice(*octagonal_device_, result);
-    EXPECT_NE(media::AudioParameters::kAudioCDSampleRate,
-              result.device_parameters().sample_rate());
-  } else {
-    // Content capture ignores device-related constraints.
-    EXPECT_TRUE(result.device_id().empty());
-  }
-  CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                    result);
-  CheckGeometryDefaults(result);
-}
-
 // Test that an advanced constraint set that contradicts a previous constraint
 // set is ignored, but that further constraint sets that can be satisfied are
 // applied.
 TEST_P(MediaStreamConstraintsUtilAudioTest,
        AdvancedConflictingMiddleConstraints) {
-  constraint_factory_.AddAdvanced().sample_size.SetExact(8);
+  constraint_factory_.AddAdvanced().goog_highpass_filter.SetExact(true);
   auto& advanced2 = constraint_factory_.AddAdvanced();
-  advanced2.sample_rate.SetExact(123456);
+  advanced2.goog_highpass_filter.SetExact(false);
   advanced2.hotword_enabled.SetExact(true);
   constraint_factory_.AddAdvanced().goog_audio_mirroring.SetExact(true);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one that matches the first advanced
-    // constraint set.
-    CheckDevice(*octagonal_device_, result);
-    // Second advanced set is discarded because no device has the requested
-    // sample rate.
-    EXPECT_NE(123456, result.device_parameters().sample_rate());
-    EXPECT_FALSE(result.hotword_enabled());
-  } else {
-    // Content capture ignores device-related constraints. Thus, it does not
-    // discard the second advanced set.
-    EXPECT_TRUE(result.device_id().empty());
-    EXPECT_TRUE(result.hotword_enabled());
-  }
-  CheckBoolDefaults({&AudioCaptureSettings::render_to_associated_sink,
-                     &AudioCaptureSettings::hotword_enabled},
-                    {&AudioProcessingProperties::goog_audio_mirroring}, result);
+  CheckDeviceDefaults(result);
+  EXPECT_FALSE(result.hotword_enabled());
+  CheckBoolDefaults({&AudioCaptureSettings::hotword_enabled},
+                    {&AudioProcessingProperties::goog_audio_mirroring,
+                     &AudioProcessingProperties::goog_highpass_filter},
+                    result);
   CheckGeometryDefaults(result);
+  EXPECT_FALSE(result.hotword_enabled());
   EXPECT_TRUE(result.audio_processing_properties().goog_audio_mirroring);
+  EXPECT_TRUE(result.audio_processing_properties().goog_highpass_filter);
 }
 
 // Test that an advanced constraint set that contradicts a previous constraint
 // set with a boolean constraint is ignored.
 TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedConflictingLastConstraint) {
-  constraint_factory_.AddAdvanced().sample_size.SetExact(8);
+  constraint_factory_.AddAdvanced().goog_highpass_filter.SetExact(true);
   constraint_factory_.AddAdvanced().hotword_enabled.SetExact(true);
   constraint_factory_.AddAdvanced().goog_audio_mirroring.SetExact(true);
   constraint_factory_.AddAdvanced().hotword_enabled.SetExact(false);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  if (IsDeviceCapture()) {
-    // The octagonal device is the only one that matches the first advanced
-    // constraint set.
-    CheckDevice(*octagonal_device_, result);
-  } else {
-    // Content capture ignores device-related constraints.
-    EXPECT_TRUE(result.device_id().empty());
-  }
+  CheckDeviceDefaults(result);
   CheckBoolDefaults({&AudioCaptureSettings::hotword_enabled},
-                    {&AudioProcessingProperties::goog_audio_mirroring}, result);
+                    {&AudioProcessingProperties::goog_audio_mirroring,
+                     &AudioProcessingProperties::goog_highpass_filter},
+                    result);
   CheckGeometryDefaults(result);
   // The fourth advanced set is ignored because it contradicts the second set.
   EXPECT_TRUE(result.hotword_enabled());
   EXPECT_TRUE(result.audio_processing_properties().goog_audio_mirroring);
+  EXPECT_TRUE(result.audio_processing_properties().goog_highpass_filter);
 }
 
 // Test that a valid geometry is interpreted correctly in all the ways it can
