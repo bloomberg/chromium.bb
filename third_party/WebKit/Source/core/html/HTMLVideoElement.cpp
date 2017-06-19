@@ -243,6 +243,8 @@ void HTMLVideoElement::SetDisplayMode(DisplayMode mode) {
 // TODO(zqzhang): this callback could be used to hide native controls instead of
 // using a settings. See `HTMLMediaElement::onMediaControlsEnabledChange`.
 void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
+  is_picture_in_picture_ = value;
+
   if (value) {
     // Record the type of video. If it is already fullscreen, it is a video with
     // native controls, otherwise it is assumed to be with custom controls.
@@ -290,6 +292,9 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
     if (fullscreen_element)
       fullscreen_element->SetContainsPersistentVideo(false);
   }
+
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
 }
 
 bool HTMLVideoElement::IsPersistent() const {
@@ -519,6 +524,12 @@ void HTMLVideoElement::MediaRemotingStopped() {
     media_remoting_status_ = MediaRemotingStatus::kNotStarted;
   DCHECK(remoting_interstitial_);
   remoting_interstitial_->Hide();
+}
+
+WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
+  if (is_picture_in_picture_)
+    return WebMediaPlayer::DisplayType::kPictureInPicture;
+  return HTMLMediaElement::DisplayType();
 }
 
 void HTMLVideoElement::DisableMediaRemoting() {

@@ -420,6 +420,7 @@ class CORE_EXPORT HTMLMediaElement
   bool IsAutoplayingMuted() final;
   void ActivateViewportIntersectionMonitoring(bool) final;
   bool HasNativeControls() final;
+  WebMediaPlayer::DisplayType DisplayType() const override;
 
   void LoadTimerFired(TimerBase*);
   void ProgressEventTimerFired(TimerBase*);

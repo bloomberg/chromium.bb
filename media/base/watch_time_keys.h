@@ -14,12 +14,18 @@ namespace media {
 // Histogram names used for reporting; also double as MediaLog key names.
 // NOTE: If you add to this list you must update GetWatchTimeKeys() and if
 // necessary, GetWatchTimePowerKeys().
+// TODO(mlamouri): the kWatchTimeAudioDisplay* constants are here for
+// convenience because a few macros expect them. They should be removed after
+// a refactor.
 MEDIA_EXPORT extern const char kWatchTimeAudioAll[];
 MEDIA_EXPORT extern const char kWatchTimeAudioMse[];
 MEDIA_EXPORT extern const char kWatchTimeAudioEme[];
 MEDIA_EXPORT extern const char kWatchTimeAudioSrc[];
 MEDIA_EXPORT extern const char kWatchTimeAudioBattery[];
 MEDIA_EXPORT extern const char kWatchTimeAudioAc[];
+MEDIA_EXPORT extern const char kWatchTimeAudioDisplayFullscreen[];
+MEDIA_EXPORT extern const char kWatchTimeAudioDisplayInline[];
+MEDIA_EXPORT extern const char kWatchTimeAudioDisplayPictureInPicture[];
 MEDIA_EXPORT extern const char kWatchTimeAudioEmbeddedExperience[];
 MEDIA_EXPORT extern const char kWatchTimeAudioNativeControlsOn[];
 MEDIA_EXPORT extern const char kWatchTimeAudioNativeControlsOff[];
@@ -29,6 +35,9 @@ MEDIA_EXPORT extern const char kWatchTimeAudioVideoEme[];
 MEDIA_EXPORT extern const char kWatchTimeAudioVideoSrc[];
 MEDIA_EXPORT extern const char kWatchTimeAudioVideoBattery[];
 MEDIA_EXPORT extern const char kWatchTimeAudioVideoAc[];
+MEDIA_EXPORT extern const char kWatchTimeAudioVideoDisplayFullscreen[];
+MEDIA_EXPORT extern const char kWatchTimeAudioVideoDisplayInline[];
+MEDIA_EXPORT extern const char kWatchTimeAudioVideoDisplayPictureInPicture[];
 MEDIA_EXPORT extern const char kWatchTimeAudioVideoEmbeddedExperience[];
 MEDIA_EXPORT extern const char kWatchTimeAudioVideoNativeControlsOn[];
 MEDIA_EXPORT extern const char kWatchTimeAudioVideoNativeControlsOff[];
@@ -46,6 +55,7 @@ MEDIA_EXPORT extern const char
 MEDIA_EXPORT extern const char kWatchTimeFinalize[];
 MEDIA_EXPORT extern const char kWatchTimeFinalizePower[];
 MEDIA_EXPORT extern const char kWatchTimeFinalizeControls[];
+MEDIA_EXPORT extern const char kWatchTimeFinalizeDisplay[];
 
 // Count of the number of underflow events during a media session.
 MEDIA_EXPORT extern const char kWatchTimeUnderflowCount[];
@@ -69,6 +79,7 @@ MEDIA_EXPORT extern const char kRebuffersCountAudioVideoEme[];
 MEDIA_EXPORT base::flat_set<base::StringPiece> GetWatchTimeKeys();
 MEDIA_EXPORT base::flat_set<base::StringPiece> GetWatchTimePowerKeys();
 MEDIA_EXPORT base::flat_set<base::StringPiece> GetWatchTimeControlsKeys();
+MEDIA_EXPORT base::flat_set<base::StringPiece> GetWatchTimeDisplayKeys();
 
 }  // namespace media
 

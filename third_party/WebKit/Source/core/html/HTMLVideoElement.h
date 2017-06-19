@@ -147,6 +147,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   void MediaRemotingStarted() final;
   void MediaRemotingStopped() final;
+  WebMediaPlayer::DisplayType DisplayType() const final;
 
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
@@ -183,7 +184,12 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   AtomicString default_poster_url_;
 
+  // TODO(mlamouri): merge these later. At the moment, the former is used for
+  // CSS rules used to hide the custom controls and the latter is used to report
+  // the display type. It's unclear whether using the CSS rules also when native
+  // controls are used would or would not have side effects.
   bool is_persistent_ = false;
+  bool is_picture_in_picture_ = false;
 };
 
 }  // namespace blink

@@ -14,6 +14,7 @@
 #include "media/base/media_log.h"
 #include "media/base/timestamp_constants.h"
 #include "media/blink/media_blink_export.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -119,6 +120,12 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void OnNativeControlsEnabled();
   void OnNativeControlsDisabled();
 
+  // These methods are used to ensure that the watch time is reported relative
+  // to the display type of the media.
+  void OnDisplayTypeInline();
+  void OnDisplayTypeFullscreen();
+  void OnDisplayTypePictureInPicture();
+
   // Setup the reporting interval to be immediate to avoid spinning real time
   // within the unit test.
   void set_reporting_interval_for_testing() {
@@ -159,6 +166,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   enum class FinalizeTime { IMMEDIATELY, ON_NEXT_UPDATE };
   void MaybeFinalizeWatchTime(FinalizeTime finalize_time);
   void UpdateWatchTime();
+  void OnDisplayTypeChanged(blink::WebMediaPlayer::DisplayType display_type);
 
   // Initialized during construction.
   const bool has_audio_;
@@ -186,11 +194,16 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   double volume_ = 1.0;
   int underflow_count_ = 0;
   std::vector<base::TimeDelta> pending_underflow_events_;
+  blink::WebMediaPlayer::DisplayType display_type_ =
+      blink::WebMediaPlayer::DisplayType::kInline;
+  blink::WebMediaPlayer::DisplayType display_type_for_recording_ =
+      blink::WebMediaPlayer::DisplayType::kInline;
 
   // The last media timestamp seen by UpdateWatchTime().
   base::TimeDelta last_media_timestamp_ = kNoTimestamp;
   base::TimeDelta last_media_power_timestamp_ = kNoTimestamp;
   base::TimeDelta last_media_controls_timestamp_ = kNoTimestamp;
+  base::TimeDelta last_media_display_type_timestamp_ = kNoTimestamp;
 
   // The starting and ending timestamps used for reporting watch time.
   base::TimeDelta start_timestamp_;
@@ -205,6 +218,11 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // native controls are being used.
   base::TimeDelta start_timestamp_for_controls_;
   base::TimeDelta end_timestamp_for_controls_ = kNoTimestamp;
+
+  // Similar to the above but tracks watch time relative to whether the display
+  // type is inline, fullscreen or picture-in-picture.
+  base::TimeDelta start_timestamp_for_display_type_;
+  base::TimeDelta end_timestamp_for_display_type_ = kNoTimestamp;
 
   // Special case reporter for handling background video watch time. Configured
   // as an audio only WatchTimeReporter with |is_background_| set to true.
