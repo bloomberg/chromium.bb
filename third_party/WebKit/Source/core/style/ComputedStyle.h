@@ -848,138 +848,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Grid properties.
-  static Vector<GridTrackSize> InitialGridAutoRepeatTracks() {
-    return Vector<GridTrackSize>(); /* none */
-  }
   static size_t InitialGridAutoRepeatInsertionPoint() { return 0; }
   static AutoRepeatType InitialGridAutoRepeatType() { return kNoAutoRepeat; }
-  static NamedGridLinesMap InitialNamedGridColumnLines() {
-    return NamedGridLinesMap();
-  }
-  static NamedGridLinesMap InitialNamedGridRowLines() {
-    return NamedGridLinesMap();
-  }
-  static OrderedNamedGridLines InitialOrderedNamedGridColumnLines() {
-    return OrderedNamedGridLines();
-  }
-  static OrderedNamedGridLines InitialOrderedNamedGridRowLines() {
-    return OrderedNamedGridLines();
-  }
-  static NamedGridAreaMap InitialNamedGridArea() { return NamedGridAreaMap(); }
-  static size_t InitialNamedGridAreaCount() { return 0; }
-
-  // grid-auto-columns
-  static Vector<GridTrackSize> InitialGridAutoColumns();
-  const Vector<GridTrackSize>& GridAutoColumns() const {
-    return rare_non_inherited_data_->grid_data_->grid_auto_columns_;
-  }
-  void SetGridAutoColumns(const Vector<GridTrackSize>& track_size_list) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_columns_,
-                   track_size_list);
-  }
 
   // grid-auto-flow
   static GridAutoFlow InitialGridAutoFlow() { return kAutoFlowRow; }
   void SetGridAutoFlow(GridAutoFlow flow) {
     SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_flow_, flow);
-  }
-
-  // grid-auto-rows
-  static Vector<GridTrackSize> InitialGridAutoRows();
-  const Vector<GridTrackSize>& GridAutoRows() const {
-    return rare_non_inherited_data_->grid_data_->grid_auto_rows_;
-  }
-  void SetGridAutoRows(const Vector<GridTrackSize>& track_size_list) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_rows_,
-                   track_size_list);
-  }
-
-  // grid-column-gap
-  static Length InitialGridColumnGap() { return Length(kFixed); }
-  const Length& GridColumnGap() const {
-    return rare_non_inherited_data_->grid_data_->grid_column_gap_;
-  }
-  void SetGridColumnGap(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_column_gap_, v);
-  }
-
-  // grid-column-start
-  static GridPosition InitialGridColumnStart() {
-    return GridPosition(); /* auto */
-  }
-  const GridPosition& GridColumnStart() const {
-    return rare_non_inherited_data_->grid_item_data_->grid_column_start_;
-  }
-  void SetGridColumnStart(const GridPosition& column_start_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_data_,
-                   grid_column_start_, column_start_position);
-  }
-
-  // grid-column-end
-  static GridPosition InitialGridColumnEnd() {
-    return GridPosition(); /* auto */
-  }
-  const GridPosition& GridColumnEnd() const {
-    return rare_non_inherited_data_->grid_item_data_->grid_column_end_;
-  }
-  void SetGridColumnEnd(const GridPosition& column_end_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_data_, grid_column_end_,
-                   column_end_position);
-  }
-
-  // grid-row-gap
-  static Length InitialGridRowGap() { return Length(kFixed); }
-  const Length& GridRowGap() const {
-    return rare_non_inherited_data_->grid_data_->grid_row_gap_;
-  }
-  void SetGridRowGap(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_row_gap_, v);
-  }
-
-  // grid-row-start
-  static GridPosition InitialGridRowStart() {
-    return GridPosition(); /* auto */
-  }
-  const GridPosition& GridRowStart() const {
-    return rare_non_inherited_data_->grid_item_data_->grid_row_start_;
-  }
-  void SetGridRowStart(const GridPosition& row_start_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_data_, grid_row_start_,
-                   row_start_position);
-  }
-
-  // grid-row-end
-  static GridPosition InitialGridRowEnd() { return GridPosition(); /* auto */ }
-  const GridPosition& GridRowEnd() const {
-    return rare_non_inherited_data_->grid_item_data_->grid_row_end_;
-  }
-  void SetGridRowEnd(const GridPosition& row_end_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_data_, grid_row_end_,
-                   row_end_position);
-  }
-
-  // grid-template-columns
-  static Vector<GridTrackSize> InitialGridTemplateColumns() {
-    return Vector<GridTrackSize>(); /* none */
-  }
-  const Vector<GridTrackSize>& GridTemplateColumns() const {
-    return rare_non_inherited_data_->grid_data_->grid_template_columns_;
-  }
-  void SetGridTemplateColumns(const Vector<GridTrackSize>& lengths) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_template_columns_,
-                   lengths);
-  }
-
-  // grid-template-rows
-  static Vector<GridTrackSize> InitialGridTemplateRows() {
-    return Vector<GridTrackSize>(); /* none */
-  }
-  const Vector<GridTrackSize>& GridTemplateRows() const {
-    return rare_non_inherited_data_->grid_data_->grid_template_rows_;
-  }
-  void SetGridTemplateRows(const Vector<GridTrackSize>& lengths) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_template_rows_,
-                   lengths);
   }
 
   // mix-blend-mode
@@ -2064,65 +1939,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasTextCombine() const { return TextCombine() != ETextCombine::kNone; }
 
   // Grid utility functions.
-  const Vector<GridTrackSize>& GridAutoRepeatColumns() const {
-    return rare_non_inherited_data_->grid_data_->grid_auto_repeat_columns_;
-  }
-  const Vector<GridTrackSize>& GridAutoRepeatRows() const {
-    return rare_non_inherited_data_->grid_data_->grid_auto_repeat_rows_;
-  }
-  size_t GridAutoRepeatColumnsInsertionPoint() const {
-    return rare_non_inherited_data_->grid_data_
-        ->auto_repeat_columns_insertion_point_;
-  }
-  size_t GridAutoRepeatRowsInsertionPoint() const {
-    return rare_non_inherited_data_->grid_data_
-        ->auto_repeat_rows_insertion_point_;
-  }
   AutoRepeatType GridAutoRepeatColumnsType() const {
     return static_cast<AutoRepeatType>(
-        rare_non_inherited_data_->grid_data_->auto_repeat_columns_type_);
+        rare_non_inherited_data_->grid_data_->grid_auto_repeat_columns_type_);
   }
   AutoRepeatType GridAutoRepeatRowsType() const {
     return static_cast<AutoRepeatType>(
-        rare_non_inherited_data_->grid_data_->auto_repeat_rows_type_);
-  }
-  const NamedGridLinesMap& NamedGridColumnLines() const {
-    return rare_non_inherited_data_->grid_data_->named_grid_column_lines_;
-  }
-  const NamedGridLinesMap& NamedGridRowLines() const {
-    return rare_non_inherited_data_->grid_data_->named_grid_row_lines_;
-  }
-  const OrderedNamedGridLines& OrderedNamedGridColumnLines() const {
-    return rare_non_inherited_data_->grid_data_
-        ->ordered_named_grid_column_lines_;
-  }
-  const OrderedNamedGridLines& OrderedNamedGridRowLines() const {
-    return rare_non_inherited_data_->grid_data_->ordered_named_grid_row_lines_;
-  }
-  const NamedGridLinesMap& AutoRepeatNamedGridColumnLines() const {
-    return rare_non_inherited_data_->grid_data_
-        ->auto_repeat_named_grid_column_lines_;
-  }
-  const NamedGridLinesMap& AutoRepeatNamedGridRowLines() const {
-    return rare_non_inherited_data_->grid_data_
-        ->auto_repeat_named_grid_row_lines_;
-  }
-  const OrderedNamedGridLines& AutoRepeatOrderedNamedGridColumnLines() const {
-    return rare_non_inherited_data_->grid_data_
-        ->auto_repeat_ordered_named_grid_column_lines_;
-  }
-  const OrderedNamedGridLines& AutoRepeatOrderedNamedGridRowLines() const {
-    return rare_non_inherited_data_->grid_data_
-        ->auto_repeat_ordered_named_grid_row_lines_;
-  }
-  const NamedGridAreaMap& NamedGridArea() const {
-    return rare_non_inherited_data_->grid_data_->named_grid_area_;
-  }
-  size_t NamedGridAreaRowCount() const {
-    return rare_non_inherited_data_->grid_data_->named_grid_area_row_count_;
-  }
-  size_t NamedGridAreaColumnCount() const {
-    return rare_non_inherited_data_->grid_data_->named_grid_area_column_count_;
+        rare_non_inherited_data_->grid_data_->grid_auto_repeat_rows_type_);
   }
   GridAutoFlow GetGridAutoFlow() const {
     return static_cast<GridAutoFlow>(
@@ -2146,84 +1969,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
             kInternalAutoFlowAlgorithmDense) == kInternalAutoFlowAlgorithmDense;
   }
-  void SetGridAutoRepeatColumns(const Vector<GridTrackSize>& track_sizes) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   grid_auto_repeat_columns_, track_sizes);
-  }
-  void SetGridAutoRepeatRows(const Vector<GridTrackSize>& track_sizes) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_repeat_rows_,
-                   track_sizes);
-  }
-  void SetGridAutoRepeatColumnsInsertionPoint(const size_t insertion_point) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   auto_repeat_columns_insertion_point_, insertion_point);
-  }
-  void SetGridAutoRepeatRowsInsertionPoint(const size_t insertion_point) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   auto_repeat_rows_insertion_point_, insertion_point);
-  }
   void SetGridAutoRepeatColumnsType(const AutoRepeatType auto_repeat_type) {
     SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   auto_repeat_columns_type_, auto_repeat_type);
+                   grid_auto_repeat_columns_type_, auto_repeat_type);
   }
   void SetGridAutoRepeatRowsType(const AutoRepeatType auto_repeat_type) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, auto_repeat_rows_type_,
-                   auto_repeat_type);
-  }
-  void SetNamedGridColumnLines(
-      const NamedGridLinesMap& named_grid_column_lines) {
     SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   named_grid_column_lines_, named_grid_column_lines);
-  }
-  void SetNamedGridRowLines(const NamedGridLinesMap& named_grid_row_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, named_grid_row_lines_,
-                   named_grid_row_lines);
-  }
-  void SetOrderedNamedGridColumnLines(
-      const OrderedNamedGridLines& ordered_named_grid_column_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   ordered_named_grid_column_lines_,
-                   ordered_named_grid_column_lines);
-  }
-  void SetOrderedNamedGridRowLines(
-      const OrderedNamedGridLines& ordered_named_grid_row_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   ordered_named_grid_row_lines_, ordered_named_grid_row_lines);
-  }
-  void SetAutoRepeatNamedGridColumnLines(
-      const NamedGridLinesMap& named_grid_column_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   auto_repeat_named_grid_column_lines_,
-                   named_grid_column_lines);
-  }
-  void SetAutoRepeatNamedGridRowLines(
-      const NamedGridLinesMap& named_grid_row_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   auto_repeat_named_grid_row_lines_, named_grid_row_lines);
-  }
-  void SetAutoRepeatOrderedNamedGridColumnLines(
-      const OrderedNamedGridLines& ordered_named_grid_column_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   auto_repeat_ordered_named_grid_column_lines_,
-                   ordered_named_grid_column_lines);
-  }
-  void SetAutoRepeatOrderedNamedGridRowLines(
-      const OrderedNamedGridLines& ordered_named_grid_row_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   auto_repeat_ordered_named_grid_row_lines_,
-                   ordered_named_grid_row_lines);
-  }
-  void SetNamedGridArea(const NamedGridAreaMap& named_grid_area) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, named_grid_area_,
-                   named_grid_area);
-  }
-  void SetNamedGridAreaRowCount(size_t row_count) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   named_grid_area_row_count_, row_count);
-  }
-  void SetNamedGridAreaColumnCount(size_t column_count) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   named_grid_area_column_count_, column_count);
+                   grid_auto_repeat_rows_type_, auto_repeat_type);
   }
 
   // align-content utility functions.

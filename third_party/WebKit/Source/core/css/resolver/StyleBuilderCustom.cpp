@@ -244,9 +244,9 @@ void StyleBuilderFunctions::applyInitialCSSPropertyGridTemplateAreas(
     StyleResolverState& state) {
   state.Style()->SetNamedGridArea(ComputedStyle::InitialNamedGridArea());
   state.Style()->SetNamedGridAreaRowCount(
-      ComputedStyle::InitialNamedGridAreaCount());
+      ComputedStyle::InitialNamedGridAreaRowCount());
   state.Style()->SetNamedGridAreaColumnCount(
-      ComputedStyle::InitialNamedGridAreaCount());
+      ComputedStyle::InitialNamedGridAreaColumnCount());
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyGridTemplateAreas(
