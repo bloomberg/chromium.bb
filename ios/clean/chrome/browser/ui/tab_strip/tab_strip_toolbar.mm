@@ -49,6 +49,7 @@ CGFloat kSpacing = 10.0f;
   UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
   [button setImage:[ChromeIcon closeIcon] forState:UIControlStateNormal];
   [button setTintColor:[UIColor whiteColor]];
+  // TODO(crbug.com/733453): Use dispatcher instead of responder chain.
   [button addTarget:nil
                 action:@selector(hideTabStrip:)
       forControlEvents:UIControlEventTouchUpInside];

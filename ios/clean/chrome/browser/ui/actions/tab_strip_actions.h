@@ -10,8 +10,6 @@
 // Target/Action methods relating to the tab strip.
 @protocol TabStripActions
 @optional
-// Shows the tab strip.
-- (void)showTabStrip:(id)sender;
 // Hides the tab strip.
 - (void)hideTabStrip:(id)sender;
 @end
