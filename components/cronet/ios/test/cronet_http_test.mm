@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/cronet/ios/test/cronet_test_base.h"
 #include "components/cronet/ios/test/start_cronet.h"
 #include "components/cronet/ios/test/test_server.h"
 #include "components/grpc_support/test/quic_test_server.h"
@@ -21,131 +22,16 @@
 
 #include "url/gurl.h"
 
-@interface Cronet (ExposedForTesting)
-+ (void)shutdownForTesting;
-@end
-
-@interface TestDelegate : NSObject<NSURLSessionDataDelegate,
-                                   NSURLSessionDelegate,
-                                   NSURLSessionTaskDelegate>
-
-// Completion semaphore for this TestDelegate. When the request this delegate is
-// attached to finishes (either successfully or with an error), this delegate
-// signals this semaphore.
-@property(assign, atomic) dispatch_semaphore_t semaphore;
-
-// Error the request this delegate is attached to failed with, if any.
-@property(retain, atomic) NSError* error;
-
-// Contains total amount of received data.
-@property(readonly) long totalBytesReceived;
-
-@end
-
-@implementation TestDelegate
-
-@synthesize semaphore = _semaphore;
-@synthesize error = _error;
-@synthesize totalBytesReceived = _totalBytesReceived;
-
-NSMutableArray<NSData*>* _responseData;
-
-- (id)init {
-  if (self = [super init]) {
-    _semaphore = dispatch_semaphore_create(0);
-  }
-  return self;
-}
-
-- (void)dealloc {
-  dispatch_release(_semaphore);
-  [_error release];
-  _error = nil;
-  [super dealloc];
-}
-
-- (void)reset {
-  [_responseData dealloc];
-  _responseData = nil;
-  _error = nil;
-  _totalBytesReceived = 0;
-}
-
-- (NSString*)responseBody {
-  if (_responseData == nil) {
-    return nil;
-  }
-  NSMutableString* body = [NSMutableString string];
-  for (NSData* data in _responseData) {
-    [body appendString:[[NSString alloc] initWithData:data
-                                             encoding:NSUTF8StringEncoding]];
-  }
-  VLOG(3) << "responseBody size:" << [body length]
-          << " chunks:" << [_responseData count];
-  return body;
-}
-
-- (void)URLSession:(NSURLSession*)session
-    didBecomeInvalidWithError:(NSError*)error {
-}
-
-- (void)URLSession:(NSURLSession*)session
-                    task:(NSURLSessionTask*)task
-    didCompleteWithError:(NSError*)error {
-  [self setError:error];
-  dispatch_semaphore_signal(_semaphore);
-}
-
-- (void)URLSession:(NSURLSession*)session
-                   task:(NSURLSessionTask*)task
-    didReceiveChallenge:(NSURLAuthenticationChallenge*)challenge
-      completionHandler:
-          (void (^)(NSURLSessionAuthChallengeDisposition disp,
-                    NSURLCredential* credential))completionHandler {
-  completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
-}
-
-- (void)URLSession:(NSURLSession*)session
-              dataTask:(NSURLSessionDataTask*)dataTask
-    didReceiveResponse:(NSURLResponse*)response
-     completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))
-                           completionHandler {
-  completionHandler(NSURLSessionResponseAllow);
-}
-
-- (void)URLSession:(NSURLSession*)session
-          dataTask:(NSURLSessionDataTask*)dataTask
-    didReceiveData:(NSData*)data {
-  _totalBytesReceived += [data length];
-  if (_responseData == nil) {
-    _responseData = [[NSMutableArray alloc] init];
-  }
-  [_responseData addObject:data];
-}
-
-- (void)URLSession:(NSURLSession*)session
-             dataTask:(NSURLSessionDataTask*)dataTask
-    willCacheResponse:(NSCachedURLResponse*)proposedResponse
-    completionHandler:
-        (void (^)(NSCachedURLResponse* cachedResponse))completionHandler {
-  completionHandler(proposedResponse);
-}
-
-@end
-
 namespace cronet {
-// base::TimeDelta would normally be ideal for this but it does not support
-// nanosecond resolution.
-static const int64_t ns_in_second = 1000000000LL;
 const char kUserAgent[] = "CronetTest/1.0.0.0";
 
-class HttpTest : public ::testing::Test {
+class HttpTest : public CronetTestBase {
  protected:
   HttpTest() {}
   ~HttpTest() override {}
 
   void SetUp() override {
-    grpc_support::StartQuicTestServer();
+    CronetTestBase::SetUp();
     TestServer::Start();
 
     [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
@@ -156,36 +42,20 @@ class HttpTest : public ::testing::Test {
     NSURLSessionConfiguration* config =
         [NSURLSessionConfiguration ephemeralSessionConfiguration];
     [Cronet installIntoSessionConfiguration:config];
-    delegate_.reset([[TestDelegate alloc] init]);
-    NSURLSession* session = [NSURLSession sessionWithConfiguration:config
-                                                          delegate:delegate_
-                                                     delegateQueue:nil];
-    // Take a reference to the session and store it so it doesn't get
-    // deallocated until this object does.
-    session_.reset([session retain]);
+    session_ = [NSURLSession sessionWithConfiguration:config
+                                             delegate:delegate_
+                                        delegateQueue:nil];
   }
 
   void TearDown() override {
-    grpc_support::ShutdownQuicTestServer();
     TestServer::Shutdown();
 
     [Cronet stopNetLog];
     [Cronet shutdownForTesting];
+    CronetTestBase::TearDown();
   }
 
-  // Launches the supplied |task| and blocks until it completes, with a timeout
-  // of 1 second.
-  void StartDataTaskAndWaitForCompletion(NSURLSessionDataTask* task) {
-    [delegate_ reset];
-    [task resume];
-    int64_t deadline_ns = 20 * ns_in_second;
-    ASSERT_EQ(0, dispatch_semaphore_wait(
-                     [delegate_ semaphore],
-                     dispatch_time(DISPATCH_TIME_NOW, deadline_ns)));
-  }
-
-  base::scoped_nsobject<NSURLSession> session_;
-  base::scoped_nsobject<TestDelegate> delegate_;
+  NSURLSession* session_;
 };
 
 TEST_F(HttpTest, CreateSslKeyLogFile) {

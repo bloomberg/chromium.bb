@@ -101,6 +101,10 @@ class CronetEnvironment {
     ssl_key_log_file_name_ = ssl_key_log_file_name;
   }
 
+  void set_pkp_list(ScopedVector<URLRequestContextConfig::Pkp> pkp_list) {
+    pkp_list_ = std::move(pkp_list);
+  }
+
   // Returns the URLRequestContext associated with this object.
   net::URLRequestContext* GetURLRequestContext() const;
 
@@ -141,6 +145,7 @@ class CronetEnvironment {
   std::string experimental_options_;
   std::string ssl_key_log_file_name_;
   URLRequestContextConfig::HttpCacheType http_cache_;
+  ScopedVector<URLRequestContextConfig::Pkp> pkp_list_;
 
   std::list<net::HostPortPair> quic_hints_;
 

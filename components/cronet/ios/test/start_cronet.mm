@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 #import <Cronet/Cronet.h>
-#import <Foundation/Foundation.h>
 
 #include "components/cronet/ios/test/start_cronet.h"
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/grpc_support/test/quic_test_server.h"
 
 namespace cronet {
 
