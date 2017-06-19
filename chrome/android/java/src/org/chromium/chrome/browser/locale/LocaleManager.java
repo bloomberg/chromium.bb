@@ -117,7 +117,7 @@ public class LocaleManager {
         int state = SEARCH_ENGINE_PROMO_SHOULD_CHECK;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            ContextUtils.getAppSharedPreferences().getInt(
+            state = ContextUtils.getAppSharedPreferences().getInt(
                     KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_SHOULD_CHECK);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
@@ -448,10 +448,15 @@ public class LocaleManager {
      * @return Whether we still have to check for whether search engine dialog is necessary.
      */
     public boolean needToCheckForSearchEnginePromo() {
+        if (ChromeFeatureList.isInitialized()
+                && !ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.SEARCH_ENGINE_PROMO_EXISTING_DEVICE)) {
+            return false;
+        }
         int state = SEARCH_ENGINE_PROMO_SHOULD_CHECK;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            ContextUtils.getAppSharedPreferences().getInt(
+            state = ContextUtils.getAppSharedPreferences().getInt(
                     KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_SHOULD_CHECK);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
