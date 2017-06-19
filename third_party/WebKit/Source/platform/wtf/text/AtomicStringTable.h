@@ -37,14 +37,14 @@ class WTF_EXPORT AtomicStringTable final {
   // a UChar string may be an LChar string as the table will attempt to
   // convert the string to save memory if possible.
   StringImpl* Add(StringImpl*);
-  PassRefPtr<StringImpl> Add(const LChar* chars, unsigned length);
-  PassRefPtr<StringImpl> Add(const UChar* chars, unsigned length);
+  RefPtr<StringImpl> Add(const LChar* chars, unsigned length);
+  RefPtr<StringImpl> Add(const UChar* chars, unsigned length);
 
   // Adding UTF8.
   // Returns null if the characters contain invalid utf8 sequences.
   // Pass null for the charactersEnd to automatically detect the length.
-  PassRefPtr<StringImpl> AddUTF8(const char* characters_start,
-                                 const char* characters_end);
+  RefPtr<StringImpl> AddUTF8(const char* characters_start,
+                             const char* characters_end);
 
   // This is for ~StringImpl to unregister a string before destruction since
   // the table is holding weak pointers. It should not be used directly.
@@ -52,7 +52,7 @@ class WTF_EXPORT AtomicStringTable final {
 
  private:
   template <typename T, typename HashTranslator>
-  inline PassRefPtr<StringImpl> AddToStringTable(const T& value);
+  inline RefPtr<StringImpl> AddToStringTable(const T& value);
 
   HashSet<StringImpl*> table_;
 };

@@ -452,7 +452,7 @@ void LayoutCounter::WillBeDestroyed() {
   LayoutText::WillBeDestroyed();
 }
 
-PassRefPtr<StringImpl> LayoutCounter::OriginalText() const {
+RefPtr<StringImpl> LayoutCounter::OriginalText() const {
   if (!counter_node_) {
     LayoutObject* before_after_container = Parent();
     while (true) {
@@ -489,7 +489,7 @@ PassRefPtr<StringImpl> LayoutCounter::OriginalText() const {
     }
   }
 
-  return text.Impl();
+  return text.ReleaseImpl();
 }
 
 void LayoutCounter::UpdateCounter() {

@@ -63,12 +63,12 @@ class LayoutTextFragment final : public LayoutText {
   void SetContentString(StringImpl*);
   StringImpl* ContentString() const { return content_string_.Get(); }
   // The complete text is all of the text in the associated DOM text node.
-  PassRefPtr<StringImpl> CompleteText() const;
+  RefPtr<StringImpl> CompleteText() const;
   // The fragment text is the text which will be used by this
   // LayoutTextFragment. For things like first-letter this may differ from the
   // completeText as we maybe using only a portion of the text nodes content.
 
-  PassRefPtr<StringImpl> OriginalText() const override;
+  RefPtr<StringImpl> OriginalText() const override;
 
   void SetText(PassRefPtr<StringImpl>, bool force = false) override;
   void SetTextFragment(PassRefPtr<StringImpl>, unsigned start, unsigned length);

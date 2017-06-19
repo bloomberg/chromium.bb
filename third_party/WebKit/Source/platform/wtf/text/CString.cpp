@@ -34,8 +34,8 @@ using namespace std;
 
 namespace WTF {
 
-PassRefPtr<CStringImpl> CStringImpl::CreateUninitialized(size_t length,
-                                                         char*& data) {
+RefPtr<CStringImpl> CStringImpl::CreateUninitialized(size_t length,
+                                                     char*& data) {
   // TODO(esprehn): This doesn't account for the NUL.
   CHECK_LT(length, (numeric_limits<unsigned>::max() - sizeof(CStringImpl)));
 

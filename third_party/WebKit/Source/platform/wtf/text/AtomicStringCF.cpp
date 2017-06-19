@@ -34,7 +34,7 @@
 
 namespace WTF {
 
-PassRefPtr<StringImpl> AtomicString::Add(CFStringRef string) {
+RefPtr<StringImpl> AtomicString::Add(CFStringRef string) {
   if (!string)
     return nullptr;
 
