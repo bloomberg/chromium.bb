@@ -2029,7 +2029,7 @@
       converter: "ConvertSnapType",
       getter: "GetScrollSnapType",
       runtime_flag: "CSSScrollSnapPoints",
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "ScrollSnapType",
       field_group: "rare-non-inherited->scroll-snap",
       include_paths: ["core/style/ScrollSnap.h"],
