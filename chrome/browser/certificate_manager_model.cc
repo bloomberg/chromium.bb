@@ -143,8 +143,11 @@ void CertificateManagerModel::RefreshSlotsUnlocked() {
 }
 
 void CertificateManagerModel::RefreshExtensionCertificates(
-    const net::CertificateList& new_certs) {
-  extension_cert_list_ = new_certs;
+    net::ClientCertIdentityList new_cert_identities) {
+  extension_cert_list_.clear();
+  extension_cert_list_.reserve(new_cert_identities.size());
+  for (const auto& identity : new_cert_identities)
+    extension_cert_list_.push_back(identity->certificate());
   observer_->CertificatesRefreshed();
   DVLOG(1) << "refresh finished for extension provided certificates";
 }

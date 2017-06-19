@@ -18,30 +18,12 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "crypto/nss_crypto_module_delegate.h"
-#include "net/ssl/client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_private_key.h"
 
 namespace chromeos {
 
 namespace {
-
-class ClientCertIdentityCros : public net::ClientCertIdentity {
- public:
-  explicit ClientCertIdentityCros(scoped_refptr<net::X509Certificate> cert)
-      : net::ClientCertIdentity(std::move(cert)) {}
-  ~ClientCertIdentityCros() override = default;
-
-  void AcquirePrivateKey(
-      const base::Callback<void(scoped_refptr<net::SSLPrivateKey>)>&
-          private_key_callback) override {
-    // There is only one implementation of ClientKeyStore and it doesn't do
-    // anything blocking, so this doesn't need to run on a worker thread.
-    private_key_callback.Run(
-        net::ClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
-            *certificate()));
-  }
-};
 
 class CertNotAllowedPredicate {
  public:
@@ -73,7 +55,7 @@ void ClientCertStoreChromeOS::GetClientCerts(
     const ClientCertListCallback& callback) {
   // Caller is responsible for keeping the ClientCertStore alive until the
   // callback is run.
-  base::Callback<void(const net::CertificateList&)>
+  base::Callback<void(net::ClientCertIdentityList)>
       get_platform_certs_and_filter =
           base::Bind(&ClientCertStoreChromeOS::GotAdditionalCerts,
                      base::Unretained(this), &cert_request_info, callback);
@@ -85,7 +67,8 @@ void ClientCertStoreChromeOS::GetClientCerts(
         base::Unretained(cert_provider_.get()), get_platform_certs_and_filter);
   } else {
     get_additional_certs_and_continue =
-        base::Bind(get_platform_certs_and_filter, net::CertificateList());
+        base::Bind(get_platform_certs_and_filter,
+                   base::Passed(net::ClientCertIdentityList()));
   }
 
   if (cert_filter_->Init(get_additional_certs_and_continue))
@@ -95,7 +78,7 @@ void ClientCertStoreChromeOS::GetClientCerts(
 void ClientCertStoreChromeOS::GotAdditionalCerts(
     const net::SSLCertRequestInfo* request,
     const ClientCertListCallback& callback,
-    const net::CertificateList& additional_certs) {
+    net::ClientCertIdentityList additional_certs) {
   scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
   if (!password_delegate_factory_.is_null())
     password_delegate = password_delegate_factory_.Run(request->host_and_port);
@@ -104,7 +87,7 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
           FROM_HERE,
           base::Bind(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
                      base::Unretained(this), password_delegate, request,
-                     additional_certs),
+                     base::Passed(&additional_certs)),
           callback)) {
     return;
   }
@@ -117,7 +100,7 @@ ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
     scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate>
         password_delegate,
     const net::SSLCertRequestInfo* request,
-    const net::CertificateList& additional_certs) {
+    net::ClientCertIdentityList additional_certs) {
   net::ClientCertIdentityList client_certs;
   net::ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
       std::move(password_delegate), &client_certs);
@@ -127,8 +110,9 @@ ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
                      CertNotAllowedPredicate(cert_filter_.get())),
       client_certs.end());
 
-  for (const scoped_refptr<net::X509Certificate>& cert : additional_certs)
-    client_certs.push_back(base::MakeUnique<ClientCertIdentityCros>(cert));
+  client_certs.reserve(client_certs.size() + additional_certs.size());
+  for (std::unique_ptr<net::ClientCertIdentity>& cert : additional_certs)
+    client_certs.push_back(std::move(cert));
   net::ClientCertStoreNSS::FilterCertsOnWorkerThread(&client_certs, *request);
   return client_certs;
 }

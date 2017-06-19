@@ -18,10 +18,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "net/base/net_errors.h"
-#include "net/ssl/client_key_store.h"
 
 namespace chromeos {
 
@@ -36,40 +36,15 @@ void PostSignResultToTaskRunner(
                                base::Bind(callback, error, signature));
 }
 
-void PostCertificatesToTaskRunner(
+void PostIdentitiesToTaskRunner(
     const scoped_refptr<base::TaskRunner>& target_task_runner,
-    const base::Callback<void(const net::CertificateList&)>& callback,
-    const net::CertificateList& certs) {
-  target_task_runner->PostTask(FROM_HERE, base::Bind(callback, certs));
+    const base::Callback<void(net::ClientCertIdentityList)>& callback,
+    net::ClientCertIdentityList certs) {
+  target_task_runner->PostTask(FROM_HERE,
+                               base::BindOnce(callback, std::move(certs)));
 }
 
 }  // namespace
-
-class CertificateProviderService::CertKeyProviderImpl
-    : public net::ClientKeyStore::CertKeyProvider {
- public:
-  // |certificate_map| must outlive this provider. |service| must be
-  // dereferenceable on |service_task_runner|.
-  // This provider may be accessed from any thread. Methods and destructor must
-  // never be called concurrently.
-  CertKeyProviderImpl(
-      const scoped_refptr<base::SequencedTaskRunner>& service_task_runner,
-      const base::WeakPtr<CertificateProviderService>& service,
-      certificate_provider::ThreadSafeCertificateMap* certificate_map);
-  ~CertKeyProviderImpl() override;
-
-  bool GetCertificateKey(
-      const net::X509Certificate& cert,
-      scoped_refptr<net::SSLPrivateKey>* private_key) override;
-
- private:
-  const scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
-  // Must be dereferenced on |service_task_runner_| only.
-  base::WeakPtr<CertificateProviderService> service_;
-  certificate_provider::ThreadSafeCertificateMap* const certificate_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertKeyProviderImpl);
-};
 
 class CertificateProviderService::CertificateProviderImpl
     : public CertificateProvider {
@@ -82,7 +57,7 @@ class CertificateProviderService::CertificateProviderImpl
       const base::WeakPtr<CertificateProviderService>& service);
   ~CertificateProviderImpl() override;
 
-  void GetCertificates(const base::Callback<void(const net::CertificateList&)>&
+  void GetCertificates(const base::Callback<void(net::ClientCertIdentityList)>&
                            callback) override;
 
   std::unique_ptr<CertificateProvider> Copy() override;
@@ -90,7 +65,7 @@ class CertificateProviderService::CertificateProviderImpl
  private:
   static void GetCertificatesOnServiceThread(
       const base::WeakPtr<CertificateProviderService>& service,
-      const base::Callback<void(const net::CertificateList&)>& callback);
+      const base::Callback<void(net::ClientCertIdentityList)>& callback);
 
   const scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
   // Must be dereferenced on |service_task_runner_| only.
@@ -144,31 +119,66 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKey);
 };
 
-CertificateProviderService::CertKeyProviderImpl::CertKeyProviderImpl(
-    const scoped_refptr<base::SequencedTaskRunner>& service_task_runner,
-    const base::WeakPtr<CertificateProviderService>& service,
-    certificate_provider::ThreadSafeCertificateMap* certificate_map)
-    : service_task_runner_(service_task_runner),
-      service_(service),
-      certificate_map_(certificate_map) {}
+class CertificateProviderService::ClientCertIdentity
+    : public net::ClientCertIdentity {
+ public:
+  ClientCertIdentity(
+      scoped_refptr<net::X509Certificate> cert,
+      const scoped_refptr<base::SequencedTaskRunner>& service_task_runner,
+      base::WeakPtr<CertificateProviderService> service)
+      : net::ClientCertIdentity(std::move(cert)),
+        service_task_runner_(service_task_runner),
+        service_(service) {}
 
-CertificateProviderService::CertKeyProviderImpl::~CertKeyProviderImpl() {}
+  void AcquirePrivateKey(
+      const base::Callback<void(scoped_refptr<net::SSLPrivateKey>)>&
+          private_key_callback) override;
 
-bool CertificateProviderService::CertKeyProviderImpl::GetCertificateKey(
-    const net::X509Certificate& cert,
-    scoped_refptr<net::SSLPrivateKey>* private_key) {
+ private:
+  scoped_refptr<net::SSLPrivateKey> AcquirePrivateKeyOnServiceThread(
+      net::X509Certificate* cert);
+
+  scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
+  // Must be dereferenced on |service_task_runner_| only.
+  const base::WeakPtr<CertificateProviderService> service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientCertIdentity);
+};
+
+void CertificateProviderService::ClientCertIdentity::AcquirePrivateKey(
+    const base::Callback<void(scoped_refptr<net::SSLPrivateKey>)>&
+        private_key_callback) {
+  // The caller is responsible for keeping the ClientCertIdentity alive until
+  // |private_key_callback| is run, so it's safe to use Unretained here.
+  if (base::PostTaskAndReplyWithResult(
+          service_task_runner_.get(), FROM_HERE,
+          base::Bind(&ClientCertIdentity::AcquirePrivateKeyOnServiceThread,
+                     base::Unretained(this), base::Unretained(certificate())),
+          private_key_callback)) {
+    return;
+  }
+  // If the task could not be posted, behave as if there was no key.
+  private_key_callback.Run(nullptr);
+}
+
+scoped_refptr<net::SSLPrivateKey> CertificateProviderService::
+    ClientCertIdentity::AcquirePrivateKeyOnServiceThread(
+        net::X509Certificate* cert) {
+  if (!service_)
+    return nullptr;
+
   bool is_currently_provided = false;
   CertificateInfo info;
   std::string extension_id;
-  certificate_map_->LookUpCertificate(cert, &is_currently_provided, &info,
-                                      &extension_id);
+  // TODO(mattm): can the ClientCertIdentity store a handle directly to the
+  // extension instead of having to go through service_->certificate_map_ ?
+  service_->certificate_map_.LookUpCertificate(*cert, &is_currently_provided,
+                                               &info, &extension_id);
   if (!is_currently_provided)
-    return false;
+    return nullptr;
 
-  *private_key =
-      new SSLPrivateKey(extension_id, info, service_task_runner_, service_);
-
-  return true;
+  return base::MakeRefCounted<SSLPrivateKey>(extension_id, info,
+                                             service_task_runner_, service_);
 }
 
 CertificateProviderService::CertificateProviderImpl::CertificateProviderImpl(
@@ -180,12 +190,12 @@ CertificateProviderService::CertificateProviderImpl::
     ~CertificateProviderImpl() {}
 
 void CertificateProviderService::CertificateProviderImpl::GetCertificates(
-    const base::Callback<void(const net::CertificateList&)>& callback) {
+    const base::Callback<void(net::ClientCertIdentityList)>& callback) {
   const scoped_refptr<base::TaskRunner> source_task_runner =
       base::ThreadTaskRunnerHandle::Get();
-  const base::Callback<void(const net::CertificateList&)>
-      callback_from_service_thread = base::Bind(&PostCertificatesToTaskRunner,
-                                                source_task_runner, callback);
+  const base::Callback<void(net::ClientCertIdentityList)>
+      callback_from_service_thread =
+          base::Bind(&PostIdentitiesToTaskRunner, source_task_runner, callback);
 
   service_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GetCertificatesOnServiceThread, service_,
@@ -202,9 +212,9 @@ CertificateProviderService::CertificateProviderImpl::Copy() {
 void CertificateProviderService::CertificateProviderImpl::
     GetCertificatesOnServiceThread(
         const base::WeakPtr<CertificateProviderService>& service,
-        const base::Callback<void(const net::CertificateList&)>& callback) {
+        const base::Callback<void(net::ClientCertIdentityList)>& callback) {
   if (!service) {
-    callback.Run(net::CertificateList());
+    callback.Run(net::ClientCertIdentityList());
     return;
   }
   service->GetCertificatesFromExtensions(callback);
@@ -287,14 +297,6 @@ CertificateProviderService::CertificateProviderService()
 
 CertificateProviderService::~CertificateProviderService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // ClientKeyStore serializes access to |cert_key_provider_|.
-  // Once RemoveProvider() returns, it is guaranteed that there are no more
-  // accesses to |cert_key_provider_| in flight and no references to
-  // |cert_key_provider_| are remaining. This service will hold the last
-  // reference to |cert_key_provider_|.
-  net::ClientKeyStore::GetInstance()->RemoveProvider(cert_key_provider_.get());
-  cert_key_provider_.reset();
 }
 
 void CertificateProviderService::SetDelegate(
@@ -304,10 +306,6 @@ void CertificateProviderService::SetDelegate(
   DCHECK(delegate);
 
   delegate_ = std::move(delegate);
-  cert_key_provider_.reset(
-      new CertKeyProviderImpl(base::ThreadTaskRunnerHandle::Get(),
-                              weak_factory_.GetWeakPtr(), &certificate_map_));
-  net::ClientKeyStore::GetInstance()->AddProvider(cert_key_provider_.get());
 }
 
 bool CertificateProviderService::SetCertificatesProvidedByExtension(
@@ -325,7 +323,7 @@ bool CertificateProviderService::SetCertificatesProvidedByExtension(
   }
   if (completed) {
     std::map<std::string, CertificateInfoList> certificates;
-    base::Callback<void(const net::CertificateList&)> callback;
+    base::Callback<void(net::ClientCertIdentityList)> callback;
     certificate_requests_.RemoveRequest(cert_request_id, &certificates,
                                         &callback);
     UpdateCertificatesAndRun(certificates, callback);
@@ -376,7 +374,7 @@ void CertificateProviderService::OnExtensionUnloaded(
   for (const int cert_request_id :
        certificate_requests_.DropExtension(extension_id)) {
     std::map<std::string, CertificateInfoList> certificates;
-    base::Callback<void(const net::CertificateList&)> callback;
+    base::Callback<void(net::ClientCertIdentityList)> callback;
     certificate_requests_.RemoveRequest(cert_request_id, &certificates,
                                         &callback);
     UpdateCertificatesAndRun(certificates, callback);
@@ -391,7 +389,7 @@ void CertificateProviderService::OnExtensionUnloaded(
 }
 
 void CertificateProviderService::GetCertificatesFromExtensions(
-    const base::Callback<void(const net::CertificateList&)>& callback) {
+    const base::Callback<void(net::ClientCertIdentityList)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const std::vector<std::string> provider_extensions(
@@ -415,20 +413,22 @@ void CertificateProviderService::GetCertificatesFromExtensions(
 
 void CertificateProviderService::UpdateCertificatesAndRun(
     const std::map<std::string, CertificateInfoList>& extension_to_certificates,
-    const base::Callback<void(const net::CertificateList&)>& callback) {
+    const base::Callback<void(net::ClientCertIdentityList)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Extensions are removed from the service's state when they're unloaded.
   // Any remaining extension is assumed to be enabled.
   certificate_map_.Update(extension_to_certificates);
 
-  net::CertificateList all_certs;
+  net::ClientCertIdentityList all_certs;
   for (const auto& entry : extension_to_certificates) {
     for (const CertificateInfo& cert_info : entry.second)
-      all_certs.push_back(cert_info.certificate);
+      all_certs.push_back(base::MakeUnique<ClientCertIdentity>(
+          cert_info.certificate, base::ThreadTaskRunnerHandle::Get(),
+          weak_factory_.GetWeakPtr()));
   }
 
-  callback.Run(all_certs);
+  callback.Run(std::move(all_certs));
 }
 
 void CertificateProviderService::TerminateCertificateRequest(
@@ -436,7 +436,7 @@ void CertificateProviderService::TerminateCertificateRequest(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::map<std::string, CertificateInfoList> certificates;
-  base::Callback<void(const net::CertificateList&)> callback;
+  base::Callback<void(net::ClientCertIdentityList)> callback;
   if (!certificate_requests_.RemoveRequest(cert_request_id, &certificates,
                                            &callback)) {
     DLOG(WARNING) << "Request id " << cert_request_id << " unknown.";

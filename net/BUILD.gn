@@ -325,8 +325,6 @@ component("net") {
     "ssl/client_cert_identity.h",
     "ssl/client_cert_identity_mac.cc",
     "ssl/client_cert_identity_mac.h",
-    "ssl/client_key_store.cc",
-    "ssl/client_key_store.h",
     "ssl/default_channel_id_store.cc",
     "ssl/default_channel_id_store.h",
     "ssl/openssl_ssl_util.cc",
@@ -1834,11 +1832,7 @@ component("net") {
           "cert/nss_profile_filter_chromeos.h",
         ]
       }
-      sources -= [
-        "ssl/client_key_store.cc",
-        "ssl/client_key_store.h",
-        "ssl/ssl_platform_key_nss.cc",
-      ]
+      sources -= [ "ssl/ssl_platform_key_nss.cc" ]
     } else {
       sources += [
         "third_party/nss/ssl/cmpcert.cc",
