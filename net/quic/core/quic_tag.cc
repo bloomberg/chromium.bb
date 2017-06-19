@@ -4,9 +4,8 @@
 
 #include "net/quic/core/quic_tag.h"
 
-#include <algorithm>
-
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
 namespace net {
@@ -62,8 +61,7 @@ uint32_t MakeQuicTag(char a, char b, char c, char d) {
 }
 
 bool ContainsQuicTag(const QuicTagVector& tag_vector, QuicTag tag) {
-  return std::find(tag_vector.begin(), tag_vector.end(), tag) !=
-         tag_vector.end();
+  return base::ContainsValue(tag_vector, tag);
 }
 
 }  // namespace net
