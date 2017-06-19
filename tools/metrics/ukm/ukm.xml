@@ -341,6 +341,9 @@ be describing additional metrics about the same event.
   <metric name="AudioVideo.Background.MSE"/>
   <metric name="AudioVideo.Background.SRC"/>
   <metric name="AudioVideo.Battery"/>
+  <metric name="AudioVideo.DisplayFullscreen"/>
+  <metric name="AudioVideo.DisplayInline"/>
+  <metric name="AudioVideo.DisplayPictureInPicture"/>
   <metric name="AudioVideo.EME"/>
   <metric name="AudioVideo.MSE"/>
   <metric name="AudioVideo.NativeControlsOff"/>

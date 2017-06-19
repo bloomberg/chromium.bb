@@ -456,6 +456,24 @@ void WebMediaPlayerImpl::OnHasNativeControlsChanged(bool has_native_controls) {
     watch_time_reporter_->OnNativeControlsDisabled();
 }
 
+void WebMediaPlayerImpl::OnDisplayTypeChanged(
+    WebMediaPlayer::DisplayType display_type) {
+  if (!watch_time_reporter_)
+    return;
+
+  switch (display_type) {
+    case WebMediaPlayer::DisplayType::kInline:
+      watch_time_reporter_->OnDisplayTypeInline();
+      break;
+    case WebMediaPlayer::DisplayType::kFullscreen:
+      watch_time_reporter_->OnDisplayTypeFullscreen();
+      break;
+    case WebMediaPlayer::DisplayType::kPictureInPicture:
+      watch_time_reporter_->OnDisplayTypePictureInPicture();
+      break;
+  }
+}
+
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
                                 CORSMode cors_mode) {
@@ -2311,14 +2329,28 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
                             media_log_.get(), pipeline_metadata_.natural_size,
                             base::Bind(&GetCurrentTimeInternal, this)));
   watch_time_reporter_->OnVolumeChange(volume_);
+
   if (delegate_->IsFrameHidden())
     watch_time_reporter_->OnHidden();
   else
     watch_time_reporter_->OnShown();
+
   if (client_->HasNativeControls())
     watch_time_reporter_->OnNativeControlsEnabled();
   else
     watch_time_reporter_->OnNativeControlsDisabled();
+
+  switch (client_->DisplayType()) {
+    case WebMediaPlayer::DisplayType::kInline:
+      watch_time_reporter_->OnDisplayTypeInline();
+      break;
+    case WebMediaPlayer::DisplayType::kFullscreen:
+      watch_time_reporter_->OnDisplayTypeFullscreen();
+      break;
+    case WebMediaPlayer::DisplayType::kPictureInPicture:
+      watch_time_reporter_->OnDisplayTypePictureInPicture();
+      break;
+  }
 }
 
 bool WebMediaPlayerImpl::IsHidden() const {

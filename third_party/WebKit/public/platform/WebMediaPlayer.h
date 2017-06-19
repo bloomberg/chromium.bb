@@ -289,6 +289,16 @@ class WebMediaPlayer {
   // This method is not used to say express if the native controls are visible
   // but if the element is using them.
   virtual void OnHasNativeControlsChanged(bool) {}
+
+  enum class DisplayType {
+    kInline,
+    kFullscreen,
+    kPictureInPicture,
+  };
+
+  // Callback called whenever the media element display type changes. By
+  // default, the display type is `kInline`.
+  virtual void OnDisplayTypeChanged(DisplayType) {}
 };
 
 }  // namespace blink
