@@ -237,6 +237,7 @@ resize
 right
 rx
 ry
+scrollBehavior
 setProperty
 shapeImageThreshold
 shapeMargin

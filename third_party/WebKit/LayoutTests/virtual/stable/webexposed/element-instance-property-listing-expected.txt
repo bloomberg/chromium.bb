@@ -214,10 +214,13 @@ namespace http://www.w3.org/1999/xhtml
     property replaceChild
     property replaceWith
     property requestPointerLock
+    property scroll
+    property scrollBy
     property scrollHeight
     property scrollIntoView
     property scrollIntoViewIfNeeded
     property scrollLeft
+    property scrollTo
     property scrollTop
     property scrollWidth
     property setAttribute
@@ -1288,10 +1291,13 @@ namespace http://www.w3.org/2000/svg
     property replaceChild
     property replaceWith
     property requestPointerLock
+    property scroll
+    property scrollBy
     property scrollHeight
     property scrollIntoView
     property scrollIntoViewIfNeeded
     property scrollLeft
+    property scrollTo
     property scrollTop
     property scrollWidth
     property setAttribute
