@@ -300,8 +300,6 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
       return;
     if (event->key() == "Tab") {
       DefaultTabEventHandler(event);
-    } else if (event->key() == "Backspace") {
-      DefaultBackspaceEventHandler(event);
     } else if (event->key() == "Escape") {
       DefaultEscapeEventHandler(event);
     } else {
@@ -336,28 +334,6 @@ void KeyboardEventManager::DefaultSpaceEventHandler(
     event->SetDefaultHandled();
     return;
   }
-}
-
-void KeyboardEventManager::DefaultBackspaceEventHandler(KeyboardEvent* event) {
-  DCHECK_EQ(event->type(), EventTypeNames::keydown);
-
-  if (!RuntimeEnabledFeatures::BackspaceDefaultHandlerEnabled())
-    return;
-
-  if (event->ctrlKey() || event->metaKey() || event->altKey())
-    return;
-
-  if (!frame_->GetEditor().Behavior().ShouldNavigateBackOnBackspace())
-    return;
-  UseCounter::Count(frame_->GetDocument(), WebFeature::kBackspaceNavigatedBack);
-  if (frame_->GetPage()->GetChromeClient().HadFormInteraction()) {
-    UseCounter::Count(frame_->GetDocument(),
-                      WebFeature::kBackspaceNavigatedBackAfterFormInteraction);
-  }
-  bool handled_event = frame_->Loader().Client()->NavigateBackForward(
-      event->shiftKey() ? 1 : -1);
-  if (handled_event)
-    event->SetDefaultHandled();
 }
 
 void KeyboardEventManager::DefaultArrowEventHandler(

@@ -82,12 +82,6 @@ class CORE_EXPORT EditingBehavior {
     return type_ == kEditingMacBehavior;
   }
 
-  // On Mac and Windows, pressing backspace (when it isn't handled otherwise)
-  // should navigate back.
-  bool ShouldNavigateBackOnBackspace() const {
-    return type_ != kEditingUnixBehavior && type_ != kEditingAndroidBehavior;
-  }
-
   // On Mac, selecting backwards by word/line from the middle of a word/line,
   // and then going forward leaves the caret back in the middle with no
   // selection, instead of directly selecting to the other end of the line/word

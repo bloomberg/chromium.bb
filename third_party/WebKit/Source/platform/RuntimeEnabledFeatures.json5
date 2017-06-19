@@ -112,10 +112,6 @@
       status: "stable",
     },
     {
-      name: "BackspaceDefaultHandler",
-      status: "test",
-    },
-    {
       name: "BlockCredentialedSubresources",
       status: "stable",
     },

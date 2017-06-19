@@ -631,8 +631,6 @@ enum class WebFeature : uint32_t {
   kV8Window_RequestIdleCallback_Method = 954,
   kFlexboxPercentagePaddingVertical = 955,
   kFlexboxPercentageMarginVertical = 956,
-  kBackspaceNavigatedBack = 957,
-  kBackspaceNavigatedBackAfterFormInteraction = 958,
   kCSPSourceWildcardWouldMatchExactHost = 959,
   kCredentialManagerGet = 960,
   kCredentialManagerGetMediationOptional = 961,
