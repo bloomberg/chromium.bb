@@ -2197,21 +2197,6 @@ bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
   return false;
 }
 
-static inline Vector<GridTrackSize> InitialGridAutoTracks() {
-  Vector<GridTrackSize> track_size_list;
-  track_size_list.ReserveInitialCapacity(1);
-  track_size_list.UncheckedAppend(GridTrackSize(Length(kAuto)));
-  return track_size_list;
-}
-
-Vector<GridTrackSize> ComputedStyle::InitialGridAutoColumns() {
-  return InitialGridAutoTracks();
-}
-
-Vector<GridTrackSize> ComputedStyle::InitialGridAutoRows() {
-  return InitialGridAutoTracks();
-}
-
 int AdjustForAbsoluteZoom(int value, float zoom_factor) {
   if (zoom_factor == 1)
     return value;
