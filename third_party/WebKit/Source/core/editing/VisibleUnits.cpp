@@ -749,12 +749,93 @@ static bool IsStartOfDifferentDirection(const InlineBox* inline_box) {
   return prev_box->BidiLevel() > inline_box->BidiLevel();
 }
 
-// TODO(yosin): We have a forward declaration here to reduce patch size. We'll
-// replice this with an implementation once review finished.
-static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(InlineBox*,
-                                                                 int,
-                                                                 UnicodeBidi,
-                                                                 TextDirection);
+static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
+    InlineBox* inline_box,
+    int caret_offset,
+    UnicodeBidi unicode_bidi,
+    TextDirection primary_direction) {
+  unsigned char level = inline_box->BidiLevel();
+
+  if (inline_box->Direction() == primary_direction) {
+    if (caret_offset == inline_box->CaretRightmostOffset()) {
+      InlineBox* next_box = inline_box->NextLeafChild();
+      if (!next_box || next_box->BidiLevel() >= level)
+        return InlineBoxPosition(inline_box, caret_offset);
+
+      level = next_box->BidiLevel();
+      InlineBox* const prev_box =
+          InlineBoxTraversal::FindLeftBidiRun(*inline_box, level);
+
+      // For example, abc FED 123 ^ CBA
+      if (prev_box && prev_box->BidiLevel() == level)
+        return InlineBoxPosition(inline_box, caret_offset);
+
+      // For example, abc 123 ^ CBA
+      inline_box = InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
+          *inline_box, level);
+      return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
+    }
+
+    if (IsStartOfDifferentDirection(inline_box))
+      return InlineBoxPosition(inline_box, caret_offset);
+
+    level = inline_box->PrevLeafChild()->BidiLevel();
+    InlineBox* const next_box =
+        InlineBoxTraversal::FindRightBidiRun(*inline_box, level);
+
+    if (next_box && next_box->BidiLevel() == level)
+      return InlineBoxPosition(inline_box, caret_offset);
+
+    inline_box =
+        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(*inline_box, level);
+    return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
+  }
+
+  if (caret_offset == inline_box->CaretLeftmostOffset()) {
+    InlineBox* prev_box = inline_box->PrevLeafChildIgnoringLineBreak();
+    if (!prev_box || prev_box->BidiLevel() < level) {
+      // Left edge of a secondary run. Set to the right edge of the entire
+      // run.
+      inline_box =
+          InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
+              *inline_box, level);
+      return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
+    }
+
+    if (prev_box->BidiLevel() > level) {
+      // Right edge of a "tertiary" run. Set to the left edge of that run.
+      inline_box =
+          InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
+              *inline_box, level);
+      return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
+    }
+    return InlineBoxPosition(inline_box, caret_offset);
+  }
+
+  if (unicode_bidi == UnicodeBidi::kPlaintext) {
+    if (inline_box->BidiLevel() < level)
+      return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
+    return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
+  }
+
+  InlineBox* next_box = inline_box->NextLeafChildIgnoringLineBreak();
+  if (!next_box || next_box->BidiLevel() < level) {
+    // Right edge of a secondary run. Set to the left edge of the entire
+    // run.
+    inline_box =
+        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
+            *inline_box, level);
+    return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
+  }
+
+  if (next_box->BidiLevel() <= level)
+    return InlineBoxPosition(inline_box, caret_offset);
+
+  // Left edge of a "tertiary" run. Set to the right edge of that run.
+  inline_box = InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
+      *inline_box, level);
+  return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
+}
 
 // Returns true if |caret_offset| is at edge of |box| based on |affinity|.
 // |caret_offset| must be either |box.CaretMinOffset()| or
@@ -866,94 +947,6 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
   return AdjustInlineBoxPositionForTextDirection(
       inline_box, caret_offset, layout_object->Style()->GetUnicodeBidi(),
       primary_direction);
-}
-
-static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
-    InlineBox* inline_box,
-    int caret_offset,
-    UnicodeBidi unicode_bidi,
-    TextDirection primary_direction) {
-  unsigned char level = inline_box->BidiLevel();
-
-  if (inline_box->Direction() == primary_direction) {
-    if (caret_offset == inline_box->CaretRightmostOffset()) {
-      InlineBox* next_box = inline_box->NextLeafChild();
-      if (!next_box || next_box->BidiLevel() >= level)
-        return InlineBoxPosition(inline_box, caret_offset);
-
-      level = next_box->BidiLevel();
-      InlineBox* const prev_box =
-          InlineBoxTraversal::FindLeftBidiRun(*inline_box, level);
-
-      // For example, abc FED 123 ^ CBA
-      if (prev_box && prev_box->BidiLevel() == level)
-        return InlineBoxPosition(inline_box, caret_offset);
-
-      // For example, abc 123 ^ CBA
-      inline_box = InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
-          *inline_box, level);
-      return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
-    }
-
-    if (IsStartOfDifferentDirection(inline_box))
-      return InlineBoxPosition(inline_box, caret_offset);
-
-    level = inline_box->PrevLeafChild()->BidiLevel();
-    InlineBox* const next_box =
-        InlineBoxTraversal::FindRightBidiRun(*inline_box, level);
-
-    if (next_box && next_box->BidiLevel() == level)
-      return InlineBoxPosition(inline_box, caret_offset);
-
-    inline_box =
-        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(*inline_box, level);
-    return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
-  }
-
-  if (caret_offset == inline_box->CaretLeftmostOffset()) {
-    InlineBox* prev_box = inline_box->PrevLeafChildIgnoringLineBreak();
-    if (!prev_box || prev_box->BidiLevel() < level) {
-      // Left edge of a secondary run. Set to the right edge of the entire
-      // run.
-      inline_box =
-          InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
-              *inline_box, level);
-      return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
-    }
-
-    if (prev_box->BidiLevel() > level) {
-      // Right edge of a "tertiary" run. Set to the left edge of that run.
-      inline_box =
-          InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
-              *inline_box, level);
-      return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
-    }
-    return InlineBoxPosition(inline_box, caret_offset);
-  }
-
-  if (unicode_bidi == UnicodeBidi::kPlaintext) {
-    if (inline_box->BidiLevel() < level)
-      return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
-    return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
-  }
-
-  InlineBox* next_box = inline_box->NextLeafChildIgnoringLineBreak();
-  if (!next_box || next_box->BidiLevel() < level) {
-    // Right edge of a secondary run. Set to the left edge of the entire
-    // run.
-    inline_box =
-        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
-            *inline_box, level);
-    return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
-  }
-
-  if (next_box->BidiLevel() <= level)
-    return InlineBoxPosition(inline_box, caret_offset);
-
-  // Left edge of a "tertiary" run. Set to the right edge of that run.
-  inline_box = InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
-      *inline_box, level);
-  return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
 }
 
 template <typename Strategy>
