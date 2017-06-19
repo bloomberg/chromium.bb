@@ -17,6 +17,12 @@ namespace net {
 
 class NetLogWithSource;
 
+namespace test {
+
+class JobControllerPeer;
+
+}  // namespace test
+
 // HttpStreamFactoryImpl::JobController manages Request and Job(s).
 class HttpStreamFactoryImpl::JobController
     : public HttpStreamFactoryImpl::Job::Delegate,
@@ -181,7 +187,7 @@ class HttpStreamFactoryImpl::JobController
   size_t EstimateMemoryUsage() const;
 
  private:
-  friend class JobControllerPeer;
+  friend class test::JobControllerPeer;
 
   enum State {
     STATE_RESOLVE_PROXY,
