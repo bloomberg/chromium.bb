@@ -9,21 +9,14 @@ Polymer({
     /**
      * The number of pages the document contains.
      */
-    docLength: {
-      type: Number,
-      value: 1,
-      observer: 'docLengthChanged_'
-    },
+    docLength: {type: Number, value: 1, observer: 'docLengthChanged_'},
 
     /**
      * The current page being viewed (1-based). A change to pageNo is mirrored
      * immediately to the input field. A change to the input field is not
      * mirrored back until pageNoCommitted() is called and change-page is fired.
      */
-    pageNo: {
-      type: Number,
-      value: 1
-    },
+    pageNo: {type: Number, value: 1},
 
     strings: Object,
   },

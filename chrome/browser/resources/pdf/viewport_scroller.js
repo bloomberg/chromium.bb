@@ -44,9 +44,9 @@ ViewportScroller.prototype = {
    */
   startDragScrollTimer_: function() {
     if (this.timerId_ === null) {
-      this.timerId_ =
-          this.window_.setInterval(this.dragScrollPage_.bind(this),
-                                   ViewportScroller.DRAG_TIMER_INTERVAL_MS_);
+      this.timerId_ = this.window_.setInterval(
+          this.dragScrollPage_.bind(this),
+          ViewportScroller.DRAG_TIMER_INTERVAL_MS_);
       this.lastFrameTime_ = Date.now();
     }
   },
@@ -71,7 +71,7 @@ ViewportScroller.prototype = {
     var position = this.viewport_.position;
     var currentFrameTime = Date.now();
     var timeAdjustment = (currentFrameTime - this.lastFrameTime_) /
-                         ViewportScroller.DRAG_TIMER_INTERVAL_MS_;
+        ViewportScroller.DRAG_TIMER_INTERVAL_MS_;
     position.y += (this.scrollVelocity_.y * timeAdjustment);
     position.x += (this.scrollVelocity_.x * timeAdjustment);
     this.viewport_.position = position;
@@ -86,18 +86,19 @@ ViewportScroller.prototype = {
    * @return {Object} Object with x and y direction scroll velocity.
    */
   calculateVelocity_: function(event) {
-    var x = Math.min(Math.max(-event.offsetX,
-                              event.offsetX - this.plugin_.offsetWidth, 0),
-                     ViewportScroller.MAX_DRAG_SCROLL_DISTANCE_) *
-            Math.sign(event.offsetX);
-    var y = Math.min(Math.max(-event.offsetY,
-                              event.offsetY - this.plugin_.offsetHeight, 0),
-                     ViewportScroller.MAX_DRAG_SCROLL_DISTANCE_) *
-            Math.sign(event.offsetY);
-    return {
-      x: x,
-      y: y
-    };
+    var x =
+        Math.min(
+            Math.max(
+                -event.offsetX, event.offsetX - this.plugin_.offsetWidth, 0),
+            ViewportScroller.MAX_DRAG_SCROLL_DISTANCE_) *
+        Math.sign(event.offsetX);
+    var y =
+        Math.min(
+            Math.max(
+                -event.offsetY, event.offsetY - this.plugin_.offsetHeight, 0),
+            ViewportScroller.MAX_DRAG_SCROLL_DISTANCE_) *
+        Math.sign(event.offsetY);
+    return {x: x, y: y};
   },
 
   /**
@@ -123,13 +124,13 @@ ViewportScroller.prototype = {
     if (isSelecting) {
       if (!this.mousemoveCallback_)
         this.mousemoveCallback_ = this.onMousemove_.bind(this);
-      this.plugin_.addEventListener('mousemove', this.mousemoveCallback_,
-                                    false);
+      this.plugin_.addEventListener(
+          'mousemove', this.mousemoveCallback_, false);
     } else {
       this.stopDragScrollTimer_();
       if (this.mousemoveCallback_) {
-        this.plugin_.removeEventListener('mousemove', this.mousemoveCallback_,
-                                         false);
+        this.plugin_.removeEventListener(
+            'mousemove', this.mousemoveCallback_, false);
       }
     }
   }

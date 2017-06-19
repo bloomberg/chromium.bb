@@ -145,16 +145,16 @@ class ActiveZoomManager extends ZoomManager {
     if (this.floatingPointEquals(this.browserZoom_, zoom))
       return;
 
-    this.changingBrowserZoom_ = this.setBrowserZoomFunction_(zoom).then(
-        function() {
-      this.browserZoom_ = zoom;
-      this.changingBrowserZoom_ = null;
+    this.changingBrowserZoom_ =
+        this.setBrowserZoomFunction_(zoom).then(function() {
+          this.browserZoom_ = zoom;
+          this.changingBrowserZoom_ = null;
 
-      // The extension's zoom level may have changed while the browser zoom
-      // change was in progress. We call back into onPdfZoomChange to ensure the
-      // browser zoom is up to date.
-      this.onPdfZoomChange();
-    }.bind(this));
+          // The extension's zoom level may have changed while the browser zoom
+          // change was in progress. We call back into onPdfZoomChange to ensure
+          // the browser zoom is up to date.
+          this.onPdfZoomChange();
+        }.bind(this));
   }
 
   /**
