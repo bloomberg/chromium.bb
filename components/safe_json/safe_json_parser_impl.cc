@@ -19,23 +19,12 @@ SafeJsonParserImpl::SafeJsonParserImpl(const std::string& unsafe_json,
                                        const ErrorCallback& error_callback)
     : unsafe_json_(unsafe_json),
       success_callback_(success_callback),
-      error_callback_(error_callback) {
-  io_thread_checker_.DetachFromThread();
-}
+      error_callback_(error_callback) {}
 
 SafeJsonParserImpl::~SafeJsonParserImpl() = default;
 
 void SafeJsonParserImpl::Start() {
-  caller_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeJsonParserImpl::StartOnIOThread, base::Unretained(this)));
-}
-
-void SafeJsonParserImpl::StartOnIOThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   mojo_json_parser_.reset(
       new content::UtilityProcessMojoClient<mojom::SafeJsonParser>(
           l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_JSON_PARSER_NAME)));
@@ -50,34 +39,27 @@ void SafeJsonParserImpl::StartOnIOThread() {
 }
 
 void SafeJsonParserImpl::OnConnectionError() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Shut down the utility process.
   mojo_json_parser_.reset();
 
-  caller_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SafeJsonParserImpl::ReportResults, base::Unretained(this),
-                 nullptr, "Connection error with the json parser process."));
+  ReportResults(nullptr, "Connection error with the json parser process.");
 }
 
 void SafeJsonParserImpl::OnParseDone(std::unique_ptr<base::Value> result,
                                      const base::Optional<std::string>& error) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Shut down the utility process.
   mojo_json_parser_.reset();
 
-  // Call ReportResults() on caller's thread.
-  caller_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SafeJsonParserImpl::ReportResults, base::Unretained(this),
-                 base::Passed(&result), error.value_or("")));
+  ReportResults(std::move(result), error.value_or(""));
 }
 
 void SafeJsonParserImpl::ReportResults(std::unique_ptr<base::Value> parsed_json,
                                        const std::string& error) {
-  DCHECK(caller_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error.empty() && parsed_json) {
     if (!success_callback_.is_null())
       success_callback_.Run(std::move(parsed_json));

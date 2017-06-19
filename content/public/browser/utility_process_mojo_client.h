@@ -66,7 +66,7 @@ class UtilityProcessMojoClient {
 
   // Starts the utility process and connects to the remote Mojo service.
   void Start() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(error_callback_);
     DCHECK(!start_called_);
 
@@ -79,7 +79,7 @@ class UtilityProcessMojoClient {
 
   // Returns the Mojo service used to make calls to the utility process.
   MojoInterface* service() WARN_UNUSED_RESULT {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(start_called_);
 
     return service_.get();
@@ -174,7 +174,7 @@ class UtilityProcessMojoClient {
   bool start_called_ = false;
 
   // Checks that this class is always accessed from the same thread.
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessMojoClient);
 };
