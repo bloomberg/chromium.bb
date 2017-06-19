@@ -23,10 +23,10 @@ function HidGnubbyDevice(gnubbies, dev, id) {
   this.id = id;
   this.txqueue = [];
   this.clients = [];
-  this.lockCID = 0;     // channel ID of client holding a lock, if != 0.
-  this.lockMillis = 0;  // current lock period.
-  this.lockTID = null;  // timer id of lock timeout.
-  this.closing = false;  // device to be closed by receive loop.
+  this.lockCID = 0;       // channel ID of client holding a lock, if != 0.
+  this.lockMillis = 0;    // current lock period.
+  this.lockTID = null;    // timer id of lock timeout.
+  this.closing = false;   // device to be closed by receive loop.
   this.updating = false;  // device firmware is in final stage of updating.
 }
 
@@ -38,13 +38,14 @@ HidGnubbyDevice.NAMESPACE = 'hid';
 
 /** Destroys this low-level device instance. */
 HidGnubbyDevice.prototype.destroy = function() {
-  if (!this.dev) return;  // Already dead.
+  if (!this.dev)
+    return;  // Already dead.
 
   function closeLowLevelDevice(dev) {
     chrome.hid.disconnect(dev.connectionId, function() {
       if (chrome.runtime.lastError) {
-        console.warn(UTIL_fmt('Device ' + dev.connectionId +
-            ' couldn\'t be disconnected:'));
+        console.warn(UTIL_fmt(
+            'Device ' + dev.connectionId + ' couldn\'t be disconnected:'));
         console.warn(UTIL_fmt(chrome.runtime.lastError.message));
         return;
       }
@@ -63,15 +64,16 @@ HidGnubbyDevice.prototype.destroy = function() {
   //
   // Use magic CID 0 to address all.
   this.publishFrame_(new Uint8Array([
-        0, 0, 0, 0,  // broadcast CID
-        GnubbyDevice.CMD_ERROR,
-        0, 1,  // length
-        GnubbyDevice.GONE]).buffer);
+                       0, 0, 0, 0,                    // broadcast CID
+                       GnubbyDevice.CMD_ERROR, 0, 1,  // length
+                       GnubbyDevice.GONE
+                     ]).buffer);
 
   // Set all clients to closed status and remove them.
   while (this.clients.length != 0) {
     var client = this.clients.shift();
-    if (client) client.closed = true;
+    if (client)
+      client.closed = true;
   }
 
   if (this.lockTID) {
@@ -123,11 +125,11 @@ HidGnubbyDevice.prototype.publishFrame_ = function(f) {
       remaining.push(client);
     } else {
       changes = true;
-      console.log(UTIL_fmt(
-          '[' + Gnubby.hexCid(client.cid) + '] left?'));
+      console.log(UTIL_fmt('[' + Gnubby.hexCid(client.cid) + '] left?'));
     }
   }
-  if (changes) this.clients = remaining;
+  if (changes)
+    this.clients = remaining;
 };
 
 /**
@@ -136,7 +138,8 @@ HidGnubbyDevice.prototype.publishFrame_ = function(f) {
  */
 HidGnubbyDevice.prototype.registerClient = function(who) {
   for (var i = 0; i < this.clients.length; ++i) {
-    if (this.clients[i] === who) return;  // Already registered.
+    if (this.clients[i] === who)
+      return;  // Already registered.
   }
   this.clients.push(who);
   if (this.clients.length == 1) {
@@ -154,11 +157,13 @@ HidGnubbyDevice.prototype.registerClient = function(who) {
  */
 HidGnubbyDevice.prototype.deregisterClient = function(who) {
   var current = this.clients;
-  if (current.length == 0) return -1;
+  if (current.length == 0)
+    return -1;
   this.clients = [];
   for (var i = 0; i < current.length; ++i) {
     var client = current[i];
-    if (client !== who) this.clients.push(client);
+    if (client !== who)
+      this.clients.push(client);
   }
   return this.clients.length;
 };
@@ -168,7 +173,8 @@ HidGnubbyDevice.prototype.deregisterClient = function(who) {
  * @return {boolean} Whether this device has who as a client.
  */
 HidGnubbyDevice.prototype.hasClient = function(who) {
-  if (this.clients.length == 0) return false;
+  if (this.clients.length == 0)
+    return false;
   for (var i = 0; i < this.clients.length; ++i) {
     if (who === this.clients[i])
       return true;
@@ -181,8 +187,9 @@ HidGnubbyDevice.prototype.hasClient = function(who) {
  * @private
  */
 HidGnubbyDevice.prototype.readLoop_ = function() {
-  //console.log(UTIL_fmt('entering readLoop'));
-  if (!this.dev) return;
+  // console.log(UTIL_fmt('entering readLoop'));
+  if (!this.dev)
+    return;
 
   if (this.closing) {
     this.destroy();
@@ -211,24 +218,25 @@ HidGnubbyDevice.prototype.readLoop_ = function() {
   }
 
   var self = this;
-  chrome.hid.receive(
-    this.dev.connectionId,
-    function(report_id, data) {
-      if (chrome.runtime.lastError || !data) {
-        console.log(UTIL_fmt('receive got lastError:'));
-        console.log(UTIL_fmt(chrome.runtime.lastError.message));
-        window.setTimeout(function() { self.destroy(); }, 0);
-        return;
-      }
-      var u8 = new Uint8Array(data);
-      console.log(UTIL_fmt('<' + UTIL_BytesToHex(u8)));
-
-      self.publishFrame_(data);
-
-      // Read more.
-      window.setTimeout(function() { self.readLoop_(); }, 0);
+  chrome.hid.receive(this.dev.connectionId, function(report_id, data) {
+    if (chrome.runtime.lastError || !data) {
+      console.log(UTIL_fmt('receive got lastError:'));
+      console.log(UTIL_fmt(chrome.runtime.lastError.message));
+      window.setTimeout(function() {
+        self.destroy();
+      }, 0);
+      return;
     }
-  );
+    var u8 = new Uint8Array(data);
+    console.log(UTIL_fmt('<' + UTIL_BytesToHex(u8)));
+
+    self.publishFrame_(data);
+
+    // Read more.
+    window.setTimeout(function() {
+      self.readLoop_();
+    }, 0);
+  });
 };
 
 /**
@@ -244,17 +252,13 @@ HidGnubbyDevice.prototype.checkLock_ = function(cid, cmd) {
     if (this.lockCID != cid) {
       // Some other channel has active lock.
 
-      if (cmd != GnubbyDevice.CMD_SYNC &&
-          cmd != GnubbyDevice.CMD_INIT) {
+      if (cmd != GnubbyDevice.CMD_SYNC && cmd != GnubbyDevice.CMD_INIT) {
         // Anything but SYNC|INIT gets an immediate busy.
-        var busy = new Uint8Array(
-            [(cid >> 24) & 255,
-             (cid >> 16) & 255,
-             (cid >> 8) & 255,
-             cid & 255,
-             GnubbyDevice.CMD_ERROR,
-             0, 1,  // length
-             GnubbyDevice.BUSY]);
+        var busy = new Uint8Array([
+          (cid >> 24) & 255, (cid >> 16) & 255, (cid >> 8) & 255, cid & 255,
+          GnubbyDevice.CMD_ERROR, 0, 1,  // length
+          GnubbyDevice.BUSY
+        ]);
         // Log the synthetic busy too.
         console.log(UTIL_fmt('<' + UTIL_BytesToHex(busy)));
         this.publishFrame_(busy.buffer);
@@ -299,14 +303,12 @@ HidGnubbyDevice.prototype.updateLock_ = function(cid, cmd, arg) {
     // (re)set the lock timeout if we still hold it.
     if (this.lockCID) {
       var self = this;
-      this.lockTID = window.setTimeout(
-          function() {
-            console.warn(UTIL_fmt(
-                'lock for CID ' + Gnubby.hexCid(cid) + ' expired!'));
-            self.lockTID = null;
-            self.lockCID = 0;
-          },
-          this.lockMillis);
+      this.lockTID = window.setTimeout(function() {
+        console.warn(
+            UTIL_fmt('lock for CID ' + Gnubby.hexCid(cid) + ' expired!'));
+        self.lockTID = null;
+        self.lockCID = 0;
+      }, this.lockMillis);
     }
   }
 };
@@ -319,8 +321,10 @@ HidGnubbyDevice.prototype.updateLock_ = function(cid, cmd, arg) {
  * @param {ArrayBuffer|Uint8Array} data Command arguments
  */
 HidGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
-  if (!this.dev) return;
-  if (!this.checkLock_(cid, cmd)) return;
+  if (!this.dev)
+    return;
+  if (!this.checkLock_(cid, cmd))
+    return;
 
   var u8 = new Uint8Array(data);
   var f = new Uint8Array(64);
@@ -377,7 +381,8 @@ HidGnubbyDevice.prototype.queueFrame_ = function(frame, cid, cmd, arg) {
   this.updateLock_(cid, cmd, arg);
   var wasEmpty = (this.txqueue.length == 0);
   this.txqueue.push(frame);
-  if (wasEmpty) this.writePump_();
+  if (wasEmpty)
+    this.writePump_();
 };
 
 /**
@@ -385,9 +390,11 @@ HidGnubbyDevice.prototype.queueFrame_ = function(frame, cid, cmd, arg) {
  * @private
  */
 HidGnubbyDevice.prototype.writePump_ = function() {
-  if (!this.dev) return;  // Ignore.
+  if (!this.dev)
+    return;  // Ignore.
 
-  if (this.txqueue.length == 0) return;  // Done with current queue.
+  if (this.txqueue.length == 0)
+    return;  // Done with current queue.
 
   var frame = this.txqueue[0];
 
@@ -396,12 +403,16 @@ HidGnubbyDevice.prototype.writePump_ = function() {
     if (chrome.runtime.lastError) {
       console.log(UTIL_fmt('send got lastError:'));
       console.log(UTIL_fmt(chrome.runtime.lastError.message));
-      window.setTimeout(function() { self.destroy(); }, 0);
+      window.setTimeout(function() {
+        self.destroy();
+      }, 0);
       return;
     }
     self.txqueue.shift();  // drop sent frame from queue.
     if (self.txqueue.length != 0) {
-      window.setTimeout(function() { self.writePump_(); }, 0);
+      window.setTimeout(function() {
+        self.writePump_();
+      }, 0);
     }
   }
 
@@ -409,7 +420,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
 
   // See whether this requires scrubbing before logging.
   var alternateLog = Gnubby.hasOwnProperty('redactRequestLog') &&
-                     Gnubby['redactRequestLog'](u8);
+      Gnubby['redactRequestLog'](u8);
   if (alternateLog) {
     console.log(UTIL_fmt('>' + alternateLog));
   } else {
@@ -424,9 +435,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
   chrome.hid.send(
       this.dev.connectionId,
       0,  // report Id. Must be 0 for our use.
-      u8f.buffer,
-      transferComplete
-  );
+      u8f.buffer, transferComplete);
 };
 
 /**
@@ -436,7 +445,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
  * @const
  */
 HidGnubbyDevice.HID_VID_PIDS = [
-  {'vendorId': 4176, 'productId': 512}    // Google-specific Yubico HID
+  {'vendorId': 4176, 'productId': 512}  // Google-specific Yubico HID
 ];
 
 /**
@@ -485,8 +494,8 @@ HidGnubbyDevice.enumerate = function(cb, opt_type) {
   if (opt_type == GnubbyEnumerationTypes.VID_PID) {
     enumerated(f1d0Filter, []);
   } else {
-    chrome.hid.getDevices({filters: [f1d0Filter]},
-        enumerated.bind(null, f1d0Filter));
+    chrome.hid.getDevices(
+        {filters: [f1d0Filter]}, enumerated.bind(null, f1d0Filter));
   }
   // Pass 2: vid/pid-based enumeration, for legacy devices. If FIDO devices
   // are asked for, "implement" this pass by providing it the empty list.

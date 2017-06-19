@@ -81,8 +81,8 @@ function addWebApk(webApkInfo) {
 
   addWebApkField(webApkList, 'Package name: ', webApkInfo.packageName);
   addWebApkField(
-      webApkList, 'Shell APK version: ', "" + webApkInfo.shellApkVersion);
-  addWebApkField(webApkList, 'Version code: ', "" + webApkInfo.versionCode);
+      webApkList, 'Shell APK version: ', '' + webApkInfo.shellApkVersion);
+  addWebApkField(webApkList, 'Version code: ', '' + webApkInfo.versionCode);
   addWebApkField(webApkList, 'URI: ', webApkInfo.uri);
   addWebApkField(webApkList, 'Scope: ', webApkInfo.scope);
   addWebApkField(webApkList, 'Manifest URL: ', webApkInfo.manifestUrl);

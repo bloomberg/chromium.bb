@@ -16,8 +16,7 @@
  * @implements OriginChecker
  * @constructor
  */
-function CryptoTokenOriginChecker() {
-}
+function CryptoTokenOriginChecker() {}
 
 /**
  * Checks whether the origin is allowed to claim the app ids.
@@ -41,8 +40,7 @@ CryptoTokenOriginChecker.prototype.canClaimAppIds = function(origin, appIds) {
  * @return {Promise<boolean>} A promise for the result of the check
  * @private
  */
-CryptoTokenOriginChecker.prototype.checkAppId_ =
-    function(origin, appId) {
+CryptoTokenOriginChecker.prototype.checkAppId_ = function(origin, appId) {
   return new Promise(function(resolve, reject) {
     if (!chrome.cryptotokenPrivate) {
       reject();

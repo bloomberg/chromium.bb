@@ -28,8 +28,7 @@ TextFetcher.prototype.fetch = function(url, opt_method, opt_body) {};
  * @constructor
  * @implements {TextFetcher}
  */
-function XhrTextFetcher() {
-}
+function XhrTextFetcher() {}
 
 /**
  * @param {string} url The URL to fetch.

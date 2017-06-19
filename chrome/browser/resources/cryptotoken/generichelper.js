@@ -42,7 +42,7 @@ GenericRequestHelper.prototype.getHandler = function(request) {
  * @param {RequestHandlerFactory} factory A factory that can produce a handler
  *     for a request of a given type.
  */
-GenericRequestHelper.prototype.registerHandlerFactory =
-    function(type, factory) {
+GenericRequestHelper.prototype.registerHandlerFactory = function(
+    type, factory) {
   this.handlerFactories_[type] = factory;
 };

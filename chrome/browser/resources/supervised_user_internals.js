@@ -46,7 +46,9 @@ cr.define('chrome.supervised_user_internals', function() {
     // Hack: Schedule another refresh after a while.
     // TODO(treib): Get rid of this once we're properly notified of all
     // relevant changes.
-    setTimeout(function() { chrome.send('getBasicInfo'); }, 5000);
+    setTimeout(function() {
+      chrome.send('getBasicInfo');
+    }, 5000);
   }
 
   function receiveUserSettings(settings) {
@@ -62,10 +64,7 @@ cr.define('chrome.supervised_user_internals', function() {
     // This is not done recursively, values are passed as their JSON
     // representation.
     var kvpairs = Object.keys(settings).map(function(key) {
-      return {
-        key: key,
-        value: JSON.stringify(settings[key], null, 2)
-      };
+      return {key: key, value: JSON.stringify(settings[key], null, 2)};
     });
 
     jstProcess(new JsEvalContext({settings: kvpairs}), $('user-settings'));
@@ -110,7 +109,7 @@ cr.define('chrome.supervised_user_internals', function() {
     // the scrollbar alone.
     var shouldScrollDown = isScrolledToBottom(container);
 
-    jstProcess(new JsEvalContext({ results: filteringResults }), container);
+    jstProcess(new JsEvalContext({results: filteringResults}), container);
 
     if (shouldScrollDown)
       scrollToBottom(container);
@@ -127,5 +126,5 @@ cr.define('chrome.supervised_user_internals', function() {
   };
 });
 
-document.addEventListener('DOMContentLoaded',
-                          chrome.supervised_user_internals.initialize);
+document.addEventListener(
+    'DOMContentLoaded', chrome.supervised_user_internals.initialize);

@@ -60,8 +60,8 @@ cr.define('ntp', function() {
       this.addEventListener('transitionend', this.onTransitionEnd_);
 
       this.input_.addEventListener('blur', this.onInputBlur_.bind(this));
-      this.input_.addEventListener('mousedown',
-                                   this.onInputMouseDown_.bind(this));
+      this.input_.addEventListener(
+          'mousedown', this.onInputMouseDown_.bind(this));
       this.input_.addEventListener('keydown', this.onInputKeyDown_.bind(this));
 
       if (animate) {

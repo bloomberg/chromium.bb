@@ -103,12 +103,9 @@ cr.define('local_discovery', function() {
       }
 
       this.registerButton = fillDeviceDescription(
-        this.domElement,
-        this.info.display_name,
-        this.info.description,
-        this.info.type,
-        loadTimeData.getString('serviceRegister'),
-        this.showRegister.bind(this, this.info.type));
+          this.domElement, this.info.display_name, this.info.description,
+          this.info.type, loadTimeData.getString('serviceRegister'),
+          this.showRegister.bind(this, this.info.type));
 
       this.setRegisterEnabled(this.registerEnabled);
     },
@@ -127,8 +124,9 @@ cr.define('local_discovery', function() {
     register: function() {
       recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CONFIRMED);
       chrome.send('registerDevice', [this.info.service_name]);
-      setRegisterPage(isPrinter(this.info.type) ?
-          'register-printer-page-adding1' : 'register-device-page-adding1');
+      setRegisterPage(
+          isPrinter(this.info.type) ? 'register-printer-page-adding1' :
+                                      'register-device-page-adding1');
     },
     /**
      * Show registrtation UI for device.
@@ -136,9 +134,9 @@ cr.define('local_discovery', function() {
     showRegister: function() {
       recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CLICKED);
       $('register-message').textContent = loadTimeData.getStringF(
-        isPrinter(this.info.type) ? 'registerPrinterConfirmMessage' :
-                                    'registerDeviceConfirmMessage',
-        this.info.display_name);
+          isPrinter(this.info.type) ? 'registerPrinterConfirmMessage' :
+                                      'registerDeviceConfirmMessage',
+          this.info.display_name);
       $('register-continue-button').onclick = this.register.bind(this);
       showRegisterOverlay();
     },
@@ -167,8 +165,7 @@ cr.define('local_discovery', function() {
     __proto__: cr.ui.FocusManager.prototype,
     /** @override */
     getFocusParent: function() {
-      return document.querySelector('#overlay .showing') ||
-        $('main-page');
+      return document.querySelector('#overlay .showing') || $('main-page');
     }
   };
 
@@ -182,8 +179,8 @@ cr.define('local_discovery', function() {
     } else if (numberPrinters == 1) {
       return loadTimeData.getString('printersOnNetworkOne');
     } else {
-      return loadTimeData.getStringF('printersOnNetworkMultiple',
-                                     numberPrinters);
+      return loadTimeData.getStringF(
+          'printersOnNetworkMultiple', numberPrinters);
     }
   }
 
@@ -197,12 +194,8 @@ cr.define('local_discovery', function() {
    * @param {function()?} button_action Action for button.
    * @return {HTMLElement} The button (for enabling/disabling/rebinding)
    */
-  function fillDeviceDescription(device_dom_element,
-                                 name,
-                                 description,
-                                 type,
-                                 button_text,
-                                 button_action) {
+  function fillDeviceDescription(
+      device_dom_element, name, description, type, button_text, button_action) {
     device_dom_element.classList.add('device');
     if (isPrinter(type))
       device_dom_element.classList.add('printer');
@@ -268,7 +261,7 @@ cr.define('local_discovery', function() {
    */
   function onRegistrationFailed() {
     $('error-message').textContent =
-      loadTimeData.getString('addingErrorMessage');
+        loadTimeData.getString('addingErrorMessage');
     setRegisterPage('register-page-error');
     recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_FAILURE);
   }
@@ -278,7 +271,7 @@ cr.define('local_discovery', function() {
    */
   function onRegistrationCanceledPrinter() {
     $('error-message').textContent =
-      loadTimeData.getString('addingCanceledMessage');
+        loadTimeData.getString('addingCanceledMessage');
     setRegisterPage('register-page-error');
     recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CANCEL_ON_PRINTER);
   }
@@ -288,7 +281,7 @@ cr.define('local_discovery', function() {
    */
   function onRegistrationTimeout() {
     $('error-message').textContent =
-      loadTimeData.getString('addingTimeoutMessage');
+        loadTimeData.getString('addingTimeoutMessage');
     setRegisterPage('register-page-error');
     recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_TIMEOUT);
   }
@@ -356,11 +349,11 @@ cr.define('local_discovery', function() {
       description = device.description;
     }
 
-    fillDeviceDescription(devicesDomElement, device.display_name,
-                          description, device.type,
-                          loadTimeData.getString('manageDevice'),
-                          isPrinter(device.type) ?
-                              manageCloudDevice.bind(null, device.id) : null);
+    fillDeviceDescription(
+        devicesDomElement, device.display_name, description, device.type,
+        loadTimeData.getString('manageDevice'),
+        isPrinter(device.type) ? manageCloudDevice.bind(null, device.id) :
+                                 null);
     return devicesDomElement;
   }
 
@@ -413,15 +406,14 @@ cr.define('local_discovery', function() {
       $('register-login-promo').hidden = true;
     } else {
       $('no-printers-message').hidden = true;
-      $('register-login-promo').hidden = isUserLoggedIn ||
-        isUserSupervisedOrOffTheRecord;
+      $('register-login-promo').hidden =
+          isUserLoggedIn || isUserSupervisedOrOffTheRecord;
     }
     if (!($('register-login-promo').hidden) ||
-      !($('cloud-devices-login-promo').hidden) ||
-      !($('register-overlay-login-promo').hidden)) {
+        !($('cloud-devices-login-promo').hidden) ||
+        !($('register-overlay-login-promo').hidden)) {
       chrome.send(
-        'metricsHandler:recordAction',
-        ['Signin_Impression_FromDevicesPage']);
+          'metricsHandler:recordAction', ['Signin_Impression_FromDevicesPage']);
     }
   }
 
@@ -484,13 +476,14 @@ cr.define('local_discovery', function() {
   }
 
   /**
-  * Record an event in the UMA histogram.
-  * @param {number} eventId The id of the event to be recorded.
-  * @private
-  */
+   * Record an event in the UMA histogram.
+   * @param {number} eventId The id of the event to be recorded.
+   * @private
+   */
   function recordUmaEvent(eventId) {
-    chrome.send('metricsHandler:recordInHistogram',
-      ['LocalDiscovery.DevicesPage', eventId, DEVICES_PAGE_EVENTS.MAX_EVENT]);
+    chrome.send(
+        'metricsHandler:recordInHistogram',
+        ['LocalDiscovery.DevicesPage', eventId, DEVICES_PAGE_EVENTS.MAX_EVENT]);
   }
 
   /**
@@ -524,12 +517,12 @@ cr.define('local_discovery', function() {
     isUserLoggedIn = userLoggedIn;
     isUserSupervisedOrOffTheRecord = userSupervisedOrOffTheRecord;
 
-    $('cloud-devices-login-promo').hidden = isUserLoggedIn ||
-      isUserSupervisedOrOffTheRecord;
-    $('register-overlay-login-promo').hidden = isUserLoggedIn ||
-      isUserSupervisedOrOffTheRecord;
-    $('register-continue-button').disabled = !isUserLoggedIn ||
-      isUserSupervisedOrOffTheRecord;
+    $('cloud-devices-login-promo').hidden =
+        isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+    $('register-overlay-login-promo').hidden =
+        isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+    $('register-continue-button').disabled =
+        !isUserLoggedIn || isUserSupervisedOrOffTheRecord;
 
     $('my-devices-container').hidden = userSupervisedOrOffTheRecord;
 
@@ -565,7 +558,7 @@ cr.define('local_discovery', function() {
 
   function registerOverlayLoginButtonClicked() {
     recordUmaEvent(
-      DEVICES_PAGE_EVENTS.LOG_IN_STARTED_FROM_REGISTER_OVERLAY_PROMO);
+        DEVICES_PAGE_EVENTS.LOG_IN_STARTED_FROM_REGISTER_OVERLAY_PROMO);
     openSignInPage();
   }
 
@@ -583,10 +576,10 @@ cr.define('local_discovery', function() {
       $('cloudPrintConnectorLabel').textContent = label;
       if (disabled || !allowed) {
         $('cloudPrintConnectorSetupButton').textContent =
-          loadTimeData.getString('cloudPrintConnectorDisabledButton');
+            loadTimeData.getString('cloudPrintConnectorDisabledButton');
       } else {
         $('cloudPrintConnectorSetupButton').textContent =
-          loadTimeData.getString('cloudPrintConnectorEnabledButton');
+            loadTimeData.getString('cloudPrintConnectorEnabledButton');
       }
       $('cloudPrintConnectorSetupButton').disabled = !allowed;
 
@@ -594,7 +587,7 @@ cr.define('local_discovery', function() {
         $('cloudPrintConnectorSetupButton').onclick = function(event) {
           // Disable the button, set its text to the intermediate state.
           $('cloudPrintConnectorSetupButton').textContent =
-            loadTimeData.getString('cloudPrintConnectorEnablingButton');
+              loadTimeData.getString('cloudPrintConnectorEnablingButton');
           $('cloudPrintConnectorSetupButton').disabled = true;
           chrome.send('showCloudPrintSetupDialog');
         };
@@ -629,31 +622,28 @@ cr.define('local_discovery', function() {
 
     [].forEach.call(
         document.querySelectorAll('.register-cancel'), function(button) {
-      button.addEventListener('click', cancelRegistration);
-    });
+          button.addEventListener('click', cancelRegistration);
+        });
 
     [].forEach.call(
         document.querySelectorAll('.confirm-code'), function(button) {
-      button.addEventListener('click', confirmCode);
-    });
+          button.addEventListener('click', confirmCode);
+        });
 
     $('register-error-exit').addEventListener('click', cancelRegistration);
 
 
-    $('cloud-devices-retry-link').addEventListener('click',
-                                                   retryLoadCloudDevices);
+    $('cloud-devices-retry-link')
+        .addEventListener('click', retryLoadCloudDevices);
 
-    $('cloud-devices-login-link').addEventListener(
-      'click',
-      cloudDevicesLoginButtonClicked);
+    $('cloud-devices-login-link')
+        .addEventListener('click', cloudDevicesLoginButtonClicked);
 
-    $('register-login-link').addEventListener(
-      'click',
-      registerLoginButtonClicked);
+    $('register-login-link')
+        .addEventListener('click', registerLoginButtonClicked);
 
-    $('register-overlay-login-button').addEventListener(
-      'click',
-      registerOverlayLoginButtonClicked);
+    $('register-overlay-login-button')
+        .addEventListener('click', registerOverlayLoginButtonClicked);
 
     if (loadTimeData.valueExists('backButtonURL')) {
       $('back-link').hidden = false;

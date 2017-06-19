@@ -15,8 +15,8 @@ function requestUploads() {
  * @param {string} version The browser version.
  */
 function updateWebRtcLogsList(uploads, version) {
-  $('log-banner').textContent = loadTimeData.getStringF('webrtcLogCountFormat',
-                                                        uploads.length);
+  $('log-banner').textContent =
+      loadTimeData.getStringF('webrtcLogCountFormat', uploads.length);
 
   var logSection = $('log-list');
 
@@ -29,9 +29,8 @@ function updateWebRtcLogsList(uploads, version) {
     var logBlock = document.createElement('div');
 
     var title = document.createElement('h3');
-    title.textContent =
-        loadTimeData.getStringF('webrtcLogHeaderFormat',
-                                upload['capture_time']);
+    title.textContent = loadTimeData.getStringF(
+        'webrtcLogHeaderFormat', upload['capture_time']);
     logBlock.appendChild(title);
 
     var localFileLine = document.createElement('p');
@@ -54,30 +53,24 @@ function updateWebRtcLogsList(uploads, version) {
           loadTimeData.getString('webrtcLogNotUploadedMessage');
     } else {
       uploadLine.textContent =
-          loadTimeData.getStringF('webrtcLogUploadTimeFormat',
-                                  upload['upload_time']) + '. ' +
-          loadTimeData.getStringF('webrtcLogReportIdFormat',
-                                  upload['id']) + '. ';
+          loadTimeData.getStringF(
+              'webrtcLogUploadTimeFormat', upload['upload_time']) +
+          '. ' +
+          loadTimeData.getStringF('webrtcLogReportIdFormat', upload['id']) +
+          '. ';
       var link = document.createElement('a');
       var commentLines = [
-          'Chrome Version: ' + version,
-          // TODO(tbreisacher): fill in the OS automatically?
-          'Operating System: e.g., "Windows 7", "Mac OSX 10.6"',
-          '',
-          'URL (if applicable) where the problem occurred:',
-          '',
-          'Can you reproduce this problem?',
-          '',
-          'What steps will reproduce this problem? (or if it\'s not ' +
-          'reproducible, what were you doing just before the problem)?',
-          '',
-          '1.', '2.', '3.',
-          '',
-          '*Please note that issues filed with no information filled in ' +
-          'above will be marked as WontFix*',
-          '',
-          '****DO NOT CHANGE BELOW THIS LINE****',
-          'report_id:' + upload.id
+        'Chrome Version: ' + version,
+        // TODO(tbreisacher): fill in the OS automatically?
+        'Operating System: e.g., "Windows 7", "Mac OSX 10.6"', '',
+        'URL (if applicable) where the problem occurred:', '',
+        'Can you reproduce this problem?', '',
+        'What steps will reproduce this problem? (or if it\'s not ' +
+            'reproducible, what were you doing just before the problem)?',
+        '', '1.', '2.', '3.', '',
+        '*Please note that issues filed with no information filled in ' +
+            'above will be marked as WontFix*',
+        '', '****DO NOT CHANGE BELOW THIS LINE****', 'report_id:' + upload.id
       ];
       var params = {
         template: 'Defect report from user',

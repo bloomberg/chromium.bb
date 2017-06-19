@@ -47,7 +47,7 @@ cr.define('chrome.invalidations', function() {
     for (var i = 0; i < keys.length; i++) {
       sortedInvalidations.push(tableObjects[keys[i]]);
     }
-    var wrapped = { objectsidtable: sortedInvalidations };
+    var wrapped = {objectsidtable: sortedInvalidations};
     jstProcess(new JsEvalContext(wrapped), $('objectsid-table-div'));
   }
 
@@ -59,11 +59,11 @@ cr.define('chrome.invalidations', function() {
    */
   function updateInvalidatorState(newState, lastChangedTime) {
     var logMessage = nowTimeString() +
-      'Invalidations service state changed to ' + quote(newState);
+        'Invalidations service state changed to ' + quote(newState);
 
     appendToLog(logMessage);
-    $('invalidations-state').textContent = newState + ' (since ' +
-        new Date(lastChangedTime) + ')';
+    $('invalidations-state').textContent =
+        newState + ' (since ' + new Date(lastChangedTime) + ')';
   }
 
   /**
@@ -75,13 +75,10 @@ cr.define('chrome.invalidations', function() {
     for (var i = 0; i < allInvalidations.length; i++) {
       var inv = allInvalidations[i];
       if (inv.hasOwnProperty('objectId')) {
-        var logMessage = nowTimeString() +
-          'Received Invalidation with type ' +
-          quote(inv.objectId.name) +
-          ' version ' +
-          quote((inv.isUnknownVersion ? 'Unknown' : inv.version)) +
-          ' with payload ' +
-          quote(inv.payload);
+        var logMessage = nowTimeString() + 'Received Invalidation with type ' +
+            quote(inv.objectId.name) + ' version ' +
+            quote((inv.isUnknownVersion ? 'Unknown' : inv.version)) +
+            ' with payload ' + quote(inv.payload);
 
         appendToLog(logMessage);
         var isInvalidation = true;
@@ -106,8 +103,7 @@ cr.define('chrome.invalidations', function() {
     var totalCount = oId.objectId.totalCount || 0;
     var key = source + '-' + name;
     var time = new Date();
-    var version = oId.isUnknownVersion ? '?' :
-      oId.version;
+    var version = oId.isUnknownVersion ? '?' : oId.version;
     var payload = '';
     if (oId.hasOwnProperty('payload'))
       payload = oId.payload;
@@ -169,7 +165,7 @@ cr.define('chrome.invalidations', function() {
     }
     // Reenable those ObjectsIds still registered with this registrar.
     for (var i = 0; i < allIds.length; i++) {
-      var oId = { objectId: allIds[i], registrar: registrar };
+      var oId = {objectId: allIds[i], registrar: registrar};
       var isInvalidation = false;
       logToTable(oId, isInvalidation);
     }

@@ -17,8 +17,7 @@ function GnubbyFactory() {}
  * Enumerates gnubbies.
  * @param {function(number, Array<GnubbyDeviceId>)} cb Enumerate callback
  */
-GnubbyFactory.prototype.enumerate = function(cb) {
-};
+GnubbyFactory.prototype.enumerate = function(cb) {};
 
 /** @typedef {function(number, Gnubby=)} */
 var FactoryOpenCallback;
@@ -36,9 +35,8 @@ var FactoryOpenCallback;
  *     that can be used to cancel this pending open operation. Opening device
  *     might take long time or be resource-hungry.
  */
-GnubbyFactory.prototype.openGnubby =
-    function(which, forEnroll, cb, opt_appIdHash, opt_logMsgUrl, opt_caller) {
-};
+GnubbyFactory.prototype.openGnubby = function(
+    which, forEnroll, cb, opt_appIdHash, opt_logMsgUrl, opt_caller) {};
 
 /**
  * Called during enrollment to check whether a gnubby known not to be enrolled
@@ -50,6 +48,5 @@ GnubbyFactory.prototype.openGnubby =
  * @param {FactoryOpenCallback} cb Called with the result of the prerequisite
  *     check. (A non-zero status indicates failure.)
  */
-GnubbyFactory.prototype.notEnrolledPrerequisiteCheck =
-    function(gnubby, appIdHash, cb) {
-};
+GnubbyFactory.prototype.notEnrolledPrerequisiteCheck = function(
+    gnubby, appIdHash, cb) {};

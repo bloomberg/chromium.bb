@@ -14,8 +14,7 @@
  * @constructor
  * @implements {SystemTimer}
  */
-function WindowTimer() {
-}
+function WindowTimer() {}
 
 /**
  * Sets a single-shot timer.

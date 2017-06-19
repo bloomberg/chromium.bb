@@ -106,7 +106,7 @@ cr.define('downloads', function() {
     /** @private */
     computeCompletelyOnDisk_: function() {
       return this.data.state == downloads.States.COMPLETE &&
-             !this.data.file_externally_removed;
+          !this.data.file_externally_removed;
     },
 
     /** @private */
@@ -141,18 +141,18 @@ cr.define('downloads', function() {
           var fileName = data.file_name;
           switch (data.danger_type) {
             case downloads.DangerType.DANGEROUS_FILE:
-             return loadTimeData.getString('dangerFileDesc');
+              return loadTimeData.getString('dangerFileDesc');
 
             case downloads.DangerType.DANGEROUS_URL:
             case downloads.DangerType.DANGEROUS_CONTENT:
             case downloads.DangerType.DANGEROUS_HOST:
-             return loadTimeData.getString('dangerDownloadDesc');
+              return loadTimeData.getString('dangerDownloadDesc');
 
             case downloads.DangerType.UNCOMMON_CONTENT:
-             return loadTimeData.getString('dangerUncommonDesc');
+              return loadTimeData.getString('dangerUncommonDesc');
 
             case downloads.DangerType.POTENTIALLY_UNWANTED:
-             return loadTimeData.getString('dangerSettingsDesc');
+              return loadTimeData.getString('dangerSettingsDesc');
           }
           break;
 
@@ -167,8 +167,8 @@ cr.define('downloads', function() {
     /** @private */
     computeIsActive_: function() {
       return this.data.state != downloads.States.CANCELLED &&
-             this.data.state != downloads.States.INTERRUPTED &&
-             !this.data.file_externally_removed;
+          this.data.state != downloads.States.INTERRUPTED &&
+          !this.data.file_externally_removed;
     },
 
     /** @private */
@@ -209,7 +209,7 @@ cr.define('downloads', function() {
     /** @private */
     computeShowCancel_: function() {
       return this.data.state == downloads.States.IN_PROGRESS ||
-             this.data.state == downloads.States.PAUSED;
+          this.data.state == downloads.States.PAUSED;
     },
 
     /** @private */
@@ -228,7 +228,8 @@ cr.define('downloads', function() {
 
         case downloads.States.COMPLETE:
           return this.data.file_externally_removed ?
-              loadTimeData.getString('statusRemoved') : '';
+              loadTimeData.getString('statusRemoved') :
+              '';
       }
 
       return '';

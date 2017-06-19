@@ -20,8 +20,7 @@ function getOriginsFromJson(text) {
     if (trustedFacets) {
       var versionBlock;
       for (i = 0; versionBlock = trustedFacets[i]; i++) {
-        if (versionBlock['version'] &&
-            versionBlock['version']['major'] == 1 &&
+        if (versionBlock['version'] && versionBlock['version']['major'] == 1 &&
             versionBlock['version']['minor'] == 0) {
           urls = versionBlock['ids'];
           break;
@@ -80,8 +79,8 @@ function AppIdChecker() {}
  * @param {string=} opt_logMsgUrl A log message URL.
  * @return {Promise<boolean>} A promise for the result of the check
  */
-AppIdChecker.prototype.checkAppIds =
-    function(timer, origin, appIds, allowHttp, opt_logMsgUrl) {};
+AppIdChecker.prototype.checkAppIds = function(
+    timer, origin, appIds, allowHttp, opt_logMsgUrl) {};
 
 /**
  * An interface to create an AppIdChecker.
@@ -114,8 +113,8 @@ function XhrAppIdChecker(fetcher) {
  * @param {string=} opt_logMsgUrl A log message URL.
  * @return {Promise<boolean>} A promise for the result of the check
  */
-XhrAppIdChecker.prototype.checkAppIds =
-    function(timer, origin, appIds, allowHttp, opt_logMsgUrl) {
+XhrAppIdChecker.prototype.checkAppIds = function(
+    timer, origin, appIds, allowHttp, opt_logMsgUrl) {
   if (this.timer_) {
     // Can't use the same object to check appIds more than once.
     return Promise.resolve(false);
@@ -170,8 +169,8 @@ XhrAppIdChecker.prototype.checkAppId_ = function(appId) {
   var self = this;
   return p.then(function(allowedOrigins) {
     if (allowedOrigins.indexOf(self.origin_) == -1) {
-      console.warn(UTIL_fmt('Origin ' + self.origin_ +
-            ' not allowed by app id ' + appId));
+      console.warn(UTIL_fmt(
+          'Origin ' + self.origin_ + ' not allowed by app id ' + appId));
       return false;
     }
     return true;
@@ -215,7 +214,7 @@ XhrAppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId) {
   var p = this.fetcher_.fetch(appId);
   var self = this;
   return p.then(getOriginsFromJson, function(rc_) {
-    var rc = /** @type {number} */(rc_);
+    var rc = /** @type {number} */ (rc_);
     console.log(UTIL_fmt('fetching ' + appId + ' failed: ' + rc));
     if (!(rc >= 400 && rc < 500) && !self.timer_.expired()) {
       // Retry

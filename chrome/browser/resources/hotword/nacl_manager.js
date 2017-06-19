@@ -228,11 +228,11 @@ cr.define('hotword', function() {
   };
 
   /**
- * Checks whether the file at the given path exists.
- * @param {!string} path Path to a file. Can be any valid URL.
- * @return {boolean} True if the patch exists.
- * @private
- */
+   * Checks whether the file at the given path exists.
+   * @param {!string} path Path to a file. Can be any valid URL.
+   * @return {boolean} True if the patch exists.
+   * @private
+   */
   NaClManager.prototype.fileExists_ = function(path) {
     var xhr = new XMLHttpRequest();
     xhr.open('HEAD', path, false);
@@ -248,11 +248,11 @@ cr.define('hotword', function() {
   };
 
   /**
- * Creates and returns a list of possible languages to check for hotword
- * support.
- * @return {!Array<string>} Array of languages.
- * @private
- */
+   * Creates and returns a list of possible languages to check for hotword
+   * support.
+   * @return {!Array<string>} Array of languages.
+   * @private
+   */
   NaClManager.prototype.getPossibleLanguages_ = function() {
     // Create array used to search first for language-country, if not found then
     // search for language, if not found then no language (empty string).
@@ -273,11 +273,11 @@ cr.define('hotword', function() {
   };
 
   /**
- * Creates a NaCl plugin object and attaches it to the page.
- * @param {!string} src Location of the plugin.
- * @return {!HTMLEmbedElement} NaCl plugin DOM object.
- * @private
- */
+   * Creates a NaCl plugin object and attaches it to the page.
+   * @param {!string} src Location of the plugin.
+   * @return {!HTMLEmbedElement} NaCl plugin DOM object.
+   * @private
+   */
   NaClManager.prototype.createPlugin_ = function(src) {
     var plugin =
         /** @type {HTMLEmbedElement} */ (document.createElement('embed'));
@@ -288,11 +288,11 @@ cr.define('hotword', function() {
   };
 
   /**
- * Initializes the NaCl manager.
- * @param {!string} naclArch Either 'arm', 'x86-32' or 'x86-64'.
- * @param {!MediaStream} stream A stream containing an audio source track.
- * @return {boolean} True if the successful.
- */
+   * Initializes the NaCl manager.
+   * @param {!string} naclArch Either 'arm', 'x86-32' or 'x86-64'.
+   * @param {!MediaStream} stream A stream containing an audio source track.
+   * @return {boolean} True if the successful.
+   */
   NaClManager.prototype.initialize = function(naclArch, stream) {
     assert(
         this.recognizerState_ == ManagerState_.UNINITIALIZED,
@@ -377,7 +377,8 @@ cr.define('hotword', function() {
    */
   NaClManager.prototype.waitForMessage_ = function(timeout, message) {
     assert(
-        this.expectingMessage_ == null, 'Cannot wait for message: ' + message +
+        this.expectingMessage_ == null,
+        'Cannot wait for message: ' + message +
             ', already waiting for message ' + this.expectingMessage_);
     this.setTimeout_(function() {
       this.recognizerState_ = ManagerState_.ERROR;

@@ -29,7 +29,9 @@ cr.define('downloads', function() {
       /** @private {!Array<!downloads.Data>} */
       items_: {
         type: Array,
-        value: function() { return []; },
+        value: function() {
+          return [];
+        },
       },
 
       /** @private */
@@ -120,7 +122,7 @@ cr.define('downloads', function() {
      * @private
      */
     onCanExecute_: function(e) {
-      e = /** @type {cr.ui.CanExecuteEvent} */(e);
+      e = /** @type {cr.ui.CanExecuteEvent} */ (e);
       switch (e.command.id) {
         case 'undo-command':
           e.canExecute = this.$.toolbar.canUndo();
@@ -209,7 +211,7 @@ cr.define('downloads', function() {
     updateItem_: function(index, data) {
       this.set('items_.' + index, data);
       this.updateHideDates_(index, index);
-      var list = /** @type {!IronListElement} */(this.$['downloads-list']);
+      var list = /** @type {!IronListElement} */ (this.$['downloads-list']);
       list.updateSizeForItem(index);
     },
   });
@@ -220,7 +222,7 @@ cr.define('downloads', function() {
 
   /** @return {!downloads.Manager} */
   Manager.get = function() {
-    return /** @type {!downloads.Manager} */(
+    return /** @type {!downloads.Manager} */ (
         queryRequiredElement('downloads-manager'));
   };
 

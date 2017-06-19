@@ -42,23 +42,22 @@ Gnubby.U2F_V2 = 'U2F_V2';
  * @param {boolean=} opt_individualAttestation Request the individual
  *     attestation cert rather than the batch one.
  */
-Gnubby.prototype.enroll = function(challenge, appIdHash, cb,
-    opt_individualAttestation) {
+Gnubby.prototype.enroll = function(
+    challenge, appIdHash, cb, opt_individualAttestation) {
   var p1 = Gnubby.P1_TUP_REQUIRED | Gnubby.P1_TUP_CONSUME;
   if (opt_individualAttestation) {
     p1 |= Gnubby.P1_INDIVIDUAL_KEY;
   }
-  var apdu = new Uint8Array(
-      [0x00,
-       Gnubby.U2F_ENROLL,
-       p1,
-       0x00, 0x00, 0x00,
-       challenge.length + appIdHash.length]);
-  var u8 = new Uint8Array(apdu.length + challenge.length +
-      appIdHash.length + 2);
-  for (var i = 0; i < apdu.length; ++i) u8[i] = apdu[i];
-  for (var i = 0; i < challenge.length; ++i) u8[i + apdu.length] =
-    challenge[i];
+  var apdu = new Uint8Array([
+    0x00, Gnubby.U2F_ENROLL, p1, 0x00, 0x00, 0x00,
+    challenge.length + appIdHash.length
+  ]);
+  var u8 =
+      new Uint8Array(apdu.length + challenge.length + appIdHash.length + 2);
+  for (var i = 0; i < apdu.length; ++i)
+    u8[i] = apdu[i];
+  for (var i = 0; i < challenge.length; ++i)
+    u8[i + apdu.length] = challenge[i];
   for (var i = 0; i < appIdHash.length; ++i) {
     u8[i + apdu.length + challenge.length] = appIdHash[i];
   }
@@ -75,8 +74,8 @@ Gnubby.prototype.enroll = function(challenge, appIdHash, cb,
  * @param {boolean=} opt_nowink Request signature without winking
  *     (e.g. during enroll)
  */
-Gnubby.prototype.sign = function(challengeHash, appIdHash, keyHandle, cb,
-                                    opt_nowink) {
+Gnubby.prototype.sign = function(
+    challengeHash, appIdHash, keyHandle, cb, opt_nowink) {
   var self = this;
   // The sign command's format is ever-so-slightly different between V1 and V2,
   // so get this gnubby's version prior to sending it.
@@ -87,17 +86,15 @@ Gnubby.prototype.sign = function(challengeHash, appIdHash, keyHandle, cb,
     }
     var version = UTIL_BytesToString(new Uint8Array(opt_data || []));
     var apduDataLen =
-      challengeHash.length + appIdHash.length + keyHandle.length;
+        challengeHash.length + appIdHash.length + keyHandle.length;
     if (version != Gnubby.U2F_V1) {
       // The V2 sign command includes a length byte for the key handle.
       apduDataLen++;
     }
-    var apdu = new Uint8Array(
-        [0x00,
-         Gnubby.U2F_SIGN,
-         Gnubby.P1_TUP_REQUIRED | Gnubby.P1_TUP_CONSUME,
-         0x00, 0x00, 0x00,
-         apduDataLen]);
+    var apdu = new Uint8Array([
+      0x00, Gnubby.U2F_SIGN, Gnubby.P1_TUP_REQUIRED | Gnubby.P1_TUP_CONSUME,
+      0x00, 0x00, 0x00, apduDataLen
+    ]);
     if (opt_nowink) {
       // A signature request that does not want winking.
       // These are used during enroll to figure out whether a gnubby was already
@@ -107,9 +104,10 @@ Gnubby.prototype.sign = function(challengeHash, appIdHash, keyHandle, cb,
       apdu[2] |= Gnubby.P1_TUP_TESTONLY;
     }
     var u8 = new Uint8Array(apdu.length + apduDataLen + 2);
-    for (var i = 0; i < apdu.length; ++i) u8[i] = apdu[i];
-    for (var i = 0; i < challengeHash.length; ++i) u8[i + apdu.length] =
-      challengeHash[i];
+    for (var i = 0; i < apdu.length; ++i)
+      u8[i] = apdu[i];
+    for (var i = 0; i < challengeHash.length; ++i)
+      u8[i + apdu.length] = challengeHash[i];
     for (var i = 0; i < appIdHash.length; ++i) {
       u8[i + apdu.length + challengeHash.length] = appIdHash[i];
     }
@@ -128,7 +126,8 @@ Gnubby.prototype.sign = function(challengeHash, appIdHash, keyHandle, cb,
  * @param {function(...)} cb Callback
  */
 Gnubby.prototype.version = function(cb) {
-  if (!cb) cb = Gnubby.defaultCallback;
+  if (!cb)
+    cb = Gnubby.defaultCallback;
   if (this.version_) {
     cb(-GnubbyDevice.OK, this.version_);
     return;
@@ -142,8 +141,8 @@ Gnubby.prototype.version = function(cb) {
     cb(rc, data);
   }
 
-  var apdu = new Uint8Array([0x00, Gnubby.U2F_VERSION, 0x00, 0x00, 0x00,
-      0x00, 0x00]);
+  var apdu =
+      new Uint8Array([0x00, Gnubby.U2F_VERSION, 0x00, 0x00, 0x00, 0x00, 0x00]);
   this.apduReply(apdu.buffer, function(rc, data) {
     if (rc == 0x6d00) {
       // Command not implemented. Pretend this is v1.
@@ -155,8 +154,8 @@ Gnubby.prototype.version = function(cb) {
     if (rc == 0x6700) {
       // Wrong length. Try with non-ISO 7816-4-conforming layout defined in
       // earlier U2F drafts.
-      apdu = new Uint8Array([0x00, Gnubby.U2F_VERSION, 0x00, 0x00, 0x00,
-          0x00, 0x00, 0x00, 0x00]);
+      apdu = new Uint8Array(
+          [0x00, Gnubby.U2F_VERSION, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
       self.apduReply(apdu.buffer, gotResponse);
       return;
     }

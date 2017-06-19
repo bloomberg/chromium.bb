@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
- // Single iframe for NTP tiles.
+// Single iframe for NTP tiles.
 (function() {
 'use strict';
 
@@ -117,9 +117,8 @@ var logEvent = function(eventType) {
  * @param {number} tileType The type from TileVisualType.
  */
 function logMostVisitedImpression(tileIndex, tileSource, tileType) {
-  chrome.embeddedSearch.newTabPage.logMostVisitedImpression(tileIndex,
-                                                            tileSource,
-                                                            tileType);
+  chrome.embeddedSearch.newTabPage.logMostVisitedImpression(
+      tileIndex, tileSource, tileType);
 }
 
 /**
@@ -129,9 +128,8 @@ function logMostVisitedImpression(tileIndex, tileSource, tileType) {
  * @param {number} tileType The type from TileVisualType.
  */
 function logMostVisitedNavigation(tileIndex, tileSource, tileType) {
-  chrome.embeddedSearch.newTabPage.logMostVisitedNavigation(tileIndex,
-                                                            tileSource,
-                                                            tileType);
+  chrome.embeddedSearch.newTabPage.logMostVisitedNavigation(
+      tileIndex, tileSource, tileType);
 }
 
 /**
@@ -207,31 +205,41 @@ var updateTheme = function(info) {
   var themeStyle = [];
 
   if (info.tileBorderColor) {
-    themeStyle.push('.mv-tile {' +
+    themeStyle.push(
+        '.mv-tile {' +
         'border: 1px solid ' + info.tileBorderColor + '; }');
   }
   if (info.tileHoverBorderColor) {
-    themeStyle.push('.mv-tile:hover {' +
+    themeStyle.push(
+        '.mv-tile:hover {' +
         'border-color: ' + info.tileHoverBorderColor + '; }');
   }
   if (info.isThemeDark) {
-    themeStyle.push('.mv-tile, .mv-empty-tile { ' +
+    themeStyle.push(
+        '.mv-tile, .mv-empty-tile { ' +
         'background: rgb(51,51,51); }');
-    themeStyle.push('.mv-thumb.failed-img { ' +
+    themeStyle.push(
+        '.mv-thumb.failed-img { ' +
         'background-color: #555; }');
-    themeStyle.push('.mv-thumb.failed-img::after { ' +
+    themeStyle.push(
+        '.mv-thumb.failed-img::after { ' +
         'border-color: #333; }');
-    themeStyle.push('.mv-x { ' +
+    themeStyle.push(
+        '.mv-x { ' +
         'background: linear-gradient(to left, ' +
         'rgb(51,51,51) 60%, transparent); }');
-    themeStyle.push('html[dir=rtl] .mv-x { ' +
+    themeStyle.push(
+        'html[dir=rtl] .mv-x { ' +
         'background: linear-gradient(to right, ' +
         'rgb(51,51,51) 60%, transparent); }');
-    themeStyle.push('.mv-x::after { ' +
+    themeStyle.push(
+        '.mv-x::after { ' +
         'background-color: rgba(255,255,255,0.7); }');
-    themeStyle.push('.mv-x:hover::after { ' +
+    themeStyle.push(
+        '.mv-x:hover::after { ' +
         'background-color: #fff; }');
-    themeStyle.push('.mv-x:active::after { ' +
+    themeStyle.push(
+        '.mv-x:active::after { ' +
         'background-color: rgba(255,255,255,0.5); }');
   }
   if (info.tileTitleColor) {
@@ -247,8 +255,8 @@ var updateTheme = function(info) {
  * and 'tilesVisible' messages from the host page.
  */
 var hideOverflowTiles = function(data) {
-  var tileAndEmptyTileList = document.querySelectorAll(
-      '#mv-tiles .mv-tile,#mv-tiles .mv-empty-tile');
+  var tileAndEmptyTileList =
+      document.querySelectorAll('#mv-tiles .mv-tile,#mv-tiles .mv-empty-tile');
   for (var i = 0; i < tileAndEmptyTileList.length; ++i) {
     tileAndEmptyTileList[i].classList.toggle('hidden', i >= data.maxVisible);
   }
@@ -358,11 +366,12 @@ var addTile = function(args) {
 var blacklistTile = function(tile) {
   tile.classList.add('blacklisted');
   tile.addEventListener('transitionend', function(ev) {
-    if (ev.propertyName != 'width') return;
+    if (ev.propertyName != 'width')
+      return;
 
-    window.parent.postMessage({cmd: 'tileBlacklisted',
-                               tid: Number(tile.getAttribute('data-tid'))},
-                              DOMAIN_ORIGIN);
+    window.parent.postMessage(
+        {cmd: 'tileBlacklisted', tid: Number(tile.getAttribute('data-tid'))},
+        DOMAIN_ORIGIN);
   });
 };
 
@@ -373,7 +382,7 @@ var blacklistTile = function(tile) {
  */
 var isSchemeAllowed = function(url) {
   return url.startsWith('http://') || url.startsWith('https://') ||
-         url.startsWith('ftp://') || url.startsWith('chrome-extension://');
+      url.startsWith('ftp://') || url.startsWith('chrome-extension://');
 };
 
 
@@ -421,8 +430,8 @@ var renderTile = function(data) {
       event.preventDefault();
       event.stopPropagation();
       blacklistTile(this);
-    } else if (event.keyCode == 13 /* ENTER */ ||
-               event.keyCode == 32 /* SPACE */) {
+    } else if (
+        event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
       event.preventDefault();
       this.click();
     } else if (event.keyCode >= 37 && event.keyCode <= 40 /* ARROWS */) {
@@ -431,15 +440,15 @@ var renderTile = function(data) {
         return (event.keyCode == 37 /* LEFT */ &&
                 origin.offsetTop == target.offsetTop &&
                 origin.offsetLeft > target.offsetLeft) ||
-                (event.keyCode == 38 /* UP */ &&
-                origin.offsetTop > target.offsetTop &&
-                origin.offsetLeft == target.offsetLeft) ||
-                (event.keyCode == 39 /* RIGHT */ &&
-                origin.offsetTop == target.offsetTop &&
-                origin.offsetLeft < target.offsetLeft) ||
-                (event.keyCode == 40 /* DOWN */ &&
-                origin.offsetTop < target.offsetTop &&
-                origin.offsetLeft == target.offsetLeft);
+            (event.keyCode == 38 /* UP */ &&
+             origin.offsetTop > target.offsetTop &&
+             origin.offsetLeft == target.offsetLeft) ||
+            (event.keyCode == 39 /* RIGHT */ &&
+             origin.offsetTop == target.offsetTop &&
+             origin.offsetLeft < target.offsetLeft) ||
+            (event.keyCode == 40 /* DOWN */ &&
+             origin.offsetTop < target.offsetTop &&
+             origin.offsetLeft == target.offsetLeft);
       };
 
       var nonEmptyTiles = document.querySelectorAll('#mv-tiles .mv-tile');
@@ -533,7 +542,8 @@ var init = function() {
   queryArgs = {};
   for (var i = 0; i < query.length; ++i) {
     var val = query[i].split('=');
-    if (val[0] == '') continue;
+    if (val[0] == '')
+      continue;
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
 

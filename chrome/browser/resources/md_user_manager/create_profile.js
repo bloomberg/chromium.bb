@@ -20,20 +20,14 @@ var NO_USER_SELECTED = -1;
 Polymer({
   is: 'create-profile',
 
-  behaviors: [
-    I18nBehavior,
-    WebUIListenerBehavior
-  ],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
      * The current profile name.
      * @private {string}
      */
-    profileName_: {
-      type: String,
-      value: ''
-    },
+    profileName_: {type: String, value: ''},
 
     /**
      * The list of available profile icon Urls and labels.
@@ -41,71 +35,52 @@ Polymer({
      */
     availableIcons_: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
 
     /**
      * The currently selected profile icon URL. May be a data URL.
      * @private {string}
      */
-    profileIconUrl_: {
-      type: String,
-      value: ''
-    },
+    profileIconUrl_: {type: String, value: ''},
 
     /**
      * True if the existing supervised users are being loaded.
      * @private {boolean}
      */
-    loadingSupervisedUsers_: {
-      type: Boolean,
-      value: false
-    },
+    loadingSupervisedUsers_: {type: Boolean, value: false},
 
     /**
      * True if a profile is being created or imported.
      * @private {boolean}
      */
-    createInProgress_: {
-      type: Boolean,
-      value: false
-    },
+    createInProgress_: {type: Boolean, value: false},
 
     /**
      * True if the error/warning message is displaying.
      * @private {boolean}
      */
-    isMessageVisble_: {
-      type: Boolean,
-      value: false
-    },
+    isMessageVisble_: {type: Boolean, value: false},
 
     /**
      * The current error/warning message.
      * @private {string}
      */
-    message_: {
-      type: String,
-      value: ''
-    },
+    message_: {type: String, value: ''},
 
     /**
      * if true, a desktop shortcut will be created for the new profile.
      * @private {boolean}
      */
-    createShortcut_: {
-      type: Boolean,
-      value: true
-    },
+    createShortcut_: {type: Boolean, value: true},
 
     /**
      * True if the new profile is a supervised profile.
      * @private {boolean}
      */
-    isSupervised_: {
-      type: Boolean,
-      value: false
-    },
+    isSupervised_: {type: Boolean, value: false},
 
     /**
      * The list of usernames and profile paths for currently signed-in users.
@@ -113,17 +88,16 @@ Polymer({
      */
     signedInUsers_: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
 
     /**
      * Index of the selected signed-in user.
      * @private {number}
      */
-    signedInUserIndex_: {
-      type: Number,
-      value: NO_USER_SELECTED
-    },
+    signedInUserIndex_: {type: Number, value: NO_USER_SELECTED},
 
     /** @private {!signin.ProfileBrowserProxy} */
     browserProxy_: Object,
@@ -152,10 +126,8 @@ Polymer({
     }
   },
 
-  listeners: {
-    'tap': 'onTap_',
-    'importUserPopup.import': 'onImportUserPopupImport_'
-  },
+  listeners:
+      {'tap': 'onTap_', 'importUserPopup.import': 'onImportUserPopupImport_'},
 
   /** @override */
   created: function() {
@@ -165,17 +137,17 @@ Polymer({
   /** @override */
   ready: function() {
     this.addWebUIListener(
-      'create-profile-success', this.handleSuccess_.bind(this));
+        'create-profile-success', this.handleSuccess_.bind(this));
     this.addWebUIListener(
-      'create-profile-warning', this.handleMessage_.bind(this));
+        'create-profile-warning', this.handleMessage_.bind(this));
     this.addWebUIListener(
-      'create-profile-error', this.handleMessage_.bind(this));
+        'create-profile-error', this.handleMessage_.bind(this));
     this.addWebUIListener(
-      'profile-icons-received', this.handleProfileIcons_.bind(this));
+        'profile-icons-received', this.handleProfileIcons_.bind(this));
     this.addWebUIListener(
-      'profile-defaults-received', this.handleProfileDefaults_.bind(this));
+        'profile-defaults-received', this.handleProfileDefaults_.bind(this));
     this.addWebUIListener(
-      'signedin-users-received', this.handleSignedInUsers_.bind(this));
+        'signedin-users-received', this.handleSignedInUsers_.bind(this));
 
     this.browserProxy_.getAvailableIcons();
     this.browserProxy_.getSignedInUsers();
@@ -271,8 +243,9 @@ Polymer({
       this.hideMessage_();
       this.loadingSupervisedUsers_ = true;
       this.browserProxy_.getExistingSupervisedUsers(signedInUser.profilePath)
-          .then(this.showImportSupervisedUserPopup_.bind(this),
-                this.handleMessage_.bind(this));
+          .then(
+              this.showImportSupervisedUserPopup_.bind(this),
+              this.handleMessage_.bind(this));
     }
   },
 
@@ -294,8 +267,9 @@ Polymer({
       this.hideMessage_();
       this.loadingSupervisedUsers_ = true;
       this.browserProxy_.getExistingSupervisedUsers(signedInUser.profilePath)
-          .then(this.createProfileIfValidSupervisedUser_.bind(this),
-                this.handleMessage_.bind(this));
+          .then(
+              this.createProfileIfValidSupervisedUser_.bind(this),
+              this.handleMessage_.bind(this));
     }
   },
 
@@ -309,8 +283,8 @@ Polymer({
   showImportSupervisedUserPopup_: function(supervisedUsers) {
     this.loadingSupervisedUsers_ = false;
     if (supervisedUsers.length > 0) {
-      this.$.importUserPopup.show(this.signedInUser_(this.signedInUserIndex_),
-                                  supervisedUsers);
+      this.$.importUserPopup.show(
+          this.signedInUser_(this.signedInUserIndex_), supervisedUsers);
     } else {
       this.handleMessage_(this.i18nAdvanced('noSupervisedUserImportText'));
     }
@@ -339,14 +313,14 @@ Polymer({
       for (var j = i + 1; j < supervisedUsers.length; ++j) {
         if (supervisedUsers[j].name == this.profileName_) {
           nameIsUnique = false;
-          allOnCurrentDevice = allOnCurrentDevice &&
-             supervisedUsers[j].onCurrentDevice;
+          allOnCurrentDevice =
+              allOnCurrentDevice && supervisedUsers[j].onCurrentDevice;
         }
       }
 
       var opts = {
         'substitutions':
-          [HTMLEscape(elide(this.profileName_, /* maxLength */ 50))],
+            [HTMLEscape(elide(this.profileName_, /* maxLength */ 50))],
         'attrs': {
           'id': function(node, value) {
             return node.tagName == 'A';
@@ -389,8 +363,8 @@ Polymer({
     }
     this.hideMessage_();
     this.createInProgress_ = true;
-    var createShortcut = this.isProfileShortcutsEnabled_ &&
-        this.createShortcut_;
+    var createShortcut =
+        this.isProfileShortcutsEnabled_ && this.createShortcut_;
     this.browserProxy_.createProfile(
         this.profileName_, this.profileIconUrl_, createShortcut,
         this.isSupervised_, '', custodianProfilePath);
@@ -439,8 +413,9 @@ Polymer({
   handleSuccess_: function(profileInfo) {
     this.createInProgress_ = false;
     if (profileInfo.showConfirmation) {
-      this.fire('change-page', {page: 'supervised-create-confirm-page',
-                                data: profileInfo});
+      this.fire(
+          'change-page',
+          {page: 'supervised-create-confirm-page', data: profileInfo});
     } else {
       this.fire('change-page', {page: 'user-pods-page'});
     }
@@ -476,7 +451,7 @@ Polymer({
   i18nAllowIDAttr_: function(id) {
     var opts = {
       'attrs': {
-        'id' : function(node, value) {
+        'id': function(node, value) {
           return node.tagName == 'A';
         }
       }
@@ -515,15 +490,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSaveDisabled_: function(createInProgress,
-                            loadingSupervisedUsers,
-                            profileName) {
+  isSaveDisabled_: function(
+      createInProgress, loadingSupervisedUsers, profileName) {
     // TODO(mahmadi): Figure out a way to add 'paper-input-extracted' as a
     // dependency and cast to PaperInputElement instead.
     /** @type {{validate: function():boolean}} */
     var nameInput = this.$.nameInput;
     return createInProgress || loadingSupervisedUsers || !profileName ||
-           !nameInput.validate();
+        !nameInput.validate();
   },
 
   /**
@@ -535,9 +509,8 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isImportUserLinkHidden_: function(createInProgress,
-                                    loadingSupervisedUsers,
-                                    signedInUserIndex) {
+  isImportUserLinkHidden_: function(
+      createInProgress, loadingSupervisedUsers, signedInUserIndex) {
     return createInProgress || loadingSupervisedUsers ||
         !this.signedInUser_(signedInUserIndex);
   },

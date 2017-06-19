@@ -20,5 +20,5 @@ cr.define('DomainReliabilityInternals', function() {
   };
 });
 
-document.addEventListener('DOMContentLoaded',
-    DomainReliabilityInternals.initialize);
+document.addEventListener(
+    'DOMContentLoaded', DomainReliabilityInternals.initialize);

@@ -21,8 +21,8 @@ cr.define('inline.login', function() {
   var authReadyFired;
 
   /**
-  * Whether the login UI is loaded for signing in primary account.
-  */
+   * Whether the login UI is loaded for signing in primary account.
+   */
   var isLoginPrimaryAccount;
 
   function onResize(e) {
@@ -77,9 +77,11 @@ cr.define('inline.login', function() {
     // TODO(rogerta): in when using webview, the |completeLogin| argument
     // is ignored.  See addEventListener() call above.
     authExtHost.load(data.authMode, data, completeLogin);
-    $('contents').classList.toggle('loading',
-        data.authMode != cr.login.GaiaAuthHost.AuthMode.DESKTOP ||
-        data.constrained == '1');
+    $('contents')
+        .classList.toggle(
+            'loading',
+            data.authMode != cr.login.GaiaAuthHost.AuthMode.DESKTOP ||
+                data.constrained == '1');
     isLoginPrimaryAccount = data.isLoginPrimaryAccount;
   }
 
@@ -114,19 +116,20 @@ cr.define('inline.login', function() {
   }
 
   function showBackButton() {
-
     $('navigation-button').icon =
         isRTL() ? 'icons:arrow-forward' : 'icons:arrow-back';
 
-    $('navigation-button').setAttribute(
-        'aria-label', loadTimeData.getString('accessibleBackButtonLabel'));
+    $('navigation-button')
+        .setAttribute(
+            'aria-label', loadTimeData.getString('accessibleBackButtonLabel'));
   }
 
   function showCloseButton() {
     $('navigation-button').icon = 'icons:close';
     $('navigation-button').classList.add('enabled');
-    $('navigation-button').setAttribute(
-        'aria-label', loadTimeData.getString('accessibleCloseButtonLabel'));
+    $('navigation-button')
+        .setAttribute(
+            'aria-label', loadTimeData.getString('accessibleCloseButtonLabel'));
   }
 
   function navigationButtonClicked() {

@@ -52,9 +52,10 @@ cr.define('cert_viewer', function() {
   function oneShot(fn) {
     var fired = false;
     return function() {
-       if (fired) return;
-       fired = true;
-       fn();
+      if (fired)
+        return;
+      fired = true;
+      fn();
     };
   }
 
@@ -130,17 +131,15 @@ cr.define('cert_viewer', function() {
    * @param {Object} tree Dictionary describing the tree structure.
    * @return {cr.ui.TreeItem} Tree node corresponding to the input dictionary.
    */
-  function constructTree(tree)
-  {
+  function constructTree(tree) {
     var treeItem = new cr.ui.TreeItem({
-        label: tree.label,
-        detail: {payload: tree.payload ? tree.payload : {},
-            children: {}
-        }});
+      label: tree.label,
+      detail: {payload: tree.payload ? tree.payload : {}, children: {}}
+    });
     if (tree.children) {
       for (var i = 0; i < tree.children.length; i++) {
-        treeItem.add(treeItem.detail.children[i] =
-            constructTree(tree.children[i]));
+        treeItem.add(
+            treeItem.detail.children[i] = constructTree(tree.children[i]));
       }
     }
     return treeItem;
@@ -175,8 +174,8 @@ cr.define('cert_viewer', function() {
   function getCertificateFields(certFields) {
     clearCertificateFields();
     var treeItem = $('cert-fields');
-    treeItem.add(treeItem.detail.children['root'] =
-        constructTree(certFields[0]));
+    treeItem.add(
+        treeItem.detail.children['root'] = constructTree(certFields[0]));
     revealTree(treeItem);
     // Ensure the list is scrolled to the top by selecting the first item.
     treeItem.children[0].selected = true;

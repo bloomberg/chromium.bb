@@ -91,24 +91,24 @@ cr.define('characteristic_list', function() {
       this.propertiesFieldSet_.setObject({
         broadcast: (this.info.properties & Property.BROADCAST) > 0,
         read: (this.info.properties & Property.READ) > 0,
-        write_without_response: (this.info.properties &
-            Property.WRITE_WITHOUT_RESPONSE) > 0,
+        write_without_response:
+            (this.info.properties & Property.WRITE_WITHOUT_RESPONSE) > 0,
         write: (this.info.properties & Property.WRITE) > 0,
         notify: (this.info.properties & Property.NOTIFY) > 0,
         indicate: (this.info.properties & Property.INDICATE) > 0,
-        authenticated_signed_writes: (this.info.properties &
-            Property.AUTHENTICATED_SIGNED_WRITES) > 0,
-        extended_properties: (this.info.properties &
-            Property.EXTENDED_PROPERTIES) > 0,
+        authenticated_signed_writes:
+            (this.info.properties & Property.AUTHENTICATED_SIGNED_WRITES) > 0,
+        extended_properties:
+            (this.info.properties & Property.EXTENDED_PROPERTIES) > 0,
         reliable_write: (this.info.properties & Property.RELIABLE_WRITE) > 0,
-        writable_auxiliaries: (this.info.properties &
-            Property.WRITABLE_AUXILIARIES) > 0,
-        read_encrypted: (this.info.properties & Property.READ_ENCRYPTED)  > 0,
-        write_encrypted: (this.info.properties & Property.WRITE_ENCRYPTED)  > 0,
-        read_encrypted_authenticated: (this.info.properties &
-            Property.READ_ENCRYPTED_AUTHENTICATED) > 0,
-        write_encrypted_authenticated: (this.info.properties &
-            Property.WRITE_ENCRYPTED_AUTHENTICATED) > 0,
+        writable_auxiliaries:
+            (this.info.properties & Property.WRITABLE_AUXILIARIES) > 0,
+        read_encrypted: (this.info.properties & Property.READ_ENCRYPTED) > 0,
+        write_encrypted: (this.info.properties & Property.WRITE_ENCRYPTED) > 0,
+        read_encrypted_authenticated:
+            (this.info.properties & Property.READ_ENCRYPTED_AUTHENTICATED) > 0,
+        write_encrypted_authenticated:
+            (this.info.properties & Property.WRITE_ENCRYPTED_AUTHENTICATED) > 0,
       });
 
       /** @private {!value_control.ValueControl} */
@@ -225,20 +225,23 @@ cr.define('characteristic_list', function() {
       this.serviceId_ = serviceId;
       this.characteristicsRequested_ = true;
 
-      device_broker.connectToDevice(deviceAddress).then(function(device) {
-        return device.getCharacteristics(serviceId);
-      }.bind(this)).then(function(response) {
-        this.setData(new ArrayDataModel(response.characteristics || []));
-        this.setSpinnerShowing(false);
-        this.characteristicsRequested_ = false;
-      }.bind(this)).catch(function(error) {
-        this.characteristicsRequested_ = false;
-        Snackbar.show(
-            deviceAddress + ': ' + error.message, SnackbarType.ERROR, 'Retry',
-            function() {
-              this.load(deviceAddress, serviceId);
-            }.bind(this));
-      }.bind(this));
+      device_broker.connectToDevice(deviceAddress)
+          .then(function(device) {
+            return device.getCharacteristics(serviceId);
+          }.bind(this))
+          .then(function(response) {
+            this.setData(new ArrayDataModel(response.characteristics || []));
+            this.setSpinnerShowing(false);
+            this.characteristicsRequested_ = false;
+          }.bind(this))
+          .catch(function(error) {
+            this.characteristicsRequested_ = false;
+            Snackbar.show(
+                deviceAddress + ': ' + error.message, SnackbarType.ERROR,
+                'Retry', function() {
+                  this.load(deviceAddress, serviceId);
+                }.bind(this));
+          }.bind(this));
     },
   };
 

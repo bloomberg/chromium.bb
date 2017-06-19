@@ -30,8 +30,7 @@ var BrowserBridge = (function() {
   /**
    * @constructor
    */
-  function BrowserBridge() {
-  }
+  function BrowserBridge() {}
 
   BrowserBridge.prototype = {
     //--------------------------------------------------------------------------
@@ -182,7 +181,9 @@ var MainView = (function() {
     };
 
     return {
-      create: function(key) { return new Aggregator(key); }
+      create: function(key) {
+        return new Aggregator(key);
+      }
     };
   })();
 
@@ -210,7 +211,9 @@ var MainView = (function() {
     };
 
     return {
-      create: function(key) { return new Aggregator(key); }
+      create: function(key) {
+        return new Aggregator(key);
+      }
     };
   })();
 
@@ -318,7 +321,9 @@ var MainView = (function() {
     };
 
     return {
-      create: function(key) { return new Aggregator(key); }
+      create: function(key) {
+        return new Aggregator(key);
+      }
     };
   })();
 
@@ -328,15 +333,14 @@ var MainView = (function() {
 
   // Custom comparator for thread names (sorts main thread and IO thread
   // higher than would happen lexicographically.)
-  var threadNameComparator =
-      createLexicographicComparatorWithExceptions([
-          'CrBrowserMain',
-          'Chrome_IOThread',
-          'Chrome_FileThread',
-          'Chrome_HistoryThread',
-          'Chrome_DBThread',
-          'Still_Alive',
-      ]);
+  var threadNameComparator = createLexicographicComparatorWithExceptions([
+    'CrBrowserMain',
+    'Chrome_IOThread',
+    'Chrome_FileThread',
+    'Chrome_HistoryThread',
+    'Chrome_DBThread',
+    'Still_Alive',
+  ]);
 
   function diffFuncForCount(a, b) {
     return b - a;
@@ -492,8 +496,8 @@ var MainView = (function() {
       cellAlignment: 'right',
       sortDescending: true,
       textPrinter: formatNumberAsText,
-      aggregator: AvgDiffAggregator.create(KEY_MEMORY_ALLOCATED_BYTES,
-                                           KEY_MEMORY_FREED_BYTES, KEY_COUNT),
+      aggregator: AvgDiffAggregator.create(
+          KEY_MEMORY_ALLOCATED_BYTES, KEY_MEMORY_FREED_BYTES, KEY_COUNT),
     };
 
     KEY_PROPERTIES[KEY_MEMORY_ALLOC_OPS] = {
@@ -758,7 +762,7 @@ var MainView = (function() {
     var orig = x.toFixed(0);
 
     var parts = [];
-    for (var end = orig.length; end > 0; ) {
+    for (var end = orig.length; end > 0;) {
       var chunk = Math.min(end, 3);
       parts.push(orig.substr(end - chunk, chunk));
       end -= chunk;
@@ -850,7 +854,7 @@ var MainView = (function() {
    */
   function deleteValuesFromArray(array, valuesToDelete) {
     var valueSet = arrayToSet(valuesToDelete);
-    for (var i = 0; i < array.length; ) {
+    for (var i = 0; i < array.length;) {
       if (valueSet[array[i]]) {
         array.splice(i, 1);
       } else {
@@ -866,7 +870,7 @@ var MainView = (function() {
     // Build up set of each entry in array.
     var seenSoFar = {};
 
-    for (var i = 0; i < array.length; ) {
+    for (var i = 0; i < array.length;) {
       var value = array[i];
       if (seenSoFar[value]) {
         array.splice(i, 1);
@@ -922,8 +926,7 @@ var MainView = (function() {
    * slashes or backslashes.
    */
   function getFilenameFromPath(path) {
-    var lastSlash = Math.max(path.lastIndexOf('/'),
-                             path.lastIndexOf('\\'));
+    var lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
     if (lastSlash == -1)
       return path;
 
@@ -980,7 +983,7 @@ var MainView = (function() {
       e[KEY_MEMORY_AVG_FREE_OPS] = e[KEY_MEMORY_FREE_OPS] / e[KEY_COUNT];
       e[KEY_MEMORY_AVG_NET_BYTES] =
           (e[KEY_MEMORY_ALLOCATED_BYTES] - e[KEY_MEMORY_FREED_BYTES]) /
-              e[KEY_COUNT];
+          e[KEY_COUNT];
     }
   }
 
@@ -1039,8 +1042,8 @@ var MainView = (function() {
    * flat list. Otherwise the result will be a dictionary, where each row
    * has a unique key.
    */
-  function mergeRows(origRows, mergeKeys, mergeSimilarThreads,
-                     outputAsDictionary) {
+  function mergeRows(
+      origRows, mergeKeys, mergeSimilarThreads, outputAsDictionary) {
     // Define a translation function for each property. Normally we copy over
     // properties as-is, but if we have been asked to "merge similar threads" we
     // we will remap the thread names that end in a numeric suffix.
@@ -1058,7 +1061,9 @@ var MainView = (function() {
         return value;
       };
     } else {
-      propertyGetterFunc = function(row, key) { return row[key]; };
+      propertyGetterFunc = function(row, key) {
+        return row[key];
+      };
     }
 
     // Determine which sets of properties a row needs to match on to be
@@ -1126,10 +1131,10 @@ var MainView = (function() {
     // final row.
     var COMPUTED_AGGREGATE_KEYS = [KEY_AVG_QUEUE_TIME, KEY_AVG_RUN_TIME];
     if (loadTimeData.getBoolean('enableMemoryTaskProfiler')) {
-       COMPUTED_AGGREGATE_KEYS = COMPUTED_AGGREGATE_KEYS.concat([
-          KEY_MEMORY_AVG_ALLOC_OPS,
-          KEY_MEMORY_AVG_FREE_OPS,
-          KEY_MEMORY_AVG_NET_BYTES]);
+      COMPUTED_AGGREGATE_KEYS = COMPUTED_AGGREGATE_KEYS.concat([
+        KEY_MEMORY_AVG_ALLOC_OPS, KEY_MEMORY_AVG_FREE_OPS,
+        KEY_MEMORY_AVG_NET_BYTES
+      ]);
     }
 
     // These are the keys which determine row equality. Since we are not doing
@@ -1235,8 +1240,8 @@ var MainView = (function() {
         var link = addNode(td, 'a', filename + ' [' + linenumber + ']');
 
         link.href = 'https://code.google.com/p/chromium/codesearch#search/&q=' +
-                    encodeURIComponent(filename) + ':' + linenumber +
-                    '&sq=package:chromium&type=cs';
+            encodeURIComponent(filename) + ':' + linenumber +
+            '&sq=package:chromium&type=cs';
         link.target = '_blank';
         return;
       }
@@ -1509,11 +1514,9 @@ var MainView = (function() {
 
         // Explain that what is being shown is the difference between two
         // snapshots.
-        summaryDiv.innerText =
-            'Showing the difference between snapshots #' +
-            selectedSnapshots[0] + ' and #' +
-            selectedSnapshots[1] + ' (' + timeDeltaInSeconds +
-            ' seconds worth of data)';
+        summaryDiv.innerText = 'Showing the difference between snapshots #' +
+            selectedSnapshots[0] + ' and #' + selectedSnapshots[1] + ' (' +
+            timeDeltaInSeconds + ' seconds worth of data)';
       } else {
         // This shouldn't be possible...
         throw 'Unexpected number of selected snapshots';
@@ -1531,31 +1534,24 @@ var MainView = (function() {
       // between two snapshots, or just displaying a single snapshot.
       if (selectedSnapshots.length == 1) {
         var snapshot = this.snapshots_[selectedSnapshots[0]];
-        this.mergedData_ = mergeRows(snapshot.flatData,
-                                     mergeColumns,
-                                     shouldMergeSimilarThreads,
-                                     false);
+        this.mergedData_ = mergeRows(
+            snapshot.flatData, mergeColumns, shouldMergeSimilarThreads, false);
 
       } else if (selectedSnapshots.length == 2) {
         var snapshot1 = this.snapshots_[selectedSnapshots[0]];
         var snapshot2 = this.snapshots_[selectedSnapshots[1]];
 
         // Merge the data for snapshot1.
-        var mergedRows1 = mergeRows(snapshot1.flatData,
-                                    mergeColumns,
-                                    shouldMergeSimilarThreads,
-                                    true);
+        var mergedRows1 = mergeRows(
+            snapshot1.flatData, mergeColumns, shouldMergeSimilarThreads, true);
 
         // Merge the data for snapshot2.
-        var mergedRows2 = mergeRows(snapshot2.flatData,
-                                    mergeColumns,
-                                    shouldMergeSimilarThreads,
-                                    true);
+        var mergedRows2 = mergeRows(
+            snapshot2.flatData, mergeColumns, shouldMergeSimilarThreads, true);
 
         // Do a diff between the two snapshots.
-        this.mergedData_ = subtractSnapshots(mergedRows1,
-                                             mergedRows2,
-                                             mergeColumns);
+        this.mergedData_ =
+            subtractSnapshots(mergedRows1, mergedRows2, mergeColumns);
       } else {
         throw 'Unexpected number of selected snapshots';
       }
@@ -1723,8 +1719,8 @@ var MainView = (function() {
       this.drawAggregateRow_(thead, data.aggregates, columns);
       this.drawTableHeader_(thead, columns);
       this.drawTableBody_(tbody, data.rows, columns, limit);
-      this.drawTruncationRow_(tbody, data.rows.length, limit, columns.length,
-                              groupKey);
+      this.drawTruncationRow_(
+          tbody, data.rows.length, limit, columns.length, groupKey);
     },
 
     drawTableHeader_: function(thead, columns) {
@@ -1939,9 +1935,10 @@ var MainView = (function() {
     saveSnapshots_: function() {
       var snapshots = [];
       for (var i = 0; i < this.snapshots_.length; ++i) {
-        snapshots.push({ data: this.snapshots_[i].origData,
-                         timestamp: Math.floor(
-                                 this.snapshots_[i].time / 1000) });
+        snapshots.push({
+          data: this.snapshots_[i].origData,
+          timestamp: Math.floor(this.snapshots_[i].time / 1000)
+        });
       }
 
       var dump = {
@@ -1951,8 +1948,8 @@ var MainView = (function() {
       };
 
       var dumpText = JSON.stringify(dump, null, ' ');
-      var textBlob = new Blob([dumpText],
-                              { type: 'octet/stream', endings: 'native' });
+      var textBlob =
+          new Blob([dumpText], {type: 'octet/stream', endings: 'native'});
       var blobUrl = window.URL.createObjectURL(textBlob);
       $(DOWNLOAD_ANCHOR_ID).href = blobUrl;
       $(DOWNLOAD_ANCHOR_ID).click();
@@ -2011,8 +2008,8 @@ var MainView = (function() {
 
       for (var i = 0; i < content.snapshots.length; ++i) {
         var snapshot = content.snapshots[i];
-        this.snapshots_.push({flatData: [], origData: [],
-                              time: snapshot.timestamp * 1000});
+        this.snapshots_.push(
+            {flatData: [], origData: [], time: snapshot.timestamp * 1000});
         this.addSnapshotToList_(this.snapshots_.length - 1);
         var snapshotData = snapshot.data;
         for (var j = 0; j < snapshotData.length; ++j) {
@@ -2092,7 +2089,9 @@ var MainView = (function() {
       // was just checked, then uncheck one of the earlier ones so we only have
       // 2.
       var checked = this.getSelectedSnapshotBoxes_();
-      checked.sort(function(a, b) { return b.__time - a.__time; });
+      checked.sort(function(a, b) {
+        return b.__time - a.__time;
+      });
       if (checked.length > 2) {
         for (var i = 2; i < checked.length; ++i)
           checked[i].checked = false;
@@ -2310,9 +2309,7 @@ var MainView = (function() {
 
         for (var i = 0; i < groupKey1.length; ++i) {
           var comparison = compareValuesForKey(
-              groupKey1[i].key,
-              groupKey1[i].value,
-              groupKey2[i].value);
+              groupKey1[i].key, groupKey1[i].value, groupKey2[i].value);
 
           if (comparison != 0)
             return comparison;
@@ -2361,8 +2358,7 @@ var MainView = (function() {
         var groupKey = [];
 
         for (var i = 0; i < groupings.length; ++i) {
-          var entry = {key: groupings[i],
-                       value: e[groupings[i]]};
+          var entry = {key: groupings[i], value: e[groupings[i]]};
           groupKey.push(entry);
         }
 

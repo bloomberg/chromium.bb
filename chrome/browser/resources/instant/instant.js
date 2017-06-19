@@ -6,7 +6,9 @@
 // the only function needed.  This allows this file to be loaded
 // in a browser directly for layout and some testing purposes.
 // eslint-disable-next-line no-restricted-properties
-var $ = function(id) { return document.getElementById(id); };
+var $ = function(id) {
+  return document.getElementById(id);
+};
 
 /**
  * WebUI for configuring instant.* preference values used by
@@ -57,15 +59,19 @@ var instantConfig = (function() {
       var input = createElementWithClass('input', 'row-input');
       input.type = field.type;
       input.id = field.key;
-      input.title = "Default Value: " + field.default;
-      if (field.size) input.size = field.size;
+      input.title = 'Default Value: ' + field.default;
+      if (field.size)
+        input.size = field.size;
       input.min = field.min || 0;
-      if (field.max) input.max = field.max;
-      if (field.step) input.step = field.step;
+      if (field.max)
+        input.max = field.max;
+      if (field.step)
+        input.step = field.step;
       row.appendChild(input);
 
       var units = createElementWithClass('div', 'row-units');
-      if (field.units) units.innerHTML = field.units;
+      if (field.units)
+        units.innerHTML = field.units;
       row.appendChild(units);
 
       $('instant-form').appendChild(row);
@@ -79,8 +85,8 @@ var instantConfig = (function() {
     for (var i = 0; i < FIELDS.length; i++) {
       var field = FIELDS[i];
       $(field.key).onchange = (function(key) {
-        setPreferenceValue(key);
-      }).bind(null, field.key);
+                                setPreferenceValue(key);
+                              }).bind(null, field.key);
     }
   }
 

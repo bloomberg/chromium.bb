@@ -50,8 +50,8 @@ var SingleSignerResult;
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @constructor
  */
-function SingleGnubbySigner(gnubbyId, forEnroll, completeCb, timer,
-    opt_logMsgUrl) {
+function SingleGnubbySigner(
+    gnubbyId, forEnroll, completeCb, timer, opt_logMsgUrl) {
   /** @private {GnubbyDeviceId} */
   this.gnubbyId_ = gnubbyId;
   /** @private {SingleGnubbySigner.State} */
@@ -115,7 +115,8 @@ SingleGnubbySigner.prototype.close = function() {
       this.openCanceller_();
   }
 
-  if (!this.gnubby_) return;
+  if (!this.gnubby_)
+    return;
   this.state_ = SingleGnubbySigner.State.CLOSING;
   this.gnubby_.closeWhenIdle(this.closed_.bind(this));
 };
@@ -194,11 +195,8 @@ SingleGnubbySigner.prototype.open_ = function() {
   if (this.state_ == SingleGnubbySigner.State.INIT) {
     this.state_ = SingleGnubbySigner.State.OPENING;
     this.openCanceller_ = DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
-        this.gnubbyId_,
-        this.forEnroll_,
-        this.openCallback_.bind(this),
-        appIdHash,
-        this.logMsgUrl_,
+        this.gnubbyId_, this.forEnroll_, this.openCallback_.bind(this),
+        appIdHash, this.logMsgUrl_,
         'singlesigner.js:SingleGnubbySigner.prototype.open_');
   }
 };
@@ -242,13 +240,11 @@ SingleGnubbySigner.prototype.openCallback_ = function(rc, gnubby) {
         var self = this;
         window.setTimeout(function() {
           if (self.gnubby_) {
-            this.openCanceller_ = DEVICE_FACTORY_REGISTRY
-              .getGnubbyFactory().openGnubby(
-                self.gnubbyId_,
-                self.forEnroll_,
-                self.openCallback_.bind(self),
-                self.logMsgUrl_,
-                'singlesigner.js:SingleGnubbySigner.prototype.openCallback_');
+            this.openCanceller_ =
+                DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
+                    self.gnubbyId_, self.forEnroll_,
+                    self.openCallback_.bind(self), self.logMsgUrl_,
+                    'singlesigner.js:SingleGnubbySigner.prototype.openCallback_');
           }
         }, SingleGnubbySigner.OPEN_DELAY_MILLIS);
       } else {
@@ -336,9 +332,9 @@ SingleGnubbySigner.prototype.doSign_ = function(challengeIndex) {
     this.signCallback_(challengeIndex, DeviceStatusCodes.WRONG_DATA_STATUS);
   } else {
     var nowink = false;
-    this.gnubby_.sign(challengeHash, appIdHash, keyHandle,
-        this.signCallback_.bind(this, challengeIndex),
-        nowink);
+    this.gnubby_.sign(
+        challengeHash, appIdHash, keyHandle,
+        this.signCallback_.bind(this, challengeIndex), nowink);
   }
 };
 
@@ -348,7 +344,8 @@ SingleGnubbySigner.prototype.doSign_ = function(challengeIndex) {
  *     for this gnubby.
  */
 SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle = function(code) {
-  return (code == DeviceStatusCodes.WRONG_DATA_STATUS ||
+  return (
+      code == DeviceStatusCodes.WRONG_DATA_STATUS ||
       code == DeviceStatusCodes.WRONG_LENGTH_STATUS ||
       code == DeviceStatusCodes.INVALID_DATA_STATUS);
 };
@@ -360,10 +357,11 @@ SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle = function(code) {
  * @param {ArrayBuffer=} opt_info Optional result data
  * @private
  */
-SingleGnubbySigner.prototype.signCallback_ =
-    function(challengeIndex, code, opt_info) {
-  console.log(UTIL_fmt('gnubby ' + JSON.stringify(this.gnubbyId_) +
-      ', challenge ' + challengeIndex + ' yielded ' + code.toString(16)));
+SingleGnubbySigner.prototype.signCallback_ = function(
+    challengeIndex, code, opt_info) {
+  console.log(UTIL_fmt(
+      'gnubby ' + JSON.stringify(this.gnubbyId_) + ', challenge ' +
+      challengeIndex + ' yielded ' + code.toString(16)));
   if (this.state_ != SingleGnubbySigner.State.SIGNING) {
     console.log(UTIL_fmt('already done!'));
     // We're done, the caller's no longer interested.
@@ -399,7 +397,8 @@ SingleGnubbySigner.prototype.signCallback_ =
       // Lower bound on the minimum length, signature length can vary.
       var MIN_SIGNATURE_LENGTH = 7;
       if (!opt_info || opt_info.byteLength < MIN_SIGNATURE_LENGTH) {
-        console.error(UTIL_fmt('Got short response to sign request (' +
+        console.error(UTIL_fmt(
+            'Got short response to sign request (' +
             (opt_info ? opt_info.byteLength : 0) + ' bytes), WTF?'));
       }
       if (this.forEnroll_) {
@@ -462,7 +461,7 @@ SingleGnubbySigner.prototype.goToError_ = function(code, opt_warn) {
   this.state_ = SingleGnubbySigner.State.COMPLETE;
   var logFn = opt_warn ? console.warn.bind(console) : console.log.bind(console);
   logFn(UTIL_fmt('failed (' + code.toString(16) + ')'));
-  var result = { code: code };
+  var result = {code: code};
   if (!this.forEnroll_ &&
       SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle(code)) {
     // When a device yields an idempotent bad key handle error to all sign
@@ -486,11 +485,11 @@ SingleGnubbySigner.prototype.goToError_ = function(code, opt_warn) {
  * @param {ArrayBuffer=} opt_info Optional result data
  * @private
  */
-SingleGnubbySigner.prototype.goToSuccess_ =
-    function(code, opt_challenge, opt_info) {
+SingleGnubbySigner.prototype.goToSuccess_ = function(
+    code, opt_challenge, opt_info) {
   this.state_ = SingleGnubbySigner.State.COMPLETE;
   console.log(UTIL_fmt('success (' + code.toString(16) + ')'));
-  var result = { code: code, gnubby: this.gnubby_ };
+  var result = {code: code, gnubby: this.gnubby_};
   if (opt_challenge || opt_info) {
     if (opt_challenge) {
       result['challenge'] = opt_challenge;

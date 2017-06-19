@@ -9,8 +9,8 @@ cr.define('signin.emailConfirmation', function() {
     var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
     var lastEmail = args.lastEmail;
     var newEmail = args.newEmail;
-    $('dialogTitle').textContent = loadTimeData.getStringF(
-        'signinEmailConfirmationTitle', lastEmail);
+    $('dialogTitle').textContent =
+        loadTimeData.getStringF('signinEmailConfirmationTitle', lastEmail);
     $('createNewUserRadioButtonSubtitle').textContent = loadTimeData.getStringF(
         'signinEmailConfirmationCreateProfileButtonSubtitle', newEmail);
     $('startSyncRadioButtonSubtitle').textContent = loadTimeData.getStringF(
@@ -54,5 +54,5 @@ cr.define('signin.emailConfirmation', function() {
   };
 });
 
-document.addEventListener('DOMContentLoaded',
-                          signin.emailConfirmation.initialize);
+document.addEventListener(
+    'DOMContentLoaded', signin.emailConfirmation.initialize);

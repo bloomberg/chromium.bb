@@ -18,8 +18,9 @@
  * @param {!TextFetcher} textFetcher A text fetcher.
  * @constructor
  */
-function FactoryRegistry(appIdCheckerFactory, approvedOrigins, countdownFactory,
-    originChecker, requestHelper, sysTimer, textFetcher) {
+function FactoryRegistry(
+    appIdCheckerFactory, approvedOrigins, countdownFactory, originChecker,
+    requestHelper, sysTimer, textFetcher) {
   /** @private {!AppIdCheckerFactory} */
   this.appIdCheckerFactory_ = appIdCheckerFactory;
   /** @private {!ApprovedOrigins} */

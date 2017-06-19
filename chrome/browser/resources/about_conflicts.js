@@ -3,15 +3,14 @@
 // found in the LICENSE file.
 
 /**
-* This variable structure is here to document the structure that the template
-* expects to correctly populate the page.
-*/
+ * This variable structure is here to document the structure that the template
+ * expects to correctly populate the page.
+ */
 var moduleListDataFormat = {
-  'moduleList': [
-  {
+  'moduleList': [{
     'type': 'The type of module found',
     'type_description':
-    'The type of module (string), defaults to blank for regular modules',
+        'The type of module (string), defaults to blank for regular modules',
     'status': 'The module status',
     'location': 'The module path, not including filename',
     'name': 'The name of the module',
@@ -22,16 +21,15 @@ var moduleListDataFormat = {
     'recommended_action': 'The help tips bitmask',
     'possible_resolution': 'The help tips in string form',
     'help_url': 'The link to the Help Center article'
-  }
-]
+  }]
 };
 
 /**
-* Takes the |moduleListData| input argument which represents data about
-* the currently available modules and populates the html jstemplate
-* with that data. It expects an object structure like the above.
-* @param {Object} moduleListData Information about available modules.
-*/
+ * Takes the |moduleListData| input argument which represents data about
+ * the currently available modules and populates the html jstemplate
+ * with that data. It expects an object structure like the above.
+ * @param {Object} moduleListData Information about available modules.
+ */
 function renderTemplate(moduleListData) {
   // This is the javascript code that processes the template:
   var input = new JsEvalContext(moduleListData);
@@ -40,19 +38,19 @@ function renderTemplate(moduleListData) {
 }
 
 /**
-* Asks the C++ ConflictsDOMHandler to get details about the available modules
-* and return detailed data about the configuration. The ConflictsDOMHandler
-* should reply to returnModuleList() (below).
-*/
+ * Asks the C++ ConflictsDOMHandler to get details about the available modules
+ * and return detailed data about the configuration. The ConflictsDOMHandler
+ * should reply to returnModuleList() (below).
+ */
 function requestModuleListData() {
   chrome.send('requestModuleList');
 }
 
 /**
-* Called by the WebUI to re-populate the page with data representing the
-* current state of installed modules.
-* @param {Object} moduleListData Information about available modules.
-*/
+ * Called by the WebUI to re-populate the page with data representing the
+ * current state of installed modules.
+ * @param {Object} moduleListData Information about available modules.
+ */
 function returnModuleList(moduleListData) {
   renderTemplate(moduleListData);
   $('loading-message').style.visibility = 'hidden';

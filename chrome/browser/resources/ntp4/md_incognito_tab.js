@@ -13,7 +13,7 @@ function recomputeLayoutWidth() {
   var fontSize = window.getComputedStyle(document.body).fontSize;
   var maxWidth = localStorage[fontSize] ||
       (bulletpoints[0].offsetWidth + bulletpoints[1].offsetWidth +
-           40 /* margin */ + 2 /* offsetWidths may be rounded down */);
+       40 /* margin */ + 2 /* offsetWidths may be rounded down */);
 
   // Save the data for quicker access when the NTP is reloaded. Note that since
   // we're in the Incognito mode, the local storage is ephemeral and the data
@@ -29,7 +29,7 @@ function recomputeLayoutWidth() {
   if (tooWide)
     maxWidth = MAX_ALLOWED_WIDTH;
 
-  content.style.maxWidth = maxWidth + "px";
+  content.style.maxWidth = maxWidth + 'px';
 }
 
 window.addEventListener('load', recomputeLayoutWidth);
@@ -44,8 +44,8 @@ var ntp = {
 
   /** @param {!{hasCustomBackground: boolean}} themeData */
   themeChanged: function(themeData) {
-    document.documentElement.setAttribute('hascustombackground',
-                                          themeData.hasCustomBackground);
+    document.documentElement.setAttribute(
+        'hascustombackground', themeData.hasCustomBackground);
     $('incognitothemecss').href =
         'chrome://theme/css/incognito_new_tab_theme.css?' + Date.now();
   },

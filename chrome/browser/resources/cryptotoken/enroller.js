@@ -21,8 +21,8 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
   var closeable = null;
 
   function sendErrorResponse(error) {
-    var response = makeU2fErrorResponse(request, error.errorCode,
-        error.errorMessage);
+    var response =
+        makeU2fErrorResponse(request, error.errorCode, error.errorMessage);
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
 
@@ -65,16 +65,16 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
   // not before.
   var watchdogTimeoutValueSeconds = attenuateTimeoutInSeconds(
       timeoutValueSeconds, MINIMUM_TIMEOUT_ATTENUATION_SECONDS / 2);
-  var watchdog = new WatchdogRequestHandler(watchdogTimeoutValueSeconds,
-      timeout);
+  var watchdog =
+      new WatchdogRequestHandler(watchdogTimeoutValueSeconds, timeout);
   var wrappedErrorCb = watchdog.wrapCallback(sendErrorResponse);
   var wrappedSuccessCb = watchdog.wrapCallback(sendSuccessResponse);
 
   var timer = createAttenuatedTimer(
       FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
   var logMsgUrl = request['logMsgUrl'];
-  var enroller = new Enroller(timer, sender, sendErrorResponse,
-      sendSuccessResponse, logMsgUrl);
+  var enroller = new Enroller(
+      timer, sender, sendErrorResponse, sendSuccessResponse, logMsgUrl);
   watchdog.setCloseable(/** @type {!Closeable} */ (enroller));
   closeable = watchdog;
 
@@ -182,8 +182,8 @@ function findEnrollChallengeOfVersion(enrollChallenges, version) {
  * @param {string=} opt_clientData The client data, if available.
  * @return {Object} The responseData object.
  */
-function makeEnrollResponseData(enrollChallenge, u2fVersion, registrationData,
-    opt_clientData) {
+function makeEnrollResponseData(
+    enrollChallenge, u2fVersion, registrationData, opt_clientData) {
   var responseData = {};
   responseData['registrationData'] = registrationData;
   // Echo the used challenge back in the reply.
@@ -278,8 +278,8 @@ Enroller.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
  *     existing enrollments for this user and appId.
  * @param {string=} opt_appId The app id for the entire request.
  */
-Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
-    opt_appId) {
+Enroller.prototype.doEnroll = function(
+    enrollChallenges, signChallenges, opt_appId) {
   /** @private {Array<EnrollChallenge>} */
   this.enrollChallenges_ = enrollChallenges;
   /** @private {Array<SignChallenge>} */
@@ -287,13 +287,17 @@ Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
   /** @private {(string|undefined)} */
   this.appId_ = opt_appId;
   var self = this;
-  getTabIdWhenPossible(this.sender_).then(function() {
-    if (self.done_) return;
-    self.approveOrigin_();
-  }, function() {
-    self.close();
-    self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
-  });
+  getTabIdWhenPossible(this.sender_)
+      .then(
+          function() {
+            if (self.done_)
+              return;
+            self.approveOrigin_();
+          },
+          function() {
+            self.close();
+            self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+          });
 };
 
 /**
@@ -306,7 +310,8 @@ Enroller.prototype.approveOrigin_ = function() {
   FACTORY_REGISTRY.getApprovedOrigins()
       .isApprovedOrigin(this.sender_.origin, this.sender_.tabId)
       .then(function(result) {
-        if (self.done_) return;
+        if (self.done_)
+          return;
         if (!result) {
           // Origin not approved: rather than give an explicit indication to
           // the web page, let a timeout occur.
@@ -346,9 +351,8 @@ Enroller.prototype.sendEnrollRequestToHelper_ = function() {
   // If the request didn't contain a sign challenge, provide one. The value
   // doesn't matter.
   var defaultSignChallenge = '';
-  var encodedSignChallenges =
-      encodeSignChallenges(this.signChallenges_, defaultSignChallenge,
-          this.appId_);
+  var encodedSignChallenges = encodeSignChallenges(
+      this.signChallenges_, defaultSignChallenge, this.appId_);
   var request = {
     type: 'enroll_helper_request',
     enrollChallenges: encodedEnrollChallenges,
@@ -378,7 +382,8 @@ Enroller.prototype.sendEnrollRequestToHelper_ = function() {
   }
   var self = this;
   this.checkAppIds_(enrollAppIds, function(result) {
-    if (self.done_) return;
+    if (self.done_)
+      return;
     if (result) {
       self.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(request);
       if (self.handler_) {
@@ -434,8 +439,8 @@ Enroller.encodeEnrollChallenge_ = function(enrollChallenge, opt_appId) {
  * @return {!Array<EnrollHelperChallenge>} The encoded enroll challenges.
  * @private
  */
-Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
-    opt_appId) {
+Enroller.prototype.encodeEnrollChallenges_ = function(
+    enrollChallenges, opt_appId) {
   var challenges = [];
   for (var i = 0; i < enrollChallenges.length; i++) {
     var enrollChallenge = enrollChallenges[i];
@@ -459,8 +464,7 @@ Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
       // Replace the challenge with the hash of the browser data.
       modifiedChallenge['challenge'] =
           B64_encode(sha256HashOfString(browserData));
-      this.browserData_[version] =
-          B64_encode(UTIL_StringToBytes(browserData));
+      this.browserData_[version] = B64_encode(UTIL_StringToBytes(browserData));
       challenges.push(Enroller.encodeEnrollChallenge_(
           /** @type {EnrollChallenge} */ (modifiedChallenge), opt_appId));
     } else {
@@ -502,8 +506,8 @@ Enroller.prototype.originChecked_ = function(appIds, cb, result) {
     return;
   }
   var appIdChecker = FACTORY_REGISTRY.getAppIdCheckerFactory().create();
-  appIdChecker.
-      checkAppIds(
+  appIdChecker
+      .checkAppIds(
           this.timer_.clone(), this.sender_.origin, appIds, this.allowHttp_,
           this.logMsgUrl_)
       .then(cb);
@@ -538,8 +542,8 @@ Enroller.prototype.notifyError_ = function(error) {
  * @param {string|undefined} opt_browserData Browser data used
  * @private
  */
-Enroller.prototype.notifySuccess_ =
-    function(u2fVersion, info, opt_browserData) {
+Enroller.prototype.notifySuccess_ = function(
+    u2fVersion, info, opt_browserData) {
   if (this.done_)
     return;
   this.close();
@@ -555,8 +559,9 @@ Enroller.prototype.notifySuccess_ =
 Enroller.prototype.helperComplete_ = function(reply) {
   if (reply.code) {
     var reportedError = mapDeviceStatusCodeToU2fError(reply.code);
-    console.log(UTIL_fmt('helper reported ' + reply.code.toString(16) +
-        ', returning ' + reportedError.errorCode));
+    console.log(UTIL_fmt(
+        'helper reported ' + reply.code.toString(16) + ', returning ' +
+        reportedError.errorCode));
     this.notifyError_(reportedError);
   } else {
     console.log(UTIL_fmt('Gnubby enrollment succeeded!!!!!'));
@@ -568,8 +573,8 @@ Enroller.prototype.helperComplete_ = function(reply) {
       browserData = this.browserData_[reply.version];
     }
 
-    this.notifySuccess_(/** @type {string} */ (reply.version),
-                        /** @type {string} */ (reply.enrollData),
-                        browserData);
+    this.notifySuccess_(
+        /** @type {string} */ (reply.version),
+        /** @type {string} */ (reply.enrollData), browserData);
   }
 };

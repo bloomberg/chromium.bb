@@ -85,7 +85,8 @@ RequestQueue.prototype.insertToken_ = function(token) {
     this.head_ = token;
     this.tail_ = token;
   } else {
-    if (!this.tail_) throw 'Non-empty list missing tail';
+    if (!this.tail_)
+      throw 'Non-empty list missing tail';
     this.tail_.next = token;
     token.prev = this.tail_;
     this.tail_ = token;
@@ -182,8 +183,8 @@ function OriginKeyedRequestQueue(sysTimer) {
  * @param {Countdown} timer Countdown timer
  * @return {QueuedRequestToken} A token for the request.
  */
-OriginKeyedRequestQueue.prototype.queueRequest =
-    function(appId, origin, beginCb, timer) {
+OriginKeyedRequestQueue.prototype.queueRequest = function(
+    appId, origin, beginCb, timer) {
   var key = appId + ' ' + origin;
   if (!this.requests_.hasOwnProperty(key)) {
     this.requests_[key] = new RequestQueue(this.sysTimer_);

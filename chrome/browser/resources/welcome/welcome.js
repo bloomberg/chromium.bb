@@ -20,18 +20,18 @@ cr.define('welcome', function() {
 
     var logo = document.querySelector('.logo-icon');
     logo.onclick = function(e) {
-      logo.animate({
-        transform: ['none', 'rotate(-10turn)'],
-      }, /** @type {!KeyframeEffectOptions} */({
-        duration: 500,
-        easing: 'cubic-bezier(1, 0, 0, 1)',
-      }));
+      logo.animate(
+          {
+            transform: ['none', 'rotate(-10turn)'],
+          },
+          /** @type {!KeyframeEffectOptions} */ ({
+            duration: 500,
+            easing: 'cubic-bezier(1, 0, 0, 1)',
+          }));
     };
   }
 
-  return {
-    initialize: initialize
-  };
+  return {initialize: initialize};
 });
 
 document.addEventListener('DOMContentLoaded', welcome.initialize);

@@ -58,23 +58,21 @@ cr.define('device_details_page', function() {
     /** @private {?HTMLElement} */
     this.connectBtn_ = null;
 
-    this.pageDiv.appendChild(
-        document.importNode($('device-details-template').content,
-                            true /* deep */));
+    this.pageDiv.appendChild(document.importNode(
+        $('device-details-template').content, true /* deep */));
 
-    this.pageDiv.querySelector('.device-details').appendChild(
-        this.deviceFieldSet_);
+    this.pageDiv.querySelector('.device-details')
+        .appendChild(this.deviceFieldSet_);
     this.pageDiv.querySelector('.services').appendChild(this.serviceList_);
 
-    this.pageDiv.querySelector('.forget').addEventListener(
-        'click', function() {
-          this.disconnect();
-          this.pageDiv.dispatchEvent(new CustomEvent('forgetpressed', {
-              detail: {
-                address: this.deviceInfo.address,
-              },
-          }));
-        }.bind(this));
+    this.pageDiv.querySelector('.forget').addEventListener('click', function() {
+      this.disconnect();
+      this.pageDiv.dispatchEvent(new CustomEvent('forgetpressed', {
+        detail: {
+          address: this.deviceInfo.address,
+        },
+      }));
+    }.bind(this));
 
     this.connectBtn_ = this.pageDiv.querySelector('.disconnect');
     this.connectBtn_.addEventListener('click', function() {
@@ -95,8 +93,8 @@ cr.define('device_details_page', function() {
       this.updateConnectionStatus_(
           device_collection.ConnectionStatus.CONNECTING);
 
-      device_broker.connectToDevice(this.deviceInfo.address).then(
-          function(devicePtr) {
+      device_broker.connectToDevice(this.deviceInfo.address)
+          .then(function(devicePtr) {
             this.devicePtr_ = devicePtr;
 
             this.updateConnectionStatus_(
@@ -104,12 +102,14 @@ cr.define('device_details_page', function() {
 
             // Fetch services asynchronously.
             return this.devicePtr_.getServices();
-          }.bind(this)).then(function(response) {
+          }.bind(this))
+          .then(function(response) {
             this.deviceInfo.services = response.services;
             this.serviceList_.load(this.deviceInfo.address);
             this.redraw();
             this.fireDeviceInfoChanged_();
-          }.bind(this)).catch(function(error) {
+          }.bind(this))
+          .catch(function(error) {
             // If a connection error occurs while fetching the services, the
             // devicePtr reference must be removed.
             if (this.devicePtr_) {
@@ -128,7 +128,8 @@ cr.define('device_details_page', function() {
 
     /** Disconnects the page from the Bluetooth device. */
     disconnect: function() {
-      if (!this.devicePtr_) return;
+      if (!this.devicePtr_)
+        return;
 
       this.devicePtr_.disconnect();
       this.devicePtr_ = null;

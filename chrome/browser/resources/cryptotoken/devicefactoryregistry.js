@@ -15,8 +15,8 @@
  *     attestation implementation.
  * @constructor
  */
-function DeviceFactoryRegistry(gnubbyFactory, countdownFactory,
-    individualAttestation) {
+function DeviceFactoryRegistry(
+    gnubbyFactory, countdownFactory, individualAttestation) {
   /** @private {!GnubbyFactory} */
   this.gnubbyFactory_ = gnubbyFactory;
   /** @private {!CountdownFactory} */

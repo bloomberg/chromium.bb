@@ -32,7 +32,5 @@ cr.define('userActions', function() {
     table.appendChild(tr);
   }
 
-  return {
-    observeUserAction: observeUserAction
-  };
+  return {observeUserAction: observeUserAction};
 });

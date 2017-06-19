@@ -75,8 +75,8 @@ function renderCacheData(body, database) {
         row.appendChild(t);
       }
 
-      row.className = resource.is_prefetchable ? 'action-prerender'
-                                               : 'action-none';
+      row.className =
+          resource.is_prefetchable ? 'action-prerender' : 'action-none';
 
       row.appendChild(document.createElement('td')).textContent =
           truncateString(resource.resource_url);
@@ -99,5 +99,5 @@ function renderCacheData(body, database) {
   }
 }
 
-document.addEventListener('DOMContentLoaded',
-                          requestResourcePrefetchPredictorDb);
+document.addEventListener(
+    'DOMContentLoaded', requestResourcePrefetchPredictorDb);

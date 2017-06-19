@@ -34,8 +34,8 @@ cr.define('identity_internals', function() {
           'extensionName', this.data_.extensionName, 'extension-name'));
       tbody.appendChild(this.createEntry_(
           'extensionId', this.data_.extensionId, 'extension-id'));
-      tbody.appendChild(this.createEntry_(
-          'tokenStatus', this.data_.status, 'token-status'));
+      tbody.appendChild(
+          this.createEntry_('tokenStatus', this.data_.status, 'token-status'));
       tbody.appendChild(this.createEntry_(
           'expirationTime', this.data_.expirationTime, 'expiration-time'));
       tbody.appendChild(this.createEntryForScopes_());
@@ -113,8 +113,9 @@ cr.define('identity_internals', function() {
       var revokeButton = this.ownerDocument.createElement('button');
       revokeButton.classList.add('revoke-button');
       revokeButton.addEventListener('click', function() {
-        chrome.send('identityInternalsRevokeToken',
-                    [this.data_.extensionId, this.data_.accessToken]);
+        chrome.send(
+            'identityInternalsRevokeToken',
+            [this.data_.extensionId, this.data_.accessToken]);
       }.bind(this));
       revokeButton.textContent = loadTimeData.getString('revoke');
       return revokeButton;

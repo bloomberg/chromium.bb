@@ -447,13 +447,17 @@ Polymer({
           that.putSearchAtBottom_();
         }
       };
-      this.importHref('chrome://resources/polymer/v1_0/neon-animation/' +
-          'web-animations.html', onload);
-      this.importHref(this.resolveUrl(
-          '../issue_banner/issue_banner.html'), onload);
-      this.importHref(this.resolveUrl(
-          '../media_router_search_highlighter/' +
-              'media_router_search_highlighter.html'), onload);
+      this.importHref(
+          'chrome://resources/polymer/v1_0/neon-animation/' +
+              'web-animations.html',
+          onload);
+      this.importHref(
+          this.resolveUrl('../issue_banner/issue_banner.html'), onload);
+      this.importHref(
+          this.resolveUrl(
+              '../media_router_search_highlighter/' +
+              'media_router_search_highlighter.html'),
+          onload);
 
       // If this is not on a Mac platform, remove the placeholder. See
       // onFocus_() for more details. ready() is only called once, so no need
@@ -497,7 +501,8 @@ Polymer({
     // Only set |userOptedIntoCloudServices| if the user was shown the cloud
     // services preferences option.
     var userOptedIntoCloudServices = this.showFirstRunFlowCloudPref ?
-        this.$$('#first-run-cloud-checkbox').checked : undefined;
+        this.$$('#first-run-cloud-checkbox').checked :
+        undefined;
     this.fire('acknowledge-first-run-flow', {
       optedIntoCloudServices: userOptedIntoCloudServices,
     });
@@ -730,8 +735,8 @@ Polymer({
    */
   computeHeaderHidden_: function(view, issue) {
     return view == media_router.MediaRouterView.ROUTE_DETAILS ||
-        (view == media_router.MediaRouterView.SINK_LIST &&
-         !!issue && issue.isBlocking);
+        (view == media_router.MediaRouterView.SINK_LIST && !!issue &&
+         issue.isBlocking);
   },
 
   /**
@@ -748,7 +753,8 @@ Polymer({
         return this.i18n('issueHeaderText');
       case media_router.MediaRouterView.ROUTE_DETAILS:
         return this.currentRoute_ && this.sinkMap_[this.currentRoute_.sinkId] ?
-            this.sinkMap_[this.currentRoute_.sinkId].name : '';
+            this.sinkMap_[this.currentRoute_.sinkId].name :
+            '';
       case media_router.MediaRouterView.SINK_LIST:
       case media_router.MediaRouterView.FILTER:
         return this.headerText;
@@ -793,9 +799,10 @@ Polymer({
    * @private
    */
   computeIssueBannerShown_: function(view, issue) {
-    return !!issue && (view == media_router.MediaRouterView.SINK_LIST ||
-                       view == media_router.MediaRouterView.FILTER ||
-                       view == media_router.MediaRouterView.ISSUE);
+    return !!issue &&
+        (view == media_router.MediaRouterView.SINK_LIST ||
+         view == media_router.MediaRouterView.FILTER ||
+         view == media_router.MediaRouterView.ISSUE);
   },
 
   /**
@@ -808,7 +815,7 @@ Polymer({
    */
   computeNoMatchesHidden_: function(searchResultsToShow, isSearchListHidden) {
     return isSearchListHidden || this.searchInputText_.length == 0 ||
-           searchResultsToShow.length != 0;
+        searchResultsToShow.length != 0;
   },
 
   /**
@@ -1109,8 +1116,8 @@ Polymer({
   computeTotalSearchHeight_: function(
       deviceMissing, noMatches, results, searchOffsetHeight, maxHeight) {
     var contentHeight = deviceMissing.offsetHeight +
-        ((noMatches.hasAttribute('hidden')) ?
-         results.offsetHeight : noMatches.offsetHeight);
+        ((noMatches.hasAttribute('hidden')) ? results.offsetHeight :
+                                              noMatches.offsetHeight);
     return Math.min(contentHeight, maxHeight) + searchOffsetHeight;
   },
 
@@ -1156,13 +1163,12 @@ Polymer({
     var searchResultsToShow = [];
     for (var i = 0; i < this.sinksToShow_.length; ++i) {
       var matchSubstrings = this.computeSearchMatches_(
-          searchInputText,
-          this.sinksToShow_[i].name);
+          searchInputText, this.sinksToShow_[i].name);
       if (!matchSubstrings) {
         continue;
       }
-      searchResultsToShow.push({sinkItem: this.sinksToShow_[i],
-                                substrings: matchSubstrings});
+      searchResultsToShow.push(
+          {sinkItem: this.sinksToShow_[i], substrings: matchSubstrings});
     }
     searchResultsToShow.sort(this.compareSearchMatches_);
 
@@ -1179,17 +1185,24 @@ Polymer({
     // the pseudo sink for the search will be treated like a real sink because
     // it will actually be in |sinksToShow_| until a real sink is returned by
     // search. So the filter here shouldn't treat it like a pseudo sink.
-    searchResultsToShow = this.pseudoSinks_.filter(function(pseudoSink) {
-      return (!pendingPseudoSink || pseudoSink.id != pendingPseudoSink.id) &&
-          !searchResultsToShow.find(function(searchResult) {
-            return searchResult.sinkItem.name == searchInputText &&
-                   searchResult.sinkItem.iconType == pseudoSink.iconType;
-          });
-    }).map(function(pseudoSink) {
-      pseudoSink.name = searchInputText;
-      return {sinkItem: pseudoSink,
-              substrings: [[0, searchInputText.length - 1]]};
-    }).concat(searchResultsToShow);
+    searchResultsToShow =
+        this.pseudoSinks_
+            .filter(function(pseudoSink) {
+              return (!pendingPseudoSink ||
+                      pseudoSink.id != pendingPseudoSink.id) &&
+                  !searchResultsToShow.find(function(searchResult) {
+                    return searchResult.sinkItem.name == searchInputText &&
+                        searchResult.sinkItem.iconType == pseudoSink.iconType;
+                  });
+            })
+            .map(function(pseudoSink) {
+              pseudoSink.name = searchInputText;
+              return {
+                sinkItem: pseudoSink,
+                substrings: [[0, searchInputText.length - 1]]
+              };
+            })
+            .concat(searchResultsToShow);
     this.searchResultsToShow_ = searchResultsToShow;
   },
 
@@ -1226,8 +1239,10 @@ Polymer({
    */
   getElementVerticalPadding_: function(element) {
     var style = window.getComputedStyle(element);
-    return [parseInt(style.getPropertyValue('padding-bottom'), 10) || 0,
-            parseInt(style.getPropertyValue('padding-top'), 10) || 0];
+    return [
+      parseInt(style.getPropertyValue('padding-bottom'), 10) || 0,
+      parseInt(style.getPropertyValue('padding-top'), 10) || 0
+    ];
   },
 
   /**
@@ -1238,7 +1253,8 @@ Polymer({
    */
   getFirstRunFlowCloudPrefText_: function() {
     return loadTimeData.valueExists('firstRunFlowCloudPrefText') ?
-        this.i18n('firstRunFlowCloudPrefText') : '';
+        this.i18n('firstRunFlowCloudPrefText') :
+        '';
   },
 
   /**
@@ -1457,34 +1473,55 @@ Polymer({
     // This GroupEffect does the reverse of |moveSearchToTop_|. It fades the
     // sink list in while sliding the search input and search results list down.
     // The dialog height is also adjusted smoothly to the sink list height.
-    var deviceMissingEffect = new KeyframeEffect(deviceMissing,
-        [{'marginBottom': searchInitialOffsetHeight},
-         {'marginBottom': searchFinalOffsetHeight}],
+    var deviceMissingEffect = new KeyframeEffect(
+        deviceMissing,
+        [
+          {'marginBottom': searchInitialOffsetHeight},
+          {'marginBottom': searchFinalOffsetHeight}
+        ],
         timing);
-    var listEffect = new KeyframeEffect(list,
-        [{'opacity': '0'}, {'opacity': '1'}],
+    var listEffect =
+        new KeyframeEffect(list, [{'opacity': '0'}, {'opacity': '1'}], timing);
+    var resultsEffect = new KeyframeEffect(
+        resultsContainer,
+        [
+          {
+            'top': resultsInitialTop + 'px',
+            'paddingTop': resultsContainer.style['padding-top']
+          },
+          {'top': '100%', 'paddingTop': '0px'}
+        ],
         timing);
-    var resultsEffect = new KeyframeEffect(resultsContainer,
-        [{'top': resultsInitialTop + 'px',
-          'paddingTop': resultsContainer.style['padding-top']},
-         {'top': '100%', 'paddingTop': '0px'}],
+    var searchEffect = new KeyframeEffect(
+        search,
+        [
+          {
+            'top': searchInitialTop + 'px',
+            'marginTop': '0px',
+            'paddingBottom': searchInitialPaddingBottom + 'px',
+            'paddingTop': searchInitialPaddingTop + 'px'
+          },
+          {
+            'top': '100%',
+            'marginTop': '-' + searchFinalOffsetHeight + 'px',
+            'paddingBottom': searchFinalPaddingBottom + 'px',
+            'paddingTop': searchFinalPaddingTop + 'px'
+          }
+        ],
         timing);
-    var searchEffect = new KeyframeEffect(search,
-        [{'top': searchInitialTop + 'px', 'marginTop': '0px',
-          'paddingBottom': searchInitialPaddingBottom + 'px',
-          'paddingTop': searchInitialPaddingTop + 'px'},
-         {'top': '100%', 'marginTop': '-' + searchFinalOffsetHeight + 'px',
-          'paddingBottom': searchFinalPaddingBottom + 'px',
-          'paddingTop': searchFinalPaddingTop + 'px'}],
+    var viewEffect = new KeyframeEffect(
+        view,
+        [
+          {'height': initialHeight + 'px', 'paddingBottom': '0px'}, {
+            'height': finalHeight + 'px',
+            'paddingBottom': searchFinalOffsetHeight + 'px'
+          }
+        ],
         timing);
-    var viewEffect = new KeyframeEffect(view,
-        [{'height': initialHeight + 'px', 'paddingBottom': '0px'},
-         {'height': finalHeight + 'px',
-          'paddingBottom': searchFinalOffsetHeight + 'px'}],
-        timing);
-    var player = document.timeline.play(new GroupEffect(hasList ?
-          [listEffect, resultsEffect, searchEffect, viewEffect] :
-          [deviceMissingEffect, resultsEffect, searchEffect, viewEffect]));
+    var player = document.timeline.play(new GroupEffect(
+        hasList ?
+            [listEffect, resultsEffect, searchEffect, viewEffect] :
+            [deviceMissingEffect, resultsEffect, searchEffect, viewEffect]));
 
     var that = this;
     var finalizeAnimation = function() {
@@ -1560,34 +1597,55 @@ Polymer({
     // This GroupEffect will cause the sink list to fade out while the search
     // input and search results list slide up. The dialog will also resize
     // smoothly to the new search result list height.
-    var deviceMissingEffect = new KeyframeEffect(deviceMissing,
-        [{'marginBottom': searchInitialOffsetHeight},
-         {'marginBottom': searchFinalOffsetHeight}],
+    var deviceMissingEffect = new KeyframeEffect(
+        deviceMissing,
+        [
+          {'marginBottom': searchInitialOffsetHeight},
+          {'marginBottom': searchFinalOffsetHeight}
+        ],
         timing);
-    var listEffect = new KeyframeEffect(list,
-        [{'opacity': '1'}, {'opacity': '0'}],
+    var listEffect =
+        new KeyframeEffect(list, [{'opacity': '1'}, {'opacity': '0'}], timing);
+    var resultsEffect = new KeyframeEffect(
+        resultsContainer,
+        [
+          {'top': '100%', 'paddingTop': '0px'}, {
+            'top': searchFinalTop + 'px',
+            'paddingTop': searchFinalOffsetHeight + 'px'
+          }
+        ],
         timing);
-    var resultsEffect = new KeyframeEffect(resultsContainer,
-        [{'top': '100%', 'paddingTop': '0px'},
-         {'top': searchFinalTop + 'px',
-          'paddingTop': searchFinalOffsetHeight + 'px'}],
+    var searchEffect = new KeyframeEffect(
+        search,
+        [
+          {
+            'top': '100%',
+            'marginTop': '-' + searchInitialOffsetHeight + 'px',
+            'paddingBottom': searchInitialPaddingBottom + 'px',
+            'paddingTop': searchInitialPaddingTop + 'px'
+          },
+          {
+            'top': searchFinalTop + 'px',
+            'marginTop': '0px',
+            'paddingBottom': searchFinalPaddingBottom + 'px',
+            'paddingTop': searchFinalPaddingTop + 'px'
+          }
+        ],
         timing);
-    var searchEffect = new KeyframeEffect(search,
-        [{'top': '100%', 'marginTop': '-' + searchInitialOffsetHeight + 'px',
-          'paddingBottom': searchInitialPaddingBottom + 'px',
-          'paddingTop': searchInitialPaddingTop + 'px'},
-         {'top': searchFinalTop + 'px', 'marginTop': '0px',
-          'paddingBottom': searchFinalPaddingBottom + 'px',
-          'paddingTop': searchFinalPaddingTop + 'px'}],
+    var viewEffect = new KeyframeEffect(
+        view,
+        [
+          {
+            'height': initialHeight + 'px',
+            'paddingBottom': searchInitialOffsetHeight + 'px'
+          },
+          {'height': finalHeight + 'px', 'paddingBottom': '0px'}
+        ],
         timing);
-    var viewEffect = new KeyframeEffect(view,
-        [{'height': initialHeight + 'px',
-          'paddingBottom': searchInitialOffsetHeight + 'px'},
-         {'height': finalHeight + 'px', 'paddingBottom': '0px'}],
-        timing);
-    var player = document.timeline.play(new GroupEffect(hasList ?
-          [listEffect, resultsEffect, searchEffect, viewEffect] :
-          [deviceMissingEffect, resultsEffect, searchEffect, viewEffect]));
+    var player = document.timeline.play(new GroupEffect(
+        hasList ?
+            [listEffect, resultsEffect, searchEffect, viewEffect] :
+            [deviceMissingEffect, resultsEffect, searchEffect, viewEffect]));
 
     var that = this;
     var finalizeAnimation = function() {
@@ -1716,9 +1774,9 @@ Polymer({
 
     // Regardless of whether the route is for display, it was resolved
     // successfully.
-    this.fire('report-resolved-route', {
-      outcome: media_router.MediaRouterRouteCreationOutcome.SUCCESS
-    });
+    this.fire(
+        'report-resolved-route',
+        {outcome: media_router.MediaRouterRouteCreationOutcome.SUCCESS});
 
     if (isForDisplay) {
       this.showRouteDetails_(route);
@@ -1764,8 +1822,8 @@ Polymer({
     // handled on the C++ side instead of the JS side on non-mac platforms,
     // which uses toolkit-views. Handle the expected behavior on all platforms
     // here.
-    if (e.key == media_router.KEY_ESC && !e.shiftKey &&
-        !e.ctrlKey && !e.altKey && !e.metaKey) {
+    if (e.key == media_router.KEY_ESC && !e.shiftKey && !e.ctrlKey &&
+        !e.altKey && !e.metaKey) {
       // When searching, allow ESC as a mechanism to leave the filter view.
       if (this.currentView_ == media_router.MediaRouterView.FILTER) {
         // If the user tabbed to an item in the search results, or otherwise has
@@ -1912,15 +1970,22 @@ Polymer({
     this.searchUseBottomPadding =
         this.shouldSearchUseBottomPadding_(deviceMissing);
     var resultsPadding = this.computeElementVerticalPadding_(results);
-    var finalHeight = this.computeTotalSearchHeight_(deviceMissing, noMatches,
-        results, search.offsetHeight, this.sinkListMaxHeight_ + resultsPadding);
+    var finalHeight = this.computeTotalSearchHeight_(
+        deviceMissing, noMatches, results, search.offsetHeight,
+        this.sinkListMaxHeight_ + resultsPadding);
     if (finalHeight != view.offsetHeight) {
-      var viewEffect = new KeyframeEffect(view,
-          [{'height': view.offsetHeight + 'px'},
-           {'height': finalHeight + 'px'}],
-          {duration:
-              this.computeAnimationDuration_(finalHeight - view.offsetHeight),
-           easing: 'ease-in-out', fill: 'forwards'});
+      var viewEffect = new KeyframeEffect(
+          view,
+          [
+            {'height': view.offsetHeight + 'px'},
+            {'height': finalHeight + 'px'}
+          ],
+          {
+            duration:
+                this.computeAnimationDuration_(finalHeight - view.offsetHeight),
+            easing: 'ease-in-out',
+            fill: 'forwards'
+          });
       var player = document.timeline.play(viewEffect);
       if (this.heightAdjustmentPlayer_) {
         this.heightAdjustmentPlayer_.cancel();
@@ -2120,7 +2185,7 @@ Polymer({
     if (this.shownCastModeValue_ != media_router.CastModeType.AUTO) {
       updatedSinkList = updatedSinkList.filter(function(element) {
         return (element.castModes & this.shownCastModeValue_) ||
-              this.sinkToRouteMap_[element.id];
+            this.sinkToRouteMap_[element.id];
       }, this);
     }
 
@@ -2131,7 +2196,8 @@ Polymer({
     if (this.sinksToShow_) {
       for (var i = this.sinksToShow_.length - 1; i >= 0; i--) {
         var index = updatedSinkList.findIndex(function(updatedSink) {
-            return this.sinksToShow_[i].id == updatedSink.id; }.bind(this));
+          return this.sinksToShow_[i].id == updatedSink.id;
+        }.bind(this));
         if (index < 0) {
           // Remove any sinks that are no longer discovered.
           this.sinksToShow_.splice(i, 1);
@@ -2344,7 +2410,8 @@ Polymer({
       // Allow one launch at a time.
       var selectedCastModeValue =
           this.shownCastModeValue_ == media_router.CastModeType.AUTO ?
-              sink.castModes & -sink.castModes : this.shownCastModeValue_;
+          sink.castModes & -sink.castModes :
+          this.shownCastModeValue_;
       if (sink.isPseudoSink) {
         this.pseudoSinkSearchState_ = new PseudoSinkSearchState(sink);
         this.fire('search-sinks-and-create-route', {
@@ -2463,11 +2530,13 @@ Polymer({
       // element can have a fractional height. So we use getBoundingClientRect()
       // to avoid rounding errors.
       var firstRunFlowHeight = this.$$('#first-run-flow') &&
-          this.$$('#first-run-flow').style.display != 'none' ?
-              this.$$('#first-run-flow').getBoundingClientRect().height : 0;
+              this.$$('#first-run-flow').style.display != 'none' ?
+          this.$$('#first-run-flow').getBoundingClientRect().height :
+          0;
       var issueHeight = this.$$('#issue-banner') &&
-          this.$$('#issue-banner').style.display != 'none' ?
-              this.$$('#issue-banner').offsetHeight : 0;
+              this.$$('#issue-banner').style.display != 'none' ?
+          this.$$('#issue-banner').offsetHeight :
+          0;
       var search = this.$$('#sink-search');
       var hasSearch = this.hasConditionalElement_(search);
       var searchHeight = hasSearch ? search.offsetHeight : 0;

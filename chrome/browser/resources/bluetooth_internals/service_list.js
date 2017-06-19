@@ -147,18 +147,22 @@ cr.define('service_list', function() {
       this.deviceAddress_ = deviceAddress;
       this.servicesRequested_ = true;
 
-      device_broker.connectToDevice(this.deviceAddress_).then(
-          function(device) {
+      device_broker.connectToDevice(this.deviceAddress_)
+          .then(function(device) {
             return device.getServices();
-          }.bind(this)).then(function(response) {
+          }.bind(this))
+          .then(function(response) {
             this.setData(new ArrayDataModel(response.services));
             this.setSpinnerShowing(false);
             this.servicesRequested_ = false;
-          }.bind(this)).catch(function(error) {
+          }.bind(this))
+          .catch(function(error) {
             this.servicesRequested_ = false;
             Snackbar.show(
                 deviceAddress + ': ' + error.message, SnackbarType.ERROR,
-                'Retry', function() { this.load(deviceAddress); }.bind(this));
+                'Retry', function() {
+                  this.load(deviceAddress);
+                }.bind(this));
           }.bind(this));
     },
   };

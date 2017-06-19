@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 (function() {
-  // Since all we want here is forwarding of certain commands, all can be done
-  // in the anonymous function's scope.
+// Since all we want here is forwarding of certain commands, all can be done
+// in the anonymous function's scope.
 
-  function wireUpWindow() {
-    $('launch-button').addEventListener('click', function() {
-      chrome.send('SetAsDefaultBrowser:LaunchSetDefaultBrowserFlow');
-    });
-  }
+function wireUpWindow() {
+  $('launch-button').addEventListener('click', function() {
+    chrome.send('SetAsDefaultBrowser:LaunchSetDefaultBrowserFlow');
+  });
+}
 
-  window.addEventListener('DOMContentLoaded', wireUpWindow);
+window.addEventListener('DOMContentLoaded', wireUpWindow);
 })();

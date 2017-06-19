@@ -62,7 +62,8 @@ var DetailsView = (function() {
 
         var p = addNode(div, 'p');
         addNodeWithText(
-            p, 'h4', sourceEntry.getSourceId() + ': ' +
+            p, 'h4',
+            sourceEntry.getSourceId() + ': ' +
                 sourceEntry.getSourceTypeString());
 
         if (sourceEntry.getDescription())

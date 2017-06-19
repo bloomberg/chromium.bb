@@ -20,9 +20,7 @@ cr.define('localState', function() {
     $('content').textContent = localState;
   }
 
-  return {
-    setLocalState: setLocalState
-  };
+  return {setLocalState: setLocalState};
 });
 
 // When the page loads, request the JSON local state data from C++.

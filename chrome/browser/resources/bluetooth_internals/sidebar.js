@@ -35,8 +35,11 @@ cr.define('sidebar', function() {
     this.overlayDiv_ = this.sidebarDiv_.querySelector('.overlay');
     this.overlayDiv_.addEventListener('click', this.close.bind(this));
 
-    window.matchMedia('screen and (max-width: 600px)').addListener(
-        function(query) { if (!query.matches) this.close(); }.bind(this));
+    window.matchMedia('screen and (max-width: 600px)')
+        .addListener(function(query) {
+          if (!query.matches)
+            this.close();
+        }.bind(this));
   }
 
   Sidebar.prototype = {
@@ -109,7 +112,5 @@ cr.define('sidebar', function() {
     },
   };
 
-  return {
-    Sidebar: Sidebar
-  };
+  return {Sidebar: Sidebar};
 });

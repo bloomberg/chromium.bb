@@ -73,7 +73,5 @@ cr.define('ntp', function() {
     }
   };
 
-  return {
-    DotList: DotList
-  };
+  return {DotList: DotList};
 });

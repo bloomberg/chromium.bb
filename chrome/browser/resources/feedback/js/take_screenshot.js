@@ -30,25 +30,22 @@ function takeScreenshot(callback) {
   }, false);
 
   navigator.webkitGetUserMedia(
-    {
-      video: {
-        mandatory: {
-          chromeMediaSource: 'screen',
-          maxWidth: 4096,
-          maxHeight: 2560
+      {
+        video: {
+          mandatory:
+              {chromeMediaSource: 'screen', maxWidth: 4096, maxHeight: 2560}
         }
-      }
-    },
-    function(stream) {
-      if (stream) {
-        screenshotStream = stream;
-        video.src = window.URL.createObjectURL(screenshotStream);
-        video.play();
-      }
-    },
-    function(err) {
-      console.error('takeScreenshot failed: ' +
-          err.name + '; ' + err.message + '; ' + err.constraintName);
-    }
-  );
+      },
+      function(stream) {
+        if (stream) {
+          screenshotStream = stream;
+          video.src = window.URL.createObjectURL(screenshotStream);
+          video.play();
+        }
+      },
+      function(err) {
+        console.error(
+            'takeScreenshot failed: ' + err.name + '; ' + err.message + '; ' +
+            err.constraintName);
+      });
 }

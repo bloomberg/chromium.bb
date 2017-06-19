@@ -72,7 +72,8 @@ cr.define('snackbar', function() {
       this.actionLink_.textContent = options.actionText || 'Dismiss';
 
       this.actionLink_.addEventListener('click', function() {
-        if (options.action) options.action();
+        if (options.action)
+          options.action();
         this.dismiss();
       }.bind(this));
     },
@@ -82,8 +83,10 @@ cr.define('snackbar', function() {
      */
     show: function() {
       this.classList.add('open');
-      if (Snackbar.hasContentFocus_) this.startTimeout_();
-      else this.stopTimeout_();
+      if (Snackbar.hasContentFocus_)
+        this.startTimeout_();
+      else
+        this.stopTimeout_();
 
       document.addEventListener('contentfocus', this.boundStartTimeout_);
       document.addEventListener('contentblur', this.boundStopTimeout_);
@@ -224,8 +227,10 @@ cr.define('snackbar', function() {
    *     dismissing.
    */
   Snackbar.dismiss = function(clearQueue) {
-    if (clearQueue) Snackbar.queue_ = [];
-    if (Snackbar.current_) return Snackbar.current_.dismiss();
+    if (clearQueue)
+      Snackbar.queue_ = [];
+    if (Snackbar.current_)
+      return Snackbar.current_.dismiss();
     return Promise.resolve();
   };
 

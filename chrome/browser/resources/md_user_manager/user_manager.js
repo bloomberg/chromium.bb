@@ -24,7 +24,7 @@ cr.define('cr.ui', function() {
    * Manages initialization of screens, transitions, and error messages.
    * @constructor
    * @extends {DisplayManager}
-  */
+   */
   function UserManager() {}
 
   cr.addSingletonGetter(UserManager);
@@ -95,8 +95,8 @@ cr.define('cr.ui', function() {
    *     displayed.
    */
   UserManager.showUserManagerScreen = function(showGuest, showAddPerson) {
-    UserManager.getInstance().showScreen({id: 'account-picker',
-                                          data: {disableAddUser: false}});
+    UserManager.getInstance().showScreen(
+        {id: 'account-picker', data: {disableAddUser: false}});
     // Hide control options if the user does not have the right permissions.
     var controlBar = document.querySelector('control-bar');
     controlBar.showGuest = showGuest;
@@ -104,13 +104,15 @@ cr.define('cr.ui', function() {
 
     // Disable the context menu, as the Print/Inspect element items don't
     // make sense when displayed as a widget.
-    document.addEventListener('contextmenu', function(e) {e.preventDefault();});
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
 
     if (window.location.hash == '#tutorial')
       document.querySelector('user-manager-tutorial').startTutorial();
     else if (window.location.hash == '#create-user') {
-      document.querySelector('user-manager-pages').setSelectedPage(
-          'create-user-page');
+      document.querySelector('user-manager-pages')
+          .setSelectedPage('create-user-page');
     }
   };
 
@@ -164,9 +166,7 @@ cr.define('cr.ui', function() {
   };
 
   // Export
-  return {
-    UserManager: UserManager
-  };
+  return {UserManager: UserManager};
 });
 
 // Alias to Oobe for use in src/ui/login/account_picker/user_pod_row.js
@@ -177,8 +177,7 @@ var Oobe = cr.ui.UserManager;
 disableTextSelectAndDrag(function(e) {
   var src = e.target;
   return src instanceof HTMLTextAreaElement ||
-         src instanceof HTMLInputElement &&
-         /text|password|search/.test(src.type);
+      src instanceof HTMLInputElement && /text|password|search/.test(src.type);
 });
 
 document.addEventListener('DOMContentLoaded', cr.ui.UserManager.initialize);

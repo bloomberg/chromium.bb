@@ -34,7 +34,8 @@ function UTIL_BytesToString(b) {
  * @return {string} result.
  */
 function UTIL_BytesToHex(b) {
-  if (!b) return '(null)';
+  if (!b)
+    return '(null)';
   var hexchars = '0123456789ABCDEF';
   var hexrep = new Array(b.length * 2);
 
@@ -51,7 +52,8 @@ function UTIL_BytesToHexWithSeparator(b, sep) {
   var hexrep = new Array(b.length * stride);
 
   for (var i = 0; i < b.length; ++i) {
-    if (sep) hexrep[i * stride + 0] = sep;
+    if (sep)
+      hexrep[i * stride + 0] = sep;
     hexrep[i * stride + stride - 2] = hexchars.charAt((b[i] >> 4) & 15);
     hexrep[i * stride + stride - 1] = hexchars.charAt(b[i] & 15);
   }
@@ -62,7 +64,8 @@ function UTIL_HexToBytes(h) {
   var hexchars = '0123456789ABCDEFabcdef';
   var res = new Uint8Array(h.length / 2);
   for (var i = 0; i < h.length; i += 2) {
-    if (hexchars.indexOf(h.substring(i, i + 1)) == -1) break;
+    if (hexchars.indexOf(h.substring(i, i + 1)) == -1)
+      break;
     res[i / 2] = parseInt(h.substring(i, i + 2), 16);
   }
   return res;
@@ -72,15 +75,18 @@ function UTIL_HexToArray(h) {
   var hexchars = '0123456789ABCDEFabcdef';
   var res = new Array(h.length / 2);
   for (var i = 0; i < h.length; i += 2) {
-    if (hexchars.indexOf(h.substring(i, i + 1)) == -1) break;
+    if (hexchars.indexOf(h.substring(i, i + 1)) == -1)
+      break;
     res[i / 2] = parseInt(h.substring(i, i + 2), 16);
   }
   return res;
 }
 
 function UTIL_equalArrays(a, b) {
-  if (!a || !b) return false;
-  if (a.length != b.length) return false;
+  if (!a || !b)
+    return false;
+  if (a.length != b.length)
+    return false;
   var accu = 0;
   for (var i = 0; i < a.length; ++i)
     accu |= a[i] ^ b[i];
@@ -88,11 +94,15 @@ function UTIL_equalArrays(a, b) {
 }
 
 function UTIL_ltArrays(a, b) {
-  if (a.length < b.length) return true;
-  if (a.length > b.length) return false;
+  if (a.length < b.length)
+    return true;
+  if (a.length > b.length)
+    return false;
   for (var i = 0; i < a.length; ++i) {
-    if (a[i] < b[i]) return true;
-    if (a[i] > b[i]) return false;
+    if (a[i] < b[i])
+      return true;
+    if (a[i] > b[i])
+      return false;
   }
   return false;
 }
@@ -124,7 +134,8 @@ function UTIL_getRandom(a) {
   var tmp = new Array(a);
   var rnd = new Uint8Array(a);
   window.crypto.getRandomValues(rnd);  // Yay!
-  for (var i = 0; i < a; ++i) tmp[i] = rnd[i] & 255;
+  for (var i = 0; i < a; ++i)
+    tmp[i] = rnd[i] & 255;
   return tmp;
 }
 
@@ -169,25 +180,34 @@ var UTIL_ASN_SEQUENCE = 0x30;
  * @return {{'r': !Array<number>, 's': !Array<number>}|null}
  */
 function UTIL_Asn1SignatureToJson(a) {
-  if (a.length < 6) return null;  // Too small to be valid
-  if (a[0] != UTIL_ASN_SEQUENCE) return null;
+  if (a.length < 6)
+    return null;  // Too small to be valid
+  if (a[0] != UTIL_ASN_SEQUENCE)
+    return null;
   var l = a[1] & 255;
-  if (l & 0x80) return null;  // SEQ.size too large
-  if (a.length != 2 + l) return null;  // SEQ size does not match input
+  if (l & 0x80)
+    return null;  // SEQ.size too large
+  if (a.length != 2 + l)
+    return null;  // SEQ size does not match input
 
   function parseInt(off) {
-    if (a[off] != UTIL_ASN_INT) return null;
+    if (a[off] != UTIL_ASN_INT)
+      return null;
     var l = a[off + 1] & 255;
-    if (l & 0x80) return null;  // INT.size too large
-    if (off + 2 + l > a.length) return null;  // Out of bounds
+    if (l & 0x80)
+      return null;  // INT.size too large
+    if (off + 2 + l > a.length)
+      return null;  // Out of bounds
     return a.slice(off + 2, off + 2 + l);
   }
 
   var r = parseInt(2);
-  if (!r) return null;
+  if (!r)
+    return null;
 
   var s = parseInt(2 + 2 + r.length);
-  if (!s) return null;
+  if (!s)
+    return null;
 
   return {'r': r, 's': s};
 }
@@ -228,7 +248,8 @@ function UTIL_JsonSignatureToAsn1(sig) {
 }
 
 function UTIL_prepend_zero(s, n) {
-  if (s.length == n) return s;
+  if (s.length == n)
+    return s;
   var l = s.length;
   for (var i = 0; i < n - l; ++i) {
     s = '0' + s;

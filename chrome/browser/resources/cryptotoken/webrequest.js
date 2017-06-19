@@ -22,7 +22,8 @@ var JS_API_VERSION = 1.1;
 function getOriginFromUrl(url) {
   var re = new RegExp('^(https?://)[^/]*/?');
   var originarray = re.exec(url);
-  if (originarray == null) return originarray;
+  if (originarray == null)
+    return originarray;
   var origin = originarray[0];
   while (origin.charAt(origin.length - 1) == '/') {
     origin = origin.substring(0, origin.length - 1);
@@ -95,8 +96,8 @@ function getSignChallenges(request) {
  *     each challenge.
  * @return {boolean} Whether the array appears valid.
  */
-function isValidSignChallengeArray(signChallenges, challengeValueRequired,
-    appIdRequired) {
+function isValidSignChallengeArray(
+    signChallenges, challengeValueRequired, appIdRequired) {
   for (var i = 0; i < signChallenges.length; i++) {
     var incomingChallenge = signChallenges[i];
     if (challengeValueRequired &&
@@ -125,15 +126,14 @@ function handleWebPageRequest(request, sender, sendResponse) {
       return handleU2fSignRequest(sender, request, sendResponse);
 
     case MessageTypes.U2F_GET_API_VERSION_REQUEST:
-      sendResponse(
-          makeU2fGetApiVersionResponse(request, JS_API_VERSION,
-              MessageTypes.U2F_GET_API_VERSION_RESPONSE));
+      sendResponse(makeU2fGetApiVersionResponse(
+          request, JS_API_VERSION, MessageTypes.U2F_GET_API_VERSION_RESPONSE));
       return null;
 
     default:
-      sendResponse(
-          makeU2fErrorResponse(request, ErrorCodes.BAD_REQUEST, undefined,
-              MessageTypes.U2F_REGISTER_RESPONSE));
+      sendResponse(makeU2fErrorResponse(
+          request, ErrorCodes.BAD_REQUEST, undefined,
+          MessageTypes.U2F_REGISTER_RESPONSE));
       return null;
   }
 }
@@ -153,7 +153,7 @@ function makeResponseForRequest(request, responseSuffix, opt_defaultType) {
   } else {
     type = opt_defaultType;
   }
-  var reply = { 'type': type };
+  var reply = {'type': type};
   if (request && request.requestId) {
     reply.requestId = request.requestId;
   }
@@ -299,9 +299,9 @@ function tlsChannelIdValue(opt_tlsChannelId) {
  */
 function makeBrowserData(type, serverChallenge, origin, opt_tlsChannelId) {
   var browserData = {
-    'typ' : type,
-    'challenge' : serverChallenge,
-    'origin' : origin
+    'typ': type,
+    'challenge': serverChallenge,
+    'origin': origin
   };
   if (BROWSER_SUPPORTS_TLS_CHANNEL_ID) {
     browserData['cid_pubkey'] = tlsChannelIdValue(opt_tlsChannelId);
@@ -364,8 +364,9 @@ function makeU2fGetApiVersionResponse(request, version, opt_defaultType) {
  *     used.
  * @return {!Array<SignHelperChallenge>} The sign challenges, encoded.
  */
-function encodeSignChallenges(signChallenges, opt_defaultChallenge,
-    opt_defaultAppId, opt_challengeHashFunction) {
+function encodeSignChallenges(
+    signChallenges, opt_defaultChallenge, opt_defaultAppId,
+    opt_challengeHashFunction) {
   function encodedSha256(keyHandle, challenge) {
     return B64_encode(sha256HashOfString(challenge));
   }

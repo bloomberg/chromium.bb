@@ -89,8 +89,7 @@ cr.define('adapter_broker', function() {
      */
     setClient: function(adapterClient) {
       adapterClient.binding = new interfaces.Bindings.Binding(
-          interfaces.BluetoothAdapter.AdapterClient,
-          adapterClient);
+          interfaces.BluetoothAdapter.AdapterClient, adapterClient);
 
       this.adapter_.setClient(
           adapterClient.binding.createInterfacePtrAndBind());
@@ -185,11 +184,8 @@ cr.define('adapter_broker', function() {
      * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
      */
     deviceAdded: function(deviceInfo) {
-      var event = new CustomEvent('deviceadded', {
-        detail: {
-          deviceInfo: deviceInfo
-        }
-      });
+      var event =
+          new CustomEvent('deviceadded', {detail: {deviceInfo: deviceInfo}});
       this.adapterBroker_.dispatchEvent(event);
     },
 
@@ -198,11 +194,8 @@ cr.define('adapter_broker', function() {
      * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
      */
     deviceChanged: function(deviceInfo) {
-      var event = new CustomEvent('devicechanged', {
-        detail: {
-          deviceInfo: deviceInfo
-        }
-      });
+      var event =
+          new CustomEvent('devicechanged', {detail: {deviceInfo: deviceInfo}});
       this.adapterBroker_.dispatchEvent(event);
     },
 
@@ -211,11 +204,8 @@ cr.define('adapter_broker', function() {
      * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
      */
     deviceRemoved: function(deviceInfo) {
-      var event = new CustomEvent('deviceremoved', {
-        detail: {
-          deviceInfo: deviceInfo
-        }
-      });
+      var event =
+          new CustomEvent('deviceremoved', {detail: {deviceInfo: deviceInfo}});
       this.adapterBroker_.dispatchEvent(event);
     },
   };
@@ -228,23 +218,27 @@ cr.define('adapter_broker', function() {
    *     rejects if Bluetooth is not supported.
    */
   function getAdapterBroker() {
-    if (adapterBroker) return Promise.resolve(adapterBroker);
+    if (adapterBroker)
+      return Promise.resolve(adapterBroker);
 
-    return interfaces.setupInterfaces().then(function(adapter) {
-      var adapterFactory = new interfaces.BluetoothAdapter.AdapterFactoryPtr(
-          interfaces.FrameInterfaces.getInterface(
-              interfaces.BluetoothAdapter.AdapterFactory.name));
+    return interfaces.setupInterfaces()
+        .then(function(adapter) {
+          var adapterFactory =
+              new interfaces.BluetoothAdapter.AdapterFactoryPtr(
+                  interfaces.FrameInterfaces.getInterface(
+                      interfaces.BluetoothAdapter.AdapterFactory.name));
 
-      // Get an Adapter service.
-      return adapterFactory.getAdapter();
-    }).then(function(response) {
-      if (!response.adapter.ptr.isBound()) {
-        throw new Error('Bluetooth Not Supported on this platform.');
-      }
+          // Get an Adapter service.
+          return adapterFactory.getAdapter();
+        })
+        .then(function(response) {
+          if (!response.adapter.ptr.isBound()) {
+            throw new Error('Bluetooth Not Supported on this platform.');
+          }
 
-      adapterBroker = new AdapterBroker(response.adapter);
-      return adapterBroker;
-    });
+          adapterBroker = new AdapterBroker(response.adapter);
+          return adapterBroker;
+        });
   }
 
   return {

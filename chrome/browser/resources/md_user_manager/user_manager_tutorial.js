@@ -25,29 +25,19 @@ Polymer({
      * True if the tutorial is currently hidden.
      * @private {boolean}
      */
-    hidden_: {
-      type: Boolean,
-      value: true
-    },
+    hidden_: {type: Boolean, value: true},
 
     /**
      * Current tutorial step ID.
      * @type {string}
      */
-    currentStep_: {
-      type: String,
-      value: ''
-    },
+    currentStep_: {type: String, value: ''},
 
     /**
      * Enum values for the step IDs.
      * @private {TutorialSteps}
      */
-    steps_: {
-      readOnly: true,
-      type: Object,
-      value: TutorialSteps
-    }
+    steps_: {readOnly: true, type: Object, value: TutorialSteps}
   },
 
   /**

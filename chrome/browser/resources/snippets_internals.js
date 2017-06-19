@@ -50,8 +50,7 @@ cr.define('chrome.SnippetsInternals', function() {
 
   function receiveContentSuggestions(categoriesList) {
     lastSuggestions = categoriesList;
-    displayList(categoriesList, 'content-suggestions',
-                'hidden-toggler');
+    displayList(categoriesList, 'content-suggestions', 'hidden-toggler');
 
     var clearCachedButtons =
         document.getElementsByClassName('submit-clear-cached-suggestions');
@@ -89,7 +88,8 @@ cr.define('chrome.SnippetsInternals', function() {
     var id = parseInt(event.currentTarget.getAttribute('category-id'), 10);
     var table = $('dismissed-suggestions-' + id);
     table.classList.toggle('hidden');
-    chrome.send('toggleDismissedSuggestions',
+    chrome.send(
+        'toggleDismissedSuggestions',
         [id, !table.classList.contains('hidden')]);
   }
 
@@ -119,7 +119,8 @@ cr.define('chrome.SnippetsInternals', function() {
 
   function receiveLastRemoteSuggestionsBackgroundFetchTime(
       lastRemoteSuggestionsBackgroundFetchTime) {
-    receiveProperty('last-background-fetch-time-label',
+    receiveProperty(
+        'last-background-fetch-time-label',
         lastRemoteSuggestionsBackgroundFetchTime);
   }
 
@@ -156,8 +157,10 @@ cr.define('chrome.SnippetsInternals', function() {
       display = 'none';
     }
 
-    if ($(domId + '-empty')) $(domId + '-empty').textContent = text;
-    if ($(domId + '-clear')) $(domId + '-clear').style.display = display;
+    if ($(domId + '-empty'))
+      $(domId + '-empty').textContent = text;
+    if ($(domId + '-clear'))
+      $(domId + '-clear').style.display = display;
 
     var links = document.getElementsByClassName(toggleClass);
     for (var link of links) {
@@ -178,5 +181,5 @@ cr.define('chrome.SnippetsInternals', function() {
   };
 });
 
-document.addEventListener('DOMContentLoaded',
-                          chrome.SnippetsInternals.initialize);
+document.addEventListener(
+    'DOMContentLoaded', chrome.SnippetsInternals.initialize);

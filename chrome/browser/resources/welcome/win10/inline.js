@@ -16,7 +16,7 @@ Polymer({
     // TODO(pmonette): Remove these checks when they are no longer needed.
     /** @const */
     var VARIANT_KEY = 'variant';
-    var VariantTypeMap = { 'defaultonly': false, 'combined': true };
+    var VariantTypeMap = {'defaultonly': false, 'combined': true};
     var params = new URLSearchParams(location.search.slice(1));
     if (params.has(VARIANT_KEY) && params.get(VARIANT_KEY) in VariantTypeMap)
       this.isCombined = VariantTypeMap[params.get(VARIANT_KEY)];
@@ -30,8 +30,8 @@ Polymer({
   ready: function() {
     this.isCombined = false;
     // Asynchronously check if Chrome is pinned to the taskbar.
-    cr.sendWithPromise('getPinnedToTaskbarState').then(
-      this.receivePinnedState_.bind(this));
+    cr.sendWithPromise('getPinnedToTaskbarState')
+        .then(this.receivePinnedState_.bind(this));
   },
 
   computeClasses: function(isCombined) {
@@ -52,8 +52,8 @@ Polymer({
     var sections = this.shadowRoot.querySelectorAll('.section.expandable');
     sections.forEach(function(section) {
       var isExpanded = section.classList.toggle('expanded');
-      section.querySelector('[role~="button"]').setAttribute(
-          'aria-expanded', isExpanded);
+      section.querySelector('[role~="button"]')
+          .setAttribute('aria-expanded', isExpanded);
     });
   }
 });

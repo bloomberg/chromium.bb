@@ -54,9 +54,10 @@ function updateAutocompleteActionPredictorDbView(database) {
 
     if (!filter.checked || entry.confidence > 0) {
       var row = document.createElement('tr');
-      row.className = (entry.confidence > 0.8 ? 'action-prerender' :
-                          (entry.confidence > 0.5 ? 'action-preconnect' :
-                              'action-none'));
+      row.className =
+          (entry.confidence > 0.8 ?
+               'action-prerender' :
+               (entry.confidence > 0.5 ? 'action-preconnect' : 'action-none'));
 
       row.appendChild(document.createElement('td')).textContent =
           entry.user_text;
@@ -74,5 +75,5 @@ function updateAutocompleteActionPredictorDbView(database) {
   $('countBanner').textContent = 'Entries: ' + databaseSection.children.length;
 }
 
-document.addEventListener('DOMContentLoaded',
-                          requestAutocompleteActionPredictorDb);
+document.addEventListener(
+    'DOMContentLoaded', requestAutocompleteActionPredictorDb);

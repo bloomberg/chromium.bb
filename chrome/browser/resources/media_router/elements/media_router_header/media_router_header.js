@@ -99,8 +99,8 @@ Polymer({
   attached: function() {
     // isRTL() only works after i18n_template.js runs to set <html dir>.
     // Set the back button icon based on text direction.
-    this.arrowDropIcon_ = isRTL() ?
-        'media-router:arrow-forward' : 'media-router:arrow-back';
+    this.arrowDropIcon_ =
+        isRTL() ? 'media-router:arrow-forward' : 'media-router:arrow-back';
   },
 
   /**
@@ -110,7 +110,8 @@ Polymer({
    */
   computeArrowDropIcon_: function(view) {
     return view == media_router.MediaRouterView.CAST_MODE_LIST ?
-        'media-router:arrow-drop-up' : 'media-router:arrow-drop-down';
+        'media-router:arrow-drop-up' :
+        'media-router:arrow-drop-down';
   },
 
   /**
@@ -131,7 +132,7 @@ Polymer({
   computeArrowDropTitle_: function(view) {
     return view == media_router.MediaRouterView.CAST_MODE_LIST ?
         this.i18n('viewDeviceListButtonTitle') :
-            this.i18n('viewCastModeListButtonTitle');
+        this.i18n('viewCastModeListButtonTitle');
   },
 
   /**
@@ -205,8 +206,8 @@ Polymer({
 
       this.$$('#header').style.height =
           this.showEmail && !this.isEmptyOrWhitespace_(this.userEmail) ?
-              this.headerWithEmailHeight_ + 'px' :
-                  this.headerWithoutEmailHeight_ + 'px';
+          this.headerWithEmailHeight_ + 'px' :
+          this.headerWithoutEmailHeight_ + 'px';
 
       // Only fire if height actually changed.
       if (currentHeight != this.offsetHeight) {
@@ -225,7 +226,8 @@ Polymer({
   updateHeaderCursorStyle_: function(view) {
     this.$$('#header-text').style.cursor =
         view == media_router.MediaRouterView.SINK_LIST ||
-        view == media_router.MediaRouterView.CAST_MODE_LIST ?
-            'pointer' : 'auto';
+            view == media_router.MediaRouterView.CAST_MODE_LIST ?
+        'pointer' :
+        'auto';
   },
 });

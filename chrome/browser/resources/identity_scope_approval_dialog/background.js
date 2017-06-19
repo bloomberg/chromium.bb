@@ -11,24 +11,17 @@
  *     if the mode is 'interactive'.
  */
 function showAuthDialog(key, url, mode) {
-  var options = {
-    frame: 'none',
-    id: key,
-    minWidth: 1024,
-    minHeight: 768,
-    hidden: true
-  };
-  chrome.app.window.create('scope_approval_dialog.html',
-                           options,
-                           function(win) {
-    win.contentWindow.addEventListener('load', function(event) {
-      var windowParam;
-      if (mode == 'interactive')
-        windowParam = win;
-      win.contentWindow.loadAuthUrlAndShowWindow(url, windowParam);
-    });
-  });
+  var options =
+      {frame: 'none', id: key, minWidth: 1024, minHeight: 768, hidden: true};
+  chrome.app.window.create(
+      'scope_approval_dialog.html', options, function(win) {
+        win.contentWindow.addEventListener('load', function(event) {
+          var windowParam;
+          if (mode == 'interactive')
+            windowParam = win;
+          win.contentWindow.loadAuthUrlAndShowWindow(url, windowParam);
+        });
+      });
 }
 
 chrome.identityPrivate.onWebFlowRequest.addListener(showAuthDialog);
-

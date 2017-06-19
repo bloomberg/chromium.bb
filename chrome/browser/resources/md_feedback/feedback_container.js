@@ -29,8 +29,8 @@ Polymer({
   ready: function() {
     // Retrieves the feedback privacy note text, if it exists. On non-official
     // branded builds, the string is not defined.
-    this.$.privacyNote.innerHTML =
-        loadTimeData.valueExists('privacyNote') ?
-            loadTimeData.getString('privacyNote') : '';
+    this.$.privacyNote.innerHTML = loadTimeData.valueExists('privacyNote') ?
+        loadTimeData.getString('privacyNote') :
+        '';
   },
 });
