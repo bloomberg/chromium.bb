@@ -223,6 +223,10 @@ class CORE_EXPORT VisualViewport final
   double Height() const;
   double ScaleForVisualViewport() const;
 
+  // Used to calculate Width and Height above but do not update layout.
+  double VisibleWidthCSSPx() const;
+  double VisibleHeightCSSPx() const;
+
   // Used for gathering data on user pinch-zoom statistics.
   void UserDidChangeScale();
   void SendUMAMetrics();
