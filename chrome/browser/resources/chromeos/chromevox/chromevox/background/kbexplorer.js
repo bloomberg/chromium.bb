@@ -22,7 +22,7 @@ goog.require('cvox.LibLouis');
  * Class to manage the keyboard explorer.
  * @constructor
  */
-cvox.KbExplorer = function() { };
+cvox.KbExplorer = function() {};
 
 
 /**
@@ -30,8 +30,7 @@ cvox.KbExplorer = function() { };
  */
 cvox.KbExplorer.init = function() {
   var backgroundWindow = chrome.extension.getBackgroundPage();
-  backgroundWindow.addEventListener(
-      'keydown', cvox.KbExplorer.onKeyDown, true);
+  backgroundWindow.addEventListener('keydown', cvox.KbExplorer.onKeyDown, true);
   backgroundWindow.addEventListener('keyup', cvox.KbExplorer.onKeyUp, true);
   backgroundWindow.addEventListener(
       'keypress', cvox.KbExplorer.onKeyPress, true);
@@ -61,8 +60,9 @@ cvox.KbExplorer.init = function() {
   }
 
   /** @type {cvox.LibLouis} */
-  this.currentBrailleTranslator_ = backgroundWindow['cvox']['BrailleBackground']
-      ['getInstance']()['getTranslatorManager']()['getDefaultTranslator']();
+  this.currentBrailleTranslator_ =
+      backgroundWindow['cvox']['BrailleBackground']['getInstance']()
+          ['getTranslatorManager']()['getDefaultTranslator']();
 
   cvox.ChromeVoxKbHandler.commandHandler = cvox.KbExplorer.onCommand;
   $('instruction').focus();
@@ -172,8 +172,7 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
         break;
       }
 
-      var command =
-          BrailleCommandHandler.getCommand(dots);
+      var command = BrailleCommandHandler.getCommand(dots);
       if (command && cvox.KbExplorer.onCommand(command))
         return;
       text = BrailleCommandHandler.makeShortcutText(dots, true);
@@ -184,9 +183,9 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
         return;
       var cells = new ArrayBuffer(1);
       var view = new Uint8Array(cells);
-      view[0]= dots;
-    cvox.KbExplorer.currentBrailleTranslator_.backTranslate(cells,
-          function(res) {
+      view[0] = dots;
+      cvox.KbExplorer.currentBrailleTranslator_.backTranslate(
+          cells, function(res) {
             cvox.KbExplorer.output(res);
           }.bind(this));
       return;
@@ -235,6 +234,6 @@ cvox.KbExplorer.output = function(text, opt_braille) {
 
 /** Clears ChromeVox range. */
 cvox.KbExplorer.clearRange = function() {
-  chrome.extension.getBackgroundPage()[
-    'ChromeVoxState']['instance']['setCurrentRange'](null);
+  chrome.extension.getBackgroundPage()['ChromeVoxState']['instance']
+                                      ['setCurrentRange'](null);
 };

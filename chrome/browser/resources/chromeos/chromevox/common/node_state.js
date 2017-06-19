@@ -34,18 +34,20 @@ cvox.NodeState;
  */
 cvox.NodeStateUtil.expand = function(state) {
   try {
-    return state.map(function(s) {
-      if (s.length < 1) {
-        throw new Error('cvox.NodeState must have at least one entry');
-      }
-      var args = s.slice(1).map(function(a) {
-        if (typeof a == 'number') {
-          return Msgs.getNumber(a);
-        }
-        return a;
-      });
-      return Msgs.getMsg(/** @type {string} */ (s[0]), args);
-    }).join(' ');
+    return state
+        .map(function(s) {
+          if (s.length < 1) {
+            throw new Error('cvox.NodeState must have at least one entry');
+          }
+          var args = s.slice(1).map(function(a) {
+            if (typeof a == 'number') {
+              return Msgs.getNumber(a);
+            }
+            return a;
+          });
+          return Msgs.getMsg(/** @type {string} */ (s[0]), args);
+        })
+        .join(' ');
   } catch (e) {
     throw new Error('error: ' + e + ' state: ' + state);
   }

@@ -14,7 +14,7 @@ goog.require('cvox.SearchUtil');
 /**
  * @constructor
  */
-cvox.AbstractResult = function() { };
+cvox.AbstractResult = function() {};
 
 /**
  * Checks the result if it is an unknown result.

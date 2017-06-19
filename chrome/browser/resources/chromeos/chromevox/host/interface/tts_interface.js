@@ -52,27 +52,27 @@ cvox.QueueMode = {
  * An interface for clients who want to get notified when an utterance
  * starts or ends from any source.
  */
-cvox.TtsCapturingEventListener = function() { };
+cvox.TtsCapturingEventListener = function() {};
 
 /**
  * Called when any utterance starts.
  */
-cvox.TtsCapturingEventListener.prototype.onTtsStart = function() { };
+cvox.TtsCapturingEventListener.prototype.onTtsStart = function() {};
 
 /**
  * Called when any utterance ends.
  */
-cvox.TtsCapturingEventListener.prototype.onTtsEnd = function() { };
+cvox.TtsCapturingEventListener.prototype.onTtsEnd = function() {};
 
 /**
  * Called when any utterance gets interrupted.
  */
-cvox.TtsCapturingEventListener.prototype.onTtsInterrupted = function() { };
+cvox.TtsCapturingEventListener.prototype.onTtsInterrupted = function() {};
 
 /**
  * @interface
  */
-cvox.TtsInterface = function() { };
+cvox.TtsInterface = function() {};
 
 /**
  * Speaks the given string using the specified queueMode and properties.
@@ -81,27 +81,27 @@ cvox.TtsInterface = function() { };
  * @param {Object=} properties Speech properties to use for this utterance.
  * @return {cvox.TtsInterface} A tts object useful for chaining speak calls.
  */
-cvox.TtsInterface.prototype.speak =
-    function(textString, queueMode, properties) { };
+cvox.TtsInterface.prototype.speak = function(
+    textString, queueMode, properties) {};
 
 
 /**
  * Returns true if the TTS is currently speaking.
  * @return {boolean} True if the TTS is speaking.
  */
-cvox.TtsInterface.prototype.isSpeaking = function() { };
+cvox.TtsInterface.prototype.isSpeaking = function() {};
 
 
 /**
  * Stops speech.
  */
-cvox.TtsInterface.prototype.stop = function() { };
+cvox.TtsInterface.prototype.stop = function() {};
 
 /**
  * Adds a listener to get called whenever any utterance starts or ends.
  * @param {cvox.TtsCapturingEventListener} listener Listener to get called.
  */
-cvox.TtsInterface.prototype.addCapturingEventListener = function(listener) { };
+cvox.TtsInterface.prototype.addCapturingEventListener = function(listener) {};
 
 /**
  * Increases a TTS speech property.
@@ -109,8 +109,8 @@ cvox.TtsInterface.prototype.addCapturingEventListener = function(listener) { };
  * @param {boolean} increase If true, increases the property value by one
  *     step size, otherwise decreases.
  */
-cvox.TtsInterface.prototype.increaseOrDecreaseProperty =
-    function(propertyName, increase) { };
+cvox.TtsInterface.prototype.increaseOrDecreaseProperty = function(
+    propertyName, increase) {};
 
 
 /**
@@ -118,7 +118,7 @@ cvox.TtsInterface.prototype.increaseOrDecreaseProperty =
  * @param {string} property The property to convert.
  * @return {?number} The percentage of the property.
  */
-cvox.TtsInterface.prototype.propertyToPercentage = function(property) { };
+cvox.TtsInterface.prototype.propertyToPercentage = function(property) {};
 
 
 /**
@@ -126,7 +126,7 @@ cvox.TtsInterface.prototype.propertyToPercentage = function(property) { };
  * @param {string} property Name of property.
  * @return {?number} The default value.
  */
-cvox.TtsInterface.prototype.getDefaultProperty = function(property) { };
+cvox.TtsInterface.prototype.getDefaultProperty = function(property) {};
 
 /**
  * Toggles on or off speech.

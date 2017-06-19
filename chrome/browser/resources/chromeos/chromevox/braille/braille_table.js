@@ -58,10 +58,9 @@ cvox.BrailleTable.getAll = function(callback) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       if (xhr.status == 200) {
-        callback(
-            appendCommonFilename(
-                /** @type {!Array<cvox.BrailleTable.Table>} */ (
-                    JSON.parse(xhr.responseText))));
+        callback(appendCommonFilename(
+            /** @type {!Array<cvox.BrailleTable.Table>} */ (
+                JSON.parse(xhr.responseText))));
       }
     }
   };
@@ -76,7 +75,10 @@ cvox.BrailleTable.getAll = function(callback) {
  * @return {cvox.BrailleTable.Table} The found table, or null if not found.
  */
 cvox.BrailleTable.forId = function(tables, id) {
-  return tables.filter(function(table) { return table.id === id; })[0] || null;
+  return tables.filter(function(table) {
+    return table.id === id;
+  })[0] ||
+      null;
 };
 
 
@@ -93,16 +95,13 @@ cvox.BrailleTable.getUncontracted = function(tables, table) {
   function mostUncontractedOf(current, candidate) {
     // An 8 dot table for the same language is prefered over a 6 dot table
     // even if the locales differ by region.
-    if (current.dots === '6' &&
-        candidate.dots === '8' &&
+    if (current.dots === '6' && candidate.dots === '8' &&
         current.locale.lastIndexOf(candidate.locale, 0) == 0) {
       return candidate;
     }
     if (current.locale === candidate.locale &&
-        current.dots === candidate.dots &&
-        goog.isDef(current.grade) &&
-        goog.isDef(candidate.grade) &&
-        candidate.grade < current.grade) {
+        current.dots === candidate.dots && goog.isDef(current.grade) &&
+        goog.isDef(candidate.grade) && candidate.grade < current.grade) {
       return candidate;
     }
     return current;
@@ -120,13 +119,14 @@ cvox.BrailleTable.getDisplayName = function(table) {
   if (!table.grade && !table.variant) {
     return localeName;
   } else if (table.grade && !table.variant) {
-    return Msgs.getMsg('braille_table_name_with_grade',
-                       [localeName, table.grade]);
+    return Msgs.getMsg(
+        'braille_table_name_with_grade', [localeName, table.grade]);
   } else if (!table.grade && table.variant) {
-    return Msgs.getMsg('braille_table_name_with_variant',
-                       [localeName, table.variant]);
+    return Msgs.getMsg(
+        'braille_table_name_with_variant', [localeName, table.variant]);
   } else {
-    return Msgs.getMsg('braille_table_name_with_variant_and_grade',
-                       [localeName, table.variant, table.grade]);
+    return Msgs.getMsg(
+        'braille_table_name_with_variant_and_grade',
+        [localeName, table.variant, table.grade]);
   }
 };

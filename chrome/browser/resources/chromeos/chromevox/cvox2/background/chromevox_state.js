@@ -63,8 +63,8 @@ ChromeVoxState.backgroundTts;
 
 /**
  * @type {boolean}
-  */
-  ChromeVoxState.isReadingContinuously;
+ */
+ChromeVoxState.isReadingContinuously;
 
 ChromeVoxState.prototype = {
   /** @type {ChromeVoxMode} */

@@ -40,10 +40,10 @@ cvox.CursorSelection = function(start, end, opt_reverse) {
 
   if ((this.isReversed_ &&
        this.start.node.compareDocumentPosition(this.end.node) ==
-       cvox.CursorSelection.BEFORE) ||
+           cvox.CursorSelection.BEFORE) ||
       (!this.isReversed_ &&
        this.end.node.compareDocumentPosition(this.start.node) ==
-       cvox.CursorSelection.BEFORE)) {
+           cvox.CursorSelection.BEFORE)) {
     var oldStart = this.start;
     this.start = this.end;
     this.end = oldStart;
@@ -134,8 +134,7 @@ cvox.CursorSelection.fromNode = function(node) {
   var text = cvox.TraverseUtil.getNodeText(node);
 
   return new cvox.CursorSelection(
-      new cvox.Cursor(node, 0, text),
-      new cvox.Cursor(node, 0, text));
+      new cvox.Cursor(node, 0, text), new cvox.Cursor(node, 0, text));
 };
 
 
@@ -144,8 +143,8 @@ cvox.CursorSelection.fromNode = function(node) {
  * @return {!cvox.CursorSelection} The selection.
  */
 cvox.CursorSelection.fromBody = function() {
-    return /** @type {!cvox.CursorSelection} */ (
-        cvox.CursorSelection.fromNode(document.body));
+  return /** @type {!cvox.CursorSelection} */ (
+      cvox.CursorSelection.fromNode(document.body));
 };
 
 /**
@@ -190,7 +189,8 @@ cvox.CursorSelection.prototype.equals = function(rhs) {
  * @return {boolean} True if equal.
  */
 cvox.CursorSelection.prototype.absEquals = function(rhs) {
-  return ((this.start.equals(rhs.start) && this.end.equals(rhs.end)) ||
+  return (
+      (this.start.equals(rhs.start) && this.end.equals(rhs.end)) ||
       (this.end.equals(rhs.start) && this.start.equals(rhs.end)));
 };
 
@@ -221,7 +221,7 @@ cvox.CursorSelection.prototype.normalize = function() {
 
     // DOM ranges use different conventions when surrounding a node. For
     // instance, input nodes endOffset is always 0 while h1's endOffset is 1
-    //with both having no children. Use a range to compute the endOffset.
+    // with both having no children. Use a range to compute the endOffset.
     var testRange = document.createRange();
     testRange.selectNodeContents(node);
     this.absEnd().index = testRange.endOffset;

@@ -60,10 +60,10 @@ cvox.GroupUtil.BREAKOUT_SELECTOR_ = 'blockquote,' +
     'tr,' +
     'ul,' +
     'math,' +
-  // This takes care of MathJax expressions.
+    // This takes care of MathJax expressions.
     'span.math,' +
-// TODO (sorge) Do we want to group all math or only display math?
-//    '[mode="display"],' +
+    // TODO (sorge) Do we want to group all math or only display math?
+    //    '[mode="display"],' +
     // Aria widget roles
     '[role~="alert ' +
     'alertdialog ' +
@@ -119,8 +119,8 @@ cvox.GroupUtil.isLeafNode = function(node) {
   }
 
   if (!cvox.DomUtil.isSemanticElt(node)) {
-    var breakingNodes = node.querySelectorAll(
-        cvox.GroupUtil.BREAKOUT_SELECTOR_);
+    var breakingNodes =
+        node.querySelectorAll(cvox.GroupUtil.BREAKOUT_SELECTOR_);
 
     for (var i = 0; i < breakingNodes.length; ++i) {
       if (cvox.DomUtil.hasContent(breakingNodes[i])) {
@@ -135,8 +135,7 @@ cvox.GroupUtil.isLeafNode = function(node) {
   }
 
   var content = cvox.DomUtil.collapseWhitespace(
-      cvox.DomUtil.getValue(node) + ' ' +
-      cvox.DomUtil.getName(node));
+      cvox.DomUtil.getValue(node) + ' ' + cvox.DomUtil.getName(node));
   if (content.length > cvox.GroupUtil.MAX_CHARCOUNT_) {
     return false;
   }

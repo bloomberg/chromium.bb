@@ -28,10 +28,7 @@ KeyboardHandler = function() {
   });
 
   // Make the initial request for prefs.
-  cvox.ExtensionBridge.send({
-    'target': 'Prefs',
-    'action': 'getPrefs'
-  });
+  cvox.ExtensionBridge.send({'target': 'Prefs', 'action': 'getPrefs'});
 };
 
 KeyboardHandler.prototype = {
@@ -40,10 +37,8 @@ KeyboardHandler.prototype = {
    * @private
    */
   handleKeyDown_: function(evt) {
-    cvox.ExtensionBridge.send({
-      'target': 'next',
-      'action': 'flushNextUtterance'
-    });
+    cvox.ExtensionBridge.send(
+        {'target': 'next', 'action': 'flushNextUtterance'});
 
     evt.stickyMode = cvox.ChromeVox.isStickyPrefOn;
 
@@ -55,10 +50,7 @@ KeyboardHandler.prototype = {
    * @private
    */
   handleCommand_: function(command) {
-    cvox.ExtensionBridge.send({
-      'target': 'next',
-      'action': 'onCommand',
-      'command': command
-    });
+    cvox.ExtensionBridge.send(
+        {'target': 'next', 'action': 'onCommand', 'command': command});
   }
 };

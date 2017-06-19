@@ -124,9 +124,9 @@ cvox.MathmlStoreUtil.nextSeparatorFunction = function(separators) {
     if (separators.match(/^\s+$/)) {
       return null;
     } else {
-      var sepList = separators.replace(/\s/g, '')
-          .split('')
-              .filter(function(x) {return x;});
+      var sepList = separators.replace(/\s/g, '').split('').filter(function(x) {
+        return x;
+      });
     }
   } else {
     // When no separator is given MathML uses comma as default.

@@ -17,8 +17,7 @@ goog.require('cvox.SearchUtil');
 /**
  * @constructor
  */
-cvox.SearchResults = function() {
-};
+cvox.SearchResults = function() {};
 
 /**
  * Speaks a result based on given selectors.
@@ -31,8 +30,8 @@ cvox.SearchResults.speakResultBySelectTexts = function(result, selectTexts) {
     if (selectText.select) {
       var elems = result.querySelectorAll(selectText.select);
       for (var i = 0; i < elems.length; i++) {
-        cvox.ChromeVox.tts.speak(cvox.DomUtil.getName(elems.item(i)),
-                                 cvox.QueueMode.QUEUE);
+        cvox.ChromeVox.tts.speak(
+            cvox.DomUtil.getName(elems.item(i)), cvox.QueueMode.QUEUE);
       }
     }
     if (selectText.text) {
@@ -46,8 +45,7 @@ cvox.SearchResults.speakResultBySelectTexts = function(result, selectTexts) {
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.UnknownResult = function() {
-};
+cvox.UnknownResult = function() {};
 goog.inherits(cvox.UnknownResult, cvox.AbstractResult);
 
 /* Normal Result Type. */
@@ -55,8 +53,7 @@ goog.inherits(cvox.UnknownResult, cvox.AbstractResult);
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.NormalResult = function() {
-};
+cvox.NormalResult = function() {};
 goog.inherits(cvox.NormalResult, cvox.AbstractResult);
 
 /**
@@ -84,12 +81,10 @@ cvox.NormalResult.prototype.speak = function(result) {
   var MORE_RESULTS_LINK_SELECT = '.mrf';
 
   var NORMAL_SELECTORS = [
-    { select: NORMAL_TITLE_SELECT },
-    { select: NORMAL_DESC_SELECT },
-    { select: NORMAL_URL_SELECT },
-    { select: SITE_LINK_SELECT },
-    { select: MORE_RESULTS_SELECT },
-    { select: MORE_RESULTS_LINK_SELECT }];
+    {select: NORMAL_TITLE_SELECT}, {select: NORMAL_DESC_SELECT},
+    {select: NORMAL_URL_SELECT}, {select: SITE_LINK_SELECT},
+    {select: MORE_RESULTS_SELECT}, {select: MORE_RESULTS_LINK_SELECT}
+  ];
   cvox.SearchResults.speakResultBySelectTexts(result, NORMAL_SELECTORS);
 
   var DISCUSS_TITLE_SELECT = '.mas-1st-col div';
@@ -110,8 +105,7 @@ cvox.NormalResult.prototype.speak = function(result) {
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.WeatherResult = function() {
-};
+cvox.WeatherResult = function() {};
 goog.inherits(cvox.WeatherResult, cvox.AbstractResult);
 
 /**
@@ -137,10 +131,8 @@ cvox.WeatherResult.speakForecast = function(forecast) {
   var FORE_LOW_SELECT = '.vk_lgy';
 
   var FORE_SELECTORS = [
-    { select: FORE_DAY_SELECT },
-    { select: FORE_COND_SELECT },
-    { select: FORE_HIGH_SELECT },
-    { select: FORE_LOW_SELECT }
+    {select: FORE_DAY_SELECT}, {select: FORE_COND_SELECT},
+    {select: FORE_HIGH_SELECT}, {select: FORE_LOW_SELECT}
   ];
   cvox.SearchResults.speakResultBySelectTexts(forecast, FORE_SELECTORS);
 };
@@ -169,18 +161,12 @@ cvox.WeatherResult.prototype.speak = function(result) {
   var WEATHER_WIND_SELECT = '#wob_ws';
 
   var WEATHER_SELECT_TEXTS = [
-    { text: WEATHER_INTRO },
-    { select: WEATHER_LOC_SELECT },
-    { select: WEATHER_WHEN_SELECT },
-    { select: WEATHER_COND_SELECT },
-    { select: WEATHER_TEMP_SELECT },
-    { text: WEATHER_TEMP_UNITS },
-    { text: WEATHER_PREC_INTRO },
-    { select: WEATHER_PREC_SELECT },
-    { text: WEATHER_HUMID_INTRO },
-    { select: WEATHER_HUMID_SELECT },
-    { text: WEATHER_WIND_INTRO },
-    { select: WEATHER_WIND_SELECT }
+    {text: WEATHER_INTRO}, {select: WEATHER_LOC_SELECT},
+    {select: WEATHER_WHEN_SELECT}, {select: WEATHER_COND_SELECT},
+    {select: WEATHER_TEMP_SELECT}, {text: WEATHER_TEMP_UNITS},
+    {text: WEATHER_PREC_INTRO}, {select: WEATHER_PREC_SELECT},
+    {text: WEATHER_HUMID_INTRO}, {select: WEATHER_HUMID_SELECT},
+    {text: WEATHER_WIND_INTRO}, {select: WEATHER_WIND_SELECT}
   ];
   cvox.SearchResults.speakResultBySelectTexts(result, WEATHER_SELECT_TEXTS);
 
@@ -199,8 +185,7 @@ cvox.WeatherResult.prototype.speak = function(result) {
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.KnowResult = function() {
-};
+cvox.KnowResult = function() {};
 goog.inherits(cvox.KnowResult, cvox.AbstractResult);
 
 /**
@@ -218,8 +203,7 @@ cvox.KnowResult.prototype.isType = function(result) {
  */
 cvox.KnowResult.prototype.speak = function(result) {
 
-  cvox.ChromeVox.tts.speak(
-      cvox.DomUtil.getName(result), cvox.QueueMode.QUEUE);
+  cvox.ChromeVox.tts.speak(cvox.DomUtil.getName(result), cvox.QueueMode.QUEUE);
   return true;
 };
 
@@ -245,8 +229,7 @@ cvox.KnowResult.prototype.getSyncNode = function(result) {
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.CalcResult = function() {
-};
+cvox.CalcResult = function() {};
 goog.inherits(cvox.CalcResult, cvox.AbstractResult);
 
 /**
@@ -268,10 +251,8 @@ cvox.CalcResult.prototype.speak = function(result) {
   }
   var CALC_QUERY_SELECT = '#cwles';
   var CALC_RESULT_SELECT = '#cwos';
-  var CALC_SELECTORS = [
-    { select: CALC_QUERY_SELECT },
-    { select: CALC_RESULT_SELECT }
-  ];
+  var CALC_SELECTORS =
+      [{select: CALC_QUERY_SELECT}, {select: CALC_RESULT_SELECT}];
   cvox.SearchResults.speakResultBySelectTexts(result, CALC_SELECTORS);
   return true;
 };
@@ -281,8 +262,7 @@ cvox.CalcResult.prototype.speak = function(result) {
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.GameResult = function() {
-};
+cvox.GameResult = function() {};
 goog.inherits(cvox.GameResult, cvox.AbstractResult);
 
 /**
@@ -299,8 +279,7 @@ cvox.GameResult.prototype.isType = function(result) {
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.ImageResult = function() {
-};
+cvox.ImageResult = function() {};
 goog.inherits(cvox.ImageResult, cvox.AbstractResult);
 
 /**
@@ -330,7 +309,7 @@ cvox.ImageResult.prototype.speak = function(result) {
 
   var filename = metaData['fn'];
   if (filename) {
-    imageSelectTexts.push({ text: filename });
+    imageSelectTexts.push({text: filename});
   }
 
   var rawDimensions = metaData['is'];
@@ -339,12 +318,12 @@ cvox.ImageResult.prototype.speak = function(result) {
     var tmpDiv = document.createElement('div');
     tmpDiv.innerHTML = rawDimensions;
     var dimensions = tmpDiv.textContent || tmpDiv.innerText;
-    imageSelectTexts.push({ text: dimensions });
+    imageSelectTexts.push({text: dimensions});
   }
 
   var url = metaData['isu'];
   if (url) {
-    imageSelectTexts.push({ text: url});
+    imageSelectTexts.push({text: url});
   }
   cvox.SearchResults.speakResultBySelectTexts(result, imageSelectTexts);
   return true;
@@ -355,8 +334,7 @@ cvox.ImageResult.prototype.speak = function(result) {
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.CategoryResult = function() {
-};
+cvox.CategoryResult = function() {};
 goog.inherits(cvox.CategoryResult, cvox.AbstractResult);
 
 /**
@@ -381,8 +359,7 @@ cvox.CategoryResult.prototype.speak = function(result) {
   var LABEL_SELECT = '.rg_bb_label';
   var label = result.querySelector(LABEL_SELECT);
 
-  cvox.ChromeVox.tts.speak(
-      cvox.DomUtil.getName(label), cvox.QueueMode.QUEUE);
+  cvox.ChromeVox.tts.speak(cvox.DomUtil.getName(label), cvox.QueueMode.QUEUE);
   return true;
 };
 
@@ -391,8 +368,7 @@ cvox.CategoryResult.prototype.speak = function(result) {
  * @constructor
  * @extends {cvox.AbstractResult}
  */
-cvox.AdResult = function() {
-};
+cvox.AdResult = function() {};
 goog.inherits(cvox.AdResult, cvox.AbstractResult);
 
 /**
@@ -415,10 +391,8 @@ cvox.AdResult.prototype.speak = function(result) {
   var HEADER_SELECT = 'h3';
   var DESC_SELECT = '.ads-creative';
   var URL_SELECT = '.ads-visurl';
-  var AD_SELECTS = [
-    { select: HEADER_SELECT },
-    { select: DESC_SELECT },
-    { select: URL_SELECT }];
+  var AD_SELECTS =
+      [{select: HEADER_SELECT}, {select: DESC_SELECT}, {select: URL_SELECT}];
   cvox.SearchResults.speakResultBySelectTexts(result, AD_SELECTS);
   return true;
 };
@@ -430,13 +404,7 @@ cvox.AdResult.prototype.speak = function(result) {
  * getURL: Function that takes in a result and extracts the URL to follow.
  */
 cvox.SearchResults.RESULT_TYPES = [
-  cvox.UnknownResult,
-  cvox.NormalResult,
-  cvox.KnowResult,
-  cvox.WeatherResult,
-  cvox.AdResult,
-  cvox.CalcResult,
-  cvox.GameResult,
-  cvox.ImageResult,
+  cvox.UnknownResult, cvox.NormalResult, cvox.KnowResult, cvox.WeatherResult,
+  cvox.AdResult, cvox.CalcResult, cvox.GameResult, cvox.ImageResult,
   cvox.CategoryResult
 ];

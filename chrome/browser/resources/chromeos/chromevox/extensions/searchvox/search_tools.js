@@ -18,8 +18,7 @@ goog.require('cvox.SearchUtil');
 /**
  * @constructor
  */
-cvox.SearchTool = function() {
-};
+cvox.SearchTool = function() {};
 
 /**
  * Index of the current menu in focus.
@@ -143,18 +142,18 @@ cvox.SearchTool.gotoMenuItem = function() {
   /* Custom Date Range. */
   var CDR_ID = 'cdr_opt';
   switch (menuItem.id) {
-  case cvox.SearchTool.CLEAR_ID:
-    window.location = menuItem.dataset.url;
-    break;
-  case CDR_ID:
-    var CDR_LINK_SELECTOR = '#cdrlnk';
-    var cdrLink = menuItem.querySelector(CDR_LINK_SELECTOR);
-    cvox.DomUtil.clickElem(cdrLink, false, false, false);
-    cvox.SearchTool.toggleMenu();
-    break;
-  default:
-    window.location = cvox.SearchUtil.extractURL(menuItem);
-    break;
+    case cvox.SearchTool.CLEAR_ID:
+      window.location = menuItem.dataset.url;
+      break;
+    case CDR_ID:
+      var CDR_LINK_SELECTOR = '#cdrlnk';
+      var cdrLink = menuItem.querySelector(CDR_LINK_SELECTOR);
+      cvox.DomUtil.clickElem(cdrLink, false, false, false);
+      cvox.SearchTool.toggleMenu();
+      break;
+    default:
+      window.location = cvox.SearchUtil.extractURL(menuItem);
+      break;
   }
 };
 
@@ -169,38 +168,38 @@ cvox.SearchTool.keyhandler = function(evt) {
   }
 
   switch (evt.keyCode) {
-  case cvox.SearchConstants.KeyCode.UP:
-    cvox.SearchTool.menuItemIndex = cvox.SearchUtil.subOneWrap(
-      cvox.SearchTool.menuItemIndex, cvox.SearchTool.menuItems.length);
-    cvox.SearchTool.syncToMenuItem();
-    break;
+    case cvox.SearchConstants.KeyCode.UP:
+      cvox.SearchTool.menuItemIndex = cvox.SearchUtil.subOneWrap(
+          cvox.SearchTool.menuItemIndex, cvox.SearchTool.menuItems.length);
+      cvox.SearchTool.syncToMenuItem();
+      break;
 
-  case cvox.SearchConstants.KeyCode.DOWN:
-    cvox.SearchTool.menuItemIndex = cvox.SearchUtil.addOneWrap(
-      cvox.SearchTool.menuItemIndex, cvox.SearchTool.menuItems.length);
-    cvox.SearchTool.syncToMenuItem();
-    break;
+    case cvox.SearchConstants.KeyCode.DOWN:
+      cvox.SearchTool.menuItemIndex = cvox.SearchUtil.addOneWrap(
+          cvox.SearchTool.menuItemIndex, cvox.SearchTool.menuItems.length);
+      cvox.SearchTool.syncToMenuItem();
+      break;
 
-  case cvox.SearchConstants.KeyCode.LEFT:
-    cvox.SearchTool.toggleMenu();
-    cvox.SearchTool.menuIndex = cvox.SearchUtil.subOneWrap(
-      cvox.SearchTool.menuIndex, cvox.SearchTool.menus.length);
-    cvox.SearchTool.syncToMenu();
-    break;
+    case cvox.SearchConstants.KeyCode.LEFT:
+      cvox.SearchTool.toggleMenu();
+      cvox.SearchTool.menuIndex = cvox.SearchUtil.subOneWrap(
+          cvox.SearchTool.menuIndex, cvox.SearchTool.menus.length);
+      cvox.SearchTool.syncToMenu();
+      break;
 
-  case cvox.SearchConstants.KeyCode.RIGHT:
-    cvox.SearchTool.toggleMenu();
-    cvox.SearchTool.menuIndex = cvox.SearchUtil.addOneWrap(
-      cvox.SearchTool.menuIndex, cvox.SearchTool.menus.length);
-    cvox.SearchTool.syncToMenu();
-    break;
+    case cvox.SearchConstants.KeyCode.RIGHT:
+      cvox.SearchTool.toggleMenu();
+      cvox.SearchTool.menuIndex = cvox.SearchUtil.addOneWrap(
+          cvox.SearchTool.menuIndex, cvox.SearchTool.menus.length);
+      cvox.SearchTool.syncToMenu();
+      break;
 
-  case cvox.SearchConstants.KeyCode.ENTER:
-    cvox.SearchTool.gotoMenuItem();
-    break;
+    case cvox.SearchConstants.KeyCode.ENTER:
+      cvox.SearchTool.gotoMenuItem();
+      break;
 
-  default:
-    return false;
+    default:
+      return false;
   }
   evt.preventDefault();
   evt.stopPropagation();

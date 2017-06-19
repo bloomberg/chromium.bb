@@ -15,8 +15,7 @@ goog.require('cvox.ChromeVoxEventWatcher');
 /**
  * @constructor
  */
-cvox.AbstractHost = function() {
-};
+cvox.AbstractHost = function() {};
 
 
 /**
@@ -32,30 +31,26 @@ cvox.AbstractHost.State = {
 /**
  * Do all host-platform-specific initialization.
  */
-cvox.AbstractHost.prototype.init = function() {
-};
+cvox.AbstractHost.prototype.init = function() {};
 
 
 /**
  * Used to reinitialize ChromeVox if initialization fails.
  */
-cvox.AbstractHost.prototype.reinit = function() {
-};
+cvox.AbstractHost.prototype.reinit = function() {};
 
 
 /**
  * Executed on page load.
  */
-cvox.AbstractHost.prototype.onPageLoad = function() {
-};
+cvox.AbstractHost.prototype.onPageLoad = function() {};
 
 
 /**
  * Sends a message to the background page (if it exists) for this host.
  * @param {Object} message The message to pass to the background page.
  */
-cvox.AbstractHost.prototype.sendToBackgroundPage = function(message) {
-};
+cvox.AbstractHost.prototype.sendToBackgroundPage = function(message) {};
 
 
 /**
@@ -111,8 +106,9 @@ cvox.AbstractHost.prototype.mustRedispatchClickEvent = function() {
  * inactive.
  */
 cvox.AbstractHost.prototype.activateOrDeactivateChromeVox = function(active) {
-  this.onStateChanged_(active ? cvox.AbstractHost.State.ACTIVE :
-      cvox.AbstractHost.State.INACTIVE);
+  this.onStateChanged_(
+      active ? cvox.AbstractHost.State.ACTIVE :
+               cvox.AbstractHost.State.INACTIVE);
 };
 
 

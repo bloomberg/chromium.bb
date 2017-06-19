@@ -138,11 +138,11 @@ cvox.AbstractShifter.prototype.isSubnavigating = function() {
 
 /**
  * Delegates to current walker.
-  * @param {string} name Action name.
+ * @param {string} name Action name.
  * @return {boolean} True if this shifter contains action.
  */
 cvox.AbstractShifter.prototype.hasAction = function(name) {
-return this.currentWalker_.hasAction(name);
+  return this.currentWalker_.hasAction(name);
 };
 
 

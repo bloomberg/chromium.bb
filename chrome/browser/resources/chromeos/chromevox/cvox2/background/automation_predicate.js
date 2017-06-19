@@ -39,7 +39,7 @@ AutomationPredicate.Binary;
  * @return {AutomationPredicate.Unary}
  */
 AutomationPredicate.roles = function(roles) {
-  return AutomationPredicate.match({anyRole: roles });
+  return AutomationPredicate.match({anyRole: roles});
 };
 
 /**
@@ -52,8 +52,12 @@ AutomationPredicate.match = function(params) {
   var anyRole = params.anyRole || [];
   var anyPredicate = params.anyPredicate || [];
   return function(node) {
-    return anyRole.some(function(role) { return role == node.role; }) ||
-        anyPredicate.some(function(p) { return p(node); });
+    return anyRole.some(function(role) {
+      return role == node.role;
+    }) ||
+        anyPredicate.some(function(p) {
+          return p(node);
+        });
   };
 };
 
@@ -88,26 +92,18 @@ AutomationPredicate.button = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.editText = function(node) {
-  return node.state.editable &&
-      node.parent &&
-      !node.parent.state.editable;
+  return node.state.editable && node.parent && !node.parent.state.editable;
 };
 
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.formField = AutomationPredicate.match({
   anyPredicate: [
-    AutomationPredicate.button,
-    AutomationPredicate.comboBox,
+    AutomationPredicate.button, AutomationPredicate.comboBox,
     AutomationPredicate.editText
   ],
   anyRole: [
-    Role.CHECK_BOX,
-    Role.COLOR_WELL,
-    Role.LIST_BOX,
-    Role.SLIDER,
-    Role.SWITCH,
-    Role.TAB,
-    Role.TREE
+    Role.CHECK_BOX, Role.COLOR_WELL, Role.LIST_BOX, Role.SLIDER, Role.SWITCH,
+    Role.TAB, Role.TREE
   ]
 });
 
@@ -117,12 +113,8 @@ AutomationPredicate.control = AutomationPredicate.match({
     AutomationPredicate.formField,
   ],
   anyRole: [
-    Role.DISCLOSURE_TRIANGLE,
-    Role.MENU_ITEM,
-    Role.MENU_ITEM_CHECK_BOX,
-    Role.MENU_ITEM_RADIO,
-    Role.MENU_LIST_OPTION,
-    Role.SCROLL_BAR
+    Role.DISCLOSURE_TRIANGLE, Role.MENU_ITEM, Role.MENU_ITEM_CHECK_BOX,
+    Role.MENU_ITEM_RADIO, Role.MENU_LIST_OPTION, Role.SCROLL_BAR
   ]
 });
 
@@ -135,26 +127,14 @@ AutomationPredicate.image = function(node) {
 };
 
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.linkOrControl = AutomationPredicate.match({
-  anyPredicate: [
-    AutomationPredicate.control
-  ],
-  anyRole: [
-    Role.LINK
-  ]
-});
+AutomationPredicate.linkOrControl = AutomationPredicate.match(
+    {anyPredicate: [AutomationPredicate.control], anyRole: [Role.LINK]});
 
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.landmark = AutomationPredicate.roles([
-    Role.APPLICATION,
-    Role.BANNER,
-    Role.COMPLEMENTARY,
-    Role.CONTENT_INFO,
-    Role.FORM,
-    Role.MAIN,
-    Role.NAVIGATION,
-    Role.REGION,
-    Role.SEARCH]);
+  Role.APPLICATION, Role.BANNER, Role.COMPLEMENTARY, Role.CONTENT_INFO,
+  Role.FORM, Role.MAIN, Role.NAVIGATION, Role.REGION, Role.SEARCH
+]);
 
 /**
  * @param {!AutomationNode} node
@@ -177,14 +157,10 @@ AutomationPredicate.focused = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.leaf = function(node) {
-  return !node.firstChild ||
-      node.role == Role.BUTTON ||
-      node.role == Role.BUTTON_DROP_DOWN ||
-      node.role == Role.POP_UP_BUTTON ||
-      node.role == Role.SLIDER ||
-      node.role == Role.TEXT_FIELD ||
-      node.state[State.INVISIBLE] ||
-      node.children.every(function(n) {
+  return !node.firstChild || node.role == Role.BUTTON ||
+      node.role == Role.BUTTON_DROP_DOWN || node.role == Role.POP_UP_BUTTON ||
+      node.role == Role.SLIDER || node.role == Role.TEXT_FIELD ||
+      node.state[State.INVISIBLE] || node.children.every(function(n) {
         return n.state[State.INVISIBLE];
       });
 };
@@ -194,8 +170,7 @@ AutomationPredicate.leaf = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.leafWithText = function(node) {
-  return AutomationPredicate.leaf(node) &&
-      !!(node.name || node.value);
+  return AutomationPredicate.leaf(node) && !!(node.name || node.value);
 };
 
 /**
@@ -206,8 +181,7 @@ AutomationPredicate.leafWithText = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.leafOrStaticText = function(node) {
-  return AutomationPredicate.leaf(node) ||
-      node.role == Role.STATIC_TEXT;
+  return AutomationPredicate.leaf(node) || node.role == Role.STATIC_TEXT;
 };
 
 /**
@@ -232,8 +206,7 @@ AutomationPredicate.object = function(node) {
   return node.state.focusable ||
       (AutomationPredicate.leafOrStaticText(node) &&
        (/\S+/.test(node.name) ||
-        (node.role != Role.LINE_BREAK &&
-         node.role != Role.STATIC_TEXT &&
+        (node.role != Role.LINE_BREAK && node.role != Role.STATIC_TEXT &&
          node.role != Role.INLINE_TEXT_BOX)));
 };
 
@@ -243,16 +216,10 @@ AutomationPredicate.object = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.group = AutomationPredicate.match({
-  anyRole: [
-    Role.HEADING,
-    Role.LIST,
-    Role.PARAGRAPH
-  ],
+  anyRole: [Role.HEADING, Role.LIST, Role.PARAGRAPH],
   anyPredicate: [
-    AutomationPredicate.editText,
-    AutomationPredicate.formField,
-    AutomationPredicate.object,
-    AutomationPredicate.table
+    AutomationPredicate.editText, AutomationPredicate.formField,
+    AutomationPredicate.object, AutomationPredicate.table
   ]
 });
 
@@ -265,8 +232,7 @@ AutomationPredicate.linebreak = function(first, second) {
   // TODO(dtseng): Use next/previousOnLin once available.
   var fl = first.location;
   var sl = second.location;
-  return fl.top != sl.top ||
-      (fl.top + fl.height != sl.top + sl.height);
+  return fl.top != sl.top || (fl.top + fl.height != sl.top + sl.height);
 };
 
 /**
@@ -278,24 +244,20 @@ AutomationPredicate.linebreak = function(first, second) {
 AutomationPredicate.container = function(node) {
   return AutomationPredicate.match({
     anyRole: [
-      Role.GENERIC_CONTAINER,
-      Role.DOCUMENT,
-      Role.GROUP,
-      Role.LIST_ITEM,
-      Role.TOOLBAR,
-      Role.WINDOW],
+      Role.GENERIC_CONTAINER, Role.DOCUMENT, Role.GROUP, Role.LIST_ITEM,
+      Role.TOOLBAR, Role.WINDOW
+    ],
     anyPredicate: [
-      AutomationPredicate.landmark,
-      AutomationPredicate.structuralContainer,
+      AutomationPredicate.landmark, AutomationPredicate.structuralContainer,
       function(node) {
         // For example, crosh.
         return (node.role == Role.TEXT_FIELD && node.state.readOnly);
       },
       function(node) {
-        return (node.state.editable &&
-            node.parent &&
-            !node.parent.state.editable);
-      }]
+        return (
+            node.state.editable && node.parent && !node.parent.state.editable);
+      }
+    ]
   })(node);
 };
 
@@ -306,15 +268,10 @@ AutomationPredicate.container = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.structuralContainer = AutomationPredicate.roles([
-    Role.ALERT_DIALOG,
-    Role.DIALOG,
-    Role.ROOT_WEB_AREA,
-    Role.WEB_VIEW,
-    Role.WINDOW,
-    Role.EMBEDDED_OBJECT,
-    Role.IFRAME,
-    Role.IFRAME_PRESENTATIONAL,
-    Role.UNKNOWN]);
+  Role.ALERT_DIALOG, Role.DIALOG, Role.ROOT_WEB_AREA, Role.WEB_VIEW,
+  Role.WINDOW, Role.EMBEDDED_OBJECT, Role.IFRAME, Role.IFRAME_PRESENTATIONAL,
+  Role.UNKNOWN
+]);
 
 /**
  * Returns whether the given node should not be crossed when performing
@@ -330,8 +287,7 @@ AutomationPredicate.root = function(node) {
       // The below logic handles nested dialogs properly in the desktop tree
       // like that found in a bubble view.
       return node.root.role != Role.DESKTOP ||
-          (!!node.parent &&
-           node.parent.role == Role.WINDOW &&
+          (!!node.parent && node.parent.role == Role.WINDOW &&
            node.parent.children.every(function(child) {
              return node.role == Role.WINDOW || node.role == Role.DIALOG;
            }));
@@ -369,17 +325,11 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
     return false;
 
   // Ignore some roles.
-  return AutomationPredicate.leaf(node) &&
-      (AutomationPredicate.roles([Role.CLIENT,
-                                  Role.COLUMN,
-                                  Role.GENERIC_CONTAINER,
-                                  Role.GROUP,
-                                  Role.IMAGE,
-                                  Role.STATIC_TEXT,
-                                  Role.SVG_ROOT,
-                                  Role.TABLE_HEADER_CONTAINER,
-                                  Role.UNKNOWN
-                                 ])(node));
+  return AutomationPredicate.leaf(node) && (AutomationPredicate.roles([
+           Role.CLIENT, Role.COLUMN, Role.GENERIC_CONTAINER, Role.GROUP,
+           Role.IMAGE, Role.STATIC_TEXT, Role.SVG_ROOT,
+           Role.TABLE_HEADER_CONTAINER, Role.UNKNOWN
+         ])(node));
 };
 
 /**
@@ -388,11 +338,9 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.checkable = AutomationPredicate.roles([
-  Role.CHECK_BOX,
-  Role.RADIO_BUTTON,
-  Role.MENU_ITEM_CHECK_BOX,
-  Role.MENU_ITEM_RADIO,
-  Role.TREE_ITEM]);
+  Role.CHECK_BOX, Role.RADIO_BUTTON, Role.MENU_ITEM_CHECK_BOX,
+  Role.MENU_ITEM_RADIO, Role.TREE_ITEM
+]);
 
 // Table related predicates.
 /**
@@ -400,17 +348,15 @@ AutomationPredicate.checkable = AutomationPredicate.roles([
  * @param {!AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.cellLike = AutomationPredicate.roles([
-  Role.CELL,
-  Role.ROW_HEADER,
-  Role.COLUMN_HEADER]);
+AutomationPredicate.cellLike =
+    AutomationPredicate.roles([Role.CELL, Role.ROW_HEADER, Role.COLUMN_HEADER]);
 
 /**
  * Returns a predicate that will match against the directed next cell taking
  * into account the current ancestor cell's position in the table.
  * @param {AutomationNode} start
  * @param {{dir: (Dir|undefined),
-*           row: (boolean|undefined),
+ *           row: (boolean|undefined),
  *          col: (boolean|undefined)}} opts
  * |dir|, specifies direction for |row or/and |col| movement by one cell.
  *     |dir| defaults to forward.
@@ -492,9 +438,7 @@ AutomationPredicate.makeHeadingPredicate = function(level) {
  * @param {!AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.supportsImageData = AutomationPredicate.roles([
-    Role.CANVAS,
-    Role.IMAGE,
-    Role.VIDEO]);
+AutomationPredicate.supportsImageData =
+    AutomationPredicate.roles([Role.CANVAS, Role.IMAGE, Role.VIDEO]);
 
 });  // goog.scope

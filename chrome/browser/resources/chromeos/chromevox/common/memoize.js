@@ -43,8 +43,7 @@ goog.provide('cvox.Memoize');
  * Create the namespace.
  * @constructor
  */
-cvox.Memoize = function() {
-};
+cvox.Memoize = function() {};
 
 /**
  * The cache: a map from string function name to a WeakMap from DOM node

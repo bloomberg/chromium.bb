@@ -24,8 +24,7 @@ goog.require('cvox.XpathUtil');
  * Create the namespace
  * @constructor
  */
-cvox.DomUtil = function() {
-};
+cvox.DomUtil = function() {};
 
 
 /**
@@ -35,27 +34,27 @@ cvox.DomUtil = function() {
  * @type {Object}
  */
 cvox.DomUtil.INPUT_TYPE_TO_INFORMATION_TABLE_MSG = {
-  'button' : 'role_button',
-  'checkbox' : 'role_checkbox',
-  'color' : 'input_type_color',
-  'datetime' : 'input_type_datetime',
-  'datetime-local' : 'input_type_datetime_local',
-  'date' : 'input_type_date',
-  'email' : 'input_type_email',
-  'file' : 'input_type_file',
-  'image' : 'role_button',
-  'month' : 'input_type_month',
-  'number' : 'input_type_number',
-  'password' : 'input_type_password',
-  'radio' : 'role_radio',
-  'range' : 'role_slider',
-  'reset' : 'input_type_reset',
-  'search' : 'input_type_search',
-  'submit' : 'role_button',
-  'tel' : 'input_type_number',
-  'text' : 'input_type_text',
-  'url' : 'input_type_url',
-  'week' : 'input_type_week'
+  'button': 'role_button',
+  'checkbox': 'role_checkbox',
+  'color': 'input_type_color',
+  'datetime': 'input_type_datetime',
+  'datetime-local': 'input_type_datetime_local',
+  'date': 'input_type_date',
+  'email': 'input_type_email',
+  'file': 'input_type_file',
+  'image': 'role_button',
+  'month': 'input_type_month',
+  'number': 'input_type_number',
+  'password': 'input_type_password',
+  'radio': 'role_radio',
+  'range': 'role_slider',
+  'reset': 'input_type_reset',
+  'search': 'input_type_search',
+  'submit': 'role_button',
+  'tel': 'input_type_number',
+  'text': 'input_type_text',
+  'url': 'input_type_url',
+  'week': 'input_type_week'
 };
 
 
@@ -66,31 +65,31 @@ cvox.DomUtil.INPUT_TYPE_TO_INFORMATION_TABLE_MSG = {
  * @type {Object}
  */
 cvox.DomUtil.TAG_TO_INFORMATION_TABLE_VERBOSE_MSG = {
-  'A' : 'role_link',
-  'ARTICLE' : 'tag_article',
-  'ASIDE' : 'tag_aside',
-  'AUDIO' : 'tag_audio',
-  'BUTTON' : 'role_button',
-  'FOOTER' : 'tag_footer',
-  'H1' : 'tag_h1',
-  'H2' : 'tag_h2',
-  'H3' : 'tag_h3',
-  'H4' : 'tag_h4',
-  'H5' : 'tag_h5',
-  'H6' : 'tag_h6',
-  'HEADER' : 'tag_header',
-  'HGROUP' : 'tag_hgroup',
-  'LI' : 'tag_li',
-  'MARK' : 'tag_mark',
-  'NAV' : 'tag_nav',
-  'OL' : 'tag_ol',
-  'SECTION' : 'tag_section',
-  'SELECT' : 'tag_select',
-  'TABLE' : 'tag_table',
-  'TEXTAREA' : 'tag_textarea',
-  'TIME' : 'tag_time',
-  'UL' : 'tag_ul',
-  'VIDEO' : 'tag_video'
+  'A': 'role_link',
+  'ARTICLE': 'tag_article',
+  'ASIDE': 'tag_aside',
+  'AUDIO': 'tag_audio',
+  'BUTTON': 'role_button',
+  'FOOTER': 'tag_footer',
+  'H1': 'tag_h1',
+  'H2': 'tag_h2',
+  'H3': 'tag_h3',
+  'H4': 'tag_h4',
+  'H5': 'tag_h5',
+  'H6': 'tag_h6',
+  'HEADER': 'tag_header',
+  'HGROUP': 'tag_hgroup',
+  'LI': 'tag_li',
+  'MARK': 'tag_mark',
+  'NAV': 'tag_nav',
+  'OL': 'tag_ol',
+  'SECTION': 'tag_section',
+  'SELECT': 'tag_select',
+  'TABLE': 'tag_table',
+  'TEXTAREA': 'tag_textarea',
+  'TIME': 'tag_time',
+  'UL': 'tag_ul',
+  'VIDEO': 'tag_video'
 };
 
 /**
@@ -98,21 +97,22 @@ cvox.DomUtil.TAG_TO_INFORMATION_TABLE_VERBOSE_MSG = {
  * @type {Object}
  */
 cvox.DomUtil.TAG_TO_INFORMATION_TABLE_BRIEF_MSG = {
-  'AUDIO' : 'tag_audio',
-  'BUTTON' : 'role_button',
-  'SELECT' : 'tag_select',
-  'TABLE' : 'tag_table',
-  'TEXTAREA' : 'tag_textarea',
-  'VIDEO' : 'tag_video'
+  'AUDIO': 'tag_audio',
+  'BUTTON': 'role_button',
+  'SELECT': 'tag_select',
+  'TABLE': 'tag_table',
+  'TEXTAREA': 'tag_textarea',
+  'VIDEO': 'tag_video'
 };
 
 /**
  * These tags are treated as text formatters.
  * @type {Array<string>}
  */
-cvox.DomUtil.FORMATTING_TAGS =
-    ['B', 'BIG', 'CITE', 'CODE', 'DFN', 'EM', 'I', 'KBD', 'SAMP', 'SMALL',
-     'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'U', 'VAR'];
+cvox.DomUtil.FORMATTING_TAGS = [
+  'B', 'BIG', 'CITE', 'CODE', 'DFN', 'EM', 'I', 'KBD', 'SAMP', 'SMALL', 'SPAN',
+  'STRIKE', 'STRONG', 'SUB', 'SUP', 'U', 'VAR'
+];
 
 /**
  * Determine if the given node is visible on the page. This does not check if
@@ -150,7 +150,8 @@ cvox.DomUtil.isVisible = function(node, opt_options) {
   var fname = 'isVisible-' + checkAncestors + '-' + checkDescendants;
   return /** @type {boolean} */ (cvox.Memoize.memoize(
       cvox.DomUtil.computeIsVisible_.bind(
-          this, node, checkAncestors, checkDescendants), fname, node));
+          this, node, checkAncestors, checkDescendants),
+      fname, node));
 };
 
 /**
@@ -176,8 +177,7 @@ cvox.DomUtil.computeIsVisible_ = function(
   }
 
   // Confirm that no subtree containing node is invisible.
-  if (checkAncestors &&
-      cvox.DomUtil.hasInvisibleAncestor_(node)) {
+  if (checkAncestors && cvox.DomUtil.hasInvisibleAncestor_(node)) {
     return false;
   }
 
@@ -233,8 +233,8 @@ cvox.DomUtil.hasVisibleNodeSubtree_ = function(root, recursive) {
     if (!root.parentElement) {
       return false;
     }
-    var parentStyle = document.defaultView
-        .getComputedStyle(root.parentElement, null);
+    var parentStyle =
+        document.defaultView.getComputedStyle(root.parentElement, null);
     var isVisibleParent = !cvox.DomUtil.isInvisibleStyle(parentStyle);
     return isVisibleParent;
   }
@@ -350,7 +350,7 @@ cvox.DomUtil.isLeafNode = function(node, opt_allowHidden) {
   }
 
   // Now we know for sure it's an element.
-  var element = /** @type {Element} */(node);
+  var element = /** @type {Element} */ (node);
   if (!opt_allowHidden &&
       !cvox.DomUtil.isVisible(element, {checkAncestors: false})) {
     return true;
@@ -408,16 +408,15 @@ cvox.DomUtil.isLeafNode = function(node, opt_allowHidden) {
  */
 cvox.DomUtil.isDescendantOf = function(node, tagName, className) {
   while (node) {
-
-    if (tagName && className &&
-        (node.tagName && (node.tagName == tagName)) &&
+    if (tagName && className && (node.tagName && (node.tagName == tagName)) &&
         (node.className && (node.className == className))) {
       return true;
-    } else if (tagName && !className &&
-               (node.tagName && (node.tagName == tagName))) {
+    } else if (
+        tagName && !className && (node.tagName && (node.tagName == tagName))) {
       return true;
-    } else if (!tagName && className &&
-               (node.className && (node.className == className))) {
+    } else if (
+        !tagName && className &&
+        (node.className && (node.className == className))) {
       return true;
     }
     node = node.parentNode;
@@ -473,8 +472,8 @@ cvox.DomUtil.getBaseLabel_ = function(node, recursive, includeControls) {
       for (var labelNodeId, i = 0; labelNodeId = labelNodeIds[i]; i++) {
         var labelNode = document.getElementById(labelNodeId);
         if (labelNode) {
-          label += ' ' + cvox.DomUtil.getName(
-              labelNode, true, includeControls, true);
+          label += ' ' +
+              cvox.DomUtil.getName(labelNode, true, includeControls, true);
         }
       }
     } else if (node.hasAttribute('aria-label')) {
@@ -587,8 +586,7 @@ cvox.DomUtil.getName = function(
 cvox.DomUtil.hasChildrenBasedName_ = function(node, opt_allowHidden) {
   if (!!cvox.DomPredicates.linkPredicate([node]) ||
       !!cvox.DomPredicates.headingPredicate([node]) ||
-      node.tagName == 'BUTTON' ||
-      cvox.AriaUtil.isControlWidget(node) ||
+      node.tagName == 'BUTTON' || cvox.AriaUtil.isControlWidget(node) ||
       !cvox.DomUtil.isLeafNode(node, opt_allowHidden)) {
     return true;
   } else {
@@ -665,8 +663,7 @@ cvox.DomUtil.getName_ = function(
 
   // Fall back to naming via title only if there is no text content.
   if (cvox.DomUtil.collapseWhitespace(node.textContent).length == 0 &&
-      node.hasAttribute &&
-      node.hasAttribute('title')) {
+      node.hasAttribute && node.hasAttribute('title')) {
     return node.getAttribute('title');
   }
 
@@ -709,10 +706,10 @@ cvox.DomUtil.getNameFromChildren = function(
     }
     var isVisible = cvox.DomUtil.isVisible(child, {checkAncestors: false});
     if (opt_allowHidden || (isVisible && !cvox.AriaUtil.isHidden(child))) {
-      delimiter = (prevChild.tagName == 'SPAN' ||
-                   child.tagName == 'SPAN' ||
+      delimiter = (prevChild.tagName == 'SPAN' || child.tagName == 'SPAN' ||
                    child.parentNode.tagName == 'SPAN') ?
-          '' : ' ';
+          '' :
+          ' ';
       name += delimiter + cvox.DomUtil.getName(child, true, includeControls);
     }
   }
@@ -741,19 +738,18 @@ cvox.DomUtil.getPrefixText = function(node, opt_index) {
   }
 
   // Do nothing if we're not at the leftmost leaf.
-  if (firstListitem &&
-      firstListitem.parentNode &&
-      opt_index == 0 &&
-      firstListitem.parentNode.tagName == 'OL' &&
-          node == leftmost &&
+  if (firstListitem && firstListitem.parentNode && opt_index == 0 &&
+      firstListitem.parentNode.tagName == 'OL' && node == leftmost &&
       document.defaultView.getComputedStyle(firstListitem.parentElement)
-          .listStyleType != 'none') {
-    var items = cvox.DomUtil.toArray(firstListitem.parentNode.children).filter(
-        function(li) { return li.tagName == 'LI'; });
+              .listStyleType != 'none') {
+    var items = cvox.DomUtil.toArray(firstListitem.parentNode.children)
+                    .filter(function(li) {
+                      return li.tagName == 'LI';
+                    });
     var position = items.indexOf(firstListitem) + 1;
     // TODO(dtseng): Support all list style types.
-    if (document.defaultView.getComputedStyle(
-            firstListitem.parentElement).listStyleType.indexOf('latin') != -1) {
+    if (document.defaultView.getComputedStyle(firstListitem.parentElement)
+            .listStyleType.indexOf('latin') != -1) {
       position--;
       prefix = String.fromCharCode('A'.charCodeAt(0) + position % 26);
     } else {
@@ -780,9 +776,9 @@ cvox.DomUtil.getControlLabelHeuristics = function(node) {
   // no title/label for that control.
   if (node.hasAttribute &&
       ((node.hasAttribute('aria-label') &&
-      (node.getAttribute('aria-label') == '')) ||
-      (node.hasAttribute('aria-title') &&
-      (node.getAttribute('aria-title') == '')))) {
+        (node.getAttribute('aria-label') == '')) ||
+       (node.hasAttribute('aria-title') &&
+        (node.getAttribute('aria-title') == '')))) {
     return '';
   }
 
@@ -794,15 +790,17 @@ cvox.DomUtil.getControlLabelHeuristics = function(node) {
   // then try getting the content from the closest node.
   var prevNode = cvox.DomUtil.previousLeafNode(node);
   var prevTraversalCount = 0;
-  while (prevNode && (!cvox.DomUtil.hasContent(prevNode) ||
-      cvox.DomUtil.isControl(prevNode))) {
+  while (prevNode &&
+         (!cvox.DomUtil.hasContent(prevNode) ||
+          cvox.DomUtil.isControl(prevNode))) {
     prevNode = cvox.DomUtil.previousLeafNode(prevNode);
     prevTraversalCount++;
   }
   var nextNode = cvox.DomUtil.directedNextLeafNode(node);
   var nextTraversalCount = 0;
-  while (nextNode && (!cvox.DomUtil.hasContent(nextNode) ||
-      cvox.DomUtil.isControl(nextNode))) {
+  while (nextNode &&
+         (!cvox.DomUtil.hasContent(nextNode) ||
+          cvox.DomUtil.isControl(nextNode))) {
     nextNode = cvox.DomUtil.directedNextLeafNode(nextNode);
     nextTraversalCount++;
   }
@@ -863,17 +861,17 @@ cvox.DomUtil.getValue = function(node) {
   }
 
   if (node.constructor == HTMLSelectElement) {
-    node = /** @type {HTMLSelectElement} */(node);
+    node = /** @type {HTMLSelectElement} */ (node);
     var value = '';
     var start = node.selectedOptions ? node.selectedOptions[0] : null;
     var end = node.selectedOptions ?
-        node.selectedOptions[node.selectedOptions.length - 1] : null;
+        node.selectedOptions[node.selectedOptions.length - 1] :
+        null;
     // TODO(dtseng): Keeping this stateless means we describe the start and end
     // of the selection only since we don't know which was added or
     // removed. Once we keep the previous selection, we can read the diff.
     if (start && end && start != end) {
-      value = Msgs.getMsg(
-        'selected_options_value', [start.text, end.text]);
+      value = Msgs.getMsg('selected_options_value', [start.text, end.text]);
     } else if (start) {
       value = start.text + '';
     }
@@ -927,8 +925,8 @@ cvox.DomUtil.getImageTitle = function(node) {
   } else {
     var url = node.src;
     if (url.substring(0, 4) != 'data') {
-      var filename = url.substring(
-          url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+      var filename =
+          url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
 
       // Hack to not speak the filename if it's ridiculously long.
       if (filename.length >= 1 && filename.length <= 16) {
@@ -1086,8 +1084,7 @@ cvox.DomUtil.computeHasContent_ = function(node) {
     if (enclosingLabel.hasAttribute('for')) {
       var targetId = enclosingLabel.getAttribute('for');
       var targetNode = document.getElementById(targetId);
-      if (targetNode &&
-          cvox.DomUtil.isControl(targetNode) &&
+      if (targetNode && cvox.DomUtil.isControl(targetNode) &&
           !embeddedControl) {
         return false;
       }
@@ -1146,8 +1143,7 @@ cvox.DomUtil.computeHasContent_ = function(node) {
   var labelledByTargets = cvox.DomUtil.getLabelledByTargets();
   var enclosingNodeWithId = node;
   while (enclosingNodeWithId) {
-    if (enclosingNodeWithId.id &&
-        labelledByTargets[enclosingNodeWithId.id]) {
+    if (enclosingNodeWithId.id && labelledByTargets[enclosingNodeWithId.id]) {
       // If we got here, some element on this page has an aria-labelledby
       // attribute listing this node as its id. As long as that "some" element
       // is not this element, we should return false, indicating this element
@@ -1240,8 +1236,8 @@ cvox.DomUtil.getUniqueAncestors = function(
     previousNode, currentNode, opt_fallback) {
   var prevAncestors = cvox.DomUtil.getAncestors(previousNode);
   var currentAncestors = cvox.DomUtil.getAncestors(currentNode);
-  var divergence = cvox.DomUtil.compareAncestors(prevAncestors,
-      currentAncestors);
+  var divergence =
+      cvox.DomUtil.compareAncestors(prevAncestors, currentAncestors);
   var diff = currentAncestors.slice(divergence);
   return (diff.length == 0 && opt_fallback) ? currentAncestors : diff;
 };
@@ -1260,21 +1256,21 @@ cvox.DomUtil.getRoleMsg = function(targetNode, verbosity) {
   if (!info) {
     if (targetNode.tagName == 'INPUT') {
       info = cvox.DomUtil.INPUT_TYPE_TO_INFORMATION_TABLE_MSG[targetNode.type];
-    } else if (targetNode.tagName == 'A' &&
-        cvox.DomUtil.isInternalLink(targetNode)) {
+    } else if (
+        targetNode.tagName == 'A' && cvox.DomUtil.isInternalLink(targetNode)) {
       info = 'internal_link';
-    } else if (targetNode.tagName == 'A' &&
-        targetNode.getAttribute('href') &&
+    } else if (
+        targetNode.tagName == 'A' && targetNode.getAttribute('href') &&
         cvox.ChromeVox.visitedUrls[targetNode.href]) {
       info = 'visited_link';
-    } else if (targetNode.tagName == 'A' &&
-        targetNode.getAttribute('name')) {
-      info = ''; // Don't want to add any role to anchors.
+    } else if (targetNode.tagName == 'A' && targetNode.getAttribute('name')) {
+      info = '';  // Don't want to add any role to anchors.
     } else if (targetNode.isContentEditable) {
       info = 'input_type_text';
     } else if (cvox.DomUtil.isMath(targetNode)) {
       info = 'math_expr';
-    } else if (targetNode.tagName == 'TABLE' &&
+    } else if (
+        targetNode.tagName == 'TABLE' &&
         cvox.DomUtil.isLayoutTable(targetNode)) {
       info = '';
     } else {
@@ -1282,8 +1278,8 @@ cvox.DomUtil.getRoleMsg = function(targetNode, verbosity) {
         info =
             cvox.DomUtil.TAG_TO_INFORMATION_TABLE_BRIEF_MSG[targetNode.tagName];
       } else {
-        info = cvox.DomUtil.TAG_TO_INFORMATION_TABLE_VERBOSE_MSG[
-          targetNode.tagName];
+        info = cvox.DomUtil
+                   .TAG_TO_INFORMATION_TABLE_VERBOSE_MSG[targetNode.tagName];
 
         if (cvox.DomUtil.hasLongDesc(targetNode)) {
           info = 'image_with_long_desc';
@@ -1312,8 +1308,7 @@ cvox.DomUtil.getRoleMsg = function(targetNode, verbosity) {
  */
 cvox.DomUtil.getRole = function(targetNode, verbosity) {
   var roleMsg = cvox.DomUtil.getRoleMsg(targetNode, verbosity) || '';
-  var role = roleMsg && roleMsg != ' ' ?
-      Msgs.getMsg(roleMsg) : '';
+  var role = roleMsg && roleMsg != ' ' ? Msgs.getMsg(roleMsg) : '';
   return role ? role : roleMsg;
 };
 
@@ -1326,12 +1321,10 @@ cvox.DomUtil.getRole = function(targetNode, verbosity) {
  */
 cvox.DomUtil.getListLength = function(targetNode) {
   var count = 0;
-  for (var node = targetNode.firstChild;
-       node;
-       node = node.nextSibling) {
+  for (var node = targetNode.firstChild; node; node = node.nextSibling) {
     if (cvox.DomUtil.isVisible(node) &&
         (node.tagName == 'LI' ||
-        (node.getAttribute && node.getAttribute('role') == 'listitem'))) {
+         (node.getAttribute && node.getAttribute('role') == 'listitem'))) {
       if (node.hasAttribute('aria-setsize')) {
         var ariaLength = parseInt(node.getAttribute('aria-setsize'), 10);
         if (!isNaN(ariaLength)) {
@@ -1372,7 +1365,8 @@ cvox.DomUtil.getStateMsgs = function(targetNode, primary) {
         'checkbox-true': 'checkbox_checked_state',
         'checkbox-false': 'checkbox_unchecked_state',
         'radio-true': 'radio_selected_state',
-        'radio-false': 'radio_unselected_state' };
+        'radio-false': 'radio_unselected_state'
+      };
       var msgId = INPUT_MSGS[targetNode.type + '-' + !!targetNode.checked];
       if (msgId) {
         info.push([msgId]);
@@ -1380,19 +1374,23 @@ cvox.DomUtil.getStateMsgs = function(targetNode, primary) {
     }
   } else if (targetNode.tagName == 'SELECT') {
     if (targetNode.selectedOptions && targetNode.selectedOptions.length <= 1) {
-      info.push(['list_position',
-                 Msgs.getNumber(targetNode.selectedIndex + 1),
-                 Msgs.getNumber(targetNode.options.length)]);
+      info.push([
+        'list_position', Msgs.getNumber(targetNode.selectedIndex + 1),
+        Msgs.getNumber(targetNode.options.length)
+      ]);
     } else {
-      info.push(['selected_options_state',
-          Msgs.getNumber(targetNode.selectedOptions.length)]);
+      info.push([
+        'selected_options_state',
+        Msgs.getNumber(targetNode.selectedOptions.length)
+      ]);
     }
-  } else if (targetNode.tagName == 'UL' ||
-             targetNode.tagName == 'OL' ||
-             role == 'list') {
-    info.push(['list_with_items_not_pluralized',
-               Msgs.getNumber(
-                   cvox.DomUtil.getListLength(targetNode))]);
+  } else if (
+      targetNode.tagName == 'UL' || targetNode.tagName == 'OL' ||
+      role == 'list') {
+    info.push([
+      'list_with_items_not_pluralized',
+      Msgs.getNumber(cvox.DomUtil.getListLength(targetNode))
+    ]);
   }
 
   if (cvox.DomUtil.isDisabled(targetNode)) {
@@ -1450,8 +1448,7 @@ cvox.DomUtil.isFocusable = function(targetNode) {
     return true;
   }
 
-  if (targetNode.hasAttribute &&
-      targetNode.hasAttribute('tabindex') &&
+  if (targetNode.hasAttribute && targetNode.hasAttribute('tabindex') &&
       targetNode.getAttribute('tabindex') == '-1') {
     return true;
   }
@@ -1492,7 +1489,8 @@ cvox.DomUtil.findFocusableDescendant = function(targetNode) {
  */
 cvox.DomUtil.countFocusableDescendants = function(targetNode) {
   return targetNode ?
-      cvox.DomUtil.countNodes(targetNode, cvox.DomUtil.isFocusable) : 0;
+      cvox.DomUtil.countNodes(targetNode, cvox.DomUtil.isFocusable) :
+      0;
 };
 
 
@@ -1562,30 +1560,36 @@ cvox.DomUtil.clickElem = function(
   // Send a mousedown (or simply a double click if requested).
   var evt = document.createEvent('MouseEvents');
   var evtType = opt_double ? 'dblclick' : 'mousedown';
-  evt.initMouseEvent(evtType, true, true, document.defaultView,
-                     1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
+  evt.initMouseEvent(
+      evtType, true, true, document.defaultView, 1, 0, 0, 0, 0, false, false,
+      shiftKey, false, 0, null);
   // Unless asked not to, Mark any events we generate so we don't try to
   // process our own events.
   evt.fromCvox = !opt_handleOwnEvents;
   try {
     targetNode.dispatchEvent(evt);
-  } catch (e) {}
-  //Send a mouse up
+  } catch (e) {
+  }
+  // Send a mouse up
   evt = document.createEvent('MouseEvents');
-  evt.initMouseEvent('mouseup', true, true, document.defaultView,
-                     1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
+  evt.initMouseEvent(
+      'mouseup', true, true, document.defaultView, 1, 0, 0, 0, 0, false, false,
+      shiftKey, false, 0, null);
   evt.fromCvox = !opt_handleOwnEvents;
   try {
     targetNode.dispatchEvent(evt);
-  } catch (e) {}
-  //Send a click
+  } catch (e) {
+  }
+  // Send a click
   evt = document.createEvent('MouseEvents');
-  evt.initMouseEvent('click', true, true, document.defaultView,
-                     1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
+  evt.initMouseEvent(
+      'click', true, true, document.defaultView, 1, 0, 0, 0, 0, false, false,
+      shiftKey, false, 0, null);
   evt.fromCvox = !opt_handleOwnEvents;
   try {
     targetNode.dispatchEvent(evt);
-  } catch (e) {}
+  } catch (e) {
+  }
 
   if (cvox.DomUtil.isInternalLink(targetNode)) {
     cvox.DomUtil.syncInternalLink(targetNode);
@@ -1659,8 +1663,7 @@ cvox.DomUtil.isInputTypeText = function(node) {
  * @return {boolean} True if the node is a control.
  */
 cvox.DomUtil.isControl = function(node) {
-  if (cvox.AriaUtil.isControlWidget(node) &&
-      cvox.DomUtil.isFocusable(node)) {
+  if (cvox.AriaUtil.isControlWidget(node) && cvox.DomUtil.isFocusable(node)) {
     return true;
   }
   if (node.tagName) {
@@ -1691,8 +1694,9 @@ cvox.DomUtil.isControl = function(node) {
  */
 cvox.DomUtil.isLeafLevelControl = function(node) {
   if (cvox.DomUtil.isControl(node)) {
-    return !(cvox.AriaUtil.isCompositeControl(node) &&
-             cvox.DomUtil.findFocusableDescendant(node));
+    return !(
+        cvox.AriaUtil.isCompositeControl(node) &&
+        cvox.DomUtil.findFocusableDescendant(node));
   }
   return false;
 };
@@ -1710,7 +1714,7 @@ cvox.DomUtil.getSurroundingControl = function(node) {
       node.hasAttribute('role')) {
     surroundingControl = node.parentElement;
     while (surroundingControl &&
-        !cvox.AriaUtil.isCompositeControl(surroundingControl)) {
+           !cvox.AriaUtil.isCompositeControl(surroundingControl)) {
       surroundingControl = surroundingControl.parentElement;
     }
   }
@@ -1742,7 +1746,7 @@ cvox.DomUtil.directedNextLeafLikeNode = function(node, r, isLeaf) {
       }
       // since node is never above document.body, it always has a parent.
       // so node.parentNode will never be null.
-      node = /** @type {!Node} */(node.parentNode);
+      node = /** @type {!Node} */ (node.parentNode);
       if (node == document.body) {
         // we've readed the end of the document.
         return null;
@@ -1750,13 +1754,13 @@ cvox.DomUtil.directedNextLeafLikeNode = function(node, r, isLeaf) {
     }
     if (cvox.DomUtil.directedNextSibling(node, r)) {
       // we just checked that next sibling is non-null.
-      node = /** @type {!Node} */(cvox.DomUtil.directedNextSibling(node, r));
+      node = /** @type {!Node} */ (cvox.DomUtil.directedNextSibling(node, r));
     }
   }
   // once we're at our next sibling, we want to descend down into it as
   // far as the child class will allow
   while (cvox.DomUtil.directedFirstChild(node, r) && !isLeaf(node)) {
-    node = /** @type {!Node} */(cvox.DomUtil.directedFirstChild(node, r));
+    node = /** @type {!Node} */ (cvox.DomUtil.directedFirstChild(node, r));
   }
 
   // after we've done all that, if we are still at document.body, this must
@@ -1870,8 +1874,8 @@ cvox.DomUtil.directedFindNextNode = function(
     if (!deep && pred(next)) {
       return next;
     }
-    var leaf = (deep ?
-                cvox.DomUtil.directedFindDeepestNode :
+    var leaf =
+        (deep ? cvox.DomUtil.directedFindDeepestNode :
                 cvox.DomUtil.directedFindFirstNode)(next, r, pred);
     if (leaf) {
       return leaf;
@@ -1881,7 +1885,7 @@ cvox.DomUtil.directedFindNextNode = function(
     }
     next = cvox.DomUtil.directedNextSibling(next, r);
   }
-  var parent = /** @type {!Node} */(node.parentNode);
+  var parent = /** @type {!Node} */ (node.parentNode);
   if (above && pred(parent)) {
     return parent;
   }
@@ -1900,9 +1904,8 @@ cvox.DomUtil.getControlValueAndStateString = function(control) {
   var parentControl = cvox.DomUtil.getSurroundingControl(control);
   if (parentControl) {
     return cvox.DomUtil.collapseWhitespace(
-        cvox.DomUtil.getValue(control) + ' ' +
-        cvox.DomUtil.getName(control) + ' ' +
-        cvox.DomUtil.getState(control, true));
+        cvox.DomUtil.getValue(control) + ' ' + cvox.DomUtil.getName(control) +
+        ' ' + cvox.DomUtil.getState(control, true));
   } else {
     return cvox.DomUtil.collapseWhitespace(
         cvox.DomUtil.getValue(control) + ' ' +
@@ -1917,7 +1920,7 @@ cvox.DomUtil.getControlValueAndStateString = function(control) {
  * @return {boolean} True if the node is an internal link, false otherwise.
  */
 cvox.DomUtil.isInternalLink = function(node) {
-  if (node.nodeType == 1) { // Element nodes only.
+  if (node.nodeType == 1) {  // Element nodes only.
     var href = node.getAttribute('href');
     if (href && href.indexOf('#') != -1) {
       var path = href.split('#')[0];
@@ -1944,8 +1947,7 @@ cvox.DomUtil.getLinkURL = function(node) {
     } else {
       return '';
     }
-  } else if (cvox.AriaUtil.getRoleName(node) ==
-             Msgs.getMsg('role_link')) {
+  } else if (cvox.AriaUtil.getRoleName(node) == Msgs.getMsg('role_link')) {
     return Msgs.getMsg('unknown_link');
   }
 
@@ -2004,8 +2006,9 @@ cvox.DomUtil.findTableNodeInList = function(nodes, kwargs) {
 cvox.DomUtil.isLayoutTable = function(tableNode) {
   // TODO(stoarca): Why are we returning based on this inaccurate heuristic
   // instead of first trying the better heuristics below?
-  if (tableNode.rows && (tableNode.rows.length <= 1 ||
-      (tableNode.rows[0].childElementCount == 1))) {
+  if (tableNode.rows &&
+      (tableNode.rows.length <= 1 ||
+       (tableNode.rows[0].childElementCount == 1))) {
     // This table has either 0 or one rows, or only "one" column.
     // This is a quick check for column count and may not be accurate. See
     // TraverseTable.getW3CColCount_ for a more accurate
@@ -2065,7 +2068,7 @@ cvox.DomUtil.isLayoutTable = function(tableNode) {
   // this is probably a layout table.
   var points = 0;
 
-  if (! cvox.DomUtil.hasBorder(tableNode)) {
+  if (!cvox.DomUtil.hasBorder(tableNode)) {
     // This table has no border.
     points++;
   }
@@ -2080,10 +2083,10 @@ cvox.DomUtil.isLayoutTable = function(tableNode) {
     points++;
   }
 
- if (cvox.XpathUtil.evalXPath('tbody/tr/td/table', tableNode).length > 0) {
-   // This table has nested tables.
-   points++;
- }
+  if (cvox.XpathUtil.evalXPath('tbody/tr/td/table', tableNode).length > 0) {
+    // This table has nested tables.
+    points++;
+  }
   return (points >= 3);
 };
 
@@ -2344,7 +2347,9 @@ cvox.DomUtil.directedNextSibling = function(node, reverse) {
  */
 cvox.DomUtil.createSimpleClickFunction = function(targetNode) {
   var target = targetNode.cloneNode(true);
-  return function() { cvox.DomUtil.clickElem(target, false, false); };
+  return function() {
+    cvox.DomUtil.clickElem(target, false, false);
+  };
 };
 
 /**
@@ -2356,7 +2361,7 @@ cvox.DomUtil.createSimpleClickFunction = function(targetNode) {
  */
 cvox.DomUtil.addNodeToHead = function(node, opt_id) {
   if (opt_id && document.getElementById(opt_id)) {
-      return;
+    return;
   }
   var p = document.head || document.body;
   p.appendChild(node);
@@ -2398,10 +2403,8 @@ cvox.DomUtil.findMathNodeInList = function(nodes) {
  * @return {boolean} Whether or not a node is a math node.
  */
 cvox.DomUtil.isMath = function(node) {
-  return cvox.DomUtil.isMathml(node) ||
-      cvox.DomUtil.isMathJax(node) ||
-          cvox.DomUtil.isMathImg(node) ||
-              cvox.AriaUtil.isMath(node);
+  return cvox.DomUtil.isMathml(node) || cvox.DomUtil.isMathJax(node) ||
+      cvox.DomUtil.isMathImg(node) || cvox.AriaUtil.isMath(node);
 };
 
 
@@ -2430,7 +2433,11 @@ cvox.DomUtil.ALT_MATH_CLASSES = {
 cvox.DomUtil.altMathQuerySelector = function(contentType) {
   var classes = cvox.DomUtil.ALT_MATH_CLASSES[contentType];
   if (classes) {
-    return classes.map(function(x) {return 'img.' + x;}).join(', ');
+    return classes
+        .map(function(x) {
+          return 'img.' + x;
+        })
+        .join(', ');
   }
   return '';
 };
@@ -2485,13 +2492,15 @@ cvox.DomUtil.isMathJax = function(node) {
   }
 
   function isSpanWithClass(n, cl) {
-    return (n.tagName == 'SPAN' &&
-            n.className.split(' ').some(function(x) {
-                                          return x.toLowerCase() == cl;}));
+    return (n.tagName == 'SPAN' && n.className.split(' ').some(function(x) {
+      return x.toLowerCase() == cl;
+    }));
   }
   if (isSpanWithClass(node, 'math')) {
     var ancestors = cvox.DomUtil.getAncestors(node);
-    return ancestors.some(function(x) {return isSpanWithClass(x, 'mathjax');});
+    return ancestors.some(function(x) {
+      return isSpanWithClass(x, 'mathjax');
+    });
   }
   return false;
 };
@@ -2546,10 +2555,9 @@ cvox.DomUtil.getNodeTagName = function(node) {
  * @return {!Array<Node|string|null>} The cleaned up list of nodes.
  */
 cvox.DomUtil.purgeNodes = function(nodes) {
-  return cvox.DomUtil.toArray(nodes).
-      filter(function(node) {
-               return node.nodeType != Node.TEXT_NODE ||
-                   !node.textContent.match(/^\s+$/);});
+  return cvox.DomUtil.toArray(nodes).filter(function(node) {
+    return node.nodeType != Node.TEXT_NODE || !node.textContent.match(/^\s+$/);
+  });
 };
 
 
@@ -2566,10 +2574,7 @@ cvox.DomUtil.elementToPoint = function(node) {
     node = node.parentNode;
   }
   var r = node.getBoundingClientRect();
-  return {
-    x: r.left + (r.width / 2),
-    y: r.top + (r.height / 2)
-  };
+  return {x: r.left + (r.width / 2), y: r.top + (r.height / 2)};
 };
 
 
@@ -2580,9 +2585,7 @@ cvox.DomUtil.elementToPoint = function(node) {
  * @return {boolean} True if HTML5 selection supported.
  */
 cvox.DomUtil.doesInputSupportSelection = function(node) {
-  return goog.isDef(node) &&
-      node.tagName == 'INPUT' &&
-      node.type != 'email' &&
+  return goog.isDef(node) && node.tagName == 'INPUT' && node.type != 'email' &&
       node.type != 'number';
 };
 
@@ -2600,8 +2603,7 @@ cvox.DomUtil.getHint = function(node) {
       for (var describedById, i = 0; describedById = describedByIds[i]; i++) {
         var describedNode = document.getElementById(describedById);
         if (describedNode) {
-          desc += ' ' + cvox.DomUtil.getName(
-              describedNode, true, true, true);
+          desc += ' ' + cvox.DomUtil.getName(describedNode, true, true, true);
         }
       }
     }

@@ -55,8 +55,7 @@ cvox.SpeechRuleEngine.prototype.parameterize = function(store) {
   } catch (err) {
     if (err.name == 'StoreError') {
       console.log('Store Error:', err.message);
-    }
-    else {
+    } else {
       throw err;
     }
   }
@@ -146,8 +145,7 @@ cvox.SpeechRuleEngine.prototype.evaluateTree_ = function(node) {
         selected = this.activeStore_.applySelector(node, content);
         if (selected.length > 0) {
           navs = this.evaluateNodeList_(
-              selected,
-              component['sepFunc'],
+              selected, component['sepFunc'],
               this.constructString(node, component['separator']),
               component['ctxtFunc'],
               this.constructString(node, component['context']));
@@ -166,9 +164,8 @@ cvox.SpeechRuleEngine.prototype.evaluateTree_ = function(node) {
     // Adding overall context if it exists.
     if (navs[0] && component['context'] &&
         component.type != cvox.SpeechRule.Type.MULTI) {
-      navs[0]['context'] =
-          this.constructString(node, component['context']) +
-              (navs[0]['context'] || '');
+      navs[0]['context'] = this.constructString(node, component['context']) +
+          (navs[0]['context'] || '');
     }
     // Adding personality to the nav descriptions.
     result = result.concat(this.addPersonality_(navs, component));
@@ -199,9 +196,13 @@ cvox.SpeechRuleEngine.prototype.evaluateNodeList_ = function(
   var sep = separator || '';
   var cont = context || '';
   var cFunc = this.activeStore_.contextFunctions.lookup(ctxtFunc);
-  var ctxtClosure = cFunc ? cFunc(nodes, cont) : function() {return cont;};
+  var ctxtClosure = cFunc ? cFunc(nodes, cont) : function() {
+    return cont;
+  };
   var sFunc = this.activeStore_.contextFunctions.lookup(sepFunc);
-  var sepClosure = sFunc ? sFunc(nodes, sep) : function() {return sep;};
+  var sepClosure = sFunc ? sFunc(nodes, sep) : function() {
+    return sep;
+  };
   var result = [];
   for (var i = 0, node; node = nodes[i]; i++) {
     var navs = this.evaluateTree_(node);
@@ -228,11 +229,12 @@ cvox.SpeechRuleEngine.prototype.evaluateNodeList_ = function(
  *         pause: string}}
  * @const
  */
-cvox.SpeechRuleEngine.propMap = {'pitch': cvox.AbstractTts.RELATIVE_PITCH,
-                                 'rate': cvox.AbstractTts.RELATIVE_RATE,
-                                 'volume': cvox.AbstractTts.RELATIVE_VOLUME,
-                                 'pause': cvox.AbstractTts.PAUSE
-                                };
+cvox.SpeechRuleEngine.propMap = {
+  'pitch': cvox.AbstractTts.RELATIVE_PITCH,
+  'rate': cvox.AbstractTts.RELATIVE_RATE,
+  'volume': cvox.AbstractTts.RELATIVE_VOLUME,
+  'pause': cvox.AbstractTts.PAUSE
+};
 
 
 /**
@@ -318,8 +320,8 @@ cvox.SpeechRuleEngine.debugMode = false;
 cvox.SpeechRuleEngine.outputDebug = function(output) {
   if (cvox.SpeechRuleEngine.debugMode) {
     var outputList = Array.prototype.slice.call(arguments, 0);
-    console.log.apply(console,
-                      ['Speech Rule Engine Debugger:'].concat(outputList));
+    console.log.apply(
+        console, ['Speech Rule Engine Debugger:'].concat(outputList));
   }
 };
 
@@ -330,9 +332,14 @@ cvox.SpeechRuleEngine.outputDebug = function(output) {
  *     engine.
  */
 cvox.SpeechRuleEngine.prototype.toString = function() {
-  var allRules = this.activeStore_.findAllRules(function(x) {return true;});
-  return allRules.map(function(rule) {return rule.toString();}).
-    join('\n');
+  var allRules = this.activeStore_.findAllRules(function(x) {
+    return true;
+  });
+  return allRules
+      .map(function(rule) {
+        return rule.toString();
+      })
+      .join('\n');
 };
 
 
@@ -347,10 +354,10 @@ cvox.SpeechRuleEngine.debugSpeechRule = function(rule, node) {
     var prec = rule.precondition;
     cvox.SpeechRuleEngine.outputDebug(
         prec.query, store.applyQuery(node, prec.query));
-    prec.constraints.forEach(
-        function(cstr) {
-          cvox.SpeechRuleEngine.outputDebug(
-              cstr, store.applyConstraint(node, cstr));});
+    prec.constraints.forEach(function(cstr) {
+      cvox.SpeechRuleEngine.outputDebug(
+          cstr, store.applyConstraint(node, cstr));
+    });
   }
 };
 
@@ -362,8 +369,9 @@ cvox.SpeechRuleEngine.debugSpeechRule = function(rule, node) {
  */
 cvox.SpeechRuleEngine.debugNamedSpeechRule = function(name, node) {
   var store = cvox.SpeechRuleEngine.getInstance().activeStore_;
-  var allRules = store.findAllRules(
-    function(rule) {return rule.name == name;});
+  var allRules = store.findAllRules(function(rule) {
+    return rule.name == name;
+  });
   for (var i = 0, rule; rule = allRules[i]; i++) {
     cvox.SpeechRuleEngine.outputDebug('Rule', name, 'number', i);
     cvox.SpeechRuleEngine.debugSpeechRule(rule, node);

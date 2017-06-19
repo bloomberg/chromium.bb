@@ -53,7 +53,7 @@ cvox.TableShifter.prototype.next = function(sel) {
 cvox.TableShifter.prototype.sync = function(sel) {
   if (sel.start.node.tagName == 'TABLE') {
     return sel.isReversed() ? this.currentWalker_.goToLastCell(sel) :
-        this.currentWalker_.goToFirstCell(sel);
+                              this.currentWalker_.goToFirstCell(sel);
   }
   return this.currentWalker_.sync(sel);
 };
@@ -93,10 +93,8 @@ cvox.TableShifter.prototype.getDescription = function(prevSel, sel) {
         }));
       }
       if (this.currentWalker_.tt.isSpanned()) {
-        descs.push(new cvox.NavDescription({
-          text: '',
-          annotation: Msgs.getMsg('spanned')
-        }));
+        descs.push(new cvox.NavDescription(
+            {text: '', annotation: Msgs.getMsg('spanned')}));
       }
       this.begin_ = false;
     }

@@ -24,9 +24,11 @@ PanelMenuItem = function(
   this.element.tabIndex = -1;
   this.element.setAttribute('role', 'menuitem');
 
-  this.element.addEventListener('mouseover', (function(evt) {
-    this.element.focus();
-  }).bind(this), false);
+  this.element.addEventListener(
+      'mouseover', (function(evt) {
+                     this.element.focus();
+                   }).bind(this),
+      false);
 
   var title = document.createElement('td');
   title.className = 'menu-item-title';

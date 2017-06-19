@@ -37,8 +37,9 @@ cvox.StructuralLineWalker.prototype.getGranularityMsg = function() {
  */
 cvox.StructuralLineWalker.prototype.getDescription = function(prevSel, sel) {
   var desc = goog.base(this, 'getDescription', prevSel, sel);
-  desc[0].text = cvox.DomUtil.getPrefixText(
-      sel.absStart().node, sel.absStart().index) + desc[0].text;
+  desc[0].text =
+      cvox.DomUtil.getPrefixText(sel.absStart().node, sel.absStart().index) +
+      desc[0].text;
   return desc;
 };
 

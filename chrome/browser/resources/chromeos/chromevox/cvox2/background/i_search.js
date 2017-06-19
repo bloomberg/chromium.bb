@@ -53,7 +53,8 @@ ISearch = function(cursor) {
     throw 'Incremental search started from invalid range.';
 
   var leaf = AutomationUtil.findNodePre(
-      cursor.node, Dir.FORWARD, AutomationPredicate.leaf) || cursor.node;
+                 cursor.node, Dir.FORWARD, AutomationPredicate.leaf) ||
+      cursor.node;
 
   /** @type {!cursors.Cursor} */
   this.cursor = cursors.Cursor.fromNode(leaf);
@@ -90,8 +91,7 @@ ISearch.prototype = {
     var move = function(curNode) {
       var cur = cursors.Cursor.fromNode(curNode);
       var prev = cur;
-      cur =
-          cur.move(cursors.Unit.NODE, cursors.Movement.DIRECTIONAL, dir);
+      cur = cur.move(cursors.Unit.NODE, cursors.Movement.DIRECTIONAL, dir);
       if (prev.equals(cur)) {
         this.handler_.onSearchReachedBoundary(this.cursor.node);
         return;
@@ -171,9 +171,9 @@ ISearchUI.prototype = {
           var node = this.iSearch_.cursor.node;
           if (!node)
             return;
-          chrome.extension.getBackgroundPage().ChromeVoxState.instance[
-            'navigateToRange'](
-                cursors.Range.fromNode(node));
+          chrome.extension.getBackgroundPage()
+              .ChromeVoxState.instance['navigateToRange'](
+                  cursors.Range.fromNode(node));
         }.bind(this));
         Panel.closeMenusAndRestoreFocus();
         return false;
@@ -218,8 +218,11 @@ ISearchUI.prototype = {
    */
   output_: function(node) {
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
-    var o = new Output().withRichSpeechAndBraille(
-        cursors.Range.fromNode(node), null, Output.EventType.NAVIGATE).go();
+    var o =
+        new Output()
+            .withRichSpeechAndBraille(
+                cursors.Range.fromNode(node), null, Output.EventType.NAVIGATE)
+            .go();
 
     this.background_.setCurrentRange(cursors.Range.fromNode(node));
   },

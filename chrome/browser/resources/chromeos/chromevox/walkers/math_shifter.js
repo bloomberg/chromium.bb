@@ -48,7 +48,7 @@ cvox.MathShifter = function(sel) {
    */
   this.bumped_ = false;
 
-cvox.TraverseMath.getInstance().initialize(sel.start.node);
+  cvox.TraverseMath.getInstance().initialize(sel.start.node);
 };
 goog.inherits(cvox.MathShifter, cvox.AbstractShifter);
 
@@ -110,7 +110,7 @@ cvox.MathShifter.prototype.getBraille = function(prevSel, sel) {
  */
 cvox.MathShifter.prototype.getGranularityMsg = function() {
   return this.direction_ ? 'up to level ' + this.level_ :
-      'down to level ' + this.level_;
+                           'down to level ' + this.level_;
 };
 
 
@@ -141,7 +141,7 @@ cvox.MathShifter.prototype.makeMoreGranular = function() {
  */
 cvox.MathShifter.create = function(sel) {
   if (cvox.DomPredicates.mathPredicate(
-      cvox.DomUtil.getAncestors(sel.start.node))) {
+          cvox.DomUtil.getAncestors(sel.start.node))) {
     var mathNode = cvox.DomUtil.getContainingMath(sel.end.node);
     cvox.TraverseMath.getInstance().initialize(mathNode);
     cvox.SpeechRuleEngine.getInstance().parameterize(

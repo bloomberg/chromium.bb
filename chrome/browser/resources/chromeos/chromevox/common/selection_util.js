@@ -93,7 +93,6 @@ cvox.SelectionUtil.cleanUpSentence = function(sel) {
   var lastSelectionOffset;
 
   while (expand) {
-
     // nodeType:3 == TEXT_NODE
     if (sel.focusNode.nodeType == 3) {
       // The focus node is of type text, check end for period
@@ -105,8 +104,8 @@ cvox.SelectionUtil.cleanUpSentence = function(sel) {
         if (fnode.substringData(sel.getRangeAt(0).endOffset - 1, 1) == '.') {
           // Text node ends with period.
           return true;
-        } else if (fnode.substringData(sel.getRangeAt(0).endOffset - 1, 1) ==
-                   ' ') {
+        } else if (
+            fnode.substringData(sel.getRangeAt(0).endOffset - 1, 1) == ' ') {
           // Text node ends with space.
           return true;
         } else {
@@ -186,8 +185,7 @@ cvox.SelectionUtil.findTopLeftPosition = function(targetNode) {
  */
 cvox.SelectionUtil.isSelectionValid = function(sel) {
   var regExpWhiteSpace = new RegExp(/^\s+$/);
-  return (! ((regExpWhiteSpace.test(sel.toString())) ||
-             (sel.toString() == '')));
+  return (!((regExpWhiteSpace.test(sel.toString())) || (sel.toString() == '')));
 };
 
 /**
@@ -199,8 +197,7 @@ cvox.SelectionUtil.isSelectionValid = function(sel) {
 cvox.SelectionUtil.isRangeValid = function(range) {
   var text = range.cloneContents().textContent;
   var regExpWhiteSpace = new RegExp(/^\s+$/);
-  return (! ((regExpWhiteSpace.test(text)) ||
-             (text == '')));
+  return (!((regExpWhiteSpace.test(text)) || (text == '')));
 };
 
 /**
@@ -247,8 +244,8 @@ cvox.SelectionUtil.scrollElementsToView = function(focusNode) {
 
   // Center the active element on the page once we know it's visible.
   var pos = cvox.SelectionUtil.findPos_(focusNode);
-  window.scrollTo(pos[0] - window.innerWidth / 2,
-                  pos[1] - window.innerHeight / 2);
+  window.scrollTo(
+      pos[0] - window.innerWidth / 2, pos[1] - window.innerHeight / 2);
 };
 
 /**
@@ -273,12 +270,11 @@ cvox.SelectionUtil.scrollToSelection = function(sel) {
   var left = pos[1];
 
   var scrolledVertically = window.pageYOffset ||
-      document.documentElement.scrollTop ||
-      document.body.scrollTop;
+      document.documentElement.scrollTop || document.body.scrollTop;
   var pageHeight = window.innerHeight ||
       document.documentElement.clientHeight || document.body.clientHeight;
-  var pageWidth = window.innerWidth ||
-      document.documentElement.innerWidth || document.body.clientWidth;
+  var pageWidth = window.innerWidth || document.documentElement.innerWidth ||
+      document.body.clientWidth;
 
   if (left < pageWidth) {
     left = 0;
@@ -331,9 +327,9 @@ cvox.SelectionUtil.isAllWs = function(node) {
  */
 
 cvox.SelectionUtil.isIgnorable = function(node) {
-  return (node.nodeType == 8) || // A comment node
-         ((node.nodeType == 3) &&
-          cvox.SelectionUtil.isAllWs(node)); // a text node, all ws
+  return (node.nodeType == 8) ||  // A comment node
+      ((node.nodeType == 3) &&
+       cvox.SelectionUtil.isAllWs(node));  // a text node, all ws
 };
 
 /**

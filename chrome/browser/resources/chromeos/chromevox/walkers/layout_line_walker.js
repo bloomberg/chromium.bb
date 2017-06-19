@@ -153,14 +153,12 @@ cvox.LayoutLineWalker.prototype.isVisualLineBreak_ = function(lSel, rSel) {
   // Some ranges from the browser give us 0-sized rects (such as in the case of
   // select's). Detect these cases and use a more reliable method (take the
   // bounding rect of the actual element rather than the range).
-  if (lRect.width == 0 &&
-      lRect.height == 0 &&
+  if (lRect.width == 0 && lRect.height == 0 &&
       lSel.end.node.nodeType == Node.ELEMENT_NODE) {
     lRect = lSel.end.node.getBoundingClientRect();
   }
 
-  if (rRect.width == 0 &&
-      rRect.height == 0 &&
+  if (rRect.width == 0 && rRect.height == 0 &&
       rSel.start.node.nodeType == Node.ELEMENT_NODE) {
     rRect = rSel.start.node.getBoundingClientRect();
   }

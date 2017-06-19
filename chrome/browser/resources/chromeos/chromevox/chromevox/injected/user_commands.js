@@ -180,8 +180,7 @@ cvox.ChromeVoxUserCommands.handleTabAction_ = function() {
 cvox.ChromeVoxUserCommands.removeTabDummySpan = function() {
   // Break the following line to get around a Chromium js linter warning.
   // TODO(plundblad): Find a better solution.
-  var previousDummySpan = document.
-      getElementById('ChromeVoxTabDummySpan');
+  var previousDummySpan = document.getElementById('ChromeVoxTabDummySpan');
   if (previousDummySpan && document.activeElement != previousDummySpan) {
     previousDummySpan.parentNode.removeChild(previousDummySpan);
   }
@@ -305,8 +304,7 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       if (!cmdStruct.findNext) {
         throw 'Invalid find command.';
       }
-      var NodeInfoStruct =
-          cvox.CommandStore.NODE_INFO_MAP[cmdStruct.findNext];
+      var NodeInfoStruct = cvox.CommandStore.NODE_INFO_MAP[cmdStruct.findNext];
       var predicateName = NodeInfoStruct.predicate;
       var predicate = cvox.DomPredicates[predicateName];
       var error = '';
@@ -364,57 +362,57 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       break;
 
     case 'previousCharacter':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.CHARACTER);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.CHARACTER);
       break;
     case 'nextCharacter':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.CHARACTER);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.CHARACTER);
       break;
 
     case 'previousWord':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.WORD);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.WORD);
       break;
     case 'nextWord':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.WORD);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.WORD);
       break;
 
     case 'previousSentence':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.SENTENCE);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.SENTENCE);
       break;
     case 'nextSentence':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.SENTENCE);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.SENTENCE);
       break;
 
     case 'previousLine':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.LINE);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.LINE);
       break;
     case 'nextLine':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.LINE);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.LINE);
       break;
 
     case 'previousObject':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.OBJECT);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.OBJECT);
       break;
     case 'nextObject':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.OBJECT);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.OBJECT);
       break;
 
     case 'previousGroup':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.GROUP);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.GROUP);
       break;
     case 'nextGroup':
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.GROUP);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.GROUP);
       break;
 
     case 'previousRow':
@@ -439,8 +437,7 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
     case 'readFromHere':
       cvox.ChromeVox.navigationManager.setGranularity(
           cvox.NavigationShifter.GRANULARITIES.OBJECT, true, true);
-      cvox.ChromeVox.navigationManager.startReading(
-          cvox.QueueMode.FLUSH);
+      cvox.ChromeVox.navigationManager.startReading(cvox.QueueMode.FLUSH);
       break;
     case 'cycleTypingEcho':
       cvox.ChromeVox.host.sendToBackgroundPage({
@@ -467,10 +464,8 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       break;
     case 'help':
       cvox.ChromeVox.tts.stop();
-      cvox.ChromeVox.host.sendToBackgroundPage({
-        'target': 'HelpDocs',
-        'action': 'open'
-      });
+      cvox.ChromeVox.host.sendToBackgroundPage(
+          {'target': 'HelpDocs', 'action': 'open'});
       break;
     case 'contextMenu':
       // Move this logic to a central dispatching class if it grows any bigger.
@@ -484,24 +479,18 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       break;
     case 'showBookmarkManager':
       // TODO(stoarca): Should this have tts.stop()??
-      cvox.ChromeVox.host.sendToBackgroundPage({
-        'target': 'BookmarkManager',
-        'action': 'open'
-      });
+      cvox.ChromeVox.host.sendToBackgroundPage(
+          {'target': 'BookmarkManager', 'action': 'open'});
       break;
     case 'showOptionsPage':
       cvox.ChromeVox.tts.stop();
-      cvox.ChromeVox.host.sendToBackgroundPage({
-        'target': 'Options',
-        'action': 'open'
-      });
+      cvox.ChromeVox.host.sendToBackgroundPage(
+          {'target': 'Options', 'action': 'open'});
       break;
     case 'showKbExplorerPage':
       cvox.ChromeVox.tts.stop();
-      cvox.ChromeVox.host.sendToBackgroundPage({
-        'target': 'KbExplorer',
-        'action': 'open'
-      });
+      cvox.ChromeVox.host.sendToBackgroundPage(
+          {'target': 'KbExplorer', 'action': 'open'});
       break;
     case 'readLinkURL':
       var activeElement = document.activeElement;
@@ -517,8 +506,8 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       if (url != '') {
         cvox.ChromeVox.tts.speak(url, cvox.QueueMode.QUEUE);
       } else {
-        cvox.ChromeVox.tts.speak(Msgs.getMsg('no_url_found'),
-                                 cvox.QueueMode.QUEUE);
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg('no_url_found'), cvox.QueueMode.QUEUE);
       }
       break;
     case 'readCurrentTitle':
@@ -559,18 +548,13 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       break;
     case 'toggleChromeVoxVersion':
     case 'showNextUpdatePage':
-      cvox.ChromeVox.host.sendToBackgroundPage({
-        'target': 'next',
-        'action': 'onCommand',
-        'command': cmd
-      });
+      cvox.ChromeVox.host.sendToBackgroundPage(
+          {'target': 'next', 'action': 'onCommand', 'command': cmd});
       break;
     case 'fullyDescribe':
       var descs = cvox.ChromeVox.navigationManager.getFullDescription();
       cvox.ChromeVox.navigationManager.speakDescriptionArray(
-          descs,
-          cvox.QueueMode.FLUSH,
-          null);
+          descs, cvox.QueueMode.FLUSH, null);
       break;
     case 'speakTimeAndDate':
       var dateTime = new Date();
@@ -580,9 +564,8 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       break;
     case 'toggleSelection':
       var selState = cvox.ChromeVox.navigationManager.togglePageSel();
-      prefixMsg = Msgs.getMsg(
-          selState ? 'begin_selection' : 'end_selection');
-    break;
+      prefixMsg = Msgs.getMsg(selState ? 'begin_selection' : 'end_selection');
+      break;
     case 'startHistoryRecording':
       cvox.History.getInstance().startRecording();
       break;
@@ -612,7 +595,7 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
     case 'speakTableLocation':
     case 'exitShifterContent':
       if (!cvox.DomPredicates.tablePredicate(cvox.DomUtil.getAncestors(
-          cvox.ChromeVox.navigationManager.getCurrentNode()))) {
+              cvox.ChromeVox.navigationManager.getCurrentNode()))) {
         errorMsg = 'not_inside_table';
       } else if (!cvox.ChromeVox.navigationManager.performAction(cmd)) {
         errorMsg = 'not_in_table_mode';
@@ -650,12 +633,10 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       cvox.ChromeVox.tts.increaseOrDecreaseProperty(
           cvox.AbstractTts.VOLUME, true);
       break;
-      case 'cyclePunctuationEcho':
-        cvox.ChromeVox.host.sendToBackgroundPage({
-            'target': 'TTS',
-            'action': 'cyclePunctuationEcho'
-          });
-        break;
+    case 'cyclePunctuationEcho':
+      cvox.ChromeVox.host.sendToBackgroundPage(
+          {'target': 'TTS', 'action': 'cyclePunctuationEcho'});
+      break;
 
     case 'toggleStickyMode':
       cvox.ChromeVox.host.sendToBackgroundPage({
@@ -679,9 +660,8 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       break;
 
     case 'toggleEarcons':
-      prefixMsg = cvox.ChromeVox.earcons.toggle() ?
-          Msgs.getMsg('earcons_on') :
-              Msgs.getMsg('earcons_off');
+      prefixMsg = cvox.ChromeVox.earcons.toggle() ? Msgs.getMsg('earcons_on') :
+                                                    Msgs.getMsg('earcons_off');
       break;
 
     case 'showHeadingsList':
@@ -692,11 +672,13 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       if (!cmdStruct.nodeList) {
         break;
       }
-      var nodeListStruct =
-          cvox.CommandStore.NODE_INFO_MAP[cmdStruct.nodeList];
+      var nodeListStruct = cvox.CommandStore.NODE_INFO_MAP[cmdStruct.nodeList];
 
-      cvox.NodeSearchWidget.create(nodeListStruct.typeMsg,
-                  cvox.DomPredicates[nodeListStruct.predicate]).show();
+      cvox.NodeSearchWidget
+          .create(
+              nodeListStruct.typeMsg,
+              cvox.DomPredicates[nodeListStruct.predicate])
+          .show();
       break;
 
     case 'openLongDesc':
@@ -704,15 +686,14 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       if (cvox.DomUtil.hasLongDesc(currentNode)) {
         cvox.ChromeVox.host.sendToBackgroundPage({
           'target': 'OpenTab',
-          'url': currentNode.longDesc // Use .longDesc instead of getAttribute
-                                      // since we want Chrome to convert the
-                                      // longDesc to an absolute URL.
+          'url': currentNode.longDesc  // Use .longDesc instead of getAttribute
+                                       // since we want Chrome to convert the
+                                       // longDesc to an absolute URL.
         });
       } else {
         cvox.ChromeVox.tts.speak(
-          Msgs.getMsg('no_long_desc'),
-          cvox.QueueMode.FLUSH,
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
+            Msgs.getMsg('no_long_desc'), cvox.QueueMode.FLUSH,
+            cvox.AbstractTts.PERSONALITY_ANNOTATION);
       }
       break;
 
@@ -730,11 +711,11 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
     // Math specific commands.
     case 'toggleSemantics':
       if (cvox.TraverseMath.toggleSemantic()) {
-        cvox.ChromeVox.tts.speak(Msgs.getMsg('semantics_on'),
-                                 cvox.QueueMode.QUEUE);
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg('semantics_on'), cvox.QueueMode.QUEUE);
       } else {
-        cvox.ChromeVox.tts.speak(Msgs.getMsg('semantics_off'),
-                                 cvox.QueueMode.QUEUE);
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg('semantics_off'), cvox.QueueMode.QUEUE);
       }
       break;
 
@@ -753,8 +734,8 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       // after line up/pan left and move the display to the far right on the
       // line in case the synced to node is longer than one display line.
       // Should also work with all widgets.
-      cvox.ChromeVox.navigationManager.navigate(false,
-          cvox.NavigationShifter.GRANULARITIES.LINE);
+      cvox.ChromeVox.navigationManager.navigate(
+          false, cvox.NavigationShifter.GRANULARITIES.LINE);
       break;
 
     case 'debug':
@@ -769,8 +750,7 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
 
   if (errorMsg != '') {
     cvox.ChromeVox.tts.speak(
-        Msgs.getMsg(errorMsg),
-        cvox.QueueMode.FLUSH,
+        Msgs.getMsg(errorMsg), cvox.QueueMode.FLUSH,
         cvox.AbstractTts.PERSONALITY_ANNOTATION);
   } else if (cvox.ChromeVox.navigationManager.isReading()) {
     if (cmdStruct.disallowContinuation) {

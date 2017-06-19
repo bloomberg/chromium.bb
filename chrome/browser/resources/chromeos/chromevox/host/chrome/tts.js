@@ -58,19 +58,18 @@ cvox.ChromeTts.prototype.isSpeaking = function() {
 /** @override */
 cvox.ChromeTts.prototype.stop = function() {
   cvox.ChromeTts.superClass_.stop.call(this);
-  cvox.ExtensionBridge.send(
-      {'target': 'TTS',
-       'action': 'stop'});
+  cvox.ExtensionBridge.send({'target': 'TTS', 'action': 'stop'});
 };
 
 /** @override */
-cvox.ChromeTts.prototype.increaseOrDecreaseProperty =
-    function(propertyName, increase) {
-  cvox.ExtensionBridge.send(
-      {'target': 'TTS',
-       'action': 'increaseOrDecrease',
-       'property': propertyName,
-       'increase': increase});
+cvox.ChromeTts.prototype.increaseOrDecreaseProperty = function(
+    propertyName, increase) {
+  cvox.ExtensionBridge.send({
+    'target': 'TTS',
+    'action': 'increaseOrDecrease',
+    'property': propertyName,
+    'increase': increase
+  });
 };
 
 /**
@@ -81,30 +80,30 @@ cvox.ChromeTts.prototype.increaseOrDecreaseProperty =
  */
 cvox.ChromeTts.prototype.increaseProperty = function(property_name, announce) {
   goog.base(this, 'increaseProperty', property_name, announce);
-  cvox.ExtensionBridge.send(
-      {'target': 'TTS',
-       'action': 'increase' + property_name,
-       'announce': announce});
+  cvox.ExtensionBridge.send({
+    'target': 'TTS',
+    'action': 'increase' + property_name,
+    'announce': announce
+  });
 };
 
 /**
  * Listens for TTS_COMPLETED message and executes the callback function.
  */
 cvox.ChromeTts.prototype.addBridgeListener = function() {
-  cvox.ExtensionBridge.addMessageListener(
-      function(msg, port) {
-        var message = msg['message'];
-        if (message == 'TTS_CALLBACK') {
-          var id = msg['id'];
-          var func = cvox.ChromeTts.functionMap[id];
-          if (func != undefined) {
-            if (!msg['cleanupOnly']) {
-              func();
-            }
-            delete cvox.ChromeTts.functionMap[id];
-          }
+  cvox.ExtensionBridge.addMessageListener(function(msg, port) {
+    var message = msg['message'];
+    if (message == 'TTS_CALLBACK') {
+      var id = msg['id'];
+      var func = cvox.ChromeTts.functionMap[id];
+      if (func != undefined) {
+        if (!msg['cleanupOnly']) {
+          func();
         }
-      });
+        delete cvox.ChromeTts.functionMap[id];
+      }
+    }
+  });
 };
 
 /**
@@ -115,13 +114,15 @@ cvox.ChromeTts.prototype.addBridgeListener = function() {
  * @return {Object} A message.
  * @private
  */
-cvox.ChromeTts.prototype.createMessageForProperties_ =
-    function(textString, queueMode, properties) {
-  var message = {'target': 'TTS',
-                 'action': 'speak',
-                 'text': textString,
-                 'queueMode': queueMode,
-                 'properties': properties};
+cvox.ChromeTts.prototype.createMessageForProperties_ = function(
+    textString, queueMode, properties) {
+  var message = {
+    'target': 'TTS',
+    'action': 'speak',
+    'text': textString,
+    'queueMode': queueMode,
+    'properties': properties
+  };
 
   if (properties['startCallback'] != undefined) {
     cvox.ChromeTts.functionMap[cvox.ChromeTts.callId] =

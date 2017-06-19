@@ -52,8 +52,8 @@ cvox.SpokenMessages.speak = function(mode) {
       throw 'Invalid message received.';
 
     var finalText = Msgs.getMsg.apply(Msgs, message.id);
-    cvox.ChromeVox.tts.speak(finalText, mode,
-                             cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
+    cvox.ChromeVox.tts.speak(
+        finalText, mode, cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
 
     // Always queue after the first message.
     mode = cvox.QueueMode.QUEUE;

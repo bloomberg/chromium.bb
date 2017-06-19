@@ -46,8 +46,7 @@ goog.require('cvox.NavBraille');
 /**
  * @constructor
  */
-cvox.AbstractWalker = function() {
-};
+cvox.AbstractWalker = function() {};
 
 
 /**
@@ -86,8 +85,8 @@ cvox.AbstractWalker.prototype.next = goog.abstractMethod;
 cvox.AbstractWalker.prototype.begin = function(kwargs) {
   kwargs = kwargs || {reversed: false};
 
-  return /** @type {!cvox.CursorSelection} */ (this.sync(
-      cvox.CursorSelection.fromBody().setReversed(kwargs.reversed)));
+  return /** @type {!cvox.CursorSelection} */ (
+      this.sync(cvox.CursorSelection.fromBody().setReversed(kwargs.reversed)));
 };
 
 

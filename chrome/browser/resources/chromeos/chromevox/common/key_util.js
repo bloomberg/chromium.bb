@@ -27,8 +27,7 @@ cvox.SimpleKeyEvent;
  * Create the namespace
  * @constructor
  */
-cvox.KeyUtil = function() {
-};
+cvox.KeyUtil = function() {};
 
 /**
  * The time in ms at which the ChromeVox Sticky Mode key was pressed.
@@ -81,8 +80,8 @@ cvox.KeyUtil.keyEventToKeySequence = function(keyEvent) {
   }
   // Either we are in the middle of a key sequence (N > H), or the key prefix
   // was pressed before (Ctrl+Z), or sticky mode is enabled
-  var keyIsPrefixed = util.sequencing || keyEvent['keyPrefix'] ||
-      keyEvent['stickyMode'];
+  var keyIsPrefixed =
+      util.sequencing || keyEvent['keyPrefix'] || keyEvent['stickyMode'];
 
   // Create key sequence.
   var keySequence = new cvox.KeySequence(keyEvent);
@@ -114,8 +113,7 @@ cvox.KeyUtil.keyEventToKeySequence = function(keyEvent) {
 
   // Repeated keys pressed.
   var currTime = new Date().getTime();
-  if (cvox.KeyUtil.isDoubleTapKey(keySequence) &&
-      util.prevKeySequence &&
+  if (cvox.KeyUtil.isDoubleTapKey(keySequence) && util.prevKeySequence &&
       keySequence.equals(util.prevKeySequence)) {
     var prevTime = util.modeKeyPressTime;
     var delta = currTime - prevTime;
@@ -193,15 +191,15 @@ cvox.KeyUtil.keyCodeToString = function(keyCode) {
  */
 cvox.KeyUtil.modStringToKeyCode = function(keyString) {
   switch (keyString) {
-  case 'Ctrl':
-    return 17;
-  case 'Alt':
-    return 18;
-  case 'Shift':
-    return 16;
-  case 'Cmd':
-  case 'Win':
-    return 91;
+    case 'Ctrl':
+      return 17;
+    case 'Alt':
+      return 18;
+    case 'Shift':
+      return 16;
+    case 'Cmd':
+    case 'Win':
+      return 91;
   }
   return -1;
 };
@@ -270,7 +268,7 @@ cvox.KeyUtil.getReadableNameForKeyCode = function(keyCode) {
   } else if (keyCode == 32) {
     return 'Space';
   } else if (keyCode == 35) {
-    return'end';
+    return 'end';
   } else if (keyCode == 36) {
     return 'home';
   } else if (keyCode == 37) {
@@ -348,9 +346,9 @@ cvox.KeyUtil.getReadableNameForKeyCode = function(keyCode) {
  */
 cvox.KeyUtil.getStickyKeyCode = function() {
   // TODO (rshearer): This should not be hard-coded here.
-  var stickyKeyCode = 45; // Insert for Linux and Windows
+  var stickyKeyCode = 45;  // Insert for Linux and Windows
   if (cvox.ChromeVox.isChromeOS || cvox.ChromeVox.isMac) {
-    stickyKeyCode = 91; // GUI key (Search/Cmd) for ChromeOs and Mac
+    stickyKeyCode = 91;  // GUI key (Search/Cmd) for ChromeOs and Mac
   }
   return stickyKeyCode;
 };
@@ -424,42 +422,42 @@ cvox.KeyUtil.keySequenceToString = function(
       var modifier = '';
       switch (keyPressed) {
         case 'ctrlKey':
-        // TODO(rshearer): This is a hack to work around the special casing
-        // of the Ctrl key that used to happen in keyEventToString. We won't
-        // need it once we move away from strings completely.
-        modifier = 'Ctrl';
-        break;
-      case 'searchKeyHeld':
-        var searchKey = cvox.KeyUtil.getReadableNameForKeyCode(91);
-        modifier = searchKey;
-        break;
-      case 'altKey':
-        modifier = 'Alt';
-        break;
-      case 'altGraphKey':
-        modifier = 'AltGraph';
-        break;
-      case 'shiftKey':
-        modifier = 'Shift';
-        break;
-      case 'metaKey':
-        var metaKey = cvox.KeyUtil.getReadableNameForKeyCode(91);
-        modifier = metaKey;
-        break;
-      case 'keyCode':
-        var keyCode = keySequence.keys[keyPressed][index];
-        // We make sure the keyCode isn't for a modifier key. If it is, then
-        // we've already added that into the string above.
-        if (!keySequence.isModifierKey(keyCode) && !opt_modifiers) {
-          if (opt_readableKeyCode) {
-            tempStr += cvox.KeyUtil.getReadableNameForKeyCode(keyCode);
-          } else {
-            tempStr += cvox.KeyUtil.keyCodeToString(keyCode);
+          // TODO(rshearer): This is a hack to work around the special casing
+          // of the Ctrl key that used to happen in keyEventToString. We won't
+          // need it once we move away from strings completely.
+          modifier = 'Ctrl';
+          break;
+        case 'searchKeyHeld':
+          var searchKey = cvox.KeyUtil.getReadableNameForKeyCode(91);
+          modifier = searchKey;
+          break;
+        case 'altKey':
+          modifier = 'Alt';
+          break;
+        case 'altGraphKey':
+          modifier = 'AltGraph';
+          break;
+        case 'shiftKey':
+          modifier = 'Shift';
+          break;
+        case 'metaKey':
+          var metaKey = cvox.KeyUtil.getReadableNameForKeyCode(91);
+          modifier = metaKey;
+          break;
+        case 'keyCode':
+          var keyCode = keySequence.keys[keyPressed][index];
+          // We make sure the keyCode isn't for a modifier key. If it is, then
+          // we've already added that into the string above.
+          if (!keySequence.isModifierKey(keyCode) && !opt_modifiers) {
+            if (opt_readableKeyCode) {
+              tempStr += cvox.KeyUtil.getReadableNameForKeyCode(keyCode);
+            } else {
+              tempStr += cvox.KeyUtil.keyCodeToString(keyCode);
+            }
           }
-        }
       }
       if (str.indexOf(modifier) == -1) {
-          tempStr += modifier + '+';
+        tempStr += modifier + '+';
       }
     }
     str += tempStr;

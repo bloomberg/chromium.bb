@@ -30,7 +30,7 @@ UpdateNotification.prototype = {
         cvox.ChromeVox.isChromeOS;
   },
 
-/** Shows the notification. */
+  /** Shows the notification. */
   show: function() {
     if (!this.shouldShow())
       return;

@@ -60,16 +60,13 @@ cvox.ChromeVox.isClassicEnabled_ = undefined;
  */
 cvox.ChromeVox.recallInit_ = function(reason) {
   if (cvox.ChromeVox.initTimeout_ > cvox.ChromeVox.MAX_INIT_TIMEOUT_) {
-    window.console.log(reason +
-        ' Taking too long - giving up.');
+    window.console.log(reason + ' Taking too long - giving up.');
     return;
   }
-  window.console.log(reason +
-                     ' Will try again in ' +
-                     cvox.ChromeVox.initTimeout_ + 'ms');
+  window.console.log(
+      reason + ' Will try again in ' + cvox.ChromeVox.initTimeout_ + 'ms');
   cvox.ChromeVox.initTimer_ = window.setTimeout(
-      cvox.ChromeVox.initDocument,
-      cvox.ChromeVox.initTimeout_);
+      cvox.ChromeVox.initDocument, cvox.ChromeVox.initTimeout_);
   cvox.ChromeVox.initTimeout_ *= 2;
 };
 
@@ -97,19 +94,13 @@ cvox.ChromeVox.initDocument = function() {
   if (disableContentScript) {
     var url = location.href;
     url = url.substring(0, url.indexOf('#')) || url;
-    cvox.ExtensionBridge.send({
-      target: 'next',
-      action: 'enableClassicCompatForUrl',
-      url: url
-    });
+    cvox.ExtensionBridge.send(
+        {target: 'next', action: 'enableClassicCompatForUrl', url: url});
     return;
   }
 
-  cvox.ExtensionBridge.send({
-    target: 'next',
-    action: 'getIsClassicEnabled',
-    url: location.href
-  });
+  cvox.ExtensionBridge.send(
+      {target: 'next', action: 'getIsClassicEnabled', url: location.href});
 
   cvox.ChromeVox.initTimer_ = 0;
   var reinitReason;
@@ -120,8 +111,8 @@ cvox.ChromeVox.initDocument = function() {
     reinitReason = 'ChromeVox waiting for background page';
   }
   if (reinitReason) {
-    cvox.ChromeVox.recallInit_(reinitReason + ': ' +
-        document.location.href + '.');
+    cvox.ChromeVox.recallInit_(
+        reinitReason + ': ' + document.location.href + '.');
     return;
   }
 
@@ -133,8 +124,9 @@ cvox.ChromeVox.initDocument = function() {
   cvox.ChromeVox.host = cvox.HostFactory.getHost();
 
   if (!cvox.ChromeVox.host.ttsLoaded()) {
-    cvox.ChromeVox.recallInit_('ChromeVox not starting; waiting for TTS. ' +
-                               document.location.href + '.');
+    cvox.ChromeVox.recallInit_(
+        'ChromeVox not starting; waiting for TTS. ' + document.location.href +
+        '.');
     return;
   }
 

@@ -80,18 +80,17 @@ cvox.Widget.prototype.show = function() {
   window.addEventListener('keydown', this.onKeyDown, true);
   window.addEventListener('keypress', this.onKeyPress, true);
 
-  this.initialNode =
-      cvox.ChromeVox.navigationManager.getCurrentNode();
+  this.initialNode = cvox.ChromeVox.navigationManager.getCurrentNode();
   this.initialFocus = document.activeElement;
 
   // Widgets do not respond to sticky key.
   cvox.ChromeVox.stickyOverride = false;
 
   if (this.getNameMsg() && this.getHelpMsg()) {
-    cvox.$m(this.getNameMsg()).
-        andPause().
-        andMessage(this.getHelpMsg()).
-        speakFlush();
+    cvox.$m(this.getNameMsg())
+        .andPause()
+        .andMessage(this.getHelpMsg())
+        .speakFlush();
   }
   cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_OPEN);
 
@@ -113,10 +112,10 @@ cvox.Widget.prototype.hide = function(opt_noSync) {
   cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_CLOSE);
   if (!opt_noSync) {
     this.initialNode = this.initialNode.nodeType == 1 ?
-        this.initialNode : this.initialNode.parentNode;
-    cvox.ChromeVox.navigationManager.syncToNode(this.initialNode,
-                                      true,
-                                      cvox.QueueMode.QUEUE);
+        this.initialNode :
+        this.initialNode.parentNode;
+    cvox.ChromeVox.navigationManager.syncToNode(
+        this.initialNode, true, cvox.QueueMode.QUEUE);
   }
 
   this.active = false;
@@ -160,11 +159,11 @@ cvox.Widget.prototype.getHelpMsg = goog.abstractMethod;
  * @protected
  */
 cvox.Widget.prototype.onKeyDown = function(evt) {
-  if (evt.keyCode == 27) { // Escape
+  if (evt.keyCode == 27) {  // Escape
     this.hide();
     evt.preventDefault();
     return true;
-  } else if (evt.keyCode == 9) { // Tab
+  } else if (evt.keyCode == 9) {  // Tab
     this.hide();
     return true;
   } else if (evt.keyCode == 17) {

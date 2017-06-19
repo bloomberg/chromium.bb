@@ -98,61 +98,63 @@ cvox.SemanticTree.Node.prototype.querySelectorAll = function(pred) {
 };
 
 
- /**
-  * Returns an XML representation of the tree.
-  * @param {boolean=} brief If set attributes are omitted.
-  * @return {Node} The XML representation of the tree.
-  */
- cvox.SemanticTree.prototype.xml = function(brief) {
-   var dp = new DOMParser();
-   var xml = dp.parseFromString('<stree></stree>', 'text/xml');
+/**
+ * Returns an XML representation of the tree.
+ * @param {boolean=} brief If set attributes are omitted.
+ * @return {Node} The XML representation of the tree.
+ */
+cvox.SemanticTree.prototype.xml = function(brief) {
+  var dp = new DOMParser();
+  var xml = dp.parseFromString('<stree></stree>', 'text/xml');
 
-   var xmlRoot = this.root.xml(xml, brief);
-   xml.childNodes[0].appendChild(xmlRoot);
+  var xmlRoot = this.root.xml(xml, brief);
+  xml.childNodes[0].appendChild(xmlRoot);
 
-   return xml.childNodes[0];
- };
-
-
- /**
-  * An XML tree representation of the current node.
-  * @param {Document} xml The XML document.
-  * @param {boolean=} brief If set attributes are omitted.
-  * @return {Node} The XML representation of the node.
-  */
- cvox.SemanticTree.Node.prototype.xml = function(xml, brief) {
-   /**
-    * Translates a list of nodes into XML representation.
-    * @param {string} tag Name of the enclosing tag.
-    * @param {!Array<!cvox.SemanticTree.Node>} nodes A list of nodes.
-    * @return {Node} An XML representation of the node list.
-    */
-   var xmlNodeList = function(tag, nodes) {
-     var xmlNodes = nodes.map(function(x) {return x.xml(xml, brief);});
-     var tagNode = xml.createElement(tag);
-     for (var i = 0, child; child = xmlNodes[i]; i++) {
-       tagNode.appendChild(child);
-     }
-     return tagNode;
-   };
-   var node = xml.createElement(this.type);
-   if (!brief) {
-     this.xmlAttributes_(node);
-   }
-   node.textContent = this.textContent;
-   if (this.contentNodes.length > 0) {
-     node.appendChild(xmlNodeList('content', this.contentNodes));
-   }
-   if (this.childNodes.length > 0) {
-     node.appendChild(xmlNodeList('children', this.childNodes));
-   }
-   return node;
- };
+  return xml.childNodes[0];
+};
 
 
 /**
-  * Serializes the XML representation of the tree.
-  * @param {boolean=} brief If set attributes are omitted.
+ * An XML tree representation of the current node.
+ * @param {Document} xml The XML document.
+ * @param {boolean=} brief If set attributes are omitted.
+ * @return {Node} The XML representation of the node.
+ */
+cvox.SemanticTree.Node.prototype.xml = function(xml, brief) {
+  /**
+   * Translates a list of nodes into XML representation.
+   * @param {string} tag Name of the enclosing tag.
+   * @param {!Array<!cvox.SemanticTree.Node>} nodes A list of nodes.
+   * @return {Node} An XML representation of the node list.
+   */
+  var xmlNodeList = function(tag, nodes) {
+    var xmlNodes = nodes.map(function(x) {
+      return x.xml(xml, brief);
+    });
+    var tagNode = xml.createElement(tag);
+    for (var i = 0, child; child = xmlNodes[i]; i++) {
+      tagNode.appendChild(child);
+    }
+    return tagNode;
+  };
+  var node = xml.createElement(this.type);
+  if (!brief) {
+    this.xmlAttributes_(node);
+  }
+  node.textContent = this.textContent;
+  if (this.contentNodes.length > 0) {
+    node.appendChild(xmlNodeList('content', this.contentNodes));
+  }
+  if (this.childNodes.length > 0) {
+    node.appendChild(xmlNodeList('children', this.childNodes));
+  }
+  return node;
+};
+
+
+/**
+ * Serializes the XML representation of the tree.
+ * @param {boolean=} brief If set attributes are omitted.
  * @return {string} Serialized string.
  */
 cvox.SemanticTree.prototype.toString = function(brief) {
@@ -184,26 +186,25 @@ cvox.SemanticTree.formatXml = function(xml) {
   xml = xml.replace(reg, '$1\r\n$2\r\n$3');
   var formatted = '';
   var padding = '';
-  xml.split('\r\n')
-      .forEach(function(node) {
-                 if (node.match(/.+<\/\w[^>]*>$/)) {
-                   // Node with content.
-                   formatted += padding + node + '\r\n';
-                 } else if (node.match(/^<\/\w/)) {
-                   if (padding) {
-                     // Closing tag
-                     padding = padding.slice(2);
-                     formatted += padding + node + '\r\n';
-                   }
-                 } else if (node.match(/^<\w[^>]*[^\/]>.*$/)) {
-                   // Opening tag
-                   formatted += padding + node + '\r\n';
-                   padding += '  ';
-                 } else {
-                   // Empty tag
-                   formatted += padding + node + '\r\n';
-                 }
-               });
+  xml.split('\r\n').forEach(function(node) {
+    if (node.match(/.+<\/\w[^>]*>$/)) {
+      // Node with content.
+      formatted += padding + node + '\r\n';
+    } else if (node.match(/^<\/\w/)) {
+      if (padding) {
+        // Closing tag
+        padding = padding.slice(2);
+        formatted += padding + node + '\r\n';
+      }
+    } else if (node.match(/^<\w[^>]*[^\/]>.*$/)) {
+      // Opening tag
+      formatted += padding + node + '\r\n';
+      padding += '  ';
+    } else {
+      // Empty tag
+      formatted += padding + node + '\r\n';
+    }
+  });
   return formatted;
 };
 
@@ -341,10 +342,12 @@ cvox.SemanticTree.Node.prototype.replaceChild_ = function(oldNode, newNode) {
   // To not mess up the order of MathML elements more than necessary, we only
   // remove and add difference lists. The hope is that we might end up with
   // little change.
-  var removeMathml = oldNode.mathml.filter(
-      function(x) {return newNode.mathml.indexOf(x) == -1;});
-  var addMathml = newNode.mathml.filter(
-      function(x) {return oldNode.mathml.indexOf(x) == -1;});
+  var removeMathml = oldNode.mathml.filter(function(x) {
+    return newNode.mathml.indexOf(x) == -1;
+  });
+  var addMathml = newNode.mathml.filter(function(x) {
+    return oldNode.mathml.indexOf(x) == -1;
+  });
   this.removeMathmlNodes_(removeMathml);
   this.addMathmlNodes_(addMathml);
 };
@@ -396,16 +399,15 @@ cvox.SemanticTree.prototype.parseMathml_ = function(mml) {
       children = cvox.SemanticUtil.purgeNodes(children);
       // Single child node, i.e. the row is meaningless.
       if (children.length == 1) {
-        return this.parseMathml_(/** @type {!Element} */(children[0]));
+        return this.parseMathml_(/** @type {!Element} */ (children[0]));
       }
       // Case of a 'meaningful' row, even if they are empty.
       return this.processRow_(this.parseMathmlChildren_(children));
-    break;
+      break;
     case 'MFRAC':
       var newNode = this.makeBranchNode_(
           cvox.SemanticAttr.Type.FRACTION,
-          [this.parseMathml_(children[0]), this.parseMathml_(children[1])],
-          []);
+          [this.parseMathml_(children[0]), this.parseMathml_(children[1])], []);
       newNode.role = cvox.SemanticAttr.Role.DIVISION;
       return newNode;
       break;
@@ -415,40 +417,38 @@ cvox.SemanticTree.prototype.parseMathml_ = function(mml) {
     case 'MOVER':
     case 'MUNDER':
     case 'MUNDEROVER':
-      return this.makeLimitNode_(cvox.SemanticUtil.tagName(mml),
-                                 this.parseMathmlChildren_(children));
+      return this.makeLimitNode_(
+          cvox.SemanticUtil.tagName(mml), this.parseMathmlChildren_(children));
       break;
     case 'MROOT':
       return this.makeBranchNode_(
           cvox.SemanticAttr.Type.ROOT,
-          [this.parseMathml_(children[0]), this.parseMathml_(children[1])],
-          []);
+          [this.parseMathml_(children[0]), this.parseMathml_(children[1])], []);
       break;
     case 'MSQRT':
-      children = this.parseMathmlChildren_(
-          cvox.SemanticUtil.purgeNodes(children));
+      children =
+          this.parseMathmlChildren_(cvox.SemanticUtil.purgeNodes(children));
       return this.makeBranchNode_(
           cvox.SemanticAttr.Type.SQRT, [this.processRow_(children)], []);
       break;
     case 'MTABLE':
       newNode = this.makeBranchNode_(
-          cvox.SemanticAttr.Type.TABLE,
-          this.parseMathmlChildren_(children), []);
+          cvox.SemanticAttr.Type.TABLE, this.parseMathmlChildren_(children),
+          []);
       if (cvox.SemanticTree.tableIsMultiline_(newNode)) {
         this.tableToMultiline_(newNode);
-        }
+      }
       return newNode;
       break;
     case 'MTR':
       newNode = this.makeBranchNode_(
-          cvox.SemanticAttr.Type.ROW,
-          this.parseMathmlChildren_(children), []);
+          cvox.SemanticAttr.Type.ROW, this.parseMathmlChildren_(children), []);
       newNode.role = cvox.SemanticAttr.Role.TABLE;
       return newNode;
       break;
     case 'MTD':
-      children = this.parseMathmlChildren_(
-          cvox.SemanticUtil.purgeNodes(children));
+      children =
+          this.parseMathmlChildren_(cvox.SemanticUtil.purgeNodes(children));
       newNode = this.makeBranchNode_(
           cvox.SemanticAttr.Type.CELL, [this.processRow_(children)], []);
       newNode.role = cvox.SemanticAttr.Role.TABLE;
@@ -485,7 +485,7 @@ cvox.SemanticTree.prototype.parseMathml_ = function(mml) {
       break;
     // TODO (sorge) Do something useful with error and phantom symbols.
     default:
-    // Ordinarilly at this point we should not get any other tag.
+      // Ordinarilly at this point we should not get any other tag.
       return this.makeUnprocessed_(mml);
   }
 };
@@ -564,12 +564,10 @@ cvox.SemanticTree.prototype.makeBranchNode_ = function(
   node.type = type;
   node.childNodes = children;
   node.contentNodes = contentNodes;
-  children.concat(contentNodes)
-      .forEach(
-          function(x) {
-            x.parent = node;
-            node.addMathmlNodes_(x.mathml);
-          });
+  children.concat(contentNodes).forEach(function(x) {
+    x.parent = node;
+    node.addMathmlNodes_(x.mathml);
+  });
   return node;
 };
 
@@ -584,7 +582,7 @@ cvox.SemanticTree.prototype.makeBranchNode_ = function(
 cvox.SemanticTree.prototype.makeImplicitNode_ = function(nodes) {
   if (nodes.length == 1) {
     return nodes[0];
-    }
+  }
   var operator = this.createNode_();
   // For now we assume this is a multiplication using invisible times.
   operator.updateContent_(cvox.SemanticAttr.invisibleTimes());
@@ -621,7 +619,11 @@ cvox.SemanticTree.prototype.makeConcatNode_ = function(inner, nodeList, type) {
   if (nodeList.length == 0) {
     return inner;
   }
-  var content = nodeList.map(function(x) {return x.textContent;}).join(' ');
+  var content = nodeList
+                    .map(function(x) {
+                      return x.textContent;
+                    })
+                    .join(' ');
   var newNode = this.makeBranchNode_(type, [inner], nodeList, content);
   if (nodeList.length > 0) {
     newNode.role = cvox.SemanticAttr.Role.MULTIOP;
@@ -717,10 +719,11 @@ cvox.SemanticTree.prototype.processRelationsInRow_ = function(nodes) {
   if (nodes.length == 1) {
     return nodes[0];
   }
-  var children = partition.comp.map(
-      goog.bind(this.processOperationsInRow_, this));
-  if (partition.rel.every(
-         function(x) {return x.textContent == firstRel.textContent;})) {
+  var children =
+      partition.comp.map(goog.bind(this.processOperationsInRow_, this));
+  if (partition.rel.every(function(x) {
+        return x.textContent == firstRel.textContent;
+      })) {
     return this.makeBranchNode_(
         cvox.SemanticAttr.Type.RELSEQ, children, partition.rel,
         firstRel.textContent);
@@ -745,8 +748,7 @@ cvox.SemanticTree.prototype.processOperationsInRow_ = function(nodes) {
   }
 
   var prefix = [];
-  while (nodes.length > 0 &&
-      nodes[0].type == cvox.SemanticAttr.Type.OPERATOR) {
+  while (nodes.length > 0 && nodes[0].type == cvox.SemanticAttr.Type.OPERATOR) {
     prefix.push(nodes.shift());
   }
   // Pathological case: only operators in row.
@@ -810,8 +812,7 @@ cvox.SemanticTree.prototype.makeOperationsTree_ = function(
     return this.makeOperationsTree_(split.tail, root, lastop, prefixes);
   }
 
-  var node = this.makePrefixNode_(
-      this.makeImplicitNode_(split.head), prefixes);
+  var node = this.makePrefixNode_(this.makeImplicitNode_(split.head), prefixes);
   var newNode = this.appendOperand_(root, lastop, node);
   if (!split.div) {
     return newNode;
@@ -841,7 +842,7 @@ cvox.SemanticTree.prototype.appendOperand_ = function(root, op, node) {
   }
   return op.role == cvox.SemanticAttr.Role.MULTIPLICATION ?
       this.appendMultiplicativeOp_(root, op, node) :
-          this.appendAdditiveOp_(root, op, node);
+      this.appendAdditiveOp_(root, op, node);
 };
 
 
@@ -900,8 +901,7 @@ cvox.SemanticTree.prototype.appendExistingOperator_ = function(root, op, node) {
   this.appendExistingOperator_(
       // Again, if this is an INFIXOP node, we know it has a child!
       /** @type {!cvox.SemanticTree.Node} */
-      (root.childNodes[root.childNodes.length - 1]),
-      op, node);
+      (root.childNodes[root.childNodes.length - 1]), op, node);
   return false;
 };
 
@@ -946,11 +946,11 @@ cvox.SemanticTree.prototype.getFencesInRow_ = function(nodes) {
  * @private
  */
 cvox.SemanticTree.prototype.processFences_ = function(
-  fences, content, openStack, contentStack) {
+    fences, content, openStack, contentStack) {
   // Base case 1: Everything is used up.
   if (fences.length == 0 && openStack.length == 0) {
     return contentStack[0];
-    }
+  }
   var openPred = cvox.SemanticTree.attrPred_('role', 'OPEN');
   // Base case 2: Only open and neutral fences are left on the stack.
   if (fences.length == 0) {
@@ -979,9 +979,9 @@ cvox.SemanticTree.prototype.processFences_ = function(
         var innerNodes = this.processNeutralFences_(
             split.head, contentStack.slice(0, cutLength));
         contentStack = contentStack.slice(cutLength);
-        //var rightContent = contentStack.shift();
+        // var rightContent = contentStack.shift();
         result.push.apply(result, innerNodes);
-        //result.push.apply(result, rightContent);
+        // result.push.apply(result, rightContent);
         if (split.div) {
           split.tail.unshift(split.div);
         }
@@ -997,21 +997,21 @@ cvox.SemanticTree.prototype.processFences_ = function(
   // Either we have an open fence.
   if (firstRole == cvox.SemanticAttr.Role.OPEN ||
       // Or we have a neutral fence that does not have a counter part.
-          (firstRole == cvox.SemanticAttr.Role.NEUTRAL &&
-              (!lastOpen ||
-                  fences[0].textContent != lastOpen.textContent))) {
+      (firstRole == cvox.SemanticAttr.Role.NEUTRAL &&
+       (!lastOpen || fences[0].textContent != lastOpen.textContent))) {
     openStack.push(fences.shift());
     contentStack.push(content.shift());
     return this.processFences_(fences, content, openStack, contentStack);
   }
   // General closing case.
-  if (lastOpen && (
-      // Closing fence for some opening fence.
-      (firstRole == cvox.SemanticAttr.Role.CLOSE &&
-          lastOpen.role == cvox.SemanticAttr.Role.OPEN) ||
-              // Netural fence with exact counter part.
-              (firstRole == cvox.SemanticAttr.Role.NEUTRAL &&
-                  fences[0].textContent == lastOpen.textContent))) {
+  if (lastOpen &&
+      (
+          // Closing fence for some opening fence.
+          (firstRole == cvox.SemanticAttr.Role.CLOSE &&
+           lastOpen.role == cvox.SemanticAttr.Role.OPEN) ||
+          // Netural fence with exact counter part.
+          (firstRole == cvox.SemanticAttr.Role.NEUTRAL &&
+           fences[0].textContent == lastOpen.textContent))) {
     var fenced = this.makeHorizontalFencedNode_(
         openStack.pop(), fences.shift(), contentStack.pop());
     contentStack.push(contentStack.pop().concat([fenced], content.shift()));
@@ -1020,7 +1020,7 @@ cvox.SemanticTree.prototype.processFences_ = function(
   // Closing with a neutral fence on the stack.
   if (lastOpen && firstRole == cvox.SemanticAttr.Role.CLOSE &&
       lastOpen.role == cvox.SemanticAttr.Role.NEUTRAL &&
-          openStack.some(openPred)) {
+      openStack.some(openPred)) {
     // Steps of the algorithm:
     // 1. Split list at right most opening bracket.
     // 2. Cut content list at corresponding length.
@@ -1037,8 +1037,8 @@ cvox.SemanticTree.prototype.processFences_ = function(
     // shift of content.
     var rightContent = contentStack.pop();
     var cutLength = contentStack.length - split.tail.length + 1;
-    var innerNodes = this.processNeutralFences_(
-        split.tail, contentStack.slice(cutLength));
+    var innerNodes =
+        this.processNeutralFences_(split.tail, contentStack.slice(cutLength));
     contentStack = contentStack.slice(0, cutLength);
     var fenced = this.makeHorizontalFencedNode_(
         split.div, fences.shift(),
@@ -1072,18 +1072,19 @@ cvox.SemanticTree.prototype.processNeutralFences_ = function(fences, content) {
   if (fences.length == 1) {
     cvox.SemanticTree.fenceToPunct_(fences[0]);
     return fences;
-    }
+  }
   var firstFence = fences.shift();
-  var split = cvox.SemanticTree.sliceNodes_(
-      fences, function(x) {return x.textContent == firstFence.textContent;});
+  var split = cvox.SemanticTree.sliceNodes_(fences, function(x) {
+    return x.textContent == firstFence.textContent;
+  });
   if (!split.div) {
     cvox.SemanticTree.fenceToPunct_(firstFence);
     var restContent = content.shift();
     restContent.unshift(firstFence);
     return restContent.concat(this.processNeutralFences_(fences, content));
   }
-  var newContent = this.combineFencedContent_(
-      firstFence, split.div, split.head, content);
+  var newContent =
+      this.combineFencedContent_(firstFence, split.div, split.head, content);
   if (split.tail.length > 0) {
     var leftContent = newContent.shift();
     var result = this.processNeutralFences_(split.tail, newContent);
@@ -1114,8 +1115,8 @@ cvox.SemanticTree.prototype.combineFencedContent_ = function(
     leftFence, rightFence, midFences, content) {
 
   if (midFences.length == 0) {
-    var fenced = this.makeHorizontalFencedNode_(
-        leftFence, rightFence, content.shift());
+    var fenced =
+        this.makeHorizontalFencedNode_(leftFence, rightFence, content.shift());
     content.unshift(fenced);
     return content;
   }
@@ -1128,15 +1129,15 @@ cvox.SemanticTree.prototype.combineFencedContent_ = function(
   var innerNodes = this.processNeutralFences_(midFences, midContent);
   leftContent.push.apply(leftContent, innerNodes);
   leftContent.push.apply(leftContent, rightContent);
-  var fenced = this.makeHorizontalFencedNode_(
-      leftFence, rightFence, leftContent);
+  var fenced =
+      this.makeHorizontalFencedNode_(leftFence, rightFence, leftContent);
   if (content.length > 0) {
     content[0].unshift(fenced);
   } else {
     content = [[fenced]];
   }
   return content;
- };
+};
 
 
 /**
@@ -1148,14 +1149,14 @@ cvox.SemanticTree.fenceToPunct_ = function(fence) {
   fence.type = cvox.SemanticAttr.Type.PUNCTUATION;
   switch (fence.role) {
     case cvox.SemanticAttr.Role.NEUTRAL:
-    fence.role = cvox.SemanticAttr.Role.VBAR;
-    break;
+      fence.role = cvox.SemanticAttr.Role.VBAR;
+      break;
     case cvox.SemanticAttr.Role.OPEN:
-    fence.role = cvox.SemanticAttr.Role.OPENFENCE;
-    break;
+      fence.role = cvox.SemanticAttr.Role.OPENFENCE;
+      break;
     case cvox.SemanticAttr.Role.CLOSE:
-    fence.role = cvox.SemanticAttr.Role.CLOSEFENCE;
-    break;
+      fence.role = cvox.SemanticAttr.Role.CLOSEFENCE;
+      break;
   }
 };
 
@@ -1194,10 +1195,10 @@ cvox.SemanticTree.prototype.getPunctuationInRow_ = function(nodes) {
   // similar to an mrow. The only exception are ellipses, which we assume to be
   // in lieu of identifiers.
   // In addition we keep the single punctuation nodes as content.
-  var partition = cvox.SemanticTree.partitionNodes_(
-      nodes, function(x) {
-        return cvox.SemanticTree.attrPred_('type', 'PUNCTUATION')(x) &&
-            !cvox.SemanticTree.attrPred_('role', 'ELLIPSIS')(x);});
+  var partition = cvox.SemanticTree.partitionNodes_(nodes, function(x) {
+    return cvox.SemanticTree.attrPred_('type', 'PUNCTUATION')(x) &&
+        !cvox.SemanticTree.attrPred_('role', 'ELLIPSIS')(x);
+  });
   if (partition.rel.length == 0) {
     return nodes;
   }
@@ -1235,7 +1236,8 @@ cvox.SemanticTree.prototype.makePunctuatedNode_ = function(
   if (punctuations.length == 1 &&
       nodes[0].type == cvox.SemanticAttr.Type.PUNCTUATION) {
     newNode.role = cvox.SemanticAttr.Role.STARTPUNCT;
-  } else if (punctuations.length == 1 &&
+  } else if (
+      punctuations.length == 1 &&
       nodes[nodes.length - 1].type == cvox.SemanticAttr.Type.PUNCTUATION) {
     newNode.role = cvox.SemanticAttr.Role.ENDPUNCT;
   } else {
@@ -1269,46 +1271,46 @@ cvox.SemanticTree.prototype.makeLimitNode_ = function(mmlTag, children) {
     switch (mmlTag) {
       case 'MSUB':
       case 'MUNDER':
-      type = cvox.SemanticAttr.Type.LIMLOWER;
-      break;
+        type = cvox.SemanticAttr.Type.LIMLOWER;
+        break;
       case 'MSUP':
       case 'MOVER':
-      type = cvox.SemanticAttr.Type.LIMUPPER;
-      break;
+        type = cvox.SemanticAttr.Type.LIMUPPER;
+        break;
       case 'MSUBSUP':
       case 'MUNDEROVER':
-      type = cvox.SemanticAttr.Type.LIMBOTH;
-      break;
+        type = cvox.SemanticAttr.Type.LIMBOTH;
+        break;
     }
   } else {
     switch (mmlTag) {
       case 'MSUB':
-      type = cvox.SemanticAttr.Type.SUBSCRIPT;
-      break;
+        type = cvox.SemanticAttr.Type.SUBSCRIPT;
+        break;
       case 'MSUP':
-      type = cvox.SemanticAttr.Type.SUPERSCRIPT;
-      break;
+        type = cvox.SemanticAttr.Type.SUPERSCRIPT;
+        break;
       case 'MSUBSUP':
-      var innerNode = this.makeBranchNode_(cvox.SemanticAttr.Type.SUBSCRIPT,
-                                      [center, children[1]], []);
-      innerNode.role = center.role;
-      children = [innerNode, children[2]];
-      type = cvox.SemanticAttr.Type.SUPERSCRIPT;
-      break;
+        var innerNode = this.makeBranchNode_(
+            cvox.SemanticAttr.Type.SUBSCRIPT, [center, children[1]], []);
+        innerNode.role = center.role;
+        children = [innerNode, children[2]];
+        type = cvox.SemanticAttr.Type.SUPERSCRIPT;
+        break;
       case 'MOVER':
-      type = cvox.SemanticAttr.Type.OVERSCORE;
-      break;
+        type = cvox.SemanticAttr.Type.OVERSCORE;
+        break;
       case 'MUNDER':
-      type = cvox.SemanticAttr.Type.UNDERSCORE;
-      break;
+        type = cvox.SemanticAttr.Type.UNDERSCORE;
+        break;
       case 'MUNDEROVER':
       default:
-      var innerNode = this.makeBranchNode_(cvox.SemanticAttr.Type.UNDERSCORE,
-                                      [center, children[1]], []);
-      innerNode.role = center.role;
-      children = [innerNode, children[2]];
-      type = cvox.SemanticAttr.Type.OVERSCORE;
-      break;
+        var innerNode = this.makeBranchNode_(
+            cvox.SemanticAttr.Type.UNDERSCORE, [center, children[1]], []);
+        innerNode.role = center.role;
+        children = [innerNode, children[2]];
+        type = cvox.SemanticAttr.Type.OVERSCORE;
+        break;
     }
   }
   var newNode = this.makeBranchNode_(type, children, []);
@@ -1371,7 +1373,7 @@ cvox.SemanticTree.classifyFunction_ = function(funcNode, restNodes) {
   //  We do not allow double function application. This is not lambda calculus!
   if (funcNode.type == cvox.SemanticAttr.Type.APPL ||
       funcNode.type == cvox.SemanticAttr.Type.BIGOP ||
-          funcNode.type == cvox.SemanticAttr.Type.INTEGRAL) {
+      funcNode.type == cvox.SemanticAttr.Type.INTEGRAL) {
     return '';
   }
   // Find and remove explicit function applications.
@@ -1387,19 +1389,19 @@ cvox.SemanticTree.classifyFunction_ = function(funcNode, restNodes) {
   }
   switch (funcNode.role) {
     case cvox.SemanticAttr.Role.INTEGRAL:
-    return 'integral';
-    break;
+      return 'integral';
+      break;
     case cvox.SemanticAttr.Role.SUM:
-    return 'bigop';
-    break;
+      return 'bigop';
+      break;
     case cvox.SemanticAttr.Role.PREFIXFUNC:
     case cvox.SemanticAttr.Role.LIMFUNC:
-    return 'prefix';
-    break;
+      return 'prefix';
+      break;
     default:
-    if (funcNode.type == cvox.SemanticAttr.Type.IDENTIFIER) {
-      return 'simple';
-    }
+      if (funcNode.type == cvox.SemanticAttr.Type.IDENTIFIER) {
+        return 'simple';
+      }
   }
   return '';
 };
@@ -1433,50 +1435,50 @@ cvox.SemanticTree.propagatePrefixFunc_ = function(funcNode) {
 cvox.SemanticTree.prototype.getFunctionArgs_ = function(func, rest, heuristic) {
   switch (heuristic) {
     case 'integral':
-    var components = this.getIntegralArgs_(rest);
-    var integrand = this.processRow_(components.integrand);
-    var funcNode = this.makeIntegralNode_(func, integrand, components.intvar);
-    components.rest.unshift(funcNode);
-    return components.rest;
-    break;
+      var components = this.getIntegralArgs_(rest);
+      var integrand = this.processRow_(components.integrand);
+      var funcNode = this.makeIntegralNode_(func, integrand, components.intvar);
+      components.rest.unshift(funcNode);
+      return components.rest;
+      break;
     case 'prefix':
-    if (rest[0] && rest[0].type == cvox.SemanticAttr.Type.FENCED) {
-      funcNode = this.makeFunctionNode_(
-          func, /** @type {!cvox.SemanticTree.Node} */ (rest.shift()));
-      rest.unshift(funcNode);
-      return rest;
-    }
+      if (rest[0] && rest[0].type == cvox.SemanticAttr.Type.FENCED) {
+        funcNode = this.makeFunctionNode_(
+            func, /** @type {!cvox.SemanticTree.Node} */ (rest.shift()));
+        rest.unshift(funcNode);
+        return rest;
+      }
     case 'bigop':
-    var partition = cvox.SemanticTree.sliceNodes_(
-        rest, cvox.SemanticTree.prefixFunctionBoundary_);
-    var arg = this.processRow_(partition.head);
-    if (heuristic == 'prefix') {
-      funcNode = this.makeFunctionNode_(func, arg);
-    } else {
-      funcNode = this.makeBigOpNode_(func, arg);
-    }
-    if (partition.div) {
-      partition.tail.unshift(partition.div);
-    }
-    partition.tail.unshift(funcNode);
-    return partition.tail;
-    break;
+      var partition = cvox.SemanticTree.sliceNodes_(
+          rest, cvox.SemanticTree.prefixFunctionBoundary_);
+      var arg = this.processRow_(partition.head);
+      if (heuristic == 'prefix') {
+        funcNode = this.makeFunctionNode_(func, arg);
+      } else {
+        funcNode = this.makeBigOpNode_(func, arg);
+      }
+      if (partition.div) {
+        partition.tail.unshift(partition.div);
+      }
+      partition.tail.unshift(funcNode);
+      return partition.tail;
+      break;
     case 'simple':
-    if (rest.length == 0) {
-      return [func];
-    }
-    var firstArg = rest[0];
-    if (firstArg.type == cvox.SemanticAttr.Type.FENCED &&
-        firstArg.role != cvox.SemanticAttr.Role.NEUTRAL &&
-            this.simpleFunctionHeuristic_(firstArg)) {
-      funcNode = this.makeFunctionNode_(
-          func, /** @type {!cvox.SemanticTree.Node} */ (rest.shift()));
-      rest.unshift(funcNode);
+      if (rest.length == 0) {
+        return [func];
+      }
+      var firstArg = rest[0];
+      if (firstArg.type == cvox.SemanticAttr.Type.FENCED &&
+          firstArg.role != cvox.SemanticAttr.Role.NEUTRAL &&
+          this.simpleFunctionHeuristic_(firstArg)) {
+        funcNode = this.makeFunctionNode_(
+            func, /** @type {!cvox.SemanticTree.Node} */ (rest.shift()));
+        rest.unshift(funcNode);
+        return rest;
+      }
+      rest.unshift(func);
       return rest;
-    }
-    rest.unshift(func);
-    return rest;
-    break;
+      break;
   }
   return [];
 };
@@ -1509,8 +1511,8 @@ cvox.SemanticTree.prototype.getIntegralArgs_ = function(nodes, args) {
   if (nodes[1] && cvox.SemanticTree.integralDxBoundary_(firstNode, nodes[1])) {
     var comma = this.createNode_();
     comma.updateContent_(cvox.SemanticAttr.invisibleComma());
-    var intvar = this.makePunctuatedNode_(
-        [firstNode, comma, nodes[1]], [comma]);
+    var intvar =
+        this.makePunctuatedNode_([firstNode, comma, nodes[1]], [comma]);
     intvar.role = cvox.SemanticAttr.Role.INTEGRAL;
     return {integrand: args, intvar: intvar, rest: nodes.slice(2)};
   }
@@ -1531,8 +1533,8 @@ cvox.SemanticTree.prototype.makeFunctionNode_ = function(func, arg) {
   applNode.updateContent_(cvox.SemanticAttr.functionApplication());
   applNode.type = cvox.SemanticAttr.Type.PUNCTUATION;
   applNode.role = cvox.SemanticAttr.Role.APPLICATION;
-  var newNode = this.makeBranchNode_(cvox.SemanticAttr.Type.APPL, [func, arg],
-                                [applNode]);
+  var newNode = this.makeBranchNode_(
+      cvox.SemanticAttr.Type.APPL, [func, arg], [applNode]);
   newNode.role = func.role;
   return newNode;
 };
@@ -1546,8 +1548,8 @@ cvox.SemanticTree.prototype.makeFunctionNode_ = function(func, arg) {
  * @private
  */
 cvox.SemanticTree.prototype.makeBigOpNode_ = function(bigOp, arg) {
-  var newNode = this.makeBranchNode_(
-      cvox.SemanticAttr.Type.BIGOP, [bigOp, arg], []);
+  var newNode =
+      this.makeBranchNode_(cvox.SemanticAttr.Type.BIGOP, [bigOp, arg], []);
   newNode.role = bigOp.role;
   return newNode;
 };
@@ -1566,8 +1568,8 @@ cvox.SemanticTree.prototype.makeIntegralNode_ = function(
     integral, integrand, intvar) {
   integrand = integrand || this.makeEmptyNode_();
   intvar = intvar || this.makeEmptyNode_();
-  var newNode = this.makeBranchNode_(cvox.SemanticAttr.Type.INTEGRAL,
-                                [integral, integrand, intvar], []);
+  var newNode = this.makeBranchNode_(
+      cvox.SemanticAttr.Type.INTEGRAL, [integral, integrand, intvar], []);
   newNode.role = integral.role;
   return newNode;
 };
@@ -1625,11 +1627,10 @@ cvox.SemanticTree.prefixFunctionBoundary_ = function(node) {
  * @return {boolean} True if the second node exists and the first node is a 'd'.
  * @private
  */
-cvox.SemanticTree.integralDxBoundary_ = function(
-    firstNode, secondNode) {
+cvox.SemanticTree.integralDxBoundary_ = function(firstNode, secondNode) {
   return !!secondNode &&
       cvox.SemanticTree.attrPred_('type', 'IDENTIFIER')(secondNode) &&
-          cvox.SemanticAttr.isCharacterD(firstNode.textContent);
+      cvox.SemanticAttr.isCharacterD(firstNode.textContent);
 };
 
 
@@ -1704,8 +1705,9 @@ cvox.SemanticTree.prototype.processTablesInRow_ = function(nodes) {
  * @private
  */
 cvox.SemanticTree.isTableOrMultiline_ = function(node) {
-  return !!node && (cvox.SemanticTree.attrPred_('type', 'TABLE')(node) ||
-      cvox.SemanticTree.attrPred_('type', 'MULTILINE')(node));
+  return !!node &&
+      (cvox.SemanticTree.attrPred_('type', 'TABLE')(node) ||
+       cvox.SemanticTree.attrPred_('type', 'MULTILINE')(node));
 };
 
 
@@ -1719,8 +1721,8 @@ cvox.SemanticTree.isTableOrMultiline_ = function(node) {
 cvox.SemanticTree.tableIsMatrixOrVector_ = function(node) {
   return !!node && cvox.SemanticTree.attrPred_('type', 'FENCED')(node) &&
       cvox.SemanticTree.attrPred_('role', 'LEFTRIGHT')(node) &&
-          node.childNodes.length == 1 &&
-              cvox.SemanticTree.isTableOrMultiline_(node.childNodes[0]);
+      node.childNodes.length == 1 &&
+      cvox.SemanticTree.isTableOrMultiline_(node.childNodes[0]);
 };
 
 
@@ -1733,7 +1735,8 @@ cvox.SemanticTree.tableIsMatrixOrVector_ = function(node) {
 cvox.SemanticTree.prototype.tableToMatrixOrVector_ = function(node) {
   var matrix = node.childNodes[0];
   var type = cvox.SemanticTree.attrPred_('type', 'MULTILINE')(matrix) ?
-      'VECTOR' : 'MATRIX';
+      'VECTOR' :
+      'MATRIX';
   matrix.type = cvox.SemanticAttr.Type[type];
   node.contentNodes.forEach(goog.bind(matrix.appendContentNode_, matrix));
   for (var i = 0, row; row = matrix.childNodes[i]; i++) {
@@ -1753,8 +1756,8 @@ cvox.SemanticTree.prototype.tableToMatrixOrVector_ = function(node) {
  */
 cvox.SemanticTree.tableIsCases_ = function(table, prevNodes) {
   return prevNodes.length > 0 &&
-      cvox.SemanticTree.attrPred_('role', 'OPENFENCE')(
-          prevNodes[prevNodes.length - 1]);
+      cvox.SemanticTree.attrPred_(
+          'role', 'OPENFENCE')(prevNodes[prevNodes.length - 1]);
 };
 
 
@@ -1790,10 +1793,10 @@ cvox.SemanticTree.prototype.tableToCases_ = function(table, openFence) {
  * @private
  */
 cvox.SemanticTree.tableIsMultiline_ = function(table) {
-  return table.childNodes.every(
-      function(row) {
-        var length = row.childNodes.length;
-        return length <= 1;});
+  return table.childNodes.every(function(row) {
+    var length = row.childNodes.length;
+    return length <= 1;
+  });
 };
 
 
@@ -1821,7 +1824,7 @@ cvox.SemanticTree.rowToLine_ = function(row, role) {
   role = role || cvox.SemanticAttr.Role.UNKNOWN;
   if (cvox.SemanticTree.attrPred_('type', 'ROW')(row) &&
       row.childNodes.length == 1 &&
-          cvox.SemanticTree.attrPred_('type', 'CELL')(row.childNodes[0])) {
+      cvox.SemanticTree.attrPred_('type', 'CELL')(row.childNodes[0])) {
     row.type = cvox.SemanticAttr.Type.LINE;
     row.role = role;
     row.childNodes = row.childNodes[0].childNodes;
@@ -1871,13 +1874,13 @@ cvox.SemanticTree.sliceNodes_ = function(nodes, pred, reverse) {
   for (var i = 0, node; node = nodes[i]; i++) {
     if (pred(node)) {
       if (reverse) {
-        return {head: nodes.slice(i + 1).reverse(),
-                div: node,
-                tail: head.reverse()};
+        return {
+          head: nodes.slice(i + 1).reverse(),
+          div: node,
+          tail: head.reverse()
+        };
       }
-      return {head: head,
-              div: node,
-              tail: nodes.slice(i + 1)};
+      return {head: head, div: node, tail: nodes.slice(i + 1)};
     }
     head.push(node);
   }
@@ -1931,11 +1934,16 @@ cvox.SemanticTree.partitionNodes_ = function(nodes, pred) {
 cvox.SemanticTree.attrPred_ = function(prop, attr) {
   var getAttr = function(prop) {
     switch (prop) {
-      case 'type': return cvox.SemanticAttr.Type[attr];
-      case 'role': return cvox.SemanticAttr.Role[attr];
-      case 'font': return cvox.SemanticAttr.Font[attr];
+      case 'type':
+        return cvox.SemanticAttr.Type[attr];
+      case 'role':
+        return cvox.SemanticAttr.Role[attr];
+      case 'font':
+        return cvox.SemanticAttr.Font[attr];
     }
   };
 
-  return function(node) {return node[prop] == getAttr(prop);};
+  return function(node) {
+    return node[prop] == getAttr(prop);
+  };
 };

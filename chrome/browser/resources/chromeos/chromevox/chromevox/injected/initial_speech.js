@@ -48,15 +48,13 @@ cvox.InitialSpeech.speak = function() {
     }
 
     if (title && !disableSpeak) {
-      cvox.ChromeVox.tts.speak(
-          title, cvox.QueueMode.FLUSH);
+      cvox.ChromeVox.tts.speak(title, cvox.QueueMode.FLUSH);
     }
     cvox.BrailleOverlayWidget.getInstance().init();
   }
 
   // Initialize live regions and speak alerts.
-  cvox.LiveRegions.init(
-      new Date(), cvox.QueueMode.QUEUE, disableSpeak);
+  cvox.LiveRegions.init(new Date(), cvox.QueueMode.QUEUE, disableSpeak);
 
   // If our activeElement is on body, try to sync to the first element. This
   // actually happens inside of NavigationManager.reset, which doesn't get

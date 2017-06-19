@@ -47,10 +47,8 @@ cvox.TraverseUtil.getNodeText = function(node) {
  * @return {boolean} True if the node should be treated as a leaf node.
  */
 cvox.TraverseUtil.treatAsLeafNode = function(node) {
-  return node.childNodes.length == 0 ||
-         node.nodeName == 'SELECT' ||
-         node.getAttribute('role') == 'listbox' ||
-         node.nodeName == 'OBJECT';
+  return node.childNodes.length == 0 || node.nodeName == 'SELECT' ||
+      node.getAttribute('role') == 'listbox' || node.nodeName == 'OBJECT';
 };
 
 /**
@@ -154,8 +152,7 @@ cvox.TraverseUtil.forwardsChar = function(
     while (cursor.node != null) {
       // Try to move to the next sibling.
       var siblingNode = null;
-      for (var node = cursor.node.nextSibling;
-           node != null;
+      for (var node = cursor.node.nextSibling; node != null;
            node = node.nextSibling) {
         if (cvox.TraverseUtil.isHidden(node)) {
           if (node instanceof HTMLElement) {
@@ -252,8 +249,7 @@ cvox.TraverseUtil.backwardsChar = function(
     while (true) {
       // Try to move to the previous sibling.
       var siblingNode = null;
-      for (var node = cursor.node.previousSibling;
-           node != null;
+      for (var node = cursor.node.previousSibling; node != null;
            node = node.previousSibling) {
         if (cvox.TraverseUtil.isHidden(node)) {
           if (node instanceof HTMLElement) {
@@ -323,8 +319,8 @@ cvox.TraverseUtil.getNextChar = function(
 
   // Save the starting position and get the first character.
   startCursor.copyFrom(endCursor);
-  var c = cvox.TraverseUtil.forwardsChar(
-      endCursor, elementsEntered, elementsLeft);
+  var c =
+      cvox.TraverseUtil.forwardsChar(endCursor, elementsEntered, elementsLeft);
   if (c == null)
     return null;
 
@@ -333,7 +329,7 @@ cvox.TraverseUtil.getNextChar = function(
 
   // Keep scanning until we find a non-whitespace or non-skipped character.
   while ((cvox.TraverseUtil.isWhitespace(c)) ||
-      (cvox.TraverseUtil.isHidden(endCursor.node))) {
+         (cvox.TraverseUtil.isHidden(endCursor.node))) {
     c = cvox.TraverseUtil.forwardsChar(
         endCursor, elementsEntered, elementsLeft);
     if (c == null)
@@ -345,8 +341,7 @@ cvox.TraverseUtil.getNextChar = function(
     startCursor.copyFrom(endCursor);
     startCursor.index--;
     return c;
-  }
-  else {
+  } else {
     for (var i = 0; i < elementsEntered.length; i++) {
       if (cvox.TraverseUtil.isHidden(elementsEntered[i])) {
         // We need to make sure that startCursor and endCursor aren't
@@ -396,7 +391,7 @@ cvox.TraverseUtil.getPreviousChar = function(
 
   // Keep scanning until we find a non-whitespace or non-skipped character.
   while ((cvox.TraverseUtil.isWhitespace(c)) ||
-      (cvox.TraverseUtil.isHidden(startCursor.node))) {
+         (cvox.TraverseUtil.isHidden(startCursor.node))) {
     c = cvox.TraverseUtil.backwardsChar(
         startCursor, elementsEntered, elementsLeft);
     if (c == null)
@@ -436,8 +431,8 @@ cvox.TraverseUtil.getPreviousChar = function(
  * @return {?string} The next word, or null if the bottom of the
  *     document has been reached.
  */
-cvox.TraverseUtil.getNextWord = function(startCursor, endCursor,
-    elementsEntered, elementsLeft) {
+cvox.TraverseUtil.getNextWord = function(
+    startCursor, endCursor, elementsEntered, elementsLeft) {
 
   // Find the first non-whitespace or non-skipped character.
   var cursor = endCursor.clone();
@@ -445,7 +440,7 @@ cvox.TraverseUtil.getNextWord = function(startCursor, endCursor,
   if (c == null)
     return null;
   while ((cvox.TraverseUtil.isWhitespace(c)) ||
-      (cvox.TraverseUtil.isHidden(cursor.node))) {
+         (cvox.TraverseUtil.isHidden(cursor.node))) {
     c = cvox.TraverseUtil.forwardsChar(cursor, elementsEntered, elementsLeft);
     if (c == null)
       return null;
@@ -469,8 +464,7 @@ cvox.TraverseUtil.getNextWord = function(startCursor, endCursor,
   if (c == null) {
     return word;
   }
-  while (!cvox.TraverseUtil.isWhitespace(c) &&
-         newEntered.length == 0 &&
+  while (!cvox.TraverseUtil.isWhitespace(c) && newEntered.length == 0 &&
          newLeft == 0) {
     word += c;
     endCursor.copyFrom(cursor);
@@ -497,16 +491,17 @@ cvox.TraverseUtil.getNextWord = function(startCursor, endCursor,
  * @return {?string} The previous word, or null if the bottom of the
  *     document has been reached.
  */
-cvox.TraverseUtil.getPreviousWord = function(startCursor, endCursor,
-    elementsEntered, elementsLeft) {
+cvox.TraverseUtil.getPreviousWord = function(
+    startCursor, endCursor, elementsEntered, elementsLeft) {
   // Find the first non-whitespace or non-skipped character.
   var cursor = startCursor.clone();
-  var c = cvox.TraverseUtil.backwardsChar(
-      cursor, elementsEntered, elementsLeft);
+  var c =
+      cvox.TraverseUtil.backwardsChar(cursor, elementsEntered, elementsLeft);
   if (c == null)
     return null;
-  while ((cvox.TraverseUtil.isWhitespace(c) ||
-      (cvox.TraverseUtil.isHidden(cursor.node)))) {
+  while (
+      (cvox.TraverseUtil.isWhitespace(c) ||
+       (cvox.TraverseUtil.isHidden(cursor.node)))) {
     c = cvox.TraverseUtil.backwardsChar(cursor, elementsEntered, elementsLeft);
     if (c == null)
       return null;
@@ -528,8 +523,7 @@ cvox.TraverseUtil.getPreviousWord = function(startCursor, endCursor,
   c = cvox.TraverseUtil.backwardsChar(cursor, newEntered, newLeft);
   if (c == null)
     return word;
-  while (!cvox.TraverseUtil.isWhitespace(c) &&
-         newEntered.length == 0 &&
+  while (!cvox.TraverseUtil.isWhitespace(c) && newEntered.length == 0 &&
          newLeft.length == 0) {
     word = c + word;
     startCursor.copyFrom(cursor);
@@ -649,7 +643,7 @@ cvox.TraverseUtil.getNextLine = function(
   var currentRect = null;
   var rightMostRect = null;
   var prevCursor = endCursor.clone();
- return cvox.TraverseUtil.getNextString(
+  return cvox.TraverseUtil.getNextString(
       startCursor, endCursor, elementsEntered, elementsLeft,
       function(str, word, elementsEntered, elementsLeft) {
         range.setStart(startCursor.node, startCursor.index);
@@ -661,8 +655,8 @@ cvox.TraverseUtil.getNextLine = function(
 
         // Break at new lines except when within a link.
         if (currentRect.bottom != rightMostRect.bottom &&
-            !cvox.DomPredicates.linkPredicate(cvox.DomUtil.getAncestors(
-                endCursor.node))) {
+            !cvox.DomPredicates.linkPredicate(
+                cvox.DomUtil.getAncestors(endCursor.node))) {
           endCursor.copyFrom(prevCursor);
           return true;
         }
@@ -707,8 +701,8 @@ cvox.TraverseUtil.getPreviousLine = function(
 
         // Break at new lines except when within a link.
         if (currentRect.top != leftMostRect.top &&
-            !cvox.DomPredicates.linkPredicate(cvox.DomUtil.getAncestors(
-                startCursor.node))) {
+            !cvox.DomPredicates.linkPredicate(
+                cvox.DomUtil.getAncestors(startCursor.node))) {
           startCursor.copyFrom(prevCursor);
           return true;
         }
@@ -734,8 +728,8 @@ cvox.TraverseUtil.getPreviousLine = function(
  * @return {?string} The next paragraph, or null if the bottom of the
  *     document has been reached.
  */
-cvox.TraverseUtil.getNextParagraph = function(startCursor, endCursor,
-    elementsEntered, elementsLeft) {
+cvox.TraverseUtil.getNextParagraph = function(
+    startCursor, endCursor, elementsEntered, elementsLeft) {
   return cvox.TraverseUtil.getNextString(
       startCursor, endCursor, elementsEntered, elementsLeft,
       function(str, word, elementsEntered, elementsLeft) {

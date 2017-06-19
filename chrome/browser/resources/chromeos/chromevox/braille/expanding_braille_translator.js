@@ -33,8 +33,8 @@ goog.require('cvox.ValueSpan');
  *     Translator to use for uncontracted braille translation.
  * @constructor
  */
-cvox.ExpandingBrailleTranslator =
-    function(defaultTranslator, opt_uncontractedTranslator) {
+cvox.ExpandingBrailleTranslator = function(
+    defaultTranslator, opt_uncontractedTranslator) {
   /**
    * @type {!cvox.LibLouis.Translator}
    * @private
@@ -86,11 +86,13 @@ cvox.ExpandingBrailleTranslator.ExpansionType = {
  *     callback Called when the translation is done.  It takes resulting
  *         braille cells and positional mappings as parameters.
  */
-cvox.ExpandingBrailleTranslator.prototype.translate =
-    function(text, expansionType, callback) {
+cvox.ExpandingBrailleTranslator.prototype.translate = function(
+    text, expansionType, callback) {
   var expandRanges = this.findExpandRanges_(text, expansionType);
-  var extraCellsSpans = text.getSpansInstanceOf(cvox.ExtraCellsSpan)
-      .filter(function(span) { return span.cells.byteLength > 0;});
+  var extraCellsSpans =
+      text.getSpansInstanceOf(cvox.ExtraCellsSpan).filter(function(span) {
+        return span.cells.byteLength > 0;
+      });
   var extraCellsPositions = extraCellsSpans.map(function(span) {
     return text.getSpanStart(span);
   });
@@ -108,12 +110,14 @@ cvox.ExpandingBrailleTranslator.prototype.translate =
       chunks.push({translator: translator, start: start, end: end});
   }
   function addExtraCellsChunk(pos, cells) {
-    var chunk = {translator: null,
-                 start: pos,
-                 end: pos,
-                 cells: cells,
-                 textToBraille: [],
-                 brailleToText: new Array(cells.byteLength)};
+    var chunk = {
+      translator: null,
+      start: pos,
+      end: pos,
+      cells: cells,
+      textToBraille: [],
+      brailleToText: new Array(cells.byteLength)
+    };
     for (var i = 0; i < cells.byteLength; ++i)
       chunk.brailleToText[i] = 0;
     chunks.push(chunk);
@@ -151,16 +155,17 @@ cvox.ExpandingBrailleTranslator.prototype.translate =
   }
 
   function finish() {
-    var totalCells = chunks.reduce(
-        function(accum, chunk) { return accum + chunk.cells.byteLength;}, 0);
+    var totalCells = chunks.reduce(function(accum, chunk) {
+      return accum + chunk.cells.byteLength;
+    }, 0);
     var cells = new Uint8Array(totalCells);
     var cellPos = 0;
     var textToBraille = [];
     var brailleToText = [];
     function appendAdjusted(array, toAppend, adjustment) {
-      array.push.apply(array, toAppend.map(
-          function(elem) { return adjustment + elem; }
-          ));
+      array.push.apply(array, toAppend.map(function(elem) {
+        return adjustment + elem;
+      }));
     }
     for (var i = 0, chunk; chunk = chunks[i]; ++i) {
       cells.set(new Uint8Array(chunk.cells), cellPos);
@@ -316,8 +321,8 @@ cvox.ExpandingBrailleTranslator.prototype.addRangesForSelection_ = function(
  *     An adapted version of the callback.
  * @private
  */
-cvox.ExpandingBrailleTranslator.nullParamsToEmptyAdapter_ =
-    function(inputLength, callback) {
+cvox.ExpandingBrailleTranslator.nullParamsToEmptyAdapter_ = function(
+    inputLength, callback) {
   return function(cells, textToBraille, brailleToText) {
     if (!textToBraille) {
       textToBraille = new Array(inputLength);
@@ -325,9 +330,7 @@ cvox.ExpandingBrailleTranslator.nullParamsToEmptyAdapter_ =
         textToBraille[i] = 0;
       }
     }
-    callback(cells || new ArrayBuffer(0),
-             textToBraille,
-             brailleToText || []);
+    callback(cells || new ArrayBuffer(0), textToBraille, brailleToText || []);
   };
 };
 

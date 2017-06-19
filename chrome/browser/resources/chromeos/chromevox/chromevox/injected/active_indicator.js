@@ -135,8 +135,7 @@ cvox.ActiveIndicator = function() {
  * @type {string}
  * @const
  */
-cvox.ActiveIndicator.STYLE =
-    '.cvox_indicator_container {' +
+cvox.ActiveIndicator.STYLE = '.cvox_indicator_container {' +
     '  position: absolute !important;' +
     '  left: 0 !important;' +
     '  top: 0 !important;' +
@@ -346,10 +345,8 @@ cvox.ActiveIndicator.prototype.handleUpdateIndicatorIfChanged_ = function() {
     for (var i = 0; i < this.lastClientRects_.length; ++i) {
       var last = this.lastClientRects_[i];
       var current = newClientRects[i];
-      if (last.top != current.top ||
-          last.right != current.right ||
-          last.bottom != current.bottom ||
-          last.left != last.left) {
+      if (last.top != current.top || last.right != current.right ||
+          last.bottom != current.bottom || last.left != last.left) {
         needsUpdate = true;
         break;
       }
@@ -434,8 +431,9 @@ cvox.ActiveIndicator.prototype.moveIndicator_ = function(
   if (window.getComputedStyle(document.body, null).position != 'static') {
     offsetX = -document.body.getBoundingClientRect().left;
     offsetY = -document.body.getBoundingClientRect().top;
-  } else if (window.getComputedStyle(document.documentElement, null).position !=
-                 'static') {
+  } else if (
+      window.getComputedStyle(document.documentElement, null).position !=
+      'static') {
     offsetX = -document.documentElement.getBoundingClientRect().left;
     offsetY = -document.documentElement.getBoundingClientRect().top;
   } else {
@@ -556,8 +554,7 @@ cvox.ActiveIndicator.prototype.moveIndicator_ = function(
   // existing elements (which results in animating the transition).
   for (i = 0; i < regions.length; i++) {
     var parent = null;
-    if (i == 0 &&
-        this.container_.childElementCount == 1 &&
+    if (i == 0 && this.container_.childElementCount == 1 &&
         this.container_.children[0].childElementCount == 6) {
       parent = this.container_.children[0];
     }
@@ -660,18 +657,18 @@ cvox.ActiveIndicator.prototype.updateIndicatorRegion_ = function(
     var q1 = Math.floor((3 * r.top + 1 * r.bottom) / 4);
     var q2 = Math.floor((2 * r.top + 2 * r.bottom) / 4);
     var q3 = Math.floor((1 * r.top + 3 * r.bottom) / 4);
-    this.setElementCoords_(regionTop, r.left, r.top, r.right, q1,
-                                      true, true, true, false);
-    this.setElementCoords_(regionMiddleNW, r.left, q1, r.left, q2,
-                                           true, true, false, false);
-    this.setElementCoords_(regionMiddleSW, r.left, q2, r.left, q3,
-                                           true, false, false, true);
-    this.setElementCoords_(regionMiddleNE, r.right, q1, r.right, q2,
-                                           false, true, true, false);
-    this.setElementCoords_(regionMiddleSE, r.right, q2, r.right, q3,
-                                           false, false, true, true);
-    this.setElementCoords_(regionBottom, r.left, q3, r.right, r.bottom,
-                                         true, false, true, true);
+    this.setElementCoords_(
+        regionTop, r.left, r.top, r.right, q1, true, true, true, false);
+    this.setElementCoords_(
+        regionMiddleNW, r.left, q1, r.left, q2, true, true, false, false);
+    this.setElementCoords_(
+        regionMiddleSW, r.left, q2, r.left, q3, true, false, false, true);
+    this.setElementCoords_(
+        regionMiddleNE, r.right, q1, r.right, q2, false, true, true, false);
+    this.setElementCoords_(
+        regionMiddleSE, r.right, q2, r.right, q3, false, false, true, true);
+    this.setElementCoords_(
+        regionBottom, r.left, q3, r.right, r.bottom, true, false, true, true);
     return;
   }
 
@@ -704,10 +701,9 @@ cvox.ActiveIndicator.prototype.updateIndicatorRegion_ = function(
       middleIndex++;
     }
     middleRect = this.inset_(middleRect, -margin, -margin, -margin, -margin);
-    middleRect.left = Math.min(
-        middleRect.left, topRect.left, bottomRect.left);
-    middleRect.right = Math.max(
-        middleRect.right, topRect.right, bottomRect.right);
+    middleRect.left = Math.min(middleRect.left, topRect.left, bottomRect.left);
+    middleRect.right =
+        Math.max(middleRect.right, topRect.right, bottomRect.right);
     middleRect.width = middleRect.right - middleRect.left;
   }
 
@@ -736,23 +732,17 @@ cvox.ActiveIndicator.prototype.updateIndicatorRegion_ = function(
   this.setElementRect_(regionBottom, bottomRect, true, false, true, true);
 
   this.setElementCoords_(
-      regionMiddleNW,
-      middleRect.left, topRect.bottom, topRect.left, midline,
+      regionMiddleNW, middleRect.left, topRect.bottom, topRect.left, midline,
       true, true, false, false);
   this.setElementCoords_(
-      regionMiddleNE,
-      topRect.right, topRect.bottom,
-      middleRect.right, midline,
+      regionMiddleNE, topRect.right, topRect.bottom, middleRect.right, midline,
       false, true, true, false);
   this.setElementCoords_(
-      regionMiddleSW,
-      middleRect.left, midline, bottomRect.left, bottomRect.top,
+      regionMiddleSW, middleRect.left, midline, bottomRect.left, bottomRect.top,
       true, false, false, true);
   this.setElementCoords_(
-      regionMiddleSE,
-      bottomRect.right, midline,
-      middleRect.right, bottomRect.top,
-      false, false, true, true);
+      regionMiddleSE, bottomRect.right, midline, middleRect.right,
+      bottomRect.top, false, false, true, true);
 };
 
 /**
@@ -766,10 +756,9 @@ cvox.ActiveIndicator.prototype.updateIndicatorRegion_ = function(
  */
 cvox.ActiveIndicator.prototype.intersects_ = function(r1, r2) {
   var slop = 2 * cvox.ActiveIndicator.MARGIN;
-  return (r2.left <= r1.right + slop &&
-          r2.right >= r1.left - slop &&
-          r2.top <= r1.bottom + slop &&
-          r2.bottom >= r1.top - slop);
+  return (
+      r2.left <= r1.right + slop && r2.right >= r1.left - slop &&
+      r2.top <= r1.bottom + slop && r2.bottom >= r1.top - slop);
 };
 
 /**
@@ -791,7 +780,7 @@ cvox.ActiveIndicator.prototype.union_ = function(r1, r2) {
   };
   result.width = result.right - result.left;
   result.height = result.bottom - result.top;
-  return /** @type {ClientRect} */(result);
+  return /** @type {ClientRect} */ (result);
 };
 
 /**
@@ -817,7 +806,7 @@ cvox.ActiveIndicator.prototype.inset_ = function(r, left, top, right, bottom) {
   };
   result.width = result.right - result.left;
   result.height = result.bottom - result.top;
-  return /** @type {ClientRect} */(result);
+  return /** @type {ClientRect} */ (result);
 };
 
 /**
@@ -830,7 +819,7 @@ cvox.ActiveIndicator.prototype.inset_ = function(r, left, top, right, bottom) {
  * @private
  */
 cvox.ActiveIndicator.prototype.createDiv_ = function(
-      parent, className, opt_before) {
+    parent, className, opt_before) {
   var elem = document.createElement('div');
   elem.setAttribute('aria-hidden', 'true');
 
@@ -901,9 +890,8 @@ cvox.ActiveIndicator.prototype.fixZoomSum_ = function(x, width) {
  * @private
  */
 cvox.ActiveIndicator.prototype.setElementCoords_ = function(
-      element,
-      left, top, right, bottom,
-      showLeft, showTop, showRight, showBottom) {
+    element, left, top, right, bottom, showLeft, showTop, showRight,
+    showBottom) {
   var origWidth = right - left;
   var origHeight = bottom - top;
 
@@ -960,9 +948,10 @@ cvox.ActiveIndicator.prototype.setElementCoords_ = function(
  * @private
  */
 cvox.ActiveIndicator.prototype.setElementRect_ = function(
-      element, r, showLeft, showTop, showRight, showBottom) {
-  this.setElementCoords_(element, r.left, r.top, r.right, r.bottom,
-                         showLeft, showTop, showRight, showBottom);
+    element, r, showLeft, showTop, showRight, showBottom) {
+  this.setElementCoords_(
+      element, r.left, r.top, r.right, r.bottom, showLeft, showTop, showRight,
+      showBottom);
 };
 
 /**

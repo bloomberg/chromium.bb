@@ -6,16 +6,18 @@
  * @fileoverview Contains html snippets shared by multiple tests.
  */
 
-function toolbarDoc() {/*!
-  <div tabindex=0 role="toolbar">
-    <button>Back</button>
-    <button>Forward</button>
-  </div>
-*/}
+function toolbarDoc() { /*!
+   <div tabindex=0 role="toolbar">
+     <button>Back</button>
+     <button>Forward</button>
+   </div>
+ */
+}
 
-function headingDoc() {/*!
-  <h1>World</h1>
-  <p>Canada</p>
-  <h2>United States</h2>
-  <a href="whitehouse.gov">White House</a>
-*/}
+function headingDoc() { /*!
+   <h1>World</h1>
+   <p>Canada</p>
+   <h2>United States</h2>
+   <a href="whitehouse.gov">White House</a>
+ */
+}

@@ -17,15 +17,10 @@ goog.require('cvox.SearchTool');
 /**
  * @constructor
  */
-cvox.SearchContextMenu = function() {
-};
+cvox.SearchContextMenu = function() {};
 
 /* Globals */
-var Command = {
-  TOOLS: 'tools',
-  ADS: 'ads',
-  MAIN: 'main'
-};
+var Command = {TOOLS: 'tools', ADS: 'ads', MAIN: 'main'};
 
 /**
  * Current focus Search is in.
@@ -39,17 +34,17 @@ cvox.SearchContextMenu.currState = Command.MAIN;
 cvox.SearchContextMenu.contextMenuHandler = function(evt) {
   var cmd = evt.detail['customCommand'];
   switch (cmd) {
-  case Command.TOOLS:
-    cvox.SearchContextMenu.focusTools();
-    break;
+    case Command.TOOLS:
+      cvox.SearchContextMenu.focusTools();
+      break;
 
-  case Command.ADS:
-    cvox.SearchContextMenu.focusAds();
-    break;
+    case Command.ADS:
+      cvox.SearchContextMenu.focusAds();
+      break;
 
-  case Command.MAIN:
-    cvox.SearchContextMenu.focusMain();
-    break;
+    case Command.MAIN:
+      cvox.SearchContextMenu.focusMain();
+      break;
   }
 };
 
@@ -124,17 +119,17 @@ cvox.SearchContextMenu.focusTools = function() {
  */
 cvox.SearchContextMenu.init = function() {
   var ACTIONS = [
-    { desc: 'Main Results', cmd: Command.MAIN },
-    { desc: 'Search Tools', cmd: Command.TOOLS },
-    { desc: 'Ads', cmd: Command.ADS }
+    {desc: 'Main Results', cmd: Command.MAIN},
+    {desc: 'Search Tools', cmd: Command.TOOLS},
+    {desc: 'Ads', cmd: Command.ADS}
   ];
   /* Attach ContextMenuActions. */
   var body = document.querySelector('body');
   body.setAttribute('contextMenuActions', JSON.stringify(ACTIONS));
 
   /* Listen for ContextMenu events. */
-  body.addEventListener('ATCustomEvent',
-    cvox.SearchContextMenu.contextMenuHandler, true);
+  body.addEventListener(
+      'ATCustomEvent', cvox.SearchContextMenu.contextMenuHandler, true);
 
   window.addEventListener('keydown', cvox.SearchContextMenu.keyhandler, true);
   cvox.Search.init();

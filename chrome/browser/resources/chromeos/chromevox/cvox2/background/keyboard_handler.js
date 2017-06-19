@@ -92,8 +92,8 @@ BackgroundKeyboardHandler.prototype = {
       // Switching out of classic, classic compat, or uninitialized
       // (on startup).
       window['prefs'].switchToKeyMap('keymap_next');
-    } else if (oldMode &&
-        oldMode != ChromeVoxMode.CLASSIC &&
+    } else if (
+        oldMode && oldMode != ChromeVoxMode.CLASSIC &&
         oldMode != ChromeVoxMode.CLASSIC_COMPAT) {
       // Switching out of next. Intentionally do nothing when switching out of
       // an uninitialized |oldMode|.

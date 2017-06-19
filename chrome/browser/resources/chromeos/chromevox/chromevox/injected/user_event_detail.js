@@ -143,18 +143,18 @@ cvox.UserEventDetail.Status = {
  */
 // TODO (clchen): Integrate this with command_store.js.
 cvox.UserEventDetail.JUMP_COMMANDS = [
-  'nextCheckbox', 'previousCheckbox', 'nextRadio', 'previousRadio',
-  'nextSlider', 'previousSlider', 'nextGraphic', 'previousGraphic',
-  'nextButton', 'previousButton', 'nextComboBox', 'previousComboBox',
-  'nextEditText', 'previousEditText', 'nextHeading', 'previousHeading',
-  'nextHeading1', 'previousHeading1', 'nextHeading2', 'previousHeading2',
-  'nextHeading3', 'previousHeading3', 'nextHeading4', 'previousHeading4',
-  'nextHeading5', 'previousHeading5', 'nextHeading6', 'previousHeading6',
-  'nextLink', 'previousLink', 'nextMath', 'previousMath', 'nextTable',
-  'previousTable', 'nextList', 'previousList', 'nextListItem',
-  'previousListItem', 'nextFormField', 'previousFormField', 'nextLandmark',
-  'previousLandmark', 'nextSection', 'previousSection', 'nextControl',
-  'previousControl'
+  'nextCheckbox', 'previousCheckbox', 'nextRadio',     'previousRadio',
+  'nextSlider',   'previousSlider',   'nextGraphic',   'previousGraphic',
+  'nextButton',   'previousButton',   'nextComboBox',  'previousComboBox',
+  'nextEditText', 'previousEditText', 'nextHeading',   'previousHeading',
+  'nextHeading1', 'previousHeading1', 'nextHeading2',  'previousHeading2',
+  'nextHeading3', 'previousHeading3', 'nextHeading4',  'previousHeading4',
+  'nextHeading5', 'previousHeading5', 'nextHeading6',  'previousHeading6',
+  'nextLink',     'previousLink',     'nextMath',      'previousMath',
+  'nextTable',    'previousTable',    'nextList',      'previousList',
+  'nextListItem', 'previousListItem', 'nextFormField', 'previousFormField',
+  'nextLandmark', 'previousLandmark', 'nextSection',   'previousSection',
+  'nextControl',  'previousControl'
 ];
 
 /**

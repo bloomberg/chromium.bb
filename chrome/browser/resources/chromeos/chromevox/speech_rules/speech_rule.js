@@ -54,8 +54,7 @@ cvox.SpeechRule.prototype.toString = function() {
     cstrStrings.push(this.dynamicCstr[key]);
   }
   return this.name + ' | ' + cstrStrings.join('.') + ' | ' +
-    this.precondition.toString() + ' ==> ' +
-    this.action.toString();
+      this.precondition.toString() + ' ==> ' + this.action.toString();
 };
 
 
@@ -78,11 +77,16 @@ cvox.SpeechRule.Type = {
  */
 cvox.SpeechRule.Type.fromString = function(str) {
   switch (str) {
-    case '[n]': return cvox.SpeechRule.Type.NODE;
-    case '[m]': return cvox.SpeechRule.Type.MULTI;
-    case '[t]': return cvox.SpeechRule.Type.TEXT;
-    case '[p]': return cvox.SpeechRule.Type.PERSONALITY;
-    default: throw 'Parse error: ' + str;
+    case '[n]':
+      return cvox.SpeechRule.Type.NODE;
+    case '[m]':
+      return cvox.SpeechRule.Type.MULTI;
+    case '[t]':
+      return cvox.SpeechRule.Type.TEXT;
+    case '[p]':
+      return cvox.SpeechRule.Type.PERSONALITY;
+    default:
+      throw 'Parse error: ' + str;
   }
 };
 
@@ -94,11 +98,16 @@ cvox.SpeechRule.Type.fromString = function(str) {
  */
 cvox.SpeechRule.Type.toString = function(speechType) {
   switch (speechType) {
-    case cvox.SpeechRule.Type.NODE: return '[n]';
-    case cvox.SpeechRule.Type.MULTI: return '[m]';
-    case cvox.SpeechRule.Type.TEXT: return '[t]';
-    case cvox.SpeechRule.Type.PERSONALITY: return '[p]';
-    default: throw 'Unknown type error: ' + speechType;
+    case cvox.SpeechRule.Type.NODE:
+      return '[n]';
+    case cvox.SpeechRule.Type.MULTI:
+      return '[m]';
+    case cvox.SpeechRule.Type.TEXT:
+      return '[t]';
+    case cvox.SpeechRule.Type.PERSONALITY:
+      return '[p]';
+    default:
+      throw 'Unknown type error: ' + speechType;
   }
 };
 
@@ -163,7 +172,7 @@ cvox.SpeechRule.Component.fromString = function(input) {
       }
       output.content = rest.substring(0, bracket).trim();
       rest = rest.slice(bracket).trimLeft();
-    break;
+      break;
   }
   output = new cvox.SpeechRule.Component(output);
   if (rest) {
@@ -251,8 +260,12 @@ cvox.SpeechRule.Action = function(components) {
  */
 cvox.SpeechRule.Action.fromString = function(input) {
   var comps = cvox.SpeechRule.splitString_(input, ';')
-      .filter(function(x) {return x.match(/\S/);})
-      .map(function(x) {return x.trim();});
+                  .filter(function(x) {
+                    return x.match(/\S/);
+                  })
+                  .map(function(x) {
+                    return x.trim();
+                  });
   var newComps = [];
   for (var i = 0; i < comps.length; i++) {
     var comp = cvox.SpeechRule.Component.fromString(comps[i]);
@@ -260,7 +273,7 @@ cvox.SpeechRule.Action.fromString = function(input) {
       newComps.push(comp);
     }
   }
-return new cvox.SpeechRule.Action(newComps);
+  return new cvox.SpeechRule.Action(newComps);
 };
 
 
@@ -268,7 +281,9 @@ return new cvox.SpeechRule.Action(newComps);
  * @override
  */
 cvox.SpeechRule.Action.prototype.toString = function() {
-  var comps = this.components.map(function(c) { return c.toString(); });
+  var comps = this.components.map(function(c) {
+    return c.toString();
+  });
   return comps.join('; ');
 };
 
@@ -323,8 +338,7 @@ cvox.SpeechRule.splitString_ = function(str, sep) {
       strList.push(prefix + str);
       prefix = '';
       str = '';
-    } else if (
-        (str.substring(0, sepPos).match(/"/g) || []).length % 2 == 0) {
+    } else if ((str.substring(0, sepPos).match(/"/g) || []).length % 2 == 0) {
       strList.push(prefix + str.substring(0, sepPos));
       prefix = '';
       str = str.substring(sepPos + 1);
@@ -352,8 +366,7 @@ cvox.SpeechRule.splitString_ = function(str, sep) {
  * attributes later.
  * @enum {string}
  */
-cvox.SpeechRule.DynamicCstrAttrib =
-{
+cvox.SpeechRule.DynamicCstrAttrib = {
   STYLE: 'style'
 };
 

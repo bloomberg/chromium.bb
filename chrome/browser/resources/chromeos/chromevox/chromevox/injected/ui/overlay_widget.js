@@ -62,14 +62,14 @@ cvox.OverlayWidget.prototype.onKeyDown = function(evt) {
   goog.base(this, 'onKeyDown', evt);
 
   // Do not interfere with any key that exits the widget.
-  if (evt.keyCode == 13 || evt.keyCode == 27) { // Enter or escape.
+  if (evt.keyCode == 13 || evt.keyCode == 27) {  // Enter or escape.
     return true;
   }
 
   // Bound navigation within the snippet for any other key.
   var r = cvox.ChromeVox.navigationManager.isReversed();
   if (!cvox.DomUtil.isDescendantOfNode(
-      cvox.ChromeVox.navigationManager.getCurrentNode(), this.host_)) {
+          cvox.ChromeVox.navigationManager.getCurrentNode(), this.host_)) {
     if (r) {
       cvox.ChromeVox.navigationManager.syncToBeginning();
     } else {
@@ -77,8 +77,8 @@ cvox.OverlayWidget.prototype.onKeyDown = function(evt) {
     }
     this.onNavigate();
     cvox.ChromeVox.navigationManager.speakDescriptionArray(
-        cvox.ChromeVox.navigationManager.getDescription(),
-        cvox.QueueMode.FLUSH, null);
+        cvox.ChromeVox.navigationManager.getDescription(), cvox.QueueMode.FLUSH,
+        null);
   }
   return false;
 };

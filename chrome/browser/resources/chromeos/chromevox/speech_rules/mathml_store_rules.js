@@ -21,10 +21,10 @@ goog.require('cvox.StoreUtil');
 cvox.MathmlStoreRules = function() {
   // Custom functions used in the rules.
   cvox.MathmlStoreRules.initCustomFunctions_();
-  cvox.MathmlStoreRules.initDefaultRules_(); // MathML rules.
-  cvox.MathmlStoreRules.initMathjaxRules_(); // MathJax Rules
-  cvox.MathmlStoreRules.initAliases_(); // MathJax Aliases for MathML rules.
-  cvox.MathmlStoreRules.initSpecializationRules_(); // Square, cube, etc.
+  cvox.MathmlStoreRules.initDefaultRules_();  // MathML rules.
+  cvox.MathmlStoreRules.initMathjaxRules_();  // MathJax Rules
+  cvox.MathmlStoreRules.initAliases_();  // MathJax Aliases for MathML rules.
+  cvox.MathmlStoreRules.initSpecializationRules_();  // Square, cube, etc.
   cvox.MathmlStoreRules.initSemanticRules_();
 };
 goog.addSingletonGetter(cvox.MathmlStoreRules);
@@ -111,41 +111,44 @@ cvox.MathmlStoreRules.initDefaultRules_ = function() {
   defineDefaultMathmlRule('mn', '[n] text()');
 
   // Dealing with fonts.
-  defineRule('mtext-variant', 'default.default',
+  defineRule(
+      'mtext-variant', 'default.default',
       '[t] "begin"; [t] @mathvariant (pause:150);' +
           '[t] text() (pause:150); [t] "end"; ' +
           '[t] @mathvariant (pause:200)',
       'self::mathml:mtext', '@mathvariant', '@mathvariant!="normal"');
 
-  defineRule('mi-variant', 'default.default',
-      '[t] @mathvariant; [n] text()',
+  defineRule(
+      'mi-variant', 'default.default', '[t] @mathvariant; [n] text()',
       'self::mathml:mi', '@mathvariant', '@mathvariant!="normal"');
 
-  defineRuleAlias('mi-variant', 'self::mathml:mn',  // mn
+  defineRuleAlias(
+      'mi-variant', 'self::mathml:mn',  // mn
       '@mathvariant', '@mathvariant!="normal"');
 
-  defineRule('mo-variant', 'default.default',
-      '[t] @mathvariant; [n] text() (rate:-0.1)',
-      'self::mathml:mo', '@mathvariant', '@mathvariant!="normal"');
+  defineRule(
+      'mo-variant', 'default.default',
+      '[t] @mathvariant; [n] text() (rate:-0.1)', 'self::mathml:mo',
+      '@mathvariant', '@mathvariant!="normal"');
 
   defineDefaultMathmlRule(
-      'ms',
-      '[t] "string" (pitch:0.5, rate:0.5); [t] text()');
+      'ms', '[t] "string" (pitch:0.5, rate:0.5); [t] text()');
 
   // Script elements.
   defineDefaultMathmlRule(
-      'msup', '[n] ./*[1]; [t] "super";' +
+      'msup',
+      '[n] ./*[1]; [t] "super";' +
           '[n] ./*[2] (pitch:0.35); [p] (pause:300)');
   defineDefaultMathmlRule(
       'msubsup',
       '[n] ./*[1]; [t] "sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);' +
-          '[t] "super"; [n] ./*[3] (pitch:0.35); [p] (pause:300)'
-      );
+          '[t] "super"; [n] ./*[3] (pitch:0.35); [p] (pause:300)');
   defineDefaultMathmlRule(
       'msub',
       '[n] ./*[1]; [t] "sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:300)');
   defineDefaultMathmlRule(
-      'mover', '[n] ./*[2] (pitch:0.35); [p] (pause:200);' +
+      'mover',
+      '[n] ./*[2] (pitch:0.35); [p] (pause:200);' +
           ' [t] "over"; [n] ./*[1]; [p] (pause:400)');
   defineDefaultMathmlRule(
       'munder',
@@ -160,13 +163,16 @@ cvox.MathmlStoreRules.initDefaultRules_ = function() {
   defineDefaultMathmlRule(
       'msqrt', '[t] "Square root of"; [m] ./* (rate:0.2); [p] (pause:400)');
   defineDefaultMathmlRule(
-      'mroot', '[t] "root of order"; [n] ./*[2]; [t] "of";' +
+      'mroot',
+      '[t] "root of order"; [n] ./*[2]; [t] "of";' +
           '[n] ./*[1] (rate:0.2); [p] (pause:400)');
   defineDefaultMathmlRule(
-      'mfrac', ' [p] (pause:400); [n] ./*[1] (pitch:0.3);' +
+      'mfrac',
+      ' [p] (pause:400); [n] ./*[1] (pitch:0.3);' +
           ' [t] "divided by"; [n] ./*[2] (pitch:-0.3); [p] (pause:400)');
   defineRule(
-      'mfrac', 'default.short', '[p] (pause:200); [t] "start frac";' +
+      'mfrac', 'default.short',
+      '[p] (pause:200); [t] "start frac";' +
           '[n] ./*[1] (pitch:0.3); [t] "over"; ' +
           '[n] ./*[2] (pitch:-0.3); [p] (pause:400); [t] "end frac"',
       'self::mathml:mfrac');
@@ -231,9 +237,7 @@ cvox.MathmlStoreRules.initDefaultRules_ = function() {
       '[m] ./* (ctxtFunc:CTXFnodeCounter,context:"column",pause:100)',
       'self::mathml:mtr');
 
-  defineRule(
-      'mtd', 'default.default',
-      '[m] ./*', 'self::mathml:mtd');
+  defineRule('mtd', 'default.default', '[m] ./*', 'self::mathml:mtd');
 
   // Mtable superbrief rules.
   defineRule(
@@ -244,80 +248,77 @@ cvox.MathmlStoreRules.initDefaultRules_ = function() {
 
   // Mtable short rules.
   defineRule(
-      'mtable', 'default.short',
-      '[t] "matrix"; [m] ./*',
+      'mtable', 'default.short', '[t] "matrix"; [m] ./*',
       'self::mathml:mtable');
 
-  defineRule(
-      'mtr', 'default.short',
-      '[m] ./*', 'self::mathml:mtr');
+  defineRule('mtr', 'default.short', '[m] ./*', 'self::mathml:mtr');
 
   defineRule(
       'mtd', 'default.short',
       '[t] "Element"; [t] count(./preceding-sibling::mathml:mtd)+1;' +
           '[t] count(./parent::mathml:mtr/preceding-sibling::mathml:mtr)+1;' +
-              '[p] (pause:500); [m] ./*',
+          '[p] (pause:500); [m] ./*',
       'self::mathml:mtd');
 
   // Mmultiscripts rules.
   defineRule(
       'mmultiscripts-4', 'default.default',
       '[n] ./*[1]; [p] (pause:200);' +
-      '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
-      '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:200);' +
-      '[t] "right sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);' +
-      '[t] "right super"; [n] ./*[3] (pitch:0.35); [p] (pause:300);',
+          '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
+          '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:200);' +
+          '[t] "right sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);' +
+          '[t] "right super"; [n] ./*[3] (pitch:0.35); [p] (pause:300);',
       'self::mathml:mmultiscripts');
   defineRule(
       'mmultiscripts-3-1', 'default.default',
       '[n] ./*[1]; [p] (pause:200);' +
-      '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
-      '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:200);' +
-      '[t] "right super"; [n] ./*[3] (pitch:0.35); [p] (pause:300);',
+          '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
+          '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:200);' +
+          '[t] "right super"; [n] ./*[3] (pitch:0.35); [p] (pause:300);',
       'self::mathml:mmultiscripts', './mathml:none=./*[2]',
       './mathml:mprescripts=./*[4]');
   defineRule(
       'mmultiscripts-3-2', 'default.default',
       '[n] ./*[1]; [p] (pause:200);' +
-      '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
-      '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:200);' +
-      '[t] "right sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);',
+          '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
+          '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:200);' +
+          '[t] "right sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);',
       'self::mathml:mmultiscripts', './mathml:none=./*[3]',
       './mathml:mprescripts=./*[4]');
   defineRule(
       'mmultiscripts-3-3', 'default.default',
       '[n] ./*[1]; [p] (pause:200);' +
-      '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:200);' +
-      '[t] "right sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);' +
-      '[t] "right super"; [n] ./*[3] (pitch:0.35); [p] (pause:300);',
+          '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:200);' +
+          '[t] "right sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);' +
+          '[t] "right super"; [n] ./*[3] (pitch:0.35); [p] (pause:300);',
       'self::mathml:mmultiscripts', './mathml:none=./*[5]',
       './mathml:mprescripts=./*[4]');
   defineRule(
       'mmultiscripts-3-4', 'default.default',
       '[n] ./*[1]; [p] (pause:200);' +
-      '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
-      '[t] "right sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);' +
-      '[t] "right super"; [n] ./*[3] (pitch:0.35); [p] (pause:300);',
+          '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
+          '[t] "right sub"; [n] ./*[2] (pitch:-0.35); [p] (pause:200);' +
+          '[t] "right super"; [n] ./*[3] (pitch:0.35); [p] (pause:300);',
       'self::mathml:mmultiscripts', './mathml:none=./*[6]',
       './mathml:mprescripts=./*[4]');
   defineRule(
       'mmultiscripts-2-1', 'default.default',
       '[n] ./*[1]; [p] (pause:200);' +
-      '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
-      '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:300);',
+          '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);' +
+          '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:300);',
       'self::mathml:mmultiscripts', './mathml:none=./*[2]',
       './mathml:none=./*[3]', './mathml:mprescripts=./*[4]');
   defineRule(
       'mmultiscripts-1-1', 'default.default',
       '[n] ./*[1]; [p] (pause:200);' +
-      '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:300);',
+          '[t] "left super"; [n] ./*[6] (pitch:0.35); [p] (pause:300);',
       'self::mathml:mmultiscripts', './mathml:none=./*[2]',
       './mathml:none=./*[3]', './mathml:mprescripts=./*[4]',
       './mathml:none=./*[5]');
   defineRule(
       'mmultiscripts-1-2', 'default.default',
       '[n] ./*[1]; [p] (pause:200);' +
-      '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);',
+          '[t] "left sub"; [n] ./*[5] (pitch:-0.35); [p] (pause:200);',
       'self::mathml:mmultiscripts', './mathml:none=./*[2]',
       './mathml:none=./*[3]', './mathml:mprescripts=./*[4]',
       './mathml:none=./*[6]');
@@ -330,30 +331,30 @@ cvox.MathmlStoreRules.initDefaultRules_ = function() {
  */
 cvox.MathmlStoreRules.initMathjaxRules_ = function() {
   // Initial rule
-  defineRule('mj-math', 'default.default',
-             '[n] ./*[1]/*[1]/*[1]', 'self::span[@class="math"]');
+  defineRule(
+      'mj-math', 'default.default', '[n] ./*[1]/*[1]/*[1]',
+      'self::span[@class="math"]');
 
   // Token Elements
   defineRule(
-      'mj-leaf', 'default.default',
-      '[n] CQFlookupleaf', 'self::span[@class="mi"]');
+      'mj-leaf', 'default.default', '[n] CQFlookupleaf',
+      'self::span[@class="mi"]');
   defineRuleAlias('mj-leaf', 'self::span[@class="mo"]');
   defineRuleAlias('mj-leaf', 'self::span[@class="mn"]');
   defineRuleAlias('mj-leaf', 'self::span[@class="mtext"]');
   defineRule(
-      'mj-mo-ext', 'default.default',
-      '[n] CQFextender', 'self::span[@class="mo"]',
-      './*[1]/*[1]/text()', './*[1]/*[2]/text()');
+      'mj-mo-ext', 'default.default', '[n] CQFextender',
+      'self::span[@class="mo"]', './*[1]/*[1]/text()', './*[1]/*[2]/text()');
   defineRule(
-      'mj-texatom', 'default.default',
-      '[n] ./*[1]', 'self::span[@class="texatom"]');
+      'mj-texatom', 'default.default', '[n] ./*[1]',
+      'self::span[@class="texatom"]');
 
   // Script elements.
   defineRule(
       'mj-msubsup', 'default.default',
       '[n] ./*[1]/*[1]/*[1]; [t] "sub"; [n] ./*[1]/*[3]/*[1] (pitch:-0.35);' +
-      '[p] (pause:200); [t] "super"; [n] ./*[1]/*[2]/*[1] (pitch:0.35);' +
-      '[p] (pause:300)',
+          '[p] (pause:200); [t] "super"; [n] ./*[1]/*[2]/*[1] (pitch:0.35);' +
+          '[p] (pause:300)',
       'self::span[@class="msubsup"]');
   defineRule(
       'mj-msub', 'default.default',
@@ -369,7 +370,7 @@ cvox.MathmlStoreRules.initMathjaxRules_ = function() {
       'mj-munderover', 'default.default',
       '[n] ./*[1]/*[2]/*[1] (pitch:0.35); [t] "under and";' +
           '[n] ./*[1]/*[3]/*[1] (pitch:-0.35); [t] "over";' +
-              '[n] ./*[1]/*[1]/*[1]; [p] (pause:400)',
+          '[n] ./*[1]/*[1]/*[1]; [p] (pause:400)',
       'self::span[@class="munderover"]');
   defineRule(
       'mj-munder', 'default.default',
@@ -388,7 +389,7 @@ cvox.MathmlStoreRules.initMathjaxRules_ = function() {
       'mj-mfrac', 'default.default',
       '[p] (pause:250); [n] ./*[1]/*[1]/*[1] (pitch:0.3); [p] (pause:250);' +
           ' [t] "divided by"; [n] ./*[1]/*[2]/*[1] (pitch:-0.3);' +
-              '[p] (pause:400)',
+          '[p] (pause:400)',
       'self::span[@class="mfrac"]');
   defineRule(
       'mj-msqrt', 'default.default',
@@ -405,7 +406,7 @@ cvox.MathmlStoreRules.initMathjaxRules_ = function() {
       'mj-mfenced', 'default.default',
       '[t] "opening"; [n] ./*[1]; ' +
           '[m] ./*[position()>1 and position()<last()];' +
-              ' [t] "closing"; [n] ./*[last()]',
+          ' [t] "closing"; [n] ./*[last()]',
       'self::span[@class="mfenced"]');
 
   // Mtable short rules.
@@ -434,11 +435,9 @@ cvox.MathmlStoreRules.initAliases_ = function() {
   defineRuleAlias('mrow', 'self::span[@class="mrow"]');
 
   // The following rules fix bugs in MathJax's LaTeX translation.
-  defineRuleAlias(
-      'mj-msub', 'self::span[@class="msubsup"]', 'CQFmathmlmsub');
+  defineRuleAlias('mj-msub', 'self::span[@class="msubsup"]', 'CQFmathmlmsub');
 
-  defineRuleAlias(
-      'mj-msup', 'self::span[@class="msubsup"]', 'CQFmathmlmsup');
+  defineRuleAlias('mj-msup', 'self::span[@class="msubsup"]', 'CQFmathmlmsup');
 
   defineRuleAlias(
       'mj-munder', 'self::span[@class="munderover"]', 'CQFmathmlmunder');
@@ -460,16 +459,16 @@ cvox.MathmlStoreRules.initSpecializationRules_ = function() {
       '[n] ./*[1]; [t] "square" (pitch:0.35); [p] (pause:300)',
       'self::mathml:msup', './*[2][text()=2]');
   defineRuleAlias(
-      'square', 'self::mathml:msup',
-      './mathml:mrow=./*[2]', 'count(./*[2]/*)=1', './*[2]/*[1][text()=2]');
+      'square', 'self::mathml:msup', './mathml:mrow=./*[2]',
+      'count(./*[2]/*)=1', './*[2]/*[1][text()=2]');
 
   defineRule(
       'cube', 'default.default',
       '[n] ./*[1]; [t] "cube" (pitch:0.35); [p] (pause:300)',
       'self::mathml:msup', './*[2][text()=3]');
   defineRuleAlias(
-      'cube', 'self::mathml:msup',
-      './mathml:mrow=./*[2]', 'count(./*[2]/*)=1', './*[2]/*[1][text()=3]');
+      'cube', 'self::mathml:msup', './mathml:mrow=./*[2]', 'count(./*[2]/*)=1',
+      './*[2]/*[1][text()=3]');
 
   defineRule(
       'square-sub', 'default.default',
@@ -477,8 +476,8 @@ cvox.MathmlStoreRules.initSpecializationRules_ = function() {
           '[p] (pause:300); [t] "square" (pitch:0.35); [p] (pause:400)',
       'self::mathml:msubsup', './*[3][text()=2]');
   defineRuleAlias(
-      'square-sub', 'self::mathml:msubsup',
-      './mathml:mrow=./*[3]', 'count(./*[3]/*)=1', './*[3]/*[1][text()=2]');
+      'square-sub', 'self::mathml:msubsup', './mathml:mrow=./*[3]',
+      'count(./*[3]/*)=1', './*[3]/*[1][text()=2]');
 
   defineRule(
       'cube-sub', 'default.default',
@@ -486,8 +485,8 @@ cvox.MathmlStoreRules.initSpecializationRules_ = function() {
           '[p] (pause:300); [t] "cube" (pitch:0.35); [p] (pause:400)',
       'self::mathml:msubsup', './*[3][text()=3]');
   defineRuleAlias(
-      'cube-sub', 'self::mathml:msubsup',
-      './mathml:mrow=./*[3]', 'count(./*[3]/*)=1', './*[3]/*[1][text()=3]');
+      'cube-sub', 'self::mathml:msubsup', './mathml:mrow=./*[3]',
+      'count(./*[3]/*)=1', './*[3]/*[1][text()=3]');
 
   // MathJax
   defineRule(
@@ -550,9 +549,7 @@ cvox.MathmlStoreRules.initSpecializationRules_ = function() {
  */
 cvox.MathmlStoreRules.initSemanticRules_ = function() {
   // Initial rule
-  defineRule(
-      'stree', 'default.default',
-      '[n] ./*[1]', 'self::stree');
+  defineRule('stree', 'default.default', '[n] ./*[1]', 'self::stree');
 
   defineRule(
       'multrel', 'default.default',
@@ -564,7 +561,7 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
       '[t] "equation sequence"; [m] ./children/* ' +
           '(context:"part",ctxtFunc:CTXFnodeCounter,separator:./text())',
       'self::relseq[@role="equality"]', 'count(./children/*)>2',
-      './children/punct[@role="ellipsis"]');// Make that better!
+      './children/punct[@role="ellipsis"]');  // Make that better!
 
   defineRule(
       'multi-equality', 'default.default',
@@ -600,21 +597,19 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
       './children/function or ./children/appl');
 
   defineRule(
-      'multrel', 'default.default',
-      '[m] children/* (separator:./text())',
+      'multrel', 'default.default', '[m] children/* (separator:./text())',
       'self::relseq');
 
   defineRule(
       'binary-operation', 'default.default',
-      '[m] children/* (separator:text());',
-      'self::infixop');
+      '[m] children/* (separator:text());', 'self::infixop');
 
   defineRule(
       'variable-addition', 'default.default',
       '[t] "sum with variable number of summands";' +
           '[p] (pause:400); [m] children/* (separator:./text())',
       'self::infixop[@role="addition"]', 'count(children/*)>2',
-      'children/punct[@role="ellipsis"]');// Make that better!
+      'children/punct[@role="ellipsis"]');  // Make that better!
 
   defineRule(
       'multi-addition', 'default.default',
@@ -626,12 +621,11 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
   defineRule(
       'prefix', 'default.default',
       '[t] "prefix"; [n] text(); [t] "of" (pause 150);' +
-      '[n] children/*[1]',
+          '[n] children/*[1]',
       'self::prefixop');
 
   defineRule(
-      'negative', 'default.default',
-      '[t] "negative"; [n] children/*[1]',
+      'negative', 'default.default', '[t] "negative"; [n] children/*[1]',
       'self::prefixop', 'self::prefixop[@role="negative"]');
 
   // Postfix Operator
@@ -640,13 +634,9 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
       '[n] children/*[1]; [t] "postfix"; [n] text() (pause 300)',
       'self::postfixop');
 
-  defineRule(
-      'identifier', 'default.default',
-      '[n] text()', 'self::identifier');
+  defineRule('identifier', 'default.default', '[n] text()', 'self::identifier');
 
-  defineRule(
-      'number', 'default.default',
-      '[n] text()', 'self::number');
+  defineRule('number', 'default.default', '[n] text()', 'self::number');
 
   defineRule(
       'fraction', 'default.default',
@@ -657,46 +647,39 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
   defineRule(
       'superscript', 'default.default',
       '[n] children/*[1]; [t] "super"; [n] children/*[2] (pitch:0.35);' +
-      '[p] (pause:300)',
+          '[p] (pause:300)',
       'self::superscript');
   defineRule(
       'subscript', 'default.default',
       '[n] children/*[1]; [t] "sub"; [n] children/*[2] (pitch:-0.35);' +
-      '[p] (pause:300)',
+          '[p] (pause:300)',
       'self::subscript');
 
   defineRule(
       'ellipsis', 'default.default',
-      '[p] (pause:200); [t] "dot dot dot"; [p] (pause:300)',
-      'self::punct', 'self::punct[@role="ellipsis"]');
+      '[p] (pause:200); [t] "dot dot dot"; [p] (pause:300)', 'self::punct',
+      'self::punct[@role="ellipsis"]');
 
   defineRule(
-      'fence-single', 'default.default',
-      '[n] text()',
-      'self::punct', 'self::punct[@role="openfence"]');
-  defineRuleAlias('fence-single', 'self::punct',
-                  'self::punct[@role="closefence"]');
-  defineRuleAlias('fence-single', 'self::punct',
-                  'self::punct[@role="vbar"]');
-  defineRuleAlias('fence-single', 'self::punct',
-                  'self::punct[@role="application"]');
+      'fence-single', 'default.default', '[n] text()', 'self::punct',
+      'self::punct[@role="openfence"]');
+  defineRuleAlias(
+      'fence-single', 'self::punct', 'self::punct[@role="closefence"]');
+  defineRuleAlias('fence-single', 'self::punct', 'self::punct[@role="vbar"]');
+  defineRuleAlias(
+      'fence-single', 'self::punct', 'self::punct[@role="application"]');
 
   // TODO (sorge) Refine punctuations further.
   defineRule(
-      'omit-punct', 'default.default',
-      '[p] (pause:200);',
-      'self::punct');
+      'omit-punct', 'default.default', '[p] (pause:200);', 'self::punct');
 
-  defineRule(
-      'omit-empty', 'default.default',
-      '',
-      'self::empty');
+  defineRule('omit-empty', 'default.default', '', 'self::empty');
 
   // Fences rules.
   defineRule(
       'fences-open-close', 'default.default',
       '[p] (pause:100); [t] "open"; [n] children/*[1]; [p] (pause:200);' +
-      '[t] "close"',
+          '[t] "close"',
       'self::fenced[@role="leftright"]');
 
   defineRule(
@@ -707,19 +690,18 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
   defineRule(
       'fences-neutral', 'default.default',
       '[p] (pause:100); [t] "absolute value of"; [n] children/*[1];' +
-      '[p] (pause:350);',
+          '[p] (pause:350);',
       'self::fenced', 'self::fenced[@role="neutral"]');
 
   defineRule(
       'omit-fences', 'default.default',
-      '[p] (pause:500); [n] children/*[1]; [p] (pause:200);',
-      'self::fenced');
+      '[p] (pause:500); [n] children/*[1]; [p] (pause:200);', 'self::fenced');
 
   // Matrix rules.
   defineRule(
       'matrix', 'default.default',
       '[t] "matrix"; [m] children/* ' +
-      '(ctxtFunc:CTXFnodeCounter,context:"row",pause:100)',
+          '(ctxtFunc:CTXFnodeCounter,context:"row",pause:100)',
       'self::matrix');
 
   defineRule(
@@ -728,30 +710,30 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
       'self::row[@role="matrix"]');
 
   defineRule(
-      'matrix-cell', 'default.default',
-      '[n] children/*[1]', 'self::cell[@role="matrix"]');
+      'matrix-cell', 'default.default', '[n] children/*[1]',
+      'self::cell[@role="matrix"]');
 
   // Vector rules.
   defineRule(
       'vector', 'default.default',
       '[t] "vector"; [m] children/* ' +
-      '(ctxtFunc:CTXFnodeCounter,context:"element",pause:100)',
+          '(ctxtFunc:CTXFnodeCounter,context:"element",pause:100)',
       'self::vector');
 
   // Cases rules.
   defineRule(
       'cases', 'default.default',
       '[t] "case statement"; [m] children/* ' +
-      '(ctxtFunc:CTXFnodeCounter,context:"case",pause:100)',
+          '(ctxtFunc:CTXFnodeCounter,context:"case",pause:100)',
       'self::cases');
 
   defineRule(
-      'cases-row', 'default.default',
-      '[m] children/*', 'self::row[@role="cases"]');
+      'cases-row', 'default.default', '[m] children/*',
+      'self::row[@role="cases"]');
 
   defineRule(
-      'cases-cell', 'default.default',
-      '[n] children/*[1]', 'self::cell[@role="cases"]');
+      'cases-cell', 'default.default', '[n] children/*[1]',
+      'self::cell[@role="cases"]');
 
   defineRule(
       'row', 'default.default',
@@ -761,46 +743,42 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
   defineRule(
       'cases-end', 'default.default',
       '[t] "case statement"; ' +
-      '[m] children/* (ctxtFunc:CTXFnodeCounter,context:"case",pause:100);' +
-      '[t] "end cases"',
+          '[m] children/* (ctxtFunc:CTXFnodeCounter,context:"case",pause:100);' +
+          '[t] "end cases"',
       'self::cases', 'following-sibling::*');
 
   // Multiline rules.
   defineRule(
       'multiline', 'default.default',
       '[t] "multiline equation";' +
-      '[m] children/* (ctxtFunc:CTXFnodeCounter,context:"line",pause:100)',
+          '[m] children/* (ctxtFunc:CTXFnodeCounter,context:"line",pause:100)',
       'self::multiline');
 
-  defineRule(
-      'line', 'default.default',
-      '[m] children/*', 'self::line');
+  defineRule('line', 'default.default', '[m] children/*', 'self::line');
 
   // Table rules.
   defineRule(
       'table', 'default.default',
       '[t] "multiline equation";' +
-      '[m] children/* (ctxtFunc:CTXFnodeCounter,context:"row",pause:200)',
+          '[m] children/* (ctxtFunc:CTXFnodeCounter,context:"row",pause:200)',
       'self::table');
 
   defineRule(
-      'table-row', 'default.default',
-      '[m] children/* (pause:100)', 'self::row[@role="table"]');
+      'table-row', 'default.default', '[m] children/* (pause:100)',
+      'self::row[@role="table"]');
 
-  defineRuleAlias(
-      'cases-cell', 'self::cell[@role="table"]');
+  defineRuleAlias('cases-cell', 'self::cell[@role="table"]');
 
 
   // Rules for punctuated expressions.
   defineRule(
-      'end-punct', 'default.default',
-      '[m] children/*; [p] (pause:300)',
+      'end-punct', 'default.default', '[m] children/*; [p] (pause:300)',
       'self::punctuated', '@role="endpunct"');
 
   defineRule(
       'start-punct', 'default.default',
-      '[n] content/*[1]; [p] (pause:200); [m] children/*',
-      'self::punctuated', '@role="startpunct"');
+      '[n] content/*[1]; [p] (pause:200); [m] children/*', 'self::punctuated',
+      '@role="startpunct"');
 
   defineRule(
       'integral-punct', 'default.default',
@@ -808,56 +786,53 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
       'self::punctuated', '@role="integral"');
 
   defineRule(
-      'punctuated', 'default.default',
-      '[m] children/* (pause:100)',
+      'punctuated', 'default.default', '[m] children/* (pause:100)',
       'self::punctuated');
 
   // Function rules
-  defineRule(
-    'function', 'default.default',
-    '[n] text()', 'self::function');
+  defineRule('function', 'default.default', '[n] text()', 'self::function');
 
   defineRule(
-    'appl', 'default.default',
-    '[n] children/*[1]; [n] content/*[1]; [n] children/*[2]', 'self::appl');
+      'appl', 'default.default',
+      '[n] children/*[1]; [n] content/*[1]; [n] children/*[2]', 'self::appl');
 
   // Limit operator rules
   defineRule(
-    'limboth', 'default.default',
-    '[n] children/*[1]; [t] "from"; [n] children/*[2]; [t] "to";' +
-    '[n] children/*[3]', 'self::limboth');
+      'limboth', 'default.default',
+      '[n] children/*[1]; [t] "from"; [n] children/*[2]; [t] "to";' +
+          '[n] children/*[3]',
+      'self::limboth');
 
   defineRule(
-    'sum-only', 'default.default',
-    '[n] children/*[1]; [p] (pause 100); [t] "over"; [n] children/*[2];' +
-    '[p] (pause 250);',
-    'self::limboth', 'self::limboth[@role="sum"]');
+      'sum-only', 'default.default',
+      '[n] children/*[1]; [p] (pause 100); [t] "over"; [n] children/*[2];' +
+          '[p] (pause 250);',
+      'self::limboth', 'self::limboth[@role="sum"]');
 
   defineRule(
-    'limlower', 'default.default',
-    '[n] children/*[1]; [t] "over"; [n] children/*[2];', 'self::limlower');
+      'limlower', 'default.default',
+      '[n] children/*[1]; [t] "over"; [n] children/*[2];', 'self::limlower');
 
   defineRule(
-    'limupper', 'default.default',
-    '[n] children/*[1]; [t] "under"; [n] children/*[2];', 'self::limupper');
+      'limupper', 'default.default',
+      '[n] children/*[1]; [t] "under"; [n] children/*[2];', 'self::limupper');
 
   // Bigoperator rules
-  defineRule(
-    'largeop', 'default.default',
-    '[n] text()', 'self::largeop');
+  defineRule('largeop', 'default.default', '[n] text()', 'self::largeop');
 
   defineRule(
-    'bigop', 'default.default',
-    '[n] children/*[1]; [p] (pause 100); [t] "over"; [n] children/*[2];' +
-    '[p] (pause 250);',
-    'self::bigop');
+      'bigop', 'default.default',
+      '[n] children/*[1]; [p] (pause 100); [t] "over"; [n] children/*[2];' +
+          '[p] (pause 250);',
+      'self::bigop');
 
 
   // Integral rules
   defineRule(
-    'integral', 'default.default',
-    '[n] children/*[1]; [p] (pause 100); [n] children/*[2]; [p] (pause 200);' +
-    '[n] children/*[3] (rate:0.35);', 'self::integral');
+      'integral', 'default.default',
+      '[n] children/*[1]; [p] (pause 100); [n] children/*[2]; [p] (pause 200);' +
+          '[n] children/*[3] (rate:0.35);',
+      'self::integral');
 
 
   defineRule(
@@ -872,8 +847,8 @@ cvox.MathmlStoreRules.initSemanticRules_ = function() {
 
   defineRule(
       'text-no-mult', 'default.default',
-      '[n] children/*[1]; [p] (pause:200); [n] children/*[2]',
-      'self::infixop', 'children/text');
+      '[n] children/*[1]; [p] (pause:200); [n] children/*[2]', 'self::infixop',
+      'children/text');
 };
 
-}); // goog.scope
+});  // goog.scope

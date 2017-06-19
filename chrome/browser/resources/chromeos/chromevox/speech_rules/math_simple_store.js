@@ -25,7 +25,7 @@ goog.require('cvox.SpeechRule');
  */
 cvox.MathSimpleStore = function() {
   goog.base(this);
- };
+};
 goog.inherits(cvox.MathSimpleStore, cvox.MathStore);
 
 
@@ -38,14 +38,14 @@ goog.inherits(cvox.MathSimpleStore, cvox.MathStore);
  *     mapping.
  */
 cvox.MathSimpleStore.prototype.defineRulesFromMappings = function(
-  name, str, mapping) {
+    name, str, mapping) {
   for (var domain in mapping) {
     for (var style in mapping[domain]) {
       var content = mapping[domain][style];
       var cstr = 'self::text() = "' + str + '"';
       var rule = this.defineRule(
-          name, domain + '.' + style, '[t] "' + content + '"',
-          'self::text()', cstr);
+          name, domain + '.' + style, '[t] "' + content + '"', 'self::text()',
+          cstr);
     }
   }
 };
@@ -135,9 +135,10 @@ cvox.MathCompoundStore.prototype.lookupString = function(text, dynamic) {
     return '';
   }
   return rule.action.components
-    .map(function(comp) {
-           return comp.content.slice(1, -1);})
-    .join(' ');
+      .map(function(comp) {
+        return comp.content.slice(1, -1);
+      })
+      .join(' ');
 };
 
 
@@ -154,9 +155,9 @@ cvox.MathCompoundStore.prototype.getDynamicConstraintValues = function() {
       var set = newCstr[key];
       if (set) {
         newCstr[key] = cvox.MathUtil.union(set, cstr[key]);
-        } else {
+      } else {
         newCstr[key] = cstr[key];
-        }
+      }
     }
   }
   return newCstr;

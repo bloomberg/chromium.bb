@@ -32,8 +32,8 @@ var TestUtils = function() {};
  *     $0, ... within the code block.
  * @return {string} The html text.
  */
-TestUtils.extractHtmlFromCommentEncodedString =
-    function(commentEncodedHtml, opt_args) {
+TestUtils.extractHtmlFromCommentEncodedString = function(
+    commentEncodedHtml, opt_args) {
   var stringified = commentEncodedHtml.toString();
   if (opt_args) {
     for (var i = 0; i < opt_args.length; i++)
@@ -43,16 +43,16 @@ TestUtils.extractHtmlFromCommentEncodedString =
 };
 
 
-  /**
-   * Creates a data url for a document.
-   * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @return {string}
-   */
+/**
+ * Creates a data url for a document.
+ * @param {function() : void} doc Snippet wrapped inside of a function.
+ * @return {string}
+ */
 TestUtils.createUrlForDoc = function(doc) {
   var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
-  return TestUtils.collapseWhitespace('data:text/html,<!doctype html>' +
-      docString.replace(/[\n\r]/g, '')
-      .trim());
+  return TestUtils.collapseWhitespace(
+      'data:text/html,<!doctype html>' +
+      docString.replace(/[\n\r]/g, '').trim());
 };
 
 /**

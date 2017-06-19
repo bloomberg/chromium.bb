@@ -26,8 +26,7 @@ goog.require('cvox.PlatformUtil');
  * Class to manage the options page.
  * @constructor
  */
-cvox.OptionsPage = function() {
-};
+cvox.OptionsPage = function() {};
 
 /**
  * The ChromeVoxPrefs object.
@@ -52,10 +51,10 @@ cvox.OptionsPage.init = function() {
     $('brailleWordWrap').checked = items.brailleWordWrap;
   });
 
-  chrome.storage.local.get({'virtualBrailleRows' : 1}, function(items) {
+  chrome.storage.local.get({'virtualBrailleRows': 1}, function(items) {
     $('virtual_braille_display_rows_input').value = items['virtualBrailleRows'];
   });
-  chrome.storage.local.get({'virtualBrailleColumns' : 40}, function(items) {
+  chrome.storage.local.get({'virtualBrailleColumns': 40}, function(items) {
     $('virtual_braille_display_columns_input').value =
         items['virtualBrailleColumns'];
   });
@@ -68,26 +67,26 @@ cvox.OptionsPage.init = function() {
   var currentlyDisplayingSideBySide =
       Msgs.getMsg('options_current_display_style_side_by_side');
   $('changeDisplayStyle').textContent =
-      localStorage['brailleSideBySide'] === 'true' ?
-      changeToInterleave : changeToSideBySide;
+      localStorage['brailleSideBySide'] === 'true' ? changeToInterleave :
+                                                     changeToSideBySide;
   $('currentDisplayStyle').textContent =
       localStorage['brailleSideBySide'] === 'true' ?
-      currentlyDisplayingSideBySide : currentlyDisplayingInterleave;
+      currentlyDisplayingSideBySide :
+      currentlyDisplayingInterleave;
 
-  chrome.commandLinePrivate.hasSwitch('enable-audio-focus',
-      function(result) {
-        if (!result) {
-          $('audioStrategy').hidden = true;
-          $('audioDescription').hidden = true;
+  chrome.commandLinePrivate.hasSwitch('enable-audio-focus', function(result) {
+    if (!result) {
+      $('audioStrategy').hidden = true;
+      $('audioDescription').hidden = true;
+    }
+    if (localStorage['audioStrategy']) {
+      for (var i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
+        if (opt.id == localStorage['audioStrategy']) {
+          opt.setAttribute('selected', '');
         }
-        if (localStorage['audioStrategy']) {
-          for (var i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
-            if (opt.id == localStorage['audioStrategy']) {
-              opt.setAttribute('selected', '');
-            }
-          }
-        }
-      });
+      }
+    }
+  });
 
   Msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
@@ -105,8 +104,7 @@ cvox.OptionsPage.init = function() {
   });
 
   if (cvox.PlatformUtil.matchesPlatform(cvox.PlatformFilter.WML)) {
-    $('version').textContent =
-        chrome.app.getDetails().version;
+    $('version').textContent = chrome.app.getDetails().version;
   }
 
   var clearVirtualDisplay = function() {
@@ -115,10 +113,11 @@ cvox.OptionsPage.init = function() {
         parseInt($('virtual_braille_display_rows_input').innerHTML, 10) *
         parseInt($('virtual_braille_display_columns_input').innerHTML, 10);
     for (var i = 0; i < sizeOfDisplay; i++) {
-        groups.push(['X', 'X']);
+      groups.push(['X', 'X']);
     }
-    (new PanelCommand(PanelCommandType.UPDATE_BRAILLE,
-                      {groups: groups})).send();
+    (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, {
+      groups: groups
+    })).send();
   };
 
   $('changeDisplayStyle').addEventListener('click', function(evt) {
@@ -126,16 +125,16 @@ cvox.OptionsPage.init = function() {
     localStorage['brailleSideBySide'] = sideBySide;
     $('changeDisplayStyle').textContent =
         sideBySide ? changeToInterleave : changeToSideBySide;
-    $('currentDisplayStyle').textContent =
-        sideBySide ? currentlyDisplayingSideBySide :
+    $('currentDisplayStyle').textContent = sideBySide ?
+        currentlyDisplayingSideBySide :
         currentlyDisplayingInterleave;
     clearVirtualDisplay();
   }, true);
 
-  handleNumericalInputPref('virtual_braille_display_rows_input',
-      'virtualBrailleRows');
-  handleNumericalInputPref('virtual_braille_display_columns_input',
-      'virtualBrailleColumns');
+  handleNumericalInputPref(
+      'virtual_braille_display_rows_input', 'virtualBrailleRows');
+  handleNumericalInputPref(
+      'virtual_braille_display_columns_input', 'virtualBrailleColumns');
 };
 
 /**
@@ -164,12 +163,12 @@ var handleNumericalInputPref = function(id, pref) {
   $(id).addEventListener('input', function(evt) {
     if ($(id).value === '') {
       return;
-    }
-    else if (parseInt($(id).value, 10) < 1 || parseInt($(id).value, 10) > 99) {
+    } else if (
+        parseInt($(id).value, 10) < 1 || parseInt($(id).value, 10) > 99) {
       chrome.storage.local.get(pref, function(items) {
         $(id).value = items[pref];
       });
-    }else {
+    } else {
       var items = {};
       items[pref] = $(id).value;
       chrome.storage.local.set(items);
@@ -241,10 +240,11 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       if (table.dots !== dots) {
         continue;
       }
-      items.push({id: table.id,
-                  name: cvox.BrailleTable.getDisplayName(table)});
+      items.push({id: table.id, name: cvox.BrailleTable.getDisplayName(table)});
     }
-    items.sort(function(a, b) { return a.name.localeCompare(b.name);});
+    items.sort(function(a, b) {
+      return a.name.localeCompare(b.name);
+    });
     for (var i = 0, item; item = items[i]; ++i) {
       var elem = document.createElement('option');
       elem.id = item.id;
@@ -285,8 +285,7 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       }
       localStorage['brailleTable'] = localStorage['brailleTable6'];
       localStorage['brailleTableType'] = 'brailleTable6';
-      tableTypeButton.textContent =
-          Msgs.getMsg('options_braille_table_type_6');
+      tableTypeButton.textContent = Msgs.getMsg('options_braille_table_type_6');
     } else {
       select6.parentElement.style.display = 'none';
       select8.parentElement.style.display = 'block';
@@ -295,8 +294,7 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       }
       localStorage['brailleTable'] = localStorage['brailleTable8'];
       localStorage['brailleTableType'] = 'brailleTable8';
-      tableTypeButton.textContent =
-          Msgs.getMsg('options_braille_table_type_8');
+      tableTypeButton.textContent = Msgs.getMsg('options_braille_table_type_8');
     }
     cvox.OptionsPage.getBrailleTranslatorManager().refresh(
         localStorage['brailleTable']);

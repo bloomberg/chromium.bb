@@ -17,7 +17,7 @@ goog.provide('cvox.SpeechRuleFunctions.CustomStrings');
 /**
  * @constructor
  */
-cvox.SpeechRuleFunctions = function() { };
+cvox.SpeechRuleFunctions = function() {};
 
 
 /**
@@ -70,11 +70,11 @@ cvox.SpeechRuleFunctions.CustomQuery;
  */
 cvox.SpeechRuleFunctions.CustomQueries = function() {
   var store =
-    /** @type {Object<cvox.SpeechRuleFunctions.CustomQuery>} */ ({});
+      /** @type {Object<cvox.SpeechRuleFunctions.CustomQuery>} */ ({});
   goog.base(this, 'CQF', store);
 };
-goog.inherits(cvox.SpeechRuleFunctions.CustomQueries,
-              cvox.SpeechRuleFunctions.Store_);
+goog.inherits(
+    cvox.SpeechRuleFunctions.CustomQueries, cvox.SpeechRuleFunctions.Store_);
 
 
 /**
@@ -90,11 +90,11 @@ cvox.SpeechRuleFunctions.CustomString;
  */
 cvox.SpeechRuleFunctions.CustomStrings = function() {
   var store =
-    /** @type {Object<cvox.SpeechRuleFunctions.CustomString>} */ ({});
+      /** @type {Object<cvox.SpeechRuleFunctions.CustomString>} */ ({});
   goog.base(this, 'CSF', store);
 };
-goog.inherits(cvox.SpeechRuleFunctions.CustomStrings,
-              cvox.SpeechRuleFunctions.Store_);
+goog.inherits(
+    cvox.SpeechRuleFunctions.CustomStrings, cvox.SpeechRuleFunctions.Store_);
 
 
 /**
@@ -110,12 +110,12 @@ cvox.SpeechRuleFunctions.ContextFunction;
  */
 cvox.SpeechRuleFunctions.ContextFunctions = function() {
   var store =
-    /** @type {Object<cvox.SpeechRuleFunctions.ContextFunction>} */
-  ({});
+      /** @type {Object<cvox.SpeechRuleFunctions.ContextFunction>} */
+      ({});
   goog.base(this, 'CTXF', store);
 };
-goog.inherits(cvox.SpeechRuleFunctions.ContextFunctions,
-              cvox.SpeechRuleFunctions.Store_);
+goog.inherits(
+    cvox.SpeechRuleFunctions.ContextFunctions, cvox.SpeechRuleFunctions.Store_);
 
 
 /**
@@ -124,14 +124,13 @@ goog.inherits(cvox.SpeechRuleFunctions.ContextFunctions,
  * @return {!boolean} True if the name is valid.
  * @private
  */
-cvox.SpeechRuleFunctions.Store_.prototype.
-    checkCustomFunctionSyntax_ = function(name) {
-      var reg = new RegExp('^' + this.prefix_);
-      if (!name.match(reg)) {
-        console.log(
-            'FunctionError: Invalid function name. Expected prefix' +
-                this.prefix_);
-        return false;
-      }
-      return true;
-    };
+cvox.SpeechRuleFunctions.Store_.prototype.checkCustomFunctionSyntax_ = function(
+    name) {
+  var reg = new RegExp('^' + this.prefix_);
+  if (!name.match(reg)) {
+    console.log(
+        'FunctionError: Invalid function name. Expected prefix' + this.prefix_);
+    return false;
+  }
+  return true;
+};

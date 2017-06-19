@@ -26,18 +26,16 @@ cvox.MathMap = function() {
    * @type {cvox.MathCompoundStore}
    */
   this.store = cvox.MathCompoundStore.getInstance();
-  cvox.MathMap.parseFiles(
-      cvox.MathMap.FUNCTIONS_FILES_.map(
-          function(file) {
-            return cvox.MathMap.FUNCTIONS_PATH_ + file;
-          }))
-              .forEach(goog.bind(this.store.addFunctionRules, this.store));
-  cvox.MathMap.parseFiles(
-      cvox.MathMap.SYMBOLS_FILES_.map(
-          function(file) {
-            return cvox.MathMap.SYMBOLS_PATH_ + file;
-          }))
-              .forEach(goog.bind(this.store.addSymbolRules, this.store));
+  cvox.MathMap
+      .parseFiles(cvox.MathMap.FUNCTIONS_FILES_.map(function(file) {
+        return cvox.MathMap.FUNCTIONS_PATH_ + file;
+      }))
+      .forEach(goog.bind(this.store.addFunctionRules, this.store));
+  cvox.MathMap
+      .parseFiles(cvox.MathMap.SYMBOLS_FILES_.map(function(file) {
+        return cvox.MathMap.SYMBOLS_PATH_ + file;
+      }))
+      .forEach(goog.bind(this.store.addSymbolRules, this.store));
 
   var cstrValues = this.store.getDynamicConstraintValues();
   /**
@@ -125,9 +123,8 @@ cvox.MathMap.SYMBOLS_FILES_ = [
  * @const
  * @private
  */
-cvox.MathMap.FUNCTIONS_FILES_ = [
-  'algebra.json', 'elementary.json', 'hyperbolic.json', 'trigonometry.json'
-];
+cvox.MathMap.FUNCTIONS_FILES_ =
+    ['algebra.json', 'elementary.json', 'hyperbolic.json', 'trigonometry.json'];
 
 
 /**
@@ -162,10 +159,14 @@ cvox.MathMap.loadFiles = function(files) {
 cvox.MathMap.parseFiles = function(files) {
   var strs = cvox.MathMap.loadFiles(files);
 
-  return [].concat.apply([], strs.map(
-      // Note: As JSON.parse does not expect the value index as the second
-      // parameter, we wrap it.
-      function(value) { return JSON.parse(value); }));
+  return [].concat.apply(
+      [],
+      strs.map(
+          // Note: As JSON.parse does not expect the value index as the second
+          // parameter, we wrap it.
+          function(value) {
+            return JSON.parse(value);
+          }));
 };
 
 
@@ -179,7 +180,7 @@ cvox.MathMap.readJSON_ = function(path) {
   var url = chrome.extension.getURL(path);
   if (!url) {
     throw 'Invalid path: ' + path;
-    }
+  }
 
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url, false);

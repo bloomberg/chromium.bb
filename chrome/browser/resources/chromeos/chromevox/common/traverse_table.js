@@ -237,8 +237,8 @@ cvox.TraverseTable.prototype.initialize = function(tableNode) {
   // TODO (stoarca): Is this safe? When this object goes away, doesn't the
   // eventListener stay on the node? Someone with better knowledge of js
   // please confirm. If so, this is a leak.
-  this.activeTable_.addEventListener('DOMSubtreeModified',
-      goog.bind(function() {
+  this.activeTable_.addEventListener(
+      'DOMSubtreeModified', goog.bind(function() {
         this.buildShadowTable_();
         this.colCount = this.shadowColCount_();
         this.rowCount = this.countRows_();
@@ -295,7 +295,7 @@ cvox.TraverseTable.prototype.findNearestCursor = function(node) {
     for (var j = 0; j < this.colCount; ++j) {
       if (this.shadowTable_[i][j]) {
         if (cvox.DomUtil.isDescendantOfNode(
-            n, this.shadowTable_[i][j].activeCell)) {
+                n, this.shadowTable_[i][j].activeCell)) {
           return [i, j];
         }
       }
@@ -334,8 +334,7 @@ cvox.TraverseTable.prototype.attachCursorToNearestCell_ = function() {
       this.currentCellCursor = null;
       return;
     }
-    var aboveCell =
-        this.shadowTable_[numRows - 1][currentCursor[1]];
+    var aboveCell = this.shadowTable_[numRows - 1][currentCursor[1]];
     if (aboveCell) {
       this.currentCellCursor = [(numRows - 1), currentCursor[1]];
     } else {
@@ -379,10 +378,8 @@ cvox.TraverseTable.prototype.buildShadowTable_ = function() {
     var shadowTableCol = 0;
 
     while (activeTableCol < childCells.length) {
-
       // Check to make sure we haven't already filled this cell.
       if (this.shadowTable_[i][shadowTableCol] == null) {
-
         var activeTableCell = childCells[activeTableCol];
 
         // Default value for colspan and rowspan is 1
@@ -390,9 +387,7 @@ cvox.TraverseTable.prototype.buildShadowTable_ = function() {
         var rowsSpanned = 1;
 
         if (activeTableCell.hasAttribute('colspan')) {
-
-          colsSpanned =
-              parseInt(activeTableCell.getAttribute('colspan'), 10);
+          colsSpanned = parseInt(activeTableCell.getAttribute('colspan'), 10);
 
           if ((isNaN(colsSpanned)) || (colsSpanned <= 0)) {
             // The HTML5 spec defines colspan MUST be greater than 0:
@@ -408,8 +403,7 @@ cvox.TraverseTable.prototype.buildShadowTable_ = function() {
           }
         }
         if (activeTableCell.hasAttribute('rowspan')) {
-          rowsSpanned =
-              parseInt(activeTableCell.getAttribute('rowspan'), 10);
+          rowsSpanned = parseInt(activeTableCell.getAttribute('rowspan'), 10);
 
           if ((isNaN(rowsSpanned)) || (rowsSpanned <= 0)) {
             // The HTML5 spec defines that rowspan can be any non-negative
@@ -488,7 +482,7 @@ cvox.TraverseTable.prototype.buildShadowTable_ = function() {
               shadowNode.colGroup = 0;
             }
 
-            if (! shadowNode.spanned) {
+            if (!shadowNode.spanned) {
               if (activeTableCell.id != null) {
                 this.idToShadowNode_[activeTableCell.id] = shadowNode;
               }
@@ -526,7 +520,6 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
   // #header-and-data-cell-semantics
 
   for (var i = 0; i < this.candidateHeaders_.length; i++) {
-
     var currentShadowNode = this.candidateHeaders_[i];
     var currentCell = currentShadowNode.activeCell;
 
@@ -537,20 +530,20 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
       continue;
     }
 
-    if ((currentCell.tagName == 'TH') &&
-        !(currentCell.hasAttribute('scope'))) {
+    if ((currentCell.tagName == 'TH') && !(currentCell.hasAttribute('scope'))) {
       // No scope specified - compute scope ourselves.
       // Go left/right - if there's a header node, then this is a column
       // header
       if (currentShadowNode.j > 0) {
-        if (this.shadowTable_[currentShadowNode.i][currentShadowNode.j - 1].
-            activeCell.tagName == 'TH') {
+        if (this.shadowTable_[currentShadowNode.i][currentShadowNode.j - 1]
+                .activeCell.tagName == 'TH') {
           assumedScope = 'col';
         }
-      } else if (currentShadowNode.j < this.shadowTable_[currentShadowNode.i].
-          length - 1) {
-        if (this.shadowTable_[currentShadowNode.i][currentShadowNode.j + 1].
-            activeCell.tagName == 'TH') {
+      } else if (
+          currentShadowNode.j <
+          this.shadowTable_[currentShadowNode.i].length - 1) {
+        if (this.shadowTable_[currentShadowNode.i][currentShadowNode.j + 1]
+                .activeCell.tagName == 'TH') {
           assumedScope = 'col';
         }
       } else {
@@ -561,13 +554,13 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
       if (assumedScope == null) {
         // Go up/down - if there's a header node, then this is a row header
         if (currentShadowNode.i > 0) {
-          if (this.shadowTable_[currentShadowNode.i - 1][currentShadowNode.j].
-              activeCell.tagName == 'TH') {
+          if (this.shadowTable_[currentShadowNode.i - 1][currentShadowNode.j]
+                  .activeCell.tagName == 'TH') {
             assumedScope = 'row';
           }
         } else if (currentShadowNode.i < this.shadowTable_.length - 1) {
-          if (this.shadowTable_[currentShadowNode.i + 1][currentShadowNode.j].
-              activeCell.tagName == 'TH') {
+          if (this.shadowTable_[currentShadowNode.i + 1][currentShadowNode.j]
+                  .activeCell.tagName == 'TH') {
             assumedScope = 'row';
           }
         } else {
@@ -578,12 +571,14 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
       }
     } else if (currentCell.hasAttribute('scope')) {
       specifiedScope = currentCell.getAttribute('scope');
-    } else if (currentCell.hasAttribute('role') &&
+    } else if (
+        currentCell.hasAttribute('role') &&
         (currentCell.getAttribute('role') == 'rowheader')) {
       specifiedScope = 'row';
-    } else if (currentCell.hasAttribute('role') &&
+    } else if (
+        currentCell.hasAttribute('role') &&
         (currentCell.getAttribute('role') == 'columnheader')) {
-     specifiedScope = 'col';
+      specifiedScope = 'col';
     }
 
     if ((specifiedScope == 'row') || (assumedScope == 'row')) {
@@ -595,13 +590,10 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
       for (var rightCtr = currentShadowNode.j;
            rightCtr < this.shadowTable_[currentShadowNode.i].length;
            rightCtr++) {
-
         var rightShadowNode = this.shadowTable_[currentShadowNode.i][rightCtr];
         var rightCell = rightShadowNode.activeCell;
 
-        if ((rightCell.tagName == 'TH') ||
-            (rightCell.hasAttribute('scope'))) {
-
+        if ((rightCell.tagName == 'TH') || (rightCell.hasAttribute('scope'))) {
           if (rightCtr < this.shadowTable_[currentShadowNode.i].length - 1) {
             var checkDataCell =
                 this.shadowTable_[currentShadowNode.i][rightCtr + 1];
@@ -618,18 +610,14 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
       // Add this cell to each shadowNode.colHeaders attribute as you go.
 
       for (var downCtr = currentShadowNode.i;
-           downCtr < this.shadowTable_.length;
-           downCtr++) {
-
+           downCtr < this.shadowTable_.length; downCtr++) {
         var downShadowNode = this.shadowTable_[downCtr][currentShadowNode.j];
         if (downShadowNode == null) {
           break;
         }
         var downCell = downShadowNode.activeCell;
 
-        if ((downCell.tagName == 'TH') ||
-            (downCell.hasAttribute('scope'))) {
-
+        if ((downCell.tagName == 'TH') || (downCell.hasAttribute('scope'))) {
           if (downCtr < this.shadowTable_.length - 1) {
             var checkDataCell =
                 this.shadowTable_[downCtr + 1][currentShadowNode.j];
@@ -639,7 +627,7 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
       }
       this.tableColHeaders.push(currentCell);
     } else if (specifiedScope == 'rowgroup') {
-       currentShadowNode.isRowHeader = true;
+      currentShadowNode.isRowHeader = true;
 
       // This cell is a row header for the rest of the cells in this row group.
       var currentRowGroup = currentShadowNode.rowGroup;
@@ -648,25 +636,20 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
       for (var cellsInRow = currentShadowNode.j + 1;
            cellsInRow < this.shadowTable_[currentShadowNode.i].length;
            cellsInRow++) {
-        this.shadowTable_[currentShadowNode.i][cellsInRow].
-            rowHeaderCells.push(currentCell);
+        this.shadowTable_[currentShadowNode.i][cellsInRow].rowHeaderCells.push(
+            currentCell);
       }
 
       // Now propagate to rest of row group
       for (var downCtr = currentShadowNode.i + 1;
-           downCtr < this.shadowTable_.length;
-           downCtr++) {
-
+           downCtr < this.shadowTable_.length; downCtr++) {
         if (this.shadowTable_[downCtr][0].rowGroup != currentRowGroup) {
           break;
         }
 
-        for (var rightCtr = 0;
-             rightCtr < this.shadowTable_[downCtr].length;
+        for (var rightCtr = 0; rightCtr < this.shadowTable_[downCtr].length;
              rightCtr++) {
-
-          this.shadowTable_[downCtr][rightCtr].
-              rowHeaderCells.push(currentCell);
+          this.shadowTable_[downCtr][rightCtr].rowHeaderCells.push(currentCell);
         }
       }
       this.tableRowHeaders.push(currentCell);
@@ -683,24 +666,20 @@ cvox.TraverseTable.prototype.findHeaderCells_ = function() {
            cellsInCol++) {
         if (this.shadowTable_[currentShadowNode.i][cellsInCol].colGroup ==
             currentColGroup) {
-          this.shadowTable_[currentShadowNode.i][cellsInCol].
-              colHeaderCells.push(currentCell);
+          this.shadowTable_[currentShadowNode.i][cellsInCol]
+              .colHeaderCells.push(currentCell);
         }
       }
 
       // Now propagate to rest of col group
       for (var downCtr = currentShadowNode.i + 1;
-           downCtr < this.shadowTable_.length;
-           downCtr++) {
-
-        for (var rightCtr = 0;
-             rightCtr < this.shadowTable_[downCtr].length;
+           downCtr < this.shadowTable_.length; downCtr++) {
+        for (var rightCtr = 0; rightCtr < this.shadowTable_[downCtr].length;
              rightCtr++) {
-
           if (this.shadowTable_[downCtr][rightCtr].colGroup ==
               currentColGroup) {
-            this.shadowTable_[downCtr][rightCtr].
-                colHeaderCells.push(currentCell);
+            this.shadowTable_[downCtr][rightCtr].colHeaderCells.push(
+                currentCell);
           }
         }
       }
@@ -739,8 +718,8 @@ cvox.TraverseTable.prototype.findAttrbHeaders_ = function(currentShadowNode) {
   var idList = activeTableCell.getAttribute('headers').split(' ');
   for (var idToken = 0; idToken < idList.length; idToken++) {
     // Find cell(s) with this ID, add to header list
-    var idCellArray = cvox.TableUtil.getCellWithID(this.activeTable_,
-                                                   idList[idToken]);
+    var idCellArray =
+        cvox.TableUtil.getCellWithID(this.activeTable_, idList[idToken]);
 
     for (var idCtr = 0; idCtr < idCellArray.length; idCtr++) {
       if (idCellArray[idCtr].id == activeTableCell.id) {
@@ -749,9 +728,8 @@ cvox.TraverseTable.prototype.findAttrbHeaders_ = function(currentShadowNode) {
       }
       // Check if this list of candidate headers contains a
       // shadowNode with an active cell with this ID already
-      var possibleHeaderNode =
-          this.idToShadowNode_[idCellArray[idCtr].id];
-      if (! cvox.TableUtil.checkIfHeader(possibleHeaderNode.activeCell)) {
+      var possibleHeaderNode = this.idToShadowNode_[idCellArray[idCtr].id];
+      if (!cvox.TableUtil.checkIfHeader(possibleHeaderNode.activeCell)) {
         // This listed header cell will not be handled later.
         // Determine whether this is a row or col header for
         // the active table cell
@@ -759,16 +737,16 @@ cvox.TraverseTable.prototype.findAttrbHeaders_ = function(currentShadowNode) {
         var iDiff = Math.abs(possibleHeaderNode.i - currentShadowNode.i);
         var jDiff = Math.abs(possibleHeaderNode.j - currentShadowNode.j);
         if ((iDiff == 0) || (iDiff < jDiff)) {
-          cvox.TableUtil.pushIfNotContained(currentShadowNode.rowHeaderCells,
-                                            possibleHeaderNode.activeCell);
-          cvox.TableUtil.pushIfNotContained(this.tableRowHeaders,
-                                            possibleHeaderNode.activeCell);
+          cvox.TableUtil.pushIfNotContained(
+              currentShadowNode.rowHeaderCells, possibleHeaderNode.activeCell);
+          cvox.TableUtil.pushIfNotContained(
+              this.tableRowHeaders, possibleHeaderNode.activeCell);
         } else {
           // This is a column header
-          cvox.TableUtil.pushIfNotContained(currentShadowNode.colHeaderCells,
-                                            possibleHeaderNode.activeCell);
-          cvox.TableUtil.pushIfNotContained(this.tableColHeaders,
-                                            possibleHeaderNode.activeCell);
+          cvox.TableUtil.pushIfNotContained(
+              currentShadowNode.colHeaderCells, possibleHeaderNode.activeCell);
+          cvox.TableUtil.pushIfNotContained(
+              this.tableColHeaders, possibleHeaderNode.activeCell);
         }
       }
     }
@@ -793,15 +771,15 @@ cvox.TraverseTable.prototype.findAttrbHeaders_ = function(currentShadowNode) {
  *
  * @private
  */
-cvox.TraverseTable.prototype.findAttrbDescribedBy_ =
-    function(currentShadowNode) {
+cvox.TraverseTable.prototype.findAttrbDescribedBy_ = function(
+    currentShadowNode) {
   var activeTableCell = currentShadowNode.activeCell;
 
   var idList = activeTableCell.getAttribute('aria-describedby').split(' ');
   for (var idToken = 0; idToken < idList.length; idToken++) {
     // Find cell(s) with this ID, add to header list
-    var idCellArray = cvox.TableUtil.getCellWithID(this.activeTable_,
-                                                   idList[idToken]);
+    var idCellArray =
+        cvox.TableUtil.getCellWithID(this.activeTable_, idList[idToken]);
 
     for (var idCtr = 0; idCtr < idCellArray.length; idCtr++) {
       if (idCellArray[idCtr].id == activeTableCell.id) {
@@ -810,27 +788,27 @@ cvox.TraverseTable.prototype.findAttrbDescribedBy_ =
       }
       // Check if this list of candidate headers contains a
       // shadowNode with an active cell with this ID already
-      var possibleHeaderNode =
-          this.idToShadowNode_[idCellArray[idCtr].id];
-      if (! cvox.TableUtil.checkIfHeader(possibleHeaderNode.activeCell)) {
+      var possibleHeaderNode = this.idToShadowNode_[idCellArray[idCtr].id];
+      if (!cvox.TableUtil.checkIfHeader(possibleHeaderNode.activeCell)) {
         // This listed header cell will not be handled later.
         // Determine whether this is a row or col header for
         // the active table cell
 
         if (possibleHeaderNode.activeCell.hasAttribute('role') &&
             (possibleHeaderNode.activeCell.getAttribute('role') ==
-                'rowheader')) {
-          cvox.TableUtil.pushIfNotContained(currentShadowNode.rowHeaderCells,
-                                            possibleHeaderNode.activeCell);
-          cvox.TableUtil.pushIfNotContained(this.tableRowHeaders,
-                                            possibleHeaderNode.activeCell);
-        } else if (possibleHeaderNode.activeCell.hasAttribute('role') &&
+             'rowheader')) {
+          cvox.TableUtil.pushIfNotContained(
+              currentShadowNode.rowHeaderCells, possibleHeaderNode.activeCell);
+          cvox.TableUtil.pushIfNotContained(
+              this.tableRowHeaders, possibleHeaderNode.activeCell);
+        } else if (
+            possibleHeaderNode.activeCell.hasAttribute('role') &&
             (possibleHeaderNode.activeCell.getAttribute('role') ==
-                'columnheader')) {
-          cvox.TableUtil.pushIfNotContained(currentShadowNode.colHeaderCells,
-                                            possibleHeaderNode.activeCell);
-          cvox.TableUtil.pushIfNotContained(this.tableColHeaders,
-                                            possibleHeaderNode.activeCell);
+             'columnheader')) {
+          cvox.TableUtil.pushIfNotContained(
+              currentShadowNode.colHeaderCells, possibleHeaderNode.activeCell);
+          cvox.TableUtil.pushIfNotContained(
+              this.tableColHeaders, possibleHeaderNode.activeCell);
         }
       }
     }
@@ -943,24 +921,20 @@ cvox.TraverseTable.prototype.isColHeader = function() {
 cvox.TraverseTable.prototype.getCol = function() {
   var colArray = [];
   for (var i = 0; i < this.shadowTable_.length; i++) {
-
     if (this.shadowTable_[i][this.currentCellCursor[1]]) {
       var shadowEntry = this.shadowTable_[i][this.currentCellCursor[1]];
 
       if (shadowEntry.colSpan && shadowEntry.rowSpan) {
         // Look at the last element in the column cell aray.
         var prev = colArray[colArray.length - 1];
-        if (prev !=
-            shadowEntry.activeCell) {
+        if (prev != shadowEntry.activeCell) {
           // Watch out for positions spanned by a cell with rowspan and
           // colspan. We don't want the same cell showing up multiple times
           // in per-column cell lists.
-          colArray.push(
-              shadowEntry.activeCell);
+          colArray.push(shadowEntry.activeCell);
         }
       } else if ((shadowEntry.colSpan) || (!shadowEntry.rowSpan)) {
-        colArray.push(
-            shadowEntry.activeCell);
+        colArray.push(shadowEntry.activeCell);
       }
     }
   }
@@ -1005,8 +979,7 @@ cvox.TraverseTable.prototype.summaryText = function() {
  */
 cvox.TraverseTable.prototype.captionText = function() {
   // If there's more than one outer <caption> element, choose the first one.
-  var captionNodes = cvox.XpathUtil.evalXPath('caption\[1]',
-      this.activeTable_);
+  var captionNodes = cvox.XpathUtil.evalXPath('caption\[1]', this.activeTable_);
   if (captionNodes.length > 0) {
     return captionNodes[0].innerHTML;
   } else {
@@ -1058,8 +1031,8 @@ cvox.TraverseTable.prototype.countRows_ = function() {
 cvox.TraverseTable.prototype.getW3CColCount_ = function() {
   // See http://www.w3.org/TR/html401/struct/tables.html#h-11.2.4.3
 
-  var colgroupNodes = cvox.XpathUtil.evalXPath('child::colgroup',
-      this.activeTable_);
+  var colgroupNodes =
+      cvox.XpathUtil.evalXPath('child::colgroup', this.activeTable_);
   var colNodes = cvox.XpathUtil.evalXPath('child::col', this.activeTable_);
 
   if ((colgroupNodes.length == 0) && (colNodes.length == 0)) {
@@ -1082,8 +1055,8 @@ cvox.TraverseTable.prototype.getW3CColCount_ = function() {
       }
     }
     for (i = 0; i < colgroupNodes.length; i++) {
-      var colChildren = cvox.XpathUtil.evalXPath('child::col',
-          colgroupNodes[i]);
+      var colChildren =
+          cvox.XpathUtil.evalXPath('child::col', colgroupNodes[i]);
       if (colChildren.length == 0) {
         if (colgroupNodes[i].hasAttribute('span')) {
           sum += colgroupNodes[i].getAttribute('span');
@@ -1104,7 +1077,7 @@ cvox.TraverseTable.prototype.getW3CColCount_ = function() {
  *    1) True if the update has been made.
  *    2) False if the end of the table has been reached and the update has not
  *       happened.
-  */
+ */
 cvox.TraverseTable.prototype.nextRow = function() {
   if (!this.currentCellCursor) {
     // We have not started moving through the table yet
@@ -1253,8 +1226,7 @@ cvox.TraverseTable.prototype.goToLastCell = function() {
   }
   var lastRow = this.shadowTable_[numRows - 1];
   var lastIndex = [(numRows - 1), (lastRow.length - 1)];
-  var cell =
-      this.shadowTable_[lastIndex[0]][lastIndex[1]];
+  var cell = this.shadowTable_[lastIndex[0]][lastIndex[1]];
   if (cell != null) {
     this.currentCellCursor = lastIndex;
     return true;
@@ -1273,8 +1245,7 @@ cvox.TraverseTable.prototype.goToLastCell = function() {
 cvox.TraverseTable.prototype.goToRowLastCell = function() {
   var currentRow = this.currentCellCursor[0];
   var lastIndex = [currentRow, (this.shadowTable_[currentRow].length - 1)];
-  var cell =
-      this.shadowTable_[lastIndex[0]][lastIndex[1]];
+  var cell = this.shadowTable_[lastIndex[0]][lastIndex[1]];
   if (cell != null) {
     this.currentCellCursor = lastIndex;
     return true;
@@ -1293,8 +1264,7 @@ cvox.TraverseTable.prototype.goToRowLastCell = function() {
 cvox.TraverseTable.prototype.goToColLastCell = function() {
   var currentCol = this.getCol();
   var lastIndex = [(currentCol.length - 1), this.currentCellCursor[1]];
-  var cell =
-      this.shadowTable_[lastIndex[0]][lastIndex[1]];
+  var cell = this.shadowTable_[lastIndex[0]][lastIndex[1]];
   if (cell != null) {
     this.currentCellCursor = lastIndex;
     return true;

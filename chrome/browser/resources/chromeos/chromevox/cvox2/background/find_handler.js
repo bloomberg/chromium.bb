@@ -47,7 +47,7 @@ FindHandler.uninit_ = function() {
  */
 FindHandler.onTextMatch_ = function(evt) {
   if (!evt.target.markerTypes.some(function(markerType) {
-          return markerType & 4 /* Text match */;
+        return markerType & 4 /* Text match */;
       }))
     return;
 

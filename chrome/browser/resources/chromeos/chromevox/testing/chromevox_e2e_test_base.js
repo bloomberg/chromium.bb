@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE([
-    'common.js',
-    'callback_helper.js']);
+GEN_INCLUDE(['common.js', 'callback_helper.js']);
 
 /**
  * Base test fixture for ChromeVox end to end tests.
@@ -34,25 +32,25 @@ ChromeVoxE2ETest.prototype = {
 
   /** @override */
   testGenCppIncludes: function() {
-    GEN_BLOCK(function() {/*!
+    GEN_BLOCK(function() { /*!
 #include "ash/accessibility_delegate.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
-    */});
+    */ });
   },
 
   /** @override */
   testGenPreamble: function() {
-    GEN_BLOCK(function() {/*!
+    GEN_BLOCK(function() { /*!
   base::Closure load_cb =
       base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
           base::Unretained(chromeos::AccessibilityManager::Get()),
           true,
           ash::A11Y_NOTIFICATION_NONE);
   WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
-    */});
+    */ });
   },
 
   /**
@@ -78,10 +76,7 @@ ChromeVoxE2ETest.prototype = {
    */
   runWithTab: function(doc, opt_callback) {
     var url = TestUtils.createUrlForDoc(doc);
-    var createParams = {
-      active: true,
-      url: url
-    };
+    var createParams = {active: true, url: url};
     chrome.tabs.create(createParams, function(tab) {
       if (opt_callback)
         opt_callback(tab.url);
@@ -94,11 +89,13 @@ ChromeVoxE2ETest.prototype = {
    * @param {string} elementQueryString
    */
   incrementSelectedIndex: function(tabId, elementQueryString) {
-    var code = TestUtils.extractHtmlFromCommentEncodedString(function() {/*!
+    var code = TestUtils.extractHtmlFromCommentEncodedString(
+        function() { /*!
       var target = document.body.querySelector('$0');
       target.focus();
       target.selectedIndex++;
-    */}, [elementQueryString]);
+    */ },
+        [elementQueryString]);
 
     chrome.tabs.executeScript(tabId, {code: code});
   },

@@ -60,8 +60,8 @@ cvox.TextHandlerInterface.prototype.changed = function(evt) {};
  * @extends {cvox.ChromeVoxEditableTextBase}
  * @constructor
  */
-cvox.ChromeVoxEditableElement = function(node, value, start, end, isPassword,
-    tts) {
+cvox.ChromeVoxEditableElement = function(
+    node, value, start, end, isPassword, tts) {
   goog.base(this, value, start, end, isPassword, tts);
 
   /**
@@ -70,7 +70,8 @@ cvox.ChromeVoxEditableElement = function(node, value, start, end, isPassword,
    * @private
    */
   this.brailleHandler_ = cvox.ChromeVox.braille ?
-      new cvox.BrailleTextHandler(cvox.ChromeVox.braille) : undefined;
+      new cvox.BrailleTextHandler(cvox.ChromeVox.braille) :
+      undefined;
 
   /**
    * The DOM node which allows text input.
@@ -86,8 +87,7 @@ cvox.ChromeVoxEditableElement = function(node, value, start, end, isPassword,
    */
   this.justSpokeDescription_ = false;
 };
-goog.inherits(cvox.ChromeVoxEditableElement,
-    cvox.ChromeVoxEditableTextBase);
+goog.inherits(cvox.ChromeVoxEditableElement, cvox.ChromeVoxEditableTextBase);
 
 
 /** @override */
@@ -181,11 +181,11 @@ cvox.ChromeVoxEditableElement.prototype.moveCursorToPreviousWord = function() {
 
 
 /** @override */
-cvox.ChromeVoxEditableElement.prototype.moveCursorToNextParagraph =
-    function() {
+cvox.ChromeVoxEditableElement.prototype.moveCursorToNextParagraph = function() {
   var node = this.node;
   var length = node.value.length;
-  var index = node.selectionEnd >= length ? length :
+  var index = node.selectionEnd >= length ?
+      length :
       node.value.indexOf('\n', node.selectionEnd);
   if (index < 0) {
     index = length;
@@ -200,7 +200,8 @@ cvox.ChromeVoxEditableElement.prototype.moveCursorToNextParagraph =
 cvox.ChromeVoxEditableElement.prototype.moveCursorToPreviousParagraph =
     function() {
   var node = this.node;
-  var index = node.selectionStart <= 0 ? 0 :
+  var index = node.selectionStart <= 0 ?
+      0 :
       node.value.lastIndexOf('\n', node.selectionStart - 2) + 1;
   if (index < 0) {
     index = 0;
@@ -229,8 +230,8 @@ cvox.ChromeVoxEditableElement.prototype.brailleCurrentLine_ = function() {
     var lineStart = this.getLineStart(lineIndex);
     var start = this.start - lineStart;
     var end = Math.min(this.end - lineStart, line.length);
-    this.brailleHandler_.changed(line, start, end, this.multiline, this.node,
-                                 lineStart);
+    this.brailleHandler_.changed(
+        line, start, end, this.multiline, this.node, lineStart);
   }
 };
 
@@ -248,16 +249,11 @@ cvox.ChromeVoxEditableElement.prototype.brailleCurrentLine_ = function() {
 cvox.ChromeVoxEditableHTMLInput = function(node, tts) {
   this.node = node;
   this.setup();
-  goog.base(this,
-            node,
-            node.value,
-            node.selectionStart,
-            node.selectionEnd,
-            node.type === 'password',
-            tts);
+  goog.base(
+      this, node, node.value, node.selectionStart, node.selectionEnd,
+      node.type === 'password', tts);
 };
-goog.inherits(cvox.ChromeVoxEditableHTMLInput,
-    cvox.ChromeVoxEditableElement);
+goog.inherits(cvox.ChromeVoxEditableHTMLInput, cvox.ChromeVoxEditableElement);
 
 
 /**
@@ -296,10 +292,9 @@ cvox.ChromeVoxEditableHTMLInput.prototype.teardown = function() {
  */
 cvox.ChromeVoxEditableHTMLInput.prototype.update = function(triggeredByUser) {
   var newValue = this.node.value;
-  var textChangeEvent = new cvox.TextChangeEvent(newValue,
-                                                 this.node.selectionStart,
-                                                 this.node.selectionEnd,
-                                                 triggeredByUser);
+  var textChangeEvent = new cvox.TextChangeEvent(
+      newValue, this.node.selectionStart, this.node.selectionEnd,
+      triggeredByUser);
   this.changed(textChangeEvent);
 };
 
@@ -316,7 +311,8 @@ cvox.ChromeVoxEditableHTMLInput.prototype.update = function(triggeredByUser) {
  * @constructor
  */
 cvox.ChromeVoxEditableTextArea = function(node, tts) {
-  goog.base(this, node, node.value, node.selectionStart, node.selectionEnd,
+  goog.base(
+      this, node, node.value, node.selectionStart, node.selectionEnd,
       false /* isPassword */, tts);
   this.multiline = true;
 
@@ -327,8 +323,7 @@ cvox.ChromeVoxEditableTextArea = function(node, tts) {
    */
   this.shadowIsCurrent_ = false;
 };
-goog.inherits(cvox.ChromeVoxEditableTextArea,
-    cvox.ChromeVoxEditableElement);
+goog.inherits(cvox.ChromeVoxEditableTextArea, cvox.ChromeVoxEditableElement);
 
 
 /**
@@ -350,8 +345,9 @@ cvox.ChromeVoxEditableTextArea.prototype.update = function(triggeredByUser) {
   if (this.node.value != this.value) {
     this.shadowIsCurrent_ = false;
   }
-  var textChangeEvent = new cvox.TextChangeEvent(this.node.value,
-      this.node.selectionStart, this.node.selectionEnd, triggeredByUser);
+  var textChangeEvent = new cvox.TextChangeEvent(
+      this.node.value, this.node.selectionStart, this.node.selectionEnd,
+      triggeredByUser);
   this.changed(textChangeEvent);
 };
 
@@ -416,8 +412,10 @@ cvox.ChromeVoxEditableTextArea.prototype.moveCursorToNextLine = function() {
   var lineStart = shadow.getLineStart(lineIndex);
   var offset = node.selectionEnd - lineStart;
   var lastLine = (length == 0) ? 0 : shadow.getLineIndex(length - 1);
-  var newCursorPosition = (lineIndex >= lastLine) ? length :
-      Math.min(shadow.getLineStart(lineIndex + 1) + offset,
+  var newCursorPosition = (lineIndex >= lastLine) ?
+      length :
+      Math.min(
+          shadow.getLineStart(lineIndex + 1) + offset,
           shadow.getLineEnd(lineIndex + 1));
   node.selectionStart = node.selectionEnd = newCursorPosition;
   cvox.ChromeVoxEventWatcher.handleTextChanged(true);
@@ -435,8 +433,10 @@ cvox.ChromeVoxEditableTextArea.prototype.moveCursorToPreviousLine = function() {
   var lineIndex = shadow.getLineIndex(node.selectionStart);
   var lineStart = shadow.getLineStart(lineIndex);
   var offset = node.selectionStart - lineStart;
-  var newCursorPosition = (lineIndex <= 0) ? 0 :
-      Math.min(shadow.getLineStart(lineIndex - 1) + offset,
+  var newCursorPosition = (lineIndex <= 0) ?
+      0 :
+      Math.min(
+          shadow.getLineStart(lineIndex - 1) + offset,
           shadow.getLineEnd(lineIndex - 1));
   node.selectionStart = node.selectionEnd = newCursorPosition;
   cvox.ChromeVoxEventWatcher.handleTextChanged(true);
@@ -476,8 +476,8 @@ cvox.ChromeVoxEditableContentEditable = function(node, tts) {
   this.end = extractor.getEndIndex();
   this.multiline = true;
 };
-goog.inherits(cvox.ChromeVoxEditableContentEditable,
-    cvox.ChromeVoxEditableElement);
+goog.inherits(
+    cvox.ChromeVoxEditableContentEditable, cvox.ChromeVoxEditableElement);
 
 /**
  * A helper used to compute the line numbers. A single object is
@@ -494,14 +494,12 @@ cvox.ChromeVoxEditableContentEditable.extractor_;
  *
  * @param {boolean} triggeredByUser True if this was triggered by a user action.
  */
-cvox.ChromeVoxEditableContentEditable.prototype.update =
-    function(triggeredByUser) {
+cvox.ChromeVoxEditableContentEditable.prototype.update = function(
+    triggeredByUser) {
   this.extractorIsCurrent_ = false;
   var textChangeEvent = new cvox.TextChangeEvent(
-      this.getExtractor().getText(),
-      this.getExtractor().getStartIndex(),
-      this.getExtractor().getEndIndex(),
-      triggeredByUser);
+      this.getExtractor().getText(), this.getExtractor().getStartIndex(),
+      this.getExtractor().getEndIndex(), triggeredByUser);
   this.changed(textChangeEvent);
 };
 
@@ -555,8 +553,7 @@ cvox.ChromeVoxEditableContentEditable.prototype.getExtractor = function() {
 
 
 /** @override */
-cvox.ChromeVoxEditableContentEditable.prototype.changed =
-    function(evt) {
+cvox.ChromeVoxEditableContentEditable.prototype.changed = function(evt) {
   if (!evt.triggeredByUser) {
     return;
   }
@@ -564,9 +561,9 @@ cvox.ChromeVoxEditableContentEditable.prototype.changed =
   if (!this.shouldDescribeChange(evt)) {
     this.speak(Msgs.getMsg('text_box_blank'), true);
     if (this.brailleHandler_) {
-      this.brailleHandler_.changed('' /*line*/, 0 /*start*/, 0 /*end*/,
-                                   true /*multiline*/, null /*element*/,
-                                   evt.start /*lineStart*/);
+      this.brailleHandler_.changed(
+          '' /*line*/, 0 /*start*/, 0 /*end*/, true /*multiline*/,
+          null /*element*/, evt.start /*lineStart*/);
     }
   } else {
     goog.base(this, 'changed', evt);
@@ -612,8 +609,8 @@ cvox.ChromeVoxEditableContentEditable.prototype.moveCursorToPreviousParagraph =
 /**
  * @override
  */
-cvox.ChromeVoxEditableContentEditable.prototype.shouldDescribeChange =
-    function(evt) {
+cvox.ChromeVoxEditableContentEditable.prototype.shouldDescribeChange = function(
+    evt) {
   var sel = window.getSelection();
   var cursor = new cvox.Cursor(sel.baseNode, sel.baseOffset, '');
 
@@ -630,10 +627,8 @@ cvox.ChromeVoxEditableContentEditable.prototype.shouldDescribeChange =
   // The new lines after Title are not traversed to by TraverseUtil. A root fix
   // would make changes there. However, considering the fickle nature of that
   // code, we specifically detect for new lines here.
-  if (Math.abs(this.start - evt.start) != 1 &&
-      this.start == this.end &&
-      evt.start == evt.end &&
-      sel.baseNode == sel.extentNode &&
+  if (Math.abs(this.start - evt.start) != 1 && this.start == this.end &&
+      evt.start == evt.end && sel.baseNode == sel.extentNode &&
       sel.baseOffset == sel.extentOffset &&
       sel.baseNode.nodeType == Node.ELEMENT_NODE &&
       sel.baseNode.querySelector('BR') &&

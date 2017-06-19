@@ -77,11 +77,10 @@ BaseAutomationHandler.prototype = {
   },
 
   /**
-    * Called after the event |evt| is handled.
+   * Called after the event |evt| is handled.
    * @protected
    */
-  didHandleEvent_: function(evt) {
-  }
+  didHandleEvent_: function(evt) {}
 };
 
 });  // goog.scope

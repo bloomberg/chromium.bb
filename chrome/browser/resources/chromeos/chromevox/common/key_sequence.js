@@ -44,8 +44,9 @@ goog.require('cvox.PlatformFilter');
  * @param {boolean=} opt_requireStickyMode Whether to require sticky mode.
  * @constructor
  */
-cvox.KeySequence = function(originalEvent, opt_cvoxModifier, opt_doubleTap,
-                            opt_skipStripping, opt_requireStickyMode) {
+cvox.KeySequence = function(
+    originalEvent, opt_cvoxModifier, opt_doubleTap, opt_skipStripping,
+    opt_requireStickyMode) {
   /** @type {boolean} */
   this.doubleTap = !!opt_doubleTap;
 
@@ -174,8 +175,8 @@ cvox.KeySequence.prototype.equals = function(rhs) {
   // If one key sequence requires sticky mode, return early the strict
   // sticky mode state.
   if (this.requireStickyMode || rhs.requireStickyMode) {
-    return (this.stickyMode || rhs.stickyMode) &&
-        !this.cvoxModifier && !rhs.cvoxModifier;
+    return (this.stickyMode || rhs.stickyMode) && !this.cvoxModifier &&
+        !rhs.cvoxModifier;
   }
 
   // If they both have the ChromeVox modifier, or they both don't have the
@@ -355,25 +356,25 @@ cvox.KeySequence.prototype.isCVoxModifierActive = function(keyEvent) {
   // If the combo string becomes empty, then the user has activated the combo.
   if (this.isKeyModifierActive(keyEvent, 'ctrlKey')) {
     modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
-                              return modifier != 'Ctrl';
-                            });
+      return modifier != 'Ctrl';
+    });
   }
   if (this.isKeyModifierActive(keyEvent, 'altKey')) {
     modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
-                                                 return modifier != 'Alt';
-                                               });
+      return modifier != 'Alt';
+    });
   }
   if (this.isKeyModifierActive(keyEvent, 'shiftKey')) {
     modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
-                                                 return modifier != 'Shift';
-                                               });
+      return modifier != 'Shift';
+    });
   }
   if (this.isKeyModifierActive(keyEvent, 'metaKey') ||
       this.isKeyModifierActive(keyEvent, 'searchKeyHeld')) {
     var metaKeyName = this.getMetaKeyName_();
     modifierKeyCombo = modifierKeyCombo.filter(function(modifier) {
-                                                 return modifier != metaKeyName;
-                                               });
+      return modifier != metaKeyName;
+    });
   }
   return (modifierKeyCombo.length == 0);
 };
@@ -405,7 +406,8 @@ cvox.KeySequence.prototype.isKeyModifierActive = function(keyEvent, modifier) {
       return (keyEvent.metaKey || (keyEvent.keyCode == 91));
       break;
     case 'searchKeyHeld':
-      return ((cvox.ChromeVox.isChromeOS && keyEvent.keyCode == 91) ||
+      return (
+          (cvox.ChromeVox.isChromeOS && keyEvent.keyCode == 91) ||
           keyEvent['searchKeyHeld']);
       break;
   }
@@ -437,9 +439,11 @@ cvox.KeySequence.deserialize = function(sequenceObject) {
   var firstSequenceEvent = {};
 
   firstSequenceEvent['stickyMode'] = (sequenceObject.stickyMode == undefined) ?
-      false : sequenceObject.stickyMode;
+      false :
+      sequenceObject.stickyMode;
   firstSequenceEvent['prefixKey'] = (sequenceObject.prefixKey == undefined) ?
-      false : sequenceObject.prefixKey;
+      false :
+      sequenceObject.prefixKey;
 
   var secondKeyPressed = sequenceObject.keys.keyCode.length > 1;
   var secondSequenceEvent = {};
@@ -451,12 +455,11 @@ cvox.KeySequence.deserialize = function(sequenceObject) {
     }
   }
   var skipStripping = sequenceObject.skipStripping !== undefined ?
-      sequenceObject.skipStripping : true;
-  var keySeq = new cvox.KeySequence(firstSequenceEvent,
-                                    sequenceObject.cvoxModifier,
-                                    sequenceObject.doubleTap,
-                                    skipStripping,
-                                    sequenceObject.requireStickyMode);
+      sequenceObject.skipStripping :
+      true;
+  var keySeq = new cvox.KeySequence(
+      firstSequenceEvent, sequenceObject.cvoxModifier, sequenceObject.doubleTap,
+      skipStripping, sequenceObject.requireStickyMode);
   if (secondKeyPressed) {
     cvox.ChromeVox.sequenceSwitchKeyCodes.push(
         new cvox.KeySequence(firstSequenceEvent, sequenceObject.cvoxModifier));

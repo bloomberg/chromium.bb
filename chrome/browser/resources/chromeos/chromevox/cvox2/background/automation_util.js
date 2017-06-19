@@ -42,8 +42,7 @@ AutomationUtil.findNodePre = function(cur, dir, pred) {
     var ret = AutomationUtil.findNodePre(child, dir, pred);
     if (ret)
       return ret;
-    child = dir == Dir.BACKWARD ?
-        child.previousSibling : child.nextSibling;
+    child = dir == Dir.BACKWARD ? child.previousSibling : child.nextSibling;
   }
   return null;
 };
@@ -65,8 +64,7 @@ AutomationUtil.findNodePost = function(cur, dir, pred) {
     var ret = AutomationUtil.findNodePost(child, dir, pred);
     if (ret)
       return ret;
-    child = dir == Dir.BACKWARD ?
-        child.previousSibling : child.nextSibling;
+    child = dir == Dir.BACKWARD ? child.previousSibling : child.nextSibling;
   }
 
   if (pred(cur) && !AutomationPredicate.shouldIgnoreNode(cur))
@@ -101,10 +99,12 @@ AutomationUtil.findNodePost = function(cur, dir, pred) {
  */
 AutomationUtil.findNextNode = function(cur, dir, pred, opt_restrictions) {
   var restrictions = {};
-  opt_restrictions = opt_restrictions || {leaf: undefined,
-      root: undefined,
-      visit: undefined,
-      skipInitialSubtree: !AutomationPredicate.container(cur) && pred(cur)};
+  opt_restrictions = opt_restrictions || {
+    leaf: undefined,
+    root: undefined,
+    visit: undefined,
+    skipInitialSubtree: !AutomationPredicate.container(cur) && pred(cur)
+  };
 
   restrictions.root = opt_restrictions.root || AutomationPredicate.root;
   restrictions.leaf = opt_restrictions.leaf || function(node) {
@@ -288,10 +288,8 @@ AutomationUtil.getTopLevelRoot = function(node) {
   if (!root || root.role == RoleType.DESKTOP)
     return null;
 
-  while (root &&
-      root.parent &&
-      root.parent.root &&
-      root.parent.root.role != RoleType.DESKTOP) {
+  while (root && root.parent && root.parent.root &&
+         root.parent.root.role != RoleType.DESKTOP) {
     root = root.parent.root;
   }
   return root;

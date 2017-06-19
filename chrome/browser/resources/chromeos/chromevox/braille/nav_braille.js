@@ -30,8 +30,8 @@ cvox.NavBraille = function(kwargs) {
    * Text, annotated with DOM nodes.
    * @type {!Spannable}
    */
-  this.text = (kwargs.text instanceof Spannable) ?
-      kwargs.text : new Spannable(kwargs.text);
+  this.text = (kwargs.text instanceof Spannable) ? kwargs.text :
+                                                   new Spannable(kwargs.text);
 
   /**
    * Selection start index.
@@ -43,8 +43,8 @@ cvox.NavBraille = function(kwargs) {
    * Selection end index.
    * @type {number}
    */
-  this.endIndex = goog.isDef(kwargs.endIndex) ?
-      kwargs.endIndex : this.startIndex;
+  this.endIndex =
+      goog.isDef(kwargs.endIndex) ? kwargs.endIndex : this.startIndex;
 };
 
 /**
@@ -89,8 +89,8 @@ cvox.NavBraille.prototype.isEmpty = function() {
  */
 cvox.NavBraille.prototype.toString = function() {
   return 'NavBraille(text="' + this.text.toString() + '" ' +
-         ' startIndex="' + this.startIndex + '" ' +
-         ' endIndex="' + this.endIndex + '")';
+      ' startIndex="' + this.startIndex + '" ' +
+      ' endIndex="' + this.endIndex + '")';
 };
 
 

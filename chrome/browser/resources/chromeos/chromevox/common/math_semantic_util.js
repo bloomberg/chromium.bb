@@ -12,7 +12,7 @@ goog.provide('cvox.SemanticUtil');
 /**
  * @constructor
  */
-cvox.SemanticUtil = function() { };
+cvox.SemanticUtil = function() {};
 
 
 /**
@@ -125,10 +125,11 @@ cvox.SemanticUtil.purgeNodes = function(nodes) {
   var nodeArray = [];
   for (var i = 0, node; node = nodes[i]; i++) {
     var tagName = cvox.SemanticUtil.tagName(node);
-    if (cvox.SemanticUtil.IGNORETAGS.indexOf(tagName) != -1) continue;
+    if (cvox.SemanticUtil.IGNORETAGS.indexOf(tagName) != -1)
+      continue;
     if (cvox.SemanticUtil.EMPTYTAGS.indexOf(tagName) != -1 &&
         node.childNodes.length == 0)
-    continue;
+      continue;
     nodeArray.push(node);
   }
   return nodeArray;

@@ -45,11 +45,14 @@ CommandHandler.onCommand = function(command) {
       chrome.automation.getDesktop(function(d) {
         // First, try speaking the on-screen time.
         var allTime = d.findAll({role: RoleType.TIME});
-        allTime.filter(function(t) { return t.root.role == RoleType.DESKTOP; });
+        allTime.filter(function(t) {
+          return t.root.role == RoleType.DESKTOP;
+        });
 
         var timeString = '';
         allTime.forEach(function(t) {
-          if (t.name) timeString = t.name;
+          if (t.name)
+            timeString = t.name;
         });
         if (timeString) {
           cvox.ChromeVox.tts.speak(timeString, cvox.QueueMode.FLUSH);
@@ -467,8 +470,8 @@ CommandHandler.onCommand = function(command) {
     case 'jumpToTop':
       var node = AutomationUtil.findNodePost(
           current.start.node.root, Dir.FORWARD, AutomationPredicate.leaf);
-    if (node)
-      current = cursors.Range.fromNode(node);
+      if (node)
+        current = cursors.Range.fromNode(node);
       break;
     case 'jumpToBottom':
       var node = AutomationUtil.findNodePost(
@@ -480,7 +483,7 @@ CommandHandler.onCommand = function(command) {
       if (ChromeVoxState.instance.currentRange) {
         var actionNode = ChromeVoxState.instance.currentRange.start.node;
         while (actionNode.role == RoleType.INLINE_TEXT_BOX ||
-            actionNode.role == RoleType.STATIC_TEXT)
+               actionNode.role == RoleType.STATIC_TEXT)
           actionNode = actionNode.parent;
         if (actionNode.inPageLinkTarget) {
           ChromeVoxState.instance.navigateToRange(
@@ -500,9 +503,8 @@ CommandHandler.onCommand = function(command) {
           return;
 
         var prevRange = ChromeVoxState.instance.currentRange_;
-        var newRange =
-            ChromeVoxState.instance.currentRange_.move(
-                cursors.Unit.NODE, Dir.FORWARD);
+        var newRange = ChromeVoxState.instance.currentRange_.move(
+            cursors.Unit.NODE, Dir.FORWARD);
 
         // Stop if we've wrapped back to the document.
         var maybeDoc = newRange.start.node;
@@ -515,17 +517,17 @@ CommandHandler.onCommand = function(command) {
         ChromeVoxState.instance.setCurrentRange(newRange);
 
         new Output()
-            .withRichSpeechAndBraille(ChromeVoxState.instance.currentRange_,
-                                      prevRange,
-                                      Output.EventType.NAVIGATE)
+            .withRichSpeechAndBraille(
+                ChromeVoxState.instance.currentRange_, prevRange,
+                Output.EventType.NAVIGATE)
             .onSpeechEnd(continueReading)
             .go();
       }.bind(this);
 
       new Output()
-          .withRichSpeechAndBraille(ChromeVoxState.instance.currentRange_,
-                                    null,
-                                    Output.EventType.NAVIGATE)
+          .withRichSpeechAndBraille(
+              ChromeVoxState.instance.currentRange_, null,
+              Output.EventType.NAVIGATE)
           .onSpeechEnd(continueReading)
           .go();
 
@@ -570,7 +572,8 @@ CommandHandler.onCommand = function(command) {
         output.withString(target.name || target.docUrl);
       } else {
         // Views.
-        while (target.role != RoleType.WINDOW) target = target.parent;
+        while (target.role != RoleType.WINDOW)
+          target = target.parent;
         if (target)
           output.withString(target.name || '');
       }
@@ -661,8 +664,8 @@ CommandHandler.onCommand = function(command) {
         node = node.parent;
       if (!node)
         break;
-      var end = AutomationUtil.findNodePost(node,
-          command == 'goToRowLastCell' ? Dir.BACKWARD : Dir.FORWARD,
+      var end = AutomationUtil.findNodePost(
+          node, command == 'goToRowLastCell' ? Dir.BACKWARD : Dir.FORWARD,
           AutomationPredicate.leaf);
       if (end)
         current = cursors.Range.fromNode(end);
@@ -704,8 +707,8 @@ CommandHandler.onCommand = function(command) {
         node = node.parent;
       if (!node)
         break;
-      var end = AutomationUtil.findNodePost(node,
-          command == 'goToLastCell' ? Dir.BACKWARD : Dir.FORWARD,
+      var end = AutomationUtil.findNodePost(
+          node, command == 'goToLastCell' ? Dir.BACKWARD : Dir.FORWARD,
           AutomationPredicate.leaf);
       if (end)
         current = cursors.Range.fromNode(end);
@@ -740,22 +743,24 @@ CommandHandler.onCommand = function(command) {
           bound = root;
         } else {
           bound = AutomationUtil.findNodePost(
-              root, dir, AutomationPredicate.leaf) || bound;
+                      root, dir, AutomationPredicate.leaf) ||
+              bound;
         }
         node = AutomationUtil.findNextNode(
             bound, dir, pred, {skipInitialAncestry: true});
 
-      if (node && !skipSync) {
-        node = AutomationUtil.findNodePre(
-            node, Dir.FORWARD, AutomationPredicate.object) || node;
-      }
+        if (node && !skipSync) {
+          node = AutomationUtil.findNodePre(
+                     node, Dir.FORWARD, AutomationPredicate.object) ||
+              node;
+        }
 
-      if (node) {
-        current = cursors.Range.fromNode(node);
-      } else if (predErrorMsg) {
+        if (node) {
+          current = cursors.Range.fromNode(node);
+        } else if (predErrorMsg) {
           cvox.ChromeVox.tts.speak(
               Msgs.getMsg(predErrorMsg), cvox.QueueMode.FLUSH);
-        return false;
+          return false;
         }
       }
     }
@@ -792,12 +797,12 @@ CommandHandler.onModeChanged = function(newMode, oldMode) {
  *     step size, otherwise decreases.
  * @private
  */
-CommandHandler.increaseOrDecreaseSpeechProperty_ =
-    function(propertyName, increase) {
+CommandHandler.increaseOrDecreaseSpeechProperty_ = function(
+    propertyName, increase) {
   cvox.ChromeVox.tts.increaseOrDecreaseProperty(propertyName, increase);
   var announcement;
-  var valueAsPercent = Math.round(
-      cvox.ChromeVox.tts.propertyToPercentage(propertyName) * 100);
+  var valueAsPercent =
+      Math.round(cvox.ChromeVox.tts.propertyToPercentage(propertyName) * 100);
   switch (propertyName) {
     case cvox.AbstractTts.RATE:
       announcement = Msgs.getMsg('announce_rate', [valueAsPercent]);
@@ -833,11 +838,11 @@ CommandHandler.onImageFrameUpdated_ = function(event) {
     return;
 
   if (!AutomationUtil.isDescendantOf(
-      ChromeVoxState.instance.currentRange.start.node,
-      CommandHandler.imageNode_)) {
+          ChromeVoxState.instance.currentRange.start.node,
+          CommandHandler.imageNode_)) {
     CommandHandler.imageNode_.removeEventListener(
-        EventType.IMAGE_FRAME_UPDATED,
-        CommandHandler.onImageFrameUpdated_, false);
+        EventType.IMAGE_FRAME_UPDATED, CommandHandler.onImageFrameUpdated_,
+        false);
     CommandHandler.imageNode_ = null;
     return;
   }
@@ -857,20 +862,19 @@ CommandHandler.onImageFrameUpdated_ = function(event) {
 CommandHandler.viewGraphicAsBraille_ = function(current) {
   if (CommandHandler.imageNode_) {
     CommandHandler.imageNode_.removeEventListener(
-        EventType.IMAGE_FRAME_UPDATED,
-        CommandHandler.onImageFrameUpdated_, false);
+        EventType.IMAGE_FRAME_UPDATED, CommandHandler.onImageFrameUpdated_,
+        false);
     CommandHandler.imageNode_ = null;
   }
 
   // Find the first node within the current range that supports image data.
   var imageNode = AutomationUtil.findNodePost(
-      current.start.node, Dir.FORWARD,
-      AutomationPredicate.supportsImageData);
+      current.start.node, Dir.FORWARD, AutomationPredicate.supportsImageData);
   if (!imageNode)
     return;
 
-  imageNode.addEventListener(EventType.IMAGE_FRAME_UPDATED,
-                             this.onImageFrameUpdated_, false);
+  imageNode.addEventListener(
+      EventType.IMAGE_FRAME_UPDATED, this.onImageFrameUpdated_, false);
   CommandHandler.imageNode_ = imageNode;
   if (imageNode.imageDataUrl) {
     var event = new CustomAutomationEvent(
@@ -887,30 +891,30 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
  */
 CommandHandler.init_ = function() {
   var firstRunId = 'jdgcneonijmofocbhmijhacgchbihela';
-  chrome.runtime.onMessageExternal.addListener(
-      function(request, sender, sendResponse) {
-        if (sender.id != firstRunId)
-          return;
+  chrome.runtime.onMessageExternal.addListener(function(
+      request, sender, sendResponse) {
+    if (sender.id != firstRunId)
+      return;
 
-        if (request.openTutorial) {
-          var launchTutorial = function(desktop, evt) {
-            desktop.removeEventListener(
-                chrome.automation.EventType.FOCUS, launchTutorial, true);
-            CommandHandler.onCommand('help');
-          };
+    if (request.openTutorial) {
+      var launchTutorial = function(desktop, evt) {
+        desktop.removeEventListener(
+            chrome.automation.EventType.FOCUS, launchTutorial, true);
+        CommandHandler.onCommand('help');
+      };
 
-          // Since we get this command early on ChromeVox launch, the first run
-          // UI is not yet shown. Monitor for when first run gets focused, and
-          // show our tutorial.
-          chrome.automation.getDesktop(function(desktop) {
-            launchTutorial = launchTutorial.bind(this, desktop);
-            desktop.addEventListener(
-                chrome.automation.EventType.FOCUS, launchTutorial, true);
-          });
-        }
+      // Since we get this command early on ChromeVox launch, the first run
+      // UI is not yet shown. Monitor for when first run gets focused, and
+      // show our tutorial.
+      chrome.automation.getDesktop(function(desktop) {
+        launchTutorial = launchTutorial.bind(this, desktop);
+        desktop.addEventListener(
+            chrome.automation.EventType.FOCUS, launchTutorial, true);
       });
+    }
+  });
 };
 
 CommandHandler.init_();
 
-}); //  goog.scope
+});  //  goog.scope

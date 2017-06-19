@@ -34,8 +34,8 @@ cvox.FindUtil.objectWalker_ = new cvox.BareObjectWalker();
  */
 cvox.FindUtil.findNext = function(sel, predicate, opt_initialNode) {
   var r = sel.isReversed();
-  var cur = new cvox.CursorSelection(sel.absStart(), sel.absStart())
-      .setReversed(r);
+  var cur =
+      new cvox.CursorSelection(sel.absStart(), sel.absStart()).setReversed(r);
 
   // We may have been sync'ed into a subtree of the current predicate match.
   // Find our ancestor that matches the predicate.

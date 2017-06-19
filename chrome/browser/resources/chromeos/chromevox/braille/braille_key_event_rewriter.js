@@ -58,8 +58,7 @@ BrailleKeyEventRewriter.prototype = {
     // previous incremental key press.
     if (evt.command == cvox.BrailleKeyCommand.DOTS && this.incrementalKey_) {
       // Check if this braille pattern has a standard key mapping.
-      standardKeyCode =
-          cvox.BrailleKeyEvent.brailleDotsToStandardKeyCode[dots];
+      standardKeyCode = cvox.BrailleKeyEvent.brailleDotsToStandardKeyCode[dots];
     }
 
     if (standardKeyCode) {

@@ -131,14 +131,15 @@ cvox.TraverseMath.prototype.initialize = function(node) {
     node = this.allTexs_[cvoxid];
   }
   if (cvox.DomUtil.isMathJax(node)) {
-      this.activeMathmlHost = this.allMathjaxs_[node.getAttribute('id')];
+    this.activeMathmlHost = this.allMathjaxs_[node.getAttribute('id')];
   }
   this.activeMath = this.activeMathmlHost || node;
   this.activeNode = this.activeMathmlHost || node;
   if (this.activeNode && cvox.TraverseMath.setSemantic_ &&
       this.activeNode.nodeType == Node.ELEMENT_NODE) {
     this.activeNode =
-        (new cvox.SemanticTree(/** @type {!Element} */ (this.activeNode))).xml();
+        (new cvox.SemanticTree(/** @type {!Element} */ (this.activeNode)))
+            .xml();
   }
 };
 
@@ -166,7 +167,9 @@ cvox.TraverseMath.prototype.addMathjax = function(mml, id) {
  * @param {string} id The MathJax node id.
  */
 cvox.TraverseMath.prototype.redoMathjaxs = function(mml, id) {
-  var fetch = goog.bind(function() {this.addMathjax(mml, id);}, this);
+  var fetch = goog.bind(function() {
+    this.addMathjax(mml, id);
+  }, this);
   setTimeout(fetch, 500);
 };
 
@@ -178,17 +181,15 @@ cvox.TraverseMath.prototype.redoMathjaxs = function(mml, id) {
  * rendered or re-rendered later.
  */
 cvox.TraverseMath.prototype.initializeMathjaxs = function() {
-  var callback =
-      goog.bind(function(mml, id) {
-                  this.addMathjax(mml, id);
-                }, this);
-  cvox.ChromeVox.mathJax.isMathjaxActive(
-      function(bool) {
-        if (bool) {
-          cvox.ChromeVox.mathJax.getAllJax(callback);
-          cvox.ChromeVox.mathJax.registerSignal(callback, 'New Math');
-        }
-      });
+  var callback = goog.bind(function(mml, id) {
+    this.addMathjax(mml, id);
+  }, this);
+  cvox.ChromeVox.mathJax.isMathjaxActive(function(bool) {
+    if (bool) {
+      cvox.ChromeVox.mathJax.getAllJax(callback);
+      cvox.ChromeVox.mathJax.registerSignal(callback, 'New Math');
+    }
+  });
 };
 
 
@@ -198,26 +199,24 @@ cvox.TraverseMath.prototype.initializeMathjaxs = function() {
  */
 cvox.TraverseMath.prototype.initializeAltMaths = function() {
   if (!document.querySelector(
-      cvox.DomUtil.altMathQuerySelector('tex') + ', ' +
+          cvox.DomUtil.altMathQuerySelector('tex') + ', ' +
           cvox.DomUtil.altMathQuerySelector('asciimath'))) {
     return;
   }
-  var callback = goog.bind(
-      function(mml, id) {
-        this.allTexs_[id] = mml;
-      }, this);
+  var callback = goog.bind(function(mml, id) {
+    this.allTexs_[id] = mml;
+  }, this);
   // Inject a minimalistic version of MathJax into the page.
   cvox.ChromeVox.mathJax.injectScripts();
   // Once MathJax is injected we harvest all Latex and AsciiMath in alt
   // attributes and translate them to MathML expression.
-  cvox.ChromeVox.mathJax.isMathjaxActive(
-      function(active) {
-        if (active) {
-          cvox.ChromeVox.mathJax.configMediaWiki();
-          cvox.ChromeVox.mathJax.getAllTexs(callback);
-          cvox.ChromeVox.mathJax.getAllAsciiMaths(callback);
-        }
-      });
+  cvox.ChromeVox.mathJax.isMathjaxActive(function(active) {
+    if (active) {
+      cvox.ChromeVox.mathJax.configMediaWiki();
+      cvox.ChromeVox.mathJax.getAllTexs(callback);
+      cvox.ChromeVox.mathJax.getAllAsciiMaths(callback);
+    }
+  });
 };
 
 
@@ -230,9 +229,9 @@ cvox.TraverseMath.prototype.initializeAltMaths = function() {
 cvox.TraverseMath.prototype.nextLeaf = function(reverse, pred) {
   if (this.activeNode && this.activeMath) {
     var next = pred(this.activeNode) ?
-      cvox.DomUtil.directedFindNextNode(
-          this.activeNode, this.activeMath, reverse, pred) :
-      cvox.DomUtil.directedFindFirstNode(this.activeNode, reverse, pred);
+        cvox.DomUtil.directedFindNextNode(
+            this.activeNode, this.activeMath, reverse, pred) :
+        cvox.DomUtil.directedFindFirstNode(this.activeNode, reverse, pred);
     if (next) {
       this.activeNode = next;
     }
@@ -262,28 +261,28 @@ cvox.TraverseMath.prototype.nextSubtree = function(reverse, pred) {
     return null;
   }
   if (!reverse) {
-    var child = cvox.DomUtil.directedFindFirstNode(
-        this.activeNode, reverse, pred);
+    var child =
+        cvox.DomUtil.directedFindFirstNode(this.activeNode, reverse, pred);
     if (child) {
       this.activeNode = child;
     } else {
       var next = cvox.DomUtil.directedFindNextNode(
           this.activeNode, this.activeMath, reverse, pred);
       if (next) {
-          this.activeNode = next;
+        this.activeNode = next;
       }
     }
   } else {
     if (this.activeNode == this.activeMath) {
-      var child = cvox.DomUtil.directedFindDeepestNode(
-          this.activeNode, reverse, pred);
+      var child =
+          cvox.DomUtil.directedFindDeepestNode(this.activeNode, reverse, pred);
       if (child != this.activeNode) {
         this.activeNode = child;
         return this.activeNode;
       }
     }
     var prev = cvox.DomUtil.directedFindNextNode(
-      this.activeNode, this.activeMath, reverse, pred, true, true);
+        this.activeNode, this.activeMath, reverse, pred, true, true);
     if (prev) {
       this.activeNode = prev;
     }
@@ -303,7 +302,7 @@ cvox.TraverseMath.prototype.nextSibling = function(r) {
     return null;
   }
   var node = this.activeNode;
-      node = r ? node.previousSibling : node.nextSibling;
+  node = r ? node.previousSibling : node.nextSibling;
   if (!node) {
     return null;
   }
@@ -342,15 +341,13 @@ cvox.TraverseMath.prototype.nextParentChild = function(r) {
  */
 cvox.TraverseMath.prototype.addDomainsAndStyles = function(domains, styles) {
   this.allDomains.push.apply(
-      this.allDomains,
-      domains.filter(
-          goog.bind(function(x) {return this.allDomains.indexOf(x) < 0;},
-                    this)));
+      this.allDomains, domains.filter(goog.bind(function(x) {
+        return this.allDomains.indexOf(x) < 0;
+      }, this)));
   this.allStyles.push.apply(
-      this.allStyles,
-      styles.filter(
-          goog.bind(function(x) {return this.allStyles.indexOf(x) < 0;},
-                    this)));
+      this.allStyles, styles.filter(goog.bind(function(x) {
+        return this.allStyles.indexOf(x) < 0;
+      }, this)));
 };
 
 
@@ -364,11 +361,10 @@ cvox.TraverseMath.prototype.initDomainsAndStyles = function() {
     this.addDomainsAndStyles(
         cvox.ChromeVox.host['mathMap'].allDomains,
         cvox.ChromeVox.host['mathMap'].allStyles);
-    } else {
-      cvox.ChromeVox.host.sendToBackgroundPage(
-          {'target': 'Math',
-           'action': 'getDomains'});
-    }
+  } else {
+    cvox.ChromeVox.host.sendToBackgroundPage(
+        {'target': 'Math', 'action': 'getDomains'});
+  }
 };
 
 

@@ -22,9 +22,10 @@ cvox.BrailleTranslatorManager = function(opt_liblouisForTest) {
    * @type {!cvox.LibLouis}
    * @private
    */
-  this.liblouis_ = opt_liblouisForTest || new cvox.LibLouis(
-      chrome.extension.getURL('braille/liblouis_nacl.nmf'),
-      chrome.extension.getURL('braille/tables'));
+  this.liblouis_ = opt_liblouisForTest ||
+      new cvox.LibLouis(
+          chrome.extension.getURL('braille/liblouis_nacl.nmf'),
+          chrome.extension.getURL('braille/tables'));
   /**
    * @type {!Array<function()>}
    * @private
@@ -62,9 +63,8 @@ cvox.BrailleTranslatorManager = function(opt_liblouisForTest) {
   this.uncontractedTableId_ = null;
 
   if (!opt_liblouisForTest) {
-    document.addEventListener('DOMContentLoaded',
-                              this.loadLiblouis_.bind(this),
-                              false);
+    document.addEventListener(
+        'DOMContentLoaded', this.loadLiblouis_.bind(this), false);
   }
 };
 
@@ -123,12 +123,13 @@ cvox.BrailleTranslatorManager.prototype = {
     // for an uncontracted table.  Otherwise, use the current table and let
     // getUncontracted find an appropriate corresponding table.
     var table8Dot = opt_brailleTable8 ?
-        cvox.BrailleTable.forId(tables, opt_brailleTable8) : null;
-    var uncontractedTable = cvox.BrailleTable.getUncontracted(
-        tables, table8Dot || table);
+        cvox.BrailleTable.forId(tables, opt_brailleTable8) :
+        null;
+    var uncontractedTable =
+        cvox.BrailleTable.getUncontracted(tables, table8Dot || table);
     var newDefaultTableId = table.id;
-    var newUncontractedTableId = table.id === uncontractedTable.id ?
-        null : uncontractedTable.id;
+    var newUncontractedTableId =
+        table.id === uncontractedTable.id ? null : uncontractedTable.id;
     if (newDefaultTableId === this.defaultTableId_ &&
         newUncontractedTableId === this.uncontractedTableId_) {
       return;
@@ -141,7 +142,9 @@ cvox.BrailleTranslatorManager.prototype = {
           defaultTranslator, uncontractedTranslator);
       this.defaultTranslator_ = defaultTranslator;
       this.uncontractedTranslator_ = uncontractedTranslator;
-      this.changeListeners_.forEach(function(listener) { listener(); });
+      this.changeListeners_.forEach(function(listener) {
+        listener();
+      });
     }.bind(this);
 
     this.liblouis_.getTranslator(table.fileNames, function(translator) {
@@ -149,11 +152,10 @@ cvox.BrailleTranslatorManager.prototype = {
         finishRefresh(translator, null);
       } else {
         this.liblouis_.getTranslator(
-            uncontractedTable.fileNames,
-            function(uncontractedTranslator) {
+            uncontractedTable.fileNames, function(uncontractedTranslator) {
               finishRefresh(translator, uncontractedTranslator);
             });
-          }
+      }
     }.bind(this));
   },
 

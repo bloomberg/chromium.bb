@@ -58,8 +58,8 @@ cvox.ClassicEarcons.prototype.playEarcon = function(earcon, opt_location) {
 
   this.currentAudio = this.audioMap[earcon];
   if (!this.currentAudio) {
-    this.currentAudio = new Audio(chrome.extension.getURL(this.getBaseUrl() +
-        earcon + '.ogg'));
+    this.currentAudio =
+        new Audio(chrome.extension.getURL(this.getBaseUrl() + earcon + '.ogg'));
     this.audioMap[earcon] = this.currentAudio;
   }
   try {

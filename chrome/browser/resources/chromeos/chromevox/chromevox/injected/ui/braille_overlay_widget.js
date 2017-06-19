@@ -45,8 +45,7 @@ goog.addSingletonGetter(cvox.BrailleOverlayWidget);
  * listener for braille content messages from the background page.
  */
 cvox.BrailleOverlayWidget.prototype.init = function() {
-  cvox.ExtensionBridge.addMessageListener(goog.bind(
-      this.onMessage_, this));
+  cvox.ExtensionBridge.addMessageListener(goog.bind(this.onMessage_, this));
 };
 
 

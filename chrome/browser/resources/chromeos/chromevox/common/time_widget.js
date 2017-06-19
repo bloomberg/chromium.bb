@@ -37,11 +37,11 @@ cvox.ChromeVoxHTMLTimeWidget = function(timeElem, tts) {
   };
   if (this.timeElem_.hasAttribute('step')) {
     var step = this.timeElem_.getAttribute('step');
-    if (step > 0) { // 0 or invalid values show hh:mm AM/PM
+    if (step > 0) {  // 0 or invalid values show hh:mm AM/PM
       if (step >= 1) {
-        this.maxPos_ = 3; // Anything larger than 1 shows hh:mm:ss AM/PM
+        this.maxPos_ = 3;  // Anything larger than 1 shows hh:mm:ss AM/PM
       } else {
-        this.maxPos_ = 4; // Anything less than 1 shows hh:mm:ss.ms AM/PM
+        this.maxPos_ = 4;  // Anything less than 1 shows hh:mm:ss.ms AM/PM
       }
     }
   }
@@ -56,11 +56,11 @@ cvox.ChromeVoxHTMLTimeWidget = function(timeElem, tts) {
   for (var i = 0; i < this.maxPos_; i++) {
     var evt = document.createEvent('KeyboardEvent');
     evt.initKeyboardEvent(
-          'keydown', true, true, window, 'Left', 0, false, false, false, false);
+        'keydown', true, true, window, 'Left', 0, false, false, false, false);
     this.timeElem_.dispatchEvent(evt);
     evt = document.createEvent('KeyboardEvent');
     evt.initKeyboardEvent(
-          'keyup', true, true, window, 'Left', 0, false, false, false, false);
+        'keyup', true, true, window, 'Left', 0, false, false, false, false);
     this.timeElem_.dispatchEvent(evt);
   }
 
@@ -166,8 +166,8 @@ cvox.ChromeVoxHTMLTimeWidget.prototype.update_ = function(shouldSpeakLabel) {
   }
 
   if (hours != this.pHours_) {
-    changeMessage = changeMessage + hours + ' ' +
-        Msgs.getMsg('timewidget_hours') + '\n';
+    changeMessage =
+        changeMessage + hours + ' ' + Msgs.getMsg('timewidget_hours') + '\n';
     this.pHours_ = hours;
   }
 

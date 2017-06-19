@@ -26,14 +26,14 @@ goog.require('cvox.BrailleTranslatorManager');
  *        Braille translator manager (for mocking in tests)
  * @implements {cvox.BrailleInterface}
  */
-cvox.BrailleBackground = function(opt_displayManagerForTest,
-                                  opt_inputHandlerForTest,
-                                  opt_translatorManagerForTest) {
+cvox.BrailleBackground = function(
+    opt_displayManagerForTest, opt_inputHandlerForTest,
+    opt_translatorManagerForTest) {
   /**
    * @type {!cvox.BrailleTranslatorManager}
    * @private*/
-  this.translatorManager_ = opt_translatorManagerForTest ||
-      new cvox.BrailleTranslatorManager();
+  this.translatorManager_ =
+      opt_translatorManagerForTest || new cvox.BrailleTranslatorManager();
   /**
    * @type {cvox.BrailleDisplayManager}
    * @private
@@ -119,8 +119,7 @@ cvox.BrailleBackground.prototype.getTranslatorManager = function() {
  */
 cvox.BrailleBackground.prototype.onBrailleMessage = function(msg) {
   if (msg['action'] == 'write') {
-    this.setContent_(cvox.NavBraille.fromJson(msg['params']),
-                     msg['contentId']);
+    this.setContent_(cvox.NavBraille.fromJson(msg['params']), msg['contentId']);
   }
 };
 
@@ -173,12 +172,8 @@ cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
  * @param {cvox.NavBraille} content Content of display when event fired.
  * @private
  */
-cvox.BrailleBackground.prototype.sendCommand_ =
-    function(brailleEvt, content) {
-  var msg = {
-    'message': 'BRAILLE',
-    'args': brailleEvt
-  };
+cvox.BrailleBackground.prototype.sendCommand_ = function(brailleEvt, content) {
+  var msg = {'message': 'BRAILLE', 'args': brailleEvt};
   if (content === this.lastContent_) {
     msg.contentId = this.lastContentId_;
   }

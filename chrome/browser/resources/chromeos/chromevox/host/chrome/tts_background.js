@@ -46,18 +46,17 @@ cvox.TtsBackground = function(opt_enableMath) {
   opt_enableMath = opt_enableMath == undefined ? true : opt_enableMath;
   goog.base(this);
 
-  this.ttsProperties['rate'] = (parseFloat(localStorage['rate']) ||
-      this.propertyDefault['rate']);
-  this.ttsProperties['pitch'] = (parseFloat(localStorage['pitch']) ||
-      this.propertyDefault['pitch']);
-  this.ttsProperties['volume'] = (parseFloat(localStorage['volume']) ||
-      this.propertyDefault['volume']);
+  this.ttsProperties['rate'] =
+      (parseFloat(localStorage['rate']) || this.propertyDefault['rate']);
+  this.ttsProperties['pitch'] =
+      (parseFloat(localStorage['pitch']) || this.propertyDefault['pitch']);
+  this.ttsProperties['volume'] =
+      (parseFloat(localStorage['volume']) || this.propertyDefault['volume']);
 
   // Use the current locale as the speech language if not otherwise
   // specified.
   if (this.ttsProperties['lang'] == undefined) {
-    this.ttsProperties['lang'] =
-        chrome.i18n.getUILanguage();
+    this.ttsProperties['lang'] = chrome.i18n.getUILanguage();
   }
 
   this.lastEventType = 'end';
@@ -72,7 +71,7 @@ cvox.TtsBackground = function(opt_enableMath) {
    * regexp:(RegExp),
    * clear:(boolean)}>}
    * @private
-  */
+   */
   this.punctuationEchoes_ = [
     /**
      * Punctuation echoed for the 'none' option.
@@ -111,9 +110,8 @@ cvox.TtsBackground = function(opt_enableMath) {
    * This is important for tts prosity.
    * @type {!Array<string>}
    * @private
-  */
-  this.retainPunctuation_ =
-      [';', '?', '!', '\''];
+   */
+  this.retainPunctuation_ = [';', '?', '!', '\''];
 
   /**
    * Mapping for math elements.
@@ -133,8 +131,8 @@ cvox.TtsBackground = function(opt_enableMath) {
      * @private
      * @const
      */
-    this.PHONETIC_MAP_ = /** @type {Object<string>} */(
-        JSON.parse(Msgs.getMsg('phonetic_map')));
+    this.PHONETIC_MAP_ =
+        /** @type {Object<string>} */ (JSON.parse(Msgs.getMsg('phonetic_map')));
   } catch (e) {
     console.log('Error; unable to parse phonetic map msg.');
   }
@@ -198,17 +196,9 @@ cvox.TtsBackground.PHONETIC_DELAY_MS_ = 1000;
  * @const
  */
 cvox.TtsBackground.ALLOWED_PROPERTIES_ = [
-    'desiredEventTypes',
-    'enqueue',
-    'extensionId',
-    'gender',
-    'lang',
-    'onEvent',
-    'pitch',
-    'rate',
-    'requiredEventTypes',
-    'voiceName',
-    'volume'];
+  'desiredEventTypes', 'enqueue', 'extensionId', 'gender', 'lang', 'onEvent',
+  'pitch', 'rate', 'requiredEventTypes', 'voiceName', 'volume'
+];
 
 
 /** @override */
@@ -285,8 +275,7 @@ cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
   // make a note that we're going to stop speech.
   if (queueMode == cvox.QueueMode.FLUSH ||
       queueMode == cvox.QueueMode.CATEGORY_FLUSH) {
-    (new PanelCommand(
-        PanelCommandType.CLEAR_SPEECH)).send();
+    (new PanelCommand(PanelCommandType.CLEAR_SPEECH)).send();
 
     if (this.shouldCancel_(this.currentUtterance_, utterance, queueMode)) {
       this.cancelUtterance_(this.currentUtterance_);
@@ -294,8 +283,7 @@ cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
     }
     var i = 0;
     while (i < this.utteranceQueue_.length) {
-      if (this.shouldCancel_(
-              this.utteranceQueue_[i], utterance, queueMode)) {
+      if (this.shouldCancel_(this.utteranceQueue_[i], utterance, queueMode)) {
         this.cancelUtterance_(this.utteranceQueue_[i]);
         this.utteranceQueue_.splice(i, 1);
       } else {
@@ -337,9 +325,8 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
   var utteranceId = utterance.id;
 
   utterance.properties['onEvent'] = goog.bind(function(event) {
-            this.onTtsEvent_(event, utteranceId);
-          },
-  this);
+    this.onTtsEvent_(event, utteranceId);
+  }, this);
 
   var validatedProperties = {};
   for (var i = 0; i < cvox.TtsBackground.ALLOWED_PROPERTIES_.length; i++) {
@@ -350,16 +337,14 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
   }
 
   // Update the caption panel.
-  if (utterance.properties &&
-      utterance.properties['pitch'] &&
+  if (utterance.properties && utterance.properties['pitch'] &&
       utterance.properties['pitch'] < this.ttsProperties['pitch']) {
     (new PanelCommand(
-        PanelCommandType.ADD_ANNOTATION_SPEECH,
-        utterance.textString)).send();
+         PanelCommandType.ADD_ANNOTATION_SPEECH, utterance.textString))
+        .send();
   } else {
-    (new PanelCommand(
-        PanelCommandType.ADD_NORMAL_SPEECH,
-        utterance.textString)).send();
+    (new PanelCommand(PanelCommandType.ADD_NORMAL_SPEECH, utterance.textString))
+        .send();
   }
 
   chrome.tts.speak(utterance.textString, validatedProperties);
@@ -378,8 +363,7 @@ cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
   this.lastEventType = event['type'];
 
   // Ignore events sent on utterances other than the current one.
-  if (!this.currentUtterance_ ||
-      utteranceId != this.currentUtterance_.id) {
+  if (!this.currentUtterance_ || utteranceId != this.currentUtterance_.id) {
     return;
   }
 
@@ -442,8 +426,8 @@ cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
  * @return {boolean} True if this utterance should be canceled.
  * @private
  */
-cvox.TtsBackground.prototype.shouldCancel_ =
-    function(utteranceToCancel, newUtterance, queueMode) {
+cvox.TtsBackground.prototype.shouldCancel_ = function(
+    utteranceToCancel, newUtterance, queueMode) {
   if (!utteranceToCancel) {
     return false;
   }
@@ -456,7 +440,8 @@ cvox.TtsBackground.prototype.shouldCancel_ =
     case cvox.QueueMode.FLUSH:
       return true;
     case cvox.QueueMode.CATEGORY_FLUSH:
-      return (utteranceToCancel.properties['category'] ==
+      return (
+          utteranceToCancel.properties['category'] ==
           newUtterance.properties['category']);
   }
   return false;
@@ -478,9 +463,9 @@ cvox.TtsBackground.prototype.cancelUtterance_ = function(utterance) {
 };
 
 /** @override */
-cvox.TtsBackground.prototype.increaseOrDecreaseProperty =
-    function(propertyName, increase) {
-      goog.base(this, 'increaseOrDecreaseProperty', propertyName, increase);
+cvox.TtsBackground.prototype.increaseOrDecreaseProperty = function(
+    propertyName, increase) {
+  goog.base(this, 'increaseOrDecreaseProperty', propertyName, increase);
   localStorage[propertyName] = this.ttsProperties[propertyName];
 };
 
@@ -550,14 +535,12 @@ cvox.TtsBackground.prototype.preprocess = function(text, properties) {
   } else {
     pE = this.punctuationEchoes_[this.currentPunctuationEcho_];
   }
-  text =
-      text.replace(pE.regexp, this.createPunctuationReplace_(pE.clear));
+  text = text.replace(pE.regexp, this.createPunctuationReplace_(pE.clear));
 
   // Try pronouncing phonetically for single characters. Cancel previous calls
   // to pronouncePhonetically_ if we fail to pronounce on this invokation or if
   // this text is math which should never be pronounced phonetically.
-  if (properties.math ||
-      !properties['phoneticCharacters'] ||
+  if (properties.math || !properties['phoneticCharacters'] ||
       !this.pronouncePhonetically_(text)) {
     this.clearTimeout_();
   }
@@ -565,8 +548,9 @@ cvox.TtsBackground.prototype.preprocess = function(text, properties) {
   // Try looking up in our unicode tables for a short description.
   if (!properties.math && text.length == 1 && this.mathmap) {
     text = this.mathmap.store.lookupString(
-        text.toLowerCase(),
-        cvox.MathStore.createDynamicConstraint('default', 'short')) || text;
+               text.toLowerCase(),
+               cvox.MathStore.createDynamicConstraint('default', 'short')) ||
+        text;
   }
 
   //  Remove all whitespace from the beginning and end, and collapse all
@@ -626,8 +610,8 @@ cvox.TtsBackground.prototype.preprocessMath_ = function(text, math) {
     return text;
   }
   var result = '';
-  var dynamicCstr = cvox.MathStore.createDynamicConstraint(
-      math['domain'], math['style']);
+  var dynamicCstr =
+      cvox.MathStore.createDynamicConstraint(math['domain'], math['style']);
   result = this.mathmap.store.lookupString(text, dynamicCstr);
   if (result) {
     return result;
@@ -664,12 +648,13 @@ cvox.TtsBackground.prototype.getNumberAsDigits_ = function(text) {
  */
 cvox.TtsBackground.prototype.createPunctuationReplace_ = function(clear) {
   return goog.bind(function(match) {
-    var retain = this.retainPunctuation_.indexOf(match) != -1 ?
-        match : ' ';
+    var retain = this.retainPunctuation_.indexOf(match) != -1 ? match : ' ';
     return clear ? retain :
-        ' ' + (new goog.i18n.MessageFormat(Msgs.getMsg(
-                cvox.AbstractTts.CHARACTER_DICTIONARY[match])))
-            .format({'COUNT': 1}) + retain + ' ';
+                   ' ' +
+            (new goog.i18n.MessageFormat(
+                 Msgs.getMsg(cvox.AbstractTts.CHARACTER_DICTIONARY[match])))
+                .format({'COUNT': 1}) +
+            retain + ' ';
   }, this);
 };
 
@@ -721,15 +706,21 @@ cvox.TtsBackground.prototype.clearTimeout_ = function() {
 cvox.TtsBackground.prototype.updateVoice_ = function(voiceName, opt_callback) {
   chrome.tts.getVoices(goog.bind(function(voices) {
     chrome.i18n.getAcceptLanguages(goog.bind(function(acceptLanguages) {
-      var currentLocale = acceptLanguages[0] ||
-          chrome.i18n.getUILanguage() || '';
+      var currentLocale =
+          acceptLanguages[0] || chrome.i18n.getUILanguage() || '';
       var match = voices.find.bind(voices);
-      var newVoice =
-          match(function(v) { return v.voiceName == voiceName; }) ||
-          match(function(v) { return v.lang === currentLocale; }) ||
-          match(function(v) { return currentLocale.startsWith(v.lang); }) ||
-          match(function(v) { return v.lang &&
-              v.lang.startsWith(currentLocale); }) ||
+      var newVoice = match(function(v) {
+                       return v.voiceName == voiceName;
+                     }) ||
+          match(function(v) {
+                       return v.lang === currentLocale;
+                     }) ||
+          match(function(v) {
+                       return currentLocale.startsWith(v.lang);
+                     }) ||
+          match(function(v) {
+                       return v.lang && v.lang.startsWith(currentLocale);
+                     }) ||
           voices[0];
 
       if (newVoice) {

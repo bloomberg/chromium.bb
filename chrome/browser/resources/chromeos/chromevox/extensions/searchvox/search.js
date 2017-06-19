@@ -18,8 +18,7 @@ goog.require('cvox.UnknownResult');
 /**
  * @constructor
  */
-cvox.Search = function() {
-};
+cvox.Search = function() {};
 
 /**
  * Selectors to match results.
@@ -100,7 +99,7 @@ cvox.Search.speakSync_ = function() {
  */
 cvox.Search.syncToIndex = function() {
   cvox.ChromeVox.tts.stop();
-  var prop = { endCallback: cvox.Search.speakSync_ };
+  var prop = {endCallback: cvox.Search.speakSync_};
   if (cvox.Search.index === 0) {
     cvox.ChromeVox.tts.speak('First result', cvox.QueueMode.QUEUE, prop);
   } else if (cvox.Search.index === cvox.Search.results.length - 1) {
@@ -169,12 +168,12 @@ cvox.Search.navigatePage = function(next) {
   var navToUrl = function() {
     window.location = url;
   };
-  var prop = { endCallback: navToUrl };
+  var prop = {endCallback: navToUrl};
   if (url) {
     var pageNumber = cvox.Search.getPageNumber(url);
     if (!isNaN(pageNumber)) {
-      cvox.ChromeVox.tts.speak('Page ' + pageNumber, cvox.QueueMode.FLUSH,
-                               prop);
+      cvox.ChromeVox.tts.speak(
+          'Page ' + pageNumber, cvox.QueueMode.FLUSH, prop);
     } else {
       cvox.ChromeVox.tts.speak('Unknown page.', cvox.QueueMode.FLUSH, prop);
     }
@@ -187,8 +186,8 @@ cvox.Search.navigatePage = function(next) {
 cvox.Search.goToPane = function() {
   var pane = cvox.Search.panes[cvox.Search.paneIndex];
   if (pane.className === cvox.Search.SELECTED_PANE_CLASS) {
-    cvox.ChromeVox.tts.speak('You are already on that page.',
-                             cvox.QueueMode.QUEUE);
+    cvox.ChromeVox.tts.speak(
+        'You are already on that page.', cvox.QueueMode.QUEUE);
     return;
   }
   var anchor = pane.querySelector('a');
@@ -233,55 +232,55 @@ cvox.Search.keyhandler = function(evt) {
   if (document.activeElement !== searchInput &&
       !cvox.SearchUtil.isSearchWidgetActive()) {
     switch (evt.keyCode) {
-    case cvox.SearchConstants.KeyCode.UP:
-      /* Add results.length because JS Modulo is silly. */
-      cvox.Search.index = cvox.SearchUtil.subOneWrap(cvox.Search.index,
-        cvox.Search.results.length);
-      if (cvox.Search.index === cvox.Search.results.length - 1) {
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
-      }
-      cvox.Search.syncToIndex();
-      break;
+      case cvox.SearchConstants.KeyCode.UP:
+        /* Add results.length because JS Modulo is silly. */
+        cvox.Search.index = cvox.SearchUtil.subOneWrap(
+            cvox.Search.index, cvox.Search.results.length);
+        if (cvox.Search.index === cvox.Search.results.length - 1) {
+          cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+        }
+        cvox.Search.syncToIndex();
+        break;
 
-    case cvox.SearchConstants.KeyCode.DOWN:
-      cvox.Search.index = cvox.SearchUtil.addOneWrap(cvox.Search.index,
-        cvox.Search.results.length);
-      if (cvox.Search.index === 0) {
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
-      }
-      cvox.Search.syncToIndex();
-      break;
+      case cvox.SearchConstants.KeyCode.DOWN:
+        cvox.Search.index = cvox.SearchUtil.addOneWrap(
+            cvox.Search.index, cvox.Search.results.length);
+        if (cvox.Search.index === 0) {
+          cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+        }
+        cvox.Search.syncToIndex();
+        break;
 
-    case cvox.SearchConstants.KeyCode.PAGE_UP:
-      cvox.Search.navigatePage(false);
-      break;
+      case cvox.SearchConstants.KeyCode.PAGE_UP:
+        cvox.Search.navigatePage(false);
+        break;
 
-    case cvox.SearchConstants.KeyCode.PAGE_DOWN:
-      cvox.Search.navigatePage(true);
-      break;
+      case cvox.SearchConstants.KeyCode.PAGE_DOWN:
+        cvox.Search.navigatePage(true);
+        break;
 
-    case cvox.SearchConstants.KeyCode.LEFT:
-      cvox.Search.paneIndex = cvox.SearchUtil.subOneWrap(cvox.Search.paneIndex,
-        cvox.Search.panes.length);
-      cvox.Search.syncPaneToIndex();
-      break;
+      case cvox.SearchConstants.KeyCode.LEFT:
+        cvox.Search.paneIndex = cvox.SearchUtil.subOneWrap(
+            cvox.Search.paneIndex, cvox.Search.panes.length);
+        cvox.Search.syncPaneToIndex();
+        break;
 
-    case cvox.SearchConstants.KeyCode.RIGHT:
-      cvox.Search.paneIndex = cvox.SearchUtil.addOneWrap(cvox.Search.paneIndex,
-        cvox.Search.panes.length);
-      cvox.Search.syncPaneToIndex();
-      break;
+      case cvox.SearchConstants.KeyCode.RIGHT:
+        cvox.Search.paneIndex = cvox.SearchUtil.addOneWrap(
+            cvox.Search.paneIndex, cvox.Search.panes.length);
+        cvox.Search.syncPaneToIndex();
+        break;
 
-    case cvox.SearchConstants.KeyCode.ENTER:
-      if (cvox.Search.isPane) {
-        cvox.Search.goToPane();
-      } else {
-        cvox.Search.goToResult();
-      }
-      break;
+      case cvox.SearchConstants.KeyCode.ENTER:
+        if (cvox.Search.isPane) {
+          cvox.Search.goToPane();
+        } else {
+          cvox.Search.goToResult();
+        }
+        break;
 
-    default:
-      return false;
+      default:
+        return false;
     }
     evt.preventDefault();
     evt.stopPropagation();
@@ -349,7 +348,7 @@ cvox.Search.observeMutation = function() {
 
   var config =
       /** @type MutationObserverInit */
-      ({ attributes: true, childList: true, characterData: true });
+      ({attributes: true, childList: true, characterData: true});
   observer.observe(target, config);
 };
 
@@ -420,16 +419,16 @@ cvox.Search.init = function() {
 
   var selectedHTML = selected.innerHTML;
   switch (selectedHTML) {
-  case 'Web':
-  case 'News':
-    cvox.Search.selectors = cvox.Search.webSelectors;
-    break;
-  case 'Images':
-    cvox.Search.selectors = cvox.Search.imageSelectors;
-    cvox.Search.observeMutation();
-    break;
-  default:
-    return;
+    case 'Web':
+    case 'News':
+      cvox.Search.selectors = cvox.Search.webSelectors;
+      break;
+    case 'Images':
+      cvox.Search.selectors = cvox.Search.imageSelectors;
+      cvox.Search.observeMutation();
+      break;
+    default:
+      return;
   }
 
   cvox.Search.populateResults();
