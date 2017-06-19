@@ -47,8 +47,6 @@ component("web") {
     "MediaKeysClientImpl.h",
     "PageOverlay.cpp",
     "PageOverlay.h",
-    "PrerendererClientImpl.cpp",
-    "PrerendererClientImpl.h",
     "WebDevToolsAgentImpl.cpp",
     "WebDevToolsAgentImpl.h",
     "WebDevToolsFrontendImpl.cpp",

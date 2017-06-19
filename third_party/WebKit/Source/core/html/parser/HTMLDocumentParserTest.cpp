@@ -16,13 +16,10 @@ namespace blink {
 
 namespace {
 
-class TestPrerendererClient : public GarbageCollected<TestPrerendererClient>,
-                              public PrerendererClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestPrerendererClient);
-
+class TestPrerendererClient : public PrerendererClient {
  public:
   TestPrerendererClient(Page& page, bool is_prefetch_only)
-      : PrerendererClient(page), is_prefetch_only_(is_prefetch_only) {}
+      : PrerendererClient(page, nullptr), is_prefetch_only_(is_prefetch_only) {}
 
  private:
   void WillAddPrerender(Prerender*) override {}
