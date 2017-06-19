@@ -59,7 +59,8 @@
       <div class="start">[[title_]]</div>
       <template is="dom-if" if="[[showActionButton_]]">
         <div class="separator"></div>
-        <paper-button id="action-button" on-tap="proceed_">
+        <paper-button id="action-button" class="primary-button"
+            on-tap="proceed_">
           [[actionButtonLabel_]]
         </paper-button>
       </template>
