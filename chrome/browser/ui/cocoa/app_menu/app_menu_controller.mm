@@ -30,7 +30,6 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
@@ -373,13 +372,6 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   [[buttonViewController_ zoomFullScreen] setImage:icon];
 
   menuOpenTime_ = base::TimeTicks::Now();
-
-  BrowserWindowController* bwc = [BrowserWindowController
-      browserWindowControllerForWindow:browser_->window()->GetNativeWindow()];
-
-  AppToolbarButton* appMenuButton =
-      static_cast<AppToolbarButton*>([[bwc toolbarController] appMenuButton]);
-  [appMenuButton animateIfPossible];
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
