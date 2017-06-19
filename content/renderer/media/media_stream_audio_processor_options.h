@@ -6,12 +6,14 @@
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
+#include "media/base/audio_point.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/media/base/mediachannel.h"
@@ -30,6 +32,7 @@ using webrtc::AudioProcessing;
 
 // A helper class to parse audio constraints from a blink::WebMediaConstraints
 // object.
+// TODO(guidou): Remove this class. http://crbug.com/706408
 class CONTENT_EXPORT MediaAudioConstraints {
  public:
   // Constraint keys used by audio processing.
@@ -92,6 +95,38 @@ class CONTENT_EXPORT MediaAudioConstraints {
   const blink::WebMediaConstraints constraints_;
   const int effects_;
   bool default_audio_processing_constraint_value_;
+};
+
+// Simple struct with audio-processing properties. Will substitute
+// MediaAudioConstraints once the old constraints-processing algorithm is
+// removed. http://crbug.com/706408
+struct CONTENT_EXPORT AudioProcessingProperties {
+  // Creates an AudioProcessingProperties object with fields initialized to
+  // their default values.
+  AudioProcessingProperties();
+  AudioProcessingProperties(const AudioProcessingProperties& other);
+  AudioProcessingProperties& operator=(const AudioProcessingProperties& other);
+  AudioProcessingProperties(AudioProcessingProperties&& other);
+  AudioProcessingProperties& operator=(AudioProcessingProperties&& other);
+  ~AudioProcessingProperties();
+
+  bool enable_sw_echo_cancellation = true;
+  bool disable_hw_echo_cancellation = false;
+  bool goog_audio_mirroring = false;
+  bool goog_auto_gain_control = true;
+  bool goog_experimental_echo_cancellation =
+#if defined(OS_ANDROID)
+      false;
+#else
+      true;
+#endif
+  bool goog_typing_noise_detection = true;
+  bool goog_noise_suppression = true;
+  bool goog_experimental_noise_suppression = true;
+  bool goog_beamforming = true;
+  bool goog_highpass_filter = true;
+  bool goog_experimental_auto_gain_control = true;
+  std::vector<media::Point> goog_array_geometry;
 };
 
 // A helper class to log echo information in general and Echo Cancellation

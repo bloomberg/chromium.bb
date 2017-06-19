@@ -603,6 +603,8 @@ target(link_target_type, "renderer") {
       "media/media_stream_center.h",
       "media/media_stream_constraints_util.cc",
       "media/media_stream_constraints_util.h",
+      "media/media_stream_constraints_util_audio.cc",
+      "media/media_stream_constraints_util_audio.h",
       "media/media_stream_constraints_util_sets.cc",
       "media/media_stream_constraints_util_sets.h",
       "media/media_stream_constraints_util_video_content.cc",

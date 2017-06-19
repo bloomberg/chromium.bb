@@ -45,31 +45,12 @@ using Point = ResolutionSet::Point;
 using StringSet = DiscreteSet<std::string>;
 using BoolSet = DiscreteSet<bool>;
 
-
 constexpr double kMinScreenCastAspectRatio =
     static_cast<double>(kMinScreenCastDimension) /
     static_cast<double>(kMaxScreenCastDimension);
 constexpr double kMaxScreenCastAspectRatio =
     static_cast<double>(kMaxScreenCastDimension) /
     static_cast<double>(kMinScreenCastDimension);
-
-StringSet StringSetFromConstraint(const blink::StringConstraint& constraint) {
-  if (!constraint.HasExact())
-    return StringSet::UniversalSet();
-
-  std::vector<std::string> elements;
-  for (const auto& entry : constraint.Exact())
-    elements.push_back(entry.Ascii());
-
-  return StringSet(std::move(elements));
-}
-
-BoolSet BoolSetFromConstraint(const blink::BooleanConstraint& constraint) {
-  if (!constraint.HasExact())
-    return BoolSet::UniversalSet();
-
-  return BoolSet({constraint.Exact()});
-}
 
 using DoubleRangeSet = NumericRangeSet<double>;
 
@@ -79,9 +60,7 @@ class VideoContentCaptureCandidates {
       : has_explicit_max_height_(false),
         has_explicit_max_width_(false),
         has_explicit_min_frame_rate_(false),
-        has_explicit_max_frame_rate_(false),
-        device_id_set_(StringSet::UniversalSet()),
-        noise_reduction_set_(BoolSet::UniversalSet()) {}
+        has_explicit_max_frame_rate_(false) {}
   explicit VideoContentCaptureCandidates(
       const blink::WebMediaTrackConstraintSet& constraint_set)
       : resolution_set_(ResolutionSet::FromConstraintSet(constraint_set)),
