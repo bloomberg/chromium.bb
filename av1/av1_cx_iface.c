@@ -1024,8 +1024,8 @@ static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
   // Add the number of frames to the marker byte
   marker |= ctx->pending_frame_count - 1;
   for (int i = 0; i < ctx->pending_frame_count - 1; i++) {
-    const size_t frame_sz = (unsigned int)ctx->pending_frame_sizes[i] - 1;
-    max_frame_sz = frame_sz > max_frame_sz ? frame_sz : max_frame_sz;
+    const size_t frame_sz = ctx->pending_frame_sizes[i] - 1;
+    max_frame_sz = AOMMAX(frame_sz, max_frame_sz);
   }
 
   // Choose the magnitude
