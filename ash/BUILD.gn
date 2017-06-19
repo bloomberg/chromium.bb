@@ -687,8 +687,6 @@ component("ash") {
     "wm/maximize_mode/maximize_mode_window_state.cc",
     "wm/maximize_mode/maximize_mode_window_state.h",
     "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h",
-    "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.cc",
-    "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h",
     "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.cc",
     "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h",
     "wm/mru_window_tracker.cc",
@@ -866,6 +864,7 @@ component("ash") {
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
+    "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
     "//skia",
 
@@ -937,10 +936,11 @@ component("ash") {
       "//ui/events/ozone:events_ozone",
       "//ui/ozone",
     ]
-  } else {
-    sources -= [
+    sources += [
       "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.cc",
       "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h",
+      "wm/maximize_mode/touchpad_and_keyboard_disabler.cc",
+      "wm/maximize_mode/touchpad_and_keyboard_disabler.h",
     ]
   }
 
@@ -1333,6 +1333,10 @@ source_set("common_unittests") {
   public_deps = [
     "//ash/test:test_support_without_content",
   ]
+
+  if (use_ozone) {
+    sources += [ "wm/maximize_mode/touchpad_and_keyboard_disabler_unittest.cc" ]
+  }
 }
 
 test("ash_unittests") {

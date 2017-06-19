@@ -67,8 +67,6 @@ class ASH_EXPORT ShellPortClassic : public ShellPort,
       override;
   std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
       aura::Window* workspace_window) override;
-  std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
-  CreateScopedDisableInternalMouseAndKeyboard() override;
   std::unique_ptr<ImmersiveFullscreenController>
   CreateImmersiveFullscreenController() override;
   std::unique_ptr<KeyboardUI> CreateKeyboardUI() override;

@@ -216,7 +216,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual void MoveCursorToScreenLocationInPixels(
       const gfx::Point& location_in_pixels) = 0;
 
-  // kCalled when the cursor visibility has changed.
+  // Called when the cursor visibility has changed.
   virtual void OnCursorVisibilityChangedNative(bool show) = 0;
 
   // Shows the WindowTreeHost.

@@ -40,12 +40,10 @@
 #include "ui/display/types/native_display_delegate.h"
 
 #if defined(USE_X11)
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
 #include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
 #endif
 
 #if defined(USE_OZONE)
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -185,16 +183,6 @@ ShellPortClassic::CreateMaximizeModeEventHandler() {
 std::unique_ptr<WorkspaceEventHandler>
 ShellPortClassic::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
   return base::MakeUnique<WorkspaceEventHandlerAura>(workspace_window);
-}
-
-std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
-ShellPortClassic::CreateScopedDisableInternalMouseAndKeyboard() {
-#if defined(USE_X11)
-  return base::WrapUnique(new ScopedDisableInternalMouseAndKeyboardX11);
-#elif defined(USE_OZONE)
-  return base::WrapUnique(new ScopedDisableInternalMouseAndKeyboardOzone);
-#endif
-  return nullptr;
 }
 
 std::unique_ptr<ImmersiveFullscreenController>

@@ -8,6 +8,8 @@
 
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -18,8 +20,7 @@
 #include "ui/platform_window/platform_window.h"
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/ozone_platform.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #endif
 
 namespace ash {
@@ -116,11 +117,13 @@ void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 
 void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
 #if defined(USE_OZONE)
-  DCHECK(ui::OzonePlatform::GetInstance()->GetInputController());
+  ui::InputDeviceControllerClient* input_device_controller_client =
+      Shell::Get()->shell_delegate()->GetInputDeviceControllerClient();
+  if (!input_device_controller_client)
+    return;  // Happens in tests.
 
   // Temporarily pause tap-to-click when the cursor is hidden.
-  ui::OzonePlatform::GetInstance()->GetInputController()->SetTapToClickPaused(
-      state);
+  input_device_controller_client->SetTapToClickPaused(state);
 #endif
 }
 

@@ -64,6 +64,9 @@ class TestShellDelegate : public ShellDelegate {
                                     bool use_local_state) override;
   void UpdateTouchscreenStatusFromPrefs() override;
   void SuspendMediaSessions() override;
+#if defined(USE_OZONE)
+  ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
+#endif
 
   int num_exit_requests() const { return num_exit_requests_; }
 

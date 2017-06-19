@@ -157,5 +157,12 @@ void TestShellDelegate::SuspendMediaSessions() {
   media_sessions_suspended_ = true;
 }
 
+#if defined(USE_OZONE)
+ui::InputDeviceControllerClient*
+TestShellDelegate::GetInputDeviceControllerClient() {
+  return nullptr;
+}
+#endif
+
 }  // namespace test
 }  // namespace ash

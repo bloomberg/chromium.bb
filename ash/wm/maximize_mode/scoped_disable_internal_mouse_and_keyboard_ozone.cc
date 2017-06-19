@@ -4,49 +4,25 @@
 
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
 
-#include <set>
-
 #include "ash/shell.h"
-#include "ui/aura/client/cursor_client.h"
-#include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/ozone_platform.h"
+#include "ash/shell_delegate.h"
+#include "ash/wm/maximize_mode/touchpad_and_keyboard_disabler.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 
 namespace ash {
 
 ScopedDisableInternalMouseAndKeyboardOzone::
-    ScopedDisableInternalMouseAndKeyboardOzone() {
-  ui::InputController* input_controller =
-      ui::OzonePlatform::GetInstance()->GetInputController();
-  if (input_controller->HasTouchpad() &&
-      input_controller->IsInternalTouchpadEnabled()) {
-    should_ignore_touch_pad_ = false;
-    input_controller->SetInternalTouchpadEnabled(false);
-    Shell::Get()->cursor_manager()->HideCursor();
-  }
-
-  // Allow the acccessible keys present on the side of some devices to continue
-  // working.
-  std::vector<ui::DomCode> allowed_keys;
-  allowed_keys.push_back(ui::DomCode::VOLUME_DOWN);
-  allowed_keys.push_back(ui::DomCode::VOLUME_UP);
-  allowed_keys.push_back(ui::DomCode::POWER);
-  input_controller->SetInternalKeyboardFilter(true /* enable_filter */,
-                                              allowed_keys);
+    ScopedDisableInternalMouseAndKeyboardOzone()
+    : disabler_(nullptr) {
+  // InputDeviceControllerClient may be null in tests.
+  if (Shell::Get()->shell_delegate()->GetInputDeviceControllerClient())
+    disabler_ = new TouchpadAndKeyboardDisabler;
 }
 
 ScopedDisableInternalMouseAndKeyboardOzone::
     ~ScopedDisableInternalMouseAndKeyboardOzone() {
-  ui::InputController* input_controller =
-      ui::OzonePlatform::GetInstance()->GetInputController();
-
-  if (!should_ignore_touch_pad_) {
-    input_controller->SetInternalTouchpadEnabled(true);
-    Shell::Get()->cursor_manager()->ShowCursor();
-  }
-
-  input_controller->SetInternalKeyboardFilter(false /* enable_filter */,
-                                              std::vector<ui::DomCode>());
+  if (disabler_)
+    disabler_->Destroy();
 }
 
 }  // namespace ash

@@ -76,6 +76,7 @@ source_set("lib") {
     "//components/user_manager",
     "//components/wallpaper",
     "//device/bluetooth",
+    "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces/input_devices",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
