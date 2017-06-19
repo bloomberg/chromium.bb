@@ -103,7 +103,7 @@ class ConnectorTest : public testing::Test {
     const size_t size = strlen(text) + 1;  // Plus null terminator.
     Message message(1, 0, size, 0);
     memcpy(message.payload_buffer()->Allocate(size), text, size);
-    message.AttachHandles(std::move(handles));
+    message.AttachHandles(&handles);
     return message;
   }
 

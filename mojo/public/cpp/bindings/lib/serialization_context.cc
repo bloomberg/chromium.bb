@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -44,6 +45,12 @@ SerializationContext::SerializationContext() {}
 
 SerializationContext::~SerializationContext() {
   DCHECK(!custom_contexts || custom_contexts->empty());
+}
+
+void SerializationContext::AttachHandlesToMessage(Message* message) {
+  associated_endpoint_handles.swap(
+      *message->mutable_associated_endpoint_handles());
+  message->AttachHandles(handles.mutable_handles());
 }
 
 }  // namespace internal

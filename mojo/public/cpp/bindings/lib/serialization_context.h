@@ -18,6 +18,9 @@
 #include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
+
+class Message;
+
 namespace internal {
 
 // A container for handles during serialization/deserialization.
@@ -27,6 +30,7 @@ class MOJO_CPP_BINDINGS_EXPORT SerializedHandleVector {
   ~SerializedHandleVector();
 
   size_t size() const { return handles_.size(); }
+  std::vector<mojo::ScopedHandle>* mutable_handles() { return &handles_; }
 
   // Adds a handle to the handle list and returns its index for encoding.
   Handle_Data AddHandle(mojo::ScopedHandle handle);
@@ -56,6 +60,10 @@ struct MOJO_CPP_BINDINGS_EXPORT SerializationContext {
   SerializationContext();
 
   ~SerializationContext();
+
+  // Transfers ownership of any accumulated handles and associated endpoint
+  // handles into |*message|.
+  void AttachHandlesToMessage(Message* message);
 
   // Opaque context pointers returned by StringTraits::SetUpContext().
   std::unique_ptr<std::queue<void*>> custom_contexts;

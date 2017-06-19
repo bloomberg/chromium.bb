@@ -51,8 +51,7 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   Message(uint32_t name,
           uint32_t flags,
           size_t payload_size,
-          size_t payload_interface_id_count,
-          std::vector<ScopedHandle> handles = std::vector<ScopedHandle>());
+          size_t payload_interface_id_count);
 
   // Constructs a new serialized Message object from an existing
   // ScopedMessageHandle; e.g., one read from a message pipe.
@@ -151,8 +150,8 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
 
   // Attaches handles to this Message. Note that this requires the underlying
   // message object to be reallocated and the payload to be copied into a new
-  // buffer.
-  void AttachHandles(std::vector<ScopedHandle> handles);
+  // buffer. Takes ownership of the contents of |*handles|.
+  void AttachHandles(std::vector<ScopedHandle>* handles);
 
   // Takes a scoped MessageHandle which may be passed to |WriteMessageNew()| for
   // transmission. Note that this invalidates this Message object, taking
