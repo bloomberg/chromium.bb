@@ -13,9 +13,7 @@ function sameDocumentSetupDone() {
 
 function differentDocumentSetupDone() {
     setTimeout(function() {
-        // Send a backspace to trigger a back navigation.
-        if (window.eventSender)
-            eventSender.keyDown('Backspace');
+        window.history.back();
      }, 0);
 }
 
