@@ -390,16 +390,6 @@ Polymer({
     },
 
     /**
-     * Whether the WebUI route controls should be shown instead of the
-     * extensionview in the route details view.
-     * @type {boolean}
-     */
-    useWebUiRouteControls: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Whether the user has explicitly selected a cast mode.
      * @private {boolean}
      */
@@ -1883,8 +1873,7 @@ Polymer({
    * from route details view to the sink list view.
    */
   onRouteControllerInvalidated: function() {
-    if (this.useWebUiRouteControls &&
-        this.currentView_ == media_router.MediaRouterView.ROUTE_DETAILS) {
+    if (this.currentView_ == media_router.MediaRouterView.ROUTE_DETAILS) {
       this.currentRoute_ = null;
       this.showSinkList_();
     }
@@ -2453,7 +2442,7 @@ Polymer({
   showRouteDetails_: function(route) {
     this.currentRoute_ = route;
     this.currentView_ = media_router.MediaRouterView.ROUTE_DETAILS;
-    if (this.useWebUiRouteControls) {
+    if (route.supportsWebUiController) {
       media_router.browserApi.onMediaControllerAvailable(route.id);
     }
     if (this.$$('route-details')) {

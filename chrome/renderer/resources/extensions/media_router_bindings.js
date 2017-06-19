@@ -85,9 +85,11 @@ define('media_router_bindings', [
       'custom_controller_path': route.customControllerPath,
       // Begin newly added properties, followed by the milestone they were
       // added.  The guard should be safe to remove N+2 milestones later.
-      'for_display': route.forDisplay, // M47
-      'is_incognito': !!route.offTheRecord,  // M50
-      'is_offscreen_presentation': !!route.isOffscreenPresentation // M56
+      'for_display': route.forDisplay,                               // M47
+      'is_incognito': !!route.offTheRecord,                          // M50
+      'is_offscreen_presentation': !!route.isOffscreenPresentation,  // M56
+      'supports_media_route_controller':
+          !!route.supportsMediaRouteController  // M61
     });
   }
 

@@ -162,6 +162,9 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // Keeps track of whether a command to close the dialog has been issued.
   bool dialog_closing_;
 
+  // Whether the WebUI version of route controller is available for use.
+  const bool is_web_ui_route_controller_available_;
+
   // The media status currently shown in the UI.
   base::Optional<MediaStatus> current_media_status_;
 

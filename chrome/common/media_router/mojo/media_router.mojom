@@ -88,8 +88,11 @@ struct MediaRoute {
   bool is_local;
   // An optional path to an HTML page bundled bundled with the media router
   // component extension. When set, the route can have custom route detail as
-  // well as its own route controls in the media router dialog.
+  // well as its own route controls within an extensionview in the Media Router
+  // dialog.
   string? custom_controller_path;
+  // Whether the provider for this route supports the Media Route Controller.
+  bool supports_media_route_controller;
   // Set to true if this route should be displayed for |media_sink_id| in UI.
   bool for_display;
   // Set to true if this route was created by an incognito profile.
