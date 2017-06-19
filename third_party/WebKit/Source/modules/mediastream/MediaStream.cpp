@@ -222,6 +222,8 @@ void MediaStream::addTrack(MediaStreamTrack* track,
 
   MediaStreamCenter::Instance().DidAddMediaStreamTrack(descriptor_,
                                                        track->Component());
+  for (auto& observer : observers_)
+    observer->OnStreamAddTrack(this, track);
 }
 
 void MediaStream::removeTrack(MediaStreamTrack* track,
@@ -258,6 +260,8 @@ void MediaStream::removeTrack(MediaStreamTrack* track,
 
   MediaStreamCenter::Instance().DidRemoveMediaStreamTrack(descriptor_,
                                                           track->Component());
+  for (auto& observer : observers_)
+    observer->OnStreamRemoveTrack(this, track);
 }
 
 MediaStreamTrack* MediaStream::getTrackById(String id) {
@@ -302,6 +306,15 @@ void MediaStream::TrackEnded() {
   }
 
   StreamEnded();
+}
+
+void MediaStream::RegisterObserver(MediaStreamObserver* observer) {
+  DCHECK(observer);
+  observers_.insert(observer);
+}
+
+void MediaStream::UnregisterObserver(MediaStreamObserver* observer) {
+  observers_.erase(observer);
 }
 
 void MediaStream::StreamEnded() {
@@ -428,6 +441,7 @@ DEFINE_TRACE(MediaStream) {
   visitor->Trace(audio_tracks_);
   visitor->Trace(video_tracks_);
   visitor->Trace(descriptor_);
+  visitor->Trace(observers_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);

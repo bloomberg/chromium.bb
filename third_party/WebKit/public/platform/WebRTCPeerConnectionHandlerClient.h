@@ -31,13 +31,15 @@
 #ifndef WebRTCPeerConnectionHandlerClient_h
 #define WebRTCPeerConnectionHandlerClient_h
 
+#include "WebCommon.h"
+
 namespace blink {
 
 class WebMediaStream;
 class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
 
-class WebRTCPeerConnectionHandlerClient {
+class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
  public:
   enum SignalingState {
     kSignalingStateStable = 1,
@@ -67,7 +69,7 @@ class WebRTCPeerConnectionHandlerClient {
     kICEGatheringStateComplete = 3
   };
 
-  virtual ~WebRTCPeerConnectionHandlerClient() {}
+  virtual ~WebRTCPeerConnectionHandlerClient();
 
   virtual void NegotiationNeeded() = 0;
   virtual void DidGenerateICECandidate(const WebRTCICECandidate&) = 0;
@@ -78,7 +80,7 @@ class WebRTCPeerConnectionHandlerClient {
   virtual void DidRemoveRemoteStream(const WebMediaStream&) = 0;
   virtual void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
   virtual void ReleasePeerConnectionHandler() = 0;
-  virtual void ClosePeerConnection() {}
+  virtual void ClosePeerConnection();
 };
 
 }  // namespace blink

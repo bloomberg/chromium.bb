@@ -39,6 +39,18 @@ class ExceptionState;
 class ExecutionContext;
 class ScriptState;
 
+class MODULES_EXPORT MediaStreamObserver : public GarbageCollectedMixin {
+ public:
+  virtual ~MediaStreamObserver() {}
+
+  // Invoked when |MediaStream::addTrack| is called.
+  virtual void OnStreamAddTrack(MediaStream*, MediaStreamTrack*) = 0;
+  // Invoked when |MediaStream::removeTrack| is called.
+  virtual void OnStreamRemoveTrack(MediaStream*, MediaStreamTrack*) = 0;
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+};
+
 class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
                                          public ContextClient,
                                          public URLRegistrable,
@@ -72,6 +84,9 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
   void TrackEnded();
+
+  void RegisterObserver(MediaStreamObserver*);
+  void UnregisterObserver(MediaStreamObserver*);
 
   // MediaStreamDescriptorClient implementation
   void StreamEnded() override;
@@ -111,6 +126,8 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   MediaStreamTrackVector audio_tracks_;
   MediaStreamTrackVector video_tracks_;
   Member<MediaStreamDescriptor> descriptor_;
+  // Observers are informed when |addTrack| and |removeTrack| are called.
+  HeapHashSet<WeakMember<MediaStreamObserver>> observers_;
 
   TaskRunnerTimer<MediaStream> scheduled_event_timer_;
   HeapVector<Member<Event>> scheduled_events_;

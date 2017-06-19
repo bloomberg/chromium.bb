@@ -57,6 +57,7 @@ class RTCDataChannelInit;
 class RTCIceCandidateInitOrRTCIceCandidate;
 class RTCOfferOptions;
 class RTCPeerConnectionErrorCallback;
+class RTCPeerConnectionTest;
 class RTCRtpReceiver;
 class RTCRtpSender;
 class RTCSessionDescription;
@@ -67,10 +68,12 @@ class ScriptState;
 class VoidCallback;
 struct WebRTCConfiguration;
 
-class RTCPeerConnection final : public EventTargetWithInlineData,
-                                public WebRTCPeerConnectionHandlerClient,
-                                public ActiveScriptWrappable<RTCPeerConnection>,
-                                public SuspendableObject {
+class MODULES_EXPORT RTCPeerConnection final
+    : public EventTargetWithInlineData,
+      public WebRTCPeerConnectionHandlerClient,
+      public ActiveScriptWrappable<RTCPeerConnection>,
+      public SuspendableObject,
+      public MediaStreamObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
   USING_PRE_FINALIZER(RTCPeerConnection, Dispose);
@@ -176,6 +179,10 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icegatheringstatechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel);
 
+  // MediaStreamObserver
+  void OnStreamAddTrack(MediaStream*, MediaStreamTrack*) override;
+  void OnStreamRemoveTrack(MediaStream*, MediaStreamTrack*) override;
+
   // WebRTCPeerConnectionHandlerClient
   void NegotiationNeeded() override;
   void DidGenerateICECandidate(const WebRTCICECandidate&) override;
@@ -204,6 +211,8 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class RTCPeerConnectionTest;
+
   typedef Function<bool()> BoolFunction;
   class EventWrapper : public GarbageCollectedFinalized<EventWrapper> {
    public:
@@ -229,8 +238,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   void ScheduleDispatchEvent(Event*);
   void ScheduleDispatchEvent(Event*, std::unique_ptr<BoolFunction>);
   void DispatchScheduledEvent();
-  MediaStreamTrack* GetLocalTrackById(const String& track_id) const;
-  MediaStreamTrack* GetRemoteTrackById(const String& track_id) const;
+  MediaStreamTrack* GetTrack(const WebMediaStreamTrack& web_track) const;
   // Senders and receivers returned by the handler are in use by the peer
   // connection, a sender or receiver that is no longer in use is permanently
   // inactive and does not need to be referenced anymore. These methods removes
@@ -258,11 +266,13 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   ICEGatheringState ice_gathering_state_;
   ICEConnectionState ice_connection_state_;
 
-  // TODO(hbos): Move away from "addStream" and "removeStream" in favor of
-  // "addTrack" and "removeTrack". Update tracks, senders and receivers on
-  // relevant events. https://crbug.com/705901
   MediaStreamVector local_streams_;
   MediaStreamVector remote_streams_;
+  // A map containing any track that is in use by the peer connection. This
+  // includes tracks of |local_streams_|, |remote_streams_|, |rtp_senders_| and
+  // |rtp_receivers_|.
+  HeapHashMap<WeakMember<MediaStreamComponent>, WeakMember<MediaStreamTrack>>
+      tracks_;
   HeapHashMap<uintptr_t, Member<RTCRtpSender>> rtp_senders_;
   HeapHashMap<uintptr_t, Member<RTCRtpReceiver>> rtp_receivers_;
 
