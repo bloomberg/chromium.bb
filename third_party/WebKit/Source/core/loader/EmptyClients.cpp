@@ -164,8 +164,7 @@ DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
                                 client_redirect_policy);
 }
 
-LocalFrame* EmptyLocalFrameClient::CreateFrame(const FrameLoadRequest&,
-                                               const AtomicString&,
+LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
                                                HTMLFrameOwnerElement*) {
   return nullptr;
 }

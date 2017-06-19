@@ -780,10 +780,9 @@ void LocalFrameClientImpl::TransitionToCommittedForNewPage() {
 }
 
 LocalFrame* LocalFrameClientImpl::CreateFrame(
-    const FrameLoadRequest& request,
     const AtomicString& name,
     HTMLFrameOwnerElement* owner_element) {
-  return web_frame_->CreateChildFrame(request, name, owner_element);
+  return web_frame_->CreateChildFrame(name, owner_element);
 }
 
 bool LocalFrameClientImpl::CanCreatePluginWithoutRenderer(
