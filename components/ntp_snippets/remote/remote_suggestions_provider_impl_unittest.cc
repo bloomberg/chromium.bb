@@ -76,6 +76,7 @@ using testing::Mock;
 using testing::MockFunction;
 using testing::NiceMock;
 using testing::Not;
+using testing::Property;
 using testing::Return;
 using testing::SaveArg;
 using testing::SizeIs;
@@ -90,18 +91,6 @@ namespace {
 ACTION_P(MoveSecondArgumentPointeeTo, ptr) {
   // 0-based indexation.
   *ptr = std::move(*arg1);
-}
-
-MATCHER_P(IdEq, value, "") {
-  return arg->id() == value;
-}
-
-MATCHER_P(IdWithinCategoryEq, expected_id, "") {
-  return arg.id().id_within_category() == expected_id;
-}
-
-MATCHER_P(HasCode, code, "") {
-  return arg.code == code;
 }
 
 const int kMaxExcludedDismissedIds = 100;
@@ -1039,14 +1028,14 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReplaceSuggestions) {
   LoadFromJSONString(provider.get(),
                      GetTestJson({GetSuggestionWithUrl(first)}));
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
-              ElementsAre(IdEq(first)));
+              ElementsAre(Pointee(Property(&RemoteSuggestion::id, first))));
 
   std::string second("http://second");
   LoadFromJSONString(provider.get(),
                      GetTestJson({GetSuggestionWithUrl(second)}));
   // The suggestions loaded last replace all that was loaded previously.
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
-              ElementsAre(IdEq(second)));
+              ElementsAre(Pointee(Property(&RemoteSuggestion::id, second))));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -1055,8 +1044,9 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   LoadFromJSONString(provider.get(),
                      GetTestJson({GetSuggestionWithUrl("http://first")}));
-  ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
-              ElementsAre(IdEq("http://first")));
+  ASSERT_THAT(
+      provider->GetSuggestionsForTesting(articles_category()),
+      ElementsAre(Pointee(Property(&RemoteSuggestion::id, "http://first"))));
 
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
   ServeImageCallback serve_one_by_one_image_callback =
@@ -1075,8 +1065,9 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldFetchMore) {
 
   LoadFromJSONString(provider.get(),
                      GetTestJson({GetSuggestionWithUrl("http://first")}));
-  ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
-              ElementsAre(IdEq("http://first")));
+  ASSERT_THAT(
+      provider->GetSuggestionsForTesting(articles_category()),
+      ElementsAre(Pointee(Property(&RemoteSuggestion::id, "http://first"))));
 
   auto expect_only_second_suggestion_received =
       base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
@@ -1147,8 +1138,11 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       .Run(Status(StatusCode::SUCCESS, "message"),
            std::move(fetched_categories));
 
-  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
-              ElementsAre(IdWithinCategoryEq("http://old.com/")));
+  ASSERT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(Property(&ContentSuggestion::id,
+                           Property(&ContentSuggestion::ID::id_within_category,
+                                    "http://old.com/"))));
 
   // Now fetch more, but first prepare a response.
   fetched_categories.push_back(FetchedCategory(
@@ -1162,8 +1156,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   auto assert_receiving_one_new_suggestion =
       base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
         ASSERT_THAT(suggestions, SizeIs(1));
-        ASSERT_THAT(suggestions[0],
-                    IdWithinCategoryEq("http://fetched-more.com/"));
+        ASSERT_THAT(suggestions[0].id().id_within_category(),
+                    Eq("http://fetched-more.com/"));
       });
   EXPECT_CALL(*mock_fetcher, FetchSnippets(_, _))
       .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
@@ -1178,8 +1172,11 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       .Run(Status(StatusCode::SUCCESS, "message"),
            std::move(fetched_categories));
   // Other surfaces should remain the same.
-  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
-              ElementsAre(IdWithinCategoryEq("http://old.com/")));
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(Property(&ContentSuggestion::id,
+                           Property(&ContentSuggestion::ID::id_within_category,
+                                    "http://old.com/"))));
 }
 
 // Imagine that we have surfaces A and B. The user fetches more in A. This
@@ -1207,8 +1204,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   auto assert_receiving_one_new_suggestion =
       base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
         ASSERT_THAT(suggestions, SizeIs(1));
-        ASSERT_THAT(suggestions[0],
-                    IdWithinCategoryEq("http://fetched-more.com/"));
+        ASSERT_THAT(suggestions[0].id().id_within_category(),
+                    Eq("http://fetched-more.com/"));
       });
   RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
   EXPECT_CALL(*mock_fetcher, FetchSnippets(_, _))
@@ -1236,8 +1233,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   auto expect_receiving_same_suggestion =
       base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
         ASSERT_THAT(suggestions, SizeIs(1));
-        EXPECT_THAT(suggestions[0],
-                    IdWithinCategoryEq("http://fetched-more.com/"));
+        EXPECT_THAT(suggestions[0].id().id_within_category(),
+                    Eq("http://fetched-more.com/"));
       });
   // The provider should not ask the fetcher to exclude the suggestion fetched
   // more on A.
@@ -1314,7 +1311,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnFetchRequestEmptyBeforeInit) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_suggestions_fetcher=*/false);
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  EXPECT_CALL(loaded, Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                           IsEmpty()));
   provider->Fetch(articles_category(), std::set<std::string>(),
                   base::Bind(&SuggestionsLoaded, &loaded));
   base::RunLoop().RunUntilIdle();
@@ -1324,7 +1322,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnTemporaryErrorForInvalidJson) {
   auto provider = MakeSuggestionsProvider();
 
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  EXPECT_CALL(loaded, Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                           IsEmpty()));
   LoadMoreFromJSONString(provider.get(), articles_category(),
                          "invalid json string}]}",
                          /*known_ids=*/std::set<std::string>(),
@@ -1338,7 +1337,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   auto provider = MakeSuggestionsProvider();
 
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  EXPECT_CALL(loaded, Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                           IsEmpty()));
   LoadMoreFromJSONString(provider.get(), articles_category(),
                          GetTestJson({GetIncompleteSuggestion()}),
                          /*known_ids=*/std::set<std::string>(),
@@ -1353,7 +1353,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   auto provider = MakeSuggestionsProvider(/*set_empty_response=*/false);
 
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  EXPECT_CALL(loaded, Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                           IsEmpty()));
   provider->Fetch(articles_category(),
                   /*known_ids=*/std::set<std::string>(),
                   base::Bind(&SuggestionsLoaded, &loaded));
@@ -1365,7 +1366,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnTemporaryErrorForHttpFailure) {
   SetUpHttpError();
 
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  EXPECT_CALL(loaded, Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+                           IsEmpty()));
   provider->Fetch(articles_category(),
                   /*known_ids=*/std::set<std::string>(),
                   base::Bind(&SuggestionsLoaded, &loaded));
