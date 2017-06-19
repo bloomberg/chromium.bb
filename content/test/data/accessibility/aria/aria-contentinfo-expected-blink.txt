@@ -1,4 +1,0 @@
-rootWebArea
-++contentInfo
-++++staticText name='This is ARIA role contentinfo.'
-++++++inlineTextBox name='This is ARIA role contentinfo.'

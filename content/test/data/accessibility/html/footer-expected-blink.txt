@@ -1,4 +1,0 @@
-rootWebArea
-++footer
-++++staticText name='Footer element'
-++++++inlineTextBox name='Footer element'

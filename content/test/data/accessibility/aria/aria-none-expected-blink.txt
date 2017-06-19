@@ -1,3 +1,0 @@
-rootWebArea
-++staticText name='With aria-role none'
-++++inlineTextBox name='With aria-role none'

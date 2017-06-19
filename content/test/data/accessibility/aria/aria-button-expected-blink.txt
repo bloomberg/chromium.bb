@@ -1,6 +1,0 @@
-rootWebArea
-++button name='Button1'
-++toggleButton name='Button2' checkedState=2
-++toggleButton name='Button3' checkedState=1
-++popUpButton haspopup name='Button4'
-++button name='Button5'

@@ -1,4 +1,0 @@
-rootWebArea
-++timer
-++++staticText name='This test is for aria-role = timer'
-++++++inlineTextBox name='This test is for aria-role = timer'

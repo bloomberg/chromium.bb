@@ -1,4 +1,0 @@
-rootWebArea
-++complementary
-++++staticText name='This is ARIA role complementary.'
-++++++inlineTextBox name='This is ARIA role complementary.'

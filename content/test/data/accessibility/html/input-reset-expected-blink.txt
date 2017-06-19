@@ -1,4 +1,0 @@
-rootWebArea
-++genericContainer
-++++textField
-++++button name='Reset'

@@ -1,4 +1,0 @@
-rootWebArea
-++search
-++++staticText name='ARIA role search.'
-++++++inlineTextBox name='ARIA role search.'

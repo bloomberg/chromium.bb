@@ -1,7 +1,0 @@
-rootWebArea
-++link name='link with no href but onclick' defaultActionVerb=4
-++++staticText name='link with no href but onclick' defaultActionVerb=3
-++++++inlineTextBox name='link with no href but onclick'
-++link name='link with no href and click handler added via script' defaultActionVerb=4
-++++staticText name='link with no href and click handler added via script' defaultActionVerb=3
-++++++inlineTextBox name='link with no href and click handler added via script'

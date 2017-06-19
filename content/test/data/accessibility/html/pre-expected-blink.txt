@@ -1,4 +1,0 @@
-rootWebArea
-++pre
-++++staticText name='This test is to check pre tag.'
-++++++inlineTextBox name='This test is to check pre tag.'

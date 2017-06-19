@@ -1,4 +1,0 @@
-rootWebArea
-++listBox
-++++listBoxOption selectable selected name='1'
-++++listBoxOption selectable name='2'
