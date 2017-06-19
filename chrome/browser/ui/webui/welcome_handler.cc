@@ -45,6 +45,7 @@ void WelcomeHandler::OnSyncConfirmationUIClosed(
 // Handles backend events necessary when user clicks "Sign in."
 void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
   result_ = WelcomeResult::ATTEMPTED;
+  base::RecordAction(base::UserMetricsAction("WelcomePage_SignInClicked"));
 
   if (SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated()) {
     // In general, this page isn't shown to signed-in users; however, if one
