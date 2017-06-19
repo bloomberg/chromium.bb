@@ -24,6 +24,7 @@
 
 #include "platform/graphics/filters/FEComposite.h"
 
+#include "SkArithmeticImageFilter.h"
 #include "SkXfermodeImageFilter.h"
 
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
@@ -189,7 +190,7 @@ sk_sp<SkImageFilter> FEComposite::CreateImageFilterInternal(
   SkImageFilter::CropRect crop_rect = GetCropRect();
 
   if (type_ == FECOMPOSITE_OPERATOR_ARITHMETIC) {
-    return SkXfermodeImageFilter::MakeArithmetic(
+    return SkArithmeticImageFilter::Make(
         SkFloatToScalar(k1_), SkFloatToScalar(k2_), SkFloatToScalar(k3_),
         SkFloatToScalar(k4_), requires_pm_color_validation,
         std::move(background), std::move(foreground), &crop_rect);
