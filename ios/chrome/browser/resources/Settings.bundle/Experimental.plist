@@ -560,6 +560,28 @@
 		</dict>
 		<dict>
 			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Enable Bookmark Reordering</string>
+			<key>Key</key>
+			<string>EnableBookmarkReordering</string>
+			<key>DefaultValue</key>
+			<string></string>
+			<key>Values</key>
+			<array>
+				<string></string>
+				<string>Enabled</string>
+				<string>Disabled</string>
+			</array>
+			<key>Titles</key>
+			<array>
+				<string>Default</string>
+				<string>Enabled</string>
+				<string>Disabled</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
 			<string>Web APIs</string>

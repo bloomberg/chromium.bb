@@ -53,6 +53,9 @@ const char kDisableRequestMobileSite[] = "disable-request-mobile-site";
 // Disables the Suggestions UI
 const char kDisableSuggestionsUI[] = "disable-suggestions-ui";
 
+// Disables bookmark reordering.
+const char kDisableBookmarkReordering[] = "disable-bookmark-reordering";
+
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
 
@@ -92,6 +95,9 @@ const char kEnableIOSPhysicalWeb[] = "enable-ios-physical-web";
 
 // Enables the Suggestions UI
 const char kEnableSuggestionsUI[] = "enable-suggestions-ui";
+
+// Enables bookmark reordering.
+const char kEnableBookmarkReordering[] = "enable-bookmark-reordering";
 
 // Forces additional Chrome Variation Ids that will be sent in X-Client-Data
 // header, specified as a 64-bit encoded list of numeric experiment ids. Ids
