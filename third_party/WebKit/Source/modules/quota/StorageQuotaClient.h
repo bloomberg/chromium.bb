@@ -33,6 +33,7 @@
 
 #include "core/page/Page.h"
 #include "modules/ModulesExport.h"
+#include "modules/quota/StorageQuotaClient.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
@@ -45,21 +46,30 @@ class Page;
 class StorageErrorCallback;
 class StorageQuotaCallback;
 
-class StorageQuotaClient : public Supplement<Page> {
+class MODULES_EXPORT StorageQuotaClient
+    : public GarbageCollectedFinalized<StorageQuotaClient>,
+      public Supplement<Page> {
   WTF_MAKE_NONCOPYABLE(StorageQuotaClient);
+  USING_GARBAGE_COLLECTED_MIXIN(StorageQuotaClient);
 
  public:
-  StorageQuotaClient() {}
-  virtual ~StorageQuotaClient() {}
+  static StorageQuotaClient* Create() { return new StorageQuotaClient(); }
 
-  virtual void RequestQuota(ScriptState*,
-                            WebStorageQuotaType,
-                            unsigned long long new_quota_in_bytes,
-                            StorageQuotaCallback*,
-                            StorageErrorCallback*) = 0;
+  virtual ~StorageQuotaClient();
+
+  void RequestQuota(ScriptState*,
+                    WebStorageQuotaType,
+                    unsigned long long new_quota_in_bytes,
+                    StorageQuotaCallback*,
+                    StorageErrorCallback*);
 
   static const char* SupplementName();
   static StorageQuotaClient* From(ExecutionContext*);
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::Trace(visitor); }
+
+ private:
+  StorageQuotaClient();
 };
 
 MODULES_EXPORT void ProvideStorageQuotaClientTo(Page&, StorageQuotaClient*);

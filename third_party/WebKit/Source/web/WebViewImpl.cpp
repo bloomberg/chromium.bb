@@ -104,7 +104,7 @@
 #include "modules/compositorworker/CompositorWorkerProxyClientImpl.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
-#include "modules/quota/StorageQuotaClientImpl.h"
+#include "modules/quota/StorageQuotaClient.h"
 #include "modules/speech/SpeechRecognitionClientProxy.h"
 #include "modules/storage/StorageNamespaceController.h"
 #include "modules/webdatabase/DatabaseClient.h"
@@ -392,7 +392,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   ProvideContextFeaturesTo(*page_, ContextFeaturesClientImpl::Create());
   ProvideDatabaseClientTo(*page_, new DatabaseClient);
 
-  ProvideStorageQuotaClientTo(*page_, StorageQuotaClientImpl::Create());
+  ProvideStorageQuotaClientTo(*page_, StorageQuotaClient::Create());
   page_->SetValidationMessageClient(ValidationMessageClientImpl::Create(*this));
   StorageNamespaceController::ProvideStorageNamespaceTo(*page_,
                                                         &storage_client_impl_);

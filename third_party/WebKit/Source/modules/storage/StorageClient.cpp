@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/storage/StorageClientImpl.h"
+#include "modules/storage/StorageClient.h"
 
 #include <memory>
 #include "core/exported/WebViewBase.h"
@@ -43,19 +43,18 @@ STATIC_ASSERT_MATCHING_ENUM(kLocalStorage,
 STATIC_ASSERT_MATCHING_ENUM(kSessionStorage,
                             ContentSettingsClient::StorageType::kSession);
 
-StorageClientImpl::StorageClientImpl(WebViewBase* web_view)
-    : web_view_(web_view) {}
+StorageClient::StorageClient(WebViewBase* web_view) : web_view_(web_view) {}
 
 std::unique_ptr<StorageNamespace>
-StorageClientImpl::CreateSessionStorageNamespace() {
+StorageClient::CreateSessionStorageNamespace() {
   if (!web_view_->Client())
     return nullptr;
   return WTF::WrapUnique(new StorageNamespace(
       WTF::WrapUnique(web_view_->Client()->CreateSessionStorageNamespace())));
 }
 
-bool StorageClientImpl::CanAccessStorage(LocalFrame* frame,
-                                         StorageType type) const {
+bool StorageClient::CanAccessStorage(LocalFrame* frame,
+                                     StorageType type) const {
   DCHECK(frame->GetContentSettingsClient());
   return frame->GetContentSettingsClient()->AllowStorage(
       static_cast<ContentSettingsClient::StorageType>(type));

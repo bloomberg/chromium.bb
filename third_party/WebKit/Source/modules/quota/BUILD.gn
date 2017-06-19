@@ -25,8 +25,6 @@ blink_modules_sources("quota") {
     "StorageQuotaCallback.h",
     "StorageQuotaClient.cpp",
     "StorageQuotaClient.h",
-    "StorageQuotaClientImpl.cpp",
-    "StorageQuotaClientImpl.h",
     "StorageUsageCallback.h",
     "WorkerNavigatorStorageQuota.cpp",
     "WorkerNavigatorStorageQuota.h",
