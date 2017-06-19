@@ -5,19 +5,26 @@
 #ifndef StorageClient_h
 #define StorageClient_h
 
-#include "modules/storage/StorageArea.h"
 #include <memory>
+#include "modules/ModulesExport.h"
+#include "modules/storage/StorageArea.h"
+#include "modules/storage/StorageClient.h"
 
 namespace blink {
 
 class StorageNamespace;
+class WebViewBase;
 
-class StorageClient {
+class MODULES_EXPORT StorageClient {
  public:
-  virtual ~StorageClient() {}
+  explicit StorageClient(WebViewBase*);
+  ~StorageClient() {}
 
-  virtual std::unique_ptr<StorageNamespace> CreateSessionStorageNamespace() = 0;
-  virtual bool CanAccessStorage(LocalFrame*, StorageType) const = 0;
+  std::unique_ptr<StorageNamespace> CreateSessionStorageNamespace();
+  bool CanAccessStorage(LocalFrame*, StorageType) const;
+
+ private:
+  WebViewBase* web_view_;
 };
 
 }  // namespace blink

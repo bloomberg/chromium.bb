@@ -41,7 +41,7 @@
 #include "core/page/EditorClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/PageWidgetDelegate.h"
-#include "modules/storage/StorageClientImpl.h"
+#include "modules/storage/StorageClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -592,7 +592,7 @@ class WEB_EXPORT WebViewImpl final
   ContextMenuClient context_menu_client_;
   EditorClient editor_client_;
   SpellCheckerClientImpl spell_checker_client_impl_;
-  StorageClientImpl storage_client_impl_;
+  StorageClient storage_client_impl_;
 
   WebSize size_;
   // If true, automatically resize the layout view around its content.
