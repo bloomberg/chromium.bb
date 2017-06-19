@@ -23,10 +23,6 @@
         -webkit-padding-start: 0;
       }
 
-      .remove-site {
-        -webkit-margin-end: 0;
-      }
-
       .subtitle-row {
         margin-top: 9px;  /* With 15px in sub-items == 24px total margin. */
       }
@@ -61,9 +57,9 @@
               aria-label$="[[item.site]]"
               aria-describedby="siteSecondary"></button>
           <div class="separator" id="removeSecondary"></div>
-          <button is="paper-icon-button-light" class="remove-site"
+          <button is="paper-icon-button-light" class="icon-delete"
               title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
-              on-tap="onRemoveSiteTap_" class="icon-delete">
+              on-tap="onRemoveSiteTap_">
           </button>
         </div>
       </template>
