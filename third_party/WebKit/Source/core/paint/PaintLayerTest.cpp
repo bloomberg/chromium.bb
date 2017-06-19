@@ -1050,7 +1050,7 @@ TEST_P(PaintLayerTest, PaintLayerTransformUpdatedOnStyleTransformAnimation) {
   RefPtr<ComputedStyle> old_style =
       ComputedStyle::Clone(target_object->StyleRef());
   ComputedStyle* new_style = target_object->MutableStyle();
-  new_style->SetHasCurrentTransformAnimation();
+  new_style->SetHasCurrentTransformAnimation(true);
   target_paint_layer->UpdateTransform(old_style.Get(), *new_style);
 
   EXPECT_NE(nullptr, target_paint_layer->Transform());

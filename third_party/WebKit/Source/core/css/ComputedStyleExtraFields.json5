@@ -475,10 +475,9 @@
     {
       name: "SelfOrAncestorHasDirAutoAttribute",
       inherited: true,
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       default_value: "false",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     // Though position: sticky is not itself an inherited property, being a
@@ -707,34 +706,30 @@
     },
     {
       name: "HasCurrentOpacityAnimation",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     {
       name: "HasCurrentTransformAnimation",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     {
       name: "HasCurrentFilterAnimation",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     {
       name: "HasCurrentBackdropFilterAnimation",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     {
@@ -769,12 +764,16 @@
       custom_compare: true,
       default_value: "false",
     },
+    // A stacking context is painted atomically and defines a stacking order,
+    // whereas a containing stacking context defines in which order the stacking
+    // contexts below are painted.
+    // See CSS 2.1, Appendix E (https://www.w3.org/TR/CSS21/zindex.html) for more
+    // details.
     {
       name: "IsStackingContext",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     // Plugins require accelerated compositing for reasons external to blink.
@@ -783,43 +782,38 @@
     // when the plugin becomes composited.
     {
       name: "RequiresAcceleratedCompositingForExternalReasons",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     {
       name: "HasInlineTransform",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     {
       name: "HasCompositorProxy",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     // Style adjustment for appearance is disabled when certain properties are set.
     {
       name: "HasAuthorBackground",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     {
       name: "HasAuthorBorder",
-      field_template: "storage_only",
+      field_template: "primitive",
       type_name: "bool",
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "false",
     },
     {

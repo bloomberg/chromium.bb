@@ -1475,97 +1475,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SetEmptyStateInternal(b);
   }
 
-  bool HasInlineTransform() const {
-    return rare_non_inherited_data_->has_inline_transform_;
-  }
-  void SetHasInlineTransform(bool b) {
-    SET_VAR(rare_non_inherited_data_, has_inline_transform_, b);
-  }
-
-  bool HasCompositorProxy() const {
-    return rare_non_inherited_data_->has_compositor_proxy_;
-  }
-  void SetHasCompositorProxy(bool b) {
-    SET_VAR(rare_non_inherited_data_, has_compositor_proxy_, b);
-  }
-
-  bool RequiresAcceleratedCompositingForExternalReasons(bool b) {
-    return rare_non_inherited_data_
-        ->requires_accelerated_compositing_for_external_reasons_;
-  }
-  void SetRequiresAcceleratedCompositingForExternalReasons(bool b) {
-    SET_VAR(rare_non_inherited_data_,
-            requires_accelerated_compositing_for_external_reasons_, b);
-  }
-
-  bool HasAuthorBackground() const {
-    return rare_non_inherited_data_->has_author_background_;
-  };
-  void SetHasAuthorBackground(bool author_background) {
-    SET_VAR(rare_non_inherited_data_, has_author_background_,
-            author_background);
-  }
-
-  bool HasAuthorBorder() const {
-    return rare_non_inherited_data_->has_author_border_;
-  };
-  void SetHasAuthorBorder(bool author_border) {
-    SET_VAR(rare_non_inherited_data_, has_author_border_, author_border);
-  }
-
-  // A stacking context is painted atomically and defines a stacking order,
-  // whereas a containing stacking context defines in which order the stacking
-  // contexts below are painted.
-  // See CSS 2.1, Appendix E (https://www.w3.org/TR/CSS21/zindex.html) for more
-  // details.
-  bool IsStackingContext() const {
-    return rare_non_inherited_data_->is_stacking_context_;
-  }
-  void SetIsStackingContext(bool b) {
-    SET_VAR(rare_non_inherited_data_, is_stacking_context_, b);
-  }
-
   float TextAutosizingMultiplier() const {
     return TextAutosizingMultiplierInternal();
   }
   void SetTextAutosizingMultiplier(float);
-
-  bool SelfOrAncestorHasDirAutoAttribute() const {
-    return SelfOrAncestorHasDirAutoAttributeInternal();
-  }
-  void SetSelfOrAncestorHasDirAutoAttribute(bool v) {
-    SetSelfOrAncestorHasDirAutoAttributeInternal(v);
-  }
-
-  // Animation flags.
-  bool HasCurrentOpacityAnimation() const {
-    return rare_non_inherited_data_->has_current_opacity_animation_;
-  }
-  void SetHasCurrentOpacityAnimation(bool b = true) {
-    SET_VAR(rare_non_inherited_data_, has_current_opacity_animation_, b);
-  }
-
-  bool HasCurrentTransformAnimation() const {
-    return rare_non_inherited_data_->has_current_transform_animation_;
-  }
-  void SetHasCurrentTransformAnimation(bool b = true) {
-    SET_VAR(rare_non_inherited_data_, has_current_transform_animation_, b);
-  }
-
-  bool HasCurrentFilterAnimation() const {
-    return rare_non_inherited_data_->has_current_filter_animation_;
-  }
-  void SetHasCurrentFilterAnimation(bool b = true) {
-    SET_VAR(rare_non_inherited_data_, has_current_filter_animation_, b);
-  }
-
-  bool HasCurrentBackdropFilterAnimation() const {
-    return rare_non_inherited_data_->has_current_backdrop_filter_animation_;
-  }
-  void SetHasCurrentBackdropFilterAnimation(bool b = true) {
-    SET_VAR(rare_non_inherited_data_, has_current_backdrop_filter_animation_,
-            b);
-  }
 
   // Column utility functions.
   void ClearMultiCol();
