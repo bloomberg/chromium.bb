@@ -186,15 +186,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
 
     # Passthrough command decoder / D3D11
-    self.Skip('conformance/textures/image_bitmap_from_video/*',
+    self.Fail('conformance/textures/image_bitmap_from_video/*',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Skip('conformance/textures/video/*',
+    self.Fail('conformance/textures/video/*',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Skip('conformance/textures/misc/texture-corner-case-videos.html',
+    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Skip('conformance2/textures/image_bitmap_from_video/*',
+    self.Fail('conformance2/textures/image_bitmap_from_video/*',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Skip('conformance2/textures/video/*',
+    self.Fail('conformance2/textures/video/*',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     self.Fail('conformance2/glsl3/no-attribute-vertex-shader.html',
@@ -292,6 +292,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
+    self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('deqp/data/gles3/shaders/preprocessor.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
@@ -304,6 +306,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
+    self.Fail('conformance2/reading/format-r11f-g11f-b10f.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance2/textures/misc/' +
         'tex-image-with-bad-args-from-dom-elements.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
@@ -320,6 +324,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('deqp/functional/gles3/shaderbuiltinvar.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_*.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
@@ -334,6 +340,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderderivate_dfdy.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('deqp/functional/gles3/shaderderivate_fwidth.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     # Mac only.
