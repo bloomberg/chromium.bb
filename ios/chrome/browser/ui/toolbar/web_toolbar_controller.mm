@@ -1852,7 +1852,10 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
 - (UIView*)keyboardAccessoryView {
   if (!_keyboardAccessoryView) {
-    if (experimental_flags::IsKeyboardAccessoryViewWithCameraSearchEnabled()) {
+    // The new keyboard accessory view is only used on iPhones as iPads have a
+    // different pattern regarding keyboard shortcuts.
+    if (experimental_flags::IsKeyboardAccessoryViewWithCameraSearchEnabled() &&
+        !IsIPadIdiom()) {
       // The '.' shortcut is left out because the new keyboard accessory view
       // has less free space for the shortcut buttons, and the '.' is already
       // present in the standard iOS keyboard.
