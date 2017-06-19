@@ -22173,6 +22173,7 @@ from previous Chrome versions.
   <int value="-1460462432" label="disable-media-source"/>
   <int value="-1456004000" label="VrShell:disabled"/>
   <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
+  <int value="-1444051091" label="ash-disable-night-light"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
   <int value="-1440152291" label="disable-gesture-typing"/>

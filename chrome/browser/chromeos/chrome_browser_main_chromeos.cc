@@ -990,8 +990,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
   shutdown_policy_forwarder_ = base::MakeUnique<ShutdownPolicyForwarder>();
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshEnableNightLight)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshDisableNightLight)) {
     night_light_client_ = base::MakeUnique<NightLightClient>(
         g_browser_process->system_request_context());
     night_light_client_->Start();
@@ -1003,6 +1003,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   chromeos::ResourceReporter::GetInstance()->StopMonitoring();
+
+  night_light_client_.reset();
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
