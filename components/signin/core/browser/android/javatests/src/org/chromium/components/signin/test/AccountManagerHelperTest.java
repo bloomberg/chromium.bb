@@ -9,6 +9,7 @@ import android.content.Context;
 import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -66,9 +67,14 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
         return account;
     }
 
-    private boolean hasAccountForName(String accountName) throws InterruptedException {
-        SimpleFuture<Boolean> result = new SimpleFuture<Boolean>();
-        mHelper.hasAccountForName(accountName, result.createCallback());
+    private boolean hasAccountForName(final String accountName) throws InterruptedException {
+        final SimpleFuture<Boolean> result = new SimpleFuture<Boolean>();
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mHelper.hasAccountForName(accountName, result.createCallback());
+            }
+        });
         return result.get();
     }
 }
