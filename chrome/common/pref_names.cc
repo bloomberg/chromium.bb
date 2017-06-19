@@ -103,6 +103,10 @@ const char kImportantSitesDialogHistory[] = "important_sites_dialog";
 // compared to this value and if different will result in a profile reset
 // prompt. See triggered_profile_resetter.h for more information.
 const char kLastProfileResetTimestamp[] = "profile.last_reset_timestamp";
+
+// A boolean indicating if settings should be reset for this profile once a
+// run of the Chrome Cleanup Tool has completed.
+const char kChromeCleanerResetPending[] = "chrome_cleaner.reset_pending";
 #endif
 
 // The URL to open the new tab page to. Only set by Group Policy.

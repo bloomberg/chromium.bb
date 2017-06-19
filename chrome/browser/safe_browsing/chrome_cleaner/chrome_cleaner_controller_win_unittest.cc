@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
@@ -15,9 +16,14 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -33,6 +39,7 @@ using ::testing::DoAll;
 using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::UnorderedElementsAreArray;
 using ::testing::Values;
 using ::testing::_;
 using CrashPoint = MockChromeCleanerProcess::CrashPoint;
@@ -111,6 +118,17 @@ class ChromeCleanerControllerSimpleTest
   }
 
   bool IsMetricsAndCrashReportingEnabled() override { return metrics_enabled_; }
+
+  void TagForResetting(Profile* profile) override {
+    // This function should never be called by these tests.
+    FAIL();
+  }
+
+  void ResetTaggedProfiles(std::vector<Profile*> profiles,
+                           base::OnceClosure continuation) override {
+    // This function should never be called by these tests.
+    FAIL();
+  }
 
   // ChromeCleanerRunnerTestDelegate overrides.
 
@@ -203,6 +221,7 @@ class ChromeCleanerControllerTest
       public ChromeCleanerRunnerTestDelegate,
       public ChromeCleanerControllerDelegate {
  public:
+  ChromeCleanerControllerTest() = default;
   ~ChromeCleanerControllerTest() override {}
 
   void SetUp() override {
@@ -253,6 +272,17 @@ class ChromeCleanerControllerTest
     // Returning an arbitrary value since this is not being tested in this
     // fixture.
     return false;
+  }
+
+  void TagForResetting(Profile* profile) override {
+    profiles_tagged_.push_back(profile);
+  }
+
+  void ResetTaggedProfiles(std::vector<Profile*> profiles,
+                           base::OnceClosure continuation) override {
+    for (Profile* profile : profiles)
+      profiles_to_reset_if_tagged_.push_back(profile);
+    std::move(continuation).Run();
   }
 
   // ChromeCleanerRunnerTestDelegate overrides.
@@ -312,6 +342,22 @@ class ChromeCleanerControllerTest
 
   bool ExpectedUwsFound() { return ExpectedOnInfectedCalled(); }
 
+  bool ExpectedToTagProfile() {
+    return process_status_ == CleanerProcessStatus::kFetchSuccessValidProcess &&
+           (crash_point_ == CrashPoint::kNone ||
+            crash_point_ == CrashPoint::kAfterResponseReceived) &&
+           (uws_found_status_ == UwsFoundStatus::kUwsFoundNoRebootRequired ||
+            uws_found_status_ == UwsFoundStatus::kUwsFoundRebootRequired) &&
+           user_response_ == UserResponse::kAccepted;
+  }
+
+  bool ExpectedToResetSettings() {
+    return process_status_ == CleanerProcessStatus::kFetchSuccessValidProcess &&
+           crash_point_ == CrashPoint::kNone &&
+           uws_found_status_ == UwsFoundStatus::kUwsFoundNoRebootRequired &&
+           user_response_ == UserResponse::kAccepted;
+  }
+
   ChromeCleanerController::IdleReason ExpectedIdleReason() {
     EXPECT_EQ(ExpectedFinalState(), State::kIdle);
 
@@ -355,6 +401,9 @@ class ChromeCleanerControllerTest
 
   StrictMock<MockChromeCleanerControllerObserver> mock_observer_;
   ChromeCleanerController* controller_;
+
+  std::vector<Profile*> profiles_tagged_;
+  std::vector<Profile*> profiles_to_reset_if_tagged_;
 };
 
 MULTIPROCESS_TEST_MAIN(MockChromeCleanerProcessMain) {
@@ -379,6 +428,21 @@ MULTIPROCESS_TEST_MAIN(MockChromeCleanerProcessMain) {
 }
 
 TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
+  TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(profile_manager.SetUp());
+
+  constexpr char kTestProfileName1[] = "Test 1";
+  constexpr char kTestProfileName2[] = "Test 2";
+
+  Profile* profile1 = profile_manager.CreateTestingProfile(kTestProfileName1);
+  ASSERT_TRUE(profile1);
+  Profile* profile2 = profile_manager.CreateTestingProfile(kTestProfileName2);
+  ASSERT_TRUE(profile2);
+
+  const int num_profiles =
+      profile_manager.profile_manager()->GetNumberOfProfiles();
+  ASSERT_EQ(2, num_profiles);
+
   EXPECT_CALL(mock_observer_, OnIdle(_)).Times(1);
   controller_->AddObserver(&mock_observer_);
   EXPECT_EQ(controller_->state(), State::kIdle);
@@ -401,8 +465,9 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
   if (ExpectedOnInfectedCalled()) {
     EXPECT_CALL(mock_observer_, OnInfected(_))
         .WillOnce(DoAll(SaveArg<0>(&files_to_delete_on_infected),
-                        InvokeWithoutArgs([this]() {
-                          controller_->ReplyWithUserResponse(user_response_);
+                        InvokeWithoutArgs([this, profile1]() {
+                          controller_->ReplyWithUserResponse(profile1,
+                                                             user_response_);
                         })));
   }
 
@@ -431,6 +496,19 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
       !files_to_delete_on_cleaning.empty()) {
     EXPECT_EQ(files_to_delete_on_infected, files_to_delete_on_cleaning);
   }
+
+  std::vector<Profile*> expected_tagged;
+  if (ExpectedToTagProfile())
+    expected_tagged.push_back(profile1);
+  EXPECT_THAT(expected_tagged, UnorderedElementsAreArray(profiles_tagged_));
+
+  std::vector<Profile*> expected_reset_if_tagged;
+  if (ExpectedToResetSettings()) {
+    expected_reset_if_tagged.push_back(profile1);
+    expected_reset_if_tagged.push_back(profile2);
+  }
+  EXPECT_THAT(expected_reset_if_tagged,
+              UnorderedElementsAreArray(profiles_to_reset_if_tagged_));
 
   controller_->RemoveObserver(&mock_observer_);
 }

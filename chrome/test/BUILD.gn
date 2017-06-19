@@ -1981,6 +1981,7 @@ test("browser_tests") {
         "../browser/extensions/webstore_reinstaller_browsertest.cc",
         "../browser/extensions/webstore_startup_installer_browsertest.cc",
         "../browser/extensions/window_open_apitest.cc",
+        "../browser/safe_browsing/chrome_cleaner/settings_resetter_browsertest_win.cc",
         "../browser/safe_browsing/settings_reset_prompt/default_settings_fetcher_browsertest.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model_browsertest_win.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",

@@ -45,6 +45,7 @@ extern const char kHomePage[];
 extern const char kImportantSitesDialogHistory[];
 #if defined(OS_WIN)
 extern const char kLastProfileResetTimestamp[];
+extern const char kChromeCleanerResetPending[];
 #endif
 extern const char kNewTabPageLocationOverride[];
 extern const char kProfileIconVersion[];

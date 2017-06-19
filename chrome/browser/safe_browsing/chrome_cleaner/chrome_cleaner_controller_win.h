@@ -7,7 +7,9 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -16,6 +18,8 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
+
+class Profile;
 
 namespace safe_browsing {
 
@@ -36,6 +40,11 @@ class ChromeCleanerControllerDelegate {
   virtual void FetchAndVerifyChromeCleaner(FetchedCallback fetched_callback);
   virtual bool SafeBrowsingExtendedReportingScoutEnabled();
   virtual bool IsMetricsAndCrashReportingEnabled();
+
+  // Auxiliary methods for tagging and resetting open profiles.
+  virtual void TagForResetting(Profile* profile);
+  virtual void ResetTaggedProfiles(std::vector<Profile*> profiles,
+                                   base::OnceClosure continuation);
 };
 
 // Controller class that keeps track of the execution of the Chrome Cleaner and
@@ -138,13 +147,14 @@ class ChromeCleanerController {
 
   // Sends the user's response, as to whether or not they want the Chrome
   // Cleaner to remove harmful software that was found, to the Chrome Cleaner
-  // process.
+  // process. If the user accepted the prompt, then tags |profile| for
+  // post-cleanup settings reset.
   //
   // A call to ReplyWithUserResponse() will be a no-op if the controller is not
   // in the kInfected state. This gracefully handles cases where multiple user
   // responses are received, for example if a user manages to click on a
   // "Cleanup" button multiple times.
-  void ReplyWithUserResponse(UserResponse user_response);
+  void ReplyWithUserResponse(Profile* profile, UserResponse user_response);
 
   // If the controller is in the kRebootRequired state, initiates a reboot of
   // the computer. Call this after obtaining permission from the user to
@@ -197,6 +207,9 @@ class ChromeCleanerController {
   void OnConnectionClosed();
   void OnCleanerProcessDone(ChromeCleanerRunner::ProcessStatus process_status);
   void InitiateReboot();
+
+  // Invoked once settings reset is done for tagged profiles.
+  void OnSettingsResetCompleted();
 
   std::unique_ptr<ChromeCleanerControllerDelegate> real_delegate_;
   // Pointer to either real_delegate_ or one set by tests.
