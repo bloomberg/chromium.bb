@@ -32,6 +32,7 @@
 
 #include "core/editing/markers/TextMatchMarker.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "public/web/WebAXEnums.h"
 
 namespace blink {
 
@@ -93,4 +94,13 @@ void DocumentMarker::ShiftOffsets(int delta) {
   end_offset_ += delta;
 }
 
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enum: " #a)
+
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeSpelling, DocumentMarker::kSpelling);
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeGrammar, DocumentMarker::kGrammar);
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeTextMatch, DocumentMarker::kTextMatch);
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeActiveSuggestion,
+                   DocumentMarker::kActiveSuggestion);
 }  // namespace blink
