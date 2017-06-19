@@ -85,7 +85,7 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
 
   // Owned by rph_factory.
   content::RenderProcessHost* host(
-      rph_factory->CreateRenderProcessHost(profile, site_instance.get()));
+      rph_factory->CreateRenderProcessHost(profile));
 
   // Crash and abnormal termination should increment renderer crash count.
   content::RenderProcessHost::RendererClosedDetails crash_details(
@@ -137,7 +137,7 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
 
   // Owned by rph_factory.
   content::RenderProcessHost* extension_host(
-      rph_factory->CreateRenderProcessHost(profile, site_instance.get()));
+      rph_factory->CreateRenderProcessHost(profile));
 
   // Make the rph an extension rph.
   extensions::ProcessMap::Get(profile)

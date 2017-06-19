@@ -44,8 +44,7 @@ class WebRtcEventlogHostTest : public testing::Test {
   WebRtcEventlogHostTest()
       : mock_render_process_host_(static_cast<MockRenderProcessHost*>(
             mock_render_process_factory_.CreateRenderProcessHost(
-                &test_browser_context_,
-                nullptr))),
+                &test_browser_context_))),
         render_id_(mock_render_process_host_->GetID()),
         event_log_host_(render_id_) {}
   TestBrowserThreadBundle thread_bundle_;

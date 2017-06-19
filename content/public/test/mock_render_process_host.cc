@@ -423,8 +423,7 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
 }
 
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
-    BrowserContext* browser_context,
-    SiteInstance* site_instance) const {
+    BrowserContext* browser_context) const {
   processes_.push_back(
       base::MakeUnique<MockRenderProcessHost>(browser_context));
   processes_.back()->SetFactory(this);

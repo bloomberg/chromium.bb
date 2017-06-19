@@ -53,7 +53,7 @@ class TextInputClientMacTest : public testing::Test {
         delegate_(),
         thread_("TextInputClientMacTestThread") {
     RenderProcessHost* rph =
-        process_factory_.CreateRenderProcessHost(&browser_context_, nullptr);
+        process_factory_.CreateRenderProcessHost(&browser_context_);
     int32_t routing_id = rph->GetNextRoutingID();
     widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id, false));
   }
