@@ -30,6 +30,7 @@
 
 #include "core/html/HTMLSlotElement.h"
 
+#include <array>
 #include "core/HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/StyleChangeReason.h"
@@ -46,6 +47,10 @@
 namespace blink {
 
 using namespace HTMLNames;
+
+namespace {
+constexpr size_t kLCSTableSizeLimit = 16;
+}
 
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document) {
@@ -113,8 +118,6 @@ void HTMLSlotElement::AppendDistributedNodesFrom(const HTMLSlotElement& other) {
 }
 
 void HTMLSlotElement::ClearDistribution() {
-  // TODO(hayato): Figure out when to call
-  // lazyReattachDistributedNodesIfNeeded()
   assigned_nodes_.clear();
   distributed_nodes_.clear();
   distributed_indices_.clear();
@@ -276,14 +279,58 @@ void HTMLSlotElement::UpdateDistributedNodesWithFallback() {
   }
 }
 
+void HTMLSlotElement::LazyReattachDistributedNodesByDynamicProgramming(
+    const HeapVector<Member<Node>>& nodes1,
+    const HeapVector<Member<Node>>& nodes2) {
+  // Use dynamic programming to minimize the number of nodes being reattached.
+  using LCSTable =
+      std::array<std::array<size_t, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
+  using Backtrack = std::pair<size_t, size_t>;
+  using BacktrackTable =
+      std::array<std::array<Backtrack, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
+
+  DEFINE_STATIC_LOCAL(LCSTable*, lcs_table, (new LCSTable));
+  DEFINE_STATIC_LOCAL(BacktrackTable*, backtrack_table, (new BacktrackTable));
+
+  FillLongestCommonSubsequenceDynamicProgrammingTable(
+      nodes1, nodes2, *lcs_table, *backtrack_table);
+
+  size_t r = nodes1.size();
+  size_t c = nodes2.size();
+  while (r > 0 && c > 0) {
+    Backtrack backtrack = (*backtrack_table)[r][c];
+    if (backtrack == std::make_pair(r - 1, c - 1)) {
+      DCHECK_EQ(nodes1[r - 1], nodes2[c - 1]);
+    } else if (backtrack == std::make_pair(r - 1, c)) {
+      nodes1[r - 1]->LazyReattachIfAttached();
+    } else {
+      DCHECK(backtrack == std::make_pair(r, c - 1));
+      nodes2[c - 1]->LazyReattachIfAttached();
+    }
+    std::tie(r, c) = backtrack;
+  }
+  if (r > 0) {
+    for (size_t i = 0; i < r; ++i)
+      nodes1[i]->LazyReattachIfAttached();
+  } else if (c > 0) {
+    for (size_t i = 0; i < c; ++i)
+      nodes2[i]->LazyReattachIfAttached();
+  }
+}
+
 void HTMLSlotElement::LazyReattachDistributedNodesIfNeeded() {
-  // TODO(hayato): Figure out an exact condition where reattach is required
-  if (old_distributed_nodes_ != distributed_nodes_) {
-    for (auto& node : old_distributed_nodes_)
-      node->LazyReattachIfAttached();
-    for (auto& node : distributed_nodes_)
-      node->LazyReattachIfAttached();
-    probe::didPerformSlotDistribution(this);
+  if (old_distributed_nodes_ == distributed_nodes_)
+    return;
+  probe::didPerformSlotDistribution(this);
+
+  if (old_distributed_nodes_.size() + 1 > kLCSTableSizeLimit ||
+      distributed_nodes_.size() + 1 > kLCSTableSizeLimit) {
+    // Since DP takes O(N^2), we don't use DP if the size is larger than the
+    // pre-defined limit.
+    LazyReattachDistributedNodesNaive();
+  } else {
+    LazyReattachDistributedNodesByDynamicProgramming(old_distributed_nodes_,
+                                                     distributed_nodes_);
   }
   old_distributed_nodes_.clear();
 }
@@ -299,6 +346,14 @@ void HTMLSlotElement::DidSlotChangeAfterRenaming() {
   EnqueueSlotChangeEvent();
   ContainingShadowRoot()->Owner()->SetNeedsDistributionRecalc();
   CheckSlotChange(SlotChangeType::kSuppressSlotChangeEvent);
+}
+
+void HTMLSlotElement::LazyReattachDistributedNodesNaive() {
+  // TODO(hayato): Use some heuristic to avoid reattaching all nodes
+  for (auto& node : old_distributed_nodes_)
+    node->LazyReattachIfAttached();
+  for (auto& node : distributed_nodes_)
+    node->LazyReattachIfAttached();
 }
 
 void HTMLSlotElement::DidSlotChange(SlotChangeType slot_change_type) {
