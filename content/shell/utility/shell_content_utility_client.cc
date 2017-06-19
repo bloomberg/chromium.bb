@@ -17,6 +17,7 @@
 #include "content/public/test/test_host_resolver.h"
 #include "content/public/test/test_service.h"
 #include "content/public/test/test_service.mojom.h"
+#include "content/shell/common/power_monitor_test_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "net/base/net_errors.h"
@@ -118,6 +119,10 @@ void ShellContentUtilityClient::UtilityThreadStarted() {
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&TestServiceImpl::Create),
                          base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface<mojom::PowerMonitorTest>(
+      base::Bind(&PowerMonitorTestImpl::MakeStrongBinding,
+                 base::Passed(base::MakeUnique<PowerMonitorTestImpl>())),
+      base::ThreadTaskRunnerHandle::Get());
   content::ChildThread::Get()
       ->GetServiceManagerConnection()
       ->AddConnectionFilter(

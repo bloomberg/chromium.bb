@@ -5,8 +5,12 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/utility_process_host.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
@@ -35,6 +39,14 @@ void VerifyPowerStateInChildProcess(mojom::PowerMonitorTest* power_monitor_test,
       },
       run_loop.QuitClosure(), expected_state));
   run_loop.Run();
+}
+
+void StartUtilityProcessOnIOThread(mojom::PowerMonitorTestRequest request) {
+  UtilityProcessHost* host = UtilityProcessHost::Create(nullptr, nullptr);
+  host->SetName(base::ASCIIToUTF16("TestProcess"));
+  EXPECT_TRUE(host->Start());
+
+  BindInterface(host, std::move(request));
 }
 
 class MockPowerMonitorMessageBroadcaster : public device::mojom::PowerMonitor {
@@ -86,15 +98,38 @@ class PowerMonitorTest : public ContentBrowserTest {
   void BindPowerMonitor(const service_manager::BindSourceInfo& source_info,
                         const std::string& interface_name,
                         mojo::ScopedMessagePipeHandle handle) {
-    if (source_info.identity.name() == mojom::kRendererServiceName)
+    if (source_info.identity.name() == mojom::kRendererServiceName) {
       ++request_count_from_renderer_;
+
+      DCHECK(renderer_bound_closure_);
+      std::move(renderer_bound_closure_).Run();
+    } else if (source_info.identity.name() == mojom::kUtilityServiceName) {
+      ++request_count_from_utility_;
+
+      DCHECK(utility_bound_closure_);
+      std::move(utility_bound_closure_).Run();
+    }
 
     power_monitor_message_broadcaster_.Bind(
         device::mojom::PowerMonitorRequest(std::move(handle)));
   }
 
  protected:
+  void StartUtilityProcess(mojom::PowerMonitorTestPtr* power_monitor_test,
+                           base::Closure utility_bound_closure) {
+    utility_bound_closure_ = utility_bound_closure;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&StartUtilityProcessOnIOThread,
+                       mojo::MakeRequest(power_monitor_test)));
+  }
+
+  void set_renderer_bound_closure(base::Closure closure) {
+    renderer_bound_closure_ = closure;
+  }
+
   int request_count_from_renderer() { return request_count_from_renderer_; }
+  int request_count_from_utility() { return request_count_from_utility_; }
 
   void SimulatePowerStateChange(bool on_battery_power) {
     power_monitor_message_broadcaster_.OnPowerStateChange(on_battery_power);
@@ -102,15 +137,21 @@ class PowerMonitorTest : public ContentBrowserTest {
 
  private:
   int request_count_from_renderer_ = 0;
+  int request_count_from_utility_ = 0;
+  base::OnceClosure renderer_bound_closure_;
+  base::OnceClosure utility_bound_closure_;
 
   MockPowerMonitorMessageBroadcaster power_monitor_message_broadcaster_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PowerMonitorTest, RequestOnceFromOneRendererProcess) {
+IN_PROC_BROWSER_TEST_F(PowerMonitorTest, TestRendererProcess) {
   ASSERT_EQ(0, request_count_from_renderer());
+  base::RunLoop run_loop;
+  set_renderer_bound_closure(run_loop.QuitClosure());
   ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(".", "simple_page.html")));
+  run_loop.Run();
   EXPECT_EQ(1, request_count_from_renderer());
 
   mojom::PowerMonitorTestPtr power_monitor_renderer;
@@ -125,6 +166,24 @@ IN_PROC_BROWSER_TEST_F(PowerMonitorTest, RequestOnceFromOneRendererProcess) {
   SimulatePowerStateChange(false);
   // Verify renderer process on_battery_power changed to false.
   VerifyPowerStateInChildProcess(power_monitor_renderer.get(), false);
+}
+
+IN_PROC_BROWSER_TEST_F(PowerMonitorTest, TestUtilityProcess) {
+  mojom::PowerMonitorTestPtr power_monitor_utility;
+
+  ASSERT_EQ(0, request_count_from_utility());
+  base::RunLoop run_loop;
+  StartUtilityProcess(&power_monitor_utility, run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_EQ(1, request_count_from_utility());
+
+  SimulatePowerStateChange(true);
+  // Verify utility process on_battery_power changed to true.
+  VerifyPowerStateInChildProcess(power_monitor_utility.get(), true);
+
+  SimulatePowerStateChange(false);
+  // Verify utility process on_battery_power changed to false.
+  VerifyPowerStateInChildProcess(power_monitor_utility.get(), false);
 }
 
 }  //  namespace
