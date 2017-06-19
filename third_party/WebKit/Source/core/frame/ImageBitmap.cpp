@@ -185,8 +185,9 @@ static PassRefPtr<Uint8Array> CopySkImageData(sk_sp<SkImage> input,
       ArrayBuffer::CreateOrNull(width * input->height(), info.bytesPerPixel());
   if (!dst_buffer)
     return nullptr;
+  unsigned byte_length = dst_buffer->ByteLength();
   RefPtr<Uint8Array> dst_pixels =
-      Uint8Array::Create(dst_buffer, 0, dst_buffer->ByteLength());
+      Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
   input->readPixels(info, dst_pixels->Data(), width * info.bytesPerPixel(), 0,
                     0);
   return dst_pixels;
@@ -682,8 +683,9 @@ static sk_sp<SkImage> ScaleSkImage(sk_sp<SkImage> sk_image,
   if (!dst_buffer)
     return nullptr;
 
+  unsigned byte_length = dst_buffer->ByteLength();
   RefPtr<Uint8Array> resized_pixels =
-      Uint8Array::Create(dst_buffer, 0, dst_buffer->ByteLength());
+      Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
   SkPixmap pixmap(
       resize_info, resized_pixels->Data(),
       static_cast<unsigned>(resize_info.width()) * resize_info.bytesPerPixel());

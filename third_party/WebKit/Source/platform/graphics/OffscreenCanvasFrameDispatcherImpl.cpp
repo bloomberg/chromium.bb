@@ -128,8 +128,9 @@ void OffscreenCanvasFrameDispatcherImpl::
   // If it fails to create a buffer for copying the pixel data, then exit early.
   if (!dst_buffer)
     return;
+  unsigned byte_length = dst_buffer->ByteLength();
   RefPtr<Uint8Array> dst_pixels =
-      Uint8Array::Create(dst_buffer, 0, dst_buffer->ByteLength());
+      Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
   image->ImageForCurrentFrame()->readPixels(info, dst_pixels->Data(),
                                             info.minRowBytes(), 0, 0);
 

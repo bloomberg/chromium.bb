@@ -26,7 +26,6 @@
 #ifndef ArrayBufferView_h
 #define ArrayBufferView_h
 
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WTFExport.h"
@@ -72,14 +71,14 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   virtual ~ArrayBufferView();
 
  protected:
-  ArrayBufferView(PassRefPtr<ArrayBuffer>, unsigned byte_offset);
+  ArrayBufferView(RefPtr<ArrayBuffer>, unsigned byte_offset);
 
   inline bool SetImpl(ArrayBufferView*, unsigned byte_offset);
 
   // Helper to verify that a given sub-range of an ArrayBuffer is
   // within range.
   template <typename T>
-  static bool VerifySubRange(PassRefPtr<ArrayBuffer> buffer,
+  static bool VerifySubRange(const ArrayBuffer* buffer,
                              unsigned byte_offset,
                              unsigned num_elements) {
     if (!buffer)

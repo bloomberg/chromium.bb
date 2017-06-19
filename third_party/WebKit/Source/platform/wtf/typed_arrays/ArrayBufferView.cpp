@@ -29,7 +29,7 @@
 
 namespace WTF {
 
-ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer,
+ArrayBufferView::ArrayBufferView(RefPtr<ArrayBuffer> buffer,
                                  unsigned byte_offset)
     : byte_offset_(byte_offset),
       is_neuterable_(true),

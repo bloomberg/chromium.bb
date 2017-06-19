@@ -63,9 +63,9 @@ class WTF_EXPORT ArrayBufferBuilder final {
 
   // Returns the accumulated data as an ArrayBuffer instance. If needed,
   // creates a new ArrayBuffer instance and copies contents from the internal
-  // buffer to it. Otherwise, returns a PassRefPtr pointing to the internal
+  // buffer to it. Otherwise, returns a RefPtr pointing to the internal
   // buffer.
-  PassRefPtr<ArrayBuffer> ToArrayBuffer();
+  RefPtr<ArrayBuffer> ToArrayBuffer();
 
   // Converts the accumulated data into a String using the default encoding.
   String ToString();
