@@ -40,6 +40,7 @@
 #include "core/frame/FrameSerializer.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/WebFrameSerializerImpl.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -75,7 +76,6 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "public/web/WebFrameSerializerClient.h"
-#include "web/WebFrameSerializerImpl.h"
 
 namespace blink {
 
