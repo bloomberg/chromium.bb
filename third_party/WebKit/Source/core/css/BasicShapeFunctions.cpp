@@ -84,7 +84,7 @@ static CSSValue* ValueForCenterCoordinate(
     return CSSValue::Create(center.length(), style.EffectiveZoom());
 
   CSSValueID keyword =
-      orientation == HORIZONTAL ? CSSValueRight : CSSValueBottom;
+      orientation == EBoxOrient::kHorizontal ? CSSValueRight : CSSValueBottom;
 
   return CSSValuePair::Create(
       CSSIdentifierValue::Create(keyword),
@@ -136,10 +136,10 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       CSSBasicShapeCircleValue* circle_value =
           CSSBasicShapeCircleValue::Create();
 
-      circle_value->SetCenterX(
-          ValueForCenterCoordinate(style, circle->CenterX(), HORIZONTAL));
-      circle_value->SetCenterY(
-          ValueForCenterCoordinate(style, circle->CenterY(), VERTICAL));
+      circle_value->SetCenterX(ValueForCenterCoordinate(
+          style, circle->CenterX(), EBoxOrient::kHorizontal));
+      circle_value->SetCenterY(ValueForCenterCoordinate(
+          style, circle->CenterY(), EBoxOrient::kVertical));
       circle_value->SetRadius(
           BasicShapeRadiusToCSSValue(style, circle->Radius()));
       return circle_value;
@@ -149,10 +149,10 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       CSSBasicShapeEllipseValue* ellipse_value =
           CSSBasicShapeEllipseValue::Create();
 
-      ellipse_value->SetCenterX(
-          ValueForCenterCoordinate(style, ellipse->CenterX(), HORIZONTAL));
-      ellipse_value->SetCenterY(
-          ValueForCenterCoordinate(style, ellipse->CenterY(), VERTICAL));
+      ellipse_value->SetCenterX(ValueForCenterCoordinate(
+          style, ellipse->CenterX(), EBoxOrient::kHorizontal));
+      ellipse_value->SetCenterY(ValueForCenterCoordinate(
+          style, ellipse->CenterY(), EBoxOrient::kVertical));
       ellipse_value->SetRadiusX(
           BasicShapeRadiusToCSSValue(style, ellipse->RadiusX()));
       ellipse_value->SetRadiusY(

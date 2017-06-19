@@ -150,10 +150,10 @@ enum EMaskSourceType { kMaskAlpha, kMaskLuminance };
 
 // Deprecated Flexible Box Properties
 
-enum EBoxPack { kBoxPackStart, kBoxPackCenter, kBoxPackEnd, kBoxPackJustify };
-enum EBoxAlignment { BSTRETCH, BSTART, BCENTER, BEND, BBASELINE };
-enum EBoxOrient { HORIZONTAL, VERTICAL };
-enum EBoxLines { SINGLE, MULTIPLE };
+enum class EBoxPack { kStart, kCenter, kEnd, kJustify };
+enum class EBoxAlignment { kStretch, kStart, kCenter, kBend, kBaseline };
+enum class EBoxOrient { kHorizontal, kVertical };
+enum class EBoxLines { kSingle, kMultiple };
 
 // CSS3 Flexbox Properties
 

@@ -2692,9 +2692,10 @@ void LayoutBox::ComputeLogicalWidth(
 
   // FIXME: Account for writing-mode in flexible boxes.
   // https://bugs.webkit.org/show_bug.cgi?id=46418
-  bool in_vertical_box = Parent()->IsDeprecatedFlexibleBox() &&
-                         (Parent()->Style()->BoxOrient() == VERTICAL);
-  bool stretching = (Parent()->Style()->BoxAlign() == BSTRETCH);
+  bool in_vertical_box =
+      Parent()->IsDeprecatedFlexibleBox() &&
+      (Parent()->Style()->BoxOrient() == EBoxOrient::kVertical);
+  bool stretching = (Parent()->Style()->BoxAlign() == EBoxAlignment::kStretch);
   // TODO (lajava): Stretching is the only reason why we don't want the box to
   // be treated as a replaced element, so we could perhaps refactor all this
   // logic, not only for flex and grid since alignment is intended to be applied
@@ -2904,8 +2905,8 @@ bool LayoutBox::ColumnFlexItemHasStretchAlignment() const {
 bool LayoutBox::IsStretchingColumnFlexItem() const {
   LayoutObject* parent = this->Parent();
   if (parent->IsDeprecatedFlexibleBox() &&
-      parent->Style()->BoxOrient() == VERTICAL &&
-      parent->Style()->BoxAlign() == BSTRETCH)
+      parent->Style()->BoxOrient() == EBoxOrient::kVertical &&
+      parent->Style()->BoxAlign() == EBoxAlignment::kStretch)
     return true;
 
   // We don't stretch multiline flexboxes because they need to apply line
@@ -2971,8 +2972,8 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
   // FIXME: Think about writing-mode here.
   // https://bugs.webkit.org/show_bug.cgi?id=46473
   if (Parent()->IsDeprecatedFlexibleBox() &&
-      (Parent()->Style()->BoxOrient() == HORIZONTAL ||
-       Parent()->Style()->BoxAlign() != BSTRETCH))
+      (Parent()->Style()->BoxOrient() == EBoxOrient::kHorizontal ||
+       Parent()->Style()->BoxAlign() != EBoxAlignment::kStretch))
     return true;
 
   // Button, input, select, textarea, and legend treat width value of 'auto' as
@@ -3182,9 +3183,10 @@ void LayoutBox::ComputeLogicalHeight(
 
     // FIXME: Account for writing-mode in flexible boxes.
     // https://bugs.webkit.org/show_bug.cgi?id=46418
-    bool in_horizontal_box = Parent()->IsDeprecatedFlexibleBox() &&
-                             Parent()->Style()->BoxOrient() == HORIZONTAL;
-    bool stretching = Parent()->Style()->BoxAlign() == BSTRETCH;
+    bool in_horizontal_box =
+        Parent()->IsDeprecatedFlexibleBox() &&
+        Parent()->Style()->BoxOrient() == EBoxOrient::kHorizontal;
+    bool stretching = Parent()->Style()->BoxAlign() == EBoxAlignment::kStretch;
     bool treat_as_replaced =
         ShouldComputeSizeAsReplaced() && (!in_horizontal_box || !stretching);
     bool check_min_max_height = false;
