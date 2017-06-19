@@ -16,10 +16,13 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.chromium.base.annotations.MainDex;
+
 /**
  * PartnerBrowserCustomizationsProvider example for testing.
  * Note: if you move or rename this class, make sure you have also updated AndroidManifest.xml.
  */
+@MainDex
 public class TestPartnerBrowserCustomizationsProvider extends ContentProvider {
     protected String mTag = TestPartnerBrowserCustomizationsProvider.class.getSimpleName();
 
