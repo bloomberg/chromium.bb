@@ -15,6 +15,8 @@ from chromite.lib import metrics
 from chromite.lib import parallel
 from chromite.lib import ts_mon_config
 
+from infra_libs import ts_mon
+
 
 class FakeException(Exception):
   """FakeException to raise during tests."""
@@ -32,14 +34,18 @@ class TestIndirectMetrics(cros_test_lib.MockTestCase):
       self.PatchObject(metrics, 'MESSAGE_QUEUE', q)
 
       proxy_metric = metric('foo')
-      proxy_metric.example('arg1', 'arg2')
+      proxy_metric.example('arg1', {'field_name': 'value'})
 
       message = q.get(timeout=10)
 
+    expected_metric_kwargs = {
+        'field_spec': [ts_mon.StringField('field_name')],
+        'description': 'No description.',
+    }
     self.assertEqual(
         message,
-        metrics.MetricCall(metric.__name__, ('foo',),
-                           {}, 'example', ('arg1', 'arg2'), {},
+        metrics.MetricCall(metric.__name__, ('foo',), expected_metric_kwargs,
+                           'example', ('arg1', {'field_name': 'value'}), {},
                            False))
 
   def patchTime(self):
@@ -85,27 +91,48 @@ class TestIndirectMetrics(cros_test_lib.MockTestCase):
         for i in range(7):
           # any extra streams with different fields and reset_after=False
           # will be cleared only if the below metric is cleared.
-          metrics.Boolean(MetricName(i, True), reset_after=False).set(
-              True, fields={'original': False})
+          metrics.Boolean(
+              MetricName(i, True), reset_after=False).set(
+                  True, fields={'original': False})
 
-          metrics.Boolean(MetricName(i, True), reset_after=True).set(
-              True, fields={'original': True})
+          metrics.Boolean(
+              MetricName(i, True), reset_after=True).set(
+                  True, fields={'original': True})
 
         for i in range(7):
-          metrics.Boolean(MetricName(i, False), reset_after=False).set(True)
+          metrics.Boolean(
+              MetricName(i, False),
+              reset_after=False).set(True)
 
 
       # By leaving the context, we .join() the flushing process.
       with open(out.name, 'r') as fh:
         content = fh.read()
 
-      # The flushed metrics should be sent only three times, because:
+      # The reset metrics should be sent only three times, because:
       # * original=False is sent twice
       # * original=True is sent once.
+      # The second flush() only results in one occurance of the string
+      # MetricName(i, True) because both data points are in a "metrics_data_set"
+      # block, like so:
+      # metrics_collection {
+      #   ... etc ...
+      #   metrics_data_set {
+      #     metric_name: "/chrome/infra/test/metric/name/0/True"
+      #     data {
+      #       bool_value: true
+      #       field {
+      #         name: "original"
+      #         bool_value: false
+      #       }
+      #     }
+      #     data {
+      #       bool_value: true
+      #       ... etc ...
       for i in range(7):
-        self.assertEqual(content.count(MetricName(i, True)), 3)
+        self.assertEqual(content.count(MetricName(i, True)), 2)
 
-      # The nonflushed metrics are sent once-per-flush.
+      # The non-reset metrics are sent once-per-flush.
       # There are 7 of these metrics,
       # * The 0th is sent 7 times,
       # * The 1st is sent 6 times,
