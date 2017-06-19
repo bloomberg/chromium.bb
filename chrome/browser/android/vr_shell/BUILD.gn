@@ -65,6 +65,8 @@ static_library("vr_common") {
     "ui_elements/exit_warning.h",
     "ui_elements/loading_indicator.cc",
     "ui_elements/loading_indicator.h",
+    "ui_elements/location_access_indicator.cc",
+    "ui_elements/location_access_indicator.h",
     "ui_elements/permanent_security_warning.cc",
     "ui_elements/permanent_security_warning.h",
     "ui_elements/screen_capture_indicator.cc",

@@ -31,7 +31,10 @@ constexpr float kTextWidthFactor =
 
 SystemIndicatorTexture::SystemIndicatorTexture(const gfx::VectorIcon& icon,
                                                int message_id)
-    : icon_(icon), message_id_(message_id) {}
+    : icon_(icon), message_id_(message_id), has_text_(true) {}
+
+SystemIndicatorTexture::SystemIndicatorTexture(const gfx::VectorIcon& icon)
+    : icon_(icon), has_text_(false) {}
 
 SystemIndicatorTexture::~SystemIndicatorTexture() = default;
 
@@ -46,21 +49,31 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
   SkPaint paint;
   paint.setColor(color_scheme().system_indicator_background);
 
-  base::string16 text = l10n_util::GetStringUTF16(message_id_);
+  gfx::Rect text_size(0, 0);
+  std::vector<std::unique_ptr<gfx::RenderText>> lines;
 
-  gfx::FontList fonts;
-  GetFontList(size_.height() * kFontSizeFactor, text, &fonts);
-  gfx::Rect text_size(0, kTextHeightFactor * size_.height());
+  if (has_text_) {
+    base::string16 text = l10n_util::GetStringUTF16(message_id_);
 
-  std::vector<std::unique_ptr<gfx::RenderText>> lines = PrepareDrawStringRect(
-      text, fonts, color_scheme().system_indicator_foreground, &text_size,
-      kTextAlignmentNone, kWrappingBehaviorNoWrap);
+    gfx::FontList fonts;
+    GetFontList(size_.height() * kFontSizeFactor, text, &fonts);
+    text_size.set_height(kTextHeightFactor * size_.height());
 
-  DCHECK_LE(text_size.width(), kTextWidthFactor * size_.height());
-  // Setting background size giving some extra lateral padding to the text.
-  size_.set_width((kHeightWidthRatio * kBorderFactor + kIconSizeFactor) *
-                      size_.height() +
-                  text_size.width());
+    lines = PrepareDrawStringRect(
+        text, fonts, color_scheme().system_indicator_foreground, &text_size,
+        kTextAlignmentNone, kWrappingBehaviorNoWrap);
+
+    DCHECK_LE(text_size.width(), kTextWidthFactor * size_.height());
+
+    // Setting background size giving some extra lateral padding to the text.
+    size_.set_width((kHeightWidthRatio * kBorderFactor + kIconSizeFactor) *
+                        size_.height() +
+                    text_size.width());
+  } else {
+    size_.set_width((2 * kBorderFactor + kIconSizeFactor) * size_.height() +
+                    text_size.width());
+  }
+
   float radius = size_.height() * kBorderFactor;
   sk_canvas->drawRoundRect(SkRect::MakeWH(size_.width(), size_.height()),
                            radius, radius, paint);
