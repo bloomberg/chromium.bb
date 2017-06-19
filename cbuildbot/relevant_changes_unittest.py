@@ -13,10 +13,10 @@ from chromite.cbuildbot import build_status_unittest
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import relevant_changes
 from chromite.lib import builder_status_lib
+from chromite.lib import build_failure_message
 from chromite.lib import clactions
 from chromite.lib import constants
 from chromite.lib import fake_cidb
-from chromite.lib import failure_message_lib
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 from chromite.lib import triage_lib
@@ -541,7 +541,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
 
   def _GetFailedBuilderStatus(self, contains_message=True):
     """Helper to return a failed BuilderStatus."""
-    failure_message = failure_message_lib.BuildFailureMessage(
+    failure_message = build_failure_message.BuildFailureMessage(
         'messages', [], True, 'reason', 'builder') if contains_message else None
     return builder_status_lib.BuilderStatus(
         constants.BUILDER_STATUS_FAILED, failure_message)

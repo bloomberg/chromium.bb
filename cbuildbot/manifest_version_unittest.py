@@ -16,12 +16,12 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.lib import builder_status_lib
 from chromite.lib import buildbucket_lib
+from chromite.lib import build_failure_message
 from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
-from chromite.lib import failure_message_lib
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import metadata_lib
 from chromite.lib import osutils
@@ -693,7 +693,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     failure_msg_helper = failure_message_lib_unittest.FailureMessageHelper
     failure_messages = [failure_msg_helper.GetStageFailureMessage(),
                         failure_msg_helper.GetBuildScriptFailureMessage()]
-    message = failure_message_lib.BuildFailureMessage(
+    message = build_failure_message.BuildFailureMessage(
         'summary', failure_messages, True, 'reason', 'build_2')
 
     builder_status_1 = builder_status_lib.BuilderStatus('build_1', None)

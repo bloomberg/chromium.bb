@@ -11,6 +11,7 @@ import mock
 from chromite.cbuildbot import build_status_unittest
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
+from chromite.lib import build_failure_message
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -32,7 +33,7 @@ class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
 
   def testUnpickleBuildStatus(self):
     """Tests that _UnpickleBuildStatus returns the correct values."""
-    failed_msg = failure_message_lib.BuildFailureMessage(
+    failed_msg = build_failure_message.BuildFailureMessage(
         'you failed', ['traceback'], True, 'taco', 'bot')
     failed_input_status = builder_status_lib.BuilderStatus(
         constants.BUILDER_STATUS_FAILED, failed_msg)

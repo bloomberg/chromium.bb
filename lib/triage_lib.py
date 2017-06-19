@@ -380,7 +380,7 @@ class CalculateSuspects(object):
 
     Args:
       changes: A list of cros_patch.GerritPatch instances.
-      messages: A list of failure_message_lib.BuildFailureMessage or NoneType
+      messages: A list of build_failure_message.BuildFailureMessage or NoneType
         instances from the failed slaves.
       build_root: The path to the build root.
       failed_hwtests: A list of names of failed hwtests got from CIDB (see the

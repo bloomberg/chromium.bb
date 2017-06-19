@@ -11,6 +11,7 @@ import cPickle
 import os
 
 from chromite.lib import buildbucket_lib
+from chromite.lib import build_failure_message
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -306,7 +307,7 @@ class SlaveBuilderStatus(object):
         StageFailureMessage or its sub-classes) of the given build.
 
     Returns:
-      A failure_message_lib.BuildFailureMessage object.
+      A build_failure_message.BuildFailureMessage object.
     """
     internal = overlays in [constants.PRIVATE_OVERLAYS,
                             constants.BOTH_OVERLAYS]
@@ -326,7 +327,7 @@ class SlaveBuilderStatus(object):
     details.append('in %s' % dashboard_url)
     msg_summary = '%s: %s' % (build_config, ' '.join(details))
 
-    return failure_message_lib.BuildFailureMessage(
+    return build_failure_message.BuildFailureMessage(
         msg_summary, failure_messages, internal, reason, build_config)
 
   def _GetMessage(self, build_config, status, dashboard_url,
@@ -341,7 +342,7 @@ class SlaveBuilderStatus(object):
         to stage failure messages (See return type of _GetSlaveFailures)
 
     Returns:
-      A failure_message_lib.BuildFailureMessage object if the status is
+      A build_failure_message.BuildFailureMessage object if the status is
       constants.BUILDER_STATUS_FAILED; else, None.
     """
     if status == constants.BUILDER_STATUS_FAILED:

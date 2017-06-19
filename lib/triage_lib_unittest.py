@@ -9,10 +9,10 @@ from __future__ import print_function
 import json
 import mock
 
+from chromite.lib import build_failure_message
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cq_config
-from chromite.lib import failure_message_lib
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import gerrit
 from chromite.lib import patch as cros_patch
@@ -67,7 +67,7 @@ class MessageHelper(object):
   def GetFailedMessage(failure_messages, stage='Build', internal=False,
                        bot='daisy_spring-paladin'):
     """Returns a BuildFailureMessage object."""
-    return failure_message_lib.BuildFailureMessage(
+    return build_failure_message.BuildFailureMessage(
         'Stage %s failed' % stage, failure_messages, internal,
         'failure reason string', bot)
 
