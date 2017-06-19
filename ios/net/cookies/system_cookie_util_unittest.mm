@@ -6,13 +6,16 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "net/cookies/cookie_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace net {
 
@@ -34,8 +37,8 @@ void CheckSystemCookie(const base::Time& expires, bool secure, bool httponly) {
       secure, httponly, net::CookieSameSite::DEFAULT_MODE,
       net::COOKIE_PRIORITY_DEFAULT);
   // Convert it to system cookie.
-  base::scoped_nsobject<NSHTTPCookie> system_cookie(
-      [SystemCookieFromCanonicalCookie(canonical_cookie) retain]);
+  NSHTTPCookie* system_cookie =
+      SystemCookieFromCanonicalCookie(canonical_cookie);
 
   // Check the attributes.
   EXPECT_TRUE(system_cookie);
@@ -62,15 +65,14 @@ TEST(CookieUtil, CanonicalCookieFromSystemCookie) {
   base::Time expire_date = creation_time + base::TimeDelta::FromHours(2);
   NSDate* system_expire_date =
       [NSDate dateWithTimeIntervalSince1970:expire_date.ToDoubleT()];
-  base::scoped_nsobject<NSHTTPCookie> system_cookie(
-      [[NSHTTPCookie alloc] initWithProperties:@{
-        NSHTTPCookieDomain : @"foo",
-        NSHTTPCookieName : @"a",
-        NSHTTPCookiePath : @"/",
-        NSHTTPCookieValue : @"b",
-        NSHTTPCookieExpires : system_expire_date,
-        @"HttpOnly" : @YES,
-      }]);
+  NSHTTPCookie* system_cookie = [[NSHTTPCookie alloc] initWithProperties:@{
+    NSHTTPCookieDomain : @"foo",
+    NSHTTPCookieName : @"a",
+    NSHTTPCookiePath : @"/",
+    NSHTTPCookieValue : @"b",
+    NSHTTPCookieExpires : system_expire_date,
+    @"HttpOnly" : @YES,
+  }];
   ASSERT_TRUE(system_cookie);
   net::CanonicalCookie chrome_cookie =
       CanonicalCookieFromSystemCookie(system_cookie, creation_time);
@@ -91,13 +93,13 @@ TEST(CookieUtil, CanonicalCookieFromSystemCookie) {
   EXPECT_EQ(net::COOKIE_PRIORITY_DEFAULT, chrome_cookie.Priority());
 
   // Test session and secure cookie.
-  system_cookie.reset([[NSHTTPCookie alloc] initWithProperties:@{
+  system_cookie = [[NSHTTPCookie alloc] initWithProperties:@{
     NSHTTPCookieDomain : @"foo",
     NSHTTPCookieName : @"a",
     NSHTTPCookiePath : @"/",
     NSHTTPCookieValue : @"b",
     NSHTTPCookieSecure : @"Y",
-  }]);
+  }];
   ASSERT_TRUE(system_cookie);
   chrome_cookie = CanonicalCookieFromSystemCookie(system_cookie, creation_time);
   EXPECT_FALSE(chrome_cookie.IsPersistent());
@@ -125,8 +127,8 @@ TEST(CookieUtil, SystemCookieFromBadCanonicalCookie) {
       false,         // httponly
       net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
   // Convert it to system cookie.
-  base::scoped_nsobject<NSHTTPCookie> system_cookie(
-      [SystemCookieFromCanonicalCookie(bad_canonical_cookie) retain]);
+  NSHTTPCookie* system_cookie =
+      SystemCookieFromCanonicalCookie(bad_canonical_cookie);
   EXPECT_TRUE(system_cookie == nil);
 }
 
