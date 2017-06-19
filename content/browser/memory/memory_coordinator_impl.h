@@ -179,18 +179,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // for testing.
   void OnConnectionError(int render_process_id);
 
-  // Returns true when a given renderer can be suspended.
-  bool CanSuspendRenderer(int render_process_id);
-
   base::SingleThreadTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
 #if !defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplBrowserTest, HandleAdded);
-  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplBrowserTest,
-                           CanSuspendRenderer);
-  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorWithServiceWorkerTest,
-                           CannotSuspendRendererWithServiceWorker);
 #endif
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnChildVisibilityChanged);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextCondition);

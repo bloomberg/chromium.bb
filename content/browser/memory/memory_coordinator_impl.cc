@@ -213,6 +213,10 @@ bool MemoryCoordinatorImpl::SetChildMemoryState(int render_process_id,
   if (memory_state == MemoryState::UNKNOWN)
     return false;
 
+  // SUSPENDED state isn't supported yet.
+  if (memory_state == MemoryState::SUSPENDED)
+    return false;
+
   // Can't send a message to a child that doesn't exist.
   auto iter = children_.find(render_process_id);
   if (iter == children_.end())
@@ -227,11 +231,6 @@ bool MemoryCoordinatorImpl::SetChildMemoryState(int render_process_id,
   // A nop doesn't need to be sent, but is considered successful.
   if (iter->second.memory_state == memory_state)
     return true;
-
-  // Can't suspend the given renderer.
-  if (memory_state == MemoryState::SUSPENDED &&
-      !CanSuspendRenderer(render_process_id))
-    return false;
 
   // Update the internal state and send the message.
   iter->second.memory_state = memory_state;
@@ -374,18 +373,6 @@ void MemoryCoordinatorImpl::SetTickClockForTesting(
 
 void MemoryCoordinatorImpl::OnConnectionError(int render_process_id) {
   children_.erase(render_process_id);
-}
-
-bool MemoryCoordinatorImpl::CanSuspendRenderer(int render_process_id) {
-  auto* render_process_host = GetRenderProcessHost(render_process_id);
-  if (!render_process_host || !render_process_host->IsProcessBackgrounded())
-    return false;
-  if (render_process_host->GetWorkerRefCount() > 0)
-    return false;
-  // Assumes that we can't suspend renderers if there is no delegate.
-  if (!delegate_)
-    return false;
-  return delegate_->CanSuspendBackgroundedRenderer(render_process_id);
 }
 
 void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
