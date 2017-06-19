@@ -42,8 +42,10 @@ OpenPDFParamsParser.prototype = {
     }
 
     // Handle #zoom=scale,left,top.
-    var position = {x: parseFloat(paramValueSplit[1]),
-                    y: parseFloat(paramValueSplit[2])};
+    var position = {
+      x: parseFloat(paramValueSplit[1]),
+      y: parseFloat(paramValueSplit[2])
+    };
     viewportPosition['position'] = position;
     viewportPosition['zoom'] = zoomFactor;
   },
@@ -123,10 +125,8 @@ OpenPDFParamsParser.prototype = {
 
     if (viewportPosition.page === undefined &&
         'nameddest' in paramsDictionary) {
-      this.outstandingRequests_.push({
-        callback: callback,
-        viewportPosition: viewportPosition
-      });
+      this.outstandingRequests_.push(
+          {callback: callback, viewportPosition: viewportPosition});
       this.getNamedDestinationsFunction_(paramsDictionary['nameddest']);
     } else {
       callback(viewportPosition);

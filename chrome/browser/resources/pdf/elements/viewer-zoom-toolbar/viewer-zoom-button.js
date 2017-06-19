@@ -18,41 +18,25 @@ Polymer({
      * perform the conversion manually.
      * @private
      */
-    icons_: {
-      type: Array,
-      value: [''],
-      computed: 'computeIconsArray_(icons)'
-    },
+    icons_: {type: Array, value: [''], computed: 'computeIconsArray_(icons)'},
 
     tooltips: Array,
 
-    closed: {
-      type: Boolean,
-      reflectToAttribute: true,
-      value: false
-    },
+    closed: {type: Boolean, reflectToAttribute: true, value: false},
 
-    delay: {
-      type: Number,
-      observer: 'delayChanged_'
-    },
+    delay: {type: Number, observer: 'delayChanged_'},
 
     /**
      * Index of the icon currently being displayed.
      */
-    activeIndex: {
-      type: Number,
-      value: 0
-    },
+    activeIndex: {type: Number, value: 0},
 
     /**
      * Icon currently being displayed on the FAB.
      * @private
      */
-    visibleIcon_: {
-      type: String,
-      computed: 'computeVisibleIcon_(icons_, activeIndex)'
-    },
+    visibleIcon_:
+        {type: String, computed: 'computeVisibleIcon_(icons_, activeIndex)'},
 
     visibleTooltip_: {
       type: String,

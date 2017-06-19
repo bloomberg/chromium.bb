@@ -39,11 +39,7 @@ function SerializeKeyEvent(event) {
  * has finished loading or failed to load.
  * @enum {string}
  */
-var LoadState = {
-  LOADING: 'loading',
-  SUCCESS: 'success',
-  FAILED: 'failed'
-};
+var LoadState = {LOADING: 'loading', SUCCESS: 'success', FAILED: 'failed'};
 
 /**
  * Create a new PDFScriptingAPI. This provides a scripting interface to
@@ -60,8 +56,8 @@ function PDFScriptingAPI(window, plugin) {
   window.addEventListener('message', function(event) {
     if (event.origin != 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' &&
         event.origin != 'chrome://print') {
-      console.error('Received message that was not from the extension: ' +
-                    event);
+      console.error(
+          'Received message that was not from the extension: ' + event);
       return;
     }
     switch (event.data.type) {
@@ -77,11 +73,9 @@ function PDFScriptingAPI(window, plugin) {
          */
         var viewportData = event.data;
         if (this.viewportChangedCallback_)
-          this.viewportChangedCallback_(viewportData.pageX,
-                                        viewportData.pageY,
-                                        viewportData.pageWidth,
-                                        viewportData.viewportWidth,
-                                        viewportData.viewportHeight);
+          this.viewportChangedCallback_(
+              viewportData.pageX, viewportData.pageY, viewportData.pageWidth,
+              viewportData.viewportWidth, viewportData.viewportHeight);
         break;
       case 'documentLoaded':
         var data = /** @type {{load_state: LoadState}} */ (event.data);
@@ -119,20 +113,18 @@ PDFScriptingAPI.prototype = {
       this.pendingScriptingMessages_.push(message);
   },
 
- /**
-  * Sets the plugin element containing the PDF viewer. The element will usually
-  * be passed into the PDFScriptingAPI constructor but may also be set later.
-  * @param {Object} plugin the plugin element containing the PDF viewer.
-  */
+  /**
+   * Sets the plugin element containing the PDF viewer. The element will usually
+   * be passed into the PDFScriptingAPI constructor but may also be set later.
+   * @param {Object} plugin the plugin element containing the PDF viewer.
+   */
   setPlugin: function(plugin) {
     this.plugin_ = plugin;
 
     if (this.plugin_) {
       // Send a message to ensure the postMessage channel is initialized which
       // allows us to receive messages.
-      this.sendMessage_({
-        type: 'initialize'
-      });
+      this.sendMessage_({type: 'initialize'});
       // Flush pending messages.
       while (this.pendingScriptingMessages_.length > 0)
         this.sendMessage_(this.pendingScriptingMessages_.shift());
@@ -190,11 +182,7 @@ PDFScriptingAPI.prototype = {
    * @param {number} index the index of the page to load.
    */
   loadPreviewPage: function(url, index) {
-    this.sendMessage_({
-      type: 'loadPreviewPage',
-      url: url,
-      index: index
-    });
+    this.sendMessage_({type: 'loadPreviewPage', url: url, index: index});
   },
 
   /**
@@ -202,9 +190,7 @@ PDFScriptingAPI.prototype = {
    * load.
    */
   selectAll: function() {
-    this.sendMessage_({
-      type: 'selectAll'
-    });
+    this.sendMessage_({type: 'selectAll'});
   },
 
   /**
@@ -218,9 +204,7 @@ PDFScriptingAPI.prototype = {
     if (this.selectedTextCallback_)
       return false;
     this.selectedTextCallback_ = callback;
-    this.sendMessage_({
-      type: 'getSelectedText'
-    });
+    this.sendMessage_({type: 'getSelectedText'});
     return true;
   },
 
@@ -228,9 +212,7 @@ PDFScriptingAPI.prototype = {
    * Print the document. May only be called after document load.
    */
   print: function() {
-    this.sendMessage_({
-      type: 'print'
-    });
+    this.sendMessage_({type: 'print'});
   },
 
   /**
@@ -238,10 +220,8 @@ PDFScriptingAPI.prototype = {
    * @param {Event} keyEvent the key event to send to the extension.
    */
   sendKeyEvent: function(keyEvent) {
-    this.sendMessage_({
-      type: 'sendKeyEvent',
-      keyEvent: SerializeKeyEvent(keyEvent)
-    });
+    this.sendMessage_(
+        {type: 'sendKeyEvent', keyEvent: SerializeKeyEvent(keyEvent)});
   },
 };
 
@@ -255,8 +235,8 @@ PDFScriptingAPI.prototype = {
  */
 function PDFCreateOutOfProcessPlugin(src) {
   var client = new PDFScriptingAPI(window, null);
-  var iframe = assertInstanceof(window.document.createElement('iframe'),
-                                HTMLIFrameElement);
+  var iframe = assertInstanceof(
+      window.document.createElement('iframe'), HTMLIFrameElement);
   iframe.setAttribute('src', 'pdf_preview.html?' + src);
   // Prevent the frame from being tab-focusable.
   iframe.setAttribute('tabindex', '-1');

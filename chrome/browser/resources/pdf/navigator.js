@@ -179,10 +179,8 @@ Navigator.prototype = {
    */
   isValidUrl_: function(url) {
     // Make sure |url| starts with a valid scheme.
-    if (!url.startsWith('http://') &&
-        !url.startsWith('https://') &&
-        !url.startsWith('ftp://') &&
-        !url.startsWith('file://') &&
+    if (!url.startsWith('http://') && !url.startsWith('https://') &&
+        !url.startsWith('ftp://') && !url.startsWith('file://') &&
         !url.startsWith('mailto:')) {
       return false;
     }
@@ -193,11 +191,8 @@ Navigator.prototype = {
 
 
     // Make sure |url| is not only a scheme.
-    if (url == 'http://' ||
-        url == 'https://' ||
-        url == 'ftp://' ||
-        url == 'file://' ||
-        url == 'mailto:') {
+    if (url == 'http://' || url == 'https://' || url == 'ftp://' ||
+        url == 'file://' || url == 'mailto:') {
       return false;
     }
 
@@ -226,8 +221,8 @@ Navigator.prototype = {
       var schemeEndIndex = this.originalUrl_.indexOf('://');
       var firstSlash = this.originalUrl_.indexOf('/', schemeEndIndex + 3);
       // e.g. http://www.foo.com/bar -> http://www.foo.com
-      var domain = firstSlash != -1 ?
-          this.originalUrl_.substr(0, firstSlash) : this.originalUrl_;
+      var domain = firstSlash != -1 ? this.originalUrl_.substr(0, firstSlash) :
+                                      this.originalUrl_;
       return domain + url;
     }
 
@@ -245,7 +240,8 @@ Navigator.prototype = {
     if (!isRelative) {
       var domainSeparatorIndex = url.indexOf('/');
       var domainName = domainSeparatorIndex == -1 ?
-          url : url.substr(0, domainSeparatorIndex);
+          url :
+          url.substr(0, domainSeparatorIndex);
       var domainDotCount = (domainName.match(/\./g) || []).length;
       if (domainDotCount < 2)
         isRelative = true;
@@ -253,8 +249,8 @@ Navigator.prototype = {
 
     if (isRelative) {
       var slashIndex = this.originalUrl_.lastIndexOf('/');
-      var path = slashIndex != -1 ?
-          this.originalUrl_.substr(0, slashIndex) : this.originalUrl_;
+      var path = slashIndex != -1 ? this.originalUrl_.substr(0, slashIndex) :
+                                    this.originalUrl_;
       return path + '/' + url;
     }
 
