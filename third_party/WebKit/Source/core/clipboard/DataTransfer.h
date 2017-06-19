@@ -44,6 +44,8 @@ class FileList;
 class FrameSelection;
 class LocalFrame;
 class Node;
+class PaintRecordBuilder;
+class PropertyTreeState;
 
 // Used for drag and drop and copy/paste.
 // Drag and Drop:
@@ -131,6 +133,16 @@ class CORE_EXPORT DataTransfer final
   DataTransferItemList* items();
 
   DataObject* GetDataObject() const;
+
+  static FloatRect DeviceSpaceBounds(const FloatRect, const LocalFrame&);
+  static std::unique_ptr<DragImage> CreateDragImageForFrame(
+      const LocalFrame&,
+      float,
+      RespectImageOrientationEnum,
+      const FloatRect&,
+      PaintRecordBuilder&,
+      const PropertyTreeState&);
+  static std::unique_ptr<DragImage> NodeImage(const LocalFrame&, Node&);
 
   DECLARE_TRACE();
 

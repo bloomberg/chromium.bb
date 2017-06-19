@@ -48,7 +48,6 @@ namespace blink {
 class Color;
 class ContentSettingsClient;
 class Document;
-class DragImage;
 class Editor;
 template <typename Traversal>
 class EditingAlgorithm;
@@ -90,8 +89,6 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 class CORE_EXPORT LocalFrame final : public Frame,
                                      public Supplementable<LocalFrame> {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
-
-  friend class LocalFrameTest;
 
  public:
   static LocalFrame* Create(LocalFrameClient*,
@@ -200,9 +197,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void DeviceScaleFactorChanged();
   double DevicePixelRatio() const;
-
-  std::unique_ptr<DragImage> NodeImage(Node&);
-  std::unique_ptr<DragImage> DragImageForSelection(float opacity);
 
   String SelectedText() const;
   String SelectedTextForClipboard() const;

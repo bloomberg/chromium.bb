@@ -81,6 +81,9 @@ class CORE_EXPORT DragController final
 
   DragState& GetDragState();
 
+  static std::unique_ptr<DragImage> DragImageForSelection(const LocalFrame&,
+                                                          float);
+
   DECLARE_TRACE();
 
  private:

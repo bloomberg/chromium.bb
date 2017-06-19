@@ -290,7 +290,7 @@ class WebFrameTest : public ::testing::Test {
         ToLocalFrame(web_view_helper->WebView()->GetPage()->MainFrame());
     DCHECK(frame);
     Element* element = frame->GetDocument()->getElementById(testcase.c_str());
-    return frame->NodeImage(*element);
+    return DataTransfer::NodeImage(*frame, *element);
   }
 
   void RemoveElementById(WebLocalFrameBase* frame, const AtomicString& id) {
