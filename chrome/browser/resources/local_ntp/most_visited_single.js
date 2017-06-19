@@ -204,16 +204,6 @@ var showTiles = function(info) {
 var updateTheme = function(info) {
   var themeStyle = [];
 
-  if (info.tileBorderColor) {
-    themeStyle.push(
-        '.mv-tile {' +
-        'border: 1px solid ' + info.tileBorderColor + '; }');
-  }
-  if (info.tileHoverBorderColor) {
-    themeStyle.push(
-        '.mv-tile:hover {' +
-        'border-color: ' + info.tileHoverBorderColor + '; }');
-  }
   if (info.isThemeDark) {
     themeStyle.push(
         '.mv-tile, .mv-empty-tile { ' +
