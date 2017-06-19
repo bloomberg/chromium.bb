@@ -21,6 +21,7 @@
       'target_name': 'media_router_container_interface',
       'dependencies': [
         '../../compiled_resources2.gyp:media_router_data',
+        '../../elements/media_router_header/compiled_resources2.gyp:media_router_header',
       ],
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

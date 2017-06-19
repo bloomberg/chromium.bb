@@ -12,7 +12,7 @@ cr.define('media_router', function() {
 
   /**
    * The media-router-container element. Initialized after polymer is ready.
-   * @type {?MediaRouterContainerElement}
+   * @type {?MediaRouterContainerInterface}
    */
   var container = null;
 
@@ -25,12 +25,10 @@ cr.define('media_router', function() {
     if (!cr.isMac)
       onRequestInitialData();
 
-    container = /** @type {!MediaRouterContainerElement} */
+    container = /** @type {!MediaRouterContainerInterface} */
         ($('media-router-container'));
 
-    media_router.ui.setElements(
-        container,
-        /** @type {!MediaRouterHeaderElement} */ (container.header));
+    media_router.ui.setElements(container, container.header);
 
     container.addEventListener(
         'acknowledge-first-run-flow', onAcknowledgeFirstRunFlow);
@@ -298,6 +296,7 @@ cr.define('media_router', function() {
    *   success - whether or not the route creation was successful.
    */
   function onReportRouteCreation(event) {
+    /** @type {{success: boolean}} */
     var detail = event.detail;
     media_router.browserApi.reportRouteCreation(detail.success);
   }

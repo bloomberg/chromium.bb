@@ -48,7 +48,9 @@ cr.define('route_details', function() {
       // Checks the default route view is shown.
       var checkDefaultViewIsShown = function() {
         assertFalse(details.$$('#route-information').hasAttribute('hidden'));
-        assertTrue(details.$$('extension-view-wrapper').hasAttribute('hidden'));
+        assertTrue(
+            !details.$$('extension-view-wrapper') ||
+            details.$$('extension-view-wrapper').hasAttribute('hidden'));
       };
 
       // Checks the start button is shown.
@@ -87,7 +89,6 @@ cr.define('route_details', function() {
       setup(function(done) {
         PolymerTest.clearBody();
         details = document.createElement('route-details');
-        details.useWebUiRouteControls = false;
         document.body.appendChild(details);
 
         // Initialize routes and sinks.
@@ -209,33 +210,45 @@ cr.define('route_details', function() {
 
       // Tests when |route| exists, has a custom controller, and it loads.
       test('route has custom controller and loading succeeds', function(done) {
-        details.$$('extension-view-wrapper').$$('#custom-controller').load =
-            function(url) {
-          setTimeout(function() {
-            assertEquals(
-                fakeRouteOneControllerPath,
-                url.substring(0, fakeRouteOneControllerPath.length));
-            checkCustomControllerIsShown();
-            done();
-          });
-          return Promise.resolve();
-        };
+        // Get the extension-view-wrapper stamped first, so that we can mock out
+        // the load method.
+        details.route = fakeRouteTwo;
 
-        details.route = fakeRouteOne;
+        setTimeout(function() {
+          details.$$('extension-view-wrapper').$$('#custom-controller').load =
+              function(url) {
+            setTimeout(function() {
+              assertEquals(
+                  fakeRouteOneControllerPath,
+                  url.substring(0, fakeRouteOneControllerPath.length));
+              checkCustomControllerIsShown();
+              done();
+            });
+            return Promise.resolve();
+          };
+
+          details.route = fakeRouteOne;
+        });
       });
 
       // Tests when |route| exists, has a custom controller, but fails to load.
       test('route has custom controller but loading fails', function(done) {
-        details.$$('extension-view-wrapper').$$('#custom-controller').load =
-            function(url) {
-          setTimeout(function() {
-            checkDefaultViewIsShown();
-            done();
-          });
-          return Promise.reject();
-        };
+        // Get the extension-view-wrapper stamped first, so that we can mock out
+        // the load method.
+        details.route = fakeRouteTwo;
 
-        details.route = fakeRouteOne;
+        setTimeout(function() {
+          details.$$('extension-view-wrapper').$$('#custom-controller').load =
+              function(url) {
+            setTimeout(function() {
+              checkDefaultViewIsShown();
+              done();
+            });
+            return Promise.reject();
+          };
+
+          details.route = fakeRouteOne;
+        });
       });
     });
   }

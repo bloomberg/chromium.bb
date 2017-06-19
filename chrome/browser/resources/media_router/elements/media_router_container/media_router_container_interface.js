@@ -40,6 +40,12 @@ MediaRouterContainerInterface.prototype.firstRunFlowCloudPrefLearnMoreUrl;
 MediaRouterContainerInterface.prototype.firstRunFlowLearnMoreUrl;
 
 /**
+ * The header element.
+ * @type {!MediaRouterHeaderElement}
+ */
+MediaRouterContainerInterface.prototype.header;
+
+/**
  * The header text for the sink list.
  * @type {string|undefined}
  */
@@ -95,6 +101,14 @@ MediaRouterContainerInterface.prototype.showFirstRunFlowCloudPref;
  * @type {boolean}
  */
 MediaRouterContainerInterface.prototype.useWebUiRouteControls;
+
+/**
+ * Adds an event listener callback for an event.
+ * @param {string} eventName
+ * @param {function(!Event)} callback
+ */
+MediaRouterContainerInterface.prototype.addEventListener = function(
+    eventName, callback) {};
 
 /**
  * Fires a 'report-initial-action' event when the user takes their first

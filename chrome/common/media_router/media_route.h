@@ -78,6 +78,14 @@ class MediaRoute {
     return custom_controller_path_;
   }
 
+  void set_supports_media_route_controller(
+      bool supports_media_route_controller) {
+    supports_media_route_controller_ = supports_media_route_controller;
+  }
+  bool supports_media_route_controller() const {
+    return supports_media_route_controller_;
+  }
+
   void set_for_display(bool for_display) { for_display_ = for_display; }
   bool for_display() const { return for_display_; }
 
@@ -113,6 +121,9 @@ class MediaRoute {
   // detail as well as its own route control features route control features in
   // the media router dialog.
   std::string custom_controller_path_;
+
+  // Whether the provider for this route supports the Media Route Controller.
+  bool supports_media_route_controller_ = false;
 
   // |true| if the route can be displayed in the UI.
   bool for_display_ = false;

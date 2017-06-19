@@ -11,7 +11,7 @@
         hidden$="[[!shouldShowRouteInfoOnly_(controllerType_)]]">
       <span>[[activityStatus_]]</span>
     </div>
-    <template is="dom-if" if="[[!useWebUiRouteControls]]">
+    <template is="dom-if" if="[[shouldAttemptLoadingExtensionView_(route)]]">
       <extension-view-wrapper id="extension-view-wrapper" route="[[route]]"
           route-details-open-time="[[openTime_]]"
           is-extension-view-ready="{{isExtensionViewReady}}"

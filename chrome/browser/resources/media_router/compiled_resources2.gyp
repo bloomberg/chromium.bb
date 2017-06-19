@@ -13,7 +13,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         'media_router_ui_interface',
         'elements/media_router_header/compiled_resources2.gyp:media_router_header',
-        'elements/media_router_container/compiled_resources2.gyp:media_router_container',
+        'elements/media_router_container/compiled_resources2.gyp:media_router_container_interface',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
