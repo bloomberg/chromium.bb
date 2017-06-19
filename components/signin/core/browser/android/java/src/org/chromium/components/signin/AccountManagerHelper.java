@@ -9,10 +9,14 @@ import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.AnyThread;
+import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -82,6 +86,7 @@ public class AccountManagerHelper {
      *
      * @param delegate the custom AccountManagerDelegate to use.
      */
+    @AnyThread
     public static void initializeAccountManagerHelper(AccountManagerDelegate delegate) {
         if (!sInstance.compareAndSet(null, new AccountManagerHelper(delegate))) {
             throw new IllegalStateException("AccountManagerHelper is already initialized!");
@@ -94,6 +99,7 @@ public class AccountManagerHelper {
      *
      * @return a singleton instance
      */
+    @AnyThread
     public static AccountManagerHelper get() {
         AccountManagerHelper instance = sInstance.get();
         assert instance != null : "AccountManagerHelper is not initialized!";
@@ -109,6 +115,7 @@ public class AccountManagerHelper {
      * @param delegate the custom AccountManagerDelegate to use.
      */
     @VisibleForTesting
+    @AnyThread
     public static void overrideAccountManagerHelperForTests(
             Context context, AccountManagerDelegate delegate) {
         sInstance.set(new AccountManagerHelper(delegate));
@@ -119,6 +126,7 @@ public class AccountManagerHelper {
      * Only for use in Tests.
      */
     @VisibleForTesting
+    @AnyThread
     public static void resetAccountManagerHelperForTests() {
         sInstance.set(null);
     }
@@ -126,6 +134,7 @@ public class AccountManagerHelper {
     /**
      * Creates an Account object for the given name.
      */
+    @AnyThread
     public static Account createAccountFromName(String name) {
         return new Account(name, GOOGLE_ACCOUNT_TYPE);
     }
@@ -135,6 +144,7 @@ public class AccountManagerHelper {
      *
      * See http://crbug.com/517697 for details.
      */
+    @WorkerThread
     public List<String> getGoogleAccountNames() {
         List<String> accountNames = new ArrayList<>();
         for (Account account : getGoogleAccounts()) {
@@ -146,6 +156,7 @@ public class AccountManagerHelper {
     /**
      * Retrieves a list of the Google account names on the device asynchronously.
      */
+    @MainThread
     public void getGoogleAccountNames(final Callback<List<String>> callback) {
         getGoogleAccounts(new Callback<Account[]>() {
             @Override
@@ -164,6 +175,7 @@ public class AccountManagerHelper {
      *
      * See http://crbug.com/517697 for details.
      */
+    @WorkerThread
     public Account[] getGoogleAccounts() {
         return mDelegate.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
     }
@@ -171,7 +183,9 @@ public class AccountManagerHelper {
     /**
      * Retrieves all Google accounts on the device asynchronously.
      */
+    @MainThread
     public void getGoogleAccounts(final Callback<Account[]> callback) {
+        ThreadUtils.assertOnUiThread();
         new AsyncTask<Void, Void, Account[]>() {
             @Override
             protected Account[] doInBackground(Void... params) {
@@ -190,6 +204,7 @@ public class AccountManagerHelper {
      *
      * See http://crbug.com/517697 for details.
      */
+    @WorkerThread
     public boolean hasGoogleAccounts() {
         return getGoogleAccounts().length > 0;
     }
@@ -197,6 +212,7 @@ public class AccountManagerHelper {
     /**
      * Asynchronously determine whether any Google accounts have been added.
      */
+    @MainThread
     public void hasGoogleAccounts(final Callback<Boolean> callback) {
         getGoogleAccounts(new Callback<Account[]>() {
             @Override
@@ -224,6 +240,7 @@ public class AccountManagerHelper {
      *
      * See http://crbug.com/517697 for details.
      */
+    @WorkerThread
     public Account getAccountFromName(String accountName) {
         String canonicalName = canonicalizeName(accountName);
         Account[] accounts = getGoogleAccounts();
@@ -238,6 +255,7 @@ public class AccountManagerHelper {
     /**
      * Asynchronously returns the account if it exists; null otherwise.
      */
+    @MainThread
     public void getAccountFromName(String accountName, final Callback<Account> callback) {
         final String canonicalName = canonicalizeName(accountName);
         getGoogleAccounts(new Callback<Account[]>() {
@@ -260,6 +278,7 @@ public class AccountManagerHelper {
      *
      * See http://crbug.com/517697 for details.
      */
+    @WorkerThread
     public boolean hasAccountForName(String accountName) {
         return getAccountFromName(accountName) != null;
     }
@@ -269,6 +288,7 @@ public class AccountManagerHelper {
      */
     // TODO(maxbogue): Remove once this function is used outside of tests.
     @VisibleForTesting
+    @MainThread
     public void hasAccountForName(String accountName, final Callback<Boolean> callback) {
         getAccountFromName(accountName, new Callback<Account>() {
             @Override
@@ -281,6 +301,7 @@ public class AccountManagerHelper {
     /**
      * @return Whether or not there is an account authenticator for Google accounts.
      */
+    @AnyThread
     public boolean hasGoogleAccountAuthenticator() {
         AuthenticatorDescription[] descs = mDelegate.getAuthenticatorTypes();
         for (AuthenticatorDescription desc : descs) {
@@ -296,6 +317,7 @@ public class AccountManagerHelper {
      *
      * - Assumes that the account is a valid account.
      */
+    @MainThread
     public void getAuthToken(final Account account, final String authTokenType,
             final GetAuthTokenCallback callback) {
         ConnectionRetry.runAuthTask(new AuthTask<String>() {
@@ -319,6 +341,7 @@ public class AccountManagerHelper {
      *
      * - Assumes that the account is a valid account.
      */
+    @MainThread
     public void getNewAuthToken(Account account, String authToken, String authTokenType,
             GetAuthTokenCallback callback) {
         invalidateAuthToken(authToken);
@@ -328,6 +351,7 @@ public class AccountManagerHelper {
     /**
      * Clear an auth token from the local cache with respect to the ApplicationContext.
      */
+    @MainThread
     public void invalidateAuthToken(final String authToken) {
         if (authToken == null || authToken.isEmpty()) {
             return;
@@ -347,6 +371,7 @@ public class AccountManagerHelper {
         });
     }
 
+    @MainThread
     public void checkChildAccount(Account account, Callback<Boolean> callback) {
         hasFeatures(account, new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY}, callback);
     }
@@ -357,6 +382,7 @@ public class AccountManagerHelper {
 
     private void hasFeatures(
             final Account account, final String[] features, final Callback<Boolean> callback) {
+        ThreadUtils.assertOnUiThread();
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             public Boolean doInBackground(Void... params) {
@@ -374,6 +400,7 @@ public class AccountManagerHelper {
      * Asks the user to enter a new password for an account, updating the saved credentials for the
      * account.
      */
+    @MainThread
     public void updateCredentials(
             Account account, Activity activity, @Nullable Callback<Boolean> callback) {
         mDelegate.updateCredentials(account, activity, callback);
@@ -414,6 +441,7 @@ public class AccountManagerHelper {
          * as a {@link ConnectionTypeObserver} when this method is called.
          */
         private void attempt() {
+            ThreadUtils.assertOnUiThread();
             // Clear any transient error.
             mIsTransientError.set(false);
             new AsyncTask<Void, Void, T>() {
