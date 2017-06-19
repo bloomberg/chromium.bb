@@ -803,15 +803,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_flow_, flow);
   }
 
-  // mix-blend-mode
-  static WebBlendMode InitialBlendMode() { return WebBlendMode::kNormal; }
-  WebBlendMode BlendMode() const {
-    return static_cast<WebBlendMode>(rare_non_inherited_data_->blend_mode_);
-  }
-  void SetBlendMode(WebBlendMode v) {
-    rare_non_inherited_data_.Access()->blend_mode_ = static_cast<unsigned>(v);
-  }
-
   // offset-anchor
   static LengthPoint InitialOffsetAnchor() {
     return LengthPoint(Length(kAuto), Length(kAuto));

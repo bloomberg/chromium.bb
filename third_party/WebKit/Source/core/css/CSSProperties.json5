@@ -1705,11 +1705,13 @@
     {
       name: "mix-blend-mode",
       name_for_methods: "BlendMode",
-      type_name: "blink::WebBlendMode",
-      field_size: 5,
-      field_template: "storage_only",
+      type_name: "WebBlendMode",
+      field_template: "keyword",
+      keywords: ["normal", "multiply", "screen", "overlay", "darken", "lighten",
+       "color-dodge", "color-burn", "hard-light", "soft-light", "difference", 
+       "exclusion", "hue", "saturation", "color", "luminosity"], 
       field_group: "rare-non-inherited",
-      default_value: "WebBlendMode::kNormal",
+      default_value: "normal",
       include_paths: ["public/platform/WebBlendMode.h"],
     },
     {
