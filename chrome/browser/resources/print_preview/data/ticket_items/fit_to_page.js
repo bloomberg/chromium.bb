@@ -18,11 +18,8 @@ cr.define('print_preview.ticket_items', function() {
    */
   function FitToPage(appState, documentInfo, destinationStore) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.IS_FIT_TO_PAGE_ENABLED,
-        destinationStore,
-        documentInfo);
+        this, appState, print_preview.AppStateField.IS_FIT_TO_PAGE_ENABLED,
+        destinationStore, documentInfo);
   }
 
   FitToPage.prototype = {
@@ -37,8 +34,8 @@ cr.define('print_preview.ticket_items', function() {
     isCapabilityAvailable: function() {
       return !this.getDocumentInfoInternal().isModifiable &&
           (!this.getSelectedDestInternal() ||
-              this.getSelectedDestInternal().id !=
-                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF);
+           this.getSelectedDestInternal().id !=
+               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF);
     },
 
     /** @override */
@@ -53,12 +50,10 @@ cr.define('print_preview.ticket_items', function() {
     getCapabilityNotAvailableValueInternal: function() {
       return !this.getSelectedDestInternal() ||
           this.getSelectedDestInternal().id !=
-              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
     }
   };
 
   // Export
-  return {
-    FitToPage: FitToPage
-  };
+  return {FitToPage: FitToPage};
 });

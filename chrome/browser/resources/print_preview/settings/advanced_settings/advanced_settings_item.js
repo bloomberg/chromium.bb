@@ -75,8 +75,8 @@ cr.define('print_preview', function() {
 
     /** @override */
     createDom: function() {
-      this.setElementInternal(this.cloneTemplateInternal(
-          'advanced-settings-item-template'));
+      this.setElementInternal(
+          this.cloneTemplateInternal('advanced-settings-item-template'));
 
       this.tracker_.add(
           this.select_, 'change', this.onSelectChange_.bind(this));
@@ -135,7 +135,7 @@ cr.define('print_preview', function() {
      * @private
      */
     get text_() {
-      return /** @type {!HTMLSelectElement} */(
+      return /** @type {!HTMLSelectElement} */ (
           this.getChildElement('.advanced-settings-item-value-text-control'));
     },
 
@@ -195,8 +195,8 @@ cr.define('print_preview', function() {
           for (var i = 0; i < this.select_.length && !optionMatches; i++)
             optionMatches = this.select_.options[i].text.match(this.query_);
         } else {
-          optionMatches = (this.text_.value || this.text_.placeholder || '')
-              .match(this.query_);
+          optionMatches = (this.text_.value || this.text_.placeholder ||
+                           '').match(this.query_);
         }
       }
       var matches = nameMatches || !!optionMatches;
@@ -267,8 +267,9 @@ cr.define('print_preview', function() {
      * @private
      */
     initializeSelectValue_: function() {
-      setIsVisible(assert(this.getChildElement(
-          '.advanced-settings-item-value-select')), true);
+      setIsVisible(
+          assert(this.getChildElement('.advanced-settings-item-value-select')),
+          true);
       var selectEl = this.select_;
       var indexToSelect = 0;
       this.capability_.select_cap.option.forEach(function(option, index) {
@@ -293,15 +294,16 @@ cr.define('print_preview', function() {
      * @private
      */
     initializeTextValue_: function() {
-      setIsVisible(assert(this.getChildElement(
-          '.advanced-settings-item-value-text')), true);
+      setIsVisible(
+          assert(this.getChildElement('.advanced-settings-item-value-text')),
+          true);
 
       var defaultValue = null;
       if (this.capability_.type == 'TYPED_VALUE' &&
           this.capability_.typed_value_cap) {
         defaultValue = this.capability_.typed_value_cap.default || null;
-      } else if (this.capability_.type == 'RANGE' &&
-                 this.capability_.range_cap) {
+      } else if (
+          this.capability_.type == 'RANGE' && this.capability_.range_cap) {
         defaultValue = this.capability_.range_cap.default || null;
       }
 
@@ -332,7 +334,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    AdvancedSettingsItem: AdvancedSettingsItem
-  };
+  return {AdvancedSettingsItem: AdvancedSettingsItem};
 });

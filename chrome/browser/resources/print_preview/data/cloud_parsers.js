@@ -77,8 +77,9 @@ cr.define('cloudprint', function() {
       account: account,
       tags: tags,
       isOwned: arrayContains(tags, CloudDestinationParser.OWNED_TAG_),
-      lastAccessTime: parseInt(
-          json[CloudDestinationParser.Field_.LAST_ACCESS], 10) || Date.now(),
+      lastAccessTime:
+          parseInt(json[CloudDestinationParser.Field_.LAST_ACCESS], 10) ||
+          Date.now(),
       cloudID: id,
       description: json[CloudDestinationParser.Field_.DESCRIPTION]
     };
@@ -86,13 +87,11 @@ cr.define('cloudprint', function() {
         id,
         CloudDestinationParser.parseType_(
             json[CloudDestinationParser.Field_.TYPE]),
-        origin,
-        json[CloudDestinationParser.Field_.DISPLAY_NAME],
+        origin, json[CloudDestinationParser.Field_.DISPLAY_NAME],
         arrayContains(tags, CloudDestinationParser.RECENT_TAG_) /*isRecent*/,
-        connectionStatus,
-        optionalParams);
+        connectionStatus, optionalParams);
     if (json.hasOwnProperty(CloudDestinationParser.Field_.CAPABILITIES)) {
-      cloudDest.capabilities = /** @type {!print_preview.Cdd} */(
+      cloudDest.capabilities = /** @type {!print_preview.Cdd} */ (
           json[CloudDestinationParser.Field_.CAPABILITIES]);
     }
     return cloudDest;
@@ -124,23 +123,16 @@ cr.define('cloudprint', function() {
    * @enum {string}
    * @private
    */
-  InvitationParser.Field_ = {
-    PRINTER: 'printer',
-    RECEIVER: 'receiver',
-    SENDER: 'sender'
-  };
+  InvitationParser
+      .Field_ = {PRINTER: 'printer', RECEIVER: 'receiver', SENDER: 'sender'};
 
   /**
    * Enumeration of cloud destination types that are supported by print preview.
    * @enum {string}
    * @private
    */
-  InvitationParser.AclType_ = {
-    DOMAIN: 'DOMAIN',
-    GROUP: 'GROUP',
-    PUBLIC: 'PUBLIC',
-    USER: 'USER'
-  };
+  InvitationParser.AclType_ =
+      {DOMAIN: 'DOMAIN', GROUP: 'GROUP', PUBLIC: 'PUBLIC', USER: 'USER'};
 
   /**
    * Parses printer sharing invitation from JSON from GCP invite API response.
@@ -167,8 +159,9 @@ cr.define('cloudprint', function() {
     var receiverType = receiver['type'];
     if (receiverType == InvitationParser.AclType_.USER) {
       // It's a personal invitation, empty name indicates just that.
-    } else if (receiverType == InvitationParser.AclType_.GROUP ||
-               receiverType == InvitationParser.AclType_.DOMAIN) {
+    } else if (
+        receiverType == InvitationParser.AclType_.GROUP ||
+        receiverType == InvitationParser.AclType_.DOMAIN) {
       receiverName = nameFormatter(receiver['name'], receiver['scope']);
     } else {
       throw Error('Invitation of unsupported receiver type');
@@ -176,8 +169,7 @@ cr.define('cloudprint', function() {
 
     var destination = cloudprint.CloudDestinationParser.parse(
         json[InvitationParser.Field_.PRINTER],
-        print_preview.DestinationOrigin.COOKIES,
-        account);
+        print_preview.DestinationOrigin.COOKIES, account);
 
     return new print_preview.Invitation(
         senderName, receiverName, destination, receiver, account);

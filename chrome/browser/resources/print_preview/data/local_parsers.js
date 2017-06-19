@@ -15,23 +15,23 @@ cr.define('print_preview', function() {
    * @return {!print_preview.Destination} Parsed local print destination.
    */
   LocalDestinationParser.parse = function(destinationInfo) {
-    var options = {description: destinationInfo.printerDescription,
-                   isEnterprisePrinter: destinationInfo.cupsEnterprisePrinter};
+    var options = {
+      description: destinationInfo.printerDescription,
+      isEnterprisePrinter: destinationInfo.cupsEnterprisePrinter
+    };
     if (destinationInfo.printerOptions) {
       // Convert options into cloud print tags format.
-      options.tags = Object.keys(destinationInfo.printerOptions).map(
-          function(key) {return '__cp__' + key + '=' + this[key];},
-          destinationInfo.printerOptions);
+      options.tags =
+          Object.keys(destinationInfo.printerOptions).map(function(key) {
+            return '__cp__' + key + '=' + this[key];
+          }, destinationInfo.printerOptions);
     }
     return new print_preview.Destination(
-        destinationInfo.deviceName,
-        print_preview.DestinationType.LOCAL,
+        destinationInfo.deviceName, print_preview.DestinationType.LOCAL,
         cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
                         print_preview.DestinationOrigin.LOCAL,
-        destinationInfo.printerName,
-        false /*isRecent*/,
-        print_preview.DestinationConnectionStatus.ONLINE,
-        options);
+        destinationInfo.printerName, false /*isRecent*/,
+        print_preview.DestinationConnectionStatus.ONLINE, options);
   };
 
   function PrivetDestinationParser() {}
@@ -47,21 +47,16 @@ cr.define('print_preview', function() {
 
     if (destinationInfo.hasLocalPrinting) {
       returnedPrinters.push(new print_preview.Destination(
-          destinationInfo.serviceName,
-          print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.PRIVET,
-          destinationInfo.name,
-          false /*isRecent*/,
-          print_preview.DestinationConnectionStatus.ONLINE,
+          destinationInfo.serviceName, print_preview.DestinationType.LOCAL,
+          print_preview.DestinationOrigin.PRIVET, destinationInfo.name,
+          false /*isRecent*/, print_preview.DestinationConnectionStatus.ONLINE,
           {cloudID: destinationInfo.cloudID}));
     }
 
     if (destinationInfo.isUnregistered) {
       returnedPrinters.push(new print_preview.Destination(
-          destinationInfo.serviceName,
-          print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.PRIVET,
-          destinationInfo.name,
+          destinationInfo.serviceName, print_preview.DestinationType.GOOGLE,
+          print_preview.DestinationOrigin.PRIVET, destinationInfo.name,
           false /*isRecent*/,
           print_preview.DestinationConnectionStatus.UNREGISTERED));
     }
@@ -78,22 +73,20 @@ cr.define('print_preview', function() {
    * @return {!print_preview.Destination} Parsed destination.
    */
   ExtensionDestinationParser.parse = function(destinationInfo) {
-    var provisionalType =
-        destinationInfo.provisional ?
-            print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION :
-            print_preview.DestinationProvisionalType.NONE;
+    var provisionalType = destinationInfo.provisional ?
+        print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION :
+        print_preview.DestinationProvisionalType.NONE;
 
     return new print_preview.Destination(
-        destinationInfo.id,
-        print_preview.DestinationType.LOCAL,
-        print_preview.DestinationOrigin.EXTENSION,
-        destinationInfo.name,
-        false /* isRecent */,
-        print_preview.DestinationConnectionStatus.ONLINE,
-        {description: destinationInfo.description || '',
-         extensionId: destinationInfo.extensionId,
-         extensionName: destinationInfo.extensionName || '',
-         provisionalType: provisionalType});
+        destinationInfo.id, print_preview.DestinationType.LOCAL,
+        print_preview.DestinationOrigin.EXTENSION, destinationInfo.name,
+        false /* isRecent */, print_preview.DestinationConnectionStatus.ONLINE,
+        {
+          description: destinationInfo.description || '',
+          extensionId: destinationInfo.extensionId,
+          extensionName: destinationInfo.extensionName || '',
+          provisionalType: provisionalType
+        });
   };
 
   // Export

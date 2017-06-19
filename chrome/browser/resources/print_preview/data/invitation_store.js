@@ -70,8 +70,7 @@ cr.define('print_preview', function() {
    * @enum {string}
    */
   InvitationStore.EventType = {
-    INVITATION_PROCESSED:
-        'print_preview.InvitationStore.INVITATION_PROCESSED',
+    INVITATION_PROCESSED: 'print_preview.InvitationStore.INVITATION_PROCESSED',
     INVITATION_SEARCH_DONE:
         'print_preview.InvitationStore.INVITATION_SEARCH_DONE'
   };
@@ -221,7 +220,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    InvitationStore: InvitationStore
-  };
+  return {InvitationStore: InvitationStore};
 });

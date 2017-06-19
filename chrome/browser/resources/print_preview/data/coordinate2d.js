@@ -63,14 +63,10 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether another point is equal to this one.
      */
     equals: function(other) {
-      return other != null &&
-          this.x_ == other.x_ &&
-          this.y_ == other.y_;
+      return other != null && this.x_ == other.x_ && this.y_ == other.y_;
     }
   };
 
   // Export
-  return {
-    Coordinate2d: Coordinate2d
-  };
+  return {Coordinate2d: Coordinate2d};
 });

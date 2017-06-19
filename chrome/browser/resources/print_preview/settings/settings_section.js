@@ -116,7 +116,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    SettingsSection: SettingsSection
-  };
+  return {SettingsSection: SettingsSection};
 });

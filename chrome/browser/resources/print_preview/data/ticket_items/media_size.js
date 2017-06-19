@@ -23,11 +23,8 @@ cr.define('print_preview.ticket_items', function() {
   function MediaSize(
       appState, destinationStore, documentInfo, marginsType, customMargins) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.MEDIA_SIZE,
-        destinationStore,
-        documentInfo);
+        this, appState, print_preview.AppStateField.MEDIA_SIZE,
+        destinationStore, documentInfo);
 
     /**
      * Margins ticket item. Reset when this item changes.
@@ -52,9 +49,9 @@ cr.define('print_preview.ticket_items', function() {
       }
       return this.capability.option.some(function(option) {
         return option.width_microns == value.width_microns &&
-               option.height_microns == value.height_microns &&
-               option.is_continuous_feed == value.is_continuous_feed &&
-               option.vendor_id == value.vendor_id;
+            option.height_microns == value.height_microns &&
+            option.is_continuous_feed == value.is_continuous_feed &&
+            option.vendor_id == value.vendor_id;
       });
     },
 
@@ -73,19 +70,18 @@ cr.define('print_preview.ticket_items', function() {
     isValueEqual: function(value) {
       var myValue = this.getValue();
       return myValue.width_microns == value.width_microns &&
-             myValue.height_microns == value.height_microns &&
-             myValue.is_continuous_feed == value.is_continuous_feed &&
-             myValue.vendor_id == value.vendor_id;
+          myValue.height_microns == value.height_microns &&
+          myValue.is_continuous_feed == value.is_continuous_feed &&
+          myValue.vendor_id == value.vendor_id;
     },
 
     /** @return {Object} Media size capability of the selected destination. */
     get capability() {
       var destination = this.getSelectedDestInternal();
-      return (destination &&
-              destination.capabilities &&
+      return (destination && destination.capabilities &&
               destination.capabilities.printer &&
               destination.capabilities.printer.media_size) ||
-             null;
+          null;
     },
 
     /** @override */
@@ -116,7 +112,5 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   // Export
-  return {
-    MediaSize: MediaSize
-  };
+  return {MediaSize: MediaSize};
 });

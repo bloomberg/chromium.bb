@@ -46,10 +46,9 @@ function areRangesEqual(array1, array2) {
   if (array1.length != array2.length)
     return false;
   for (var i = 0; i < array1.length; i++)
-    if (array1[i].from != array2[i].from ||
-        array1[i].to != array2[i].to) {
-    return false;
-  }
+    if (array1[i].from != array2[i].from || array1[i].to != array2[i].to) {
+      return false;
+    }
   return true;
 }
 
@@ -73,11 +72,7 @@ function removeDuplicates(inArray) {
 }
 
 /** @enum {number} */
-var PageRangeStatus = {
-  NO_ERROR: 0,
-  SYNTAX_ERROR: -1,
-  LIMIT_ERROR: -2
-};
+var PageRangeStatus = {NO_ERROR: 0, SYNTAX_ERROR: -1, LIMIT_ERROR: -2};
 
 /**
  * Returns a list of ranges in |pageRangeText|. The ranges are
@@ -111,8 +106,8 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
   }
 
   var MAX_PAGE_NUMBER = 1000000000;
-  var totalPageCount = opt_totalPageCount ? opt_totalPageCount :
-                                            MAX_PAGE_NUMBER;
+  var totalPageCount =
+      opt_totalPageCount ? opt_totalPageCount : MAX_PAGE_NUMBER;
 
   var regex = /^\s*([0-9]*)\s*-\s*([0-9]*)\s*$/;
   var parts = pageRangeText.split(/,/);
@@ -159,8 +154,8 @@ function pageRangeTextToPageList(pageRangeText, totalPageCount) {
   var pageList = [];
   if (pageRanges instanceof Array) {
     for (var i = 0; i < pageRanges.length; ++i) {
-      for (var j = pageRanges[i].from; j <= Math.min(pageRanges[i].to,
-                                                     totalPageCount); ++j) {
+      for (var j = pageRanges[i].from;
+           j <= Math.min(pageRanges[i].to, totalPageCount); ++j) {
         pageList.push(j);
       }
     }
@@ -183,7 +178,7 @@ function pageListToPageSet(pageList) {
     return pageSet;
   pageSet = pageList.slice(0);
   pageSet.sort(function(a, b) {
-    return /** @type {number} */(a) - /** @type {number} */(b);
+    return /** @type {number} */ (a) - /** @type {number} */ (b);
   });
   pageSet = removeDuplicates(pageSet);
   return pageSet;
@@ -240,6 +235,5 @@ function getStringForLocale(localizedStrings, locale) {
 function getStringForCurrentLocale(localizedStrings) {
   // First try to find an exact match and then look for the language only.
   return getStringForLocale(localizedStrings, navigator.language) ||
-         getStringForLocale(localizedStrings,
-                            navigator.language.split('-')[0]);
+      getStringForLocale(localizedStrings, navigator.language.split('-')[0]);
 }

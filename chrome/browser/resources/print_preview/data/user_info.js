@@ -87,7 +87,5 @@ cr.define('print_preview', function() {
     },
   };
 
-  return {
-    UserInfo: UserInfo
-  };
+  return {UserInfo: UserInfo};
 });

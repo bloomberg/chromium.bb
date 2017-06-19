@@ -17,11 +17,8 @@ cr.define('print_preview.ticket_items', function() {
    */
   function CssBackground(appState, documentInfo) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.IS_CSS_BACKGROUND_ENABLED,
-        null /*destinationStore*/,
-        documentInfo);
+        this, appState, print_preview.AppStateField.IS_CSS_BACKGROUND_ENABLED,
+        null /*destinationStore*/, documentInfo);
   }
 
   CssBackground.prototype = {
@@ -49,7 +46,5 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   // Export
-  return {
-    CssBackground: CssBackground
-  };
+  return {CssBackground: CssBackground};
 });

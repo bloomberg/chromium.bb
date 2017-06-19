@@ -44,7 +44,5 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   // Export
-  return {
-    Rasterize: Rasterize
-  };
+  return {Rasterize: Rasterize};
 });

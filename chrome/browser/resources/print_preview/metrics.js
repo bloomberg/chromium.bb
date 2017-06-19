@@ -114,10 +114,10 @@ cr.define('print_preview', function() {
      * @param {number} bucket Value to record.
      */
     record: function(bucket) {
-      chrome.send('metricsHandler:recordInHistogram',
-                  [this.histogram_,
-                   ((bucket > this.maxBucket_) ? this.maxBucket_ : bucket),
-                   this.maxBucket_]);
+      chrome.send('metricsHandler:recordInHistogram', [
+        this.histogram_,
+        ((bucket > this.maxBucket_) ? this.maxBucket_ : bucket), this.maxBucket_
+      ]);
     }
   };
 
@@ -128,8 +128,7 @@ cr.define('print_preview', function() {
    */
   function DestinationSearchMetricsContext() {
     MetricsContext.call(
-        this,
-        'PrintPreview.DestinationAction',
+        this, 'PrintPreview.DestinationAction',
         Metrics.DestinationSearchBucket.DESTINATION_SEARCH_MAX_BUCKET);
   }
 
@@ -143,14 +142,12 @@ cr.define('print_preview', function() {
    * @extends {print_preview.MetricsContext}
    */
   function GcpPromoMetricsContext() {
-    MetricsContext.call(this,
-                        'PrintPreview.GcpPromo',
-                        Metrics.GcpPromoBucket.GCP_PROMO_MAX_BUCKET);
+    MetricsContext.call(
+        this, 'PrintPreview.GcpPromo',
+        Metrics.GcpPromoBucket.GCP_PROMO_MAX_BUCKET);
   }
 
-  GcpPromoMetricsContext.prototype = {
-    __proto__: MetricsContext.prototype
-  };
+  GcpPromoMetricsContext.prototype = {__proto__: MetricsContext.prototype};
 
   /**
    * Print settings UI specific usage statistics context.
@@ -159,8 +156,7 @@ cr.define('print_preview', function() {
    */
   function PrintSettingsUiMetricsContext() {
     MetricsContext.call(
-        this,
-        'PrintPreview.PrintSettingsUi',
+        this, 'PrintPreview.PrintSettingsUi',
         Metrics.PrintSettingsUiBucket.PRINT_SETTINGS_UI_MAX_BUCKET);
   }
 

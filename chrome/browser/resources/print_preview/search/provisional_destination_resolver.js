@@ -60,7 +60,7 @@ cr.define('print_preview', function() {
    */
   ProvisionalDestinationResolver.create = function(store, destination) {
     if (destination.provisionalType !=
-            print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION) {
+        print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION) {
       return null;
     }
     return new ProvisionalDestinationResolver(store, destination);
@@ -74,13 +74,10 @@ cr.define('print_preview', function() {
       print_preview.Overlay.prototype.enterDocument.call(this);
 
       this.tracker.add(
-          this.getChildElement('.usb-permission-ok-button'),
-          'click',
+          this.getChildElement('.usb-permission-ok-button'), 'click',
           this.startResolveDestination_.bind(this));
       this.tracker.add(
-          this.getChildElement('.cancel'),
-          'click',
-          this.cancel.bind(this));
+          this.getChildElement('.cancel'), 'click', this.cancel.bind(this));
 
       this.tracker.add(
           this.destinationStore_,
@@ -92,15 +89,17 @@ cr.define('print_preview', function() {
     /** @override */
     onSetVisibleInternal: function(visible) {
       if (visible) {
-        assert(this.state_ == print_preview.ResolverState.INITIAL,
-               'Showing overlay while not in initial state.');
+        assert(
+            this.state_ == print_preview.ResolverState.INITIAL,
+            'Showing overlay while not in initial state.');
         assert(!this.promiseResolver_, 'Promise resolver already set.');
         this.setState_(print_preview.ResolverState.ACTIVE);
         this.promiseResolver_ = new PromiseResolver();
         this.getChildElement('.default').focus();
       } else if (this.state_ != print_preview.ResolverState.DONE) {
-        assert(this.state_ != print_preview.ResolverState.INITIAL,
-              'Hiding in initial state');
+        assert(
+            this.state_ != print_preview.ResolverState.INITIAL,
+            'Hiding in initial state');
         this.setState_(print_preview.ResolverState.DONE);
         this.promiseResolver_.reject();
         this.promiseResolver_ = null;
@@ -109,8 +108,8 @@ cr.define('print_preview', function() {
 
     /** @override */
     createDom: function() {
-      this.setElementInternal(this.cloneTemplateInternal(
-          'extension-usb-resolver'));
+      this.setElementInternal(
+          this.cloneTemplateInternal('extension-usb-resolver'));
 
       var extNameEl = this.getChildElement('.usb-permission-extension-name');
       extNameEl.title = this.destination_.extensionName;
@@ -118,10 +117,10 @@ cr.define('print_preview', function() {
 
       var extIconEl = this.getChildElement('.usb-permission-extension-icon');
       extIconEl.style.backgroundImage = '-webkit-image-set(' +
-          'url(chrome://extension-icon/' +
-               this.destination_.extensionId + '/24/1) 1x,' +
-          'url(chrome://extension-icon/' +
-               this.destination_.extensionId + '/48/1) 2x)';
+          'url(chrome://extension-icon/' + this.destination_.extensionId +
+          '/24/1) 1x,' +
+          'url(chrome://extension-icon/' + this.destination_.extensionId +
+          '/48/1) 2x)';
     },
 
     /**
@@ -129,8 +128,9 @@ cr.define('print_preview', function() {
      * @private
      */
     startResolveDestination_: function() {
-      assert(this.state_ == print_preview.ResolverState.ACTIVE,
-             'Invalid state in request grant permission');
+      assert(
+          this.state_ == print_preview.ResolverState.ACTIVE,
+          'Invalid state in request grant permission');
 
       this.setState_(print_preview.ResolverState.GRANTING_PERMISSION);
       this.destinationStore_.resolveProvisionalDestination(this.destination_);
@@ -187,18 +187,20 @@ cr.define('print_preview', function() {
       if (this.state_ != print_preview.ResolverState.ACTIVE)
         this.getChildElement('.cancel').focus();
 
-      this.getChildElement('.throbber-placeholder').classList.toggle(
-          'throbber',
-          this.state_ == print_preview.ResolverState.GRANTING_PERMISSION);
+      this.getChildElement('.throbber-placeholder')
+          .classList.toggle(
+              'throbber',
+              this.state_ == print_preview.ResolverState.GRANTING_PERMISSION);
 
       this.getChildElement('.usb-permission-extension-desc').hidden =
           this.state_ == print_preview.ResolverState.ERROR;
 
       this.getChildElement('.usb-permission-message').textContent =
           this.state_ == print_preview.ResolverState.ERROR ?
-              loadTimeData.getStringF('resolveExtensionUSBErrorMessage',
-                                      this.destination_.extensionName) :
-              loadTimeData.getString('resolveExtensionUSBPermissionMessage');
+          loadTimeData.getStringF(
+              'resolveExtensionUSBErrorMessage',
+              this.destination_.extensionName) :
+          loadTimeData.getString('resolveExtensionUSBPermissionMessage');
     },
 
     /**
@@ -217,7 +219,5 @@ cr.define('print_preview', function() {
     }
   };
 
-  return {
-    ProvisionalDestinationResolver: ProvisionalDestinationResolver
-  };
+  return {ProvisionalDestinationResolver: ProvisionalDestinationResolver};
 });

@@ -190,7 +190,8 @@ cr.define('print_preview.ticket_items', function() {
      */
     getSelectedDestInternal: function() {
       return this.destinationStore_ ?
-          this.destinationStore_.selectedDestination : null;
+          this.destinationStore_.selectedDestination :
+          null;
     },
 
     /**
@@ -227,21 +228,18 @@ cr.define('print_preview.ticket_items', function() {
       if (this.destinationStore_) {
         this.tracker_.add(
             this.destinationStore_,
-            print_preview.DestinationStore.EventType.
-                SELECTED_DESTINATION_CAPABILITIES_READY,
+            print_preview.DestinationStore.EventType
+                .SELECTED_DESTINATION_CAPABILITIES_READY,
             this.dispatchChangeEventInternal.bind(this));
       }
       if (this.documentInfo_) {
         this.tracker_.add(
-            this.documentInfo_,
-            print_preview.DocumentInfo.EventType.CHANGE,
+            this.documentInfo_, print_preview.DocumentInfo.EventType.CHANGE,
             this.dispatchChangeEventInternal.bind(this));
       }
     },
   };
 
   // Export
-  return {
-    TicketItem: TicketItem
-  };
+  return {TicketItem: TicketItem};
 });

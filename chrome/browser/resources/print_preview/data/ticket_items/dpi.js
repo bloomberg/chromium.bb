@@ -16,10 +16,7 @@ cr.define('print_preview.ticket_items', function() {
    */
   function Dpi(appState, destinationStore) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.DPI,
-        destinationStore);
+        this, appState, print_preview.AppStateField.DPI, destinationStore);
   }
 
   Dpi.prototype = {
@@ -31,34 +28,32 @@ cr.define('print_preview.ticket_items', function() {
         return false;
       return this.capability.option.some(function(option) {
         return option.horizontal_dpi == value.horizontal_dpi &&
-               option.vertical_dpi == value.vertical_dpi &&
-               option.vendor_id == value.vendor_id;
+            option.vertical_dpi == value.vertical_dpi &&
+            option.vendor_id == value.vendor_id;
       });
     },
 
     /** @override */
     isCapabilityAvailable: function() {
-      return !!this.capability &&
-             !!this.capability.option &&
-             this.capability.option.length > 1;
+      return !!this.capability && !!this.capability.option &&
+          this.capability.option.length > 1;
     },
 
     /** @override */
     isValueEqual: function(value) {
       var myValue = this.getValue();
       return myValue.horizontal_dpi == value.horizontal_dpi &&
-             myValue.vertical_dpi == value.vertical_dpi &&
-             myValue.vendor_id == value.vendor_id;
+          myValue.vertical_dpi == value.vertical_dpi &&
+          myValue.vendor_id == value.vendor_id;
     },
 
     /** @return {Object} DPI capability of the selected destination. */
     get capability() {
       var destination = this.getSelectedDestInternal();
-      return (destination &&
-              destination.capabilities &&
+      return (destination && destination.capabilities &&
               destination.capabilities.printer &&
               destination.capabilities.printer.dpi) ||
-             null;
+          null;
     },
 
     /** @override */
@@ -76,7 +71,5 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   // Export
-  return {
-    Dpi: Dpi
-  };
+  return {Dpi: Dpi};
 });

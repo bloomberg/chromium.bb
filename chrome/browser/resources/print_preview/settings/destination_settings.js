@@ -98,8 +98,8 @@ cr.define('print_preview', function() {
           this.onDestinationSelect_.bind(this));
       this.tracker_.add(
           this.destinationStore_,
-          print_preview.DestinationStore.EventType.
-              CACHED_SELECTED_DESTINATION_INFO_READY,
+          print_preview.DestinationStore.EventType
+              .CACHED_SELECTED_DESTINATION_INFO_READY,
           this.onSelectedDestinationNameSet_.bind(this));
     },
 
@@ -168,7 +168,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    DestinationSettings: DestinationSettings
-  };
+  return {DestinationSettings: DestinationSettings};
 });

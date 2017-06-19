@@ -58,8 +58,8 @@ cr.define('print_preview', function() {
 
     /** @override */
     createDom: function() {
-      this.setElementInternal(this.cloneTemplateInternal(
-          'destination-list-item-template'));
+      this.setElementInternal(
+          this.cloneTemplateInternal('destination-list-item-template'));
       this.updateUi_();
     },
 
@@ -70,8 +70,7 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.getElement(), 'keydown', this.onKeyDown_.bind(this));
       this.tracker.add(
-          this.getChildElement('.register-promo-button'),
-          'click',
+          this.getChildElement('.register-promo-button'), 'click',
           this.onRegisterPromoClicked_.bind(this));
     },
 
@@ -130,8 +129,7 @@ cr.define('print_preview', function() {
         this.onDestinationActivated_();
       } else {
         this.updateConfiguringMessage_(false);
-        setIsVisible(
-            this.getChildElement('.configuring-failed-text'), true);
+        setIsVisible(this.getChildElement('.configuring-failed-text'), true);
       }
     },
 
@@ -182,15 +180,14 @@ cr.define('print_preview', function() {
 
         var extensionIconEl = this.getChildElement('.extension-icon');
         extensionIconEl.style.backgroundImage = '-webkit-image-set(' +
-             'url(chrome://extension-icon/' +
-                  this.destination_.extensionId + '/24/1) 1x,' +
-             'url(chrome://extension-icon/' +
-                  this.destination_.extensionId + '/48/1) 2x)';
+            'url(chrome://extension-icon/' + this.destination_.extensionId +
+            '/24/1) 1x,' +
+            'url(chrome://extension-icon/' + this.destination_.extensionId +
+            '/48/1) 2x)';
         extensionIconEl.title = loadTimeData.getStringF(
-            'extensionDestinationIconTooltip',
-            this.destination_.extensionName);
+            'extensionDestinationIconTooltip', this.destination_.extensionName);
         extensionIconEl.onclick = this.onExtensionIconClicked_.bind(this);
-        extensionIconEl.onkeydown = /** @type {function(Event)} */(
+        extensionIconEl.onkeydown = /** @type {function(Event)} */ (
             this.onExtensionIconKeyDown_.bind(this));
       }
 
@@ -213,8 +210,7 @@ cr.define('print_preview', function() {
       if (cr.isChromeOS) {
         // Reset the configuring messages for CUPS printers.
         this.updateConfiguringMessage_(false);
-        setIsVisible(
-            this.getChildElement('.configuring-failed-text'), false);
+        setIsVisible(this.getChildElement('.configuring-failed-text'), false);
       }
     },
 
@@ -246,8 +242,7 @@ cr.define('print_preview', function() {
      * @private
      */
     updateConfiguringMessage_: function(show) {
-      setIsVisible(
-          this.getChildElement('.configuring-in-progress-text'), show);
+      setIsVisible(this.getChildElement('.configuring-in-progress-text'), show);
       this.getChildElement('.configuring-text-jumping-dots')
           .classList.toggle('jumping-dots', show);
     },
@@ -278,7 +273,7 @@ cr.define('print_preview', function() {
      */
     onDestinationActivated_: function() {
       if (this.destination_.connectionStatus !=
-              print_preview.DestinationConnectionStatus.UNREGISTERED) {
+          print_preview.DestinationConnectionStatus.UNREGISTERED) {
         var selectEvt = new Event(DestinationListItem.EventType.SELECT);
         selectEvt.destination = this.destination_;
         this.eventTarget_.dispatchEvent(selectEvt);
@@ -295,7 +290,8 @@ cr.define('print_preview', function() {
       if (!hasKeyModifiers(e)) {
         if (e.keyCode == 13) {
           var activeElementTag = document.activeElement ?
-              document.activeElement.tagName.toUpperCase() : '';
+              document.activeElement.tagName.toUpperCase() :
+              '';
           if (activeElementTag == 'LI') {
             e.stopPropagation();
             e.preventDefault();
@@ -310,8 +306,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onRegisterPromoClicked_: function() {
-      var promoClickedEvent = new Event(
-          DestinationListItem.EventType.REGISTER_PROMO_CLICKED);
+      var promoClickedEvent =
+          new Event(DestinationListItem.EventType.REGISTER_PROMO_CLICKED);
       promoClickedEvent.destination = this.destination_;
       this.eventTarget_.dispatchEvent(promoClickedEvent);
     },
@@ -344,7 +340,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    DestinationListItem: DestinationListItem
-  };
+  return {DestinationListItem: DestinationListItem};
 });

@@ -98,12 +98,10 @@ cr.define('print_preview', function() {
 
       // User events
       this.tracker.add(
-          this.getChildElement('button.cancel'),
-          'click',
+          this.getChildElement('button.cancel'), 'click',
           this.onCancelButtonClick_.bind(this));
       this.tracker.add(
-          this.getChildElement('button.print'),
-          'click',
+          this.getChildElement('button.print'), 'click',
           this.onPrintButtonClick_.bind(this));
 
       // Data events.
@@ -144,8 +142,7 @@ cr.define('print_preview', function() {
     updatePrintButtonEnabledState_: function() {
       this.getChildElement('button.print').disabled =
           this.destinationStore_.selectedDestination == null ||
-          !this.isEnabled_ ||
-          !this.isPrintButtonEnabled_ ||
+          !this.isEnabled_ || !this.isPrintButtonEnabled_ ||
           !this.printTicketStore_.isTicketValid();
     },
 
@@ -161,9 +158,9 @@ cr.define('print_preview', function() {
 
       var saveToPdfOrDrive = this.destinationStore_.selectedDestination &&
           (this.destinationStore_.selectedDestination.id ==
-              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
            this.destinationStore_.selectedDestination.id ==
-              print_preview.Destination.GooglePromotedId.DOCS);
+               print_preview.Destination.GooglePromotedId.DOCS);
 
       var numPages = this.printTicketStore_.pageRange.getPageNumberSet().size;
       var numSheets = numPages;
@@ -178,7 +175,8 @@ cr.define('print_preview', function() {
       var pagesLabel = loadTimeData.getString('printPreviewPageLabelPlural');
       var summaryLabel;
       if (numSheets > 1) {
-        summaryLabel = saveToPdfOrDrive ? pagesLabel :
+        summaryLabel = saveToPdfOrDrive ?
+            pagesLabel :
             loadTimeData.getString('printPreviewSheetsLabelPlural');
       } else {
         summaryLabel = loadTimeData.getString(
@@ -192,22 +190,19 @@ cr.define('print_preview', function() {
         html = loadTimeData.getStringF(
             'printPreviewSummaryFormatLong',
             '<b>' + numSheets.toLocaleString() + '</b>',
-            '<b>' + summaryLabel + '</b>',
-            numPages.toLocaleString(),
+            '<b>' + summaryLabel + '</b>', numPages.toLocaleString(),
             pagesLabel);
-        label = loadTimeData.getStringF('printPreviewSummaryFormatLong',
-                                        numSheets.toLocaleString(),
-                                        summaryLabel,
-                                        numPages.toLocaleString(),
-                                        pagesLabel);
+        label = loadTimeData.getStringF(
+            'printPreviewSummaryFormatLong', numSheets.toLocaleString(),
+            summaryLabel, numPages.toLocaleString(), pagesLabel);
       } else {
         html = loadTimeData.getStringF(
             'printPreviewSummaryFormatShort',
             '<b>' + numSheets.toLocaleString() + '</b>',
             '<b>' + summaryLabel + '</b>');
-        label = loadTimeData.getStringF('printPreviewSummaryFormatShort',
-                                        numSheets.toLocaleString(),
-                                        summaryLabel);
+        label = loadTimeData.getStringF(
+            'printPreviewSummaryFormatShort', numSheets.toLocaleString(),
+            summaryLabel);
       }
 
       // Removing extra spaces from within the string.
@@ -228,7 +223,8 @@ cr.define('print_preview', function() {
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
         this.getChildElement('button.print').classList.add('loading');
         this.getChildElement('button.cancel').classList.add('loading');
-        var isSaveLabel = (this.destinationStore_.selectedDestination.id ==
+        var isSaveLabel =
+            (this.destinationStore_.selectedDestination.id ==
              print_preview.Destination.GooglePromotedId.DOCS);
         this.getChildElement('.summary').innerHTML =
             loadTimeData.getString(isSaveLabel ? 'saving' : 'printing');
@@ -279,7 +275,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    PrintHeader: PrintHeader
-  };
+  return {PrintHeader: PrintHeader};
 });

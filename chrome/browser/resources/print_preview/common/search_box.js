@@ -24,7 +24,7 @@ cr.define('print_preview', function() {
      * Timeout used to control incremental search.
      * @private {?number}
      */
-     this.timeout_ = null;
+    this.timeout_ = null;
 
     /**
      * Input box where the query is entered.
@@ -37,9 +37,7 @@ cr.define('print_preview', function() {
    * Enumeration of event types dispatched from the search box.
    * @enum {string}
    */
-  SearchBox.EventType = {
-    SEARCH: 'print_preview.SearchBox.SEARCH'
-  };
+  SearchBox.EventType = {SEARCH: 'print_preview.SearchBox.SEARCH'};
 
   /**
    * Delay in milliseconds before dispatching a SEARCH event.
@@ -64,18 +62,18 @@ cr.define('print_preview', function() {
 
     /** @override */
     createDom: function() {
-      this.setElementInternal(this.cloneTemplateInternal(
-          'search-box-template'));
-      this.input_ = assertInstanceof(this.getChildElement('.search-box-input'),
-          HTMLInputElement);
+      this.setElementInternal(
+          this.cloneTemplateInternal('search-box-template'));
+      this.input_ = assertInstanceof(
+          this.getChildElement('.search-box-input'), HTMLInputElement);
       this.input_.setAttribute('placeholder', this.searchBoxPlaceholderText_);
     },
 
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
-      this.tracker.add(assert(this.input_), 'input',
-                       this.onInputInput_.bind(this));
+      this.tracker.add(
+          assert(this.input_), 'input', this.onInputInput_.bind(this));
     },
 
     /** @override */
@@ -124,7 +122,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    SearchBox: SearchBox
-  };
+  return {SearchBox: SearchBox};
 });

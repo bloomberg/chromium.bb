@@ -59,7 +59,7 @@ cr.define('print_preview', function() {
     // page-related information won't be set until preview generation occurs,
     // so we'll use some defaults until then. This way, the print ticket store
     // will be valid even if no preview can be generated.
-    var initialPageSize = new print_preview.Size(612, 792); // 8.5"x11"
+    var initialPageSize = new print_preview.Size(612, 792);  // 8.5"x11"
 
     /**
      * Size of the pages of the document in points.
@@ -95,9 +95,7 @@ cr.define('print_preview', function() {
    * Event types dispatched by this data model.
    * @enum {string}
    */
-  DocumentInfo.EventType = {
-    CHANGE: 'print_preview.DocumentInfo.CHANGE'
-  };
+  DocumentInfo.EventType = {CHANGE: 'print_preview.DocumentInfo.CHANGE'};
 
   DocumentInfo.prototype = {
     __proto__: cr.EventTarget.prototype,
@@ -223,7 +221,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    DocumentInfo: DocumentInfo
-  };
+  return {DocumentInfo: DocumentInfo};
 });

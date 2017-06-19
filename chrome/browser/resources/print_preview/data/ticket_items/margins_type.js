@@ -35,11 +35,8 @@ cr.define('print_preview.ticket_items', function() {
    */
   function MarginsType(appState, documentInfo, customMargins) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.MARGINS_TYPE,
-        null /*destinationStore*/,
-        documentInfo);
+        this, appState, print_preview.AppStateField.MARGINS_TYPE,
+        null /*destinationStore*/, documentInfo);
 
     /**
      * Custom margins ticket item, used to write when margins type changes.
@@ -77,7 +74,7 @@ cr.define('print_preview.ticket_items', function() {
       print_preview.ticket_items.TicketItem.prototype.updateValueInternal.call(
           this, value);
       if (this.isValueEqual(
-          print_preview.ticket_items.MarginsTypeValue.CUSTOM)) {
+              print_preview.ticket_items.MarginsTypeValue.CUSTOM)) {
         // If CUSTOM, set the value of the custom margins so that it won't be
         // overridden by the default value.
         this.customMargins_.updateValue(this.customMargins_.getValue());
@@ -86,7 +83,5 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   // Export
-  return {
-    MarginsType: MarginsType
-  };
+  return {MarginsType: MarginsType};
 });

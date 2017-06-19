@@ -88,20 +88,13 @@ cr.define('print_preview', function() {
       this.inputField_ = this.getChildElement('input.user-value');
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
-          this.inputField_,
-          'keydown',
-          this.onTextfieldKeyDown_.bind(this));
+          this.inputField_, 'keydown', this.onTextfieldKeyDown_.bind(this));
       this.tracker.add(
-          this.inputField_,
-          'input',
-          this.onTextfieldInput_.bind(this));
+          this.inputField_, 'input', this.onTextfieldInput_.bind(this));
       this.tracker.add(
-          this.inputField_,
-          'blur',
-          this.onTextfieldBlur_.bind(this));
+          this.inputField_, 'blur', this.onTextfieldBlur_.bind(this));
       this.tracker.add(
-          this.getChildElement('input.collate'),
-          'click',
+          this.getChildElement('input.collate'), 'click',
           this.onCollateCheckboxClick_.bind(this));
       this.tracker.add(
           this.copiesTicketItem_,
@@ -131,8 +124,8 @@ cr.define('print_preview', function() {
         this.inputField_.classList.remove('invalid');
         fadeOutElement(this.getChildElement('.hint'));
         if (!(this.getChildElement('.collate-container').hidden =
-               !this.collateTicketItem_.isCapabilityAvailable() ||
-               this.copiesTicketItem_.getValueAsNumber() <= 1)) {
+                  !this.collateTicketItem_.isCapabilityAvailable() ||
+                  this.copiesTicketItem_.getValueAsNumber() <= 1)) {
           this.getChildElement('input.collate').checked =
               this.collateTicketItem_.getValue();
         }
@@ -146,9 +139,10 @@ cr.define('print_preview', function() {
      */
     onTextfieldTimeout_: function() {
       this.textfieldTimeout_ = null;
-      var newValue = (this.inputField_.validity.valid &&
-                      this.inputField_.value != '') ?
-                      this.inputField_.valueAsNumber.toString() : '';
+      var newValue =
+          (this.inputField_.validity.valid && this.inputField_.value != '') ?
+          this.inputField_.valueAsNumber.toString() :
+          '';
       if (this.copiesTicketItem_.getValue() === newValue) {
         this.updateState_();
         return;
@@ -195,9 +189,11 @@ cr.define('print_preview', function() {
           // No need to update the ticket, but change the display to match.
           this.inputField_.value = '1';
         } else {
-          setTimeout((function() {
-            this.copiesTicketItem_.updateValue('1');
-          }).bind(this), 0);
+          setTimeout(
+              (function() {
+                this.copiesTicketItem_.updateValue('1');
+              }).bind(this),
+              0);
         }
       }
     },
@@ -213,7 +209,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    CopiesSettings: CopiesSettings
-  };
+  return {CopiesSettings: CopiesSettings};
 });

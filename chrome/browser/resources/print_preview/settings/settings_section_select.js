@@ -41,12 +41,12 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
-      this.tracker.add(assert(this.select_),
-                       'change',
-                       this.onSelectChange_.bind(this));
-      this.tracker.add(this.ticketItem_,
-                       print_preview.ticket_items.TicketItem.EventType.CHANGE,
-                       this.onTicketItemChange_.bind(this));
+      this.tracker.add(
+          assert(this.select_), 'change', this.onSelectChange_.bind(this));
+      this.tracker.add(
+          this.ticketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onTicketItemChange_.bind(this));
     },
 
     /**
@@ -80,7 +80,7 @@ cr.define('print_preview', function() {
         this.ticketItem_.capability.option.forEach(function(option, index) {
           var selectOption = document.createElement('option');
           selectOption.text = this.getCustomDisplayName_(option) ||
-                              this.getDefaultDisplayName_(option);
+              this.getDefaultDisplayName_(option);
           selectOption.value = JSON.stringify(option);
           select.appendChild(selectOption);
           if (option.is_default)
@@ -144,7 +144,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    SettingsSectionSelect: SettingsSectionSelect
-  };
+  return {SettingsSectionSelect: SettingsSectionSelect};
 });

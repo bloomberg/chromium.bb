@@ -15,10 +15,7 @@ cr.define('print_preview.ticket_items', function() {
    */
   function PageRange(documentInfo) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        null /*appState*/,
-        null /*field*/,
-        null /*destinationStore*/,
+        this, null /*appState*/, null /*field*/, null /*destinationStore*/,
         documentInfo);
   }
 
@@ -70,7 +67,7 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     getValueAsString_: function() {
-      return /** @type {string} */(this.getValue());
+      return /** @type {string} */ (this.getValue());
     },
 
     /**
@@ -107,13 +104,11 @@ cr.define('print_preview.ticket_items', function() {
     checkValidity: function() {
       var pageRanges = pageRangeTextToPageRanges(
           this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
-      return pageRanges instanceof Array ?
-          PageRangeStatus.NO_ERROR : pageRanges;
+      return pageRanges instanceof Array ? PageRangeStatus.NO_ERROR :
+                                           pageRanges;
     },
   };
 
   // Export
-  return {
-    PageRange: PageRange
-  };
+  return {PageRange: PageRange};
 });

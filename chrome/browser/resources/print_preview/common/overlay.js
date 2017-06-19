@@ -37,7 +37,8 @@ cr.define('print_preview', function() {
             this.cancel();
           } else if (e.keyCode == 13) {
             var activeElementTag = document.activeElement ?
-                document.activeElement.tagName.toUpperCase() : '';
+                document.activeElement.tagName.toUpperCase() :
+                '';
             if (activeElementTag != 'BUTTON' && activeElementTag != 'SELECT') {
               if (this.onEnterPressedInternal()) {
                 e.stopPropagation();
@@ -49,15 +50,13 @@ cr.define('print_preview', function() {
       }.bind(this));
 
       this.tracker.add(
-          this.getChildElement('.page > .close-button'),
-          'click',
+          this.getChildElement('.page > .close-button'), 'click',
           this.cancel.bind(this));
 
       this.tracker.add(
           this.getElement(), 'click', this.onOverlayClick_.bind(this));
       this.tracker.add(
-          this.getChildElement('.page'),
-          'animationend',
+          this.getChildElement('.page'), 'animationend',
           this.onAnimationEnd_.bind(this));
     },
 
@@ -126,7 +125,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    Overlay: Overlay
-  };
+  return {Overlay: Overlay};
 });

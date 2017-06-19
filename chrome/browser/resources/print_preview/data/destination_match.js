@@ -18,7 +18,6 @@ cr.define('print_preview', function() {
    */
   function DestinationMatch(
       origins, idRegExp, displayNameRegExp, skipVirtualDestinations) {
-
     /** @private {!Array<!print_preview.DestinationOrigin>} */
     this.origins_ = origins;
 
@@ -48,9 +47,8 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether destination is the same as initial.
      */
     matchIdAndOrigin: function(id, origin) {
-      return this.matchOrigin(origin) &&
-             !!this.idRegExp_ &&
-             this.idRegExp_.test(id);
+      return this.matchOrigin(origin) && !!this.idRegExp_ &&
+          this.idRegExp_.test(id);
     },
 
     /**
@@ -89,13 +87,10 @@ cr.define('print_preview', function() {
             destination.id);
       }
       return arrayContains(
-          [print_preview.Destination.GooglePromotedId.DOCS],
-          destination.id);
+          [print_preview.Destination.GooglePromotedId.DOCS], destination.id);
     }
   };
 
   // Export
-  return {
-    DestinationMatch: DestinationMatch
-  };
+  return {DestinationMatch: DestinationMatch};
 });

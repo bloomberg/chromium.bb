@@ -63,16 +63,16 @@ cr.define('print_preview.ticket_items', function() {
     /** @return {Object} Vendor capabilities of the selected destination. */
     get capability() {
       var destination = this.destinationStore_ ?
-          this.destinationStore_.selectedDestination : null;
+          this.destinationStore_.selectedDestination :
+          null;
       if (!destination)
         return null;
       if (destination.type == print_preview.DestinationType.MOBILE) {
         return null;
       }
-      return (destination.capabilities &&
-              destination.capabilities.printer &&
+      return (destination.capabilities && destination.capabilities.printer &&
               destination.capabilities.printer.vendor_capability) ||
-             null;
+          null;
     },
 
     /**
@@ -106,7 +106,5 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   // Export
-  return {
-    VendorItems: VendorItems
-  };
+  return {VendorItems: VendorItems};
 });

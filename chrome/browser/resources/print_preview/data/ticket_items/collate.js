@@ -17,9 +17,7 @@ cr.define('print_preview.ticket_items', function() {
    */
   function Collate(appState, destinationStore) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.IS_COLLATE_ENABLED,
+        this, appState, print_preview.AppStateField.IS_COLLATE_ENABLED,
         destinationStore);
   }
 
@@ -53,16 +51,12 @@ cr.define('print_preview.ticket_items', function() {
      */
     getCollateCapability_: function() {
       var dest = this.getSelectedDestInternal();
-      return (dest &&
-              dest.capabilities &&
-              dest.capabilities.printer &&
+      return (dest && dest.capabilities && dest.capabilities.printer &&
               dest.capabilities.printer.collate) ||
-             null;
+          null;
     }
   };
 
   // Export
-  return {
-    Collate: Collate
-  };
+  return {Collate: Collate};
 });
