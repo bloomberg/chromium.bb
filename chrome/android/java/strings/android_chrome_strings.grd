@@ -2950,7 +2950,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 
       <!-- WebAPK related strings -->
       <message name="IDS_WEBAPK_RUNNING_IN_CHROME_DISCLOSURE" desc="Message on the notification that indicates a WebApk may use Chrome data.">
-        <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph> is running in Chrome.
+        This app is running in Chrome.
       </message>
 
       <!-- Keyboard shortcuts in Android N-->
