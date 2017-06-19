@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebHelperPluginImpl.h"
+#include "core/exported/WebHelperPluginImpl.h"
 
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/frame/LocalFrameClient.h"
