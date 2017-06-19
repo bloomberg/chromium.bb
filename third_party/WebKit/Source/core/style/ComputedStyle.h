@@ -961,24 +961,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(rare_non_inherited_data_, outline_.offset_, v);
   }
 
-  // perspective (aka -webkit-perspective)
-  static float InitialPerspective() { return 0; }
-  float Perspective() const { return rare_non_inherited_data_->perspective_; }
-  void SetPerspective(float p) {
-    SET_VAR(rare_non_inherited_data_, perspective_, p);
-  }
-
-  // perspective-origin (aka -webkit-perspective-origin)
-  static LengthPoint InitialPerspectiveOrigin() {
-    return LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent));
-  }
-  const LengthPoint& PerspectiveOrigin() const {
-    return rare_non_inherited_data_->perspective_origin_;
-  }
-  void SetPerspectiveOrigin(const LengthPoint& p) {
-    SET_VAR(rare_non_inherited_data_, perspective_origin_, p);
-  }
-
   // -webkit-perspective-origin-x
   static Length InitialPerspectiveOriginX() { return Length(50.0, kPercent); }
   const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }
