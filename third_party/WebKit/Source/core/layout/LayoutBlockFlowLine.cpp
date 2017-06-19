@@ -2417,8 +2417,10 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
   ellipsis_width = (font == first_line_font) ? first_line_ellipsis_width : 0;
 
   if (!ellipsis_width) {
-    DCHECK(font.PrimaryFont());
-    if (font.PrimaryFont()->GlyphForCharacter(kHorizontalEllipsisCharacter)) {
+    const SimpleFontData* font_data = font.PrimaryFont();
+    DCHECK(font_data);
+    if (font_data &&
+        font_data->GlyphForCharacter(kHorizontalEllipsisCharacter)) {
       ellipsis_width =
           font.Width(ConstructTextRun(font, &kHorizontalEllipsisCharacter, 1,
                                       StyleRef(), ellipsis_direction));
