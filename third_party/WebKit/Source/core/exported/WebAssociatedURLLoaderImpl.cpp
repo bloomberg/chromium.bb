@@ -46,6 +46,7 @@
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
@@ -347,10 +348,6 @@ WebAssociatedURLLoaderImpl::WebAssociatedURLLoaderImpl(
 WebAssociatedURLLoaderImpl::~WebAssociatedURLLoaderImpl() {
   Cancel();
 }
-
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enum: " #a)
 
 STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kConsiderPreflight,
                    kConsiderPreflight);

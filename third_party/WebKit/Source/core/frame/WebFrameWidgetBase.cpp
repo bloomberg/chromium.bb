@@ -20,6 +20,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
+#include "platform/wtf/Assertions.h"
 #include "public/web/WebWidgetClient.h"
 
 namespace blink {
@@ -36,9 +37,6 @@ LocalFrame* ToCoreFrame(WebLocalFrame* frame) {
 
 // Ensure that the WebDragOperation enum values stay in sync with the original
 // DragOperation constants.
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enum : " #a)
 STATIC_ASSERT_ENUM(kDragOperationNone, kWebDragOperationNone);
 STATIC_ASSERT_ENUM(kDragOperationCopy, kWebDragOperationCopy);
 STATIC_ASSERT_ENUM(kDragOperationLink, kWebDragOperationLink);
