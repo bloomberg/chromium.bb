@@ -69,3 +69,7 @@ class DesktopMemoryPageSet(story.StorySet):
 
     for url in urls_list:
       self.AddStory(DesktopMemoryPage(url, self))
+
+class DesktopMemoryStoryExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass  # Not tests disabled.
