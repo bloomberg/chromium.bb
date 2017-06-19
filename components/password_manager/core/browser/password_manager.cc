@@ -212,7 +212,7 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
   if (form_manager) {
     if (!password_is_generated)
       form_manager->form_saver()->RemovePresavedPassword();
-    form_manager->set_has_generated_password(password_is_generated);
+    form_manager->SetHasGeneratedPassword(password_is_generated);
     return;
   }
 

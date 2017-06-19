@@ -655,7 +655,7 @@ class PasswordFormManagerTest : public testing::Test {
                                             : form.password_element;
     form_manager.set_generation_element(generation_element);
     form_manager.set_generation_popup_was_shown(true);
-    form_manager.set_has_generated_password(has_generated_password);
+    form_manager.SetHasGeneratedPassword(has_generated_password);
 
     // Figure out expected generation event type.
     autofill::AutofillUploadContents::Field::PasswordGenerationType
@@ -768,7 +768,7 @@ class PasswordFormManagerTest : public testing::Test {
     if (manager_action != SimulatedManagerAction::NONE)
       matches.push_back(&http_stored_form);
 
-    // Extra mile: kUserActionChoose is only recorded if there were multiple
+    // Extra mile: kChoose is only recorded if there were multiple
     // logins available and the preferred one was changed.
     PasswordForm http_stored_form2 = http_stored_form;
     if (manager_action == SimulatedManagerAction::OFFERED) {
@@ -2529,7 +2529,7 @@ TEST_F(PasswordFormManagerTest, TestNotUpdateWhenOnlyPSLMatched) {
 TEST_F(PasswordFormManagerTest,
        TestSavingOnChangePasswordFormGenerationNoStoredForms) {
   fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
-  form_manager()->set_has_generated_password(true);
+  form_manager()->SetHasGeneratedPassword(true);
 
   // User submits change password form and there is no stored credentials.
   PasswordForm credentials = *observed_form();
@@ -2564,7 +2564,7 @@ TEST_F(PasswordFormManagerTest,
 
 TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
   fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
-  form_manager()->set_has_generated_password(true);
+  form_manager()->SetHasGeneratedPassword(true);
 
   // User submits credentials for the change password form, and old password is
   // coincide with password from an existing credentials, so stored credentials
@@ -2600,7 +2600,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
 TEST_F(PasswordFormManagerTest,
        TestSavingOnChangePasswordFormGenerationNoMatchedForms) {
   fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
-  form_manager()->set_has_generated_password(true);
+  form_manager()->SetHasGeneratedPassword(true);
 
   // User submits credentials for the change password form, and old password is
   // not coincide with password from existing credentials, so new credentials
