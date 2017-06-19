@@ -112,14 +112,15 @@ TEST(CSPSourceTest, AllowScheme) {
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_TRUE(Allow(source, GURL("ftp://a.com"), &context));
 
-    // Self's scheme is unique.
+    // Self's scheme is unique (non standard scheme).
     context.SetSelf(url::Origin(GURL("non-standard-scheme://a.com")));
-    // TODO(mkwst, arthursonzogni): This result might be wrong.
-    // See http://crbug.com/692449
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
-    // TODO(mkwst, arthursonzogni): This result might be wrong.
-    // See http://crbug.com/692449
     EXPECT_FALSE(Allow(source, GURL("non-standard-scheme://a.com"), &context));
+
+    // Self's scheme is unique (data-url).
+    context.SetSelf(url::Origin(GURL("data:text/html,<iframe src=[...]>")));
+    EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
+    EXPECT_FALSE(Allow(source, GURL("data:text/html,hello"), &context));
   }
 }
 

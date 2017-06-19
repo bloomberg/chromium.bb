@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy_header.h"
@@ -59,14 +60,17 @@ class CONTENT_EXPORT CSPContext {
                                     GURL* new_url);
 
   void SetSelf(const url::Origin origin);
-  bool AllowSelf(const GURL& url);
-  bool ProtocolIsSelf(const GURL& url);
-  const std::string& GetSelfScheme();
+
+  // When a CSPSourceList contains 'self', the url is allowed when it match the
+  // CSPSource returned by this function.
+  // Sometimes there is no 'self' source. It means that the current origin is
+  // unique and no urls will match 'self' whatever they are.
+  // Note: When there is a 'self' source, its scheme is guaranteed to be
+  // non-empty.
+  const base::Optional<CSPSource>& self_source() { return self_source_; }
 
   virtual void ReportContentSecurityPolicyViolation(
       const CSPViolationParams& violation_params);
-
-  bool SelfSchemeShouldBypassCsp();
 
   void ResetContentSecurityPolicies() { policies_.clear(); }
   void AddContentSecurityPolicy(const ContentSecurityPolicy& policy) {
@@ -90,10 +94,7 @@ class CONTENT_EXPORT CSPContext {
       SourceLocation* source_location) const;
 
  private:
-  bool has_self_ = false;
-  std::string self_scheme_;
-  CSPSource self_source_;
-
+  base::Optional<CSPSource> self_source_;
   std::vector<ContentSecurityPolicy> policies_;
 
   DISALLOW_COPY_AND_ASSIGN(CSPContext);

@@ -26,8 +26,7 @@ bool ShouldCheckPolicy(const ContentSecurityPolicy& policy,
 
 }  // namespace
 
-CSPContext::CSPContext() : has_self_(false) {}
-
+CSPContext::CSPContext() {}
 CSPContext::~CSPContext() {}
 
 bool CSPContext::IsAllowedByCsp(CSPDirective::Name directive_name,
@@ -69,40 +68,24 @@ bool CSPContext::ShouldModifyRequestUrlForCsp(
 }
 
 void CSPContext::SetSelf(const url::Origin origin) {
-  if (origin.unique()) {
-    // TODO(arthursonzogni): Decide what to do with unique origins.
-    has_self_ = false;
+  self_source_.reset();
+
+  // When the origin is unique, no URL should match with 'self'. That's why
+  // |self_source_| stays undefined here.
+  if (origin.unique())
     return;
-  }
 
   if (origin.scheme() == url::kFileScheme) {
-    has_self_ = true;
-    self_scheme_ = url::kFileScheme;
     self_source_ = CSPSource(url::kFileScheme, "", false, url::PORT_UNSPECIFIED,
                              false, "");
     return;
   }
 
-  has_self_ = true;
-  self_scheme_ = origin.scheme();
   self_source_ = CSPSource(
       origin.scheme(), origin.host(), false,
-      origin.port() == 0 ? url::PORT_UNSPECIFIED : origin.port(),  // port
-      false, "");
-}
+      origin.port() == 0 ? url::PORT_UNSPECIFIED : origin.port(), false, "");
 
-bool CSPContext::AllowSelf(const GURL& url) {
-  return has_self_ && CSPSource::Allow(self_source_, url, this);
-}
-
-bool CSPContext::ProtocolIsSelf(const GURL& url) {
-  if (!has_self_)
-    return false;
-  return url.SchemeIs(self_scheme_);
-}
-
-const std::string& CSPContext::GetSelfScheme() {
-  return self_scheme_;
+  DCHECK_NE("", self_source_->scheme);
 }
 
 bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {
@@ -115,12 +98,6 @@ void CSPContext::SanitizeDataForUseInCspViolation(
     GURL* blocked_url,
     SourceLocation* source_location) const {
   return;
-}
-
-bool CSPContext::SelfSchemeShouldBypassCsp() {
-  if (!has_self_)
-    return false;
-  return SchemeShouldBypassCSP(self_scheme_);
 }
 
 void CSPContext::ReportContentSecurityPolicyViolation(

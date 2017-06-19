@@ -27,7 +27,10 @@ CSPSourceList::CSPSourceList()
 CSPSourceList::CSPSourceList(bool allow_self,
                              bool allow_star,
                              std::vector<CSPSource> sources)
-    : allow_self(allow_self), allow_star(allow_star), sources(sources) {}
+    : allow_self(allow_self), allow_star(allow_star), sources(sources) {
+  // When the '*' source is used, it must be the only one.
+  DCHECK(!allow_star || (!allow_self && sources.empty()));
+}
 
 CSPSourceList::CSPSourceList(const CSPSourceList&) = default;
 CSPSourceList::~CSPSourceList() = default;
@@ -44,14 +47,18 @@ bool CSPSourceList::Allow(const CSPSourceList& source_list,
   // list.
   if (source_list.allow_star) {
     if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsSuborigin() ||
-        url.SchemeIsWSOrWSS() || url.SchemeIs("ftp") ||
-        context->ProtocolIsSelf(url))
+        url.SchemeIsWSOrWSS() || url.SchemeIs("ftp")) {
       return true;
-
-    return AllowFromSources(url, source_list.sources, context, is_redirect);
+    }
+    if (context->self_source() && url.SchemeIs(context->self_source()->scheme))
+      return true;
   }
 
-  if (source_list.allow_self && context->AllowSelf(url)) return true;
+  if (source_list.allow_self && context->self_source() &&
+      CSPSource::Allow(context->self_source().value(), url, context,
+                       is_redirect)) {
+    return true;
+  }
 
   return AllowFromSources(url, source_list.sources, context, is_redirect);
 }
