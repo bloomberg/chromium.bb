@@ -47,6 +47,16 @@ struct TraverseRightIgnoringLineBreak {
 };
 
 template <typename TraversalStrategy>
+InlineBox* FindBidiRun(const InlineBox& start, unsigned bidi_level) {
+  for (InlineBox* runner = TraversalStrategy::Forward(start); runner;
+       runner = TraversalStrategy::Forward(*runner)) {
+    if (runner->BidiLevel() <= bidi_level)
+      return runner;
+  }
+  return nullptr;
+}
+
+template <typename TraversalStrategy>
 InlineBox* FindBoudnaryOfBidiRun(const InlineBox& start, unsigned bidi_level) {
   InlineBox* result = const_cast<InlineBox*>(&start);
   for (InlineBox* runner = TraversalStrategy::Forward(start); runner;
@@ -72,6 +82,16 @@ InlineBox* FindBoudnaryOfEntireBidiRun(const InlineBox& start,
 }
 
 }  // namespace
+
+InlineBox* InlineBoxTraversal::FindLeftBidiRun(const InlineBox& box,
+                                               unsigned bidi_level) {
+  return FindBidiRun<TraverseLeft>(box, bidi_level);
+}
+
+InlineBox* InlineBoxTraversal::FindRightBidiRun(const InlineBox& box,
+                                                unsigned bidi_level) {
+  return FindBidiRun<TraverseRight>(box, bidi_level);
+}
 
 InlineBox* InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
     const InlineBox& inline_box,
