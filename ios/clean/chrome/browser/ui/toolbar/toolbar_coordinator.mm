@@ -48,7 +48,8 @@
 }
 
 - (void)start {
-  self.viewController = [[ToolbarViewController alloc] init];
+  self.viewController = [[ToolbarViewController alloc]
+      initWithDispatcher:static_cast<id>(self.browser->dispatcher())];
 
   CommandDispatcher* dispatcher = self.browser->dispatcher();
   [dispatcher startDispatchingToTarget:self
@@ -61,7 +62,6 @@
   [dispatcher startDispatchingToTarget:self
                            forSelector:@selector(stopLoadingPage)];
 
-  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
   self.mediator.consumer = self.viewController;
   self.mediator.webStateList = &self.browser->web_state_list();
 

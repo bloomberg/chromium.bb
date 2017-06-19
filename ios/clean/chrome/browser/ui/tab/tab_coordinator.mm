@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
 #import "ios/clean/chrome/browser/ui/find_in_page/find_in_page_coordinator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
@@ -61,8 +62,10 @@
             selector:@selector(broadcastTabStripVisible:)];
 
   CommandDispatcher* dispatcher = self.browser->dispatcher();
-  // TabCommands
+  // Register Commands
   [dispatcher startDispatchingToTarget:self forSelector:@selector(loadURL:)];
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(showTabStrip)];
 
   WebCoordinator* webCoordinator = [[WebCoordinator alloc] init];
   webCoordinator.webState = self.webState;
@@ -205,6 +208,12 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 - (void)loadURL:(web::NavigationManager::WebLoadParams)params {
   self.webState->GetNavigationManager()->LoadURLWithParams(params);
+}
+
+#pragma mark - TabStripCommands
+
+- (void)showTabStrip {
+  self.viewController.tabStripVisible = YES;
 }
 
 @end

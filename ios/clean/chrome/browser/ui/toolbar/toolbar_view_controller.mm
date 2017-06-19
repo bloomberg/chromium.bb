@@ -6,9 +6,9 @@
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
@@ -56,6 +56,14 @@
     [self setUpProgressBar];
   }
   return self;
+}
+
+- (instancetype)initWithDispatcher:(id<NavigationCommands,
+                                       TabGridCommands,
+                                       TabStripCommands,
+                                       ToolsMenuCommands>)dispatcher {
+  _dispatcher = dispatcher;
+  return [self init];
 }
 
 #pragma mark - View lifecyle
@@ -135,8 +143,8 @@
   [buttonConstraints
       addObject:[self.backButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.backButton addTarget:self
-                      action:@selector(goBack:)
+  [self.backButton addTarget:self.dispatcher
+                      action:@selector(goBack)
             forControlEvents:UIControlEventTouchUpInside];
 
   // Forward button.
@@ -147,8 +155,8 @@
   [buttonConstraints
       addObject:[self.forwardButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.forwardButton addTarget:self
-                         action:@selector(goForward:)
+  [self.forwardButton addTarget:self.dispatcher
+                         action:@selector(goForward)
                forControlEvents:UIControlEventTouchUpInside];
 
   // Tab switcher Strip button.
@@ -159,8 +167,8 @@
   [buttonConstraints
       addObject:[self.tabSwitchStripButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.tabSwitchStripButton addTarget:nil
-                                action:@selector(showTabStrip:)
+  [self.tabSwitchStripButton addTarget:self.dispatcher
+                                action:@selector(showTabStrip)
                       forControlEvents:UIControlEventTouchUpInside];
   [self.tabSwitchStripButton
       setTitleColor:UIColorFromRGB(kToolbarButtonTitleNormalColor)
@@ -177,8 +185,8 @@
   [buttonConstraints
       addObject:[self.tabSwitchGridButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.tabSwitchGridButton addTarget:self
-                               action:@selector(showTabGrid:)
+  [self.tabSwitchGridButton addTarget:self.dispatcher
+                               action:@selector(showTabGrid)
                      forControlEvents:UIControlEventTouchUpInside];
   self.tabSwitchGridButton.hiddenInCurrentState = YES;
 
@@ -189,8 +197,8 @@
   [buttonConstraints
       addObject:[self.toolsMenuButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.toolsMenuButton addTarget:self
-                           action:@selector(showToolsMenu:)
+  [self.toolsMenuButton addTarget:self.dispatcher
+                           action:@selector(showToolsMenu)
                  forControlEvents:UIControlEventTouchUpInside];
 
   // Share button.
@@ -199,9 +207,7 @@
   [buttonConstraints
       addObject:[self.shareButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.shareButton addTarget:self
-                       action:@selector(showShareMenu:)
-             forControlEvents:UIControlEventTouchUpInside];
+  // TODO(crbug.com/683793):Dispatch command once someone is handling it.
 
   // Reload button.
   self.reloadButton = [ToolbarButton reloadToolbarButton];
@@ -209,8 +215,8 @@
   [buttonConstraints
       addObject:[self.reloadButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.reloadButton addTarget:self
-                        action:@selector(reload:)
+  [self.reloadButton addTarget:self.dispatcher
+                        action:@selector(reloadPage)
               forControlEvents:UIControlEventTouchUpInside];
 
   // Stop button.
@@ -219,8 +225,8 @@
   [buttonConstraints
       addObject:[self.stopButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.stopButton addTarget:self
-                      action:@selector(stop:)
+  [self.stopButton addTarget:self.dispatcher
+                      action:@selector(stopLoadingPage)
             forControlEvents:UIControlEventTouchUpInside];
 
   // Set the button constraint priority to UILayoutPriorityDefaultHigh so
@@ -373,40 +379,6 @@
 - (CGRect)rectForZoomWithKey:(NSObject*)key inView:(UIView*)view {
   return [view convertRect:self.toolsMenuButton.bounds
                   fromView:self.toolsMenuButton];
-}
-
-#pragma mark - Private Methods
-
-- (void)showToolsMenu:(id)sender {
-  [self.dispatcher showToolsMenu];
-}
-
-- (void)closeToolsMenu:(id)sender {
-  [self.dispatcher closeToolsMenu];
-}
-
-- (void)showShareMenu:(id)sender {
-  [self.dispatcher showShareMenu];
-}
-
-- (void)goBack:(id)sender {
-  [self.dispatcher goBack];
-}
-
-- (void)goForward:(id)sender {
-  [self.dispatcher goForward];
-}
-
-- (void)stop:(id)sender {
-  [self.dispatcher stopLoadingPage];
-}
-
-- (void)reload:(id)sender {
-  [self.dispatcher reloadPage];
-}
-
-- (void)showTabGrid:(id)sender {
-  [self.dispatcher showTabGrid];
 }
 
 #pragma mark - Helper Methods

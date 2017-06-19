@@ -254,10 +254,6 @@ CGFloat kTabStripHeight = 120.0f;
 
 #pragma mark - Tab Strip actions.
 
-- (void)showTabStrip:(id)sender {
-  self.tabStripVisible = YES;
-}
-
 - (void)hideTabStrip:(id)sender {
   self.tabStripVisible = NO;
 }

@@ -38,7 +38,6 @@ source_set("toolbar_ui") {
     ":toolbar_components_ui",
     "//base",
     "//ios/chrome/browser/ui",
-    "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/tools",
