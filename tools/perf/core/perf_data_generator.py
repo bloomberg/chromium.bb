@@ -665,7 +665,7 @@ def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
   isolate_name = 'telemetry_perf_tests'
   if browser == 'android-webview':
     test_args.append(
-        '--webview-embedded-apk=../../out/Release/apks/SystemWebViewShell.apk')
+        '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
     isolate_name = 'telemetry_perf_webview_tests'
 
   return generate_isolate_script_entry(
