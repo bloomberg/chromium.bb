@@ -113,10 +113,12 @@ static void BuildUpdateWebApkProto(
       gfx::CreateSkBitmapFromJavaBitmap(java_primary_icon_bitmap_lock);
   primary_icon.setImmutable();
 
-  gfx::JavaBitmap java_badge_icon_bitmap_lock(java_badge_icon_bitmap);
-  SkBitmap badge_icon =
-      gfx::CreateSkBitmapFromJavaBitmap(java_badge_icon_bitmap_lock);
-  badge_icon.setImmutable();
+  SkBitmap badge_icon;
+  if (!java_badge_icon_bitmap.is_null()) {
+    gfx::JavaBitmap java_badge_icon_bitmap_lock(java_badge_icon_bitmap);
+    gfx::CreateSkBitmapFromJavaBitmap(java_badge_icon_bitmap_lock);
+    badge_icon.setImmutable();
+  }
 
   std::string webapk_package;
   ConvertJavaStringToUTF8(env, java_webapk_package, &webapk_package);
