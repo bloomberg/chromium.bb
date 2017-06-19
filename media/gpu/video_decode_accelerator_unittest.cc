@@ -291,6 +291,10 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
     // be initialized multiple times for the same Ozone platform.
     gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get(),
                             GetRenderingTaskRunner());
+    // Part of the initialization happens on the rendering thread. Make sure it
+    // has completed, otherwise we may start using resources that are not yet
+    // available.
+    rendering_thread_.FlushForTesting();
 #endif
   }
 
