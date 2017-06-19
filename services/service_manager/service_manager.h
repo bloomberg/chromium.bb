@@ -27,10 +27,6 @@
 #include "services/service_manager/runner/host/service_process_launcher_factory.h"
 #include "services/service_manager/service_overrides.h"
 
-#if !defined(OS_IOS)
-#include "services/service_manager/runner/host/service_process_launcher.h"
-#endif
-
 namespace catalog {
 class ManifestProvider;
 }
