@@ -1290,6 +1290,7 @@ source_set("unit_tests") {
     "html/canvas/CanvasAsyncBlobCreatorTest.cpp",
     "html/canvas/CanvasFontCacheTest.cpp",
     "html/forms/EmailInputTypeTest.cpp",
+    "html/forms/ExternalPopupMenuTest.cpp",
     "html/forms/FileInputTypeTest.cpp",
     "html/forms/OptionListTest.cpp",
     "html/forms/PasswordInputTypeTest.cpp",
