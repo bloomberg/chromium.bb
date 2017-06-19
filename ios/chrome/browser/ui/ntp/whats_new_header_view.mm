@@ -131,11 +131,11 @@ const int kLinkColorRgb = 0x5595FE;
   [_infoIconImageView setImage:image];
 }
 
-- (void)setSideMargin:(CGFloat)sideMargin {
+- (void)setSideMargin:(CGFloat)sideMargin forWidth:(CGFloat)width {
   _sideMargin = sideMargin;
   [self setNeedsUpdateConstraints];
   CGFloat maxLabelWidth =
-      self.frame.size.width - 2 * sideMargin - kInfoIconSize - kLabelLeftMargin;
+      width - 2 * sideMargin - kInfoIconSize - kLabelLeftMargin;
   [_promoLabel.get() setPreferredMaxLayoutWidth:maxLabelWidth];
 }
 

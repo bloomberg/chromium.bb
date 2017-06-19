@@ -54,44 +54,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 
 }  // namespace
 
-@interface GoogleLandingViewController (UsedByGoogleLandingView)
-// Update frames for subviews depending on the interface orientation.
-- (void)updateSubviewFrames;
-// Resets the collection view's inset to 0.
-- (void)resetSectionInset;
-- (void)reloadData;
-@end
-
-// Subclassing the main UIScrollView allows calls for setFrame.
-@interface GoogleLandingView : UIView {
-  GoogleLandingViewController* _googleLanding;
-}
-
-- (void)setFrameDelegate:(GoogleLandingViewController*)delegate;
-
-@end
-
-@implementation GoogleLandingView
-
-- (void)setFrameDelegate:(GoogleLandingViewController*)delegate {
-  _googleLanding = delegate;
-}
-
-- (void)setFrame:(CGRect)frame {
-  // On iPad and in fullscreen, the collection view's inset is very large.
-  // When Chrome enters slide over mode, the previously set inset is larger than
-  // the newly set collection view's width, which makes the collection view
-  // throw an exception.
-  // To prevent this from happening, we reset the inset to 0 before changing the
-  // frame.
-  [_googleLanding resetSectionInset];
-  [super setFrame:frame];
-  [_googleLanding updateSubviewFrames];
-  [_googleLanding reloadData];
-}
-
-@end
-
 @interface GoogleLandingViewController ()<OverscrollActionsControllerDelegate,
                                           UICollectionViewDataSource,
                                           UICollectionViewDelegate,
@@ -153,10 +115,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   base::WeakNSProtocol<id<UrlLoader, OmniboxFocuser>> _dispatcher;
 }
 
-// Redeclare the |view| property to be the GoogleLandingView subclass instead of
-// a generic UIView.
-@property(nonatomic, readwrite, strong) GoogleLandingView* view;
-
 // Whether the Google logo or doodle is being shown.
 @property(nonatomic, assign) BOOL logoIsShowing;
 
@@ -193,6 +151,9 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 // pushed into the header view.
 @property(nonatomic, assign) BOOL canGoBack;
 
+// Left margin to center the items. Used for the inset.
+@property(nonatomic, assign) CGFloat leftMargin;
+
 // Returns the height to use for the What's New promo view.
 - (CGFloat)promoHeaderHeight;
 // Add fake search field and voice search microphone.
@@ -217,8 +178,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 // If Google is not the default search engine, hide the logo, doodle and
 // fakebox.
 - (void)updateLogoAndFakeboxDisplay;
-// Helper method to set UICollectionViewFlowLayout insets for most visited.
-- (void)setFlowLayoutInset:(UICollectionViewFlowLayout*)layout;
 // Instructs the UICollectionView and UIView to reload it's data and layout.
 - (void)reloadData;
 // Adds the constraints for the |logoView|, the |searchField| related to the
@@ -244,7 +203,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 
 @implementation GoogleLandingViewController
 
-@dynamic view;
 @synthesize logoVendor = _logoVendor;
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
@@ -258,17 +216,12 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 @synthesize canGoForward = _canGoForward;
 @synthesize canGoBack = _canGoBack;
 @synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
-
-- (void)loadView {
-  self.view = [[[GoogleLandingView alloc]
-      initWithFrame:[UIScreen mainScreen].bounds] autorelease];
-}
+@synthesize leftMargin = _leftMargin;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                  UIViewAutoresizingFlexibleWidth];
-  [self.view setFrameDelegate:self];
 
   // Initialise |shiftTilesDownStartTime| to a sentinel value to indicate that
   // the animation has not yet started.
@@ -287,20 +240,28 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
               action:@selector(blurOmnibox)]);
   [_swipeGestureRecognizer setDirection:UISwipeGestureRecognizerDirectionDown];
 
+  self.leftMargin =
+      content_suggestions::centeredTilesMarginForWidth([self viewWidth]);
+
   [self addSearchField];
   [self addMostVisited];
   [self addOverscrollActions];
   [self reload];
-}
-
-- (void)viewDidLayoutSubviews {
-  [self updateSubviewFrames];
+  _viewLoaded = YES;
+  [self.logoVendor fetchDoodle];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+  self.leftMargin =
+      content_suggestions::centeredTilesMarginForWidth(size.width);
+
+  // Invalidate the layout so that the collection view's header size is reset
+  // for the new orientation.
+  [[_mostVisitedView collectionViewLayout] invalidateLayout];
 
   void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) = ^(
       id<UIViewControllerTransitionCoordinatorContext> context) {
@@ -310,23 +271,33 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
       return;
     };
 
-    // Invalidate the layout so that the collection view's header size is reset
-    // for the new orientation.
-    if (!_scrolledToTop) {
-      [[_mostVisitedView collectionViewLayout] invalidateLayout];
-    }
-
     // Call -scrollViewDidScroll: so that the omnibox's frame is adjusted for
     // the scroll view's offset.
     [self scrollViewDidScroll:_mostVisitedView];
 
     // Updates the constraints.
+    [_promoHeaderView
+        setSideMargin:content_suggestions::centeredTilesMarginForWidth(
+                          size.width)
+             forWidth:size.width];
+    [_doodleTopMarginConstraint
+        setConstant:content_suggestions::doodleTopMargin()];
     [_searchFieldWidthConstraint
         setConstant:content_suggestions::searchFieldWidth(size.width)];
     [_searchFieldTopMarginConstraint
         setConstant:content_suggestions::searchFieldTopMargin()];
-    [_doodleTopMarginConstraint
-        setConstant:content_suggestions::doodleTopMargin()];
+    BOOL isScrollableNTP = !IsIPadIdiom() || IsCompactTablet();
+    if (isScrollableNTP && _scrolledToTop) {
+      // Set the scroll view's offset to the pinned offset to keep the omnibox
+      // at the top of the screen if it isn't already.
+      CGFloat pinnedOffsetY = [self pinnedOffsetY];
+      if ([_mostVisitedView contentOffset].y < pinnedOffsetY) {
+        [_mostVisitedView setContentOffset:CGPointMake(0, pinnedOffsetY)];
+      } else {
+        [self updateSearchField];
+      }
+    }
+
   };
   [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
 }
@@ -404,7 +375,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   if (self.logoVendor.showingLogo != self.logoIsShowing) {
     self.logoVendor.showingLogo = self.logoIsShowing;
     if (_viewLoaded) {
-      [self updateSubviewFrames];
       [_doodleHeightConstraint
           setConstant:content_suggestions::doodleHeight(self.logoIsShowing)];
 
@@ -501,64 +471,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   base::scoped_nsobject<GenericChromeCommand> command(
       [[GenericChromeCommand alloc] initWithTag:IDC_PRELOAD_VOICE_SEARCH]);
   [sender chromeExecuteCommand:command];
-}
-
-- (void)setFlowLayoutInset:(UICollectionViewFlowLayout*)layout {
-  CGFloat leftMargin =
-      content_suggestions::centeredTilesMarginForWidth([self viewWidth]);
-  [layout setSectionInset:UIEdgeInsetsMake(0, leftMargin, 0, leftMargin)];
-}
-
-- (void)resetSectionInset {
-  UICollectionViewFlowLayout* flowLayout =
-      (UICollectionViewFlowLayout*)[_mostVisitedView collectionViewLayout];
-  [flowLayout setSectionInset:UIEdgeInsetsZero];
-}
-
-- (void)updateSubviewFrames {
-  _mostVisitedCellSize = [self mostVisitedCellSize];
-  UICollectionViewFlowLayout* flowLayout =
-      base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
-          [_mostVisitedView collectionViewLayout]);
-  [flowLayout setItemSize:_mostVisitedCellSize];
-
-  [self setFlowLayoutInset:flowLayout];
-  [flowLayout invalidateLayout];
-  [_promoHeaderView
-      setSideMargin:content_suggestions::centeredTilesMarginForWidth(
-                        [self viewWidth])];
-
-  // On the iPhone 6 Plus, if the app is started in landscape after a fresh
-  // install, the UICollectionViewLayout incorrectly sizes the widths of the
-  // supplementary views to the portrait width.  Correct that here to ensure
-  // that the header is property laid out to the UICollectionView's width.
-  // crbug.com/491131
-  CGFloat collectionViewWidth = CGRectGetWidth([_mostVisitedView bounds]);
-  CGFloat collectionViewMinX = CGRectGetMinX([_mostVisitedView bounds]);
-  for (UIView* supplementaryView in _supplementaryViews.get()) {
-    CGRect supplementaryViewFrame = supplementaryView.frame;
-    supplementaryViewFrame.origin.x = collectionViewMinX;
-    supplementaryViewFrame.size.width = collectionViewWidth;
-    supplementaryView.frame = supplementaryViewFrame;
-  }
-
-  BOOL isScrollableNTP = !IsIPadIdiom() || IsCompactTablet();
-  if (isScrollableNTP && _scrolledToTop) {
-    // Set the scroll view's offset to the pinned offset to keep the omnibox
-    // at the top of the screen if it isn't already.
-    CGFloat pinnedOffsetY = [self pinnedOffsetY];
-    if ([_mostVisitedView contentOffset].y < pinnedOffsetY) {
-      [_mostVisitedView setContentOffset:CGPointMake(0, pinnedOffsetY)];
-    } else {
-      [self updateSearchField];
-    }
-  }
-
-  if (!_viewLoaded) {
-    _viewLoaded = YES;
-    [self.logoVendor fetchDoodle];
-  }
-  [self.delegate updateNtpBarShadowForPanelController:self];
 }
 
 // Initialize and add a panel with most visited sites.
@@ -808,6 +720,12 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 
 #pragma mark - UICollectionView Methods.
 
+- (UIEdgeInsets)collectionView:(UICollectionView*)collectionView
+                        layout:(UICollectionViewLayout*)collectionViewLayout
+        insetForSectionAtIndex:(NSInteger)section {
+  return UIEdgeInsetsMake(0, self.leftMargin, 0, self.leftMargin);
+}
+
 - (CGSize)collectionView:(UICollectionView*)collectionView
                              layout:
                                  (UICollectionViewLayout*)collectionViewLayout
@@ -914,7 +832,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
                                     forIndexPath:indexPath] retain]);
       [_promoHeaderView
           setSideMargin:content_suggestions::centeredTilesMarginForWidth(
-                            [self viewWidth])];
+                            [self viewWidth])
+               forWidth:[self viewWidth]];
       [_promoHeaderView setDelegate:self];
       if (self.promoCanShow) {
         [_promoHeaderView setText:self.promoText];
@@ -1120,7 +1039,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 // Returns the Y value to use for the scroll view's contentOffset when scrolling
 // the omnibox to the top of the screen.
 - (CGFloat)pinnedOffsetY {
-  CGFloat headerHeight = [_headerView frame].size.height;
+  CGFloat headerHeight = content_suggestions::heightForLogoHeader(
+      self.logoIsShowing, self.promoCanShow);
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsIPadIdiom())
