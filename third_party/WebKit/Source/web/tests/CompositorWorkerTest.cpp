@@ -42,8 +42,7 @@ class CompositorWorkerTest
         base_url_("http://www.test.com/") {}
 
   void SetUp() override {
-    helper_.Initialize(nullptr, &mock_web_view_client_, nullptr,
-                       &ConfigureSettings);
+    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
     GetWebView()->Resize(IntSize(320, 240));
   }
 
@@ -97,7 +96,6 @@ class CompositorWorkerTest
 
  protected:
   String base_url_;
-  FrameTestHelpers::TestWebViewClient mock_web_view_client_;
 
  private:
   static void ConfigureSettings(WebSettings* settings) {
