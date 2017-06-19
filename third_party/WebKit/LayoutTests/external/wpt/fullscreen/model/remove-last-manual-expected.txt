@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Remove the last element on the fullscreen element stack assert_equals: expected Element node <div id="first">
-    <div id="last"></div>
-</div> but got Document node with 2 children
-Harness: the test ran to completion.
-

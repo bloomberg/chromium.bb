@@ -144,6 +144,8 @@ namespace http://www.w3.org/1999/xhtml
     property onended
     property onerror
     property onfocus
+    property onfullscreenchange
+    property onfullscreenerror
     property ongotpointercapture
     property oninput
     property oninvalid
@@ -1240,6 +1242,8 @@ namespace http://www.w3.org/2000/svg
     property onended
     property onerror
     property onfocus
+    property onfullscreenchange
+    property onfullscreenerror
     property ongotpointercapture
     property oninput
     property oninvalid

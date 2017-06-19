@@ -18,15 +18,15 @@ async_test(t => {
   // Expect first a fullscreenchange event for the second (!) request, then a
   // fullscreenerror event for the first request. TODO(foolip): Remove the
   // Fullscreen hierarchy restrictions. https://crbug.com/627792
-  a.contentDocument.onfullscreenerror = t.step_func(() => {
-    b.contentDocument.onfullscreenchange = t.step_func_done(() => {
-      assert_equals(document.fullscreenElement, b, 'fullscreenElement');
-      assert_equals(a.contentDocument.fullscreenElement, null, 'fullscreenElement in iframe a');
-      assert_equals(b.contentDocument.fullscreenElement, b.contentDocument.body, 'fullscreenElement in iframe b');
+  a.contentDocument.onfullscreenchange = t.step_func_done(() => {
+    assert_equals(document.fullscreenElement, a, 'fullscreenElement');
+    assert_equals(a.contentDocument.fullscreenElement, a.contentDocument.body, 'fullscreenElement in iframe a');
+    b.contentDocument.onfullscreenerror = t.step_func(() => {
+      assert_equals(b.contentDocument.fullscreenElement, null, 'fullscreenElement in iframe b');
     });
   });
-  a.contentDocument.onfullscreenchange = t.unreached_func('fullscreenchange event in iframe a');
-  b.contentDocument.onfullscreenerror = t.unreached_func('fullscreenerror event in iframe b');
+  a.contentDocument.onfullscreenerror = t.unreached_func('fullscreenerror event in iframe a');
+  b.contentDocument.onfullscreenchange = t.unreached_func('fullscreenchange event in iframe b');
 
   trusted_click(t, () => {
     b.contentDocument.body.requestFullscreen();

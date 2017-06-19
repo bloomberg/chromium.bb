@@ -409,9 +409,9 @@ void LayoutInline::SplitInlines(LayoutBlockFlow* from_block,
   // not its parent. Since the splitting logic expects |this| to be the parent,
   // set |beforeChild| to be the LayoutFullScreen.
   if (Fullscreen* fullscreen = Fullscreen::FromIfExists(GetDocument())) {
-    const Element* full_screen_element = fullscreen->CurrentFullScreenElement();
-    if (full_screen_element && before_child &&
-        before_child->GetNode() == full_screen_element)
+    const Element* fullscreen_element = fullscreen->FullscreenElement();
+    if (fullscreen_element && before_child &&
+        before_child->GetNode() == fullscreen_element)
       before_child = fullscreen->FullScreenLayoutObject();
   }
 

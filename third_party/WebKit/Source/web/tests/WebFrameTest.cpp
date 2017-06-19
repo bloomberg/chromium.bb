@@ -97,6 +97,7 @@
 #include "platform/DragImage.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/Microtask.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -7979,15 +7980,10 @@ TEST_P(ParameterizedWebFrameTest, FullscreenLayerSize) {
   UserGestureIndicator gesture(UserGestureToken::Create(document));
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
-  EXPECT_EQ(nullptr, Fullscreen::CurrentFullScreenElementFrom(*document));
-  EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
+  EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidEnterFullscreen();
-  EXPECT_EQ(div_fullscreen,
-            Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->UpdateAllLifecyclePhases();
-  EXPECT_EQ(div_fullscreen,
-            Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
 
   // Verify that the element is sized to the viewport.
@@ -8022,15 +8018,10 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   UserGestureIndicator gesture(UserGestureToken::Create(document));
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
-  EXPECT_EQ(nullptr, Fullscreen::CurrentFullScreenElementFrom(*document));
-  EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
+  EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidEnterFullscreen();
-  EXPECT_EQ(div_fullscreen,
-            Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->UpdateAllLifecyclePhases();
-  EXPECT_EQ(div_fullscreen,
-            Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
 
   // Verify that the viewports are nonscrollable.
@@ -8046,14 +8037,10 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   ASSERT_FALSE(visual_viewport_scroll_layer->UserScrollableVertical());
 
   // Verify that the viewports are scrollable upon exiting fullscreen.
-  EXPECT_EQ(div_fullscreen,
-            Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidExitFullscreen();
-  EXPECT_EQ(nullptr, Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr, Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   ASSERT_TRUE(layout_viewport_scroll_layer->UserScrollableHorizontal());
   ASSERT_TRUE(layout_viewport_scroll_layer->UserScrollableVertical());
@@ -8087,18 +8074,12 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame) {
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
   UserGestureIndicator gesture(UserGestureToken::Create(document));
   Fullscreen::RequestFullscreen(*document->documentElement());
-  EXPECT_EQ(nullptr, Fullscreen::CurrentFullScreenElementFrom(*document));
-  EXPECT_EQ(document->documentElement(),
-            Fullscreen::FullscreenElementFrom(*document));
+  EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidEnterFullscreen();
-  EXPECT_EQ(document->documentElement(),
-            Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(document->documentElement(),
             Fullscreen::FullscreenElementFrom(*document));
 
   web_view_impl->UpdateAllLifecyclePhases();
-  EXPECT_EQ(document->documentElement(),
-            Fullscreen::CurrentFullScreenElementFrom(*document));
   EXPECT_EQ(document->documentElement(),
             Fullscreen::FullscreenElementFrom(*document));
 
@@ -8191,22 +8172,19 @@ TEST_P(ParameterizedWebFrameTest, FullscreenNestedExit) {
     Fullscreen::RequestFullscreen(*iframe_body);
   }
   web_view_impl->DidEnterFullscreen();
+  Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
   web_view_impl->UpdateAllLifecyclePhases();
 
   // We are now in nested fullscreen, with both documents having a non-empty
   // fullscreen element stack.
-  EXPECT_EQ(top_body, Fullscreen::CurrentFullScreenElementFrom(*top_doc));
   EXPECT_EQ(iframe, Fullscreen::FullscreenElementFrom(*top_doc));
-  EXPECT_EQ(iframe_body, Fullscreen::CurrentFullScreenElementFrom(*iframe_doc));
   EXPECT_EQ(iframe_body, Fullscreen::FullscreenElementFrom(*iframe_doc));
 
   web_view_impl->DidExitFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
   // We should now have fully exited fullscreen.
-  EXPECT_EQ(nullptr, Fullscreen::CurrentFullScreenElementFrom(*top_doc));
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*top_doc));
-  EXPECT_EQ(nullptr, Fullscreen::CurrentFullScreenElementFrom(*iframe_doc));
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*iframe_doc));
 }
 

@@ -16,12 +16,12 @@ PASS Document interface: new Document must inherit property "onfullscreenerror" 
 PASS Document interface: new Document must inherit property "fullscreenElement" with the proper type (35) 
 FAIL ShadowRoot interface: attribute fullscreenElement assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
 FAIL Element interface: operation requestFullscreen() assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
-FAIL Element interface: attribute onfullscreenchange assert_true: The prototype object must have a property "onfullscreenchange" expected true got false
-FAIL Element interface: attribute onfullscreenerror assert_true: The prototype object must have a property "onfullscreenerror" expected true got false
+PASS Element interface: attribute onfullscreenchange 
+PASS Element interface: attribute onfullscreenerror 
 PASS Element must be primary interface of document.createElementNS(null, "test") 
 PASS Stringification of document.createElementNS(null, "test") 
 PASS Element interface: document.createElementNS(null, "test") must inherit property "requestFullscreen" with the proper type (34) 
-FAIL Element interface: document.createElementNS(null, "test") must inherit property "onfullscreenchange" with the proper type (35) assert_inherits: property "onfullscreenchange" not found in prototype chain
-FAIL Element interface: document.createElementNS(null, "test") must inherit property "onfullscreenerror" with the proper type (36) assert_inherits: property "onfullscreenerror" not found in prototype chain
+PASS Element interface: document.createElementNS(null, "test") must inherit property "onfullscreenchange" with the proper type (35) 
+PASS Element interface: document.createElementNS(null, "test") must inherit property "onfullscreenerror" with the proper type (36) 
 Harness: the test ran to completion.
 

@@ -56,7 +56,7 @@ class HTMLVideoElementPersistentTest : public ::testing::Test {
   }
 
   Element* FullscreenElement() {
-    return Fullscreen::CurrentFullScreenElementFrom(GetDocument());
+    return Fullscreen::FullscreenElementFrom(GetDocument());
   }
 
   MockChromeClient& GetMockChromeClient() { return *chrome_client_; }

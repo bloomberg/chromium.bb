@@ -733,9 +733,9 @@ void ChromeClientImpl::ExitFullscreen(LocalFrame& frame) {
   web_view_->ExitFullscreen(frame);
 }
 
-void ChromeClientImpl::FullscreenElementChanged(Element* from_element,
-                                                Element* to_element) {
-  web_view_->FullscreenElementChanged(from_element, to_element);
+void ChromeClientImpl::FullscreenElementChanged(Element* old_element,
+                                                Element* new_element) {
+  web_view_->FullscreenElementChanged(old_element, new_element);
 }
 
 void ChromeClientImpl::ClearCompositedSelection(LocalFrame* frame) {

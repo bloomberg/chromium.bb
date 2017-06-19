@@ -3,12 +3,14 @@
     <head>
         <script>
             var runPixelTests = true;
-            
+
             function init() {
-                waitForEventAndEnd(document, 'webkitfullscreenchange');
+                waitForEventOnce(document, 'webkitfullscreenchange', function() {
+                    testRunner.layoutAndPaintAsyncThen(endTest);
+                });
                 runWithKeyDown(goFullScreen);
             }
-            
+
             function goFullScreen() {
                 document.getElementById('video').webkitRequestFullScreen();
             }
@@ -46,7 +48,7 @@
         </style>
     </head>
     <body onload="init()">
-        <div>This tests that a full screen element in a lower stacking context blocks a sibling in a higher stacking context.  
+        <div>This tests that a full screen element in a lower stacking context blocks a sibling in a higher stacking context.
              After entering full screen mode, only a black box should be visible.
              Click <button onclick="goFullScreen()">go full screen</button> to run the test.</div>
         <div id="one"></div>

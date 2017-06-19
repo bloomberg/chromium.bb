@@ -4,8 +4,8 @@
 <script src="../fast/events/touch/resources/touch-hover-active-tests.js"></script>
 <link rel="stylesheet" href="../fast/events/touch/resources/touch-hover-active-tests.css">
 
-<button id="enter" class='touch-interactive' onclick="document.body.webkitRequestFullScreen()">Go full screen</button>
-<button id="exit" class='touch-interactive' onclick="document.webkitCancelFullScreen()">Exit full screen</button>
+<button id="enter" class='touch-interactive' onclick="document.body.webkitRequestFullScreen()">Enter fullscreen</button>
+<button id="exit" class='touch-interactive' onclick="document.webkitCancelFullScreen()">Exit fullscreen</button>
 
 <script>
 var enterButton;
@@ -22,30 +22,36 @@ function runTest() {
 
     var enterButtonCenter = elementCenter(enterButton);
 
+    // After entering fullscreen + layout, the button should lose hover.
     waitForEventOnce(document, 'webkitfullscreenchange', function() {
-        shouldBeTrue("document.webkitIsFullScreen")
-        // After entering fullscreen, the button should lose hover
-        shouldBeDefault("getHoverActiveState(enterButton)")
+        shouldBeTrue("document.webkitIsFullScreen");
+        testRunner.layoutAndPaintAsyncThen(function() {
+            shouldBeDefault("getHoverActiveState(enterButton)");
 
-        waitForEventOnce(document, 'webkitfullscreenchange', function() {
-            shouldBeFalse("document.webkitIsFullScreen")
-            // After leaving fullscreen, the button should lose hover
-            shouldBeDefault("getHoverActiveState(exitButton)")
-            endTest();
+            // After exiting fullscreen + layout, the button should lose hover.
+            waitForEventOnce(document, 'webkitfullscreenchange', function() {
+                shouldBeFalse("document.webkitIsFullScreen");
+                testRunner.layoutAndPaintAsyncThen(function() {
+                    shouldBeDefault("getHoverActiveState(exitButton)");
+                    endTest();
+                });
+            });
+
+            var exitButtonCenter = elementCenter(exitButton);
+            // Hover and click the "Exit fullscreen" button.
+            eventSender.mouseMoveTo(exitButtonCenter.x, exitButtonCenter.y);
+            eventSender.mouseDown();
+            eventSender.mouseUp();
+            shouldBeOnlyHovered("getHoverActiveState(exitButton)");
         });
-
-        var exitButtonCenter = elementCenter(exitButton);
-        // Hover on and click the "Exit fullscreen" button
-        eventSender.mouseMoveTo(exitButtonCenter.x, exitButtonCenter.y);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
     });
 
 
-    // Move mouse over to the "Go fullscreen" button and click
+    // Hover and click the "Enter fullscreen" button.
     eventSender.mouseMoveTo(enterButtonCenter.x, enterButtonCenter.y);
     eventSender.mouseDown();
     eventSender.mouseUp();
+    shouldBeOnlyHovered("getHoverActiveState(enterButton)");
 }
 
 runTest();

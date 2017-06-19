@@ -342,24 +342,21 @@ void WebRemoteFrameImpl::WillEnterFullscreen() {
   HTMLFrameOwnerElement* owner_element =
       ToHTMLFrameOwnerElement(GetFrame()->Owner());
 
-  // Call requestFullscreen() on |ownerElement| to make it the provisional
-  // fullscreen element in FullscreenController, and to prepare
-  // fullscreenchange events that will need to fire on it and its (local)
-  // ancestors. The events will be triggered if/when fullscreen is entered.
+  // Call |requestFullscreen()| on |ownerElement| to make it the pending
+  // fullscreen element in anticipation of the coming |didEnterFullscreen()|
+  // call.
   //
-  // Passing |forCrossProcessAncestor| to requestFullscreen is necessary
-  // because:
-  // - |ownerElement| will need :-webkit-full-screen-ancestor style in
-  //   addition to :-webkit-full-screen.
-  // - there's no need to resend the ToggleFullscreen IPC to the browser
-  //   process.
+  // PrefixedForCrossProcessDescendant is necessary because:
+  //  - The fullscreen element ready check and other checks should be bypassed.
+  //  - |ownerElement| will need :-webkit-full-screen-ancestor style in addition
+  //    to :-webkit-full-screen.
   //
   // TODO(alexmos): currently, this assumes prefixed requests, but in the
   // future, this should plumb in information about which request type
   // (prefixed or unprefixed) to use for firing fullscreen events.
-  Fullscreen::RequestFullscreen(*owner_element,
-                                Fullscreen::RequestType::kPrefixed,
-                                true /* forCrossProcessAncestor */);
+  Fullscreen::RequestFullscreen(
+      *owner_element,
+      Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
 }
 
 void WebRemoteFrameImpl::SetHasReceivedUserGesture() {

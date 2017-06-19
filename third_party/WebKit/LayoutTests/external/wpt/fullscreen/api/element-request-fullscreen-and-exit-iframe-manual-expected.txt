@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Element#requestFullscreen() and Document#exitFullscreen() in iframe assert_equals: event target expected Element node <iframe allowfullscreen=""></iframe> but got Document node with 2 children
-Harness: the test ran to completion.
-

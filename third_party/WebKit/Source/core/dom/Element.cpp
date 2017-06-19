@@ -1748,7 +1748,7 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
 
   DCHECK(!HasRareData() || !GetElementRareData()->HasPseudoElements());
 
-  if (Fullscreen::IsCurrentFullScreenElement(*this)) {
+  if (Fullscreen::IsFullscreenElement(*this)) {
     SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
     if (insertion_point->IsElementNode()) {
       ToElement(insertion_point)->SetContainsFullScreenElement(false);
@@ -3715,7 +3715,7 @@ void Element::SetContainsPersistentVideo(bool value) {
 
   // In some rare situations, when the persistent video has been removed from
   // the tree, part of the tree might still carry the flag.
-  if (!value && Fullscreen::IsCurrentFullScreenElement(*this)) {
+  if (!value && Fullscreen::IsFullscreenElement(*this)) {
     for (Node* node = firstChild(); node;) {
       if (!node->IsElementNode() ||
           !ToElement(node)->ContainsPersistentVideo()) {
@@ -4361,7 +4361,7 @@ bool Element::SupportsStyleSharing() const {
     return false;
   if (HasAnimations())
     return false;
-  if (Fullscreen::IsCurrentFullScreenElement(*this))
+  if (Fullscreen::IsFullscreenElement(*this))
     return false;
   return true;
 }
