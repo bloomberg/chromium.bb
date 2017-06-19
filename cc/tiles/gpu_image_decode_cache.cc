@@ -110,6 +110,38 @@ gfx::Size CalculateSizeForMipLevel(const DrawImage& draw_image, int mip_level) {
   return MipMapUtil::GetSizeForLevel(base_size, mip_level);
 }
 
+// Draws and scales the provided |draw_image| into the |target_pixmap|. If the
+// draw/scale can be done directly, calls directly into SkImage::scalePixels,
+// if not, decodes to a compatible temporary pixmap and then converts that into
+// the |target_pixmap|.
+bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
+  const SkImage* image = draw_image.image().get();
+  if (image->dimensions() == target_pixmap->bounds().size() ||
+      target_pixmap->info().colorType() == kN32_SkColorType) {
+    // If no scaling is occurring, or if the target colortype is already N32,
+    // just scale directly.
+    return image->scalePixels(*target_pixmap,
+                              CalculateUploadScaleFilterQuality(draw_image),
+                              SkImage::kDisallow_CachingHint);
+  }
+
+  // If the target colortype is not N32, it may be impossible to scale
+  // directly. Instead scale into an N32 pixmap, and convert that into the
+  // |target_pixmap|.
+  SkImageInfo decode_info =
+      target_pixmap->info().makeColorType(kN32_SkColorType);
+  SkBitmap decode_bitmap;
+  if (!decode_bitmap.tryAllocPixels(decode_info))
+    return false;
+  SkPixmap decode_pixmap(decode_bitmap.info(), decode_bitmap.getPixels(),
+                         decode_bitmap.rowBytes());
+  if (!image->scalePixels(decode_pixmap,
+                          CalculateUploadScaleFilterQuality(draw_image),
+                          SkImage::kDisallow_CachingHint))
+    return false;
+  return decode_pixmap.readPixels(*target_pixmap);
+}
+
 }  // namespace
 
 // static
@@ -1117,9 +1149,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
                               backing_memory->data(), image_info.minRowBytes());
         // Note that scalePixels falls back to readPixels if the scale is 1x, so
         // no need to special case that as an optimization.
-        if (!draw_image.image()->scalePixels(
-                image_pixmap, CalculateUploadScaleFilterQuality(draw_image),
-                SkImage::kDisallow_CachingHint)) {
+        if (!DrawAndScaleImage(draw_image, &image_pixmap)) {
           DLOG(ERROR) << "scalePixels failed.";
           backing_memory->Unlock();
           backing_memory.reset();
