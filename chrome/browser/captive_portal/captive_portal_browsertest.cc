@@ -2289,7 +2289,7 @@ IN_PROC_BROWSER_TEST_F(
   // 1- For stopping the hanging page.
   // 2- For completing the load of the above navigation.
   // 3- For completing the load of the login tab.
-  // NOTE: for PlzNaviate the first one doesn't show up.
+  // NOTE: for PlzNavigate the first one doesn't show up.
   test_navigation_observer.WaitForNavigations(
       content::IsBrowserSideNavigationEnabled() ? 2 : 3);
   // Should end up with a captive portal interstitial and a new login tab.
