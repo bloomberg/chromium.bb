@@ -2253,10 +2253,6 @@ TEST_P(EndToEndTest, BadEncryptedData) {
 
 TEST_P(EndToEndTest, CanceledStreamDoesNotBecomeZombie) {
   ASSERT_TRUE(Initialize());
-  if (!FLAGS_quic_reloadable_flag_quic_use_stream_notifier) {
-    return;
-  }
-
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   // Lose the request.
   SetPacketLossPercentage(100);

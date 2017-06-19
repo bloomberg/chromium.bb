@@ -716,9 +716,6 @@ TEST_F(QuicStreamTest, EarlyResponseFinHandling) {
 
 TEST_F(QuicStreamTest, StreamWaitsForAcks) {
   Initialize(kShouldProcessData);
-  if (!session_->use_stream_notifier()) {
-    return;
-  }
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   // Stream is not waiting for acks initially.
@@ -752,10 +749,6 @@ TEST_F(QuicStreamTest, StreamWaitsForAcks) {
 
 TEST_F(QuicStreamTest, CancelStream) {
   Initialize(kShouldProcessData);
-  if (!session_->use_stream_notifier()) {
-    return;
-  }
-
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   EXPECT_FALSE(stream_->IsWaitingForAcks());
@@ -774,10 +767,6 @@ TEST_F(QuicStreamTest, CancelStream) {
 
 TEST_F(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
   Initialize(kShouldProcessData);
-  if (!session_->use_stream_notifier()) {
-    return;
-  }
-
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   EXPECT_FALSE(stream_->IsWaitingForAcks());
@@ -795,10 +784,6 @@ TEST_F(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
 
 TEST_F(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
   Initialize(kShouldProcessData);
-  if (!session_->use_stream_notifier()) {
-    return;
-  }
-
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   EXPECT_FALSE(stream_->IsWaitingForAcks());
@@ -815,10 +800,6 @@ TEST_F(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
 
 TEST_F(QuicStreamTest, ConnectionClosed) {
   Initialize(kShouldProcessData);
-  if (!session_->use_stream_notifier()) {
-    return;
-  }
-
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   EXPECT_FALSE(stream_->IsWaitingForAcks());
