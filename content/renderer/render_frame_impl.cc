@@ -6442,17 +6442,12 @@ void RenderFrameImpl::SendUpdateState() {
 }
 
 void RenderFrameImpl::MaybeEnableMojoBindings() {
-  // BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO,
-  // BINDINGS_POLICY_HEADLESS_MAIN_WORLD and
-  // BINDINGS_POLICY_HEADLESS_ISOLATED_WORLD are mutually exclusive. They
-  // provide access to Mojo bindings, but do so in incompatible ways.
-  const int kAllBindingsTypes = BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO |
-                                BINDINGS_POLICY_HEADLESS_MAIN_WORLD |
-                                BINDINGS_POLICY_HEADLESS_ISOLATED_WORLD;
+  // BINDINGS_POLICY_WEB_UI and BINDINGS_POLICY_MOJO are mutually exclusive.
+  // They provide access to Mojo bindings, but do so in incompatible ways.
+  const int kAllBindingsTypes = BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO;
 
-  // Make sure that at most one of BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO
-  // BINDINGS_POLICY_HEADLESS_MAIN_WORLD and
-  // BINDINGS_POLICY_HEADLESS_ISOLATED_WORLD have been set.
+  // Make sure that at most one of BINDINGS_POLICY_WEB_UI and
+  // BINDINGS_POLICY_MOJO have been set.
   // NOTE x & (x - 1) == 0 is true iff x is zero or a power of two.
   DCHECK_EQ((enabled_bindings_ & kAllBindingsTypes) &
                 ((enabled_bindings_ & kAllBindingsTypes) - 1),

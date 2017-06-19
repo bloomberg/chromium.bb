@@ -138,8 +138,17 @@ HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
 std::unique_ptr<base::Value>
 HeadlessContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece name) {
-  if (name != content::mojom::kBrowserServiceName ||
-      browser_->options()->mojo_service_names.empty())
+  if (name == content::mojom::kBrowserServiceName)
+    return GetBrowserServiceManifestOverlay();
+  else if (name == content::mojom::kRendererServiceName)
+    return GetRendererServiceManifestOverlay();
+
+  return nullptr;
+}
+
+std::unique_ptr<base::Value>
+HeadlessContentBrowserClient::GetBrowserServiceManifestOverlay() {
+  if (browser_->options()->mojo_service_names.empty())
     return nullptr;
 
   base::StringPiece manifest_template =
@@ -160,6 +169,14 @@ HeadlessContentBrowserClient::GetServiceManifestOverlay(
   }
 
   return manifest;
+}
+
+std::unique_ptr<base::Value>
+HeadlessContentBrowserClient::GetRendererServiceManifestOverlay() {
+  base::StringPiece manifest_template =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_HEADLESS_RENDERER_MANIFEST_OVERLAY);
+  return base::JSONReader::Read(manifest_template);
 }
 
 void HeadlessContentBrowserClient::GetQuotaSettings(

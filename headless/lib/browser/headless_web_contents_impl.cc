@@ -34,6 +34,7 @@
 #include "headless/lib/browser/headless_tab_socket_impl.h"
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "headless/lib/browser/headless_print_manager.h"
@@ -48,27 +49,6 @@ HeadlessWebContentsImpl* HeadlessWebContentsImpl::From(
   // HeadlessWebContents.
   return static_cast<HeadlessWebContentsImpl*>(web_contents);
 }
-
-class WebContentsObserverAdapter : public content::WebContentsObserver {
- public:
-  WebContentsObserverAdapter(content::WebContents* web_contents,
-                             HeadlessWebContents::Observer* observer)
-      : content::WebContentsObserver(web_contents), observer_(observer) {}
-
-  ~WebContentsObserverAdapter() override {}
-
-  void RenderViewReady() override {
-    DCHECK(web_contents()->GetMainFrame()->IsRenderFrameLive());
-    observer_->DevToolsTargetReady();
-  }
-
-  HeadlessWebContents::Observer* observer() { return observer_; }
-
- private:
-  HeadlessWebContents::Observer* observer_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsObserverAdapter);
-};
 
 class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
  public:
@@ -213,7 +193,8 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
       agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
       inject_mojo_services_into_isolated_world_(false),
       browser_context_(browser_context),
-      render_process_host_(web_contents->GetRenderProcessHost()) {
+      render_process_host_(web_contents->GetRenderProcessHost()),
+      weak_ptr_factory_(this) {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   printing::HeadlessPrintManager::CreateForWebContents(web_contents);
 #endif
@@ -230,11 +211,28 @@ HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
 
 void HeadlessWebContentsImpl::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+  render_frame_host->GetRemoteInterfaces()->GetInterface(
+      &render_frame_controller_);
   if (!mojo_services_.empty()) {
-    render_frame_host->AllowBindings(
+    base::Closure callback;
+    // We only fire DevToolsTargetReady when the tab socket is set up for the
+    // main frame.
+    // TODO(eseckler): To indicate tab socket readiness for child frames, we
+    // need to send an event via the parent frame's DevTools connection instead.
+    if (render_frame_host == web_contents()->GetMainFrame()) {
+      callback =
+          base::Bind(&HeadlessWebContentsImpl::MainFrameTabSocketSetupComplete,
+                     weak_ptr_factory_.GetWeakPtr());
+    }
+    render_frame_controller_->AllowTabSocketBindings(
         inject_mojo_services_into_isolated_world_
-            ? content::BINDINGS_POLICY_HEADLESS_ISOLATED_WORLD
-            : content::BINDINGS_POLICY_HEADLESS_MAIN_WORLD);
+            ? MojoBindingsPolicy::ISOLATED_WORLD
+            : MojoBindingsPolicy::MAIN_WORLD,
+        callback);
+  } else if (render_frame_host == web_contents()->GetMainFrame()) {
+    // Pretend we set up the TabSocket, which allows the DevToolsTargetReady
+    // event to fire.
+    MainFrameTabSocketSetupComplete();
   }
 
   service_manager::BinderRegistry* interface_registry =
@@ -256,6 +254,25 @@ void HeadlessWebContentsImpl::RenderFrameDeleted(
   browser_context_->RemoveFrameTreeNode(
       render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRoutingID());
+}
+
+void HeadlessWebContentsImpl::RenderViewReady() {
+  DCHECK(web_contents()->GetMainFrame()->IsRenderFrameLive());
+  render_view_ready_ = true;
+  MaybeIssueDevToolsTargetReady();
+}
+
+void HeadlessWebContentsImpl::MainFrameTabSocketSetupComplete() {
+  main_frame_tab_socket_setup_complete_ = true;
+  MaybeIssueDevToolsTargetReady();
+}
+
+void HeadlessWebContentsImpl::MaybeIssueDevToolsTargetReady() {
+  if (!main_frame_tab_socket_setup_complete_ || !render_view_ready_)
+    return;
+
+  for (auto& observer : observers_)
+    observer.DevToolsTargetReady();
 }
 
 std::string
@@ -293,29 +310,23 @@ std::string HeadlessWebContentsImpl::GetDevToolsAgentHostId() {
 }
 
 void HeadlessWebContentsImpl::AddObserver(Observer* observer) {
-  DCHECK(observer_map_.find(observer) == observer_map_.end());
-  observer_map_[observer] = base::MakeUnique<WebContentsObserverAdapter>(
-      web_contents_.get(), observer);
+  observers_.AddObserver(observer);
 }
 
 void HeadlessWebContentsImpl::RemoveObserver(Observer* observer) {
-  ObserverMap::iterator it = observer_map_.find(observer);
-  DCHECK(it != observer_map_.end());
-  observer_map_.erase(it);
+  observers_.RemoveObserver(observer);
 }
 
 void HeadlessWebContentsImpl::DevToolsAgentHostAttached(
     content::DevToolsAgentHost* agent_host) {
-  for (const auto& pair : observer_map_) {
-    pair.second->observer()->DevToolsClientAttached();
-  }
+  for (auto& observer : observers_)
+    observer.DevToolsClientAttached();
 }
 
 void HeadlessWebContentsImpl::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
-  for (const auto& pair : observer_map_) {
-    pair.second->observer()->DevToolsClientDetached();
-  }
+  for (auto& observer : observers_)
+    observer.DevToolsClientDetached();
 }
 
 void HeadlessWebContentsImpl::RenderProcessExited(
@@ -323,9 +334,8 @@ void HeadlessWebContentsImpl::RenderProcessExited(
     base::TerminationStatus status,
     int exit_code) {
   DCHECK_EQ(render_process_host_, host);
-  for (const auto& pair : observer_map_) {
-    pair.second->observer()->RenderProcessExited(status, exit_code);
-  }
+  for (auto& observer : observers_)
+    observer.RenderProcessExited(status, exit_code);
 }
 
 void HeadlessWebContentsImpl::RenderProcessHostDestroyed(

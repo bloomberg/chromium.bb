@@ -1,0 +1,20 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module headless;
+
+enum MojoBindingsPolicy {
+  // No access to the TabSocket API from within the frame.
+  NONE,
+  // Allow main world JS content within the frame to access the TabSocket API.
+  MAIN_WORLD,
+  // Allow access to the TabSocket API only from within DevTools-created
+  // isolated worlds for the frame.
+  ISOLATED_WORLD
+};
+
+interface HeadlessRenderFrameController {
+  // Set the bindings policy for TabSocket mojo services for a frame.
+  AllowTabSocketBindings(MojoBindingsPolicy policy) => ();
+};

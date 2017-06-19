@@ -10,10 +10,12 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/observer_list.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "headless/lib/browser/headless_window_tree_host.h"
+#include "headless/lib/headless_render_frame_controller.mojom.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
@@ -30,7 +32,6 @@ class Size;
 namespace headless {
 class HeadlessBrowserImpl;
 class HeadlessTabSocketImpl;
-class WebContentsObserverAdapter;
 
 // Exported for tests.
 class HEADLESS_EXPORT HeadlessWebContentsImpl
@@ -83,6 +84,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   // content::WebContentsObserver implementation:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderViewReady() override;
 
   content::WebContents* web_contents() const;
   bool OpenURL(const GURL& url);
@@ -113,6 +115,9 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   HeadlessWebContentsImpl(content::WebContents* web_contents,
                           HeadlessBrowserContextImpl* browser_context);
 
+  void MainFrameTabSocketSetupComplete();
+  void MaybeIssueDevToolsTargetReady();
+
   void InitializeScreen(const gfx::Size& initial_size);
   using MojoService = HeadlessWebContents::Builder::MojoService;
 
@@ -126,16 +131,19 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   std::list<MojoService> mojo_services_;
   bool inject_mojo_services_into_isolated_world_;
   std::unique_ptr<HeadlessTabSocketImpl> headless_tab_socket_;
+  bool render_view_ready_ = false;
+  bool main_frame_tab_socket_setup_complete_ = false;
 
   HeadlessBrowserContextImpl* browser_context_;      // Not owned.
   // TODO(alexclarke): With OOPIF there may be more than one renderer, we need
   // to fix this. See crbug.com/715924
   content::RenderProcessHost* render_process_host_;  // Not owned.
 
-  using ObserverMap =
-      std::unordered_map<HeadlessWebContents::Observer*,
-                         std::unique_ptr<WebContentsObserverAdapter>>;
-  ObserverMap observer_map_;
+  HeadlessRenderFrameControllerPtr render_frame_controller_;
+
+  base::ObserverList<HeadlessWebContents::Observer> observers_;
+
+  base::WeakPtrFactory<HeadlessWebContentsImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWebContentsImpl);
 };

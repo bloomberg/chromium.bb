@@ -53,6 +53,9 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   void ResourceDispatcherHostCreated() override;
 
  private:
+  std::unique_ptr<base::Value> GetBrowserServiceManifestOverlay();
+  std::unique_ptr<base::Value> GetRendererServiceManifestOverlay();
+
   HeadlessBrowserImpl* browser_;  // Not owned.
 
   std::unique_ptr<HeadlessResourceDispatcherHostDelegate>
