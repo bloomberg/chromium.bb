@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
-#include "ash/wm_display_observer.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -45,7 +45,7 @@ class WallpaperControllerObserver;
 //     state is ACTIVE;
 class ASH_EXPORT WallpaperController
     : public NON_EXPORTED_BASE(mojom::WallpaperController),
-      public WmDisplayObserver,
+      public WindowTreeHostManager::Observer,
       public ShellObserver,
       public wallpaper::WallpaperResizerObserver,
       public wallpaper::WallpaperColorCalculatorObserver,
@@ -89,7 +89,7 @@ class ASH_EXPORT WallpaperController
   // crashes. An example test is SystemGestureEventFilterTest.ThreeFingerSwipe.
   void CreateEmptyWallpaper();
 
-  // WmDisplayObserver:
+  // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:

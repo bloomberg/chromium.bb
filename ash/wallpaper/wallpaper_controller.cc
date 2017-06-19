@@ -100,7 +100,7 @@ WallpaperController::WallpaperController()
            // Don't need to finish resize or color extraction during shutdown.
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       scoped_session_observer_(this) {
-  ShellPort::Get()->AddDisplayObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
 }
 
@@ -109,7 +109,7 @@ WallpaperController::~WallpaperController() {
     current_wallpaper_->RemoveObserver(this);
   if (color_calculator_)
     color_calculator_->RemoveObserver(this);
-  ShellPort::Get()->RemoveDisplayObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }
 

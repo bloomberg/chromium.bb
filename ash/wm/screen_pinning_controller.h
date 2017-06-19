@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm_display_observer.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 
 namespace aura {
@@ -30,7 +30,8 @@ class WindowUserData;
 // Android, or a single-purpose or kiosk application."
 // https://developer.android.com/about/versions/android-5.0.html#ScreenPinning
 // See also ArcKioskAppLauncher::CheckAndPinWindow().
-class ASH_EXPORT ScreenPinningController : public WmDisplayObserver {
+class ASH_EXPORT ScreenPinningController
+    : public WindowTreeHostManager::Observer {
  public:
   ScreenPinningController();
   ~ScreenPinningController() override;
@@ -82,7 +83,7 @@ class ASH_EXPORT ScreenPinningController : public WmDisplayObserver {
   // Returns the window from WindowDimmer.
   aura::Window* CreateWindowDimmer(aura::Window* container);
 
-  // WmDisplayObserver:
+  // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
   // Pinned window should be on top in the parent window.

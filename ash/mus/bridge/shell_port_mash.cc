@@ -48,7 +48,6 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
-#include "ash/wm_display_observer.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
@@ -125,9 +124,6 @@ aura::WindowTreeClient* ShellPortMash::window_tree_client() {
 
 void ShellPortMash::Shutdown() {
   display_synchronizer_.reset();
-
-  if (added_display_observer_)
-    Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 
   if (mus_state_)
     mus_state_->pointer_watcher_adapter.reset();
@@ -362,28 +358,6 @@ std::unique_ptr<KeyEventWatcher> ShellPortMash::CreateKeyEventWatcher() {
   return std::unique_ptr<KeyEventWatcher>();
 }
 
-void ShellPortMash::AddDisplayObserver(WmDisplayObserver* observer) {
-  // TODO(sky): WmDisplayObserver should be removed; http://crbug.com/718860.
-  if (!Shell::ShouldEnableSimplifiedDisplayManagement()) {
-    NOTIMPLEMENTED();
-    return;
-  }
-  if (!added_display_observer_) {
-    added_display_observer_ = true;
-    Shell::Get()->window_tree_host_manager()->AddObserver(this);
-  }
-  display_observers_.AddObserver(observer);
-}
-
-void ShellPortMash::RemoveDisplayObserver(WmDisplayObserver* observer) {
-  // TODO(sky): WmDisplayObserver should be removed; http://crbug.com/718860.
-  if (!Shell::ShouldEnableSimplifiedDisplayManagement()) {
-    NOTIMPLEMENTED();
-    return;
-  }
-  display_observers_.RemoveObserver(observer);
-}
-
 void ShellPortMash::AddPointerWatcher(views::PointerWatcher* watcher,
                                       views::PointerWatcherEventTypes events) {
   if (GetAshConfig() == Config::MUS) {
@@ -555,16 +529,6 @@ ShellPortMash::CreateAcceleratorController() {
   return base::MakeUnique<AcceleratorController>(
       mash_state_->accelerator_controller_delegate.get(),
       mash_state_->accelerator_controller_registrar.get());
-}
-
-void ShellPortMash::OnDisplayConfigurationChanging() {
-  for (auto& observer : display_observers_)
-    observer.OnDisplayConfigurationChanging();
-}
-
-void ShellPortMash::OnDisplayConfigurationChanged() {
-  for (auto& observer : display_observers_)
-    observer.OnDisplayConfigurationChanged();
 }
 
 }  // namespace mus

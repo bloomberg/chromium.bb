@@ -9,7 +9,6 @@
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -136,11 +135,11 @@ DragDropController::DragDropController()
       current_drag_event_source_(ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE),
       weak_factory_(this) {
   Shell::Get()->PrependPreTargetHandler(this);
-  ShellPort::Get()->AddDisplayObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 DragDropController::~DragDropController() {
-  ShellPort::Get()->RemoveDisplayObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
   Cleanup();
   if (cancel_animation_)
