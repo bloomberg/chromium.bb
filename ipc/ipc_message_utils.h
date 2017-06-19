@@ -208,10 +208,10 @@ struct ParamTraits<unsigned int> {
 //      very few IPCs that cross this boundary.
 //   2) We also need to keep it for Linux for two reasons: int64_t is typedef'd
 //      to long, and gfx::PluginWindow is long and is used in one GPU IPC.
-//   3) Android 64 bit also has int64_t typedef'd to long.
+//   3) Android 64 bit and Fuchsia also have int64_t typedef'd to long.
 // Since we want to support Android 32<>64 bit IPC, as long as we don't have
 // these traits for 32 bit ARM then that'll catch any errors.
-#if defined(OS_WIN) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FUCHSIA) || \
     (defined(OS_ANDROID) && defined(ARCH_CPU_64_BITS))
 template <>
 struct ParamTraits<long> {
