@@ -20,7 +20,11 @@ ios_eg_test("ios_web_view_shell_egtests") {
 
   deps = [
     ":earl_grey_test_support",
+    "//ios/testing:http_server_bundle_data",
     "//ios/web_view:web_view+link",
+    "//ios/web_view/shell:shell",
+    "//ios/web_view/test:test_support",
+    "//net:test_support",
 
     # All shared libraries must have the sanitizer deps to properly link in
     # asan mode (this target will be empty in other cases).
