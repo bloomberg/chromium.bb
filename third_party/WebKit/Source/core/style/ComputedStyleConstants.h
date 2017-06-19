@@ -148,13 +148,6 @@ enum BackgroundEdgeOrigin { kTopEdge, kRightEdge, kBottomEdge, kLeftEdge };
 // CSS Mask Source Types
 enum EMaskSourceType { kMaskAlpha, kMaskLuminance };
 
-// Deprecated Flexible Box Properties
-
-enum class EBoxPack { kStart, kCenter, kEnd, kJustify };
-enum class EBoxAlignment { kStretch, kStart, kCenter, kBend, kBaseline };
-enum class EBoxOrient { kHorizontal, kVertical };
-enum class EBoxLines { kSingle, kMultiple };
-
 // CSS3 Flexbox Properties
 
 enum class EFlexDirection { kRow, kRowReverse, kColumn, kColumnReverse };
