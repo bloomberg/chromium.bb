@@ -5,24 +5,16 @@
 
 # Those stress V8's simulator, making them very slow under MSan.
 crbug.com/420198 [ Linux ] fast/js/regress [ Skip ]
-crbug.com/420198 [ Linux ] virtual/slimmingpaint/fast/js/regress [ Skip ]
-crbug.com/420198 [ Linux ] editing/selection/move-by-word-visually-crash-test-5.html [ Skip ]
-crbug.com/420198 [ Linux ] perf/array-nested-loop.html [ Skip ]
 crbug.com/420198 [ Linux ] fast/css/fontface-arraybuffer.html [ Skip ]
-crbug.com/420198 [ Linux ] virtual/slimmingpaint/fast/css/fontface-arraybuffer.html [ Skip ]
 
 # Deliberate infinite recursion. A JS exception is expected, but may crash with
 # a stack overflow due to bloated stack frames under MSan.
 crbug.com/420606 [ Linux ] fast/workers/shared-worker-constructor.html [ Skip ]
-crbug.com/420606 [ Linux ] virtual/slimmingpaint/fast/workers/shared-worker-constructor.html [ Skip ]
 crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
-crbug.com/420606 [ Linux ] virtual/slimmingpaint/fast/workers/worker-constructor.html [ Skip ]
 
 # Flaky under MSan (hang forever).
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
 
-crbug.com/450639 [ Linux ] inspector/tracing/animations.html [ Timeout ]
-crbug.com/450639 [ Linux ] virtual/deferred/inspector/tracing/animations.html [ Timeout ]
 crbug.com/700795 [ Linux ] inspector/animation/animation-transition-setTiming-crash.html [ Skip ]
 
 crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-360-winding.html [ Crash ]
