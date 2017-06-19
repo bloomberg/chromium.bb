@@ -1244,6 +1244,8 @@ source_set("unit_tests") {
     "events/PointerEventFactoryTest.cpp",
     "events/TouchEventTest.cpp",
     "exported/WebAssociatedURLLoaderImplTest.cpp",
+    "exported/WebDragDataTest.cpp",
+    "exported/WebElementTest.cpp",
     "exported/WebNodeTest.cpp",
     "fileapi/FileListTest.cpp",
     "fileapi/FileTest.cpp",
