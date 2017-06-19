@@ -403,6 +403,85 @@ class LayerTreeHostImplTest : public testing::Test,
     return scroll_layer;
   }
 
+  void CreateAndTestNonScrollableLayers(const bool& transparent_layer) {
+    LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+    gfx::Size content_size = gfx::Size(360, 600);
+    gfx::Size scroll_content_size = gfx::Size(345, 3800);
+    gfx::Size scrollbar_size = gfx::Size(15, 600);
+
+    host_impl_->SetViewportSize(content_size);
+    std::unique_ptr<LayerImpl> root = LayerImpl::Create(layer_tree_impl, 1);
+    root->SetBounds(content_size);
+    root->SetPosition(gfx::PointF());
+
+    std::unique_ptr<LayerImpl> clip = LayerImpl::Create(layer_tree_impl, 2);
+    clip->SetBounds(content_size);
+    clip->SetPosition(gfx::PointF());
+
+    std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 3);
+    scroll->SetBounds(scroll_content_size);
+    scroll->SetScrollClipLayer(clip->id());
+    scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
+    scroll->SetDrawsContent(true);
+
+    std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
+        SolidColorScrollbarLayerImpl::Create(layer_tree_impl, 4, VERTICAL, 10,
+                                             0, false, true);
+    scrollbar->SetBounds(scrollbar_size);
+    scrollbar->SetPosition(gfx::PointF(345, 0));
+    scrollbar->SetScrollElementId(scroll->element_id());
+    scrollbar->SetDrawsContent(true);
+    scrollbar->test_properties()->opacity = 1.f;
+
+    std::unique_ptr<LayerImpl> squash1 = LayerImpl::Create(layer_tree_impl, 5);
+    squash1->SetBounds(gfx::Size(140, 300));
+    squash1->SetPosition(gfx::PointF(220, 0));
+    if (transparent_layer) {
+      // In the it is a transparent layer but should still participate
+      // in hit testing.
+      squash1->test_properties()->opacity = 0.0f;
+      squash1->SetShouldHitTest(true);
+    } else {
+      squash1->SetDrawsContent(true);
+    }
+
+    std::unique_ptr<LayerImpl> squash2 = LayerImpl::Create(layer_tree_impl, 6);
+    squash2->SetBounds(gfx::Size(140, 300));
+    squash2->SetPosition(gfx::PointF(220, 300));
+    squash2->SetDrawsContent(true);
+
+    scroll->test_properties()->AddChild(std::move(squash2));
+    clip->test_properties()->AddChild(std::move(scroll));
+    clip->test_properties()->AddChild(std::move(scrollbar));
+    clip->test_properties()->AddChild(std::move(squash1));
+    root->test_properties()->AddChild(std::move(clip));
+
+    layer_tree_impl->SetRootLayerForTesting(std::move(root));
+    layer_tree_impl->BuildPropertyTreesForTesting();
+    layer_tree_impl->DidBecomeActive();
+
+    // The point hits squash1 layer and also scroll layer, because scroll layer
+    // is not an ancestor of squash1 layer, we cannot scroll on impl thread.
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(230, 150)).get(), InputHandler::WHEEL);
+    ASSERT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
+    ASSERT_EQ(MainThreadScrollingReason::kFailedHitTest,
+              status.main_thread_scrolling_reasons);
+
+    // The point hits squash1 layer and also scrollbar layer.
+    status = host_impl_->ScrollBegin(BeginState(gfx::Point(350, 150)).get(),
+                                     InputHandler::WHEEL);
+    ASSERT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
+    ASSERT_EQ(MainThreadScrollingReason::kFailedHitTest,
+              status.main_thread_scrolling_reasons);
+
+    // The point hits squash2 layer and also scroll layer, because scroll layer
+    // is an ancestor of squash2 layer, we should scroll on impl.
+    status = host_impl_->ScrollBegin(BeginState(gfx::Point(230, 450)).get(),
+                                     InputHandler::WHEEL);
+    ASSERT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+  }
+
   // Sets up a typical virtual viewport setup with one child content layer.
   // Returns a pointer to the content layer.
   LayerImpl* CreateBasicVirtualViewportLayers(const gfx::Size& viewport_size,
@@ -1099,75 +1178,12 @@ TEST_F(LayerTreeHostImplTest, ShouldScrollOnMainThread) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollWithOverlappingNonScrollableLayer) {
-  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
-  gfx::Size content_size = gfx::Size(360, 600);
-  gfx::Size scroll_content_size = gfx::Size(345, 3800);
-  gfx::Size scrollbar_size = gfx::Size(15, 600);
+  CreateAndTestNonScrollableLayers(false);
+}
 
-  host_impl_->SetViewportSize(content_size);
-  std::unique_ptr<LayerImpl> root = LayerImpl::Create(layer_tree_impl, 1);
-  root->SetBounds(content_size);
-  root->SetPosition(gfx::PointF());
-
-  std::unique_ptr<LayerImpl> clip = LayerImpl::Create(layer_tree_impl, 2);
-  clip->SetBounds(content_size);
-  clip->SetPosition(gfx::PointF());
-
-  std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 3);
-  scroll->SetBounds(scroll_content_size);
-  scroll->SetScrollClipLayer(clip->id());
-  scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
-  scroll->SetDrawsContent(true);
-
-  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
-      SolidColorScrollbarLayerImpl::Create(layer_tree_impl, 4, VERTICAL, 10, 0,
-                                           false, true);
-  scrollbar->SetBounds(scrollbar_size);
-  scrollbar->SetPosition(gfx::PointF(345, 0));
-  scrollbar->SetScrollElementId(scroll->element_id());
-  scrollbar->SetDrawsContent(true);
-  scrollbar->test_properties()->opacity = 1.f;
-
-  std::unique_ptr<LayerImpl> squash1 = LayerImpl::Create(layer_tree_impl, 5);
-  squash1->SetBounds(gfx::Size(140, 300));
-  squash1->SetPosition(gfx::PointF(220, 0));
-  squash1->SetDrawsContent(true);
-
-  std::unique_ptr<LayerImpl> squash2 = LayerImpl::Create(layer_tree_impl, 6);
-  squash2->SetBounds(gfx::Size(140, 300));
-  squash2->SetPosition(gfx::PointF(220, 300));
-  squash2->SetDrawsContent(true);
-
-  scroll->test_properties()->AddChild(std::move(squash2));
-  clip->test_properties()->AddChild(std::move(scroll));
-  clip->test_properties()->AddChild(std::move(scrollbar));
-  clip->test_properties()->AddChild(std::move(squash1));
-  root->test_properties()->AddChild(std::move(clip));
-
-  layer_tree_impl->SetRootLayerForTesting(std::move(root));
-  layer_tree_impl->BuildPropertyTreesForTesting();
-  layer_tree_impl->DidBecomeActive();
-
-  // The point hits squash1 layer and also scroll layer, because scroll layer is
-  // not an ancestor of squash1 layer, we cannot scroll on impl thread.
-  InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
-      BeginState(gfx::Point(230, 150)).get(), InputHandler::WHEEL);
-  EXPECT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
-  EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
-            status.main_thread_scrolling_reasons);
-
-  // The point hits squash1 layer and also scrollbar layer.
-  status = host_impl_->ScrollBegin(BeginState(gfx::Point(350, 150)).get(),
-                                   InputHandler::WHEEL);
-  EXPECT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
-  EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
-            status.main_thread_scrolling_reasons);
-
-  // The point hits squash2 layer and also scroll layer, because scroll layer is
-  // an ancestor of squash2 layer, we should scroll on impl.
-  status = host_impl_->ScrollBegin(BeginState(gfx::Point(230, 450)).get(),
-                                   InputHandler::WHEEL);
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+TEST_F(LayerTreeHostImplTest,
+       ScrollWithOverlappingTransparentNonScrollableLayer) {
+  CreateAndTestNonScrollableLayers(true);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {

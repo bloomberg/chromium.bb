@@ -160,6 +160,9 @@ class CC_EXPORT LayerImpl {
   void SetDrawsContent(bool draws_content);
   bool DrawsContent() const { return draws_content_; }
 
+  void SetShouldHitTest(bool should_hit_test);
+  bool should_hit_test() const { return should_hit_test_; }
+
   LayerImplTestProperties* test_properties() {
     if (!test_properties_)
       test_properties_.reset(new LayerImplTestProperties(this));
@@ -494,6 +497,7 @@ class CC_EXPORT LayerImpl {
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool contributes_to_drawn_render_surface_ : 1;
+  bool should_hit_test_ : 1;
 
   static_assert(LAST_VIEWPORT_LAYER_TYPE < (1u << 3),
                 "enough bits for ViewportLayerType (viewport_layer_type_)");
