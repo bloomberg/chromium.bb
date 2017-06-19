@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/sync_handle_registry.h"
 #include "mojo/public/cpp/system/core.h"
@@ -65,7 +65,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncHandleWatcher {
 
   scoped_refptr<base::RefCountedData<bool>> destroyed_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SyncHandleWatcher);
 };

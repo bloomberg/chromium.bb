@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
@@ -71,8 +71,8 @@ class AssociatedInterfacePtr {
   // comments of MakeRequest(AssociatedInterfacePtr<Interface>*) for more
   // details.
   void Bind(AssociatedInterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SingleThreadTaskRunner> runner =
-                base::ThreadTaskRunnerHandle::Get()) {
+            scoped_refptr<base::SequencedTaskRunner> runner =
+                base::SequencedTaskRunnerHandle::Get()) {
     reset();
 
     if (info.is_valid())
@@ -186,8 +186,8 @@ class AssociatedInterfacePtr {
 template <typename Interface>
 AssociatedInterfaceRequest<Interface> MakeRequest(
     AssociatedInterfacePtr<Interface>* ptr,
-    scoped_refptr<base::SingleThreadTaskRunner> runner =
-        base::ThreadTaskRunnerHandle::Get()) {
+    scoped_refptr<base::SequencedTaskRunner> runner =
+        base::SequencedTaskRunnerHandle::Get()) {
   AssociatedInterfacePtrInfo<Interface> ptr_info;
   auto request = MakeRequest(&ptr_info);
   ptr->Bind(std::move(ptr_info), std::move(runner));
@@ -231,13 +231,13 @@ AssociatedInterfaceRequest<Interface> MakeIsolatedRequest(
     AssociatedInterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router0 =
-      new internal::MultiplexRouter(std::move(pipe.handle0),
-                                    internal::MultiplexRouter::MULTI_INTERFACE,
-                                    false, base::ThreadTaskRunnerHandle::Get());
+      new internal::MultiplexRouter(
+          std::move(pipe.handle0), internal::MultiplexRouter::MULTI_INTERFACE,
+          false, base::SequencedTaskRunnerHandle::Get());
   scoped_refptr<internal::MultiplexRouter> router1 =
-      new internal::MultiplexRouter(std::move(pipe.handle1),
-                                    internal::MultiplexRouter::MULTI_INTERFACE,
-                                    true, base::ThreadTaskRunnerHandle::Get());
+      new internal::MultiplexRouter(
+          std::move(pipe.handle1), internal::MultiplexRouter::MULTI_INTERFACE,
+          true, base::SequencedTaskRunnerHandle::Get());
 
   ScopedInterfaceEndpointHandle endpoint0, endpoint1;
   ScopedInterfaceEndpointHandle::CreatePairPendingAssociation(&endpoint0,

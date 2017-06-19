@@ -88,10 +88,10 @@ class ReportBadMessageTest : public testing::Test {
       error_handler_.Run();
   }
 
+  base::MessageLoop message_loop;
   TestBadMessagesPtr proxy_;
   TestBadMessagesImpl impl_;
   base::Closure error_handler_;
-  base::MessageLoop message_loop;
 };
 
 TEST_F(ReportBadMessageTest, Request) {

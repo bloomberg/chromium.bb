@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -58,7 +58,7 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
   virtual InterfaceEndpointController* AttachEndpointClient(
       const ScopedInterfaceEndpointHandle& handle,
       InterfaceEndpointClient* endpoint_client,
-      scoped_refptr<base::SingleThreadTaskRunner> runner) = 0;
+      scoped_refptr<base::SequencedTaskRunner> runner) = 0;
 
   // Detaches the client attached to the specified endpoint. It must be called
   // on the same thread as the corresponding AttachEndpointClient() call.

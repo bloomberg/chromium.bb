@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
@@ -208,7 +209,7 @@ class ChannelAssociatedGroupController
   mojo::InterfaceEndpointController* AttachEndpointClient(
       const mojo::ScopedInterfaceEndpointHandle& handle,
       mojo::InterfaceEndpointClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> runner) override {
+      scoped_refptr<base::SequencedTaskRunner> runner) override {
     const mojo::InterfaceId id = handle.id();
 
     DCHECK(mojo::IsValidInterfaceId(id));
@@ -343,7 +344,7 @@ class ChannelAssociatedGroupController
       disconnect_reason_ = disconnect_reason;
     }
 
-    base::SingleThreadTaskRunner* task_runner() const {
+    base::SequencedTaskRunner* task_runner() const {
       return task_runner_.get();
     }
 
@@ -353,11 +354,11 @@ class ChannelAssociatedGroupController
     }
 
     void AttachClient(mojo::InterfaceEndpointClient* client,
-                      scoped_refptr<base::SingleThreadTaskRunner> runner) {
+                      scoped_refptr<base::SequencedTaskRunner> runner) {
       controller_->lock_.AssertAcquired();
       DCHECK(!client_);
       DCHECK(!closed_);
-      DCHECK(runner->BelongsToCurrentThread());
+      DCHECK(runner->RunsTasksOnCurrentThread());
 
       task_runner_ = std::move(runner);
       client_ = client;
@@ -366,7 +367,7 @@ class ChannelAssociatedGroupController
     void DetachClient() {
       controller_->lock_.AssertAcquired();
       DCHECK(client_);
-      DCHECK(task_runner_->BelongsToCurrentThread());
+      DCHECK(task_runner_->RunsTasksOnCurrentThread());
       DCHECK(!closed_);
 
       task_runner_ = nullptr;
@@ -400,20 +401,20 @@ class ChannelAssociatedGroupController
 
     // mojo::InterfaceEndpointController:
     bool SendMessage(mojo::Message* message) override {
-      DCHECK(task_runner_->BelongsToCurrentThread());
+      DCHECK(task_runner_->RunsTasksOnCurrentThread());
       message->set_interface_id(id_);
       return controller_->SendMessage(message);
     }
 
     void AllowWokenUpBySyncWatchOnSameThread() override {
-      DCHECK(task_runner_->BelongsToCurrentThread());
+      DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
       EnsureSyncWatcherExists();
       sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
     }
 
     bool SyncWatch(const bool* should_stop) override {
-      DCHECK(task_runner_->BelongsToCurrentThread());
+      DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
       // It's not legal to make sync calls from the master endpoint's thread,
       // and in fact they must only happen from the proxy task runner.
@@ -436,7 +437,7 @@ class ChannelAssociatedGroupController
     }
 
     void OnSyncMessageEventReady() {
-      DCHECK(task_runner_->BelongsToCurrentThread());
+      DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
       scoped_refptr<Endpoint> keepalive(this);
       scoped_refptr<AssociatedGroupController> controller_keepalive(
@@ -483,7 +484,7 @@ class ChannelAssociatedGroupController
     }
 
     void EnsureSyncWatcherExists() {
-      DCHECK(task_runner_->BelongsToCurrentThread());
+      DCHECK(task_runner_->RunsTasksOnCurrentThread());
       if (sync_watcher_)
         return;
 
@@ -519,7 +520,7 @@ class ChannelAssociatedGroupController
     bool handle_created_ = false;
     base::Optional<mojo::DisconnectReason> disconnect_reason_;
     mojo::InterfaceEndpointClient* client_ = nullptr;
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> task_runner_;
     std::unique_ptr<mojo::SyncEventWatcher> sync_watcher_;
     std::unique_ptr<base::WaitableEvent> sync_message_event_;
     std::queue<std::pair<uint32_t, MessageWrapper>> sync_messages_;
@@ -626,7 +627,7 @@ class ChannelAssociatedGroupController
   void NotifyEndpointOfError(Endpoint* endpoint, bool force_async) {
     lock_.AssertAcquired();
     DCHECK(endpoint->task_runner() && endpoint->client());
-    if (endpoint->task_runner()->BelongsToCurrentThread() && !force_async) {
+    if (endpoint->task_runner()->RunsTasksOnCurrentThread() && !force_async) {
       mojo::InterfaceEndpointClient* client = endpoint->client();
       base::Optional<mojo::DisconnectReason> reason(
           endpoint->disconnect_reason());
@@ -651,7 +652,7 @@ class ChannelAssociatedGroupController
     if (!endpoint->client())
       return;
 
-    DCHECK(endpoint->task_runner()->BelongsToCurrentThread());
+    DCHECK(endpoint->task_runner()->RunsTasksOnCurrentThread());
     NotifyEndpointOfError(endpoint, false /* force_async */);
   }
 
@@ -709,7 +710,7 @@ class ChannelAssociatedGroupController
       return true;
 
     mojo::InterfaceEndpointClient* client = endpoint->client();
-    if (!client || !endpoint->task_runner()->BelongsToCurrentThread()) {
+    if (!client || !endpoint->task_runner()->RunsTasksOnCurrentThread()) {
       // No client has been bound yet or the client runs tasks on another
       // thread. We assume the other thread must always be the one on which
       // |proxy_task_runner_| runs tasks, since that's the only valid scenario.
@@ -765,7 +766,7 @@ class ChannelAssociatedGroupController
     if (!client)
       return;
 
-    DCHECK(endpoint->task_runner()->BelongsToCurrentThread());
+    DCHECK(endpoint->task_runner()->RunsTasksOnCurrentThread());
 
     // Sync messages should never make their way to this method.
     DCHECK(!message.has_flag(mojo::Message::kFlagIsSync));
@@ -794,7 +795,7 @@ class ChannelAssociatedGroupController
     if (!client)
       return;
 
-    DCHECK(endpoint->task_runner()->BelongsToCurrentThread());
+    DCHECK(endpoint->task_runner()->RunsTasksOnCurrentThread());
     MessageWrapper message_wrapper = endpoint->PopSyncMessage(message_id);
 
     // The message must have already been dequeued by the endpoint waking up

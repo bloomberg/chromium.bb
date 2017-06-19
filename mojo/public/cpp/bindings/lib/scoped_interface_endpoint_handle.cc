@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
 
@@ -103,7 +104,7 @@ class ScopedInterfaceEndpointHandle::State
       return;
     }
 
-    runner_ = base::ThreadTaskRunnerHandle::Get();
+    runner_ = base::SequencedTaskRunnerHandle::Get();
     if (!pending_association_) {
       runner_->PostTask(
           FROM_HERE,
@@ -191,7 +192,7 @@ class ScopedInterfaceEndpointHandle::State
       group_controller_ = std::move(group_controller);
 
       if (!association_event_handler_.is_null()) {
-        if (runner_->BelongsToCurrentThread()) {
+        if (runner_->RunsTasksOnCurrentThread()) {
           handler = std::move(association_event_handler_);
           runner_ = nullptr;
         } else {
@@ -227,7 +228,7 @@ class ScopedInterfaceEndpointHandle::State
       peer_state_ = nullptr;
 
       if (!association_event_handler_.is_null()) {
-        if (runner_->BelongsToCurrentThread()) {
+        if (runner_->RunsTasksOnCurrentThread()) {
           handler = std::move(association_event_handler_);
           runner_ = nullptr;
         } else {
@@ -245,7 +246,7 @@ class ScopedInterfaceEndpointHandle::State
   }
 
   void RunAssociationEventHandler(
-      scoped_refptr<base::SingleThreadTaskRunner> posted_to_runner,
+      scoped_refptr<base::SequencedTaskRunner> posted_to_runner,
       AssociationEvent event) {
     AssociationEventCallback handler;
 
@@ -271,7 +272,7 @@ class ScopedInterfaceEndpointHandle::State
   scoped_refptr<State> peer_state_;
 
   AssociationEventCallback association_event_handler_;
-  scoped_refptr<base::SingleThreadTaskRunner> runner_;
+  scoped_refptr<base::SequencedTaskRunner> runner_;
 
   InterfaceId id_ = kInvalidInterfaceId;
   scoped_refptr<AssociatedGroupController> group_controller_;

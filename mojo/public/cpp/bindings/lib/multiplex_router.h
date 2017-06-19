@@ -17,9 +17,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connector.h"
@@ -32,8 +32,14 @@
 #include "mojo/public/cpp/bindings/pipe_control_message_proxy.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
+// TODO(sammc): Remove these includes. Various files are not including what they
+// use, but are instead depending on mojo headers including what they use.
+// To avoid unrelated changes, these includes are left for now.
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
+
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace mojo {
@@ -76,7 +82,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   MultiplexRouter(ScopedMessagePipeHandle message_pipe,
                   Config config,
                   bool set_interface_id_namespace_bit,
-                  scoped_refptr<base::SingleThreadTaskRunner> runner);
+                  scoped_refptr<base::SequencedTaskRunner> runner);
 
   // Sets the master interface name for this router. Only used when reporting
   // message header or control message validation errors.
@@ -97,7 +103,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   InterfaceEndpointController* AttachEndpointClient(
       const ScopedInterfaceEndpointHandle& handle,
       InterfaceEndpointClient* endpoint_client,
-      scoped_refptr<base::SingleThreadTaskRunner> runner) override;
+      scoped_refptr<base::SequencedTaskRunner> runner) override;
   void DetachEndpointClient(
       const ScopedInterfaceEndpointHandle& handle) override;
   void RaiseError() override;
@@ -112,14 +118,14 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
 
   // Extracts the underlying message pipe.
   ScopedMessagePipeHandle PassMessagePipe() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!HasAssociatedEndpoints());
     return connector_.PassMessagePipe();
   }
 
   // Blocks the current thread until the first incoming message, or |deadline|.
   bool WaitForIncomingMessage(MojoDeadline deadline) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return connector_.WaitForIncomingMessage(deadline);
   }
 
@@ -137,13 +143,13 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
 
   // Is the router bound to a message pipe handle?
   bool is_valid() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return connector_.is_valid();
   }
 
   // TODO(yzshen): consider removing this getter.
   MessagePipeHandle handle() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return connector_.handle();
   }
 
@@ -191,7 +197,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   // of this object, if direct calls are allowed, the caller needs to hold on to
   // a ref outside of |lock_| before calling this method.
   void ProcessTasks(ClientCallBehavior client_call_behavior,
-                    base::SingleThreadTaskRunner* current_task_runner);
+                    base::SequencedTaskRunner* current_task_runner);
 
   // Processes the first queued sync message for the endpoint corresponding to
   // |id|; returns whether there are more sync messages for that endpoint in the
@@ -202,16 +208,14 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   bool ProcessFirstSyncMessageForEndpoint(InterfaceId id);
 
   // Returns true to indicate that |task|/|message| has been processed.
-  bool ProcessNotifyErrorTask(
-      Task* task,
-      ClientCallBehavior client_call_behavior,
-      base::SingleThreadTaskRunner* current_task_runner);
-  bool ProcessIncomingMessage(
-      Message* message,
-      ClientCallBehavior client_call_behavior,
-      base::SingleThreadTaskRunner* current_task_runner);
+  bool ProcessNotifyErrorTask(Task* task,
+                              ClientCallBehavior client_call_behavior,
+                              base::SequencedTaskRunner* current_task_runner);
+  bool ProcessIncomingMessage(Message* message,
+                              ClientCallBehavior client_call_behavior,
+                              base::SequencedTaskRunner* current_task_runner);
 
-  void MaybePostToProcessTasks(base::SingleThreadTaskRunner* task_runner);
+  void MaybePostToProcessTasks(base::SequencedTaskRunner* task_runner);
   void LockAndCallProcessTasks();
 
   // Updates the state of |endpoint|. If both the endpoint and its peer have
@@ -232,7 +236,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   // comments of kInterfaceIdNamespaceMask.
   const bool set_interface_id_namespace_bit_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Owned by |filters_| below.
   MessageHeaderValidator* header_validator_;
@@ -240,7 +244,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   FilterChain filters_;
   Connector connector_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Protects the following members.
   // Not set in Config::SINGLE_INTERFACE* mode.
@@ -258,7 +262,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   std::map<InterfaceId, deque<Task*>> sync_message_tasks_;
 
   bool posted_to_process_tasks_;
-  scoped_refptr<base::SingleThreadTaskRunner> posted_to_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> posted_to_task_runner_;
 
   bool encountered_error_;
 

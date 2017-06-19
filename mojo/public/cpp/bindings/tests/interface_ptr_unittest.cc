@@ -8,11 +8,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
@@ -201,7 +204,7 @@ class InterfacePtrTest : public testing::Test {
   void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment;
 };
 
 void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
@@ -227,44 +230,52 @@ TEST_F(InterfacePtrTest, IsBound) {
   EXPECT_TRUE(calc.is_bound());
 }
 
-TEST_F(InterfacePtrTest, EndToEnd) {
-  math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(MakeRequest(&calc));
+class EndToEndInterfacePtrTest : public InterfacePtrTest {
+ public:
+  void RunTest(const scoped_refptr<base::SequencedTaskRunner> runner) {
+    base::RunLoop run_loop;
+    done_closure_ = run_loop.QuitClosure();
+    done_runner_ = base::ThreadTaskRunnerHandle::Get();
+    runner->PostTask(FROM_HERE,
+                     base::Bind(&EndToEndInterfacePtrTest::RunTestImpl,
+                                base::Unretained(this)));
+    run_loop.Run();
+  }
 
-  // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUI calculator_ui(std::move(calc));
+ private:
+  void RunTestImpl() {
+    math::CalculatorPtr calc;
+    calc_impl_ = base::MakeUnique<MathCalculatorImpl>(MakeRequest(&calc));
+    calculator_ui_ = base::MakeUnique<MathCalculatorUI>(std::move(calc));
+    calculator_ui_->Add(2.0, base::Bind(&EndToEndInterfacePtrTest::AddDone,
+                                        base::Unretained(this)));
+    calculator_ui_->Multiply(5.0,
+                             base::Bind(&EndToEndInterfacePtrTest::MultiplyDone,
+                                        base::Unretained(this)));
+    EXPECT_EQ(0.0, calculator_ui_->GetOutput());
+  }
 
-  base::RunLoop run_loop, run_loop2;
-  calculator_ui.Add(2.0, run_loop.QuitClosure());
-  calculator_ui.Multiply(5.0, run_loop2.QuitClosure());
-  run_loop.Run();
-  run_loop2.Run();
+  void AddDone() { EXPECT_EQ(2.0, calculator_ui_->GetOutput()); }
 
-  EXPECT_EQ(10.0, calculator_ui.GetOutput());
+  void MultiplyDone() {
+    EXPECT_EQ(10.0, calculator_ui_->GetOutput());
+    calculator_ui_.reset();
+    calc_impl_.reset();
+    done_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&done_closure_));
+  }
+
+  base::Closure done_closure_;
+  scoped_refptr<base::SingleThreadTaskRunner> done_runner_;
+  std::unique_ptr<MathCalculatorUI> calculator_ui_;
+  std::unique_ptr<MathCalculatorImpl> calc_impl_;
+};
+
+TEST_F(EndToEndInterfacePtrTest, EndToEnd) {
+  RunTest(base::ThreadTaskRunnerHandle::Get());
 }
 
-TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
-  math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(MakeRequest(&calc));
-
-  // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUI calculator_ui(std::move(calc));
-
-  EXPECT_EQ(0.0, calculator_ui.GetOutput());
-
-  base::RunLoop run_loop;
-  calculator_ui.Add(2.0, run_loop.QuitClosure());
-  EXPECT_EQ(0.0, calculator_ui.GetOutput());
-  calc_impl.binding()->WaitForIncomingMethodCall();
-  run_loop.Run();
-  EXPECT_EQ(2.0, calculator_ui.GetOutput());
-
-  base::RunLoop run_loop2;
-  calculator_ui.Multiply(5.0, run_loop2.QuitClosure());
-  EXPECT_EQ(2.0, calculator_ui.GetOutput());
-  calc_impl.binding()->WaitForIncomingMethodCall();
-  run_loop2.Run();
-  EXPECT_EQ(10.0, calculator_ui.GetOutput());
+TEST_F(EndToEndInterfacePtrTest, EndToEndOnSequence) {
+  RunTest(base::CreateSequencedTaskRunnerWithTraits({}));
 }
 
 TEST_F(InterfacePtrTest, Movable) {
@@ -843,10 +854,6 @@ TEST_F(InterfacePtrTest, ThreadSafeInterfacePointer) {
 
   base::RunLoop run_loop;
 
-  // Create and start the thread from where we'll call the interface pointer.
-  base::Thread other_thread("service test thread");
-  other_thread.Start();
-
   auto run_method = base::Bind(
       [](const scoped_refptr<base::TaskRunner>& main_task_runner,
          const base::Closure& quit_closure,
@@ -868,18 +875,16 @@ TEST_F(InterfacePtrTest, ThreadSafeInterfacePointer) {
       },
       base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
       thread_safe_ptr);
-  other_thread.message_loop()->task_runner()->PostTask(FROM_HERE, run_method);
+  base::CreateSequencedTaskRunnerWithTraits({})->PostTask(FROM_HERE,
+                                                          run_method);
 
   // Block until the method callback is called on the background thread.
   run_loop.Run();
 }
 
 TEST_F(InterfacePtrTest, ThreadSafeInterfacePointerWithTaskRunner) {
-  // Create and start the thread from where we'll bind the interface pointer.
-  base::Thread other_thread("service test thread");
-  other_thread.Start();
-  const scoped_refptr<base::SingleThreadTaskRunner>& other_thread_task_runner =
-      other_thread.message_loop()->task_runner();
+  const scoped_refptr<base::SequencedTaskRunner> other_thread_task_runner =
+      base::CreateSequencedTaskRunnerWithTraits({});
 
   math::CalculatorPtr ptr;
   auto request = mojo::MakeRequest(&ptr);
@@ -906,7 +911,7 @@ TEST_F(InterfacePtrTest, ThreadSafeInterfacePointerWithTaskRunner) {
         },
         base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
         thread_safe_ptr, base::Passed(&request), &math_calc_impl);
-    other_thread.message_loop()->task_runner()->PostTask(FROM_HERE, run_method);
+    other_thread_task_runner->PostTask(FROM_HERE, run_method);
     run_loop.Run();
   }
 

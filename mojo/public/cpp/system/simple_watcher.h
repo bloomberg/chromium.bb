@@ -10,21 +10,21 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequence_checker.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/system_export.h"
 #include "mojo/public/cpp/system/watcher.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace mojo {
 
 // This provides a convenient thread-bound watcher implementation to safely
 // watch a single handle, dispatching state change notifications to an arbitrary
-// SingleThreadTaskRunner running on the same thread as the SimpleWatcher.
+// SequencedTaskRunner running on the same thread as the SimpleWatcher.
 //
 // SimpleWatcher exposes the concept of "arming" from the low-level Watcher API.
 // In general, a SimpleWatcher must be "armed" in order to dispatch a single
@@ -80,8 +80,8 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
 
   SimpleWatcher(const tracked_objects::Location& from_here,
                 ArmingPolicy arming_policy,
-                scoped_refptr<base::SingleThreadTaskRunner> runner =
-                    base::ThreadTaskRunnerHandle::Get());
+                scoped_refptr<base::SequencedTaskRunner> runner =
+                    base::SequencedTaskRunnerHandle::Get());
   ~SimpleWatcher();
 
   // Indicates if the SimpleWatcher is currently watching a handle.
@@ -166,17 +166,17 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
 
   void OnHandleReady(int watch_id, MojoResult result);
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // The policy used to determine how this SimpleWatcher is armed.
   const ArmingPolicy arming_policy_;
 
   // The TaskRunner of this SimpleWatcher's owning thread. This field is safe to
   // access from any thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Whether |task_runner_| is the same as base::ThreadTaskRunnerHandle::Get()
-  // for the thread.
+  // Whether |task_runner_| is the same as
+  // base::SequencedTaskRunnerHandle::Get() for the thread.
   const bool is_default_task_runner_;
 
   ScopedWatcherHandle watcher_handle_;

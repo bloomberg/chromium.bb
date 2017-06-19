@@ -7,24 +7,31 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_local.h"
+#include "base/threading/sequence_local_storage_slot.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/c/system/core.h"
 
 namespace mojo {
 namespace {
 
-base::LazyInstance<base::ThreadLocalPointer<SyncHandleRegistry>>::Leaky
+base::LazyInstance<
+    base::SequenceLocalStorageSlot<scoped_refptr<SyncHandleRegistry>>>::Leaky
     g_current_sync_handle_watcher = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 // static
 scoped_refptr<SyncHandleRegistry> SyncHandleRegistry::current() {
-  scoped_refptr<SyncHandleRegistry> result(
-      g_current_sync_handle_watcher.Pointer()->Get());
+  // SyncMessageFilter can be used on threads without sequence-local storage
+  // being available. Those receive a unique, standalone SyncHandleRegistry.
+  if (!base::SequencedTaskRunnerHandle::IsSet())
+    return new SyncHandleRegistry();
+
+  scoped_refptr<SyncHandleRegistry> result =
+      g_current_sync_handle_watcher.Get().Get();
   if (!result) {
     result = new SyncHandleRegistry();
-    DCHECK_EQ(result.get(), g_current_sync_handle_watcher.Pointer()->Get());
+    g_current_sync_handle_watcher.Get().Set(result);
   }
   return result;
 }
@@ -32,7 +39,7 @@ scoped_refptr<SyncHandleRegistry> SyncHandleRegistry::current() {
 bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
                                         MojoHandleSignals handle_signals,
                                         const HandleCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (base::ContainsKey(handles_, handle))
     return false;
@@ -46,7 +53,7 @@ bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
 }
 
 void SyncHandleRegistry::UnregisterHandle(const Handle& handle) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::ContainsKey(handles_, handle))
     return;
 
@@ -75,7 +82,7 @@ void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event) {
 }
 
 bool SyncHandleRegistry::Wait(const bool* should_stop[], size_t count) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   size_t num_ready_handles;
   Handle ready_handle;
@@ -109,27 +116,8 @@ bool SyncHandleRegistry::Wait(const bool* should_stop[], size_t count) {
   return false;
 }
 
-SyncHandleRegistry::SyncHandleRegistry() {
-  DCHECK(!g_current_sync_handle_watcher.Pointer()->Get());
-  g_current_sync_handle_watcher.Pointer()->Set(this);
-}
+SyncHandleRegistry::SyncHandleRegistry() = default;
 
-SyncHandleRegistry::~SyncHandleRegistry() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // This object may be destructed after the thread local storage slot used by
-  // |g_current_sync_handle_watcher| is reset during thread shutdown.
-  // For example, another slot in the thread local storage holds a referrence to
-  // this object, and that slot is cleaned up after
-  // |g_current_sync_handle_watcher|.
-  if (!g_current_sync_handle_watcher.Pointer()->Get())
-    return;
-
-  // If this breaks, it is likely that the global variable is bulit into and
-  // accessed from multiple modules.
-  DCHECK_EQ(this, g_current_sync_handle_watcher.Pointer()->Get());
-
-  g_current_sync_handle_watcher.Pointer()->Set(nullptr);
-}
+SyncHandleRegistry::~SyncHandleRegistry() = default;
 
 }  // namespace mojo

@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -52,7 +52,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
   // Any message sent through this forwarding interface will dispatch its reply,
   // if any, back to the thread which called the corresponding interface method.
   ThreadSafeForwarder(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const ForwardMessageCallback& forward,
       const ForwardMessageWithResponderCallback& forward_with_responder,
       const AssociatedGroup& associated_group)
@@ -208,7 +208,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
    public:
     explicit ForwardToCallingThread(std::unique_ptr<MessageReceiver> responder)
         : responder_(std::move(responder)),
-          caller_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+          caller_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
    private:
     bool Accept(Message* message) {
@@ -230,11 +230,11 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     }
 
     std::unique_ptr<MessageReceiver> responder_;
-    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> caller_task_runner_;
   };
 
   ProxyType proxy_;
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const ForwardMessageCallback forward_;
   const ForwardMessageWithResponderCallback forward_with_responder_;
   AssociatedGroup associated_group_;
@@ -272,7 +272,7 @@ class ThreadSafeInterfacePtrBase
   // that TaskRunner.
   static scoped_refptr<ThreadSafeInterfacePtrBase> Create(
       PtrInfoType ptr_info,
-      const scoped_refptr<base::SingleThreadTaskRunner>& bind_task_runner) {
+      const scoped_refptr<base::SequencedTaskRunner>& bind_task_runner) {
     scoped_refptr<PtrWrapper> wrapper = new PtrWrapper(bind_task_runner);
     wrapper->BindOnTaskRunner(std::move(ptr_info));
     return new ThreadSafeInterfacePtrBase(wrapper->CreateForwarder());
@@ -295,13 +295,13 @@ class ThreadSafeInterfacePtrBase
       : public base::RefCountedThreadSafe<PtrWrapper, PtrWrapperDeleter> {
    public:
     explicit PtrWrapper(InterfacePtrType ptr)
-        : PtrWrapper(base::ThreadTaskRunnerHandle::Get()) {
+        : PtrWrapper(base::SequencedTaskRunnerHandle::Get()) {
       ptr_ = std::move(ptr);
       associated_group_ = *ptr_.internal_state()->associated_group();
     }
 
     explicit PtrWrapper(
-        const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+        const scoped_refptr<base::SequencedTaskRunner>& task_runner)
         : task_runner_(task_runner) {}
 
     void BindOnTaskRunner(AssociatedInterfacePtrInfo<InterfaceType> ptr_info) {
@@ -362,7 +362,7 @@ class ThreadSafeInterfacePtrBase
     }
 
     InterfacePtrType ptr_;
-    const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    const scoped_refptr<base::SequencedTaskRunner> task_runner_;
     AssociatedGroup associated_group_;
 
     DISALLOW_COPY_AND_ASSIGN(PtrWrapper);
