@@ -17,9 +17,8 @@ function test()
     async function testPreviewer(request)
     {
         var previewView = new Network.RequestPreviewView(request, null);
-        var previewerPromise = InspectorTest.addSnifferPromise(previewView, "_previewViewHandledForTest");
         previewView.wasShown();
-        var previewer = await previewerPromise;
+        var previewer = await previewView._previewViewPromise;
         InspectorTest.addResult("Its previewer is searchable: " + (previewer && previewer instanceof UI.SearchableView));
         InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof Network.JSONView));
     }
