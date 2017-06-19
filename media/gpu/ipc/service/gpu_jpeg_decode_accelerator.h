@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator_factory_provider.h"
 #include "media/gpu/mojo/jpeg_decoder.mojom.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
@@ -28,19 +29,6 @@ class FilteredSender;
 }
 
 namespace media {
-
-class GpuJpegDecodeAcceleratorFactoryProvider {
- public:
-  using CreateAcceleratorCB =
-      base::Callback<std::unique_ptr<JpegDecodeAccelerator>(
-          scoped_refptr<base::SingleThreadTaskRunner>)>;
-
-  // Static query for JPEG supported. This query calls the appropriate
-  // platform-specific version.
-  static bool IsAcceleratedJpegDecodeSupported();
-
-  static std::vector<CreateAcceleratorCB> GetAcceleratorFactories();
-};
 
 // TODO(c.padhi): Move GpuJpegDecodeAccelerator to media/gpu/mojo, see
 // http://crbug.com/699255.
