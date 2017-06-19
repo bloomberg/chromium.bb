@@ -366,20 +366,22 @@ static VisiblePositionTemplate<Strategy> EndPositionForLine(
     end_node = end_box->GetLineLayoutItem().NonPseudoNode();
   }
 
-  PositionTemplate<Strategy> pos;
   if (isHTMLBRElement(*end_node)) {
-    pos = PositionTemplate<Strategy>::BeforeNode(end_node);
-  } else if (end_box->IsInlineTextBox() && end_node->IsTextNode()) {
+    return CreateVisiblePosition(
+        PositionTemplate<Strategy>::BeforeNode(end_node),
+        VP_UPSTREAM_IF_POSSIBLE);
+  }
+  if (end_box->IsInlineTextBox() && end_node->IsTextNode()) {
     InlineTextBox* end_text_box = ToInlineTextBox(end_box);
     int end_offset = end_text_box->Start();
     if (!end_text_box->IsLineBreak())
       end_offset += end_text_box->Len();
-    pos = PositionTemplate<Strategy>(ToText(end_node), end_offset);
-  } else {
-    pos = PositionTemplate<Strategy>::AfterNode(end_node);
+    return CreateVisiblePosition(
+        PositionTemplate<Strategy>(ToText(end_node), end_offset),
+        VP_UPSTREAM_IF_POSSIBLE);
   }
-
-  return CreateVisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
+  return CreateVisiblePosition(PositionTemplate<Strategy>::AfterNode(end_node),
+                               VP_UPSTREAM_IF_POSSIBLE);
 }
 
 // TODO(yosin) Rename this function to reflect the fact it ignores bidi levels.
