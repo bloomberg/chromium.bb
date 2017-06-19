@@ -26,6 +26,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       suggested_articles_observer_(std::move(suggested_articles_observer)) {
   prefetch_dispatcher_->SetService(this);
   prefetch_gcm_handler_->SetService(this);
+  suggested_articles_observer_->SetPrefetchService(this);
 }
 
 PrefetchServiceImpl::~PrefetchServiceImpl() = default;

@@ -39,7 +39,7 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
     prefetch_service_test_taco_.SetPrefetchDispatcher(
         base::WrapUnique(test_prefetch_dispatcher_));
     prefetch_service_test_taco_.SetSuggestedArticlesObserver(
-        base::MakeUnique<SuggestedArticlesObserver>(test_prefetch_dispatcher_));
+        base::MakeUnique<SuggestedArticlesObserver>());
     prefetch_service_test_taco_.CreatePrefetchService();
   }
 
