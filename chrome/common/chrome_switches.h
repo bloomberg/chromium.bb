@@ -350,6 +350,10 @@ extern const char kEnableInputImeAPI[];
 extern const char kEnableNewAppMenuIcon[];
 #endif
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+extern const char kUseSystemDefaultPrinter[];
+#endif
+
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
 extern const char kMemlog[];
 extern const char kMemlogPipe[];

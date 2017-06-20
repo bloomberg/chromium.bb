@@ -616,6 +616,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserAddPersonEnabled,
     prefs::kBrowserAddPersonEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kPrintPreviewUseSystemDefaultPrinter,
+    prefs::kPrintPreviewUseSystemDefaultPrinter,
+    base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
   { key::kForceBrowserSignin,

@@ -1245,6 +1245,13 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 const char kPrintPreviewDefaultDestinationSelectionRules[] =
     "printing.default_destination_selection_rules";
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+// A pref that sets the default destination in Print Preview to always be the
+// OS default printer instead of the most recently used destination.
+const char kPrintPreviewUseSystemDefaultPrinter[] =
+    "printing.use_system_default_printer";
+#endif  // !OS_CHROMEOS && !OS_ANDROID
+
 #if defined(OS_CHROMEOS)
 // List of all printers that the user has configured.
 const char kPrintingDevices[] = "printing.devices";

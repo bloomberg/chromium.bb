@@ -114,3 +114,10 @@ PrintPreviewUIBrowserTest.prototype = {
     mocha.grep(new RegExp(testName + '\\b')).run();
   });
 });
+
+GEN('#if !defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewUIBrowserTest', 'SystemDefaultPrinterPolicy', function() {
+  loadTimeData.overrideValues({useSystemDefaultPrinter: true});
+  mocha.grep(new RegExp('SystemDefaultPrinterPolicy' + '\\b')).run();
+});
+GEN('#endif');
