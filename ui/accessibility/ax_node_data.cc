@@ -92,6 +92,7 @@ typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
 bool IsNodeIdIntAttribute(AXIntAttribute attr) {
   switch (attr) {
     case AX_ATTR_ACTIVEDESCENDANT_ID:
+    case AX_ATTR_DETAILS_ID:
     case AX_ATTR_ERRORMESSAGE_ID:
     case AX_ATTR_IN_PAGE_LINK_TARGET_ID:
     case AX_ATTR_MEMBER_OF_ID:
@@ -157,7 +158,6 @@ bool IsNodeIdIntListAttribute(AXIntListAttribute attr) {
     case AX_ATTR_CELL_IDS:
     case AX_ATTR_CONTROLS_IDS:
     case AX_ATTR_DESCRIBEDBY_IDS:
-    case AX_ATTR_DETAILS_IDS:
     case AX_ATTR_FLOWTO_IDS:
     case AX_ATTR_INDIRECT_CHILD_IDS:
     case AX_ATTR_LABELLEDBY_IDS:
@@ -624,6 +624,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ACTIVEDESCENDANT_ID:
         result += " activedescendant=" + value;
         break;
+      case AX_ATTR_DETAILS_ID:
+        result += " details=" + value;
+        break;
       case AX_ATTR_ERRORMESSAGE_ID:
         result += " errormessage=" + value;
         break;
@@ -891,9 +894,6 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_DESCRIBEDBY_IDS:
         result += " describedby_ids=" + IntVectorToString(values);
-        break;
-      case AX_ATTR_DETAILS_IDS:
-        result += " details_ids=" + IntVectorToString(values);
         break;
       case AX_ATTR_FLOWTO_IDS:
         result += " flowto_ids=" + IntVectorToString(values);

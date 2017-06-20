@@ -404,6 +404,7 @@
 
     // Relationships between this element and other elements.
     activedescendant_id,
+    details_id,
     errormessage_id,
     in_page_link_target_id,
     member_of_id,
@@ -486,7 +487,6 @@
     // Relationships between this element and other elements.
     controls_ids,
     describedby_ids,
-    details_ids,
     flowto_ids,
     labelledby_ids,
     radio_group_ids,

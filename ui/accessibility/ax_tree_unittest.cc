@@ -749,7 +749,7 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].AddIntListAttribute(AX_ATTR_CONTROLS_IDS, one);
-  initial_state.nodes[0].AddIntListAttribute(AX_ATTR_DETAILS_IDS, two);
+  initial_state.nodes[0].AddIntListAttribute(AX_ATTR_RADIO_GROUP_IDS, two);
   AXTree tree(initial_state);
 
   FakeAXTreeDelegate fake_delegate;
@@ -761,14 +761,14 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
   update0.nodes.resize(1);
   update0.nodes[0].id = 1;
   update0.nodes[0].AddIntListAttribute(AX_ATTR_CONTROLS_IDS, two);
-  update0.nodes[0].AddIntListAttribute(AX_ATTR_DETAILS_IDS, three);
+  update0.nodes[0].AddIntListAttribute(AX_ATTR_RADIO_GROUP_IDS, three);
   EXPECT_TRUE(tree.Unserialize(update0));
 
   const std::vector<std::string>& change_log =
       fake_delegate.attribute_change_log();
   ASSERT_EQ(2U, change_log.size());
   EXPECT_EQ("controlsIds changed from 1 to 2,2", change_log[0]);
-  EXPECT_EQ("detailsIds changed from 2,2 to 3", change_log[1]);
+  EXPECT_EQ("radioGroupIds changed from 2,2 to 3", change_log[1]);
 
   FakeAXTreeDelegate fake_delegate2;
   tree.SetDelegate(&fake_delegate2);
@@ -778,7 +778,7 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
   update1.root_id = 1;
   update1.nodes.resize(1);
   update1.nodes[0].id = 1;
-  update1.nodes[0].AddIntListAttribute(AX_ATTR_DETAILS_IDS, two);
+  update1.nodes[0].AddIntListAttribute(AX_ATTR_RADIO_GROUP_IDS, two);
   update1.nodes[0].AddIntListAttribute(AX_ATTR_FLOWTO_IDS, three);
   EXPECT_TRUE(tree.Unserialize(update1));
 
@@ -786,7 +786,7 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
       fake_delegate2.attribute_change_log();
   ASSERT_EQ(3U, change_log2.size());
   EXPECT_EQ("controlsIds changed from 2,2 to ", change_log2[0]);
-  EXPECT_EQ("detailsIds changed from 3 to 2,2", change_log2[1]);
+  EXPECT_EQ("radioGroupIds changed from 3 to 2,2", change_log2[1]);
   EXPECT_EQ("flowtoIds changed from  to 3", change_log2[2]);
 
   tree.SetDelegate(NULL);

@@ -909,6 +909,9 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   void AddBidirectionalRelations(const base::string16& relation_type,
                                  const base::string16& reverse_relation_type,
                                  ui::AXIntListAttribute attribute);
+  void AddBidirectionalRelations(const base::string16& relation_type,
+                                 const base::string16& reverse_relation_type,
+                                 const std::vector<int32_t>& target_ids);
   // Clears all the forward relations from this object to any other object and
   // the associated  reverse relations on the other objects, but leaves any
   // reverse relations on this object alone.
