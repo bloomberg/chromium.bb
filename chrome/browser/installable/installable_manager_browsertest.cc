@@ -5,6 +5,7 @@
 #include "chrome/browser/installable/installable_manager.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using IconPurpose = content::Manifest::Icon::IconPurpose;
@@ -57,6 +59,25 @@ InstallableParams GetPrimaryIconAndBadgeIconParams() {
 }
 
 }  // anonymous namespace
+
+// Used only for testing pages with no service workers. This class will dispatch
+// a RunLoop::QuitClosure when it begins waiting for a service worker to be
+// registered.
+class LazyWorkerInstallableManager : public InstallableManager {
+ public:
+  LazyWorkerInstallableManager(content::WebContents* web_contents,
+                               base::Closure quit_closure)
+      : InstallableManager(web_contents), quit_closure_(quit_closure) {}
+  ~LazyWorkerInstallableManager() override {}
+
+ protected:
+  void OnWaitingForServiceWorker() override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+  };
+
+ private:
+  base::Closure quit_closure_;
+};
 
 class CallbackTester {
  public:
@@ -214,7 +235,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_FALSE(manager->is_installable());
 
   EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
-  EXPECT_EQ(NO_ERROR_DETECTED, manager->installable_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
   EXPECT_TRUE(manager->tasks_.empty());
 }
 
@@ -543,7 +565,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_FALSE((manager->icon_url(kPrimaryIconParams).is_empty()));
     EXPECT_NE(nullptr, (manager->icon(kPrimaryIconParams)));
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, manager->installable_error());
+    EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
+    EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
     EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
     EXPECT_TRUE(manager->tasks_.empty());
   }
@@ -579,7 +602,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_FALSE((manager->icon_url(kPrimaryIconParams).is_empty()));
     EXPECT_NE(nullptr, (manager->icon(kPrimaryIconParams)));
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, manager->installable_error());
+    EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
+    EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
     EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
     EXPECT_TRUE(manager->tasks_.empty());
   }
@@ -594,7 +618,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_FALSE(manager->is_installable());
     EXPECT_TRUE(manager->icons_.empty());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, manager->installable_error());
+    EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
+    EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
     EXPECT_TRUE(manager->tasks_.empty());
   }
 }
@@ -647,13 +672,15 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_COMPLETED);
   }
 
-  // Fetch the full criteria should fail.
+  // Fetching the full criteria should fail if we don't wait for the worker.
   {
     base::RunLoop run_loop;
     std::unique_ptr<CallbackTester> tester(
         new CallbackTester(run_loop.QuitClosure()));
 
-    RunInstallableManager(tester.get(), GetWebAppParams());
+    InstallableParams params = GetWebAppParams();
+    params.wait_for_worker = false;
+    RunInstallableManager(tester.get(), params);
     run_loop.Run();
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
@@ -667,6 +694,175 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     EXPECT_EQ(NO_MATCHING_SERVICE_WORKER, tester->error_code());
     EXPECT_EQ(GetStatus(),
               InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckLazyServiceWorkerPassesWhenWaiting) {
+  base::RunLoop tester_run_loop, sw_run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(tester_run_loop.QuitClosure()));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto manager = base::MakeUnique<LazyWorkerInstallableManager>(
+      web_contents, sw_run_loop.QuitClosure());
+
+  // Load a URL with no service worker.
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/manifest_no_service_worker.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  // Kick off fetching the data. This should block on waiting for a worker.
+  manager->GetData(GetWebAppParams(),
+                   base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                              base::Unretained(tester.get())));
+  sw_run_loop.Run();
+
+  // We should now be waiting for the service worker.
+  EXPECT_FALSE(manager->manifest().IsEmpty());
+  EXPECT_FALSE(manager->manifest_url().is_empty());
+  EXPECT_FALSE(manager->is_installable());
+  EXPECT_EQ(1u, manager->icons_.size());
+  EXPECT_FALSE((manager->icon_url(kPrimaryIconParams).is_empty()));
+  EXPECT_NE(nullptr, (manager->icon(kPrimaryIconParams)));
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
+  EXPECT_TRUE(manager->worker_waiting());
+  EXPECT_FALSE(manager->tasks_.empty());
+
+  // Load the service worker.
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents, "navigator.serviceWorker.register('service_worker.js');"));
+  tester_run_loop.Run();
+
+  // We should have passed now.
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+  EXPECT_FALSE(tester->primary_icon_url().is_empty());
+  EXPECT_NE(nullptr, tester->primary_icon());
+  EXPECT_TRUE(tester->is_installable());
+  EXPECT_TRUE(tester->badge_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->badge_icon());
+  EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
+  EXPECT_EQ(manager->page_status_,
+            InstallabilityCheckStatus::COMPLETE_PROGRESSIVE_WEB_APP);
+
+  // Verify internal state.
+  EXPECT_FALSE(manager->manifest().IsEmpty());
+  EXPECT_FALSE(manager->manifest_url().is_empty());
+  EXPECT_TRUE(manager->is_installable());
+  EXPECT_EQ(1u, manager->icons_.size());
+  EXPECT_FALSE((manager->icon_url(kPrimaryIconParams).is_empty()));
+  EXPECT_NE(nullptr, (manager->icon(kPrimaryIconParams)));
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
+  EXPECT_FALSE(manager->worker_waiting());
+  EXPECT_TRUE(manager->tasks_.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckLazyServiceWorkerNoFetchHandlerFails) {
+  base::RunLoop tester_run_loop, sw_run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(tester_run_loop.QuitClosure()));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto manager = base::MakeUnique<LazyWorkerInstallableManager>(
+      web_contents, sw_run_loop.QuitClosure());
+
+  // Load a URL with no service worker.
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/manifest_no_service_worker.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  // Kick off fetching the data. This should block on waiting for a worker.
+  manager->GetData(GetWebAppParams(),
+                   base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                              base::Unretained(tester.get())));
+  sw_run_loop.Run();
+
+  // We should now be waiting for the service worker.
+  EXPECT_TRUE(manager->worker_waiting());
+  EXPECT_FALSE(manager->tasks_.empty());
+
+  // Load the service worker with no fetch handler.
+  EXPECT_TRUE(content::ExecuteScript(web_contents,
+                                     "navigator.serviceWorker.register('"
+                                     "service_worker_no_fetch_handler.js');"));
+  tester_run_loop.Run();
+
+  // We should fail the check.
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+  EXPECT_FALSE(tester->primary_icon_url().is_empty());
+  EXPECT_NE(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->is_installable());
+  EXPECT_TRUE(tester->badge_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->badge_icon());
+  EXPECT_EQ(NOT_OFFLINE_CAPABLE, tester->error_code());
+  EXPECT_FALSE(manager->worker_waiting());
+  EXPECT_EQ(manager->page_status_,
+            InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP);
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckServiceWorkerErrorIsNotCached) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  base::RunLoop sw_run_loop;
+  auto manager = base::MakeUnique<LazyWorkerInstallableManager>(
+      web_contents, sw_run_loop.QuitClosure());
+
+  // Load a URL with no service worker.
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/manifest_no_service_worker.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  {
+    base::RunLoop tester_run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(tester_run_loop.QuitClosure()));
+
+    InstallableParams params = GetWebAppParams();
+    params.wait_for_worker = false;
+    manager->GetData(params,
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    tester_run_loop.Run();
+
+    // We should have returned with an error.
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_FALSE(tester->is_installable());
+    EXPECT_EQ(NO_MATCHING_SERVICE_WORKER, tester->error_code());
+  }
+
+  {
+    base::RunLoop tester_run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(tester_run_loop.QuitClosure()));
+
+    InstallableParams params = GetWebAppParams();
+    params.wait_for_worker = true;
+    manager->GetData(params,
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    sw_run_loop.Run();
+
+    EXPECT_TRUE(content::ExecuteScript(
+        web_contents,
+        "navigator.serviceWorker.register('service_worker.js');"));
+    tester_run_loop.Run();
+
+    // The callback should tell us that the page is installable
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_TRUE(tester->is_installable());
+    EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
   }
 }
 

@@ -101,6 +101,14 @@ class AppBannerManager : public content::WebContentsObserver,
     // The banner pipeline is currently running for this page load.
     ACTIVE,
 
+    // The banner pipeline is currently waiting for the page manifest to be
+    // fetched.
+    PENDING_MANIFEST,
+
+    // The banner pipeline is currently waiting for the installability criteria
+    // to be checked.
+    PENDING_INSTALLABLE_CHECK,
+
     // The banner pipeline has finished running, but is waiting for sufficient
     // engagement to trigger the banner.
     PENDING_ENGAGEMENT,
@@ -137,7 +145,7 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual int GetIdealPrimaryIconSizeInPx();
   virtual int GetMinimumPrimaryIconSizeInPx();
 
-  // Returns true if |is_debug_mode_| is true or the
+  // Returns true if |triggered_by_devtools_| is true or the
   // kBypassAppBannerEngagementChecks flag is set.
   virtual bool IsDebugMode() const;
 
@@ -212,8 +220,18 @@ class AppBannerManager : public content::WebContentsObserver,
   int event_request_id() const { return event_request_id_; }
   bool is_active() const { return state_ == State::ACTIVE; }
   bool is_active_or_pending() const {
-    return state_ == State::ACTIVE || state_ == State::PENDING_ENGAGEMENT ||
-           state_ == State::PENDING_EVENT;
+    switch (state_) {
+      case State::ACTIVE:
+      case State::PENDING_MANIFEST:
+      case State::PENDING_INSTALLABLE_CHECK:
+      case State::PENDING_ENGAGEMENT:
+      case State::PENDING_EVENT:
+        return true;
+      case State::INACTIVE:
+      case State::COMPLETE:
+        return false;
+    }
+    return false;
   }
   bool is_complete() const { return state_ == State::COMPLETE; }
   bool is_pending_engagement() const {
@@ -295,8 +313,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Record whether the page requests for a banner to be shown later on.
   bool page_requested_prompt_;
 
-  // Whether we should be logging errors to the console for this request.
-  bool is_debug_mode_;
+  // Whether the current flow was begun via devtools.
+  bool triggered_by_devtools_;
 
   // Whether the installable status has been logged for this run.
   bool need_to_log_status_;

@@ -18,6 +18,7 @@
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/manifest.h"
@@ -44,11 +45,6 @@ struct InstallableParams {
   // |fetch_valid_badge_icon| is true.
   int minimum_badge_icon_size_in_px = -1;
 
-  // Check whether the site is installable. That is, it has a manifest valid for
-  // a web app and a service worker controlling the manifest start URL and the
-  // current URL.
-  bool check_installable = false;
-
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the primary icon size parameters.
   bool fetch_valid_primary_icon = false;
@@ -56,6 +52,16 @@ struct InstallableParams {
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the badge icon size parameters.
   bool fetch_valid_badge_icon = false;
+
+  // Check whether the site is installable. That is, it has a manifest valid for
+  // a web app and a service worker controlling the manifest start URL and the
+  // current URL.
+  bool check_installable = false;
+
+  // Whether or not to wait indefinitely for a service worker. If this is set to
+  // false, the worker status will not be cached and will be re-checked if
+  // GetData() is called again for the current page.
+  bool wait_for_worker = true;
 };
 
 // This struct is passed to an InstallableCallback when the InstallableManager
@@ -104,7 +110,8 @@ using InstallableCallback = base::Callback<void(const InstallableData&)>;
 // This class is responsible for fetching the resources required to check and
 // install a site.
 class InstallableManager
-    : public content::WebContentsObserver,
+    : public content::ServiceWorkerContextObserver,
+      public content::WebContentsObserver,
       public content::WebContentsUserData<InstallableManager> {
  public:
   explicit InstallableManager(content::WebContents* web_contents);
@@ -124,10 +131,14 @@ class InstallableManager
   // when the data is ready; the synchronous execution ensures that the
   // references |callback| receives in its InstallableData argument are valid.
   //
+  // Clients must be prepared for |callback| to not ever be invoked. For
+  // instance, if installability checking is requested, this method will wait
+  // until the site registers a service worker (and hence not invoke |callback|
+  // at all if a service worker is never registered).
+  //
   // Calls requesting data that is already fetched will return the cached data.
-  // This method is marked virtual so clients may mock this object in tests.
-  virtual void GetData(const InstallableParams& params,
-                       const InstallableCallback& callback);
+  void GetData(const InstallableParams& params,
+               const InstallableCallback& callback);
 
   // Called via AppBannerManagerAndroid to record metrics on how often the
   // installable check is completed when the menu or add to homescreen menu item
@@ -137,18 +148,27 @@ class InstallableManager
   void RecordQueuedMetricsOnTaskCompletion(const InstallableParams& params,
                                            bool check_passed);
 
+ protected:
+  // For mocking in tests.
+  virtual void OnWaitingForServiceWorker() {}
+
  private:
   friend class InstallableManagerBrowserTest;
   friend class InstallableManagerUnitTest;
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManagerBeginsInEmptyState);
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest, CheckWebapp);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
+                           CheckLazyServiceWorkerPassesWhenWaiting);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
+                           CheckLazyServiceWorkerNoFetchHandlerFails);
 
   using Task = std::pair<InstallableParams, InstallableCallback>;
   using IconParams = std::tuple<int, int, content::Manifest::Icon::IconPurpose>;
 
   struct ManifestProperty;
-  struct InstallableProperty;
+  struct ValidManifestProperty;
+  struct ServiceWorkerProperty;
   struct IconProperty;
 
   // Returns an IconParams object that queries for a primary icon conforming to
@@ -171,8 +191,10 @@ class InstallableManager
 
   // Gets/sets parts of particular properties. Exposed for testing.
   InstallableStatusCode manifest_error() const;
-  InstallableStatusCode installable_error() const;
-  void set_installable_error(InstallableStatusCode error_code);
+  InstallableStatusCode valid_manifest_error() const;
+  void set_valid_manifest_error(InstallableStatusCode error_code);
+  InstallableStatusCode worker_error() const;
+  bool worker_waiting() const;
   InstallableStatusCode icon_error(const IconParams& icon_params);
   GURL& icon_url(const IconParams& icon_params);
   const SkBitmap* icon(const IconParams& icon);
@@ -209,8 +231,12 @@ class InstallableManager
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
 
   void CheckAndFetchBestIcon(const IconParams& params);
-  void OnIconFetched(
-      const GURL icon_url, const IconParams& params, const SkBitmap& bitmap);
+  void OnIconFetched(const GURL icon_url,
+                     const IconParams& params,
+                     const SkBitmap& bitmap);
+
+  // content::ServiceWorkerContextObserver overrides
+  void OnRegistrationStored(const GURL& pattern) override;
 
   // content::WebContentsObserver overrides
   void DidFinishNavigation(content::NavigationHandle* handle) override;
@@ -225,8 +251,13 @@ class InstallableManager
 
   // Installable properties cached on this object.
   std::unique_ptr<ManifestProperty> manifest_;
-  std::unique_ptr<InstallableProperty> installable_;
+  std::unique_ptr<ValidManifestProperty> valid_manifest_;
+  std::unique_ptr<ServiceWorkerProperty> worker_;
   std::map<IconParams, IconProperty> icons_;
+
+  // Owned by the storage partition attached to the content::WebContents which
+  // this object is scoped to.
+  content::ServiceWorkerContext* service_worker_context_;
 
   // Whether or not the current page is a PWA. This is reset per navigation and
   // is independent of the caching mechanism, i.e. if a PWA check is run

@@ -956,6 +956,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="27" label="Url is not eligible for WebAPKs"/>
   <int value="28" label="Site loaded in incognito window (not reported)"/>
   <int value="29" label="Service worker not offline capable"/>
+  <int value="30" label="Waiting for manifest to be fetched"/>
+  <int value="31" label="Waiting for installability check"/>
 </enum>
 
 <enum name="AppBannersInstallEvent">
