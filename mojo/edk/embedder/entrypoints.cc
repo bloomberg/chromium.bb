@@ -201,19 +201,21 @@ MojoResult MojoUnwrapPlatformHandleImpl(MojoHandle mojo_handle,
 MojoResult MojoWrapPlatformSharedBufferHandleImpl(
     const MojoPlatformHandle* platform_handle,
     size_t num_bytes,
+    const MojoSharedBufferGuid* guid,
     MojoPlatformSharedBufferHandleFlags flags,
     MojoHandle* mojo_handle) {
   return g_core->WrapPlatformSharedBufferHandle(platform_handle, num_bytes,
-                                                flags, mojo_handle);
+                                                guid, flags, mojo_handle);
 }
 
 MojoResult MojoUnwrapPlatformSharedBufferHandleImpl(
     MojoHandle mojo_handle,
     MojoPlatformHandle* platform_handle,
     size_t* num_bytes,
+    MojoSharedBufferGuid* guid,
     MojoPlatformSharedBufferHandleFlags* flags) {
   return g_core->UnwrapPlatformSharedBufferHandle(mojo_handle, platform_handle,
-                                                  num_bytes, flags);
+                                                  num_bytes, guid, flags);
 }
 
 MojoResult MojoNotifyBadMessageImpl(MojoMessageHandle message,

@@ -108,12 +108,14 @@ struct MojoSystemThunks {
   MojoResult (*WrapPlatformSharedBufferHandle)(
       const struct MojoPlatformHandle* platform_handle,
       size_t num_bytes,
+      const struct MojoSharedBufferGuid* guid,
       MojoPlatformSharedBufferHandleFlags flags,
       MojoHandle* mojo_handle);
   MojoResult (*UnwrapPlatformSharedBufferHandle)(
       MojoHandle mojo_handle,
       struct MojoPlatformHandle* platform_handle,
       size_t* num_bytes,
+      struct MojoSharedBufferGuid* guid,
       MojoPlatformSharedBufferHandleFlags* flags);
   MojoResult (*NotifyBadMessage)(MojoMessageHandle message,
                                  const char* error,
@@ -134,7 +136,7 @@ typedef size_t (*MojoSetSystemThunksFn)(
 
 // A function for setting up the embedder's own system thunks. This should only
 // be called by Mojo embedder code.
-MOJO_SYSTEM_EXPORT size_t MojoEmbedderSetSystemThunks(
-    const struct MojoSystemThunks* system_thunks);
+MOJO_SYSTEM_EXPORT size_t
+MojoEmbedderSetSystemThunks(const struct MojoSystemThunks* system_thunks);
 
 #endif  // MOJO_PUBLIC_C_SYSTEM_THUNKS_H_

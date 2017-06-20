@@ -108,7 +108,7 @@ Broker::Broker(ScopedPlatformHandle handle) : sync_channel_(std::move(handle)) {
     const InitData* data = reinterpret_cast<const InitData*>(header + 1);
     CHECK_EQ(message->payload_size(),
              sizeof(BrokerMessageHeader) + sizeof(InitData) +
-             data->pipe_name_length * sizeof(base::char16));
+                 data->pipe_name_length * sizeof(base::char16));
     const base::char16* name_data =
         reinterpret_cast<const base::char16*>(data + 1);
     CHECK(data->pipe_name_length);
@@ -144,8 +144,13 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
       sync_channel_.get(), BrokerMessageType::BUFFER_RESPONSE);
   if (response &&
       TakeHandlesFromBrokerMessage(response.get(), 2, &handles[0])) {
+    BufferResponseData* data;
+    if (!GetBrokerMessageData(response.get(), &data))
+      return nullptr;
+    base::UnguessableToken guid =
+        base::UnguessableToken::Deserialize(data->guid_high, data->guid_low);
     return PlatformSharedBuffer::CreateFromPlatformHandlePair(
-        num_bytes, std::move(handles[0]), std::move(handles[1]));
+        num_bytes, guid, std::move(handles[0]), std::move(handles[1]));
   }
 
   return nullptr;

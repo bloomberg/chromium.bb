@@ -370,9 +370,8 @@ ScopedMessagePipeHandle Core::ExtractMessagePipeFromInvitation(
   RequestContext request_context;
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
-  MojoHandle handle = AddDispatcher(
-      new MessagePipeDispatcher(GetNodeController(), port0,
-                                kUnknownPipeIdForDebug, 1));
+  MojoHandle handle = AddDispatcher(new MessagePipeDispatcher(
+      GetNodeController(), port0, kUnknownPipeIdForDebug, 1));
   GetNodeController()->MergePortIntoParent(name, port1);
   return ScopedMessagePipeHandle(MessagePipeHandle(handle));
 }
@@ -569,10 +568,9 @@ MojoResult Core::GetProperty(MojoPropertyType type, void* value) {
   }
 }
 
-MojoResult Core::CreateMessagePipe(
-    const MojoCreateMessagePipeOptions* options,
-    MojoHandle* message_pipe_handle0,
-    MojoHandle* message_pipe_handle1) {
+MojoResult Core::CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
+                                   MojoHandle* message_pipe_handle0,
+                                   MojoHandle* message_pipe_handle1) {
   RequestContext request_context;
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
@@ -692,10 +690,9 @@ MojoResult Core::NotifyBadMessage(MojoMessageHandle message_handle,
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::CreateDataPipe(
-    const MojoCreateDataPipeOptions* options,
-    MojoHandle* data_pipe_producer_handle,
-    MojoHandle* data_pipe_consumer_handle) {
+MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
+                                MojoHandle* data_pipe_producer_handle,
+                                MojoHandle* data_pipe_consumer_handle) {
   RequestContext request_context;
   if (options && options->struct_size != sizeof(MojoCreateDataPipeOptions))
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -705,9 +702,9 @@ MojoResult Core::CreateDataPipe(
   create_options.flags = options ? options->flags : 0;
   create_options.element_num_bytes = options ? options->element_num_bytes : 1;
   // TODO(rockot): Use Configuration to get default data pipe capacity.
-  create_options.capacity_num_bytes =
-      options && options->capacity_num_bytes ? options->capacity_num_bytes
-                                             : 64 * 1024;
+  create_options.capacity_num_bytes = options && options->capacity_num_bytes
+                                          ? options->capacity_num_bytes
+                                          : 64 * 1024;
 
   scoped_refptr<PlatformSharedBuffer> ring_buffer =
       GetNodeController()->CreateSharedBuffer(
@@ -917,8 +914,8 @@ MojoResult Core::UnmapBuffer(void* buffer) {
 MojoResult Core::WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
                                     MojoHandle* mojo_handle) {
   ScopedPlatformHandle handle;
-  MojoResult result = MojoPlatformHandleToScopedPlatformHandle(platform_handle,
-                                                               &handle);
+  MojoResult result =
+      MojoPlatformHandleToScopedPlatformHandle(platform_handle, &handle);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -939,18 +936,21 @@ MojoResult Core::UnwrapPlatformHandle(MojoHandle mojo_handle,
 MojoResult Core::WrapPlatformSharedBufferHandle(
     const MojoPlatformHandle* platform_handle,
     size_t size,
+    const MojoSharedBufferGuid* guid,
     MojoPlatformSharedBufferHandleFlags flags,
     MojoHandle* mojo_handle) {
   DCHECK(size);
   ScopedPlatformHandle handle;
-  MojoResult result = MojoPlatformHandleToScopedPlatformHandle(platform_handle,
-                                                               &handle);
+  MojoResult result =
+      MojoPlatformHandleToScopedPlatformHandle(platform_handle, &handle);
   if (result != MOJO_RESULT_OK)
     return result;
 
+  base::UnguessableToken token =
+      base::UnguessableToken::Deserialize(guid->high, guid->low);
   bool read_only = flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY;
   scoped_refptr<PlatformSharedBuffer> platform_buffer =
-      PlatformSharedBuffer::CreateFromPlatformHandle(size, read_only,
+      PlatformSharedBuffer::CreateFromPlatformHandle(size, read_only, token,
                                                      std::move(handle));
   if (!platform_buffer)
     return MOJO_RESULT_UNKNOWN;
@@ -975,6 +975,7 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
     MojoHandle mojo_handle,
     MojoPlatformHandle* platform_handle,
     size_t* size,
+    MojoSharedBufferGuid* guid,
     MojoPlatformSharedBufferHandleFlags* flags) {
   scoped_refptr<Dispatcher> dispatcher;
   MojoResult result = MOJO_RESULT_OK;
@@ -998,6 +999,10 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
 
   DCHECK(size);
   *size = platform_shared_buffer->GetNumBytes();
+
+  base::UnguessableToken token = platform_shared_buffer->GetGUID();
+  guid->high = token.GetHighForSerialization();
+  guid->low = token.GetLowForSerialization();
 
   DCHECK(flags);
   *flags = MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE;

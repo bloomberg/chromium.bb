@@ -224,21 +224,23 @@ MojoResult MojoUnwrapPlatformHandle(
 MojoResult MojoWrapPlatformSharedBufferHandle(
     const struct MojoPlatformHandle* platform_handle,
     size_t num_bytes,
+    const struct MojoSharedBufferGuid* guid,
     MojoPlatformSharedBufferHandleFlags flags,
     MojoHandle* mojo_handle) {
   assert(g_thunks.WrapPlatformSharedBufferHandle);
   return g_thunks.WrapPlatformSharedBufferHandle(platform_handle, num_bytes,
-                                                 flags, mojo_handle);
+                                                 guid, flags, mojo_handle);
 }
 
 MojoResult MojoUnwrapPlatformSharedBufferHandle(
     MojoHandle mojo_handle,
     struct MojoPlatformHandle* platform_handle,
     size_t* num_bytes,
+    struct MojoSharedBufferGuid* guid,
     MojoPlatformSharedBufferHandleFlags* flags) {
   assert(g_thunks.UnwrapPlatformSharedBufferHandle);
   return g_thunks.UnwrapPlatformSharedBufferHandle(mojo_handle, platform_handle,
-                                                   num_bytes, flags);
+                                                   num_bytes, guid, flags);
 }
 
 MojoResult MojoNotifyBadMessage(MojoMessageHandle message,

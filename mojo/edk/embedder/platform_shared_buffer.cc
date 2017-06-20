@@ -57,11 +57,12 @@ PlatformSharedBuffer* PlatformSharedBuffer::Create(size_t num_bytes) {
 PlatformSharedBuffer* PlatformSharedBuffer::CreateFromPlatformHandle(
     size_t num_bytes,
     bool read_only,
+    const base::UnguessableToken& guid,
     ScopedPlatformHandle platform_handle) {
   DCHECK_GT(num_bytes, 0u);
 
   PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes, read_only);
-  if (!rv->InitFromPlatformHandle(std::move(platform_handle))) {
+  if (!rv->InitFromPlatformHandle(guid, std::move(platform_handle))) {
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
     scoped_refptr<PlatformSharedBuffer> deleter(rv);
@@ -74,6 +75,7 @@ PlatformSharedBuffer* PlatformSharedBuffer::CreateFromPlatformHandle(
 // static
 PlatformSharedBuffer* PlatformSharedBuffer::CreateFromPlatformHandlePair(
     size_t num_bytes,
+    const base::UnguessableToken& guid,
     ScopedPlatformHandle rw_platform_handle,
     ScopedPlatformHandle ro_platform_handle) {
   DCHECK_GT(num_bytes, 0u);
@@ -81,7 +83,7 @@ PlatformSharedBuffer* PlatformSharedBuffer::CreateFromPlatformHandlePair(
   DCHECK(ro_platform_handle.is_valid());
 
   PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes, false);
-  if (!rv->InitFromPlatformHandlePair(std::move(rw_platform_handle),
+  if (!rv->InitFromPlatformHandlePair(guid, std::move(rw_platform_handle),
                                       std::move(ro_platform_handle))) {
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
@@ -111,6 +113,11 @@ size_t PlatformSharedBuffer::GetNumBytes() const {
 
 bool PlatformSharedBuffer::IsReadOnly() const {
   return read_only_;
+}
+
+base::UnguessableToken PlatformSharedBuffer::GetGUID() const {
+  DCHECK(shared_memory_);
+  return shared_memory_->handle().GetGUID();
 }
 
 std::unique_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::Map(
@@ -230,11 +237,10 @@ bool PlatformSharedBuffer::Init() {
 }
 
 bool PlatformSharedBuffer::InitFromPlatformHandle(
+    const base::UnguessableToken& guid,
     ScopedPlatformHandle platform_handle) {
   DCHECK(!shared_memory_);
 
-  // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
-  base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_WIN)
   base::SharedMemoryHandle handle(platform_handle.release().handle, num_bytes_,
                                   guid);
@@ -252,6 +258,7 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
 }
 
 bool PlatformSharedBuffer::InitFromPlatformHandlePair(
+    const base::UnguessableToken& guid,
     ScopedPlatformHandle rw_platform_handle,
     ScopedPlatformHandle ro_platform_handle) {
 #if defined(OS_MACOSX)
@@ -259,14 +266,12 @@ bool PlatformSharedBuffer::InitFromPlatformHandlePair(
   return false;
 #else  // defined(OS_MACOSX)
 
-  // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
-  base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_WIN)
   base::SharedMemoryHandle handle(rw_platform_handle.release().handle,
                                   num_bytes_, guid);
   base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle,
                                      num_bytes_, guid);
-#else  // defined(OS_WIN)
+#else   // defined(OS_WIN)
   base::SharedMemoryHandle handle(
       base::FileDescriptor(rw_platform_handle.release().handle, false),
       num_bytes_, guid);
@@ -303,9 +308,9 @@ size_t PlatformSharedBufferMapping::GetLength() const {
 }
 
 bool PlatformSharedBufferMapping::Map() {
-  // Mojo shared buffers can be mapped at any offset. However,
-  // base::SharedMemory must be mapped at a page boundary. So calculate what the
-  // nearest whole page offset is, and build a mapping that's offset from that.
+// Mojo shared buffers can be mapped at any offset. However,
+// base::SharedMemory must be mapped at a page boundary. So calculate what the
+// nearest whole page offset is, and build a mapping that's offset from that.
 #if defined(OS_NACL)
   // base::SysInfo isn't available under NaCl.
   size_t page_size = getpagesize();

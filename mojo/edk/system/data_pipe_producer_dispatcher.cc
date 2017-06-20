@@ -38,6 +38,8 @@ struct SerializedState {
   uint32_t write_offset;
   uint32_t available_capacity;
   uint8_t flags;
+  uint64_t buffer_guid_high;
+  uint64_t buffer_guid_low;
   char padding[7];
 };
 
@@ -135,8 +137,7 @@ MojoResult DataPipeProducerDispatcher::WriteData(const void* elements,
 
   DCHECK_LE(write_offset_, options_.capacity_num_bytes);
   uint32_t tail_bytes_to_write =
-      std::min(options_.capacity_num_bytes - write_offset_,
-               num_bytes_to_write);
+      std::min(options_.capacity_num_bytes - write_offset_, num_bytes_to_write);
   uint32_t head_bytes_to_write = num_bytes_to_write - tail_bytes_to_write;
 
   DCHECK_GT(tail_bytes_to_write, 0u);
@@ -146,8 +147,8 @@ MojoResult DataPipeProducerDispatcher::WriteData(const void* elements,
 
   DCHECK_LE(num_bytes_to_write, available_capacity_);
   available_capacity_ -= num_bytes_to_write;
-  write_offset_ = (write_offset_ + num_bytes_to_write) %
-      options_.capacity_num_bytes;
+  write_offset_ =
+      (write_offset_ + num_bytes_to_write) % options_.capacity_num_bytes;
 
   watchers_.NotifyState(GetHandleSignalsStateNoLock());
 
@@ -213,8 +214,8 @@ MojoResult DataPipeProducerDispatcher::EndWriteData(
   } else {
     DCHECK_LE(num_bytes_written + write_offset_, options_.capacity_num_bytes);
     available_capacity_ -= num_bytes_written;
-    write_offset_ = (write_offset_ + num_bytes_written) %
-        options_.capacity_num_bytes;
+    write_offset_ =
+        (write_offset_ + num_bytes_written) % options_.capacity_num_bytes;
 
     base::AutoUnlock unlock(lock_);
     NotifyWrite(num_bytes_written);
@@ -277,6 +278,10 @@ bool DataPipeProducerDispatcher::EndSerialize(
   state->available_capacity = available_capacity_;
   state->flags = peer_closed_ ? kFlagPeerClosed : 0;
 
+  base::UnguessableToken guid = shared_ring_buffer_->GetGUID();
+  state->buffer_guid_high = guid.GetHighForSerialization();
+  state->buffer_guid_low = guid.GetLowForSerialization();
+
   ports[0] = control_port_.name();
 
   buffer_handle_for_transit_ = shared_ring_buffer_->DuplicatePlatformHandle();
@@ -336,12 +341,13 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
   if (node_controller->node()->GetPort(ports[0], &port) != ports::OK)
     return nullptr;
 
+  base::UnguessableToken guid = base::UnguessableToken::Deserialize(
+      state->buffer_guid_high, state->buffer_guid_low);
   PlatformHandle buffer_handle;
   std::swap(buffer_handle, handles[0]);
   scoped_refptr<PlatformSharedBuffer> ring_buffer =
       PlatformSharedBuffer::CreateFromPlatformHandle(
-          state->options.capacity_num_bytes,
-          false /* read_only */,
+          state->options.capacity_num_bytes, false /* read_only */, guid,
           ScopedPlatformHandle(buffer_handle));
   if (!ring_buffer) {
     DLOG(ERROR) << "Failed to deserialize shared buffer handle.";
@@ -400,8 +406,7 @@ bool DataPipeProducerDispatcher::InitializeNoLock() {
 
   base::AutoUnlock unlock(lock_);
   node_controller_->SetPortObserver(
-      control_port_,
-      make_scoped_refptr(new PortObserverThunk(this)));
+      control_port_, make_scoped_refptr(new PortObserverThunk(this)));
 
   return true;
 }
@@ -439,9 +444,9 @@ HandleSignalsState DataPipeProducerDispatcher::GetHandleSignalsStateNoLock()
 }
 
 void DataPipeProducerDispatcher::NotifyWrite(uint32_t num_bytes) {
-  DVLOG(1) << "Data pipe producer " << pipe_id_ << " notifying peer: "
-           << num_bytes << " bytes written. [control_port="
-           << control_port_.name() << "]";
+  DVLOG(1) << "Data pipe producer " << pipe_id_
+           << " notifying peer: " << num_bytes
+           << " bytes written. [control_port=" << control_port_.name() << "]";
 
   SendDataPipeControlMessage(node_controller_, control_port_,
                              DataPipeCommand::DATA_WAS_WRITTEN, num_bytes);
@@ -499,14 +504,15 @@ void DataPipeProducerDispatcher::UpdateSignalsStateNoLock() {
         }
 
         if (static_cast<size_t>(available_capacity_) + m->num_bytes >
-              options_.capacity_num_bytes) {
+            options_.capacity_num_bytes) {
           DLOG(ERROR) << "Consumer claims to have read too many bytes.";
           break;
         }
 
         DVLOG(1) << "Data pipe producer " << pipe_id_ << " is aware that "
-                 << m->num_bytes << " bytes were read. [control_port="
-                 << control_port_.name() << "]";
+                 << m->num_bytes
+                 << " bytes were read. [control_port=" << control_port_.name()
+                 << "]";
 
         available_capacity_ += m->num_bytes;
       }
