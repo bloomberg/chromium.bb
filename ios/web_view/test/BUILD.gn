@@ -43,6 +43,10 @@ test("ios_web_view_inttests") {
 source_set("test_support") {
   testonly = true
   sources = [
+    # Explicitly reference imported headers from web_view library to avoid
+    # depending on the framework (as it is statically linked).
+    "//ios/web_view/public/cwv_web_view.h",
+    "//ios/web_view/public/cwv_web_view_configuration.h",
     "observer.h",
     "observer.mm",
     "web_view_test_util.h",
@@ -52,7 +56,6 @@ source_set("test_support") {
   deps = [
     "//base:base",
     "//ios/testing:ios_test_support",
-    "//ios/web_view:web_view+link",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
