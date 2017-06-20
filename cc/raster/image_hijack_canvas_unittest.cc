@@ -33,6 +33,7 @@ class MockImageDecodeCache : public ImageDecodeCache {
   MOCK_METHOD2(GetOutOfRasterDecodeTaskForImageAndRef,
                bool(const DrawImage& image, scoped_refptr<TileTask>* task));
   MOCK_CONST_METHOD0(GetMaximumMemoryLimitBytes, size_t());
+  MOCK_METHOD1(NotifyImageUnused, void(uint32_t skimage_id));
 };
 
 TEST(ImageHijackCanvasTest, NonLazyImagesSkipped) {
