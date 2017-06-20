@@ -12,6 +12,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
+
+namespace content {
+class RenderFrameHost;
+}
 
 namespace android_webview {
 
@@ -128,14 +133,19 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       base::StringPiece name) override;
-  void ExposeInterfacesToFrame(
-      service_manager::BinderRegistry* registry,
-      content::RenderFrameHost* render_frame_host) override;
+  void BindInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const service_manager::BindSourceInfo& source_info,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.
   std::unique_ptr<AwBrowserContext> browser_context_;
+
+  service_manager::BinderRegistryWithParams<content::RenderFrameHost*>
+      frame_interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentBrowserClient);
 };

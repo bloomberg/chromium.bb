@@ -14,6 +14,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell_speech_recognition_manager_delegate.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 
@@ -36,8 +37,11 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
   bool IsHandledURL(const GURL& url) override;
-  void ExposeInterfacesToFrame(service_manager::BinderRegistry* registry,
-                               RenderFrameHost* frame_host) override;
+  void BindInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const service_manager::BindSourceInfo& source_info,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
@@ -110,6 +114,9 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       resource_dispatcher_host_delegate_;
 
   base::Closure select_client_certificate_callback_;
+
+  service_manager::BinderRegistryWithParams<content::RenderFrameHost*>
+      frame_interfaces_;
 
   ShellBrowserMainParts* shell_browser_main_parts_;
 };

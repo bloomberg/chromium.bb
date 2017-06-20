@@ -47,9 +47,9 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
   static ContentAutofillDriverFactory* FromWebContents(
       content::WebContents* contents);
   static void BindAutofillDriver(
-      content::RenderFrameHost* render_frame_host,
       const service_manager::BindSourceInfo& source_info,
-      mojom::AutofillDriverRequest request);
+      mojom::AutofillDriverRequest request,
+      content::RenderFrameHost* render_frame_host);
 
   // Gets the |ContentAutofillDriver| associated with |render_frame_host|.
   // |render_frame_host| must be owned by |web_contents()|.

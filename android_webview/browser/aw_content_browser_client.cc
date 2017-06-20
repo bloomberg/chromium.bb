@@ -166,7 +166,8 @@ void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
 // A dummy binder for mojo interface autofill::mojom::PasswordManagerDriver.
 void DummyBindPasswordManagerDriver(
     const service_manager::BindSourceInfo& source_info,
-    autofill::mojom::PasswordManagerDriverRequest request) {}
+    autofill::mojom::PasswordManagerDriverRequest request,
+    content::RenderFrameHost* render_frame_host) {}
 
 }  // anonymous namespace
 
@@ -189,7 +190,15 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
   return AwBrowserContext::GetDefault();
 }
 
-AwContentBrowserClient::AwContentBrowserClient() {}
+AwContentBrowserClient::AwContentBrowserClient() {
+  frame_interfaces_.AddInterface(
+      base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver));
+  // Although WebView does not support password manager feature, renderer code
+  // could still request this interface, so we register a dummy binder which
+  // just drops the incoming request, to avoid the 'Failed to locate a binder
+  // for interface' error log..
+  frame_interfaces_.AddInterface(base::Bind(&DummyBindPasswordManagerDriver));
+}
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
 
@@ -542,18 +551,16 @@ std::unique_ptr<base::Value> AwContentBrowserClient::GetServiceManifestOverlay(
   return base::JSONReader::Read(manifest_contents);
 }
 
-void AwContentBrowserClient::ExposeInterfacesToFrame(
-    service_manager::BinderRegistry* registry,
-    content::RenderFrameHost* render_frame_host) {
-  registry->AddInterface(
-      base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver,
-                 render_frame_host));
-
-  // Although WebView does not support password manager feature, renderer code
-  // could still request this interface, so we register a dummy binder which
-  // just drops the incoming request, to avoid the 'Failed to locate a binder
-  // for interface' error log..
-  registry->AddInterface(base::Bind(&DummyBindPasswordManagerDriver));
+void AwContentBrowserClient::BindInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const service_manager::BindSourceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  if (frame_interfaces_.CanBindInterface(interface_name)) {
+    frame_interfaces_.BindInterface(source_info, interface_name,
+                                    std::move(interface_pipe),
+                                    render_frame_host);
+  }
 }
 
 }  // namespace android_webview

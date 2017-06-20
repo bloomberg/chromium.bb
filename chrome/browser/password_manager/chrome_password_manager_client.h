@@ -123,9 +123,9 @@ class ChromePasswordManagerClient
   void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
 
   static void BindCredentialManager(
-      content::RenderFrameHost* render_frame_host,
       const service_manager::BindSourceInfo& source_info,
-      password_manager::mojom::CredentialManagerRequest request);
+      password_manager::mojom::CredentialManagerRequest request,
+      content::RenderFrameHost* render_frame_host);
 
   // A helper method to determine whether a save/update bubble can be shown
   // on this |url|.

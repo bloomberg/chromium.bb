@@ -43,14 +43,14 @@ class ContentPasswordManagerDriverFactory
       content::WebContents* web_contents);
 
   static void BindPasswordManagerDriver(
-      content::RenderFrameHost* render_frame_host,
       const service_manager::BindSourceInfo& source_info,
-      autofill::mojom::PasswordManagerDriverRequest request);
+      autofill::mojom::PasswordManagerDriverRequest request,
+      content::RenderFrameHost* render_frame_host);
 
   static void BindSensitiveInputVisibilityService(
-      content::RenderFrameHost* render_frame_host,
       const service_manager::BindSourceInfo& source_info,
-      blink::mojom::SensitiveInputVisibilityServiceRequest request);
+      blink::mojom::SensitiveInputVisibilityServiceRequest request,
+      content::RenderFrameHost* render_frame_host);
 
   ContentPasswordManagerDriver* GetDriverForFrame(
       content::RenderFrameHost* render_frame_host);
