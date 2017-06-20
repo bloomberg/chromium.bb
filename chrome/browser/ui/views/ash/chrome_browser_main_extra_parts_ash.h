@@ -14,6 +14,14 @@ namespace ash {
 class ShelfModel;
 }
 
+namespace aura {
+class UserActivityForwarder;
+}
+
+namespace ui {
+class UserActivityDetector;
+}
+
 class AshInit;
 class CastConfigClientMediaRouter;
 class ChromeLauncherController;
@@ -62,6 +70,10 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // ShelfController and ChromeShellDelegate in classic Ash.
   std::unique_ptr<ash::ShelfModel> chrome_shelf_model_;
   std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
+
+  // Used only for mash.
+  std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
+  std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };
