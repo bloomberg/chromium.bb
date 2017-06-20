@@ -463,6 +463,57 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListDoubleCloseBeforeUnloadCancel) {
   window_observer.Wait();
 }
 
+// Tests closing the browser by BrowserList::CloseAllBrowsersWithProfile, with
+// a null success callback, a beforeunload handler and clicking Leave in the
+// beforeunload confirm dialog. The test succeed if no crash happens.
+IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadNullCallbackOk) {
+  NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
+  PrepareForDialog(browser());
+
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithProfile(browser()->profile(),
+                                           BrowserList::CloseCallback(),
+                                           BrowserList::CloseCallback(), false);
+  ClickModalDialogButton(true);
+  window_observer.Wait();
+}
+
+// Tests closing the browser by BrowserList::CloseAllBrowsersWithProfile, with
+// a null failure callback, a beforeunload handler and clicking Stay in the
+// beforeunload confirm dialog. The test succeed if no crash happens.
+IN_PROC_BROWSER_TEST_F(UnloadTest,
+                       BrowserListCloseBeforeUnloadNullCallbackCancel) {
+  NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
+  PrepareForDialog(browser());
+
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithProfile(browser()->profile(),
+                                           BrowserList::CloseCallback(),
+                                           BrowserList::CloseCallback(), false);
+
+  // We wait for the title to change after cancelling the closure of browser
+  // window, to ensure that in-flight IPCs from the renderer reach the browser.
+  // Otherwise the browser won't put up the beforeunload dialog because it's
+  // waiting for an ack from the renderer.
+  base::string16 expected_title = base::ASCIIToUTF16("cancelled");
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  ClickModalDialogButton(false);
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // The test harness cannot close the window automatically, because it requires
+  // confirmation. We close the window manually instead.
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  chrome::CloseWindow(browser());
+  ClickModalDialogButton(true);
+  window_observer.Wait();
+}
+
 // Tests terminating the browser with a beforeunload handler.
 // Currently only ChromeOS shuts down gracefully.
 #if defined(OS_CHROMEOS)

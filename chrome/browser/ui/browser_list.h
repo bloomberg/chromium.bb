@@ -92,13 +92,14 @@ class BrowserList {
   static void CloseAllBrowsersWithProfile(Profile* profile);
 
   // Closes all browsers for |profile| across all desktops. Uses
-  // TryToCloseBrowserList() to do the actual closing. Trigger any
-  // OnBeforeUnload events if |if_force| is false. If all OnBeforeUnload events
-  // are confirmed or |skip_beforeunload| is true, |on_close_success| is called,
-  // otherwise |on_close_aborted| is called.
-  // Note that if there is any browser window has been used before, user
-  // should always has a chance to save his or her work before closing windows
-  // without trigger beforeunload event.
+  // TryToCloseBrowserList() to do the actual closing. Triggers any
+  // OnBeforeUnload events unless |skip_beforeunload| is true. If all
+  // OnBeforeUnload events are confirmed or |skip_beforeunload| is true,
+  // |on_close_success| is called, otherwise |on_close_aborted| is called. Both
+  // callbacks may be null.
+  // Note that if there is any browser window that has been used before, the
+  // user should always have a chance to save their work before closing windows
+  // without triggering beforeunload events.
   static void CloseAllBrowsersWithProfile(Profile* profile,
                                           const CloseCallback& on_close_success,
                                           const CloseCallback& on_close_aborted,
