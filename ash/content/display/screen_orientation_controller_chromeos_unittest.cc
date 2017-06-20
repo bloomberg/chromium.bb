@@ -510,16 +510,6 @@ TEST_F(ScreenOrientationControllerTest, ResetUserRotationUponExit) {
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
-// Tests that if a user sets a display rotation that accelerometer rotation
-// becomes locked.
-TEST_F(ScreenOrientationControllerTest,
-       NonAccelerometerRotationChangesLockRotation) {
-  EnableMaximizeMode(true);
-  ASSERT_FALSE(RotationLocked());
-  SetInternalDisplayRotation(display::Display::ROTATE_270);
-  EXPECT_TRUE(RotationLocked());
-}
-
 // Tests that if a user changes the display rotation, while rotation is locked,
 // that the updates are recorded. Upon exiting maximize mode the latest user
 // rotation should be applied.
@@ -619,33 +609,6 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
-}
-
-// Tests that when MaximizeMode is triggered before the internal display is
-// ready, that ScreenOrientationController still begins listening to events,
-// which require an internal display to be acted upon.
-TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetFirstDisplayAsInternalDisplay();
-
-  int64_t internal_display_id = display::Display::InternalDisplayId();
-  display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
-
-  EnableMaximizeMode(true);
-
-  // Should not crash, even though there is no internal display.
-  SetDisplayRotationById(internal_display_id, display::Display::ROTATE_180);
-  EXPECT_FALSE(RotationLocked());
-
-  // Should not crash, even though the invalid display id is requested.
-  SetDisplayRotationById(display::kInvalidDisplayId,
-                         display::Display::ROTATE_180);
-  EXPECT_FALSE(RotationLocked());
-
-  // With an internal display now available, functionality should resume.
-  display::Display::SetInternalDisplayId(internal_display_id);
-  SetInternalDisplayRotation(display::Display::ROTATE_90);
-  EXPECT_TRUE(RotationLocked());
 }
 
 // Verifies rotating an inactive Display is successful.
