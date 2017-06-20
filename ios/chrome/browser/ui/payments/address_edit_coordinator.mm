@@ -35,7 +35,10 @@ using ::AutofillTypeFromAutofillUIType;
 @property(nonatomic, strong)
     CountrySelectionCoordinator* countrySelectionCoordinator;
 
-@property(nonatomic, strong) PaymentRequestEditViewController* viewController;
+@property(nonatomic, strong) UINavigationController* viewController;
+
+@property(nonatomic, strong)
+    PaymentRequestEditViewController* editViewController;
 
 @property(nonatomic, strong) AddressEditMediator* mediator;
 
@@ -48,24 +51,32 @@ using ::AutofillTypeFromAutofillUIType;
 @synthesize delegate = _delegate;
 @synthesize countrySelectionCoordinator = _countrySelectionCoordinator;
 @synthesize viewController = _viewController;
+@synthesize editViewController = _editViewController;
 @synthesize mediator = _mediator;
 
 - (void)start {
-  self.viewController = [[PaymentRequestEditViewController alloc] init];
+  self.editViewController = [[PaymentRequestEditViewController alloc] init];
   // TODO(crbug.com/602666): Title varies depending on what field is missing.
   // e.g., Add Email vs. Add Phone Number.
   NSString* title = self.address
                         ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_ADDRESS)
                         : l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
-  [self.viewController setTitle:title];
-  [self.viewController setDelegate:self];
-  [self.viewController setValidatorDelegate:self];
+  [self.editViewController setTitle:title];
+  [self.editViewController setDelegate:self];
+  [self.editViewController setValidatorDelegate:self];
   self.mediator =
       [[AddressEditMediator alloc] initWithPaymentRequest:self.paymentRequest
                                                   address:self.address];
-  [self.mediator setConsumer:self.viewController];
-  [self.viewController setDataSource:self.mediator];
-  [self.viewController loadModel];
+  [self.mediator setConsumer:self.editViewController];
+  [self.editViewController setDataSource:self.mediator];
+  [self.editViewController loadModel];
+
+  self.viewController = [[UINavigationController alloc]
+      initWithRootViewController:self.editViewController];
+  [self.viewController setModalPresentationStyle:UIModalPresentationFormSheet];
+  [self.viewController
+      setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+  [self.viewController setNavigationBarHidden:YES];
 
   [[self baseViewController] presentViewController:self.viewController
                                           animated:YES
@@ -78,6 +89,7 @@ using ::AutofillTypeFromAutofillUIType;
                          completion:nil];
   [self.countrySelectionCoordinator stop];
   self.countrySelectionCoordinator = nil;
+  self.editViewController = nil;
   self.viewController = nil;
 }
 
@@ -115,7 +127,7 @@ using ::AutofillTypeFromAutofillUIType;
                           didSelectField:(EditorField*)field {
   if (field.autofillUIType == AutofillUITypeProfileHomeAddressCountry) {
     self.countrySelectionCoordinator = [[CountrySelectionCoordinator alloc]
-        initWithBaseViewController:self.viewController];
+        initWithBaseViewController:self.editViewController];
     [self.countrySelectionCoordinator setCountries:self.mediator.countries];
     [self.countrySelectionCoordinator
         setSelectedCountryCode:self.mediator.selectedCountryCode];
@@ -171,8 +183,8 @@ using ::AutofillTypeFromAutofillUIType;
            didSelectCountryWithCode:(NSString*)countryCode {
   if (self.mediator.selectedCountryCode != countryCode) {
     [self.mediator setSelectedCountryCode:countryCode];
-    [self.viewController loadModel];
-    [self.viewController.collectionView reloadData];
+    [self.editViewController loadModel];
+    [self.editViewController.collectionView reloadData];
   }
   [self.countrySelectionCoordinator stop];
   self.countrySelectionCoordinator = nil;
