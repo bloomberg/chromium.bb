@@ -66,6 +66,10 @@ every day:
     Code formatting, debugging, Intellisense.
 *   ***Python*** -
     Linting, intellisense, code formatting, refactoring, debugging, snippets.
+*   ***Toggle Header/Source*** -
+    Toggles between .cc and .h with `F4`. The C/C++ extension supports this as
+    well through `Alt+O` but sometimes chooses the wrong file when there are
+    multiple files in the workspace that have the same name.
 *   ***Protobuf support*** -
     Syntax highlighting for .proto files.
 *   ***you-complete-me*** -
