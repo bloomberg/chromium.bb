@@ -10,12 +10,22 @@
 
 namespace blink {
 
-FontGlobalContext& FontGlobalContext::Get() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<FontGlobalContext>,
+FontGlobalContext* FontGlobalContext::Get(CreateIfNeeded create_if_needed) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<FontGlobalContext*>,
                                   font_persistent, ());
+  if (!*font_persistent && create_if_needed == kCreate) {
+    *font_persistent = new FontGlobalContext();
+  }
   return *font_persistent;
 }
 
 FontGlobalContext::FontGlobalContext() {}
+
+void FontGlobalContext::ClearMemory() {
+  if (!Get(kDoNotCreate))
+    return;
+
+  GetFontCache().Invalidate();
+}
 
 }  // namespace blink
