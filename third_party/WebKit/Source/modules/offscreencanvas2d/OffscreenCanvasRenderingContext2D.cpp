@@ -6,8 +6,8 @@
 
 #include "bindings/modules/v8/OffscreenRenderingContext.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/ImageBitmap.h"
 #include "core/frame/Settings.h"
+#include "core/imagebitmap/ImageBitmap.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerSettings.h"
 #include "platform/graphics/ImageBuffer.h"

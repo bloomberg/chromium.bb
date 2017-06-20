@@ -5,7 +5,7 @@
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 
 #include "bindings/modules/v8/RenderingContext.h"
-#include "core/frame/ImageBitmap.h"
+#include "core/imagebitmap/ImageBitmap.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/gpu/ImageLayerBridge.h"

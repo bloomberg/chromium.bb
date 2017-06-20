@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("imagebitmap") {
   sources = [
+    "ImageBitmap.cpp",
+    "ImageBitmap.h",
     "ImageBitmapFactories.cpp",
     "ImageBitmapFactories.h",
     "ImageBitmapSource.cpp",
