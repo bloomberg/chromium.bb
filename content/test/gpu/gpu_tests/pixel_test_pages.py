@@ -484,12 +484,12 @@ def MacSpecificPages(base_name):
       'filter_effects.html',
       base_name + '_CSSFilterEffects',
       test_rect=[0, 0, 300, 300],
-      revision=4),
+      revision=5),
     PixelTestPage(
       'filter_effects.html',
       base_name + '_CSSFilterEffects_NoOverlays',
       test_rect=[0, 0, 300, 300],
-      revision=4,
+      revision=5,
       tolerance=10,
       browser_args=['--disable-mac-overlays']),
   ]
