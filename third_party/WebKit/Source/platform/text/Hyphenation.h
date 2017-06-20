@@ -30,8 +30,7 @@ class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
 
  private:
   friend class LayoutLocale;
-  static PassRefPtr<Hyphenation> PlatformGetHyphenation(
-      const AtomicString& locale);
+  static RefPtr<Hyphenation> PlatformGetHyphenation(const AtomicString& locale);
 };
 
 }  // namespace blink
