@@ -348,6 +348,7 @@
 
     'chromium.perf.fyi': {
       'Android Builder FYI': 'official_goma_minimal_symbols_android',
+      'Android arm64 Builder FYI': 'official_goma_minimal_symbols_android_arm64',
       'Win Builder FYI': 'official_goma',
       'Win Clang Builder': 'official_goma_minimal_symbols_clang',
       'Battor Agent Linux': 'official_goma_minimal_symbols_clang',
