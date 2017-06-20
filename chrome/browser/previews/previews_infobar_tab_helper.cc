@@ -105,6 +105,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
                 web_contents()->GetBrowserContext());
     PreviewsInfoBarDelegate::Create(
         web_contents(), previews::PreviewsType::OFFLINE,
+        base::Time() /* previews_freshness */,
         data_reduction_proxy_settings &&
             data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
         base::Bind(&AddPreviewNavigationCallback, browser_context_,
@@ -118,8 +119,10 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();
   if (headers && data_reduction_proxy::IsLitePagePreview(*headers)) {
+    base::Time previews_freshness;
+    headers->GetDateValue(&previews_freshness);
     PreviewsInfoBarDelegate::Create(
-        web_contents(), previews::PreviewsType::LITE_PAGE,
+        web_contents(), previews::PreviewsType::LITE_PAGE, previews_freshness,
         true /* is_data_saver_user */,
         base::Bind(&AddPreviewNavigationCallback, browser_context_,
                    navigation_handle->GetRedirectChain()[0],

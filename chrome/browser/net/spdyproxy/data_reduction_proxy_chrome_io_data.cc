@@ -60,7 +60,8 @@ void AddPreviewNavigationToBlackListCallback(
 void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PreviewsInfoBarDelegate::Create(
-      web_contents, previews::PreviewsType::LOFI, true /* is_data_saver_user */,
+      web_contents, previews::PreviewsType::LOFI,
+      base::Time() /* previews_freshness */, true /* is_data_saver_user */,
       base::Bind(&AddPreviewNavigationToBlackListCallback,
                  web_contents->GetBrowserContext(),
                  web_contents->GetController()

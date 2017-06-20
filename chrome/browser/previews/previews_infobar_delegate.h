@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/previews/core/previews_experiments.h"
 
@@ -41,10 +42,12 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   static void Create(
       content::WebContents* web_contents,
       previews::PreviewsType previews_type,
+      base::Time previews_freshness,
       bool is_data_saver_user,
       const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
   // ConfirmInfoBarDelegate overrides:
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetLinkText() const override;
 
@@ -54,18 +57,21 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   PreviewsInfoBarDelegate(
       content::WebContents* web_contents,
       previews::PreviewsType previews_type,
+      base::Time previews_freshness,
       bool is_data_saver_user,
       const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
   // ConfirmInfoBarDelegate overrides:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
   int GetButtons() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   previews::PreviewsType previews_type_;
+  // The time at which the preview associated with this infobar was created. A
+  // value of zero means that the creation time is unknown.
+  const base::Time previews_freshness_;
   mutable PreviewsInfoBarAction infobar_dismissed_action_;
 
   const base::string16 message_text_;
