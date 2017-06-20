@@ -530,7 +530,7 @@
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
       'linux_chromium_browser_side_navigation_rel': 'release_trybot',
-      'linux_chromium_cfi_rel_ng': 'cfi_full_release_static_dcheck_always_on',
+      'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'linux_chromium_chromeos_asan_rel_ng': 'asan_lsan_chromeos_release_trybot',
       'linux_chromium_chromeos_compile_dbg_ng': 'chromeos_with_codecs_debug_trybot',
       'linux_chromium_chromeos_compile_rel_ng': 'chromeos_with_codecs_release_trybot',
@@ -992,8 +992,8 @@
       'cfi_full', 'clang_tot', 'release', 'static',
     ],
 
-    'cfi_full_release_static_dcheck_always_on': [
-      'cfi_full', 'release', 'static', 'dcheck_always_on',
+    'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on': [
+      'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on',
     ],
 
     'cfi_release_static': [
