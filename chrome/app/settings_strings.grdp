@@ -918,6 +918,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_MANUALLY_TITLE" desc="Text for the title of the dialog that is used to manually add a printer instead of automatically finding ones nearby.">
       Add a printer manually
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_SELECT_MANUFACTURER_AND_MODEL_TITLE" desc="Text for the title of the dialog that is used to select a manufacturer and model from the drop down list.">
+      Select a printer manufacturer and model
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE" desc="Text for the title of the Printer Details subpage.">
       Printer details
     </message>
