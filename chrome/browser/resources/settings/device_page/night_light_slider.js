@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+(function() {
+
 /**
  * @fileoverview
  * night-light-slider is used to set the custom automatic schedule of the
@@ -18,37 +20,23 @@ Polymer({
   is: 'night-light-slider',
 
   behaviors: [
-    I18nBehavior,
     PrefsBehavior,
     Polymer.IronA11yKeysBehavior,
+    Polymer.PaperInkyFocusBehavior,
   ],
 
   properties: {
     /**
-     * The object currently being dragged. Either the start or end knobs.
-     * @type {?Object}
-     * @private
-     */
-    dragObject_: {
-      type: Object,
-      value: null,
-    },
-
-    /**
      * The start knob time as a string to be shown on the start label bubble.
      * @private
      */
-    startTime_: {
-      type: String,
-    },
+    startTime_: String,
 
     /**
      * The end knob time as a string to be shown on the end label bubble.
      * @private
      */
-    endTime_: {
-      type: String,
-    },
+    endTime_: String,
   },
 
   observers: [
@@ -61,6 +49,14 @@ Polymer({
     'right': 'onRightKey_',
   },
 
+  /**
+   * The object currently being dragged. Either the start or end knobs.
+   * @type {?Object}
+   * @private
+   */
+  dragObject_: null,
+
+  /** @override */
   ready: function() {
     // Build the legend markers.
     var markersContainer = this.$.markersContainer;
@@ -71,6 +67,7 @@ Polymer({
       markersContainer.appendChild(marker);
       marker.style.left = (i * 100 / HOURS_PER_DAY) + '%';
     }
+
     this.async(function() {
       // Read the initial prefs values and refresh the slider.
       this.customTimesChanged_();
@@ -111,7 +108,19 @@ Polymer({
    */
   startDrag_: function(event) {
     event.preventDefault();
-    this.dragObject_ = event.target;
+
+    // Only handle start or end knobs. Use the "knob-inner" divs just to display
+    // the knobs.
+    if (event.target == this.$.startKnob ||
+        event.target == this.$.startKnob.firstElementChild) {
+      this.dragObject_ = this.$.startKnob;
+    } else if (event.target == this.$.endKnob ||
+               event.target == this.$.endKnob.firstElementChild) {
+      this.dragObject_ = this.$.endKnob;
+    } else {
+      return;
+    }
+
     this.setExpanded_(true);
 
     // Focus is only given to the knobs by means of keyboard tab navigations.
@@ -449,4 +458,68 @@ Polymer({
 
     this.incrementPref_(knobPref, 1);
   },
+
+  /**
+   * @return {boolean} Whether either of the two knobs is focused.
+   * @private
+   */
+  isEitherKnobFocused_: function() {
+    var activeElement = this.shadowRoot.activeElement;
+    return activeElement == this.$.startKnob || activeElement == this.$.endKnob;
+  },
+
+  /**
+   * Overrides _createRipple() from PaperInkyFocusBehavior to create the ripple
+   * only on a knob if it's focused, or on a dummy hidden element so that it
+   * doesn't show.
+   * @private
+   */
+  _createRipple: function() {
+    if (this.isEitherKnobFocused_()) {
+      this._rippleContainer = this.shadowRoot.activeElement;
+    } else {
+      // We can't just skip the ripple creation and return early with null here.
+      // The code inherited from PaperInkyFocusBehavior expects that this
+      // function returns a ripple element. So to avoid crashes, we'll setup the
+      // ripple to be created under a hidden element.
+      this._rippleContainer = this.$.dummyRippleContainer;
+    }
+
+    return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+  },
+
+  /**
+   * Handles focus events on the start and end knobs.
+   * @private
+   */
+  onFocus_: function() {
+    this.ensureRipple();
+
+    if (this.hasRipple()) {
+      this._ripple.style.display = '';
+      this._ripple.holdDown = true;
+    }
+  },
+
+  /**
+   * Handles blur events on the start and end knobs.
+   * @private
+   */
+  onBlur_: function() {
+    if (this.hasRipple()) {
+      this._ripple.remove();
+      this._ripple = null;
+    }
+  },
+
+  /** @private */
+  _focusedChanged: function(receivedFocusFromKeyboard) {
+    // Overrides the _focusedChanged() from the PaperInkyFocusBehavior so that
+    // it does nothing. This function is called only once for the entire
+    // night-light-slider element even when focus is moved between the two
+    // knobs. This doesn't allow us to decide on which knob the ripple will be
+    // created. Hence we handle focus and blur explicitly above.
+  }
 });
+
+})();
