@@ -136,7 +136,6 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
   // safe.
   controller_event_handler_ = base::MakeUnique<ControllerEventHandler>(
       weak_factory_.GetWeakPtr(), stream_id_);
-  audio_log_->OnCreated(stream_id, params, output_device_id);
   controller_ = media::AudioOutputController::Create(
       audio_manager, controller_event_handler_.get(), params, output_device_id,
       reader_.get());

@@ -290,6 +290,7 @@ void AudioRendererHost::OnCreateStream(int stream_id,
   MediaInternals* const media_internals = MediaInternals::GetInstance();
   std::unique_ptr<media::AudioLog> audio_log = media_internals->CreateAudioLog(
       media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER);
+  audio_log->OnCreated(stream_id, params, device_unique_id);
   media_internals->SetWebContentsTitleForAudioLogEntry(
       stream_id, render_process_id_, render_frame_id, audio_log.get());
   auto delegate = AudioOutputDelegateImpl::Create(
