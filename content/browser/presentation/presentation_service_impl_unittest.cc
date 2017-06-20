@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using blink::mojom::ScreenAvailability;
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Mock;
@@ -203,8 +204,7 @@ class MockPresentationServiceClient
     : public blink::mojom::PresentationServiceClient {
  public:
   MOCK_METHOD2(OnScreenAvailabilityUpdated,
-               void(const GURL& url,
-                    blink::mojom::ScreenAvailability availability));
+               void(const GURL& url, ScreenAvailability availability));
   MOCK_METHOD2(OnConnectionStateChanged,
                void(const PresentationInfo& connection,
                     PresentationConnectionState new_state));
@@ -294,17 +294,14 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
   }
 
-  void SimulateScreenAvailabilityChangeAndWait(const GURL& url,
-                                               bool available) {
+  void SimulateScreenAvailabilityChangeAndWait(
+      const GURL& url,
+      ScreenAvailability availability) {
     auto listener_it = service_impl_->screen_availability_listeners_.find(url);
     ASSERT_TRUE(listener_it->second);
 
-    blink::mojom::ScreenAvailability expected_availability =
-        available ? blink::mojom::ScreenAvailability::AVAILABLE
-                  : blink::mojom::ScreenAvailability::UNAVAILABLE;
-    EXPECT_CALL(mock_client_,
-                OnScreenAvailabilityUpdated(url, expected_availability));
-    listener_it->second->OnScreenAvailabilityChanged(available);
+    EXPECT_CALL(mock_client_, OnScreenAvailabilityUpdated(url, availability));
+    listener_it->second->OnScreenAvailabilityChanged(availability);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -337,9 +334,12 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {
   ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
-  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, true);
-  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, false);
-  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, true);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_,
+                                          ScreenAvailability::AVAILABLE);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_,
+                                          ScreenAvailability::UNAVAILABLE);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_,
+                                          ScreenAvailability::AVAILABLE);
 }
 
 TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {
@@ -373,7 +373,8 @@ TEST_F(PresentationServiceImplTest, DidNavigateOtherFrame) {
 
   // Availability is reported and callback is invoked since it was not
   // removed.
-  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, true);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_,
+                                          ScreenAvailability::AVAILABLE);
 }
 
 TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
@@ -398,7 +399,8 @@ TEST_F(PresentationServiceImplTest, OtherRenderFrameDeleted) {
 
   // Availability is reported and callback should be invoked since listener
   // has not been deleted.
-  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, true);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_,
+                                          ScreenAvailability::AVAILABLE);
 }
 
 TEST_F(PresentationServiceImplTest, DelegateFails) {

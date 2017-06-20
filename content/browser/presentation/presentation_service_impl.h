@@ -125,7 +125,8 @@ class CONTENT_EXPORT PresentationServiceImpl
 
     // PresentationScreenAvailabilityListener implementation.
     GURL GetAvailabilityUrl() const override;
-    void OnScreenAvailabilityChanged(bool available) override;
+    void OnScreenAvailabilityChanged(
+        blink::mojom::ScreenAvailability availability) override;
     void OnScreenAvailabilityNotSupported() override;
 
    private:

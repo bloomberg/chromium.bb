@@ -494,12 +494,10 @@ GURL PresentationServiceImpl::ScreenAvailabilityListenerImpl::
   return availability_url_;
 }
 
-void PresentationServiceImpl::ScreenAvailabilityListenerImpl
-::OnScreenAvailabilityChanged(bool available) {
-  service_->client_->OnScreenAvailabilityUpdated(
-      availability_url_, available
-                             ? blink::mojom::ScreenAvailability::AVAILABLE
-                             : blink::mojom::ScreenAvailability::UNAVAILABLE);
+void PresentationServiceImpl::ScreenAvailabilityListenerImpl::
+    OnScreenAvailabilityChanged(blink::mojom::ScreenAvailability availability) {
+  service_->client_->OnScreenAvailabilityUpdated(availability_url_,
+                                                 availability);
 }
 
 void PresentationServiceImpl::ScreenAvailabilityListenerImpl

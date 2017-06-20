@@ -18,7 +18,8 @@ class MockScreenAvailabilityListener
 
   GURL GetAvailabilityUrl() const override;
 
-  MOCK_METHOD1(OnScreenAvailabilityChanged, void(bool available));
+  MOCK_METHOD1(OnScreenAvailabilityChanged,
+               void(blink::mojom::ScreenAvailability));
 
   MOCK_METHOD0(OnScreenAvailabilityNotSupported, void());
 
