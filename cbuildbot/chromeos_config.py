@@ -2221,7 +2221,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # A paladin is generally considered good enough for important if it can
   # pass the last ~20 build attempts, e.g. the builder page shows all green.
   _paladin_new_boards = frozenset([
+      'bob',
       'eve',
+      'hana',
       'lakitu-gpu', # crbug.com/732942
       'lakitu-st',
       'sentry',

@@ -3974,6 +3974,7 @@
     },
     "bob-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "bob"
         ],
@@ -10699,6 +10700,7 @@
     },
     "hana-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "hana"
         ],
@@ -14714,6 +14716,7 @@
             "arm-generic-paladin",
             "auron-paladin",
             "beaglebone-paladin",
+            "bob-paladin",
             "butterfly-paladin",
             "caroline-paladin",
             "cave-paladin",
@@ -14735,6 +14738,7 @@
             "gonzo-paladin",
             "guado-paladin",
             "guado_moblab-paladin",
+            "hana-paladin",
             "kevin-paladin",
             "kip-paladin",
             "lakitu-gpu-paladin",
