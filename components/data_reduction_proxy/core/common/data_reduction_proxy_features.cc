@@ -20,7 +20,7 @@ const base::Feature kDataReductionSiteBreakdown{
 // version required the client to make this decision. The new protocol relies
 // on updates primarily to the Chrome-Proxy-Accept-Transform header.
 const base::Feature kDataReductionProxyDecidesTransform{
-    "DataReductionProxyDecidesTransform", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DataReductionProxyDecidesTransform", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the data saver promo for low memory Android devices.
 const base::Feature kDataReductionProxyLowMemoryDevicePromo{
