@@ -1337,5 +1337,41 @@ cr.define('print_preview_test', function() {
         expectTrue(nativeLayer.generateDraft());
       });
     });
+
+    // Test that the policy to use the system default printer by default
+    // instead of the most recently used destination works.
+    test('SystemDefaultPrinterPolicy', function() {
+      // Add recent destination.
+      initialSettings.serializedAppStateStr_ = JSON.stringify({
+        version: 2,
+        recentDestinations: [
+          {
+            id: 'ID1',
+            origin: 'local',
+            account: '',
+            capabilities: 0,
+            name: 'One',
+            extensionId: '',
+            extensionName: '',
+          },
+        ],
+      });
+
+      // Setup local destinations with the system default + recent.
+      localDestinationInfos = [
+        { printerName: 'One', deviceName: 'ID1' },
+        { printerName: 'FooName', deviceName: 'FooDevice' }
+      ];
+      nativeLayer.setLocalDestinationCapabilities(
+          getCddTemplate('ID1', 'One'));
+
+      return setupSettingsAndDestinationsWithCapabilities().then(function() {
+        // The system default destination should be used instead of the
+        // most recent destination.
+        assertEquals(
+            'FooDevice',
+            printPreview.destinationStore_.selectedDestination.id);
+      });
+    });
   });
 });

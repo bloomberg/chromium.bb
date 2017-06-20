@@ -1785,6 +1785,14 @@
     ]
   },
 
+  "PrintPreviewUseSystemDefaultPrinter": {
+    "os": ["win", "mac", "linux"],
+    "test_policy": { "PrintPreviewUseSystemDefaultPrinter": false },
+    "pref_mappings": [
+      { "pref": "printing.use_system_default_printer" }
+    ]
+  },
+
   "BackgroundModeEnabled": {
     "os": ["win", "linux"],
     "can_be_recommended": true,

@@ -10699,6 +10699,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="370" label="NetworkTimeQueriesEnabled"/>
   <int value="371" label="DownloadRestrictions"/>
   <int value="372" label="DeviceSecondFactorAuthentication"/>
+  <int value="373" label="UseSystemDefaultPrinterAsDefault"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

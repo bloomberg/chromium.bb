@@ -80,6 +80,10 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         {switches::kUnsafePacUrl, prefs::kPacHttpsUrlStrippingEnabled, false},
         {switches::kEnableLocalSyncBackend,
          syncer::prefs::kEnableLocalSyncBackend, true},
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+        {switches::kUseSystemDefaultPrinter,
+         prefs::kPrintPreviewUseSystemDefaultPrinter, true},
+#endif
 };
 
 const CommandLinePrefStore::SwitchToPreferenceMapEntry

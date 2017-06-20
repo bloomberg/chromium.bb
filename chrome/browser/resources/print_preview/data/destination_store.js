@@ -169,6 +169,14 @@ cr.define('print_preview', function() {
         print_preview.DestinationOrigin.CROS :
         print_preview.DestinationOrigin.LOCAL;
 
+    /**
+     * Whether to default to the system default printer instead of the most
+     * recent destination.
+     * @private {boolean}
+     */
+    this.useSystemDefaultAsDefault_ =
+        loadTimeData.getBoolean('useSystemDefaultPrinter');
+
     this.addEventListeners_();
     this.reset_();
   }
@@ -597,18 +605,19 @@ cr.define('print_preview', function() {
           var candidate = this.destinationMap_[this.getDestinationKey_(
               origin, id, account)];
           if (candidate != null) {
-            if (!foundDestination)
+            if (!foundDestination && !this.useSystemDefaultAsDefault_)
               this.selectDestination(candidate);
             candidate.isRecent = true;
             foundDestination = true;
-          } else if (!foundDestination) {
+          } else if (!foundDestination && !this.useSystemDefaultAsDefault_) {
             foundDestination = this.fetchPreselectedDestination_(
                 origin, id, account, name, capabilities, extensionId,
                 extensionName);
           }
         }
       }
-      if (foundDestination)
+
+      if (foundDestination && !this.useSystemDefaultAsDefault_)
         return;
 
       // Try the system default

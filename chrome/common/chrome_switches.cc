@@ -1122,6 +1122,12 @@ extern const char kEnableInputImeAPI[] = "enable-input-ime-api";
 extern const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 #endif
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+// Uses the system default printer as the initially selected destination in
+// print preview, instead of the most recently used destination.
+const char kUseSystemDefaultPrinter[] = "use-system-default-printer";
+#endif
+
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
 // Enables the out-of-process memory logging.
 const char kMemlog[] = "memlog";

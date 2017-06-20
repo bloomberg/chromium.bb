@@ -75,6 +75,10 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kEnableDoNotTrack,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kPrintPreviewUseSystemDefaultPrinter,
+                                false);
+#endif
 #if BUILDFLAG(ENABLE_WEBRTC)
   // TODO(guoweis): Remove next 2 options at M50.
   registry->RegisterBooleanPref(prefs::kWebRTCMultipleRoutesEnabled, true);
