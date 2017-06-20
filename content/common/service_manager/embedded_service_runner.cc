@@ -30,6 +30,8 @@ class EmbeddedServiceRunner::InstanceManager
       : name_(name.as_string()),
         factory_callback_(info.factory),
         use_own_thread_(!info.task_runner && info.use_own_thread),
+        message_loop_type_(info.message_loop_type),
+        thread_priority_(info.thread_priority),
         quit_closure_(quit_closure),
         quit_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         service_task_runner_(info.task_runner) {
@@ -43,7 +45,10 @@ class EmbeddedServiceRunner::InstanceManager
     if (use_own_thread_ && !thread_) {
       // Start a new thread if necessary.
       thread_.reset(new base::Thread(name_));
-      thread_->Start();
+      base::Thread::Options options;
+      options.message_loop_type = message_loop_type_;
+      options.priority = thread_priority_;
+      thread_->StartWithOptions(options);
       service_task_runner_ = thread_->task_runner();
     }
 
@@ -133,6 +138,8 @@ class EmbeddedServiceRunner::InstanceManager
   const std::string name_;
   const ServiceInfo::ServiceFactory factory_callback_;
   const bool use_own_thread_;
+  base::MessageLoop::Type message_loop_type_;
+  base::ThreadPriority thread_priority_;
   const base::Closure quit_closure_;
   const scoped_refptr<base::SingleThreadTaskRunner> quit_task_runner_;
 
