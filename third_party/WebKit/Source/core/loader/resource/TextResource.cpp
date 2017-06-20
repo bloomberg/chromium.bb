@@ -6,6 +6,7 @@
 
 #include "core/html/parser/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
+#include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -13,11 +14,12 @@ namespace blink {
 TextResource::TextResource(const ResourceRequest& resource_request,
                            Resource::Type type,
                            const ResourceLoaderOptions& options,
-                           TextResourceDecoder::ContentType content_type,
+                           TextResourceDecoderOptions::ContentType content_type,
                            const String& charset)
     : Resource(resource_request, type, options),
-      decoder_(TextResourceDecoder::Create(content_type,
-                                           WTF::TextEncoding(charset))) {}
+      decoder_(TextResourceDecoder::Create(
+          TextResourceDecoderOptions(content_type,
+                                     WTF::TextEncoding(charset)))) {}
 
 TextResource::~TextResource() {}
 

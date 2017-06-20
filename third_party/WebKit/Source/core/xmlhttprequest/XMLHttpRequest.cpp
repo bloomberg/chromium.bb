@@ -71,6 +71,7 @@
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/NetworkLog.h"
 #include "platform/network/ParsedContentType.h"
@@ -1713,35 +1714,35 @@ void XMLHttpRequest::ParseDocumentChunk(const char* data, unsigned len) {
 
 std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   if (response_type_code_ == kResponseTypeJSON) {
-    return TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent,
-                                       UTF8Encoding());
+    return TextResourceDecoder::Create(TextResourceDecoderOptions(
+        TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));
   }
 
   if (!final_response_charset_.IsEmpty()) {
-    return TextResourceDecoder::Create(
-        TextResourceDecoder::kPlainTextContent,
-        WTF::TextEncoding(final_response_charset_));
+    return TextResourceDecoder::Create(TextResourceDecoderOptions(
+        TextResourceDecoderOptions::kPlainTextContent,
+        WTF::TextEncoding(final_response_charset_)));
   }
 
   // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
   if (ResponseIsXML()) {
-    std::unique_ptr<TextResourceDecoder> decoder =
-        TextResourceDecoder::Create(TextResourceDecoder::kXMLContent);
+    TextResourceDecoderOptions options(TextResourceDecoderOptions::kXMLContent);
+
     // Don't stop on encoding errors, unlike it is done for other kinds
     // of XML resources. This matches the behavior of previous WebKit
     // versions, Firefox and Opera.
-    decoder->UseLenientXMLDecoding();
+    options.SetUseLenientXMLDecoding();
 
-    return decoder;
+    return TextResourceDecoder::Create(options);
   }
 
   if (ResponseIsHTML()) {
-    return TextResourceDecoder::Create(TextResourceDecoder::kHTMLContent,
-                                       UTF8Encoding());
+    return TextResourceDecoder::Create(TextResourceDecoderOptions(
+        TextResourceDecoderOptions::kHTMLContent, UTF8Encoding()));
   }
 
-  return TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent,
-                                     UTF8Encoding());
+  return TextResourceDecoder::Create(TextResourceDecoderOptions(
+      TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));
 }
 
 void XMLHttpRequest::DidReceiveData(const char* data, unsigned len) {
