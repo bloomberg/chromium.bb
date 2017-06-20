@@ -31,8 +31,8 @@ namespace payments {
 
 namespace {
 
-constexpr int kFirstTagValue = static_cast<int>(
-    payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
+constexpr int kFirstTagValue =
+    static_cast<int>(PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
 
 enum class PaymentMethodViewControllerTags : int {
   // The tag for the button that triggers the "add address" flow. Starts at
@@ -56,17 +56,17 @@ class ProfileItem : public PaymentRequestItemList::Item {
               ProfileListViewController* controller,
               PaymentRequestDialogView* dialog,
               bool selected)
-      : payments::PaymentRequestItemList::Item(spec,
-                                               state,
-                                               parent_list,
-                                               selected,
-                                               /*show_edit_button=*/true),
+      : PaymentRequestItemList::Item(spec,
+                                     state,
+                                     parent_list,
+                                     selected,
+                                     /*show_edit_button=*/true),
         controller_(controller),
         profile_(profile) {}
   ~ProfileItem() override {}
 
  private:
-  // payments::PaymentRequestItemList::Item:
+  // PaymentRequestItemList::Item:
   std::unique_ptr<views::View> CreateContentView(
       base::string16* accessible_content) override {
     DCHECK(profile_);
@@ -165,39 +165,54 @@ class ShippingProfileViewController : public ProfileListViewController,
     return DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW;
   }
 
+  // Creates a warning message when address is not valid or an informational
+  // message when the user has not selected their shipping address yet. The
+  // warning icon is displayed only for warning messages.
+  // ---------------------------------------------
+  // | Warning icon | Warning message            |
+  // ---------------------------------------------
   std::unique_ptr<views::View> CreateHeaderView() override {
-    if (spec()->selected_shipping_option_error().empty())
+    if (!spec()->details().shipping_options.empty())
       return nullptr;
 
-    std::unique_ptr<views::View> header_view = base::MakeUnique<views::View>();
-    // 8 pixels between the warning icon view and the text.
+    auto header_view = base::MakeUnique<views::View>();
+    // 8 pixels between the warning icon view (if present) and the text.
     constexpr int kRowHorizontalSpacing = 8;
-    views::BoxLayout* layout = new views::BoxLayout(
+    auto layout = base::MakeUnique<views::BoxLayout>(
         views::BoxLayout::kHorizontal,
-        gfx::Insets(0, payments::kPaymentRequestRowHorizontalInsets),
+        gfx::Insets(0, kPaymentRequestRowHorizontalInsets),
         kRowHorizontalSpacing);
     layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-    header_view->SetLayoutManager(layout);
+    header_view->SetLayoutManager(layout.release());
 
-    std::unique_ptr<views::ImageView> warning_icon =
-        base::MakeUnique<views::ImageView>();
-    warning_icon->set_can_process_events_within_subtree(false);
-    warning_icon->SetImage(gfx::CreateVectorIcon(
-        ui::kWarningIcon, 16,
-        warning_icon->GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_AlertSeverityHigh)));
-    header_view->AddChildView(warning_icon.release());
-
-    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
-        spec()->selected_shipping_option_error());
+    auto label = base::MakeUnique<views::Label>(
+        spec()->selected_shipping_option_error().empty()
+            ? GetShippingAddressSelectorInfoMessage(spec()->shipping_type())
+            : spec()->selected_shipping_option_error());
+    // If the warning message comes from the websites, then align label
+    // according to the language of the website's text.
+    label->SetHorizontalAlignment(
+        spec()->selected_shipping_option_error().empty() ? gfx::ALIGN_LEFT
+                                                         : gfx::ALIGN_TO_HEAD);
     label->set_id(
-        static_cast<int>(DialogViewID::SHIPPING_ADDRESS_OPTION_ERROR));
-    label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_AlertSeverityHigh));
+        static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
     label->SetMultiLine(true);
+
+    if (!spec()->selected_shipping_option_error().empty()) {
+      auto warning_icon = base::MakeUnique<views::ImageView>();
+      warning_icon->set_can_process_events_within_subtree(false);
+      warning_icon->SetImage(gfx::CreateVectorIcon(
+          ui::kWarningIcon, 16,
+          warning_icon->GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_AlertSeverityHigh)));
+      header_view->AddChildView(warning_icon.release());
+      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_AlertSeverityHigh));
+    }
+
     header_view->AddChildView(label.release());
     return header_view;
   }
@@ -369,11 +384,11 @@ void ProfileListViewController::PopulateList() {
 }
 
 void ProfileListViewController::FillContentView(views::View* content_view) {
-  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical);
+  auto layout = base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  content_view->SetLayoutManager(layout);
+  content_view->SetLayoutManager(layout.release());
   std::unique_ptr<views::View> header_view = CreateHeaderView();
   if (header_view)
     content_view->AddChildView(header_view.release());
@@ -384,7 +399,7 @@ void ProfileListViewController::FillContentView(views::View* content_view) {
 
 std::unique_ptr<views::View>
 ProfileListViewController::CreateExtraFooterView() {
-  std::unique_ptr<views::View> extra_view = base::MakeUnique<views::View>();
+  auto extra_view = base::MakeUnique<views::View>();
 
   extra_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),

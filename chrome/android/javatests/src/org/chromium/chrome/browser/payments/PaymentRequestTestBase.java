@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSecti
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -457,7 +456,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         mTestCommon.onCardUnmaskPromptValidationDone(prompt);
     }
 
-
     /**
      * Installs a payment app for testing.
      *
@@ -497,12 +495,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     protected void installPaymentApp(
             String methodName, int instrumentPresence, int responseSpeed, int creationSpeed) {
         mTestCommon.installPaymentApp(methodName, instrumentPresence, responseSpeed, creationSpeed);
-    }
-
-    protected void installPaymentApp(final List<String> appMethodNames,
-            final int instrumentPresence, final int responseSpeed, final int creationSpeed) {
-        mTestCommon.installPaymentApp(
-                appMethodNames, instrumentPresence, responseSpeed, creationSpeed);
     }
 
     @Override

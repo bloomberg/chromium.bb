@@ -5447,8 +5447,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="In Title Case: The tooltip for the icon that shows the save credit card bubble">
-          Save Credit Card
+        <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="In Title Case: The tooltip for the icon that shows the save card bubble">
+          Save Card
         </message>
        </if>
       <message name="IDS_TOOLTIP_TRANSLATE" desc="The tooltip for translate">
@@ -7572,8 +7572,8 @@ I don't think this site should be blocked!
         <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
           Addresses
         </message>
-        <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="IThe name of the Credit Cards group of the Autofill dialog.">
-          Credit cards
+        <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="The name of the Cards group of the Autofill dialog.">
+          Cards
         </message>
         <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog.">
           Edit address
@@ -7584,14 +7584,14 @@ I don't think this site should be blocked!
         <message name="IDS_AUTOFILL_ADD_CONTACT_CAPTION" desc="The caption on the edit Autofill contact dialog for the new entry.">
           Add a contact
         </message>
-        <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog.">
-          Edit credit card
+        <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit Autofill card dialog. The card can be either credit, debit, or prepaid.">
+          Edit card
         </message>
-        <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog the new entry.">
-          Add a credit card
+        <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit Autofill card dialog the new entry. The card can be either credit, debit, or prepaid.">
+          Add a card
         </message>
         <message name="IDS_AUTOFILL_USE_PAYMENTS_DATA" desc="The text for the checkbox that controls the Autofill/Payments integration feature.">
-          Credit cards and addresses using Google Payments
+          Cards and addresses using Google Payments
         </message>
 
         <message name="IDS_AUTOFILL_FIELD_LABEL_EMAIL" desc="The label of the Email entry.">
@@ -7603,8 +7603,8 @@ I don't think this site should be blocked!
         <message name="IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD" desc="The label of the Name on card entry.">
           Name on card
         </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
-          Credit card number
+        <message name="IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER" desc="The label of the card number entry. This can be either credit, debit, or prepaid card.">
+          Card number
         </message>
         <message name="IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
           Expiration date

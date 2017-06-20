@@ -13,7 +13,7 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 72;
+const int WebDatabase::kCurrentVersionNumber = 73;
 
 const int WebDatabase::kDeprecatedVersionNumber = 51;
 
@@ -29,15 +29,15 @@ void ChangeVersion(sql::MetaTable* meta_table,
   meta_table->SetVersionNumber(version_num);
   if (update_compatible_version_num) {
     meta_table->SetCompatibleVersionNumber(
-          std::min(version_num, kCompatibleVersionNumber));
+        std::min(version_num, kCompatibleVersionNumber));
   }
 }
 
 // Outputs the failed version number as a warning and always returns
 // |sql::INIT_FAILURE|.
 sql::InitStatus FailedMigrationTo(int version_num) {
-  LOG(WARNING) << "Unable to update web database to version "
-               << version_num << ".";
+  LOG(WARNING) << "Unable to update web database to version " << version_num
+               << ".";
   NOTREACHED();
   return sql::INIT_FAILURE;
 }
@@ -46,8 +46,7 @@ sql::InitStatus FailedMigrationTo(int version_num) {
 
 WebDatabase::WebDatabase() {}
 
-WebDatabase::~WebDatabase() {
-}
+WebDatabase::~WebDatabase() {}
 
 void WebDatabase::AddTable(WebDatabaseTable* table) {
   tables_[table->GetTypeKey()] = table;
@@ -150,8 +149,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
   DCHECK_GT(current_version, kDeprecatedVersionNumber);
 
   for (int next_version = current_version + 1;
-       next_version <= kCurrentVersionNumber;
-       ++next_version) {
+       next_version <= kCurrentVersionNumber; ++next_version) {
     // Do any database-wide migrations.
     bool update_compatible_version = false;
     if (!MigrateToVersion(next_version, &update_compatible_version))
@@ -175,7 +173,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
 }
 
 bool WebDatabase::MigrateToVersion(int version,
-                      bool* update_compatible_version) {
+                                   bool* update_compatible_version) {
   // Migrate if necessary.
   switch (version) {
     case 58:
@@ -188,10 +186,9 @@ bool WebDatabase::MigrateToVersion(int version,
 
 bool WebDatabase::MigrateToVersion58DropWebAppsAndIntents() {
   sql::Transaction transaction(&db_);
-  return transaction.Begin() &&
-      db_.Execute("DROP TABLE IF EXISTS web_apps") &&
-      db_.Execute("DROP TABLE IF EXISTS web_app_icons") &&
-      db_.Execute("DROP TABLE IF EXISTS web_intents") &&
-      db_.Execute("DROP TABLE IF EXISTS web_intents_defaults") &&
-      transaction.Commit();
+  return transaction.Begin() && db_.Execute("DROP TABLE IF EXISTS web_apps") &&
+         db_.Execute("DROP TABLE IF EXISTS web_app_icons") &&
+         db_.Execute("DROP TABLE IF EXISTS web_intents") &&
+         db_.Execute("DROP TABLE IF EXISTS web_intents_defaults") &&
+         transaction.Commit();
 }
