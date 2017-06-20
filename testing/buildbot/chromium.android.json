@@ -3077,15 +3077,6 @@
         "test": "components_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3611,15 +3602,6 @@
         "test": "media_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "net_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3899,15 +3881,6 @@
         "test": "ui_touch_selection_unittests"
       },
       {
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "unit_tests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3982,18 +3955,6 @@
         "test": "vr_common_unittests"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "chrome_public_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -4114,18 +4075,6 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "content_shell_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -4159,18 +4108,6 @@
         "test": "content_shell_test_apk"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "webview_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
