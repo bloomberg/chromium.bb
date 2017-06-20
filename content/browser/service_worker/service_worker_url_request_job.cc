@@ -288,7 +288,8 @@ class ServiceWorkerURLRequestJob::NavigationPreloadMetrics {
     ServiceWorkerMetrics::RecordNavigationPreloadResponse(
         owner_->worker_ready_time_ - owner_->worker_start_time_,
         navigation_preload_response_time_ - owner_->worker_start_time_,
-        owner_->initial_worker_status_, owner_->resource_type_);
+        owner_->initial_worker_status_, owner_->worker_start_situation_,
+        owner_->resource_type_);
     phase_ = Phase::RECORDED;
   }
 

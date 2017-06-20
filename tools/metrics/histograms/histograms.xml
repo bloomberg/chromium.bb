@@ -68062,6 +68062,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.NavPreload.WorkerPreparationType"
+    enum="ServiceWorkerPreparationType">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The type of preparation needed for the browser to find and possibly start an
+    active worker to dispatch a FetchEvent for a main frame resource request,
+    when navigation preload also occurred.
+
+    This histogram is recorded when a navigation preload response is succesfully
+    forwarded to the service worker's fetch event (for the case mentioned
+    above), with the same restrictions numbered 1) through 3) as for
+    ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time. The sample is
+    only recorded to the appropriate suffixed histograms.
+
+    This is similar to
+    ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_NavigationPreloadEnabled.
+    The difference is ServiceWorker.NavPreload.WorkerPreparationType gets logged
+    if the navigation preload successfully occurred, at the same time as the
+    other ServiceWorker.NavPreload.* metrics so is more safely comparable to
+    them. We could deprecate the Type_NavigationPreloadEnabled histogram if it
+    turns out there is no significant difference.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.NavPreload.WorkerWaitTime" units="ms">
   <owner>falken@chromium.org</owner>
   <summary>
@@ -89933,6 +89957,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="ServiceWorker.NavPreload.ConcurrentTime"/>
   <affected-histogram name="ServiceWorker.NavPreload.FinishedFirst"/>
   <affected-histogram name="ServiceWorker.NavPreload.ResponseTime"/>
+  <affected-histogram name="ServiceWorker.NavPreload.WorkerPreparationType"/>
   <affected-histogram name="ServiceWorker.NavPreload.WorkerWaitTime"/>
 </histogram_suffixes>
 
