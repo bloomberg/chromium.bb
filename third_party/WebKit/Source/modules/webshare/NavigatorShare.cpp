@@ -12,6 +12,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/webshare/ShareData.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -69,7 +70,6 @@ void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
   if (error == mojom::blink::ShareError::OK) {
     resolver_->Resolve();
   } else {
-    // TODO(mgiuca): Work out which error type to use.
     resolver_->Reject(DOMException::Create(kAbortError, ErrorToString(error)));
   }
 }
@@ -109,6 +109,16 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     DOMException* error = DOMException::Create(kSecurityError, error_message);
     return ScriptPromise::RejectWithDOMException(script_state, error);
   }
+
+  Document* doc = ToDocument(ExecutionContext::From(script_state));
+  DCHECK(doc);
+  KURL full_url = doc->CompleteURL(share_data.url());
+  if (!full_url.IsNull() && !full_url.IsValid()) {
+    v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "Invalid URL");
+    return ScriptPromise::Reject(script_state, error);
+  }
+
   if (!UserGestureIndicator::ProcessingUserGesture()) {
     DOMException* error = DOMException::Create(
         kSecurityError,
@@ -116,8 +126,6 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(script_state, error);
   }
 
-  Document* doc = ToDocument(ExecutionContext::From(script_state));
-  DCHECK(doc);
   if (!service_) {
     LocalFrame* frame = doc->GetFrame();
     DCHECK(frame);
@@ -134,7 +142,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 
   service_->Share(share_data.hasTitle() ? share_data.title() : g_empty_string,
                   share_data.hasText() ? share_data.text() : g_empty_string,
-                  doc->CompleteURL(share_data.url()),
+                  full_url,
                   ConvertToBaseCallback(WTF::Bind(&ShareClientImpl::Callback,
                                                   WrapPersistent(client))));
 
