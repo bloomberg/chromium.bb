@@ -179,32 +179,59 @@ TEST_P(LocalFrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
 
   GetDocument().body()->setInnerHTML(
       "<style>.container { height: 200%; }"
-      "#sticky { position: sticky; top: 0; height: 50px; }</style>"
-      "<div class='container'><div id='sticky'></div></div>");
+      "#sticky1 { position: sticky; top: 0; height: 50px; }"
+      "#sticky2 { position: sticky; height: 50px; }</style>"
+      "<div class='container'>"
+      "  <div id='sticky1'></div>"
+      "  <div id='sticky2'></div>"
+      "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  LayoutBoxModelObject* sticky = ToLayoutBoxModelObject(
-      GetDocument().getElementById("sticky")->GetLayoutObject());
+  LayoutBoxModelObject* sticky1 = ToLayoutBoxModelObject(
+      GetDocument().getElementById("sticky1")->GetLayoutObject());
+  LayoutBoxModelObject* sticky2 = ToLayoutBoxModelObject(
+      GetDocument().getElementById("sticky2")->GetLayoutObject());
 
   EXPECT_TRUE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky));
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky1));
+  // #sticky2 is not viewport constrained because it has no anchor edges.
+  EXPECT_FALSE(
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky2));
 
   // Making the element non-sticky should remove it from the set of
   // viewport-constrained objects.
-  GetDocument().getElementById("sticky")->setAttribute(HTMLNames::styleAttr,
-                                                       "position: relative");
+  GetDocument().getElementById("sticky1")->setAttribute(HTMLNames::styleAttr,
+                                                        "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_FALSE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky));
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky1));
 
-  // And making it sticky again should put it back in that list.
-  GetDocument().getElementById("sticky")->setAttribute(HTMLNames::styleAttr,
-                                                       "");
+  // And making it sticky1 again should put it back in that list.
+  GetDocument().getElementById("sticky1")->setAttribute(HTMLNames::styleAttr,
+                                                        "");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky));
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky1));
+
+  // Adding an anchor edge on the non-anchored sticky should add it to the
+  // viewport-constrained objects.
+  GetDocument().getElementById("sticky2")->setAttribute(HTMLNames::styleAttr,
+                                                        "top: 0");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky2));
+
+  // Removing the anchor edge on a sticky position element should remove it from
+  // the viewport-constrained objects.
+  GetDocument().getElementById("sticky2")->setAttribute(HTMLNames::styleAttr,
+                                                        "");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky2));
 }
 
 }  // namespace

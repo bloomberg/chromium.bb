@@ -118,7 +118,7 @@ static void UpdateAuxiliaryObjectProperties(const LayoutObject& object,
   paint_layer->UpdateAncestorOverflowLayer(
       context.ancestor_overflow_paint_layer);
 
-  if (object.StyleRef().GetPosition() == EPosition::kSticky) {
+  if (object.StyleRef().HasStickyConstrainedPosition()) {
     paint_layer->GetLayoutObject().UpdateStickyPositionConstraints();
 
     // Sticky position constraints and ancestor overflow scroller affect the

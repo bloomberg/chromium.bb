@@ -105,7 +105,7 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   const PaintLayer* previous_overflow_layer = layer->AncestorOverflowLayer();
   layer->UpdateAncestorOverflowLayer(info.last_overflow_clip_layer);
   if (info.last_overflow_clip_layer && layer->NeedsCompositingInputsUpdate() &&
-      layer->GetLayoutObject().Style()->GetPosition() == EPosition::kSticky) {
+      layer->GetLayoutObject().Style()->HasStickyConstrainedPosition()) {
     if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       if (info.last_overflow_clip_layer != previous_overflow_layer) {
         // Old ancestor scroller should no longer have these constraints.

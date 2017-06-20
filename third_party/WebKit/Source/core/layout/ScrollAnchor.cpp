@@ -119,7 +119,8 @@ static LayoutPoint ComputeRelativeOffset(const LayoutObject* layout_object,
 static bool CandidateMayMoveWithScroller(const LayoutObject* candidate,
                                          const ScrollableArea* scroller) {
   if (const ComputedStyle* style = candidate->Style()) {
-    if (style->HasViewportConstrainedPosition())
+    if (style->HasViewportConstrainedPosition() ||
+        style->HasStickyConstrainedPosition())
       return false;
   }
 
