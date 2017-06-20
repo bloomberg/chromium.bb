@@ -115,7 +115,7 @@ class FrameSerializerTest : public ::testing::Test,
   }
 
   void Serialize(const char* url) {
-    FrameTestHelpers::LoadFrame(helper_.WebView()->MainFrame(),
+    FrameTestHelpers::LoadFrame(helper_.WebView()->MainFrameImpl(),
                                 KURL(base_url_, url).GetString().Utf8().data());
     FrameSerializer serializer(resources_, *this);
     Frame* frame = helper_.WebView()->MainFrameImpl()->GetFrame();

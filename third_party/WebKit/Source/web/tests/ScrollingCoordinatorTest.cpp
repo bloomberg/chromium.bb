@@ -86,7 +86,7 @@ class ScrollingCoordinatorTest : public ::testing::Test,
   }
 
   void NavigateTo(const std::string& url) {
-    FrameTestHelpers::LoadFrame(GetWebView()->MainFrame(), url);
+    FrameTestHelpers::LoadFrame(GetWebView()->MainFrameImpl(), url);
   }
 
   void LoadHTML(const std::string& html) {

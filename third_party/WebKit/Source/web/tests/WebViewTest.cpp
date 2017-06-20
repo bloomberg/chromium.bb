@@ -362,9 +362,9 @@ TEST_P(WebViewTest, BrokenImage) {
       KURL(ToKURL(base_url_), "non_existent.png"));
   std::string url = RegisterMockedHttpURLLoad("image-broken.html");
 
-  WebView* web_view = web_view_helper_.Initialize();
+  WebViewBase* web_view = web_view_helper_.Initialize();
   web_view->GetSettings()->SetLoadsImagesAutomatically(true);
-  LoadFrame(web_view->MainFrame(), url);
+  LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(400, 400));
 
   std::string image_url = "http://www.test.com/non_existent.png";
@@ -379,9 +379,9 @@ TEST_P(WebViewTest, BrokenInputImage) {
       KURL(ToKURL(base_url_), "non_existent.png"));
   std::string url = RegisterMockedHttpURLLoad("input-image-broken.html");
 
-  WebView* web_view = web_view_helper_.Initialize();
+  WebViewBase* web_view = web_view_helper_.Initialize();
   web_view->GetSettings()->SetLoadsImagesAutomatically(true);
-  LoadFrame(web_view->MainFrame(), url);
+  LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(400, 400));
 
   std::string image_url = "http://www.test.com/non_existent.png";
@@ -578,8 +578,8 @@ TEST_P(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
   std::string url = base_url_ + "specify_size.html?" + "50px" + ":" + "50px";
   URLTestHelpers::RegisterMockedURLLoad(
       ToKURL(url), testing::WebTestDataPath("specify_size.html"));
-  WebView* web_view = web_view_helper_.Initialize();
-  LoadFrame(web_view->MainFrame(), url);
+  WebViewBase* web_view = web_view_helper_.Initialize();
+  LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(100, 100));
   WebPoint hit_point(75, 75);
 
@@ -633,8 +633,8 @@ TEST_P(WebViewTest, HitTestResultForTapWithTapArea) {
 
 TEST_P(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan) {
   std::string url = RegisterMockedHttpURLLoad("hit_test.html");
-  WebView* web_view = web_view_helper_.Initialize();
-  LoadFrame(web_view->MainFrame(), url);
+  WebViewBase* web_view = web_view_helper_.Initialize();
+  LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(100, 100));
   WebPoint hit_point(55, 55);
 
@@ -3201,7 +3201,7 @@ TEST_P(WebViewTest, AddFrameInNavigateUnload) {
   RegisterMockedHttpURLLoad("add_frame_in_unload.html");
   web_view_helper_.InitializeAndLoad(base_url_ + "add_frame_in_unload.html",
                                      &frame_client);
-  FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrame(),
+  FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
                               "about:blank");
   EXPECT_EQ(0, frame_client.Count());
   web_view_helper_.Reset();
@@ -3213,7 +3213,7 @@ TEST_P(WebViewTest, AddFrameInChildInNavigateUnload) {
   RegisterMockedHttpURLLoad("add_frame_in_unload.html");
   web_view_helper_.InitializeAndLoad(
       base_url_ + "add_frame_in_unload_wrapper.html", &frame_client);
-  FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrame(),
+  FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
                               "about:blank");
   EXPECT_EQ(1, frame_client.Count());
   web_view_helper_.Reset();
@@ -3549,10 +3549,10 @@ TEST_P(WebViewTest, CompareSelectAllToContentAsText) {
 
 TEST_P(WebViewTest, AutoResizeSubtreeLayout) {
   std::string url = RegisterMockedHttpURLLoad("subtree-layout.html");
-  WebView* web_view = web_view_helper_.Initialize();
+  WebViewBase* web_view = web_view_helper_.Initialize();
 
   web_view->EnableAutoResizeMode(WebSize(200, 200), WebSize(200, 200));
-  LoadFrame(web_view->MainFrame(), url);
+  LoadFrame(web_view->MainFrameImpl(), url);
 
   LocalFrameView* frame_view =
       web_view_helper_.WebView()->MainFrameImpl()->GetFrameView();

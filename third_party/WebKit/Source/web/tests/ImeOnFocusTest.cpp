@@ -100,7 +100,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
   WebViewBase* web_view =
       web_view_helper_.Initialize(nullptr, nullptr, &client);
   web_view->Resize(WebSize(800, 1200));
-  LoadFrame(web_view->MainFrame(), base_url_ + file_name);
+  LoadFrame(web_view->MainFrameImpl(), base_url_ + file_name);
   document_ = web_view_helper_.WebView()
                   ->MainFrameImpl()
                   ->GetDocument()
@@ -117,7 +117,8 @@ void ImeOnFocusTest::RunImeOnFocusTest(
     RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
                                   testing::WebTestDataPath(),
                                   WebString::FromUTF8(frame));
-    WebFrame* child_frame = web_view->MainFrame()->FirstChild();
+    WebLocalFrame* child_frame =
+        web_view->MainFrame()->FirstChild()->ToWebLocalFrame();
     LoadFrame(child_frame, base_url_ + frame);
   }
 

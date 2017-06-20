@@ -42,10 +42,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebView* View() const override;
   WebDocument GetDocument() const override;
   WebPerformance Performance() const override;
-  void Reload(WebFrameLoadType) override;
-  void ReloadWithOverrideURL(const WebURL& override_url,
-                             WebFrameLoadType) override;
-  void LoadRequest(const WebURLRequest&) override;
   void StopLoading() override;
   void EnableViewSourceMode(bool enable) override;
   bool IsViewSourceModeEnabled() const override;

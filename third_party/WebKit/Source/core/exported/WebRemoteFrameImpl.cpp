@@ -133,19 +133,6 @@ WebPerformance WebRemoteFrameImpl::Performance() const {
   return WebPerformance();
 }
 
-void WebRemoteFrameImpl::Reload(WebFrameLoadType) {
-  NOTREACHED();
-}
-
-void WebRemoteFrameImpl::ReloadWithOverrideURL(const WebURL& override_url,
-                                               WebFrameLoadType) {
-  NOTREACHED();
-}
-
-void WebRemoteFrameImpl::LoadRequest(const WebURLRequest&) {
-  NOTREACHED();
-}
-
 void WebRemoteFrameImpl::StopLoading() {
   // TODO(dcheng,japhet): Calling this method should stop loads
   // in all subframes, both remote and local.

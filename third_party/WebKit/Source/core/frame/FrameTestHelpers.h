@@ -66,22 +66,22 @@ class TestWebRemoteFrameClient;
 class TestWebWidgetClient;
 class TestWebViewClient;
 
-// Loads a url into the specified WebFrame for testing purposes. Pumps any
+// Loads a url into the specified WebLocalFrame for testing purposes. Pumps any
 // pending resource requests, as well as waiting for the threaded parser to
 // finish, before returning.
-void LoadFrame(WebFrame*, const std::string& url);
+void LoadFrame(WebLocalFrame*, const std::string& url);
 // Same as above, but for WebLocalFrame::LoadHTMLString().
 void LoadHTMLString(WebLocalFrame*,
                     const std::string& html,
                     const WebURL& base_url);
-// Same as above, but for WebFrame::loadHistoryItem().
-void LoadHistoryItem(WebFrame*,
+// Same as above, but for WebLocalFrame::RequestFromHistoryItem/Load.
+void LoadHistoryItem(WebLocalFrame*,
                      const WebHistoryItem&,
                      WebHistoryLoadType,
                      WebCachePolicy);
-// Same as above, but for WebFrame::reload().
-void ReloadFrame(WebFrame*);
-void ReloadFrameBypassingCache(WebFrame*);
+// Same as above, but for WebLocalFrame::Reload().
+void ReloadFrame(WebLocalFrame*);
+void ReloadFrameBypassingCache(WebLocalFrame*);
 
 // Pumps pending resource requests while waiting for a frame to load. Consider
 // using one of the above helper methods whenever possible.

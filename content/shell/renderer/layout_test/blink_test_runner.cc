@@ -1022,12 +1022,16 @@ void BlinkTestRunner::OnSessionHistory(
 }
 
 void BlinkTestRunner::OnReset() {
+  // ShellViewMsg_Reset should always be sent to the *current* view.
+  DCHECK(render_view()->GetWebView()->MainFrame()->IsWebLocalFrame());
+  WebLocalFrame* main_frame =
+      render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
+
   LayoutTestRenderThreadObserver::GetInstance()->test_interfaces()->ResetAll();
   Reset(true /* for_new_test */);
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
-  WebURLRequest request = WebURLRequest(GURL(url::kAboutBlankURL));
-  render_view()->GetWebView()->MainFrame()->LoadRequest(request);
+  main_frame->LoadRequest(WebURLRequest(GURL(url::kAboutBlankURL)));
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 

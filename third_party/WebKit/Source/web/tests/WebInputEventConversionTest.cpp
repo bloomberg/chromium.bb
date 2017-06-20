@@ -843,7 +843,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
   FloatSize elastic_overscroll(10, -20);
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                 elastic_overscroll, 1.0f, 0.0f);
-  FrameTestHelpers::ReloadFrame(web_view_helper.WebView()->MainFrame());
+  FrameTestHelpers::ReloadFrame(web_view_helper.WebView()->MainFrameImpl());
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
   // Just elastic overscroll.

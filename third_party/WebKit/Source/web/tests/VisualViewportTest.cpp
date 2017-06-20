@@ -136,7 +136,7 @@ class VisualViewportTest
   }
 
   void NavigateTo(const std::string& url) {
-    FrameTestHelpers::LoadFrame(WebViewImpl()->MainFrame(), url);
+    FrameTestHelpers::LoadFrame(WebViewImpl()->MainFrameImpl(), url);
   }
 
   void ForceFullCompositingUpdate() {
@@ -909,7 +909,7 @@ TEST_P(VisualViewportTest, TestRestoredFromHistoryItem) {
   item.SetVisualViewportScrollOffset(WebFloatPoint(100, 120));
   item.SetPageScaleFactor(2);
 
-  FrameTestHelpers::LoadHistoryItem(WebViewImpl()->MainFrame(), item,
+  FrameTestHelpers::LoadHistoryItem(WebViewImpl()->MainFrameImpl(), item,
                                     kWebHistoryDifferentDocumentLoad,
                                     WebCachePolicy::kUseProtocolCachePolicy);
 
@@ -940,7 +940,7 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
   item.SetScrollOffset(WebPoint(120, 180));
   item.SetPageScaleFactor(2);
 
-  FrameTestHelpers::LoadHistoryItem(WebViewImpl()->MainFrame(), item,
+  FrameTestHelpers::LoadHistoryItem(WebViewImpl()->MainFrameImpl(), item,
                                     kWebHistoryDifferentDocumentLoad,
                                     WebCachePolicy::kUseProtocolCachePolicy);
 
@@ -2373,7 +2373,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, page_height),
                                            browser_controls_height, true);
 
-  FrameTestHelpers::LoadFrame(web_view_impl->MainFrame(), "about:blank");
+  FrameTestHelpers::LoadFrame(web_view_impl->MainFrameImpl(), "about:blank");
   web_view_impl->UpdateAllLifecyclePhases();
 
   Document* document =
