@@ -312,19 +312,20 @@ AutoScrollExtensionSettingsWebUITest.prototype = {
 
 TEST_F('AutoScrollExtensionSettingsWebUITest', 'testAutoScroll', function() {
   var checkHasScrollbar = function() {
-    assertGT(document.body.scrollHeight, document.body.clientHeight);
+    assertGT(document.scrollingElement.scrollHeight,
+             document.body.clientHeight);
     this.nextStep();
   };
   var checkIsScrolled = function() {
-    assertGT(document.body.scrollTop, 0);
+    assertGT(document.scrollingElement.scrollTop, 0);
     this.nextStep();
   };
   var checkScrolledToTop = function() {
-    assertEquals(0, document.body.scrollTop);
+    assertEquals(0, document.scrollingElement.scrollTop);
     this.nextStep();
   };
   var scrollToTop = function() {
-    document.body.scrollTop = 0;
+    document.scrollingElement.scrollTop = 0;
     this.nextStep();
   };
   // Test that a) autoscroll works on first page load and b) updating the
