@@ -219,7 +219,7 @@ bool PresentationFrame::SetScreenAvailabilityListener(
   MediaSource source(GetMediaSourceFromListener(listener));
   if (!IsValidPresentationUrl(source.url())) {
     listener->OnScreenAvailabilityChanged(
-        blink::mojom::ScreenAvailability::UNAVAILABLE);
+        blink::mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED);
     return false;
   }
 
@@ -233,7 +233,8 @@ bool PresentationFrame::SetScreenAvailabilityListener(
 
   if (!sinks_observer->Init()) {
     url_to_sinks_observer_.erase(source.id());
-    listener->OnScreenAvailabilityNotSupported();
+    listener->OnScreenAvailabilityChanged(
+        blink::mojom::ScreenAvailability::DISABLED);
     return false;
   }
 

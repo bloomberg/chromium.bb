@@ -76,8 +76,9 @@ class MockPresentationServiceDelegate
       int render_process_id,
       int routing_id,
       PresentationScreenAvailabilityListener* listener) override {
-    if (!screen_availability_listening_supported_)
-      listener->OnScreenAvailabilityNotSupported();
+    if (!screen_availability_listening_supported_) {
+      listener->OnScreenAvailabilityChanged(ScreenAvailability::DISABLED);
+    }
 
     return AddScreenAvailabilityListener();
   }
@@ -212,7 +213,6 @@ class MockPresentationServiceClient
                void(const PresentationInfo& connection,
                     PresentationConnectionCloseReason reason,
                     const std::string& message));
-  MOCK_METHOD1(OnScreenAvailabilityNotSupported, void(const GURL& url));
   // PresentationConnectionMessage is move-only.
   void OnConnectionMessagesReceived(
       const PresentationInfo& presentation_info,
@@ -345,7 +345,8 @@ TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {
 TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {
   mock_delegate_.set_screen_availability_listening_supported(false);
   EXPECT_CALL(mock_client_,
-              OnScreenAvailabilityNotSupported(presentation_url1_));
+              OnScreenAvailabilityUpdated(presentation_url1_,
+                                          ScreenAvailability::DISABLED));
   ListenForScreenAvailabilityAndWait(presentation_url1_, false);
   base::RunLoop().RunUntilIdle();
 }

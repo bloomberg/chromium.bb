@@ -29,11 +29,6 @@ class CONTENT_EXPORT PresentationScreenAvailabilityListener {
   // changed to |availability|.
   virtual void OnScreenAvailabilityChanged(
       blink::mojom::ScreenAvailability availability) = 0;
-
-  // Called when screen availability monitoring is not supported by the
-  // implementation because of system limitations like running low on battery or
-  // having resource constraints.
-  virtual void OnScreenAvailabilityNotSupported() = 0;
 };
 
 }  // namespace content

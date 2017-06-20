@@ -439,84 +439,38 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(
 
   listening_status->last_known_availability = availability;
 
+  static const blink::WebString& not_supported_error =
+      blink::WebString::FromUTF8(
+          "getAvailability() isn't supported at the moment. It can be due to "
+          "a permanent or temporary system limitation. It is recommended to "
+          "try to blindly start a presentation in that case.");
+
   std::set<AvailabilityListener*> modified_listeners;
   for (auto& listener : availability_set_) {
     if (!base::ContainsValue(listener->urls, url))
       continue;
 
     auto screen_availability = GetScreenAvailability(listener->urls);
-    DCHECK(screen_availability != blink::mojom::ScreenAvailability::UNKNOWN &&
-           screen_availability != blink::mojom::ScreenAvailability::DISABLED);
+    DCHECK(screen_availability != blink::mojom::ScreenAvailability::UNKNOWN);
     for (auto* observer : listener->availability_observers)
       observer->AvailabilityChanged(screen_availability);
 
     for (AvailabilityCallbacksMap::iterator iter(
              &listener->availability_callbacks);
          !iter.IsAtEnd(); iter.Advance()) {
-      iter.GetCurrentValue()->OnSuccess(
-          screen_availability == blink::mojom::ScreenAvailability::AVAILABLE);
+      if (screen_availability == blink::mojom::ScreenAvailability::DISABLED) {
+        iter.GetCurrentValue()->OnError(blink::WebPresentationError(
+            blink::WebPresentationError::kErrorTypeAvailabilityNotSupported,
+            not_supported_error));
+      } else {
+        iter.GetCurrentValue()->OnSuccess(
+            screen_availability == blink::mojom::ScreenAvailability::AVAILABLE);
+      }
     }
     listener->availability_callbacks.Clear();
 
     for (const auto& availabilityUrl : listener->urls)
       MaybeStopListeningToURL(availabilityUrl);
-
-    modified_listeners.insert(listener.get());
-  }
-
-  for (auto* listener : modified_listeners)
-    TryRemoveAvailabilityListener(listener);
-}
-
-void PresentationDispatcher::OnScreenAvailabilityNotSupported(const GURL& url) {
-  auto* listening_status = GetListeningStatus(url);
-  if (!listening_status)
-    return;
-
-  if (listening_status->listening_state == ListeningState::WAITING)
-    listening_status->listening_state = ListeningState::ACTIVE;
-
-  if (listening_status->last_known_availability ==
-      blink::mojom::ScreenAvailability::DISABLED) {
-    return;
-  }
-
-  listening_status->last_known_availability =
-      blink::mojom::ScreenAvailability::DISABLED;
-
-  const blink::WebString& not_supported_error = blink::WebString::FromUTF8(
-      "getAvailability() isn't supported at the moment. It can be due to "
-      "a permanent or temporary system limitation. It is recommended to "
-      "try to blindly start a presentation in that case.");
-
-  std::set<AvailabilityListener*> modified_listeners;
-  for (auto& listener : availability_set_) {
-    if (!base::ContainsValue(listener->urls, url))
-      continue;
-
-    // ScreenAvailabilityNotSupported should be a browser side setting, which
-    // means all urls in PresentationAvailability should report NotSupported.
-    // It is not possible to change listening status from AVAILABLE or
-    // UNAVAILABLE to DISABLED.
-    auto screen_availability = GetScreenAvailability(listener->urls);
-    DCHECK_EQ(screen_availability, blink::mojom::ScreenAvailability::DISABLED);
-
-    // RemotePlayback is using a listener but doesn't use callbacks.
-    // So update observers even though it's not necessary for Presentation API.
-    for (auto* observer : listener->availability_observers)
-      observer->AvailabilityChanged(screen_availability);
-
-    for (AvailabilityCallbacksMap::iterator iter(
-             &listener->availability_callbacks);
-         !iter.IsAtEnd(); iter.Advance()) {
-      iter.GetCurrentValue()->OnError(blink::WebPresentationError(
-          blink::WebPresentationError::kErrorTypeAvailabilityNotSupported,
-          not_supported_error));
-    }
-    listener->availability_callbacks.Clear();
-
-    for (const auto& availability_url : listener->urls)
-      MaybeStopListeningToURL(availability_url);
 
     modified_listeners.insert(listener.get());
   }

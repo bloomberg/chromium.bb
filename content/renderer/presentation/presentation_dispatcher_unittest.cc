@@ -273,7 +273,8 @@ class PresentationDispatcherTest : public ::testing::Test {
             url, ScreenAvailability::UNAVAILABLE);
         break;
       case ScreenAvailability::DISABLED:
-        dispatcher_.OnScreenAvailabilityNotSupported(url);
+        dispatcher_.OnScreenAvailabilityUpdated(url,
+                                                ScreenAvailability::DISABLED);
         break;
       case ScreenAvailability::UNKNOWN:
         break;

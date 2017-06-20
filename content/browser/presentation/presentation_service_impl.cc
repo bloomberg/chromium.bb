@@ -500,11 +500,6 @@ void PresentationServiceImpl::ScreenAvailabilityListenerImpl::
                                                  availability);
 }
 
-void PresentationServiceImpl::ScreenAvailabilityListenerImpl
-::OnScreenAvailabilityNotSupported() {
-  service_->client_->OnScreenAvailabilityNotSupported(availability_url_);
-}
-
 PresentationServiceImpl::NewPresentationCallbackWrapper::
     NewPresentationCallbackWrapper(NewPresentationCallback callback)
     : callback_(std::move(callback)) {}

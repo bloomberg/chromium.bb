@@ -124,12 +124,6 @@ interface PresentationService {
 interface PresentationServiceClient {
   //////////  This API is implemented by a controlling frame.  /////////////////
 
-  // Called when the client tries to listen for screen availability changes for
-  // presentation of |url| but it is not supported by the device or underlying
-  // platform. This can also be called if the device is currently in a mode
-  // where it can't do screen discoveries (eg. low battery).
-  OnScreenAvailabilityNotSupported(url.mojom.Url url);
-
   // Called when the client is listening for screen availability for
   // presentation of |url| and the state changes. When the client starts to
   // listen for screen availability, this method will always be called to give
