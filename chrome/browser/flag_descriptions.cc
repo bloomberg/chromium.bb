@@ -1238,13 +1238,6 @@ const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =
     "Raster threads write directly to GPU memory associated with tiles.";
 
-const char kHideInactiveStackedTabCloseButtonsName[] =
-    "Hiding close buttons on inactive tabs when stacked";
-
-const char kHideInactiveStackedTabCloseButtonsDescription[] =
-    "Hides the close buttons of inactive tabs when the tabstrip is in "
-    "stacked mode.";
-
 const char kDefaultTileWidthName[] = "Default tile width";
 
 const char kDefaultTileWidthDescription[] = "Specify the default tile width.";

@@ -176,11 +176,6 @@ const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 // Manager can be used to terminate the offending process in this case.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
-// Disable hiding the close buttons of inactive tabs when the tabstrip is in
-// stacked mode.
-const char kDisableHideInactiveStackedTabCloseButtons[] =
-    "disable-hide-inactive-stacked-tab-close-buttons";
-
 // Disable the RenderThread's HistogramCustomizer.
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 

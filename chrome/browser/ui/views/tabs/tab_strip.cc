@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -33,10 +32,8 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/common/content_switches.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
@@ -1057,15 +1054,11 @@ const ui::ListSelectionModel& TabStrip::GetSelectionModel() const {
 
 bool TabStrip::SupportsMultipleSelection() {
   // TODO: currently only allow single selection in touch layout mode.
-  return touch_layout_ == NULL;
+  return touch_layout_ == nullptr;
 }
 
 bool TabStrip::ShouldHideCloseButtonForInactiveTabs() {
-  if (!touch_layout_)
-    return false;
-
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableHideInactiveStackedTabCloseButtons);
+  return touch_layout_ != nullptr;
 }
 
 bool TabStrip::MaySetClip() {

@@ -63,7 +63,6 @@ CONTENT_EXPORT extern const char kDisableJavaScriptHarmonyShipping[];
 CONTENT_EXPORT extern const char kDisableLowLatencyDxva[];
 CONTENT_EXPORT extern const char kDisableLowResTiling[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];
-CONTENT_EXPORT extern const char kDisableHideInactiveStackedTabCloseButtons[];
 extern const char kDisableHistogramCustomizer[];
 CONTENT_EXPORT extern const char kDisableLCDText[];
 CONTENT_EXPORT extern const char kDisablePreferCompositingToLCDText[];
