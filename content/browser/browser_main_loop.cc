@@ -967,8 +967,6 @@ int BrowserMainLoop::CreateThreads() {
 
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  base::Thread::Options ui_message_loop_options;
-  ui_message_loop_options.message_loop_type = base::MessageLoop::TYPE_UI;
 
   // Start threads in the order they occur in the BrowserThread::ID enumeration,
   // except for BrowserThread::UI which is the main thread.
