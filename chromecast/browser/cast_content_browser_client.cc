@@ -467,9 +467,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
                                       render_process_id, false)) {
     original_runner->PostTask(
         FROM_HERE,
-        base::Bind(continue_callback,
-                   make_scoped_refptr(CastNetworkDelegate::DeviceCert()),
-                   make_scoped_refptr(CastNetworkDelegate::DeviceKey())));
+        base::Bind(continue_callback, CastNetworkDelegate::DeviceCert(),
+                   CastNetworkDelegate::DeviceKey()));
     return;
   } else {
     LOG(ERROR) << "Invalid host for client certificate request: "

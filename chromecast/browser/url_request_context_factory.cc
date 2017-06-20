@@ -435,9 +435,9 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
 }
 
 void URLRequestContextFactory::InitializeNetworkDelegates() {
-  app_network_delegate_->Initialize(false);
+  app_network_delegate_->Initialize();
   LOG(INFO) << "Initialized app network delegate.";
-  system_network_delegate_->Initialize(false);
+  system_network_delegate_->Initialize();
   LOG(INFO) << "Initialized system network delegate.";
 }
 
