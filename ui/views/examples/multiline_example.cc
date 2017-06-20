@@ -97,8 +97,6 @@ class MultilineExample::RenderTextView : public View {
     render_text_->SetText(new_contents);
     render_text_->SetColor(SK_ColorBLACK);
     render_text_->ApplyColor(0xFFFF0000, color_range);
-    render_text_->SetStyle(gfx::DIAGONAL_STRIKE, false);
-    render_text_->ApplyStyle(gfx::DIAGONAL_STRIKE, true, color_range);
     render_text_->SetStyle(gfx::UNDERLINE, false);
     render_text_->ApplyStyle(gfx::UNDERLINE, true, color_range);
     render_text_->ApplyStyle(gfx::ITALIC, true, italic_range);

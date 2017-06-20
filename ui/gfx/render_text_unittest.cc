@@ -165,7 +165,6 @@ const wchar_t kRtlLtrRtl[] = L"\x5d0" L"a" L"\x5d1";
 enum {
   ITALIC_MASK = 1 << ITALIC,
   STRIKE_MASK = 1 << STRIKE,
-  DIAGONAL_STRIKE_MASK = 1 << DIAGONAL_STRIKE,
   UNDERLINE_MASK = 1 << UNDERLINE,
 };
 
@@ -251,7 +250,6 @@ DecoratedText::RangedAttribute CreateRangedAttribute(
   DecoratedText::RangedAttribute attributes(Range(index, index + 1),
                                             font_with_style);
   attributes.strike = style_mask & STRIKE_MASK;
-  attributes.diagonal_strike = style_mask & DIAGONAL_STRIKE_MASK;
   return attributes;
 }
 
@@ -280,7 +278,6 @@ void VerifyDecoratedWordsAreEqual(const DecoratedText& expected,
     ASSERT_NE(actual.attributes.end(), actual_attr);
 
     EXPECT_EQ(expected_attr->strike, actual_attr->strike);
-    EXPECT_EQ(expected_attr->diagonal_strike, actual_attr->diagonal_strike);
     EXPECT_EQ(expected_attr->font.GetFontName(),
               actual_attr->font.GetFontName());
     EXPECT_EQ(expected_attr->font.GetFontSize(),
@@ -340,16 +337,13 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
   };
 
   struct DecorationLog {
-    DecorationLog(int x, int y, int width, bool underline, bool strike,
-                  bool diagonal_strike)
-        : x(x), y(y), width(width), underline(underline), strike(strike),
-          diagonal_strike(diagonal_strike) {}
+    DecorationLog(int x, int y, int width, bool underline, bool strike)
+        : x(x), y(y), width(width), underline(underline), strike(strike) {}
     int x;
     int y;
     int width;
     bool underline;
     bool strike;
-    bool diagonal_strike;
   };
 
   explicit TestSkiaTextRenderer(Canvas* canvas)
@@ -387,12 +381,13 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
     internal::SkiaTextRenderer::DrawPosText(pos, glyphs, glyph_count);
   }
 
-  void DrawDecorations(int x, int y, int width, bool underline, bool strike,
-                       bool diagonal_strike) override {
-    decoration_log_.push_back(
-        DecorationLog(x, y, width, underline, strike, diagonal_strike));
-    internal::SkiaTextRenderer::DrawDecorations(
-        x, y, width, underline, strike, diagonal_strike);
+  void DrawDecorations(int x,
+                       int y,
+                       int width,
+                       bool underline,
+                       bool strike) override {
+    decoration_log_.push_back(DecorationLog(x, y, width, underline, strike));
+    internal::SkiaTextRenderer::DrawDecorations(x, y, width, underline, strike);
   }
 
   std::vector<TextLog> text_log_;
@@ -1099,7 +1094,6 @@ TEST_P(RenderTextHarfBuzzTest, MultilineElide) {
   // slightly different width. This must be done after |SetText()|.
   render_text->ApplyWeight(Font::Weight::BOLD, Range(1, 20));
   render_text->ApplyStyle(ITALIC, true, Range(1, 20));
-  render_text->ApplyStyle(DIAGONAL_STRIKE, true, Range(1, 20));
   render_text->SetMultiline(true);
   render_text->SetElideBehavior(ELIDE_TAIL);
   render_text->SetMaxLines(3);
@@ -4201,7 +4195,6 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
   render_text->ApplyWeight(Font::Weight::SEMIBOLD, Range(0, 3));
   render_text->ApplyStyle(UNDERLINE, true, Range(1, 5));
   render_text->ApplyStyle(ITALIC, true, Range(3, 8));
-  render_text->ApplyStyle(DIAGONAL_STRIKE, true, Range(5, 7));
   render_text->ApplyStyle(STRIKE, true, Range(1, 7));
   const int cursor_y = GetCursorYForTesting();
 
@@ -4225,9 +4218,9 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
   DecoratedText expected_word_2;
   expected_word_2.text = ASCIIToUTF16("c");
   // Attributes for character 'c' at logical index |kWordTwoStartIndex|.
-  expected_word_2.attributes.push_back(CreateRangedAttribute(
-      font_spans, 0, kWordTwoStartIndex, Font::Weight::NORMAL,
-      ITALIC_MASK | DIAGONAL_STRIKE_MASK | STRIKE_MASK));
+  expected_word_2.attributes.push_back(
+      CreateRangedAttribute(font_spans, 0, kWordTwoStartIndex,
+                            Font::Weight::NORMAL, ITALIC_MASK | STRIKE_MASK));
   const Rect left_glyph_word_2 = render_text->GetCursorBounds(
       SelectionModel(kWordTwoStartIndex, CURSOR_FORWARD), false);
 
@@ -4286,7 +4279,6 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
   render_text->ApplyWeight(Font::Weight::SEMIBOLD, Range(2, 3));
   render_text->ApplyStyle(UNDERLINE, true, Range(3, 6));
   render_text->ApplyStyle(ITALIC, true, Range(0, 3));
-  render_text->ApplyStyle(DIAGONAL_STRIKE, true, Range(0, 2));
   render_text->ApplyStyle(STRIKE, true, Range(2, 5));
   const int cursor_y = GetCursorYForTesting();
 
@@ -4298,8 +4290,7 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
   expected_word_1.text = WideToUTF16(L"\x0634\x0632");
   // Attributes for characters at logical indices 1 and 2.
   expected_word_1.attributes.push_back(CreateRangedAttribute(
-      font_spans, 0, kWordOneStartIndex, Font::Weight::NORMAL,
-      ITALIC_MASK | DIAGONAL_STRIKE_MASK));
+      font_spans, 0, kWordOneStartIndex, Font::Weight::NORMAL, ITALIC_MASK));
   expected_word_1.attributes.push_back(
       CreateRangedAttribute(font_spans, 1, kWordOneStartIndex + 1,
                             Font::Weight::SEMIBOLD, ITALIC_MASK | STRIKE_MASK));

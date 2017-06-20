@@ -8,7 +8,7 @@ namespace gfx {
 
 DecoratedText::RangedAttribute::RangedAttribute(const gfx::Range& range,
                                                 const gfx::Font& font)
-    : range(range), font(font), strike(false), diagonal_strike(false) {}
+    : range(range), font(font), strike(false) {}
 
 DecoratedText::DecoratedText() {}
 

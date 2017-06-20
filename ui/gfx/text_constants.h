@@ -77,7 +77,6 @@ enum DirectionalityMode {
 enum TextStyle {
   ITALIC = 0,
   STRIKE,
-  DIAGONAL_STRIKE,
   UNDERLINE,
   NUM_TEXT_STYLES,
 };
