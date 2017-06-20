@@ -115,7 +115,8 @@ void EnforcePolicyInputMethods(std::string user_input_method) {
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();
   imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods);
-  ImeControllerClient::Get()->SetImesManagedByPolicy(true);
+  if (ImeControllerClient::Get())  // Can be null in tests.
+    ImeControllerClient::Get()->SetImesManagedByPolicy(true);
 }
 
 void StopEnforcingPolicyInputMethods() {
@@ -124,7 +125,8 @@ void StopEnforcingPolicyInputMethods() {
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();
   imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods);
-  ImeControllerClient::Get()->SetImesManagedByPolicy(false);
+  if (ImeControllerClient::Get())  // Can be null in tests.
+    ImeControllerClient::Get()->SetImesManagedByPolicy(false);
 }
 
 void SetKeyboardSettings(const AccountId& account_id) {

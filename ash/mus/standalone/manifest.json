@@ -8,6 +8,7 @@
           "app_list::mojom::AppList",
           "ash::mojom::AcceleratorController",
           "ash::mojom::CastConfig",
+          "ash::mojom::ImeController",
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::MediaController",
           "ash::mojom::NewWindowController",

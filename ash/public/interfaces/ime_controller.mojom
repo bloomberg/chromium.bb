@@ -1,0 +1,50 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ash.mojom;
+
+import "ash/public/interfaces/ime_info.mojom";
+
+// Interface for ash client (e.g. Chrome) to send input method info to ash.
+interface ImeController {
+  // Sets the client interface.
+  SetClient(ImeControllerClient client);
+
+  // Updates the cached IME information and refreshes the IME menus.
+  // |current_ime| has an empty ID when there is no active IME yet.
+  // TODO(jamescook): Convert |current_ime| to an ID instead of an IMEInfo.
+  RefreshIme(ImeInfo current_ime,
+             array<ImeInfo> available_imes,
+             array<ImeMenuItem> menu_items);
+
+  // Shows an icon in the IME menu indicating that IMEs are controlled by device
+  // policy.
+  SetImesManagedByPolicy(bool managed);
+
+  // Shows the IME menu on the shelf instead of inside the system tray menu.
+  // Users with multiple IMEs that have multiple configurable properties (e.g.
+  // some Chinese IMEs) prefer this to keeping the IME menu under the primary
+  // system tray menu.
+  ShowImeMenuOnShelf(bool show);
+};
+
+// Interface for ash to send input method requests to its client (e.g. Chrome).
+interface ImeControllerClient {
+  // Switches to the next input method. Does nothing if only one input method
+  // is installed.
+  SwitchToNextIme();
+
+  // Switches to the previous input method. Does nothing if only one input
+  // method is installed.
+  SwitchToPreviousIme();
+
+  // Switches to an input method by |id| (for example, "xkb:jp::jpn"). Does
+  // nothing if the input method is not installed.
+  SwitchImeById(string id);
+
+  // Activates an input method property. These are settings that are provided by
+  // IME extensions that appear in the IME menu. Does nothing if the |key| does
+  // not exist.
+  ActivateImeProperty(string key);
+};

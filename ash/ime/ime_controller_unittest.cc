@@ -21,7 +21,7 @@ class TestImeObserver : public IMEObserver {
   ~TestImeObserver() override = default;
 
   // IMEObserver:
-  void OnIMERefresh() override { refresh_count_++; }
+  void OnIMERefresh() override { ++refresh_count_; }
   void OnIMEMenuActivationChanged(bool is_active) override {
     ime_menu_active_ = is_active;
   }
@@ -37,15 +37,23 @@ TEST_F(ImeControllerTest, RefreshIme) {
   TestImeObserver observer;
   Shell::Get()->system_tray_notifier()->AddIMEObserver(&observer);
 
-  mojom::ImeInfo ime1;
-  ime1.id = "ime1";
-  mojom::ImeInfo ime2;
-  ime2.id = "ime2";
+  mojom::ImeInfoPtr ime1 = mojom::ImeInfo::New();
+  ime1->id = "ime1";
+  mojom::ImeInfoPtr ime2 = mojom::ImeInfo::New();
+  ime2->id = "ime2";
 
-  mojom::ImeMenuItem item1;
-  item1.key = "key1";
+  std::vector<mojom::ImeInfoPtr> available_imes;
+  available_imes.push_back(ime1.Clone());
+  available_imes.push_back(ime2.Clone());
 
-  controller->RefreshIme(ime1, {ime1, ime2}, {item1});
+  mojom::ImeMenuItemPtr item1 = mojom::ImeMenuItem::New();
+  item1->key = "key1";
+
+  std::vector<mojom::ImeMenuItemPtr> menu_items;
+  menu_items.push_back(item1.Clone());
+
+  controller->RefreshIme(std::move(ime1), std::move(available_imes),
+                         std::move(menu_items));
 
   // Cached data was updated.
   EXPECT_EQ("ime1", controller->current_ime().id);

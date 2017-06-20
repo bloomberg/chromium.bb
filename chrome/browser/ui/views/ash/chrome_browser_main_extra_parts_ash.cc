@@ -88,11 +88,9 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
   // Must be available at login screen, so initialize before profile.
   system_tray_client_ = base::MakeUnique<SystemTrayClient>();
-  // TODO(jamescook): Enable in mash once converted to mojo.
-  if (!ash_util::IsRunningInMash()) {
-    ime_controller_client_ = base::MakeUnique<ImeControllerClient>(
-        chromeos::input_method::InputMethodManager::Get());
-  }
+  ime_controller_client_ = base::MakeUnique<ImeControllerClient>(
+      chromeos::input_method::InputMethodManager::Get());
+  ime_controller_client_->Init();
   new_window_client_ = base::MakeUnique<ChromeNewWindowClient>();
   volume_controller_ = base::MakeUnique<VolumeController>();
   vpn_list_forwarder_ = base::MakeUnique<VpnListForwarder>();
