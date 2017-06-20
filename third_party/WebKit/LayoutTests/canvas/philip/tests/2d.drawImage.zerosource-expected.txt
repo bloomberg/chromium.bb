@@ -1,4 +1,0 @@
-Failed assertion: should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(document.getElementById('red.png'), 10, 10, 0, 1, 0, 0, 100, 50)
-Failed assertion: should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(document.getElementById('red.png'), 10, 10, 1, 0, 0, 0, 100, 50)
-Failed assertion: should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(document.getElementById('red.png'), 10, 10, 0, 0, 0, 0, 100, 50)
-
