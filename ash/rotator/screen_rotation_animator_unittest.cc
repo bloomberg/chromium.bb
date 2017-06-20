@@ -27,6 +27,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -567,6 +568,48 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
 
   GetTray()->layer()->GetAnimator()->StopAnimating();
   EXPECT_FALSE(GetTray()->visible());
+}
+
+// Test that smooth screen rotation animation will work when |root_window|
+// recreated.
+TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
+       ShouldRotateAfterRecreateLayers) {
+  // TODO(sky): remove this, temporary until mash_unittests as a separate
+  // executable is nuked. http://crbug.com/729810.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  const int64_t display_id = display_manager()->GetDisplayAt(0).id();
+  aura::Window* root_window = GetRootWindow(display_id);
+  SetScreenRotationAnimator(
+      root_window, run_loop_->QuitWhenIdleClosure(),
+      base::Bind(
+          &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
+          base::Unretained(this)));
+  SetDisplayRotation(display_id, display::Display::ROTATE_0);
+  animator()->Rotate(display::Display::ROTATE_90,
+                     display::Display::RotationSource::ROTATION_SOURCE_USER);
+  WaitForCopyCallback();
+  EXPECT_TRUE(test_api()->HasActiveAnimations());
+
+  test_api()->CompleteAnimations();
+  EXPECT_FALSE(test_api()->HasActiveAnimations());
+  EXPECT_EQ(display::Display::ROTATE_90, GetDisplayRotation(display_id));
+
+  // Colone and delete the old layer tree.
+  std::unique_ptr<ui::LayerTreeOwner> old_layer_tree_owner =
+      ::wm::RecreateLayers(root_window);
+  old_layer_tree_owner.reset();
+
+  // Should work for another rotation.
+  animator()->Rotate(display::Display::ROTATE_180,
+                     display::Display::RotationSource::ROTATION_SOURCE_USER);
+  WaitForCopyCallback();
+  EXPECT_TRUE(test_api()->HasActiveAnimations());
+
+  test_api()->CompleteAnimations();
+  EXPECT_FALSE(test_api()->HasActiveAnimations());
+  EXPECT_EQ(display::Display::ROTATE_180, GetDisplayRotation(display_id));
 }
 
 }  // namespace ash
