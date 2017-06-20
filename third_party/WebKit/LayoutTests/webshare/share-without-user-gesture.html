@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
-<script src="resources/mock-share-service.js"></script>
 <script>
 
-share_test((t, mock) => {
+promise_test(t => {
+  // promise_rejects doesn't test the exception message, so just match against undefined.
   return promise_rejects(
-      t, new DOMException('Must be handling a user gesture to perform a share request.', 'SecurityError'),
+      t, new DOMException(undefined, 'SecurityError'),
       navigator.share({title: 'the title', text: 'the message', url: 'data:the url'}));
 }, 'share without a user gesture');
 

@@ -6,8 +6,25 @@
 <script>
 
 share_test((t, webshare, mock) => {
+  mock.pushShareResult('', '', '', webshare.ShareError.OK);
+  return callWithKeyDown(() => navigator.share(undefined));
+}, 'share of undefined (expect treated as empty dictionary)');
+
+share_test((t, webshare, mock) => {
+  mock.pushShareResult('', '', '', webshare.ShareError.OK);
+  return callWithKeyDown(() => navigator.share(null));
+}, 'share of null (expect treated as empty dictionary)');
+
+share_test((t, webshare, mock) => {
   mock.pushShareResult('384957', '[object Object]', '', webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share({title: 384957, text: {}}));
 }, 'share of types other than string (expect implicitly converted to string)');
+
+share_test((t, webshare, mock) => {
+  // TODO(mgiuca): A null title should convert into the string 'null'.
+  // https://crbug.com/733063.
+  mock.pushShareResult('', '', '', webshare.ShareError.OK);
+  return callWithKeyDown(() => navigator.share({title: null, text: undefined}));
+}, 'share of null/undefined dict values');
 
 </script>
