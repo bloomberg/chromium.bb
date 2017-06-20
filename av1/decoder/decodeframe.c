@@ -4750,8 +4750,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       if (cm->delta_lf_present_flag) {
         xd->prev_delta_lf_from_base = 0;
         cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
-      } else {
-        cm->delta_lf_present_flag = 0;
       }
 #endif  // CONFIG_EXT_DELTA_Q
     }
