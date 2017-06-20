@@ -41,7 +41,6 @@ SchedulerImpl::SchedulerImpl(TaskScheduler* task_scheduler,
       config_(config),
       download_clients_(clients),
       current_client_index_(0) {
-  DCHECK(!download_clients_.empty());
   DCHECK(task_scheduler_);
 }
 

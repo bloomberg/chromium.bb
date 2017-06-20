@@ -634,6 +634,8 @@ void ControllerImpl::HandleStartDownloadResponse(
     model_->Remove(guid);
   }
 
+  if (callback.is_null())
+    return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, guid, result));
 }
