@@ -24925,6 +24925,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ImportantFile.FileCreateError" enum="PlatformFileError">
+  <owner>xaerox@yandex-team.ru</owner>
+  <summary>
+    File error happened upon temporary file creation at ImportantFileWriter.
+  </summary>
+</histogram>
+
+<histogram name="ImportantFile.FileDeleteError" enum="PlatformFileError">
+  <owner>xaerox@yandex-team.ru</owner>
+  <summary>
+    File error happened upon temporary file deletion at ImportantFileWriter.
+  </summary>
+</histogram>
+
+<histogram name="ImportantFile.FileOpenError" enum="PlatformFileError">
+  <owner>xaerox@yandex-team.ru</owner>
+  <summary>
+    File error happened upon opening temporary file at ImportantFileWriter.
+  </summary>
+</histogram>
+
+<histogram name="ImportantFile.FileRenameError" enum="PlatformFileError">
+  <owner>xaerox@yandex-team.ru</owner>
+  <summary>
+    File error happened upon temporary file renaming at ImportantFileWriter.
+  </summary>
+</histogram>
+
+<histogram name="ImportantFile.FileWriteError" enum="PlatformFileError">
+  <owner>xaerox@yandex-team.ru</owner>
+  <summary>
+    File error happened upon writing data to temporary file at
+    ImportantFileWriter.
+  </summary>
+</histogram>
+
 <histogram name="ImportantFile.TempFileFailures" enum="TempFileFailure">
   <owner>rvargas@chromium.org</owner>
   <summary>
@@ -89491,6 +89527,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              help loading-dev to understand the impact of logging metrics at
              the end of a page load."/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ImportantFileWriterSuffix" separator=".">
+  <suffix name="BookmarkStorage"/>
+  <suffix name="FeedbackReport"/>
+  <affected-histogram name="ImportantFile.FileCreateError"/>
+  <affected-histogram name="ImportantFile.FileDeleteError"/>
+  <affected-histogram name="ImportantFile.FileOpenError"/>
+  <affected-histogram name="ImportantFile.FileRenameError"/>
+  <affected-histogram name="ImportantFile.FileWriteError"/>
+  <affected-histogram name="ImportantFile.TempFileFailures"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IndexedDBLevelDBErrnoMethods" separator=".">
