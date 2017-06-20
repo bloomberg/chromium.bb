@@ -26,6 +26,10 @@ extern const base::Feature kIPHDownloadPageFeature;
 extern const base::Feature kIPHDownloadHomeFeature;
 #endif  // OS_ANDROID
 
+#if defined(OS_WIN)
+extern const base::Feature kIPHNewTabFeature;
+#endif  // OS_WIN
+
 }  // namespace feature_engagement_tracker
 
 #endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_PUBLIC_FEATURE_CONSTANTS_H_

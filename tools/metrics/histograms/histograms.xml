@@ -89722,6 +89722,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="In product help data saver detail."/>
   <suffix name="IPH_DownloadPage" label="In product help download page."/>
   <suffix name="IPH_DownloadHome" label="In product help download home."/>
+  <suffix name="IPH_NewTab" label="In product help new tab."/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IPProtocolType" separator="_">
