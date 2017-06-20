@@ -102,6 +102,7 @@ component("wtf") {
     "PassRefPtr.h",
     "PrintStream.cpp",
     "PrintStream.h",
+    "ProcessMetrics.h",
     "PtrUtil.h",
     "RefCounted.h",
     "RefPtr.h",

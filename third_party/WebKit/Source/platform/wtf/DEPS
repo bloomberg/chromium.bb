@@ -3,6 +3,7 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/allocator/oom.h",
     "+base/allocator/partition_allocator",
+    "+base/process/process_metrics.h",
     "+base/auto_reset.h",
     "+base/bind.h",
     "+base/bits.h",
