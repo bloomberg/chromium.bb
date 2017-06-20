@@ -571,7 +571,7 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
 }
 
 void ChromeClientImpl::OpenFileChooser(LocalFrame* frame,
-                                       PassRefPtr<FileChooser> file_chooser) {
+                                       RefPtr<FileChooser> file_chooser) {
   NotifyPopupOpeningObservers();
   WebFrameClient* client = WebLocalFrameImpl::FromFrame(frame)->Client();
   if (!client)

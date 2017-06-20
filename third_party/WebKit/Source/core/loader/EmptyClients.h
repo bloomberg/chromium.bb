@@ -185,7 +185,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
       const DateTimeChooserParameters&) override;
   void OpenTextDataListChooser(HTMLInputElement&) override;
 
-  void OpenFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
+  void OpenFileChooser(LocalFrame*, RefPtr<FileChooser>) override;
 
   void SetCursor(const Cursor&, LocalFrame* local_root) override {}
   void SetCursorOverridden(bool) override {}

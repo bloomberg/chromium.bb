@@ -117,7 +117,7 @@ DateTimeChooser* EmptyChromeClient::OpenDateTimeChooser(
 
 void EmptyChromeClient::OpenTextDataListChooser(HTMLInputElement&) {}
 
-void EmptyChromeClient::OpenFileChooser(LocalFrame*, PassRefPtr<FileChooser>) {}
+void EmptyChromeClient::OpenFileChooser(LocalFrame*, RefPtr<FileChooser>) {}
 
 void EmptyChromeClient::AttachRootGraphicsLayer(GraphicsLayer* layer,
                                                 LocalFrame* local_root) {
