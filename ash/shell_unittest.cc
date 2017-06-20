@@ -22,6 +22,7 @@
 #include "ash/test/test_session_controller_client.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -34,6 +35,9 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
@@ -483,6 +487,23 @@ TEST_F(ShellTest, EnvPreTargetHandler) {
   generator.MoveMouseBy(1, 1);
   EXPECT_NE(0, event_handler.num_mouse_events());
   aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
+}
+
+// Verifies keyboard is re-created on proper timing.
+TEST_F(ShellTest, KeyboardCreation) {
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      keyboard::switches::kEnableVirtualKeyboard);
+
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+
+  SessionObserver* shell = Shell::Get();
+  EXPECT_FALSE(keyboard::KeyboardController::GetInstance());
+  shell->OnSessionStateChanged(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+
+  EXPECT_TRUE(keyboard::KeyboardController::GetInstance());
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after
