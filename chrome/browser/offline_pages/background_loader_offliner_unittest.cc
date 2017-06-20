@@ -563,6 +563,22 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnInternetDisconnected) {
   EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
 }
 
+TEST_F(BackgroundLoaderOfflinerTest, DoesNotCrashWithNullResponseHeaders) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+
+  // Called after calling LoadAndSave so we have web_contents to work with.
+  std::unique_ptr<content::NavigationHandle> handle(
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
+          net::Error::OK));
+  // Call DidFinishNavigation with handle.
+  offliner()->DidFinishNavigation(handle.get());
+}
+
 TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOffHistogram) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,

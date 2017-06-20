@@ -321,9 +321,10 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
                         static_cast<int>(navigation_handle->GetNetErrorCode()));
     page_load_state_ = RETRIABLE;
   } else {
-    if (!navigation_handle->GetResponseHeaders())
-      return;
-    int status_code = navigation_handle->GetResponseHeaders()->response_code();
+    int status_code = 200;  // Default to OK.
+    // No response header can imply intermediate navigation state.
+    if (navigation_handle->GetResponseHeaders())
+      status_code = navigation_handle->GetResponseHeaders()->response_code();
     // 2XX and 3XX are ok because they indicate success or redirection.
     // We track 301 because it's MOVED_PERMANENTLY and usually accompanies an
     // error page with new address.
