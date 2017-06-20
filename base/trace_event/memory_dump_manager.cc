@@ -172,10 +172,8 @@ HeapProfilingMode MemoryDumpManager::GetHeapProfilingModeFromCommandLine() {
     return kHeapProfilingModePseudo;
   if (profiling_mode == switches::kEnableHeapProfilingModeNative)
     return kHeapProfilingModeNative;
-  if (profiling_mode == switches::kEnableHeapProfilingTaskProfiler &&
-      base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled()) {
+  if (profiling_mode == switches::kEnableHeapProfilingTaskProfiler)
     return kHeapProfilingModeTaskProfiler;
-  }
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
   return kHeapProfilingModeInvalid;
 }
@@ -200,7 +198,8 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
           AllocationContextTracker::CaptureMode::NATIVE_STACK);
       break;
     case kHeapProfilingModeTaskProfiler:
-      base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
+      if (!base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled())
+        base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
       break;
   }
 
