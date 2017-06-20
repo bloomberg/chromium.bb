@@ -213,6 +213,7 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
 
 .input-line {
   display: none;
+  height: 1px;
   opacity: 0.34;
   position: absolute;
   stroke: #FFFFFF;
