@@ -344,6 +344,7 @@ class ServiceWorkerMetrics {
       base::TimeDelta worker_start,
       base::TimeDelta response_start,
       EmbeddedWorkerStatus initial_worker_status,
+      StartSituation start_situation,
       ResourceType resource_type);
 
   // Records the result of trying to handle a request for a service worker
