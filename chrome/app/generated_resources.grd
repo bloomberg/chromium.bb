@@ -4975,6 +4975,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PREVIEWS_INFOBAR_LINK" desc="The text of the link to load the original page from the infobar notifying the user that a preview page has been shown.">
          Show original
       </message>
+      <message name="IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES" desc="The desciption stating how old a preview version of a page is in minutes. This is shown on the infobar notifying the user that a preview page has been shown.">
+         Updated <ph name="MINUTES">$1<ex>30</ex></ph>min ago
+      </message>
+      <message name="IDS_PREVIEWS_INFOBAR_TIMESTAMP_ONE_HOUR" desc="The desciption stating a preview version of a page is one hour old. This is shown on the infobar notifying the user that a preview page has been shown.">
+         Updated 1hr ago
+      </message>
+      <message name="IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS" desc="The desciption stating how old a preview version of a page is in hours. This is shown on the infobar notifying the user that a preview page has been shown.">
+         Updated <ph name="HOURS">$1<ex>4</ex></ph>hrs ago
+      </message>
 
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">

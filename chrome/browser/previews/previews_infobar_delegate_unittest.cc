@@ -9,11 +9,15 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
@@ -22,6 +26,7 @@
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
@@ -32,9 +37,12 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/network_time/network_time_test_utils.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/reload_type.h"
@@ -111,6 +119,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TestPreviewsWebContentsObserver);
 
 class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
+  PreviewsInfoBarDelegateUnitTest()
+      : field_trial_list_(new base::FieldTrialList(nullptr)) {}
+
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
@@ -139,17 +150,23 @@ class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
         base::WrapUnique(new data_reduction_proxy::DataStore()),
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get());
+
+    TestingBrowserProcess::GetGlobal()->SetLocalState(
+        drp_test_context_->pref_service());
+    network_time::NetworkTimeTracker::RegisterPrefs(registry);
   }
 
   void TearDown() override {
     drp_test_context_->DestroySettings();
     ChromeRenderViewHostTestHarness::TearDown();
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 
-  ConfirmInfoBarDelegate* CreateInfoBar(previews::PreviewsType type,
-                                        bool is_data_saver_user) {
+  PreviewsInfoBarDelegate* CreateInfoBar(previews::PreviewsType type,
+                                         base::Time previews_freshness,
+                                         bool is_data_saver_user) {
     PreviewsInfoBarDelegate::Create(
-        web_contents(), type, is_data_saver_user,
+        web_contents(), type, previews_freshness, is_data_saver_user,
         base::Bind(&PreviewsInfoBarDelegateUnitTest::OnDismissPreviewsInfobar,
                    base::Unretained(this)));
 
@@ -157,9 +174,27 @@ class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
         InfoBarService::FromWebContents(web_contents());
     EXPECT_EQ(1U, infobar_service->infobar_count());
 
-    return infobar_service->infobar_at(0)
-        ->delegate()
-        ->AsConfirmInfoBarDelegate();
+    return static_cast<PreviewsInfoBarDelegate*>(
+        infobar_service->infobar_at(0)->delegate());
+  }
+
+  void EnableStalePreviewsTimestamp() {
+    const std::string kTrialName = "TrialName";
+    const std::string kGroupName = "GroupName";
+
+    std::map<std::string, std::string> variation_params;
+    variation_params["min_staleness_in_minutes"] = "2";
+    variation_params["max_staleness_in_minutes"] = "1440";
+
+    base::AssociateFieldTrialParams(kTrialName, kGroupName, variation_params);
+    base::FieldTrial* field_trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        previews::features::kStalePreviewsTimestamp.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
   }
 
   void OnDismissPreviewsInfobar(bool user_opt_out) {
@@ -174,18 +209,21 @@ class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
       drp_test_context_;
 
   base::Optional<bool> user_opt_out_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestNavigationDismissal) {
   base::HistogramTester tester;
 
-  CreateInfoBar(previews::PreviewsType::LOFI, true /* is_data_saver_user */);
+  CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
+                true /* is_data_saver_user */);
 
   // Try showing a second infobar. Another should not be shown since the page
   // has not navigated.
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
-      true /* is_data_saver_user */,
+      base::Time() /* previews_freshness */, true /* is_data_saver_user */,
       PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
@@ -207,13 +245,14 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
   // Navigate to test URL, so we can reload later.
   NavigateAndCommit(GURL(kTestUrl));
 
-  CreateInfoBar(previews::PreviewsType::LOFI, true /* is_data_saver_user */);
+  CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
+                true /* is_data_saver_user */);
 
   // Try showing a second infobar. Another should not be shown since the page
   // has not navigated.
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
-      true /* is_data_saver_user */,
+      base::Time() /* previews_freshness */, true /* is_data_saver_user */,
       PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
@@ -243,8 +282,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestUserDismissal) {
   base::HistogramTester tester;
 
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::LOFI, true /* is_data_saver_user */);
+  ConfirmInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
+                    true /* is_data_saver_user */);
 
   // Simulate dismissing the infobar.
   infobar->InfoBarDismissed();
@@ -262,7 +302,8 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestUserDismissal) {
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestTabClosedDismissal) {
   base::HistogramTester tester;
 
-  CreateInfoBar(previews::PreviewsType::LOFI, true /* is_data_saver_user */);
+  CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
+                true /* is_data_saver_user */);
 
   // Delete the infobar without any other infobar actions.
   infobar_service()->infobar_at(0)->RemoveSelf();
@@ -285,7 +326,8 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
   };
   for (const auto test : tests) {
     drp_test_context_->config()->ResetLoFiStatusForTest();
-    base::FieldTrialList field_trial_list(nullptr);
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(nullptr));
     if (test.using_previews_blacklist) {
       base::FieldTrialList::CreateFieldTrial(
           "DataReductionProxyPreviewsBlackListTransition", "Enabled_");
@@ -295,8 +337,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
     web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
     content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
 
-    ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-        previews::PreviewsType::LOFI, true /* is_data_saver_user */);
+    ConfirmInfoBarDelegate* infobar =
+        CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
+                      true /* is_data_saver_user */);
 
     // Simulate clicking the infobar link.
     if (infobar->LinkClicked(WindowOpenDisposition::CURRENT_TAB))
@@ -325,8 +368,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLitePage) {
 
   NavigateAndCommit(GURL(kTestUrl));
 
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::LITE_PAGE, true /* is_data_saver_user */);
+  ConfirmInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::LITE_PAGE, base::Time(),
+                    true /* is_data_saver_user */);
 
   // Simulate clicking the infobar link.
   if (infobar->LinkClicked(WindowOpenDisposition::CURRENT_TAB))
@@ -353,8 +397,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLitePage) {
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::LOFI, true /* is_data_saver_user */);
+  ConfirmInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
+                    true /* is_data_saver_user */);
 
   // Simulate dismissing the infobar.
   infobar->InfoBarDismissed();
@@ -363,7 +408,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
 
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
-      true /* is_data_saver_user */,
+      base::Time() /* previews_freshness */, true /* is_data_saver_user */,
       PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
 
   // Infobar should not be shown again since a navigation hasn't happened.
@@ -371,14 +416,16 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
 
   // Navigate and show infobar again.
   NavigateAndCommit(GURL(kTestUrl));
-  CreateInfoBar(previews::PreviewsType::LOFI, true /* is_data_saver_user */);
+  CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
+                true /* is_data_saver_user */);
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, LoFiInfobarTest) {
   base::HistogramTester tester;
 
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::LOFI, true /* is_data_saver_user */);
+  ConfirmInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
+                    true /* is_data_saver_user */);
 
   tester.ExpectUniqueSample(kUMAPreviewsInfoBarActionLoFi,
                             PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
@@ -400,8 +447,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, LoFiInfobarTest) {
 TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTest) {
   base::HistogramTester tester;
 
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::LITE_PAGE, true /* is_data_saver_user */);
+  PreviewsInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::LITE_PAGE, base::Time(),
+                    true /* is_data_saver_user */);
 
   tester.ExpectUniqueSample(kUMAPreviewsInfoBarActionLitePage,
                             PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
@@ -414,6 +462,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTest) {
             infobar->GetMessageText());
   ASSERT_EQ(l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_LINK),
             infobar->GetLinkText());
+  ASSERT_EQ(base::string16(), infobar->GetTimestampText());
 #if defined(OS_ANDROID)
   ASSERT_EQ(IDR_ANDROID_INFOBAR_PREVIEWS, infobar->GetIconId());
 #else
@@ -424,8 +473,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTest) {
 TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarNonDataSaverUserTest) {
   base::HistogramTester tester;
 
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::OFFLINE, false /* is_data_saver_user */);
+  PreviewsInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::OFFLINE, base::Time(),
+                    false /* is_data_saver_user */);
 
   tester.ExpectUniqueSample(kUMAPreviewsInfoBarActionOffline,
                             PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
@@ -438,6 +488,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarNonDataSaverUserTest) {
             infobar->GetMessageText());
   ASSERT_EQ(l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_LINK),
             infobar->GetLinkText());
+  ASSERT_EQ(base::string16(), infobar->GetTimestampText());
 #if defined(OS_ANDROID)
   ASSERT_EQ(IDR_ANDROID_INFOBAR_PREVIEWS, infobar->GetIconId());
 #else
@@ -448,8 +499,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarNonDataSaverUserTest) {
 TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDataSaverUserTest) {
   base::HistogramTester tester;
 
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::OFFLINE, true /* is_data_saver_user */);
+  PreviewsInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::OFFLINE, base::Time(),
+                    true /* is_data_saver_user */);
 
   tester.ExpectUniqueSample(kUMAPreviewsInfoBarActionOffline,
                             PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
@@ -462,6 +514,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDataSaverUserTest) {
             infobar->GetMessageText());
   ASSERT_EQ(l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_LINK),
             infobar->GetLinkText());
+  ASSERT_EQ(base::string16(), infobar->GetTimestampText());
 #if defined(OS_ANDROID)
   ASSERT_EQ(IDR_ANDROID_INFOBAR_PREVIEWS, infobar->GetIconId());
 #else
@@ -477,8 +530,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDisablesLoFi) {
 
   NavigateAndCommit(GURL(kTestUrl));
 
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::OFFLINE, true /* is_data_saver_user */);
+  ConfirmInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::OFFLINE, base::Time(),
+                    true /* is_data_saver_user */);
 
   tester.ExpectUniqueSample(kUMAPreviewsInfoBarActionOffline,
                             PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
@@ -508,8 +562,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, PingbackClientClearedTabClosed) {
 
   NavigateAndCommit(GURL(kTestUrl));
 
-  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
-      previews::PreviewsType::LITE_PAGE, true /* is_data_saver_user */);
+  ConfirmInfoBarDelegate* infobar =
+      CreateInfoBar(previews::PreviewsType::LITE_PAGE, base::Time(),
+                    true /* is_data_saver_user */);
 
   // Simulate clicking the infobar link.
   if (infobar->LinkClicked(WindowOpenDisposition::CURRENT_TAB))
@@ -551,4 +606,49 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, PingbackClientClearedTabClosed) {
   EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
                     ->pingback_client()
                     ->OptOutsSizeForTesting());
+}
+
+TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTimestampMintuesTest) {
+  EnableStalePreviewsTimestamp();
+
+  int staleness_in_minutes = 5;
+
+  PreviewsInfoBarDelegate* infobar = CreateInfoBar(
+      previews::PreviewsType::LITE_PAGE,
+      base::Time::Now() - base::TimeDelta::FromMinutes(staleness_in_minutes),
+      true /* is_data_saver_user */);
+
+  ASSERT_EQ(
+      l10n_util::GetStringFUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
+                                 base::IntToString16(staleness_in_minutes)),
+      infobar->GetTimestampText());
+}
+
+TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTimestampHourTest) {
+  EnableStalePreviewsTimestamp();
+
+  int staleness_in_minutes = 65;
+
+  PreviewsInfoBarDelegate* infobar = CreateInfoBar(
+      previews::PreviewsType::LITE_PAGE,
+      base::Time::Now() - base::TimeDelta::FromMinutes(staleness_in_minutes),
+      true /* is_data_saver_user */);
+
+  ASSERT_EQ(l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_ONE_HOUR),
+            infobar->GetTimestampText());
+}
+
+TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTimestampHoursTest) {
+  EnableStalePreviewsTimestamp();
+
+  int staleness_in_hours = 2;
+
+  PreviewsInfoBarDelegate* infobar = CreateInfoBar(
+      previews::PreviewsType::LITE_PAGE,
+      base::Time::Now() - base::TimeDelta::FromHours(staleness_in_hours),
+      true /* is_data_saver_user */);
+
+  ASSERT_EQ(l10n_util::GetStringFUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS,
+                                       base::IntToString16(staleness_in_hours)),
+            infobar->GetTimestampText());
 }
