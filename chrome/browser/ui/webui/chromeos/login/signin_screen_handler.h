@@ -281,7 +281,6 @@ class SigninScreenHandler
 
   // wallpaper::WallpaperManagerBase::Observer implementation.
   void OnWallpaperColorsChanged() override;
-  void OnWallpaperAnimationFinished(const AccountId& account_id) override;
 
   void SetFocusPODCallbackForTesting(base::Closure callback);
 
