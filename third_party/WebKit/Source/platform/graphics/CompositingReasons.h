@@ -31,76 +31,77 @@ const uint64_t kCompositingReasonOutOfFlowClipping = UINT64_C(1) << 11;
 const uint64_t kCompositingReasonVideoOverlay = UINT64_C(1) << 12;
 const uint64_t kCompositingReasonWillChangeCompositingHint = UINT64_C(1) << 13;
 const uint64_t kCompositingReasonBackdropFilter = UINT64_C(1) << 14;
+const uint64_t kCompositingReasonRootScroller = UINT64_C(1) << 15;
 
 // Overlap reasons that require knowing what's behind you in paint-order before
 // knowing the answer.
-const uint64_t kCompositingReasonAssumedOverlap = UINT64_C(1) << 15;
-const uint64_t kCompositingReasonOverlap = UINT64_C(1) << 16;
-const uint64_t kCompositingReasonNegativeZIndexChildren = UINT64_C(1) << 17;
-const uint64_t kCompositingReasonSquashingDisallowed = UINT64_C(1) << 18;
+const uint64_t kCompositingReasonAssumedOverlap = UINT64_C(1) << 16;
+const uint64_t kCompositingReasonOverlap = UINT64_C(1) << 17;
+const uint64_t kCompositingReasonNegativeZIndexChildren = UINT64_C(1) << 18;
+const uint64_t kCompositingReasonSquashingDisallowed = UINT64_C(1) << 19;
 
 // Subtree reasons that require knowing what the status of your subtree is
 // before knowing the answer.
 const uint64_t kCompositingReasonTransformWithCompositedDescendants =
-    UINT64_C(1) << 19;
+    UINT64_C(1) << 20;
 const uint64_t kCompositingReasonOpacityWithCompositedDescendants = UINT64_C(1)
-                                                                    << 20;
+                                                                    << 21;
 const uint64_t kCompositingReasonMaskWithCompositedDescendants = UINT64_C(1)
-                                                                 << 21;
+                                                                 << 22;
 const uint64_t kCompositingReasonReflectionWithCompositedDescendants =
-    UINT64_C(1) << 22;
+    UINT64_C(1) << 23;
 const uint64_t kCompositingReasonFilterWithCompositedDescendants = UINT64_C(1)
-                                                                   << 23;
+                                                                   << 24;
 const uint64_t kCompositingReasonBlendingWithCompositedDescendants = UINT64_C(1)
-                                                                     << 24;
+                                                                     << 25;
 const uint64_t kCompositingReasonClipsCompositingDescendants = UINT64_C(1)
-                                                               << 25;
+                                                               << 26;
 const uint64_t kCompositingReasonPerspectiveWith3DDescendants = UINT64_C(1)
-                                                                << 26;
+                                                                << 27;
 const uint64_t kCompositingReasonPreserve3DWith3DDescendants = UINT64_C(1)
-                                                               << 27;
+                                                               << 28;
 const uint64_t kCompositingReasonReflectionOfCompositedParent = UINT64_C(1)
-                                                                << 28;
-const uint64_t kCompositingReasonIsolateCompositedDescendants = UINT64_C(1)
                                                                 << 29;
+const uint64_t kCompositingReasonIsolateCompositedDescendants = UINT64_C(1)
+                                                                << 30;
 const uint64_t
     kCompositingReasonPositionFixedOrStickyWithCompositedDescendants =
-        UINT64_C(1) << 30;
+        UINT64_C(1) << 31;
 
 // The root layer is a special case. It may be forced to be a layer, but it also
 // needs to be a layer if anything else in the subtree is composited.
-const uint64_t kCompositingReasonRoot = UINT64_C(1) << 31;
+const uint64_t kCompositingReasonRoot = UINT64_C(1) << 32;
 
 // CompositedLayerMapping internal hierarchy reasons
-const uint64_t kCompositingReasonLayerForAncestorClip = UINT64_C(1) << 32;
-const uint64_t kCompositingReasonLayerForDescendantClip = UINT64_C(1) << 33;
-const uint64_t kCompositingReasonLayerForPerspective = UINT64_C(1) << 34;
+const uint64_t kCompositingReasonLayerForAncestorClip = UINT64_C(1) << 33;
+const uint64_t kCompositingReasonLayerForDescendantClip = UINT64_C(1) << 34;
+const uint64_t kCompositingReasonLayerForPerspective = UINT64_C(1) << 35;
 const uint64_t kCompositingReasonLayerForHorizontalScrollbar = UINT64_C(1)
-                                                               << 35;
-const uint64_t kCompositingReasonLayerForVerticalScrollbar = UINT64_C(1) << 36;
+                                                               << 36;
+const uint64_t kCompositingReasonLayerForVerticalScrollbar = UINT64_C(1) << 37;
 const uint64_t kCompositingReasonLayerForOverflowControlsHost = UINT64_C(1)
-                                                                << 37;
-const uint64_t kCompositingReasonLayerForScrollCorner = UINT64_C(1) << 38;
-const uint64_t kCompositingReasonLayerForScrollingContents = UINT64_C(1) << 39;
-const uint64_t kCompositingReasonLayerForScrollingContainer = UINT64_C(1) << 40;
-const uint64_t kCompositingReasonLayerForSquashingContents = UINT64_C(1) << 41;
-const uint64_t kCompositingReasonLayerForSquashingContainer = UINT64_C(1) << 42;
-const uint64_t kCompositingReasonLayerForForeground = UINT64_C(1) << 43;
-const uint64_t kCompositingReasonLayerForBackground = UINT64_C(1) << 44;
-const uint64_t kCompositingReasonLayerForMask = UINT64_C(1) << 45;
-const uint64_t kCompositingReasonLayerForClippingMask = UINT64_C(1) << 46;
+                                                                << 38;
+const uint64_t kCompositingReasonLayerForScrollCorner = UINT64_C(1) << 39;
+const uint64_t kCompositingReasonLayerForScrollingContents = UINT64_C(1) << 40;
+const uint64_t kCompositingReasonLayerForScrollingContainer = UINT64_C(1) << 41;
+const uint64_t kCompositingReasonLayerForSquashingContents = UINT64_C(1) << 42;
+const uint64_t kCompositingReasonLayerForSquashingContainer = UINT64_C(1) << 43;
+const uint64_t kCompositingReasonLayerForForeground = UINT64_C(1) << 44;
+const uint64_t kCompositingReasonLayerForBackground = UINT64_C(1) << 45;
+const uint64_t kCompositingReasonLayerForMask = UINT64_C(1) << 46;
+const uint64_t kCompositingReasonLayerForClippingMask = UINT64_C(1) << 47;
 const uint64_t kCompositingReasonLayerForAncestorClippingMask = UINT64_C(1)
-                                                                << 47;
+                                                                << 48;
 const uint64_t kCompositingReasonLayerForScrollingBlockSelection = UINT64_C(1)
-                                                                   << 48;
+                                                                   << 49;
 // Composited layer painted on top of all other layers as decoration
-const uint64_t kCompositingReasonLayerForDecoration = UINT64_C(1) << 49;
+const uint64_t kCompositingReasonLayerForDecoration = UINT64_C(1) << 50;
 
 // Composited elements with inline transforms trigger assumed overlap so that
 // we can update their transforms quickly.
-const uint64_t kCompositingReasonInlineTransform = UINT64_C(1) << 50;
+const uint64_t kCompositingReasonInlineTransform = UINT64_C(1) << 51;
 
-const uint64_t kCompositingReasonCompositorProxy = UINT64_C(1) << 51;
+const uint64_t kCompositingReasonCompositorProxy = UINT64_C(1) << 52;
 
 // Various combinations of compositing reasons are defined here also, for more
 // intutive and faster bitwise logic.
@@ -114,7 +115,8 @@ const uint64_t kCompositingReasonComboAllDirectReasons =
     kCompositingReasonOverflowScrollingParent |
     kCompositingReasonOutOfFlowClipping | kCompositingReasonVideoOverlay |
     kCompositingReasonWillChangeCompositingHint |
-    kCompositingReasonCompositorProxy | kCompositingReasonBackdropFilter;
+    kCompositingReasonCompositorProxy | kCompositingReasonBackdropFilter |
+    kCompositingReasonRootScroller;
 
 const uint64_t kCompositingReasonComboAllDirectStyleDeterminedReasons =
     kCompositingReason3DTransform | kCompositingReasonBackfaceVisibilityHidden |

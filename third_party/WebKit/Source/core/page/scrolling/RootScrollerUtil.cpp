@@ -11,7 +11,10 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutView.h"
+#include "core/page/Page.h"
 #include "core/page/scrolling/RootScrollerController.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
+#include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 
 namespace blink {
@@ -69,6 +72,30 @@ bool IsEffective(const LayoutBox& box) {
 
   return box.GetNode() ==
          &box.GetDocument().GetRootScrollerController().EffectiveRootScroller();
+}
+
+bool IsGlobal(const LayoutBox& box) {
+  if (!box.GetNode() || !box.GetNode()->GetDocument().GetPage())
+    return false;
+
+  return box.GetNode() == box.GetDocument()
+                              .GetPage()
+                              ->GlobalRootScrollerController()
+                              .GlobalRootScroller();
+}
+
+bool IsGlobal(const PaintLayer& layer) {
+  if (!layer.GetLayoutBox())
+    return false;
+
+  PaintLayer* root_scroller_layer =
+      PaintLayerForRootScroller(layer.GetLayoutBox()
+                                    ->GetDocument()
+                                    .GetPage()
+                                    ->GlobalRootScrollerController()
+                                    .GlobalRootScroller());
+
+  return &layer == root_scroller_layer;
 }
 
 }  // namespace RootScrollerUtil

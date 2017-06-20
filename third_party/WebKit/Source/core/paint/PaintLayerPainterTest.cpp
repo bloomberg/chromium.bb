@@ -51,6 +51,13 @@ class PaintLayerPainterTest
         << ", expected=" << expected_value << ", actual=" << invisible << "].";
   }
 
+  PaintController& MainGraphicsLayerPaintController() {
+    return GetLayoutView()
+        .Layer()
+        ->GraphicsLayerBacking(&GetLayoutView())
+        ->GetPaintController();
+  }
+
  private:
   void SetUp() override {
     PaintControllerPaintTestBase::SetUp();
@@ -96,25 +103,19 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   LayoutObject& content2 =
       *GetDocument().getElementById("content2")->GetLayoutObject();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // With SPv1 and RLS, the LayoutView gets painted into the
+    // MainGraphicsLayer while the rest into the ScrollingContentsLayer
     EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 5,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(container1, kBackgroundType),
-        TestDisplayItem(content1, kBackgroundType),
-        TestDisplayItem(container2, kBackgroundType),
-        TestDisplayItem(content2, kBackgroundType));
+        MainGraphicsLayerPaintController().GetDisplayItemList(), 1,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType));
 
-    // check that new paint chunks were forced for |container1| and
-    // |container2|.
-    Vector<PaintChunk> paint_chunks =
-        RootPaintController().GetPaintArtifact().PaintChunks();
-    EXPECT_EQ(3u, paint_chunks.size());
-    EXPECT_EQ(GetLayoutView().Layer(), &paint_chunks[0].id.client);
-    EXPECT_EQ(ToLayoutBoxModelObject(container1).Layer(),
-              &paint_chunks[1].id.client);
-    EXPECT_EQ(ToLayoutBoxModelObject(container2).Layer(),
-              &paint_chunks[2].id.client);
+    EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
+                        TestDisplayItem(container1, kBackgroundType),
+                        TestDisplayItem(content1, kBackgroundType),
+                        TestDisplayItem(container2, kBackgroundType),
+                        TestDisplayItem(content2, kBackgroundType));
   } else {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,
@@ -125,6 +126,19 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
         TestDisplayItem(content2, kBackgroundType));
   }
 
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // check that new paint chunks were forced for |container1| and
+    // |container2|.
+    Vector<PaintChunk> paint_chunks =
+        RootPaintController().GetPaintArtifact().PaintChunks();
+    EXPECT_EQ(3u, paint_chunks.size());
+    EXPECT_EQ(GetLayoutView().Layer(), &paint_chunks[0].id.client);
+    EXPECT_EQ(ToLayoutBoxModelObject(container1).Layer(),
+              &paint_chunks[1].id.client);
+    EXPECT_EQ(ToLayoutBoxModelObject(container2).Layer(),
+              &paint_chunks[2].id.client);
+  }
+
   ToHTMLElement(content1.GetNode())
       ->setAttribute(HTMLNames::styleAttr,
                      "position: absolute; width: 100px; height: 100px; "
@@ -132,18 +146,27 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(PaintWithoutCommit());
 
-  EXPECT_EQ(4, NumCachedNewItems());
+  // With RLS and SPv1, the LayoutView is painted into a separate GraphicsLayer
+  // so it doesn't contribute to NumCachedNewItems since it isn't invalidated.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    EXPECT_EQ(3, NumCachedNewItems());
+  else
+    EXPECT_EQ(4, NumCachedNewItems());
 
   Commit();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 5,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(container1, kBackgroundType),
-        TestDisplayItem(content1, kBackgroundType),
-        TestDisplayItem(container2, kBackgroundType),
-        TestDisplayItem(content2, kBackgroundType));
+        MainGraphicsLayerPaintController().GetDisplayItemList(), 1,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType));
+
+    EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
+                        TestDisplayItem(container1, kBackgroundType),
+                        TestDisplayItem(content1, kBackgroundType),
+                        TestDisplayItem(container2, kBackgroundType),
+                        TestDisplayItem(content2, kBackgroundType));
   } else {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,
@@ -204,14 +227,31 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   // Container2 is partly (including its stacking chidren) in the interest rect;
   // Content2b is out of the interest rect and output nothing;
   // Container3 is partly in the interest rect.
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 7,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(container1, kBackgroundType),
-                      TestDisplayItem(content1, kBackgroundType),
-                      TestDisplayItem(container2, kBackgroundType),
-                      TestDisplayItem(content2a, kBackgroundType),
-                      TestDisplayItem(container3, kBackgroundType),
-                      TestDisplayItem(content3, kBackgroundType));
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // With SPv1 and RLS, the LayoutView gets painted into the
+    // MainGraphicsLayer while the rest into the ScrollingContentsLayer
+    EXPECT_DISPLAY_LIST(
+        MainGraphicsLayerPaintController().GetDisplayItemList(), 1,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType));
+    EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 6,
+                        TestDisplayItem(container1, kBackgroundType),
+                        TestDisplayItem(content1, kBackgroundType),
+                        TestDisplayItem(container2, kBackgroundType),
+                        TestDisplayItem(content2a, kBackgroundType),
+                        TestDisplayItem(container3, kBackgroundType),
+                        TestDisplayItem(content3, kBackgroundType));
+  } else {
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 7,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(container1, kBackgroundType),
+        TestDisplayItem(content1, kBackgroundType),
+        TestDisplayItem(container2, kBackgroundType),
+        TestDisplayItem(content2a, kBackgroundType),
+        TestDisplayItem(container3, kBackgroundType),
+        TestDisplayItem(content3, kBackgroundType));
+  }
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   IntRect new_interest_rect(0, 100, 300, 1000);
@@ -223,17 +263,35 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   // Content2b is out of the interest rect and outputs nothing;
   // Container3 becomes out of the interest rect and outputs empty subsequence
   // pair.
-  EXPECT_EQ(5, NumCachedNewItems());
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    EXPECT_EQ(4, NumCachedNewItems());
+  else
+    EXPECT_EQ(5, NumCachedNewItems());
 
   Commit();
 
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(container1, kBackgroundType),
-                      TestDisplayItem(content1, kBackgroundType),
-                      TestDisplayItem(container2, kBackgroundType),
-                      TestDisplayItem(content2a, kBackgroundType),
-                      TestDisplayItem(content2b, kBackgroundType));
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    EXPECT_DISPLAY_LIST(
+        MainGraphicsLayerPaintController().GetDisplayItemList(), 1,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType));
+    EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
+                        TestDisplayItem(container1, kBackgroundType),
+                        TestDisplayItem(content1, kBackgroundType),
+                        TestDisplayItem(container2, kBackgroundType),
+                        TestDisplayItem(content2a, kBackgroundType),
+                        TestDisplayItem(content2b, kBackgroundType));
+  } else {
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 6,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(container1, kBackgroundType),
+        TestDisplayItem(content1, kBackgroundType),
+        TestDisplayItem(container2, kBackgroundType),
+        TestDisplayItem(content2a, kBackgroundType),
+        TestDisplayItem(content2b, kBackgroundType));
+  }
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -263,14 +321,18 @@ TEST_P(PaintLayerPainterTest,
   LayoutObject& content2 =
       *GetDocument().getElementById("content2")->GetLayoutObject();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // With SPv1 and RLS, the LayoutView gets painted into the
+    // MainGraphicsLayer while the rest into the ScrollingContentsLayer
     EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 5,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(container1, kBackgroundType),
-        TestDisplayItem(content1, kBackgroundType),
-        TestDisplayItem(container2, kBackgroundType),
-        TestDisplayItem(content2, kBackgroundType));
+        MainGraphicsLayerPaintController().GetDisplayItemList(), 1,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType));
+    EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
+                        TestDisplayItem(container1, kBackgroundType),
+                        TestDisplayItem(content1, kBackgroundType),
+                        TestDisplayItem(container2, kBackgroundType),
+                        TestDisplayItem(content2, kBackgroundType));
   } else {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,
@@ -288,18 +350,24 @@ TEST_P(PaintLayerPainterTest,
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(PaintWithoutCommit(&interest_rect));
 
-  EXPECT_EQ(4, NumCachedNewItems());
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    EXPECT_EQ(3, NumCachedNewItems());
+  else
+    EXPECT_EQ(4, NumCachedNewItems());
 
   Commit();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 5,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(container1, kBackgroundType),
-        TestDisplayItem(content1, kBackgroundType),
-        TestDisplayItem(container2, kBackgroundType),
-        TestDisplayItem(content2, kBackgroundType));
+        MainGraphicsLayerPaintController().GetDisplayItemList(), 1,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType));
+    EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
+                        TestDisplayItem(container1, kBackgroundType),
+                        TestDisplayItem(content1, kBackgroundType),
+                        TestDisplayItem(container2, kBackgroundType),
+                        TestDisplayItem(content2, kBackgroundType));
   } else {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,
@@ -534,7 +602,13 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
   ToHTMLElement(background_div.GetNode())
       ->setAttribute(HTMLNames::styleAttr, style_without_background);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // In RootLayerScrolls+SPv1, the empty paint phase optimization doesn't
+    // apply to the composited scrolling layer so we don't need this check.
+    EXPECT_FALSE(
+        self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
+  }
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval) {

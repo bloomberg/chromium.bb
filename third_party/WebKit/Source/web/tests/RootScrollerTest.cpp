@@ -604,6 +604,53 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   }
 }
 
+// Ensures that the root scroller always gets composited with scrolling layers.
+// This is necessary since we replace the Frame scrolling layers in CC as the
+// OuterViewport, we need something to replace them with.
+TEST_F(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
+  Initialize();
+
+  WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                   "<!DOCTYPE html>"
+                                   "<style>"
+                                   "  body {"
+                                   "    margin: 0px;"
+                                   "  }"
+                                   "  #container {"
+                                   "    width: 100%;"
+                                   "    height: 100%;"
+                                   "    position: absolute;"
+                                   "    overflow: auto;"
+                                   "  }"
+                                   "</style>"
+                                   "<div id='container'></div>",
+                                   base_url);
+
+  GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, true);
+  MainFrameView()->UpdateAllLifecyclePhases();
+
+  Element* container = MainFrame()->GetDocument()->getElementById("container");
+
+  PaintLayerScrollableArea* container_scroller =
+      ToLayoutBox(container->GetLayoutObject())->GetScrollableArea();
+  PaintLayer* layer = container_scroller->Layer();
+
+  ASSERT_FALSE(layer->HasCompositedLayerMapping());
+
+  MainFrame()->GetDocument()->setRootScroller(container, ASSERT_NO_EXCEPTION);
+  MainFrameView()->UpdateAllLifecyclePhases();
+
+  ASSERT_TRUE(layer->HasCompositedLayerMapping());
+  EXPECT_TRUE(layer->GetCompositedLayerMapping()->ScrollingContentsLayer());
+  EXPECT_TRUE(layer->GetCompositedLayerMapping()->ScrollingLayer());
+
+  MainFrame()->GetDocument()->setRootScroller(nullptr, ASSERT_NO_EXCEPTION);
+  MainFrameView()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(layer->HasCompositedLayerMapping());
+}
+
 TEST_F(RootScrollerTest, TestSetRootScrollerCausesViewportLayerChange) {
   // TODO(bokan): Need a test that changing root scrollers actually sets the
   // outer viewport layer on the compositor, even in the absence of other

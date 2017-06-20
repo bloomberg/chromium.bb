@@ -20,6 +20,8 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
     {kCompositingReasonIFrame, "iFrame", "Is an accelerated iFrame"},
     {kCompositingReasonBackfaceVisibilityHidden, "backfaceVisibilityHidden",
      "Has backface-visibility: hidden"},
+    {kCompositingReasonRootScroller, "rootScroller",
+     "Is the document.rootScroller"},
     {kCompositingReasonActiveAnimation, "activeAnimation",
      "Has an active accelerated animation or transition"},
     {kCompositingReasonTransitionProperty, "transitionProperty",
