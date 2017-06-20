@@ -1,7 +1,6 @@
 SUBDIRS = moreTables resolve_table emphclass
 
 EXTRA_DIST =					\
-	back_cont_then_punc.ctb			\
 	bad.ctb					\
 	begcaps_endcaps.utb			\
 	capitalization.ctb			\
