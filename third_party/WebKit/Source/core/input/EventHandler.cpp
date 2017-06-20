@@ -155,7 +155,7 @@ static const double kMinimumCursorScale = 0.001;
 
 // The minimum amount of time an element stays active after a ShowPress
 // This is roughly 9 frames, which should be long enough to be noticeable.
-static const TimeDelta kMinimumActiveInterval = TimeDelta::FromSecondsD(0.15);
+constexpr TimeDelta kMinimumActiveInterval = TimeDelta::FromSecondsD(0.15);
 
 enum NoCursorChangeType { kNoCursorChange };
 

@@ -14,17 +14,17 @@
 
 namespace {
 
-const WCHAR* kMachineNamePolicyVarName = L"${machine_name}";
-const WCHAR* kUserNamePolicyVarName = L"${user_name}";
-const WCHAR* kWinDocumentsFolderVarName = L"${documents}";
-const WCHAR* kWinLocalAppDataFolderVarName = L"${local_app_data}";
-const WCHAR* kWinRoamingAppDataFolderVarName = L"${roaming_app_data}";
-const WCHAR* kWinProfileFolderVarName = L"${profile}";
-const WCHAR* kWinProgramDataFolderVarName = L"${global_app_data}";
-const WCHAR* kWinProgramFilesFolderVarName = L"${program_files}";
-const WCHAR* kWinWindowsFolderVarName = L"${windows}";
-const WCHAR* kWinClientName = L"${client_name}";
-const WCHAR* kWinSessionName = L"${session_name}";
+constexpr WCHAR kMachineNamePolicyVarName[] = L"${machine_name}";
+constexpr WCHAR kUserNamePolicyVarName[] = L"${user_name}";
+constexpr WCHAR kWinDocumentsFolderVarName[] = L"${documents}";
+constexpr WCHAR kWinLocalAppDataFolderVarName[] = L"${local_app_data}";
+constexpr WCHAR kWinRoamingAppDataFolderVarName[] = L"${roaming_app_data}";
+constexpr WCHAR kWinProfileFolderVarName[] = L"${profile}";
+constexpr WCHAR kWinProgramDataFolderVarName[] = L"${global_app_data}";
+constexpr WCHAR kWinProgramFilesFolderVarName[] = L"${program_files}";
+constexpr WCHAR kWinWindowsFolderVarName[] = L"${windows}";
+constexpr WCHAR kWinClientName[] = L"${client_name}";
+constexpr WCHAR kWinSessionName[] = L"${session_name}";
 
 struct WinFolderNamesToCSIDLMapping {
   const WCHAR* name;
@@ -32,7 +32,7 @@ struct WinFolderNamesToCSIDLMapping {
 };
 
 // Mapping from variable names to Windows CSIDL ids.
-const WinFolderNamesToCSIDLMapping kWinFolderMapping[] = {
+constexpr WinFolderNamesToCSIDLMapping kWinFolderMapping[] = {
     { kWinWindowsFolderVarName,        CSIDL_WINDOWS},
     { kWinProgramFilesFolderVarName,   CSIDL_PROGRAM_FILES},
     { kWinProgramDataFolderVarName,    CSIDL_COMMON_APPDATA},
