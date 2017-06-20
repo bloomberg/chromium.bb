@@ -835,7 +835,7 @@ static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
     y = (r << 8) - dy;
     for (c = 0; c < bw; ++c, base1 += base_inc_x, y -= dy) {
       if (base1 >= min_base_x) {
-        shift1 = (x << upsample_above) & 0xFF;
+        shift1 = (x * (1 << upsample_above)) & 0xFF;
 #if CONFIG_INTRA_INTERP
         val =
             intra_subpel_interp(base1, shift1, above, -1, bw - 1, filter_type);
@@ -846,7 +846,7 @@ static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
       } else {
         base2 = y >> frac_bits_y;
         assert(base2 >= -(1 << upsample_left));
-        shift2 = (y << upsample_left) & 0xFF;
+        shift2 = (y * (1 << upsample_left)) & 0xFF;
 #if CONFIG_INTRA_INTERP
         val = intra_subpel_interp(base2, shift2, left, -1, bh - 1, filter_type);
 #else
