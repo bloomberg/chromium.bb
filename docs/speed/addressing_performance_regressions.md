@@ -118,6 +118,13 @@ There's a lot of information packed in that bug comment! Here's a breakdown:
 
 ## If you don't believe your CL could be the cause
 
+*** promo
+Please remember that our performance tests exist to catch unexpected
+regressions. Often, the tests catch performance problems the CL author was
+not aware of. Please look at the data carefully and understand what the test
+is measuring before concluding that your CL is not related.
+***
+
 There are some clear reasons to believe the bisect bot made a mistake:
 
   * Your CL changes a test or some code that isn't compiled on the platform
