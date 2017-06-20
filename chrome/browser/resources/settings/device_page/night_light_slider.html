@@ -117,11 +117,11 @@
         color: rgb(100, 100, 100);
         font-family: Roboto-Regular;
         font-size: 12px;
-        margin-left: -2em;
+        margin-left: -2.5em;
         position: absolute;
         text-align: center;
         top: 5px;
-        width: 4em;
+        width: 5em;
       }
     </style>
 
@@ -149,12 +149,11 @@
             on-up="endDrag_" on-track="continueDrag_"></div>
       </div>
       <div id="legendContainer">
-        <!-- TODO(afakhry): Check if these values need to be localized. -->
-        <div style="left: 0%;">6 PM</div>
-        <div style="left: 25%;">12 AM</div>
-        <div style="left: 50%;">6 AM</div>
-        <div style="left: 75%;">12 PM</div>
-        <div style="left: 100%;">6 PM</div>
+        <div style="left: 0%;">[[getLocaleTimeString_(18, 0)]]</div>
+        <div style="left: 25%;">[[getLocaleTimeString_(0, 0)]]</div>
+        <div style="left: 50%;">[[getLocaleTimeString_(6, 0)]]</div>
+        <div style="left: 75%;">[[getLocaleTimeString_(12, 0)]]</div>
+        <div style="left: 100%;">[[getLocaleTimeString_(18, 0)]]</div>
       </div>
     </div>
 
