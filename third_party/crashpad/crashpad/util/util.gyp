@@ -120,6 +120,8 @@
         'misc/pdb_structures.h',
         'misc/random_string.cc',
         'misc/random_string.h',
+        'misc/reinterpret_bytes.cc',
+        'misc/reinterpret_bytes.h',
         'misc/scoped_forbid_return.cc',
         'misc/scoped_forbid_return.h',
         'misc/symbolic_constants_common.h',
@@ -283,7 +285,11 @@
                 '<(INTERMEDIATE_DIR)/util/mach/<(RULE_INPUT_ROOT)Server.h',
               ],
               'action': [
-                'python', '<@(_inputs)', '<(RULE_INPUT_PATH)', '<@(_outputs)'
+                'python',
+                '<@(_inputs)',
+                '<(RULE_INPUT_PATH)',
+                '<@(_outputs)',
+                '--include=../compat/mac'
               ],
               'process_outputs_as_sources': 1,
             },
