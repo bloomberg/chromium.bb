@@ -78,7 +78,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   }
 
   UpdateState(State::ACTIVE);
-  is_debug_mode_ = is_debug_mode;
+  triggered_by_devtools_ = is_debug_mode;
   page_requested_prompt_ = false;
 
   // We only need to call ReportStatus if we aren't in debug mode (this avoids
@@ -110,6 +110,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   if (binding_.is_bound())
     binding_.Close();
 
+  UpdateState(State::PENDING_MANIFEST);
   manager_->GetData(
       ParamsToGetManifest(),
       base::Bind(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
@@ -154,7 +155,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       has_sufficient_engagement_(false),
       load_finished_(false),
       page_requested_prompt_(false),
-      is_debug_mode_(false),
+      triggered_by_devtools_(false),
       need_to_log_status_(false),
       weak_factory_(this) {
   // Ensure the InstallableManager exists since we have a hard dependency on it.
@@ -193,7 +194,7 @@ int AppBannerManager::GetMinimumPrimaryIconSizeInPx() {
 }
 
 bool AppBannerManager::IsDebugMode() const {
-  return is_debug_mode_ ||
+  return triggered_by_devtools_ ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kBypassAppBannerEngagementChecks);
 }
@@ -206,6 +207,7 @@ bool AppBannerManager::IsWebAppInstalled(
 }
 
 void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
+  UpdateState(State::ACTIVE);
   if (data.error_code != NO_ERROR_DETECTED) {
     ReportStatus(web_contents(), data.error_code);
     Stop();
@@ -237,6 +239,9 @@ InstallableParams AppBannerManager::ParamsToPerformInstallableCheck() {
   params.check_installable = true;
   params.fetch_valid_primary_icon = true;
 
+  // Don't wait for the service worker if this was triggered from devtools.
+  params.wait_for_worker = !triggered_by_devtools_;
+
   return params;
 }
 
@@ -245,6 +250,7 @@ void AppBannerManager::PerformInstallableCheck() {
     return;
 
   // Fetch and verify the other required information.
+  UpdateState(State::PENDING_INSTALLABLE_CHECK);
   manager_->GetData(ParamsToPerformInstallableCheck(),
                     base::Bind(&AppBannerManager::OnDidPerformInstallableCheck,
                                GetWeakPtr()));
@@ -252,6 +258,7 @@ void AppBannerManager::PerformInstallableCheck() {
 
 void AppBannerManager::OnDidPerformInstallableCheck(
     const InstallableData& data) {
+  UpdateState(State::ACTIVE);
   if (data.is_installable)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
@@ -319,21 +326,41 @@ void AppBannerManager::ResetCurrentPageData() {
 }
 
 void AppBannerManager::Stop() {
-  if (state_ == State::PENDING_EVENT && !page_requested_prompt_) {
-    TrackBeforeInstallEvent(
-        BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT);
-    ReportStatus(web_contents(), RENDERER_CANCELLED);
-  } else if (state_ == State::PENDING_ENGAGEMENT &&
-             !has_sufficient_engagement_) {
-    TrackDisplayEvent(DISPLAY_EVENT_NOT_VISITED_ENOUGH);
-    ReportStatus(web_contents(), INSUFFICIENT_ENGAGEMENT);
+  // Record the status if we are currently waiting for data.
+  InstallableStatusCode code = NO_ERROR_DETECTED;
+  switch (state_) {
+    case State::PENDING_EVENT:
+      if (!page_requested_prompt_) {
+        TrackBeforeInstallEvent(
+            BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT);
+        code = RENDERER_CANCELLED;
+      }
+      break;
+    case State::PENDING_ENGAGEMENT:
+      if (!has_sufficient_engagement_) {
+        TrackDisplayEvent(DISPLAY_EVENT_NOT_VISITED_ENOUGH);
+        code = INSUFFICIENT_ENGAGEMENT;
+      }
+      break;
+    case State::PENDING_MANIFEST:
+      code = WAITING_FOR_MANIFEST;
+      break;
+    case State::PENDING_INSTALLABLE_CHECK:
+      code = WAITING_FOR_INSTALLABLE_CHECK;
+      break;
+    case State::ACTIVE:
+    case State::INACTIVE:
+    case State::COMPLETE:
+      break;
   }
+
+  if (code != NO_ERROR_DETECTED)
+    ReportStatus(web_contents(), code);
 
   // In every non-debug run through the banner pipeline, we should have called
   // ReportStatus() and set need_to_log_status_ to false. The only case where
-  // we don't is if we're still active and waiting for a callback from the
-  // InstallableManager (e.g. the renderer crashes or the browser is shutting
-  // down). These situations are explicitly not logged.
+  // we don't is if we're still active and waiting for native app data, which is
+  // explicitly not logged.
   DCHECK(!need_to_log_status_ || is_active());
 
   weak_factory_.InvalidateWeakPtrs();

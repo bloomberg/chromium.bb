@@ -12,7 +12,8 @@ using IconPurpose = content::Manifest::Icon::IconPurpose;
 
 class InstallableManagerUnitTest : public testing::Test {
  public:
-  InstallableManagerUnitTest() : manager_(new InstallableManager(nullptr)) { }
+  InstallableManagerUnitTest()
+      : manager_(base::MakeUnique<InstallableManager>(nullptr)) {}
 
  protected:
   static base::NullableString16 ToNullableUTF16(const std::string& str) {
@@ -39,12 +40,12 @@ class InstallableManagerUnitTest : public testing::Test {
 
   bool IsManifestValid(const content::Manifest& manifest) {
     // Explicitly reset the error code before running the method.
-    manager_->set_installable_error(NO_ERROR_DETECTED);
+    manager_->set_valid_manifest_error(NO_ERROR_DETECTED);
     return manager_->IsManifestValidForWebApp(manifest);
   }
 
   InstallableStatusCode GetErrorCode() {
-    return manager_->installable_error();
+    return manager_->valid_manifest_error();
   }
 
  private:
