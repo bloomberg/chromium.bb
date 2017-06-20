@@ -1087,9 +1087,9 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
   return loader;
 }
 
-void FrameFetchContext::Detach() {
+FetchContext* FrameFetchContext::Detach() {
   if (IsDetached())
-    return;
+    return this;
 
   if (document_) {
     frozen_state_ = new FrozenState(
@@ -1113,6 +1113,8 @@ void FrameFetchContext::Detach() {
   // This is needed to break a reference cycle in which off-heap
   // ComputedStyle is involved. See https://crbug.com/383860 for details.
   document_ = nullptr;
+
+  return this;
 }
 
 DEFINE_TRACE(FrameFetchContext) {
