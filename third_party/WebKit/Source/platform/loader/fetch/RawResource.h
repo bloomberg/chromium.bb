@@ -77,13 +77,13 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                           const ResourceResponse&) override;
 
  private:
-  class RawResourceFactory : public ResourceFactory {
+  class RawResourceFactory : public NonTextResourceFactory {
    public:
-    explicit RawResourceFactory(Resource::Type type) : ResourceFactory(type) {}
+    explicit RawResourceFactory(Resource::Type type)
+        : NonTextResourceFactory(type) {}
 
     Resource* Create(const ResourceRequest& request,
-                     const ResourceLoaderOptions& options,
-                     const String& charset) const override {
+                     const ResourceLoaderOptions& options) const override {
       return new RawResource(request, type_, options);
     }
   };

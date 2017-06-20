@@ -72,13 +72,12 @@ class CORE_EXPORT FontResource final : public Resource {
                     WebProcessMemoryDump*) const override;
 
  private:
-  class FontResourceFactory : public ResourceFactory {
+  class FontResourceFactory : public NonTextResourceFactory {
    public:
-    FontResourceFactory() : ResourceFactory(Resource::kFont) {}
+    FontResourceFactory() : NonTextResourceFactory(Resource::kFont) {}
 
     Resource* Create(const ResourceRequest& request,
-                     const ResourceLoaderOptions& options,
-                     const String& charset) const override {
+                     const ResourceLoaderOptions& options) const override {
       return new FontResource(request, options);
     }
   };
