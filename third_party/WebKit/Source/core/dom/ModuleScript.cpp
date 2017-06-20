@@ -34,15 +34,15 @@ ModuleScript* ModuleScript::Create(
     AccessControlStatus access_control_status,
     const TextPosition& start_position) {
   // https://html.spec.whatwg.org/#creating-a-module-script
-  // Step 1. Let script be a new module script that this algorithm will
-  // subsequently initialize.
-  // Step 2. Set script's settings object to the environment settings object
-  // provided.
-  // Note: "script's settings object" will be "modulator".
-
-  v8::HandleScope scope(modulator->GetScriptState()->GetIsolate());
-  ExceptionState exception_state(modulator->GetScriptState()->GetIsolate(),
-                                 ExceptionState::kExecutionContext,
+  // Step 1. "Let script be a new module script that this algorithm will
+  // subsequently initialize, with its module record initially set to null."
+  // [spec text] Step 2. "Set script's settings object to the environment
+  // settings object provided." [spec text] Note: "script's settings object"
+  // will be "modulator".
+  ScriptState* script_state = modulator->GetScriptState();
+  ScriptState::Scope scope(script_state);
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleScript", "Create");
 
   // Delegate to Modulator::CompileModule to process Steps 3-5.
@@ -50,26 +50,48 @@ ModuleScript* ModuleScript::Create(
       source_text, base_url.GetString(), access_control_status, start_position,
       exception_state);
 
-  // CreateInternal processes Steps 7-13.
+  // CreateInternal processes Steps 8-13.
   // [nospec] We initialize the other ModuleScript members anyway by running
-  // Steps 7-13 before Step 6. In a case that compile failed, we will
+  // Steps 8-13 before Step 6. In a case that compile failed, we will
   // immediately turn the script into errored state. Thus the members will not
   // be used for the speced algorithms, but may be used from inspector.
   ModuleScript* script =
       CreateInternal(source_text, modulator, result, base_url, nonce,
                      parser_state, credentials_mode, start_position);
 
-  // Step 6. If result is a List of errors, then:
+  // Step 6. "If result is a List of errors, then:" [spec text]
   if (exception_state.HadException()) {
     DCHECK(result.IsNull());
 
-    // Step 6.1. Error script with errors[0].
+    // Step 6.1. "Error script with errors[0]." [spec text]
     v8::Local<v8::Value> error = exception_state.GetException();
     exception_state.ClearException();
-    script->SetErrorAndClearRecord(
-        ScriptValue(modulator->GetScriptState(), error));
+    script->SetErrorAndClearRecord(ScriptValue(script_state, error));
 
-    // Step 6.2. Return script.
+    // Step 6.2. "Return script." [spec text]
+    return script;
+  }
+
+  // Step 7. "For each string requested of record.[[RequestedModules]]:" [spec
+  // text]
+  for (const auto& requested :
+       modulator->ModuleRequestsFromScriptModule(result)) {
+    // Step 7.1. "Let url be the result of resolving a module specifier given
+    // module script and requested."[spec text] Step 7.2. "If url is failure:"
+    // [spec text]
+    // TODO(kouhei): Cache the url here instead of issuing
+    // ResolveModuleSpecifier later again in ModuleTreeLinker.
+    if (modulator->ResolveModuleSpecifier(requested, base_url).IsValid())
+      continue;
+
+    // Step 7.2.1. "Let error be a new TypeError exception." [spec text]
+    v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
+        isolate, "Failed to resolve module specifier '" + requested + "'");
+
+    // Step 7.2.2. "Set the parse error of script to error." [spec text]
+    script->SetErrorAndClearRecord(ScriptValue(script_state, error));
+
+    // Step 7.2.3. "Return script." [spec text]
     return script;
   }
 
@@ -99,7 +121,6 @@ ModuleScript* ModuleScript::CreateInternal(
     WebURLRequest::FetchCredentialsMode credentials_mode,
     const TextPosition& start_position) {
   // https://html.spec.whatwg.org/#creating-a-module-script
-  // Step 7. Set script's state to "uninstantiated".
   // Step 8. Set script's module record to result.
   // Step 9. Set script's base URL to the script base URL provided.
   // Step 10. Set script's cryptographic nonce to the cryptographic nonce

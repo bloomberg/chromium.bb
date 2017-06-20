@@ -78,11 +78,19 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
         exception_state);
   }
 
+  void SetModuleRequests(const Vector<String>& requests) {
+    requests_ = requests;
+  }
+  Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override {
+    return requests_;
+  }
+
   DECLARE_TRACE();
 
  private:
   RefPtr<ScriptState> script_state_;
   RefPtr<SecurityOrigin> security_origin_;
+  Vector<String> requests_;
 };
 
 DEFINE_TRACE(ModuleScriptLoaderTestModulator) {
@@ -101,13 +109,13 @@ class ModuleScriptLoaderTest : public ::testing::Test {
   LocalFrame& GetFrame() { return dummy_page_holder_->GetFrame(); }
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   ResourceFetcher* Fetcher() { return fetcher_.Get(); }
-  Modulator* GetModulator() { return modulator_.Get(); }
+  ModuleScriptLoaderTestModulator* GetModulator() { return modulator_.Get(); }
 
  protected:
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Persistent<ResourceFetcher> fetcher_;
-  Persistent<Modulator> modulator_;
+  Persistent<ModuleScriptLoaderTestModulator> modulator_;
 };
 
 void ModuleScriptLoaderTest::SetUp() {
@@ -136,6 +144,24 @@ TEST_F(ModuleScriptLoaderTest, fetchDataURL) {
   ASSERT_TRUE(client->GetModuleScript());
   EXPECT_EQ(client->GetModuleScript()->State(),
             ModuleInstantiationState::kUninstantiated);
+}
+
+TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
+  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
+  KURL url(KURL(),
+           "data:text/javascript,import 'invalid';export default 'grapes';");
+  ModuleScriptFetchRequest module_request(
+      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
+  GetModulator()->SetModuleRequests({"invalid"});
+  registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
+                  GetModulator(), Fetcher(), client);
+
+  EXPECT_TRUE(client->WasNotifyFinished())
+      << "ModuleScriptLoader should finish synchronously.";
+  ASSERT_TRUE(client->GetModuleScript());
+  EXPECT_EQ(client->GetModuleScript()->State(),
+            ModuleInstantiationState::kErrored);
 }
 
 TEST_F(ModuleScriptLoaderTest, fetchInvalidURL) {
