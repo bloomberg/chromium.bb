@@ -67,14 +67,6 @@ struct ManageAccountsParams {
   // Whether the continue URL should be loaded in the same tab.
   bool is_same_tab;
 
-// iOS has no notion of route and child IDs.
-#if !defined(OS_IOS)
-  // The child ID associated with the web content of the request.
-  int child_id;
-  // The route ID associated with the web content of the request.
-  int route_id;
-#endif  // !defined(OS_IOS)
-
   ManageAccountsParams();
   ManageAccountsParams(const ManageAccountsParams& other);
 };

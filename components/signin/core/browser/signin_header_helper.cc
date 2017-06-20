@@ -33,10 +33,6 @@ ManageAccountsParams::ManageAccountsParams()
       is_saml(false),
       continue_url(""),
       is_same_tab(false) {
-#if !defined(OS_IOS)
-  child_id = 0;
-  route_id = 0;
-#endif  // !defined(OS_IOS)
 }
 
 ManageAccountsParams::ManageAccountsParams(const ManageAccountsParams& other) =
