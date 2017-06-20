@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "components/sync/base/get_session_name.h"
 #include "components/sync/driver/sync_util.h"
@@ -74,14 +74,15 @@ LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
 
 void LocalDeviceInfoProviderImpl::Initialize(
     const std::string& cache_guid,
-    const std::string& signin_scoped_device_id,
-    const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
+    const std::string& signin_scoped_device_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
   cache_guid_ = cache_guid;
 
   GetSessionName(
-      blocking_task_runner,
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
       base::Bind(&LocalDeviceInfoProviderImpl::InitializeContinuation,
                  weak_factory_.GetWeakPtr(), cache_guid,
                  signin_scoped_device_id));

@@ -25,7 +25,6 @@ class FakeSyncClient : public SyncClient {
 
   void Initialize() override;
 
-  base::SequencedWorkerPool* GetBlockingPool() override;
   SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;

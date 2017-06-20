@@ -244,10 +244,6 @@ void ChromeSyncClient::Initialize() {
   }
 }
 
-base::SequencedWorkerPool* ChromeSyncClient::GetBlockingPool() {
-  return content::BrowserThread::GetBlockingPool();
-}
-
 syncer::SyncService* ChromeSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
