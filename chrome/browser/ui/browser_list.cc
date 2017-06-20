@@ -165,7 +165,8 @@ void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
     }
   }
 
-  on_close_success.Run(profile_path);
+  if (on_close_success)
+    on_close_success.Run(profile_path);
 
   for (Browser* b : browsers_to_close) {
     // BeforeUnload handlers may close browser windows, so we need to explicitly
@@ -197,7 +198,8 @@ void BrowserList::PostTryToCloseBrowserWindow(
          it != browsers_to_close.end(); ++it) {
       (*it)->ResetTryToCloseWindow();
     }
-    on_close_aborted.Run(profile_path);
+    if (on_close_aborted)
+      on_close_aborted.Run(profile_path);
   }
 }
 
