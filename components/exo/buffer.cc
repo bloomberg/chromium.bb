@@ -24,7 +24,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
-#include "components/exo/compositor_frame_sink_holder.h"
+#include "components/exo/layer_tree_frame_sink_holder.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/aura/env.h"
@@ -408,7 +408,7 @@ Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
 Buffer::~Buffer() {}
 
 bool Buffer::ProduceTransferableResource(
-    CompositorFrameSinkHolder* compositor_frame_sink_holder,
+    LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder,
     cc::ResourceId resource_id,
     bool secure_output_only,
     bool client_usage,
@@ -470,7 +470,7 @@ bool Buffer::ProduceTransferableResource(
 
     // The contents texture will be released when no longer used by the
     // compositor.
-    compositor_frame_sink_holder->SetResourceReleaseCallback(
+    layer_tree_frame_sink_holder->SetResourceReleaseCallback(
         resource_id,
         base::Bind(&Buffer::Texture::ReleaseTexImage,
                    base::Unretained(contents_texture),
@@ -500,7 +500,7 @@ bool Buffer::ProduceTransferableResource(
 
   // The mailbox texture will be released when no longer used by the
   // compositor.
-  compositor_frame_sink_holder->SetResourceReleaseCallback(
+  layer_tree_frame_sink_holder->SetResourceReleaseCallback(
       resource_id,
       base::Bind(&Buffer::Texture::Release, base::Unretained(texture),
                  base::Bind(&Buffer::ReleaseTexture, AsWeakPtr(),

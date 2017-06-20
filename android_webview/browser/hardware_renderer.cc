@@ -30,8 +30,8 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       frame_sink_id_(surfaces_->AllocateFrameSinkId()),
       local_surface_id_allocator_(
           base::MakeUnique<cc::LocalSurfaceIdAllocator>()),
-      last_committed_compositor_frame_sink_id_(0u),
-      last_submitted_compositor_frame_sink_id_(0u) {
+      last_committed_layer_tree_frame_sink_id_(0u),
+      last_submitted_layer_tree_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
   surfaces_->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   CreateNewCompositorFrameSinkSupport();
@@ -85,8 +85,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     child_frame_queue_.clear();
   }
   if (child_frame_) {
-    last_committed_compositor_frame_sink_id_ =
-        child_frame_->compositor_frame_sink_id;
+    last_committed_layer_tree_frame_sink_id_ =
+        child_frame_->layer_tree_frame_sink_id;
   }
 
   // We need to watch if the current Android context has changed and enforce
@@ -104,15 +104,15 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   // unnecessary kModeProcess.
   if (child_frame_.get() && child_frame_->frame.get()) {
     if (!compositor_id_.Equals(child_frame_->compositor_id) ||
-        last_submitted_compositor_frame_sink_id_ !=
-            child_frame_->compositor_frame_sink_id) {
+        last_submitted_layer_tree_frame_sink_id_ !=
+            child_frame_->layer_tree_frame_sink_id) {
       if (child_id_.is_valid())
         DestroySurface();
 
       CreateNewCompositorFrameSinkSupport();
       compositor_id_ = child_frame_->compositor_id;
-      last_submitted_compositor_frame_sink_id_ =
-          child_frame_->compositor_frame_sink_id;
+      last_submitted_layer_tree_frame_sink_id_ =
+          child_frame_->layer_tree_frame_sink_id;
     }
 
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
@@ -178,7 +178,7 @@ void HardwareRenderer::DestroySurface() {
 void HardwareRenderer::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
   ReturnResourcesToCompositor(resources, compositor_id_,
-                              last_submitted_compositor_frame_sink_id_);
+                              last_submitted_layer_tree_frame_sink_id_);
 }
 
 void HardwareRenderer::OnBeginFrame(const cc::BeginFrameArgs& args) {
@@ -188,7 +188,7 @@ void HardwareRenderer::OnBeginFrame(const cc::BeginFrameArgs& args) {
 void HardwareRenderer::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   ReturnResourcesToCompositor(resources, compositor_id_,
-                              last_submitted_compositor_frame_sink_id_);
+                              last_submitted_layer_tree_frame_sink_id_);
 }
 
 void HardwareRenderer::WillDrawSurface(
@@ -244,17 +244,17 @@ void HardwareRenderer::ReturnChildFrame(
   // The child frame's compositor id is not necessarily same as
   // compositor_id_.
   ReturnResourcesToCompositor(resources_to_return, child_frame->compositor_id,
-                              child_frame->compositor_frame_sink_id);
+                              child_frame->layer_tree_frame_sink_id);
 }
 
 void HardwareRenderer::ReturnResourcesToCompositor(
     const cc::ReturnedResourceArray& resources,
     const CompositorID& compositor_id,
-    uint32_t compositor_frame_sink_id) {
-  if (compositor_frame_sink_id != last_committed_compositor_frame_sink_id_)
+    uint32_t layer_tree_frame_sink_id) {
+  if (layer_tree_frame_sink_id != last_committed_layer_tree_frame_sink_id_)
     return;
   render_thread_manager_->InsertReturnedResourcesOnRT(resources, compositor_id,
-                                                      compositor_frame_sink_id);
+                                                      layer_tree_frame_sink_id);
 }
 
 void HardwareRenderer::CreateNewCompositorFrameSinkSupport() {

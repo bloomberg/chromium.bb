@@ -81,7 +81,7 @@ class Thread;
 
 namespace cc {
 class BeginFrameSource;
-class CompositorFrameSink;
+class LayerTreeFrameSink;
 class SyntheticBeginFrameSource;
 class TaskGraphRunner;
 }
@@ -266,14 +266,14 @@ class CONTENT_EXPORT RenderThreadImpl
 
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager();
 
-  using CompositorFrameSinkCallback =
-      base::Callback<void(std::unique_ptr<cc::CompositorFrameSink>)>;
-  void RequestNewCompositorFrameSink(
+  using LayerTreeFrameSinkCallback =
+      base::Callback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
+  void RequestNewLayerTreeFrameSink(
       bool use_software,
       int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
-      const CompositorFrameSinkCallback& callback);
+      const LayerTreeFrameSinkCallback& callback);
 
   AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 

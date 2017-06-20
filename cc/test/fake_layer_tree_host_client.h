@@ -19,8 +19,8 @@ class FakeLayerTreeHostClient : public StubLayerTreeHostClient {
   void SetLayerTreeHost(LayerTreeHost* host) { host_ = host; }
 
   // StubLayerTreeHostClient overrides.
-  void RequestNewCompositorFrameSink() override;
-  void DidFailToInitializeCompositorFrameSink() override;
+  void RequestNewLayerTreeFrameSink() override;
+  void DidFailToInitializeLayerTreeFrameSink() override;
 
  private:
   LayerTreeHost* host_ = nullptr;

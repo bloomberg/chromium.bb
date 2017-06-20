@@ -7,8 +7,8 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/lap_timer.h"
-#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
@@ -42,7 +42,7 @@ class PictureLayerImplPerfTest : public testing::Test {
  public:
   PictureLayerImplPerfTest()
       : task_runner_provider_(base::ThreadTaskRunnerHandle::Get()),
-        compositor_frame_sink_(FakeCompositorFrameSink::Create3d()),
+        layer_tree_frame_sink_(FakeLayerTreeFrameSink::Create3d()),
         host_impl_(LayerTreeSettings(),
                    &task_runner_provider_,
                    &task_graph_runner_),
@@ -52,7 +52,7 @@ class PictureLayerImplPerfTest : public testing::Test {
 
   void SetUp() override {
     host_impl_.SetVisible(true);
-    host_impl_.InitializeRenderer(compositor_frame_sink_.get());
+    host_impl_.InitializeRenderer(layer_tree_frame_sink_.get());
   }
 
   void SetupPendingTree(const gfx::Size& layer_bounds) {
@@ -175,7 +175,7 @@ class PictureLayerImplPerfTest : public testing::Test {
  protected:
   TestTaskGraphRunner task_graph_runner_;
   FakeImplTaskRunnerProvider task_runner_provider_;
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_layer_;
   LapTimer timer_;

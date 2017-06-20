@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/local/compositor_frame_sink_local.h"
+#include "ui/aura/local/layer_tree_frame_sink_local.h"
 
-#include "cc/output/compositor_frame_sink_client.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -15,18 +15,18 @@
 
 namespace aura {
 
-CompositorFrameSinkLocal::CompositorFrameSinkLocal(
+LayerTreeFrameSinkLocal::LayerTreeFrameSinkLocal(
     const cc::FrameSinkId& frame_sink_id,
     cc::SurfaceManager* surface_manager)
-    : cc::CompositorFrameSink(nullptr, nullptr, nullptr, nullptr),
+    : cc::LayerTreeFrameSink(nullptr, nullptr, nullptr, nullptr),
       frame_sink_id_(frame_sink_id),
       surface_manager_(surface_manager) {}
 
-CompositorFrameSinkLocal::~CompositorFrameSinkLocal() {}
+LayerTreeFrameSinkLocal::~LayerTreeFrameSinkLocal() {}
 
-bool CompositorFrameSinkLocal::BindToClient(
-    cc::CompositorFrameSinkClient* client) {
-  if (!cc::CompositorFrameSink::BindToClient(client))
+bool LayerTreeFrameSinkLocal::BindToClient(
+    cc::LayerTreeFrameSinkClient* client) {
+  if (!cc::LayerTreeFrameSink::BindToClient(client))
     return false;
   DCHECK(!thread_checker_);
   thread_checker_ = base::MakeUnique<base::ThreadChecker>();
@@ -40,13 +40,13 @@ bool CompositorFrameSinkLocal::BindToClient(
   return true;
 }
 
-void CompositorFrameSinkLocal::SetSurfaceChangedCallback(
+void LayerTreeFrameSinkLocal::SetSurfaceChangedCallback(
     const SurfaceChangedCallback& callback) {
   DCHECK(!surface_changed_callback_);
   surface_changed_callback_ = callback;
 }
 
-void CompositorFrameSinkLocal::DetachFromClient() {
+void LayerTreeFrameSinkLocal::DetachFromClient() {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   client_->SetBeginFrameSource(nullptr);
@@ -54,11 +54,10 @@ void CompositorFrameSinkLocal::DetachFromClient() {
   support_->EvictCurrentSurface();
   support_.reset();
   thread_checker_.reset();
-  cc::CompositorFrameSink::DetachFromClient();
+  cc::LayerTreeFrameSink::DetachFromClient();
 }
 
-void CompositorFrameSinkLocal::SubmitCompositorFrame(
-    cc::CompositorFrame frame) {
+void LayerTreeFrameSinkLocal::SubmitCompositorFrame(cc::CompositorFrame frame) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
@@ -84,8 +83,7 @@ void CompositorFrameSinkLocal::SubmitCompositorFrame(
   }
 }
 
-void CompositorFrameSinkLocal::DidNotProduceFrame(
-    const cc::BeginFrameAck& ack) {
+void LayerTreeFrameSinkLocal::DidNotProduceFrame(const cc::BeginFrameAck& ack) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   DCHECK(!ack.has_damage);
@@ -93,7 +91,7 @@ void CompositorFrameSinkLocal::DidNotProduceFrame(
   support_->DidNotProduceFrame(ack);
 }
 
-void CompositorFrameSinkLocal::DidReceiveCompositorFrameAck(
+void LayerTreeFrameSinkLocal::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
@@ -104,13 +102,13 @@ void CompositorFrameSinkLocal::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void CompositorFrameSinkLocal::OnBeginFrame(const cc::BeginFrameArgs& args) {
+void LayerTreeFrameSinkLocal::OnBeginFrame(const cc::BeginFrameArgs& args) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   begin_frame_source_->OnBeginFrame(args);
 }
 
-void CompositorFrameSinkLocal::ReclaimResources(
+void LayerTreeFrameSinkLocal::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
@@ -119,7 +117,7 @@ void CompositorFrameSinkLocal::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void CompositorFrameSinkLocal::OnNeedsBeginFrames(bool needs_begin_frames) {
+void LayerTreeFrameSinkLocal::OnNeedsBeginFrames(bool needs_begin_frames) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   support_->SetNeedsBeginFrame(needs_begin_frames);

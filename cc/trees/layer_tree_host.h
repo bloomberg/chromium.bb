@@ -33,7 +33,7 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/swap_promise.h"
 #include "cc/resources/resource_format.h"
 #include "cc/surfaces/surface_reference_owner.h"
@@ -131,23 +131,23 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   // Sets whether the content is suitable to use Gpu Rasterization.
   void SetHasGpuRasterizationTrigger(bool has_trigger);
 
-  // Visibility and CompositorFrameSink -------------------------------
+  // Visibility and LayerTreeFrameSink -------------------------------
 
   void SetVisible(bool visible);
   bool IsVisible() const;
 
-  // Called in response to an CompositorFrameSink request made to the client
-  // using LayerTreeHostClient::RequestNewCompositorFrameSink. The client will
-  // be informed of the CompositorFrameSink initialization status using
-  // DidInitializaCompositorFrameSink or DidFailToInitializeCompositorFrameSink.
+  // Called in response to a LayerTreeFrameSink request made to the client
+  // using LayerTreeHostClient::RequestNewLayerTreeFrameSink. The client will
+  // be informed of the LayerTreeFrameSink initialization status using
+  // DidInitializaLayerTreeFrameSink or DidFailToInitializeLayerTreeFrameSink.
   // The request is completed when the host successfully initializes an
-  // CompositorFrameSink.
-  void SetCompositorFrameSink(
-      std::unique_ptr<CompositorFrameSink> compositor_frame_sink);
+  // LayerTreeFrameSink.
+  void SetLayerTreeFrameSink(
+      std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink);
 
   // Forces the host to immediately release all references to the
-  // CompositorFrameSink, if any. Can be safely called any time.
-  std::unique_ptr<CompositorFrameSink> ReleaseCompositorFrameSink();
+  // LayerTreeFrameSink, if any. Can be safely called any time.
+  std::unique_ptr<LayerTreeFrameSink> ReleaseLayerTreeFrameSink();
 
   // Frame Scheduling (main and compositor frames) requests -------
 
@@ -416,12 +416,12 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void WillCommit();
   void CommitComplete();
-  void RequestNewCompositorFrameSink();
-  void DidInitializeCompositorFrameSink();
-  void DidFailToInitializeCompositorFrameSink();
+  void RequestNewLayerTreeFrameSink();
+  void DidInitializeLayerTreeFrameSink();
+  void DidFailToInitializeLayerTreeFrameSink();
   virtual std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* client);
-  void DidLoseCompositorFrameSink();
+  void DidLoseLayerTreeFrameSink();
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidReceiveCompositorFrameAck() {
     client_->DidReceiveCompositorFrameAck();
@@ -551,13 +551,13 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   SwapPromiseManager swap_promise_manager_;
 
-  // |current_compositor_frame_sink_| can't be updated until we've successfully
-  // initialized a new CompositorFrameSink. |new_compositor_frame_sink_|
-  // contains the new CompositorFrameSink that is currently being initialized.
-  // If initialization is successful then |new_compositor_frame_sink_| replaces
-  // |current_compositor_frame_sink_|.
-  std::unique_ptr<CompositorFrameSink> new_compositor_frame_sink_;
-  std::unique_ptr<CompositorFrameSink> current_compositor_frame_sink_;
+  // |current_layer_tree_frame_sink_| can't be updated until we've successfully
+  // initialized a new LayerTreeFrameSink. |new_layer_tree_frame_sink_|
+  // contains the new LayerTreeFrameSink that is currently being initialized.
+  // If initialization is successful then |new_layer_tree_frame_sink_| replaces
+  // |current_layer_tree_frame_sink_|.
+  std::unique_ptr<LayerTreeFrameSink> new_layer_tree_frame_sink_;
+  std::unique_ptr<LayerTreeFrameSink> current_layer_tree_frame_sink_;
 
   const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;

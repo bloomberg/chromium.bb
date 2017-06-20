@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/direct_compositor_frame_sink.h"
+#include "cc/surfaces/direct_layer_tree_frame_sink.h"
 
 #include <memory>
 
@@ -18,7 +18,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
-#include "cc/test/fake_compositor_frame_sink_client.h"
+#include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/test_context_provider.h"
@@ -31,16 +31,16 @@ namespace {
 
 static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
-class TestDirectCompositorFrameSink : public DirectCompositorFrameSink {
+class TestDirectLayerTreeFrameSink : public DirectLayerTreeFrameSink {
  public:
-  using DirectCompositorFrameSink::DirectCompositorFrameSink;
+  using DirectLayerTreeFrameSink::DirectLayerTreeFrameSink;
 
   CompositorFrameSinkSupport* support() const { return support_.get(); }
 };
 
-class DirectCompositorFrameSinkTest : public testing::Test {
+class DirectLayerTreeFrameSinkTest : public testing::Test {
  public:
-  DirectCompositorFrameSinkTest()
+  DirectLayerTreeFrameSinkTest()
       : now_src_(new base::SimpleTestTickClock()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
         display_size_(1920, 1080),
@@ -64,21 +64,21 @@ class DirectCompositorFrameSinkTest : public testing::Test {
         kArbitraryFrameSinkId, std::move(display_output_surface),
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
-    compositor_frame_sink_.reset(new TestDirectCompositorFrameSink(
+    layer_tree_frame_sink_.reset(new TestDirectLayerTreeFrameSink(
         kArbitraryFrameSinkId, &surface_manager_, display_.get(),
         context_provider_, nullptr, &gpu_memory_buffer_manager_,
         &bitmap_manager_));
 
-    compositor_frame_sink_->BindToClient(&compositor_frame_sink_client_);
+    layer_tree_frame_sink_->BindToClient(&layer_tree_frame_sink_client_);
     display_->Resize(display_size_);
     display_->SetVisible(true);
 
     EXPECT_FALSE(
-        compositor_frame_sink_client_.did_lose_compositor_frame_sink_called());
+        layer_tree_frame_sink_client_.did_lose_layer_tree_frame_sink_called());
   }
 
-  ~DirectCompositorFrameSinkTest() override {
-    compositor_frame_sink_->DetachFromClient();
+  ~DirectLayerTreeFrameSinkTest() override {
+    layer_tree_frame_sink_->DetachFromClient();
   }
 
   void SwapBuffersWithDamage(const gfx::Rect& damage_rect) {
@@ -89,7 +89,7 @@ class DirectCompositorFrameSinkTest : public testing::Test {
     frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
     frame.render_pass_list.push_back(std::move(render_pass));
 
-    compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
+    layer_tree_frame_sink_->SubmitCompositorFrame(std::move(frame));
   }
 
   void SetUp() override {
@@ -115,25 +115,25 @@ class DirectCompositorFrameSinkTest : public testing::Test {
   FakeOutputSurface* display_output_surface_ = nullptr;
   std::unique_ptr<BackToBackBeginFrameSource> begin_frame_source_;
   std::unique_ptr<Display> display_;
-  FakeCompositorFrameSinkClient compositor_frame_sink_client_;
-  std::unique_ptr<TestDirectCompositorFrameSink> compositor_frame_sink_;
+  FakeLayerTreeFrameSinkClient layer_tree_frame_sink_client_;
+  std::unique_ptr<TestDirectLayerTreeFrameSink> layer_tree_frame_sink_;
 };
 
-TEST_F(DirectCompositorFrameSinkTest, DamageTriggersSwapBuffers) {
+TEST_F(DirectLayerTreeFrameSinkTest, DamageTriggersSwapBuffers) {
   SwapBuffersWithDamage(display_rect_);
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunUntilIdle();
   EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
 }
 
-TEST_F(DirectCompositorFrameSinkTest, NoDamageDoesNotTriggerSwapBuffers) {
+TEST_F(DirectLayerTreeFrameSinkTest, NoDamageDoesNotTriggerSwapBuffers) {
   SwapBuffersWithDamage(gfx::Rect());
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunUntilIdle();
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
 }
 
-TEST_F(DirectCompositorFrameSinkTest, SuspendedDoesNotTriggerSwapBuffers) {
+TEST_F(DirectLayerTreeFrameSinkTest, SuspendedDoesNotTriggerSwapBuffers) {
   SwapBuffersWithDamage(display_rect_);
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   display_output_surface_->set_suspended_for_recycle(true);

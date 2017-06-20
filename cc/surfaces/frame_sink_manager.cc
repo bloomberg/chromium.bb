@@ -27,8 +27,7 @@ FrameSinkManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() = default;
 FrameSinkManager::FrameSinkManager() = default;
 
 FrameSinkManager::~FrameSinkManager() {
-  // All CompositorFrameSinks should be unregistered prior to
-  // SurfaceManager destruction.
+  // All FrameSinks should be unregistered prior to SurfaceManager destruction.
   DCHECK_EQ(clients_.size(), 0u);
   DCHECK_EQ(registered_sources_.size(), 0u);
 }

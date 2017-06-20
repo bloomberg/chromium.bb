@@ -5,7 +5,7 @@
 #include "ui/aura/window_port_for_shutdown.h"
 
 #include "base/memory/ptr_util.h"
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "ui/aura/window.h"
 
 namespace aura {
@@ -51,8 +51,8 @@ void WindowPortForShutdown::OnPropertyChanged(
     int64_t old_value,
     std::unique_ptr<ui::PropertyData> data) {}
 
-std::unique_ptr<cc::CompositorFrameSink>
-WindowPortForShutdown::CreateCompositorFrameSink() {
+std::unique_ptr<cc::LayerTreeFrameSink>
+WindowPortForShutdown::CreateLayerTreeFrameSink() {
   return nullptr;
 }
 

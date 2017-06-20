@@ -23,8 +23,8 @@ class Rect;
 }
 
 namespace cc {
+class LayerTreeFrameSink;
 class LayerTreeMutator;
-class CompositorFrameSink;
 
 // Abstract interface responsible for proxying commands from the main-thread
 // side of the compositor over to the compositor implementation.
@@ -35,12 +35,9 @@ class CC_EXPORT Proxy {
   virtual bool IsStarted() const = 0;
   virtual bool CommitToActiveTree() const = 0;
 
-  // Will call LayerTreeHost::OnCreateAndInitializeCompositorFrameSinkAttempted
-  // with the result of this function.
-  virtual void SetCompositorFrameSink(
-      CompositorFrameSink* compositor_frame_sink) = 0;
-
-  virtual void ReleaseCompositorFrameSink() = 0;
+  virtual void SetLayerTreeFrameSink(
+      LayerTreeFrameSink* layer_tree_frame_sink) = 0;
+  virtual void ReleaseLayerTreeFrameSink() = 0;
 
   virtual void SetVisible(bool visible) = 0;
 

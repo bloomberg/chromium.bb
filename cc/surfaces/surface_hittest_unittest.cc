@@ -29,7 +29,7 @@ constexpr bool kNeedsSyncPoints = true;
 struct TestCase {
   SurfaceId input_surface_id;
   gfx::Point input_point;
-  SurfaceId expected_compositor_frame_sink_id;
+  SurfaceId expected_layer_tree_frame_sink_id;
   gfx::Point expected_output_point;
 };
 
@@ -42,7 +42,7 @@ void RunTests(SurfaceHittestDelegate* delegate,
     const TestCase& test = tests[i];
     gfx::Point point(test.input_point);
     gfx::Transform transform;
-    EXPECT_EQ(test.expected_compositor_frame_sink_id,
+    EXPECT_EQ(test.expected_layer_tree_frame_sink_id,
               hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
                                               &transform));
     transform.TransformPoint(&point);
@@ -52,7 +52,7 @@ void RunTests(SurfaceHittestDelegate* delegate,
     // transform as returned by GetTargetSurfaceAtPoint.
     gfx::Transform target_transform;
     EXPECT_TRUE(hittest.GetTransformToTargetSurface(
-        test.input_surface_id, test.expected_compositor_frame_sink_id,
+        test.input_surface_id, test.expected_layer_tree_frame_sink_id,
         &target_transform));
     EXPECT_EQ(transform, target_transform);
   }

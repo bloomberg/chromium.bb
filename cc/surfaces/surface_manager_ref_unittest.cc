@@ -501,9 +501,9 @@ TEST_F(SurfaceManagerRefTest, TempReferencesWithClientCrash) {
   manager().AssignTemporaryReference(id1a, kFrameSink1);
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1a, id1b));
 
-  // If the parent client crashes then the CompositorFrameSink connection will
-  // be closed and the FrameSinkId invalidated. The temporary reference
-  // |kFrameSink1| owns to |id2a| will be removed.
+  // If the parent client crashes then the FrameSink connection will be closed
+  // and the FrameSinkId invalidated. The temporary reference |kFrameSink1| owns
+  // to |id2a| will be removed.
   DestroyCompositorFrameSinkSupport(kFrameSink1);
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1b));
 

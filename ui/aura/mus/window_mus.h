@@ -127,7 +127,7 @@ class AURA_EXPORT WindowMus {
 
   virtual void NotifyEmbeddedAppDisconnected() = 0;
 
-  virtual bool HasLocalCompositorFrameSink() = 0;
+  virtual bool HasLocalLayerTreeFrameSink() = 0;
 
  private:
   // Just for set_server_id(), which other places should not call.

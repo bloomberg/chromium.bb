@@ -22,9 +22,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_sink.h"
-#include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/layer_tree_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
@@ -184,24 +184,22 @@ class LaserSegment {
   DISALLOW_COPY_AND_ASSIGN(LaserSegment);
 };
 
-class LaserCompositorFrameSinkHolder : public cc::CompositorFrameSinkClient {
+class LaserLayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
  public:
-  LaserCompositorFrameSinkHolder(
+  LaserLayerTreeFrameSinkHolder(
       LaserPointerView* view,
-      std::unique_ptr<cc::CompositorFrameSink> frame_sink)
+      std::unique_ptr<cc::LayerTreeFrameSink> frame_sink)
       : view_(view), frame_sink_(std::move(frame_sink)) {
     frame_sink_->BindToClient(this);
   }
-  ~LaserCompositorFrameSinkHolder() override {
-    frame_sink_->DetachFromClient();
-  }
+  ~LaserLayerTreeFrameSinkHolder() override { frame_sink_->DetachFromClient(); }
 
-  cc::CompositorFrameSink* frame_sink() { return frame_sink_.get(); }
+  cc::LayerTreeFrameSink* frame_sink() { return frame_sink_.get(); }
 
   // Called before laser pointer view is destroyed.
   void OnLaserPointerViewDestroying() { view_ = nullptr; }
 
-  // Overridden from cc::CompositorFrameSinkClient:
+  // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(cc::BeginFrameSource* source) override {}
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override {
     if (view_)
@@ -212,7 +210,7 @@ class LaserCompositorFrameSinkHolder : public cc::CompositorFrameSinkClient {
     if (view_)
       view_->DidReceiveCompositorFrameAck();
   }
-  void DidLoseCompositorFrameSink() override {}
+  void DidLoseLayerTreeFrameSink() override {}
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw) override {}
@@ -223,9 +221,9 @@ class LaserCompositorFrameSinkHolder : public cc::CompositorFrameSinkClient {
 
  private:
   LaserPointerView* view_;
-  std::unique_ptr<cc::CompositorFrameSink> frame_sink_;
+  std::unique_ptr<cc::LayerTreeFrameSink> frame_sink_;
 
-  DISALLOW_COPY_AND_ASSIGN(LaserCompositorFrameSinkHolder);
+  DISALLOW_COPY_AND_ASSIGN(LaserLayerTreeFrameSinkHolder);
 };
 
 // This struct contains the resources associated with a laser pointer frame.
@@ -274,8 +272,8 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
 
   scale_factor_ = ui::GetScaleFactorForNativeView(widget_->GetNativeView());
 
-  frame_sink_holder_ = base::MakeUnique<LaserCompositorFrameSinkHolder>(
-      this, widget_->GetNativeView()->CreateCompositorFrameSink());
+  frame_sink_holder_ = base::MakeUnique<LaserLayerTreeFrameSinkHolder>(
+      this, widget_->GetNativeView()->CreateLayerTreeFrameSink());
 }
 
 LaserPointerView::~LaserPointerView() {

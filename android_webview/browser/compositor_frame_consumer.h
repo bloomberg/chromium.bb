@@ -25,7 +25,7 @@ class CompositorFrameConsumer {
     ReturnedResources();
     ~ReturnedResources();
 
-    uint32_t compositor_frame_sink_id;
+    uint32_t layer_tree_frame_sink_id;
     cc::ReturnedResourceArray resources;
   };
   using ReturnedResourcesMap =

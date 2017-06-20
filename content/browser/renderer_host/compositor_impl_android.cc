@@ -40,7 +40,7 @@
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
-#include "cc/surfaces/direct_compositor_frame_sink.h"
+#include "cc/surfaces/direct_layer_tree_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/frame_sink_id_allocator.h"
@@ -445,7 +445,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       needs_animate_(false),
       pending_frames_(0U),
       num_successive_context_creation_failures_(0),
-      compositor_frame_sink_request_pending_(false),
+      layer_tree_frame_sink_request_pending_(false),
       weak_factory_(this) {
   GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   DCHECK(client);
@@ -516,7 +516,7 @@ void CompositorImpl::SetSurface(jobject surface) {
   if (window) {
     window_ = window;
     ANativeWindow_acquire(window);
-    // Register first, SetVisible() might create a CompositorFrameSink.
+    // Register first, SetVisible() might create a LayerTreeFrameSink.
     surface_handle_ = tracker->AddSurfaceForNativeWidget(
         gpu::GpuSurfaceTracker::SurfaceRecord(window, surface));
     SetVisible(true);
@@ -569,8 +569,8 @@ void CompositorImpl::SetVisible(bool visible) {
       display_->ForceImmediateDrawAndSwapIfPossible();
 
     host_->SetVisible(false);
-    host_->ReleaseCompositorFrameSink();
-    has_compositor_frame_sink_ = false;
+    host_->ReleaseLayerTreeFrameSink();
+    has_layer_tree_frame_sink_ = false;
     pending_frames_ = 0;
     if (display_) {
       GetSurfaceManager()->UnregisterBeginFrameSource(
@@ -579,8 +579,8 @@ void CompositorImpl::SetVisible(bool visible) {
     display_.reset();
   } else {
     host_->SetVisible(true);
-    if (compositor_frame_sink_request_pending_)
-      HandlePendingCompositorFrameSinkRequest();
+    if (layer_tree_frame_sink_request_pending_)
+      HandlePendingLayerTreeFrameSinkRequest();
   }
 }
 
@@ -631,31 +631,31 @@ void CompositorImpl::UpdateLayerTreeHost() {
   }
 }
 
-void CompositorImpl::RequestNewCompositorFrameSink() {
-  DCHECK(!compositor_frame_sink_request_pending_)
-      << "Output Surface Request is already pending?";
+void CompositorImpl::RequestNewLayerTreeFrameSink() {
+  DCHECK(!layer_tree_frame_sink_request_pending_)
+      << "LayerTreeFrameSink request is already pending?";
 
-  compositor_frame_sink_request_pending_ = true;
-  HandlePendingCompositorFrameSinkRequest();
+  layer_tree_frame_sink_request_pending_ = true;
+  HandlePendingLayerTreeFrameSinkRequest();
 }
 
-void CompositorImpl::DidInitializeCompositorFrameSink() {
-  compositor_frame_sink_request_pending_ = false;
-  has_compositor_frame_sink_ = true;
+void CompositorImpl::DidInitializeLayerTreeFrameSink() {
+  layer_tree_frame_sink_request_pending_ = false;
+  has_layer_tree_frame_sink_ = true;
   for (auto& frame_sink_id : pending_child_frame_sink_ids_)
     AddChildFrameSink(frame_sink_id);
 
   pending_child_frame_sink_ids_.clear();
 }
 
-void CompositorImpl::DidFailToInitializeCompositorFrameSink() {
+void CompositorImpl::DidFailToInitializeLayerTreeFrameSink() {
   // The context is bound/initialized before handing it to the
-  // CompositorFrameSink.
+  // LayerTreeFrameSink.
   NOTREACHED();
 }
 
-void CompositorImpl::HandlePendingCompositorFrameSinkRequest() {
-  DCHECK(compositor_frame_sink_request_pending_);
+void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
+  DCHECK(layer_tree_frame_sink_request_pending_);
 
   // We might have been made invisible now.
   if (!host_->IsVisible())
@@ -719,13 +719,13 @@ void CompositorImpl::OnGpuChannelEstablished(
   establish_gpu_channel_timeout_.Stop();
 
   // We might end up queing multiple GpuChannel requests for the same
-  // CompositorFrameSink request as the visibility of the compositor changes, so
-  // the CompositorFrameSink request could have been handled already.
-  if (!compositor_frame_sink_request_pending_)
+  // LayerTreeFrameSink request as the visibility of the compositor changes, so
+  // the LayerTreeFrameSink request could have been handled already.
+  if (!layer_tree_frame_sink_request_pending_)
     return;
 
   if (!gpu_channel_host) {
-    HandlePendingCompositorFrameSinkRequest();
+    HandlePendingLayerTreeFrameSinkRequest();
     return;
   }
 
@@ -758,7 +758,7 @@ void CompositorImpl::OnGpuChannelEstablished(
     LOG(ERROR) << "Failed to init ContextProvider for compositor.";
     LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 2)
         << "Too many context creation failures. Giving up... ";
-    HandlePendingCompositorFrameSinkRequest();
+    HandlePendingLayerTreeFrameSinkRequest();
     return;
   }
 
@@ -774,7 +774,7 @@ void CompositorImpl::InitializeDisplay(
     std::unique_ptr<cc::OutputSurface> display_output_surface,
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
     scoped_refptr<cc::ContextProvider> context_provider) {
-  DCHECK(compositor_frame_sink_request_pending_);
+  DCHECK(layer_tree_frame_sink_request_pending_);
 
   pending_frames_ = 0;
   num_successive_context_creation_failures_ = 0;
@@ -800,12 +800,12 @@ void CompositorImpl::InitializeDisplay(
       frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
-  auto compositor_frame_sink =
+  auto layer_tree_frame_sink =
       vulkan_context_provider
-          ? base::MakeUnique<cc::DirectCompositorFrameSink>(
+          ? base::MakeUnique<cc::DirectLayerTreeFrameSink>(
                 frame_sink_id_, manager, display_.get(),
                 vulkan_context_provider)
-          : base::MakeUnique<cc::DirectCompositorFrameSink>(
+          : base::MakeUnique<cc::DirectLayerTreeFrameSink>(
                 frame_sink_id_, manager, display_.get(), context_provider,
                 nullptr, BrowserGpuMemoryBufferManager::current(),
                 viz::HostSharedBitmapManager::current());
@@ -814,7 +814,7 @@ void CompositorImpl::InitializeDisplay(
   display_->Resize(size_);
   GetSurfaceManager()->RegisterBeginFrameSource(
       root_window_->GetBeginFrameSource(), frame_sink_id_);
-  host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
+  host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
 void CompositorImpl::DidSwapBuffers() {
@@ -848,9 +848,9 @@ void CompositorImpl::DidReceiveCompositorFrameAck() {
   client_->DidSwapFrame(pending_frames_);
 }
 
-void CompositorImpl::DidLoseCompositorFrameSink() {
-  TRACE_EVENT0("compositor", "CompositorImpl::DidLoseCompositorFrameSink");
-  has_compositor_frame_sink_ = false;
+void CompositorImpl::DidLoseLayerTreeFrameSink() {
+  TRACE_EVENT0("compositor", "CompositorImpl::DidLoseLayerTreeFrameSink");
+  has_layer_tree_frame_sink_ = false;
   client_->DidSwapFrame(0);
 }
 
@@ -881,7 +881,7 @@ cc::FrameSinkId CompositorImpl::GetFrameSinkId() {
 }
 
 void CompositorImpl::AddChildFrameSink(const cc::FrameSinkId& frame_sink_id) {
-  if (has_compositor_frame_sink_) {
+  if (has_layer_tree_frame_sink_) {
     GetSurfaceManager()->RegisterFrameSinkHierarchy(frame_sink_id_,
                                                     frame_sink_id);
   } else {

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_LOCAL_COMPOSITOR_FRAME_SINK_LOCAL_H_
-#define UI_AURA_LOCAL_COMPOSITOR_FRAME_SINK_LOCAL_H_
+#ifndef UI_AURA_LOCAL_LAYER_TREE_FRAME_SINK_LOCAL_H_
+#define UI_AURA_LOCAL_LAYER_TREE_FRAME_SINK_LOCAL_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/frame_sink_id.h"
@@ -18,29 +18,29 @@
 namespace cc {
 class CompositorFrameSinkSupport;
 class SurfaceManager;
-}
+}  // namespace cc
 
 namespace aura {
 
-// cc::CompositorFrameSink implementation for classic aura, e.g. not mus.
-// aura::Window::CreateCompositorFramSink creates this class for a given
+// cc::LayerTreeFrameSink implementation for classic aura, e.g. not mus.
+// aura::Window::CreateLayerTreeFrameSink creates this class for a given
 // aura::Window, and then the sink can be used for submitting frames to the
 // aura::Window's ui::Layer.
-class CompositorFrameSinkLocal : public cc::CompositorFrameSink,
-                                 public cc::CompositorFrameSinkSupportClient,
-                                 public cc::ExternalBeginFrameSourceClient {
+class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
+                                public cc::CompositorFrameSinkSupportClient,
+                                public cc::ExternalBeginFrameSourceClient {
  public:
-  CompositorFrameSinkLocal(const cc::FrameSinkId& frame_sink_id,
-                           cc::SurfaceManager* surface_manager);
-  ~CompositorFrameSinkLocal() override;
+  LayerTreeFrameSinkLocal(const cc::FrameSinkId& frame_sink_id,
+                          cc::SurfaceManager* surface_manager);
+  ~LayerTreeFrameSinkLocal() override;
 
   using SurfaceChangedCallback =
       base::Callback<void(const cc::SurfaceId&, const gfx::Size&)>;
   // Set a callback which will be called when the surface is changed.
   void SetSurfaceChangedCallback(const SurfaceChangedCallback& callback);
 
-  // cc::CompositorFrameSink:
-  bool BindToClient(cc::CompositorFrameSinkClient* client) override;
+  // cc::LayerTreeFrameSink:
+  bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
@@ -68,9 +68,9 @@ class CompositorFrameSinkLocal : public cc::CompositorFrameSink,
   std::unique_ptr<base::ThreadChecker> thread_checker_;
   SurfaceChangedCallback surface_changed_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkLocal);
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSinkLocal);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_LOCAL_COMPOSITOR_FRAME_SINK_LOCAL_H_
+#endif  // UI_AURA_LOCAL_LAYER_TREE_FRAME_SINK_LOCAL_H_

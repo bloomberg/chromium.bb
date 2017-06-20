@@ -404,43 +404,42 @@ void LayerTreeHost::CommitComplete() {
   }
 }
 
-void LayerTreeHost::SetCompositorFrameSink(
-    std::unique_ptr<CompositorFrameSink> surface) {
-  TRACE_EVENT0("cc", "LayerTreeHostInProcess::SetCompositorFrameSink");
+void LayerTreeHost::SetLayerTreeFrameSink(
+    std::unique_ptr<LayerTreeFrameSink> surface) {
+  TRACE_EVENT0("cc", "LayerTreeHostInProcess::SetLayerTreeFrameSink");
   DCHECK(surface);
 
-  DCHECK(!new_compositor_frame_sink_);
-  new_compositor_frame_sink_ = std::move(surface);
-  proxy_->SetCompositorFrameSink(new_compositor_frame_sink_.get());
+  DCHECK(!new_layer_tree_frame_sink_);
+  new_layer_tree_frame_sink_ = std::move(surface);
+  proxy_->SetLayerTreeFrameSink(new_layer_tree_frame_sink_.get());
 }
 
-std::unique_ptr<CompositorFrameSink>
-LayerTreeHost::ReleaseCompositorFrameSink() {
+std::unique_ptr<LayerTreeFrameSink> LayerTreeHost::ReleaseLayerTreeFrameSink() {
   DCHECK(!visible_);
 
-  DidLoseCompositorFrameSink();
-  proxy_->ReleaseCompositorFrameSink();
-  return std::move(current_compositor_frame_sink_);
+  DidLoseLayerTreeFrameSink();
+  proxy_->ReleaseLayerTreeFrameSink();
+  return std::move(current_layer_tree_frame_sink_);
 }
 
-void LayerTreeHost::RequestNewCompositorFrameSink() {
-  client_->RequestNewCompositorFrameSink();
+void LayerTreeHost::RequestNewLayerTreeFrameSink() {
+  client_->RequestNewLayerTreeFrameSink();
 }
 
-void LayerTreeHost::DidInitializeCompositorFrameSink() {
-  DCHECK(new_compositor_frame_sink_);
-  current_compositor_frame_sink_ = std::move(new_compositor_frame_sink_);
-  client_->DidInitializeCompositorFrameSink();
+void LayerTreeHost::DidInitializeLayerTreeFrameSink() {
+  DCHECK(new_layer_tree_frame_sink_);
+  current_layer_tree_frame_sink_ = std::move(new_layer_tree_frame_sink_);
+  client_->DidInitializeLayerTreeFrameSink();
 }
 
-void LayerTreeHost::DidFailToInitializeCompositorFrameSink() {
-  DCHECK(new_compositor_frame_sink_);
+void LayerTreeHost::DidFailToInitializeLayerTreeFrameSink() {
+  DCHECK(new_layer_tree_frame_sink_);
   // Note: It is safe to drop all output surface references here as
   // LayerTreeHostImpl will not keep a pointer to either the old or
-  // new CompositorFrameSink after failing to initialize the new one.
-  current_compositor_frame_sink_ = nullptr;
-  new_compositor_frame_sink_ = nullptr;
-  client_->DidFailToInitializeCompositorFrameSink();
+  // new LayerTreeFrameSink after failing to initialize the new one.
+  current_layer_tree_frame_sink_ = nullptr;
+  new_layer_tree_frame_sink_ = nullptr;
+  client_->DidFailToInitializeLayerTreeFrameSink();
 }
 
 std::unique_ptr<LayerTreeHostImpl>
@@ -464,8 +463,8 @@ LayerTreeHost::CreateLayerTreeHostImpl(
   return host_impl;
 }
 
-void LayerTreeHost::DidLoseCompositorFrameSink() {
-  TRACE_EVENT0("cc", "LayerTreeHostInProcess::DidLoseCompositorFrameSink");
+void LayerTreeHost::DidLoseLayerTreeFrameSink() {
+  TRACE_EVENT0("cc", "LayerTreeHostInProcess::DidLoseLayerTreeFrameSink");
   DCHECK(task_runner_provider_->IsMainThread());
   SetNeedsCommit();
 }
@@ -643,9 +642,9 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
     return;
 
   bool gpu_rasterization_enabled = false;
-  if (host_impl->compositor_frame_sink()) {
+  if (host_impl->layer_tree_frame_sink()) {
     ContextProvider* compositor_context_provider =
-        host_impl->compositor_frame_sink()->context_provider();
+        host_impl->layer_tree_frame_sink()->context_provider();
     if (compositor_context_provider) {
       gpu_rasterization_enabled =
           compositor_context_provider->ContextCapabilities().gpu_rasterization;

@@ -23,10 +23,10 @@ class AnimationPlayer;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostForTesting;
-class LayerTreeTestCompositorFrameSinkClient;
+class LayerTreeTestLayerTreeFrameSinkClient;
 class Proxy;
 class TestContextProvider;
-class TestCompositorFrameSink;
+class TestLayerTreeFrameSink;
 class TestTaskGraphRunner;
 
 // Creates the virtual viewport layer hierarchy under the given root_layer.
@@ -98,8 +98,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   void RealEndTest();
 
-  std::unique_ptr<CompositorFrameSink>
-  ReleaseCompositorFrameSinkOnLayerTreeHost();
+  std::unique_ptr<LayerTreeFrameSink>
+  ReleaseLayerTreeFrameSinkOnLayerTreeHost();
   void SetVisibleOnLayerTreeHost(bool visible);
 
   virtual void AfterTest() = 0;
@@ -134,18 +134,18 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DestroyLayerTreeHost();
 
   // By default, output surface recreation is synchronous.
-  void RequestNewCompositorFrameSink() override;
+  void RequestNewLayerTreeFrameSink() override;
   // Override this and call the base class to change what ContextProviders will
   // be used (such as for pixel tests). Or override it and create your own
-  // TestCompositorFrameSink to control how it is created.
-  virtual std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
+  // TestLayerTreeFrameSink to control how it is created.
+  virtual std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
   // Override this and call the base class to change what ContextProvider will
   // be used, such as to prevent sharing the context with the
-  // CompositorFrameSink. Or override it and create your own OutputSurface to
+  // LayerTreeFrameSink. Or override it and create your own OutputSurface to
   // change what type of OutputSurface is used, such as a real OutputSurface for
   // pixel tests or a software-compositing OutputSurface.
   std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
@@ -190,8 +190,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   int timeout_seconds_ = false;
 
-  std::unique_ptr<LayerTreeTestCompositorFrameSinkClient>
-      compositor_frame_sink_client_;
+  std::unique_ptr<LayerTreeTestLayerTreeFrameSinkClient>
+      layer_tree_frame_sink_client_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
   std::unique_ptr<base::Thread> impl_thread_;

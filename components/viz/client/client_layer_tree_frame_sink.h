@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_CLIENT_CLIENT_COMPOSITOR_FRAME_SINK_H_
-#define COMPONENTS_VIZ_CLIENT_CLIENT_COMPOSITOR_FRAME_SINK_H_
+#ifndef COMPONENTS_VIZ_CLIENT_CLIENT_LAYER_TREE_FRAME_SINK_H_
+#define COMPONENTS_VIZ_CLIENT_CLIENT_LAYER_TREE_FRAME_SINK_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
-#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_id.h"
@@ -19,12 +19,12 @@ namespace viz {
 
 class LocalSurfaceIdProvider;
 
-class ClientCompositorFrameSink
-    : public cc::CompositorFrameSink,
+class ClientLayerTreeFrameSink
+    : public cc::LayerTreeFrameSink,
       public cc::mojom::MojoCompositorFrameSinkClient,
       public cc::ExternalBeginFrameSourceClient {
  public:
-  ClientCompositorFrameSink(
+  ClientLayerTreeFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -36,7 +36,7 @@ class ClientCompositorFrameSink
       std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
       bool enable_surface_synchronization);
 
-  ClientCompositorFrameSink(
+  ClientLayerTreeFrameSink(
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
       std::unique_ptr<cc::SyntheticBeginFrameSource>
           synthetic_begin_frame_source,
@@ -45,12 +45,12 @@ class ClientCompositorFrameSink
       std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
       bool enable_surface_synchronization);
 
-  ~ClientCompositorFrameSink() override;
+  ~ClientLayerTreeFrameSink() override;
 
-  base::WeakPtr<ClientCompositorFrameSink> GetWeakPtr();
+  base::WeakPtr<ClientLayerTreeFrameSink> GetWeakPtr();
 
-  // cc::CompositorFrameSink implementation.
-  bool BindToClient(cc::CompositorFrameSinkClient* client) override;
+  // cc::LayerTreeFrameSink implementation.
+  bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
@@ -80,11 +80,11 @@ class ClientCompositorFrameSink
   THREAD_CHECKER(thread_checker_);
   const bool enable_surface_synchronization_;
 
-  base::WeakPtrFactory<ClientCompositorFrameSink> weak_factory_;
+  base::WeakPtrFactory<ClientLayerTreeFrameSink> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(ClientLayerTreeFrameSink);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_CLIENT_CLIENT_COMPOSITOR_FRAME_SINK_H_
+#endif  // COMPONENTS_VIZ_CLIENT_CLIENT_LAYER_TREE_FRAME_SINK_H_

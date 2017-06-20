@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_COMPOSITOR_FRAME_SINK_CLIENT_H_
-#define CC_OUTPUT_COMPOSITOR_FRAME_SINK_CLIENT_H_
+#ifndef CC_OUTPUT_LAYER_TREE_FRAME_SINK_CLIENT_H_
+#define CC_OUTPUT_LAYER_TREE_FRAME_SINK_CLIENT_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -23,10 +23,10 @@ namespace cc {
 class BeginFrameSource;
 struct ManagedMemoryPolicy;
 
-class CC_EXPORT CompositorFrameSinkClient {
+class CC_EXPORT LayerTreeFrameSinkClient {
  public:
   // Pass the begin frame source for the client to observe.  Client does not own
-  // the BeginFrameSource.  CompositorFrameSink should call this once after
+  // the BeginFrameSource. LayerTreeFrameSink should call this once after
   // binding to the client and then call again with a null while detaching.
   virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
 
@@ -35,7 +35,7 @@ class CC_EXPORT CompositorFrameSinkClient {
 
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain
-  // valid for the lifetime of the CompositorFrameSinkClient or until
+  // valid for the lifetime of the LayerTreeFrameSinkClient or until
   // unregistered by giving a null base::Closure.
   virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
 
@@ -45,10 +45,10 @@ class CC_EXPORT CompositorFrameSinkClient {
   // so that frames are submitted only at the rate it can handle them.
   virtual void DidReceiveCompositorFrameAck() = 0;
 
-  // The CompositorFrameSink is lost when the ContextProviders held by it
-  // encounter an error. In this case the CompositorFrameSink (and the
+  // The LayerTreeFrameSink is lost when the ContextProviders held by it
+  // encounter an error. In this case the LayerTreeFrameSink (and the
   // ContextProviders) must be recreated.
-  virtual void DidLoseCompositorFrameSink() = 0;
+  virtual void DidLoseLayerTreeFrameSink() = 0;
 
   // For SynchronousCompositor (WebView) to ask the layer compositor to submit
   // a new CompositorFrame synchronously.
@@ -68,9 +68,9 @@ class CC_EXPORT CompositorFrameSinkClient {
       const gfx::Transform& transform) = 0;
 
  protected:
-  virtual ~CompositorFrameSinkClient() {}
+  virtual ~LayerTreeFrameSinkClient() {}
 };
 
 }  // namespace cc
 
-#endif  // CC_OUTPUT_COMPOSITOR_FRAME_SINK_CLIENT_H_
+#endif  // CC_OUTPUT_LAYER_TREE_FRAME_SINK_CLIENT_H_

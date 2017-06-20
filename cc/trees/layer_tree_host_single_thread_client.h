@@ -22,10 +22,10 @@ class LayerTreeHostSingleThreadClient {
   // limiting.
   virtual void DidSubmitCompositorFrame() = 0;
 
-  // Called when the active CompositorFrameSink is lost and needs to be
+  // Called when the active LayerTreeFrameSink is lost and needs to be
   // replaced. This allows the embedder to schedule a composite which will
-  // run the machinery to acquire a new CompositorFrameSink.
-  virtual void DidLoseCompositorFrameSink() = 0;
+  // run the machinery to acquire a new LayerTreeFrameSink.
+  virtual void DidLoseLayerTreeFrameSink() = 0;
 
  protected:
   virtual ~LayerTreeHostSingleThreadClient() {}

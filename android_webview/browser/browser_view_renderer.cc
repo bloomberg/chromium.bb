@@ -253,7 +253,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
 
   allow_async_draw_ = true;
   std::unique_ptr<ChildFrame> child_frame = base::MakeUnique<ChildFrame>(
-      std::move(future), frame.compositor_frame_sink_id, std::move(frame.frame),
+      std::move(future), frame.layer_tree_frame_sink_id, std::move(frame.frame),
       compositor_id_, viewport_rect_for_tile_priority.IsEmpty(),
       transform_for_tile_priority, offscreen_pre_raster_,
       external_draw_constraints_.is_layer);
@@ -321,7 +321,7 @@ void BrowserViewRenderer::ReturnUnusedResource(
   content::SynchronousCompositor* compositor =
       FindCompositor(child_frame->compositor_id);
   if (compositor && !resources.empty())
-    compositor->ReturnResources(child_frame->compositor_frame_sink_id,
+    compositor->ReturnResources(child_frame->layer_tree_frame_sink_id,
                                 resources);
 }
 
@@ -336,7 +336,7 @@ void BrowserViewRenderer::ReturnResourceFromParent(
     resources.swap(pair.second.resources);
 
     if (compositor && !resources.empty()) {
-      compositor->ReturnResources(pair.second.compositor_frame_sink_id,
+      compositor->ReturnResources(pair.second.layer_tree_frame_sink_id,
                                   resources);
     }
   }

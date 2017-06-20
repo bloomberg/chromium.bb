@@ -459,7 +459,7 @@ base::TimeDelta CompositorTimingHistory::DrawDurationEstimate() const {
   return draw_duration_history_.Percentile(kDrawEstimationPercentile);
 }
 
-void CompositorTimingHistory::DidCreateAndInitializeCompositorFrameSink() {
+void CompositorTimingHistory::DidCreateAndInitializeLayerTreeFrameSink() {
   // After we get a new output surface, we won't get a spurious
   // CompositorFrameAck from the old output surface.
   submit_start_time_ = base::TimeTicks();

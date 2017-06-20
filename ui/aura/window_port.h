@@ -18,7 +18,7 @@
 #include "ui/base/class_property.h"
 
 namespace cc {
-class CompositorFrameSink;
+class LayerTreeFrameSink;
 }
 
 namespace gfx {
@@ -80,9 +80,9 @@ class AURA_EXPORT WindowPort {
                                  int64_t old_value,
                                  std::unique_ptr<ui::PropertyData> data) = 0;
 
-  // Called for creating a cc::CompositorFrameSink for the window.
-  virtual std::unique_ptr<cc::CompositorFrameSink>
-  CreateCompositorFrameSink() = 0;
+  // Called for creating a cc::LayerTreeFrameSink for the window.
+  virtual std::unique_ptr<cc::LayerTreeFrameSink>
+  CreateLayerTreeFrameSink() = 0;
 
   // Get the current cc::SurfaceId.
   virtual cc::SurfaceId GetSurfaceId() const = 0;

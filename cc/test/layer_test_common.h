@@ -36,7 +36,7 @@ namespace gfx { class Rect; }
 
 namespace cc {
 class LayerImpl;
-class CompositorFrameSink;
+class LayerTreeFrameSink;
 class QuadList;
 class RenderSurfaceImpl;
 class ResourceProvider;
@@ -59,10 +59,10 @@ class LayerTestCommon {
    public:
     LayerImplTest();
     explicit LayerImplTest(
-        std::unique_ptr<CompositorFrameSink> compositor_frame_sink);
+        std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink);
     explicit LayerImplTest(const LayerTreeSettings& settings);
     LayerImplTest(const LayerTreeSettings& settings,
-                  std::unique_ptr<CompositorFrameSink> compositor_frame_sink);
+                  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink);
     ~LayerImplTest();
 
     template <typename T>
@@ -176,8 +176,8 @@ class LayerTestCommon {
 
     void RequestCopyOfOutput();
 
-    CompositorFrameSink* compositor_frame_sink() const {
-      return host_->host_impl()->compositor_frame_sink();
+    LayerTreeFrameSink* layer_tree_frame_sink() const {
+      return host_->host_impl()->layer_tree_frame_sink();
     }
     ResourceProvider* resource_provider() const {
       return host_->host_impl()->resource_provider();
@@ -201,7 +201,7 @@ class LayerTestCommon {
    private:
     FakeLayerTreeHostClient client_;
     TestTaskGraphRunner task_graph_runner_;
-    std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
+    std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink_;
     std::unique_ptr<AnimationHost> animation_host_;
     std::unique_ptr<FakeLayerTreeHost> host_;
     std::unique_ptr<RenderPass> render_pass_;

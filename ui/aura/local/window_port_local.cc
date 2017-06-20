@@ -7,7 +7,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/local/compositor_frame_sink_local.h"
+#include "ui/aura/local/layer_tree_frame_sink_local.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/display/display.h"
@@ -96,13 +96,13 @@ void WindowPortLocal::OnPropertyChanged(
     int64_t old_value,
     std::unique_ptr<ui::PropertyData> data) {}
 
-std::unique_ptr<cc::CompositorFrameSink>
-WindowPortLocal::CreateCompositorFrameSink() {
+std::unique_ptr<cc::LayerTreeFrameSink>
+WindowPortLocal::CreateLayerTreeFrameSink() {
   DCHECK(!frame_sink_id_.is_valid());
   auto* context_factory_private =
       aura::Env::GetInstance()->context_factory_private();
   frame_sink_id_ = context_factory_private->AllocateFrameSinkId();
-  auto frame_sink = base::MakeUnique<CompositorFrameSinkLocal>(
+  auto frame_sink = base::MakeUnique<LayerTreeFrameSinkLocal>(
       frame_sink_id_, context_factory_private->GetSurfaceManager());
   frame_sink->SetSurfaceChangedCallback(base::Bind(
       &WindowPortLocal::OnSurfaceChanged, weak_factory_.GetWeakPtr()));

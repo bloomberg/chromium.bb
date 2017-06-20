@@ -10,8 +10,6 @@ source_set("exo") {
   sources = [
     "buffer.cc",
     "buffer.h",
-    "compositor_frame_sink_holder.cc",
-    "compositor_frame_sink_holder.h",
     "display.cc",
     "display.h",
     "gaming_seat.h",
@@ -19,6 +17,8 @@ source_set("exo") {
     "keyboard.h",
     "keyboard_delegate.h",
     "keyboard_device_configuration_delegate.h",
+    "layer_tree_frame_sink_holder.cc",
+    "layer_tree_frame_sink_holder.h",
     "notification_surface.cc",
     "notification_surface.h",
     "notification_surface_manager.h",

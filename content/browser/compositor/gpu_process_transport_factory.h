@@ -47,7 +47,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   ~GpuProcessTransportFactory() override;
 
   // ui::ContextFactory implementation.
-  void CreateCompositorFrameSink(
+  void CreateLayerTreeFrameSink(
       base::WeakPtr<ui::Compositor> compositor) override;
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   double GetRefreshRate() const override;

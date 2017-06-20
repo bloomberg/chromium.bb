@@ -52,7 +52,7 @@ class CONTENT_EXPORT SynchronousCompositor {
     Frame(Frame&& rhs);
     Frame& operator=(Frame&& rhs);
 
-    uint32_t compositor_frame_sink_id;
+    uint32_t layer_tree_frame_sink_id;
     std::unique_ptr<cc::CompositorFrame> frame;
 
    private:
@@ -93,7 +93,7 @@ class CONTENT_EXPORT SynchronousCompositor {
 
   // For delegated rendering, return resources from parent compositor to this.
   // Note that all resources must be returned before ReleaseHwDraw.
-  virtual void ReturnResources(uint32_t compositor_frame_sink_id,
+  virtual void ReturnResources(uint32_t layer_tree_frame_sink_id,
                                const cc::ReturnedResourceArray& resources) = 0;
 
   // "On demand" SW draw, into the supplied canvas (observing the transform

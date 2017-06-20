@@ -29,7 +29,7 @@ class Widget;
 }
 
 namespace ash {
-class LaserCompositorFrameSinkHolder;
+class LaserLayerTreeFrameSinkHolder;
 struct LaserResource;
 
 // LaserPointerView displays the palette tool laser pointer. It draws the laser,
@@ -74,7 +74,7 @@ class LaserPointerView : public views::View {
   gfx::Rect surface_damage_rect_;
   bool needs_update_surface_ = false;
   bool pending_draw_surface_ = false;
-  std::unique_ptr<LaserCompositorFrameSinkHolder> frame_sink_holder_;
+  std::unique_ptr<LaserLayerTreeFrameSinkHolder> frame_sink_holder_;
   int next_resource_id_ = 1;
   base::flat_map<int, std::unique_ptr<LaserResource>> resources_;
   std::vector<std::unique_ptr<LaserResource>> returned_resources_;

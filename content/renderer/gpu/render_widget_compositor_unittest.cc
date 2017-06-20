@@ -16,7 +16,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/test/fake_compositor_frame_sink.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
@@ -46,9 +46,9 @@ class StubRenderWidgetCompositorDelegate
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
   void BeginMainFrame(double frame_time_sec) override {}
-  void RequestNewCompositorFrameSink(
+  void RequestNewLayerTreeFrameSink(
       bool fallback,
-      const CompositorFrameSinkCallback& callback) override {
+      const LayerTreeFrameSinkCallback& callback) override {
     callback.Run(nullptr);
   }
   void DidCommitAndDrawCompositorFrame() override {}
@@ -70,18 +70,18 @@ class FakeRenderWidgetCompositorDelegate
  public:
   FakeRenderWidgetCompositorDelegate() = default;
 
-  void RequestNewCompositorFrameSink(
+  void RequestNewLayerTreeFrameSink(
       bool fallback,
-      const CompositorFrameSinkCallback& callback) override {
+      const LayerTreeFrameSinkCallback& callback) override {
     EXPECT_EQ(num_requests_since_last_success_ >
                   RenderWidgetCompositor::
-                      COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
+                      LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
               fallback);
     last_create_was_fallback_ = fallback;
 
     bool success = num_failures_ >= num_failures_before_success_;
-    if (!success && use_null_compositor_frame_sink_) {
-      callback.Run(std::unique_ptr<cc::CompositorFrameSink>());
+    if (!success && use_null_layer_tree_frame_sink_) {
+      callback.Run(std::unique_ptr<cc::LayerTreeFrameSink>());
       return;
     }
 
@@ -91,7 +91,7 @@ class FakeRenderWidgetCompositorDelegate
           GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
     }
     callback.Run(
-        cc::FakeCompositorFrameSink::Create3d(std::move(context_provider)));
+        cc::FakeLayerTreeFrameSink::Create3d(std::move(context_provider)));
   }
 
   void add_success() {
@@ -120,11 +120,11 @@ class FakeRenderWidgetCompositorDelegate
     return num_failures_before_success_;
   }
 
-  void set_use_null_compositor_frame_sink(bool u) {
-    use_null_compositor_frame_sink_ = u;
+  void set_use_null_layer_tree_frame_sink(bool u) {
+    use_null_layer_tree_frame_sink_ = u;
   }
-  bool use_null_compositor_frame_sink() const {
-    return use_null_compositor_frame_sink_;
+  bool use_null_layer_tree_frame_sink() const {
+    return use_null_layer_tree_frame_sink_;
   }
 
  private:
@@ -135,7 +135,7 @@ class FakeRenderWidgetCompositorDelegate
   int num_fallback_successes_ = 0;
   int num_successes_ = 0;
   bool last_create_was_fallback_ = false;
-  bool use_null_compositor_frame_sink_ = true;
+  bool use_null_layer_tree_frame_sink_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetCompositorDelegate);
 };
@@ -146,10 +146,10 @@ class FakeRenderWidgetCompositorDelegate
 // The use null output surface parameter allows testing whether failures
 // from RenderWidget (couldn't create an output surface) vs failures from
 // the compositor (couldn't bind the output surface) are handled identically.
-class RenderWidgetCompositorFrameSink : public RenderWidgetCompositor {
+class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
  public:
-  RenderWidgetCompositorFrameSink(FakeRenderWidgetCompositorDelegate* delegate,
-                                  CompositorDependencies* compositor_deps)
+  RenderWidgetLayerTreeFrameSink(FakeRenderWidgetCompositorDelegate* delegate,
+                                 CompositorDependencies* compositor_deps)
       : RenderWidgetCompositor(delegate, compositor_deps),
         delegate_(delegate) {}
 
@@ -158,41 +158,41 @@ class RenderWidgetCompositorFrameSink : public RenderWidgetCompositor {
   // Force a new output surface to be created.
   void SynchronousComposite() {
     layer_tree_host()->SetVisible(false);
-    layer_tree_host()->ReleaseCompositorFrameSink();
+    layer_tree_host()->ReleaseLayerTreeFrameSink();
     layer_tree_host()->SetVisible(true);
 
     base::TimeTicks some_time;
     layer_tree_host()->Composite(some_time);
   }
 
-  void RequestNewCompositorFrameSink() override {
+  void RequestNewLayerTreeFrameSink() override {
     delegate_->add_request();
-    RenderWidgetCompositor::RequestNewCompositorFrameSink();
+    RenderWidgetCompositor::RequestNewLayerTreeFrameSink();
   }
 
-  void DidInitializeCompositorFrameSink() override {
+  void DidInitializeLayerTreeFrameSink() override {
     delegate_->add_success();
     if (delegate_->num_requests() == expected_requests_) {
       EndTest();
     } else {
-      RenderWidgetCompositor::DidInitializeCompositorFrameSink();
+      RenderWidgetCompositor::DidInitializeLayerTreeFrameSink();
       // Post the synchronous composite task so that it is not called
-      // reentrantly as a part of RequestNewCompositorFrameSink.
+      // reentrantly as a part of RequestNewLayerTreeFrameSink.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&RenderWidgetCompositorFrameSink::SynchronousComposite,
+          base::Bind(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
                      base::Unretained(this)));
     }
   }
 
-  void DidFailToInitializeCompositorFrameSink() override {
+  void DidFailToInitializeLayerTreeFrameSink() override {
     delegate_->add_failure();
     if (delegate_->num_requests() == expected_requests_) {
       EndTest();
       return;
     }
 
-    RenderWidgetCompositor::DidFailToInitializeCompositorFrameSink();
+    RenderWidgetCompositor::DidFailToInitializeLayerTreeFrameSink();
   }
 
   void SetUp(int expected_successes, int expected_fallback_succeses) {
@@ -219,12 +219,12 @@ class RenderWidgetCompositorFrameSink : public RenderWidgetCompositor {
   int expected_fallback_successes_ = 0;
   int expected_requests_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetLayerTreeFrameSink);
 };
 
-class RenderWidgetCompositorFrameSinkTest : public testing::Test {
+class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
  public:
-  RenderWidgetCompositorFrameSinkTest()
+  RenderWidgetLayerTreeFrameSinkTest()
       : render_widget_compositor_(&compositor_delegate_, &compositor_deps_) {
     auto animation_host = cc::AnimationHost::CreateMainInstance();
 
@@ -239,12 +239,12 @@ class RenderWidgetCompositorFrameSinkTest : public testing::Test {
                                          std::move(animation_host));
   }
 
-  void RunTest(bool use_null_compositor_frame_sink,
+  void RunTest(bool use_null_layer_tree_frame_sink,
                int num_failures_before_success,
                int expected_successes,
                int expected_fallback_succeses) {
-    compositor_delegate_.set_use_null_compositor_frame_sink(
-        use_null_compositor_frame_sink);
+    compositor_delegate_.set_use_null_layer_tree_frame_sink(
+        use_null_layer_tree_frame_sink);
     compositor_delegate_.set_num_failures_before_success(
         num_failures_before_success);
     render_widget_compositor_.SetUp(expected_successes,
@@ -252,7 +252,7 @@ class RenderWidgetCompositorFrameSinkTest : public testing::Test {
     render_widget_compositor_.SetVisible(true);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&RenderWidgetCompositorFrameSink::SynchronousComposite,
+        base::Bind(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
                    base::Unretained(&render_widget_compositor_)));
     base::RunLoop().Run();
     render_widget_compositor_.AfterTest();
@@ -263,31 +263,31 @@ class RenderWidgetCompositorFrameSinkTest : public testing::Test {
   MockRenderThread render_thread_;
   FakeCompositorDependencies compositor_deps_;
   FakeRenderWidgetCompositorDelegate compositor_delegate_;
-  RenderWidgetCompositorFrameSink render_widget_compositor_;
+  RenderWidgetLayerTreeFrameSink render_widget_compositor_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorFrameSinkTest);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetLayerTreeFrameSinkTest);
 };
 
-TEST_F(RenderWidgetCompositorFrameSinkTest, SucceedOnce) {
+TEST_F(RenderWidgetLayerTreeFrameSinkTest, SucceedOnce) {
   RunTest(false, 0, 1, 0);
 }
 
-TEST_F(RenderWidgetCompositorFrameSinkTest, SucceedTwice) {
+TEST_F(RenderWidgetLayerTreeFrameSinkTest, SucceedTwice) {
   RunTest(false, 0, 2, 0);
 }
 
-TEST_F(RenderWidgetCompositorFrameSinkTest, FailOnceNull) {
+TEST_F(RenderWidgetLayerTreeFrameSinkTest, FailOnceNull) {
   static_assert(
-      RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK >=
+      RenderWidgetCompositor::LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK >=
           2,
       "Adjust the values of this test if this fails");
   RunTest(true, 1, 1, 0);
 }
 
-TEST_F(RenderWidgetCompositorFrameSinkTest, FailOnceBind) {
+TEST_F(RenderWidgetLayerTreeFrameSinkTest, FailOnceBind) {
   static_assert(
-      RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK >=
+      RenderWidgetCompositor::LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK >=
           2,
       "Adjust the values of this test if this fails");
   RunTest(false, 1, 1, 0);
@@ -295,22 +295,22 @@ TEST_F(RenderWidgetCompositorFrameSinkTest, FailOnceBind) {
 
 // Android doesn't support fallback frame sinks. (crbug.com/721102)
 #ifndef OS_ANDROID
-TEST_F(RenderWidgetCompositorFrameSinkTest, FallbackSuccessNull) {
+TEST_F(RenderWidgetLayerTreeFrameSinkTest, FallbackSuccessNull) {
   RunTest(true,
-          RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
+          RenderWidgetCompositor::LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
           0, 1);
 }
 
-TEST_F(RenderWidgetCompositorFrameSinkTest, FallbackSuccessBind) {
+TEST_F(RenderWidgetLayerTreeFrameSinkTest, FallbackSuccessBind) {
   RunTest(false,
-          RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
+          RenderWidgetCompositor::LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
           0, 1);
 }
 
-TEST_F(RenderWidgetCompositorFrameSinkTest, FallbackSuccessNormalSuccess) {
+TEST_F(RenderWidgetLayerTreeFrameSinkTest, FallbackSuccessNormalSuccess) {
   // The first success is a fallback, but the next should not be a fallback.
   RunTest(false,
-          RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
+          RenderWidgetCompositor::LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
           1, 1);
 }
 #endif

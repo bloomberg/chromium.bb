@@ -21,8 +21,8 @@
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
-#include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_in_process_context_provider.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/gl_in_process_context.h"
@@ -38,8 +38,8 @@ LayerTreePixelTest::LayerTreePixelTest()
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
-std::unique_ptr<TestCompositorFrameSink>
-LayerTreePixelTest::CreateCompositorFrameSink(
+std::unique_ptr<TestLayerTreeFrameSink>
+LayerTreePixelTest::CreateLayerTreeFrameSink(
     const RendererSettings& renderer_settings,
     double refresh_rate,
     scoped_refptr<ContextProvider>,
@@ -55,7 +55,7 @@ LayerTreePixelTest::CreateCompositorFrameSink(
   bool synchronous_composite =
       !HasImplThread() &&
       !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-  auto delegating_output_surface = base::MakeUnique<TestCompositorFrameSink>(
+  auto delegating_output_surface = base::MakeUnique<TestLayerTreeFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(), RendererSettings(),
       ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,

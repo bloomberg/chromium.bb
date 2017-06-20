@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/direct_compositor_frame_sink.h"
+#include "cc/surfaces/direct_layer_tree_frame_sink.h"
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_sink_client.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
@@ -15,7 +15,7 @@
 
 namespace cc {
 
-DirectCompositorFrameSink::DirectCompositorFrameSink(
+DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     const FrameSinkId& frame_sink_id,
     SurfaceManager* surface_manager,
     Display* display,
@@ -23,26 +23,26 @@ DirectCompositorFrameSink::DirectCompositorFrameSink(
     scoped_refptr<ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     SharedBitmapManager* shared_bitmap_manager)
-    : CompositorFrameSink(std::move(context_provider),
-                          std::move(worker_context_provider),
-                          gpu_memory_buffer_manager,
-                          shared_bitmap_manager),
+    : LayerTreeFrameSink(std::move(context_provider),
+                         std::move(worker_context_provider),
+                         gpu_memory_buffer_manager,
+                         shared_bitmap_manager),
       frame_sink_id_(frame_sink_id),
       surface_manager_(surface_manager),
       display_(display) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capabilities_.must_always_swap = true;
-  // Display and DirectCompositorFrameSink share a GL context, so sync
+  // Display and DirectLayerTreeFrameSink share a GL context, so sync
   // points aren't needed when passing resources between them.
   capabilities_.delegated_sync_points_required = false;
 }
 
-DirectCompositorFrameSink::DirectCompositorFrameSink(
+DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     const FrameSinkId& frame_sink_id,
     SurfaceManager* surface_manager,
     Display* display,
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : CompositorFrameSink(std::move(vulkan_context_provider)),
+    : LayerTreeFrameSink(std::move(vulkan_context_provider)),
       frame_sink_id_(frame_sink_id),
       surface_manager_(surface_manager),
       display_(display) {
@@ -50,15 +50,14 @@ DirectCompositorFrameSink::DirectCompositorFrameSink(
   capabilities_.must_always_swap = true;
 }
 
-DirectCompositorFrameSink::~DirectCompositorFrameSink() {
+DirectLayerTreeFrameSink::~DirectLayerTreeFrameSink() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool DirectCompositorFrameSink::BindToClient(
-    CompositorFrameSinkClient* client) {
+bool DirectLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!CompositorFrameSink::BindToClient(client))
+  if (!LayerTreeFrameSink::BindToClient(client))
     return false;
 
   // We want the Display's output surface to hear about lost context, and since
@@ -82,7 +81,7 @@ bool DirectCompositorFrameSink::BindToClient(
   return true;
 }
 
-void DirectCompositorFrameSink::DetachFromClient() {
+void DirectLayerTreeFrameSink::DetachFromClient() {
   client_->SetBeginFrameSource(nullptr);
   begin_frame_source_.reset();
 
@@ -90,10 +89,10 @@ void DirectCompositorFrameSink::DetachFromClient() {
   // one client is alive for this namespace at any given time.
   support_.reset();
 
-  CompositorFrameSink::DetachFromClient();
+  LayerTreeFrameSink::DetachFromClient();
 }
 
-void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
+void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
@@ -112,51 +111,51 @@ void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   DCHECK(result);
 }
 
-void DirectCompositorFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
+void DirectLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
   DCHECK(!ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
   support_->DidNotProduceFrame(ack);
 }
 
-void DirectCompositorFrameSink::DisplayOutputSurfaceLost() {
+void DirectLayerTreeFrameSink::DisplayOutputSurfaceLost() {
   is_lost_ = true;
-  client_->DidLoseCompositorFrameSink();
+  client_->DidLoseLayerTreeFrameSink();
 }
 
-void DirectCompositorFrameSink::DisplayWillDrawAndSwap(
+void DirectLayerTreeFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const RenderPassList& render_passes) {
   // This notification is not relevant to our client outside of tests.
 }
 
-void DirectCompositorFrameSink::DisplayDidDrawAndSwap() {
+void DirectLayerTreeFrameSink::DisplayDidDrawAndSwap() {
   // This notification is not relevant to our client outside of tests. We
   // unblock the client from DidDrawCallback() when the surface is going to
   // be drawn.
 }
 
-void DirectCompositorFrameSink::DidReceiveCompositorFrameAck(
+void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const ReturnedResourceArray& resources) {
   client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
 
-void DirectCompositorFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
+void DirectLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   begin_frame_source_->OnBeginFrame(args);
 }
 
-void DirectCompositorFrameSink::ReclaimResources(
+void DirectLayerTreeFrameSink::ReclaimResources(
     const ReturnedResourceArray& resources) {
   client_->ReclaimResources(resources);
 }
 
-void DirectCompositorFrameSink::WillDrawSurface(
+void DirectLayerTreeFrameSink::WillDrawSurface(
     const LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {
   // TODO(staraz): Implement this.
 }
 
-void DirectCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
+void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 

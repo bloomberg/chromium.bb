@@ -26,8 +26,8 @@
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/context_cache_controller.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
@@ -55,7 +55,7 @@ namespace cc {
 
 class BrowserControlsOffsetManager;
 class CompositorFrameMetadata;
-class CompositorFrameSink;
+class LayerTreeFrameSink;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
@@ -97,7 +97,7 @@ enum class ImplThreadPhase {
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
-  virtual void DidLoseCompositorFrameSinkOnImplThread() = 0;
+  virtual void DidLoseLayerTreeFrameSinkOnImplThread() = 0;
   virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
   virtual void DidReceiveCompositorFrameAckOnImplThread() = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
@@ -124,8 +124,7 @@ class LayerTreeHostImplClient {
   virtual void DidCompletePageScaleAnimationOnImplThread() = 0;
 
   // Called when output surface asks for a draw.
-  virtual void OnDrawForCompositorFrameSink(
-      bool resourceless_software_draw) = 0;
+  virtual void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw) = 0;
 
   virtual void NeedsImplSideInvalidation() = 0;
   // Called when a requested image decode completes.
@@ -142,7 +141,7 @@ class LayerTreeHostImplClient {
 class CC_EXPORT LayerTreeHostImpl
     : public InputHandler,
       public TileManagerClient,
-      public CompositorFrameSinkClient,
+      public LayerTreeFrameSinkClient,
       public BrowserControlsOffsetManagerClient,
       public ScrollbarAnimationControllerClient,
       public VideoFrameControllerClient,
@@ -366,12 +365,12 @@ class CC_EXPORT LayerTreeHostImpl
   void AddVideoFrameController(VideoFrameController* controller) override;
   void RemoveVideoFrameController(VideoFrameController* controller) override;
 
-  // CompositorFrameSinkClient implementation.
+  // LayerTreeFrameSinkClient implementation.
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) override;
-  void DidLoseCompositorFrameSink() override;
+  void DidLoseLayerTreeFrameSink() override;
   void DidReceiveCompositorFrameAck() override;
   void ReclaimResources(const ReturnedResourceArray& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
@@ -389,17 +388,17 @@ class CC_EXPORT LayerTreeHostImpl
   // Implementation.
   int id() const { return id_; }
   bool CanDraw() const;
-  CompositorFrameSink* compositor_frame_sink() const {
-    return compositor_frame_sink_;
+  LayerTreeFrameSink* layer_tree_frame_sink() const {
+    return layer_tree_frame_sink_;
   }
-  void ReleaseCompositorFrameSink();
+  void ReleaseLayerTreeFrameSink();
 
   std::string LayerTreeAsJson() const;
 
   int RequestedMSAASampleCount() const;
 
   // TODO(danakj): Rename this, there is no renderer.
-  virtual bool InitializeRenderer(CompositorFrameSink* compositor_frame_sink);
+  virtual bool InitializeRenderer(LayerTreeFrameSink* layer_tree_frame_sink);
   TileManager* tile_manager() { return &tile_manager_; }
 
   void SetHasGpuRasterizationTrigger(bool flag);
@@ -727,12 +726,12 @@ class CC_EXPORT LayerTreeHostImpl
   // request queue.
   std::set<UIResourceId> evicted_ui_resources_;
 
-  CompositorFrameSink* compositor_frame_sink_;
+  LayerTreeFrameSink* layer_tree_frame_sink_;
 
   LocalSurfaceId local_surface_id_;
 
   // The following scoped variables must not outlive the
-  // |compositor_frame_sink_|.
+  // |layer_tree_frame_sink_|.
   // These should be transfered to ContextCacheController's
   // ClientBecameNotVisible() before the output surface is destroyed.
   std::unique_ptr<ContextCacheController::ScopedVisibility>
@@ -813,7 +812,7 @@ class CC_EXPORT LayerTreeHostImpl
   // overridden.
   gfx::Size device_viewport_size_;
 
-  // Optional top-level constraints that can be set by the CompositorFrameSink.
+  // Optional top-level constraints that can be set by the LayerTreeFrameSink.
   // - external_transform_ applies a transform above the root layer
   // - external_viewport_ is used DrawProperties, tile management and
   // glViewport/window projection matrix.
@@ -852,9 +851,9 @@ class CC_EXPORT LayerTreeHostImpl
   bool requires_high_res_to_draw_;
   bool is_likely_to_require_a_draw_;
 
-  // TODO(danakj): Delete the compositor frame sink and all resources when
+  // TODO(danakj): Delete the LayerTreeFrameSink and all resources when
   // it's lost instead of having this bool.
-  bool has_valid_compositor_frame_sink_;
+  bool has_valid_layer_tree_frame_sink_;
 
   std::unique_ptr<Viewport> viewport_;
 
