@@ -16,7 +16,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_scanout_buffer_generator.h"
+#include "ui/ozone/platform/drm/gpu/mock_dumb_buffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace {
@@ -51,10 +51,9 @@ class ScreenManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    drm_ = new ui::MockDrmDevice(false, std::vector<uint32_t>(1, kPrimaryCrtc),
-                                 4 /* planes per crtc */);
+    drm_ = new ui::MockDrmDevice();
     device_manager_.reset(new ui::DrmDeviceManager(nullptr));
-    buffer_generator_.reset(new ui::MockScanoutBufferGenerator());
+    buffer_generator_.reset(new ui::MockDumbBufferGenerator());
     screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   }
   void TearDown() override {
@@ -65,7 +64,7 @@ class ScreenManagerTest : public testing::Test {
  protected:
   scoped_refptr<ui::MockDrmDevice> drm_;
   std::unique_ptr<ui::DrmDeviceManager> device_manager_;
-  std::unique_ptr<ui::MockScanoutBufferGenerator> buffer_generator_;
+  std::unique_ptr<ui::MockDumbBufferGenerator> buffer_generator_;
   std::unique_ptr<ui::ScreenManager> screen_manager_;
 
  private:
@@ -513,36 +512,6 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
       kDefaultMode);
 
   EXPECT_EQ(buffer->GetFramebufferId(), drm_->current_framebuffer());
-
-  window = screen_manager_->RemoveWindow(1);
-  window->Shutdown();
-}
-
-TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize(buffer_generator_.get());
-  window->SetBounds(GetPrimaryBounds());
-  scoped_refptr<ui::ScanoutBuffer> buffer =
-      buffer_generator_->CreateWithModifier(drm_, DRM_FORMAT_XRGB8888,
-                                            I915_FORMAT_MOD_X_TILED,
-                                            GetPrimaryBounds().size());
-
-  window->SchedulePageFlip(
-      std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(buffer)),
-      base::Bind(&EmptySwapCallback));
-  screen_manager_->AddWindow(1, std::move(window));
-
-  screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
-  screen_manager_->ConfigureDisplayController(
-      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
-      kDefaultMode);
-
-  // ScreenManager::GetModesetBuffer (called to get a buffer to
-  // modeset the new controller) should reject the buffer with
-  // I915_FORMAT_MOD_X_TILED modifier we created above and the two
-  // framebuffer IDs should be different.
-  EXPECT_NE(buffer->GetFramebufferId(), drm_->current_framebuffer());
 
   window = screen_manager_->RemoveWindow(1);
   window->Shutdown();

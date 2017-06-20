@@ -48,6 +48,7 @@ class GbmBuffer : public GbmBufferBase {
   int GetStride(size_t plane) const;
   int GetOffset(size_t plane) const;
   size_t GetSize(size_t plane) const;
+  uint64_t GetFormatModifier(size_t plane) const;
   gfx::Size GetSize() const override;
 
  private:

@@ -24,7 +24,6 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
     framebuffer_pixel_format_ = format;
     opaque_framebuffer_pixel_format_ = GetFourCCFormatForOpaqueFramebuffer(
         GetBufferFormatFromFourCCFormat(format));
-    format_modifier_ = modifier;
 
     uint32_t handles[4] = {0};
     uint32_t strides[4] = {0};
@@ -85,11 +84,6 @@ uint32_t GbmBufferBase::GetFramebufferPixelFormat() const {
 uint32_t GbmBufferBase::GetOpaqueFramebufferPixelFormat() const {
   DCHECK(framebuffer_);
   return opaque_framebuffer_pixel_format_;
-}
-
-uint64_t GbmBufferBase::GetFormatModifier() const {
-  DCHECK(framebuffer_);
-  return format_modifier_;
 }
 
 const DrmDevice* GbmBufferBase::GetDrmDevice() const {
