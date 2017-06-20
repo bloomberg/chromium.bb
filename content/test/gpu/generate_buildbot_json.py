@@ -1095,11 +1095,14 @@ COMMON_GTESTS = {
             'gpu': '10de:104a',
             'os': 'Windows-2008ServerR2-SP1'
           },
+          # Temporarily disable AMD deqp ES3 tests due to issues with the log
+          # size causing out-of-memory errors in the recipe engine.
+          # crbug.com/713196
           # AMD Win 7
-          {
-            'gpu': '1002:6613',
-            'os': 'Windows-2008ServerR2-SP1'
-          }
+          #{
+          #  'gpu': '1002:6613',
+          #  'os': 'Windows-2008ServerR2-SP1'
+          #}
         ],
       }
     ],
