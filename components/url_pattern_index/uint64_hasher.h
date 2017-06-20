@@ -7,15 +7,15 @@
 // https://gist.github.com/badboy/6267743
 // TODO(pkalinnikov): Consider moving the implementation into base/.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_HASH_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_HASH_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_HASH_H_
+#define COMPONENTS_URL_PATTERN_INDEX_HASH_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include <type_traits>
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 template <typename T>
 typename std::enable_if<sizeof(T) == 4, T>::type Uint64Hash(uint64_t v) {
@@ -47,6 +47,6 @@ class Uint64Hasher {
   size_t operator()(uint64_t v) const { return Uint64Hash<size_t>(v); }
 };
 
-}  // subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_HASH_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_HASH_H_

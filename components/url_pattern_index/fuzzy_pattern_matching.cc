@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/fuzzy_pattern_matching.h"
+#include "components/url_pattern_index/fuzzy_pattern_matching.h"
 
 #include <algorithm>
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace {
 
@@ -56,4 +56,4 @@ size_t FindFuzzy(base::StringPiece text,
   return found == text.end() ? base::StringPiece::npos : found - text.begin();
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

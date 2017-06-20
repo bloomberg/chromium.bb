@@ -10,16 +10,19 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
-#include "components/subresource_filter/core/common/url_pattern.h"
-#include "components/subresource_filter/core/common/url_rule_test_support.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
+#include "components/url_pattern_index/url_pattern.h"
+#include "components/url_pattern_index/url_rule_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace subresource_filter {
 
-using namespace testing;
+namespace proto = url_pattern_index::proto;
+namespace testing = url_pattern_index::testing;
+using testing::MakeUrlRule;
+using url_pattern_index::UrlPattern;
 
 class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
  public:
@@ -28,21 +31,22 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
  protected:
   bool ShouldAllow(base::StringPiece url,
                    base::StringPiece document_origin = nullptr,
-                   proto::ElementType element_type = kOther,
+                   proto::ElementType element_type = testing::kOther,
                    bool disable_generic_rules = false) const {
     DCHECK(matcher_);
     return !matcher_->ShouldDisallowResourceLoad(
-        GURL(url), FirstPartyOrigin(GetOrigin(document_origin)), element_type,
-        disable_generic_rules);
+        GURL(url), FirstPartyOrigin(testing::GetOrigin(document_origin)),
+        element_type, disable_generic_rules);
   }
 
   bool ShouldDeactivate(
       base::StringPiece document_url,
       base::StringPiece parent_document_origin = nullptr,
-      proto::ActivationType activation_type = kNoActivation) const {
+      proto::ActivationType activation_type = testing::kNoActivation) const {
     DCHECK(matcher_);
     return matcher_->ShouldDisableFilteringForDocument(
-        GURL(document_url), GetOrigin(parent_document_origin), activation_type);
+        GURL(document_url), testing::GetOrigin(parent_document_origin),
+        activation_type);
   }
 
   bool AddUrlRule(const proto::UrlRule& rule) {
@@ -50,18 +54,19 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
   }
 
   bool AddSimpleRule(base::StringPiece url_pattern) {
-    return AddUrlRule(MakeUrlRule(UrlPattern(url_pattern, kSubstring)));
+    return AddUrlRule(
+        MakeUrlRule(UrlPattern(url_pattern, testing::kSubstring)));
   }
 
   bool AddSimpleWhitelistRule(base::StringPiece url_pattern) {
-    auto rule = MakeUrlRule(UrlPattern(url_pattern, kSubstring));
+    auto rule = MakeUrlRule(UrlPattern(url_pattern, testing::kSubstring));
     rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
     return AddUrlRule(rule);
   }
 
   bool AddSimpleWhitelistRule(base::StringPiece url_pattern,
                               int32_t activation_types) {
-    auto rule = MakeUrlRule(UrlPattern(url_pattern, kSubstring));
+    auto rule = MakeUrlRule(UrlPattern(url_pattern, testing::kSubstring));
     rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
     rule.clear_element_types();
     rule.set_activation_types(activation_types);
@@ -130,11 +135,13 @@ TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklistAndWhitelist) {
 TEST_F(SubresourceFilterIndexedRulesetTest,
        OneBlacklistAndOneDeactivationRule) {
   ASSERT_TRUE(AddSimpleRule("example.com"));
-  ASSERT_TRUE(AddSimpleWhitelistRule("example.com", kDocument));
+  ASSERT_TRUE(AddSimpleWhitelistRule("example.com", testing::kDocument));
   Finish();
 
-  EXPECT_TRUE(ShouldDeactivate("https://example.com", nullptr, kDocument));
-  EXPECT_FALSE(ShouldDeactivate("https://xample.com", nullptr, kDocument));
+  EXPECT_TRUE(
+      ShouldDeactivate("https://example.com", nullptr, testing::kDocument));
+  EXPECT_FALSE(
+      ShouldDeactivate("https://xample.com", nullptr, testing::kDocument));
   EXPECT_FALSE(ShouldAllow("https://example.com"));
   EXPECT_TRUE(ShouldAllow("https://xample.com"));
 }

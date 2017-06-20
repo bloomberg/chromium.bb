@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
 
 namespace subresource_filter {
@@ -44,8 +44,9 @@ class WebDocumentSubresourceFilterImpl
   bool ShouldLogToConsole() override;
 
  private:
-  LoadPolicy getLoadPolicyImpl(const blink::WebURL& url,
-                               proto::ElementType element_type);
+  LoadPolicy getLoadPolicyImpl(
+      const blink::WebURL& url,
+      url_pattern_index::proto::ElementType element_type);
 
   DocumentSubresourceFilter filter_;
   base::OnceClosure first_disallowed_load_callback_;

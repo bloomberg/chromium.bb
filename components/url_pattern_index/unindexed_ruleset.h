@@ -19,15 +19,15 @@
 // before reading the next one. In practice, this should not be an issue as
 // indexing of the ruleset is expected to be performed in an on-line fashion.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_UNINDEXED_RULESET_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_UNINDEXED_RULESET_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_UNINDEXED_RULESET_H_
+#define COMPONENTS_URL_PATTERN_INDEX_UNINDEXED_RULESET_H_
 
 #include "base/macros.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 // Reads an unindexed ruleset from |stream| one chunk at a time.
 class UnindexedRulesetReader {
@@ -95,6 +95,6 @@ class UnindexedRulesetWriter {
   DISALLOW_COPY_AND_ASSIGN(UnindexedRulesetWriter);
 };
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_UNINDEXED_RULESET_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_UNINDEXED_RULESET_H_

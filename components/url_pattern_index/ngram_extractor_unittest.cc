@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/ngram_extractor.h"
+#include "components/url_pattern_index/ngram_extractor.h"
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace {
 
@@ -108,4 +108,4 @@ TEST(NGramExtractorTest, NGramsArePresent) {
   }
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

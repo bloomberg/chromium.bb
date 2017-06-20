@@ -14,14 +14,14 @@
 // characters of the |text|, whereas each '^' placeholder can correspond to any
 // type of separator in |text|.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_FUZZY_PATTERN_MATCHING_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_FUZZY_PATTERN_MATCHING_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_FUZZY_PATTERN_MATCHING_H_
+#define COMPONENTS_URL_PATTERN_INDEX_FUZZY_PATTERN_MATCHING_H_
 
 #include <stddef.h>
 
 #include "base/strings/string_piece.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 constexpr char kSeparatorPlaceholder = '^';
 
@@ -63,6 +63,6 @@ size_t FindFuzzy(base::StringPiece text,
                  base::StringPiece subpattern,
                  size_t from = 0);
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_FUZZY_PATTERN_MATCHING_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_FUZZY_PATTERN_MATCHING_H_

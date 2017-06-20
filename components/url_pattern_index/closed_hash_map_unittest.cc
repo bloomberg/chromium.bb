@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/closed_hash_map.h"
+#include "components/url_pattern_index/closed_hash_map.h"
 
 #include <string>
 #include <vector>
 
-#include "components/subresource_filter/core/common/uint64_hasher.h"
+#include "components/url_pattern_index/uint64_hasher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace {
 
@@ -163,4 +163,4 @@ TEST(ClosedHashMapTest, ManualRehash) {
   }
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

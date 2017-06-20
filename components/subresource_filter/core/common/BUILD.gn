@@ -13,43 +13,29 @@ static_library("common") {
     "activation_scope.h",
     "activation_state.cc",
     "activation_state.h",
-    "closed_hash_map.h",
-    "copying_file_stream.cc",
-    "copying_file_stream.h",
     "document_load_statistics.h",
     "document_subresource_filter.cc",
     "document_subresource_filter.h",
     "first_party_origin.cc",
     "first_party_origin.h",
-    "fuzzy_pattern_matching.cc",
-    "fuzzy_pattern_matching.h",
     "indexed_ruleset.cc",
     "indexed_ruleset.h",
     "load_policy.h",
     "memory_mapped_ruleset.cc",
     "memory_mapped_ruleset.h",
-    "ngram_extractor.h",
     "scoped_timers.h",
-    "string_splitter.h",
     "time_measurements.h",
-    "uint64_hasher.h",
-    "unindexed_ruleset.cc",
-    "unindexed_ruleset.h",
-    "url_pattern.cc",
-    "url_pattern.h",
-    "url_pattern_index.cc",
-    "url_pattern_index.h",
   ]
 
   public_deps = [
-    "//components/subresource_filter/core/common/flat:flatbuffer",
-    "//components/subresource_filter/core/common/proto:proto",
+    "//components/subresource_filter/core/common/flat:indexed_ruleset",
+    "//components/url_pattern_index",
   ]
 
   deps = [
     "//base",
     "//net",
-    "//third_party/flatbuffers:flatbuffers",
+    "//third_party/flatbuffers",
     "//third_party/protobuf:protobuf_lite",
     "//url",
   ]
@@ -62,8 +48,6 @@ static_library("test_support") {
     "test_ruleset_creator.h",
     "test_ruleset_utils.cc",
     "test_ruleset_utils.h",
-    "url_rule_test_support.cc",
-    "url_rule_test_support.h",
   ]
   deps = [
     ":common",
@@ -77,23 +61,17 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "closed_hash_map_unittest.cc",
     "document_subresource_filter_unittest.cc",
     "first_party_origin_unittest.cc",
-    "fuzzy_pattern_matching_unittest.cc",
     "indexed_ruleset_unittest.cc",
-    "ngram_extractor_unittest.cc",
     "scoped_timers_unittest.cc",
-    "string_splitter_unittest.cc",
-    "unindexed_ruleset_unittest.cc",
-    "url_pattern_index_unittest.cc",
-    "url_pattern_unittest.cc",
   ]
   deps = [
     ":common",
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/url_pattern_index:test_support",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
     "//url",

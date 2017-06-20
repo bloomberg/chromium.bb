@@ -16,6 +16,8 @@
 
 namespace subresource_filter {
 
+namespace proto = url_pattern_index::proto;
+
 namespace {
 
 constexpr auto kDryRun = ActivationLevel::DRYRUN;

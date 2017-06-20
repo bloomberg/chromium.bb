@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_NGRAM_EXTRACTOR_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_NGRAM_EXTRACTOR_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_NGRAM_EXTRACTOR_H_
+#define COMPONENTS_URL_PATTERN_INDEX_NGRAM_EXTRACTOR_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 // The class used to iteratively extract N-grams from strings. An N-gram is a
 // string consisting of N (up to 8) non-special characters, which are stored in
@@ -128,6 +128,6 @@ NGramExtractor<N, NGramType, IsSeparator> CreateNGramExtractor(
   return NGramExtractor<N, NGramType, IsSeparator>(string, is_separator);
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_NGRAM_EXTRACTOR_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_NGRAM_EXTRACTOR_H_

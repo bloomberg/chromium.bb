@@ -20,9 +20,9 @@
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/navigation_simulator.h"
@@ -30,6 +30,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_filter {
+
+namespace proto = url_pattern_index::proto;
 
 class ActivationStateComputingNavigationThrottleTest
     : public content::RenderViewHostTestHarness,

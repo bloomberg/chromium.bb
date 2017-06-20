@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_PATTERN_INDEX_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_PATTERN_INDEX_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_URL_PATTERN_INDEX_H_
+#define COMPONENTS_URL_PATTERN_INDEX_URL_PATTERN_INDEX_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,10 +12,10 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
-#include "components/subresource_filter/core/common/closed_hash_map.h"
-#include "components/subresource_filter/core/common/flat/url_pattern_index_generated.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
-#include "components/subresource_filter/core/common/uint64_hasher.h"
+#include "components/url_pattern_index/closed_hash_map.h"
+#include "components/url_pattern_index/flat/url_pattern_index_generated.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
+#include "components/url_pattern_index/uint64_hasher.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
 class GURL;
@@ -24,7 +24,7 @@ namespace url {
 class Origin;
 }
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 // The integer type used to represent N-grams.
 using NGram = uint64_t;
@@ -130,6 +130,6 @@ class UrlPatternIndexMatcher {
   DISALLOW_COPY_AND_ASSIGN(UrlPatternIndexMatcher);
 };
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_PATTERN_INDEX_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_URL_PATTERN_INDEX_H_

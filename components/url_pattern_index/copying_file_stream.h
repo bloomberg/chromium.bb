@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_COPYING_FILE_STREAM_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_COPYING_FILE_STREAM_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_COPYING_FILE_STREAM_H_
+#define COMPONENTS_URL_PATTERN_INDEX_COPYING_FILE_STREAM_H_
 
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 // Implements a CopyingInputStream that reads from a base::File. Can be used in
 // combination with CopyingInputStreamAdaptor for reading from that file through
@@ -46,6 +46,6 @@ class CopyingFileOutputStream
   DISALLOW_COPY_AND_ASSIGN(CopyingFileOutputStream);
 };
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_COPYING_FILE_STREAM_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_COPYING_FILE_STREAM_H_

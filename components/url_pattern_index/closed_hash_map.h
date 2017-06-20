@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_CLOSED_HASH_MAP_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_CLOSED_HASH_MAP_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_CLOSED_HASH_MAP_H_
+#define COMPONENTS_URL_PATTERN_INDEX_CLOSED_HASH_MAP_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 template <typename KeyType_, typename Hasher_>
 class SimpleQuadraticProber;
@@ -215,13 +215,14 @@ class ClosedHashMap {
   // Finds a slot such that it's either empty (indicating that the |key| is not
   // stored) or contains the |key|.
   size_t FindSlotForKey(const KeyType& key) const {
-    return prober_.FindSlot(key, hash_table_.size(), [this](const KeyType& key,
-                                                            size_t slot_index) {
-      DCHECK_LT(slot_index, hash_table_.size());
-      const uint32_t entry_index = hash_table_[slot_index];
-      DCHECK(entry_index == EmptySlot() || entry_index < entries_.size());
-      return entry_index == EmptySlot() || entries_[entry_index].first == key;
-    });
+    return prober_.FindSlot(
+        key, hash_table_.size(), [this](const KeyType& key, size_t slot_index) {
+          DCHECK_LT(slot_index, hash_table_.size());
+          const uint32_t entry_index = hash_table_[slot_index];
+          DCHECK(entry_index == EmptySlot() || entry_index < entries_.size());
+          return entry_index == EmptySlot() ||
+                 entries_[entry_index].first == key;
+        });
   }
 
   // Contains indices into |entries_|, or EmptySlot() for free table slots.
@@ -288,6 +289,6 @@ class SimpleQuadraticProber {
   Hasher hasher_;
 };
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_CLOSED_HASH_MAP_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_CLOSED_HASH_MAP_H_

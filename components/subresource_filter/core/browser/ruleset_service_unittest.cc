@@ -27,8 +27,8 @@
 #include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service_delegate.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -661,7 +661,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
   mock_delegate()->SimulateStartupCompleted();
 
   // The default field values are considered unsupported.
-  proto::UrlRule unfilled_rule;
+  url_pattern_index::proto::UrlRule unfilled_rule;
 
   TestRulesetPair ruleset_with_unsupported_rule;
   ASSERT_NO_FATAL_FAILURE(

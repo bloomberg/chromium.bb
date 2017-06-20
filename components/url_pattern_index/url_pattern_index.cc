@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/url_pattern_index.h"
+#include "components/url_pattern_index/url_pattern_index.h"
 
 #include <algorithm>
 #include <limits>
@@ -12,12 +12,12 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "components/subresource_filter/core/common/ngram_extractor.h"
-#include "components/subresource_filter/core/common/url_pattern.h"
+#include "components/url_pattern_index/ngram_extractor.h"
+#include "components/url_pattern_index/url_pattern.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace {
 
@@ -564,4 +564,4 @@ const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
                                         is_third_party, disable_generic_rules);
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
