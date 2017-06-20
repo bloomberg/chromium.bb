@@ -18,8 +18,7 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/stack_trace.h"
+#include "base/debug/alias.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -38,7 +37,6 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/preemption_flag.h"
 #include "gpu/command_buffer/service/scheduler.h"
-#include "gpu/config/gpu_crash_keys.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -590,10 +588,7 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
 }
 
 GpuChannelMessageFilter::~GpuChannelMessageFilter() {
-  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
-  base::debug::SetCrashKeyToStackTrace(gpu::crash_keys::kGpuChannelFilterTrace,
-                                       base::debug::StackTrace());
-  CHECK(!gpu_channel_);
+  DCHECK(!gpu_channel_);
 }
 
 void GpuChannelMessageFilter::Destroy() {
@@ -619,6 +614,8 @@ void GpuChannelMessageFilter::RemoveRoute(int32_t route_id) {
 void GpuChannelMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
   CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
 
   DCHECK(!ipc_channel_);
   ipc_channel_ = channel;
@@ -629,6 +626,8 @@ void GpuChannelMessageFilter::OnFilterAdded(IPC::Channel* channel) {
 void GpuChannelMessageFilter::OnFilterRemoved() {
   // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
   CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
 
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
     filter->OnFilterRemoved();
@@ -639,6 +638,8 @@ void GpuChannelMessageFilter::OnFilterRemoved() {
 void GpuChannelMessageFilter::OnChannelConnected(int32_t peer_pid) {
   // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
   CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
 
   DCHECK(peer_pid_ == base::kNullProcessId);
   peer_pid_ = peer_pid;
@@ -649,6 +650,8 @@ void GpuChannelMessageFilter::OnChannelConnected(int32_t peer_pid) {
 void GpuChannelMessageFilter::OnChannelError() {
   // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
   CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
 
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
     filter->OnChannelError();
@@ -657,6 +660,8 @@ void GpuChannelMessageFilter::OnChannelError() {
 void GpuChannelMessageFilter::OnChannelClosing() {
   // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
   CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
 
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
     filter->OnChannelClosing();
@@ -666,6 +671,8 @@ void GpuChannelMessageFilter::AddChannelFilter(
     scoped_refptr<IPC::MessageFilter> filter) {
   // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
   CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
 
   channel_filters_.push_back(filter);
   if (ipc_channel_)
@@ -678,6 +685,8 @@ void GpuChannelMessageFilter::RemoveChannelFilter(
     scoped_refptr<IPC::MessageFilter> filter) {
   // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
   CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
 
   if (ipc_channel_)
     filter->OnFilterRemoved();

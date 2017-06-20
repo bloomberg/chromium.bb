@@ -24,12 +24,6 @@ extern const char kGPUGLVersion[];
 extern const char kGPUVendor[];
 extern const char kGPURenderer[];
 #endif
-
-// TEMPORARY: Backtraces for gpu message filters to fix use-after-free.
-// TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
-extern const char kGpuChannelFilterTrace[];
-extern const char kMediaGpuChannelFilterTrace[];
-
 }  // namespace crash_keys
 }  // namespace gpu
 

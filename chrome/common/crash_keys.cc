@@ -112,8 +112,6 @@ size_t RegisterChromeCrashKeys() {
     {kApValue, kSmallSize},
     {kCohortName, kSmallSize},
 #endif  // defined(OS_WIN)
-
-// gpu
 #if !defined(OS_ANDROID)
     {gpu::crash_keys::kGPUVendorID, kSmallSize},
     {gpu::crash_keys::kGPUDeviceID, kSmallSize},
@@ -127,10 +125,6 @@ size_t RegisterChromeCrashKeys() {
     {gpu::crash_keys::kGPUVendor, kSmallSize},
     {gpu::crash_keys::kGPURenderer, kSmallSize},
 #endif
-    // Temporary for https://crbug.com/729483.
-    // TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
-    {gpu::crash_keys::kGpuChannelFilterTrace, crash_keys::kMediumSize},
-    {gpu::crash_keys::kMediaGpuChannelFilterTrace, crash_keys::kMediumSize},
 
     // content/:
     {"bad_message_reason", kSmallSize},
@@ -175,7 +169,7 @@ size_t RegisterChromeCrashKeys() {
     {"channel_error_bt", kMediumSize},
     {"remove_route_bt", kMediumSize},
     {"rwhvm_window", kMediumSize},
-// media/:
+    // media/:
 #endif
     {kBug464926CrashKey, kSmallSize},
     {kViewCount, kSmallSize},
