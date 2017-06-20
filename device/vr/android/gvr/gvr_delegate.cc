@@ -66,9 +66,10 @@ gfx::Vector3dF GetAngularVelocityFromPoses(gfx::Transform head_mat,
   // provided by the caller.
   for (int j = 0; j < 3; ++j) {
     for (int i = 0; i < 3; ++i) {
-      delta_mat.matrix().set(j, i,
-                             head_mat_2.matrix().get(j, i) -
-                                 head_mat.matrix().get(j, i) / epsilon_seconds);
+      delta_mat.matrix().set(
+          j, i,
+          (head_mat_2.matrix().get(j, i) - head_mat.matrix().get(j, i)) /
+              epsilon_seconds);
       inverse_head_mat.matrix().set(j, i, head_mat.matrix().get(i, j));
     }
     delta_mat.matrix().set(j, 3, 0);
