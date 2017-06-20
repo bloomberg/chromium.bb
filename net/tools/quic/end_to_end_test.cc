@@ -88,9 +88,7 @@ struct TestParams {
              QuicTag congestion_control_tag,
              bool disable_hpack_dynamic_table,
              bool force_hol_blocking,
-             bool use_cheap_stateless_reject,
-             bool connection_id_big_endian_client,
-             bool connection_id_big_endian_server)
+             bool use_cheap_stateless_reject)
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
@@ -100,9 +98,7 @@ struct TestParams {
         congestion_control_tag(congestion_control_tag),
         disable_hpack_dynamic_table(disable_hpack_dynamic_table),
         force_hol_blocking(force_hol_blocking),
-        use_cheap_stateless_reject(use_cheap_stateless_reject),
-        connection_id_big_endian_client(connection_id_big_endian_client),
-        connection_id_big_endian_server(connection_id_big_endian_server) {}
+        use_cheap_stateless_reject(use_cheap_stateless_reject) {}
 
   friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
     os << "{ server_supported_versions: "
@@ -118,11 +114,8 @@ struct TestParams {
        << QuicTagToString(p.congestion_control_tag);
     os << " disable_hpack_dynamic_table: " << p.disable_hpack_dynamic_table;
     os << " force_hol_blocking: " << p.force_hol_blocking;
-    os << " use_cheap_stateless_reject: " << p.use_cheap_stateless_reject;
-    os << " connection_id_big_endian_client: "
-       << p.connection_id_big_endian_client;
-    os << " connection_id_big_endian_server: "
-       << p.connection_id_big_endian_server << " }";
+    os << " use_cheap_stateless_reject: " << p.use_cheap_stateless_reject
+       << " }";
     return os;
   }
 
@@ -135,8 +128,6 @@ struct TestParams {
   bool disable_hpack_dynamic_table;
   bool force_hol_blocking;
   bool use_cheap_stateless_reject;
-  bool connection_id_big_endian_client;
-  bool connection_id_big_endian_server;
 };
 
 // Constructs various test permutations.
@@ -162,7 +153,7 @@ std::vector<TestParams> GetTestParams() {
 
   // This must be kept in sync with the number of nested for-loops below as it
   // is used to prune the number of tests that are run.
-  const int kMaxEnabledOptions = 7;
+  const int kMaxEnabledOptions = 5;
   int max_enabled_options = 0;
   std::vector<TestParams> params;
   for (bool server_uses_stateless_rejects_if_peer_supported : {true, false}) {
@@ -172,101 +163,84 @@ std::vector<TestParams> GetTestParams() {
         for (bool disable_hpack_dynamic_table : {false}) {
           for (bool force_hol_blocking : {true, false}) {
             for (bool use_cheap_stateless_reject : {true, false}) {
-              for (bool connection_id_big_endian_client : {true, false}) {
-                for (bool connection_id_big_endian_server : {true, false}) {
-                  int enabled_options = 0;
-                  if (force_hol_blocking) {
-                    ++enabled_options;
-                  }
-                  if (congestion_control_tag != kQBIC) {
-                    ++enabled_options;
-                  }
-                  if (disable_hpack_dynamic_table) {
-                    ++enabled_options;
-                  }
-                  if (client_supports_stateless_rejects) {
-                    ++enabled_options;
-                  }
-                  if (server_uses_stateless_rejects_if_peer_supported) {
-                    ++enabled_options;
-                  }
-                  if (use_cheap_stateless_reject) {
-                    ++enabled_options;
-                  }
-                  if (connection_id_big_endian_server) {
-                    ++enabled_options;
-                  }
-                  if (connection_id_big_endian_client) {
-                    ++enabled_options;
-                  }
-                  CHECK_GE(kMaxEnabledOptions, enabled_options);
-                  if (enabled_options > max_enabled_options) {
-                    max_enabled_options = enabled_options;
-                  }
+              int enabled_options = 0;
+              if (force_hol_blocking) {
+                ++enabled_options;
+              }
+              if (congestion_control_tag != kQBIC) {
+                ++enabled_options;
+              }
+              if (disable_hpack_dynamic_table) {
+                ++enabled_options;
+              }
+              if (client_supports_stateless_rejects) {
+                ++enabled_options;
+              }
+              if (server_uses_stateless_rejects_if_peer_supported) {
+                ++enabled_options;
+              }
+              if (use_cheap_stateless_reject) {
+                ++enabled_options;
+              }
+              CHECK_GE(kMaxEnabledOptions, enabled_options);
+              if (enabled_options > max_enabled_options) {
+                max_enabled_options = enabled_options;
+              }
 
-                  // Run tests with no options, a single option, or all the
-                  // options enabled to avoid a combinatorial explosion.
-                  if (enabled_options > 1 &&
-                      enabled_options < kMaxEnabledOptions) {
+              // Run tests with no options, a single option, or all the
+              // options enabled to avoid a combinatorial explosion.
+              if (enabled_options > 1 && enabled_options < kMaxEnabledOptions) {
+                continue;
+              }
+
+              for (const QuicVersionVector& client_versions : version_buckets) {
+                CHECK(!client_versions.empty());
+                if (FilterSupportedVersions(client_versions).empty()) {
+                  continue;
+                }
+                // Add an entry for server and client supporting all
+                // versions.
+                params.push_back(TestParams(
+                    client_versions, all_supported_versions,
+                    client_versions.front(), client_supports_stateless_rejects,
+                    server_uses_stateless_rejects_if_peer_supported,
+                    congestion_control_tag, disable_hpack_dynamic_table,
+                    force_hol_blocking, use_cheap_stateless_reject));
+
+                // Run version negotiation tests tests with no options, or
+                // all the options enabled to avoid a combinatorial
+                // explosion.
+                if (enabled_options > 1 &&
+                    enabled_options < kMaxEnabledOptions) {
+                  continue;
+                }
+
+                // Test client supporting all versions and server supporting
+                // 1 version. Simulate an old server and exercise version
+                // downgrade in the client. Protocol negotiation should
+                // occur.  Skip the i = 0 case because it is essentially the
+                // same as the default case.
+                for (size_t i = 1; i < client_versions.size(); ++i) {
+                  QuicVersionVector server_supported_versions;
+                  server_supported_versions.push_back(client_versions[i]);
+                  if (FilterSupportedVersions(server_supported_versions)
+                          .empty()) {
                     continue;
                   }
-
-                  for (const QuicVersionVector& client_versions :
-                       version_buckets) {
-                    CHECK(!client_versions.empty());
-                    if (FilterSupportedVersions(client_versions).empty()) {
-                      continue;
-                    }
-                    // Add an entry for server and client supporting all
-                    // versions.
-                    params.push_back(TestParams(
-                        client_versions, all_supported_versions,
-                        client_versions.front(),
-                        client_supports_stateless_rejects,
-                        server_uses_stateless_rejects_if_peer_supported,
-                        congestion_control_tag, disable_hpack_dynamic_table,
-                        force_hol_blocking, use_cheap_stateless_reject,
-                        connection_id_big_endian_client,
-                        connection_id_big_endian_server));
-
-                    // Run version negotiation tests tests with no options, or
-                    // all the options enabled to avoid a combinatorial
-                    // explosion.
-                    if (enabled_options > 1 &&
-                        enabled_options < kMaxEnabledOptions) {
-                      continue;
-                    }
-
-                    // Test client supporting all versions and server supporting
-                    // 1 version. Simulate an old server and exercise version
-                    // downgrade in the client. Protocol negotiation should
-                    // occur.  Skip the i = 0 case because it is essentially the
-                    // same as the default case.
-                    for (size_t i = 1; i < client_versions.size(); ++i) {
-                      QuicVersionVector server_supported_versions;
-                      server_supported_versions.push_back(client_versions[i]);
-                      if (FilterSupportedVersions(server_supported_versions)
-                              .empty()) {
-                        continue;
-                      }
-                      params.push_back(TestParams(
-                          client_versions, server_supported_versions,
-                          server_supported_versions.front(),
-                          client_supports_stateless_rejects,
-                          server_uses_stateless_rejects_if_peer_supported,
-                          congestion_control_tag, disable_hpack_dynamic_table,
-                          force_hol_blocking, use_cheap_stateless_reject,
-                          connection_id_big_endian_client,
-                          connection_id_big_endian_server));
-                    }  // End of version for loop.
-                  }    // End of 2nd version for loop.
-                }      // End of connection_id_big_endian_server
-              }        // End of connection_id_big_endian_client
-            }          // End of use_cheap_stateless_reject for loop.
-          }            // End of force_hol_blocking loop.
-        }              // End of disable_hpack_dynamic_table for loop.
-      }                // End of congestion_control_tag for loop.
-    }                  // End of client_supports_stateless_rejects for loop.
+                  params.push_back(TestParams(
+                      client_versions, server_supported_versions,
+                      server_supported_versions.front(),
+                      client_supports_stateless_rejects,
+                      server_uses_stateless_rejects_if_peer_supported,
+                      congestion_control_tag, disable_hpack_dynamic_table,
+                      force_hol_blocking, use_cheap_stateless_reject));
+                }  // End of version for loop.
+              }    // End of 2nd version for loop.
+            }      // End of use_cheap_stateless_reject for loop.
+          }        // End of force_hol_blocking loop.
+        }          // End of disable_hpack_dynamic_table for loop.
+      }            // End of congestion_control_tag for loop.
+    }              // End of client_supports_stateless_rejects for loop.
     CHECK_EQ(kMaxEnabledOptions, max_enabled_options);
   }  // End of server_uses_stateless_rejects_if_peer_supported for loop.
   return params;
@@ -334,11 +308,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
 
     AddToCache("/foo", 200, kFooResponseBody);
     AddToCache("/bar", 200, kBarResponseBody);
-
-    FLAGS_quic_restart_flag_quic_big_endian_connection_id_client =
-        GetParam().connection_id_big_endian_client;
-    FLAGS_quic_restart_flag_quic_big_endian_connection_id_server =
-        GetParam().connection_id_big_endian_server;
   }
 
   ~EndToEndTest() override {
@@ -1354,7 +1323,6 @@ TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {
 }
 
 TEST_P(EndToEndTest, NegotiateCongestionControl) {
-  FLAGS_quic_reloadable_flag_quic_allow_new_bbr = true;
   ASSERT_TRUE(Initialize());
 
   // For PCC, the underlying implementation may be a stub with a
@@ -2022,8 +1990,7 @@ TEST_P(EndToEndTest, ServerSendPublicReset) {
   QuicConnectionId connection_id =
       client_->client()->session()->connection()->connection_id();
   QuicPublicResetPacket header;
-  header.public_header.connection_id =
-      GetPeerInMemoryConnectionId(connection_id);
+  header.public_header.connection_id = connection_id;
   header.public_header.reset_flag = true;
   header.public_header.version_flag = false;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
@@ -2055,8 +2022,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   QuicConnectionId incorrect_connection_id =
       client_->client()->session()->connection()->connection_id() + 1;
   QuicPublicResetPacket header;
-  header.public_header.connection_id =
-      GetPeerInMemoryConnectionId(incorrect_connection_id);
+  header.public_header.connection_id = incorrect_connection_id;
   header.public_header.reset_flag = true;
   header.public_header.version_flag = false;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
@@ -2119,9 +2085,8 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
   QuicConnectionId incorrect_connection_id =
       client_->client()->session()->connection()->connection_id() + 1;
   std::unique_ptr<QuicEncryptedPacket> packet(
-      QuicFramer::BuildVersionNegotiationPacket(
-          GetPeerInMemoryConnectionId(incorrect_connection_id),
-          server_supported_versions_));
+      QuicFramer::BuildVersionNegotiationPacket(incorrect_connection_id,
+                                                server_supported_versions_));
   testing::NiceMock<MockQuicConnectionDebugVisitor> visitor;
   client_->client()->session()->connection()->set_debug_visitor(&visitor);
   EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))

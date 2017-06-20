@@ -60,12 +60,6 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
       const QuicSocketAddress& old_address,
       const QuicSocketAddress& new_address);
 
-  // Returns whether connection id needs to be read/write in big endian.
-  // TODO(fayang): Remove this method once deprecating
-  // FLAGS_quic_restart_flag_quic_big_endian_connection_id_client and
-  // FLAGS_quic_restart_flag_quic_big_endian_connection_id_server.
-  static bool IsConnectionIdWireFormatBigEndian(Perspective perspective);
-
   // Copies |length| bytes from iov starting at offset |iov_offset| into buffer.
   // |iov| must be at least iov_offset+length total length and buffer must be
   // at least |length| long.

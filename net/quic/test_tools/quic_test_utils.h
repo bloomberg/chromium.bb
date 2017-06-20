@@ -178,10 +178,6 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
 // Compute SHA-1 hash of the supplied std::string.
 std::string Sha1Hash(QuicStringPiece data);
 
-// Given endpoint in memory |connection_id|, returns peer's in memory connection
-// id.
-QuicConnectionId GetPeerInMemoryConnectionId(QuicConnectionId connection_id);
-
 // Simple random number generator used to compute random numbers suitable
 // for pseudo-randomly dropping packets in tests.  It works by computing
 // the sha1 hash of the current seed, and using the first 64 bits as

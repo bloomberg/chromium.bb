@@ -210,14 +210,6 @@ PeerAddressChangeType QuicUtils::DetermineAddressChangeType(
 }
 
 // static
-bool QuicUtils::IsConnectionIdWireFormatBigEndian(Perspective perspective) {
-  return (perspective == Perspective::IS_CLIENT &&
-          FLAGS_quic_restart_flag_quic_big_endian_connection_id_client) ||
-         (perspective == Perspective::IS_SERVER &&
-          FLAGS_quic_restart_flag_quic_big_endian_connection_id_server);
-}
-
-// static
 void QuicUtils::CopyToBuffer(QuicIOVector iov,
                              size_t iov_offset,
                              size_t length,
