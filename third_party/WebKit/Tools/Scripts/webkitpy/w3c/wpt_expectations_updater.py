@@ -31,6 +31,7 @@ class WPTExpectationsUpdater(object):
         self.port = self.host.port_factory.get()
         self.finder = PathFinder(self.host.filesystem)
         self.ports_with_no_results = set()
+        self.ports_with_all_pass = set()
 
     def run(self, args=None):
         """Downloads text new baselines and adds test expectations lines."""
@@ -46,9 +47,9 @@ class WPTExpectationsUpdater(object):
             _log.error('No issue on current branch.')
             return 1
 
-        builds = self.get_latest_try_jobs()
-        _log.debug('Latest try jobs: %r', builds)
-        if not builds:
+        build_to_status = self.get_latest_try_jobs()
+        _log.debug('Latest try jobs: %r', build_to_status)
+        if not build_to_status:
             _log.error('No try job information was collected.')
             return 1
 
@@ -57,7 +58,11 @@ class WPTExpectationsUpdater(object):
 
         # Here we build up a dict of failing test results for all platforms.
         test_expectations = {}
-        for build in builds:
+        for build, job_status in build_to_status.iteritems():
+            if job_status.result == 'SUCCESS':
+                self.ports_with_all_pass.add(self.port_name(build))
+
+
             port_results = self.get_failing_results_dict(build)
             test_expectations = self.merge_dicts(test_expectations, port_results)
 
@@ -91,24 +96,32 @@ class WPTExpectationsUpdater(object):
 
         Returns:
             A dictionary with the structure: {
-                'full-port-name': {
-                    'expected': 'TIMEOUT',
-                    'actual': 'CRASH',
-                    'bug': 'crbug.com/11111'
+                test-with-failing-result: {
+                    'full-port-name': {
+                        'expected': 'TIMEOUT',
+                        'actual': 'CRASH',
+                        'bug': 'crbug.com/11111'
+                    }
                 }
             }
-            If there are no failing results or no results could be fetched,
+            If results could be fetched but none are failing,
             this will return an empty dictionary.
         """
+        port_name = self.port_name(build)
+        if port_name in self.ports_with_all_pass:
+            # All tests passed, so there should be no failing results.
+            return {}
         layout_test_results = self.host.buildbot.fetch_results(build)
-        port_name = self.host.builders.port_name_for_builder_name(build.builder_name)
         if layout_test_results is None:
             _log.warning('No results for build %s', build)
-            self.ports_with_no_results.add(port_name)
+            self.ports_with_no_results.add(self.port_name(build))
             return {}
         test_results = [result for result in layout_test_results.didnt_run_as_expected_results() if not result.did_pass()]
-        failing_results_dict = self.generate_results_dict(port_name, test_results)
-        return failing_results_dict
+        return self.generate_results_dict(self.port_name(build), test_results)
+
+    @memoized
+    def port_name(self, build):
+        return self.host.builders.port_name_for_builder_name(build.builder_name)
 
     def generate_results_dict(self, full_port_name, test_results):
         """Makes a dict with results for one platform.
@@ -139,9 +152,10 @@ class WPTExpectationsUpdater(object):
         Args:
             target: First dictionary, which is updated based on source.
             source: Second dictionary, not modified.
+            path: A list of keys, only used for making error messages.
 
         Returns:
-            An updated target dictionary.
+            The updated target dictionary.
         """
         path = path or []
         for key in source:
