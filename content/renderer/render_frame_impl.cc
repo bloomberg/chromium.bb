@@ -3300,10 +3300,12 @@ void RenderFrameImpl::LoadURLExternally(const blink::WebURLRequest& request,
 
     Send(new FrameHostMsg_DownloadUrl(params));
   } else {
+    // TODO(csharrison): Plumb triggering_event_info through Blink.
     OpenURL(request.Url(), IsHttpPost(request),
             GetRequestBodyForWebURLRequest(request),
             GetWebURLRequestHeaders(request), referrer, policy,
-            should_replace_current_entry, false);
+            should_replace_current_entry, false,
+            blink::WebTriggeringEventInfo::kUnknown);
   }
 }
 
@@ -3456,6 +3458,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(blink::WebDataSource* data_source,
     info.is_history_navigation_in_new_child_frame =
         pending_navigation_info_->history_navigation_in_new_child_frame;
     info.is_client_redirect = pending_navigation_info_->client_redirect;
+    info.triggering_event_info =
+        pending_navigation_info_->triggering_event_info;
     info.is_cache_disabled = pending_navigation_info_->cache_disabled;
     info.form = pending_navigation_info_->form;
     info.source_location = pending_navigation_info_->source_location;
@@ -5313,7 +5317,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     OpenURL(url, IsHttpPost(info.url_request),
             GetRequestBodyForWebURLRequest(info.url_request),
             GetWebURLRequestHeaders(info.url_request), referrer,
-            info.default_policy, info.replaces_current_history_item, false);
+            info.default_policy, info.replaces_current_history_item, false,
+            info.triggering_event_info);
     return blink::kWebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
@@ -5346,7 +5351,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
         OpenURL(url, IsHttpPost(info.url_request),
                 GetRequestBodyForWebURLRequest(info.url_request),
                 GetWebURLRequestHeaders(info.url_request), referrer,
-                info.default_policy, info.replaces_current_history_item, true);
+                info.default_policy, info.replaces_current_history_item, true,
+                info.triggering_event_info);
         // Suppress the load in Blink but mark the frame as loading.
         return blink::kWebNavigationPolicyHandledByClientForInitialHistory;
       } else {
@@ -5411,7 +5417,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
               GetRequestBodyForWebURLRequest(info.url_request),
               GetWebURLRequestHeaders(info.url_request),
               send_referrer ? referrer : Referrer(), info.default_policy,
-              info.replaces_current_history_item, false);
+              info.replaces_current_history_item, false,
+              info.triggering_event_info);
       return blink::kWebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
@@ -5453,7 +5460,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     OpenURL(url, IsHttpPost(info.url_request),
             GetRequestBodyForWebURLRequest(info.url_request),
             GetWebURLRequestHeaders(info.url_request), Referrer(),
-            info.default_policy, info.replaces_current_history_item, false);
+            info.default_policy, info.replaces_current_history_item, false,
+            info.triggering_event_info);
     return blink::kWebNavigationPolicyIgnore;
   }
 
@@ -5872,7 +5880,8 @@ void RenderFrameImpl::OpenURL(
     const Referrer& referrer,
     WebNavigationPolicy policy,
     bool should_replace_current_entry,
-    bool is_history_navigation_in_new_child) {
+    bool is_history_navigation_in_new_child,
+    blink::WebTriggeringEventInfo triggering_event_info) {
   FrameHostMsg_OpenURL_Params params;
   params.url = url;
   params.uses_post = uses_post;
@@ -5880,6 +5889,7 @@ void RenderFrameImpl::OpenURL(
   params.extra_headers = extra_headers;
   params.referrer = referrer;
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
+  params.triggering_event_info = triggering_event_info;
 
   if (IsBrowserInitiated(pending_navigation_params_.get())) {
     // This is necessary to preserve the should_replace_current_entry value on
@@ -6866,6 +6876,7 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
       history_navigation_in_new_child_frame(
           info.is_history_navigation_in_new_child_frame),
       client_redirect(info.is_client_redirect),
+      triggering_event_info(info.triggering_event_info),
       cache_disabled(info.is_cache_disabled),
       form(info.form),
       source_location(info.source_location) {}

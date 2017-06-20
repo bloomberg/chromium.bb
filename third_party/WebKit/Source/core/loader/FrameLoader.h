@@ -49,6 +49,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashSet.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+#include "public/web/WebTriggeringEventInfo.h"
 
 #include <memory>
 
@@ -192,6 +193,7 @@ class CORE_EXPORT FrameLoader final {
       NavigationPolicy,
       FrameLoadType,
       bool is_client_redirect,
+      WebTriggeringEventInfo,
       HTMLFormElement*);
 
   // Like ShouldContinueForNavigationPolicy, but should be used when following

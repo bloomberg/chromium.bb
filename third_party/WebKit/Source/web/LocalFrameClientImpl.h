@@ -114,6 +114,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       NavigationPolicy,
       bool should_replace_current_entry,
       bool is_client_redirect,
+      WebTriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition should_bypass_main_world_csp) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;

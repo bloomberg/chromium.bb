@@ -48,6 +48,7 @@
 #include "WebNavigatorContentUtilsClient.h"
 #include "WebSandboxFlags.h"
 #include "WebTextDirection.h"
+#include "WebTriggeringEventInfo.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebColor.h"
@@ -327,6 +328,7 @@ class BLINK_EXPORT WebFrameClient {
     bool replaces_current_history_item;
     bool is_history_navigation_in_new_child_frame;
     bool is_client_redirect;
+    WebTriggeringEventInfo triggering_event_info;
     WebFormElement form;
     bool is_cache_disabled;
     WebSourceLocation source_location;
@@ -346,6 +348,7 @@ class BLINK_EXPORT WebFrameClient {
           replaces_current_history_item(false),
           is_history_navigation_in_new_child_frame(false),
           is_client_redirect(false),
+          triggering_event_info(WebTriggeringEventInfo::kUnknown),
           is_cache_disabled(false),
           should_check_main_world_content_security_policy(
               kWebContentSecurityPolicyDispositionCheck),

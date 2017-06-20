@@ -55,6 +55,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebTriggeringEventInfo.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {
@@ -130,6 +131,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       NavigationPolicy,
       bool should_replace_current_entry,
       bool is_client_redirect,
+      WebTriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition
           should_check_main_world_content_security_policy) = 0;

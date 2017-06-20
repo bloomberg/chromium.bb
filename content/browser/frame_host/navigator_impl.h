@@ -64,16 +64,18 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                               bool is_same_document_history_load) override;
   bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
                              const GURL& default_url) override;
-  void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
-                      const GURL& url,
-                      bool uses_post,
-                      const scoped_refptr<ResourceRequestBodyImpl>& body,
-                      const std::string& extra_headers,
-                      const Referrer& referrer,
-                      WindowOpenDisposition disposition,
-                      bool force_new_process_for_new_contents,
-                      bool should_replace_current_entry,
-                      bool user_gesture) override;
+  void RequestOpenURL(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url,
+      bool uses_post,
+      const scoped_refptr<ResourceRequestBodyImpl>& body,
+      const std::string& extra_headers,
+      const Referrer& referrer,
+      WindowOpenDisposition disposition,
+      bool force_new_process_for_new_contents,
+      bool should_replace_current_entry,
+      bool user_gesture,
+      blink::WebTriggeringEventInfo triggering_event_info) override;
   void RequestTransferURL(RenderFrameHostImpl* render_frame_host,
                           const GURL& url,
                           SiteInstance* source_site_instance,
