@@ -1234,7 +1234,7 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) {
   // FIXME: Handle table/inline-table with a caption.
   if (element_layout_object->IsBoxModelObject() ||
       element_layout_object->IsBR())
-    element_layout_object->AbsoluteQuads(quads);
+    element_layout_object->AbsoluteQuads(quads, kUseTransforms);
 }
 
 ClientRectList* Element::getClientRects() {
