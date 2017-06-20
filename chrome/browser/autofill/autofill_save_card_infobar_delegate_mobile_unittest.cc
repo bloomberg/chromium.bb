@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -60,6 +61,11 @@ class AutofillSaveCardInfoBarDelegateMobileTest
       bool is_uploading,
       prefs::PreviousSaveCreditCardPromptUserDecision
           previous_save_credit_card_prompt_user_decision);
+  std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegateWithLegalMessage(
+      bool is_uploading,
+      std::string legal_message_string,
+      prefs::PreviousSaveCreditCardPromptUserDecision
+          previous_save_credit_card_prompt_user_decision);
 
   std::unique_ptr<TestPersonalDataManager> personal_data_;
 
@@ -101,9 +107,26 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegate(
     bool is_uploading,
     prefs::PreviousSaveCreditCardPromptUserDecision
         previous_save_credit_card_prompt_user_decision) {
-  base::HistogramTester histogram_tester;
+  return CreateDelegateWithLegalMessage(
+      is_uploading, "", previous_save_credit_card_prompt_user_decision);
+}
+
+std::unique_ptr<ConfirmInfoBarDelegate>
+AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
+    bool is_uploading,
+    std::string legal_message_string,
+    prefs::PreviousSaveCreditCardPromptUserDecision
+        previous_save_credit_card_prompt_user_decision) {
   CreditCard credit_card;
   std::unique_ptr<base::DictionaryValue> legal_message;
+  if (!legal_message_string.empty()) {
+    std::unique_ptr<base::Value> value(
+        base::JSONReader::Read(legal_message_string));
+    EXPECT_TRUE(value);
+    base::DictionaryValue* dictionary;
+    EXPECT_TRUE(value->GetAsDictionary(&dictionary));
+    legal_message = dictionary->CreateDeepCopy();
+  }
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new AutofillSaveCardInfoBarDelegateMobile(
           is_uploading, credit_card, std::move(legal_message),
@@ -125,9 +148,6 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegate(
                 prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
       break;
   }
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CreditCardInfoBar" + destination + previous_response,
-      AutofillMetrics::INFOBAR_SHOWN, 1);
   return delegate;
 }
 
@@ -135,17 +155,29 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegate(
 TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Local) {
   ::testing::InSequence dummy;
 
+  // Infobar is shown.
+  {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
+        /* is_uploading= */ false,
+        prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE));
+
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Local",
+                                        AutofillMetrics::INFOBAR_SHOWN, 1);
+  }
+
   // Accept the infobar.
   {
     std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
         /* is_uploading= */ false,
-        prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE));
+        prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED));
     EXPECT_CALL(*personal_data_, SaveImportedCreditCard(_));
 
     base::HistogramTester histogram_tester;
     EXPECT_TRUE(infobar->Accept());
-    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Local",
-                                        AutofillMetrics::INFOBAR_ACCEPTED, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.CreditCardInfoBar.Local.PreviouslyDenied",
+        AutofillMetrics::INFOBAR_ACCEPTED, 1);
   }
 
   // Cancel the infobar.
@@ -192,6 +224,59 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Local) {
 TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Server) {
   ::testing::InSequence dummy;
 
+  // Infobar is shown.
+  {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
+        /* is_uploading= */ true,
+        prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE));
+
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
+                                        AutofillMetrics::INFOBAR_SHOWN, 1);
+  }
+
+  // Infobar is still shown when the legal message is successfully parsed.
+  {
+    base::HistogramTester histogram_tester;
+    std::string good_legal_message =
+        "{"
+        "  \"line\" : [ {"
+        "     \"template\": \"This is the entire message.\""
+        "  } ]"
+        "}";
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegateWithLegalMessage(
+            /* is_uploading= */ true, std::move(good_legal_message),
+            prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED));
+
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.CreditCardInfoBar.Server.PreviouslyDenied",
+        AutofillMetrics::INFOBAR_SHOWN, 1);
+  }
+
+  // Infobar is not shown because the provided legal message is invalid.
+  {
+    base::HistogramTester histogram_tester;
+    // Legal message is invalid because it's missing the url.
+    std::string bad_legal_message =
+        "{"
+        "  \"line\" : [ {"
+        "     \"template\": \"Panda {0}.\","
+        "     \"template_parameter\": [ {"
+        "        \"display_text\": \"bear\""
+        "     } ]"
+        "  } ]"
+        "}";
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegateWithLegalMessage(
+            /* is_uploading= */ true, std::move(bad_legal_message),
+            prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED));
+
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.CreditCardInfoBar.Server.PreviouslyDenied",
+        AutofillMetrics::INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE, 1);
+  }
+
   // Accept the infobar.
   {
     std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
@@ -201,8 +286,9 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Server) {
 
     base::HistogramTester histogram_tester;
     EXPECT_TRUE(infobar->Accept());
-    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
-                                        AutofillMetrics::INFOBAR_ACCEPTED, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.CreditCardInfoBar.Server.PreviouslyDenied",
+        AutofillMetrics::INFOBAR_ACCEPTED, 1);
   }
 
   // Cancel the infobar.

@@ -283,6 +283,9 @@ class AutofillMetrics {
     INFOBAR_DENIED,     // The user explicitly denied the infobar.
     INFOBAR_IGNORED,    // The user completely ignored the infobar (logged on
                         // tab close).
+    INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE,  // We didn't show the infobar
+                                              // because the provided legal
+                                              // message was invalid.
     NUM_INFO_BAR_METRICS,
   };
 

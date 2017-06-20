@@ -206,10 +206,15 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     bool should_cvc_be_requested,
     const base::Closure& callback) {
 #if defined(OS_ANDROID)
-  InfoBarService::FromWebContents(web_contents())
-      ->AddInfoBar(CreateSaveCardInfoBarMobile(
+  std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
+      save_card_info_bar_delegate_mobile =
           base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
-              true, card, std::move(legal_message), callback, GetPrefs())));
+              true, card, std::move(legal_message), callback, GetPrefs());
+  if (save_card_info_bar_delegate_mobile->LegalMessagesParsedSuccessfully()) {
+    InfoBarService::FromWebContents(web_contents())
+        ->AddInfoBar(CreateSaveCardInfoBarMobile(
+            std::move(save_card_info_bar_delegate_mobile)));
+  }
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
