@@ -538,6 +538,8 @@ blink_core_sources("css") {
     "resolver/FilterOperationResolver.h",
     "resolver/FontBuilder.cpp",
     "resolver/FontBuilder.h",
+    "resolver/FontStyleResolver.cpp",
+    "resolver/FontStyleResolver.h",
     "resolver/MatchRequest.h",
     "resolver/MatchResult.cpp",
     "resolver/MatchResult.h",
