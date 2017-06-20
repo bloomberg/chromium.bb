@@ -31,7 +31,10 @@ using ::AutofillTypeFromAutofillUIType;
 
 @interface ContactInfoEditCoordinator ()
 
-@property(nonatomic, strong) PaymentRequestEditViewController* viewController;
+@property(nonatomic, strong) UINavigationController* viewController;
+
+@property(nonatomic, strong)
+    PaymentRequestEditViewController* editViewController;
 
 @property(nonatomic, strong) ContactInfoEditMediator* mediator;
 
@@ -43,25 +46,33 @@ using ::AutofillTypeFromAutofillUIType;
 @synthesize paymentRequest = _paymentRequest;
 @synthesize delegate = _delegate;
 @synthesize viewController = _viewController;
+@synthesize editViewController = _editViewController;
 @synthesize mediator = _mediator;
 
 - (void)start {
-  self.viewController = [[PaymentRequestEditViewController alloc] init];
+  self.editViewController = [[PaymentRequestEditViewController alloc] init];
   // TODO(crbug.com/602666): Title varies depending on what field is missing.
   // e.g., Add Email vs. Add Phone Number.
   NSString* title =
       self.profile
           ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL)
           : l10n_util::GetNSString(IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL);
-  [self.viewController setTitle:title];
-  [self.viewController setDelegate:self];
-  [self.viewController setValidatorDelegate:self];
+  [self.editViewController setTitle:title];
+  [self.editViewController setDelegate:self];
+  [self.editViewController setValidatorDelegate:self];
   self.mediator = [[ContactInfoEditMediator alloc]
       initWithPaymentRequest:self.paymentRequest
                      profile:self.profile];
-  [self.mediator setConsumer:self.viewController];
-  [self.viewController setDataSource:self.mediator];
-  [self.viewController loadModel];
+  [self.mediator setConsumer:self.editViewController];
+  [self.editViewController setDataSource:self.mediator];
+  [self.editViewController loadModel];
+
+  self.viewController = [[UINavigationController alloc]
+      initWithRootViewController:self.editViewController];
+  [self.viewController setModalPresentationStyle:UIModalPresentationFormSheet];
+  [self.viewController
+      setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+  [self.viewController setNavigationBarHidden:YES];
 
   [[self baseViewController] presentViewController:self.viewController
                                           animated:YES
@@ -72,6 +83,7 @@ using ::AutofillTypeFromAutofillUIType;
   [[self.viewController presentingViewController]
       dismissViewControllerAnimated:YES
                          completion:nil];
+  self.editViewController = nil;
   self.viewController = nil;
 }
 
