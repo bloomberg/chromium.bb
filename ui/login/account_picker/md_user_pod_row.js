@@ -162,6 +162,16 @@ cr.define('login', function() {
   }
 
   /**
+   * Helper function to switch directions for right-to-left languages.
+   * @param {!HTMLElement} el Element whose style needs to change.
+   */
+  function switchDirection(el) {
+    var leftStyle = el.style.left;
+    el.style.left = el.style.right;
+    el.style.right = leftStyle;
+  }
+
+  /**
    * Creates a user pod.
    * @constructor
    * @extends {HTMLDivElement}
@@ -3885,18 +3895,21 @@ cr.define('login', function() {
     handleAfterPodPlacement_: function() {
       var pods = this.pods;
       for (var pod of pods) {
-        if (pods.length > POD_ROW_LIMIT && pod != this.mainPod_)
+        if (pod.getPodStyle() != UserPod.Style.LARGE)
           continue;
         // Make sure that user name on each large pod is centered and extra
         // long names don't exceed maximum pod width.
         var nameArea = pod.querySelector('.name-container');
         var leftMargin = (CROS_POD_WIDTH - pod.nameElement.offsetWidth) / 2;
-        if (leftMargin > 0)
+        if (leftMargin > 0) {
           nameArea.style.left = cr.ui.toCssPx(leftMargin);
-        else {
+          nameArea.style.right = 'auto';
+        } else {
           pod.nameElement.style.width = cr.ui.toCssPx(CROS_POD_WIDTH);
           nameArea.style.left = cr.ui.toCssPx(0);
+          nameArea.style.right = 'auto';
         }
+
         // Update info container area for public session pods.
         if (pod.isPublicSessionPod) {
           var infoElement = pod.querySelector('.info');
@@ -3905,11 +3918,15 @@ cr.define('login', function() {
           var infoLeftMargin = (CROS_POD_WIDTH - totalWidth) / 2;
           if (infoLeftMargin > 0) {
             infoIcon.style.left = cr.ui.toCssPx(infoLeftMargin);
+            infoIcon.style.right = 'auto';
             infoElement.style.left =
                 cr.ui.toCssPx(infoLeftMargin + PUBLIC_SESSION_ICON_WIDTH);
+            infoElement.style.right = 'auto';
           } else {
             infoIcon.style.left = cr.ui.toCssPx(0);
+            infoIcon.style.right = 'auto';
             infoElement.style.left = cr.ui.toCssPx(PUBLIC_SESSION_ICON_WIDTH);
+            infoElement.style.right = 'auto';
             infoElement.style.width = cr.ui.toCssPx(
                 CROS_POD_WIDTH - PUBLIC_SESSION_ICON_WIDTH -
                 infoElement.style.paddingLeft);
@@ -3919,6 +3936,7 @@ cr.define('login', function() {
           if (pod.expanded)
             this.centerPod_(pod, PUBLIC_EXPANDED_WIDTH, PUBLIC_EXPANDED_HEIGHT);
         }
+
         // Update action box menu position to ensure it doesn't overlap with
         // elements outside the pod.
         var actionBoxMenu = pod.querySelector('.action-box-menu');
@@ -3944,6 +3962,7 @@ cr.define('login', function() {
           actionBoxMenu.style.top =
               cr.ui.toCssPx(actionBoxButton.offsetHeight + MENU_TOP_PADDING);
         }
+
         // Update password container width based on the visibility of the
         // custom icon container.
         pod.querySelector('.password-container')
@@ -3954,11 +3973,24 @@ cr.define('login', function() {
             pod.querySelector('.action-box-button.ripple-circle');
         actionBoxRippleEffect.style.left = cr.ui.toCssPx(
             pod.nameElement.offsetWidth + actionBoxButton.style.marginLeft);
+        actionBoxRippleEffect.style.right = 'auto';
         actionBoxRippleEffect.style.top =
             cr.ui.toCssPx(actionBoxButton.style.marginTop);
         // Adjust the vertical position of the pod if pin keyboard is shown.
         if (pod.isPinShown() && !this.isScreenShrinked_())
           pod.top = (this.screenSize.height - CROS_POD_HEIGHT_WITH_PIN) / 2;
+
+        // In the end, switch direction of the above elements if right-to-left
+        // language is used.
+        if (isRTL()) {
+          switchDirection(nameArea);
+          switchDirection(actionBoxMenu);
+          switchDirection(actionBoxRippleEffect);
+          if (pod.isPublicSessionPod) {
+            switchDirection(pod.querySelector('.info'));
+            switchDirection(pod.querySelector('.learn-more'));
+          }
+        }
       }
       // Update the position of the sign-in banner if it's shown.
       if ($('signin-banner').textContent.length != 0) {
