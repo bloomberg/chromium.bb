@@ -75,6 +75,11 @@ def GetAPIKeyPhysicalWebTest():
   return _GetToken('GOOGLE_API_KEY_PHYSICAL_WEB_TEST')
 
 
+def GetAPIKeyRemoting():
+  """Returns the simple API key."""
+  return _GetToken('GOOGLE_API_KEY_REMOTING')
+
+
 def GetClientID(client_name):
   """Returns the OAuth 2.0 client ID for the client of the given name."""
   return _GetToken('GOOGLE_CLIENT_ID_%s' % client_name)
@@ -87,6 +92,7 @@ def GetClientSecret(client_name):
 
 if __name__ == "__main__":
   print 'GOOGLE_API_KEY=%s' % GetAPIKey()
+  print 'GOOGLE_API_KEY_REMOTING=%s' % GetAPIKeyRemoting()
   print 'GOOGLE_CLIENT_ID_MAIN=%s' % GetClientID('MAIN')
   print 'GOOGLE_CLIENT_SECRET_MAIN=%s' % GetClientSecret('MAIN')
   print 'GOOGLE_CLIENT_ID_CLOUD_PRINT=%s' % GetClientID('CLOUD_PRINT')
