@@ -175,6 +175,10 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
                                         defer:NO]);
     [popup_ setBackgroundColor:[NSColor clearColor]];
     [popup_ setOpaque:NO];
+    bool narrow_popup =
+        base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown);
+    if (narrow_popup)
+      [popup_ setHasShadow:YES];
 
     // Use a flipped view to pin the matrix top the top left. This is needed
     // for animated resize.
@@ -196,14 +200,16 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
                                                   forDarkTheme:is_dark_theme]);
     [background_view_ addSubview:matrix_];
 
-    top_separator_view_.reset(
-        [[OmniboxPopupTopSeparatorView alloc] initWithFrame:NSZeroRect]);
-    [contentView addSubview:top_separator_view_];
+    if (!narrow_popup) {
+      top_separator_view_.reset(
+          [[OmniboxPopupTopSeparatorView alloc] initWithFrame:NSZeroRect]);
+      [contentView addSubview:top_separator_view_];
 
-    bottom_separator_view_.reset([[OmniboxPopupBottomSeparatorView alloc]
-        initWithFrame:NSZeroRect
-         forDarkTheme:is_dark_theme]);
-    [contentView addSubview:bottom_separator_view_];
+      bottom_separator_view_.reset([[OmniboxPopupBottomSeparatorView alloc]
+          initWithFrame:NSZeroRect
+           forDarkTheme:is_dark_theme]);
+      [contentView addSubview:bottom_separator_view_];
+    }
 
     // TODO(dtseng): Ignore until we provide NSAccessibility support.
     [popup_ accessibilitySetOverrideValue:NSAccessibilityUnknownRole
