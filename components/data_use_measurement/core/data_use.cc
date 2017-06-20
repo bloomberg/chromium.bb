@@ -13,6 +13,11 @@ DataUse::DataUse(TrafficType traffic_type)
 
 DataUse::~DataUse() {}
 
+void DataUse::IncrementTotalBytes(int64_t bytes_received, int64_t bytes_sent) {
+  total_bytes_received_ += bytes_received;
+  total_bytes_sent_ += bytes_sent;
+}
+
 void DataUse::MergeFrom(const DataUse& other) {
   // Traffic type need not be same while merging. One of the data use created
   // when mainframe is created could have UNKNOWN traffic type, and later merged

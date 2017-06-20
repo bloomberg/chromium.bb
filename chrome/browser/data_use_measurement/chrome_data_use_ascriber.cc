@@ -138,12 +138,8 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
       return data_use_recorders_.end();
     }
 
-    const auto entry = frame_iter->second;
-    request->SetUserData(
-        DataUseRecorderEntryAsUserData::kUserDataKey,
-        base::MakeUnique<DataUseRecorderEntryAsUserData>(entry));
-    entry->AddPendingURLRequest(request);
-    return entry;
+    AscribeRecorderWithRequest(request, frame_iter->second);
+    return frame_iter->second;
   }
 
   // Create a new DataUseRecorder for all other requests.
@@ -376,16 +372,10 @@ void ChromeDataUseAscriber::DidFinishNavigation(int render_process_id,
   if (is_same_page_navigation) {
     old_frame_entry->MergeFrom(&(*entry));
 
-    for (auto* request : entry->pending_url_requests()) {
-      request->RemoveUserData(DataUseRecorderEntryAsUserData::kUserDataKey);
-      request->SetUserData(
-          DataUseRecorderEntryAsUserData::kUserDataKey,
-          base::MakeUnique<DataUseRecorderEntryAsUserData>(old_frame_entry));
-      old_frame_entry->AddPendingURLRequest(request);
-    }
+    for (auto* request : entry->pending_url_requests())
+      AscribeRecorderWithRequest(request, old_frame_entry);
 
     entry->RemoveAllPendingURLRequests();
-
     data_use_recorders_.erase(entry);
   } else {
     if (old_frame_entry->IsDataUseComplete()) {
@@ -434,13 +424,18 @@ ChromeDataUseAscriber::CreateNewDataUseRecorder(
     DataUse::TrafficType traffic_type) {
   DataUseRecorderEntry entry =
       data_use_recorders_.emplace(data_use_recorders_.end(), traffic_type);
-  if (request) {
-    entry->AddPendingURLRequest(request);
-    request->SetUserData(
-        DataUseRecorderEntryAsUserData::kUserDataKey,
-        base::MakeUnique<DataUseRecorderEntryAsUserData>(entry));
-  }
+  if (request)
+    AscribeRecorderWithRequest(request, entry);
   return entry;
+}
+
+void ChromeDataUseAscriber::AscribeRecorderWithRequest(
+    net::URLRequest* request,
+    DataUseRecorderEntry recorder) {
+  recorder->AddPendingURLRequest(request);
+  request->SetUserData(
+      DataUseRecorderEntryAsUserData::kUserDataKey,
+      base::MakeUnique<DataUseRecorderEntryAsUserData>(recorder));
 }
 
 void ChromeDataUseAscriber::WasShownOrHidden(int main_render_process_id,
