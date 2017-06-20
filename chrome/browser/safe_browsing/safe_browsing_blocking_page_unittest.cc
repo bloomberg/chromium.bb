@@ -208,14 +208,14 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     sb_service_factory.SetTestUIManager(ui_manager_.get());
     auto* safe_browsing_service =
         sb_service_factory.CreateSafeBrowsingService();
+    TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
+        safe_browsing_service);
+    g_browser_process->safe_browsing_service()->Initialize();
     // A profile was created already but SafeBrowsingService wasn't around to
     // get notified of it, so include that notification now.
     safe_browsing_service->AddPrefService(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext())
             ->GetPrefs());
-    TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
-        safe_browsing_service);
-    g_browser_process->safe_browsing_service()->Initialize();
   }
 
   void TearDown() override {
