@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <memory>
 #include "core/frame/UseCounter.h"
+#include "core/layout/GridLayoutUtils.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/paint/GridPainter.h"
@@ -1547,50 +1548,15 @@ static LayoutUnit ComputeOverflowAlignmentOffset(OverflowAlignment overflow,
   return LayoutUnit();
 }
 
-LayoutUnit LayoutGrid::MarginLogicalSizeForChild(
-    GridTrackSizingDirection direction,
-    const LayoutBox& child) const {
-  return FlowAwareDirectionForChild(child, direction) == kForColumns
-             ? child.MarginLogicalWidth()
-             : child.MarginLogicalHeight();
-}
-
-LayoutUnit LayoutGrid::ComputeMarginLogicalSizeForChild(
-    MarginDirection for_direction,
-    const LayoutBox& child) const {
-  if (!child.StyleRef().HasMargin())
-    return LayoutUnit();
-
-  bool is_row_axis = for_direction == kInlineDirection;
-  LayoutUnit margin_start;
-  LayoutUnit margin_end;
-  LayoutUnit logical_size =
-      is_row_axis ? child.LogicalWidth() : child.LogicalHeight();
-  Length margin_start_length = is_row_axis ? child.StyleRef().MarginStart()
-                                           : child.StyleRef().MarginBefore();
-  Length margin_end_length = is_row_axis ? child.StyleRef().MarginEnd()
-                                         : child.StyleRef().MarginAfter();
-  child.ComputeMarginsForDirection(
-      for_direction, this, child.ContainingBlockLogicalWidthForContent(),
-      logical_size, margin_start, margin_end, margin_start_length,
-      margin_end_length);
-
-  return margin_start + margin_end;
-}
-
 LayoutUnit LayoutGrid::AvailableAlignmentSpaceForChildBeforeStretching(
     LayoutUnit grid_area_breadth_for_child,
     const LayoutBox& child) const {
   // Because we want to avoid multiple layouts, stretching logic might be
   // performed before children are laid out, so we can't use the child cached
-  // values. Hence, we need to compute margins in order to determine the
+  // values. Hence, we may need to compute margins in order to determine the
   // available height before stretching.
-  GridTrackSizingDirection child_block_flow_direction =
-      FlowAwareDirectionForChild(child, kForRows);
   return grid_area_breadth_for_child -
-         (child.NeedsLayout()
-              ? ComputeMarginLogicalSizeForChild(kBlockDirection, child)
-              : MarginLogicalSizeForChild(child_block_flow_direction, child));
+         GridLayoutUtils::MarginLogicalHeightForChild(*this, child);
 }
 
 StyleSelfAlignmentData LayoutGrid::AlignSelfForChild(
