@@ -146,7 +146,6 @@ extern const char kChromeUICastURL[];
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIDiscardsURL[];
 #endif
 
@@ -257,6 +256,11 @@ extern const char kChromeUIWorkersHost[];
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 extern const char kChromeUIPrintHost[];
 #endif  // ENABLE_PRINT_PREVIEW
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+extern const char kChromeUISigninDiceInternalsHost[];
+extern const char kChromeUIDiscardsHost[];
+#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 extern const char kChromeUILinuxProxyConfigHost[];

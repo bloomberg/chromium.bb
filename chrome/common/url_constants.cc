@@ -159,7 +159,6 @@ const char kChromeUICastURL[] = "chrome://cast/";
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIDiscardsURL[] = "chrome://discards/";
 #endif
 
@@ -273,6 +272,11 @@ const char kChromeUIWorkersHost[] = "workers";
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 const char kChromeUIPrintHost[] = "print";
 #endif  // ENABLE_PRINT_PREVIEW
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+const char kChromeUIDiscardsHost[] = "discards";
+const char kChromeUISigninDiceInternalsHost[] = "signin-dice-internals";
+#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 const char kChromeUILinuxProxyConfigHost[] = "linux-proxy-config";

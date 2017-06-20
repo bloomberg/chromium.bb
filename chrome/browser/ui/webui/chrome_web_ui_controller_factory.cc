@@ -162,6 +162,7 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/md_user_manager_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_dice_internals_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
@@ -395,6 +396,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIAppLauncherPageHost && profile &&
       extensions::ExtensionSystem::Get(profile)->extension_service()) {
     return &NewWebUI<AppLauncherPageUI>;
+  }
+  // Desktop Identity Consistency is only available on Windows, Linux and macOS.
+  if (url.host() == chrome::kChromeUISigninDiceInternalsHost &&
+      !profile->IsOffTheRecord() &&
+      switches::IsAccountConsistencyDiceEnabled()) {
+    return &NewWebUI<SigninDiceInternalsUI>;
   }
 #endif  // defined(OS_CHROMEOS)
 
