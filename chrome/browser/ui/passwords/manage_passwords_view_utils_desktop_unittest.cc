@@ -26,11 +26,6 @@ namespace {
 
 enum UserType { SMART_LOCK_USER, NON_SMART_LOCK_USER };
 
-const char kPasswordManagerSettingMigrationFieldTrialName[] =
-    "PasswordManagerSettingsMigration";
-const char kEnabledPasswordManagerSettingsMigrationGroupName[] = "Enable";
-const char kDisablePasswordManagerSettingsMigrationGroupName[] = "Disable";
-
 }  // namespace
 
 class ManagePasswordsViewUtilDesktopTest : public testing::Test {
@@ -44,11 +39,6 @@ class ManagePasswordsViewUtilDesktopTest : public testing::Test {
   };
 
   Profile* profile() { return &profile_; }
-
-  void EnforcePasswordManagerSettingMigrationExperiment(const char* name) {
-    settings_migration_ = base::FieldTrialList::CreateFieldTrial(
-        kPasswordManagerSettingMigrationFieldTrialName, name);
-  }
 
   browser_sync::ProfileSyncService* GetSyncServiceForSmartLockUser() {
     browser_sync::ProfileSyncServiceMock* sync_service =
@@ -81,36 +71,19 @@ class ManagePasswordsViewUtilDesktopTest : public testing::Test {
 
 TEST_F(ManagePasswordsViewUtilDesktopTest, GetPasswordManagerSettingsStringId) {
   const struct {
-    const char* description;
-    const char* settings_migration_experiment_group;
     UserType user_type;
     int expected_setting_description_id;
   } kTestData[] = {
-      {"Smart Lock User, migration active",
-       kEnabledPasswordManagerSettingsMigrationGroupName, SMART_LOCK_USER,
-       IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE},
-      {"Smart Lock User, no migration",
-       kDisablePasswordManagerSettingsMigrationGroupName, SMART_LOCK_USER,
-       IDS_OPTIONS_PASSWORD_MANAGER_ENABLE},
-      {"Non Smart Lock User, no migration",
-       kDisablePasswordManagerSettingsMigrationGroupName, NON_SMART_LOCK_USER,
-       IDS_OPTIONS_PASSWORD_MANAGER_ENABLE},
-      {"Non Smart Lock User, migration",
-       kEnabledPasswordManagerSettingsMigrationGroupName, NON_SMART_LOCK_USER,
-       IDS_OPTIONS_PASSWORD_MANAGER_ENABLE},
+      {SMART_LOCK_USER, IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE},
+      {NON_SMART_LOCK_USER, IDS_OPTIONS_PASSWORD_MANAGER_ENABLE},
   };
 
   for (const auto& test_case : kTestData) {
-    base::FieldTrialList field_trial_list(
-        base::MakeUnique<base::MockEntropyProvider>());
-    SCOPED_TRACE(testing::Message(test_case.description));
     browser_sync::ProfileSyncService* sync_service;
     if (test_case.user_type == SMART_LOCK_USER)
       sync_service = GetSyncServiceForSmartLockUser();
     else
       sync_service = GetSyncServiceForNonSmartLockUser();
-    EnforcePasswordManagerSettingMigrationExperiment(
-        test_case.settings_migration_experiment_group);
     EXPECT_EQ(
         l10n_util::GetStringUTF16(test_case.expected_setting_description_id),
         l10n_util::GetStringUTF16(

@@ -15,7 +15,6 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -30,7 +29,6 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service_factory.h"
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_manager_setting_migrator_service_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
@@ -215,17 +213,6 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
       ->SetupInvalidationsOnProfileLoad(invalidation_service);
   ios::AccountReconcilorFactory::GetForBrowserState(browser_state);
   DesktopPromotionSyncServiceFactory::GetForBrowserState(browser_state);
-
-  // This service is responsible for migration of the legacy password manager
-  // preference which controls behaviour of Chrome to the new preference which
-  // controls password management behaviour on Chrome and Android. After
-  // migration will be performed for all users it's planned to remove the
-  // migration code, rough time estimates are Q1 2016.
-  IOSChromePasswordManagerSettingMigratorServiceFactory::GetForBrowserState(
-      browser_state)
-      ->InitializeMigration(
-          IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-              browser_state));
 }
 
 void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(

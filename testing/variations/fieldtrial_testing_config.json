@@ -2025,23 +2025,6 @@
             ]
         }
     ],
-    "PasswordManagerSettingsMigration": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enable"
-                }
-            ]
-        }
-    ],
     "PasswordMetadataFilling": [
         {
             "platforms": [

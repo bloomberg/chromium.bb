@@ -6,15 +6,13 @@
 
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_manager_settings_migration_experiment.h"
 
 int GetPasswordManagerSettingsStringId(
     const syncer::SyncService* sync_service) {
   int smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE;
   int non_smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_ENABLE;
 
-  if (password_bubble_experiment::IsSmartLockUser(sync_service) &&
-      password_manager::IsSettingsMigrationActive()) {
+  if (password_bubble_experiment::IsSmartLockUser(sync_service)) {
     return smart_lock_users_ids;
   }
   return non_smart_lock_users_ids;
