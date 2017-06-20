@@ -16,9 +16,8 @@
 
 namespace {
 
-// TODO(sorin): rename to "ChromeRecovery.exe".
 const base::FilePath::CharType kRecoveryFileName[] =
-    FILE_PATH_LITERAL("recovery.exe");
+    FILE_PATH_LITERAL("ChromeRecovery.exe");
 
 }  // namespace
 
