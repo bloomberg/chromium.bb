@@ -9,6 +9,9 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -80,8 +83,7 @@ void LoadDataWithBaseURL(Shell* window,
 
 bool NavigateToURL(Shell* window, const GURL& url) {
   NavigateToURLBlockUntilNavigationsComplete(window, url, 1);
-  if (!IsLastCommittedEntryOfPageType(window->web_contents(),
-                                      PAGE_TYPE_NORMAL))
+  if (!IsLastCommittedEntryOfPageType(window->web_contents(), PAGE_TYPE_NORMAL))
     return false;
   return window->web_contents()->GetLastCommittedURL() == url;
 }
@@ -109,14 +111,42 @@ RenderFrameHost* ConvertToRenderFrameHost(Shell* shell) {
   return shell->web_contents()->GetMainFrame();
 }
 
-ShellAddedObserver::ShellAddedObserver()
-    : shell_(NULL) {
+void LookupAndLogNameAndIdOfFirstCamera() {
+  DCHECK(BrowserMainLoop::GetInstance());
+  MediaStreamManager* media_stream_manager =
+      BrowserMainLoop::GetInstance()->media_stream_manager();
+  base::RunLoop run_loop;
+  BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          [](MediaStreamManager* media_stream_manager,
+             base::Closure quit_closure) {
+            media_stream_manager->video_capture_manager()->EnumerateDevices(
+                base::Bind(
+                    [](base::Closure quit_closure,
+                       const media::VideoCaptureDeviceDescriptors&
+                           descriptors) {
+                      if (descriptors.empty()) {
+                        LOG(WARNING) << "No camera found";
+                        return;
+                      }
+                      LOG(INFO)
+                          << "Using camera " << descriptors.front().display_name
+                          << " (" << descriptors.front().model_id << ")";
+                      quit_closure.Run();
+                    },
+                    quit_closure));
+          },
+          media_stream_manager, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+ShellAddedObserver::ShellAddedObserver() : shell_(NULL) {
   Shell::SetShellCreatedCallback(
       base::Bind(&ShellAddedObserver::ShellCreated, base::Unretained(this)));
 }
 
-ShellAddedObserver::~ShellAddedObserver() {
-}
+ShellAddedObserver::~ShellAddedObserver() {}
 
 Shell* ShellAddedObserver::GetShell() {
   if (shell_)

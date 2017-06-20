@@ -308,6 +308,13 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
     }
 #endif
 
+    if (device_descriptors_->empty())
+      LOG(WARNING) << "No camera found";
+    else {
+      LOG(INFO) << "Using camera " << device_descriptors_->front().display_name
+                << " (" << device_descriptors_->front().model_id << ")";
+    }
+
     return !device_descriptors_->empty();
   }
 
