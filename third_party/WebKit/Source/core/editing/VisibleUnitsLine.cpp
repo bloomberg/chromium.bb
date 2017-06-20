@@ -212,6 +212,21 @@ bool InSameLine(const Node& node, const VisiblePosition& visible_position) {
                     visible_position);
 }
 
+Node* FindNodeInPreviousLine(const Node& start_node,
+                             const VisiblePosition& visible_position,
+                             EditableType editable_type) {
+  // TODO(editing-dev): We should make |PreviousLeafWithSameEditability()| to
+  // take |const Node&|.
+  for (Node* runner = PreviousLeafWithSameEditability(
+           const_cast<Node*>(&start_node), editable_type);
+       runner;
+       runner = PreviousLeafWithSameEditability(runner, editable_type)) {
+    if (!InSameLine(*runner, visible_position))
+      return runner;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 // FIXME: consolidate with code in previousLinePosition.
@@ -222,13 +237,8 @@ Position PreviousRootInlineBoxCandidatePosition(
   DCHECK(visible_position.IsValid()) << visible_position;
   ContainerNode* highest_root =
       HighestEditableRoot(visible_position.DeepEquivalent(), editable_type);
-  Node* previous_node = PreviousLeafWithSameEditability(node, editable_type);
-
-  while (previous_node && InSameLine(*previous_node, visible_position)) {
-    previous_node =
-        PreviousLeafWithSameEditability(previous_node, editable_type);
-  }
-
+  Node* const previous_node =
+      FindNodeInPreviousLine(*node, visible_position, editable_type);
   for (Node* runner = previous_node; runner && !runner->IsShadowRoot();
        runner = PreviousLeafWithSameEditability(runner, editable_type)) {
     if (HighestEditableRoot(FirstPositionInOrBeforeNode(runner),
