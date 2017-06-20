@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "components/download/internal/startup_status.h"
 #include "components/download/internal/test/download_params_utils.h"
 #include "components/download/internal/test/mock_controller.h"
@@ -63,6 +64,9 @@ TEST_F(DownloadServiceImplTest, TestGetStatus) {
 
 TEST_F(DownloadServiceImplTest, TestApiPassThrough) {
   DownloadParams params = test::BuildBasicDownloadParams();
+  // TODO(xingliu): Remove the limitation of upper case guid in
+  // |download_params|, see http://crbug.com/734818.
+  params.guid = base::ToUpperASCII(params.guid);
   SchedulingParams scheduling_params;
   scheduling_params.priority = SchedulingParams::Priority::UI;
 

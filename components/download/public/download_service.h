@@ -75,7 +75,9 @@ class DownloadService : public KeyedService {
 
   // Sends the download to the service.  A callback to
   // |DownloadParams::callback| will be triggered once the download has been
-  // persisted and saved in the service
+  // persisted and saved in the service.
+  // TODO(xingliu): Remove the limitation of upper case guid in
+  // |download_params|, see http://crbug.com/734818.
   virtual void StartDownload(const DownloadParams& download_params) = 0;
 
   // Allows any feature to pause or resume downloads at will.  Paused downloads

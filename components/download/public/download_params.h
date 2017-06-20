@@ -131,6 +131,8 @@ struct DownloadParams {
   DownloadClient client;
 
   // A unique GUID that represents this download.  See |base::GenerateGUID()|.
+  // TODO(xingliu): guid in content download must be upper case, see
+  // http://crbug.com/734818.
   std::string guid;
 
   // A callback that will be notified if this download has been accepted and
