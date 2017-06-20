@@ -120,6 +120,7 @@ XFAIL_TESTS =					\
 dist_yaml_TESTS =				\
 	yaml/ar-ar-g1_harness.yaml		\
 	yaml/ar-fa_harness.yaml			\
+	yaml/back_cont_then_punc.yaml		\
 	yaml/begcaps_endcaps.yaml		\
 	yaml/capsnocont.yaml			\
 	yaml/capsword_for_back.yaml		\
