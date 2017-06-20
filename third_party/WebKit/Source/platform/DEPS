@@ -23,6 +23,7 @@ include_rules = [
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
     "+base/sys_info.h",
+    "+base/android/sys_utils.h",
     "+base/test",
     "+base/test/fuzzed_data_provider.h",
     "+base/threading/thread_task_runner_handle.h",
