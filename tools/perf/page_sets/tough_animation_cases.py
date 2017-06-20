@@ -273,3 +273,8 @@ class ToughAnimationCasesPageSet(story.StorySet):
     for url in urls_list_two:
       self.AddStory(ToughAnimationCasesPage(url, self,
                                            need_measurement_ready=False))
+
+class ToughAnimationCasesStoryExpectations(
+    story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass # No tests disabled.
