@@ -15,6 +15,9 @@
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/lazy_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -51,6 +54,7 @@ class DevToolsFileWatcher::SharedFileWatcher :
   std::set<base::FilePath> pending_paths_;
   base::Time last_event_time_;
   base::TimeDelta last_dispatch_cost_;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 DevToolsFileWatcher::SharedFileWatcher::SharedFileWatcher()
@@ -60,22 +64,26 @@ DevToolsFileWatcher::SharedFileWatcher::SharedFileWatcher()
 }
 
 DevToolsFileWatcher::SharedFileWatcher::~SharedFileWatcher() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DevToolsFileWatcher::s_shared_watcher_ = nullptr;
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::AddListener(
     DevToolsFileWatcher* watcher) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   listeners_.push_back(watcher);
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::RemoveListener(
     DevToolsFileWatcher* watcher) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = std::find(listeners_.begin(), listeners_.end(), watcher);
   listeners_.erase(it);
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::AddWatch(
     const base::FilePath& path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (watchers_.find(path) != watchers_.end())
     return;
   if (!base::FilePathWatcher::RecursiveWatchAvailable())
@@ -104,13 +112,14 @@ void DevToolsFileWatcher::SharedFileWatcher::GetModificationTimes(
 
 void DevToolsFileWatcher::SharedFileWatcher::RemoveWatch(
     const base::FilePath& path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   watchers_.erase(path);
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::DirectoryChanged(
     const base::FilePath& path,
     bool error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pending_paths_.insert(path);
   if (pending_paths_.size() > 1)
     return;  // PostDelayedTask is already pending.
@@ -122,8 +131,8 @@ void DevToolsFileWatcher::SharedFileWatcher::DirectoryChanged(
           base::TimeDelta::FromMilliseconds(kFirstThrottleTimeout) :
           last_dispatch_cost_ * 2;
 
-  BrowserThread::PostDelayedTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(
           &DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications, this),
       shedule_for);
@@ -131,6 +140,7 @@ void DevToolsFileWatcher::SharedFileWatcher::DirectoryChanged(
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pending_paths_.size())
     return;
   base::Time start = base::Time::Now();
@@ -160,30 +170,49 @@ void DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications() {
   pending_paths_.clear();
 
   for (auto* watcher : listeners_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(watcher->callback_, changed_paths,
-                                           added_paths, removed_paths));
+    watcher->client_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(watcher->callback_, changed_paths,
+                                  added_paths, removed_paths));
   }
   last_dispatch_cost_ = base::Time::Now() - start;
 }
+
+// DevToolsFileWatcher ---------------------------------------------------------
+
+namespace {
+base::SequencedTaskRunner* impl_task_runner() {
+  constexpr base::TaskTraits kImplTaskTraits = {base::MayBlock(),
+                                                base::TaskPriority::BACKGROUND};
+  static base::LazySequencedTaskRunner s_file_task_runner =
+      LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(kImplTaskTraits);
+
+  return s_file_task_runner.Get().get();
+}
+}  // namespace
 
 // static
 DevToolsFileWatcher::SharedFileWatcher*
 DevToolsFileWatcher::s_shared_watcher_ = nullptr;
 
-// DevToolsFileWatcher ---------------------------------------------------------
+// static
+void DevToolsFileWatcher::Deleter::operator()(const DevToolsFileWatcher* ptr) {
+  impl_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DevToolsFileWatcher::Destroy, base::Unretained(ptr)));
+}
 
-DevToolsFileWatcher::DevToolsFileWatcher(const WatchCallback& callback)
-    : callback_(callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&DevToolsFileWatcher::InitSharedWatcher,
-                     base::Unretained(this)));
+DevToolsFileWatcher::DevToolsFileWatcher(
+    WatchCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner)
+    : callback_(std::move(callback)),
+      client_task_runner_(std::move(callback_task_runner)) {
+  impl_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&DevToolsFileWatcher::InitSharedWatcher,
+                                base::Unretained(this)));
 }
 
 DevToolsFileWatcher::~DevToolsFileWatcher() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(impl_task_runner()->RunsTasksInCurrentSequence());
   shared_watcher_->RemoveListener(this);
 }
 
@@ -194,12 +223,22 @@ void DevToolsFileWatcher::InitSharedWatcher() {
   shared_watcher_->AddListener(this);
 }
 
-void DevToolsFileWatcher::AddWatch(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  shared_watcher_->AddWatch(path);
+void DevToolsFileWatcher::AddWatch(base::FilePath path) {
+  impl_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&DevToolsFileWatcher::AddWatchOnImpl,
+                                base::Unretained(this), std::move(path)));
 }
 
-void DevToolsFileWatcher::RemoveWatch(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  shared_watcher_->RemoveWatch(path);
+void DevToolsFileWatcher::RemoveWatch(base::FilePath path) {
+  impl_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&DevToolsFileWatcher::AddWatchOnImpl,
+                                base::Unretained(this), std::move(path)));
+}
+
+void DevToolsFileWatcher::AddWatchOnImpl(base::FilePath path) {
+  shared_watcher_->AddWatch(std::move(path));
+}
+
+void DevToolsFileWatcher::RemoveWatchOnImpl(base::FilePath path) {
+  shared_watcher_->RemoveWatch(std::move(path));
 }
