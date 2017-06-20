@@ -59,12 +59,16 @@ void SetExperimentIds(const base::ListValue& list) {
 //    command line. Here's an exmaple:
 //
 //      const base::Feature kSuperSecretSauce{
-//          "enable-super-secret-sauce", base::FEATURE_DISABLED_BY_DEFAULT};
+//          "enable_super_secret_sauce", base::FEATURE_DISABLED_BY_DEFAULT};
 //
 //    IMPORTANT NOTE:
 //    The first parameter that you pass in the definition is the feature's name.
-//    This MUST match the DCS experiement key for this feature. Use dashes (not
-//    underscores) in the names.
+//    This MUST match the DCS experiment key for this feature.
+//
+//    While Features elsewhere in Chromium alternatively use dashed-case or
+//    PascalCase for their names, Chromecast features should use snake_case
+//    (lowercase letters separated by underscores). This will ensure that DCS
+//    configs, which are passed around as JSON, remain conformant and readable.
 //
 // 2) Using the feature in client code.
 //    Using these features in your code is easy. Here's an example:
@@ -95,19 +99,17 @@ void SetExperimentIds(const base::ListValue& list) {
 //    While the server value trumps the default values, the command line trumps
 //    both. Enable features by passing this command line arg to cast_shell:
 //
-//      --enable-features=enable-foo,enable-super-secret-sauce
+//      --enable-features=enable_foo,enable_super_secret_sauce
 //
 //    Features are separated by commas. Disable features by passing:
 //
-//      --disable-features=enable-foo,enable-bar
+//      --disable-features=enable_foo,enable_bar
 //
 
 // Begin Chromecast Feature definitions.
 
 // Enables the use of QUIC in Cast-specific URLRequestContextGetters. See
 // chromecast/browser/url_request_context_factory.cc for usage.
-// NOTE: This feature has a legacy name - do not use it as your convention.
-// Dashes, not underscores, should be used in Feature names.
 const base::Feature kEnableQuic{"enable_quic",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
