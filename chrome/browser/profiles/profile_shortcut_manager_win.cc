@@ -31,6 +31,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/win/app_icon.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -779,8 +781,16 @@ base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
 // static
 bool ProfileShortcutManager::IsFeatureEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableProfileShortcutManager) ||
-         !command_line->HasSwitch(switches::kUserDataDir);
+  if (command_line->HasSwitch(switches::kEnableProfileShortcutManager))
+    return true;
+
+  base::FilePath user_data_dir;
+  bool success = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  DCHECK(success);
+  base::FilePath default_user_data_dir;
+  success = chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
+  DCHECK(success);
+  return user_data_dir == default_user_data_dir;
 }
 
 // static
