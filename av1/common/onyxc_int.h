@@ -947,10 +947,20 @@ static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {
 }
 
 #if CONFIG_VAR_TX
+// Disable array-bounds checks as the TX_SIZE enum contains values larger than
+// TX_SIZES_ALL (TX_INVALID) which make extending the array as a workaround
+// infeasible. The assert is enough for static analysis and this or other tools
+// asan, valgrind would catch oob access at runtime.
+#if defined(__GNUC__) && __GNUC__ >= 4
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 static INLINE TX_SIZE get_min_tx_size(TX_SIZE tx_size) {
   assert(tx_size < TX_SIZES_ALL);
   return txsize_sqr_map[tx_size];
 }
+#if defined(__GNUC__) && __GNUC__ >= 4
+#pragma GCC diagnostic warning "-Warray-bounds"
+#endif
 
 static INLINE void set_txfm_ctx(TXFM_CONTEXT *txfm_ctx, uint8_t txs, int len) {
   int i;
