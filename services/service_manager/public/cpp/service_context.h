@@ -114,7 +114,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContext : public mojom::Service {
       const std::string& service_name,
       const std::string& interface_name,
       const BinderRegistry::Binder& binder,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner = nullptr);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr);
 
   // Clears all overridden interface binders for service |service_name| set via
   // SetGlobalBinderForTesting().

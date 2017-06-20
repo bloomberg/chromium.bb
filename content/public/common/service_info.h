@@ -35,7 +35,7 @@ struct CONTENT_EXPORT ServiceInfo {
   // The task runner on which to construct and bind new Service instances
   // for this service. If null, behavior depends on the value of
   // |use_own_thread| below.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+  scoped_refptr<base::SequencedTaskRunner> task_runner;
 
   // If |task_runner| is null, setting this to |true| will give each instance of
   // this service its own thread to run on. Setting this to |false| (the
