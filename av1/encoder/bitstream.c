@@ -5072,10 +5072,13 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #else   // !CONFIG_COMPOUND_SINGLEREF
     if (cm->reference_mode != SINGLE_REFERENCE && cm->allow_masked_compound) {
 #endif  // CONFIG_COMPOUND_SINGLEREF
-      for (i = 0; i < BLOCK_SIZES; i++)
-        prob_diff_update(av1_compound_type_tree, fc->compound_type_prob[i],
-                         cm->counts.compound_interinter[i], COMPOUND_TYPES,
-                         probwt, header_bc);
+      for (i = 0; i < BLOCK_SIZES; i++) {
+        if (is_any_masked_compound_used(i)) {
+          prob_diff_update(av1_compound_type_tree, fc->compound_type_prob[i],
+                           cm->counts.compound_interinter[i], COMPOUND_TYPES,
+                           probwt, header_bc);
+        }
+      }
     }
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
