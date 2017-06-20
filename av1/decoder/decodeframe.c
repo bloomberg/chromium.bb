@@ -697,7 +697,7 @@ static void predict_and_reconstruct_intra_block(
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
 #else   // CONFIG_LV_MAP
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
-    const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
+    const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
     int16_t max_scan_line = 0;
     const int eob =
         av1_decode_block_tokens(cm, xd, plane, scan_order, col, row, tx_size,
@@ -769,7 +769,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, plane_tx_size);
 #else   // CONFIG_LV_MAP
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, plane_tx_size);
-    const SCAN_ORDER *sc = get_scan(cm, plane_tx_size, tx_type, 1);
+    const SCAN_ORDER *sc = get_scan(cm, plane_tx_size, tx_type, mbmi);
     int16_t max_scan_line = 0;
     const int eob = av1_decode_block_tokens(
         cm, xd, plane, sc, blk_col, blk_row, plane_tx_size, tx_type,
@@ -829,7 +829,8 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #else   // CONFIG_LV_MAP
   int16_t max_scan_line = 0;
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
-  const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 1);
+  const SCAN_ORDER *scan_order =
+      get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
   const int eob =
       av1_decode_block_tokens(cm, xd, plane, scan_order, col, row, tx_size,
                               tx_type, &max_scan_line, r, segment_id);

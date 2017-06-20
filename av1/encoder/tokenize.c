@@ -277,9 +277,8 @@ static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   const PLANE_TYPE type = pd->plane_type;
-  const int ref = is_inter_block(mbmi);
   const TX_TYPE tx_type = get_tx_type(type, xd, block, tx_size);
-  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, ref);
+  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int rate = av1_cost_coeffs(cpi, x, plane, block, tx_size, scan_order,
                                    pd->above_context + blk_col,
                                    pd->left_context + blk_row, 0);
@@ -435,8 +434,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_SUEPRTX
   const int16_t *scan, *nb;
   const TX_TYPE tx_type = get_tx_type(type, xd, block, tx_size);
-  const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int ref = is_inter_block(mbmi);
   unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       td->rd_counts.coef_counts[txsize_sqr_map[tx_size]][type][ref];

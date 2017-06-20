@@ -78,12 +78,14 @@ static INLINE const SCAN_ORDER *get_default_scan(TX_SIZE tx_size,
 }
 
 static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
-                                         TX_TYPE tx_type, int is_inter) {
+                                         TX_TYPE tx_type,
+                                         const MB_MODE_INFO *mbmi) {
 #if CONFIG_ADAPT_SCAN
-  (void)is_inter;
+  (void)mbmi;
   return &cm->fc->sc[tx_size][tx_type];
 #else   // CONFIG_ADAPT_SCAN
   (void)cm;
+  const int is_inter = is_inter_block(mbmi);
   return get_default_scan(tx_size, tx_type, is_inter);
 #endif  // CONFIG_ADAPT_SCAN
 }

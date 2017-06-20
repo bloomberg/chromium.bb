@@ -1653,8 +1653,7 @@ CALCULATE_RD : {}
 #if !CONFIG_PVQ
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
-  const SCAN_ORDER *scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   this_rd_stats.rate =
       av1_cost_coeffs(cpi, x, plane, block, tx_size, scan_order, a, l,
                       args->use_fast_coef_costing);
@@ -2845,7 +2844,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #endif
           if (is_lossless) {
             TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
-            const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
+            const SCAN_ORDER *scan_order =
+                get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
             const int coeff_ctx =
                 combine_entropy_contexts(tempa[idx], templ[idy]);
 #if !CONFIG_PVQ
@@ -2889,7 +2889,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             int64_t dist;
             unsigned int tmp;
             TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
-            const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
+            const SCAN_ORDER *scan_order =
+                get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
             const int coeff_ctx =
                 combine_entropy_contexts(tempa[idx], templ[idy]);
 #if !CONFIG_PVQ
@@ -3044,7 +3045,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #endif  // !CONFIG_PVQ
 
         TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
-        const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
+        const SCAN_ORDER *scan_order =
+            get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
         const int coeff_ctx = combine_entropy_contexts(tempa[idx], templ[idy]);
 #if CONFIG_CB4X4
         block = 4 * block;
@@ -3963,7 +3965,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(&xd->mi[0]->mbmi));
+      get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
   BLOCK_SIZE txm_bsize = txsize_to_bsize[tx_size];
   int bh = block_size_high[txm_bsize];
   int bw = block_size_wide[txm_bsize];

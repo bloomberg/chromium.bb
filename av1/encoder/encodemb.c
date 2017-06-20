@@ -157,7 +157,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   const uint8_t *const band_translate = get_band_translate(tx_size);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(&xd->mi[0]->mbmi));
+      get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
   const int16_t *const scan = scan_order->scan;
   const int16_t *const nb = scan_order->neighbors;
   int dqv;
@@ -553,8 +553,12 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+
+#if CONFIG_AOM_QM || CONFIG_NEW_QUANT
   const int is_inter = is_inter_block(mbmi);
-  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, is_inter);
+#endif
+
+  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -1303,7 +1307,8 @@ void av1_encode_block_intra_dpcm(const AV1_COMMON *cm, MACROBLOCK *x,
   const int dst_stride = pd->dst.stride;
   const int tx1d_width = tx_size_wide[tx_size];
   const int tx1d_height = tx_size_high[tx_size];
-  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, 0);
+  const SCAN_ORDER *const scan_order =
+      get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
   tran_low_t *coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   uint8_t *dst =

@@ -140,6 +140,13 @@ class AV1PartialIDctTest
 };
 
 #if !CONFIG_ADAPT_SCAN
+static MB_MODE_INFO get_mbmi() {
+  MB_MODE_INFO mbmi;
+  mbmi.ref_frame[0] = LAST_FRAME;
+  assert(is_inter_block(&mbmi));
+  return mbmi;
+}
+
 TEST_P(AV1PartialIDctTest, RunQuantCheck) {
   int size;
   switch (tx_size_) {
@@ -186,9 +193,10 @@ TEST_P(AV1PartialIDctTest, RunQuantCheck) {
 
       // quantization with maximum allowed step sizes
       test_coef_block1[0] = (output_ref_block[0] / 1336) * 1336;
+      MB_MODE_INFO mbmi = get_mbmi();
       for (int j = 1; j < last_nonzero_; ++j)
         test_coef_block1[get_scan((const AV1_COMMON *)NULL, tx_size_, DCT_DCT,
-                                  0)
+                                  &mbmi)
                              ->scan[j]] = (output_ref_block[j] / 1828) * 1828;
     }
 
@@ -239,7 +247,9 @@ TEST_P(AV1PartialIDctTest, ResultsMatch) {
         max_energy_leftover = 0;
         coef = 0;
       }
-      test_coef_block1[get_scan((const AV1_COMMON *)NULL, tx_size_, DCT_DCT, 0)
+      MB_MODE_INFO mbmi = get_mbmi();
+      test_coef_block1[get_scan((const AV1_COMMON *)NULL, tx_size_, DCT_DCT,
+                                &mbmi)
                            ->scan[j]] = coef;
     }
 

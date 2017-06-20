@@ -79,8 +79,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_context(tx_size);
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
-  const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
   int c;
   int is_nz;
@@ -309,8 +308,7 @@ int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
   aom_prob(*coeff_base)[COEFF_BASE_CONTEXTS] =
       xd->fc->coeff_base[txs_ctx][plane_type];
 
-  const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
 
   cost = 0;
@@ -1491,8 +1489,7 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   const aom_prob *coeff_lps = xd->fc->coeff_lps[txs_ctx][plane_type];
 
   const int is_inter = is_inter_block(mbmi);
-  const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
 
   const TxbProbs txb_probs = { xd->fc->dc_sign[plane_type],
                                nz_map,
@@ -1547,8 +1544,7 @@ void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   const PLANE_TYPE plane_type = pd->plane_type;
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
-  const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   (void)plane_bsize;
 
   int cul_level = av1_get_txb_entropy_context(qcoeff, scan_order, eob);
@@ -1573,8 +1569,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
   const int segment_id = mbmi->segment_id;
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
-  const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
   const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   int c, i;
@@ -1893,8 +1888,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
                    &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS);
-    const SCAN_ORDER *scan_order =
-        get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+    const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
     this_rd_stats.rate = av1_cost_coeffs(
         cpi, x, plane, block, tx_size, scan_order, a, l, use_fast_coef_costing);
     int rd = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
