@@ -9,8 +9,6 @@ animations/svg-attribute-composition/svg-bias-composition.html
 animations/svg-attribute-interpolation/svg-numOctaves-interpolation.html
 bluetooth/idl/idl-NavigatorBluetooth.html
 bluetooth/requestDevice/canonicalizeFilter/no-arguments.html
-canvas/feimage-with-foreignobject-taint-canvas-2.html
-canvas/philip/tests/2d.text.font.default.html
 compositing/animation/animated-composited-inside-hidden.html
 compositing/animation/animation-compositing.html
 compositing/animation/computed-style-during-delay.html
@@ -386,6 +384,7 @@ fast/box-sizing/table-no-collapse.html
 fast/canvas/alpha.html
 fast/canvas/canvas-set-font-with-updated-style.html
 fast/canvas/color-space/imageData-colorSpace.html
+fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
 fast/canvas/imagebitmap/transferFromImageBitmap-drawImage.html
 fast/canvas/unclosed-canvas-2.html
 fast/canvas/webgl/canvas-getContext-crash.html
@@ -979,9 +978,11 @@ virtual/disable-spinvalidation/compositing/empty-render-surface-crasher.html
 virtual/disable-spinvalidation/paint/invalidation/compositing/should-not-repaint-composited-descendants.html
 virtual/display_list_2d_canvas/fast/canvas/bug535171.html
 virtual/display_list_2d_canvas/fast/canvas/canvas-hides-fallback.html
+virtual/display_list_2d_canvas/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
 virtual/display_list_2d_canvas/fast/canvas/script-inside-canvas-fallback.html
 virtual/display_list_2d_canvas/fast/canvas/unclosed-canvas-1.html
 virtual/gpu/fast/canvas/canvas-filter-frameless-document.html
+virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
 virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html
 virtual/layout_ng/fast/block/float/floats-not-cleared-crash.html
 virtual/layout_ng/fast/block/float/positioned-float-crash.html
