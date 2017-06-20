@@ -347,7 +347,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   main_context_ = context_builder.Build();
 
   // Iterate through PKP configuration for every host.
-  for (auto* const pkp : config->pkp_list) {
+  for (const auto& pkp : config->pkp_list) {
     // Add the host pinning.
     main_context_->transport_security_state()->AddHPKP(
         pkp->host, pkp->expiration_date, pkp->include_subdomains,

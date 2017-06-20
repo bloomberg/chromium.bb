@@ -37,6 +37,8 @@ namespace cronet {
 // and initialization.
 class CronetEnvironment {
  public:
+  using PkpVector = std::vector<std::unique_ptr<URLRequestContextConfig::Pkp>>;
+
   // Initialize Cronet environment globals. Must be called only once on the
   // main thread.
   static void Initialize();
@@ -101,9 +103,7 @@ class CronetEnvironment {
     ssl_key_log_file_name_ = ssl_key_log_file_name;
   }
 
-  void set_pkp_list(ScopedVector<URLRequestContextConfig::Pkp> pkp_list) {
-    pkp_list_ = std::move(pkp_list);
-  }
+  void set_pkp_list(PkpVector pkp_list) { pkp_list_ = std::move(pkp_list); }
 
   // Returns the URLRequestContext associated with this object.
   net::URLRequestContext* GetURLRequestContext() const;
@@ -145,7 +145,7 @@ class CronetEnvironment {
   std::string experimental_options_;
   std::string ssl_key_log_file_name_;
   URLRequestContextConfig::HttpCacheType http_cache_;
-  ScopedVector<URLRequestContextConfig::Pkp> pkp_list_;
+  PkpVector pkp_list_;
 
   std::list<net::HostPortPair> quic_hints_;
 
