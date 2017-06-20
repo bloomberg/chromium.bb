@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/sequenced_task_runner.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -91,7 +90,6 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
       const std::string& browser_locale,
       scoped_refptr<net::URLRequestContextGetter> url_context_getter,
       scoped_refptr<PpdCache> cache,
-      scoped_refptr<base::SequencedTaskRunner> disk_task_runner,
       const Options& options = Options());
 
   // Get all manufacturers for which we have drivers.  Keys of the map will be
@@ -133,10 +131,6 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // |cb| will be called on the invoking thread, and will be sequenced.
   virtual void ResolvePpd(const Printer::PpdReference& reference,
                           const ResolvePpdCallback& cb) = 0;
-
-  // Hook for testing.  Returns true if there are no API calls that have not
-  // yet completed.
-  virtual bool Idle() const = 0;
 
  protected:
   friend class base::RefCounted<PpdProvider>;
