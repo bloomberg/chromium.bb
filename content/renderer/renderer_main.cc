@@ -98,13 +98,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
 
-#if defined(OS_WIN) && defined(__clang__)
-  // TODO(thakis): Remove this again soon, it's here to check what effect
-  // renderer startup delays have on a particular metric in the next dev
-  // channel release.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-#endif
-
   const base::CommandLine& parsed_command_line = parameters.command_line;
 
 #if defined(OS_MACOSX)
