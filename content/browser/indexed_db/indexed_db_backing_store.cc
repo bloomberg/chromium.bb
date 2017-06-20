@@ -2424,7 +2424,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     blobs_.swap(*blobs);
     iter_ = blobs_.begin();
     backing_store->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChainedBlobWriterImpl::WriteNextFile, this));
+        FROM_HERE, base::BindOnce(&ChainedBlobWriterImpl::WriteNextFile, this));
   }
 
   void set_delegate(std::unique_ptr<FileWriterDelegate> delegate) override {
@@ -2526,18 +2526,16 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
       // LocalFileStreamWriter only creates a file if data is actually written.
       // If none was then create one now.
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&LocalWriteClosure::CreateEmptyFile, this));
+          FROM_HERE, base::BindOnce(&LocalWriteClosure::CreateEmptyFile, this));
     } else if (success && !last_modified_.is_null()) {
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&LocalWriteClosure::UpdateTimeStamp, this));
+          FROM_HERE, base::BindOnce(&LocalWriteClosure::UpdateTimeStamp, this));
     } else {
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&IndexedDBBackingStore::Transaction::ChainedBlobWriter::
-                     ReportWriteCompletion,
-                     chained_blob_writer_,
-                     success,
-                     bytes_written_));
+          base::BindOnce(&IndexedDBBackingStore::Transaction::
+                             ChainedBlobWriter::ReportWriteCompletion,
+                         chained_blob_writer_, success, bytes_written_));
     }
   }
 
@@ -2677,19 +2675,17 @@ bool IndexedDBBackingStore::WriteBlobFile(
 
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Transaction::ChainedBlobWriter::ReportWriteCompletion,
-                   chained_blob_writer,
-                   true,
-                   info.size));
+        base::BindOnce(&Transaction::ChainedBlobWriter::ReportWriteCompletion,
+                       chained_blob_writer, true, info.size));
   } else {
     DCHECK(descriptor.url().is_valid());
     scoped_refptr<LocalWriteClosure> write_closure(
         new LocalWriteClosure(chained_blob_writer, task_runner_.get()));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&LocalWriteClosure::WriteBlobToFileOnIOThread,
-                   write_closure, path, descriptor.url(),
-                   descriptor.last_modified(), request_context_getter_));
+        base::BindOnce(&LocalWriteClosure::WriteBlobToFileOnIOThread,
+                       write_closure, path, descriptor.url(),
+                       descriptor.last_modified(), request_context_getter_));
   }
   return true;
 }

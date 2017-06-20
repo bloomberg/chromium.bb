@@ -145,10 +145,10 @@ void IndexedDBTransaction::ScheduleTask(blink::WebIDBTaskType type,
   timeout_timer_.Stop();
   used_ = true;
   if (type == blink::kWebIDBTaskTypeNormal) {
-    task_queue_.push(task);
+    task_queue_.push(std::move(task));
     ++diagnostics_.tasks_scheduled;
   } else {
-    preemptive_task_queue_.push(task);
+    preemptive_task_queue_.push(std::move(task));
   }
   RunTasksIfStarted();
 }
@@ -172,8 +172,8 @@ void IndexedDBTransaction::RunTasksIfStarted() {
 
   should_process_queue_ = true;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&IndexedDBTransaction::ProcessTaskQueue,
-                            ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&IndexedDBTransaction::ProcessTaskQueue,
+                                ptr_factory_.GetWeakPtr()));
 }
 
 void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
@@ -254,7 +254,7 @@ void IndexedDBTransaction::Start() {
       // front-end previously requested a commit; do the commit now, but not
       // re-entrantly as that may renter the coordinator.
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&CommitUnused, ptr_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&CommitUnused, ptr_factory_.GetWeakPtr()));
     }
     return;
   }
@@ -485,7 +485,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   while (!task_queue->empty() && state_ != FINISHED) {
     DCHECK_EQ(state_, STARTED);
     Operation task(task_queue->pop());
-    leveldb::Status result = task.Run(this);
+    leveldb::Status result = std::move(task).Run(this);
     if (!pending_preemptive_events_) {
       DCHECK(diagnostics_.tasks_completed < diagnostics_.tasks_scheduled);
       ++diagnostics_.tasks_completed;

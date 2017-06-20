@@ -83,10 +83,8 @@ void IndexedDBInternalsUI::AddContextFromStoragePartition(
   scoped_refptr<IndexedDBContext> context = partition->GetIndexedDBContext();
   context->TaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread,
-                 base::Unretained(this),
-                 context,
-                 partition->GetPath()));
+      base::BindOnce(&IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread,
+                     base::Unretained(this), context, partition->GetPath()));
 }
 
 void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
@@ -114,12 +112,10 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
   bool is_incognito = context_impl->is_incognito();
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&IndexedDBInternalsUI::OnOriginsReady,
-                 base::Unretained(this),
-                 base::Passed(&info_list),
-                 is_incognito ? base::FilePath() : context_path));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&IndexedDBInternalsUI::OnOriginsReady,
+                     base::Unretained(this), base::Passed(&info_list),
+                     is_incognito ? base::FilePath() : context_path));
 }
 
 void IndexedDBInternalsUI::OnOriginsReady(
@@ -191,8 +187,8 @@ void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
   DCHECK(context.get());
   context->TaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread,
-                 base::Unretained(this), partition_path, context, origin));
+      base::BindOnce(&IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread,
+                     base::Unretained(this), partition_path, context, origin));
 }
 
 void IndexedDBInternalsUI::ForceCloseOrigin(const base::ListValue* args) {
@@ -206,8 +202,8 @@ void IndexedDBInternalsUI::ForceCloseOrigin(const base::ListValue* args) {
 
   context->TaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread,
-                 base::Unretained(this), partition_path, context, origin));
+      base::BindOnce(&IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread,
+                     base::Unretained(this), partition_path, context, origin));
 }
 
 void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
@@ -243,9 +239,9 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&IndexedDBInternalsUI::OnDownloadDataReady,
-                 base::Unretained(this), partition_path, origin, temp_path,
-                 zip_path, connection_count));
+      base::BindOnce(&IndexedDBInternalsUI::OnDownloadDataReady,
+                     base::Unretained(this), partition_path, origin, temp_path,
+                     zip_path, connection_count));
 }
 
 void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
@@ -261,10 +257,10 @@ void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
   context->ForceClose(origin, IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
   size_t connection_count = context->GetConnectionCount(origin);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&IndexedDBInternalsUI::OnForcedClose, base::Unretained(this),
-                 partition_path, origin, connection_count));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&IndexedDBInternalsUI::OnForcedClose,
+                                         base::Unretained(this), partition_path,
+                                         origin, connection_count));
 }
 
 void IndexedDBInternalsUI::OnForcedClose(const base::FilePath& partition_path,

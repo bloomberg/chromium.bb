@@ -117,10 +117,11 @@ void IndexedDBQuotaClient::GetOriginsForType(
 
   std::set<GURL>* origins_to_return = new std::set<GURL>();
   indexed_db_context_->TaskRunner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&GetAllOriginsOnIndexedDBThread,
-                            base::RetainedRef(indexed_db_context_),
-                            base::Unretained(origins_to_return)),
-      base::Bind(&DidGetOrigins, callback, base::Owned(origins_to_return)));
+      FROM_HERE,
+      base::BindOnce(&GetAllOriginsOnIndexedDBThread,
+                     base::RetainedRef(indexed_db_context_),
+                     base::Unretained(origins_to_return)),
+      base::BindOnce(&DidGetOrigins, callback, base::Owned(origins_to_return)));
 }
 
 void IndexedDBQuotaClient::GetOriginsForHost(
@@ -144,10 +145,11 @@ void IndexedDBQuotaClient::GetOriginsForHost(
 
   std::set<GURL>* origins_to_return = new std::set<GURL>();
   indexed_db_context_->TaskRunner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&GetOriginsForHostOnIndexedDBThread,
-                            base::RetainedRef(indexed_db_context_), host,
-                            base::Unretained(origins_to_return)),
-      base::Bind(&DidGetOrigins, callback, base::Owned(origins_to_return)));
+      FROM_HERE,
+      base::BindOnce(&GetOriginsForHostOnIndexedDBThread,
+                     base::RetainedRef(indexed_db_context_), host,
+                     base::Unretained(origins_to_return)),
+      base::BindOnce(&DidGetOrigins, callback, base::Owned(origins_to_return)));
 }
 
 void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,

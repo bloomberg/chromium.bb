@@ -154,8 +154,8 @@ DatabaseImpl::DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
   helper_ = new IDBSequenceHelper(std::move(connection), origin,
                                   dispatcher_host->context());
   idb_runner_->PostTask(FROM_HERE,
-                        base::Bind(&IDBSequenceHelper::ConnectionOpened,
-                                   base::Unretained(helper_)));
+                        base::BindOnce(&IDBSequenceHelper::ConnectionOpened,
+                                       base::Unretained(helper_)));
 }
 
 DatabaseImpl::~DatabaseImpl() {
@@ -168,47 +168,48 @@ void DatabaseImpl::CreateObjectStore(int64_t transaction_id,
                                      const IndexedDBKeyPath& key_path,
                                      bool auto_increment) {
   idb_runner_->PostTask(
-      FROM_HERE, base::Bind(&IDBSequenceHelper::CreateObjectStore,
-                            base::Unretained(helper_), transaction_id,
-                            object_store_id, name, key_path, auto_increment));
+      FROM_HERE,
+      base::BindOnce(&IDBSequenceHelper::CreateObjectStore,
+                     base::Unretained(helper_), transaction_id, object_store_id,
+                     name, key_path, auto_increment));
 }
 
 void DatabaseImpl::DeleteObjectStore(int64_t transaction_id,
                                      int64_t object_store_id) {
   idb_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IDBSequenceHelper::DeleteObjectStore,
-                 base::Unretained(helper_), transaction_id, object_store_id));
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::DeleteObjectStore,
+                                base::Unretained(helper_), transaction_id,
+                                object_store_id));
 }
 
 void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
                                      int64_t object_store_id,
                                      const base::string16& new_name) {
-  idb_runner_->PostTask(FROM_HERE,
-                        base::Bind(&IDBSequenceHelper::RenameObjectStore,
-                                   base::Unretained(helper_), transaction_id,
-                                   object_store_id, new_name));
+  idb_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::RenameObjectStore,
+                                base::Unretained(helper_), transaction_id,
+                                object_store_id, new_name));
 }
 
 void DatabaseImpl::CreateTransaction(
     int64_t transaction_id,
     const std::vector<int64_t>& object_store_ids,
     blink::WebIDBTransactionMode mode) {
-  idb_runner_->PostTask(FROM_HERE,
-                        base::Bind(&IDBSequenceHelper::CreateTransaction,
-                                   base::Unretained(helper_), transaction_id,
-                                   object_store_ids, mode));
+  idb_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::CreateTransaction,
+                                base::Unretained(helper_), transaction_id,
+                                object_store_ids, mode));
 }
 
 void DatabaseImpl::Close() {
-  idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBSequenceHelper::Close,
-                                              base::Unretained(helper_)));
+  idb_runner_->PostTask(FROM_HERE, base::BindOnce(&IDBSequenceHelper::Close,
+                                                  base::Unretained(helper_)));
 }
 
 void DatabaseImpl::VersionChangeIgnored() {
   idb_runner_->PostTask(FROM_HERE,
-                        base::Bind(&IDBSequenceHelper::VersionChangeIgnored,
-                                   base::Unretained(helper_)));
+                        base::BindOnce(&IDBSequenceHelper::VersionChangeIgnored,
+                                       base::Unretained(helper_)));
 }
 
 void DatabaseImpl::AddObserver(int64_t transaction_id,
@@ -219,15 +220,15 @@ void DatabaseImpl::AddObserver(int64_t transaction_id,
                                uint16_t operation_types) {
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::AddObserver, base::Unretained(helper_),
-                 transaction_id, observer_id, include_transaction, no_records,
-                 values, operation_types));
+      base::BindOnce(&IDBSequenceHelper::AddObserver, base::Unretained(helper_),
+                     transaction_id, observer_id, include_transaction,
+                     no_records, values, operation_types));
 }
 
 void DatabaseImpl::RemoveObservers(const std::vector<int32_t>& observers) {
   idb_runner_->PostTask(FROM_HERE,
-                        base::Bind(&IDBSequenceHelper::RemoveObservers,
-                                   base::Unretained(helper_), observers));
+                        base::BindOnce(&IDBSequenceHelper::RemoveObservers,
+                                       base::Unretained(helper_), observers));
 }
 
 void DatabaseImpl::Get(
@@ -241,9 +242,10 @@ void DatabaseImpl::Get(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
-      FROM_HERE, base::Bind(&IDBSequenceHelper::Get, base::Unretained(helper_),
-                            transaction_id, object_store_id, index_id,
-                            key_range, key_only, base::Passed(&callbacks)));
+      FROM_HERE,
+      base::BindOnce(&IDBSequenceHelper::Get, base::Unretained(helper_),
+                     transaction_id, object_store_id, index_id, key_range,
+                     key_only, base::Passed(&callbacks)));
 }
 
 void DatabaseImpl::GetAll(
@@ -259,9 +261,9 @@ void DatabaseImpl::GetAll(
                              std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::GetAll, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id, key_range, key_only,
-                 max_count, base::Passed(&callbacks)));
+      base::BindOnce(&IDBSequenceHelper::GetAll, base::Unretained(helper_),
+                     transaction_id, object_store_id, index_id, key_range,
+                     key_only, max_count, base::Passed(&callbacks)));
 }
 
 void DatabaseImpl::Put(
@@ -299,9 +301,9 @@ void DatabaseImpl::Put(
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
                                    kInvalidBlobUuid);
       idb_runner_->PostTask(
-          FROM_HERE, base::Bind(&IDBSequenceHelper::AbortWithError,
-                                base::Unretained(helper_), transaction_id,
-                                base::Passed(&callbacks), error));
+          FROM_HERE, base::BindOnce(&IDBSequenceHelper::AbortWithError,
+                                    base::Unretained(helper_), transaction_id,
+                                    base::Passed(&callbacks), error));
       return;
     }
     uint64_t size = handle->size();
@@ -337,10 +339,10 @@ void DatabaseImpl::Put(
   }
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::Put, base::Unretained(helper_),
-                 transaction_id, object_store_id, base::Passed(&value),
-                 base::Passed(&handles), base::Passed(&blob_info), key, mode,
-                 index_keys, base::Passed(&callbacks)));
+      base::BindOnce(&IDBSequenceHelper::Put, base::Unretained(helper_),
+                     transaction_id, object_store_id, base::Passed(&value),
+                     base::Passed(&handles), base::Passed(&blob_info), key,
+                     mode, index_keys, base::Passed(&callbacks)));
 }
 
 void DatabaseImpl::SetIndexKeys(
@@ -349,18 +351,18 @@ void DatabaseImpl::SetIndexKeys(
     const IndexedDBKey& primary_key,
     const std::vector<IndexedDBIndexKeys>& index_keys) {
   idb_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IDBSequenceHelper::SetIndexKeys, base::Unretained(helper_),
-                 transaction_id, object_store_id, primary_key, index_keys));
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::SetIndexKeys,
+                                base::Unretained(helper_), transaction_id,
+                                object_store_id, primary_key, index_keys));
 }
 
 void DatabaseImpl::SetIndexesReady(int64_t transaction_id,
                                    int64_t object_store_id,
                                    const std::vector<int64_t>& index_ids) {
   idb_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IDBSequenceHelper::SetIndexesReady, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_ids));
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::SetIndexesReady,
+                                base::Unretained(helper_), transaction_id,
+                                object_store_id, index_ids));
 }
 
 void DatabaseImpl::OpenCursor(
@@ -377,9 +379,9 @@ void DatabaseImpl::OpenCursor(
                              std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::OpenCursor, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id, key_range,
-                 direction, key_only, task_type, base::Passed(&callbacks)));
+      base::BindOnce(&IDBSequenceHelper::OpenCursor, base::Unretained(helper_),
+                     transaction_id, object_store_id, index_id, key_range,
+                     direction, key_only, task_type, base::Passed(&callbacks)));
 }
 
 void DatabaseImpl::Count(
@@ -393,9 +395,9 @@ void DatabaseImpl::Count(
                              std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::Count, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id, key_range,
-                 base::Passed(&callbacks)));
+      base::BindOnce(&IDBSequenceHelper::Count, base::Unretained(helper_),
+                     transaction_id, object_store_id, index_id, key_range,
+                     base::Passed(&callbacks)));
 }
 
 void DatabaseImpl::DeleteRange(
@@ -408,9 +410,9 @@ void DatabaseImpl::DeleteRange(
                              std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::DeleteRange, base::Unretained(helper_),
-                 transaction_id, object_store_id, key_range,
-                 base::Passed(&callbacks)));
+      base::BindOnce(&IDBSequenceHelper::DeleteRange, base::Unretained(helper_),
+                     transaction_id, object_store_id, key_range,
+                     base::Passed(&callbacks)));
 }
 
 void DatabaseImpl::Clear(
@@ -421,9 +423,9 @@ void DatabaseImpl::Clear(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IDBSequenceHelper::Clear, base::Unretained(helper_),
-                 transaction_id, object_store_id, base::Passed(&callbacks)));
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::Clear,
+                                base::Unretained(helper_), transaction_id,
+                                object_store_id, base::Passed(&callbacks)));
 }
 
 void DatabaseImpl::CreateIndex(int64_t transaction_id,
@@ -435,9 +437,9 @@ void DatabaseImpl::CreateIndex(int64_t transaction_id,
                                bool multi_entry) {
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::CreateIndex, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id, name, key_path,
-                 unique, multi_entry));
+      base::BindOnce(&IDBSequenceHelper::CreateIndex, base::Unretained(helper_),
+                     transaction_id, object_store_id, index_id, name, key_path,
+                     unique, multi_entry));
 }
 
 void DatabaseImpl::DeleteIndex(int64_t transaction_id,
@@ -445,8 +447,8 @@ void DatabaseImpl::DeleteIndex(int64_t transaction_id,
                                int64_t index_id) {
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::DeleteIndex, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id));
+      base::BindOnce(&IDBSequenceHelper::DeleteIndex, base::Unretained(helper_),
+                     transaction_id, object_store_id, index_id));
 }
 
 void DatabaseImpl::RenameIndex(int64_t transaction_id,
@@ -455,20 +457,20 @@ void DatabaseImpl::RenameIndex(int64_t transaction_id,
                                const base::string16& new_name) {
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::RenameIndex, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id, new_name));
+      base::BindOnce(&IDBSequenceHelper::RenameIndex, base::Unretained(helper_),
+                     transaction_id, object_store_id, index_id, new_name));
 }
 
 void DatabaseImpl::Abort(int64_t transaction_id) {
-  idb_runner_->PostTask(FROM_HERE,
-                        base::Bind(&IDBSequenceHelper::Abort,
-                                   base::Unretained(helper_), transaction_id));
+  idb_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::Abort,
+                                base::Unretained(helper_), transaction_id));
 }
 
 void DatabaseImpl::Commit(int64_t transaction_id) {
-  idb_runner_->PostTask(FROM_HERE,
-                        base::Bind(&IDBSequenceHelper::Commit,
-                                   base::Unretained(helper_), transaction_id));
+  idb_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::Commit,
+                                base::Unretained(helper_), transaction_id));
 }
 
 void DatabaseImpl::AckReceivedBlobs(const std::vector<std::string>& uuids) {

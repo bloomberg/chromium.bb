@@ -34,7 +34,7 @@ leveldb::Status InvokeOrSucceed(base::WeakPtr<IndexedDBCursor> weak_cursor,
                                 IndexedDBTransaction::Operation operation,
                                 IndexedDBTransaction* transaction) {
   if (weak_cursor)
-    return operation.Run(transaction);
+    return std::move(operation).Run(transaction);
   return leveldb::Status::OK();
 }
 
@@ -47,10 +47,10 @@ IndexedDBTransaction::Operation BindWeakOperation(
     Args&&... args) {
   DCHECK(weak_cursor);
   IndexedDBCursor* cursor_ptr = weak_cursor.get();
-  return base::Bind(
-      &InvokeOrSucceed, std::move(weak_cursor),
-      base::Bind(std::forward<Functor>(functor), base::Unretained(cursor_ptr),
-                 std::forward<Args>(args)...));
+  return base::BindOnce(&InvokeOrSucceed, std::move(weak_cursor),
+                        base::BindOnce(std::forward<Functor>(functor),
+                                       base::Unretained(cursor_ptr),
+                                       std::forward<Args>(args)...));
 }
 
 }  // namespace
