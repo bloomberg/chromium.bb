@@ -12,8 +12,6 @@
 
 namespace prefs {
 
-// TODO(tibell): Make PrefObserverStore use PrefStoreClient as a base class.
-
 // An implementation of PrefStore which uses prefs::mojom::PrefStore as
 // the backing store of the preferences.
 //
