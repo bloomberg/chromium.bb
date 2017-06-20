@@ -22021,6 +22021,7 @@ from previous Chrome versions.
   <int value="-1963427770" label="EmojiHandwritingVoiceInput:disabled"/>
   <int value="-1963402827" label="enable-topchrome-md"/>
   <int value="-1961648833" label="show_summary"/>
+  <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
   <int value="-1956349722" label="disable-smooth-scrolling"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
@@ -22131,6 +22132,7 @@ from previous Chrome versions.
   <int value="-1617183455" label="OfflineRecentPages:disabled"/>
   <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
+  <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1599538279" label="enable-md-policy-page"/>

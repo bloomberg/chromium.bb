@@ -119,6 +119,10 @@ constexpr int kNotificationsDefaultDailyLimit = 1;
 extern const char kNotificationsIgnoredLimitParam[];
 constexpr int kNotificationsIgnoredDefaultLimit = 3;
 
+// Whether to keep some prefetched content suggestions even when new suggestions
+// have been fetched.
+extern const base::Feature kKeepPrefetchedContentSuggestions;
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_FEATURES_H_

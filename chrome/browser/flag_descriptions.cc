@@ -2314,6 +2314,13 @@ const char kCrOSComponentDescription[] =
 
 #if defined(OS_ANDROID)
 
+const char kKeepPrefetchedContentSuggestionsName[] =
+    "Keep prefetched content suggestions";
+
+const char kKeepPrefetchedContentSuggestionsDescription[] =
+    "If enabled, some of prefetched content suggestions are not replaced by "
+    "the new fetched suggestions.";
+
 const char kContentSuggestionsCategoryOrderName[] =
     "Default content suggestions category order (e.g. on NTP)";
 

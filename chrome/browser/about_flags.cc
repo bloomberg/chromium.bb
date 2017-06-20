@@ -2320,6 +2320,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(extensions::switches::kDisableTabForDesktopShare)},
 #endif  // ENABLE_EXTENSIONS
 #if defined(OS_ANDROID)
+    {"keep-prefetched-content-suggestions",
+     flag_descriptions::kKeepPrefetchedContentSuggestionsName,
+     flag_descriptions::kKeepPrefetchedContentSuggestionsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(ntp_snippets::kKeepPrefetchedContentSuggestions)},
     {"content-suggestions-category-order",
      flag_descriptions::kContentSuggestionsCategoryOrderName,
      flag_descriptions::kContentSuggestionsCategoryOrderDescription, kOsAndroid,
