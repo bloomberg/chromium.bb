@@ -135,6 +135,7 @@ cr.define('cr.ui.Oobe', function() {
       login.DeviceDisabledScreen.register();
       login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
       login.VoiceInteractionValuePropScreen.register();
+      login.WaitForContainerReadyScreen.register();
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));
