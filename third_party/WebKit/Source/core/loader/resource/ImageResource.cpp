@@ -126,16 +126,16 @@ class ImageResource::ImageResourceInfoImpl final
   const Member<ImageResource> resource_;
 };
 
-class ImageResource::ImageResourceFactory : public ResourceFactory {
+class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
   STACK_ALLOCATED();
 
  public:
   ImageResourceFactory(const FetchParameters& fetch_params)
-      : ResourceFactory(Resource::kImage), fetch_params_(&fetch_params) {}
+      : NonTextResourceFactory(Resource::kImage),
+        fetch_params_(&fetch_params) {}
 
   Resource* Create(const ResourceRequest& request,
-                   const ResourceLoaderOptions& options,
-                   const String&) const override {
+                   const ResourceLoaderOptions& options) const override {
     return new ImageResource(request, options,
                              ImageResourceContent::CreateNotStarted(),
                              fetch_params_->GetPlaceholderImageRequestType() ==

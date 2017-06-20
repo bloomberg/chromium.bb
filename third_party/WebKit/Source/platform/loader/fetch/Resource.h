@@ -511,6 +511,21 @@ class ResourceFactory {
   Resource::Type type_;
 };
 
+class NonTextResourceFactory : public ResourceFactory {
+ protected:
+  explicit NonTextResourceFactory(Resource::Type type)
+      : ResourceFactory(type) {}
+
+  virtual Resource* Create(const ResourceRequest&,
+                           const ResourceLoaderOptions&) const = 0;
+
+  Resource* Create(const ResourceRequest& request,
+                   const ResourceLoaderOptions& options,
+                   const String&) const final {
+    return Create(request, options);
+  }
+};
+
 #define DEFINE_RESOURCE_TYPE_CASTS(typeName)                      \
   DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource,       \
                     resource->GetType() == Resource::k##typeName, \

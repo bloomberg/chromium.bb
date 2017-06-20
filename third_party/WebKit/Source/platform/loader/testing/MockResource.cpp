@@ -12,13 +12,12 @@ namespace blink {
 
 namespace {
 
-class MockResourceFactory final : public ResourceFactory {
+class MockResourceFactory final : public NonTextResourceFactory {
  public:
-  MockResourceFactory() : ResourceFactory(Resource::kMock) {}
+  MockResourceFactory() : NonTextResourceFactory(Resource::kMock) {}
 
   Resource* Create(const ResourceRequest& request,
-                   const ResourceLoaderOptions& options,
-                   const String&) const override {
+                   const ResourceLoaderOptions& options) const override {
     return new MockResource(request, options);
   }
 };
