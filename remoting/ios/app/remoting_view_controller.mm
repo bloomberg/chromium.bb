@@ -13,6 +13,7 @@
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/client_connection_view_controller.h"
 #import "remoting/ios/app/host_collection_view_controller.h"
 #import "remoting/ios/app/host_view_controller.h"
@@ -135,10 +136,7 @@ static CGFloat kHostInset = 5.f;
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   if (!_isAuthenticated) {
-    // TODO(nicholss): This is used as a demo of the app functionality for the
-    // moment but the real app will force the login flow if unauthenticated.
-    [self didSelectMenu];
-    // [self didSelectRefresh];
+    [AppDelegate.instance presentSignInFlow];
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = @"Please login.";
     [MDCSnackbarManager showMessage:message];
@@ -251,9 +249,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 }
 
 - (void)didSelectMenu {
-  RemotingMenuViewController* menuViewController =
-      [[RemotingMenuViewController alloc] init];
-  [self presentViewController:menuViewController animated:YES completion:nil];
+  [AppDelegate.instance showMenuAnimated:YES];
 }
 
 - (void)presentStatus {

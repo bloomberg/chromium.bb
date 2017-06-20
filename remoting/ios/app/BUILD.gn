@@ -17,6 +17,7 @@ source_set("common_source_set") {
   sources = [
     "app_delegate.h",
     "app_delegate.mm",
+    "app_view_controller.h",
     "client_connection_view_controller.h",
     "client_connection_view_controller.mm",
     "host_collection_header_view.h",
@@ -27,10 +28,9 @@ source_set("common_source_set") {
     "host_collection_view_controller.mm",
     "host_view_controller.h",
     "host_view_controller.mm",
+    "main.mm",
     "pin_entry_view.h",
     "pin_entry_view.mm",
-    "remoting_menu_view_controller.h",
-    "remoting_menu_view_controller.mm",
     "remoting_theme.h",
     "remoting_theme.mm",
     "remoting_view_controller.h",
@@ -61,7 +61,9 @@ source_set("common_source_set") {
 
 source_set("main") {
   sources = [
-    "main.mm",
+    "app_view_controller_chromium.mm",
+    "remoting_menu_view_controller.h",
+    "remoting_menu_view_controller.mm",
   ]
   deps = [
     ":common_source_set",
