@@ -573,7 +573,8 @@ void NavigationRequest::OnResponseStarted(
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
-    bool is_stream) {
+    bool is_stream,
+    mojom::URLLoaderFactoryPtrInfo subresource_loader_factory_info) {
   DCHECK(state_ == STARTED);
   DCHECK(response);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
@@ -645,6 +646,8 @@ void NavigationRequest::OnResponseStarted(
   response_ = response;
   body_ = std::move(body);
   handle_ = std::move(consumer_handle);
+
+  subresource_loader_factory_info_ = std::move(subresource_loader_factory_info);
 
   // Check if the navigation should be allowed to proceed.
   navigation_handle_->WillProcessResponse(
@@ -922,9 +925,10 @@ void NavigationRequest::CommitNavigation() {
 
   DCHECK_EQ(request_params_.has_user_gesture, begin_params_.has_user_gesture);
 
-  render_frame_host->CommitNavigation(response_.get(), std::move(body_),
-                                      std::move(handle_), common_params_,
-                                      request_params_, is_view_source_);
+  render_frame_host->CommitNavigation(
+      response_.get(), std::move(body_), std::move(handle_), common_params_,
+      request_params_, is_view_source_,
+      std::move(subresource_loader_factory_info_));
 
   frame_tree_node_->ResetNavigationRequest(true, true);
 }

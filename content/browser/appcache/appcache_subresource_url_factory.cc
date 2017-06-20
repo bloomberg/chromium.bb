@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/appcache/appcache_url_loader_factory.h"
+#include "content/browser/appcache/appcache_subresource_url_factory.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -21,29 +21,33 @@
 namespace content {
 
 // Implements the URLLoaderFactory mojom for AppCache requests.
-AppCacheURLLoaderFactory::AppCacheURLLoaderFactory(
+AppCacheSubresourceURLFactory::AppCacheSubresourceURLFactory(
     mojom::URLLoaderFactoryRequest request,
-    URLLoaderFactoryGetter* factory_getter)
-    : binding_(this, std::move(request)), factory_getter_(factory_getter) {
-  binding_.set_connection_error_handler(base::Bind(
-      &AppCacheURLLoaderFactory::OnConnectionError, base::Unretained(this)));
+    URLLoaderFactoryGetter* default_url_loader_factory_getter)
+    : binding_(this, std::move(request)),
+      default_url_loader_factory_getter_(default_url_loader_factory_getter) {
+  binding_.set_connection_error_handler(
+      base::Bind(&AppCacheSubresourceURLFactory::OnConnectionError,
+                 base::Unretained(this)));
 }
 
-AppCacheURLLoaderFactory::~AppCacheURLLoaderFactory() {}
+AppCacheSubresourceURLFactory::~AppCacheSubresourceURLFactory() {}
 
 // static
-mojom::URLLoaderFactoryPtr AppCacheURLLoaderFactory::CreateURLLoaderFactory(
-    URLLoaderFactoryGetter* factory_getter) {
+mojom::URLLoaderFactoryPtr
+AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
+    URLLoaderFactoryGetter* default_url_loader_factory_getter) {
   mojom::URLLoaderFactoryPtr loader_factory;
   mojom::URLLoaderFactoryRequest request = mojo::MakeRequest(&loader_factory);
 
   // This instance will get deleted when the client drops the connection.
   // Please see OnConnectionError() for details.
-  new AppCacheURLLoaderFactory(std::move(request), factory_getter);
+  new AppCacheSubresourceURLFactory(std::move(request),
+                                    default_url_loader_factory_getter);
   return loader_factory;
 }
 
-void AppCacheURLLoaderFactory::CreateLoaderAndStart(
+void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     mojom::URLLoaderAssociatedRequest url_loader_request,
     int32_t routing_id,
     int32_t request_id,
@@ -52,17 +56,22 @@ void AppCacheURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NOTREACHED() << "Currently not implemented";
+  DLOG(WARNING) << "Received request for loading : " << request.url.spec();
+  default_url_loader_factory_getter_->GetNetworkFactory()
+      ->get()
+      ->CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest(), routing_id,
+                             request_id, options, request, std::move(client),
+                             traffic_annotation);
 }
 
-void AppCacheURLLoaderFactory::SyncLoad(int32_t routing_id,
-                                        int32_t request_id,
-                                        const ResourceRequest& request,
-                                        SyncLoadCallback callback) {
+void AppCacheSubresourceURLFactory::SyncLoad(int32_t routing_id,
+                                             int32_t request_id,
+                                             const ResourceRequest& request,
+                                             SyncLoadCallback callback) {
   NOTREACHED();
 }
 
-void AppCacheURLLoaderFactory::OnConnectionError() {
+void AppCacheSubresourceURLFactory::OnConnectionError() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 

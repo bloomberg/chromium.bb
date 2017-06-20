@@ -29,6 +29,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/page_messages.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1173,7 +1174,8 @@ void NavigatorImpl::RequestNavigation(
         nullptr,  // response
         nullptr,  // body
         mojo::ScopedDataPipeConsumerHandle(), scoped_request->common_params(),
-        scoped_request->request_params(), scoped_request->is_view_source());
+        scoped_request->request_params(), scoped_request->is_view_source(),
+        mojom::URLLoaderFactoryPtrInfo());
     return;
   }
 
