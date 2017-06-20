@@ -100,18 +100,6 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
   return ntp_snippets::ContentSuggestion::ID(category.category, id_in_category);
 }
 
-ContentSuggestionsSectionInformation* LogoSectionInformation() {
-  ContentSuggestionsSectionInformation* sectionInfo =
-      [[ContentSuggestionsSectionInformation alloc]
-          initWithSectionID:ContentSuggestionsSectionLogo];
-  sectionInfo.title = nil;
-  sectionInfo.footerTitle = nil;
-  sectionInfo.showIfEmpty = YES;
-  sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;
-
-  return sectionInfo;
-}
-
 ContentSuggestionsSectionInformation* MostVisitedSectionInformation() {
   ContentSuggestionsSectionInformation* sectionInfo =
       [[ContentSuggestionsSectionInformation alloc]
