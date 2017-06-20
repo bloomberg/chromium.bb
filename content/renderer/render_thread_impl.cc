@@ -1751,42 +1751,6 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
       base::TimeDelta::FromMinutes(90));
 }
 
-// TODO(tasak): Replace the following GetMallocUsage() with memory-infra
-// when it is possible to run memory-infra without tracing.
-#if defined(OS_WIN)
-namespace {
-
-static size_t GetMallocUsage() {
-  // Iterate through whichever heap the CRT is using.
-  HANDLE crt_heap = reinterpret_cast<HANDLE>(_get_heap_handle());
-  if (crt_heap == NULL)
-    return 0;
-  if (!::HeapLock(crt_heap))
-    return 0 ;
-  size_t malloc_usage = 0;
-  PROCESS_HEAP_ENTRY heap_entry;
-  heap_entry.lpData = NULL;
-  while (::HeapWalk(crt_heap, &heap_entry) != 0) {
-    if ((heap_entry.wFlags & PROCESS_HEAP_ENTRY_BUSY) != 0)
-      malloc_usage += heap_entry.cbData;
-  }
-  ::HeapUnlock(crt_heap);
-  return malloc_usage;
-}
-
-}  // namespace
-#elif defined(OS_MACOSX) || defined(OS_IOS)
-namespace {
-
-static size_t GetMallocUsage() {
-  malloc_statistics_t stats = {0};
-  malloc_zone_statistics(nullptr, &stats);
-  return stats.size_in_use;
-}
-
-}  // namespace
-#endif
-
 bool RenderThreadImpl::GetRendererMemoryMetrics(
     RendererMemoryMetrics* memory_metrics) const {
   DCHECK(memory_metrics);
@@ -1805,16 +1769,9 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
       blink_stats.partition_alloc_total_allocated_bytes / 1024;
   memory_metrics->blink_gc_kb =
       blink_stats.blink_gc_total_allocated_bytes / 1024;
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  struct mallinfo minfo = mallinfo();
-#if defined(USE_TCMALLOC)
-  size_t malloc_usage = minfo.uordblks;
-#else
-  size_t malloc_usage = minfo.hblkhd + minfo.arena;
-#endif
-#else
-  size_t malloc_usage = GetMallocUsage();
-#endif
+  std::unique_ptr<base::ProcessMetrics> metric(
+      base::ProcessMetrics::CreateCurrentProcessMetrics());
+  size_t malloc_usage = metric->GetMallocUsage();
   memory_metrics->malloc_mb = malloc_usage / 1024 / 1024;
 
   discardable_memory::ClientDiscardableSharedMemoryManager::Statistics
