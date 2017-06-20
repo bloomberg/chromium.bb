@@ -114,7 +114,7 @@ class CORE_EXPORT WebSharedWorkerImpl final
 
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
-  void PostMessageToPageInspector(const String& message);
+  void PostMessageToPageInspector(int session_id, const String& message);
   void DidCloseWorkerGlobalScope();
   void DidTerminateWorkerThread();
 

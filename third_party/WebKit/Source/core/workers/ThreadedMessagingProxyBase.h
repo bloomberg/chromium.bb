@@ -54,7 +54,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
                             MessageLevel,
                             const String& message,
                             std::unique_ptr<SourceLocation>);
-  void PostMessageToPageInspector(const String&);
+  void PostMessageToPageInspector(int session_id, const String&);
 
   // 'virtual' for testing.
   virtual void WorkerThreadTerminated();

@@ -48,7 +48,7 @@ class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
                             MessageLevel,
                             const String& message,
                             SourceLocation*) override {}
-  void PostMessageToPageInspector(const String&) override {}
+  void PostMessageToPageInspector(int session_id, const String&) override {}
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override {}
   void DidEvaluateWorkerScript(bool success) override {}
   void DidCloseWorkerGlobalScope() override {}

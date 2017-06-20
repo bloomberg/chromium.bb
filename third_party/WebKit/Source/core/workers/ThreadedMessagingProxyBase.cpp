@@ -159,10 +159,11 @@ void ThreadedMessagingProxyBase::TerminateGlobalScope() {
 }
 
 void ThreadedMessagingProxyBase::PostMessageToPageInspector(
+    int session_id,
     const String& message) {
   DCHECK(IsParentContextThread());
   if (worker_inspector_proxy_)
-    worker_inspector_proxy_->DispatchMessageFromWorker(message);
+    worker_inspector_proxy_->DispatchMessageFromWorker(session_id, message);
 }
 
 ThreadableLoadingContext*

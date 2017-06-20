@@ -511,6 +511,7 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
 }
 
 void ServiceWorkerGlobalScopeProxy::PostMessageToPageInspector(
+    int session_id,
     const String& message) {
   DCHECK(embedded_worker_);
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
@@ -519,7 +520,8 @@ void ServiceWorkerGlobalScopeProxy::PostMessageToPageInspector(
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&WebEmbeddedWorkerImpl::PostMessageToPageInspector,
-                          CrossThreadUnretained(embedded_worker_), message));
+                          CrossThreadUnretained(embedded_worker_), session_id,
+                          message));
 }
 
 void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(

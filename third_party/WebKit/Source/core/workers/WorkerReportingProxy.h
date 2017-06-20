@@ -57,7 +57,7 @@ class CORE_EXPORT WorkerReportingProxy {
                                     MessageLevel,
                                     const String& message,
                                     SourceLocation*) {}
-  virtual void PostMessageToPageInspector(const String&) {}
+  virtual void PostMessageToPageInspector(int session_id, const String&) {}
 
   // Invoked when the new WorkerGlobalScope is created. This is called after
   // didLoadWorkerScript().

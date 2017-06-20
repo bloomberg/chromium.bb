@@ -78,7 +78,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
                                const WebString& message) override;
   void AddMessageToConsole(const WebConsoleMessage&) override;
 
-  void PostMessageToPageInspector(const WTF::String&);
+  void PostMessageToPageInspector(int session_id, const WTF::String&);
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
     return Platform::Current()->CreateURLLoader();

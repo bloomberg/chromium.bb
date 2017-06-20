@@ -79,6 +79,7 @@ class CORE_EXPORT InspectorWorkerAgent final
 
   // WorkerInspectorProxy::PageInspector implementation.
   void DispatchMessageFromWorker(WorkerInspectorProxy*,
+                                 int session_id,
                                  const String& message) override;
 
   Member<InspectedFrames> inspected_frames_;
