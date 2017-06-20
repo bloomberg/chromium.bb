@@ -44,7 +44,7 @@ Replace methods that used to
 ```
 and make them use
 ```cpp
-  base::ThreadsRestrictions::AssertIOAllowed();
+  base::ThreadRestrictions::AssertIOAllowed();
 ```
 
 The TaskScheduler API intentionally doesn't provide a
