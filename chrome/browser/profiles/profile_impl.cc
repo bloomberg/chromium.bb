@@ -979,6 +979,11 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
   return last_session_exit_type_;
 }
 
+scoped_refptr<base::SequencedTaskRunner>
+ProfileImpl::GetPrefServiceTaskRunner() {
+  return pref_service_task_runner_;
+}
+
 PrefService* ProfileImpl::GetPrefs() {
   return const_cast<PrefService*>(
       static_cast<const ProfileImpl*>(this)->GetPrefs());
@@ -1126,8 +1131,10 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
     info.factory = base::Bind(
         &prefs::CreatePrefService, chrome::ExpectedPrefStores(),
         make_scoped_refptr(content::BrowserThread::GetBlockingPool()));
-    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::IO);
+    info.task_runner = base::CreateSequencedTaskRunnerWithTraits(
+        {base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+         base::TaskPriority::USER_VISIBLE});
+    pref_service_task_runner_ = info.task_runner;
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
 

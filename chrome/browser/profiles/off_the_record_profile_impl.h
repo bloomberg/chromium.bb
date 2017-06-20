@@ -80,6 +80,7 @@ class OffTheRecordProfileImpl : public Profile {
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   void SetExitType(ExitType exit_type) override;
   ExitType GetLastSessionExitType() override;
+  scoped_refptr<base::SequencedTaskRunner> GetPrefServiceTaskRunner() override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
@@ -139,6 +140,7 @@ class OffTheRecordProfileImpl : public Profile {
   Profile* profile_;
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
+  scoped_refptr<base::SequencedTaskRunner> pref_service_task_runner_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::HostZoomMap::Subscription> track_zoom_subscription_;

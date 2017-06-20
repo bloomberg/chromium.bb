@@ -469,18 +469,14 @@ void BrowserProcessImpl::EndSession() {
   ProfileManager* pm = profile_manager();
   std::vector<Profile*> profiles(pm->GetLoadedProfiles());
   scoped_refptr<RundownTaskCounter> rundown_counter(new RundownTaskCounter());
-  const bool pref_service_enabled =
-      base::FeatureList::IsEnabled(features::kPrefService);
   std::vector<scoped_refptr<base::SequencedTaskRunner>> profile_writer_runners;
   for (size_t i = 0; i < profiles.size(); ++i) {
     Profile* profile = profiles[i];
     profile->SetExitType(Profile::EXIT_SESSION_ENDED);
     if (profile->GetPrefs()) {
       profile->GetPrefs()->CommitPendingWrite();
-      if (pref_service_enabled) {
-        rundown_counter->Post(content::BrowserThread::GetTaskRunnerForThread(
-                                  content::BrowserThread::IO)
-                                  .get());
+      if (profile->GetPrefServiceTaskRunner()) {
+        rundown_counter->Post(profile->GetPrefServiceTaskRunner().get());
         profile_writer_runners.push_back(profile->GetIOTaskRunner());
       } else {
         rundown_counter->Post(profile->GetIOTaskRunner().get());
@@ -527,7 +523,7 @@ void BrowserProcessImpl::EndSession() {
   // http://crbug.com/318527.
   const base::TimeTicks end_time = base::TimeTicks::Now() + kEndSessionTimeout;
   const bool timed_out = !rundown_counter->TimedWaitUntil(end_time);
-  if (timed_out || !pref_service_enabled)
+  if (timed_out || !base::FeatureList::IsEnabled(features::kPrefService))
     return;
 
   scoped_refptr<RundownTaskCounter> profile_write_rundown_counter(

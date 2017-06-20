@@ -1050,6 +1050,12 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
+scoped_refptr<base::SequencedTaskRunner>
+TestingProfile::GetPrefServiceTaskRunner() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 TestingProfile::Builder::Builder()
     : build_called_(false),
       delegate_(NULL),

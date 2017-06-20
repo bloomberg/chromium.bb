@@ -387,8 +387,10 @@ void OffTheRecordProfileImpl::RegisterInProcessServices(
     info.factory = base::Bind(
         &prefs::CreatePrefService, chrome::ExpectedPrefStores(),
         make_scoped_refptr(content::BrowserThread::GetBlockingPool()));
-    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::IO);
+    info.task_runner = base::CreateSequencedTaskRunnerWithTraits(
+        {base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+         base::TaskPriority::USER_VISIBLE});
+    pref_service_task_runner_ = info.task_runner;
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
 }
@@ -497,6 +499,11 @@ bool OffTheRecordProfileImpl::WasCreatedByVersionOrLater(
 
 Profile::ExitType OffTheRecordProfileImpl::GetLastSessionExitType() {
   return profile_->GetLastSessionExitType();
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+OffTheRecordProfileImpl::GetPrefServiceTaskRunner() {
+  return pref_service_task_runner_;
 }
 
 #if defined(OS_CHROMEOS)

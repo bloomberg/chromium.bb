@@ -303,6 +303,10 @@ class Profile : public content::BrowserContext {
   // Returns how the last session was shutdown.
   virtual ExitType GetLastSessionExitType() = 0;
 
+  // Returns the SequencedTaskRunner the pref service runs on.
+  virtual scoped_refptr<base::SequencedTaskRunner>
+  GetPrefServiceTaskRunner() = 0;
+
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of
   // Resume calls matches the number of Pause calls received.
