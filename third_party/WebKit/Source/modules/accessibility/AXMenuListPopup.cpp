@@ -124,13 +124,20 @@ void AXMenuListPopup::UpdateChildrenIfNecessary() {
     AddChildren();
 }
 
-void AXMenuListPopup::DidUpdateActiveOption(int option_index) {
+void AXMenuListPopup::DidUpdateActiveOption(int option_index,
+                                            bool fire_notifications) {
   UpdateChildrenIfNecessary();
 
+  int old_index = active_index_;
+  active_index_ = option_index;
+
+  if (!fire_notifications)
+    return;
+
   AXObjectCacheImpl& cache = AxObjectCache();
-  if (active_index_ != option_index && active_index_ >= 0 &&
-      active_index_ < static_cast<int>(children_.size())) {
-    AXObjectImpl* previous_child = children_[active_index_].Get();
+  if (old_index != option_index && old_index >= 0 &&
+      old_index < static_cast<int>(children_.size())) {
+    AXObjectImpl* previous_child = children_[old_index].Get();
     cache.PostNotification(previous_child,
                            AXObjectCacheImpl::kAXMenuListItemUnselected);
   }
@@ -140,8 +147,6 @@ void AXMenuListPopup::DidUpdateActiveOption(int option_index) {
     cache.PostNotification(this, AXObjectCacheImpl::kAXActiveDescendantChanged);
     cache.PostNotification(child, AXObjectCacheImpl::kAXMenuListItemSelected);
   }
-
-  active_index_ = option_index;
 }
 
 void AXMenuListPopup::DidHide() {

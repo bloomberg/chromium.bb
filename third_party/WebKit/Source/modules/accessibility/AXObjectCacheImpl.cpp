@@ -574,24 +574,29 @@ void AXObjectCacheImpl::RemoveAXID(AXObjectImpl* object) {
   aria_owner_to_ids_mapping_.erase(obj_id);
 }
 
-void AXObjectCacheImpl::SelectionChanged(Node* node) {
+AXObjectImpl* AXObjectCacheImpl::NearestExistingAncestor(Node* node) {
   // Find the nearest ancestor that already has an accessibility object, since
   // we might be in the middle of a layout.
   while (node) {
-    if (AXObjectImpl* obj = Get(node)) {
-      obj->SelectionChanged();
-      return;
-    }
+    if (AXObjectImpl* obj = Get(node))
+      return obj;
     node = node->parentNode();
   }
+  return nullptr;
+}
+
+void AXObjectCacheImpl::SelectionChanged(Node* node) {
+  AXObjectImpl* nearestAncestor = NearestExistingAncestor(node);
+  if (nearestAncestor)
+    nearestAncestor->SelectionChanged();
 }
 
 void AXObjectCacheImpl::TextChanged(Node* node) {
-  TextChanged(GetOrCreate(node));
+  TextChanged(Get(node));
 }
 
 void AXObjectCacheImpl::TextChanged(LayoutObject* layout_object) {
-  TextChanged(GetOrCreate(layout_object));
+  TextChanged(Get(layout_object));
 }
 
 void AXObjectCacheImpl::TextChanged(AXObjectImpl* obj) {
@@ -1177,7 +1182,7 @@ void AXObjectCacheImpl::HandleValueChanged(Node* node) {
 
 void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutMenuList* menu_list,
                                                      int option_index) {
-  AXObjectImpl* obj = Get(menu_list);
+  AXObjectImpl* obj = GetOrCreate(menu_list);
   if (!obj || !obj->IsMenuList())
     return;
 

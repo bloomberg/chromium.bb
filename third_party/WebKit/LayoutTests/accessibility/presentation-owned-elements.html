@@ -78,7 +78,10 @@ description("This test make sure that presentation role is inherited to required
 
 if (window.testRunner)
     testRunner.dumpAsText();
+
 if (window.accessibilityController) {
+    // Ensure we've seen all nodes in accessibility tree.
+    traverseAccessibilityTree(accessibilityController.rootElement);
     buildAccessibilityTree(accessibilityController.focusedElement, 0, 1);
 }
 </script>

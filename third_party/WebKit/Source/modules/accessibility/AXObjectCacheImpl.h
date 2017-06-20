@@ -255,6 +255,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
 
   void TextChanged(Node*);
   bool NodeIsTextControl(const Node*);
+  AXObjectImpl* NearestExistingAncestor(Node*);
 
   Settings* GetSettings();
 };

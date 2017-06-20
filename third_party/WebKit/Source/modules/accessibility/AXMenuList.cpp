@@ -117,6 +117,8 @@ bool AXMenuList::CanSetFocusAttribute() const {
 }
 
 void AXMenuList::DidUpdateActiveOption(int option_index) {
+  bool suppress_notifications =
+      (GetNode() && !GetNode()->IsFinishedParsingChildren());
   const auto& child_objects = Children();
   if (!child_objects.IsEmpty()) {
     DCHECK(child_objects.size() == 1);
@@ -124,7 +126,7 @@ void AXMenuList::DidUpdateActiveOption(int option_index) {
 
     if (child_objects[0]->IsMenuListPopup()) {
       if (AXMenuListPopup* popup = ToAXMenuListPopup(child_objects[0].Get()))
-        popup->DidUpdateActiveOption(option_index);
+        popup->DidUpdateActiveOption(option_index, !suppress_notifications);
     }
   }
 

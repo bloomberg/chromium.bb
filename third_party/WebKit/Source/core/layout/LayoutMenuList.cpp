@@ -308,9 +308,6 @@ void LayoutMenuList::DidUpdateActiveOption(HTMLOptionElement* option) {
     return;
   last_active_index_ = option_index;
 
-  if (option_index < 0)
-    return;
-
   // We skip sending accessiblity notifications for the very first option,
   // otherwise we get extra focus and select events that are undesired.
   if (!has_updated_active_option_) {
