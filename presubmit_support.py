@@ -568,7 +568,7 @@ class InputApi(object):
   @property
   def tbr(self):
     """Returns if a change is TBR'ed."""
-    return 'TBR' in self.change.tags
+    return 'TBR' in self.change.tags or self.change.TBRsFromDescription()
 
   def RunTests(self, tests_mix, parallel=True):
     tests = []
