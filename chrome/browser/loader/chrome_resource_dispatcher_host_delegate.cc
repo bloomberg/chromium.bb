@@ -768,7 +768,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
   signin::ProcessAccountConsistencyResponseHeaders(
-      request, GURL(), io_data, info->GetChildID(), info->GetRouteID());
+      request, GURL(), io_data, info->GetWebContentsGetterForRequest());
 
   // Built-in additional protection for the chrome web store origin.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -814,7 +814,7 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   signin::FixAccountConsistencyRequestHeader(
       request, redirect_url, io_data, info->GetChildID(), info->GetRouteID());
   signin::ProcessAccountConsistencyResponseHeaders(
-      request, redirect_url, io_data, info->GetChildID(), info->GetRouteID());
+      request, redirect_url, io_data, info->GetWebContentsGetterForRequest());
 
   if (io_data->loading_predictor_observer()) {
     io_data->loading_predictor_observer()->OnRequestRedirected(
