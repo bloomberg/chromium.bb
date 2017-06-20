@@ -244,6 +244,11 @@ public class LocaleManager {
             final Activity activity, final @Nullable Callback<Boolean> onSearchEngineFinalized) {
         assert TemplateUrlService.getInstance().isLoaded();
 
+        if (TemplateUrlService.getInstance().isDefaultSearchManaged()) {
+            if (onSearchEngineFinalized != null) onSearchEngineFinalized.onResult(true);
+            return;
+        }
+
         final int shouldShow = getSearchEnginePromoShowType();
         Callable<PromoDialog> dialogCreator;
         switch (shouldShow) {

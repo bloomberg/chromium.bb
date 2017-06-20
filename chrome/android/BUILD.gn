@@ -472,6 +472,7 @@ android_library("chrome_test_java") {
     "//components/payments/content/android:java",
     "//components/payments/mojom:mojom_parser_java",
     "//components/policy/android:policy_java",
+    "//components/policy/android:policy_java_test_support",
     "//components/precache/android:precache_java",
     "//components/precache/android:precache_javatests",
     "//components/signin/core/browser/android:java",
