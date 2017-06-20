@@ -21,7 +21,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/paint/BackgroundImageGeometry.h"
-#include "core/paint/BoxBorderPainter.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/NinePieceImagePainter.h"
@@ -36,6 +35,7 @@
 #include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -191,8 +191,8 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
               layout_box_, paint_info, snapped_paint_rect))) &&
         !(layout_box_.IsTable() &&
           ToLayoutTable(&layout_box_)->ShouldCollapseBorders())) {
-      PaintBorder(layout_box_, paint_info, paint_rect, style,
-                  box_decoration_data.bleed_avoidance);
+      PaintBorder(layout_box_, layout_box_.GetDocument(), GetNode(), paint_info,
+                  paint_rect, style, box_decoration_data.bleed_avoidance);
     }
   }
 
@@ -643,9 +643,10 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
   if (all_mask_images_loaded) {
     PaintFillLayers(paint_info, Color::kTransparent,
                     layout_box_.Style()->MaskLayers(), paint_rect);
-    PaintNinePieceImage(layout_box_, paint_info.context, paint_rect,
-                        layout_box_.StyleRef(),
-                        layout_box_.Style()->MaskBoxImage());
+    NinePieceImagePainter::Paint(paint_info.context, layout_box_,
+                                 layout_box_.GetDocument(), GetNode(),
+                                 paint_rect, layout_box_.StyleRef(),
+                                 layout_box_.StyleRef().MaskBoxImage());
   }
 
   if (push_transparency_layer)
@@ -674,31 +675,13 @@ void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,
   paint_info.context.FillRect(paint_rect, Color::kBlack);
 }
 
-bool BoxPainter::PaintNinePieceImage(const LayoutBoxModelObject& obj,
-                                     GraphicsContext& graphics_context,
-                                     const LayoutRect& rect,
-                                     const ComputedStyle& style,
-                                     const NinePieceImage& nine_piece_image,
-                                     SkBlendMode op) {
-  return NinePieceImagePainter().Paint(graphics_context, obj, rect, style,
-                                       nine_piece_image, op);
-}
-
-void BoxPainter::PaintBorder(const LayoutBoxModelObject& obj,
-                             const PaintInfo& info,
-                             const LayoutRect& rect,
-                             const ComputedStyle& style,
-                             BackgroundBleedAvoidance bleed_avoidance,
-                             bool include_logical_left_edge,
-                             bool include_logical_right_edge) {
-  // border-image is not affected by border-radius.
-  if (PaintNinePieceImage(obj, info.context, rect, style, style.BorderImage()))
-    return;
-
-  const BoxBorderPainter border_painter(rect, style, bleed_avoidance,
-                                        include_logical_left_edge,
-                                        include_logical_right_edge);
-  border_painter.PaintBorder(info, rect);
+Node* BoxPainter::GetNode() {
+  Node* node = nullptr;
+  const LayoutObject* layout_object = &layout_box_;
+  for (; layout_object && !node; layout_object = layout_object->Parent()) {
+    node = layout_object->GeneratingNode();
+  }
+  return node;
 }
 
 }  // namespace blink

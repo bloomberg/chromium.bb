@@ -7,6 +7,7 @@
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/NinePieceImagePainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -241,6 +242,13 @@ InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
   return kDontPaintBorders;
 }
 
+static inline Node* GetNode(const LayoutObject* box_model) {
+  Node* node = nullptr;
+  for (const LayoutObject* obj = box_model; obj && !node; obj = obj->Parent())
+    node = obj->GeneratingNode();
+  return node;
+}
+
 void InlineFlowBoxPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
@@ -301,14 +309,16 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
                   style_to_use->BackgroundLayers(), adjusted_frame_rect);
   PaintInsetBoxShadow(paint_info, *style_to_use, adjusted_frame_rect);
 
+  const LayoutObject* box_model = ToLayoutBoxModelObject(
+      LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
+
   switch (border_painting_type) {
     case kDontPaintBorders:
       break;
     case kPaintBordersWithoutClip:
       BoxPainter::PaintBorder(
-          *ToLayoutBoxModelObject(LineLayoutAPIShim::LayoutObjectFrom(
-              inline_flow_box_.BoxModelObject())),
-          paint_info, adjusted_frame_rect,
+          *box_model, box_model->GetDocument(), GetNode(box_model), paint_info,
+          adjusted_frame_rect,
           inline_flow_box_.GetLineLayoutItem().StyleRef(
               inline_flow_box_.IsFirstLineStyle()),
           kBackgroundBleedNone, inline_flow_box_.IncludeLogicalLeftEdge(),
@@ -322,12 +332,11 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
           adjusted_paint_offset, frame_rect.Size(), TextDirection::kLtr);
       GraphicsContextStateSaver state_saver(paint_info.context);
       paint_info.context.Clip(adjusted_clip_rect);
-      BoxPainter::PaintBorder(
-          *ToLayoutBoxModelObject(LineLayoutAPIShim::LayoutObjectFrom(
-              inline_flow_box_.BoxModelObject())),
-          paint_info, image_strip_paint_rect,
-          inline_flow_box_.GetLineLayoutItem().StyleRef(
-              inline_flow_box_.IsFirstLineStyle()));
+      BoxPainter::PaintBorder(*box_model, box_model->GetDocument(),
+                              GetNode(box_model), paint_info,
+                              image_strip_paint_rect,
+                              inline_flow_box_.GetLineLayoutItem().StyleRef(
+                                  inline_flow_box_.IsFirstLineStyle()));
       break;
   }
 }
@@ -398,8 +407,9 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
   // The simple case is where we are the only box for this object. In those
   // cases only a single call to draw is required.
   if (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) {
-    BoxPainter::PaintNinePieceImage(
-        *box_model, paint_info.context, paint_rect,
+    NinePieceImagePainter::Paint(
+        paint_info.context, *box_model, box_model->GetDocument(),
+        GetNode(box_model), paint_rect,
         inline_flow_box_.GetLineLayoutItem().StyleRef(), mask_nine_piece_image,
         composite_op);
   } else {
@@ -413,8 +423,9 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     GraphicsContextStateSaver state_saver(paint_info.context);
     // TODO(chrishtr): this should be pixel-snapped.
     paint_info.context.Clip(clip_rect);
-    BoxPainter::PaintNinePieceImage(
-        *box_model, paint_info.context, image_strip_paint_rect,
+    NinePieceImagePainter::Paint(
+        paint_info.context, *box_model, box_model->GetDocument(),
+        GetNode(box_model), image_strip_paint_rect,
         inline_flow_box_.GetLineLayoutItem().StyleRef(), mask_nine_piece_image,
         composite_op);
   }

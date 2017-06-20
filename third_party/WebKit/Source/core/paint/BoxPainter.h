@@ -11,18 +11,13 @@
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
-#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace blink {
 
-class ComputedStyle;
 class FillLayer;
-class GraphicsContext;
 class InlineFlowBox;
 class LayoutPoint;
 class LayoutRect;
-class NinePieceImage;
 struct PaintInfo;
 class LayoutBox;
 class LayoutObject;
@@ -61,20 +56,6 @@ class BoxPainter : public BoxPainterBase {
                              const LayoutSize& = LayoutSize(),
                              SkBlendMode = SkBlendMode::kSrcOver,
                              const LayoutObject* background_object = nullptr);
-  static bool PaintNinePieceImage(const LayoutBoxModelObject&,
-                                  GraphicsContext&,
-                                  const LayoutRect&,
-                                  const ComputedStyle&,
-                                  const NinePieceImage&,
-                                  SkBlendMode = SkBlendMode::kSrcOver);
-  static void PaintBorder(const LayoutBoxModelObject&,
-                          const PaintInfo&,
-                          const LayoutRect&,
-                          const ComputedStyle&,
-                          BackgroundBleedAvoidance = kBackgroundBleedNone,
-                          bool include_logical_left_edge = true,
-                          bool include_logical_right_edge = true);
-
   LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
                                       const LayoutPoint& adjusted_paint_offset);
 
@@ -87,6 +68,7 @@ class BoxPainter : public BoxPainterBase {
                        const LayoutRect&,
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
+  Node* GetNode();
 
   const LayoutBox& layout_box_;
 };
