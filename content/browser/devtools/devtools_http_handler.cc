@@ -801,6 +801,7 @@ void ServerWrapper::WriteActivePortToUserProfile(
                       static_cast<int>(port_string.length())) < 0) {
     LOG(ERROR) << "Error writing DevTools active port to file";
   }
+  LOG(ERROR) << "\nDevTools listening on " << endpoint.ToString() << "\n";
 }
 
 void DevToolsHttpHandler::SendJson(int connection_id,
