@@ -158,7 +158,6 @@ class CONTENT_EXPORT PresentationDispatcher
   void WidgetWillClose() override;
 
   // blink::mojom::PresentationServiceClient
-  void OnScreenAvailabilityNotSupported(const GURL& url) override;
   void OnScreenAvailabilityUpdated(
       const GURL& url,
       blink::mojom::ScreenAvailability availability) override;

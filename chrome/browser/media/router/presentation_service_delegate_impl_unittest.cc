@@ -323,8 +323,9 @@ TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
 
 TEST_F(PresentationServiceDelegateImplTest, AddListenerForInvalidUrl) {
   MockScreenAvailabilityListener listener(GURL("unsupported-url://foo"));
-  EXPECT_CALL(listener, OnScreenAvailabilityChanged(
-                            blink::mojom::ScreenAvailability::UNAVAILABLE));
+  EXPECT_CALL(listener,
+              OnScreenAvailabilityChanged(
+                  blink::mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED));
   EXPECT_FALSE(delegate_impl_->AddScreenAvailabilityListener(
       main_frame_process_id_, main_frame_routing_id_, &listener));
   EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).Times(0);
@@ -517,7 +518,8 @@ TEST_F(PresentationServiceDelegateImplTest, DelegateObservers) {
 
 TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
   EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).WillOnce(Return(false));
-  EXPECT_CALL(listener1_, OnScreenAvailabilityNotSupported());
+  EXPECT_CALL(listener1_, OnScreenAvailabilityChanged(
+                              blink::mojom::ScreenAvailability::DISABLED));
   EXPECT_FALSE(delegate_impl_->AddScreenAvailabilityListener(
       main_frame_process_id_, main_frame_routing_id_, &listener1_));
 }
