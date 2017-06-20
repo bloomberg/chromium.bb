@@ -1,0 +1,33 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chrome/process_version_rc_template.gni")
+import("//testing/test.gni")
+
+executable("zucchini") {
+  sources = [
+    "zucchini_main.cc",
+  ]
+
+  deps = []
+
+  if (is_win) {
+    deps += [ ":zucchini_exe_version" ]
+  }
+}
+
+if (is_win) {
+  process_version_rc_template("zucchini_exe_version") {
+    template_file = "zucchini_exe_version.rc.version"
+    output = "$target_gen_dir/zucchini_exe_version.rc"
+  }
+}
+
+test("zucchini_unittests") {
+  sources = []
+
+  deps = [
+    "//base/test:run_all_unittests",
+  ]
+}
