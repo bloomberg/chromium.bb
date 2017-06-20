@@ -3152,6 +3152,36 @@
     <message name="IDS_SETTINGS_POWER_SOURCE_CALCULATING" desc="In Device Settings > Power, the power source description when the power status is being determined.">
       Checking...
     </message>
+    <message name="IDS_SETTINGS_POWER_IDLE_LABEL" desc="In Device Settings > Power, label for behavior when device is idle.">
+      When idle
+    </message>
+    <message name="IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF_SLEEP" desc="In Device Settings > Power, menu item for idle behavior that turns the screen off and later puts the device to sleep.">
+      Turn off display and sleep
+    </message>
+    <message name="IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF_STAY_AWAKE" desc="In Device Settings > Power, menu item for idle behavior that turns the screen off but prevents the device from sleeping.">
+      Turn off display but stay awake
+    </message>
+    <message name="IDS_SETTINGS_POWER_IDLE_DISPLAY_ON" desc="In Device Settings > Power, menu item for idle behavior that prevents the screen from turning off and prevents the device from sleeping.">
+      Keep display on
+    </message>
+    <message name="IDS_SETTINGS_POWER_IDLE_OTHER" desc="In Device Settings > Power, menu item for custom idle behavior.">
+      Other
+    </message>
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_LABEL" desc="In Device Settings > Power, label for behavior when lid is closed.">
+      When lid is closed
+    </message>
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SLEEP" desc="In Device Settings > Power, menu item for lid-closed behavior that puts the device to sleep.">
+      Sleep
+    </message>
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_STAY_AWAKE" desc="In Device Settings > Power, menu item for lid-closed behavior that prevents the device from sleeping.">
+      Stay awake
+    </message>
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT" desc="In Device Settings > Power, menu item for lid-closed behavior that signs the user out.">
+      Sign out
+    </message>
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN" desc="In Device Settings > Power, menu item for lid-closed behavior that shuts the system down.">
+      Shut down
+    </message>
   </if>
 
   <!-- System Page -->

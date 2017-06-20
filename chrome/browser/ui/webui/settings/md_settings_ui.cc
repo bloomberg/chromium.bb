@@ -210,15 +210,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
                               arc::IsPlayStoreAvailable());
 
   // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
-  bool enable_power_settings =
-      !ash_util::IsRunningInMash() &&
-      (switches::PowerOverlayEnabled() ||
-       (ash::PowerStatus::Get()->IsBatteryPresent() &&
-        ash::PowerStatus::Get()->SupportsDualRoleDevices()));
+  bool enable_power_settings = !ash_util::IsRunningInMash();
   html_source->AddBoolean("enablePowerSettings", enable_power_settings);
   if (enable_power_settings) {
-    AddSettingsPageUIHandler(
-        base::MakeUnique<chromeos::settings::PowerHandler>());
+    AddSettingsPageUIHandler(base::MakeUnique<chromeos::settings::PowerHandler>(
+        profile->GetPrefs()));
   }
 #endif
 
