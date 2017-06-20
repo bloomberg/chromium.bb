@@ -1836,7 +1836,7 @@ int HttpCache::Transaction::DoHeadersPhaseCannotProceed() {
 }
 
 int HttpCache::Transaction::DoFinishHeaders(int result) {
-  if (!entry_ || result != OK) {
+  if (!cache_.get() || !entry_ || result != OK) {
     TransitionToState(STATE_NONE);
     return result;
   }
