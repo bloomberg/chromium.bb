@@ -41,6 +41,15 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
           metrics_util::PASSWORD_NOT_SUBMITTED);
     }
   }
+
+  if (submitted_form_type_ != kSubmittedFormTypeUnspecified) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType",
+                              submitted_form_type_, kSubmittedFormTypeMax);
+    if (!is_main_frame_secure_) {
+      UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedNonSecureFormType",
+                                submitted_form_type_, kSubmittedFormTypeMax);
+    }
+  }
 }
 
 void PasswordFormMetricsRecorder::MarkGenerationAvailable() {
@@ -100,6 +109,11 @@ void PasswordFormMetricsRecorder::LogSubmitFailed() {
   }
   base::RecordAction(base::UserMetricsAction("PasswordManager_LoginFailed"));
   submit_result_ = kSubmitResultFailed;
+}
+
+void PasswordFormMetricsRecorder::SetSubmittedFormType(
+    SubmittedFormType form_type) {
+  submitted_form_type_ = form_type;
 }
 
 int PasswordFormMetricsRecorder::GetActionsTakenNew() const {

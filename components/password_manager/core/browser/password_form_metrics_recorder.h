@@ -68,6 +68,22 @@ class PasswordFormMetricsRecorder {
     kSuppressedAccountExistenceMax,
   };
 
+  // What the form is used for. kSubmittedFormTypeUnspecified is only set before
+  // the SetSubmittedFormType() is called, and should never be actually
+  // uploaded.
+  enum SubmittedFormType {
+    kSubmittedFormTypeLogin,
+    kSubmittedFormTypeLoginNoUsername,
+    kSubmittedFormTypeChangePasswordEnabled,
+    kSubmittedFormTypeChangePasswordDisabled,
+    kSubmittedFormTypeChangePasswordNoUsername,
+    kSubmittedFormTypeSignup,
+    kSubmittedFormTypeSignupNoUsername,
+    kSubmittedFormTypeLoginAndSignup,
+    kSubmittedFormTypeUnspecified,
+    kSubmittedFormTypeMax
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -101,6 +117,9 @@ class PasswordFormMetricsRecorder {
   // These routines are used to update internal statistics ("ActionsTaken").
   void LogSubmitPassed();
   void LogSubmitFailed();
+
+  // Call this once the submitted form type has been determined.
+  void SetSubmittedFormType(SubmittedFormType form_type);
 
   // Records all histograms in the PasswordManager.SuppressedAccount.* family.
   // Takes the FormFetcher intance which owns the login data from PasswordStore.
@@ -156,6 +175,11 @@ class PasswordFormMetricsRecorder {
   ManagerAction manager_action_ = kManagerActionNone;
   UserAction user_action_ = UserAction::kNone;
   SubmitResult submit_result_ = kSubmitResultNotSubmitted;
+
+  // Form type of the form that the PasswordFormManager is managing. Set after
+  // submission as the classification of the form can change depending on what
+  // data the user has entered.
+  SubmittedFormType submitted_form_type_ = kSubmittedFormTypeUnspecified;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

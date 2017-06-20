@@ -261,4 +261,53 @@ TEST(PasswordFormMetricsRecorder, ActionSequence) {
                    "PasswordManager_LoggedInWithNewUsername"));
 }
 
+TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
+  static constexpr struct {
+    // Stimuli:
+    bool is_main_frame_secure;
+    PasswordFormMetricsRecorder::SubmittedFormType form_type;
+    // Expectations:
+    // Expectation for PasswordManager.SubmittedFormType:
+    int expected_submitted_form_type;
+    // Expectation for PasswordManager.SubmittedNonSecureFormType:
+    int expected_submitted_non_secure_form_type;
+  } kTests[] = {
+      {false, PasswordFormMetricsRecorder::kSubmittedFormTypeUnspecified, 0, 0},
+      {true, PasswordFormMetricsRecorder::kSubmittedFormTypeUnspecified, 0, 0},
+      {false, PasswordFormMetricsRecorder::kSubmittedFormTypeLogin, 1, 1},
+      {true, PasswordFormMetricsRecorder::kSubmittedFormTypeLogin, 1, 0},
+  };
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(testing::Message()
+                 << "is_main_frame_secure=" << test.is_main_frame_secure
+                 << ", form_type=" << test.form_type);
+
+    base::HistogramTester histogram_tester;
+
+    // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
+    // on destruction.
+    {
+      PasswordFormMetricsRecorder recorder(test.is_main_frame_secure);
+      recorder.SetSubmittedFormType(test.form_type);
+    }
+
+    if (test.expected_submitted_form_type) {
+      histogram_tester.ExpectBucketCount("PasswordManager.SubmittedFormType",
+                                         test.form_type,
+                                         test.expected_submitted_form_type);
+    } else {
+      histogram_tester.ExpectTotalCount("PasswordManager.SubmittedFormType", 0);
+    }
+
+    if (test.expected_submitted_non_secure_form_type) {
+      histogram_tester.ExpectBucketCount(
+          "PasswordManager.SubmittedNonSecureFormType", test.form_type,
+          test.expected_submitted_non_secure_form_type);
+    } else {
+      histogram_tester.ExpectTotalCount(
+          "PasswordManager.SubmittedNonSecureFormType", 0);
+    }
+  }
+}
+
 }  // namespace password_manager
