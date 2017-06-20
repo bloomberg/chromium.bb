@@ -163,7 +163,8 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 
 // Tests that the progress indicator is shown and has expected progress value
 // after a form is submitted, and the toolbar is visible.
-- (void)testProgressIndicatorShownOnFormSubmit {
+// TODO(crbug.com/734874): Reenable test when fixed.
+- (void)DISABLED_testProgressIndicatorShownOnFormSubmit {
   if (IsIPadIdiom()) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no progress view in tablet)");
   }
