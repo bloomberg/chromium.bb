@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chromeos/network/network_handler_callbacks.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
 
@@ -73,7 +74,7 @@ class NetworkStateHelper {
   virtual void CreateAndConnectNetworkFromOnc(
       const std::string& onc_spec,
       const base::Closure& success_callback,
-      const base::Closure& error_callback) const;
+      const network_handler::ErrorCallback& error_callback) const;
 
   // Returns true if the default network is in connected state.
   virtual bool IsConnected() const;
@@ -82,14 +83,11 @@ class NetworkStateHelper {
   virtual bool IsConnecting() const;
 
  private:
-  void OnCreateConfiguration(const base::Closure& success_callback,
-                             const base::Closure& error_callback,
-                             const std::string& service_path,
-                             const std::string& guid) const;
-  void OnCreateOrConnectNetworkFailed(
-      const base::Closure& error_callback,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data) const;
+  void OnCreateConfiguration(
+      const base::Closure& success_callback,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& service_path,
+      const std::string& guid) const;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHelper);
 };

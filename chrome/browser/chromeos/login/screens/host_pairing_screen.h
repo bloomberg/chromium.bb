@@ -90,6 +90,10 @@ class HostPairingScreen
   pairing_chromeos::HostPairingController* remora_controller_ = nullptr;
 
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
+
+  // Describes the error code of an enrollment operation. For the format, see
+  // the definition of |error_code_| in bluetooth_host_pairing_controller.h.
+  int enrollment_error_code_ = 0;
   std::string enrollment_error_string_;
 
   // Current stage of pairing process.

@@ -150,6 +150,29 @@ void BluetoothHostPairingController::SendHostStatus() {
                  ptr_factory_.GetWeakPtr()));
 }
 
+void BluetoothHostPairingController::SendErrorCodeAndMessage() {
+  if (error_code_ ==
+      static_cast<int>(HostPairingController::ErrorCode::ERROR_NONE)) {
+    return;
+  }
+
+  pairing_api::Error error_status;
+  error_status.set_api_version(kPairingAPIVersion);
+  error_status.mutable_parameters()->set_code(error_code_);
+  error_status.mutable_parameters()->set_description(error_message_);
+
+  int size = 0;
+  scoped_refptr<net::IOBuffer> io_buffer(
+      ProtoDecoder::SendError(error_status, &size));
+
+  controller_socket_->Send(
+      io_buffer, size,
+      base::Bind(&BluetoothHostPairingController::OnSendComplete,
+                 ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothHostPairingController::OnSendError,
+                 ptr_factory_.GetWeakPtr()));
+}
+
 void BluetoothHostPairingController::Reset() {
   if (adapter_.get()) {
     device::BluetoothDevice* device =
@@ -476,9 +499,12 @@ std::string BluetoothHostPairingController::GetEnrollmentDomain() {
 void BluetoothHostPairingController::OnNetworkConnectivityChanged(
     Connectivity connectivity_status) {
   connectivity_status_ = connectivity_status;
-  if (connectivity_status == CONNECTIVITY_NONE)
+  if (connectivity_status == CONNECTIVITY_NONE) {
     ChangeStage(STAGE_SETUP_NETWORK_ERROR);
-  SendHostStatus();
+    SendErrorCodeAndMessage();
+  } else {
+    SendHostStatus();
+  }
 }
 
 void BluetoothHostPairingController::OnUpdateStatusChanged(
@@ -497,15 +523,23 @@ void BluetoothHostPairingController::OnEnrollmentStatusChanged(
   enrollment_status_ = enrollment_status;
   if (enrollment_status == ENROLLMENT_STATUS_SUCCESS) {
     ChangeStage(STAGE_ENROLLMENT_SUCCESS);
+    SendHostStatus();
   } else if (enrollment_status == ENROLLMENT_STATUS_FAILURE) {
     ChangeStage(STAGE_ENROLLMENT_ERROR);
+    SendErrorCodeAndMessage();
   }
-  SendHostStatus();
 }
 
 void BluetoothHostPairingController::SetPermanentId(
     const std::string& permanent_id) {
   permanent_id_ = permanent_id;
+}
+
+void BluetoothHostPairingController::SetErrorCodeAndMessage(
+    int error_code,
+    const std::string& error_message) {
+  error_code_ = error_code;
+  error_message_ = error_message;
 }
 
 void BluetoothHostPairingController::RequestPinCode(

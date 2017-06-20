@@ -51,6 +51,14 @@ class HostPairingController {
     ENROLLMENT_STATUS_SUCCESS,
   };
 
+  enum class ErrorCode : int {
+    ERROR_NONE = 0,
+    NETWORK_ERROR,
+    AUTH_ERROR,
+    ENROLL_ERROR,
+    OTHER_ERROR,
+  };
+
   class Observer {
    public:
     Observer();
@@ -114,6 +122,9 @@ class HostPairingController {
 
   // Set the permanent id assigned during enrollment.
   virtual void SetPermanentId(const std::string& permanent_id) = 0;
+
+  virtual void SetErrorCodeAndMessage(int error_code,
+                                      const std::string& error_message) = 0;
 
   // Reset the controller.
   virtual void Reset() = 0;

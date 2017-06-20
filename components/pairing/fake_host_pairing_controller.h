@@ -49,6 +49,8 @@ class FakeHostPairingController
   void OnUpdateStatusChanged(UpdateStatus update_status) override;
   void OnEnrollmentStatusChanged(EnrollmentStatus enrollment_status) override;
   void SetPermanentId(const std::string& permanent_id) override;
+  void SetErrorCodeAndMessage(int error_code,
+                              const std::string& error_message) override;
   void Reset() override;
 
   // HostPairingController::Observer:

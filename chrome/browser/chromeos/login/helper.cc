@@ -18,6 +18,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
@@ -35,6 +36,8 @@
 namespace chromeos {
 
 namespace {
+
+constexpr char kInvalidJsonError[] = "Invalid JSON Dictionary";
 
 // Gets the WebContents instance of current login display. If there is none,
 // returns nullptr.
@@ -164,15 +167,19 @@ void NetworkStateHelper::GetConnectedWifiNetwork(std::string* out_onc_spec) {
 void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
     const std::string& onc_spec,
     const base::Closure& success_callback,
-    const base::Closure& error_callback) const {
+    const network_handler::ErrorCallback& error_callback) const {
   std::string error;
   std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
       onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
 
   base::DictionaryValue* toplevel_onc = nullptr;
   if (!root || !root->GetAsDictionary(&toplevel_onc)) {
-    LOG(ERROR) << "Invalid JSON Dictionary: " << error;
-    error_callback.Run();
+    LOG(ERROR) << kInvalidJsonError << ": " << error;
+    std::unique_ptr<base::DictionaryValue> error_data =
+        base::MakeUnique<base::DictionaryValue>();
+    error_data->SetString(network_handler::kErrorName, kInvalidJsonError);
+    error_data->SetString(network_handler::kErrorDetail, error);
+    error_callback.Run(kInvalidJsonError, std::move(error_data));
     return;
   }
 
@@ -182,8 +189,7 @@ void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
           "", *toplevel_onc,
           base::Bind(&NetworkStateHelper::OnCreateConfiguration,
                      base::Unretained(this), success_callback, error_callback),
-          base::Bind(&NetworkStateHelper::OnCreateOrConnectNetworkFailed,
-                     base::Unretained(this), error_callback));
+          error_callback);
 }
 
 bool NetworkStateHelper::IsConnected() const {
@@ -202,23 +208,12 @@ bool NetworkStateHelper::IsConnecting() const {
 
 void NetworkStateHelper::OnCreateConfiguration(
     const base::Closure& success_callback,
-    const base::Closure& error_callback,
+    const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
     const std::string& guid) const {
   // Connect to the network.
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
-      service_path, success_callback,
-      base::Bind(&NetworkStateHelper::OnCreateOrConnectNetworkFailed,
-                 base::Unretained(this), error_callback),
-      false);
-}
-
-void NetworkStateHelper::OnCreateOrConnectNetworkFailed(
-    const base::Closure& error_callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) const {
-  LOG(ERROR) << "Failed to create or connect to network: " << error_name;
-  error_callback.Run();
+      service_path, success_callback, error_callback, false);
 }
 
 content::StoragePartition* GetSigninPartition() {
