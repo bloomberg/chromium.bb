@@ -104,12 +104,6 @@ const char* NavigatorShare::SupplementName() {
 
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     const ShareData& share_data) {
-  String error_message;
-  if (!ExecutionContext::From(script_state)->IsSecureContext(error_message)) {
-    DOMException* error = DOMException::Create(kSecurityError, error_message);
-    return ScriptPromise::RejectWithDOMException(script_state, error);
-  }
-
   Document* doc = ToDocument(ExecutionContext::From(script_state));
   DCHECK(doc);
   KURL full_url = doc->CompleteURL(share_data.url());

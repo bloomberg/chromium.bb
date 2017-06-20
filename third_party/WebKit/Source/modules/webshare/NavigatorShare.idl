@@ -7,6 +7,6 @@
 [
   OriginTrialEnabled=WebShare
 ] partial interface Navigator {
-  [CallWith=ScriptState, MeasureAs=WebShareShare]
+  [SecureContext, CallWith=ScriptState, MeasureAs=WebShareShare]
   Promise<void> share(ShareData data);
 };
