@@ -69,7 +69,7 @@ message Translation {
 }
 
 message UserEventSpecifics {
-  // Time of event, as measured on the client (unix epoch).
+  // Time of event, as measured by client in microseconds since Windows epoch.
   optional int64 event_time_usec = 1;
 
   // The |global_id| field of the associated navigation, if there is one.
