@@ -24,7 +24,7 @@ import tempfile
 import urllib2
 
 # This can be changed after running /build/package_mac_toolchain.py.
-MAC_TOOLCHAIN_VERSION = '5B1008'
+MAC_TOOLCHAIN_VERSION = '8E2002'
 MAC_TOOLCHAIN_SUB_REVISION = 3
 MAC_TOOLCHAIN_VERSION = '%s-%s' % (MAC_TOOLCHAIN_VERSION,
                                    MAC_TOOLCHAIN_SUB_REVISION)
