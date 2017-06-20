@@ -11,6 +11,7 @@
 if (NOT AOM_TEST_TEST_CMAKE_)
 set(AOM_TEST_TEST_CMAKE_ 1)
 
+include(FindPythonInterp)
 include(ProcessorCount)
 
 include("${AOM_ROOT}/test/test_data_util.cmake")
@@ -294,6 +295,12 @@ if (CONFIG_HIGHBITDEPTH)
 endif ()
 
 if (CONFIG_UNIT_TESTS)
+  find_package(PythonInterp)
+  if (NOT PYTHONINTERP_FOUND)
+    message(WARNING "--- Unit tests disabled: Python not found.")
+    set(CONFIG_UNIT_TESTS 0)
+  endif ()
+
   if (MSVC)
     # Force static run time to avoid collisions with googletest.
     include("${AOM_ROOT}/build/cmake/msvc_runtime.cmake")
