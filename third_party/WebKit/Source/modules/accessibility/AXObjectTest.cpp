@@ -48,25 +48,25 @@ TEST_F(AXObjectTest, IsARIAWidget) {
   GetDocument().documentElement()->setInnerHTML(test_content);
   GetDocument().UpdateStyleAndLayout();
   Element* root(GetDocument().documentElement());
-  EXPECT_FALSE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_FALSE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("plain")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-parent")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-caps")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-second")));
-  EXPECT_FALSE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_FALSE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("aria-bogus")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("aria-selected")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("haspopup")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("focusable")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("focusable-parent")));
 }
 

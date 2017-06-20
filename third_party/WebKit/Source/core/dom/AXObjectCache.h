@@ -152,6 +152,9 @@ class CORE_EXPORT AXObjectCache
   typedef AXObjectCache* (*AXObjectCacheCreateFunction)(Document&);
   static void Init(AXObjectCacheCreateFunction);
 
+  // Static helper functions.
+  static bool IsInsideFocusableElementOrARIAWidget(const Node&);
+
  protected:
   AXObjectCache();
 

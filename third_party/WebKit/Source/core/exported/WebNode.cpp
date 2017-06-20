@@ -31,7 +31,7 @@
 #include "public/web/WebNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/AXObject.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -144,7 +144,7 @@ bool WebNode::IsContentEditable() const {
 }
 
 bool WebNode::IsInsideFocusableElementOrARIAWidget() const {
-  return AXObject::IsInsideFocusableElementOrARIAWidget(
+  return AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *this->ConstUnwrap<Node>());
 }
 
