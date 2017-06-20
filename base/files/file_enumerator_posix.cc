@@ -125,16 +125,8 @@ bool FileEnumerator::ReadDirectory(std::vector<FileInfo>* entries,
   if (!dir)
     return false;
 
-#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_BSD) &&    \
-    !defined(OS_SOLARIS) && !defined(OS_ANDROID) && !defined(OS_AIX) && \
-    !defined(OS_FUCHSIA)
-#error Port warning: depending on the definition of struct dirent, \
-         additional space for pathname may be needed
-#endif
-
-  struct dirent dent_buf;
   struct dirent* dent;
-  while (readdir_r(dir, &dent_buf, &dent) == 0 && dent) {
+  while ((dent = readdir(dir))) {
     FileInfo info;
     info.filename_ = FilePath(dent->d_name);
 
