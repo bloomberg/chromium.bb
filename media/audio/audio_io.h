@@ -119,18 +119,10 @@ class MEDIA_EXPORT AudioInputStream {
     // Called by the audio recorder when a full packet of audio data is
     // available. This is called from a special audio thread and the
     // implementation should return as soon as possible.
-    // TODO(henrika): should be pure virtual when old OnData() is phased out.
     virtual void OnData(AudioInputStream* stream,
                         const AudioBus* source,
                         uint32_t hardware_delay_bytes,
-                        double volume) {}
-
-    // TODO(henrika): don't use; to be removed.
-    virtual void OnData(AudioInputStream* stream,
-                        const uint8_t* src,
-                        uint32_t size,
-                        uint32_t hardware_delay_bytes,
-                        double volume) {}
+                        double volume) = 0;
 
     // There was an error while recording audio. The audio sink cannot be
     // destroyed yet. No direct action needed by the AudioInputStream, but it
