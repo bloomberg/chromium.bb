@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "content/public/browser/presentation_service_delegate.h"
+#include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace content {
 class PresentationScreenAvailabilityListener;
@@ -46,10 +47,8 @@ class PresentationMediaSinksObserver : public MediaSinksObserver {
   }
 
  private:
-  enum Availability { UNKNOWN, AVAILABLE, UNAVAILABLE };
-
   content::PresentationScreenAvailabilityListener* listener_;
-  Availability previous_availablity_;
+  blink::mojom::ScreenAvailability previous_availability_;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationMediaSinksObserver);
 };

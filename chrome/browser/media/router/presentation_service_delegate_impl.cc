@@ -218,7 +218,8 @@ bool PresentationFrame::SetScreenAvailabilityListener(
     content::PresentationScreenAvailabilityListener* listener) {
   MediaSource source(GetMediaSourceFromListener(listener));
   if (!IsValidPresentationUrl(source.url())) {
-    listener->OnScreenAvailabilityChanged(false);
+    listener->OnScreenAvailabilityChanged(
+        blink::mojom::ScreenAvailability::UNAVAILABLE);
     return false;
   }
 
