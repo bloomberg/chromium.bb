@@ -1,0 +1,8 @@
+rootWebArea
+++paragraph
+++++staticText name='This paragraph has one '
+++++++inlineTextBox name='This paragraph has one '
+++++staticText name='word'
+++++++inlineTextBox name='word'
+++++staticText name=' in a span.'
+++++++inlineTextBox name=' in a span.'

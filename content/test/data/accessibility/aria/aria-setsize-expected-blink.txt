@@ -1,0 +1,12 @@
+rootWebArea
+++listBox
+++++listBoxOption selectable name='Item 1' setSize=4 posInSet=1
+++++listBoxOption selectable name='Item 2' setSize=4 posInSet=2
+++++listBoxOption selectable name='Item 3' setSize=4 posInSet=3
+++++listBoxOption selectable name='Item 4' setSize=4 posInSet=4
+++listBox
+++++listBoxOption selectable name='Item 1' setSize=5 posInSet=1
+++++listBoxOption selectable name='Item 2' setSize=5 posInSet=2
+++++listBoxOption selectable name='Item 3' setSize=5 posInSet=3
+++++listBoxOption selectable name='Item 4' setSize=5 posInSet=4
+++++listBoxOption selectable name='Item 5' setSize=5 posInSet=5

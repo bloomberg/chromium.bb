@@ -1,0 +1,4 @@
+rootWebArea
+++menu
+++++menuItem name='File'
+++++menuItem name='Edit'

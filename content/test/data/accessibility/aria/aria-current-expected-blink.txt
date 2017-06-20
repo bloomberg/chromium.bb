@@ -9,13 +9,13 @@ rootWebArea
 ++++staticText name='Section three'
 ++++++inlineTextBox name='Section three'
 ++lineBreak name='<newline>'
-++heading name='Section one heading'
+++heading name='Section one heading' hierarchicalLevel=1
 ++++staticText name='Section one heading'
 ++++++inlineTextBox name='Section one heading'
-++heading name='Section two heading'
+++heading name='Section two heading' hierarchicalLevel=1
 ++++staticText name='Section two heading'
 ++++++inlineTextBox name='Section two heading'
-++heading name='Section three heading'
+++heading name='Section three heading' hierarchicalLevel=1
 ++++staticText name='Section three heading'
 ++++++inlineTextBox name='Section three heading'
 ++lineBreak name='<newline>'
