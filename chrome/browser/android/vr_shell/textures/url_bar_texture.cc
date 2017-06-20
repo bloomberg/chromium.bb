@@ -367,23 +367,25 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
   render_text->SetFontList(font_list);
   render_text->SetColor(SK_ColorBLACK);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  render_text->SetElideBehavior(gfx::TRUNCATE);
+  render_text->SetElideBehavior(gfx::ELIDE_TAIL);
+  render_text->SetText(text);
+  render_text->SetDisplayRect(bounds);
 
+  // Until we can properly elide a URL, we need to bail if the origin portion
+  // cannot be displayed in its entirety.
   base::string16 mandatory_prefix = text;
   int length = parsed.CountCharactersBefore(url::Parsed::PORT, false);
   if (length > 0)
     mandatory_prefix = text.substr(0, length);
-  gfx::Rect expanded_bounds = bounds;
-  expanded_bounds.set_width(2 * bounds.width());
-  render_text->SetDisplayRect(expanded_bounds);
-  render_text->SetText(mandatory_prefix);
-
-  if (render_text->GetStringSize().width() > bounds.width()) {
+  // Ellipsis-based eliding replaces the last character in the string with an
+  // ellipsis, so to reliably check that the origin is intact, check both length
+  // and string equality.
+  if (render_text->GetDisplayText().size() < mandatory_prefix.size() ||
+      render_text->GetDisplayText().substr(0, mandatory_prefix.size()) !=
+          mandatory_prefix) {
     failure_callback_.Run(UiUnsupportedMode::kCouldNotElideURL);
   }
 
-  render_text->SetText(text);
-  render_text->SetDisplayRect(bounds);
   vr_shell::RenderTextWrapper vr_render_text(render_text.get());
   ApplyUrlStyling(text, parsed, security_level_, &vr_render_text,
                   color_scheme());
