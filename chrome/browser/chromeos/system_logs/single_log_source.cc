@@ -6,7 +6,11 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/process/process_info.h"
+#include "base/strings/string_split.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace system_logs {
@@ -15,6 +19,16 @@ namespace {
 
 constexpr char kDefaultSystemLogDirPath[] = "/var/log";
 constexpr int kMaxNumAllowedLogRotationsDuringFileRead = 3;
+
+// For log files that contain old logging, start reading from the first
+// timestamp that is less than this amount of time before the current session of
+// Chrome started.
+constexpr base::TimeDelta kLogCutoffTimeBeforeChromeStart =
+    base::TimeDelta::FromMinutes(10);
+
+// A custom timestamp for when the current Chrome session started. Used during
+// testing to override the actual time.
+const base::Time* g_chrome_start_time_for_test = nullptr;
 
 // Converts a logs source type to the corresponding file path, relative to the
 // base system log directory path. In the future, if non-file source types are
@@ -53,16 +67,86 @@ void AppendToSystemLogsResponse(SystemLogsResponse* response,
     iter->second += value;
 }
 
+// Returns the time that the current Chrome process started. Will instead return
+// |*g_chrome_start_time_for_test| if it is set.
+base::Time GetChromeStartTime() {
+  if (g_chrome_start_time_for_test)
+    return *g_chrome_start_time_for_test;
+  return base::CurrentProcessInfo::CreationTime();
+}
+
+// Returns the file offset into |path| of the first line that starts with a
+// timestamp no earlier than |time|. Returns 0 if no such offset could be
+// determined (e.g. can't open file, no timestamps present).
+size_t GetFirstFileOffsetWithTime(const base::FilePath& path,
+                                  const base::Time& time) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return 0;
+
+  const size_t file_size = file.GetLength();
+  if (file_size == 0)
+    return 0;
+
+  std::string file_contents;
+  file_contents.resize(file_size);
+  size_t size_read = file.ReadAtCurrentPos(&file_contents[0], file_size);
+
+  if (size_read < file_size)
+    return 0;
+
+  std::vector<base::StringPiece> lines = base::SplitStringPiece(
+      file_contents, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  bool any_timestamp_found = false;
+
+  // Find the first line with timestamp >= |time|. If a line has no timestamp,
+  // just advance to the next line.
+  size_t offset = 0;
+  base::Time timestamp;
+  for (const auto& line : lines) {
+    if (base::Time::FromString(line.as_string().c_str(), &timestamp)) {
+      any_timestamp_found = true;
+
+      if (timestamp >= time)
+        break;
+    }
+
+    // Include the newline in the offset.
+    offset += line.length() + 1;
+  }
+
+  // If the file does not have any timestamps at all, don't skip any contents.
+  if (!any_timestamp_found)
+    return 0;
+
+  if (offset > 0 && offset >= file_size && lines.back().as_string().empty()) {
+    // The last line may or may not have ended with a newline. If it ended with
+    // a newline, |lines| would end with an extra empty line after the newline.
+    // This would have resulted in an extra nonexistent newline being counted
+    // during the computation of |offset|.
+    --offset;
+  }
+  return offset;
+}
+
 }  // namespace
 
-SingleLogSource::SingleLogSource(SupportedSource source)
-    : SystemLogsSource(GetLogFileSourceRelativeFilePath(source).value()),
+SingleLogSource::SingleLogSource(SupportedSource source_type)
+    : SystemLogsSource(GetLogFileSourceRelativeFilePath(source_type).value()),
+      source_type_(source_type),
       log_file_dir_path_(kDefaultSystemLogDirPath),
       num_bytes_read_(0),
       file_inode_(0),
       weak_ptr_factory_(this) {}
 
 SingleLogSource::~SingleLogSource() {}
+
+// static
+void SingleLogSource::SetChromeStartTimeForTesting(
+    const base::Time* start_time) {
+  g_chrome_start_time_for_test = start_time;
+}
 
 void SingleLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -89,6 +173,18 @@ void SingleLogSource::ReadFile(size_t num_rotations_allowed,
                      base::File::FLAG_OPEN | base::File::FLAG_READ);
     if (!file_.IsValid())
       return;
+
+    // Determine actual offset from which to start reading.
+    if (source_type_ == SupportedSource::kMessages) {
+      const base::Time earliest_log_time =
+          GetChromeStartTime() - kLogCutoffTimeBeforeChromeStart;
+
+      num_bytes_read_ =
+          GetFirstFileOffsetWithTime(GetLogFilePath(), earliest_log_time);
+    } else {
+      num_bytes_read_ = 0;
+    }
+    file_.Seek(base::File::FROM_BEGIN, num_bytes_read_);
 
     file_inode_ = GetInodeValue(GetLogFilePath());
   }

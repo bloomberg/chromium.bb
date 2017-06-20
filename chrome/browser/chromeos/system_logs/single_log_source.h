@@ -13,6 +13,10 @@
 #include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/anonymizer_tool.h"
 
+namespace base {
+class Time;
+}
+
 namespace system_logs {
 
 // Gathers log data from a single source, possibly incrementally.
@@ -28,6 +32,11 @@ class SingleLogSource : public SystemLogsSource {
 
   explicit SingleLogSource(SupportedSource source);
   ~SingleLogSource() override;
+
+  // During testing, use this to set a custom Chrome start time to override the
+  // actual start time. Does not take ownership of |start_time|. Call this again
+  // with |start_time|=nullptr when done with testing.
+  static void SetChromeStartTimeForTesting(const base::Time* start_time);
 
   // system_logs::SystemLogsSource:
   void Fetch(const SysLogsSourceCallback& callback) override;
@@ -52,6 +61,9 @@ class SingleLogSource : public SystemLogsSource {
   // remainder of its execution. Any further rotation could result in missed log
   // data.
   void ReadFile(size_t num_rotations_allowed, SystemLogsResponse* result);
+
+  // The source type.
+  const SupportedSource source_type_;
 
   // Path to system log file directory.
   base::FilePath log_file_dir_path_;
