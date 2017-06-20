@@ -817,6 +817,7 @@ static_library("extensions") {
     "//chrome/browser/devtools",
     "//chrome/browser/media/router",
     "//chrome/browser/media/router/discovery",
+    "//chrome/browser/safe_browsing",
     "//chrome/common",
     "//chrome/common/extensions:mojo_bindings",
     "//chrome/common/extensions/api:api_registration",
