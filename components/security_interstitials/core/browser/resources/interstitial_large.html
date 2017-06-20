@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport"
       content="initial-scale=1, minimum-scale=1, width=device-width">
-  <title i18n-content="tabTitle"></title>
+  <title>$i18n{tabTitle}</title>
   <link rel="stylesheet" href="interstitial_common.css">
   <link rel="stylesheet" href="interstitial_large.css">
   <script src="../../../../../ui/webui/resources/js/util.js"></script>
@@ -21,7 +21,7 @@
       <div class="icon" id="icon"></div>
       <div id="main-message">
         <h1>$i18n{heading}</h1>
-        <p i18n-values=".innerHTML:primaryParagraph"></p>
+        <p>$i18nRaw{primaryParagraph}</p>
         <div id="debugging">
           <div id="error-code" class="error-code"></div>
           <div id="error-debugging-info" class="hidden"></div>
@@ -39,11 +39,13 @@
     </div>
     <div class="nav-wrapper">
       <button id="primary-button">$i18n{primaryButtonText}</button>
-      <button id="details-button" class="small-link">$i18n{openDetails}</button>
+      <button id="details-button" class="small-link">
+        $i18n{openDetails}
+      </button>
     </div>
     <div id="details" class="hidden">
-      <p i18n-values=".innerHTML:explanationParagraph"></p>
-      <p i18n-values=".innerHTML:finalParagraph" id="final-paragraph"></p>
+      <p>$i18nRaw{explanationParagraph}</p>
+      <p id="final-paragraph">$i18nRaw{finalParagraph}</p>
     </div>
   </div>
 </body>
