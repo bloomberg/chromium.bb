@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_downloader.h"
@@ -48,8 +49,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 namespace {
@@ -149,6 +148,19 @@ std::string GetLocaleSpecificStringImpl(
 void CheckWallpaperCacheExists(const base::FilePath& path, bool* exists) {
   DCHECK(exists);
   *exists = base::PathExists(path);
+}
+
+std::string ReadFileInBackground(const base::FilePath& file) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  std::string manifest;
+  if (!base::ReadFileToString(file, &manifest)) {
+    manifest.clear();
+    LOG(ERROR) << "Failed to load services customization manifest from: "
+               << file.value();
+  }
+
+  return manifest;
 }
 
 }  // anonymous namespace
@@ -533,36 +545,18 @@ void ServicesCustomizationDocument::StartFetching() {
   if (url_.is_valid()) {
     fetch_started_ = true;
     if (url_.SchemeIsFile()) {
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ServicesCustomizationDocument::ReadFileInBackground,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::FilePath(url_.path())));
+      base::PostTaskWithTraitsAndReplyWithResult(
+          FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+          base::BindOnce(&ReadFileInBackground, base::FilePath(url_.path())),
+          base::BindOnce(&ServicesCustomizationDocument::OnManifestRead,
+                         weak_ptr_factory_.GetWeakPtr()));
     } else {
       StartFileFetch();
     }
   }
 }
 
-// static
-void ServicesCustomizationDocument::ReadFileInBackground(
-    base::WeakPtr<ServicesCustomizationDocument> self,
-    const base::FilePath& file) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  std::string manifest;
-  if (!base::ReadFileToString(file, &manifest)) {
-    manifest.clear();
-    LOG(ERROR) << "Failed to load services customization manifest from: "
-               << file.value();
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServicesCustomizationDocument::OnManifesteRead,
-                 self,
-                 manifest));
-}
-
-void ServicesCustomizationDocument::OnManifesteRead(
+void ServicesCustomizationDocument::OnManifestRead(
     const std::string& manifest) {
   if (!manifest.empty())
     LoadManifestFromString(manifest);
