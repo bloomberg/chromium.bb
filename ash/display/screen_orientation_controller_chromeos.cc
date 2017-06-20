@@ -288,20 +288,17 @@ void ScreenOrientationController::OnDisplayConfigurationChanged() {
     return;
   if (!display::Display::HasInternalDisplay())
     return;
-  display::Display::Rotation user_rotation =
+  if (!Shell::Get()->display_manager()->IsActiveDisplayId(
+          display::Display::InternalDisplayId())) {
+    return;
+  }
+
+  // TODO(oshima): We should disable the orientation change in settings
+  // because application may not work correctly.
+  current_rotation_ =
       ShellPort::Get()
           ->GetDisplayInfo(display::Display::InternalDisplayId())
           .GetActiveRotation();
-  if (user_rotation != current_rotation_) {
-    // TODO(oshima): We should disable the orientation change in settings
-    // because application may not work correctly.
-
-    // A user may change other display configuration settings. When the user
-    // does change the rotation setting, then lock rotation to prevent the
-    // accelerometer from erasing their change.
-    SetRotationLockedInternal(true);
-    user_rotation_ = current_rotation_ = user_rotation;
-  }
 }
 
 void ScreenOrientationController::OnMaximizeModeStarted() {

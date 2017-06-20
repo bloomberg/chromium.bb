@@ -3213,4 +3213,26 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
             test_api.GetCurrentOrientation());
 }
 
+// crbug.com/734107
+TEST_F(DisplayManagerOrientationTest, DisplayChangeShouldNotSaveUserRotation) {
+  Shell* shell = Shell::Get();
+  display::DisplayManager* display_manager = shell->display_manager();
+  display::test::DisplayManagerTestApi test_api(display_manager);
+  test_api.SetFirstDisplayAsInternalDisplay();
+  display::Screen* screen = display::Screen::GetScreen();
+
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+  // Emulate that Animator is calling this async when animation is completed.
+  display_manager->SetDisplayRotation(
+      screen->GetPrimaryDisplay().id(), display::Display::ROTATE_90,
+      display::Display::ROTATION_SOURCE_ACCELEROMETER);
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
+
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
+  EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
+}
+
 }  // namespace ash
