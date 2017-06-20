@@ -82,8 +82,8 @@ assigned files by:
     passed down into a component the prefered paradigm is to remove all of that
     plumbing and simply have the leaf layers requiring a TaskRunner get it from
     base::CreateSequenceTaskRunnerWithTraits() directly.
- 3. Ideally migrating from a single-threaded context to a [much preferred]
-    (threading_and_tasks.md#Prefer-Sequences-to-Threads) sequenced context.
+ 3. Ideally migrating from a single-threaded context to a
+    [much preferred](threading_and_tasks.md#Prefer-Sequences-to-Threads) sequenced context.
     * Note: if your tasks use COM APIs (Component Object Model on Windows),
       you'll need to use CreateCOMSTATaskRunnerWithTraits() and sequencing will
       not be an option (there are DCHECKs in place that will fire if your task
