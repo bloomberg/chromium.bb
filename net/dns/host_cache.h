@@ -124,6 +124,15 @@ class NET_EXPORT HostCache {
     int stale_hits_;
   };
 
+  // Interface for interacting with persistent storage, to be provided by the
+  // embedder. Does not include support for writes that must happen immediately.
+  class PersistenceDelegate {
+   public:
+    // Calling ScheduleWrite() signals that data has changed and should be
+    // written to persistent storage. The write might be delayed.
+    virtual void ScheduleWrite() = 0;
+  };
+
   using EntryMap = std::map<Key, Entry>;
   using EvictionCallback = base::Callback<void(const Key&, const Entry&)>;
 
@@ -156,6 +165,10 @@ class NET_EXPORT HostCache {
 
   void set_eviction_callback(const EvictionCallback& callback) {
     eviction_callback_ = callback;
+  }
+
+  void set_persistence_delegate(PersistenceDelegate* delegate) {
+    delegate_ = delegate;
   }
 
   // Empties the cache.
@@ -196,7 +209,8 @@ class NET_EXPORT HostCache {
   void RecordSet(SetOutcome outcome,
                  base::TimeTicks now,
                  const Entry* old_entry,
-                 const Entry& new_entry);
+                 const Entry& new_entry,
+                 AddressListDeltaType delta);
   void RecordUpdateStale(AddressListDeltaType delta,
                          const EntryStaleness& stale);
   void RecordLookup(LookupOutcome outcome,
@@ -218,6 +232,8 @@ class NET_EXPORT HostCache {
   size_t max_entries_;
   int network_changes_;
   EvictionCallback eviction_callback_;
+
+  PersistenceDelegate* delegate_;
 
   THREAD_CHECKER(thread_checker_);
 
