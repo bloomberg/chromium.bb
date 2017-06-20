@@ -150,7 +150,6 @@ enum EMaskSourceType { kMaskAlpha, kMaskLuminance };
 
 // CSS3 Flexbox Properties
 
-enum class EFlexDirection { kRow, kRowReverse, kColumn, kColumnReverse };
 enum class EFlexWrap { kNowrap, kWrap, kWrapReverse };
 
 // CSS3 Image Values

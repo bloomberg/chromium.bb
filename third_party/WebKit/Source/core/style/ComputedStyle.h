@@ -739,17 +739,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    length);
   }
 
-  // flex-direction (aka -webkit-flex-direction)
-  static EFlexDirection InitialFlexDirection() { return EFlexDirection::kRow; }
-  EFlexDirection FlexDirection() const {
-    return static_cast<EFlexDirection>(
-        rare_non_inherited_data_->flexible_box_data_->flex_direction_);
-  }
-  void SetFlexDirection(EFlexDirection direction) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_,
-                   flex_direction_, static_cast<unsigned>(direction));
-  }
-
   // flex-grow (aka -webkit-flex-grow)
   static float InitialFlexGrow() { return 0; }
   float FlexGrow() const {
