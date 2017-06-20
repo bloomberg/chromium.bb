@@ -2777,3 +2777,6 @@ crbug.com/733357 [ Win Mac ] inspector/elements/styles-4/styles-history.html [ F
 crbug.com/733448 virtual/mojo-loading/http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733448 http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733524 [ Mac ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.php [ Timeout Pass ]
+
+# Rebaselining a newly-passing test fixed by v8
+crbug.com/v8/6504 fast/js/mozilla/strict/B.1.2.html [ NeedsManualRebaseline ]
