@@ -15,26 +15,44 @@ namespace blink {
 
 class TextResourceDecoderForFuzzing : public TextResourceDecoder {
  public:
-  // Note: Charsets can be long (see the various encodings in wtf/text). For
-  // instance: "unicode-1-1-utf-8". To ensure good coverage, set a generous max
-  // limit for these sizes (32 bytes should be good).
   TextResourceDecoderForFuzzing(FuzzedDataProvider& fuzzed_data)
-      : TextResourceDecoder(static_cast<TextResourceDecoder::ContentType>(
-                                fuzzed_data.ConsumeInt32InRange(
-                                    TextResourceDecoder::kPlainTextContent,
-                                    TextResourceDecoder::kMaxContentType)),
-                            WTF::TextEncoding(String::FromUTF8(
-                                fuzzed_data.ConsumeBytesInRange(0, 32))),
-                            FuzzedOption(fuzzed_data),
-                            KURL()) {}
+      : TextResourceDecoder(FuzzedOption(fuzzed_data)) {}
 
  private:
-  static TextResourceDecoder::EncodingDetectionOption FuzzedOption(
+  static TextResourceDecoderOptions FuzzedOption(
       FuzzedDataProvider& fuzzed_data) {
-    // Don't use AlwaysUseUTF8ForText which requires knowing the mimeType
-    // ahead of time.
-    return fuzzed_data.ConsumeBool() ? kUseAllAutoDetection
-                                     : kUseContentAndBOMBasedDetection;
+    switch (static_cast<TextResourceDecoderOptions::EncodingDetectionOption>(
+        fuzzed_data.ConsumeInt32InRange(
+            TextResourceDecoderOptions::kUseAllAutoDetection,
+            TextResourceDecoderOptions::kAlwaysUseUTF8ForText))) {
+      case TextResourceDecoderOptions::kUseAllAutoDetection:
+        return TextResourceDecoderOptions::CreateWithAutoDetection(
+            FuzzedContentType(fuzzed_data), FuzzedEncoding(fuzzed_data),
+            WTF::TextEncoding(), KURL());
+
+      case TextResourceDecoderOptions::kUseContentAndBOMBasedDetection:
+        return TextResourceDecoderOptions(FuzzedContentType(fuzzed_data),
+                                          FuzzedEncoding(fuzzed_data));
+
+      case TextResourceDecoderOptions::kAlwaysUseUTF8ForText:
+        return TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText();
+    }
+  }
+
+  static TextResourceDecoderOptions::ContentType FuzzedContentType(
+      FuzzedDataProvider& fuzzed_data) {
+    return static_cast<TextResourceDecoderOptions::ContentType>(
+        fuzzed_data.ConsumeInt32InRange(
+            TextResourceDecoderOptions::kPlainTextContent,
+            TextResourceDecoderOptions::kMaxContentType));
+  }
+
+  static WTF::TextEncoding FuzzedEncoding(FuzzedDataProvider& fuzzed_data) {
+    // Note: Charsets can be long (see the various encodings in
+    // wtf/text). For instance: "unicode-1-1-utf-8". To ensure good coverage,
+    // set a generous max limit for these sizes (32 bytes should be good).
+    return WTF::TextEncoding(
+        String::FromUTF8(fuzzed_data.ConsumeBytesInRange(0, 32)));
   }
 };
 

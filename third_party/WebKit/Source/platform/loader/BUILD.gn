@@ -69,6 +69,8 @@ source_set("loader") {
     "fetch/ResourceTimingInfo.cpp",
     "fetch/ResourceTimingInfo.h",
     "fetch/SubstituteData.h",
+    "fetch/TextResourceDecoderOptions.cpp",
+    "fetch/TextResourceDecoderOptions.h",
     "fetch/UniqueIdentifier.cpp",
     "fetch/UniqueIdentifier.h",
   ]

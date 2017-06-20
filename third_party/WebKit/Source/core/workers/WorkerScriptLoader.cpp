@@ -38,6 +38,7 @@
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -180,12 +181,12 @@ void WorkerScriptLoader::DidReceiveData(const char* data, unsigned len) {
 
   if (!decoder_) {
     if (!response_encoding_.IsEmpty()) {
-      decoder_ =
-          TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent,
-                                      WTF::TextEncoding(response_encoding_));
+      decoder_ = TextResourceDecoder::Create(TextResourceDecoderOptions(
+          TextResourceDecoderOptions::kPlainTextContent,
+          WTF::TextEncoding(response_encoding_)));
     } else {
-      decoder_ = TextResourceDecoder::Create(
-          TextResourceDecoder::kPlainTextContent, UTF8Encoding());
+      decoder_ = TextResourceDecoder::Create(TextResourceDecoderOptions(
+          TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));
     }
   }
 

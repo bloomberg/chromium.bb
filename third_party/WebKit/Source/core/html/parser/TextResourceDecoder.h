@@ -25,6 +25,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -49,36 +50,11 @@ class CORE_EXPORT TextResourceDecoder {
     kEncodingFromParentFrame
   };
 
-  enum ContentType {
-    kPlainTextContent,
-    kHTMLContent,
-    kXMLContent,
-    kCSSContent,
-    kMaxContentType = kCSSContent
-  };  // PlainText only checks for BOM.
-
   static std::unique_ptr<TextResourceDecoder> Create(
-      ContentType content_type,
-      const WTF::TextEncoding& default_encoding = WTF::TextEncoding()) {
-    return WTF::WrapUnique(
-        new TextResourceDecoder(content_type, default_encoding,
-                                kUseContentAndBOMBasedDetection, KURL()));
+      const TextResourceDecoderOptions& options) {
+    return WTF::WrapUnique(new TextResourceDecoder(options));
   }
 
-  static std::unique_ptr<TextResourceDecoder> CreateWithAutoDetection(
-      ContentType content_type,
-      const WTF::TextEncoding& default_encoding,
-      const KURL& url) {
-    return WTF::WrapUnique(new TextResourceDecoder(
-        content_type, default_encoding, kUseAllAutoDetection, url));
-  }
-
-  // Corresponds to utf-8 decode in Encoding spec:
-  // https://encoding.spec.whatwg.org/#utf-8-decode.
-  static std::unique_ptr<TextResourceDecoder> CreateAlwaysUseUTF8ForText() {
-    return WTF::WrapUnique(new TextResourceDecoder(
-        kPlainTextContent, UTF8Encoding(), kAlwaysUseUTF8ForText, KURL()));
-  }
   ~TextResourceDecoder();
 
   void SetEncoding(const WTF::TextEncoding&, EncodingSource);
@@ -91,43 +67,15 @@ class CORE_EXPORT TextResourceDecoder {
   String Decode(const char* data, size_t length);
   String Flush();
 
-  void SetHintEncoding(const WTF::TextEncoding& encoding) {
-    hint_encoding_ = encoding.GetName();
-  }
-
-  void UseLenientXMLDecoding() { use_lenient_xml_decoding_ = true; }
   bool SawError() const { return saw_error_; }
   size_t CheckForBOM(const char*, size_t);
 
  protected:
-  // TextResourceDecoder does three kind of encoding detection:
-  // 1. By BOM,
-  // 2. By Content if |m_contentType| is not |PlainTextContext|
-  //    (e.g. <meta> tag for HTML), and
-  // 3. By detectTextEncoding().
-  enum EncodingDetectionOption {
-    // Use 1. + 2. + 3.
-    kUseAllAutoDetection,
-
-    // Use 1. + 2.
-    kUseContentAndBOMBasedDetection,
-
-    // Use None of them.
-    // |m_contentType| must be |PlainTextContent| and
-    // |m_encoding| must be UTF8Encoding.
-    // This doesn't change encoding based on BOMs, but still processes
-    // utf-8 BOMs so that utf-8 BOMs don't appear in the decoded result.
-    kAlwaysUseUTF8ForText
-  };
-
-  TextResourceDecoder(ContentType,
-                      const WTF::TextEncoding& default_encoding,
-                      EncodingDetectionOption,
-                      const KURL& hint_url);
+  TextResourceDecoder(const TextResourceDecoderOptions&);
 
  private:
   static const WTF::TextEncoding& DefaultEncoding(
-      ContentType,
+      TextResourceDecoderOptions::ContentType,
       const WTF::TextEncoding& default_encoding);
 
   bool CheckForCSSCharset(const char*, size_t, bool& moved_data_to_buffer);
@@ -135,21 +83,17 @@ class CORE_EXPORT TextResourceDecoder {
   void CheckForMetaCharset(const char*, size_t);
   void AutoDetectEncodingIfAllowed(const char* data, size_t len);
 
-  ContentType content_type_;
+  const TextResourceDecoderOptions options_;
+
   WTF::TextEncoding encoding_;
   std::unique_ptr<TextCodec> codec_;
   EncodingSource source_;
-  const char* hint_encoding_;
-  const KURL hint_url_;
   Vector<char> buffer_;
-  char hint_language_[3];
   bool checked_for_bom_;
   bool checked_for_css_charset_;
   bool checked_for_xml_charset_;
   bool checked_for_meta_charset_;
-  bool use_lenient_xml_decoding_;  // Don't stop on XML decoding errors.
   bool saw_error_;
-  EncodingDetectionOption encoding_detection_option_;
 
   std::unique_ptr<HTMLMetaCharsetParser> charset_parser_;
 };

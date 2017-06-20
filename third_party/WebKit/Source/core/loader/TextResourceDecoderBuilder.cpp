@@ -86,14 +86,15 @@ static const WTF::TextEncoding GetEncodingFromDomain(const KURL& url) {
   return WTF::TextEncoding();
 }
 
-TextResourceDecoder::ContentType DetermineContentType(const String& mime_type) {
+TextResourceDecoderOptions::ContentType DetermineContentType(
+    const String& mime_type) {
   if (DeprecatedEqualIgnoringCase(mime_type, "text/css"))
-    return TextResourceDecoder::kCSSContent;
+    return TextResourceDecoderOptions::kCSSContent;
   if (DeprecatedEqualIgnoringCase(mime_type, "text/html"))
-    return TextResourceDecoder::kHTMLContent;
+    return TextResourceDecoderOptions::kHTMLContent;
   if (DOMImplementation::IsXMLMIMEType(mime_type))
-    return TextResourceDecoder::kXMLContent;
-  return TextResourceDecoder::kPlainTextContent;
+    return TextResourceDecoderOptions::kXMLContent;
+  return TextResourceDecoderOptions::kPlainTextContent;
 }
 
 }  // namespace
@@ -105,43 +106,15 @@ TextResourceDecoderBuilder::TextResourceDecoderBuilder(
 
 TextResourceDecoderBuilder::~TextResourceDecoderBuilder() {}
 
-inline std::unique_ptr<TextResourceDecoder>
-TextResourceDecoderBuilder::CreateDecoderInstance(Document* document) {
+std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::BuildFor(
+    Document* document) {
   const WTF::TextEncoding encoding_from_domain =
       GetEncodingFromDomain(document->Url());
-  if (LocalFrame* frame = document->GetFrame()) {
-    if (Settings* settings = frame->GetSettings()) {
-      const WTF::TextEncoding hint_encoding =
-          encoding_from_domain.IsValid()
-              ? encoding_from_domain
-              : WTF::TextEncoding(settings->GetDefaultTextEncodingName());
-      // Disable autodetection for XML to honor the default encoding (UTF-8) for
-      // unlabelled documents.
-      if (DOMImplementation::IsXMLMIMEType(mime_type_)) {
-        return TextResourceDecoder::Create(TextResourceDecoder::kXMLContent,
-                                           hint_encoding);
-      }
-      return TextResourceDecoder::CreateWithAutoDetection(
-          DetermineContentType(mime_type_), hint_encoding, document->Url());
-    }
-  }
 
-  return TextResourceDecoder::Create(DetermineContentType(mime_type_),
-                                     encoding_from_domain);
-}
-
-inline void TextResourceDecoderBuilder::SetupEncoding(
-    TextResourceDecoder* decoder,
-    Document* document) {
   LocalFrame* frame = document->GetFrame();
   LocalFrame* parent_frame = 0;
   if (frame && frame->Tree().Parent() && frame->Tree().Parent()->IsLocalFrame())
     parent_frame = ToLocalFrame(frame->Tree().Parent());
-
-  if (!encoding_.IsEmpty()) {
-    decoder->SetEncoding(WTF::TextEncoding(encoding_.GetString()),
-                         TextResourceDecoder::kEncodingFromHTTPHeader);
-  }
 
   // Set the hint encoding to the parent frame encoding only if the parent and
   // the current frames share the security origin. We impose this condition
@@ -151,22 +124,45 @@ inline void TextResourceDecoderBuilder::SetupEncoding(
   // could be an attack vector.
   // FIXME: This might be too cautious for non-7bit-encodings and we may
   // consider relaxing this later after testing.
-  if (frame && CanReferToParentFrameEncoding(frame, parent_frame)) {
-    if (parent_frame->GetDocument()->EncodingWasDetectedHeuristically())
-      decoder->SetHintEncoding(parent_frame->GetDocument()->Encoding());
+  const bool use_hint_encoding =
+      frame && CanReferToParentFrameEncoding(frame, parent_frame);
 
-    if (encoding_.IsEmpty()) {
-      decoder->SetEncoding(parent_frame->GetDocument()->Encoding(),
-                           TextResourceDecoder::kEncodingFromParentFrame);
+  std::unique_ptr<TextResourceDecoder> decoder;
+  if (frame && frame->GetSettings()) {
+    const WTF::TextEncoding default_encoding =
+        encoding_from_domain.IsValid()
+            ? encoding_from_domain
+            : WTF::TextEncoding(
+                  frame->GetSettings()->GetDefaultTextEncodingName());
+    // Disable autodetection for XML to honor the default encoding (UTF-8) for
+    // unlabelled documents.
+    if (DOMImplementation::IsXMLMIMEType(mime_type_)) {
+      decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
+          TextResourceDecoderOptions::kXMLContent, default_encoding));
+    } else {
+      WTF::TextEncoding hint_encoding;
+      if (use_hint_encoding &&
+          parent_frame->GetDocument()->EncodingWasDetectedHeuristically())
+        hint_encoding = parent_frame->GetDocument()->Encoding();
+      decoder = TextResourceDecoder::Create(
+          TextResourceDecoderOptions::CreateWithAutoDetection(
+              DetermineContentType(mime_type_), default_encoding, hint_encoding,
+              document->Url()));
     }
+  } else {
+    decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
+        DetermineContentType(mime_type_), encoding_from_domain));
   }
-}
+  DCHECK(decoder);
 
-std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::BuildFor(
-    Document* document) {
-  std::unique_ptr<TextResourceDecoder> decoder =
-      CreateDecoderInstance(document);
-  SetupEncoding(decoder.get(), document);
+  if (!encoding_.IsEmpty()) {
+    decoder->SetEncoding(WTF::TextEncoding(encoding_.GetString()),
+                         TextResourceDecoder::kEncodingFromHTTPHeader);
+  } else if (use_hint_encoding) {
+    decoder->SetEncoding(parent_frame->GetDocument()->Encoding(),
+                         TextResourceDecoder::kEncodingFromParentFrame);
+  }
+
   return decoder;
 }
 

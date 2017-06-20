@@ -35,6 +35,7 @@
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/CurrentTime.h"
 
@@ -69,7 +70,7 @@ CSSStyleSheetResource::CSSStyleSheetResource(
     : StyleSheetResource(resource_request,
                          kCSSStyleSheet,
                          options,
-                         TextResourceDecoder::kCSSContent,
+                         TextResourceDecoderOptions::kCSSContent,
                          charset),
       did_notify_first_data_(false) {}
 
