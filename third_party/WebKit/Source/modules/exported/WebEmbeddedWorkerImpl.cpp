@@ -261,8 +261,9 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
                                  message.column_number, nullptr)));
 }
 
-void WebEmbeddedWorkerImpl::PostMessageToPageInspector(const String& message) {
-  worker_inspector_proxy_->DispatchMessageFromWorker(message);
+void WebEmbeddedWorkerImpl::PostMessageToPageInspector(int session_id,
+                                                       const String& message) {
+  worker_inspector_proxy_->DispatchMessageFromWorker(session_id, message);
 }
 
 void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {

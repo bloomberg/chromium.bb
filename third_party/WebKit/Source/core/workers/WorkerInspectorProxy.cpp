@@ -36,9 +36,7 @@ WorkerInspectorProxy::AllProxies() {
 }
 
 WorkerInspectorProxy::WorkerInspectorProxy()
-    : worker_thread_(nullptr),
-      execution_context_(nullptr),
-      page_inspector_(nullptr) {}
+    : worker_thread_(nullptr), execution_context_(nullptr) {}
 
 WorkerInspectorProxy* WorkerInspectorProxy::Create() {
   return new WorkerInspectorProxy();
@@ -84,13 +82,15 @@ void WorkerInspectorProxy::WorkerThreadTerminated() {
   }
 
   worker_thread_ = nullptr;
-  page_inspector_ = nullptr;
+  page_inspectors_.clear();
   execution_context_ = nullptr;
 }
 
-void WorkerInspectorProxy::DispatchMessageFromWorker(const String& message) {
-  if (page_inspector_)
-    page_inspector_->DispatchMessageFromWorker(this, message);
+void WorkerInspectorProxy::DispatchMessageFromWorker(int session_id,
+                                                     const String& message) {
+  auto it = page_inspectors_.find(session_id);
+  if (it != page_inspectors_.end())
+    it->value->DispatchMessageFromWorker(this, session_id, message);
 }
 
 void WorkerInspectorProxy::AddConsoleMessageFromWorker(
@@ -101,63 +101,74 @@ void WorkerInspectorProxy::AddConsoleMessageFromWorker(
       level, message, std::move(location), inspector_id_));
 }
 
-static void ConnectToWorkerGlobalScopeInspectorTask(
-    WorkerThread* worker_thread) {
+static void ConnectToWorkerGlobalScopeInspectorTask(WorkerThread* worker_thread,
+                                                    int session_id) {
   if (WorkerInspectorController* inspector =
-          worker_thread->GetWorkerInspectorController())
-    inspector->ConnectFrontend();
+          worker_thread->GetWorkerInspectorController()) {
+    inspector->ConnectFrontend(session_id);
+  }
 }
 
 void WorkerInspectorProxy::ConnectToInspector(
+    int session_id,
     WorkerInspectorProxy::PageInspector* page_inspector) {
   if (!worker_thread_)
     return;
-  DCHECK(!page_inspector_);
-  page_inspector_ = page_inspector;
+  DCHECK(page_inspectors_.find(session_id) == page_inspectors_.end());
+  page_inspectors_.insert(session_id, page_inspector);
   worker_thread_->AppendDebuggerTask(
       CrossThreadBind(ConnectToWorkerGlobalScopeInspectorTask,
-                      CrossThreadUnretained(worker_thread_)));
+                      CrossThreadUnretained(worker_thread_), session_id));
 }
 
 static void DisconnectFromWorkerGlobalScopeInspectorTask(
-    WorkerThread* worker_thread) {
+    WorkerThread* worker_thread,
+    int session_id) {
   if (WorkerInspectorController* inspector =
-          worker_thread->GetWorkerInspectorController())
-    inspector->DisconnectFrontend();
+          worker_thread->GetWorkerInspectorController()) {
+    inspector->DisconnectFrontend(session_id);
+  }
 }
 
 void WorkerInspectorProxy::DisconnectFromInspector(
+    int session_id,
     WorkerInspectorProxy::PageInspector* page_inspector) {
-  DCHECK(page_inspector_ == page_inspector);
-  page_inspector_ = nullptr;
-  if (worker_thread_)
+  DCHECK(page_inspectors_.at(session_id) == page_inspector);
+  page_inspectors_.erase(session_id);
+  if (worker_thread_) {
     worker_thread_->AppendDebuggerTask(
         CrossThreadBind(DisconnectFromWorkerGlobalScopeInspectorTask,
-                        CrossThreadUnretained(worker_thread_)));
+                        CrossThreadUnretained(worker_thread_), session_id));
+  }
 }
 
-static void DispatchOnInspectorBackendTask(const String& message,
+static void DispatchOnInspectorBackendTask(int session_id,
+                                           const String& message,
                                            WorkerThread* worker_thread) {
   if (WorkerInspectorController* inspector =
-          worker_thread->GetWorkerInspectorController())
-    inspector->DispatchMessageFromFrontend(message);
+          worker_thread->GetWorkerInspectorController()) {
+    inspector->DispatchMessageFromFrontend(session_id, message);
+  }
 }
 
-void WorkerInspectorProxy::SendMessageToInspector(const String& message) {
-  if (worker_thread_)
+void WorkerInspectorProxy::SendMessageToInspector(int session_id,
+                                                  const String& message) {
+  if (worker_thread_) {
     worker_thread_->AppendDebuggerTask(
-        CrossThreadBind(DispatchOnInspectorBackendTask, message,
+        CrossThreadBind(DispatchOnInspectorBackendTask, session_id, message,
                         CrossThreadUnretained(worker_thread_)));
+  }
 }
 
-void WorkerInspectorProxy::WriteTimelineStartedEvent(const String& session_id) {
+void WorkerInspectorProxy::WriteTimelineStartedEvent(
+    const String& tracing_session_id) {
   if (!worker_thread_)
     return;
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD,
                        "data",
                        InspectorTracingSessionIdForWorkerEvent::Data(
-                           session_id, InspectorId(), worker_thread_));
+                           tracing_session_id, InspectorId(), worker_thread_));
 }
 
 DEFINE_TRACE(WorkerInspectorProxy) {

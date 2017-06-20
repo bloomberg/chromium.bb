@@ -46,6 +46,11 @@ static const char kWaitForDebuggerOnStart[] = "waitForDebuggerOnStart";
 static const char kAttachedWorkerIds[] = "attachedWorkerIds";
 };
 
+namespace {
+// TODO(dgozman): support multiple sessions in protocol.
+static const int kSessionId = 1;
+}  // namespace
+
 InspectorWorkerAgent::InspectorWorkerAgent(InspectedFrames* inspected_frames)
     : inspected_frames_(inspected_frames) {}
 
@@ -104,16 +109,17 @@ Response InspectorWorkerAgent::sendMessageToTarget(const String& target_id,
   WorkerInspectorProxy* proxy = connected_proxies_.at(target_id);
   if (!proxy)
     return Response::Error("Not attached to a target with given id");
-  proxy->SendMessageToInspector(message);
+  proxy->SendMessageToInspector(kSessionId, message);
   return Response::OK();
 }
 
-void InspectorWorkerAgent::SetTracingSessionId(const String& session_id) {
-  tracing_session_id_ = session_id;
-  if (session_id.IsEmpty())
+void InspectorWorkerAgent::SetTracingSessionId(
+    const String& tracing_session_id) {
+  tracing_session_id_ = tracing_session_id;
+  if (tracing_session_id.IsEmpty())
     return;
   for (auto& id_proxy : connected_proxies_)
-    id_proxy.value->WriteTimelineStartedEvent(session_id);
+    id_proxy.value->WriteTimelineStartedEvent(tracing_session_id);
 }
 
 void InspectorWorkerAgent::ShouldWaitForDebuggerOnWorkerStart(bool* result) {
@@ -136,7 +142,7 @@ void InspectorWorkerAgent::WorkerTerminated(WorkerInspectorProxy* proxy) {
     return;
   AttachedWorkerIds()->remove(proxy->InspectorId());
   GetFrontend()->detachedFromTarget(proxy->InspectorId());
-  proxy->DisconnectFromInspector(this);
+  proxy->DisconnectFromInspector(kSessionId, this);
   connected_proxies_.erase(proxy->InspectorId());
 }
 
@@ -157,7 +163,7 @@ void InspectorWorkerAgent::DisconnectFromAllProxies(bool report_to_frontend) {
       AttachedWorkerIds()->remove(id_proxy.key);
       GetFrontend()->detachedFromTarget(id_proxy.key);
     }
-    id_proxy.value->DisconnectFromInspector(this);
+    id_proxy.value->DisconnectFromInspector(kSessionId, this);
   }
   connected_proxies_.clear();
 }
@@ -172,7 +178,7 @@ void InspectorWorkerAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   for (auto& id_proxy : connected_proxies_) {
     AttachedWorkerIds()->remove(id_proxy.key);
     GetFrontend()->detachedFromTarget(id_proxy.key);
-    id_proxy.value->DisconnectFromInspector(this);
+    id_proxy.value->DisconnectFromInspector(kSessionId, this);
   }
   connected_proxies_.clear();
 }
@@ -192,7 +198,7 @@ protocol::DictionaryValue* InspectorWorkerAgent::AttachedWorkerIds() {
 void InspectorWorkerAgent::ConnectToProxy(WorkerInspectorProxy* proxy,
                                           bool waiting_for_debugger) {
   connected_proxies_.Set(proxy->InspectorId(), proxy);
-  proxy->ConnectToInspector(this);
+  proxy->ConnectToInspector(kSessionId, this);
   DCHECK(GetFrontend());
   AttachedWorkerIds()->setBoolean(proxy->InspectorId(), true);
   GetFrontend()->attachedToTarget(protocol::Target::TargetInfo::create()
@@ -206,7 +212,9 @@ void InspectorWorkerAgent::ConnectToProxy(WorkerInspectorProxy* proxy,
 
 void InspectorWorkerAgent::DispatchMessageFromWorker(
     WorkerInspectorProxy* proxy,
+    int session_id,
     const String& message) {
+  DCHECK(session_id == kSessionId);
   GetFrontend()->receivedMessageFromTarget(proxy->InspectorId(), message);
 }
 

@@ -56,6 +56,7 @@ void SharedWorkerReportingProxy::ReportConsoleMessage(MessageSource,
 }
 
 void SharedWorkerReportingProxy::PostMessageToPageInspector(
+    int session_id,
     const String& message) {
   DCHECK(!IsMainThread());
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
@@ -64,7 +65,7 @@ void SharedWorkerReportingProxy::PostMessageToPageInspector(
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&WebSharedWorkerImpl::PostMessageToPageInspector,
-                          CrossThreadUnretained(worker_), message));
+                          CrossThreadUnretained(worker_), session_id, message));
 }
 
 void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {

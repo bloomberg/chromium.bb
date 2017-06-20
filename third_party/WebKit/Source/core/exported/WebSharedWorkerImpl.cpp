@@ -235,9 +235,10 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   client_->CountFeature(static_cast<uint32_t>(feature));
 }
 
-void WebSharedWorkerImpl::PostMessageToPageInspector(const String& message) {
+void WebSharedWorkerImpl::PostMessageToPageInspector(int session_id,
+                                                     const String& message) {
   DCHECK(IsMainThread());
-  worker_inspector_proxy_->DispatchMessageFromWorker(message);
+  worker_inspector_proxy_->DispatchMessageFromWorker(session_id, message);
 }
 
 void WebSharedWorkerImpl::DidCloseWorkerGlobalScope() {

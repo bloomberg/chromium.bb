@@ -35,7 +35,7 @@ class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
                             MessageLevel,
                             const String& message,
                             SourceLocation*) override;
-  void PostMessageToPageInspector(const String&) override;
+  void PostMessageToPageInspector(int session_id, const String&) override;
   void DidCloseWorkerGlobalScope() override;
   void DidTerminateWorkerThread() override;
 

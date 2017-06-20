@@ -46,6 +46,7 @@ void ThreadedObjectProxyBase::ReportConsoleMessage(MessageSource source,
 }
 
 void ThreadedObjectProxyBase::PostMessageToPageInspector(
+    int session_id,
     const String& message) {
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
@@ -54,7 +55,7 @@ void ThreadedObjectProxyBase::PostMessageToPageInspector(
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(
                      &ThreadedMessagingProxyBase::PostMessageToPageInspector,
-                     MessagingProxyWeakPtr(), message));
+                     MessagingProxyWeakPtr(), session_id, message));
 }
 
 void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {

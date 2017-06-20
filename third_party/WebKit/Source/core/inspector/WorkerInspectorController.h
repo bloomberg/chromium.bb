@@ -35,6 +35,7 @@
 #include "core/inspector/InspectorTaskRunner.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebThread.h"
@@ -58,9 +59,9 @@ class WorkerInspectorController final
 
   CoreProbeSink* GetProbeSink() const { return probe_sink_.Get(); }
 
-  void ConnectFrontend();
-  void DisconnectFrontend();
-  void DispatchMessageFromFrontend(const String&);
+  void ConnectFrontend(int session_id);
+  void DisconnectFrontend(int session_id);
+  void DispatchMessageFromFrontend(int session_id, const String& message);
   void Dispose();
   void FlushProtocolNotifications();
 
@@ -80,7 +81,7 @@ class WorkerInspectorController final
   WorkerThreadDebugger* debugger_;
   WorkerThread* thread_;
   Member<CoreProbeSink> probe_sink_;
-  Member<InspectorSession> session_;
+  HeapHashMap<int, Member<InspectorSession>> sessions_;
 };
 
 }  // namespace blink
