@@ -6,8 +6,11 @@
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_METHOD_DATA_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
+
+#include "components/autofill/core/browser/credit_card.h"
 
 namespace base {
 class DictionaryValue;
@@ -41,7 +44,7 @@ class PaymentMethodData {
   // When the methods include "basic-card", a list of networks and types that
   // are supported.
   std::vector<std::string> supported_networks;
-  std::vector<std::string> supported_types;
+  std::set<autofill::CreditCard::CardType> supported_types;
 };
 
 }  // namespace payments

@@ -49,7 +49,7 @@ enum class DialogViewID : int {
   // The following are Label objects.
   SHIPPING_OPTION_DESCRIPTION,
   SHIPPING_OPTION_AMOUNT,
-  SHIPPING_ADDRESS_OPTION_ERROR,
+  SHIPPING_ADDRESS_SECTION_HEADER_LABEL,
 
   // Used in profile labels to annotate each line of the grouping.
   PROFILE_LABEL_LINE_1,

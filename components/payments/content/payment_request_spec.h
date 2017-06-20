@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
@@ -81,6 +82,10 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   const std::map<std::string, std::set<std::string>>& stringified_method_data()
       const {
     return stringified_method_data_;
+  }
+  const std::set<autofill::CreditCard::CardType>& supported_card_types_set()
+      const {
+    return supported_card_types_set_;
   }
   // Returns whether the |method_name| was specified as supported through the
   // "basic-card" payment method. If false, it means either the |method_name| is
@@ -156,6 +161,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // fast lookup of supported methods.
   std::vector<std::string> supported_card_networks_;
   std::set<std::string> supported_card_networks_set_;
+
+  std::set<autofill::CreditCard::CardType> supported_card_types_set_;
 
   // Only the set of basic-card specified networks. NOTE: callers should use
   // |supported_card_networks_set_| to check merchant support.

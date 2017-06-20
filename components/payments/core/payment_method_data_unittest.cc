@@ -12,20 +12,14 @@ namespace payments {
 // Tests the success case when populating a PaymentMethodData from a dictionary.
 TEST(PaymentMethodData, FromDictionaryValueSuccess) {
   PaymentMethodData expected;
-  std::vector<std::string> supported_methods;
-  supported_methods.push_back("visa");
-  supported_methods.push_back("basic-card");
-  expected.supported_methods = supported_methods;
+  expected.supported_methods.push_back("visa");
+  expected.supported_methods.push_back("basic-card");
   expected.data =
       "{\"supportedNetworks\":[\"mastercard\"],"
       "\"supportedTypes\":[\"debit\",\"credit\"]}";
-  std::vector<std::string> supported_networks;
-  supported_networks.push_back("mastercard");
-  expected.supported_networks = supported_networks;
-  std::vector<std::string> supported_types;
-  supported_types.push_back("debit");
-  supported_types.push_back("credit");
-  expected.supported_types = supported_types;
+  expected.supported_networks.push_back("mastercard");
+  expected.supported_types.insert(autofill::CreditCard::CARD_TYPE_DEBIT);
+  expected.supported_types.insert(autofill::CreditCard::CARD_TYPE_CREDIT);
 
   base::DictionaryValue method_data_dict;
   std::unique_ptr<base::ListValue> supported_methods_list(new base::ListValue);
@@ -97,13 +91,11 @@ TEST(PaymentMethodData, Equality) {
   method_data2.supported_networks = supported_networks1;
   EXPECT_EQ(method_data1, method_data2);
 
-  std::vector<std::string> supported_types1{"credit"};
-  method_data1.supported_types = supported_types1;
+  method_data1.supported_types = {autofill::CreditCard::CARD_TYPE_UNKNOWN};
   EXPECT_NE(method_data1, method_data2);
-  std::vector<std::string> supported_types2{"debit"};
-  method_data2.supported_types = supported_types2;
+  method_data2.supported_types = {autofill::CreditCard::CARD_TYPE_DEBIT};
   EXPECT_NE(method_data1, method_data2);
-  method_data2.supported_types = supported_types1;
+  method_data2.supported_types = method_data1.supported_types;
   EXPECT_EQ(method_data1, method_data2);
 }
 

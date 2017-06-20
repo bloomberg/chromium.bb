@@ -250,6 +250,7 @@ android_library("chrome_java") {
     ":resource_id_javagen",
     "//chrome:content_setting_javagen",
     "//chrome:content_settings_type_javagen",
+    "//chrome:credit_card_javagen",
     "//chrome:data_use_ui_message_enum_javagen",
     "//chrome:offline_pages_enum_javagen",
     "//chrome:page_info_connection_type_javagen",

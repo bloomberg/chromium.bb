@@ -39,6 +39,10 @@ class PaymentInstrument {
   // Returns whether the instrument is complete to be used as a payment method
   // without further editing.
   virtual bool IsCompleteForPayment() = 0;
+  // Returns whether the instrument is exactly matching all filters provided by
+  // the merchant. For example, this can return "false" for unknown card types,
+  // if the merchant requested only debit cards.
+  virtual bool IsExactlyMatchingMerchantRequest() = 0;
   // Returns a message to indicate to the user what's missing for the instrument
   // to be complete for payment.
   virtual base::string16 GetMissingInfoLabel() = 0;

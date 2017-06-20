@@ -35,7 +35,7 @@ void* UserDataKey() {
   return reinterpret_cast<void*>(&user_data_key);
 }
 
-const char* CardTypeFromWalletCardType(
+const char* CardNetworkFromWalletCardType(
     sync_pb::WalletMaskedCreditCard::WalletCardType type) {
   switch (type) {
     case sync_pb::WalletMaskedCreditCard::AMEX:
@@ -60,6 +60,20 @@ const char* CardTypeFromWalletCardType(
   }
 }
 
+CreditCard::CardType CardTypeFromWalletCardClass(
+    sync_pb::WalletMaskedCreditCard::WalletCardClass card_class) {
+  switch (card_class) {
+    case sync_pb::WalletMaskedCreditCard::CREDIT:
+      return CreditCard::CARD_TYPE_CREDIT;
+    case sync_pb::WalletMaskedCreditCard::DEBIT:
+      return CreditCard::CARD_TYPE_DEBIT;
+    case sync_pb::WalletMaskedCreditCard::PREPAID:
+      return CreditCard::CARD_TYPE_PREPAID;
+    default:
+      return CreditCard::CARD_TYPE_UNKNOWN;
+  }
+}
+
 CreditCard::ServerStatus ServerToLocalStatus(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus status) {
   switch (status) {
@@ -76,7 +90,8 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   CreditCard result(CreditCard::MASKED_SERVER_CARD, card.id());
   result.SetNumber(base::UTF8ToUTF16(card.last_four()));
   result.SetServerStatus(ServerToLocalStatus(card.status()));
-  result.SetNetworkForMaskedCard(CardTypeFromWalletCardType(card.type()));
+  result.SetNetworkForMaskedCard(CardNetworkFromWalletCardType(card.type()));
+  result.set_card_type(CardTypeFromWalletCardClass(card.card_class()));
   result.SetRawInfo(CREDIT_CARD_NAME_FULL,
                     base::UTF8ToUTF16(card.name_on_card()));
   result.SetExpirationMonth(card.exp_month());
@@ -98,8 +113,7 @@ AutofillProfile ProfileFromSpecifics(
   profile.SetRawInfo(COMPANY_NAME, base::UTF8ToUTF16(address.company_name()));
   profile.SetRawInfo(ADDRESS_HOME_STATE,
                      base::UTF8ToUTF16(address.address_1()));
-  profile.SetRawInfo(ADDRESS_HOME_CITY,
-                     base::UTF8ToUTF16(address.address_2()));
+  profile.SetRawInfo(ADDRESS_HOME_CITY, base::UTF8ToUTF16(address.address_2()));
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                      base::UTF8ToUTF16(address.address_3()));
   // AutofillProfile doesn't support address_4 ("sub dependent locality").
@@ -192,11 +206,9 @@ bool SetDataIfChanged(
 AutofillWalletSyncableService::AutofillWalletSyncableService(
     AutofillWebDataBackend* webdata_backend,
     const std::string& app_locale)
-    : webdata_backend_(webdata_backend) {
-}
+    : webdata_backend_(webdata_backend) {}
 
-AutofillWalletSyncableService::~AutofillWalletSyncableService() {
-}
+AutofillWalletSyncableService::~AutofillWalletSyncableService() {}
 
 syncer::SyncMergeResult AutofillWalletSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
@@ -342,10 +354,8 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
   size_t prev_card_count = 0;
   size_t prev_address_count = 0;
   bool changed_cards = SetDataIfChanged(
-      table, wallet_cards,
-      &AutofillTable::GetServerCreditCards,
-      &AutofillTable::SetServerCreditCards,
-      &prev_card_count);
+      table, wallet_cards, &AutofillTable::GetServerCreditCards,
+      &AutofillTable::SetServerCreditCards, &prev_card_count);
   bool changed_addresses = SetDataIfChanged(
       table, wallet_addresses, &AutofillTable::GetServerProfiles,
       &AutofillTable::SetServerProfiles, &prev_address_count);
