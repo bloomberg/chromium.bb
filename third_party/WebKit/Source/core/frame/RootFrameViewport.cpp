@@ -241,6 +241,8 @@ LayoutRect RootFrameViewport::ScrollIntoView(const LayoutRect& rect_in_content,
 
   // RootFrameViewport only changes the viewport relative to the document so we
   // can't change the input rect's location relative to the document origin.
+  // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
+  // value to the visible content rect, but this does not.
   return rect_in_content;
 }
 
