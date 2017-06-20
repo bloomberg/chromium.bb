@@ -18,6 +18,8 @@
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/styled_label.h"
 
 namespace payments {
 
@@ -368,6 +370,42 @@ class PaymentsRequestVisualTest
 
 IN_PROC_BROWSER_TEST_F(PaymentsRequestVisualTest, InvokeDialog_NoShipping) {
   RunDialog();
+}
+
+class PaymentRequestSettingsLinkTest : public PaymentRequestBrowserTestBase {
+ protected:
+  PaymentRequestSettingsLinkTest()
+      : PaymentRequestBrowserTestBase(
+            "/payment_request_no_shipping_test.html") {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestSettingsLinkTest);
+};
+
+// Tests that clicking the settings link brings the user to settings.
+IN_PROC_BROWSER_TEST_F(PaymentRequestSettingsLinkTest, ClickSettingsLink) {
+  // Setup a credit card with an associated billing address.
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(billing_address.guid());
+  AddCreditCard(card);  // Visa.
+
+  // Click on the settings link in the payment request dialog window.
+  InvokePaymentRequestUI();
+  views::StyledLabel* styled_label =
+      static_cast<views::StyledLabel*>(dialog_view()->GetViewByID(
+          static_cast<int>(DialogViewID::DATA_SOURCE_LABEL)));
+  EXPECT_TRUE(styled_label);
+  // The Link is the only child of the StyledLabel.
+  content::WebContentsAddedObserver web_contents_added_observer;
+  styled_label->LinkClicked(
+      static_cast<views::Link*>(styled_label->child_at(0)), 0);
+  content::WebContents* new_tab_contents =
+      web_contents_added_observer.GetWebContents();
+
+  EXPECT_EQ("chrome://settings/autofill",
+            new_tab_contents->GetVisibleURL().spec());
 }
 
 }  // namespace payments

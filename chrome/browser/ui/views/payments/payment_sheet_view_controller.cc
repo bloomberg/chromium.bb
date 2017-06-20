@@ -939,6 +939,7 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
   std::unique_ptr<views::StyledLabel> data_source_label =
       base::MakeUnique<views::StyledLabel>(data_source, this);
   data_source_label->SetBorder(views::CreateEmptyBorder(22, 0, 0, 0));
+  data_source_label->set_id(static_cast<int>(DialogViewID::DATA_SOURCE_LABEL));
 
   views::StyledLabel::RangeStyleInfo default_style;
   default_style.color = data_source_label->GetNativeTheme()->GetSystemColor(
