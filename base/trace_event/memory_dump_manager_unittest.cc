@@ -891,17 +891,17 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   InitializeMemoryDumpManagerForInProcessTesting(true /* is_coordinator */);
 
   // Enabling memory-infra with the legacy TraceConfig (category filter) in
-  // a coordinator process should not enable periodic dumps.
+  // a coordinator process should enable periodic dumps.
   EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
-  EXPECT_FALSE(IsPeriodicDumpingEnabled());
+  EXPECT_TRUE(IsPeriodicDumpingEnabled());
   DisableTracing();
 
   // Enabling memory-infra with the new (JSON) TraceConfig in a coordinator
-  // process while specifying a "memory_dump_config" section should enable
+  // process without specifying any "memory_dump_config" section should enable
   // periodic dumps. This is to preserve the behavior chrome://tracing UI, that
-  // is: ticking memory-infra should dump periodically with an explicit config.
+  // is: ticking memory-infra should dump periodically with the default config.
   EnableTracingWithTraceConfig(
-      TraceConfigMemoryTestUtil::GetTraceConfig_PeriodicTriggers(100, 5));
+      TraceConfigMemoryTestUtil::GetTraceConfig_NoTriggers());
   EXPECT_TRUE(IsPeriodicDumpingEnabled());
   DisableTracing();
 
