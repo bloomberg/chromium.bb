@@ -11,6 +11,7 @@
 <translation id="127345590676626841">Chrome స్వయంచాలకంగా నవీకరించబడుతుంది కనుక మీరు ఎల్లప్పుడూ తాజా సంస్కరణని కలిగి ఉంటారు. ఈ డౌన్‌లోడ్ పూర్తయినప్పుడు, Chrome పునఃప్రారంభించబడుతుంది మరియు మీరు మీ పనిని కొనసాగించవచ్చు.</translation>
 <translation id="1302523850133262269">దయచేసి Chrome తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
 <translation id="1350930993895295930">Chrome అసాధారణ ప్రవర్తనను గుర్తించింది</translation>
+<translation id="137466361146087520">Google Chrome బీటా</translation>
 <translation id="1393853151966637042">Chromeని ఉపయోగించి సహాయాన్ని పొందండి</translation>
 <translation id="1399397803214730675">ఈ కంప్యూటర్‌లో ఇప్పటికే Google Chrome యొక్క తాజా సంస్కరణ ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chromeను అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="1434626383986940139">Chrome కెనరీ అనువర్తనాలు</translation>
@@ -33,6 +34,7 @@
 <translation id="1773601347087397504">Chrome OSని ఉపయోగించి సహాయాన్ని పొందండి</translation>
 <translation id="1795405610103747296">మీ ఫోన్‌లో Chromeను ఇన్‌స్టాల్ చేయండి. మేము మీ ఫోన్ నంబర్‌కు SMSను పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1818142563254268765">Chrome దానికదే తాజా సంస్కరణకు నవీకరించబడదు, కనుక మీరు అద్భుతమైన కొత్త లక్షణాలను మరియు భద్రతా పరిష్కారాలను కోల్పోతున్నారు. మీరు Chromeను నవీకరించాలి.</translation>
+<translation id="1874309113135274312">Google Chrome బీటా (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome కాలం చెల్లినది</translation>
 <translation id="2063848847527508675">నవీకరణను వర్తింపజేయడానికి Chrome OSని పునఃప్రారంభించాలి.</translation>
 <translation id="2077129598763517140">హార్డ్‌వేర్ త్వరితం అందుబాటులో ఉన్నప్పుడు ఉపయోగించు</translation>
@@ -110,6 +112,7 @@
 <translation id="4251615635259297716">మీ Chrome డేటాను ఈ ఖాతాకు జోడించాలా?</translation>
 <translation id="4251625577313994583">మీ iPhoneలో Chromeని పొందండి</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />పునఃప్రారంభం<ph name="END_BUTTON" /> అవసరం)</translation>
+<translation id="4328355335528187361">Google Chrome డెవలపర్ (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">ఈ Linux సిస్టమ్‌కు ఇప్పుడు మద్దతు లేనందున ఈ కంప్యూటర్ ఇకపై Google Chrome నవీకరణలను స్వీకరించదు.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
@@ -133,6 +136,7 @@
 <translation id="4921569541910214635">కంప్యూటర్‌ను భాగస్వామ్యం చేయాలా? ఇప్పుడు మీరు కోరుకున్న విధంగా Chromeను సెటప్ చేయవచ్చు.</translation>
 <translation id="4953650215774548573">Google Chromeను మీ డిఫాల్ట్ బ్రౌజర్‌గా సెట్ చేయండి</translation>
 <translation id="495931528404527476">Chromeలో</translation>
+<translation id="4965682129423310439">Chrome మీ కంప్యూటర్‌లో హానికరమైన సాఫ్ట్‌వేర్‌ని కనుగొంది. Chrome దీనిని తీసివేయగలదు మరియు మీ బ్రౌజర్ సాధారణంగా పని చేసేలా చేయడం కోసం మీ సెట్టింగ్‌లను పునరుద్ధరించగలదు.</translation>
 <translation id="4987308747895123092">దయచేసి అన్ని Google Chrome విండోలను (Windows 8 మోడ్‌లో తెరిచి ఉన్న వాటితో సహా) మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4990567037958725628">Google Chrome కేనరీ</translation>
 <translation id="5028489144783860647">Google Chrome మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
@@ -176,6 +180,7 @@
 <translation id="61852838583753520">&amp;Chrome OSను నవీకరించు</translation>
 <translation id="6235018212288296708">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="6236285698028833233">Google Chrome నవీకరించడాన్ని ఆపివేసింది మరియు ఇక మీ ఆపరేటింగ్ సిస్టమ్ యొక్క ఈ సంస్కరణకు మద్దతివ్వదు.</translation>
+<translation id="6291089322031436445">Chrome డెవలపర్ యాప్‌లు</translation>
 <translation id="6291549208091401781">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Google Chrome ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
 <translation id="6338556085225130112">Google Chromeని నవీకరిస్తోంది</translation>
 <translation id="6368958679917195344">అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS" /> ద్వారా  Chrome OS సాధ్యం అవుతుంది.</translation>
@@ -190,10 +195,13 @@
 <translation id="6626317981028933585">పాపం, ఆ బ్రౌజర్ అమలులో ఉన్నప్పుడు మీ Mozilla Firefox సెట్టింగ్‌లు అందుబాటులో ఉండవు. Google Chromeకు ఆ సెట్టింగులను దిగుమతి చెయ్యడానికి, మీ పనిని సేవ్ చేసుకొని అన్ని Firefox విండోలను మూసివెయ్యండి. తర్వాత కొనసాగుపై క్లిక్ చెయ్యండి.</translation>
 <translation id="6634887557811630702">Google Chrome తాజాగా ఉంది.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
+<translation id="6697947395630195233">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromeకు మీ స్థాన యాక్సెస్ అవసరం.</translation>
 <translation id="6757767188268205357">నన్ను విసిగించకు</translation>
 <translation id="683440813066116847">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome కెనరీ కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="686561893457936865">Chromeని ప్రతిచోటుకు తీసుకెళ్లండి</translation>
 <translation id="6883876366448858277">ఒక పదాన్ని మరియు దాని సంబంధిత సందర్భాన్ని Google శోధనకు పంపుతుంది, ప్రతిస్పందనగా దాని నుండి నిర్వచనాలు, చిత్రాలు మరియు ఇతర శోధన ఫలితాలను అందిస్తుంది.</translation>
+<translation id="6885412569789873916">Chrome బీటా యాప్‌లు</translation>
+<translation id="6967962315388095737">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome బీటా కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="6970811910055250180">మీ పరికరాన్ని నవీకరిస్తోంది...</translation>
 <translation id="6982337800632491844">మీరు ఈ పరికరాన్ని ఉపయోగించడానికి ముందు సేవా నిబంధనలను చదివి, అంగీకరించాలని <ph name="DOMAIN" /> కోరుతోంది. ఈ నిబంధనలు Google Chrome OS నిబంధనలను విస్తరింపజేయవు, సవరించవు లేదా పరిమితం చేయవు.</translation>
 <translation id="6989339256997917931">Google Chrome నవీకరింబడింది, కానీ మీరు దీన్ని కనీసం 30 రోజులు ఉయోగించలేరు.</translation>
@@ -220,6 +228,7 @@
 <translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="7494905215383356681">Chrome ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{దీని వలన ఈ పరికరం నుండి కనీసం $1 అంశం శాశ్వతంగా తొలగించబడుతుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి $2 వలె సైన్ ఇన్ చేయండి.}other{దీని వలన ఈ పరికరం నుండి కనీసం $1 అంశాలు శాశ్వతంగా తొలగించబడతాయి. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి $2 వలె సైన్ ఇన్ చేయండి.}}</translation>
+<translation id="7535429826459677826">Google Chrome డెవలపర్</translation>
 <translation id="7552219221109926349">Chrome OSను ఈ భాషలో ప్రదర్శించు</translation>
 <translation id="7592736734348559088">మీ ఖాతా సైన్-ఇన్ వివరాల గడువు ముగిసినందున Google Chrome మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="7626032353295482388">Chromeకు స్వాగతం</translation>
@@ -251,6 +260,7 @@
 <translation id="8439301513305169426">Chrome <ph name="SAVED_PASSWORD_LINK" />తో ఈ పాస్‌వర్డ్‌ని సేవ్ చేస్తుంది. మీరు దీనిని గుర్తుంచుకోవాల్సిన అవసరం లేదు.</translation>
 <translation id="8455999171311319804">ఐచ్ఛికం: విశ్లేషణ మరియు వినియోగ డేటాను స్వయంచాలకంగా Googleకి పంపడం ద్వారా Chrome OSని మెరుగుపరచడంలో సహాయం అందించండి.</translation>
 <translation id="8478823064122749032">మీ ఫోన్‌లో Chromeను ఇన్‌స్టాల్ చేయండి. మేము మీ ఖాతా పునరుద్ధరణ ఫోన్ నంబర్‌కు SMSను పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8521348052903287641">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome డెవలపర్ కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome అనువర్తన లాంచర్ కెనరీ</translation>
 <translation id="8556340503434111824">Google Chrome యొక్క క్రొత్త సంస్కరణ అందుబాటులో ఉంది, ఇది ఎప్పటి కంటే వేగంగా ఉంది.</translation>

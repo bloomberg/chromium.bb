@@ -17,14 +17,13 @@
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1201402288615127009">Siguiente</translation>
-<translation id="1204037785786432551">Descargar enlace</translation>
-<translation id="1206892813135768548">Copiar texto de enlace</translation>
 <translation id="1209206284964581585">Ocultar por ahora</translation>
 <translation id="1211530540767271776">No hay dispositivos USB</translation>
 <translation id="123724288017357924">Vuelve a cargar esta página sin contenido en caché</translation>
 <translation id="1240668123557180468">Descubre páginas web enviadas por los objetos cercanos. Chrome recopila páginas web asociadas a los objetos que te rodean, las envía de forma anónima a un servicio de Google para seleccionar las que te puedan resultar más útiles y, a continuación, las muestra.
 
 Debes activar la ubicación y el Bluetooth para utilizar la Web física.</translation>
+<translation id="124116460088058876">Más idiomas</translation>
 <translation id="124678866338384709">Cierra la pestaña actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Interrumpir</translation>
@@ -86,6 +85,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1749561566933687563">Sincronizar marcadores</translation>
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1756600373018374892">Toca este botón para acceder rápidamente a tus pestañas.</translation>
+<translation id="1779089405699405702">Decodificador de imágenes</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
 <translation id="1832521218263067499">Incidentes de seguridad</translation>
@@ -105,6 +105,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1993768208584545658"><ph name="SITE" /> quiere vincularse</translation>
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB de otras aplicaciones</translation>
+<translation id="2017836877785168846">Borra el historial y los autocompletados de la barra de direcciones.</translation>
 <translation id="2020525020270327736">Copiar sitio web</translation>
 <translation id="2038563949887743358">Activar opción para ver como ordenador</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de otras aplicaciones</translation>
@@ -174,6 +175,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
+<translation id="2876764156902388290">Chrome está utilizando menos datos para mostrarte esta página</translation>
 <translation id="2888126860611144412">Información de Chrome</translation>
 <translation id="2891154217021530873">Detener la carga de la página</translation>
 <translation id="2900528713135656174">Crear evento</translation>
@@ -197,6 +199,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="307908932405420782">Próximamente se mostrarán más artículos. Disfruta de la mañana.</translation>
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
 <translation id="311456632243022227">Varios enlaces abiertos en Chrome</translation>
+<translation id="3115898365077584848">Mostrar información</translation>
 <translation id="3137521801621304719">Salir del modo incógnito</translation>
 <translation id="3148434565183091099">Inicia sesión en Chrome para ver tus marcadores en todos tus dispositivos.</translation>
 <translation id="3166827708714933426">Combinaciones de teclas de pestañas y ventanas</translation>
@@ -214,6 +217,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3269093882174072735">Cargar imagen</translation>
 <translation id="3269956123044984603">Para ver las pestañas de tus otros dispositivos, activa la opción Sincronización automática en la configuración de la cuenta de Android.</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
+<translation id="3295602654194328831">Ocultar información</translation>
 <translation id="3303414029551471755">¿Quieres continuar para descargar el contenido?</translation>
 <translation id="3321222012623826478">Este servicio necesita enviar de forma anónima la dirección de este sitio web a los servidores de Google para que la verifiquen.</translation>
 <translation id="3328801116991980348">Información del sitio</translation>
@@ -236,6 +240,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3542235761944717775">kB disponibles: <ph name="KILOBYTES" /></translation>
 <translation id="3549644494707163724">Cifrar todos los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
 <translation id="3549657413697417275">Buscar en el historial</translation>
+<translation id="3552151358455404883">Administrar la personalización y la sincronización de Chrome en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Añadir a contactos</translation>
 <translation id="3583454905526475291">No se ha podido iniciar la aplicación</translation>
 <translation id="3587482841069643663">Todo</translation>
@@ -254,6 +259,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3662546969139119822">Ningún elemento del historial</translation>
 <translation id="3672452749423051839">Sugerencias para errores de navegación</translation>
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
+<translation id="3734660163659757482">Súbela para ver marcadores y más</translation>
 <translation id="3738139272394829648">Tocar para Buscar</translation>
 <translation id="3739899004075612870">Marcador añadido a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de otras aplicaciones</translation>
@@ -297,6 +303,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4099578267706723511">Ayudar a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
+<translation id="4116038641877404294">Descarga páginas para usarlas sin conexión</translation>
 <translation id="4165986682804962316">Configuración de sitios web</translation>
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
@@ -307,7 +314,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4256782883801055595">Licencias de código abierto</translation>
 <translation id="4259722352634471385">Se ha bloqueado la navegación: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Se ha producido un error de sincronización. Toca para ver los detalles.</translation>
-<translation id="4269820728363426813">Copiar la dirección del enlace</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="42981349822642051">Ampliar</translation>
@@ -385,7 +391,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="510275257476243843">Queda 1 hora</translation>
 <translation id="5127805178023152808">La sincronización está desactivada</translation>
 <translation id="5129038482087801250">Instalar aplicación web</translation>
-<translation id="5131405117025179004">Editar cuenta guardada</translation>
 <translation id="5138299137310274655">Esta página está escrita en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Borrar datos almacenados</translation>
 <translation id="5152843274749979095">No hay aplicaciones compatibles instaladas</translation>
@@ -424,15 +429,18 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5435775191620395718">Mostrando historial de este dispositivo. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Te dirige a la barra de direcciones</translation>
 <translation id="5447201525962359567">Todo el almacenamiento del sitio web, como las cookies y otros datos almacenados de forma local</translation>
+<translation id="5447765697759493033">Este sitio web no va a traducirse</translation>
 <translation id="5456381639095306749">Descargar página</translation>
 <translation id="548278423535722844">Abrirla en una aplicación de mapas</translation>
 <translation id="5487521232677179737">Borrar los datos</translation>
 <translation id="5487729733663684359">Ya no se admiten actualizaciones de Chrome para esta versión de Android.</translation>
 <translation id="5490801865084500306">Pestaña Marcadores seleccionada</translation>
 <translation id="5512137114520586844">Esta cuenta está administrada por <ph name="PARENT_NAME" />.</translation>
+<translation id="5514904542973294328">Inhabilitada por el administrador de este dispositivo</translation>
 <translation id="5517095782334947753">Tienes los marcadores, el historial, las contraseñas y otras opciones de configuración de <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5527082711130173040">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualizar permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Cerrar pestañas de incógnito</translation>
+<translation id="5537099431952529648">Tus padres y tú podéis administrar la personalización y la sincronización de Chrome en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">Volver a cargar</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
 <translation id="5568069709869097550">No puedo iniciar sesión</translation>
@@ -440,6 +448,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
+<translation id="5620928963363755975">Encuentra tus archivos y páginas en la sección Descargas con el botón Más opciones</translation>
 <translation id="5626134646977739690">Nombre:</translation>
 <translation id="5639724618331995626">Permitir todos los sitios web</translation>
 <translation id="5646376287012673985">Ubicación</translation>
@@ -480,6 +489,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5942872142862698679">Google se ha establecido como motor de búsqueda predeterminado</translation>
 <translation id="5956665950594638604">Abre la Ayuda de Chrome en una pestaña nueva</translation>
+<translation id="5958275228015807058">Encuentra tus archivos y páginas en la sección Descargas</translation>
 <translation id="5962718611393537961">Toca para ocultar</translation>
 <translation id="6000066717592683814">Mantener Google como motor de búsqueda predeterminado</translation>
 <translation id="6031101910111098835">Vista contraída (hacer clic para expandirla)</translation>
@@ -524,6 +534,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6409731863280057959">Ventanas emergentes</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893">MB descargados: <ph name="MBS" /></translation>
+<translation id="6433501201775827830">Elegir tu motor de búsqueda</translation>
 <translation id="6437478888915024427">Información de la página</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugerencias de URL y de búsqueda</translation>
@@ -557,6 +568,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="666268767214822976">Utiliza un servicio de predicciones para mostrar consultas relacionadas y sitios web populares a medida que escribes en la barra de direcciones</translation>
 <translation id="666731172850799929">Abrir en <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de privacidad de Chrome</translation>
+<translation id="6697947395630195233">Chrome necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
 <translation id="6701279291835318271">Informes de seguridad</translation>
 <translation id="6710213216561001401">Anterior</translation>
@@ -570,7 +582,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6820607729870073286">No tienes ajustes del sitio web guardados.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traducir</translation>
-<translation id="6836509131652750668"><ph name="APP_NAME" /> se está ejecutando en Chrome.</translation>
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> pestañas cerradas</translation>
 <translation id="6864459304226931083">Descargar imagen</translation>
@@ -608,6 +619,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7138678301420049075">Otro</translation>
 <translation id="7144878232160441200">Volver a intentar</translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
+<translation id="7177466738963138057">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7189372733857464326">Esperando a que Servicios de Google Play termine de actualizarse</translation>
 <translation id="7189598951263744875">Compartir...</translation>
@@ -707,6 +719,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8173098127580644436">el origen de los tiempos</translation>
+<translation id="8186512483418048923">Archivos restantes: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Queda 1 día</translation>
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
@@ -753,6 +766,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8660471606262461360">De Google Payments</translation>
 <translation id="8662811608048051533">Cierra tu sesión en la mayoría de los sitios web.</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
+<translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidad de la señal: # barra}other{Nivel de intensidad de la señal: # barras}}</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
 <translation id="8719023831149562936">No se puede compartir la pestaña actual.</translation>
 <translation id="8725066075913043281">Volver a intentarlo</translation>
@@ -770,6 +784,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando detalles de los padres.</translation>
+<translation id="8922289737868596582">Descarga páginas con el botón con el botón Más opciones para usarlas sin conexión</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="894871326938397531">¿Salir del modo incógnito?</translation>
@@ -800,6 +815,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="9187067407629017315">Introduce una búsqueda o un sitio web</translation>
 <translation id="9187199695613236444">Vista optimizada para móviles</translation>
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
+<translation id="9204836675896933765">1 archivo restante</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9216841883364897953">Desglose del uso de datos</translation>
 <translation id="9219103736887031265">Imágenes</translation>

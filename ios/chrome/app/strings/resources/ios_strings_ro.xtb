@@ -150,6 +150,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3638472932233958418">Preîncarcă pagini</translation>
 <translation id="3691593122358196899">Marcaj adăugat în <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
+<translation id="3742082982782149146">Adresa URL a site-ului a fost copiată.</translation>
 <translation id="3771033907050503522">File incognito</translation>
 <translation id="3783017676699494206">Salvează imaginea</translation>
 <translation id="3789841737615482174">Instalează</translation>
@@ -164,10 +165,12 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4038354071007134711">Aplicațiile de pe dispozitiv nu deschid fișierul.</translation>
 <translation id="4049507953662678203">Asigură-te că ai o conexiune la rețea și încearcă din nou.</translation>
 <translation id="411254640334432676">Nu s-a descărcat.</translation>
+<translation id="4117350985506774529">Numele de utilizator a fost copiat.</translation>
 <translation id="4121993058175073134">Pentru trimitere date de export în rețea, configurați e-mailul în Setări.</translation>
 <translation id="4124987746317609294">Interval de timp</translation>
 <translation id="4172051516777682613">Afișați întotdeauna</translation>
 <translation id="418156467088430727">Vezi versiunea offline într-o filă nouă</translation>
+<translation id="4237682350741091554">Gestionează Sincronizarea Chrome și personalizarea în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Introdu expresia de acces</translation>
 <translation id="4272631900155121838">Pentru a scana un cod QR, activează camera foto din setări</translation>
 <translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
@@ -312,6 +315,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7136892417564438900">Camera foto nu este disponibilă</translation>
 <translation id="7159472599653637159">Site mobil</translation>
 <translation id="7167621057293532233">Tipuri de date</translation>
+<translation id="7175593937868963913">Scrie un e-mail</translation>
 <translation id="7189598951263744875">Trimite...</translation>
 <translation id="7203585745079012652">Primești răspunsuri vocale</translation>
 <translation id="722055596168483966">Personalizează serviciile Google</translation>

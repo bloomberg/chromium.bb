@@ -112,6 +112,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="3649256019230929621">Riduci la finestra</translation>
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Scopri come</translation>
+<translation id="3718805989288361841">Si è verificato un errore con le impostazioni delle norme per Chrome Remote Desktop. Contatta l'amministratore di sistema per ricevere assistenza.</translation>
 <translation id="3776024066357219166">La sessione Chrome Remote Desktop è terminata.</translation>
 <translation id="3785447812627779171">Host
 Chromoting</translation>
@@ -249,7 +250,7 @@ Remote Desktop</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Accesso negato per client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client connesso: <ph name="CLIENT_USERNAME" />.</translation>
-<translation id="7589941250119944644">Chrome Remote Desktop si sta trasferendo sul Web. Prova la nostra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />: è veloce, gratuita e ha tutte le stesse funzioni di prima.</translation>
+<translation id="7589941250119944644">Chrome Remote Desktop si sta trasferendo sul Web. Prova la nostra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />: è veloce, gratuita e ha le stesse funzioni di prima.</translation>
 <translation id="7606912958770842224">Attiva connessioni remote</translation>
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>

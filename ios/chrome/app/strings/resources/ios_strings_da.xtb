@@ -150,6 +150,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
+<translation id="3742082982782149146">Webadressen blev kopieret.</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3783017676699494206">Gem billede</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -164,10 +165,12 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4038354071007134711">Ingen apps på denne enhed, der kan åbne filen.</translation>
 <translation id="4049507953662678203">Sørg for, at du har forbindelse til et netværk, og prøv igen.</translation>
 <translation id="411254640334432676">Download mislykkedes.</translation>
+<translation id="4117350985506774529">Dit brugernavn blev kopieret.</translation>
 <translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din e-mailkonto i appen Indstillinger.</translation>
 <translation id="4124987746317609294">Tidsinterval</translation>
 <translation id="4172051516777682613">Vis altid</translation>
 <translation id="418156467088430727">Se offlineversion på en ny fane</translation>
+<translation id="4237682350741091554">Administrer Chrome-synkronisering og -tilpasning i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Angiv adgangssætning</translation>
 <translation id="4272631900155121838">Aktivér kameraet i Indstillinger for at scanne en QR-kode</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
@@ -312,6 +315,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7136892417564438900">Kameraet er ikke tilgængeligt</translation>
 <translation id="7159472599653637159">Anmod om mobilversion</translation>
 <translation id="7167621057293532233">Datatyper</translation>
+<translation id="7175593937868963913">Skriv mail</translation>
 <translation id="7189598951263744875">Del...</translation>
 <translation id="7203585745079012652">Giv talte svar</translation>
 <translation id="722055596168483966">Tilpas Google-tjenester</translation>

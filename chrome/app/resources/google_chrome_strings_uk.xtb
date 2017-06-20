@@ -11,6 +11,7 @@
 <translation id="127345590676626841">Chrome оновлюється автоматично, щоб у вас завжди була найновіша версія. Коли це завантаження завершиться, Chrome перезапуститься, і ви зможете продовжувати роботу.</translation>
 <translation id="1302523850133262269">Зачекайте, доки Chrome установить найновіші оновлення системи.</translation>
 <translation id="1350930993895295930">У Chrome виявлено незвичну активність</translation>
+<translation id="137466361146087520">Бета-версія Google Chrome</translation>
 <translation id="1393853151966637042">Отримати довідку щодо користування Chrome</translation>
 <translation id="1399397803214730675">На комп’ютері вже встановлено новішу версію Google Chrome. Якщо програмне забезпечення не працює, видаліть Google Chrome і повторіть спробу.</translation>
 <translation id="1434626383986940139">Програми Chrome для версії Canary</translation>
@@ -33,6 +34,7 @@
 <translation id="1773601347087397504">Отримати довідку щодо користування ОС Chrome</translation>
 <translation id="1795405610103747296">Установіть Chrome на телефоні. Ми надішлемо SMS на ваш телефон: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1818142563254268765">Не вдалось оновити Chrome до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, оновіть Chrome.</translation>
+<translation id="1874309113135274312">Бета-версія Google Chrome (mDNS-In)</translation>
 <translation id="1877026089748256423">Версія Chrome застаріла</translation>
 <translation id="2063848847527508675">Щоб застосувати це оновлення, потрібно перезапустити ОС Chrome.</translation>
 <translation id="2077129598763517140">Використовувати апаратне прискорення, якщо доступно</translation>
@@ -110,6 +112,7 @@
 <translation id="4251615635259297716">Пов’язати ваші дані Chrome із цим обліковим записом?</translation>
 <translation id="4251625577313994583">завантажити Chrome на iPhone</translation>
 <translation id="4309555186815777032">(потрібно <ph name="BEGIN_BUTTON" />перезапустити<ph name="END_BUTTON" /> Chrome)</translation>
+<translation id="4328355335528187361">Версія Google Chrome для розробників (mDNS-In)</translation>
 <translation id="4331809312908958774">ОС Chrome</translation>
 <translation id="437002079035561265">На цей комп’ютер більше не надходитимуть оновлення Google Chrome, оскільки ця система Linux уже не підтримується.</translation>
 <translation id="4407807842708586359">ОС Google Chrome</translation>
@@ -133,6 +136,7 @@
 <translation id="4921569541910214635">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chrome на свій смак.</translation>
 <translation id="4953650215774548573">Зробити Google Chrome веб-переглядачем за умовчанням</translation>
 <translation id="495931528404527476">У Chrome</translation>
+<translation id="4965682129423310439">Chrome виявив зловмисне програмне забезпечення на вашому комп’ютері. Chrome може вилучити його та відновити налаштування для роботи веб-переглядача у звичайному режимі.</translation>
 <translation id="4987308747895123092">Закрийте всі вікна Google Chrome (зокрема вікна в режимі Windows 8) і повторіть спробу.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
@@ -176,6 +180,7 @@
 <translation id="61852838583753520">Оновити &amp;ОС Chrome</translation>
 <translation id="6235018212288296708">Вхідне правило для Google Chrome дозволяє трафік mDNS.</translation>
 <translation id="6236285698028833233">Оновлення Google Chrome припинилось. Ця версія вашої операційної системи більше не підтримується.</translation>
+<translation id="6291089322031436445">Версія Chrome для розробників додатків</translation>
 <translation id="6291549208091401781">Google Chrome уже встановлено для всіх користувачів на вашому комп’ютері.</translation>
 <translation id="6338556085225130112">Оновлення Google Chrome</translation>
 <translation id="6368958679917195344">ОС Chrome стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -190,10 +195,13 @@
 <translation id="6626317981028933585">Шкода, але ваші налаштування Mozilla Firefox не є доступні, коли переглядач запущено. Щоб імпортувати такі налаштування у Google Chrome, збережіть зроблені вами зміни та закрийте усі вікна Firefox. Потім натисніть "Продовжити"</translation>
 <translation id="6634887557811630702">У вас остання версія Google Chrome.</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
+<translation id="6697947395630195233">Chrome потрібен доступ до місцезнаходження, щоб повідомляти ваші геодані цьому сайту.</translation>
 <translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
 <translation id="686561893457936865">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>
+<translation id="6885412569789873916">Бета-версія додатків Chrome</translation>
+<translation id="6967962315388095737">Вхідне правило для бета-версії Google Chrome дозволяє трафік mDNS.</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
 <translation id="6982337800632491844">Перш ніж використовувати цей пристрій, потрібно прочитати й прийняти наведені нижче Загальні положення та умови для <ph name="DOMAIN" />. Ці умови не розширюють, не змінюють і не обмежують Умови використання ОС Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
@@ -220,6 +228,7 @@
 <translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7494905215383356681">Ліцензії Chrome із відкритим кодом</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Принаймні $1 елемент буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як $2.}one{Принаймні $1 елемент буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як $2.}few{Принаймні $1 елементи буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як $2.}many{Принаймні $1 елементів буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як $2.}other{Принаймні $1 елемента буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як $2.}}</translation>
+<translation id="7535429826459677826">Версія Google Chrome для розробників</translation>
 <translation id="7552219221109926349">Вибрати цю мову для ОС Chrome</translation>
 <translation id="7592736734348559088">Google Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="7626032353295482388">Вітаємо у Chrome!</translation>
@@ -251,6 +260,7 @@
 <translation id="8439301513305169426">Chrome збереже цей пароль тут: <ph name="SAVED_PASSWORD_LINK" />. Не потрібно його запам’ятовувати.</translation>
 <translation id="8455999171311319804">Додатково. Допоможіть покращити ОС Chrome, автоматично надсилаючи в Google дані про діагностику та використання.</translation>
 <translation id="8478823064122749032">Установіть Chrome на телефоні. Ми надішлемо SMS на номер телефону для відновлення облікового запису: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8521348052903287641">Вхідне правило для Google Chrome для розробників дозволяє трафік mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Панель запуску програм Chrome для версії Canary</translation>
 <translation id="8556340503434111824">Доступна нова версія Google Chrome – швидша, ніж будь-коли.</translation>

@@ -150,6 +150,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
 <translation id="3691593122358196899">Als Lesezeichen in "<ph name="FOLDER_TITLE" />" gespeichert</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
+<translation id="3742082982782149146">Die Website-URL wurde kopiert.</translation>
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
 <translation id="3783017676699494206">Bild speichern</translation>
 <translation id="3789841737615482174">Installieren</translation>
@@ -164,10 +165,12 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4038354071007134711">Keine App zum Öffnen der Datei auf diesem Gerät</translation>
 <translation id="4049507953662678203">Überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es noch einmal.</translation>
 <translation id="411254640334432676">Fehler beim Download</translation>
+<translation id="4117350985506774529">Ihr Nutzername wurde kopiert.</translation>
 <translation id="4121993058175073134">Zum Senden von Exportdaten E-Mail-Konto in App "Einstellungen" konfigurieren</translation>
 <translation id="4124987746317609294">Zeitraum</translation>
 <translation id="4172051516777682613">Immer anzeigen</translation>
 <translation id="418156467088430727">Offlineversion in einem neuen Tab ansehen</translation>
+<translation id="4237682350741091554">Chrome-Synchronisierung und -Personalisierung in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> verwalten</translation>
 <translation id="424315890655130736">Passphrase eingeben</translation>
 <translation id="4272631900155121838">Um einen QR-Code zu scannen, aktivieren Sie in den Einstellungen die Kamera</translation>
 <translation id="4281844954008187215">Nutzungsbedingungen</translation>
@@ -312,6 +315,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7136892417564438900">Kamera ist nicht verfügbar</translation>
 <translation id="7159472599653637159">Mobile Version anfordern</translation>
 <translation id="7167621057293532233">Datentypen</translation>
+<translation id="7175593937868963913">E-Mail schreiben</translation>
 <translation id="7189598951263744875">Teilen...</translation>
 <translation id="7203585745079012652">Gesprochene Antworten</translation>
 <translation id="722055596168483966">Google-Dienste personalisieren</translation>

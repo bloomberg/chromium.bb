@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">আইনি পথ (পূর্ণ অথবা '..' এর সাথে সম্পর্কিত: '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">এই এক্সটেনশানটি নেটওয়ার্কের অনুরোধ সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনের অন্য এক্সটেনশানের সঙ্গে বিরোধ হয়েছে৷</translation>
 <translation id="2857834222104759979">তালিকা ফাইল অবৈধ৷</translation>
+<translation id="2903070246402204397">প্রশাসক <ph name="EXTENSION_NAME" /> (এক্সটেনশন আইডি "<ph name="EXTENSION_ID" />") ব্লক করেছে। <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">এই প্যাকেজটি ইনস্টল করতে পারেনি: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> বিক্রেতার থেকেঅজানা পণ্য <ph name="PRODUCT_ID" /> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> বিক্রেতার থেকে অজানা পণ্য <ph name="PRODUCT_ID" /></translation>

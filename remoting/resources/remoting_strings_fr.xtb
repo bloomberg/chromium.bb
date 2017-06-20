@@ -112,6 +112,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="3649256019230929621">Réduire la fenêtre</translation>
 <translation id="369442766917958684">Hors connexion</translation>
 <translation id="3695446226812920698">Comment procéder</translation>
+<translation id="3718805989288361841">Erreur dans les paramètres des règles pour le bureau à distance Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="3776024066357219166">La session du bureau à distance Google Chrome est terminée.</translation>
 <translation id="3785447812627779171">Hôte
 Chromoting</translation>
@@ -249,7 +250,7 @@ Google Chrome</translation>
 <translation id="7401733114166276557">Bureau à distance Google Chrome</translation>
 <translation id="7434397035092923453">Accès refusé au client : <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client connecté : <ph name="CLIENT_USERNAME" /></translation>
-<translation id="7589941250119944644">L'application Bureau à distance Chrome est désormais hébergé sur le Web. Essayez notre <ph name="LINK_BEGIN" />nouvelle application<ph name="LINK_END" /> ! Rapide et gratuite, elle offre les mêmes fonctionnalités qu'avant.</translation>
+<translation id="7589941250119944644">L'application Bureau à distance Chrome est désormais hébergée sur le Web. Essayez notre <ph name="LINK_BEGIN" />nouvelle application<ph name="LINK_END" /> ! Rapide et gratuite, elle offre les mêmes fonctionnalités qu'avant.</translation>
 <translation id="7606912958770842224">Activer les connexions à distance</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7658239707568436148">Annuler</translation>

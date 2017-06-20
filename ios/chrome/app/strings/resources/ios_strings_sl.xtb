@@ -150,6 +150,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="3638472932233958418">Vnaprej naloži spletne strani</translation>
 <translation id="3691593122358196899">Zaznamek ustvarjen v mapi <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
+<translation id="3742082982782149146">URL spletnega mesta je bil kopiran.</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3783017676699494206">Shrani sliko</translation>
 <translation id="3789841737615482174">Namesti</translation>
@@ -164,10 +165,12 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="4038354071007134711">Nobena aplikacija v tej napravi ne more odpreti datoteke.</translation>
 <translation id="4049507953662678203">Make sure you have a network connection, and try again.</translation>
 <translation id="411254640334432676">Prenos ni uspel.</translation>
+<translation id="4117350985506774529">Uporabniško ime je bilo kopirano.</translation>
 <translation id="4121993058175073134">Če želite pošiljati podatke net-export, v aplikaciji Nastavitve konfigurirajte e-poštni račun.</translation>
 <translation id="4124987746317609294">Časovno obdobje</translation>
 <translation id="4172051516777682613">Vedno pokaži</translation>
 <translation id="418156467088430727">Ogled različice brez povezave na novem zavihku</translation>
+<translation id="4237682350741091554">Upravljanje sinhronizacije za Chrome in prilagajanja v <ph name="BEGIN_LINK" />Nastavitvah<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Vnos gesla</translation>
 <translation id="4272631900155121838">Če želite optično prebrati kodo QR, v nastavitvah omogočite fotoaparat</translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
@@ -312,6 +315,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7136892417564438900">Fotoaparat ni na voljo</translation>
 <translation id="7159472599653637159">Zahtevaj spletno mesto za mob. napravo</translation>
 <translation id="7167621057293532233">Vrste podatkov</translation>
+<translation id="7175593937868963913">Novo e-poštno sporočilo</translation>
 <translation id="7189598951263744875">Deli z drugimi</translation>
 <translation id="7203585745079012652">Izgovorjava odgovorov</translation>
 <translation id="722055596168483966">Prilagajanje Googlovih storitev</translation>

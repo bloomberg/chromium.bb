@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
-<translation id="1007441141628883408">Mengaktifkan pembaruan komponen untuk semua komponen di <ph name="PRODUCT_NAME" /> jika belum disetel atau sudah disetel ke True.
-
-      Jika disetel ke False, pembaruan untuk komponen akan dinonaktifkan. Namun, beberapa komponen akan dikecualikan dari kebijakan ini: pembaruan untuk komponen apa pun yang tidak berisi kode yang dapat dieksekusi atau tidak mengubah perilaku browser secara signifikan, maupun yang bersifat kritis untuk keamanannya tidak akan dinonaktifkan.
-      Contoh komponen tersebut mencakup daftar pencabutan sertifikat dan data penjelajahan aman. </translation>
 <translation id="101438888985615157">Putar layar sebesar 180 derajat</translation>
 <translation id="1017967144265860778">Pengelolaan daya di layar masuk</translation>
 <translation id="1019101089073227242">Menyetel direktori data pengguna</translation>
@@ -484,15 +480,6 @@
 
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
-<translation id="2785954641789149745">Mengaktifkan fitur Safe Browsing <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
-
-      Jika Anda mengaktifkan setelan ini, Safe Browsing akan selalu aktif.
-
-      Jika Anda menonaktifkan setelan ini, Safe Browsing tidak akan pernah aktif.
-
-      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan "Aktifkan perlindungan phishing dan software perusak" di <ph name="PRODUCT_NAME" />.
-
-      Jika kebijakan ini tidak disetel, kebijakan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
 <translation id="2801230735743888564">Mengizinkan pengguna memainkan game dinosaur easter egg saat perangkat offline.
 
@@ -505,9 +492,6 @@
           Jika setelan ini dinonaktifkan dan koneksi UDP yang keluar disaring oleh firewall, komputer ini hanya akan mengizinkan koneksi dari komputer klien dalam jaringan lokal.
 
           Jika kebijakan ini dibiarkan tidak disetel, setelan tersebut akan diaktifkan.</translation>
-<translation id="2811293057593285123">Layanan Safe Browsing menampilkan laman peringatan saat pengguna bernavigasi ke situs yang diberi tanda sebagai berpotensi berbahaya. Mengaktifkan setelan ini mencegah pengguna terus melanjutkan dari laman peringatan ke situs yang berbahaya.
-
-      Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna dapat memilih untuk melanjutkan ke situs yang diberi tanda setelah peringatan ditampilkan.</translation>
 <translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
 <translation id="2844404652289407061">Mengaktifkan ketersediaan Sentuh untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
 
@@ -711,9 +695,9 @@
       Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3758249152301468420">Nonaktifkan Alat Pengembang</translation>
 <translation id="3765260570442823273">Durasi pesan peringatan proses keluar nganggur</translation>
-<translation id="376931976323225993">Memungkinkan Anda menyetel apakah situs diizinkan untuk otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />. Otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> dapat diizinkan untuk semua situs atau ditolak untuk semua situs.
+<translation id="376931976323225993">Memungkinkan Anda menyetel apakah situs diizinkan untuk otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />. Fitur otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> dapat diizinkan untuk semua situs atau ditolak untuk semua situs.
 
-          Klik untuk mainkan memungkinkan plugin <ph name="FLASH_PLUGIN_NAME" /> berjalan, namun pengguna harus mengklik placeholder untuk mulai menjalankannya.
+          Fitur klik untuk memutar memungkinkan plugin <ph name="FLASH_PLUGIN_NAME" /> berjalan, namun pengguna harus mengklik placeholder untuk mulai menjalankannya.
 
           Jika kebijakan ini tidak disetel, pengguna akan dapat mengubah setelan ini secara manual.</translation>
 <translation id="3780152581321609624">Sertakan port non-standar di SPN Kerberos</translation>
@@ -895,7 +879,6 @@
 <translation id="4372704773119750918">Jangan izinkan pengguna perusahaan untuk menjadi bagian dari multiprofil (primer atau sekunder)</translation>
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
 <translation id="4389091865841123886">Mengonfigurasi pengesahan jarak jauh dengan mekanisme TPM.</translation>
-<translation id="4397469093966511008">Menyetel kebijakan ini ke false akan menghentikan pengguna memilih untuk mengirim beberapa informasi sistem dan konten halaman ke server Google. Jika disetel ke true atau tidak dikonfigurasi, pengguna akan diizinkan untuk mengirim beberapa informasi sistem dan konten halaman ke Safe Browsing untuk membantu mendeteksi aplikasi dan situs yang berbahaya.</translation>
 <translation id="4418726081189202489">Menyetel kebijakan ini ke false akan menghentikan <ph name="PRODUCT_NAME" /> yang terkadang mengirim kueri ke server Google, untuk mengambil stempel waktu yang akurat. Kueri ini akan diaktifkan jika kebijakan disetel ke True atau tidak disetel.</translation>
 <translation id="4423597592074154136">Tentukan setelan proxy secara manual</translation>
 <translation id="4429220551923452215">Mengaktifkan atau menonaktifkan pintasan aplikasi di bilah bookmark.
@@ -1188,6 +1171,8 @@
       Jika <ph name="PRODUCT_NAME" /> tidak dapat memperoleh informasi status pembatalan, sertifikat tersebut yang akan diperlakukan sebagai dicabut ('kegagalan fatal').
 
       Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan menggunakan setelan pemeriksaan pembatalan online yang ada.</translation>
+<translation id="572720239788271400">Mengaktifkan update komponen di <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Mengimpor data formulir isi-otomatis dari browser default saat pertama kali dijalankan</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
@@ -1313,7 +1298,7 @@
       Perhatikan bahwa, "sslv3" adalah versi yang lebih awal dibandingkan "tls1", meskipun angkanya lebih besar.</translation>
 <translation id="6181608880636987460">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
 
-          Jika kebijakan ini dibiarkan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
+          Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="6190022522129724693">Setelan munculan default</translation>
 <translation id="6197453924249895891">Memberikan akses ke kunci perusahaan ke ekstensi.
 
@@ -1398,6 +1383,7 @@
           Jika kebijakan ini tidak disetel, keyboard di layar akan dinonaktifkan ketika layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan keyboard di layar kapan saja dan statusnya pada layar masuk bersifat tetap antarpengguna.</translation>
 <translation id="6573305661369899995">Setel sumber eksternal batasan URL</translation>
 <translation id="6598235178374410284">Gambar avatar pengguna</translation>
+<translation id="6603004149426829878">Selalu kirim sinyal lokasi yang tersedia ke server sembari menentukan zona waktu</translation>
 <translation id="6628646143828354685">Memungkinkan Anda menyetel apakah situs web dapat mengakses perangkat Bluetooth di sekitar. Akses dapat diblokir sepenuhnya, atau pengguna dapat dimintai izin setiap kali situs web ingin mengakses perangkat Bluetooth di sekitar.
 
           Jika kebijakan ini belum disetel, '3' akan digunakan, dan pengguna dapat mengubahnya.</translation>
@@ -1428,7 +1414,7 @@
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
 <translation id="6757438632136860443">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
 
-          Jika kebijakan dibiarkan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, ataupun konfigurasi pribadi pengguna.</translation>
+          Jika kebijakan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
@@ -2016,5 +2002,6 @@
 <translation id="922540222991413931">Konfigurasi sumber pemasangan skrip pengguna, aplikasi, dan ekstensi</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>
 <translation id="930930237275114205">Setel direktori data pengguna <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Aktifkan login paksa untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Setel ukuran cache disk</translation>
 </translationbundle>

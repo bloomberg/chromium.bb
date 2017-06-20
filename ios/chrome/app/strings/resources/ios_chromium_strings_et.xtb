@@ -19,6 +19,7 @@
 <translation id="3473048256428424907">Chromiumi QR-skanneri sisselülitamine</translation>
 <translation id="3605252743693911722">Logige Chromiumi sisse, et kõikides oma seadmetes kasutada järjehoidjaid, paroole ja muud.</translation>
 <translation id="3805899903892079518">Chromiumil pole juurdepääsu fotodele ega videotele. Lubage iOS-is juurdepääs valikutega Seaded &gt; Privaatsus &gt; Fotod.</translation>
+<translation id="4024541897090868497">Kõikidesse seadmetesse vahelehtede hankimiseks logige Chromiumi sisse.</translation>
 <translation id="418271229036116702">Oma teistest seadmetest vahelehtede hankimiseks logige Chromiumisse sisse.</translation>
 <translation id="4241912885070669028">Logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chromiumi andmed, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="4555020257205549924">Kui see funktsioon on sisse lülitatud, pakub Chromium võimalust tõlkida teistes keeltes kirjutatud lehti Google'i tõlke abil. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>

@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
-<translation id="1007441141628883408">Omogućuje ažuriranja komponenti za sve komponente u proizvodu <ph name="PRODUCT_NAME" /> kada pravilo nije postavljeno ili je postavljeno na True.
-
-      Ako se postavi na False, ažuriranje komponenti je onemogućeno. No neke su komponente izuzete od tog pravila i dalje će se ažurirati, a to su komponente koje ne sadrže izvršni kôd, koje bitno ne mijenjaju ponašanje preglednika ili koje su važne za sigurnost.
-      Primjeri takvih komponenti uključuju popise opozvanih certifikata i podatke sigurnog pregledavanja. </translation>
 <translation id="101438888985615157">Zakreni zaslon 180 stupnjeva</translation>
 <translation id="1017967144265860778">Upravljanje napajanjem na zaslonu za prijavu</translation>
 <translation id="1019101089073227242">Postavi imenik korisničkih podataka</translation>
@@ -484,15 +480,6 @@
 
       Svaki unos na popisu navodi identifikator, koji se upotrebljava interno da bi se razlikovali lokalni računi na uređaju.</translation>
 <translation id="2769952903507981510">Konfiguriraj traženi naziv domene za hostove daljinskog pristupa</translation>
-<translation id="2785954641789149745">Omogućuje značajku Sigurno pregledavanje usluge <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
-
-      Ako omogućite tu postavku, Sigurno pregledavanje uvijek je aktivno.
-
-      Ako je onemogućite, Sigurno pregledavanje nikada nije aktivno.
-
-      Ako omogućite ili onemogućite tu postavku, korisnici ne mogu promijeniti ili premostiti postavku "Omogući zaštitu od krađe identiteta i zlonamjernog softvera" na usluzi <ph name="PRODUCT_NAME" />.
-
-      Ako se to pravilo ne postavi, ta će postavka biti omogućena, ali će je korisnici moći promijeniti.</translation>
 <translation id="2787173078141616821">Prijavi informacije o statusu Androida</translation>
 <translation id="2801230735743888564">Dopusti korisnicima igranje skrivene igre s dinosaurom kada je uređaj izvan mreže.
 
@@ -505,9 +492,6 @@
           Ako je ova postavka onemogućena, a odlazne UDP veze filtrirane su vatrozidom, onda će ovo računalo dopustiti samo veze s klijentskih računala unutar lokalne mreže.
 
           Ako ovo pravilo nije postavljeno, postavka će biti omogućena.</translation>
-<translation id="2811293057593285123">Usluga Sigurno pregledavanje prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje su označene kao potencijalno zlonamjerne. Omogućavanje te postavke sprječava korisnike da ipak krenu dalje sa stranice upozorenja do zlonamjerne web-lokacije.
-
-      Ako je ta postavka onemogućena ili ako nije konfigurirana, korisnici prema želji mogu nastaviti do označene web-lokacije nakon što im se prikazalo upozorenje.</translation>
 <translation id="2824715612115726353">Omogući anonimni način</translation>
 <translation id="2844404652289407061">Omogućuje dostupnost značajke Dodirnite za pretraživanje u prikazu sadržaja preglednika <ph name="PRODUCT_NAME" />.
 
@@ -891,7 +875,6 @@
 <translation id="4372704773119750918">Ne dopusti poslovnom korisniku da bude dio višestrukog profila (primarnom ili sekundarnom)</translation>
 <translation id="4377599627073874279">Dopusti svim web-lokacijama prikazivanje svih slika</translation>
 <translation id="4389091865841123886">Konfiguriranje daljinskog atestiranja TPM mehanizmom.</translation>
-<translation id="4397469093966511008">Ako se to pravilo postavi na "false", korisnici neće moći odabrati slanje nekih informacija sustava i sadržaja stranice Googleovim poslužiteljima. Ako se ta postavka postavi na "true" ili se ne konfigurira, korisnici će moći slati neke informacije sustava i sadržaj stranice Sigurnom pregledavanju radi boljeg otkrivanja opasnih aplikacija i web-lokacija.</translation>
 <translation id="4418726081189202489">Ako se to pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> neće povremeno slati upite Googleovu poslužitelju radi dohvaćanja točne vremenske oznake. Ti će se upiti omogućiti ako se pravilo postavi na točno ili se ne postavi.</translation>
 <translation id="4423597592074154136">Ručno određivanje proxy postavki</translation>
 <translation id="4429220551923452215">Omogućuje ili onemogućuje prečace aplikacija u traci oznaka.
@@ -1189,6 +1172,8 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako <ph name="PRODUCT_NAME" /> ne može dobiti informaciju o statusu opoziva, s takvim će se certifikatima postupati kao da su opozvani (tzv. "hard-fail").
 
       Ako to pravilo nije postavljeno ili je postavljeno kao netočno, tada će <ph name="PRODUCT_NAME" /> upotrijebiti postojeće mrežne postavke provjere opoziva.</translation>
+<translation id="572720239788271400">Omogućuje ažuriranje komponenti u proizvodu <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Omogućuje izradu roaming kopija podataka <ph name="PRODUCT_NAME" /> profila</translation>
 <translation id="5732972008943405952">Uvoz podataka za automatsko popunjavanje obrazaca iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5770738360657678870">Razvojni kanal (možda je nestabilan)</translation>
@@ -1399,6 +1384,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako ne postavite to pravilo, tipkovnica na zaslonu onemogućena je prilikom prvog prikazivanja zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti tipkovnicu na zaslonu u bilo kojem trenutku i njen status na zaslonu za prijavu zadržava se među korisnicima.</translation>
 <translation id="6573305661369899995">Postavi vanjski izvor ograničenja URL-ova</translation>
 <translation id="6598235178374410284">Slika avatara korisnika</translation>
+<translation id="6603004149426829878">Uvijek šalji sve dostupne signale lokacije poslužitelju prilikom utvrđivanja vremenske zone</translation>
 <translation id="6628646143828354685">Omogućuje vam da odredite smiju li web-lokacije dobivati pristup Bluetooth uređajima u blizini. Pristup se može potpuno blokirati ili se može tražiti dopuštenje korisnika svaki put kad neka web-lokacija želi pristupiti Bluetooth uređajima u blizini.
 
           Ako se pravilo ne postavi, upotrebljavat će se vrijednost "3" i korisnik će to moći promijeniti.</translation>
@@ -2019,5 +2005,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="922540222991413931">Konfiguracija izvora instalacija proširenja, aplikacija i korisničkih skripti</translation>
 <translation id="924557436754151212">Uvoz spremljenih zaporki iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="930930237275114205">Postavi direktorij korisničkih podataka za pravilo <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Omogućuje nametanje prijave za <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Postavi veličinu predmemorije diska</translation>
 </translationbundle>

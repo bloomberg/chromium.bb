@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="1007441141628883408">Când nu este configurată sau este activată, permite actualizările componentelor pentru toate componentele din <ph name="PRODUCT_NAME" />.
-
-      Dacă este dezactivată, actualizările componentelor sunt dezactivate. Totuși, anumite componente nu se supun acestei politici: nu vor fi dezactivate actualizările oricărei componente care nu conține un cod executabil sau care nu schimbă semnificativ comportamentul browserului ori care este critică pentru securitatea sa.
-      Exemplele de asemenea componente includ listele de revocare a certificatelor și datele de navigare sigură. </translation>
 <translation id="101438888985615157">Rotește ecranul la 180 de grade</translation>
 <translation id="1017967144265860778">Gestionarea consumului de energie pe ecranul de conectare</translation>
 <translation id="1019101089073227242">Setează directorul pentru datele utilizatorului</translation>
@@ -487,15 +483,6 @@
 
       Fiecare intrare de pe listă specifică un identificator, care este utilizat la nivel intern pentru a face diferența între conturile locale de pe gadget.</translation>
 <translation id="2769952903507981510">Configurați numele de domeniu necesar pentru gazdele de acces la distanță</translation>
-<translation id="2785954641789149745">Activează funcția Navigare sigură din <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să modifice această setare.
-
-      Dacă activați această setare, Navigarea sigură este activă întotdeauna.
-
-      Dacă dezactivați această setare, Navigarea sigură nu este niciodată activă.
-
-      Dacă activați sau dezactivați această setare, utilizatorii nu pot modifica sau ignora setarea „Activați protecția pentru phishing și malware” din <ph name="PRODUCT_NAME" />.
-
-      Dacă politica nu este configurată, această opțiune va fi activată, dar utilizatorul va putea să o modifice.</translation>
 <translation id="2787173078141616821">Raportează informații despre starea Android</translation>
 <translation id="2801230735743888564">Permite utilizatorilor să joace jocul ascuns cu dinozaurul când dispozitivul este offline.
 
@@ -508,9 +495,6 @@
           Dacă setarea este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, acest computer va accepta numai conexiunile de la computerele client din rețeaua locală.
 
           Dacă politica nu este configurată, setarea va fi activată.</translation>
-<translation id="2811293057593285123">Serviciul Navigare sigură afișează o pagină de avertisment când utilizatorii navighează pe site-uri semnalate ca fiind potențial dăunătoare. Dacă activați această setare, utilizatorii nu vor putea să navigheze mai departe de pe pagina de avertisment pe site-ul dăunător.
-
-      Dacă setarea este dezactivată sau nu este configurată, utilizatorii pot alege să acceseze site-ul semnalat după ce li se afișează avertismentul.</translation>
 <translation id="2824715612115726353">Activează modul incognito</translation>
 <translation id="2844404652289407061">Activează disponibilitatea funcției Atinge pentru a căuta în timpul afișării conținutului din <ph name="PRODUCT_NAME" />.
 
@@ -903,7 +887,6 @@
 <translation id="4372704773119750918">Nu permite ca utilizatorul întreprindere să facă parte din profilul multiplu (principal sau secundar)</translation>
 <translation id="4377599627073874279">Permite tuturor site-urilor să afișeze toate imaginile</translation>
 <translation id="4389091865841123886">Configurați atestarea la distanță cu mecanismul TPM.</translation>
-<translation id="4397469093966511008">Dacă dezactivezi această politică, utilizatorii nu vor mai putea trimite unele informații de sistem și conținutul paginii la serverele Google. Dacă această setare este activată sau nu este configurată, utilizatorii au permisiunea să trimită unele informații de sistem și conținutul paginii la Navigarea sigură pentru detectarea aplicațiilor și a site-urilor periculoase.</translation>
 <translation id="4418726081189202489">Dacă dezactivezi această politică, <ph name="PRODUCT_NAME" /> nu mai trimite ocazional interogări către un server Google pentru a prelua un marcaj temporal precis. Dacă politica este activată sau nu este configurată, aceste interogări vor fi activate.</translation>
 <translation id="4423597592074154136">Specifică manual setările proxy</translation>
 <translation id="4429220551923452215">Activează sau dezactivează comanda rapidă pentru aplicații din bara de marcaje.
@@ -1200,6 +1183,8 @@
       Dacă <ph name="PRODUCT_NAME" /> nu poate obține informații despre starea revocării, certificatele de acest fel vor fi considerate revocate („blocate”).
 
       Dacă politica nu este configurată sau nu este activată, <ph name="PRODUCT_NAME" /> va folosi setările existente pentru verificarea revocărilor online.</translation>
+<translation id="572720239788271400">Permite actualizările componentelor în <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Activează crearea unor copii de roaming pentru datele profilului <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importă datele salvate pentru completarea automată a formularelor din browserul prestabilit la prima lansare</translation>
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5770738360657678870">Canalul pentru dezvoltatori (poate fi instabil)</translation>
@@ -1325,7 +1310,7 @@
       Reține că în ciuda numărului, „sslv3” este o versiune anterioară versiunii „tls1”.</translation>
 <translation id="6181608880636987460">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care nu au permisiunea să ruleze pluginul <ph name="FLASH_PLUGIN_NAME" />.
 
-          Dacă această politica nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
+          Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="6190022522129724693">Setare prestabilită pentru ferestrele pop-up</translation>
 <translation id="6197453924249895891">Acordă extensiilor accesul la certificatele companiei.
 
@@ -1410,6 +1395,7 @@
           Dacă politica nu este configurată, tastatura pe ecran este dezactivată la prima afișare a ecranului de conectare. Utilizatorii pot activa sau dezactiva oricând tastatura pe ecran, iar starea acesteia pe ecranul de conectare se păstrează de la un utilizator la altul.</translation>
 <translation id="6573305661369899995">Setează o sursă externă a restricțiilor privind adresele URL</translation>
 <translation id="6598235178374410284">Imagine cu avatarul de utilizator</translation>
+<translation id="6603004149426829878">Trimite întotdeauna semnalele disponibile privind locația către server în timp ce se stabilește fusul orar</translation>
 <translation id="6628646143828354685">Îți permite să setezi dacă site-urile primesc acces la dispozitivele Bluetooth din apropiere. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele Bluetooth din apropiere.
 
           Dacă această politică nu este configurată, va fi folosită valoarea „3”, iar utilizatorul o va putea modifica.</translation>
@@ -1440,7 +1426,7 @@
 <translation id="6699880231565102694">Activați autentificarea cu doi factori pentru gazdele de acces la distanță</translation>
 <translation id="6757438632136860443">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care au permisiunea să ruleze pluginul <ph name="FLASH_PLUGIN_NAME" />.
 
-          Dacă această politica nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
+          Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="6766216162565713893">Permite site-urilor să solicite utilizatorului să acorde accesul la un dispozitiv Bluetooth din apropiere</translation>
 <translation id="6770454900105963262">Raportează informații despre sesiunile chioșc active</translation>
 <translation id="6786747875388722282">Extensii</translation>
@@ -2030,5 +2016,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="922540222991413931">Configurați sursele pentru instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
 <translation id="924557436754151212">Importați parolele salvate din browserul prestabilit, la prima rulare</translation>
 <translation id="930930237275114205">Setați directorul <ph name="PRODUCT_FRAME_NAME" /> pentru datele utilizatorului</translation>
+<translation id="934390688529359269">Activează conectarea forțată pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Setați dimensiunea pentru memorare în cache pe disc</translation>
 </translationbundle>

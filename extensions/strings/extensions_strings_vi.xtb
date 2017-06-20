@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Đường dẫn không hợp lệ (tuyệt đối hoặc tương đối với '..'): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">Tiện ích này không thể sửa đổi yêu cầu mạng vì việc sửa đổi xung đột với một tiện ích khác.</translation>
 <translation id="2857834222104759979">Tệp kê khai không hợp lệ.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (ID tiện ích "<ph name="EXTENSION_ID" />") bị quản trị viên chặn. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Không thể cài đặt gói: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ nhà cung cấp <ph name="VENDOR_ID" /> (số sê-ri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ nhà cung cấp <ph name="VENDOR_ID" /></translation>

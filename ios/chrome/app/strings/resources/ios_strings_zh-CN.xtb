@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
+<translation id="3742082982782149146">系统已复制该网站网址。</translation>
 <translation id="3771033907050503522">隐身标签页</translation>
 <translation id="3783017676699494206">保存图片</translation>
 <translation id="3789841737615482174">安装</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">此设备上没有可以打开该文件的应用。</translation>
 <translation id="4049507953662678203">请确保已连接到网络，然后重试。</translation>
 <translation id="411254640334432676">下载失败。</translation>
+<translation id="4117350985506774529">系统已复制您的用户名。</translation>
 <translation id="4121993058175073134">要发送净导出数据，请在“设置”应用中指定您的电子邮件帐号。</translation>
 <translation id="4124987746317609294">时间范围</translation>
 <translation id="4172051516777682613">一律显示</translation>
 <translation id="418156467088430727">在新标签页中查看离线版本</translation>
+<translation id="4237682350741091554">在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理 Chrome 同步和个性化</translation>
 <translation id="424315890655130736">请输入密码</translation>
 <translation id="4272631900155121838">要扫描 QR 码，请从设置中启用相机功能</translation>
 <translation id="4281844954008187215">服务条款</translation>
@@ -312,6 +315,7 @@
 <translation id="7136892417564438900">无法使用相机</translation>
 <translation id="7159472599653637159">请求移动版网站</translation>
 <translation id="7167621057293532233">数据类型</translation>
+<translation id="7175593937868963913">邮件内容</translation>
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="722055596168483966">对 Google 服务进行个性化设置</translation>

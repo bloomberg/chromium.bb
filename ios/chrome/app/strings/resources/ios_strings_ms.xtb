@@ -150,6 +150,7 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Ditandai halaman ke <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Sentuh untuk Cari</translation>
+<translation id="3742082982782149146">URL tapak ini telah disalin.</translation>
 <translation id="3771033907050503522">Tab Inkognito</translation>
 <translation id="3783017676699494206">Simpan Imej</translation>
 <translation id="3789841737615482174">Pasang</translation>
@@ -164,10 +165,12 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="4038354071007134711">Tiada aplikasi pada peranti ini yang dapat membuka fail itu.</translation>
 <translation id="4049507953662678203">Pastikan anda mempunyai sambungan rangkaian dan cuba lagi.</translation>
 <translation id="411254640334432676">Muat turun gagal.</translation>
+<translation id="4117350985506774529">Nama pengguna anda telah disalin.</translation>
 <translation id="4121993058175073134">Tetapkn akaun e-mel anda dahulu dlm apl Tetapan utk mhantar data net-eksport.</translation>
 <translation id="4124987746317609294">Julat Masa</translation>
 <translation id="4172051516777682613">Sentiasa paparkan</translation>
 <translation id="418156467088430727">Lihat Versi Luar Talian di Tab Baharu</translation>
+<translation id="4237682350741091554">Urus Penyegerakan Chrome dan pemperibadian dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Masukkan Ungkapan Laluan</translation>
 <translation id="4272631900155121838">Untuk mengimbas kod QR, dayakan kamera daripada tetapan</translation>
 <translation id="4281844954008187215">Syarat Perkhidmatan</translation>
@@ -312,6 +315,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7136892417564438900">Kamera tidak tersedia</translation>
 <translation id="7159472599653637159">Minta Tapak Mudah Alih</translation>
 <translation id="7167621057293532233">Jenis Data</translation>
+<translation id="7175593937868963913">Karang E-mel</translation>
 <translation id="7189598951263744875">Kongsi...</translation>
 <translation id="7203585745079012652">Sebut Kembali Jawapan</translation>
 <translation id="722055596168483966">Peribadikan perkhidmatan Google</translation>

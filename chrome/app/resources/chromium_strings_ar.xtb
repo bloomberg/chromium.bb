@@ -167,6 +167,7 @@
 <translation id="6403826409255603130">‏ إن Chromium هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة مذهلة. إنه سريع وثابت وسهل الاستخدام. يمكنك تصفح الويب بشكل أكثر أمانًا من خلال ميزات الحماية من البرامج الضارة والتصيّد الاحتيالي المدمجة في Chromium.</translation>
 <translation id="6475912303565314141">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium.</translation>
 <translation id="6485906693002546646">‏أنت تستخدم <ph name="PROFILE_EMAIL" /> لمزامنة عناصرك في Chromium. لتحديث تفضيل المزامنة أو استخدام Chromium بدون حساب Google، يُرجى الانتقال إلى <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6505742536731484931">‏يحتاج Chromium إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6510925080656968729">‏إزالة Chromium</translation>
 <translation id="6526111688217511984">‏يحتاج Chromium الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
 <translation id="6584627348340620412">‏لن تدعم الإصدارات المستقبلية من Chromium إصدار32 بت نظام Linux هذا بعد الآن، الرجاء الترقية إلى Chromium إصدار 64 بت.</translation>
@@ -241,6 +242,7 @@
 <translation id="8563206822260884157">‏استخدام كلمة مرور قوية تم إنشاؤها بواسطة Chromium</translation>
 <translation id="85843667276690461">‏الحصول على مساعدة بشأن استخدام Chromium</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
+<translation id="8590769996813453836">‏عثر Chromium على برنامج ضار على الكمبيوتر. يمكن لمتصفح Chromium إزالته، واستعادة إعداداتك لجعل متصفحك يعمل بشكلٍ طبيعي مرة أخرى.</translation>
 <translation id="8621669128220841554">‏تعذّر التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="8628626585870903697">‏لا يتضمن Chromium عارض PDF المطلوب لإجراء معاينة الطباعة.</translation>
 <translation id="8667808506758191620">جهاز <ph name="DEVICE_TYPE" /> مُحدّث.</translation>

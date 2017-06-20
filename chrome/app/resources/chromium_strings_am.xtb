@@ -169,6 +169,7 @@
 <translation id="6403826409255603130">Chromium ድረ-ገጾችን እና መተግበሪያዎችን እጅግ በጣም ፈጣን በሆነ ፍጥነት የሚያሄድ ድር አሳሽ ነው። ፈጣን፣ የረጋ እና ለመጠቀም ቀላል ነው። Chromium ውስጥ አብሮ በተሰራላቸው የተንኮል-አዘል ሶፍትዌር እና የማስገሪያ መከላከያዎች አማካኝነት ደህንነትዎ ይበልጥ በተጠበቀ ሁኔታ ድሩን ያስሱ።</translation>
 <translation id="6475912303565314141">እንዲሁም Chromiumን ሲጀምሩት የሚታየውን ገጽ ይቆጣጠራል።</translation>
 <translation id="6485906693002546646">የChromium ነገሮችዎን ለማመሳሰል <ph name="PROFILE_EMAIL" />ን እየተጠቀሙ ነው። የማመሳሰል ምርጫዎን ለማዘመን ወይም Chromium ያለGoogle መለያ መጠቀም የሚፈልጉ ከሆኑ <ph name="SETTINGS_LINK" />ን ይጎብኙ።</translation>
+<translation id="6505742536731484931">Chromium አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ይፈልጋል።</translation>
 <translation id="6510925080656968729">Chromiumን ያራግፉ</translation>
 <translation id="6526111688217511984">Chromium ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል።</translation>
 <translation id="6584627348340620412">የወደፊት 32-ቢት የChromium ስሪቶች ከአሁን በኋላ ይህንን የLinux ስርዓት አይደግፍም። እባክዎ ወደ 64-ቢት Chromium ያልቁ።</translation>
@@ -243,6 +244,7 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="8563206822260884157">በChromium የመነጨ ጠንካራ የይለፍ ቃል ይጠቀሙ</translation>
 <translation id="85843667276690461">Chromiumን መጠቀም ላይ እገዛ ያግኙ</translation>
 <translation id="8586442755830160949">የቅጂ መብት <ph name="YEAR" /> የChromium ደራሲያን። ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
+<translation id="8590769996813453836">Chromium በእርስዎ ኮምፒውተር ላይ ጎጂ ሶፍትዌር አግኝቷል። የእርስዎን አሳሽ እንደገና በጤናማ ሁኔታ እንዲሠራ ለማድረግ Chromium ጎጂ ሶፍትዌሩን ሊያስወግደውና ቅንብሮችዎን ወደነበሩበት ሊመልሳቸው ይችላል።</translation>
 <translation id="8621669128220841554">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። እባክዎ Chromiumን እንደገና ያውርዱ።</translation>
 <translation id="8628626585870903697">Chromium የህትመት ቅድመ እይታ እንዲሰራ የሚያስፈልገው የፒ ዲ ኤፍ ማያውን አያካትትም።</translation>
 <translation id="8667808506758191620">የእርስዎ <ph name="DEVICE_TYPE" /> የተዘመነ ነው።</translation>

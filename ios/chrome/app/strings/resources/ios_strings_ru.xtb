@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">Предварительная загрузка</translation>
 <translation id="3691593122358196899">Закладка добавлена в папку "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
+<translation id="3742082982782149146">URL-адрес сайта скопирован.</translation>
 <translation id="3771033907050503522">Вкладки инкогнито</translation>
 <translation id="3783017676699494206">Сохранить изображение</translation>
 <translation id="3789841737615482174">Установить</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">Нет приложения, чтобы открыть этот файл.</translation>
 <translation id="4049507953662678203">Проверьте подключение к Интернету и повторите попытку.</translation>
 <translation id="411254640334432676">Ошибка при скачивании</translation>
+<translation id="4117350985506774529">Имя пользователя скопировано.</translation>
 <translation id="4121993058175073134">Чтобы отправлять очищенные данные для экспорта, задайте соответствующие параметры аккаунта электронной почты в приложении "Настройки".</translation>
 <translation id="4124987746317609294">Временной диапазон</translation>
 <translation id="4172051516777682613">Показывать всегда</translation>
 <translation id="418156467088430727">Открыть офлайн-версию в новой вкладке</translation>
+<translation id="4237682350741091554">Управление персонализацией и синхронизацией Chrome доступно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Введите кодовую фразу</translation>
 <translation id="4272631900155121838">Чтобы отсканировать QR-код, разрешите доступ к камере в настройках.</translation>
 <translation id="4281844954008187215">Условия использования</translation>
@@ -312,6 +315,7 @@
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7159472599653637159">Требуется моб. версия</translation>
 <translation id="7167621057293532233">Типы данных</translation>
+<translation id="7175593937868963913">Текст сообщения</translation>
 <translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
 <translation id="722055596168483966">Персонализировать сервисы Google</translation>

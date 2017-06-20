@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1007441141628883408">未設定或設為 True 時，允許更新 <ph name="PRODUCT_NAME" /> 的所有元件。
-
-      如果設為 False，則禁止更新元件。不過，部分元件不受這項政策規範：只要元件更新不含可執行的程式碼、不大幅變更瀏覽器的行為，或是對元件安全性至關重要，就不會遭到禁止。
-      這類元件的範例包括憑證撤銷清單和安全瀏覽資料。 </translation>
 <translation id="101438888985615157">將畫面旋轉 180 度</translation>
 <translation id="1017967144265860778">位於登入畫面中的電源管理設定</translation>
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
@@ -484,15 +480,6 @@
 
       每個清單項目都會指定一個識別碼，用來在系統內部區別不同的裝置本機帳戶。</translation>
 <translation id="2769952903507981510">設定遠端存取主機所需的網域名稱</translation>
-<translation id="2785954641789149745">啟用 <ph name="PRODUCT_NAME" /> 安全瀏覽功能，並防止使用者變更這項設定。
-
-      如果你啟用這項設定，將一律啟用安全瀏覽。
-
-      如果你停用這項設定，將一律停用安全瀏覽。
-
-      只要你啟用或停用這項設定，使用者即無法變更或覆寫 <ph name="PRODUCT_NAME" /> 的 [阻擋釣魚網站及惡意程式] 設定。
-
-      如果你未設定這項政策，安全瀏覽將保持啟用，但使用者可以自行決定是否要予以變更。</translation>
 <translation id="2787173078141616821">回報 Android 狀態的相關資訊</translation>
 <translation id="2801230735743888564">允許使用者在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。
 
@@ -505,9 +492,6 @@
           如果停用這項設定，且防火牆會篩出外傳 UDP 連線，則這台電腦只會自動允許來自區域網路用戶端電腦的連線。
 
           如果未設定這項政策，系統會啟用這項設定。</translation>
-<translation id="2811293057593285123">安全瀏覽服務會在使用者瀏覽遭檢舉為有惡意風險的網站時顯示警告網頁。如果你啟用這項設定，就能防止使用者略過警告網頁，避免他們直接繼續前往惡意網站。
-
-      如果你停用這項設定或並未進行設置，則使用者可以選擇在系統顯示警告之後，繼續前往遭檢舉的網站。</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
 <translation id="2844404652289407061">在 <ph name="PRODUCT_NAME" /> 的內容畫面中啟用「輕觸搜尋」功能。
 
@@ -893,7 +877,6 @@
 <translation id="4372704773119750918">不允許企業使用者使用多重設定檔 (主要或次要)</translation>
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
 <translation id="4389091865841123886">使用 TPM 機制設定遠端證明。</translation>
-<translation id="4397469093966511008">將這項政策設為 false 會禁止使用者選擇傳送部分系統資訊和網頁內容給 Google 伺服器。如果這項設定為 true 或未設定，使用者即可傳送部分系統資訊和網頁內容給「安全搜尋」，協助我們偵測危險的應用程式和網站。</translation>
 <translation id="4418726081189202489">將這項政策設為 False 後，<ph name="PRODUCT_NAME" /> 就無法為了擷取精確時間戳記而不定期傳送查詢給 Google 伺服器。如果將這項政策設為 True 或不予設定，則會允許傳送這類查詢。</translation>
 <translation id="4423597592074154136">手動指定 Proxy 設定</translation>
 <translation id="4429220551923452215">啟用或停用書籤列中的應用程式捷徑。
@@ -1186,6 +1169,8 @@
       如果 <ph name="PRODUCT_NAME" /> 無法取得撤銷狀態資訊，這類憑證將被視為已撤銷 (也就是「作業失敗」) 來處理。
 
       如未設定這項政策，或是設定為 False，<ph name="PRODUCT_NAME" /> 將會套用目前的線上撤銷檢查設定。</translation>
+<translation id="572720239788271400">允許更新 <ph name="PRODUCT_NAME" /> 的元件</translation>
+<translation id="5728154254076636808">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本</translation>
 <translation id="5732972008943405952">首次執行時從預設瀏覽器匯入自動填入表單資料</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
@@ -1396,6 +1381,7 @@
           如未設定這項政策，那麼登入畫面最初顯示時就會停用螢幕小鍵盤。使用者隨時可以啟用或停用螢幕小鍵盤，這項功能在登入畫面中的狀態，會在不同使用者之間持續下去。</translation>
 <translation id="6573305661369899995">設定外部網址來源限制</translation>
 <translation id="6598235178374410284">使用者顯示圖片</translation>
+<translation id="6603004149426829878">偵測時區時一律將任何可用的位置標記傳送至伺服器</translation>
 <translation id="6628646143828354685">讓您設定是否允許網站存取附近的藍牙裝置。您可以完全禁止網站存取附近的藍牙裝置，也可以要求網站一律需要經過使用者同意才能存取附近的藍牙裝置。
 
           如果未設定這項政策，系統會使用「3」，而使用者可以自行變更設定。</translation>
@@ -2003,5 +1989,6 @@
 <translation id="922540222991413931">設定擴充功能、應用程式和使用者指令碼安裝來源</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
 <translation id="930930237275114205">設定 <ph name="PRODUCT_FRAME_NAME" /> 使用者資料目錄</translation>
+<translation id="934390688529359269">啟用 <ph name="PRODUCT_NAME" /> 的強制登入功能</translation>
 <translation id="944817693306670849">設定磁碟快取大小</translation>
 </translationbundle>

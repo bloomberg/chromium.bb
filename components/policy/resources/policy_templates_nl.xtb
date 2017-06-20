@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="1007441141628883408">Hiermee schakel je onderdelenupdates voor alle onderdelen in <ph name="PRODUCT_NAME" /> in wanneer de optie niet is ingesteld of is ingesteld op Waar (True).
-
-      Als deze optie is ingesteld op Onwaar (False), zijn de updates voor onderdelen uitgeschakeld. Bepaalde onderdelen worden echter uitgesloten van dit beleid: updates voor onderdelen worden niet uitgeschakeld als deze geen uitvoerbare code bevatten, het gedrag van de browser niet aanzienlijk veranderen of essentieel zijn voor de beveiliging.
-      Voorbeelden van dergelijk onderdelen zijn Certificate Revocation Lists en de Safe Browsing-gegevens. </translation>
 <translation id="101438888985615157">Scherm 180 graden draaien</translation>
 <translation id="1017967144265860778">Energiebeheer op het inlogscherm</translation>
 <translation id="1019101089073227242">Gegevensdirectory voor gebruiker instellen</translation>
@@ -508,15 +504,6 @@
 
       Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
-<translation id="2785954641789149745">Hiermee schakel je de functie Veilig surfen van <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze instelling wijzigen.
-
-      Als je deze instelling inschakelt, is Veilig surfen altijd actief.
-
-      Als je deze instelling uitschakelt, is Veilig surfen nooit actief.
-
-      Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling 'Bescherming tegen phishing en malware inschakelen' in <ph name="PRODUCT_NAME" /> niet wijzigen of negeren.
-
-      Als je deze instelling niet instelt, wordt deze uitgeschakeld maar kan de gebruiker deze wijzigen.</translation>
 <translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
 <translation id="2801230735743888564">Toestaan dat gebruikers de easter egg-dinosaurusgame spelen wanneer het apparaat offline is.
 
@@ -529,9 +516,6 @@
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, staat dit apparaat alleen verbindingen toe met clientapparaten binnen het lokale netwerk.
 
           Als dit beleid niet wordt ingesteld, wordt de instelling ingeschakeld.</translation>
-<translation id="2811293057593285123">De service Safe Browsing geeft een waarschuwingspagina weer wanneer gebruikers naar sites gaan die zijn gemarkeerd als potentieel schadelijk. Als je deze instelling inschakelt, voorkom je dat gebruikers vanaf de waarschuwingspagina toch doorgaan naar de schadelijke site.
-
-      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers ervoor kiezen door te gaan naar de gemarkeerde site nadat de waarschuwing is weergegeven.</translation>
 <translation id="2824715612115726353">Incognitomodus inschakelen</translation>
 <translation id="2844404652289407061">Hiermee wordt de beschikbaarheid van 'Tikken om te zoeken' ingeschakeld in de inhoudsweergave van <ph name="PRODUCT_NAME" />.
 
@@ -746,7 +730,7 @@
 <translation id="3765260570442823273">Duur van de waarschuwing bij uitloggen inactieve gebruiker</translation>
 <translation id="376931976323225993">Hiermee kun je instellen of websites de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch mogen uitvoeren. Het automatisch uitvoeren van de <ph name="FLASH_PLUGIN_NAME" />-plug-in kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
 
-          Via 'Klikken om te spelen' kan de <ph name="FLASH_PLUGIN_NAME" />-plug-in worden uitgevoerd, maar de gebruiker moet op de tijdelijke aanduiding klikken om de uitvoering te starten.
+          Via Click-to-play kan de <ph name="FLASH_PLUGIN_NAME" />-plug-in worden uitgevoerd, maar de gebruiker moet op de tijdelijke aanduiding klikken om de uitvoering te starten.
 
           Als dit beleid niet wordt ingesteld, kan de gebruiker deze instelling handmatig wijzigen.</translation>
 <translation id="3780152581321609624">Niet-standaardpoort in Kerberos-SPN opnemen</translation>
@@ -937,7 +921,6 @@
 <translation id="4372704773119750918">Zakelijke gebruikers niet toestaan deel uit te maken van multiprofielen (primair of secundair)</translation>
 <translation id="4377599627073874279">Alle sites toestaan afbeeldingen weer te geven</translation>
 <translation id="4389091865841123886">De externe bevestiging configureren met een TPM-mechanisme.</translation>
-<translation id="4397469093966511008">Als dit beleid wordt ingesteld op 'false' (onwaar), kunnen gebruikers geen systeeminformatie en paginacontent meer naar Google-servers verzenden. Als deze instelling wordt ingesteld op 'true' (waar) of niet wordt geconfigureerd, kunnen gebruikers bepaalde systeeminformatie en paginacontent naar Safe Browsing verzenden om te helpen bij de detectie van gevaarlijke apps en sites.</translation>
 <translation id="4418726081189202489">Als dit beleid wordt ingesteld op Onwaar, is het <ph name="PRODUCT_NAME" /> niet toegestaan om af en toe query's naar een Google-server verzenden om een nauwkeurig tijdstempel op te halen. Als het beleid is ingesteld op Waar of niet is ingesteld, zijn deze query's ingeschakeld.</translation>
 <translation id="4423597592074154136">Proxyinstellingen handmatig specificeren</translation>
 <translation id="4429220551923452215">De snelkoppeling voor apps in- of uitschakelen op de bladwijzerbalk.
@@ -1261,6 +1244,8 @@
       Als <ph name="PRODUCT_NAME" /> geen informatie over de intrekkingsstatus kan verkrijgen, worden dergelijke certificaten beschouwd als ingetrokken ('hard-fail').
 
       Als dit beleid niet is ingesteld of is ingesteld op 'onwaar', gebruikt <ph name="PRODUCT_NAME" /> de bestaande instellingen voor online intrekkingscontrole.</translation>
+<translation id="572720239788271400">Hiermee schakel je componentupdates in <ph name="PRODUCT_NAME" /> in</translation>
+<translation id="5728154254076636808">Het maken van roaming-exemplaren voor <ph name="PRODUCT_NAME" />-profielgegevens inschakelen</translation>
 <translation id="5732972008943405952">Formuliergegevens voor Automatisch aanvullen importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
 <translation id="5770738360657678870">Ontwikkelaarskanaal (mogelijk instabiel)</translation>
@@ -1490,6 +1475,7 @@
           Als dit beleid niet is ingesteld, wordt het schermtoetsenbord uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het schermtoetsenbord op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.</translation>
 <translation id="6573305661369899995">Een externe bron voor URL-beperkingen instellen</translation>
 <translation id="6598235178374410284">Avatarafbeelding van gebruiker</translation>
+<translation id="6603004149426829878">Beschikbare locatiesignalen altijd verzenden naar de server wanneer de tijdzone wordt bepaald</translation>
 <translation id="6628646143828354685">Hiermee kun je instellen of websites toegang mogen krijgen tot Bluetooth-apparaten in de buurt. De toegang kan volledig worden geblokkeerd of de gebruiker kan elke keer om toestemming worden gevraagd wanneer een website toegang wil hebben tot Bluetooth-apparaten in de buurt.
 
           Als dit beleid niet is ingesteld, wordt '3' gebruikt en kan de gebruiker dit wijzigen.</translation>
@@ -2160,5 +2146,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="922540222991413931">Installatiebronnen voor het configureren van extensies, apps en gebruikersscripts</translation>
 <translation id="924557436754151212">Opgeslagen wachtwoorden importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="930930237275114205">Directory met gebruikersgegevens voor <ph name="PRODUCT_FRAME_NAME" /> instellen</translation>
+<translation id="934390688529359269">Schakelt gedwongen inloggen voor <ph name="PRODUCT_NAME" /> in</translation>
 <translation id="944817693306670849">Grootte voor schijfcache instellen</translation>
 </translationbundle>

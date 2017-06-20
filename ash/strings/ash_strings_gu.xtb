@@ -47,6 +47,7 @@
 <translation id="225680501294068881">ઉપકરણો માટે સ્કેન કરી રહ્યું છે...</translation>
 <translation id="2268130516524549846">Bluetooth અક્ષમ છે</translation>
 <translation id="2268813581635650749">બધામાંથી સાઇન આઉટ કરો</translation>
+<translation id="2292698582925480719">પ્રદર્શન સ્કેલ</translation>
 <translation id="2303600792989757991">ટોગલ વિન્ડો વિહંગાવલોકન</translation>
 <translation id="2352467521400612932">કલમની સેટિંગ્સ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
@@ -183,6 +184,7 @@
 <translation id="6297287540776456956">કોઈ પ્રદેશ પસંદ કરવા માટે કલમનો ઉપયોગ કરો</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ને <ph name="ROTATION" /> પર ફેરવવામાં આવ્યું હતું</translation>
 <translation id="632744581670418035">કીબોર્ડ ઓવરલે</translation>
+<translation id="6395038768903208085">મેટાલેયર મોડ</translation>
 <translation id="639644700271529076">CAPS LOCK બંધ છે</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">નકારો</translation>
@@ -222,6 +224,7 @@
 <translation id="742594950370306541">કૅમેરો ઉપયોગમાં છે.</translation>
 <translation id="743058460480092004">કૅમેરો અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
 <translation id="7510334386202674593">ctrl + shift + L</translation>
+<translation id="7526573455193969409">નેટવર્ક મોનિટર કરવામાં આવી શકે છે</translation>
 <translation id="7536035074519304529">IP સરનામું: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> ને સમર્થન આપતું નથી. રિઝોલ્યુશન <ph name="FALLBACK_RESOLUTION" /> પર બદલાયું હતું</translation>
 <translation id="7562368315689366235">ઇમોજી પૅલેટ</translation>
@@ -252,6 +255,7 @@
 <translation id="8433186206711564395">નેટવર્ક સેટિંગ્સ</translation>
 <translation id="8433977262951327081">શેલ્ફમાં મેનૂ પરપોટો ઇનપુટ વિકલ્પો બતાવવાનો શૉર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" />ને બદલે <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
 <translation id="8454013096329229812">Wi-Fi ચાલુ છે.</translation>
+<translation id="847056008324733326">પ્રદર્શન સ્કેલની સેટિંગ્સ</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ફરીથી કનેક્ટ કરી રહ્યાં છે...</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> બાકી</translation>

@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1007441141628883408">如果此政策未设置或设为 true，则允许更新 <ph name="PRODUCT_NAME" /> 中的所有组件。
-
-      如果此政策设为 false，则禁止更新组件。不过，部分组件不受此政策限制：只要组件更新不含可执行的代码、不明显改变浏览器的行为，或对浏览器的安全性至关重要，系统就不会禁止此类组件更新。
-      此类组件包括证书撤消列表和安全浏览数据。 </translation>
 <translation id="101438888985615157">将屏幕旋转 180 度</translation>
 <translation id="1017967144265860778">登录屏幕的电源管理设置</translation>
 <translation id="1019101089073227242">设置用户数据目录</translation>
@@ -465,15 +461,6 @@
 
       每个列表条目指定一个标识符，用于在内部区分不同的设备本地帐号。</translation>
 <translation id="2769952903507981510">为远程访问主机配置所需的域名</translation>
-<translation id="2785954641789149745">启用 <ph name="PRODUCT_NAME" /> 的安全浏览功能，并阻止用户更改此设置。
-
-      如果您启用了此设置，则系统将始终启用安全浏览功能。
-
-      如果您停用了此设置，则系统将一律停用安全浏览功能。
-
-      如果您启用或停用了此设置，那么用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖“启用网上诱骗和恶意软件防护”设置。
-
-      如果未设置此政策，则系统将会启用安全浏览功能，但用户可以对其进行更改。</translation>
 <translation id="2787173078141616821">报告有关 Android 状态的信息</translation>
 <translation id="2801230735743888564">允许用户在设备未联网的情况下玩恐龙复活节彩蛋游戏。
 
@@ -486,9 +473,6 @@
           此政策处于停用状态并且出站UDP连接会被防火墙阻止时，此机器将只允许通过本地网络内的客户端机器建立连接。
 
           如果此政策未设置，系统将启用此政策。</translation>
-<translation id="2811293057593285123">当用户打开被标记为可能存在恶意内容的网站时，安全浏览服务会显示警告页面。如果您启用了此设置，用户在看到警告页面后将无法再继续访问相应的恶意网站。
-
-      如果此设置处于停用状态或未配置，用户在看到警告后可以继续访问被标记为可能存在恶意内容的网站。</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
 <translation id="2844404652289407061">在 <ph name="PRODUCT_NAME" /> 的内容视图中启用“触摸搜索”功能。
 
@@ -867,7 +851,6 @@
 <translation id="4372704773119750918">不允许企业用户成为多用户配置的用户（一级或二级）</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
 <translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
-<translation id="4397469093966511008">如果此政策设为 false，用户将无法选择向 Google 服务器发送一些系统信息和网页内容。如果此设置设为 true 或未配置，用户将能够向安全浏览功能发送一些系统信息和网页内容，以帮助检测危险应用和网站。</translation>
 <translation id="4418726081189202489">如果将此政策设为 False，<ph name="PRODUCT_NAME" /> 将无法不定期向 Google 服务器发出查询来检索准确的时间戳。如果此政策设为 True 或未设置，这样的查询将能够发送到 Google 服务器。</translation>
 <translation id="4423597592074154136">手动指定代理设置</translation>
 <translation id="4429220551923452215">启用或停用书签栏中的应用快捷方式。
@@ -1156,6 +1139,8 @@
       如果 <ph name="PRODUCT_NAME" /> 无法获取撤消状态信息，此类证书将被视为已撤消（“硬性失败”）。
 
       如果此政策未设置或设为 false，<ph name="PRODUCT_NAME" /> 将使用现有的在线撤消检查设置。</translation>
+<translation id="572720239788271400">允许更新 <ph name="PRODUCT_NAME" /> 中的组件</translation>
+<translation id="5728154254076636808">允许创建 <ph name="PRODUCT_NAME" /> 个人资料数据的漫游副本</translation>
 <translation id="5732972008943405952">首次运行时，从默认浏览器导入自动填充表单数据</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5770738360657678870">开发者版（可能不稳定）</translation>
@@ -1365,6 +1350,7 @@
           如果此政策未设置，登录屏幕初次打开时会停用屏幕键盘。用户可以随时启用或停用屏幕键盘，并且屏幕键盘在登录屏幕上的状态对各用户均有效。</translation>
 <translation id="6573305661369899995">设置网址限制条件的外部来源</translation>
 <translation id="6598235178374410284">用户头像图片</translation>
+<translation id="6603004149426829878">解析时区时一律将任何可用的位置信号发送给服务器</translation>
 <translation id="6628646143828354685">可让您设置是否允许网站访问附近的蓝牙设备。您可以完全禁止此类访问，也可以设为每当有网站希望访问附近的蓝牙设备时均征求用户同意。
 
           如果此政策未设置，系统将使用“3”，并且用户可以更改此设置。</translation>
@@ -1968,5 +1954,6 @@
 <translation id="922540222991413931">配置扩展程序、应用和用户脚本安装源</translation>
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>
 <translation id="930930237275114205">设置 <ph name="PRODUCT_FRAME_NAME" />用户数据目录</translation>
+<translation id="934390688529359269">为 <ph name="PRODUCT_NAME" /> 启用强制登录功能</translation>
 <translation id="944817693306670849">设置磁盘缓存大小</translation>
 </translationbundle>

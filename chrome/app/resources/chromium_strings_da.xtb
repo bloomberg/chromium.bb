@@ -167,6 +167,7 @@
 <translation id="6403826409255603130">Chromium er en webbrowser, der kører websider og applikationer med lynets hast. Den er hurtig, stabil og brugervenlig. Beskyttelse mod malware og phishing er indbygget i Chromium, så du kan søge mere sikkert på internettet.</translation>
 <translation id="6475912303565314141">Den styrer også, hvilken side der vises, når du åbner Chromium.</translation>
 <translation id="6485906693002546646">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chromium-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference eller bruge Chromium uden en Google-konto.</translation>
+<translation id="6505742536731484931">Chromium skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6510925080656968729">Afinstaller Chromium</translation>
 <translation id="6526111688217511984">Chromium skal have lageradgang for at kunne downloade filer.</translation>
 <translation id="6584627348340620412">Fremtidige versioner af 32-bit Chromium vil ikke længere understøtte dette Linux-system. Opgrader til 64-bit Chromium.</translation>
@@ -241,6 +242,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="8563206822260884157">Brug en stærk adgangskode, der er genereret af Chromium</translation>
 <translation id="85843667276690461">Få hjælp til at bruge Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Forfatterne bag Chromium. Alle rettigheder forbeholdes.</translation>
+<translation id="8590769996813453836">Chromium fandt skadelig software på din computer. Chromium kan slette den og gendanne dine indstillinger, så din browser fungerer normalt igen.</translation>
 <translation id="8621669128220841554">Installationen mislykkedes på grund af en uspecificeret fejl. Download Chromium igen.</translation>
 <translation id="8628626585870903697">Chromium inkluderer ikke PDF-fremviseren, som er påkrævet, for at Vis udskrift kan fungere.</translation>
 <translation id="8667808506758191620">Din <ph name="DEVICE_TYPE" /> er opdateret.</translation>

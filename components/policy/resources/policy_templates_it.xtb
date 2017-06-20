@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
-<translation id="1007441141628883408">Se non impostata o impostata su true, consente gli aggiornamenti di tutti i componenti di <ph name="PRODUCT_NAME" />.
-
-      Se impostata su false, gli aggiornamenti dei componenti vengono disattivati. Tuttavia, alcuni componenti sono esclusi da questa norma: gli aggiornamenti dei componenti che non contengono codice eseguibile, che non alterano in modo significativo il comportamento del browser o che sono importanti per la sicurezza non vengono disattivati.
-      Esempi di tali componenti sono gli elenchi di revoche di certificati e i dati di Navigazione sicura. </translation>
 <translation id="101438888985615157">Ruota lo schermo di 180°</translation>
 <translation id="1017967144265860778">Gestione dell'alimentazione nella schermata di accesso</translation>
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
@@ -467,15 +463,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Ogni voce in elenco specifica un identificatore che viene utilizzato internamente per distinguere i vari account del dispositivo.</translation>
 <translation id="2769952903507981510">Configura il nome di dominio richiesto per gli host di accesso remoto</translation>
-<translation id="2785954641789149745">Consente di attivare la funzione Navigazione sicura di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare l'impostazione.
-
-Se l'impostazione viene attivata, la funzione Navigazione sicura è sempre attiva.
-
-Se l'impostazione viene disattivata, la funzione Navigazione sicura non è mai attiva.
-
-Se l'impostazione viene attivata o disattivata, gli utenti non potranno modificare o ignorare l'impostazione "Attiva protezione contro phishing e malware" di <ph name="PRODUCT_NAME" />.
-
-Se la norma non viene impostata l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
 <translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
 <translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
 
@@ -488,9 +475,6 @@ Se la norma non viene impostata l'impostazione verrà attivata ma gli utenti pot
           Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer consentirà soltanto connessioni da computer client all'interno della rete locale.
 
           Se questa norma non viene impostata l'impostazione verrà attivata.</translation>
-<translation id="2811293057593285123">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
-
-      Se questa impostazione è disattivata o non è configurata, gli utenti possono scegliere di proseguire al sito segnalato dopo che è stato mostrato l'avviso.</translation>
 <translation id="2824715612115726353">Attiva modalità di navigazione in incognito</translation>
 <translation id="2844404652289407061">Consente di attivare la disponibilità della funzione Tocca per cercare nella visualizzazione contenuti di <ph name="PRODUCT_NAME" />.
 
@@ -693,7 +677,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3765260570442823273">Durata del messaggio di avviso di uscita per inattività</translation>
 <translation id="376931976323225993">Ti consente di impostare i siti web affinché eseguano o meno automaticamente il plug-in <ph name="FLASH_PLUGIN_NAME" />. L'esecuzione automatica del plug-in <ph name="FLASH_PLUGIN_NAME" /> può essere consentita o negata a tutti i siti web.
 
-          Click-to-play consente di eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" /> pma l'utente deve fare clic sul segnaposto per avviarne l'esecuzione.
+          Click-to-play consente di eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />, ma l'utente deve fare clic sul segnaposto per avviarne l'esecuzione.
 
           Se la norma non viene impostata, l'utente potrà modificare l'impostazione manualmente.</translation>
 <translation id="3780152581321609624">Includi porta non standard in Kerberos SPN</translation>
@@ -872,7 +856,6 @@ Avviso. Non è consigliabile configurare restrizioni alle versioni, poiché potr
 <translation id="4372704773119750918">Non permettere all'utente aziendale di far parte del profilo multiplo (principale o secondario)</translation>
 <translation id="4377599627073874279">Consenti la visualizzazione di tutte le immagini in tutti i siti</translation>
 <translation id="4389091865841123886">Configura l'attestazione da remoto con meccanismo TPM.</translation>
-<translation id="4397469093966511008">L'impostazione di questa norma su false impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni sul sistema e alcuni contenuti delle pagine. Se questa impostazione viene impostata su true o non viene configurata, gli utenti potranno inviare alcune informazioni sul sistema e alcuni contenuti delle pagine alla Navigazione sicura per contribuire a rilevare app e siti pericolosi.</translation>
 <translation id="4418726081189202489">Se questa norma viene impostata su false, <ph name="PRODUCT_NAME" /> non può più inviare query occasionali a un server di Google per recuperare un timestamp preciso. Queste query vengono attivate se questa norma viene impostata su True o non viene configurata.</translation>
 <translation id="4423597592074154136">Specifica manualmente le impostazioni proxy</translation>
 <translation id="4429220551923452215">Attiva o disattiva la scorciatoia per le app nella barra dei Preferiti. Se questa norma non è impostata, l'utente può scegliere di mostrare o nascondere la scorciatoia per le app dal menu contestuale della barra dei Preferiti. Se la norma è configurata, l'utente non può modificarla e la scorciatoia per le app viene mostrata sempre oppure non viene mostrata mai.</translation>
@@ -1156,6 +1139,8 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se <ph name="PRODUCT_NAME" /> non riesce ad acquisire informazioni sullo stato delle revoche, tali certificati vengono considerati revocati ("hard-fail").
 
       Se questa norma non viene impostata o se viene impostata su false, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni di controllo delle revoche online esistenti.</translation>
+<translation id="572720239788271400">Consente gli aggiornamenti dei componenti in <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importa i dati della Compilazione automatica dei moduli dal browser predefinito alla prima esecuzione</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
@@ -1361,6 +1346,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se questa norma non viene impostata, la tastiera sullo schermo è disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la tastiera sullo schermo in qualsiasi momento e il relativo stato sulla schermata di accesso viene mantenuto tra utenti differenti.</translation>
 <translation id="6573305661369899995">Imposta una fonte esterna di limitazioni relative agli URL</translation>
 <translation id="6598235178374410284">Immagine avatar utente</translation>
+<translation id="6603004149426829878">Consente di inviare sempre al server i segnali relativi alla posizione disponibili durante le operazioni per stabilire il fuso orario</translation>
 <translation id="6628646143828354685">Permette di stabilire se consentire o meno l'accesso ai dispositivi Bluetooth nelle vicinanze. L'accesso può essere bloccato completamente oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera accedere ai dispositivi Bluetooth vicini.
 
           Se questa norma non viene impostata, verrà utilizzato il valore "3", che potrà essere modificato dall'utente.</translation>
@@ -1965,5 +1951,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="922540222991413931">Configura fonti di installazione di estensioni, applicazioni e script utente</translation>
 <translation id="924557436754151212">Importa password salvate dal browser predefinito alla prima esecuzione</translation>
 <translation id="930930237275114205">Imposta la directory dei dati utente di <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Consente di attivare l'accesso forzato per <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Imposta dimensioni cache su disco</translation>
 </translationbundle>

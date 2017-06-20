@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">불법 경로(절대 또는 상대): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">수정 내용이 다른 확장 프로그램과 충돌하여 이 확장 프로그램이 네트워크 요청을 수정하지 못했습니다.</translation>
 <translation id="2857834222104759979">매니페스트 파일이 잘못되었습니다.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" />(확장 프로그램 ID '<ph name="EXTENSION_ID" />')은(는) 관리자에 의해 차단되었습니다. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">패키지를 설치할 수 없습니다. '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089">공급업체 <ph name="VENDOR_ID" />의 알 수 없는 제품 <ph name="PRODUCT_ID" />(일련번호 <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">공급업체 <ph name="VENDOR_ID" />의 알 수 없는 제품 <ph name="PRODUCT_ID" /></translation>

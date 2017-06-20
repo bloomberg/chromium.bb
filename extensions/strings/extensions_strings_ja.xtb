@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">パス（絶対パスまたは '..' がある相対パス）が不適切です: <ph name="IMAGE_PATH" /></translation>
 <translation id="27822970480436970">この拡張機能はネットワーク リクエストを変更できませんでした。他の拡張機能と変更が競合しています。</translation>
 <translation id="2857834222104759979">マニフェスト ファイルが無効です。</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）は管理者によってブロックされています。<ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">パッケージをインストールできませんでした: <ph name="ERROR_CODE" /></translation>
 <translation id="3115238746683532089">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_ID" />、シリアル番号: <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="3163201441334626963">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_ID" />）</translation>

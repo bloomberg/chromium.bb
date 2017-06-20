@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
-<translation id="1007441141628883408">Enables component updates for all components in <ph name="PRODUCT_NAME" /> when unset or set to True.
-
-      If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, or does not significantly alter the behaviour of the browser, or is critical for its security will not be disabled.
-      Examples of such components include the certificate revocation lists and safe browsing data. </translation>
 <translation id="101438888985615157">Rotate screen by 180 degrees</translation>
 <translation id="1017967144265860778">Power management on the login screen</translation>
 <translation id="1019101089073227242">Set user data directory</translation>
@@ -510,15 +506,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.</translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
-<translation id="2785954641789149745">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
-
-      If you enable this setting, Safe Browsing is always active.
-
-      If you disable this setting, Safe Browsing is never active.
-
-      If you enable or disable this setting, users cannot change or override the "Enable phishing and malware protection" setting in <ph name="PRODUCT_NAME" />.
-
-      If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
@@ -531,9 +518,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.
 
           If this policy is not set, the setting will be enabled.</translation>
-<translation id="2811293057593285123">The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
-
-      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
 <translation id="2844404652289407061">Enables the availability of Touch to Search in <ph name="PRODUCT_NAME" />'s content view.
 
@@ -940,7 +924,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
-<translation id="4397469093966511008">Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.</translation>
 <translation id="4418726081189202489">Setting this policy to false stops <ph name="PRODUCT_NAME" /> from occasionally sending queries to a Google server to retrieve an accurate timestamp. These queries will be enabled if this policy is set to True or is not set.</translation>
 <translation id="4423597592074154136">Manually specify proxy settings</translation>
 <translation id="4429220551923452215">Enables or disables the apps shortcut in the bookmark bar.
@@ -1270,6 +1253,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If <ph name="PRODUCT_NAME" /> is unable to obtain revocation status information, such certificates will be treated as revoked ('hard-fail').
 
       If this policy is not set or it is set to false then <ph name="PRODUCT_NAME" /> will use the existing online revocation checking settings.</translation>
+<translation id="572720239788271400">Enables component updates in <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data</translation>
 <translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
@@ -1494,6 +1479,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is left unset, the on-screen keyboard is disabled when the login screen is first shown. Users can enable or disable the on-screen keyboard any time and its status on the login screen is persisted between users.</translation>
 <translation id="6573305661369899995">Set an external source of URL restrictions</translation>
 <translation id="6598235178374410284">User avatar image</translation>
+<translation id="6603004149426829878">Always send any available location signals to the server while resolving time zone</translation>
 <translation id="6628646143828354685">Allows you to set whether websites are allowed to get access to nearby Bluetooth devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to nearby Bluetooth devices.
 
           If this policy is left not set, '3' will be used, and the user will be able to change it.</translation>
@@ -2168,5 +2154,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
+<translation id="934390688529359269">Enables force sign in for <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Set disk cache size</translation>
 </translationbundle>

@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">നിയമവിരുദ്ധമായ പാത്ത് (കേവലം അല്ലെങ്കിൽ '..' എന്നതുമായി ബന്ധപ്പെട്ടത്): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">ഈ വിപുലീകരണം ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥന പരിഷ്‌കരിക്കുന്നതിൽ പരാജയപ്പെട്ടു കാരണം പരിഷ്‌കരണത്തിന് മറ്റൊരു വിപുലീകരണവുമായി പൊരുത്തക്കേടുണ്ട്.</translation>
 <translation id="2857834222104759979">മാനിഫെസ്റ്റ് ഫയല്‍ അസാധുവാണ്.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (വിവുലീകരണ ഐഡി "<ph name="EXTENSION_ID" />") അഡ്‌മിനിസ്‌ട്രേറ്റർ ബ്ലോക്കുചെയ്‌തു. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">പാക്കേജ് ഇന്‍സ്റ്റാള്‍ ചെയ്യാന്‍ കഴിഞ്ഞില്ല: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /></translation>

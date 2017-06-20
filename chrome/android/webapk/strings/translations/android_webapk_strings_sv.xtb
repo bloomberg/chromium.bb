@@ -3,4 +3,5 @@
 <translationbundle lang="sv">
 <translation id="5095487927081109870"><ph name="WEBAPK_SITE" /> måste köras i en webbläsare</translation>
 <translation id="7671141431838911305">INSTALLERA</translation>
+<translation id="8307642646779885758">Välj i vilken webbläsare du vill köra <ph name="WEBAPK_SITE" /></translation>
 </translationbundle>

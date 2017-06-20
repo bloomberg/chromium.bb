@@ -168,6 +168,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="6403826409255603130">Chromium est un navigateur Web qui exécute les pages Web et les applications à une vitesse fulgurante. Il est rapide, stable et simple d'utilisation. Naviguez sur le Web en toute sécurité tout en bénéficiant de la protection offerte par Chromium contre les logiciels malveillants et de phishing.</translation>
 <translation id="6475912303565314141">Elle contrôle également la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="6485906693002546646">Vous utilisez le compte <ph name="PROFILE_EMAIL" /> pour synchroniser votre contenu dans Chromium. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chromium sans compte Google, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6505742536731484931">Chromium a besoin d'accéder à votre position pour la partager avec ce site.</translation>
 <translation id="6510925080656968729">Désinstaller Chromium</translation>
 <translation id="6526111688217511984">Pour télécharger des fichiers, Chromium a besoin d'accéder à l'espace de stockage.</translation>
 <translation id="6584627348340620412">Les futures versions de Chromium 32 bits ne seront plus compatibles avec ce système Linux. Veuillez passer à Chromium 64 bits.</translation>
@@ -242,6 +243,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="8563206822260884157">Utiliser un mot de passe sécurisé, généré par Chromium</translation>
 <translation id="85843667276690461">Obtenir de l'aide sur l'utilisation de Chromium</translation>
 <translation id="8586442755830160949">Copyright Auteurs de Chromium <ph name="YEAR" />. Tous droits réservés.</translation>
+<translation id="8590769996813453836">Chromium a détecté un logiciel malveillant sur votre ordinateur. Il peut supprimer ce logiciel et restaurer vos paramètres pour que votre navigateur fonctionne à nouveau normalement.</translation>
 <translation id="8621669128220841554">Échec de l'installation en raison d'une erreur non spécifiée. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="8628626585870903697">Chromium ne comprend pas le lecteur de PDF qui est nécessaire au fonctionnement de l'aperçu avant impression.</translation>
 <translation id="8667808506758191620">Votre <ph name="DEVICE_TYPE" /> est à jour.</translation>

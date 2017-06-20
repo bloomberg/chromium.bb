@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Njia haramu (kabisa au kiasi na '..'): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">Kiendelezi hiki kimeshindwa kurekebisha ombi la mtandao kwa sababu ya ukizano wa urekebishaji na kirefusho kingine.</translation>
 <translation id="2857834222104759979">Faili ya ratiba sio halali.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (kitambulisho cha kiendelezi cha "<ph name="EXTENSION_ID" />") kimezuiwa na msimamizi. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Isingeweza kusakinisha furushi: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089">Bidhaa isiyojulikana <ph name="PRODUCT_ID" /> kutoka kwa mchuuzi <ph name="VENDOR_ID" /> (nambari tambulishi <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Bidhaa isiyojulikana <ph name="PRODUCT_ID" /> kutoka kwa mchuuzi <ph name="VENDOR_ID" /></translation>

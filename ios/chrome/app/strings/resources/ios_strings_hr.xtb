@@ -150,6 +150,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3638472932233958418">Već učitane stranice</translation>
 <translation id="3691593122358196899">Oznaka dodana u mapu <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
+<translation id="3742082982782149146">URL web-lokacije kopiran je.</translation>
 <translation id="3771033907050503522">Anonimne kartice</translation>
 <translation id="3783017676699494206">Spremi sliku</translation>
 <translation id="3789841737615482174">Instaliraj</translation>
@@ -164,10 +165,12 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4038354071007134711">Na ovom uređaju nema aplikacije za tu datoteku.</translation>
 <translation id="4049507953662678203">Provjerite mrežnu vezu i pokušajte ponovo.</translation>
 <translation id="411254640334432676">Preuzimanje nije uspjelo.</translation>
+<translation id="4117350985506774529">Vaše je korisničko ime kopirano.</translation>
 <translation id="4121993058175073134">Za slanje neto izvezenih datoteka konfigurirajte svoj račun e-pošte u aplikaciji Postavke.</translation>
 <translation id="4124987746317609294">Vremenski raspon</translation>
 <translation id="4172051516777682613">Uvijek prikaži</translation>
 <translation id="418156467088430727">Prikaži offline verziju na novoj kartici</translation>
+<translation id="4237682350741091554">Sinkronizacijom Chromea i prilagodbom možete upravljati na stranici <ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Unesite šifru</translation>
 <translation id="4272631900155121838">Da biste skenirali QR kod, omogućite fotoaparat u postavkama</translation>
 <translation id="4281844954008187215">Uvjeti upotrebe usluge</translation>
@@ -312,6 +315,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7136892417564438900">Fotoaparat nije dostupan</translation>
 <translation id="7159472599653637159">Prikaži mob. str.</translation>
 <translation id="7167621057293532233">Vrste podataka</translation>
+<translation id="7175593937868963913">Napišite poruku</translation>
 <translation id="7189598951263744875">Dijeli...</translation>
 <translation id="7203585745079012652">Izgovaranje odgovora</translation>
 <translation id="722055596168483966">Prilagođavanje Googleovih usluga</translation>

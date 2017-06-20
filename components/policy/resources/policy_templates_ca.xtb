@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="1007441141628883408">Si no s'estableix cap valor o s'estableix en "true", activa les actualitzacions de tots els components a <ph name="PRODUCT_NAME" />.
-
-      Si s'estableix en "false", les actualitzacions dels components es desactiven. Tanmateix, aquesta política no afecta tots els components, com ara els que no contenen codi executable, els que no afecten de manera considerable el funcionament del navegador o els que són essencials per protegir-se.
-      Aquests components inclouen, entre d'altres, les llistes de revocació de certificats i les dades de navegació segura. </translation>
 <translation id="101438888985615157">Gira la pantalla 180 graus</translation>
 <translation id="1017967144265860778">Gestió de l'alimentació a la pantalla d'inici de sessió</translation>
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
@@ -131,7 +127,7 @@
 
           Deixa-la sense establir si has seleccionat qualsevol altra manera de definir les polítiques del servidor intermediari.
 
-          Per veure exemples més detallats, vés a:
+          Per veure exemples més detallats, ves a:
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1509692106376861764">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />.</translation>
@@ -481,15 +477,6 @@
 
 Cada entrada de la llista especifica un identificador, que s'utilitza internament per diferenciar els diversos comptes locals del dispositiu.</translation>
 <translation id="2769952903507981510">Configuració del nom de domini necessari per als amfitrions d'accés remot</translation>
-<translation id="2785954641789149745">Activa la funció de Navegació segura de <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn la configuració.
-
-      Si activeu aquesta configuració, Navegació segura sempre estarà activa.
-
-      Si desactiveu aquesta configuració, Navegació segura mai no estarà activa.
-
-      Si activeu o desactiveu aquesta configuració, els usuaris no podran canviar ni ignorar la configuració "Activa la protecció contra contra pesca i programari maliciós" a <ph name="PRODUCT_NAME" />.
-
-      Si no s'estableix aquesta política, aquesta configuració s'activarà, però l'usuari podrà canviar-la.</translation>
 <translation id="2787173078141616821">Ofereix informació sobre l'estat d'Android</translation>
 <translation id="2801230735743888564">Permet que els usuaris juguin al joc del dinosaure que apareix per sorpresa quan el dispositiu està sense connexió.
 
@@ -502,9 +489,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Si aquesta opció de configuració està desactivada i el tallafocs filtra les connexions UDP sortints, aquest ordinador només permetrà les connexions de màquines de client a la xarxa local.
 
           Si aquesta política no es defineix, la configuració s'activarà.</translation>
-<translation id="2811293057593285123">El servei Navegació segura mostra una pàgina d'advertiment quan els usuaris naveguen a llocs marcats com a potencialment maliciosos. Si activeu aquesta configuració, els usuaris no podran accedir de cap manera a un lloc maliciós des de la pàgina d'advertiment.
-
-      Si desactiveu o si no definiu aquesta configuració, els usuaris podran decidir si volen accedir al lloc marcat després de veure l'advertiment.</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2844404652289407061">Permet que la funció Toca per cercar estigui disponible a la visualització de contingut de <ph name="PRODUCT_NAME" />.
 
@@ -589,7 +573,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
           Si decideixes fer servir un script de servidor intermediari .pac, has d'especificar l'URL de l'script a URL d'un fitxer .pac d'un servidor intermediari.
 
-          Per veure exemples detallats, vés a:
+          Per veure exemples detallats, ves a:
           <ph name="PROXY_HELP_URL" />.
 
           Si actives aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
@@ -698,7 +682,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si decideixes detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
 
-          Per veure exemples detallats, vés a:
+          Per veure exemples detallats, ves a:
           <ph name="PROXY_HELP_URL" />.
 
           Si actives aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
@@ -708,7 +692,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3765260570442823273">Durada del missatge d'advertència de tancament de la sessió per inactivitat</translation>
 <translation id="376931976323225993">Permet establir si els llocs web poden executar automàticament el connector <ph name="FLASH_PLUGIN_NAME" /> o no. L'execució automàtica del connector <ph name="FLASH_PLUGIN_NAME" /> pot permetre's o denegar-se per a tots els llocs web.
 
-          La funció Clic per reproduir permet que el connector <ph name="FLASH_PLUGIN_NAME" /> s'executi, però l'usuari haurà de fer clic a l'espai reservat per iniciar-ne l'execució.
+          La funció Clic per executar permet que el connector <ph name="FLASH_PLUGIN_NAME" /> s'executi, però l'usuari haurà de fer clic a l'espai reservat per iniciar-ne l'execució.
 
           Si aquesta política no es defineix, l'usuari podrà canviar l'opció de configuració manualment.</translation>
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
@@ -888,7 +872,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4372704773119750918">No permetis que l'usuari empresarial formi part dels perfils múltiples (com a usuari principal o secundari)</translation>
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
 <translation id="4389091865841123886">Configura el testimoni remot amb el mecanisme TPM.</translation>
-<translation id="4397469093966511008">Si s'estableix aquesta política en "false", els usuaris no poden decidir que s'enviïn als servidors de Google algunes dades del sistema i contingut de les pàgines. Si aquesta opció de configuració s'estableix en "true" o no es configura, els usuaris poden enviar aquestes dades al servei Navegació segura per ajudar a detectar les aplicacions i els llocs perillosos.</translation>
 <translation id="4418726081189202489">Si aquesta política es defineix en "false", impedeix que <ph name="PRODUCT_NAME" /> enviï de tant en tant consultes a un servidor de Google per recuperar una marca de temps precisa. Aquestes consultes s'activaran si la política es defineix en "true" o si no es defineix.</translation>
 <translation id="4423597592074154136">Especifica manualment la configuració del servidor intermediari</translation>
 <translation id="4429220551923452215">Activa o desactiva la drecera de les aplicacions a la barra d'adreces d'interès.
@@ -994,7 +977,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si tries manualment la configuració del servidor intermediari, pots especificar més opcions a Adreça o URL del servidor intermediari, a URL d'un fitxer .pac d'un servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només poden utilitzar el servidor intermediari HTTP amb la prioritat més alta.
 
-          Per veure exemples detallats, vés a:
+          Per veure exemples detallats, ves a:
           <ph name="PROXY_HELP_URL" />.
 
           Si actives aquesta opció de configuració, <ph name="PRODUCT_NAME" /> ignora totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
@@ -1178,6 +1161,8 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Si <ph name="PRODUCT_NAME" /> no pot obtenir informació de l'estat de revocació, aquests certificats es consideraran revocats ("hard-fail").
 
       Si aquesta política no està definida o si es defineix com a "false", <ph name="PRODUCT_NAME" /> utilitzarà la configuració de la comprovació de revocació en línia existent.</translation>
+<translation id="572720239788271400">Permet les actualitzacions de components a <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Permet crear còpies itinerants de les dades de perfil que tingui <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importa les dades d'emplenament automàtic de formularis des del navegador predeterminat quan s'inicia per primera vegada</translation>
 <translation id="5765780083710877561">Descripció:</translation>
 <translation id="5770738360657678870">Canal per a desenvolupadors (pot ser inestable)</translation>
@@ -1387,6 +1372,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si aquesta política es deixa sense configurar, el teclat en pantalla estarà desactivat la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris podran activar o desactivar el teclat en pantalla en qualsevol moment i l'estat que tingui a la pantalla d'inici de sessió es conservarà entre els usuaris.</translation>
 <translation id="6573305661369899995">Estableix una font externa de restriccions d'URL</translation>
 <translation id="6598235178374410284">Imatge d'avatar de l'usuari</translation>
+<translation id="6603004149426829878">Envia sempre els senyals d'ubicació disponibles al servidor mentre es determina la zona horària</translation>
 <translation id="6628646143828354685">Us permet definir si els llocs web poden obtenir accés a dispositius Bluetooth propers. Es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius Bluetooth propers.
 
           Si aquesta política es deixa sense establir, es farà servir el valor "3" i l'usuari podrà canviar-lo.</translation>
@@ -2006,5 +1992,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="922540222991413931">Configura fonts d'instal·lació d'extensions, d'aplicacions i de scripts d'usuari</translation>
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
 <translation id="930930237275114205">Defineix el directori de dades de l'usuari del producte <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Permet l'inici de sessió forçat a <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Defineix la mida de la memòria cau del disc</translation>
 </translationbundle>

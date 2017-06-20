@@ -64,7 +64,7 @@
 <translation id="225614027745146050">सुस्वागतम</translation>
 <translation id="228809120910082333">कृपया Chromoting द्वारे प्रवेश अनुमत करण्यासाठी आपल्या खात्याची आणि पिन ची खाली पुष्टी करा.</translation>
 <translation id="2314101195544969792">आपले <ph name="APPLICATION_NAME" /> सत्र काही काळ निष्क्रिय होते आणि लवकरच डिस्कनेक्ट केले जाईल.</translation>
-<translation id="2317666076142640974"><ph name="LINK_BEGIN" />Chrome रिमोट डेस्कटॉप वेब अॅप<ph name="LINK_END" />मध्ये डोकावून पहा. आम्हाला तुमचा फीडबॅक जाणून घायला आवडेल.</translation>
+<translation id="2317666076142640974"><ph name="LINK_BEGIN" />Chrome रिमोट डेस्कटॉप वेब अॅप<ph name="LINK_END" />मध्ये डोकावून पहा. आम्हाला तुमचा फीडबॅक जाणून घ्यायला आवडेल.</translation>
 <translation id="2353140552984634198">Chromoting वापरून आपण या संगणकावर सुरक्षितरितीने प्रवेश करू शकता.</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2366718077645204424">होस्‍टवर पोहोचण्‍यात अक्षम. हे बहुदा आपण वापरत असलेल्या नेटवर्कच्या कॉन्फिगरेशनमुळे झाले आहे.</translation>
@@ -112,6 +112,7 @@
 <translation id="3649256019230929621">विंडो लहान करा</translation>
 <translation id="369442766917958684">ऑफलाइन.</translation>
 <translation id="3695446226812920698">कसे ते जाणून घ्या</translation>
+<translation id="3718805989288361841">Chrome रीमोट डेस्कटॉपच्या धोरण सेटिंग्जमध्ये एरर आली आहे. साहाय्यासाठी तुमच्या सिस्टम प्रशसकाशी संपर्क साधा.</translation>
 <translation id="3776024066357219166">आपले Chrome दूरस्थ डेस्कटॉप सत्र समाप्त झाले आहे.</translation>
 <translation id="3785447812627779171">Chromoting
 होस्ट</translation>
@@ -249,7 +250,7 @@
 <translation id="7401733114166276557">Chrome दूरस्थ डेस्कटॉप</translation>
 <translation id="7434397035092923453">क्लायंटसाठी प्रवेश नाकारला: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7444276978508498879">कनेक्ट केलेला क्लायंट: <ph name="CLIENT_USERNAME" />.</translation>
-<translation id="7589941250119944644">Chrome रिमोट डेस्कटॉप हे वेबवरील नवीन होमवर जात आहे. आमचे <ph name="LINK_BEGIN" />वेब अॅप<ph name="LINK_END" /> पहा—हे पहिल्यासारख्या सर्व समान वैशिष्ट्यांप्रमाणे, जलद आणि विनामूल्य आहे.</translation>
+<translation id="7589941250119944644">Chrome रिमोट डेस्कटॉप हे वेबवरील नवीन होमवर जात आहे. आमचे <ph name="LINK_BEGIN" />वेब अॅप<ph name="LINK_END" /> पहा—हे पहिल्यासारख्या सर्व वैशिष्ट्यांप्रमाणे, जलद आणि विनामूल्य आहे.</translation>
 <translation id="7606912958770842224">दूरस्थ कनेक्‍शन सक्षम करा</translation>
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7658239707568436148">रद्द करा</translation>

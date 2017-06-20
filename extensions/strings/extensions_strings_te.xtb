@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">చట్టవిరుద్ధ పథం (ఖచ్చితంగా లేదా '..'కు సంబంధిత): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">నెట్‌వర్క్ అభ్యర్థనను సవరించడంలో ఈ పొడిగింపు విఫలమైంది ఎందుకంటే సవరణ మరొక పొడిగింపుతో వైరుధ్యంలో ఉంది.</translation>
 <translation id="2857834222104759979">వివరాల ఫైల్ చెల్లనిది.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (పొడిగింపు ID "<ph name="EXTENSION_ID" />") నిర్వాహకుల ద్వారా బ్లాక్ చేయబడింది. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">ప్యాకేజీని వ్యవస్థాపించడం సాధ్యం కాలేదు: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> విక్రేత నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID" /> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> నుండి <ph name="PRODUCT_ID" /> తెలియని ఉత్పత్తి</translation>

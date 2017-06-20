@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">Предв. зареждане на уеб стр.</translation>
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
+<translation id="3742082982782149146">URL адресът на сайта бе копиран.</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
 <translation id="3783017676699494206">Запазване на изобрaжението</translation>
 <translation id="3789841737615482174">Инсталиране</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">Няма приложение, което може да отвори файла.</translation>
 <translation id="4049507953662678203">Уверете се, че сте свързани с мрежа, и опитайте отново.</translation>
 <translation id="411254640334432676">Изтеглянето не бе успешно.</translation>
+<translation id="4117350985506774529">Потребителското ви име бе копирано.</translation>
 <translation id="4121993058175073134">За изпращане на експ. данни от мрежата конфиг. имейла си в Настройки.</translation>
 <translation id="4124987746317609294">Период от време</translation>
 <translation id="4172051516777682613">Показване винаги</translation>
 <translation id="418156467088430727">Преглед на офлайн версията в нов раздел</translation>
+<translation id="4237682350741091554">Управлявайте синхронизирането в Chrome и персонализирането от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Въвеждане на пропуск</translation>
 <translation id="4272631900155121838">За да сканирате код за бърза реакция, активирайте камерата от настройките</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
@@ -312,6 +315,7 @@
 <translation id="7136892417564438900">Няма достъп до камерата</translation>
 <translation id="7159472599653637159">Мобилен сайт</translation>
 <translation id="7167621057293532233">Типове данни</translation>
+<translation id="7175593937868963913">Ново съобщение</translation>
 <translation id="7189598951263744875">Споделяне...</translation>
 <translation id="7203585745079012652">Изговаряне на отговорите</translation>
 <translation id="722055596168483966">Персонализиране на услугите на Google</translation>

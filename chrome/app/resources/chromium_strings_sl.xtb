@@ -170,6 +170,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="6403826409255603130">Chromium je spletni brskalnik, ki bliskovito odpira spletne strani in izvaja aplikacije. Je hiter, stabilen in preprost za uporabo. Z vgrajeno zaščito pred zlonamerno programsko opremo in lažnim predstavljanjem je brskanje po spletu varno.</translation>
 <translation id="6475912303565314141">Določa tudi, katera stran je prikazana, ko zaženete Chromium.</translation>
 <translation id="6485906693002546646">Za sinhronizacijo stvari v Chromiumu uporabljate <ph name="PROFILE_EMAIL" />. Če želite posodobiti nastavitve sinhroniziranja ali uporabljati Chromium brez Google Računa, odprite <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6505742536731484931">Chromium potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom.</translation>
 <translation id="6510925080656968729">Odstranitev Chromiuma</translation>
 <translation id="6526111688217511984">Chromium potrebuje za prenos datotek dostop do shrambe.</translation>
 <translation id="6584627348340620412">Prihodnje 32-bitne različice Chromiuma ne bodo več podpirale tega sistema Linux. Nadgradite Chromium na 64-bitno različico.</translation>
@@ -244,6 +245,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="8563206822260884157">Uporabite zapleteno geslo, ki ga ustvari Chromium</translation>
 <translation id="85843667276690461">Pomoč pri uporabi Chromiuma</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
+<translation id="8590769996813453836">Chromium je v računalniku našel škodljivo programsko opremo. Chromium jo lahko odstrani in obnovi nastavitve, da bo brskalnik znova deloval kot običajno.</translation>
 <translation id="8621669128220841554">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Chromium.</translation>
 <translation id="8628626585870903697">Chromium nima pregledovalnika datotek PDF, ki je potreben za predogled tiskanja.</translation>
 <translation id="8667808506758191620">Naprava <ph name="DEVICE_TYPE" /> je posodobljena.</translation>

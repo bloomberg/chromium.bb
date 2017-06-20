@@ -150,6 +150,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3638472932233958418">Läs in webbsidor i förväg</translation>
 <translation id="3691593122358196899">Bokmärkt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
+<translation id="3742082982782149146">Webbadressen kopierades.</translation>
 <translation id="3771033907050503522">Inkognitoflikar</translation>
 <translation id="3783017676699494206">Spara bild</translation>
 <translation id="3789841737615482174">Installera</translation>
@@ -164,10 +165,12 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4038354071007134711">Det går inte att öppna filen med någon av apparna på enheten.</translation>
 <translation id="4049507953662678203">Kontrollera att du är ansluten till nätverket och försök igen.</translation>
 <translation id="411254640334432676">Nedladdningen misslyckades.</translation>
+<translation id="4117350985506774529">Användarnamnet kopierades.</translation>
 <translation id="4121993058175073134">Ange ett e-postkonto i appen Inställningar om du vill skicka nätverksexportdata.</translation>
 <translation id="4124987746317609294">Tidsintervall</translation>
 <translation id="4172051516777682613">Visa alltid</translation>
 <translation id="418156467088430727">Visa offlineversionen i en ny flik</translation>
+<translation id="4237682350741091554">Hantera Chrome Sync och anpassning i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Ange lösenfras</translation>
 <translation id="4272631900155121838">Om du vill skanna en QR-kod aktiverar du kameran i inställningarna</translation>
 <translation id="4281844954008187215">Användarvillkor</translation>
@@ -312,6 +315,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7136892417564438900">Kameran är inte tillgänglig</translation>
 <translation id="7159472599653637159">Använd mobilversion</translation>
 <translation id="7167621057293532233">Datatyper</translation>
+<translation id="7175593937868963913">Skriv ett e-postmeddelande</translation>
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7203585745079012652">Läs upp svaren</translation>
 <translation id="722055596168483966">Anpassa Googles tjänster</translation>

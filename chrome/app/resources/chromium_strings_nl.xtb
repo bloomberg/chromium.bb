@@ -169,6 +169,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6403826409255603130">Chromium is een webbrowser die webpagina's en applicaties bliksemsnel uitvoert. Chromium is snel, stabiel en eenvoudig in gebruik. Surf veiliger op internet met de in Chromium ingebouwde beveiliging tegen malware en phishing.</translation>
 <translation id="6475912303565314141">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="6485906693002546646">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chromium-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chromium zonder een Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
+<translation id="6505742536731484931">Chromium heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
 <translation id="6510925080656968729">Chromium verwijderen</translation>
 <translation id="6526111688217511984">Chromium heeft toegang tot de opslag nodig om deze bestanden te downloaden.</translation>
 <translation id="6584627348340620412">Toekomstige 32-bits versies van Chromium bieden geen ondersteuning meer voor dit Linux-systeem. Upgrade naar de 64-bits versie van Chromium.</translation>
@@ -243,6 +244,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="8563206822260884157">Een sterk wachtwoord gebruiken dat is gegenereerd door Chromium</translation>
 <translation id="85843667276690461">Hulp bij het gebruik van Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> De auteurs van Chromium. Alle rechten voorbehouden.</translation>
+<translation id="8590769996813453836">Chromium heeft schadelijke software gevonden op je computer. Chromium kan deze software verwijderen en je instellingen herstellen zodat je browser weer normaal werkt.</translation>
 <translation id="8621669128220841554">De installatie is mislukt wegens een onbekende fout. Download Chromium opnieuw.</translation>
 <translation id="8628626585870903697">Chromium bevat niet de pdf-viewer die nodig is om de functie 'Afdrukvoorbeeld' te laten werken.</translation>
 <translation id="8667808506758191620">Je <ph name="DEVICE_TYPE" /> is up-to-date.</translation>

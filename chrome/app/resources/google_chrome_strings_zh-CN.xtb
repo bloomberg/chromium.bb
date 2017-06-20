@@ -11,6 +11,7 @@
 <translation id="127345590676626841">Chrome会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chrome会重新启动，然后您就可以开始使用了。</translation>
 <translation id="1302523850133262269">Chrome正在安装最新的系统更新，请稍候。</translation>
 <translation id="1350930993895295930">Chrome 检测到异常行为</translation>
+<translation id="137466361146087520">Google Chrome 测试版</translation>
 <translation id="1393853151966637042">获取 Chrome 浏览器使用帮助</translation>
 <translation id="1399397803214730675">该计算机已安装了更高版本的 Google Chrome 浏览器。如果该软件无法正常运行，请卸载 Google Chrome 浏览器，然后重试。</translation>
 <translation id="1434626383986940139">Chrome Canary 应用</translation>
@@ -33,6 +34,7 @@
 <translation id="1773601347087397504">获取 Chrome 操作系统使用帮助</translation>
 <translation id="1795405610103747296">请在您的手机上安装 Chrome。我们会将一条短信发送到您的手机：<ph name="PHONE_NUMBER" /></translation>
 <translation id="1818142563254268765">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chrome。</translation>
+<translation id="1874309113135274312">Google Chrome 测试版 (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome版本太旧</translation>
 <translation id="2063848847527508675">需要重新启动 Chrome 操作系统以应用更新。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
@@ -110,6 +112,7 @@
 <translation id="4251615635259297716">是否将您的 Chrome 数据与此帐号相关联？</translation>
 <translation id="4251625577313994583">在 iPhone 上下载 Chrome</translation>
 <translation id="4309555186815777032">（需要<ph name="BEGIN_BUTTON" />重新启动<ph name="END_BUTTON" /> Chrome）</translation>
+<translation id="4328355335528187361">Google Chrome 开发者版 (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="437002079035561265">Google Chrome 不再支持此 Linux 系统，因此这台计算机将不再接收 Google Chrome 更新。</translation>
@@ -134,6 +137,7 @@
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
 <translation id="4953650215774548573">将Google Chrome设为默认浏览器</translation>
 <translation id="495931528404527476">在 Chrome 中</translation>
+<translation id="4965682129423310439">Chrome 在您的计算机上发现了有害软件。Chrome 可移除该软件并恢复您的设置，以确保您的浏览器重新正常运行。</translation>
 <translation id="4987308747895123092">请关闭所有 Google Chrome 窗口（包括 Windows 8 模式下的窗口），然后重试。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome无法同步您的数据。请更新您的同步密码。</translation>
@@ -177,6 +181,7 @@
 <translation id="61852838583753520">更新 Chrome 操作系统(&amp;C)</translation>
 <translation id="6235018212288296708">Google Chrome的入站规则，允许mDNS流量。</translation>
 <translation id="6236285698028833233">Google Chrome 已停止更新，并且不再支持您的操作系统版本。</translation>
+<translation id="6291089322031436445">Chrome 开发者版应用</translation>
 <translation id="6291549208091401781">已为您计算机上的所有用户安装 Google Chrome。</translation>
 <translation id="6338556085225130112">正在更新 Google Chrome</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功劳。</translation>
@@ -191,10 +196,13 @@
 <translation id="6626317981028933585">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Google Chrome 浏览器，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="6634887557811630702">Google Chrome 已是最新版本。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
+<translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="686561893457936865">随时随地使用 Chrome</translation>
 <translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
+<translation id="6885412569789873916">Chrome 测试版应用</translation>
+<translation id="6967962315388095737">Google Chrome 测试版的入站规则，允许 mDNS 流量。</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> 要求您必须先阅读并接受以下服务条款，才能使用此设备。这些条款不会扩大、修改或限制 Google Chrome 操作系统条款。</translation>
 <translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
@@ -221,6 +229,7 @@
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7494905215383356681">Chrome开放源代码许可</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{这会将至少 $1 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。}other{这会将至少 $1 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。}}</translation>
+<translation id="7535429826459677826">Google Chrome 开发者版</translation>
 <translation id="7552219221109926349">以这种语言显示 Chrome 操作系统</translation>
 <translation id="7592736734348559088">由于您的帐号登录详细信息已过期，Google Chrome无法同步您的数据。</translation>
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
@@ -252,6 +261,7 @@
 <translation id="8439301513305169426">Chrome 会通过 <ph name="SAVED_PASSWORD_LINK" /> 保存此密码，因此您不必记住它。</translation>
 <translation id="8455999171311319804">可选：将诊断数据和使用情况数据自动发送给 Google，协助我们改进 Chrome 操作系统。</translation>
 <translation id="8478823064122749032">请在您的手机上安装 Chrome。我们会将一条短信发送到您帐号的辅助电话号码：<ph name="PHONE_NUMBER" /></translation>
+<translation id="8521348052903287641">Google Chrome 开发者版的入站规则，允许 mDNS 流量。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome 应用启动器 Canary</translation>
 <translation id="8556340503434111824">Google Chrome 浏览器现已推出速度更快的新版本。</translation>

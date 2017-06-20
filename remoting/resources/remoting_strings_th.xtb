@@ -112,6 +112,7 @@
 <translation id="3649256019230929621">ย่อหน้าต่าง</translation>
 <translation id="369442766917958684">ออฟไลน์</translation>
 <translation id="3695446226812920698">เรียนรู้วิธี</translation>
+<translation id="3718805989288361841">การตั้งค่านโยบายของ Chrome Remote Desktop มีข้อผิดพลาด โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="3776024066357219166">เซสชัน Chrome Remote Desktop ของคุณสิ้นสุดแล้ว</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -232,7 +233,7 @@ Desktop Host</translation>
 <translation id="6930242544192836755">ระยะเวลา</translation>
 <translation id="6939719207673461467">แสดง/ซ่อนแป้นพิมพ์</translation>
 <translation id="6944854424004126054">กู้คืนหน้าต่าง</translation>
-<translation id="6948905685698011662">Chrome Remote Desktop ใช้งานในเว็บได้แล้ว ลองใช้<ph name="LINK_BEGIN" />เว็บแอปฟรี<ph name="LINK_END" />ของเราเลย</translation>
+<translation id="6948905685698011662">Chrome Remote Desktop ใช้งานในเว็บได้แล้ว! ลองใช้<ph name="LINK_BEGIN" />เว็บแอปฟรี<ph name="LINK_END" />ของเราเลย</translation>
 <translation id="6963936880795878952">การเชื่อมต่อกับคอมพิวเตอร์ระยะไกลถูกบล็อกไว้ชั่วคราว เนื่องจากมีผู้พยายามเชื่อมต่อกับคอมพิวเตอร์ดังกล่าวโดยใช้ PIN ที่ไม่ถูกต้อง โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6985691951107243942">คุณแน่ใจหรือไม่ว่าต้องการปิดใช้งานการเชื่อมต่อระยะไกลกับ <ph name="HOSTNAME" /> หากคุณเปลี่ยนใจภายหลัง คุณจะต้องไปที่คอมพิวเตอร์เครื่องนั้นเพื่อเปิดใช้งานการเชื่อมต่ออีกครั้ง</translation>
@@ -249,7 +250,7 @@ Desktop Host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">การเข้าถึงถูกปฏิเสธสำหรับไคลเอ็นต์: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7444276978508498879">ไคลเอ็นต์ที่เชื่อมต่อ: <ph name="CLIENT_USERNAME" /></translation>
-<translation id="7589941250119944644">Chrome Remote Desktop กำลังจะย้ายไปอยู่บ้านหลังใหม่ในเว็บ ลองใช้<ph name="LINK_BEGIN" />เว็บแอป<ph name="LINK_END" />ของเราเลย เว็บแอปนี้ทั้งรวดเร็วและฟรี โดยมีฟีเจอร์ครบเครื่องเหมือนเดิม</translation>
+<translation id="7589941250119944644">Chrome Remote Desktop กำลังจะย้ายไปอยู่บ้านหลังใหม่ในเว็บแล้ว ลองใช้<ph name="LINK_BEGIN" />เว็บแอป<ph name="LINK_END" />ของเราดูสิ ทั้งรวดเร็วและฟรี มีฟีเจอร์ครบเครื่องเหมือนเดิม</translation>
 <translation id="7606912958770842224">เปิดใช้งานการเชื่อมต่อระยะไกล</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>

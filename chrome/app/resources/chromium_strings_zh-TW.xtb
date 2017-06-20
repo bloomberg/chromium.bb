@@ -167,6 +167,7 @@
 <translation id="6403826409255603130">Chromium 網路瀏覽器開啟網頁和執行應用程式的速度十分迅速。除了迅速、穩定且易於使用之外，Chromium 的內建惡意軟體與網路釣魚防護功能，可讓你安心悠遊網路。</translation>
 <translation id="6475912303565314141">這個擴充功能也會控管你啟動 Chromium 時所顯示的網頁。</translation>
 <translation id="6485906693002546646">你正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理你的 Chromium 資料。如要更新你的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chromium，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
+<translation id="6505742536731484931">Chromium 需要位置資訊存取權，才能與這個網站分享你的位置資訊。</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
 <translation id="6526111688217511984">Chromium 必須取得儲存空間的存取權才能下載檔案。</translation>
 <translation id="6584627348340620412">日後發佈的 32 位元 Chromium 版本將不再支援這種 Linux 系統，請升級至 64 位元的 Chromium。</translation>
@@ -241,6 +242,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8563206822260884157">使用 Chromium 產生的高強度密碼</translation>
 <translation id="85843667276690461">前往 Chromium 說明頁面</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. 版權所有。</translation>
+<translation id="8590769996813453836">Chromium 在你的電腦上找到有害軟體，並可將它移除及還原相關設定，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="8621669128220841554">不明錯誤導致安裝失敗，請重新下載 Chromium。</translation>
 <translation id="8628626585870903697">Chromium 不含 PDF 檢視器，因此無法執行預覽列印功能。</translation>
 <translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 已搭載最新版作業系統。</translation>

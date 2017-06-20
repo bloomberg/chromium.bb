@@ -150,6 +150,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3638472932233958418">Pré-carregar páginas da web</translation>
 <translation id="3691593122358196899">Adicionado como favorito em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
+<translation id="3742082982782149146">O URL do site foi copiado.</translation>
 <translation id="3771033907050503522">Guias anônimas</translation>
 <translation id="3783017676699494206">Salvar imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -164,10 +165,12 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4038354071007134711">Nenhum app deste dispositivo pode abrir o arquivo.</translation>
 <translation id="4049507953662678203">Verifique se você tem uma conexão de rede e tente novamente.</translation>
 <translation id="411254640334432676">Falha no download.</translation>
+<translation id="4117350985506774529">Seu nome de usuário foi copiado.</translation>
 <translation id="4121993058175073134">Para enviar dados de exportação líquida, configure sua conta de e-mail no aplicativo "Configurações".</translation>
 <translation id="4124987746317609294">Intervalo de tempo</translation>
 <translation id="4172051516777682613">Sempre mostrar</translation>
 <translation id="418156467088430727">Ver versão off-line em uma nova guia</translation>
+<translation id="4237682350741091554">Gerenciar a sincronização e a personalização do Chrome em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Informar senha longa</translation>
 <translation id="4272631900155121838">Para ler um código QR, ative a câmera nas configurações</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
@@ -312,6 +315,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7136892417564438900">A câmera não está disponível</translation>
 <translation id="7159472599653637159">Solicitar um site para dispositivos móveis</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
+<translation id="7175593937868963913">Escrever e-mail</translation>
 <translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7203585745079012652">Falar as respostas</translation>
 <translation id="722055596168483966">Personalizar os serviços do Google</translation>

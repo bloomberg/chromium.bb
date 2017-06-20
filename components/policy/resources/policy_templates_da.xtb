@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1007441141628883408">Aktiverer komponentopdateringer for alle komponenter i <ph name="PRODUCT_NAME" />, hvis politikken ikke er angivet eller er angivet som Sand.
-
-      Hvis den er angivet til Falsk, deaktiveres opdateringer af komponenter. Visse komponenter er dog fritaget fra denne politik. Opdateringer til en komponent, som ikke indeholder eksekverbar kode, som ikke ændrer browserens adfærd markant, eller som er afgørende for sikkerheden, deaktiveres ikke.
-      Eksempler på sådanne komponenter omfatter lister over tilbagekaldte certifikater og data for beskyttet browsing. </translation>
 <translation id="101438888985615157">Roter skærmen 180 grader</translation>
 <translation id="1017967144265860778">Strømstyring på loginskærmen</translation>
 <translation id="1019101089073227242">Angiv brugerdatamappe</translation>
@@ -484,15 +480,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hver post på listen angiver et id, som bruges internt til at skelne mellem de forskellige enhedslokale konti.</translation>
 <translation id="2769952903507981510">Konfigurer det påkrævede domænenavn for værter med fjernadgang</translation>
-<translation id="2785954641789149745">Aktiverer funktionen Beskyttet browsing i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
-
-      Hvis du aktiverer denne indstilling, vil Beskyttet browsing altid være aktiv.
-
-      Hvis du deaktiverer denne indstilling, vil Beskyttet browsing aldrig være aktiv.
-
-      Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen "Aktivér phishing og malwarebeskyttelse" i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne politik ikke indstilles, vil den blive aktiveret, men brugeren vil være i stand til at ændre den.</translation>
 <translation id="2787173078141616821">Rapportér oplysninger om status for Android</translation>
 <translation id="2801230735743888564">Giv brugerne mulighed for at spille det ekstra dinosaurspil, når enheden er offline.
 
@@ -505,9 +492,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, vil denne computer kun tillade forbindelser fra klientcomputere på det lokale netværk.
  
           Hvis denne politik ikke er angivet, aktiveres denne indstilling.</translation>
-<translation id="2811293057593285123">Tjenesten Beskyttet browsing viser en advarselsside, når brugerne navigerer til websites, der er markeret som potentielt skadelige. Denne indstilling forhindrer, at brugerne kan fortsætte fra advarselssiden til det skadelige website.
-
-      Hvis denne indstilling er deaktiveret eller ikke er konfigureret, kan brugerne vælge at gå til det markerede website, efter advarslen er blevet vist.</translation>
 <translation id="2824715612115726353">Aktiver inkognitotilstand</translation>
 <translation id="2844404652289407061">Aktiverer tilgængeligheden af funktionen "Tryk for at søge" i indholdsvisningen i <ph name="PRODUCT_NAME" />.
 
@@ -716,7 +700,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3765260570442823273">Varighed af advarselsmeddelelsen om logout for inaktivitet</translation>
 <translation id="376931976323225993">Gør det muligt for dig at angive, om det er tilladt for websites at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet automatisk. Automatisk kørsel af <ph name="FLASH_PLUGIN_NAME" />-pluginnet kan tillades for alle websites eller forbydes for alle websites.
 
-          Klik for at afspille giver tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet, men brugeren skal klikke på pladsholderen for at starte udførelsen.
+          Klik for at afspille giver tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet, men brugeren skal klikke på pladsholderen for at starte det.
 
           Hvis denne politik ikke angives, kan brugeren ændre denne indstilling manuelt.</translation>
 <translation id="3780152581321609624">Inkluder en port, der ikke er standard, i Kerberos-SPN</translation>
@@ -904,7 +888,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 <translation id="4372704773119750918">Tillad ikke, at virksomhedsbrugere er en del af en multiprofil (primær eller sekundær)</translation>
 <translation id="4377599627073874279">Tillad alle websites at vise alle billeder</translation>
 <translation id="4389091865841123886">Konfigurer fjernattestering med TPM-mekanismen</translation>
-<translation id="4397469093966511008">Hvis denne politik angives som Falsk, forhindres brugerne i at sende visse former for systemoplysninger og sideindhold til Googles servere. Hvis denne indstilling er angivet som Sand eller ikke er konfigureret, kan brugerne sende visse former for systemoplysninger og sideindhold til Beskyttet browsing som en hjælp til at registrere skadelige apps og websites.</translation>
 <translation id="4418726081189202489">Hvis du angiver denne politik til Falsk, stopper <ph name="PRODUCT_NAME" /> med af og til at sende forespørgsler til en Google-server for at hente et nøjagtigt tidsstempel. Forespørgslerne aktiveres, hvis denne politik angives til Sand eller ikke angives.</translation>
 <translation id="4423597592074154136">Angiv proxyindstillingerne manuelt</translation>
 <translation id="4429220551923452215">Aktiverer eller deaktiverer genvejen til apps i bogmærkelinjen.
@@ -1196,6 +1179,8 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis <ph name="PRODUCT_NAME" /> ikke kan hente oplysninger om tilbagekaldelsesstatus, bliver sådanne certifikater behandlet som tilbagekaldt ("alvorlig fejl").
 
       Hvis denne politik ikke er angivet eller angivet som falsk, vil <ph name="PRODUCT_NAME" /> anvende de eksisterende indstillinger for onlinesøgning efter tilbagekaldelser.</translation>
+<translation id="572720239788271400">Aktiverer komponentopdateringer i <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5728154254076636808">Aktivér oprettelse af roamingkopier til profildata i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5732972008943405952">Importér formulardata for AutoFyld fra standardbrowseren ved første visning</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5770738360657678870">Udviklerkanal (kan være ustabil)</translation>
@@ -1406,6 +1391,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Hvis denne politik ikke indstilles, deaktiveres skærmtastaturet, når loginskærmen vises første gang. Brugerne kan til enhver tid aktivere eller deaktivere skærmtastaturet, og status for skærmtastaturet på loginskærmen bibeholdes for de enkelte brugere.</translation>
 <translation id="6573305661369899995">Angiv en ekstern kilde til webadressebegrænsninger</translation>
 <translation id="6598235178374410284">Brugerens avatarbillede</translation>
+<translation id="6603004149426829878">Send altid eventuelle tilgængelige placeringssignaler til serveren under opdatering af tidszone.</translation>
 <translation id="6628646143828354685">Giver dig mulighed for at angive, om websites må få adgang til Bluetooth-enheder i nærheden. Adgangen kan være fuldstændig blokeret, eller brugeren kan få en anmodning, hver gang et website vil have adgang til en Bluetooth-enhed i nærheden.
 
           Hvis denne politik ikke indstilles, bruges "3", og brugeren kan ændre denne indstilling.</translation>
@@ -2023,5 +2009,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="922540222991413931">Konfigurer udvidelser, apps og installationskilder til brugerscripts</translation>
 <translation id="924557436754151212">Importer gemte adgangskoder fra standardbrowser på første visning</translation>
 <translation id="930930237275114205">Angiv brugerdatamappe for <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Aktiverer påtvungen login for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="944817693306670849">Angiv diskcachens størrelse</translation>
 </translationbundle>

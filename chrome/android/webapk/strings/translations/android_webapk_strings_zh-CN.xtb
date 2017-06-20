@@ -3,4 +3,5 @@
 <translationbundle lang="zh-CN">
 <translation id="5095487927081109870"><ph name="WEBAPK_SITE" /> 需要在网络浏览器中运行</translation>
 <translation id="7671141431838911305">安装</translation>
+<translation id="8307642646779885758">请选择您想要用来运行 <ph name="WEBAPK_SITE" /> 的浏览器</translation>
 </translationbundle>

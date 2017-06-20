@@ -167,6 +167,7 @@
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
 <translation id="6475912303565314141">它还能够控制Chromium启动后显示的页面。</translation>
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐号的情况下使用Chromium，请前往<ph name="SETTINGS_LINK" />部分。</translation>
+<translation id="6505742536731484931">Chromium 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
 <translation id="6526111688217511984">Chromium 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="6584627348340620412">32 位 Chromium 的后续版本将不再支持此 Linux 系统，请升级到 64 位 Chromium。</translation>
@@ -241,6 +242,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8563206822260884157">使用由 Chromium 生成的安全系数高的密码</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
+<translation id="8590769996813453836">Chromium 在您的计算机上发现了有害软件。Chromium 可移除该软件并恢复您的设置，以确保您的浏览器重新正常运行。</translation>
 <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
 <translation id="8628626585870903697">Chromium 未包含运行打印预览所需的 PDF 查看器。</translation>
 <translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 是最新版本。</translation>

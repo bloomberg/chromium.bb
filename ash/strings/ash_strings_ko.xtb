@@ -47,6 +47,7 @@
 <translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="2268130516524549846">블루투스를 사용 안 함</translation>
 <translation id="2268813581635650749">모두 로그아웃</translation>
+<translation id="2292698582925480719">디스플레이 배율</translation>
 <translation id="2303600792989757991">창 전환 개요</translation>
 <translation id="2352467521400612932">스타일러스 설정</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> 활성화 중</translation>
@@ -183,6 +184,7 @@
 <translation id="6297287540776456956">스타일러스를 사용하여 영역을 선택하세요.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />(이)가 <ph name="ROTATION" />(으)로 회전되었습니다.</translation>
 <translation id="632744581670418035">키보드 오버레이</translation>
+<translation id="6395038768903208085">Metalayer 모드</translation>
 <translation id="639644700271529076">CAPS LOCK이 꺼져 있음</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">거부</translation>
@@ -222,6 +224,7 @@
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
+<translation id="7526573455193969409">네트워크가 모니터링될 수 있음</translation>
 <translation id="7536035074519304529">IP 주소: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
@@ -252,6 +255,7 @@
 <translation id="8433186206711564395">네트워크 설정</translation>
 <translation id="8433977262951327081">실행기에서 입력 옵션 메뉴 도움말 풍선을 표시하는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
+<translation id="847056008324733326">배율 설정 표시</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> 남음</translation>

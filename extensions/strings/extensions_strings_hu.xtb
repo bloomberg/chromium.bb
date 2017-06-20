@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Szabálytalan útvonal (abszolút vagy relatív „..” taggal): „<ph name="IMAGE_PATH" />”</translation>
 <translation id="27822970480436970">A bővítmény nem tudta módosítani a hálózati lekérést, mivel a módosítás egy másik bővítménnyel ütközött.</translation>
 <translation id="2857834222104759979">A jegyzékfájl érvénytelen.</translation>
+<translation id="2903070246402204397">A(z) <ph name="EXTENSION_NAME" /> bővítményt (bővítményazonosító: <ph name="EXTENSION_ID" />) tiltja a rendszergazda. <ph name="ADMIN_INFO" />.</translation>
 <translation id="2988488679308982380">Nem sikerült a következő csomag telepítése: "<ph name="ERROR_CODE" />"</translation>
 <translation id="3115238746683532089">Ismeretlen termék (<ph name="PRODUCT_ID" />) <ph name="VENDOR_ID" /> szolgáltatótól (sorozatszám: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Ismeretlen termék (<ph name="PRODUCT_ID" />) a következő forgalmazótól: <ph name="VENDOR_ID" /></translation>

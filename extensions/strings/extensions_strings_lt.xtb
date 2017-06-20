@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Netinkamas kelias (absoliutus arba susijęs su „..“): „<ph name="IMAGE_PATH" />“</translation>
 <translation id="27822970480436970">Šiam plėtiniui nepavyko pakeisti tinklo užklausos, nes pakeitimas nesuderinamas su kitu plėtiniu.</translation>
 <translation id="2857834222104759979">Neteisingas deklaracijos failas.</translation>
+<translation id="2903070246402204397">„<ph name="EXTENSION_NAME" />“ (plėtinio ID „<ph name="EXTENSION_ID" />“) užblokavo administratorius. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Nepavyko įdiegti paketo: „<ph name="ERROR_CODE" />“</translation>
 <translation id="3115238746683532089">Nežinomas produktas „<ph name="PRODUCT_ID" />“ iš teikėjo „<ph name="VENDOR_ID" />“ (serijos numeris: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Nežinomas produktas „<ph name="PRODUCT_ID" />“ iš teikėjo „<ph name="VENDOR_ID" />“</translation>

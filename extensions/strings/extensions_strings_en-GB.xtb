@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Illegal path (absolute or relative with '..'): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">This extension failed to modify a network request because the modification conflicted with another extension.</translation>
 <translation id="2857834222104759979">Manifest file is invalid.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is blocked by the administrator. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Could not install package: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089">Unknown product <ph name="PRODUCT_ID" /> from vendor <ph name="VENDOR_ID" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Unknown product <ph name="PRODUCT_ID" /> from vendor <ph name="VENDOR_ID" /></translation>

@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">ಕಾನೂನು ಬಾಹಿರ ಪಾಥ್ ('..' ರೊಂದಿಗೆ ಸಮಗ್ರ ಅಥವಾ ಸಂಬಂಧಿತ... ): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯನ್ನು ಮಾರ್ಪಡಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ ಏಕೆಂದರೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಮತ್ತೊಂದು ವಿಸ್ತರಣೆಯೊಂದಿಗೆ ಸಂಘರ್ಷಗೊಂಡಿದೆ.</translation>
 <translation id="2857834222104759979">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಮಾನ್ಯತೆ ಪಡೆದಿಲ್ಲ.</translation>
+<translation id="2903070246402204397">ನಿರ್ವಾಹಕರಿಂದ <ph name="EXTENSION_NAME" /> (ವಿಸ್ತರಣೆ ಐಡಿ "<ph name="EXTENSION_ID" />") ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">ಪ್ಯಾಕೇಜ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> ಮಾರಾಟಗಾರರಿಂದ <ph name="PRODUCT_ID" /> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ (ಕ್ರಮ ಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> ಮಾರಾಟಗಾರರಿಂದ <ph name="PRODUCT_ID" /> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ</translation>

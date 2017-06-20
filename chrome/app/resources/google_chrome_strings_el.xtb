@@ -11,6 +11,7 @@
 <translation id="127345590676626841">Το Chrome ενημερώνεται αυτόματα, προκειμένου να έχετε πάντα στη διάθεσή σας τη νεότερη έκδοση. Όταν ολοκληρωθεί αυτή η λήψη, θα γίνει επανεκκίνηση του Chrome και θα είστε έτοιμοι.</translation>
 <translation id="1302523850133262269">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chrome.</translation>
 <translation id="1350930993895295930">Το Chrome εντόπισε ασυνήθιστη συμπεριφορά</translation>
+<translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1393853151966637042">Λήψη βοήθειας σχετικά με τη χρήση του Chrome</translation>
 <translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και δοκιμάστε ξανά.</translation>
 <translation id="1434626383986940139">Εφαρμογές Chrome Canary</translation>
@@ -35,6 +36,7 @@
 <translation id="1773601347087397504">Λήψη βοήθειας σχετικά με τη χρήση του Chrome OS</translation>
 <translation id="1795405610103747296">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στο τηλέφωνό σας: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1818142563254268765">Δεν ήταν δυνατή η αυτόματη ενημέρωση του Chrome στην πιο πρόσφατη έκδοση, επομένως δεν θα μπορείτε να επωφεληθείτε από τις νέες δυνατότητες και τις επιδιορθώσεις ασφαλείας. Θα πρέπει να ενημερώσετε το Chrome.</translation>
+<translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Το Chrome δεν είναι ενημερωμένο</translation>
 <translation id="2063848847527508675">Για να εφαρμοστεί η ενημέρωση, πρέπει να γίνει επανεκκίνηση του Chrome OS.</translation>
 <translation id="2077129598763517140">Χρήση της επιτάχυνσης υλικού όταν είναι διαθέσιμη</translation>
@@ -112,6 +114,7 @@
 <translation id="4251615635259297716">Να συνδεθούν τα δεδομένα σας στο Chrome με αυτόν το λογαριασμό;</translation>
 <translation id="4251625577313994583">λήψη Chrome στο iPhone</translation>
 <translation id="4309555186815777032">(απαιτείται <ph name="BEGIN_BUTTON" />επανεκκίνηση<ph name="END_BUTTON" /> του Chrome)</translation>
+<translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">Αυτός ο υπολογιστής δεν θα λαμβάνει πλέον ενημερώσεις για το Google Chrome, επειδή αυτό το σύστημα Linux δεν υποστηρίζεται πλέον.</translation>
 <translation id="4407807842708586359">Λειτουργικό σύστημα Google Chrome</translation>
@@ -135,6 +138,7 @@
 <translation id="4921569541910214635">Μοιράζεστε έναν υπολογιστή; Τώρα μπορείτε να ρυθμίσετε το Chrome όπως ακριβώς σας αρέσει.</translation>
 <translation id="4953650215774548573">Ορίστε το Google Chrome ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="495931528404527476">Στο Chrome</translation>
+<translation id="4965682129423310439">Το Chrome εντόπισε επιβλαβές λογισμικό στον υπολογιστή σας. Το Chrome μπορεί να το καταργήσει και να επαναφέρει τις ρυθμίσεις σας ώστε το πρόγραμμα περιήγησης να λειτουργεί και πάλι κανονικά.</translation>
 <translation id="4987308747895123092">Κλείστε όλα τα παράθυρα του Google Chrome (περιλαμβανομένων όσων βρίσκονται σε λειτουργία Windows 8) και δοκιμάστε ξανά.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
@@ -180,6 +184,7 @@
 <translation id="61852838583753520">&amp;Ενημέρωση του Chrome OS</translation>
 <translation id="6235018212288296708">Εισερχόμενος κανόνας για το Google Chrome για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="6236285698028833233">Το Google Chrome έχει σταματήσει να ενημερώνεται και δεν υποστηρίζει πλέον αυτήν την έκδοση του λειτουργικού σας συστήματος.</translation>
+<translation id="6291089322031436445">Εφαρμογές Chrome Dev</translation>
 <translation id="6291549208091401781">Το Google Chrome είναι ήδη εγκατεστημένο για όλους τους χρήστες στον υπολογιστή σας.</translation>
 <translation id="6338556085225130112">Ενημέρωση Google Chrome</translation>
 <translation id="6368958679917195344">Το Chrome OS έγινε πραγματικότητα χάρη στην ύπαρξη πρόσθετων <ph name="BEGIN_LINK_CROS_OSS" />λογισμικών ανοικτού κώδικα<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -194,10 +199,13 @@
 <translation id="6626317981028933585">Δυστυχώς, οι ρυθμίσεις του Mozilla Firefox δεν είναι διαθέσιμες, ενώ εκτελείται αυτό το πρόγραμμα περιήγησης. Για να εισαγάγετε αυτές τις ρυθμίσεις στο Google Chrome, αποθηκεύστε την εργασία σας και κλείστε όλα τα παράθυρα του Firefox. Έπειτα, κάντε κλικ στο κουμπί "Συνέχεια".</translation>
 <translation id="6634887557811630702">Το Google Chrome έχει ενημερωθεί.</translation>
 <translation id="6676384891291319759">Πρόσβαση στο Διαδίκτυο</translation>
+<translation id="6697947395630195233">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο.</translation>
 <translation id="6757767188268205357">Δεν με ενδιαφέρει</translation>
 <translation id="683440813066116847">Εισερχόμενος κανόνας για το Google Chrome Canary για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="686561893457936865">Πάρτε το Chrome μαζί σας παντού</translation>
 <translation id="6883876366448858277">στέλνει μια λέξη και το συγκείμενό της στην Αναζήτηση Google και φέρνει ως αποτέλεσμα ορισμούς, εικόνες και άλλα αποτελέσματα αναζήτησης.</translation>
+<translation id="6885412569789873916">Εφαρμογές Chrome Beta</translation>
+<translation id="6967962315388095737">Εισερχόμενος κανόνας για το Google Chrome Beta για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="6970811910055250180">Ενημέρωση της συσκευής σας...</translation>
 <translation id="6982337800632491844">Το <ph name="DOMAIN" /> απαιτεί να διαβάσετε και να αποδεχτείτε τους ακόλουθους Όρους Παροχής Υπηρεσιών πριν από τη χρήση αυτής της συσκευής. Οι συγκεκριμένοι όροι δεν επεκτείνουν, τροποποιούν ή περιορίζουν τους όρους του Google Chrome OS.</translation>
 <translation id="6989339256997917931">Το Google Chrome έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
@@ -224,6 +232,7 @@
 <translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="7494905215383356681">Άδειες λογισμικού ανοικτού κώδικα του Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Με αυτή την ενέργεια θα διαγραφεί οριστικά τουλάχιστον 1$ στοιχείο από αυτή τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως $2.}other{Με αυτή την ενέργεια θα διαγραφούν οριστικά τουλάχιστον 1$ στοιχεία από αυτή τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως $2.}}</translation>
+<translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Να εμφανίζεται το Chrome OS σε αυτήν τη γλώσσα</translation>
 <translation id="7592736734348559088">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας επειδή τα στοιχεία σύνδεσης στο λογαριασμό σας δεν έχουν ενημερωθεί.</translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>
@@ -255,6 +264,7 @@
 <translation id="8439301513305169426">Το Chrome θα αποθηκεύσει αυτόν τον κωδικό πρόσβασης με το <ph name="SAVED_PASSWORD_LINK" />. Δεν χρειάζεται να τον απομνημονεύσετε.</translation>
 <translation id="8455999171311319804">Προαιρετικό: Συμβάλετε στη βελτίωση του Chrome OS στέλνοντας αυτόματα στην Google διαγνωστικά και δεδομένα χρήσης.</translation>
 <translation id="8478823064122749032">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας: <ph name="PHONE_NUMBER" />.</translation>
+<translation id="8521348052903287641">Εισερχόμενος κανόνας για το Google Chrome Dev για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Λειτουργία εκκίνησης εφαρμογών Chrome Canary</translation>
 <translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>

@@ -150,6 +150,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3638472932233958418">Précharger pages Web</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
+<translation id="3742082982782149146">L'URL du site a été copiée.</translation>
 <translation id="3771033907050503522">Ongl. navig. priv.</translation>
 <translation id="3783017676699494206">Enregistrer l'image</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -164,10 +165,12 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4038354071007134711">Aucune appli sur appareil ne peut ouvrir fichier.</translation>
 <translation id="4049507953662678203">Vérifiez si vous disposez bien d'une connexion réseau, puis réessayez.</translation>
 <translation id="411254640334432676">Échec du téléchargement.</translation>
+<translation id="4117350985506774529">Votre nom d'utilisateur a été copié.</translation>
 <translation id="4121993058175073134">Configurez compte mess. dans appli Paramètres pour envoyer données net-export.</translation>
 <translation id="4124987746317609294">Période</translation>
 <translation id="4172051516777682613">Toujours afficher</translation>
 <translation id="418156467088430727">Afficher version hors connexion dans nouvel onglet</translation>
+<translation id="4237682350741091554">Gérer la synchronisation et la personnalisation de Chrome dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Saisir la phrase secrète</translation>
 <translation id="4272631900155121838">Pour scanner un code QR, activez l'appareil photo depuis les paramètres</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
@@ -312,6 +315,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
 <translation id="7167621057293532233">Types de données</translation>
+<translation id="7175593937868963913">Rédiger un e-mail</translation>
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="722055596168483966">Personnaliser les services Google</translation>

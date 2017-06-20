@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
 <translation id="3738139272394829648">शोधण्यासाठी स्विच करा</translation>
+<translation id="3742082982782149146">साइट URL कॉपी करण्यात आली होती.</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
 <translation id="3783017676699494206">प्रतिमा जतन करा</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">या डिव्हाइसवरील कोणताही अनुप्रयोग फाईल उघडू शकत नाही.</translation>
 <translation id="4049507953662678203">आपल्याकडे नेटवर्क कनेक्शन आहे हे सुनिश्चित करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="411254640334432676">डाउनलोड अयशस्वी.</translation>
+<translation id="4117350985506774529">तुमचे वापरकर्ता नाव कॉपी करण्यात होते.</translation>
 <translation id="4121993058175073134">निव्वळ-निर्यात डेटा पाठविण्यासाठी, कृपया सेटिंग्ज अॅप मध्ये आपले ईमेल खाते कॉन्फिगर करा.</translation>
 <translation id="4124987746317609294">वेळ श्रेणी</translation>
 <translation id="4172051516777682613">नेहमी दर्शवा</translation>
 <translation id="418156467088430727">नवीन टॅबमध्‍ये ऑफलाइन आवृत्ती पहा</translation>
+<translation id="4237682350741091554">Chrome सिंक आणि वैयक्तिकरणाचे <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" />मधून व्यवस्थापन करा</translation>
 <translation id="424315890655130736">सांकेतिक वाक्यांश प्रविष्ट करा</translation>
 <translation id="4272631900155121838">QR कोड स्कॅन करण्‍यासाठी, सेटिंग्ज मधून कॅमेरा सक्षम करा</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
@@ -313,6 +316,7 @@
 <translation id="7136892417564438900">कॅमेरा अनुपलब्ध आहे</translation>
 <translation id="7159472599653637159">मोबाइल साइटची विनंती करा</translation>
 <translation id="7167621057293532233">डेटा प्रकार</translation>
+<translation id="7175593937868963913">ईमेल तयार करा</translation>
 <translation id="7189598951263744875">सामयिक करा...</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
 <translation id="722055596168483966">Google सेेव वैयक्तिकृत करा</translation>

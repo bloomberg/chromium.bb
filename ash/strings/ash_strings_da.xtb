@@ -47,6 +47,7 @@
 <translation id="225680501294068881">Søger efter enheder...</translation>
 <translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
 <translation id="2268813581635650749">Log alle ud</translation>
+<translation id="2292698582925480719">Visningsskala</translation>
 <translation id="2303600792989757991">Skift vinduesoversigt</translation>
 <translation id="2352467521400612932">Penneindstillinger</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
@@ -183,6 +184,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="6297287540776456956">Brug pennen til at vælge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tastaturoverlejring</translation>
+<translation id="6395038768903208085">Tilstanden Metalag</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Afvis</translation>
@@ -222,6 +224,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
+<translation id="7526573455193969409">Netværket kan være overvåget</translation>
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" />. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emojipalet</translation>
@@ -252,6 +255,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8433186206711564395">Netværksindstillinger</translation>
 <translation id="8433977262951327081">Genvejen til menuboblen med indtastningsmuligheder på hylden har ændret sig. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
+<translation id="847056008324733326">Indstillinger for visningsskala</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Genopretter forbindelsen...</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> tilbage</translation>

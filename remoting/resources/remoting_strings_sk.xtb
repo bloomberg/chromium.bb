@@ -112,6 +112,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="3649256019230929621">Minimalizovať okno</translation>
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Ako na to</translation>
+<translation id="3718805989288361841">V súvislosti s nastaveniami pravidiel pre Vzdialenú plochu Chrome sa vyskytla chyba. Požiadajte o pomoc správcu systému.</translation>
 <translation id="3776024066357219166">Vaša relácia Vzdialenej plochy Chrome bola ukončená.</translation>
 <translation id="3785447812627779171">Chromoting
 Hostiteľ</translation>
@@ -249,7 +250,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="7401733114166276557">Vzdialená plocha Chrome</translation>
 <translation id="7434397035092923453">Prístup bol odmietnutý klientskemu programu: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klient je pripojený: <ph name="CLIENT_USERNAME" />.</translation>
-<translation id="7589941250119944644">Vzdialenú plochu Chrome odteraz nájdete na novom mieste – na webe! Vyskúšajte túto <ph name="LINK_BEGIN" />webovú aplikáciu<ph name="LINK_END" /> – je rýchla, bezplatná a má všetky rovnaké funkcie ako predtým.</translation>
+<translation id="7589941250119944644">Vzdialenú plochu Chrome odteraz nájdete na novom mieste – na webe! Vyskúšajte túto <ph name="LINK_BEGIN" />webovú aplikáciu<ph name="LINK_END" /> – je rýchla, bezplatná a má rovnaké funkcie ako predtým.</translation>
 <translation id="7606912958770842224">Povoliť vzdialené pripojenia</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>

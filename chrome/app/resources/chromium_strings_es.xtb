@@ -169,6 +169,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="6403826409255603130">Chromium es un navegador web que ejecuta páginas web y aplicaciones a gran velocidad. Es rápido, estable y fácil de utilizar. Chromium te permite navegar en la Web de forma más segura, ya que incluye protección contra software malicioso y phishing.</translation>
 <translation id="6475912303565314141">También controla qué página se muestra al iniciar Chromium.</translation>
 <translation id="6485906693002546646">Estás utilizando <ph name="PROFILE_EMAIL" /> para sincronizar tu contenido de Chromium. Para actualizar tus preferencias de sincronización o utilizar Chromium sin una cuenta de Google, accede a <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6505742536731484931">Chromium necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="6526111688217511984">Chromium necesita acceso de almacenamiento para descargar archivos.</translation>
 <translation id="6584627348340620412">Las próximas versiones de Chromium (32 bits) dejarán de ser compatibles con este sistema Linux. Actualiza Chromium a la versión de 64 bits.</translation>
@@ -244,6 +245,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="8563206822260884157">Utiliza una contraseña segura generada por Chromium</translation>
 <translation id="85843667276690461">Obtener ayuda de Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Los creadores de Chromium. Todos los derechos reservados.</translation>
+<translation id="8590769996813453836">Chromium ha encontrado software dañino en tu ordenador. Chromium puede eliminarlo y restaurar tu configuración para que el navegador vuelva a funcionar con normalidad.</translation>
 <translation id="8621669128220841554">La instalación ha fallado debido a un error no especificado. Vuelve a descargar Chromium.</translation>
 <translation id="8628626585870903697">Chromium no incluye el visor de PDF que se necesita para que la vista previa de impresión funcione.</translation>
 <translation id="8667808506758191620">El dispositivo <ph name="DEVICE_TYPE" /> está actualizado.</translation>

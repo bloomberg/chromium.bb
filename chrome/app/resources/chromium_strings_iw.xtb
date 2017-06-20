@@ -165,6 +165,7 @@
 <translation id="6403826409255603130">‏Chromium הוא דפדפן אינטרנט המפעיל דפי אינטרנט ואפליקציות במהירות הבזק. זהו דפדפן מהיר, יציב וקל לשימוש. תוכל לגלוש באינטרנט בצורה מאובטחת יותר הודות להגנה מפני תוכנות זדוניות ודיוג המובנית ב-Chromium.</translation>
 <translation id="6475912303565314141">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chromium.</translation>
 <translation id="6485906693002546646">‏אתה משתמש ב-<ph name="PROFILE_EMAIL" /> כדי לסנכרן את הפריטים שלך ב-Chromium. עבור אל '<ph name="SETTINGS_LINK" />' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chromium ללא חשבון Google.</translation>
+<translation id="6505742536731484931">‏Chromium זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6510925080656968729">‏הסר את התקנת Chromium</translation>
 <translation id="6526111688217511984">‏לצורך הורדת קבצים, Chromium זקוק לגישה לאחסון.</translation>
 <translation id="6584627348340620412">‏גרסאות עתידיות של Chromium ב-32 סיביות לא יתמכו יותר במערכת Linux זו. שדרג ל-Chromium ב-64 סיביות.</translation>
@@ -239,6 +240,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8563206822260884157">‏השתמש בסיסמה חזקה שנוצרה על-ידי Chromium</translation>
 <translation id="85843667276690461">‏עזרה באמצעות Chromium</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
+<translation id="8590769996813453836">‏Chromium גילה תוכנה מזיקה במחשב. כדי להחזיר את הדפדפן לפעילות רגילה, Chromium יכול להסיר את התוכנה ולשחזר את ההגדרות שלך.</translation>
 <translation id="8621669128220841554">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Chromium.</translation>
 <translation id="8628626585870903697">‏Chromium אינו כולל מציג PDF, הנדרש להפעלת תצוגה מקדימה של הדפסה.</translation>
 <translation id="8667808506758191620">ה-<ph name="DEVICE_TYPE" /> שלך מעודכן.</translation>

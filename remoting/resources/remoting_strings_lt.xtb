@@ -64,7 +64,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="225614027745146050">Sveiki</translation>
 <translation id="228809120910082333">Kad leistumėte prieigą „Chrome“ nuotoliniu ryšiu, toliau patvirtinkite savo paskyrą ir PIN kodą.</translation>
 <translation id="2314101195544969792">Jūsų „<ph name="APPLICATION_NAME" />“ sesija buvo neaktyvi ir netrukus bus atjungta.</translation>
-<translation id="2317666076142640974">Išbandykite naująją <ph name="LINK_BEGIN" />„Chrome“ nuotolinio kompiuterio valdymo žiniatinklio programą<ph name="LINK_END" /> pirmieji. Džiaugtumės galėdami išgirsti jūsų atsiliepimus.</translation>
+<translation id="2317666076142640974">Išbandykite naująją <ph name="LINK_BEGIN" />„Chrome“ nuotolinio kompiuterio valdymo žiniatinklio programą<ph name="LINK_END" /> pirmieji. Džiaugtumės, jeigu gautume jūsų atsiliepimus.</translation>
 <translation id="2353140552984634198">Galite saugiai pasiekti kompiuterį naudodami „Chrome“ nuotolinį ryšį.</translation>
 <translation id="2359808026110333948">Tęsti</translation>
 <translation id="2366718077645204424">Neįmanoma pasiekti prieglobos. Taip greičiausiai nutiko dėl naudojamo tinklo konfigūracijos.</translation>
@@ -112,6 +112,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="3649256019230929621">Sumažinti langą</translation>
 <translation id="369442766917958684">Neprisijungus.</translation>
 <translation id="3695446226812920698">Sužinokite kaip</translation>
+<translation id="3718805989288361841">Įvyko „Chrome“ nuotolinio kompiuterio valdymo politikos nustatymų klaida. Kreipkitės pagalbos į sistemos administratorių.</translation>
 <translation id="3776024066357219166">Baigėsi „Chrome“ nuotolinio kompiuterio valdymo sesija.</translation>
 <translation id="3785447812627779171">„Chrome“ nuotolinio ryšio
 priegloba</translation>

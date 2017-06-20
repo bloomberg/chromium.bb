@@ -167,6 +167,7 @@
 <translation id="6403826409255603130">Chromium on veebibrauser, mis avab veebilehti ja rakendusi välgukiirusel. See on kiire, stabiilne ja hõlpsasti kasutatav. Sirvige veebi turvalisemalt tänu Chromiumi sisseehitatud pahavara- ja andmepüügikaitsele.</translation>
 <translation id="6475912303565314141">Lisaks juhib see seda, mis leht kuvatakse Chromiumi käivitamisel.</translation>
 <translation id="6485906693002546646">Kasutate Chromiumi kraami sünkroonimiseks kontot <ph name="PROFILE_EMAIL" />. Sünkroonimiseelistuste värskendamiseks või Chromiumi kasutamiseks ilma Google'i kontota avage <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6505742536731484931">Chromium vajab juurdepääsu teie asukohale, et seda selle saidiga jagada.</translation>
 <translation id="6510925080656968729">Desinstalli Chromium</translation>
 <translation id="6526111688217511984">Chromium vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
 <translation id="6584627348340620412">32-bitise Chromiumi tulevased versioonid ei toeta enam seda Linuxi süsteemi. Viige Chromium üle 64-bitisele versioonile.</translation>
@@ -241,6 +242,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="8563206822260884157">Kasutage Chromiumi loodud tugevat parooli</translation>
 <translation id="85843667276690461">Hangi abi Chromiumi kasutamise kohta</translation>
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR" /> The Chromium Authors. Kõik õigused on kaitstud.</translation>
+<translation id="8590769996813453836">Chromium leidis teie arvutist kahjulikku tarkvara. Chromium saab selle eemaldada ja teie seaded taastada, et brauser töötaks jälle normaalselt.</translation>
 <translation id="8621669128220841554">Installimine ebaõnnestus tundmatu vea tõttu. Laadige Chromium uuesti alla.</translation>
 <translation id="8628626585870903697">Chromium ei sisalda PDF-vaaturit, mida on printimise eelvaate jaoks vaja.</translation>
 <translation id="8667808506758191620">Teie <ph name="DEVICE_TYPE" /> on ajakohane.</translation>

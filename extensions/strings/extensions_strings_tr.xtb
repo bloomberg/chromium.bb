@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Geçersiz yol (mutlak veya '..' ile göreli): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">Bu uzantı, değişikliğin başka bir uzantıyla çakışması nedeniyle bir ağ isteğini değiştiremedi.</translation>
 <translation id="2857834222104759979">Bildiri dosyası geçersiz.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (uzantı kimliği "<ph name="EXTENSION_ID" />") yönetici tarafından engelleniyor. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Paket yüklenemedi: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> adlı satıcı firma tarafından sağlanan <ph name="PRODUCT_ID" /> ürün kimliğine sahip bilinmeyen ürün (seri numarası: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> adlı satıcı firma tarafından sağlanan <ph name="PRODUCT_ID" /> ürün kimliğine sahip bilinmeyen ürün</translation>

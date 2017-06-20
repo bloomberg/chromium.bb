@@ -112,6 +112,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3649256019230929621">Minimitza la finestra</translation>
 <translation id="369442766917958684">Sense connexió</translation>
 <translation id="3695446226812920698">Més informació</translation>
+<translation id="3718805989288361841">S'ha produït un error amb la configuració de la política de l'escriptori remot de Chrome. Contacta amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="3776024066357219166">La sessió de l'escriptori remot de Chrome ha finalitzat.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -249,7 +250,7 @@ remot de Chrome</translation>
 <translation id="7401733114166276557">Escriptori remot de Chrome</translation>
 <translation id="7434397035092923453">S'ha rebutjat l'accés del client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client connectat: <ph name="CLIENT_USERNAME" />.</translation>
-<translation id="7589941250119944644">Escriptori remot de Chrome es trasllada a un lloc nou al web. Prova la nostra <ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />; és ràpida i gratuïta, i té totes les funcions que tenia abans.</translation>
+<translation id="7589941250119944644">Escriptori remot de Chrome es trasllada al web. Prova la nostra <ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />; és ràpida i gratuïta, i té totes les funcions que tenia abans.</translation>
 <translation id="7606912958770842224">Activa les connexions remotes</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>

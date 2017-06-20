@@ -1,11 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
-<translation id="1007441141628883408">Mendayakan kemas kini komponen untuk semua komponen dalam <ph name="PRODUCT_NAME" /> apabila tidak ditetapkan atau ditetapkan kepada Benar.
-
-      Jika ditetapkan kepada Palsu, kemas kini kepada komponen akan dilumpuhkan. Walau bagaimanapun, sesetengah komponen dikecualikan daripada dasar ini: kemas kini kepada mana-mana komponen yang tidak mengandungi kod boleh laksana atau tidak mengubah gelagat penyemak imbas dengan ketara atau yang penting untuk keselamatannya tidak akan dilumpuhkan.
-
-Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan imbas selamat. </translation>
 <translation id="101438888985615157">Putar skrin 180 darjah</translation>
 <translation id="1017967144265860778">Pengurusan kuasa pada skrin log masuk</translation>
 <translation id="1019101089073227242">Tetapkan direktori data pengguna</translation>
@@ -509,15 +504,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Setiap masukan senarai menetapkan pengecam, yang digunakan secara dalaman untuk membezakan akaun setempat peranti.</translation>
 <translation id="2769952903507981510">Konfigurasi nama domain yang diperlukan untuk hos akses jauh</translation>
-<translation id="2785954641789149745">Mendayakan ciri Penyemakan Imbas Selamat <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
-
-      Jika anda mendayakan tetapan ini, Penyemakan Imbas Selamat akan sentiasa aktif.
-
-      Jika anda melumpuhkan tetapan ini, Penyemakan Imbas Selamat tidak akan aktif.
-
-      Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan "Dayakan perlindungan pancingan data dan perlindungan perisian hasad" dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan tetapi pengguna akan dapat mengubahnya.</translation>
 <translation id="2787173078141616821">Laporkan maklumat tentang status Android</translation>
 <translation id="2801230735743888564">Membolehkan pengguna bermain permainan telur easter dinosaur apabila peranti di luar talian.
 
@@ -530,9 +516,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika tetapan ini dilumpuhkan dan sambungan UDP keluar ditapis oleh firewall, maka mesin ini hanya akan membenarkan sambungan dari mesin pelanggan di dalam rangkaian setempat sahaja.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan.</translation>
-<translation id="2811293057593285123">Perkhidmatan Penyemakan Imbas Selamat memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang ditandakan sebagai berkemungkinan bersifat hasad. Tindakan mendayakan tetapan ini akan menghalang pengguna daripada tetap meneruskan dari halaman amaran ke tapak yang bersifat hasad.
-
-      Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk meneruskan ke tapak yang dibenderakan selepas amaran dipaparkan.</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
 <translation id="2844404652289407061">Mendayakan ketersediaan Sentuh untuk Cari dalam paparan kandungan <ph name="PRODUCT_NAME" />.
 
@@ -744,7 +727,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih sendiri tetapan proksi mereka.</translation>
 <translation id="3758249152301468420">Lumpuhkan Alatan Pembangun</translation>
 <translation id="3765260570442823273">Tempoh mesej amaran log keluar melahu</translation>
-<translation id="376931976323225993">Membolehkan anda menetapkan sama ada tapak web dibenarkan untuk menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik. Tindakan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik boleh dibenarkan atau ditolak untuk semua tapak web.
+<translation id="376931976323225993">Membolehkan anda menetapkan sama ada tapak web dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik. Tindakan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik boleh dibenarkan atau ditolak untuk semua tapak web.
 
           Klik untuk main membenarkan pemalam <ph name="FLASH_PLUGIN_NAME" /> dijalankan tetapi pengguna perlu mengklik pada pemegang tempat untuk memulakan pelaksanaannya.
 
@@ -938,7 +921,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="4372704773119750918">Jangan benarkan pengguna perusahaan menjadi sebahagian daripada berbilang profil (utama atau kedua)</translation>
 <translation id="4377599627073874279">Benarkan semua tapak untuk menunjukkan semua imej</translation>
 <translation id="4389091865841123886">Konfigurasikan pembuktian jauh dengan mekanisme TPM.</translation>
-<translation id="4397469093966511008">Penetapan dasar ini kepada palsu akan menghentikan pengguna daripada memilih untuk menghantar beberapa maklumat sistem dan kandungan halaman kepada pelayan Google. Jika tetapan ini benar atau tidak dikonfigurasikan, maka pengguna akan dibenarkan menghantar beberapa maklumat sistem dan kandungan halaman kepada Penyemakan Imbas Selamat untuk mengesan apl dan tapak yang berbahaya.</translation>
 <translation id="4418726081189202489">Apabila dasar ini ditetapkan kepada palsu, dsaar ini akan menghentikan <ph name="PRODUCT_NAME" /> daripada menghantar sekali sekala pertanyaan kepada pelayan Google untuk mendapatkan cap masa yang tepat. Pertanyaan ini akan didayakan jika dasar ini ditetapkan kepada Benar atau tidak ditetapkan.</translation>
 <translation id="4423597592074154136">Menentukan tetapan proksi secara manual</translation>
 <translation id="4429220551923452215">Dayakan atau menyahdayakan pintasan apl pada bar penanda halaman.
@@ -1263,6 +1245,8 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika <ph name="PRODUCT_NAME" /> tidak berjaya memperoleh maklumat status pembatalan, sijil seperti itu akan dikendalikan sebagai dibatalkan ('gagal keras').
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> akan menggunakan tetapan semakan pembatalan dalam talian yang sedia ada.</translation>
+<translation id="572720239788271400">Mendayakan kemas kini komponen dalam <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Dayakan pembuatan salinan perayauan bagi data profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Import data borang autolengkap daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="5765780083710877561">Huraian:</translation>
 <translation id="5770738360657678870">Saluran Dev (mungkin tidak stabil)</translation>
@@ -1394,7 +1378,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika tidak, produk mungkin ditetapkan kepada salah satu nilai berikut: "sslv3", "tls1", "tls1.1" atau "tls1.2". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah daripada versi yang dinyatakan. Nilai yang tidak dikenali akan diabaikan.
 
       Ambil perhatian bahawa, "sslv3" ialah versi yang lebih awal daripada "tls1" walaupun nombornya tidak menggambarkan begitu.</translation>
-<translation id="6181608880636987460">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang tidak dibenarkan untuk menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
+<translation id="6181608880636987460">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang tidak dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultPluginsSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.</translation>
 <translation id="6190022522129724693">Tetapan pop muncul lalai</translation>
@@ -1491,6 +1475,7 @@ Jika anda menetapkan dasar ini, pengguna boleh mengatasi dasar sementara dengan 
 Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan apabila skrin log masuk mula-mula ditunjukkan. Pengguna boleh mendayakan atau melumpuhkan papan kekunci pada skrin pada bila-bila masa dan status pada skrin log masuk diteruskan antara pengguna.</translation>
 <translation id="6573305661369899995">Tetapkan sumber luaran sekatan URL</translation>
 <translation id="6598235178374410284">Imej avatar pengguna</translation>
+<translation id="6603004149426829878">Sentiasa hantar sebarang isyarat lokasi yang tersedia kepada pelayan semasa menyelesaikan zon waktu</translation>
 <translation id="6628646143828354685">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mendapatkan akses kepada peranti Bluetooth berhampiran. Akses boleh disekat sepenuhnya atau pengguna boleh ditanya setiap kali tapak web ingin mendapatkan akses kepada peranti Bluetooth berhampiran.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, '3' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
@@ -1521,7 +1506,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan, pencari pemalam akan diaktifkan.</translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
-<translation id="6757438632136860443">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan untuk menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
+<translation id="6757438632136860443">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultPluginsSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.</translation>
 <translation id="6766216162565713893">Benarkan tapak web meminta pengguna memberikan akses kepada peranti Bluetooth berhampiran</translation>
@@ -2165,5 +2150,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="922540222991413931">Konfigurasi sambungan, apl dan sumber pemasangan skrip pengguna</translation>
 <translation id="924557436754151212">Import kata laluan yang disimpan daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="930930237275114205">Tetapkan direktori data pengguna <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Mendayakan log masuk paksa untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Tetapkan saiz cache cakera</translation>
 </translationbundle>

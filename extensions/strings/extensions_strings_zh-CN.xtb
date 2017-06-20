@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">非法路径（具有“..”的绝对或相对路径）：“<ph name="IMAGE_PATH" />”</translation>
 <translation id="27822970480436970">此扩展程序无法修改网络请求，因为这一修改与其他扩展程序产生了冲突。</translation>
 <translation id="2857834222104759979">清单文件无效。</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" />（扩展程序 ID为“<ph name="EXTENSION_ID" />”）已被管理员阻止。<ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">无法安装程序包：“<ph name="ERROR_CODE" />”</translation>
 <translation id="3115238746683532089">来自供应商 <ph name="VENDOR_ID" /> 的未知产品 <ph name="PRODUCT_ID" />（序列号为 <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="3163201441334626963">来自供应商 <ph name="VENDOR_ID" /> 的未知产品 <ph name="PRODUCT_ID" /></translation>

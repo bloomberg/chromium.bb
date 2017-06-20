@@ -39,9 +39,10 @@
 <translation id="1227633850867390598">Скрыть значение</translation>
 <translation id="1228893227497259893">Неверный идентификатор объекта</translation>
 <translation id="1232569758102978740">Без имени</translation>
+<translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (данные синхронизируются)</translation>
 <translation id="1263231323834454256">Список для чтения</translation>
 <translation id="1264126396475825575"><ph name="CRASH_TIME" />: получен отчет о сбое (ещё не загружен или не отклонен)</translation>
-<translation id="1283919782143846010">Опасный контент заблокирован</translation>
+<translation id="1281526147609854549">Выдан <ph name="ISSUER" /></translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="129553762522093515">Недавно закрытые</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Удалите файлы cookie<ph name="END_LINK" />.</translation>
@@ -98,7 +99,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Обратитесь за помощью к системному администратору.</translation>
 <translation id="1740951997222943430">Недопустимый формат месяца.</translation>
-<translation id="1745358365027406341">Скачать позже</translation>
 <translation id="17513872634828108">Открытые вкладки</translation>
 <translation id="1753706481035618306">Номер страницы</translation>
 <translation id="1763864636252898013">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система устройства не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
@@ -164,6 +164,7 @@
 <translation id="2292556288342944218">Доступ в Интернет закрыт</translation>
 <translation id="230155334948463882">Добавить карту?</translation>
 <translation id="2317259163369394535">Для доступа к домену <ph name="DOMAIN" /> необходимо указать имя пользователя и пароль.</translation>
+<translation id="2337852623177822836">Эта настройка управляется администратором</translation>
 <translation id="2354001756790975382">Другие закладки</translation>
 <translation id="2354430244986887761">Система Безопасного просмотра Google недавно <ph name="BEGIN_LINK" />обнаружила вредоносные приложения<ph name="END_LINK" /> на сайте <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Злоумышленники могут видеть изображения, которые видны вам, и изменять их в целях мошенничества.</translation>
@@ -229,6 +230,7 @@
 <translation id="2824775600643448204">Адресная строка и строка поиска</translation>
 <translation id="2826760142808435982">Соединение зашифровано и проверено с помощью <ph name="CIPHER" />. В качестве механизма обмена ключами используется <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Очистить форму</translation>
+<translation id="2856444702002559011">Злоумышленники могут пытаться похитить ваши данные с сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (например, пароли, сообщения или номера банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2889159643044928134">Не обновлять</translation>
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
 <translation id="2916038427272391327">Закройте другие программы.</translation>
@@ -245,6 +247,7 @@
 <translation id="2985398929374701810">Укажите действительный адрес.</translation>
 <translation id="2986368408720340940">Этот способ выдачи недоступен. Выберите другой.</translation>
 <translation id="2991174974383378012">Доступ веб-сайтов</translation>
+<translation id="2991571918955627853">Веб-сайт <ph name="SITE" /> использует механизм HSTS. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="3005723025932146533">Открыть сохраненную копию</translation>
 <translation id="3008447029300691911">Введите CVC-код карты <ph name="CREDIT_CARD" />. После этого ее данные будут переданы сайту.</translation>
 <translation id="3010559122411665027">Элемент списка "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -273,6 +276,7 @@
           задать верные параметры. В противном случае^
           <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3200379322500587640">Откройте страницу в режиме инкогнито.</translation>
+<translation id="320323717674993345">Отменить оплату</translation>
 <translation id="3207960819495026254">Добавлено в закладки</translation>
 <translation id="3225919329040284222">Сертификат не соответствует встроенным параметрам определенных сайтов с высоким уровнем безопасности.</translation>
 <translation id="3226128629678568754">Чтобы повторно ввести данные, необходимые для загрузки страницы, нажмите "Обновить".</translation>
@@ -324,9 +328,13 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{Как минимум 1 запись на синхронизируемых устройствах}=1{1 запись (не считая данных на синхронизируемых устройствах)}one{# запись (не считая данных на синхронизируемых устройствах)}few{# записи (не считая данных на синхронизируемых устройствах)}many{# записей (не считая данных на синхронизируемых устройствах)}other{# записей (не считая данных на синхронизируемых устройствах)}}</translation>
 <translation id="3539171420378717834">Хранить данные карты на этом устройстве</translation>
 <translation id="3542684924769048008">Использовать пароль для:</translation>
+<translation id="3545341443414427877">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">Шифровать все синхронизированные данные с помощью кодовой фразы</translation>
 <translation id="3556433843310711081">Для разблокировки обратитесь к администратору.</translation>
 <translation id="3566021033012934673">Ваше подключение не защищено</translation>
+<translation id="3569145463236695319">&lt;p&gt;Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
+
+      &lt;p&gt;Установите точную дату и время. Для этого откройте раздел &lt;strong&gt;Основные&lt;/strong&gt; в приложении &lt;strong&gt;Настройки&lt;/strong&gt;.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3582930987043644930">Добавьте имя</translation>
 <translation id="3583757800736429874">&amp;Повторить перемещение</translation>
@@ -355,6 +363,7 @@
 <translation id="3736520371357197498">Если вы готовы подвергнуть риску ваши личные данные, вы можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносного ПО.</translation>
 <translation id="3739623965217189342">Скопированная ссылка</translation>
 <translation id="3744899669254331632">Перейти на сайт <ph name="SITE" /> невозможно, так как его идентификационные данные зашифрованы, и Chrome не может их обработать. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
+<translation id="3748148204939282805">Посещение сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может привести к установке вредоносного ПО или хищению личной информации (например, паролей, телефонных номеров и данных банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Сбой при переводе вследствие ошибки сервера.</translation>
 <translation id="3759461132968374835">Нет записей о недавних сбоях. Сбои, которые произошли при отключенной функции записи сбоев, здесь не отображаются.</translation>
 <translation id="3778403066972421603">Хотите сохранить карту в аккаунте Google и на этом устройстве?</translation>
@@ -394,6 +403,7 @@
 <translation id="4117700440116928470">Область действия правил не поддерживается.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{ещё 1 вариант}one{ещё # вариант}few{ещё # варианта}many{ещё # вариантов}other{ещё # варианта}}</translation>
 <translation id="4130226655945681476">Проверьте сетевые кабели, модем и маршрутизатор.</translation>
+<translation id="413544239732274901">Подробнее...</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Использовать глобальный параметр по умолчанию (находить)</translation>
 <translation id="4165986682804962316">Настройки сайта</translation>
@@ -402,11 +412,14 @@
 <translation id="4196861286325780578">&amp;Повторить перемещение</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверьте настройки брандмауэра и антивирусного ПО<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Завершение работы программы</translation>
+<translation id="422022731706691852">Посещение сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может привести к установке вредоносного ПО, которое будет мешать вашей работе в браузере (например, менять стартовую страницу или показывать дополнительную рекламу на сайтах). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Выполните диагностику сети<ph name="END_LINK" />.</translation>
+<translation id="4235360514405112390">Действительный</translation>
 <translation id="4250431568374086873">Подключение к сайту защищено не полностью</translation>
 <translation id="4250680216510889253">Нет</translation>
 <translation id="425582637250725228">Возможно, внесенные изменения не сохранятся.</translation>
 <translation id="4258748452823770588">Подпись недействительна</translation>
+<translation id="4265872034478892965">Разрешено администратором</translation>
 <translation id="4269787794583293679">(Не указано)</translation>
 <translation id="4275830172053184480">Перезапуск устройства</translation>
 <translation id="4280429058323657511">, действует до <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -463,10 +476,10 @@
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4854362297993841467">Этот способ доставки недоступен. Выберите другой.</translation>
 <translation id="4858792381671956233">Запрос на просмотр сайта отправлен вашим родителям</translation>
-<translation id="4863764087567530506">Посещение этой страницы может привести к установке вредоносной программы или хищению вашей личной информации. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
 <translation id="4880827082731008257">Искать в истории</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{и ещё 1 веб-страница}one{и ещё # веб-страница}few{и ещё # веб-страницы}many{и ещё # веб-страниц}other{и ещё # веб-страницы}}</translation>
+<translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Платеж</translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
@@ -497,7 +510,6 @@
 <translation id="5171045022955879922">Введите запрос или URL</translation>
 <translation id="5172758083709347301">Локальный компьютер</translation>
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE" />? Сообщите об ошибке</translation>
-<translation id="5181140330217080051">Скачивается</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5199729219167945352">Экспериментальные функции</translation>
 <translation id="5205222826937269299">Введите имя или название</translation>
@@ -509,6 +521,7 @@
 <translation id="5308689395849655368">Отчеты о сбоях отключены.</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5327248766486351172">Название</translation>
+<translation id="5355557959165512791">Сертификат веб-сайта <ph name="SITE" /> отозван. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="536296301121032821">Не удалось сохранить настройки политики</translation>
 <translation id="5386426401304769735">В цепочке сертификатов этого сайта есть сертификат, подписанный с помощью алгоритма SHA-1.</translation>
 <translation id="5402410679244714488">Срок действия: <ph name="EXPIRATION_DATE_ABBR" />, использовалась более года назад</translation>
@@ -546,12 +559,12 @@
 <translation id="5622887735448669177">Покинуть эту страницу?</translation>
 <translation id="5629630648637658800">Не удалось применить настройки политики</translation>
 <translation id="5631439013527180824">Токен устройства недействителен</translation>
+<translation id="5633066919399395251">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может установить на ваш компьютер вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="5646376287012673985">Местоположение</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5669703222995421982">Получение персонализированного контента</translation>
 <translation id="5675650730144413517">Страница недоступна</translation>
 <translation id="5710435578057952990">Идентификационные данные этого сайта не проверены.</translation>
-<translation id="5713016350996637505">Мошеннический контент заблокирован</translation>
 <translation id="5720705177508910913">Текущий пользователь</translation>
 <translation id="5732392974455271431">Для разблокировки обратитесь к родителям.</translation>
 <translation id="5763042198335101085">Укажите действительный адрес электронной почты.</translation>
@@ -568,6 +581,7 @@
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5872918882028971132">Подсказки для родительских элементов</translation>
 <translation id="5901630391730855834">Желтый</translation>
+<translation id="5908541034548427511"><ph name="TYPE_1" /> (данные синхронизируются)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Используется 1 файл cookie}one{Используется # файл cookie}few{Используется # файла cookie}many{Используется # файлов cookie}other{Используется # файла cookie}}</translation>
 <translation id="5959728338436674663">Автоматически отправлять <ph name="BEGIN_WHITEPAPER_LINK" />системную информацию и контент страниц<ph name="END_WHITEPAPER_LINK" /> в Google, чтобы улучшить распознавание опасных приложений и сайтов. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967867314010545767">Удалить из истории</translation>
@@ -579,10 +593,12 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}one{Страница #}few{Страница #}many{Страница #}other{Страница #}}</translation>
 <translation id="6017514345406065928">Зеленый</translation>
 <translation id="6017850046339264347">Злоумышленники могут использовать сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, чтобы установить вредоносные приложения, маскирующиеся под безопасные программы или собирающие данные, по которым вас можно отследить. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (данные синхронизируются)</translation>
 <translation id="6027201098523975773">Введите имя.</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6042308850641462728">Подробнее...</translation>
-<translation id="6047233362582046994">Если вы готовы подвергнуть риску свои личные данные, то можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносных приложений.</translation>
+<translation id="6047233362582046994">Если вы осознаете, что можете подвергнуть риску свои личные данные, то можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносных приложений.</translation>
+<translation id="6051221802930200923">Веб-сайт <ph name="SITE" /> использует механизм Certificate Pinning, поэтому на нем могла произойти подмена сертификата. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="6060685159320643512">Будьте осторожны при работе с экспериментальной версией</translation>
 <translation id="6080696365213338172">Вы используете сертификат, предоставленный администратором, поэтому он может заблокировать передачу данных на сайт <ph name="DOMAIN" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Нет}=1{1 синхронизированный пароль}one{# синхронизированный пароль}few{# синхронизированных пароля}many{# синхронизированных паролей}other{# синхронизированного пароля}}</translation>
@@ -591,6 +607,7 @@
 <translation id="614940544461990577">Попробуйте сделать следующее:</translation>
 <translation id="6151417162996330722">Слишком долгий срок действия сертификата, предоставленного сервером.</translation>
 <translation id="6157877588268064908">Выберите адрес, чтобы посмотреть способы и условия доставки.</translation>
+<translation id="6158003235852588289">Система Google по проверке безопасности недавно обнаружила попытку фишинга на сайте <ph name="SITE" />. Будьте внимательны: мошенники часто создают веб-страницы, похожие на знакомые вам сайты.</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
 <translation id="6169916984152623906">Ваши действия в режиме инкогнито будут недоступны другим пользователям этого устройства. Однако закладки и скачанные файлы сохранятся.</translation>
 <translation id="6177128806592000436">Подключение к сайту не защищено</translation>
@@ -641,11 +658,11 @@
 <translation id="6556915248009097796">Срок действия: <ph name="EXPIRATION_DATE_ABBR" />, последний раз использовалась <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Ещё не одобрено администратором</translation>
 <translation id="6569060085658103619">Вы просматриваете страницу расширения</translation>
-<translation id="657639383826808334">Посещение этой страницы может привести к установке опасной программы, которая похищает или удаляет данные. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
 <translation id="6596325263575161958">Параметры шифрования</translation>
 <translation id="662080504995468778">Остаться</translation>
 <translation id="6626291197371920147">Введите номер действующей карты</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE" /></translation>
+<translation id="6630809736994426279">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может установить на ваш компьютер Mac вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">Правило устарело.</translation>
 <translation id="6671697161687535275">Удалить подсказку из Chromium?</translation>
 <translation id="6685834062052613830">Выйдите из аккаунта и завершите настройку</translation>
@@ -660,6 +677,7 @@
 <translation id="6810899417690483278">Идентификатор персонализации</translation>
 <translation id="6820686453637990663">Код CVC</translation>
 <translation id="6824266427216888781">Не удалось загрузить данные регионов</translation>
+<translation id="6825578344716086703">Вы пытаетесь обратиться к серверу в домене <ph name="DOMAIN" />, но его сертификат подписан с помощью ненадежного алгоритма (например, SHA-1). Это означает, что учетные данные безопасности и сам сервер могут оказаться поддельными. Возможно, вы имеете дело со злоумышленниками.</translation>
 <translation id="6830728435402077660">Не защищено</translation>
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="6839929833149231406">Административный район</translation>
@@ -685,6 +703,7 @@
 <translation id="7079718277001814089">Этот сайт содержит вредоносное ПО</translation>
 <translation id="7087282848513945231">Графство</translation>
 <translation id="7090678807593890770">Выполните поиск по запросу <ph name="LINK" /> в Google</translation>
+<translation id="7108819624672055576">Разрешено расширением</translation>
 <translation id="7119414471315195487">Закройте другие вкладки и программы.</translation>
 <translation id="7129409597930077180">Невозможно отправить заказ по этому адресу. Выберите другой вариант.</translation>
 <translation id="7138472120740807366">Способ доставки</translation>
@@ -754,6 +773,7 @@
 <translation id="7637571805876720304">Удалить кредитную карту из Chromium?</translation>
 <translation id="765676359832457558">Скрыть дополнительные настройки</translation>
 <translation id="7658239707568436148">Отмена</translation>
+<translation id="7662298039739062396">Эта настройка управляется расширением</translation>
 <translation id="7667346355482952095">Возвращенный токен пуст или не соответствует имеющемуся</translation>
 <translation id="7668654391829183341">Неизвестное устройство</translation>
 <translation id="7669271284792375604">Посещение этого сайта может привести к установке вредоносного ПО, которое будет мешать работе браузера (например, меняя стартовую страницу или показывая дополнительную рекламу на сайтах).</translation>
@@ -762,6 +782,7 @@
 <translation id="7701040980221191251">Нет</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Перейти на сайт <ph name="SITE" /> (небезопасно)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Сертификат</translation>
+<translation id="7716147886133743102">Заблокировано администратором</translation>
 <translation id="7716424297397655342">Не удалось загрузить сайт из кеша</translation>
 <translation id="7752995774971033316">Не управляется</translation>
 <translation id="7755287808199759310">Для разблокировки обратитесь к родителю.</translation>
@@ -820,6 +841,7 @@
 <translation id="8289355894181816810">Уточните информацию у администратора сети.</translation>
 <translation id="8293206222192510085">Добавление закладки</translation>
 <translation id="8294431847097064396">Источник</translation>
+<translation id="8306404619377842860">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">Перевод не завершен из-за проблем с сетевым подключением.</translation>
 <translation id="8332188693563227489">Доступ к <ph name="HOST_NAME" /> запрещен</translation>
 <translation id="834457929814110454">Если вы готовы подвергнуть риску ваши личные данные, вы можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносного ПО.</translation>
@@ -883,6 +905,7 @@
 <translation id="9001074447101275817">Для доступа на прокси-сервер <ph name="DOMAIN" /> требуется указать имя пользователя и пароль.</translation>
 <translation id="9005998258318286617">Не удалось загрузить PDF-документ.</translation>
 <translation id="901974403500617787">Системные флаги может устанавливать только владелец (<ph name="OWNER_EMAIL" />).</translation>
+<translation id="9020200922353704812">Необходимо указать платежный адрес карты</translation>
 <translation id="9020542370529661692">Эта страница переведена на <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="9035022520814077154">Ошибка безопасности</translation>
 <translation id="9038649477754266430">Использовать подсказки для ускорения загрузки страниц</translation>
@@ -891,6 +914,7 @@
 <translation id="9050666287014529139">Кодовая фраза</translation>
 <translation id="9065203028668620118">Изменить</translation>
 <translation id="9068849894565669697">Выберите цвет</translation>
+<translation id="9069693763241529744">Заблокировано расширением</translation>
 <translation id="9076283476770535406">Может содержать контент для взрослых</translation>
 <translation id="9078964945751709336">Информации недостаточно</translation>
 <translation id="9103872766612412690">На сайте <ph name="SITE" /> для защиты ваших данных обычно используется шифрование. Однако учетные данные, которые мы получили от сайта <ph name="SITE" /> сейчас, отличаются от тех, которые он отправляет обычно. Вероятно, вредоносный сайт пытается выдать себя за <ph name="SITE" />, либо страница подключения к сети Wi-Fi прервала соединение. Ваша информация по-прежнему в безопасности, так как браузер Chromium разорвал соединение до того, как произошел обмен данными.</translation>
@@ -914,4 +938,5 @@
 <translation id="969892804517981540">Официальная сборка</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Нет}=1{1 запись}one{# запись}few{# записи}many{# записей}other{# записи}}</translation>
 <translation id="988159990683914416">Сборка для разработчиков</translation>
+<translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>
