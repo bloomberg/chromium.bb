@@ -16,7 +16,7 @@
 #include "base/observer_list.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "components/exo/compositor_frame_sink_holder.h"
+#include "components/exo/layer_tree_frame_sink_holder.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
@@ -70,8 +70,8 @@ class Surface : public ui::ContextFactoryObserver,
 
   cc::SurfaceId GetSurfaceId() const;
 
-  CompositorFrameSinkHolder* compositor_frame_sink_holder() {
-    return compositor_frame_sink_holder_.get();
+  LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder() {
+    return layer_tree_frame_sink_holder_.get();
   }
 
   // Set a buffer as the content of this surface. A buffer can only be attached
@@ -302,7 +302,7 @@ class Surface : public ui::ContextFactoryObserver,
   // The device scale factor sent in CompositorFrames.
   float device_scale_factor_ = 1.0f;
 
-  std::unique_ptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
+  std::unique_ptr<LayerTreeFrameSinkHolder> layer_tree_frame_sink_holder_;
 
   // The next resource id the buffer will be attached to.
   int next_resource_id_ = 1;

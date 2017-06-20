@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_sink.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"

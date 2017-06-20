@@ -9,7 +9,7 @@
 #include "cc/paint/paint_image.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
-#include "cc/test/test_compositor_frame_sink.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -69,7 +69,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
   }
 
  protected:
-  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
@@ -78,7 +78,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     modified_renderer_settings.force_antialiasing = force_antialiasing_;
     modified_renderer_settings.force_blending_with_shaders =
         force_blending_with_shaders_;
-    return LayerTreeHostPixelResourceTest::CreateCompositorFrameSink(
+    return LayerTreeHostPixelResourceTest::CreateLayerTreeFrameSink(
         modified_renderer_settings, refresh_rate, compositor_context_provider,
         worker_context_provider);
   }

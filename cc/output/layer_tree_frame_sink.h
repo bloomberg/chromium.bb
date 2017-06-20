@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_COMPOSITOR_FRAME_SINK_H_
-#define CC_OUTPUT_COMPOSITOR_FRAME_SINK_H_
+#ifndef CC_OUTPUT_LAYER_TREE_FRAME_SINK_H_
+#define CC_OUTPUT_LAYER_TREE_FRAME_SINK_H_
 
 #include <deque>
 #include <memory>
@@ -27,17 +27,17 @@ namespace cc {
 
 struct BeginFrameAck;
 class CompositorFrame;
-class CompositorFrameSinkClient;
+class LayerTreeFrameSinkClient;
 class LocalSurfaceId;
 class SharedBitmapManager;
 
 // An interface for submitting CompositorFrames to a display compositor
-// which will compose frames from multiple CompositorFrameSinks to show
-// on screen to the user.
+// which will compose frames from multiple clients to show on screen to the
+// user.
 // If a context_provider() is present, frames should be submitted with
 // OpenGL resources (created with the context_provider()). If not, then
 // SharedBitmap resources should be used.
-class CC_EXPORT CompositorFrameSink {
+class CC_EXPORT LayerTreeFrameSink {
  public:
   struct Capabilities {
     Capabilities() = default;
@@ -56,33 +56,33 @@ class CC_EXPORT CompositorFrameSink {
 
   // Constructor for GL-based and/or software resources.
   // gpu_memory_buffer_manager and shared_bitmap_manager must outlive the
-  // CompositorFrameSink.
+  // LayerTreeFrameSink.
   // shared_bitmap_manager is optional (won't be used) if context_provider is
   // present.
   // gpu_memory_buffer_manager is optional (won't be used) if context_provider
   // is not present.
-  CompositorFrameSink(scoped_refptr<ContextProvider> context_provider,
-                      scoped_refptr<ContextProvider> worker_context_provider,
-                      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                      SharedBitmapManager* shared_bitmap_manager);
+  LayerTreeFrameSink(scoped_refptr<ContextProvider> context_provider,
+                     scoped_refptr<ContextProvider> worker_context_provider,
+                     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                     SharedBitmapManager* shared_bitmap_manager);
 
   // Constructor for Vulkan-based resources.
-  explicit CompositorFrameSink(
+  explicit LayerTreeFrameSink(
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
 
-  virtual ~CompositorFrameSink();
+  virtual ~LayerTreeFrameSink();
 
   // Called by the compositor on the compositor thread. This is a place where
   // thread-specific data for the output surface can be initialized, since from
   // this point to when DetachFromClient() is called the output surface will
   // only be used on the compositor thread.
   // The caller should call DetachFromClient() on the same thread before
-  // destroying the CompositorFrameSink, even if this fails. And BindToClient
-  // should not be called twice for a given CompositorFrameSink.
-  virtual bool BindToClient(CompositorFrameSinkClient* client);
+  // destroying the LayerTreeFrameSink, even if this fails. And BindToClient
+  // should not be called twice for a given LayerTreeFrameSink.
+  virtual bool BindToClient(LayerTreeFrameSinkClient* client);
 
   // Must be called from the thread where BindToClient was called if
-  // BindToClient succeeded, after which the CompositorFrameSink may be
+  // BindToClient succeeded, after which the LayerTreeFrameSink may be
   // destroyed from any thread. This is a place where thread-specific data for
   // the object can be uninitialized.
   virtual void DetachFromClient();
@@ -107,14 +107,13 @@ class CC_EXPORT CompositorFrameSink {
     return shared_bitmap_manager_;
   }
 
-  // If supported, this sets the LocalSurfaceId the CompositorFrameSink will use
+  // If supported, this sets the LocalSurfaceId the LayerTreeFrameSink will use
   // to submit a CompositorFrame.
   virtual void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) {}
 
-  // Support for a pull-model where draws are requested by the output surface.
-  //
-  // CompositorFrameSink::Invalidate is called by the compositor to notify that
-  // there's new content.
+  // Support for a pull-model where draws are requested by the implementation of
+  // LayerTreeFrameSink. This is called by the compositor to notify that there's
+  // new content.
   virtual void Invalidate() {}
 
   // For successful swaps, the implementation must call
@@ -129,11 +128,11 @@ class CC_EXPORT CompositorFrameSink {
  protected:
   // Bound to the ContextProvider to hear about when it is lost and inform the
   // |client_|.
-  void DidLoseCompositorFrameSink();
+  void DidLoseLayerTreeFrameSink();
 
-  CompositorFrameSinkClient* client_ = nullptr;
+  LayerTreeFrameSinkClient* client_ = nullptr;
 
-  struct CompositorFrameSink::Capabilities capabilities_;
+  struct LayerTreeFrameSink::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
   scoped_refptr<ContextProvider> worker_context_provider_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
@@ -141,9 +140,9 @@ class CC_EXPORT CompositorFrameSink {
   SharedBitmapManager* shared_bitmap_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSink);
 };
 
 }  // namespace cc
 
-#endif  // CC_OUTPUT_COMPOSITOR_FRAME_SINK_H_
+#endif  // CC_OUTPUT_LAYER_TREE_FRAME_SINK_H_

@@ -48,8 +48,8 @@
 #include "cc/layers/viewport.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -196,7 +196,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     : client_(client),
       task_runner_provider_(task_runner_provider),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
-      compositor_frame_sink_(nullptr),
+      layer_tree_frame_sink_(nullptr),
       need_update_gpu_rasterization_status_(false),
       content_is_suitable_for_gpu_rasterization_(true),
       has_gpu_rasterization_trigger_(false),
@@ -237,7 +237,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       id_(id),
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
-      has_valid_compositor_frame_sink_(false),
+      has_valid_layer_tree_frame_sink_(false),
       mutator_(nullptr),
       scroll_animating_latched_node_id_(ScrollTree::kInvalidNodeId),
       has_scrolled_by_wheel_(false),
@@ -277,7 +277,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
                                      "cc::LayerTreeHostImpl", id_);
 
   // It is released before shutdown.
-  DCHECK(!compositor_frame_sink_);
+  DCHECK(!layer_tree_frame_sink_);
 
   DCHECK(!resource_provider_);
   DCHECK(!resource_pool_);
@@ -396,9 +396,9 @@ bool LayerTreeHostImpl::CanDraw() const {
   // client_->OnCanDrawStateChanged in the proper places and update the
   // NotifyIfCanDrawChanged test.
 
-  if (!compositor_frame_sink_) {
+  if (!layer_tree_frame_sink_) {
     TRACE_EVENT_INSTANT0("cc",
-                         "LayerTreeHostImpl::CanDraw no CompositorFrameSink",
+                         "LayerTreeHostImpl::CanDraw no LayerTreeFrameSink",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
@@ -727,7 +727,7 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
 DrawMode LayerTreeHostImpl::GetDrawMode() const {
   if (resourceless_software_draw_) {
     return DRAW_MODE_RESOURCELESS_SOFTWARE;
-  } else if (compositor_frame_sink_->context_provider()) {
+  } else if (layer_tree_frame_sink_->context_provider()) {
     return DRAW_MODE_HARDWARE;
   } else {
     return DRAW_MODE_SOFTWARE;
@@ -802,7 +802,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   bool hud_wants_to_draw_ = active_tree_->hud_layer() &&
                             active_tree_->hud_layer()->IsAnimatingHUDContents();
   bool must_always_swap =
-      compositor_frame_sink_->capabilities().must_always_swap;
+      layer_tree_frame_sink_->capabilities().must_always_swap;
   // When touch handle visibility changes there is no visible damage
   // because touch handles are composited in the browser. However we
   // still want the browser to be notified that the handles changed
@@ -1035,7 +1035,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // would be animating checkerboards, because failing under those conditions
   // triggers a new main frame, which may cause the copy request layer to be
   // destroyed.
-  // TODO(weiliangc): Test copy request w/ CompositorFrameSink recreation. Would
+  // TODO(weiliangc): Test copy request w/ LayerTreeFrameSink recreation. Would
   // trigger this DCHECK.
   DCHECK(!have_copy_request || draw_result == DRAW_SUCCESS);
 
@@ -1510,7 +1510,7 @@ void LayerTreeHostImpl::SetExternalTilePriorityConstraints(
     if (pending_tree_)
       pending_tree_->set_needs_update_draw_properties();
 
-    // Compositor, not CompositorFrameSink, is responsible for setting damage
+    // Compositor, not LayerTreeFrameSink, is responsible for setting damage
     // and triggering redraw for constraint changes.
     SetFullViewportDamage();
     SetNeedsRedraw();
@@ -1582,7 +1582,7 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
       client_->OnCanDrawStateChanged(CanDraw());
     }
 
-    client_->OnDrawForCompositorFrameSink(resourceless_software_draw_);
+    client_->OnDrawForLayerTreeFrameSink(resourceless_software_draw_);
   }
 
   if (resourceless_software_draw) {
@@ -1671,7 +1671,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   }
 
   fps_counter_->SaveTimeStamp(CurrentBeginFrameArgs().frame_time,
-                              !compositor_frame_sink_->context_provider());
+                              !layer_tree_frame_sink_->context_provider());
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
   memory_history_->SaveEntry(tile_manager_.memory_stats_from_last_assign());
@@ -1709,7 +1709,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
     active_tree_->hud_layer()->UpdateHudTexture(
         draw_mode, resource_provider_.get(),
-        compositor_frame_sink_->context_provider());
+        layer_tree_frame_sink_->context_provider());
   }
 
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
@@ -1752,10 +1752,10 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   // the LocalSurfaceId should hang off CompositorFrameMetadata.
   if (settings_.enable_surface_synchronization &&
       active_tree()->local_surface_id().is_valid()) {
-    compositor_frame_sink_->SetLocalSurfaceId(
+    layer_tree_frame_sink_->SetLocalSurfaceId(
         active_tree()->local_surface_id());
   }
-  compositor_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
+  layer_tree_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
 
   // Clears the list of swap promises after calling DidSwap on each of them to
   // signal that the swap is over.
@@ -1814,12 +1814,12 @@ void LayerTreeHostImpl::SetContentIsSuitableForGpuRasterization(bool flag) {
 }
 
 bool LayerTreeHostImpl::CanUseGpuRasterization() {
-  if (!(compositor_frame_sink_ && compositor_frame_sink_->context_provider() &&
-        compositor_frame_sink_->worker_context_provider()))
+  if (!(layer_tree_frame_sink_ && layer_tree_frame_sink_->context_provider() &&
+        layer_tree_frame_sink_->worker_context_provider()))
     return false;
 
   ContextProvider* context_provider =
-      compositor_frame_sink_->worker_context_provider();
+      layer_tree_frame_sink_->worker_context_provider();
   ContextProvider::ScopedContextLock scoped_context(context_provider);
   if (!context_provider->GrContext())
     return false;
@@ -1829,16 +1829,16 @@ bool LayerTreeHostImpl::CanUseGpuRasterization() {
 
 bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   // TODO(danakj): Can we avoid having this run when there's no
-  // CompositorFrameSink?
+  // LayerTreeFrameSink?
   // For now just early out and leave things unchanged, we'll come back here
-  // when we get an CompositorFrameSink.
-  if (!compositor_frame_sink_)
+  // when we get a LayerTreeFrameSink.
+  if (!layer_tree_frame_sink_)
     return false;
 
   int requested_msaa_samples = RequestedMSAASampleCount();
   int max_msaa_samples = 0;
   ContextProvider* compositor_context_provider =
-      compositor_frame_sink_->context_provider();
+      layer_tree_frame_sink_->context_provider();
   bool gpu_rasterization_enabled = false;
   if (compositor_context_provider) {
     const auto& caps = compositor_context_provider->ContextCapabilities();
@@ -1945,8 +1945,8 @@ void LayerTreeHostImpl::DidFinishImplFrame() {
 }
 
 void LayerTreeHostImpl::DidNotProduceFrame(const BeginFrameAck& ack) {
-  if (compositor_frame_sink_)
-    compositor_frame_sink_->DidNotProduceFrame(ack);
+  if (layer_tree_frame_sink_)
+    layer_tree_frame_sink_->DidNotProduceFrame(ack);
 }
 
 void LayerTreeHostImpl::UpdateViewportContainerSizes() {
@@ -1999,11 +1999,11 @@ void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
   single_thread_synchronous_task_graph_runner_->RunUntilIdle();
 }
 
-void LayerTreeHostImpl::DidLoseCompositorFrameSink() {
+void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
   if (resource_provider_)
     resource_provider_->DidLoseContextProvider();
-  has_valid_compositor_frame_sink_ = false;
-  client_->DidLoseCompositorFrameSinkOnImplThread();
+  has_valid_layer_tree_frame_sink_ = false;
+  client_->DidLoseLayerTreeFrameSinkOnImplThread();
 }
 
 bool LayerTreeHostImpl::HaveRootScrollLayer() const {
@@ -2268,7 +2268,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
 
   if (use_gpu_rasterization_) {
     image_decode_cache_ = base::MakeUnique<GpuImageDecodeCache>(
-        compositor_frame_sink_->worker_context_provider(),
+        layer_tree_frame_sink_->worker_context_provider(),
         settings_.preferred_tile_format,
         settings_.decoded_image_working_set_budget_bytes,
         settings_.decoded_image_cache_budget_bytes);
@@ -2307,7 +2307,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   CHECK(resource_provider_);
 
   ContextProvider* compositor_context_provider =
-      compositor_frame_sink_->context_provider();
+      layer_tree_frame_sink_->context_provider();
   if (!compositor_context_provider) {
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
@@ -2321,7 +2321,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   }
 
   ContextProvider* worker_context_provider =
-      compositor_frame_sink_->worker_context_provider();
+      layer_tree_frame_sink_->worker_context_provider();
   if (use_gpu_rasterization_) {
     DCHECK(worker_context_provider);
 
@@ -2443,26 +2443,26 @@ void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   // We've potentially just freed a large number of resources on our various
   // contexts. Flushing now helps ensure these are cleaned up quickly
   // preventing driver cache growth. See crbug.com/643251
-  if (compositor_frame_sink_) {
-    if (auto* compositor_context = compositor_frame_sink_->context_provider())
+  if (layer_tree_frame_sink_) {
+    if (auto* compositor_context = layer_tree_frame_sink_->context_provider())
       compositor_context->ContextGL()->ShallowFlushCHROMIUM();
     if (auto* worker_context =
-            compositor_frame_sink_->worker_context_provider()) {
+            layer_tree_frame_sink_->worker_context_provider()) {
       ContextProvider::ScopedContextLock hold(worker_context);
       worker_context->ContextGL()->ShallowFlushCHROMIUM();
     }
   }
 }
 
-void LayerTreeHostImpl::ReleaseCompositorFrameSink() {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::ReleaseCompositorFrameSink");
+void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::ReleaseLayerTreeFrameSink");
 
-  if (!compositor_frame_sink_) {
-    DCHECK(!has_valid_compositor_frame_sink_);
+  if (!layer_tree_frame_sink_) {
+    DCHECK(!has_valid_layer_tree_frame_sink_);
     return;
   }
 
-  has_valid_compositor_frame_sink_ = false;
+  has_valid_layer_tree_frame_sink_ = false;
 
   // Since we will create a new resource provider, we cannot continue to use
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
@@ -2473,27 +2473,27 @@ void LayerTreeHostImpl::ReleaseCompositorFrameSink() {
   CleanUpTileManagerAndUIResources();
   resource_provider_ = nullptr;
 
-  // Release any context visibility before we destroy the CompositorFrameSink.
+  // Release any context visibility before we destroy the LayerTreeFrameSink.
   SetContextVisibility(false);
 
-  // Detach from the old CompositorFrameSink and reset |compositor_frame_sink_|
+  // Detach from the old LayerTreeFrameSink and reset |layer_tree_frame_sink_|
   // pointer as this surface is going to be destroyed independent of if binding
-  // the new CompositorFrameSink succeeds or not.
-  compositor_frame_sink_->DetachFromClient();
-  compositor_frame_sink_ = nullptr;
+  // the new LayerTreeFrameSink succeeds or not.
+  layer_tree_frame_sink_->DetachFromClient();
+  layer_tree_frame_sink_ = nullptr;
 
-  // We don't know if the next CompositorFrameSink will support GPU
+  // We don't know if the next LayerTreeFrameSink will support GPU
   // rasterization. Make sure to clear the flag so that we force a
   // re-computation.
   use_gpu_rasterization_ = false;
 }
 
 bool LayerTreeHostImpl::InitializeRenderer(
-    CompositorFrameSink* compositor_frame_sink) {
+    LayerTreeFrameSink* layer_tree_frame_sink) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
 
-  ReleaseCompositorFrameSink();
-  if (!compositor_frame_sink->BindToClient(this)) {
+  ReleaseLayerTreeFrameSink();
+  if (!layer_tree_frame_sink->BindToClient(this)) {
     // Avoid recreating tree resources because we might not have enough
     // information to do this yet (eg. we don't have a TileManager at this
     // point).
@@ -2503,17 +2503,17 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // When using software compositing, change to the limits specified for it.
   // Since this is a one way trip, we don't need to worry about going back to
   // GPU compositing.
-  if (!compositor_frame_sink->context_provider())
+  if (!layer_tree_frame_sink->context_provider())
     SetMemoryPolicy(settings_.software_memory_policy);
 
-  compositor_frame_sink_ = compositor_frame_sink;
-  has_valid_compositor_frame_sink_ = true;
+  layer_tree_frame_sink_ = layer_tree_frame_sink;
+  has_valid_layer_tree_frame_sink_ = true;
   resource_provider_ = base::MakeUnique<ResourceProvider>(
-      compositor_frame_sink_->context_provider(),
-      compositor_frame_sink_->shared_bitmap_manager(),
-      compositor_frame_sink_->gpu_memory_buffer_manager(),
+      layer_tree_frame_sink_->context_provider(),
+      layer_tree_frame_sink_->shared_bitmap_manager(),
+      layer_tree_frame_sink_->gpu_memory_buffer_manager(),
       task_runner_provider_->blocking_main_thread_task_runner(),
-      compositor_frame_sink_->capabilities().delegated_sync_points_required,
+      layer_tree_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
 
@@ -2522,7 +2522,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // already.
   UpdateGpuRasterizationStatus();
 
-  // See note in LayerTreeImpl::UpdateDrawProperties, new CompositorFrameSink
+  // See note in LayerTreeImpl::UpdateDrawProperties, new LayerTreeFrameSink
   // means a new max texture size which affects draw properties. Also, if the
   // draw properties were up to date, layers still lost resources and we need to
   // UpdateDrawProperties() after calling RecreateTreeResources().
@@ -3937,7 +3937,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   if (id)
     DeleteUIResource(uid);
 
-  if (!has_valid_compositor_frame_sink_) {
+  if (!has_valid_layer_tree_frame_sink_) {
     evicted_ui_resources_.insert(uid);
     return;
   }
@@ -4023,7 +4023,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
   ResourceId id = ResourceIdForUIResource(uid);
   if (id) {
-    if (has_valid_compositor_frame_sink_)
+    if (has_valid_layer_tree_frame_sink_)
       resource_provider_->DeleteResource(id);
     ui_resource_map_.erase(uid);
   }
@@ -4272,13 +4272,13 @@ bool LayerTreeHostImpl::CommitToActiveTree() const {
 }
 
 void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
-  if (!compositor_frame_sink_)
+  if (!layer_tree_frame_sink_)
     return;
 
   // Update the compositor context. If we are already in the correct visibility
   // state, skip. This can happen if we transition invisible/visible rapidly,
   // before we get a chance to go invisible in NotifyAllTileTasksComplete.
-  auto* compositor_context = compositor_frame_sink_->context_provider();
+  auto* compositor_context = layer_tree_frame_sink_->context_provider();
   if (compositor_context && is_visible != !!compositor_context_visibility_) {
     if (is_visible) {
       compositor_context_visibility_ =
@@ -4292,7 +4292,7 @@ void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
   // Update the worker context. If we are already in the correct visibility
   // state, skip. This can happen if we transition invisible/visible rapidly,
   // before we get a chance to go invisible in NotifyAllTileTasksComplete.
-  auto* worker_context = compositor_frame_sink_->worker_context_provider();
+  auto* worker_context = layer_tree_frame_sink_->worker_context_provider();
   if (worker_context && is_visible != !!worker_context_visibility_) {
     ContextProvider::ScopedContextLock hold(worker_context);
     if (is_visible) {

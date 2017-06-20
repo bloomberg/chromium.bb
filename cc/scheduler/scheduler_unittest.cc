@@ -156,16 +156,16 @@ class FakeSchedulerClient : public SchedulerClient,
   void ScheduledActionActivateSyncTree() override {
     PushAction("ScheduledActionActivateSyncTree");
   }
-  void ScheduledActionBeginCompositorFrameSinkCreation() override {
-    PushAction("ScheduledActionBeginCompositorFrameSinkCreation");
+  void ScheduledActionBeginLayerTreeFrameSinkCreation() override {
+    PushAction("ScheduledActionBeginLayerTreeFrameSinkCreation");
   }
   void ScheduledActionPrepareTiles() override {
     PushAction("ScheduledActionPrepareTiles");
     scheduler_->WillPrepareTiles();
     scheduler_->DidPrepareTiles();
   }
-  void ScheduledActionInvalidateCompositorFrameSink() override {
-    actions_.push_back("ScheduledActionInvalidateCompositorFrameSink");
+  void ScheduledActionInvalidateLayerTreeFrameSink() override {
+    actions_.push_back("ScheduledActionInvalidateLayerTreeFrameSink");
     states_.push_back(scheduler_->AsValue());
   }
   void ScheduledActionPerformImplSideInvalidation() override {
@@ -301,14 +301,14 @@ class SchedulerTest : public testing::Test {
                       std::unique_ptr<FakeSchedulerClient> client) {
     client_ = std::move(client);
     CreateScheduler(bfs_type);
-    EXPECT_SCOPED(InitializeCompositorFrameSinkAndFirstCommit());
+    EXPECT_SCOPED(InitializeLayerTreeFrameSinkAndFirstCommit());
   }
 
   void SetUpScheduler(BeginFrameSourceType bfs_type) {
     SetUpScheduler(bfs_type, base::MakeUnique<FakeSchedulerClient>());
   }
 
-  void SetUpSchedulerWithNoCompositorFrameSink(BeginFrameSourceType bfs_type) {
+  void SetUpSchedulerWithNoLayerTreeFrameSink(BeginFrameSourceType bfs_type) {
     client_ = base::MakeUnique<FakeSchedulerClient>();
     CreateScheduler(bfs_type);
   }
@@ -319,10 +319,10 @@ class SchedulerTest : public testing::Test {
   // As this function contains EXPECT macros, to allow debugging it should be
   // called inside EXPECT_SCOPED like so;
   //   EXPECT_SCOPED(
-  //       client.InitializeCompositorFrameSinkAndFirstCommit(scheduler));
-  void InitializeCompositorFrameSinkAndFirstCommit() {
+  //       client.InitializeLayerTreeFrameSinkAndFirstCommit(scheduler));
+  void InitializeLayerTreeFrameSinkAndFirstCommit() {
     TRACE_EVENT0(
-        "cc", "SchedulerUnitTest::InitializeCompositorFrameSinkAndFirstCommit");
+        "cc", "SchedulerUnitTest::InitializeLayerTreeFrameSinkAndFirstCommit");
     DCHECK(scheduler_);
 
     // Check the client doesn't have any actions queued when calling this
@@ -330,15 +330,15 @@ class SchedulerTest : public testing::Test {
     EXPECT_NO_ACTION();
     EXPECT_FALSE(scheduler_->begin_frames_expected());
 
-    // Start the initial CompositorFrameSink creation.
+    // Start the initial LayerTreeFrameSink creation.
     scheduler_->SetVisible(true);
     scheduler_->SetCanDraw(true);
-    EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation");
+    EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
 
     client_->Reset();
 
     // We don't see anything happening until the first impl frame.
-    scheduler_->DidCreateAndInitializeCompositorFrameSink();
+    scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
     scheduler_->SetNeedsBeginMainFrame();
     EXPECT_TRUE(scheduler_->begin_frames_expected());
     EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -358,7 +358,7 @@ class SchedulerTest : public testing::Test {
       if (scheduler_settings_.using_synchronous_renderer_compositor) {
         scheduler_->SetNeedsRedraw();
         bool resourceless_software_draw = false;
-        scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+        scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
       } else {
         // Run the posted deadline task.
         EXPECT_TRUE(client_->IsInsideBeginImplFrame());
@@ -459,14 +459,14 @@ class SchedulerTest : public testing::Test {
   FakeCompositorTimingHistory* fake_compositor_timing_history_;
 };
 
-TEST_F(SchedulerTest, InitializeCompositorFrameSinkDoesNotBeginImplFrame) {
-  SetUpSchedulerWithNoCompositorFrameSink(EXTERNAL_BFS);
+TEST_F(SchedulerTest, InitializeLayerTreeFrameSinkDoesNotBeginImplFrame) {
+  SetUpSchedulerWithNoLayerTreeFrameSink(EXTERNAL_BFS);
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
 
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation");
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
   client_->Reset();
-  scheduler_->DidCreateAndInitializeCompositorFrameSink();
+  scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
   EXPECT_NO_ACTION();
 }
 
@@ -668,7 +668,7 @@ TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 
   // Because we just swapped, the Scheduler should also request the next
-  // BeginImplFrame from the CompositorFrameSink.
+  // BeginImplFrame from the LayerTreeFrameSink.
   EXPECT_TRUE(scheduler_->begin_frames_expected());
   client_->Reset();
   // Since another commit is needed, the next BeginImplFrame should initiate
@@ -1275,7 +1275,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
   EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
 }
 
-TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostCompositorFrameSink) {
+TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostLayerTreeFrameSink) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.commit_to_active_tree = true;
@@ -1305,13 +1305,13 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostCompositorFrameSink) {
   // There is no posted deadline.
   EXPECT_NO_ACTION();
 
-  // Scheduler loses CompositorFrameSink, and stops waiting for ready to draw
+  // Scheduler loses LayerTreeFrameSink, and stops waiting for ready to draw
   // signal.
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseLayerTreeFrameSink();
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation",
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation",
                  "RemoveObserver(this)");
 }
 
@@ -2204,22 +2204,22 @@ TEST_F(SchedulerTest, UnthrottledBeginFrames_IsDrawThrottled) {
 }
 
 TEST_F(SchedulerTest,
-       DidLoseCompositorFrameSinkAfterCompositorFrameSinkIsInitialized) {
-  SetUpSchedulerWithNoCompositorFrameSink(EXTERNAL_BFS);
+       DidLoseLayerTreeFrameSinkAfterLayerTreeFrameSinkIsInitialized) {
+  SetUpSchedulerWithNoLayerTreeFrameSink(EXTERNAL_BFS);
 
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
 
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation");
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
   client_->Reset();
-  scheduler_->DidCreateAndInitializeCompositorFrameSink();
+  scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
   EXPECT_NO_ACTION();
 
-  scheduler_->DidLoseCompositorFrameSink();
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation");
+  scheduler_->DidLoseLayerTreeFrameSink();
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
 }
 
-TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginFrameStarted) {
+TEST_F(SchedulerTest, DidLoseLayerTreeFrameSinkAfterBeginFrameStarted) {
   SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
@@ -2232,7 +2232,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginFrameStarted) {
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
 
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseLayerTreeFrameSink();
   // RemoveObserver(this) is not called until the end of the frame.
   EXPECT_NO_ACTION();
 
@@ -2243,12 +2243,12 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginFrameStarted) {
 
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation",
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation",
                  "RemoveObserver(this)");
 }
 
 TEST_F(SchedulerTest,
-       DidLoseCompositorFrameSinkAfterBeginFrameStartedWithHighLatency) {
+       DidLoseLayerTreeFrameSinkAfterBeginFrameStartedWithHighLatency) {
   SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
@@ -2261,7 +2261,7 @@ TEST_F(SchedulerTest,
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
 
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseLayerTreeFrameSink();
   // Do nothing when impl frame is in deadine pending state.
   EXPECT_NO_ACTION();
 
@@ -2269,7 +2269,7 @@ TEST_F(SchedulerTest,
   // Run posted deadline.
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  // OnBeginImplFrameDeadline didn't schedule CompositorFrameSink creation
+  // OnBeginImplFrameDeadline didn't schedule LayerTreeFrameSink creation
   // because
   // main frame is not yet completed.
   EXPECT_ACTIONS("RemoveObserver(this)");
@@ -2286,10 +2286,10 @@ TEST_F(SchedulerTest,
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_ACTIONS("ScheduledActionCommit", "ScheduledActionActivateSyncTree",
-                 "ScheduledActionBeginCompositorFrameSinkCreation");
+                 "ScheduledActionBeginLayerTreeFrameSinkCreation");
 }
 
-TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterReadyToCommit) {
+TEST_F(SchedulerTest, DidLoseLayerTreeFrameSinkAfterReadyToCommit) {
   SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
@@ -2307,18 +2307,18 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterReadyToCommit) {
   EXPECT_ACTIONS("ScheduledActionCommit");
 
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseLayerTreeFrameSink();
   // Sync tree should be forced to activate.
   EXPECT_ACTIONS("ScheduledActionActivateSyncTree");
 
   // RemoveObserver(this) is not called until the end of the frame.
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation",
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation",
                  "RemoveObserver(this)");
 }
 
-TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterSetNeedsPrepareTiles) {
+TEST_F(SchedulerTest, DidLoseLayerTreeFrameSinkAfterSetNeedsPrepareTiles) {
   SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsPrepareTiles();
@@ -2331,19 +2331,18 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterSetNeedsPrepareTiles) {
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
 
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseLayerTreeFrameSink();
   // RemoveObserver(this) is not called until the end of the frame.
   EXPECT_NO_ACTION();
 
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_ACTIONS("ScheduledActionPrepareTiles",
-                 "ScheduledActionBeginCompositorFrameSinkCreation",
+                 "ScheduledActionBeginLayerTreeFrameSinkCreation",
                  "RemoveObserver(this)");
 }
 
-TEST_F(SchedulerTest,
-       DidLoseCompositorFrameSinkWithDelayBasedBeginFrameSource) {
+TEST_F(SchedulerTest, DidLoseLayerTreeFrameSinkWithDelayBasedBeginFrameSource) {
   SetUpScheduler(THROTTLED_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
@@ -2371,18 +2370,18 @@ TEST_F(SchedulerTest,
   EXPECT_TRUE(scheduler_->begin_frames_expected());
 
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseLayerTreeFrameSink();
   // RemoveObserver(this) is not called until the end of the frame.
   EXPECT_NO_ACTION();
   EXPECT_TRUE(scheduler_->begin_frames_expected());
 
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation");
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
   EXPECT_FALSE(scheduler_->begin_frames_expected());
 }
 
-TEST_F(SchedulerTest, DidLoseCompositorFrameSinkWhenIdle) {
+TEST_F(SchedulerTest, DidLoseLayerTreeFrameSinkWhenIdle) {
   SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
@@ -2409,8 +2408,8 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkWhenIdle) {
 
   // Idle time between BeginFrames.
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation",
+  scheduler_->DidLoseLayerTreeFrameSink();
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation",
                  "RemoveObserver(this)");
 }
 
@@ -2645,13 +2644,13 @@ TEST_F(SchedulerTest, SwitchFrameSourceWhenNotObserving) {
   scheduler_->NotifyReadyToActivate();
   EXPECT_ACTIONS("ScheduledActionActivateSyncTree");
 
-  // Scheduler loses CompositorFrameSink, and stops waiting for ready to draw
+  // Scheduler loses LayerTreeFrameSink, and stops waiting for ready to draw
   // signal.
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseLayerTreeFrameSink();
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunPendingTasks();
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation",
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation",
                  "RemoveObserver(this)");
 
   // Changing begin frame source doesn't do anything.
@@ -2661,7 +2660,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceWhenNotObserving) {
   EXPECT_NO_ACTION();
 
   client_->Reset();
-  scheduler_->DidCreateAndInitializeCompositorFrameSink();
+  scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
   EXPECT_NO_ACTION();
 
   client_->Reset();
@@ -2779,14 +2778,14 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   // Next vsync.
   AdvanceFrame();
   EXPECT_ACTIONS("WillBeginImplFrame",
-                 "ScheduledActionInvalidateCompositorFrameSink");
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
   // Android onDraw. This doesn't consume the single begin frame request.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2798,13 +2797,13 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   // Next vsync.
   AdvanceFrame();
   EXPECT_ACTIONS("WillBeginImplFrame",
-                 "ScheduledActionInvalidateCompositorFrameSink");
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2822,7 +2821,7 @@ TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
 
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   EXPECT_ACTIONS("AddObserver(this)", "ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2918,7 +2917,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   // Next vsync.
   args = SendNextBeginFrame();
   EXPECT_ACTIONS("WillBeginImplFrame",
-                 "ScheduledActionInvalidateCompositorFrameSink");
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 
   // Not confirmed yet and no damage, since not drawn yet.
@@ -2934,7 +2933,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2982,7 +2981,7 @@ TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
 
   AdvanceFrame();
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame",
-                 "ScheduledActionInvalidateCompositorFrameSink");
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -3020,13 +3019,13 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   // Next vsync.
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTIONS("WillBeginImplFrame",
-                 "ScheduledActionInvalidateCompositorFrameSink");
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible",
                  "ScheduledActionPrepareTiles");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3035,7 +3034,7 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible",
                  "ScheduledActionPrepareTiles");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3061,13 +3060,13 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   // Next vsync.
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTIONS("WillBeginImplFrame",
-                 "ScheduledActionInvalidateCompositorFrameSink");
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -3090,12 +3089,12 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   // Next vsync.
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTIONS("WillBeginImplFrame",
-                 "ScheduledActionInvalidateCompositorFrameSink");
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -3115,7 +3114,7 @@ TEST_F(SchedulerTest, SynchronousCompositorResourcelessOnDrawWhenInvisible) {
 
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = true;
-  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
   // SynchronousCompositor has to draw regardless of visibility.
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3186,7 +3185,7 @@ TEST_F(SchedulerTest, ImplLatencyTakesPriority) {
   EXPECT_FALSE(scheduler_->ImplLatencyTakesPriority());
 }
 
-TEST_F(SchedulerTest, NoCompositorFrameSinkCreationWhileCommitPending) {
+TEST_F(SchedulerTest, NoLayerTreeFrameSinkCreationWhileCommitPending) {
   SetUpScheduler(THROTTLED_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
@@ -3195,13 +3194,13 @@ TEST_F(SchedulerTest, NoCompositorFrameSinkCreationWhileCommitPending) {
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
 
-  // Lose the CompositorFrameSink and trigger the deadline.
+  // Lose the LayerTreeFrameSink and trigger the deadline.
   client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseLayerTreeFrameSink();
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   EXPECT_NO_ACTION();
 
-  // The scheduler should not trigger the CompositorFrameSink creation till the
+  // The scheduler should not trigger the LayerTreeFrameSink creation till the
   // commit is aborted.
   task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3211,8 +3210,8 @@ TEST_F(SchedulerTest, NoCompositorFrameSinkCreationWhileCommitPending) {
   client_->Reset();
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks::Now());
   scheduler_->BeginMainFrameAborted(
-      CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST);
-  EXPECT_ACTIONS("ScheduledActionBeginCompositorFrameSinkCreation");
+      CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST);
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
 }
 
 TEST_F(SchedulerTest, ImplSideInvalidationsInDeadline) {

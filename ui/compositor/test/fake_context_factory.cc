@@ -8,10 +8,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_sink_client.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/test/fake_compositor_frame_sink.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
@@ -45,11 +45,11 @@ const cc::CompositorFrame& FakeContextFactory::GetLastCompositorFrame() const {
   return *frame_sink_->last_sent_frame();
 }
 
-void FakeContextFactory::CreateCompositorFrameSink(
+void FakeContextFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
-  auto frame_sink = cc::FakeCompositorFrameSink::Create3d();
+  auto frame_sink = cc::FakeLayerTreeFrameSink::Create3d();
   frame_sink_ = frame_sink.get();
-  compositor->SetCompositorFrameSink(std::move(frame_sink));
+  compositor->SetLayerTreeFrameSink(std::move(frame_sink));
 }
 
 scoped_refptr<cc::ContextProvider>

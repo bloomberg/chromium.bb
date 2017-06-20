@@ -15,7 +15,6 @@ class Vector2dF;
 }
 
 namespace cc {
-class CompositorFrameSink;
 struct BeginFrameArgs;
 
 class LayerTreeHostClient {
@@ -48,13 +47,13 @@ class LayerTreeHostClient {
   virtual void RecordWheelAndTouchScrollingCount(
       bool has_scrolled_by_wheel,
       bool has_scrolled_by_touch) = 0;
-  // Request an CompositorFrameSink from the client. When the client has one it
-  // should call LayerTreeHost::SetCompositorFrameSink.  This will result in
-  // either DidFailToInitializeCompositorFrameSink or
-  // DidInitializeCompositorFrameSink being called.
-  virtual void RequestNewCompositorFrameSink() = 0;
-  virtual void DidInitializeCompositorFrameSink() = 0;
-  virtual void DidFailToInitializeCompositorFrameSink() = 0;
+  // Request a LayerTreeFrameSink from the client. When the client has one it
+  // should call LayerTreeHost::SetLayerTreeFrameSink. This will result in
+  // either DidFailToInitializeLayerTreeFrameSink or
+  // DidInitializeLayerTreeFrameSink being called.
+  virtual void RequestNewLayerTreeFrameSink() = 0;
+  virtual void DidInitializeLayerTreeFrameSink() = 0;
+  virtual void DidFailToInitializeLayerTreeFrameSink() = 0;
   virtual void WillCommit() = 0;
   virtual void DidCommit() = 0;
   virtual void DidCommitAndDrawFrame() = 0;

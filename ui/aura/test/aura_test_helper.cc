@@ -11,7 +11,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
-#include "ui/aura/local/compositor_frame_sink_local.h"
+#include "ui/aura/local/layer_tree_frame_sink_local.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_port_mus.h"

@@ -32,6 +32,7 @@ namespace cc {
 class AnimationHost;
 class InputHandler;
 class Layer;
+class LayerTreeFrameSink;
 class LayerTreeHost;
 class MutatorHost;
 }
@@ -199,9 +200,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
                            float top_controls_delta) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
-  void RequestNewCompositorFrameSink() override;
-  void DidInitializeCompositorFrameSink() override;
-  void DidFailToInitializeCompositorFrameSink() override;
+  void RequestNewLayerTreeFrameSink() override;
+  void DidInitializeLayerTreeFrameSink() override;
+  void DidFailToInitializeLayerTreeFrameSink() override;
   void WillCommit() override;
   void DidCommit() override;
   void DidCommitAndDrawFrame() override;
@@ -212,12 +213,12 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // cc::LayerTreeHostSingleThreadClient implementation.
   void RequestScheduleAnimation() override;
   void DidSubmitCompositorFrame() override;
-  void DidLoseCompositorFrameSink() override;
+  void DidLoseLayerTreeFrameSink() override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
 
   enum {
-    COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK = 4,
-    MAX_COMPOSITOR_FRAME_SINK_RETRIES = 5,
+    LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK = 4,
+    MAX_LAYER_TREE_FRAME_SINK_RETRIES = 5,
   };
 
  protected:
@@ -229,8 +230,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
  private:
-  void SetCompositorFrameSink(
-      std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink);
+  void SetLayerTreeFrameSink(
+      std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
   void LayoutAndUpdateLayers();
   void InvokeLayoutAndPaintCallback();
   bool CompositeIsSynchronous() const;

@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "cc/base/switches.h"
-#include "components/viz/client/client_compositor_frame_sink.h"
+#include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/local_surface_id_provider.h"
 
 namespace content {
@@ -49,20 +49,20 @@ void RendererWindowTreeClient::Bind(
   binding_.Bind(std::move(request));
 }
 
-void RendererWindowTreeClient::RequestCompositorFrameSink(
+void RendererWindowTreeClient::RequestLayerTreeFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    const CompositorFrameSinkCallback& callback) {
-  DCHECK(pending_compositor_frame_sink_callback_.is_null());
+    const LayerTreeFrameSinkCallback& callback) {
+  DCHECK(pending_layer_tree_frame_sink_callback_.is_null());
   if (tree_) {
-    RequestCompositorFrameSinkInternal(std::move(context_provider),
-                                       gpu_memory_buffer_manager, callback);
+    RequestLayerTreeFrameSinkInternal(std::move(context_provider),
+                                      gpu_memory_buffer_manager, callback);
     return;
   }
 
   pending_context_provider_ = std::move(context_provider);
   pending_gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
-  pending_compositor_frame_sink_callback_ = callback;
+  pending_layer_tree_frame_sink_callback_ = callback;
 }
 
 RendererWindowTreeClient::RendererWindowTreeClient(int routing_id)
@@ -73,10 +73,10 @@ RendererWindowTreeClient::~RendererWindowTreeClient() {
   g_connections.Get().erase(routing_id_);
 }
 
-void RendererWindowTreeClient::RequestCompositorFrameSinkInternal(
+void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    const CompositorFrameSinkCallback& callback) {
+    const LayerTreeFrameSinkCallback& callback) {
   cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info;
   cc::mojom::MojoCompositorFrameSinkRequest sink_request =
       mojo::MakeRequest(&sink_info);
@@ -84,7 +84,7 @@ void RendererWindowTreeClient::RequestCompositorFrameSinkInternal(
   cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&client);
   constexpr bool enable_surface_synchronization = true;
-  auto frame_sink = base::MakeUnique<viz::ClientCompositorFrameSink>(
+  auto frame_sink = base::MakeUnique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), nullptr /* worker_context_provider */,
       gpu_memory_buffer_manager, nullptr /* shared_bitmap_manager */,
       nullptr /* synthetic_begin_frame_source */, std::move(sink_info),
@@ -110,13 +110,13 @@ void RendererWindowTreeClient::OnEmbed(
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   root_window_id_ = root->window_id;
   tree_ = std::move(tree);
-  if (!pending_compositor_frame_sink_callback_.is_null()) {
-    RequestCompositorFrameSinkInternal(std::move(pending_context_provider_),
-                                       pending_gpu_memory_buffer_manager_,
-                                       pending_compositor_frame_sink_callback_);
+  if (!pending_layer_tree_frame_sink_callback_.is_null()) {
+    RequestLayerTreeFrameSinkInternal(std::move(pending_context_provider_),
+                                      pending_gpu_memory_buffer_manager_,
+                                      pending_layer_tree_frame_sink_callback_);
     pending_context_provider_ = nullptr;
     pending_gpu_memory_buffer_manager_ = nullptr;
-    pending_compositor_frame_sink_callback_.Reset();
+    pending_layer_tree_frame_sink_callback_.Reset();
   }
 }
 

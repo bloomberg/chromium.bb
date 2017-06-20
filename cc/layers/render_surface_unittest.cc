@@ -6,8 +6,8 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/quads/shared_quad_state.h"
-#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
@@ -39,8 +39,8 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
 
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
-      FakeCompositorFrameSink::Create3d();
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink =
+      FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<LayerImpl> owning_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -49,7 +49,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   host_impl.active_tree()->ResetAllChangeTracking();
   host_impl.active_tree()->SetRootLayerForTesting(std::move(owning_layer));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(compositor_frame_sink.get());
+  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
 
@@ -92,8 +92,8 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
-      FakeCompositorFrameSink::Create3d();
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink =
+      FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<LayerImpl> root_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -109,7 +109,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   root_layer->test_properties()->AddChild(std::move(owning_layer));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(compositor_frame_sink.get());
+  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
 
@@ -154,8 +154,8 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
-      FakeCompositorFrameSink::Create3d();
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink =
+      FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<LayerImpl> root_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -168,7 +168,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   root_layer->test_properties()->AddChild(std::move(owning_layer));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(compositor_frame_sink.get());
+  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
 

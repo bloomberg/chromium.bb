@@ -19,7 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -30,7 +30,7 @@
 #include "ui/aura/client/window_stacking_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/local/compositor_frame_sink_local.h"
+#include "ui/aura/local/layer_tree_frame_sink_local.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -982,8 +982,8 @@ bool Window::CleanupGestureState() {
   return state_modified;
 }
 
-std::unique_ptr<cc::CompositorFrameSink> Window::CreateCompositorFrameSink() {
-  return port_->CreateCompositorFrameSink();
+std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
+  return port_->CreateLayerTreeFrameSink();
 }
 
 cc::SurfaceId Window::GetSurfaceId() const {

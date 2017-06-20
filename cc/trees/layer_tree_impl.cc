@@ -30,7 +30,7 @@
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/resources/ui_resource_request.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
@@ -1020,7 +1020,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
   // For max_texture_size. When a new output surface is received the needs
   // update draw properties flag is set again.
-  if (!layer_tree_host_impl_->compositor_frame_sink())
+  if (!layer_tree_host_impl_->layer_tree_frame_sink())
     return false;
 
   // Clear this after the renderer early out, as it should still be
@@ -1345,7 +1345,7 @@ const LayerTreeDebugState& LayerTreeImpl::debug_state() const {
 }
 
 ContextProvider* LayerTreeImpl::context_provider() const {
-  return layer_tree_host_impl_->compositor_frame_sink()->context_provider();
+  return layer_tree_host_impl_->layer_tree_frame_sink()->context_provider();
 }
 
 ResourceProvider* LayerTreeImpl::resource_provider() const {

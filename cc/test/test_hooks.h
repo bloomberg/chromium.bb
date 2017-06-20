@@ -94,8 +94,8 @@ class TestHooks : public AnimationDelegate {
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}
   virtual void UpdateLayerTreeHost() {}
-  virtual void DidInitializeCompositorFrameSink() {}
-  virtual void DidFailToInitializeCompositorFrameSink() {}
+  virtual void DidInitializeLayerTreeFrameSink() {}
+  virtual void DidFailToInitializeLayerTreeFrameSink() {}
   virtual void DidAddAnimation() {}
   virtual void WillCommit() {}
   virtual void DidCommit() {}
@@ -122,7 +122,7 @@ class TestHooks : public AnimationDelegate {
 
   // OutputSurface indirections to the LayerTreeTest, that can be further
   // overridden.
-  virtual void RequestNewCompositorFrameSink() = 0;
+  virtual void RequestNewLayerTreeFrameSink() = 0;
   virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<ContextProvider> compositor_context_provider) = 0;
 };

@@ -52,7 +52,7 @@ TEST_F(SurfaceTest, Attach) {
   // attached buffer.
   surface->Attach(nullptr);
   surface->Commit();
-  // CompositorFrameSinkHolder::ReclaimResources() gets called via
+  // LayerTreeFrameSinkHolder::ReclaimResources() gets called via
   // MojoCompositorFrameSinkClient interface. We need to wait here for the mojo
   // call to finish so that the release callback finishes running before
   // the assertion below.

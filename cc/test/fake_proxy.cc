@@ -18,8 +18,6 @@ bool FakeProxy::CommitToActiveTree() const {
   return false;
 }
 
-void FakeProxy::ReleaseCompositorFrameSink() {}
-
 bool FakeProxy::CommitRequested() const { return false; }
 
 void FakeProxy::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {}

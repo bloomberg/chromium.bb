@@ -27,14 +27,14 @@
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/output/context_provider.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
-#include "cc/test/test_compositor_frame_sink.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
@@ -207,9 +207,8 @@ struct CommonMailboxObjects {
 class TextureLayerTest : public testing::Test {
  public:
   TextureLayerTest()
-      : compositor_frame_sink_(FakeCompositorFrameSink::Create3d()),
-        host_impl_(&task_runner_provider_,
-                   &task_graph_runner_),
+      : layer_tree_frame_sink_(FakeLayerTreeFrameSink::Create3d()),
+        host_impl_(&task_runner_provider_, &task_graph_runner_),
         test_data_(&shared_bitmap_manager_) {}
 
  protected:
@@ -238,7 +237,7 @@ class TextureLayerTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink_;
   FakeLayerTreeHostImpl host_impl_;
   CommonMailboxObjects test_data_;
 };
@@ -635,7 +634,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
  public:
   TextureLayerImplWithMailboxThreadedCallback() = default;
 
-  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
@@ -644,7 +643,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     bool synchronous_composite =
         !HasImplThread() &&
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-    return base::MakeUnique<TestCompositorFrameSink>(
+    return base::MakeUnique<TestLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
         ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
@@ -891,7 +890,7 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
     layer_tree_host_ = MockLayerTreeHost::Create(
         &fake_client_, &task_graph_runner_, animation_host_.get());
     host_impl_.SetVisible(true);
-    EXPECT_TRUE(host_impl_.InitializeRenderer(compositor_frame_sink_.get()));
+    EXPECT_TRUE(host_impl_.InitializeRenderer(layer_tree_frame_sink_.get()));
   }
 
   bool WillDraw(TextureLayerImpl* layer, DrawMode mode) {

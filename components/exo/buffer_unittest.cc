@@ -33,8 +33,8 @@ TEST_F(BufferTest, ReleaseCallback) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
   const cc::FrameSinkId arbitrary_frame_sink_id(1, 1);
-  CompositorFrameSinkHolder* compositor_frame_sink_holder =
-      surface->compositor_frame_sink_holder();
+  LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder =
+      surface->layer_tree_frame_sink_holder();
 
   // Set the release callback.
   int release_call_count = 0;
@@ -44,7 +44,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   buffer->OnAttach();
   cc::TransferableResource resource;
   // Produce a transferable resource for the contents of the buffer.
-  bool rv = buffer->ProduceTransferableResource(compositor_frame_sink_holder, 0,
+  bool rv = buffer->ProduceTransferableResource(layer_tree_frame_sink_holder, 0,
                                                 false, true, &resource);
   ASSERT_TRUE(rv);
 
@@ -54,7 +54,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   returned_resource.sync_token = resource.mailbox_holder.sync_token;
   returned_resource.lost = false;
   cc::ReturnedResourceArray resources = {returned_resource};
-  compositor_frame_sink_holder->ReclaimResources(resources);
+  layer_tree_frame_sink_holder->ReclaimResources(resources);
 
   RunAllPendingInMessageLoop();
   ASSERT_EQ(release_call_count, 0);
@@ -71,15 +71,15 @@ TEST_F(BufferTest, IsLost) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   const cc::FrameSinkId arbitrary_frame_sink_id(1, 1);
   std::unique_ptr<Surface> surface(new Surface);
-  CompositorFrameSinkHolder* compositor_frame_sink_holder =
-      surface->compositor_frame_sink_holder();
+  LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder =
+      surface->layer_tree_frame_sink_holder();
   cc::ResourceId resource_id = 0;
 
   buffer->OnAttach();
   // Acquire a texture transferable resource for the contents of the buffer.
   cc::TransferableResource resource;
   bool rv = buffer->ProduceTransferableResource(
-      compositor_frame_sink_holder, resource_id, false, true, &resource);
+      layer_tree_frame_sink_holder, resource_id, false, true, &resource);
   ASSERT_TRUE(rv);
 
   scoped_refptr<cc::ContextProvider> context_provider =
@@ -99,7 +99,7 @@ TEST_F(BufferTest, IsLost) {
   returned_resource.sync_token = gpu::SyncToken();
   returned_resource.lost = is_lost;
   cc::ReturnedResourceArray resources = {returned_resource};
-  compositor_frame_sink_holder->ReclaimResources(resources);
+  layer_tree_frame_sink_holder->ReclaimResources(resources);
   RunAllPendingInMessageLoop();
 
   // Producing a new texture transferable resource for the contents of the
@@ -107,7 +107,7 @@ TEST_F(BufferTest, IsLost) {
   ++resource_id;
   cc::TransferableResource new_resource;
   rv = buffer->ProduceTransferableResource(
-      compositor_frame_sink_holder, resource_id, false, false, &new_resource);
+      layer_tree_frame_sink_holder, resource_id, false, false, &new_resource);
   ASSERT_TRUE(rv);
   buffer->OnDetach();
 
@@ -116,7 +116,7 @@ TEST_F(BufferTest, IsLost) {
   returned_resource2.sync_token = gpu::SyncToken();
   returned_resource2.lost = false;
   cc::ReturnedResourceArray resources2 = {returned_resource2};
-  compositor_frame_sink_holder->ReclaimResources(resources2);
+  layer_tree_frame_sink_holder->ReclaimResources(resources2);
   RunAllPendingInMessageLoop();
 }
 

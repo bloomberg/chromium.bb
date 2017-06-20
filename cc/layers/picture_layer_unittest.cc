@@ -13,8 +13,8 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
@@ -57,11 +57,11 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
 
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
-  std::unique_ptr<FakeCompositorFrameSink> compositor_frame_sink =
-      FakeCompositorFrameSink::CreateSoftware();
+  std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink =
+      FakeLayerTreeFrameSink::CreateSoftware();
   FakeLayerTreeHostImpl host_impl(
       LayerTreeSettings(), &impl_task_runner_provider, &task_graph_runner);
-  host_impl.InitializeRenderer(compositor_frame_sink.get());
+  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.CreatePendingTree();
   std::unique_ptr<FakePictureLayerImpl> layer_impl =
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1);
@@ -96,13 +96,13 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
 
   host->CommitComplete();
   FakeImplTaskRunnerProvider impl_task_runner_provider;
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
-      FakeCompositorFrameSink::Create3d());
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink(
+      FakeLayerTreeFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettings();
   FakeLayerTreeHostImpl host_impl(
       layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(compositor_frame_sink.get());
+  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
@@ -137,13 +137,13 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
 
   host->CommitComplete();
   FakeImplTaskRunnerProvider impl_task_runner_provider;
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
-      FakeCompositorFrameSink::Create3d());
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink(
+      FakeLayerTreeFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettings();
   FakeLayerTreeHostImpl host_impl(
       layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(compositor_frame_sink.get());
+  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
@@ -182,13 +182,13 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
-      FakeCompositorFrameSink::Create3d());
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink(
+      FakeLayerTreeFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettings();
   FakeLayerTreeHostImpl host_impl(
       layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(compositor_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
 
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(

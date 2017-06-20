@@ -46,8 +46,8 @@
 #include "cc/base/switches.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/output/buffer_to_texture_target_map.h"
-#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -55,7 +55,7 @@
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
-#include "components/viz/client/client_compositor_frame_sink.h"
+#include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
@@ -182,7 +182,7 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "content/renderer/android/synchronous_compositor_filter.h"
-#include "content/renderer/android/synchronous_compositor_frame_sink.h"
+#include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "media/base/android/media_codec_util.h"
 #endif
@@ -261,7 +261,7 @@ const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
 
 #if defined(OS_ANDROID)
 // Unique identifier for each output surface created.
-uint32_t g_next_compositor_frame_sink_id = 1;
+uint32_t g_next_layer_tree_frame_sink_id = 1;
 #endif
 
 // An implementation of mojom::RenderMessageFilter which can be mocked out
@@ -1917,12 +1917,12 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
   return gpu_channel_;
 }
 
-void RenderThreadImpl::RequestNewCompositorFrameSink(
+void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     bool use_software,
     int routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
-    const CompositorFrameSinkCallback& callback) {
+    const LayerTreeFrameSinkCallback& callback) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
@@ -1949,7 +1949,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
       return;
     }
     RendererWindowTreeClient::Get(routing_id)
-        ->RequestCompositorFrameSink(
+        ->RequestLayerTreeFrameSink(
             gpu_->CreateContextProvider(std::move(channel)),
             GetGpuMemoryBufferManager(), callback);
     return;
@@ -1970,7 +1970,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
       DCHECK(!layout_test_mode());
       frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                             std::move(client));
-      callback.Run(base::MakeUnique<viz::ClientCompositorFrameSink>(
+      callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
           std::move(vulkan_context_provider),
           std::move(synthetic_begin_frame_source), std::move(sink_info),
           std::move(client_request),
@@ -2000,7 +2000,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
     DCHECK(!layout_test_mode());
     frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                           std::move(client));
-    callback.Run(base::MakeUnique<viz::ClientCompositorFrameSink>(
+    callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
         nullptr, nullptr, nullptr, shared_bitmap_manager(),
         std::move(synthetic_begin_frame_source), std::move(sink_info),
         std::move(client_request),
@@ -2051,7 +2051,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
           ui::command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
   if (layout_test_deps_) {
-    callback.Run(layout_test_deps_->CreateCompositorFrameSink(
+    callback.Run(layout_test_deps_->CreateLayerTreeFrameSink(
         routing_id, std::move(gpu_channel_host), std::move(context_provider),
         std::move(worker_context_provider), GetGpuMemoryBufferManager(), this));
     return;
@@ -2063,10 +2063,10 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
         synthetic_begin_frame_source
             ? std::move(synthetic_begin_frame_source)
             : CreateExternalBeginFrameSource(routing_id);
-    callback.Run(base::MakeUnique<SynchronousCompositorFrameSink>(
+    callback.Run(base::MakeUnique<SynchronousLayerTreeFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
         GetGpuMemoryBufferManager(), shared_bitmap_manager(), routing_id,
-        g_next_compositor_frame_sink_id++, std::move(begin_frame_source),
+        g_next_layer_tree_frame_sink_id++, std::move(begin_frame_source),
         sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue)));
     return;
@@ -2074,7 +2074,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
 #endif
   frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                         std::move(client));
-  callback.Run(base::MakeUnique<viz::ClientCompositorFrameSink>(
+  callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), std::move(worker_context_provider),
       GetGpuMemoryBufferManager(), nullptr,
       std::move(synthetic_begin_frame_source), std::move(sink_info),

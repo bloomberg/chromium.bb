@@ -342,7 +342,7 @@ RENDERING_TEST_F(ClientIsInvisibleAfterDetachTest);
 class ResourceRenderingTest : public RenderingTest {
  public:
   using ResourceCountMap = std::map<cc::ResourceId, int>;
-  using CompositorFrameSinkResourceCountMap =
+  using LayerTreeFrameSinkResourceCountMap =
       std::map<uint32_t, ResourceCountMap>;
 
   virtual std::unique_ptr<content::SynchronousCompositor::Frame> GetFrame(
@@ -355,7 +355,7 @@ class ResourceRenderingTest : public RenderingTest {
 
   void WillOnDraw() override {
     if (next_frame_) {
-      compositor_->SetHardwareFrame(next_frame_->compositor_frame_sink_id,
+      compositor_->SetHardwareFrame(next_frame_->layer_tree_frame_sink_id,
                                     std::move(next_frame_->frame));
     }
   }
@@ -369,13 +369,13 @@ class ResourceRenderingTest : public RenderingTest {
     }
   }
 
-  CompositorFrameSinkResourceCountMap GetReturnedResourceCounts() {
-    CompositorFrameSinkResourceCountMap counts;
+  LayerTreeFrameSinkResourceCountMap GetReturnedResourceCounts() {
+    LayerTreeFrameSinkResourceCountMap counts;
     content::TestSynchronousCompositor::FrameAckArray returned_resources_array;
     compositor_->SwapReturnedResources(&returned_resources_array);
     for (const auto& resources : returned_resources_array) {
       for (const auto& returned_resource : resources.resources) {
-        counts[resources.compositor_frame_sink_id][returned_resource.id] +=
+        counts[resources.layer_tree_frame_sink_id][returned_resource.id] +=
             returned_resource.count;
       }
     }
@@ -398,9 +398,9 @@ class ResourceRenderingTest : public RenderingTest {
   int frame_number_;
 };
 
-class SwitchCompositorFrameSinkIdTest : public ResourceRenderingTest {
+class SwitchLayerTreeFrameSinkIdTest : public ResourceRenderingTest {
   struct FrameInfo {
-    uint32_t compositor_frame_sink_id;
+    uint32_t layer_tree_frame_sink_id;
     cc::ResourceId resource_id;  // Each frame contains a single resource.
   };
 
@@ -418,22 +418,22 @@ class SwitchCompositorFrameSinkIdTest : public ResourceRenderingTest {
 
     std::unique_ptr<content::SynchronousCompositor::Frame> frame(
         new content::SynchronousCompositor::Frame);
-    frame->compositor_frame_sink_id =
-        infos[frame_number].compositor_frame_sink_id;
+    frame->layer_tree_frame_sink_id =
+        infos[frame_number].layer_tree_frame_sink_id;
     frame->frame = ConstructFrame(infos[frame_number].resource_id);
 
-    if (last_compositor_frame_sink_id_ !=
-        infos[frame_number].compositor_frame_sink_id) {
+    if (last_layer_tree_frame_sink_id_ !=
+        infos[frame_number].layer_tree_frame_sink_id) {
       expected_return_count_.clear();
-      last_compositor_frame_sink_id_ =
-          infos[frame_number].compositor_frame_sink_id;
+      last_layer_tree_frame_sink_id_ =
+          infos[frame_number].layer_tree_frame_sink_id;
     }
     ++expected_return_count_[infos[frame_number].resource_id];
     return frame;
   }
 
   void StartTest() override {
-    last_compositor_frame_sink_id_ = -1U;
+    last_layer_tree_frame_sink_id_ = -1U;
     ResourceRenderingTest::StartTest();
   }
 
@@ -444,16 +444,16 @@ class SwitchCompositorFrameSinkIdTest : public ResourceRenderingTest {
 
     // Make sure resources for the last output surface are returned.
     EXPECT_EQ(expected_return_count_,
-              GetReturnedResourceCounts()[last_compositor_frame_sink_id_]);
+              GetReturnedResourceCounts()[last_layer_tree_frame_sink_id_]);
     EndTest();
   }
 
  private:
-  uint32_t last_compositor_frame_sink_id_;
+  uint32_t last_layer_tree_frame_sink_id_;
   ResourceCountMap expected_return_count_;
 };
 
-RENDERING_TEST_F(SwitchCompositorFrameSinkIdTest);
+RENDERING_TEST_F(SwitchLayerTreeFrameSinkIdTest);
 
 class RenderThreadManagerDeletionTest : public ResourceRenderingTest {
   std::unique_ptr<content::SynchronousCompositor::Frame> GetFrame(
@@ -462,20 +462,20 @@ class RenderThreadManagerDeletionTest : public ResourceRenderingTest {
       return nullptr;
     }
 
-    const uint32_t compositor_frame_sink_id = 0u;
+    const uint32_t layer_tree_frame_sink_id = 0u;
     const cc::ResourceId resource_id =
         static_cast<cc::ResourceId>(frame_number);
 
     std::unique_ptr<content::SynchronousCompositor::Frame> frame(
         new content::SynchronousCompositor::Frame);
-    frame->compositor_frame_sink_id = compositor_frame_sink_id;
+    frame->layer_tree_frame_sink_id = layer_tree_frame_sink_id;
     frame->frame = ConstructFrame(resource_id);
-    ++expected_return_count_[compositor_frame_sink_id][resource_id];
+    ++expected_return_count_[layer_tree_frame_sink_id][resource_id];
     return frame;
   }
 
   void CheckResults() override {
-    CompositorFrameSinkResourceCountMap resource_counts;
+    LayerTreeFrameSinkResourceCountMap resource_counts;
     functor_.reset();
     // Make sure resources for the last frame are returned.
     EXPECT_EQ(expected_return_count_, GetReturnedResourceCounts());
@@ -483,7 +483,7 @@ class RenderThreadManagerDeletionTest : public ResourceRenderingTest {
   }
 
  private:
-  CompositorFrameSinkResourceCountMap expected_return_count_;
+  LayerTreeFrameSinkResourceCountMap expected_return_count_;
 };
 
 RENDERING_TEST_F(RenderThreadManagerDeletionTest);
@@ -524,20 +524,20 @@ class RenderThreadManagerSwitchTest : public ResourceRenderingTest {
         return nullptr;
     }
 
-    const uint32_t compositor_frame_sink_id = 0u;
+    const uint32_t layer_tree_frame_sink_id = 0u;
     const cc::ResourceId resource_id =
         static_cast<cc::ResourceId>(frame_number);
 
     std::unique_ptr<content::SynchronousCompositor::Frame> frame(
         new content::SynchronousCompositor::Frame);
-    frame->compositor_frame_sink_id = compositor_frame_sink_id;
+    frame->layer_tree_frame_sink_id = layer_tree_frame_sink_id;
     frame->frame = ConstructFrame(resource_id);
-    ++expected_return_count_[compositor_frame_sink_id][resource_id];
+    ++expected_return_count_[layer_tree_frame_sink_id][resource_id];
     return frame;
   }
 
   void CheckResults() override {
-    CompositorFrameSinkResourceCountMap resource_counts;
+    LayerTreeFrameSinkResourceCountMap resource_counts;
     functor_.reset();
     // Make sure resources for all frames are returned.
     EXPECT_EQ(expected_return_count_, GetReturnedResourceCounts());
@@ -546,7 +546,7 @@ class RenderThreadManagerSwitchTest : public ResourceRenderingTest {
 
  private:
   std::unique_ptr<FakeFunctor> saved_functor_;
-  CompositorFrameSinkResourceCountMap expected_return_count_;
+  LayerTreeFrameSinkResourceCountMap expected_return_count_;
 };
 
 RENDERING_TEST_F(RenderThreadManagerSwitchTest);

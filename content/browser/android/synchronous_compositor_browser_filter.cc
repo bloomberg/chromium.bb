@@ -85,7 +85,7 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
   }
 
   auto frame_ptr = base::MakeUnique<SynchronousCompositor::Frame>();
-  frame_ptr->compositor_frame_sink_id = std::get<0>(param);
+  frame_ptr->layer_tree_frame_sink_id = std::get<0>(param);
   base::Optional<cc::CompositorFrame>& compositor_frame = std::get<1>(param);
   if (compositor_frame) {
     BrowserThread::PostTask(

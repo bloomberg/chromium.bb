@@ -11,7 +11,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/test/layer_tree_pixel_test.h"
-#include "cc/test/test_compositor_frame_sink.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 #if !defined(OS_ANDROID)
@@ -178,7 +178,7 @@ class LayerTreeHostTilesTestPartialInvalidation
     // Issue a GL finish before preparing tiles to ensure resources become
     // available for use in a timely manner. Needed for the one-copy path.
     ContextProvider* context_provider =
-        host_impl->compositor_frame_sink()->worker_context_provider();
+        host_impl->layer_tree_frame_sink()->worker_context_provider();
     if (!context_provider)
       return;
 

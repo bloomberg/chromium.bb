@@ -36,7 +36,7 @@ class InProcessContextFactory : public ContextFactory,
   // Both |frame_sink_manager_host| and |surface_manager| must outlive the
   // ContextFactory.
   // TODO(crbug.com/657959): |surface_manager| should go away and we should use
-  // the CompositorFrameSink from the FrameSinkManagerHost.
+  // the LayerTreeFrameSink from the FrameSinkManagerHost.
   InProcessContextFactory(viz::FrameSinkManagerHost* frame_sink_manager_host,
                           cc::SurfaceManager* surface_manager);
   ~InProcessContextFactory() override;
@@ -55,8 +55,8 @@ class InProcessContextFactory : public ContextFactory,
   // used for tests.
   void SetUseFastRefreshRateForTests();
 
-  // ContextFactory implementation
-  void CreateCompositorFrameSink(base::WeakPtr<Compositor> compositor) override;
+  // ContextFactory implementation.
+  void CreateLayerTreeFrameSink(base::WeakPtr<Compositor> compositor) override;
 
   std::unique_ptr<Reflector> CreateReflector(Compositor* mirrored_compositor,
                                              Layer* mirroring_layer) override;

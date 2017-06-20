@@ -132,27 +132,27 @@ void SynchronousCompositorFilter::FilterReadyOnCompositorThread() {
     DCHECK(entry_pair.second);
     int routing_id = entry_pair.first;
     CreateSynchronousCompositorProxy(routing_id, entry_pair.second);
-    auto compositor_frame_sink_entry =
-        compositor_frame_sink_map_.find(routing_id);
-    if (compositor_frame_sink_entry != compositor_frame_sink_map_.end()) {
-      SetProxyCompositorFrameSink(routing_id,
-                                  compositor_frame_sink_entry->second);
+    auto layer_tree_frame_sink_entry =
+        layer_tree_frame_sink_map_.find(routing_id);
+    if (layer_tree_frame_sink_entry != layer_tree_frame_sink_map_.end()) {
+      SetProxyLayerTreeFrameSink(routing_id,
+                                 layer_tree_frame_sink_entry->second);
     }
   }
 }
 
-void SynchronousCompositorFilter::RegisterCompositorFrameSink(
+void SynchronousCompositorFilter::RegisterLayerTreeFrameSink(
     int routing_id,
-    SynchronousCompositorFrameSink* compositor_frame_sink) {
+    SynchronousLayerTreeFrameSink* layer_tree_frame_sink) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  DCHECK(compositor_frame_sink);
+  DCHECK(layer_tree_frame_sink);
   SynchronousCompositorProxy* proxy = FindProxy(routing_id);
   if (proxy) {
-    proxy->SetCompositorFrameSink(compositor_frame_sink);
+    proxy->SetLayerTreeFrameSink(layer_tree_frame_sink);
   } else {
-    DCHECK(compositor_frame_sink_map_.find(routing_id) ==
-           compositor_frame_sink_map_.end());
-    compositor_frame_sink_map_[routing_id] = compositor_frame_sink;
+    DCHECK(layer_tree_frame_sink_map_.find(routing_id) ==
+           layer_tree_frame_sink_map_.end());
+    layer_tree_frame_sink_map_[routing_id] = layer_tree_frame_sink;
   }
 }
 
@@ -168,18 +168,18 @@ void SynchronousCompositorFilter::OnSynchronizeRendererState(
   }
 }
 
-void SynchronousCompositorFilter::UnregisterCompositorFrameSink(
+void SynchronousCompositorFilter::UnregisterLayerTreeFrameSink(
     int routing_id,
-    SynchronousCompositorFrameSink* compositor_frame_sink) {
+    SynchronousLayerTreeFrameSink* layer_tree_frame_sink) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  DCHECK(compositor_frame_sink);
+  DCHECK(layer_tree_frame_sink);
   SynchronousCompositorProxy* proxy = FindProxy(routing_id);
   if (proxy) {
-    proxy->SetCompositorFrameSink(nullptr);
+    proxy->SetLayerTreeFrameSink(nullptr);
   }
-  auto entry = compositor_frame_sink_map_.find(routing_id);
-  if (entry != compositor_frame_sink_map_.end())
-    compositor_frame_sink_map_.erase(entry);
+  auto entry = layer_tree_frame_sink_map_.find(routing_id);
+  if (entry != layer_tree_frame_sink_map_.end())
+    layer_tree_frame_sink_map_.erase(entry);
 }
 
 void SynchronousCompositorFilter::CreateSynchronousCompositorProxy(
@@ -192,13 +192,13 @@ void SynchronousCompositorFilter::CreateSynchronousCompositorProxy(
   sync_compositor_map_[routing_id] = std::move(proxy);
 }
 
-void SynchronousCompositorFilter::SetProxyCompositorFrameSink(
+void SynchronousCompositorFilter::SetProxyLayerTreeFrameSink(
     int routing_id,
-    SynchronousCompositorFrameSink* compositor_frame_sink) {
-  DCHECK(compositor_frame_sink);
+    SynchronousLayerTreeFrameSink* layer_tree_frame_sink) {
+  DCHECK(layer_tree_frame_sink);
   SynchronousCompositorProxy* proxy = FindProxy(routing_id);
   DCHECK(proxy);
-  proxy->SetCompositorFrameSink(compositor_frame_sink);
+  proxy->SetLayerTreeFrameSink(layer_tree_frame_sink);
 }
 
 void SynchronousCompositorFilter::DidAddSynchronousHandlerProxy(
@@ -209,9 +209,9 @@ void SynchronousCompositorFilter::DidAddSynchronousHandlerProxy(
   if (filter_ready_) {
     CreateSynchronousCompositorProxy(routing_id,
                                      synchronous_input_handler_proxy);
-    auto entry = compositor_frame_sink_map_.find(routing_id);
-    if (entry != compositor_frame_sink_map_.end())
-      SetProxyCompositorFrameSink(routing_id, entry->second);
+    auto entry = layer_tree_frame_sink_map_.find(routing_id);
+    if (entry != layer_tree_frame_sink_map_.end())
+      SetProxyLayerTreeFrameSink(routing_id, entry->second);
   } else {
     auto*& mapped_synchronous_input_handler_proxy =
         synchronous_input_handler_proxy_map_[routing_id];

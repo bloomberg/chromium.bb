@@ -13,7 +13,7 @@ namespace android_webview {
 
 ChildFrame::ChildFrame(
     scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
-    uint32_t compositor_frame_sink_id,
+    uint32_t layer_tree_frame_sink_id,
     std::unique_ptr<cc::CompositorFrame> frame,
     const CompositorID& compositor_id,
     bool viewport_rect_for_tile_priority_empty,
@@ -21,7 +21,7 @@ ChildFrame::ChildFrame(
     bool offscreen_pre_raster,
     bool is_layer)
     : frame_future(std::move(frame_future)),
-      compositor_frame_sink_id(compositor_frame_sink_id),
+      layer_tree_frame_sink_id(layer_tree_frame_sink_id),
       frame(std::move(frame)),
       compositor_id(compositor_id),
       viewport_rect_for_tile_priority_empty(
@@ -41,7 +41,7 @@ void ChildFrame::WaitOnFutureIfNeeded() {
   DCHECK(!frame);
   auto frame_ptr = frame_future->GetFrame();
   if (frame_ptr) {
-    compositor_frame_sink_id = frame_ptr->compositor_frame_sink_id;
+    layer_tree_frame_sink_id = frame_ptr->layer_tree_frame_sink_id;
     frame = std::move(frame_ptr->frame);
   }
   frame_future = nullptr;

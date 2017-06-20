@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/test/fake_compositor_frame_sink.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -23,7 +23,7 @@ TestLayerTreeHostBase::TestLayerTreeHostBase()
 TestLayerTreeHostBase::~TestLayerTreeHostBase() = default;
 
 void TestLayerTreeHostBase::SetUp() {
-  compositor_frame_sink_ = CreateCompositorFrameSink();
+  layer_tree_frame_sink_ = CreateLayerTreeFrameSink();
   task_graph_runner_ = CreateTaskGraphRunner();
   host_impl_ = CreateHostImpl(CreateSettings(), &task_runner_provider_,
                               task_graph_runner_.get());
@@ -36,9 +36,9 @@ LayerTreeSettings TestLayerTreeHostBase::CreateSettings() {
   return settings;
 }
 
-std::unique_ptr<CompositorFrameSink>
-TestLayerTreeHostBase::CreateCompositorFrameSink() {
-  return FakeCompositorFrameSink::Create3d();
+std::unique_ptr<LayerTreeFrameSink>
+TestLayerTreeHostBase::CreateLayerTreeFrameSink() {
+  return FakeLayerTreeFrameSink::Create3d();
 }
 
 std::unique_ptr<FakeLayerTreeHostImpl> TestLayerTreeHostBase::CreateHostImpl(
@@ -56,15 +56,15 @@ TestLayerTreeHostBase::CreateTaskGraphRunner() {
 
 void TestLayerTreeHostBase::InitializeRenderer() {
   host_impl_->SetVisible(true);
-  host_impl_->InitializeRenderer(compositor_frame_sink_.get());
+  host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
 }
 
-void TestLayerTreeHostBase::ResetCompositorFrameSink(
-    std::unique_ptr<CompositorFrameSink> compositor_frame_sink) {
-  host_impl()->DidLoseCompositorFrameSink();
+void TestLayerTreeHostBase::ResetLayerTreeFrameSink(
+    std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink) {
+  host_impl()->DidLoseLayerTreeFrameSink();
   host_impl()->SetVisible(true);
-  host_impl()->InitializeRenderer(compositor_frame_sink.get());
-  compositor_frame_sink_ = std::move(compositor_frame_sink);
+  host_impl()->InitializeRenderer(layer_tree_frame_sink.get());
+  layer_tree_frame_sink_ = std::move(layer_tree_frame_sink);
 }
 
 std::unique_ptr<FakeLayerTreeHostImpl> TestLayerTreeHostBase::TakeHostImpl() {

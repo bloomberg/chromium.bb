@@ -11,7 +11,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
 namespace cc {
-class CompositorFrameSink;
+class LayerTreeFrameSink;
 class ContextProvider;
 }
 
@@ -40,21 +40,21 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
 
   void Bind(ui::mojom::WindowTreeClientRequest request);
 
-  using CompositorFrameSinkCallback =
-      base::Callback<void(std::unique_ptr<cc::CompositorFrameSink>)>;
-  void RequestCompositorFrameSink(
+  using LayerTreeFrameSinkCallback =
+      base::Callback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
+  void RequestLayerTreeFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const CompositorFrameSinkCallback& callback);
+      const LayerTreeFrameSinkCallback& callback);
 
  private:
   explicit RendererWindowTreeClient(int routing_id);
   ~RendererWindowTreeClient() override;
 
-  void RequestCompositorFrameSinkInternal(
+  void RequestLayerTreeFrameSinkInternal(
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const CompositorFrameSinkCallback& callback);
+      const LayerTreeFrameSinkCallback& callback);
 
   void DestroySelf();
 
@@ -162,7 +162,7 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
   ui::Id root_window_id_;
   scoped_refptr<cc::ContextProvider> pending_context_provider_;
   gpu::GpuMemoryBufferManager* pending_gpu_memory_buffer_manager_ = nullptr;
-  CompositorFrameSinkCallback pending_compositor_frame_sink_callback_;
+  LayerTreeFrameSinkCallback pending_layer_tree_frame_sink_callback_;
   ui::mojom::WindowTreePtr tree_;
   mojo::Binding<ui::mojom::WindowTreeClient> binding_;
 

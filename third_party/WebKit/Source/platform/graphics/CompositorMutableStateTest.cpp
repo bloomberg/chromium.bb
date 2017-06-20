@@ -4,9 +4,11 @@
 
 #include "platform/graphics/CompositorMutableState.h"
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
-#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -17,13 +19,12 @@
 #include "platform/graphics/CompositorMutableStateProvider.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
 using cc::FakeImplTaskRunnerProvider;
 using cc::FakeLayerTreeHostImpl;
-using cc::FakeCompositorFrameSink;
+using cc::FakeLayerTreeFrameSink;
 using cc::LayerImpl;
 using cc::LayerTreeSettings;
 using cc::TestTaskGraphRunner;
@@ -32,13 +33,13 @@ using cc::TestSharedBitmapManager;
 class CompositorMutableStateTest : public testing::Test {
  public:
   CompositorMutableStateTest()
-      : compositor_frame_sink_(FakeCompositorFrameSink::Create3d()) {
+      : layer_tree_frame_sink_(FakeLayerTreeFrameSink::Create3d()) {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
     host_impl_.reset(new FakeLayerTreeHostImpl(settings, &task_runner_provider_,
                                                &task_graph_runner_));
     host_impl_->SetVisible(true);
-    EXPECT_TRUE(host_impl_->InitializeRenderer(compositor_frame_sink_.get()));
+    EXPECT_TRUE(host_impl_->InitializeRenderer(layer_tree_frame_sink_.get()));
   }
 
   void SetLayerPropertiesForTesting(LayerImpl* layer) {
@@ -61,7 +62,7 @@ class CompositorMutableStateTest : public testing::Test {
   base::MessageLoop message_loop_;
   TestTaskGraphRunner task_graph_runner_;
   FakeImplTaskRunnerProvider task_runner_provider_;
-  std::unique_ptr<FakeCompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink_;
   std::unique_ptr<FakeLayerTreeHostImpl> host_impl_;
 };
 

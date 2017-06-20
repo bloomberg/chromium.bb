@@ -43,6 +43,7 @@ class AnimationTimeline;
 class ContextProvider;
 class Layer;
 class LayerTreeDebugState;
+class LayerTreeFrameSink;
 class LayerTreeHost;
 class LocalSurfaceId;
 class ResourceSettings;
@@ -112,7 +113,7 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
 
   // Inform the display corresponding to this compositor if it is visible. When
   // false it does not need to produce any frames. Visibility is reset for each
-  // call to CreateCompositorFrameSink.
+  // call to CreateLayerTreeFrameSink.
   virtual void SetDisplayVisible(ui::Compositor* compositor, bool visible) = 0;
 
   // Resize the display corresponding to this compositor to a particular size.
@@ -128,7 +129,7 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                              base::TimeDelta interval) = 0;
   // Mac path for transporting vsync parameters to the display.  Other platforms
-  // update it via the BrowserCompositorCompositorFrameSink directly.
+  // update it via the BrowserCompositorLayerTreeFrameSink directly.
   virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                          base::TimeTicks timebase,
                                          base::TimeDelta interval) = 0;
@@ -145,7 +146,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Creates an output surface for the given compositor. The factory may keep
   // per-compositor data (e.g. a shared context), that needs to be cleaned up
   // by calling RemoveCompositor when the compositor gets destroyed.
-  virtual void CreateCompositorFrameSink(
+  virtual void CreateLayerTreeFrameSink(
       base::WeakPtr<Compositor> compositor) = 0;
 
   // Return a reference to a shared offscreen context provider usable from the
@@ -201,7 +202,7 @@ class COMPOSITOR_EXPORT Compositor
 
   void SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id);
 
-  void SetCompositorFrameSink(std::unique_ptr<cc::CompositorFrameSink> surface);
+  void SetLayerTreeFrameSink(std::unique_ptr<cc::LayerTreeFrameSink> surface);
 
   // Schedules a redraw of the layer tree associated with this compositor.
   void ScheduleDraw();
@@ -274,9 +275,8 @@ class COMPOSITOR_EXPORT Compositor
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
   // Most platforms set their vsync info via
-  // BrowerCompositorCompositorFrameSink's
-  // OnUpdateVSyncParametersFromGpu, but Mac routes vsync info via the
-  // browser compositor instead through this path.
+  // BrowerCompositorLayerTreeFrameSink::OnUpdateVSyncParametersFromGpu(), but
+  // Mac routes vsync info via the browser compositor instead through this path.
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval);
 
@@ -341,9 +341,9 @@ class COMPOSITOR_EXPORT Compositor
                            float top_controls_delta) override {}
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
-  void RequestNewCompositorFrameSink() override;
-  void DidInitializeCompositorFrameSink() override {}
-  void DidFailToInitializeCompositorFrameSink() override;
+  void RequestNewLayerTreeFrameSink() override;
+  void DidInitializeLayerTreeFrameSink() override {}
+  void DidFailToInitializeLayerTreeFrameSink() override;
   void WillCommit() override {}
   void DidCommit() override;
   void DidCommitAndDrawFrame() override {}
@@ -354,7 +354,7 @@ class COMPOSITOR_EXPORT Compositor
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
-  void DidLoseCompositorFrameSink() override {}
+  void DidLoseLayerTreeFrameSink() override {}
 
   bool IsLocked() { return !active_locks_.empty(); }
 
@@ -405,7 +405,7 @@ class COMPOSITOR_EXPORT Compositor
   // A map from child id to parent id.
   std::unordered_set<cc::FrameSinkId, cc::FrameSinkIdHash> child_frame_sinks_;
   bool widget_valid_ = false;
-  bool compositor_frame_sink_requested_ = false;
+  bool layer_tree_frame_sink_requested_ = false;
   const cc::FrameSinkId frame_sink_id_;
   scoped_refptr<cc::Layer> root_web_layer_;
   std::unique_ptr<cc::AnimationHost> animation_host_;

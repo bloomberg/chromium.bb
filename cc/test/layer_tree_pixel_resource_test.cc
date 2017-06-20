@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
@@ -129,9 +129,9 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
   DCHECK(initialized_);
 
   ContextProvider* compositor_context_provider =
-      host_impl->compositor_frame_sink()->context_provider();
+      host_impl->layer_tree_frame_sink()->context_provider();
   ContextProvider* worker_context_provider =
-      host_impl->compositor_frame_sink()->worker_context_provider();
+      host_impl->layer_tree_frame_sink()->worker_context_provider();
   ResourceProvider* resource_provider = host_impl->resource_provider();
   int max_bytes_per_copy_operation = 1024 * 1024;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;

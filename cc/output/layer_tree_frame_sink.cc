@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 
 #include <stdint.h>
 
@@ -11,14 +11,14 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/output/compositor_frame_sink_client.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace cc {
 
-CompositorFrameSink::CompositorFrameSink(
+LayerTreeFrameSink::LayerTreeFrameSink(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -26,22 +26,20 @@ CompositorFrameSink::CompositorFrameSink(
     : context_provider_(std::move(context_provider)),
       worker_context_provider_(std::move(worker_context_provider)),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      shared_bitmap_manager_(shared_bitmap_manager) {
-}
+      shared_bitmap_manager_(shared_bitmap_manager) {}
 
-CompositorFrameSink::CompositorFrameSink(
+LayerTreeFrameSink::LayerTreeFrameSink(
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
     : vulkan_context_provider_(vulkan_context_provider),
       gpu_memory_buffer_manager_(nullptr),
-      shared_bitmap_manager_(nullptr) {
-}
+      shared_bitmap_manager_(nullptr) {}
 
-CompositorFrameSink::~CompositorFrameSink() {
+LayerTreeFrameSink::~LayerTreeFrameSink() {
   if (client_)
     DetachFromClient();
 }
 
-bool CompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
+bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
@@ -51,7 +49,7 @@ bool CompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
     success = context_provider_->BindToCurrentThread();
     if (success) {
       context_provider_->SetLostContextCallback(
-          base::Bind(&CompositorFrameSink::DidLoseCompositorFrameSink,
+          base::Bind(&LayerTreeFrameSink::DidLoseLayerTreeFrameSink,
                      base::Unretained(this)));
     }
   }
@@ -65,7 +63,7 @@ bool CompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   return success;
 }
 
-void CompositorFrameSink::DetachFromClient() {
+void LayerTreeFrameSink::DetachFromClient() {
   DCHECK(client_);
 
   if (context_provider_.get()) {
@@ -77,9 +75,9 @@ void CompositorFrameSink::DetachFromClient() {
   client_ = nullptr;
 }
 
-void CompositorFrameSink::DidLoseCompositorFrameSink() {
-  TRACE_EVENT0("cc", "CompositorFrameSink::DidLoseCompositorFrameSink");
-  client_->DidLoseCompositorFrameSink();
+void LayerTreeFrameSink::DidLoseLayerTreeFrameSink() {
+  TRACE_EVENT0("cc", "LayerTreeFrameSink::DidLoseLayerTreeFrameSink");
+  client_->DidLoseLayerTreeFrameSink();
 }
 
 }  // namespace cc

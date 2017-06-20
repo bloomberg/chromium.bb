@@ -5,7 +5,6 @@
 #include "services/ui/ws/frame_generator.h"
 
 #include "base/macros.h"
-#include "cc/output/compositor_frame_sink.h"
 #include "cc/quads/render_pass.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/begin_frame_args_test.h"

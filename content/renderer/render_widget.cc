@@ -26,8 +26,8 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/input/touch_action.h"
-#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/content_switches_internal.h"
@@ -910,14 +910,14 @@ void RenderWidget::BeginMainFrame(double frame_time_sec) {
   GetWebWidget()->BeginFrame(frame_time_sec);
 }
 
-void RenderWidget::RequestNewCompositorFrameSink(
+void RenderWidget::RequestNewLayerTreeFrameSink(
     bool fallback,
-    const CompositorFrameSinkCallback& callback) {
+    const LayerTreeFrameSinkCallback& callback) {
   DCHECK(GetWebWidget());
   // For widgets that are never visible, we don't start the compositor, so we
-  // never get a request for a cc::CompositorFrameSink.
+  // never get a request for a cc::LayerTreeFrameSink.
   DCHECK(!compositor_never_visible_);
-  RenderThreadImpl::current()->RequestNewCompositorFrameSink(
+  RenderThreadImpl::current()->RequestNewLayerTreeFrameSink(
       fallback, routing_id_, frame_swap_message_queue_,
       GetURLForGraphicsContext3D(), callback);
 }
@@ -1320,7 +1320,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   compositor_->SetContentSourceId(current_content_source_id_);
   compositor_->SetLocalSurfaceId(local_surface_id_);
   // For background pages and certain tests, we don't want to trigger
-  // CompositorFrameSink creation.
+  // LayerTreeFrameSink creation.
   bool should_generate_frame_sink =
       !compositor_never_visible_ && RenderThreadImpl::current();
   if (!should_generate_frame_sink)

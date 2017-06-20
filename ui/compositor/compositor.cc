@@ -236,10 +236,10 @@ void Compositor::SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id) {
   host_->SetLocalSurfaceId(local_surface_id);
 }
 
-void Compositor::SetCompositorFrameSink(
-    std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink) {
-  compositor_frame_sink_requested_ = false;
-  host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
+void Compositor::SetLayerTreeFrameSink(
+    std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
+  layer_tree_frame_sink_requested_ = false;
+  host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   // Display properties are reset when the output surface is lost, so update it
   // to match the Compositor's.
   if (context_factory_private_) {
@@ -392,13 +392,13 @@ void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
   DCHECK(!widget_valid_);
   widget_ = widget;
   widget_valid_ = true;
-  if (compositor_frame_sink_requested_)
-    context_factory_->CreateCompositorFrameSink(weak_ptr_factory_.GetWeakPtr());
+  if (layer_tree_frame_sink_requested_)
+    context_factory_->CreateLayerTreeFrameSink(weak_ptr_factory_.GetWeakPtr());
 }
 
 gfx::AcceleratedWidget Compositor::ReleaseAcceleratedWidget() {
   DCHECK(!IsVisible());
-  host_->ReleaseCompositorFrameSink();
+  host_->ReleaseLayerTreeFrameSink();
   context_factory_->RemoveCompositor(this);
   widget_valid_ = false;
   gfx::AcceleratedWidget widget = widget_;
@@ -467,15 +467,15 @@ void Compositor::UpdateLayerTreeHost() {
   SendDamagedRectsRecursive(root_layer());
 }
 
-void Compositor::RequestNewCompositorFrameSink() {
-  DCHECK(!compositor_frame_sink_requested_);
-  compositor_frame_sink_requested_ = true;
+void Compositor::RequestNewLayerTreeFrameSink() {
+  DCHECK(!layer_tree_frame_sink_requested_);
+  layer_tree_frame_sink_requested_ = true;
   if (widget_valid_)
-    context_factory_->CreateCompositorFrameSink(weak_ptr_factory_.GetWeakPtr());
+    context_factory_->CreateLayerTreeFrameSink(weak_ptr_factory_.GetWeakPtr());
 }
 
-void Compositor::DidFailToInitializeCompositorFrameSink() {
-  // The CompositorFrameSink should already be bound/initialized before being
+void Compositor::DidFailToInitializeLayerTreeFrameSink() {
+  // The LayerTreeFrameSink should already be bound/initialized before being
   // given to
   // the Compositor.
   NOTREACHED();

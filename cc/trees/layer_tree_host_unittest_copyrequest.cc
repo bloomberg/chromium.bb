@@ -17,7 +17,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/test_compositor_frame_sink.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
@@ -464,12 +464,12 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     client_.set_bounds(root_->bounds());
   }
 
-  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
-    auto frame_sink = LayerTreeHostCopyRequestTest::CreateCompositorFrameSink(
+    auto frame_sink = LayerTreeHostCopyRequestTest::CreateLayerTreeFrameSink(
         renderer_settings, refresh_rate, std::move(compositor_context_provider),
         std::move(worker_context_provider));
     frame_sink_ = frame_sink.get();
@@ -536,7 +536,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   RenderPassId parent_render_pass_id = 0;
   RenderPassId copy_layer_render_pass_id = 0;
-  TestCompositorFrameSink* frame_sink_ = nullptr;
+  TestLayerTreeFrameSink* frame_sink_ = nullptr;
   bool did_swap_ = false;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
@@ -869,7 +869,7 @@ class LayerTreeHostCopyRequestTestCountTextures
     // These tests expect the LayerTreeHostImpl to share a context with
     // the Display so that sync points are not needed and the texture counts
     // are visible together.
-    // Since this test does not override CreateCompositorFrameSink, the
+    // Since this test does not override CreateLayerTreeFrameSink, the
     // |compositor_context_provider| will be a TestContextProvider.
     display_context_provider_ =
         static_cast<TestContextProvider*>(compositor_context_provider.get());

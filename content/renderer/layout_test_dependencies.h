@@ -13,7 +13,7 @@
 namespace cc {
 class ContextProvider;
 class CopyOutputRequest;
-class CompositorFrameSink;
+class LayerTreeFrameSink;
 class SwapPromise;
 }
 
@@ -29,7 +29,7 @@ class CompositorDependencies;
 // RenderThreadImpl.
 class LayoutTestDependencies {
  public:
-  virtual std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
+  virtual std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink(
       int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
       scoped_refptr<cc::ContextProvider> compositor_context_provider,

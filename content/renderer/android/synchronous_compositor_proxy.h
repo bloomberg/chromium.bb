@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "content/renderer/android/synchronous_compositor_frame_sink.h"
+#include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -27,14 +27,14 @@ class CompositorFrame;
 
 namespace content {
 
-class SynchronousCompositorFrameSink;
+class SynchronousLayerTreeFrameSink;
 struct SyncCompositorCommonRendererParams;
 struct SyncCompositorDemandDrawHwParams;
 struct SyncCompositorDemandDrawSwParams;
 struct SyncCompositorSetSharedMemoryParams;
 
 class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
-                                   public SynchronousCompositorFrameSinkClient {
+                                   public SynchronousLayerTreeFrameSinkClient {
  public:
   SynchronousCompositorProxy(
       int routing_id,
@@ -51,14 +51,14 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
                             float min_page_scale_factor,
                             float max_page_scale_factor) override;
 
-  // SynchronousCompositorFrameSinkClient overrides.
+  // SynchronousLayerTreeFrameSinkClient overrides.
   void DidActivatePendingTree() override;
   void Invalidate() override;
-  void SubmitCompositorFrame(uint32_t compositor_frame_sink_id,
+  void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
                              cc::CompositorFrame frame) override;
 
-  void SetCompositorFrameSink(
-      SynchronousCompositorFrameSink* compositor_frame_sink);
+  void SetLayerTreeFrameSink(
+      SynchronousLayerTreeFrameSink* layer_tree_frame_sink);
   void OnMessageReceived(const IPC::Message& message);
   bool Send(IPC::Message* message);
   void PopulateCommonParams(SyncCompositorCommonRendererParams* params) const;
@@ -84,15 +84,15 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
       SyncCompositorCommonRendererParams* common_renderer_params);
   void SetScroll(const gfx::ScrollOffset& total_scroll_offset);
 
-  void SubmitCompositorFrameHwAsync(uint32_t compositor_frame_sink_id,
+  void SubmitCompositorFrameHwAsync(uint32_t layer_tree_frame_sink_id,
                                     cc::CompositorFrame frame);
-  void SubmitCompositorFrameHw(uint32_t compositor_frame_sink_id,
+  void SubmitCompositorFrameHw(uint32_t layer_tree_frame_sink_id,
                                cc::CompositorFrame frame);
   void SendDemandDrawHwReply(base::Optional<cc::CompositorFrame> frame,
-                             uint32_t compositor_frame_sink_id,
+                             uint32_t layer_tree_frame_sink_id,
                              IPC::Message* reply_message);
   void SendDemandDrawHwReplyAsync(base::Optional<cc::CompositorFrame> frame,
-                                  uint32_t compositor_frame_sink_id);
+                                  uint32_t layer_tree_frame_sink_id);
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
   void SubmitCompositorFrameSw(cc::CompositorFrame frame);
   void SendDemandDrawSwReply(
@@ -106,7 +106,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   IPC::Sender* const sender_;
   ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
   const bool use_in_process_zero_copy_software_draw_;
-  SynchronousCompositorFrameSink* compositor_frame_sink_;
+  SynchronousLayerTreeFrameSink* layer_tree_frame_sink_;
   bool inside_receive_;
   IPC::Message* hardware_draw_reply_;
   IPC::Message* software_draw_reply_;

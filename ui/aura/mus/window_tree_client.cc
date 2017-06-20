@@ -700,7 +700,7 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
   if (window->window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
       window->window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
       window->window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED ||
-      window->HasLocalCompositorFrameSink()) {
+      window->HasLocalLayerTreeFrameSink()) {
     local_surface_id = window->GetOrAllocateLocalSurfaceId(new_bounds.size());
     synchronizing_with_child_on_next_frame_ = true;
   }

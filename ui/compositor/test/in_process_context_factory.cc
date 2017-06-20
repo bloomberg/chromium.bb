@@ -18,7 +18,7 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/surfaces/direct_compositor_frame_sink.h"
+#include "cc/surfaces/direct_layer_tree_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
@@ -179,7 +179,7 @@ void InProcessContextFactory::SetUseFastRefreshRateForTests() {
   refresh_rate_ = 200.0;
 }
 
-void InProcessContextFactory::CreateCompositorFrameSink(
+void InProcessContextFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<Compositor> compositor) {
   // Try to reuse existing shared worker context provider.
   bool shared_worker_context_provider_lost = false;
@@ -251,11 +251,11 @@ void InProcessContextFactory::CreateCompositorFrameSink(
   data->begin_frame_source = std::move(begin_frame_source);
 
   auto* display = per_compositor_data_[compositor.get()]->display.get();
-  auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(
+  auto layer_tree_frame_sink = base::MakeUnique<cc::DirectLayerTreeFrameSink>(
       compositor->frame_sink_id(), GetSurfaceManager(), display,
       context_provider, shared_worker_context_provider_,
       &gpu_memory_buffer_manager_, &shared_bitmap_manager_);
-  compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
+  compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 
   data->display->Resize(compositor->size());
 }

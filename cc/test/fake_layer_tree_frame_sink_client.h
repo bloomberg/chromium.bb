@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_CLIENT_H_
-#define CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_CLIENT_H_
+#ifndef CC_TEST_FAKE_LAYER_TREE_FRAME_SINK_CLIENT_H_
+#define CC_TEST_FAKE_LAYER_TREE_FRAME_SINK_CLIENT_H_
 
-#include "cc/output/compositor_frame_sink_client.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
+
 #include "cc/output/managed_memory_policy.h"
 
 namespace cc {
 
-class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
+class FakeLayerTreeFrameSinkClient : public LayerTreeFrameSinkClient {
  public:
-  FakeCompositorFrameSinkClient() : memory_policy_(0) {}
+  FakeLayerTreeFrameSinkClient() : memory_policy_(0) {}
 
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void DidReceiveCompositorFrameAck() override;
   void ReclaimResources(const ReturnedResourceArray& resources) override {}
-  void DidLoseCompositorFrameSink() override;
+  void DidLoseLayerTreeFrameSink() override;
   void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override {}
@@ -29,8 +30,8 @@ class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
 
   int ack_count() { return ack_count_; }
 
-  bool did_lose_compositor_frame_sink_called() {
-    return did_lose_compositor_frame_sink_called_;
+  bool did_lose_layer_tree_frame_sink_called() {
+    return did_lose_layer_tree_frame_sink_called_;
   }
 
   const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
@@ -39,11 +40,11 @@ class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
 
  private:
   int ack_count_ = 0;
-  bool did_lose_compositor_frame_sink_called_ = false;
+  bool did_lose_layer_tree_frame_sink_called_ = false;
   ManagedMemoryPolicy memory_policy_;
   BeginFrameSource* begin_frame_source_;
 };
 
 }  // namespace cc
 
-#endif  // CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_CLIENT_H_
+#endif  // CC_TEST_FAKE_LAYER_TREE_FRAME_SINK_CLIENT_H_

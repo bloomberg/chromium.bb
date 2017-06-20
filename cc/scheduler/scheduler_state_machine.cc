@@ -23,19 +23,19 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
 
 SchedulerStateMachine::~SchedulerStateMachine() = default;
 
-const char* SchedulerStateMachine::CompositorFrameSinkStateToString(
-    CompositorFrameSinkState state) {
+const char* SchedulerStateMachine::LayerTreeFrameSinkStateToString(
+    LayerTreeFrameSinkState state) {
   switch (state) {
-    case COMPOSITOR_FRAME_SINK_NONE:
-      return "COMPOSITOR_FRAME_SINK_NONE";
-    case COMPOSITOR_FRAME_SINK_ACTIVE:
-      return "COMPOSITOR_FRAME_SINK_ACTIVE";
-    case COMPOSITOR_FRAME_SINK_CREATING:
-      return "COMPOSITOR_FRAME_SINK_CREATING";
-    case COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT:
-      return "COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT";
-    case COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION:
-      return "COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION";
+    case LAYER_TREE_FRAME_SINK_NONE:
+      return "LAYER_TREE_FRAME_SINK_NONE";
+    case LAYER_TREE_FRAME_SINK_ACTIVE:
+      return "LAYER_TREE_FRAME_SINK_ACTIVE";
+    case LAYER_TREE_FRAME_SINK_CREATING:
+      return "LAYER_TREE_FRAME_SINK_CREATING";
+    case LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_COMMIT:
+      return "LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_COMMIT";
+    case LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION:
+      return "LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION";
   }
   NOTREACHED();
   return "???";
@@ -132,12 +132,12 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_DRAW_FORCED";
     case ACTION_DRAW_ABORT:
       return "ACTION_DRAW_ABORT";
-    case ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION:
-      return "ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION";
+    case ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION:
+      return "ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION";
     case ACTION_PREPARE_TILES:
       return "ACTION_PREPARE_TILES";
-    case ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK:
-      return "ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK";
+    case ACTION_INVALIDATE_LAYER_TREE_FRAME_SINK:
+      return "ACTION_INVALIDATE_LAYER_TREE_FRAME_SINK";
     case ACTION_PERFORM_IMPL_SIDE_INVALIDATION:
       return "ACTION_PERFORM_IMPL_SIDE_INVALIDATION";
     case ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
@@ -164,8 +164,8 @@ void SchedulerStateMachine::AsValueInto(
   state->SetString("begin_main_frame_state",
                    BeginMainFrameStateToString(begin_main_frame_state_));
   state->SetString(
-      "compositor_frame_sink_state",
-      CompositorFrameSinkStateToString(compositor_frame_sink_state_));
+      "layer_tree_frame_sink_state",
+      LayerTreeFrameSinkStateToString(layer_tree_frame_sink_state_));
   state->SetString("forced_redraw_state",
                    ForcedRedrawOnTimeoutStateToString(forced_redraw_state_));
   state->EndDictionary();
@@ -199,16 +199,16 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("wants_begin_main_frame_not_expected",
                     wants_begin_main_frame_not_expected_);
   state->SetBoolean("did_commit_during_frame", did_commit_during_frame_);
-  state->SetBoolean("did_invalidate_compositor_frame_sink",
-                    did_invalidate_compositor_frame_sink_);
+  state->SetBoolean("did_invalidate_layer_tree_frame_sink",
+                    did_invalidate_layer_tree_frame_sink_);
   state->SetBoolean("did_perform_impl_side_invalidaion",
                     did_perform_impl_side_invalidation_);
   state->SetBoolean("did_prepare_tiles", did_prepare_tiles_);
   state->SetInteger("consecutive_checkerboard_animations",
                     consecutive_checkerboard_animations_);
   state->SetInteger("pending_submit_frames", pending_submit_frames_);
-  state->SetInteger("submit_frames_with_current_compositor_frame_sink",
-                    submit_frames_with_current_compositor_frame_sink_);
+  state->SetInteger("submit_frames_with_current_layer_tree_frame_sink",
+                    submit_frames_with_current_layer_tree_frame_sink_);
   state->SetBoolean("needs_redraw", needs_redraw_);
   state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
   state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
@@ -223,8 +223,8 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("active_tree_needs_first_draw",
                     active_tree_needs_first_draw_);
   state->SetBoolean("wait_for_ready_to_draw", wait_for_ready_to_draw_);
-  state->SetBoolean("did_create_and_initialize_first_compositor_frame_sink",
-                    did_create_and_initialize_first_compositor_frame_sink_);
+  state->SetBoolean("did_create_and_initialize_first_layer_tree_frame_sink",
+                    did_create_and_initialize_first_layer_tree_frame_sink_);
   state->SetString("tree_priority", TreePriorityToString(tree_priority_));
   state->SetString("scroll_handler_state",
                    ScrollHandlerStateToString(scroll_handler_state_));
@@ -253,10 +253,10 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   // pending activations will be forced and draws will be aborted. However,
   // when the embedder is Android WebView, software draws could be scheduled by
   // the Android OS at any time and draws should not be aborted in this case.
-  bool is_compositor_frame_sink_lost =
-      (compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_NONE);
+  bool is_layer_tree_frame_sink_lost =
+      (layer_tree_frame_sink_state_ == LAYER_TREE_FRAME_SINK_NONE);
   if (resourceless_draw_)
-    return is_compositor_frame_sink_lost || !can_draw_;
+    return is_layer_tree_frame_sink_lost || !can_draw_;
 
   // These are all the cases where we normally cannot or do not want to draw
   // but, if needs_redraw_ is true and we do not draw to make forward progress,
@@ -264,7 +264,7 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   // This should be a superset of PendingActivationsShouldBeForced() since
   // activation of the pending tree is blocked by drawing of the active tree and
   // the main thread might be blocked on activation of the most recent commit.
-  return is_compositor_frame_sink_lost || !can_draw_ || !visible_ ||
+  return is_layer_tree_frame_sink_lost || !can_draw_ || !visible_ ||
          begin_frame_source_paused_;
 }
 
@@ -272,7 +272,7 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
   // There is no output surface to trigger our activations.
   // If we do not force activations to make forward progress, we might deadlock
   // with the main thread.
-  if (compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_NONE)
+  if (layer_tree_frame_sink_state_ == LAYER_TREE_FRAME_SINK_NONE)
     return true;
 
   // If we're not visible, we should force activation.
@@ -293,7 +293,7 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
   return false;
 }
 
-bool SchedulerStateMachine::ShouldBeginCompositorFrameSinkCreation() const {
+bool SchedulerStateMachine::ShouldBeginLayerTreeFrameSinkCreation() const {
   if (!visible_)
     return false;
 
@@ -303,8 +303,8 @@ bool SchedulerStateMachine::ShouldBeginCompositorFrameSinkCreation() const {
     return false;
   }
 
-  // Make sure the BeginImplFrame from any previous CompositorFrameSinks
-  // are complete before creating the new CompositorFrameSink.
+  // Make sure the BeginImplFrame from any previous LayerTreeFrameSinks
+  // are complete before creating the new LayerTreeFrameSink.
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_IDLE)
     return false;
 
@@ -317,7 +317,7 @@ bool SchedulerStateMachine::ShouldBeginCompositorFrameSinkCreation() const {
 
   // We need to create the output surface if we don't have one and we haven't
   // started creating one yet.
-  return compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_NONE;
+  return layer_tree_frame_sink_state_ == LAYER_TREE_FRAME_SINK_NONE;
 }
 
 bool SchedulerStateMachine::ShouldDraw() const {
@@ -335,7 +335,7 @@ bool SchedulerStateMachine::ShouldDraw() const {
     return false;
 
   // Don't draw if we are waiting on the first commit after a surface.
-  if (compositor_frame_sink_state_ != COMPOSITOR_FRAME_SINK_ACTIVE)
+  if (layer_tree_frame_sink_state_ != LAYER_TREE_FRAME_SINK_ACTIVE)
     return false;
 
   // Do not queue too many draws.
@@ -491,8 +491,8 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT)
     return true;
 
-  // We shouldn't normally accept commits if there isn't an CompositorFrameSink.
-  if (!HasInitializedCompositorFrameSink())
+  // We shouldn't normally accept commits if there isn't a LayerTreeFrameSink.
+  if (!HasInitializedLayerTreeFrameSink())
     return false;
 
   if (!settings_.main_frame_while_submit_frame_throttled_enabled) {
@@ -549,9 +549,9 @@ bool SchedulerStateMachine::ShouldPrepareTiles() const {
   return needs_prepare_tiles_;
 }
 
-bool SchedulerStateMachine::ShouldInvalidateCompositorFrameSink() const {
+bool SchedulerStateMachine::ShouldInvalidateLayerTreeFrameSink() const {
   // Do not invalidate more than once per begin frame.
-  if (did_invalidate_compositor_frame_sink_)
+  if (did_invalidate_layer_tree_frame_sink_)
     return false;
 
   // Only the synchronous compositor requires invalidations.
@@ -587,10 +587,10 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     return ACTION_PREPARE_TILES;
   if (ShouldSendBeginMainFrame())
     return ACTION_SEND_BEGIN_MAIN_FRAME;
-  if (ShouldInvalidateCompositorFrameSink())
-    return ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK;
-  if (ShouldBeginCompositorFrameSinkCreation())
-    return ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION;
+  if (ShouldInvalidateLayerTreeFrameSink())
+    return ACTION_INVALIDATE_LAYER_TREE_FRAME_SINK;
+  if (ShouldBeginLayerTreeFrameSinkCreation())
+    return ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION;
   if (ShouldNotifyBeginMainFrameNotSent())
     return ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT;
   return ACTION_NONE;
@@ -659,7 +659,7 @@ bool SchedulerStateMachine::CouldCreatePendingTree() const {
     return false;
 
   // Don't create a pending tree till a frame sink is initialized.
-  if (!HasInitializedCompositorFrameSink())
+  if (!HasInitializedLayerTreeFrameSink())
     return false;
 
   return true;
@@ -739,18 +739,18 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
   }
 
   // Update the output surface state.
-  if (compositor_frame_sink_state_ ==
-      COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT) {
-    compositor_frame_sink_state_ =
-        has_pending_tree_ ? COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION
-                          : COMPOSITOR_FRAME_SINK_ACTIVE;
+  if (layer_tree_frame_sink_state_ ==
+      LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_COMMIT) {
+    layer_tree_frame_sink_state_ =
+        has_pending_tree_ ? LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION
+                          : LAYER_TREE_FRAME_SINK_ACTIVE;
   }
 }
 
 void SchedulerStateMachine::WillActivate() {
-  if (compositor_frame_sink_state_ ==
-      COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION)
-    compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_ACTIVE;
+  if (layer_tree_frame_sink_state_ ==
+      LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION)
+    layer_tree_frame_sink_state_ = LAYER_TREE_FRAME_SINK_ACTIVE;
 
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION)
     forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_DRAW;
@@ -863,9 +863,9 @@ void SchedulerStateMachine::WillPrepareTiles() {
   needs_prepare_tiles_ = false;
 }
 
-void SchedulerStateMachine::WillBeginCompositorFrameSinkCreation() {
-  DCHECK_EQ(compositor_frame_sink_state_, COMPOSITOR_FRAME_SINK_NONE);
-  compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_CREATING;
+void SchedulerStateMachine::WillBeginLayerTreeFrameSinkCreation() {
+  DCHECK_EQ(layer_tree_frame_sink_state_, LAYER_TREE_FRAME_SINK_NONE);
+  layer_tree_frame_sink_state_ = LAYER_TREE_FRAME_SINK_CREATING;
 
   // The following DCHECKs make sure we are in the proper quiescent state.
   // The pipeline should be flushed entirely before we start output
@@ -875,10 +875,10 @@ void SchedulerStateMachine::WillBeginCompositorFrameSinkCreation() {
   DCHECK(!active_tree_needs_first_draw_);
 }
 
-void SchedulerStateMachine::WillInvalidateCompositorFrameSink() {
-  DCHECK(!did_invalidate_compositor_frame_sink_);
-  did_invalidate_compositor_frame_sink_ = true;
-  last_frame_number_invalidate_compositor_frame_sink_performed_ =
+void SchedulerStateMachine::WillInvalidateLayerTreeFrameSink() {
+  DCHECK(!did_invalidate_layer_tree_frame_sink_);
+  did_invalidate_layer_tree_frame_sink_ = true;
+  last_frame_number_invalidate_layer_tree_frame_sink_performed_ =
       current_frame_number_;
 
   // The synchronous compositor makes no guarantees about a draw coming in after
@@ -900,7 +900,7 @@ bool SchedulerStateMachine::BeginFrameNeededForVideo() const {
 bool SchedulerStateMachine::BeginFrameNeeded() const {
   // We can't handle BeginFrames when output surface isn't initialized.
   // TODO(brianderson): Support output surface creation inside a BeginFrame.
-  if (!HasInitializedCompositorFrameSink())
+  if (!HasInitializedLayerTreeFrameSink())
     return false;
 
   // If we are not visible, we don't need BeginFrame messages.
@@ -1048,7 +1048,7 @@ void SchedulerStateMachine::OnBeginImplFrame(uint32_t source_id,
   did_notify_begin_main_frame_not_sent_ = false;
   did_send_begin_main_frame_for_current_frame_ = false;
   did_commit_during_frame_ = false;
-  did_invalidate_compositor_frame_sink_ = false;
+  did_invalidate_layer_tree_frame_sink_ = false;
   did_perform_impl_side_invalidation_ = false;
 }
 
@@ -1199,7 +1199,7 @@ void SchedulerStateMachine::DidSubmitCompositorFrame() {
   DCHECK_LT(pending_submit_frames_, kMaxPendingSubmitFrames);
 
   pending_submit_frames_++;
-  submit_frames_with_current_compositor_frame_sink_++;
+  submit_frames_with_current_layer_tree_frame_sink_++;
 
   did_submit_in_last_frame_ = true;
   last_frame_number_submit_performed_ = current_frame_number_;
@@ -1264,7 +1264,7 @@ void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   main_thread_missed_last_deadline_ = false;
 
   switch (reason) {
-    case CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST:
+    case CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST:
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
     case CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:
       begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
@@ -1282,11 +1282,11 @@ void SchedulerStateMachine::DidPrepareTiles() {
   did_prepare_tiles_ = true;
 }
 
-void SchedulerStateMachine::DidLoseCompositorFrameSink() {
-  if (compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_NONE ||
-      compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_CREATING)
+void SchedulerStateMachine::DidLoseLayerTreeFrameSink() {
+  if (layer_tree_frame_sink_state_ == LAYER_TREE_FRAME_SINK_NONE ||
+      layer_tree_frame_sink_state_ == LAYER_TREE_FRAME_SINK_CREATING)
     return;
-  compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_NONE;
+  layer_tree_frame_sink_state_ = LAYER_TREE_FRAME_SINK_NONE;
   needs_redraw_ = false;
   wait_for_ready_to_draw_ = false;
 }
@@ -1300,18 +1300,18 @@ void SchedulerStateMachine::NotifyReadyToDraw() {
   wait_for_ready_to_draw_ = false;
 }
 
-void SchedulerStateMachine::DidCreateAndInitializeCompositorFrameSink() {
-  DCHECK_EQ(compositor_frame_sink_state_, COMPOSITOR_FRAME_SINK_CREATING);
-  compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT;
+void SchedulerStateMachine::DidCreateAndInitializeLayerTreeFrameSink() {
+  DCHECK_EQ(layer_tree_frame_sink_state_, LAYER_TREE_FRAME_SINK_CREATING);
+  layer_tree_frame_sink_state_ = LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_COMMIT;
 
-  if (did_create_and_initialize_first_compositor_frame_sink_) {
+  if (did_create_and_initialize_first_layer_tree_frame_sink_) {
     // TODO(boliu): See if we can remove this when impl-side painting is always
     // on. Does anything on the main thread need to update after recreate?
     needs_begin_main_frame_ = true;
   }
-  did_create_and_initialize_first_compositor_frame_sink_ = true;
+  did_create_and_initialize_first_layer_tree_frame_sink_ = true;
   pending_submit_frames_ = 0;
-  submit_frames_with_current_compositor_frame_sink_ = 0;
+  submit_frames_with_current_layer_tree_frame_sink_ = 0;
   main_thread_missed_last_deadline_ = false;
 }
 
@@ -1320,15 +1320,15 @@ void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
   begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_STARTED;
 }
 
-bool SchedulerStateMachine::HasInitializedCompositorFrameSink() const {
-  switch (compositor_frame_sink_state_) {
-    case COMPOSITOR_FRAME_SINK_NONE:
-    case COMPOSITOR_FRAME_SINK_CREATING:
+bool SchedulerStateMachine::HasInitializedLayerTreeFrameSink() const {
+  switch (layer_tree_frame_sink_state_) {
+    case LAYER_TREE_FRAME_SINK_NONE:
+    case LAYER_TREE_FRAME_SINK_CREATING:
       return false;
 
-    case COMPOSITOR_FRAME_SINK_ACTIVE:
-    case COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT:
-    case COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION:
+    case LAYER_TREE_FRAME_SINK_ACTIVE:
+    case LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_COMMIT:
+    case LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION:
       return true;
   }
   NOTREACHED();

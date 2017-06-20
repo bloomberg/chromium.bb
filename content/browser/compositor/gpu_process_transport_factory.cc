@@ -26,7 +26,7 @@
 #include "cc/raster/task_graph_runner.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/surfaces/direct_compositor_frame_sink.h"
+#include "cc/surfaces/direct_layer_tree_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_manager.h"
@@ -302,7 +302,7 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
   return validator;
 }
 
-static bool ShouldCreateGpuCompositorFrameSink(ui::Compositor* compositor) {
+static bool ShouldCreateGpuLayerTreeFrameSink(ui::Compositor* compositor) {
 #if defined(OS_CHROMEOS)
   // Software fallback does not happen on Chrome OS.
   return true;
@@ -316,7 +316,7 @@ static bool ShouldCreateGpuCompositorFrameSink(ui::Compositor* compositor) {
   return GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor();
 }
 
-void GpuProcessTransportFactory::CreateCompositorFrameSink(
+void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
   DCHECK(!!compositor);
   PerCompositorData* data = per_compositor_data_[compositor.get()].get();
@@ -325,7 +325,7 @@ void GpuProcessTransportFactory::CreateCompositorFrameSink(
   } else {
     // TODO(danakj): We can destroy the |data->display| and
     // |data->begin_frame_source| here when the compositor destroys its
-    // CompositorFrameSink before calling back here.
+    // LayerTreeFrameSink before calling back here.
     data->display_output_surface = nullptr;
   }
 
@@ -336,7 +336,7 @@ void GpuProcessTransportFactory::CreateCompositorFrameSink(
 
   const bool use_vulkan = static_cast<bool>(SharedVulkanContextProvider());
   const bool create_gpu_output_surface =
-      ShouldCreateGpuCompositorFrameSink(compositor.get());
+      ShouldCreateGpuLayerTreeFrameSink(compositor.get());
   if (create_gpu_output_surface && !use_vulkan) {
     gpu::GpuChannelEstablishedCallback callback(
         base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
@@ -618,21 +618,21 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the
   // same ContextProvider as the Display's output surface.
-  auto compositor_frame_sink =
+  auto layer_tree_frame_sink =
       vulkan_context_provider
-          ? base::MakeUnique<cc::DirectCompositorFrameSink>(
+          ? base::MakeUnique<cc::DirectLayerTreeFrameSink>(
                 compositor->frame_sink_id(), GetSurfaceManager(),
                 data->display.get(),
                 static_cast<scoped_refptr<cc::VulkanContextProvider>>(
                     vulkan_context_provider))
-          : base::MakeUnique<cc::DirectCompositorFrameSink>(
+          : base::MakeUnique<cc::DirectLayerTreeFrameSink>(
                 compositor->frame_sink_id(), GetSurfaceManager(),
                 data->display.get(), context_provider,
                 shared_worker_context_provider_, GetGpuMemoryBufferManager(),
                 viz::HostSharedBitmapManager::current());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
-  compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
+  compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
 std::unique_ptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(

@@ -66,9 +66,9 @@
 #define SET_UP_STATE(state)                                                \
   state.SetVisible(true);                                                  \
   EXPECT_ACTION_UPDATE_STATE(                                              \
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION); \
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION); \
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);          \
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();       \
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();        \
   state.SetCanDraw(true);
 
 namespace cc {
@@ -95,9 +95,9 @@ class StateMachine : public SchedulerStateMachine {
       : SchedulerStateMachine(scheduler_settings),
         draw_result_for_test_(DRAW_SUCCESS) {}
 
-  void CreateAndInitializeCompositorFrameSinkWithActivatedCommit() {
-    DidCreateAndInitializeCompositorFrameSink();
-    compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_ACTIVE;
+  void CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit() {
+    DidCreateAndInitializeLayerTreeFrameSink();
+    layer_tree_frame_sink_state_ = LAYER_TREE_FRAME_SINK_ACTIVE;
   }
 
   void IssueNextBeginImplFrame() {
@@ -123,8 +123,8 @@ class StateMachine : public SchedulerStateMachine {
     return begin_impl_frame_state_;
   }
 
-  CompositorFrameSinkState compositor_frame_sink_state() const {
-    return compositor_frame_sink_state_;
+  LayerTreeFrameSinkState layer_tree_frame_sink_state() const {
+    return layer_tree_frame_sink_state_;
   }
 
   void SetNeedsBeginMainFrameForTest(bool needs_begin_main_frame) {
@@ -226,16 +226,16 @@ void PerformAction(StateMachine* sm, SchedulerStateMachine::Action action) {
       return;
     }
 
-    case SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION:
-      sm->WillBeginCompositorFrameSinkCreation();
+    case SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION:
+      sm->WillBeginLayerTreeFrameSinkCreation();
       return;
 
     case SchedulerStateMachine::ACTION_PREPARE_TILES:
       sm->WillPrepareTiles();
       return;
 
-    case SchedulerStateMachine::ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK:
-      sm->WillInvalidateCompositorFrameSink();
+    case SchedulerStateMachine::ACTION_INVALIDATE_LAYER_TREE_FRAME_SINK:
+      sm->WillInvalidateLayerTreeFrameSink();
       return;
 
     case SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION:
@@ -249,9 +249,9 @@ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   state.SetBeginMainFrameState(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
 
@@ -300,9 +300,9 @@ TEST(SchedulerStateMachineTest, TestNextActionNotifyBeginMainFrameNotSent) {
   state.SetMainThreadWantsBeginMainFrameNotExpectedMessages(true);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   state.IssueNextBeginImplFrame();
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -322,9 +322,9 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     StateMachine state(default_scheduler_settings);
     state.SetVisible(true);
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+        SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+    state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
     state.SetBeginMainFrameState(
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
     state.SetNeedsRedraw(false);
@@ -366,9 +366,9 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
     state.SetVisible(true);
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+        SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+    state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
     state.SetNeedsRedraw(false);
     state.SetNeedsBeginMainFrame();
 
@@ -393,9 +393,9 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
     state.SetVisible(true);
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+        SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+    state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
     state.SetNeedsRedraw(false);
     state.SetNeedsBeginMainFrame();
     state.SetCanDraw(false);
@@ -767,9 +767,9 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
       StateMachine state(default_scheduler_settings);
       state.SetVisible(true);
       EXPECT_ACTION_UPDATE_STATE(
-          SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+          SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
       EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-      state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+      state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetBeginImplFrameState(all_begin_impl_frame_states[j]);
       bool visible =
@@ -795,9 +795,9 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
     StateMachine state(default_scheduler_settings);
     state.SetVisible(true);
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+        SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+    state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
     state.SetCanDraw(true);
     state.SetBeginMainFrameState(begin_main_frame_states[i]);
     state.SetBeginImplFrameState(
@@ -834,9 +834,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginMainFrameStatesRedrawWhenInvisible) {
       StateMachine state(default_scheduler_settings);
       state.SetVisible(true);
       EXPECT_ACTION_UPDATE_STATE(
-          SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+          SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
       EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-      state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+      state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetVisible(false);
       state.SetNeedsRedraw(true);
@@ -870,9 +870,9 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw) {
       StateMachine state(default_scheduler_settings);
       state.SetVisible(true);
       EXPECT_ACTION_UPDATE_STATE(
-          SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+          SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
       EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-      state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+      state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetVisible(false);
       state.SetNeedsRedraw(true);
@@ -892,9 +892,9 @@ TEST(SchedulerStateMachineTest,
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
 
   state.SetActiveTreeNeedsFirstDraw(true);
   state.SetNeedsBeginMainFrame();
@@ -1290,9 +1290,9 @@ TEST(SchedulerStateMachineTest, TestNoRequestCommitWhenInvisible) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   state.SetVisible(false);
   state.SetNeedsBeginMainFrame();
   EXPECT_FALSE(state.CouldSendBeginMainFrame());
@@ -1304,36 +1304,36 @@ TEST(SchedulerStateMachineTest, TestNoRequestCommitWhenBeginFrameSourcePaused) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   state.SetBeginFrameSourcePaused(true);
   state.SetNeedsBeginMainFrame();
   EXPECT_FALSE(state.CouldSendBeginMainFrame());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
-TEST(SchedulerStateMachineTest, TestNoRequestCompositorFrameSinkWhenInvisible) {
+TEST(SchedulerStateMachineTest, TestNoRequestLayerTreeFrameSinkWhenInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  // We should not request an CompositorFrameSink when we are still invisible.
+  // We should not request a LayerTreeFrameSink when we are still invisible.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   state.SetVisible(false);
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
   state.SetNeedsBeginMainFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
 }
 
 // See ProxyMain::BeginMainFrame "EarlyOut_NotVisible" /
-// "EarlyOut_CompositorFrameSinkLost" cases.
+// "EarlyOut_LayerTreeFrameSinkLost" cases.
 TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
@@ -1392,9 +1392,9 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseCommitNotNeeded) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.DidCreateAndInitializeCompositorFrameSink();
+  state.DidCreateAndInitializeLayerTreeFrameSink();
   state.SetCanDraw(true);
 
   // Get into a begin frame / commit state.
@@ -1442,8 +1442,8 @@ TEST(SchedulerStateMachineTest, TestFirstContextCreation) {
   state.SetCanDraw(true);
 
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Check that the first init does not SetNeedsBeginMainFrame.
@@ -1464,19 +1464,19 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle) {
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
 
-  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION,
+  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION,
             state.NextAction());
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
 
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Once context recreation begins, nothing should happen.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Recreate the context.
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
 
   // When the context is recreated, we should begin a commit.
   state.IssueNextBeginImplFrame();
@@ -1490,14 +1490,14 @@ TEST(SchedulerStateMachineTest,
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
 
-  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION,
+  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION,
             state.NextAction());
-  state.DidLoseCompositorFrameSink();
-  EXPECT_EQ(state.compositor_frame_sink_state(),
-            SchedulerStateMachine::COMPOSITOR_FRAME_SINK_NONE);
+  state.DidLoseLayerTreeFrameSink();
+  EXPECT_EQ(state.layer_tree_frame_sink_state(),
+            SchedulerStateMachine::LAYER_TREE_FRAME_SINK_NONE);
 
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Once context recreation begins, nothing should happen.
@@ -1514,10 +1514,10 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Recreate the context
-  state.DidCreateAndInitializeCompositorFrameSink();
+  state.DidCreateAndInitializeLayerTreeFrameSink();
   EXPECT_EQ(
-      state.compositor_frame_sink_state(),
-      SchedulerStateMachine::COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT);
+      state.layer_tree_frame_sink_state(),
+      SchedulerStateMachine::LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_COMMIT);
   EXPECT_FALSE(state.RedrawPending());
 
   // When the context is recreated, we wait until the next BeginImplFrame
@@ -1539,16 +1539,16 @@ TEST(SchedulerStateMachineTest,
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-  EXPECT_EQ(state.compositor_frame_sink_state(),
+  EXPECT_EQ(state.layer_tree_frame_sink_state(),
             SchedulerStateMachine::
-                COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION);
+                LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION);
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_EQ(state.compositor_frame_sink_state(),
-            SchedulerStateMachine::COMPOSITOR_FRAME_SINK_ACTIVE);
+  EXPECT_EQ(state.layer_tree_frame_sink_state(),
+            SchedulerStateMachine::LAYER_TREE_FRAME_SINK_ACTIVE);
 
-  // Finishing the first commit after initializing an CompositorFrameSink should
+  // Finishing the first commit after initializing a LayerTreeFrameSink should
   // automatically cause a redraw.
   EXPECT_TRUE(state.RedrawPending());
   state.IssueNextBeginImplFrame();
@@ -1627,7 +1627,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
                           BeginFrameArgs::kInvalidFrameNumber);
 
   // Cause a lost context while the BeginMainFrame is in flight.
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
   EXPECT_FALSE(state.BeginFrameNeeded());
 
   // Ask for another draw. Expect nothing happens.
@@ -1645,7 +1645,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, 10u,
                           BeginFrameArgs::kInvalidFrameNumber);
 
-  // We will abort the draw when the CompositorFrameSink is lost if we are
+  // We will abort the draw when the LayerTreeFrameSink is lost if we are
   // waiting for the first draw to unblock the main thread.
   EXPECT_TRUE(state.active_tree_needs_first_draw());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_ABORT);
@@ -1655,7 +1655,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   // Expect to begin context recreation only in BEGIN_IMPL_FRAME_STATE_IDLE
   EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   EXPECT_ACTION(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
 
   state.OnBeginImplFrame(0, 11);
   EXPECT_IMPL_FRAME_STATE(
@@ -1694,7 +1694,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Cause a lost context while the BeginMainFrame is in flight.
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
 
   // Ask for another draw and also set needs commit. Expect nothing happens.
   state.SetNeedsRedraw(true);
@@ -1709,13 +1709,13 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_TRUE(state.active_tree_needs_first_draw());
 
-  // Because the CompositorFrameSink is missing, we expect the draw to abort.
+  // Because the LayerTreeFrameSink is missing, we expect the draw to abort.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_ABORT);
 
   // Expect to begin context recreation only in BEGIN_IMPL_FRAME_STATE_IDLE
   EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   EXPECT_ACTION(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
 
   state.IssueNextBeginImplFrame();
   EXPECT_IMPL_FRAME_STATE(
@@ -1729,10 +1729,10 @@ TEST(SchedulerStateMachineTest,
 
   state.OnBeginImplFrameIdle();
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
 
-  // After we get a new CompositorFrameSink, the commit flow should start.
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  // After we get a new LayerTreeFrameSink, the commit flow should start.
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
@@ -1752,19 +1752,19 @@ TEST(SchedulerStateMachineTest,
 }
 
 TEST(SchedulerStateMachineTest,
-     DontDrawBeforeCommitAfterLostCompositorFrameSink) {
+     DontDrawBeforeCommitAfterLostLayerTreeFrameSink) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
 
   state.SetNeedsRedraw(true);
 
-  // Cause a lost CompositorFrameSink, and restore it.
-  state.DidLoseCompositorFrameSink();
+  // Cause a lost LayerTreeFrameSink, and restore it.
+  state.DidLoseLayerTreeFrameSink();
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.DidCreateAndInitializeCompositorFrameSink();
+  state.DidCreateAndInitializeLayerTreeFrameSink();
 
   EXPECT_FALSE(state.RedrawPending());
   state.IssueNextBeginImplFrame();
@@ -1772,7 +1772,7 @@ TEST(SchedulerStateMachineTest,
 }
 
 TEST(SchedulerStateMachineTest,
-     TestPendingActivationsShouldBeForcedAfterLostCompositorFrameSink) {
+     TestPendingActivationsShouldBeForcedAfterLostLayerTreeFrameSink) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
@@ -1781,7 +1781,7 @@ TEST(SchedulerStateMachineTest,
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
 
   // Cause a lost context.
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
 
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
@@ -1799,9 +1799,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginFrameNeededWhenInvisible) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
 
   EXPECT_FALSE(state.BeginFrameNeeded());
   state.SetNeedsRedraw(true);
@@ -1819,9 +1819,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginMainFrameWhenInvisible) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   state.SetVisible(false);
   state.SetNeedsBeginMainFrame();
   EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
@@ -1840,9 +1840,9 @@ TEST(SchedulerStateMachineTest, TestFinishCommitWhenCommitInProgress) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   state.SetVisible(false);
   state.SetBeginMainFrameState(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
@@ -1865,9 +1865,9 @@ TEST(SchedulerStateMachineTest,
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
   state.SetBeginFrameSourcePaused(true);
   state.SetBeginMainFrameState(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
@@ -1890,20 +1890,20 @@ TEST(SchedulerStateMachineTest, TestInitialActionsWhenContextLost) {
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
   state.SetNeedsBeginMainFrame();
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
 
-  // When we are visible, we normally want to begin CompositorFrameSink creation
+  // When we are visible, we normally want to begin LayerTreeFrameSink creation
   // as soon as possible.
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
 
-  state.DidCreateAndInitializeCompositorFrameSink();
+  state.DidCreateAndInitializeLayerTreeFrameSink();
   EXPECT_EQ(
-      state.compositor_frame_sink_state(),
-      SchedulerStateMachine::COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT);
+      state.layer_tree_frame_sink_state(),
+      SchedulerStateMachine::LAYER_TREE_FRAME_SINK_WAITING_FOR_FIRST_COMMIT);
 
   // We should not send a BeginMainFrame when we are invisible, even if we've
-  // lost the CompositorFrameSink and are trying to get the first commit, since
+  // lost the LayerTreeFrameSink and are trying to get the first commit, since
   // the
   // main thread will just abort anyway.
   state.SetVisible(false);
@@ -1965,24 +1965,24 @@ TEST(SchedulerStateMachineTest, ForceDrawForResourcelessSoftwareDraw) {
   state.SetBeginFrameSourcePaused(false);
 
   state.SetVisible(false);
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
 
   state.SetCanDraw(false);
-  state.WillBeginCompositorFrameSinkCreation();
-  state.DidCreateAndInitializeCompositorFrameSink();
+  state.WillBeginLayerTreeFrameSinkCreation();
+  state.DidCreateAndInitializeLayerTreeFrameSink();
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(true);
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(true);
-  state.WillBeginCompositorFrameSinkCreation();
-  state.DidCreateAndInitializeCompositorFrameSink();
+  state.WillBeginLayerTreeFrameSinkCreation();
+  state.DidCreateAndInitializeLayerTreeFrameSink();
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(false);
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 }
 
@@ -2092,7 +2092,7 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
 }
 
 TEST(SchedulerStateMachineTest,
-     TestTriggerDeadlineImmediatelyOnLostCompositorFrameSink) {
+     TestTriggerDeadlineImmediatelyOnLostLayerTreeFrameSink) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
@@ -2105,9 +2105,9 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  // The deadline should be triggered immediately when CompositorFrameSink is
+  // The deadline should be triggered immediately when LayerTreeFrameSink is
   // lost.
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
@@ -2188,7 +2188,7 @@ TEST(SchedulerStateMachineTest, EarlyOutCommitWantsProactiveBeginFrame) {
 }
 
 TEST(SchedulerStateMachineTest,
-     NoCompositorFrameSinkCreationWhileCommitPending) {
+     NoLayerTreeFrameSinkCreationWhileCommitPending) {
   SchedulerSettings settings;
   StateMachine state(settings);
   SET_UP_STATE(state);
@@ -2198,10 +2198,10 @@ TEST(SchedulerStateMachineTest,
   state.IssueNextBeginImplFrame();
   PerformAction(&state, SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
 
-  // Lose the CompositorFrameSink.
-  state.DidLoseCompositorFrameSink();
+  // Lose the LayerTreeFrameSink.
+  state.DidLoseLayerTreeFrameSink();
 
-  // The scheduler shouldn't trigger the CompositorFrameSink creation till the
+  // The scheduler shouldn't trigger the LayerTreeFrameSink creation till the
   // previous commit has been cleared.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
@@ -2212,15 +2212,15 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Abort the commit, since that is what we expect the main thread to do if the
-  // CompositorFrameSink was lost due to a synchronous call from the main thread
-  // to release the CompositorFrameSink.
+  // LayerTreeFrameSink was lost due to a synchronous call from the main thread
+  // to release the LayerTreeFrameSink.
   state.NotifyBeginMainFrameStarted();
   state.BeginMainFrameAborted(
-      CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST);
+      CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST);
 
-  // The scheduler should begin the CompositorFrameSink creation now.
+  // The scheduler should begin the LayerTreeFrameSink creation now.
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
 }
 
 TEST(SchedulerStateMachineTest, NoImplSideInvalidationsWhileInvisible) {
@@ -2265,16 +2265,16 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationOnlyInsideDeadline) {
 }
 
 TEST(SchedulerStateMachineTest,
-     NoImplSideInvalidationWithoutCompositorFrameSink) {
+     NoImplSideInvalidationWithoutLayerTreeFrameSink) {
   SchedulerSettings settings;
   StateMachine state(settings);
   SET_UP_STATE(state);
 
   // Impl-side invalidations should not be triggered till the frame sink is
   // initialized.
-  state.DidLoseCompositorFrameSink();
+  state.DidLoseLayerTreeFrameSink();
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // No impl-side invalidations should be performed during frame sink creation.
@@ -2283,9 +2283,9 @@ TEST(SchedulerStateMachineTest,
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
-  // Initializing the CompositorFrameSink puts us in a state waiting for the
+  // Initializing the LayerTreeFrameSink puts us in a state waiting for the
   // first commit.
-  state.DidCreateAndInitializeCompositorFrameSink();
+  state.DidCreateAndInitializeLayerTreeFrameSink();
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);

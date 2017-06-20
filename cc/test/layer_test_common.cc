@@ -17,7 +17,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/animation_test_common.h"
-#include "cc/test/fake_compositor_frame_sink.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/mock_occlusion_tracker.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,16 +132,16 @@ LayerTestCommon::LayerImplTest::LayerImplTest()
     : LayerImplTest(LayerTreeSettings()) {}
 
 LayerTestCommon::LayerImplTest::LayerImplTest(
-    std::unique_ptr<CompositorFrameSink> compositor_frame_sink)
-    : LayerImplTest(LayerTreeSettings(), std::move(compositor_frame_sink)) {}
+    std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink)
+    : LayerImplTest(LayerTreeSettings(), std::move(layer_tree_frame_sink)) {}
 
 LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
-    : LayerImplTest(settings, FakeCompositorFrameSink::Create3d()) {}
+    : LayerImplTest(settings, FakeLayerTreeFrameSink::Create3d()) {}
 
 LayerTestCommon::LayerImplTest::LayerImplTest(
     const LayerTreeSettings& settings,
-    std::unique_ptr<CompositorFrameSink> compositor_frame_sink)
-    : compositor_frame_sink_(std::move(compositor_frame_sink)),
+    std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink)
+    : layer_tree_frame_sink_(std::move(layer_tree_frame_sink)),
       animation_host_(AnimationHost::CreateForTesting(ThreadInstance::MAIN)),
       host_(FakeLayerTreeHost::Create(&client_,
                                       &task_graph_runner_,
@@ -154,7 +154,7 @@ LayerTestCommon::LayerImplTest::LayerImplTest(
   host_->host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
   host_->host_impl()->SetVisible(true);
   EXPECT_TRUE(
-      host_->host_impl()->InitializeRenderer(compositor_frame_sink_.get()));
+      host_->host_impl()->InitializeRenderer(layer_tree_frame_sink_.get()));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   timeline_ = AnimationTimeline::Create(timeline_id);
@@ -168,7 +168,7 @@ LayerTestCommon::LayerImplTest::LayerImplTest(
 LayerTestCommon::LayerImplTest::~LayerImplTest() {
   animation_host_->RemoveAnimationTimeline(timeline_);
   timeline_ = nullptr;
-  host_->host_impl()->ReleaseCompositorFrameSink();
+  host_->host_impl()->ReleaseLayerTreeFrameSink();
 }
 
 void LayerTestCommon::LayerImplTest::CalcDrawProps(

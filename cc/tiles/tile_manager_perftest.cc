@@ -13,9 +13,9 @@
 #include "cc/base/lap_timer.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/test/begin_frame_args_test.h"
-#include "cc/test/fake_compositor_frame_sink.h"
-#include "cc/test/fake_compositor_frame_sink_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
+#include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
@@ -48,7 +48,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
   void InitializeRenderer() override {
     host_impl()->SetVisible(true);
-    host_impl()->InitializeRenderer(compositor_frame_sink());
+    host_impl()->InitializeRenderer(layer_tree_frame_sink());
     tile_manager()->SetTileTaskManagerForTesting(
         base::MakeUnique<FakeTileTaskManagerImpl>());
   }

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_DIRECT_COMPOSITOR_FRAME_SINK_H_
-#define CC_SURFACES_DIRECT_COMPOSITOR_FRAME_SINK_H_
+#ifndef CC_SURFACES_DIRECT_LAYER_TREE_FRAME_SINK_H_
+#define CC_SURFACES_DIRECT_LAYER_TREE_FRAME_SINK_H_
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
@@ -22,15 +22,15 @@ class SurfaceManager;
 
 // This class submits compositor frames to an in-process Display, with the
 // client's frame being the root surface of the Display.
-class CC_SURFACES_EXPORT DirectCompositorFrameSink
-    : public CompositorFrameSink,
+class CC_SURFACES_EXPORT DirectLayerTreeFrameSink
+    : public LayerTreeFrameSink,
       public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
       public ExternalBeginFrameSourceClient,
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
   // The underlying Display, SurfaceManager, and LocalSurfaceIdAllocator must
   // outlive this class.
-  DirectCompositorFrameSink(
+  DirectLayerTreeFrameSink(
       const FrameSinkId& frame_sink_id,
       SurfaceManager* surface_manager,
       Display* display,
@@ -38,15 +38,15 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
       scoped_refptr<ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       SharedBitmapManager* shared_bitmap_manager);
-  DirectCompositorFrameSink(
+  DirectLayerTreeFrameSink(
       const FrameSinkId& frame_sink_id,
       SurfaceManager* surface_manager,
       Display* display,
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
-  ~DirectCompositorFrameSink() override;
+  ~DirectLayerTreeFrameSink() override;
 
-  // CompositorFrameSink implementation.
-  bool BindToClient(CompositorFrameSinkClient* client) override;
+  // LayerTreeFrameSink implementation.
+  bool BindToClient(LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SubmitCompositorFrame(CompositorFrame frame) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
@@ -85,9 +85,9 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   bool is_lost_ = false;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 
-  DISALLOW_COPY_AND_ASSIGN(DirectCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(DirectLayerTreeFrameSink);
 };
 
 }  // namespace cc
 
-#endif  // CC_SURFACES_DIRECT_COMPOSITOR_FRAME_SINK_H_
+#endif  // CC_SURFACES_DIRECT_LAYER_TREE_FRAME_SINK_H_

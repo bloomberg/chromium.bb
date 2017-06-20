@@ -97,9 +97,9 @@ class CONTENT_EXPORT CompositorImpl
                            float top_controls_delta) override {}
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
-  void RequestNewCompositorFrameSink() override;
-  void DidInitializeCompositorFrameSink() override;
-  void DidFailToInitializeCompositorFrameSink() override;
+  void RequestNewLayerTreeFrameSink() override;
+  void DidInitializeLayerTreeFrameSink() override;
+  void DidFailToInitializeLayerTreeFrameSink() override;
   void WillCommit() override {}
   void DidCommit() override;
   void DidCommitAndDrawFrame() override {}
@@ -109,7 +109,7 @@ class CONTENT_EXPORT CompositorImpl
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
-  void DidLoseCompositorFrameSink() override;
+  void DidLoseLayerTreeFrameSink() override;
 
   // WindowAndroidCompositor implementation.
   void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
@@ -123,7 +123,7 @@ class CONTENT_EXPORT CompositorImpl
   void SetVisible(bool visible);
   void CreateLayerTreeHost();
 
-  void HandlePendingCompositorFrameSinkRequest();
+  void HandlePendingLayerTreeFrameSinkRequest();
 
 #if BUILDFLAG(ENABLE_VULKAN)
   void CreateVulkanOutputSurface();
@@ -177,14 +177,14 @@ class CONTENT_EXPORT CompositorImpl
 
   base::OneShotTimer establish_gpu_channel_timeout_;
 
-  // Whether there is an CompositorFrameSink request pending from the current
-  // |host_|. Becomes |true| if RequestNewCompositorFrameSink is called, and
+  // Whether there is a LayerTreeFrameSink request pending from the current
+  // |host_|. Becomes |true| if RequestNewLayerTreeFrameSink is called, and
   // |false| if |host_| is deleted or we succeed in creating *and* initializing
-  // a CompositorFrameSink (which is essentially the contract with cc).
-  bool compositor_frame_sink_request_pending_;
+  // a LayerTreeFrameSink (which is essentially the contract with cc).
+  bool layer_tree_frame_sink_request_pending_;
 
   gpu::Capabilities gpu_capabilities_;
-  bool has_compositor_frame_sink_ = false;
+  bool has_layer_tree_frame_sink_ = false;
   std::unordered_set<cc::FrameSinkId, cc::FrameSinkIdHash>
       pending_child_frame_sink_ids_;
   base::WeakPtrFactory<CompositorImpl> weak_factory_;

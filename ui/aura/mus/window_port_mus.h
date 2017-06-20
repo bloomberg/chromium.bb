@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/surfaces/surface_info.h"
-#include "components/viz/client/client_compositor_frame_sink.h"
+#include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
@@ -25,7 +25,7 @@
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 
 namespace viz {
-class ClientCompositorFrameSink;
+class ClientLayerTreeFrameSink;
 }
 
 namespace aura {
@@ -80,7 +80,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
-  std::unique_ptr<viz::ClientCompositorFrameSink> RequestCompositorFrameSink(
+  std::unique_ptr<viz::ClientLayerTreeFrameSink> RequestLayerTreeFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
@@ -242,7 +242,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void PrepareForTransientRestack(WindowMus* window) override;
   void OnTransientRestackDone(WindowMus* window) override;
   void NotifyEmbeddedAppDisconnected() override;
-  bool HasLocalCompositorFrameSink() override;
+  bool HasLocalLayerTreeFrameSink() override;
 
   // WindowPort:
   void OnPreInit(Window* window) override;
@@ -260,7 +260,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void OnPropertyChanged(const void* key,
                          int64_t old_value,
                          std::unique_ptr<ui::PropertyData> data) override;
-  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink() override;
+  std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink() override;
   cc::SurfaceId GetSurfaceId() const override;
   void OnWindowAddedToRootWindow() override {}
   void OnWillRemoveWindowFromRootWindow() override {}
@@ -292,7 +292,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // When a frame sink is created
   // for a local aura::Window, we need keep a weak ptr of it, so we can update
   // the local surface id when necessary.
-  base::WeakPtr<viz::ClientCompositorFrameSink> local_compositor_frame_sink_;
+  base::WeakPtr<viz::ClientLayerTreeFrameSink> local_layer_tree_frame_sink_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPortMus);
 };

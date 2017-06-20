@@ -32,7 +32,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace cc {
-class CompositorFrameSink;
+class LayerTreeFrameSink;
 }
 
 namespace display {
@@ -309,8 +309,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns true if there was state needing to be cleaned up.
   bool CleanupGestureState();
 
-  // Create a CompositorFrameSink for the aura::Window.
-  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink();
+  // Create a LayerTreeFrameSink for the aura::Window.
+  std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink();
 
   // Get the current cc::SurfaceId.
   cc::SurfaceId GetSurfaceId() const;

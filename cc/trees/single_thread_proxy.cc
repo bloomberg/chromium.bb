@@ -10,8 +10,8 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
-#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
@@ -50,8 +50,8 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       animate_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
-      compositor_frame_sink_creation_requested_(false),
-      compositor_frame_sink_lost_(true),
+      layer_tree_frame_sink_creation_requested_(false),
+      layer_tree_frame_sink_lost_(true),
       frame_sink_bound_weak_factory_(this),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
@@ -113,49 +113,49 @@ void SingleThreadProxy::SetVisible(bool visible) {
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
 }
 
-void SingleThreadProxy::RequestNewCompositorFrameSink() {
+void SingleThreadProxy::RequestNewLayerTreeFrameSink() {
   DCHECK(task_runner_provider_->IsMainThread());
-  compositor_frame_sink_creation_callback_.Cancel();
-  if (compositor_frame_sink_creation_requested_)
+  layer_tree_frame_sink_creation_callback_.Cancel();
+  if (layer_tree_frame_sink_creation_requested_)
     return;
-  compositor_frame_sink_creation_requested_ = true;
-  layer_tree_host_->RequestNewCompositorFrameSink();
+  layer_tree_frame_sink_creation_requested_ = true;
+  layer_tree_host_->RequestNewLayerTreeFrameSink();
 }
 
-void SingleThreadProxy::ReleaseCompositorFrameSink() {
-  compositor_frame_sink_lost_ = true;
+void SingleThreadProxy::ReleaseLayerTreeFrameSink() {
+  layer_tree_frame_sink_lost_ = true;
   frame_sink_bound_weak_factory_.InvalidateWeakPtrs();
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->DidLoseCompositorFrameSink();
-  return layer_tree_host_impl_->ReleaseCompositorFrameSink();
+    scheduler_on_impl_thread_->DidLoseLayerTreeFrameSink();
+  return layer_tree_host_impl_->ReleaseLayerTreeFrameSink();
 }
 
-void SingleThreadProxy::SetCompositorFrameSink(
-    CompositorFrameSink* compositor_frame_sink) {
+void SingleThreadProxy::SetLayerTreeFrameSink(
+    LayerTreeFrameSink* layer_tree_frame_sink) {
   DCHECK(task_runner_provider_->IsMainThread());
-  DCHECK(compositor_frame_sink_creation_requested_);
+  DCHECK(layer_tree_frame_sink_creation_requested_);
 
   bool success;
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
     DebugScopedSetImplThread impl(task_runner_provider_);
-    success = layer_tree_host_impl_->InitializeRenderer(compositor_frame_sink);
+    success = layer_tree_host_impl_->InitializeRenderer(layer_tree_frame_sink);
   }
 
   if (success) {
     frame_sink_bound_weak_ptr_ = frame_sink_bound_weak_factory_.GetWeakPtr();
-    layer_tree_host_->DidInitializeCompositorFrameSink();
+    layer_tree_host_->DidInitializeLayerTreeFrameSink();
     if (scheduler_on_impl_thread_)
-      scheduler_on_impl_thread_->DidCreateAndInitializeCompositorFrameSink();
+      scheduler_on_impl_thread_->DidCreateAndInitializeLayerTreeFrameSink();
     else if (!inside_synchronous_composite_)
       SetNeedsCommit();
-    compositor_frame_sink_creation_requested_ = false;
-    compositor_frame_sink_lost_ = false;
+    layer_tree_frame_sink_creation_requested_ = false;
+    layer_tree_frame_sink_lost_ = false;
   } else {
-    // DidFailToInitializeCompositorFrameSink is treated as a
-    // RequestNewCompositorFrameSink, and so
-    // compositor_frame_sink_creation_requested remains true.
-    layer_tree_host_->DidFailToInitializeCompositorFrameSink();
+    // DidFailToInitializeLayerTreeFrameSink is treated as a
+    // RequestNewLayerTreeFrameSink, and so
+    // layer_tree_frame_sink_creation_requested remains true.
+    layer_tree_host_->DidFailToInitializeLayerTreeFrameSink();
   }
 }
 
@@ -300,9 +300,9 @@ void SingleThreadProxy::Stop() {
     // inconsistent state.
     if (scheduler_on_impl_thread_)
       scheduler_on_impl_thread_->Stop();
-    // Take away the CompositorFrameSink before destroying things so it doesn't
+    // Take away the LayerTreeFrameSink before destroying things so it doesn't
     // try to call into its client mid-shutdown.
-    layer_tree_host_impl_->ReleaseCompositorFrameSink();
+    layer_tree_host_impl_->ReleaseLayerTreeFrameSink();
     scheduler_on_impl_thread_ = nullptr;
     layer_tree_host_impl_ = nullptr;
   }
@@ -407,19 +407,19 @@ void SingleThreadProxy::DidCompletePageScaleAnimationOnImplThread() {
   layer_tree_host_->DidCompletePageScaleAnimation();
 }
 
-void SingleThreadProxy::DidLoseCompositorFrameSinkOnImplThread() {
+void SingleThreadProxy::DidLoseLayerTreeFrameSinkOnImplThread() {
   TRACE_EVENT0("cc",
-               "SingleThreadProxy::DidLoseCompositorFrameSinkOnImplThread");
+               "SingleThreadProxy::DidLoseLayerTreeFrameSinkOnImplThread");
   {
     DebugScopedSetMainThread main(task_runner_provider_);
     // This must happen before we notify the scheduler as it may try to recreate
     // the output surface if already in BEGIN_IMPL_FRAME_STATE_IDLE.
-    layer_tree_host_->DidLoseCompositorFrameSink();
+    layer_tree_host_->DidLoseLayerTreeFrameSink();
   }
-  single_thread_client_->DidLoseCompositorFrameSink();
+  single_thread_client_->DidLoseLayerTreeFrameSink();
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->DidLoseCompositorFrameSink();
-  compositor_frame_sink_lost_ = true;
+    scheduler_on_impl_thread_->DidLoseLayerTreeFrameSink();
+  layer_tree_frame_sink_lost_ = true;
 }
 
 void SingleThreadProxy::SetBeginFrameSource(BeginFrameSource* source) {
@@ -440,7 +440,7 @@ void SingleThreadProxy::DidReceiveCompositorFrameAckOnImplThread() {
                             frame_sink_bound_weak_ptr_));
 }
 
-void SingleThreadProxy::OnDrawForCompositorFrameSink(
+void SingleThreadProxy::OnDrawForLayerTreeFrameSink(
     bool resourceless_software_draw) {
   NOTREACHED() << "Implemented by ThreadProxy for synchronous compositor.";
 }
@@ -478,11 +478,11 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
 #endif
   base::AutoReset<bool> inside_composite(&inside_synchronous_composite_, true);
 
-  if (compositor_frame_sink_lost_) {
-    RequestNewCompositorFrameSink();
-    // RequestNewCompositorFrameSink could have synchronously created an output
+  if (layer_tree_frame_sink_lost_) {
+    RequestNewLayerTreeFrameSink();
+    // RequestNewLayerTreeFrameSink could have synchronously created an output
     // surface, so check again before returning.
-    if (compositor_frame_sink_lost_)
+    if (layer_tree_frame_sink_lost_)
       return;
   }
 
@@ -548,14 +548,14 @@ bool SingleThreadProxy::ShouldComposite() const {
   return layer_tree_host_impl_->visible() && layer_tree_host_impl_->CanDraw();
 }
 
-void SingleThreadProxy::ScheduleRequestNewCompositorFrameSink() {
-  if (compositor_frame_sink_creation_callback_.IsCancelled() &&
-      !compositor_frame_sink_creation_requested_) {
-    compositor_frame_sink_creation_callback_.Reset(
-        base::Bind(&SingleThreadProxy::RequestNewCompositorFrameSink,
+void SingleThreadProxy::ScheduleRequestNewLayerTreeFrameSink() {
+  if (layer_tree_frame_sink_creation_callback_.IsCancelled() &&
+      !layer_tree_frame_sink_creation_requested_) {
+    layer_tree_frame_sink_creation_callback_.Reset(
+        base::Bind(&SingleThreadProxy::RequestNewLayerTreeFrameSink,
                    weak_factory_.GetWeakPtr()));
     task_runner_provider_->MainThreadTaskRunner()->PostTask(
-        FROM_HERE, compositor_frame_sink_creation_callback_.callback());
+        FROM_HERE, layer_tree_frame_sink_creation_callback_.callback());
   }
 }
 
@@ -592,7 +592,7 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
     if (draw_frame) {
       if (layer_tree_host_impl_->DrawLayers(frame)) {
         if (scheduler_on_impl_thread_)
-          // Drawing implies we submitted a frame to the CompositorFrameSink.
+          // Drawing implies we submitted a frame to the LayerTreeFrameSink.
           scheduler_on_impl_thread_->DidSubmitCompositorFrame();
         single_thread_client_->DidSubmitCompositorFrame();
       }
@@ -775,7 +775,7 @@ void SingleThreadProxy::ScheduledActionActivateSyncTree() {
   layer_tree_host_impl_->ActivateSyncTree();
 }
 
-void SingleThreadProxy::ScheduledActionBeginCompositorFrameSinkCreation() {
+void SingleThreadProxy::ScheduledActionBeginLayerTreeFrameSinkCreation() {
   DebugScopedSetMainThread main(task_runner_provider_);
   DCHECK(scheduler_on_impl_thread_);
   // If possible, create the output surface in a post task.  Synchronously
@@ -783,9 +783,9 @@ void SingleThreadProxy::ScheduledActionBeginCompositorFrameSinkCreation() {
   // from the ThreadProxy behavior.  However, sometimes there is no
   // task runner.
   if (task_runner_provider_->MainThreadTaskRunner()) {
-    ScheduleRequestNewCompositorFrameSink();
+    ScheduleRequestNewLayerTreeFrameSink();
   } else {
-    RequestNewCompositorFrameSink();
+    RequestNewLayerTreeFrameSink();
   }
 }
 
@@ -795,7 +795,7 @@ void SingleThreadProxy::ScheduledActionPrepareTiles() {
   layer_tree_host_impl_->PrepareTiles();
 }
 
-void SingleThreadProxy::ScheduledActionInvalidateCompositorFrameSink() {
+void SingleThreadProxy::ScheduledActionInvalidateLayerTreeFrameSink() {
   NOTREACHED();
 }
 

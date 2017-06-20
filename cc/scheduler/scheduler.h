@@ -42,9 +42,9 @@ class SchedulerClient {
   virtual DrawResult ScheduledActionDrawForced() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionActivateSyncTree() = 0;
-  virtual void ScheduledActionBeginCompositorFrameSinkCreation() = 0;
+  virtual void ScheduledActionBeginLayerTreeFrameSinkCreation() = 0;
   virtual void ScheduledActionPrepareTiles() = 0;
-  virtual void ScheduledActionInvalidateCompositorFrameSink() = 0;
+  virtual void ScheduledActionInvalidateLayerTreeFrameSink() = 0;
   virtual void ScheduledActionPerformImplSideInvalidation() = 0;
   virtual void DidFinishImplFrame() = 0;
   virtual void DidNotProduceFrame(const BeginFrameAck& ack) = 0;
@@ -73,7 +73,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void OnBeginFrameSourcePausedChanged(bool paused) override;
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
 
-  void OnDrawForCompositorFrameSink(bool resourceless_software_draw);
+  void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw);
 
   const SchedulerSettings& settings() const { return settings_; }
 
@@ -103,9 +103,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetNeedsImplSideInvalidation();
 
   // Drawing should result in submitting a CompositorFrame to the
-  // CompositorFrameSink and then calling this.
+  // LayerTreeFrameSink and then calling this.
   void DidSubmitCompositorFrame();
-  // The CompositorFrameSink acks when it is ready for a new frame which
+  // The LayerTreeFrameSink acks when it is ready for a new frame which
   // should result in this getting called to unblock the next draw.
   void DidReceiveCompositorFrameAck();
 
@@ -118,8 +118,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void WillPrepareTiles();
   void DidPrepareTiles();
-  void DidLoseCompositorFrameSink();
-  void DidCreateAndInitializeCompositorFrameSink();
+  void DidLoseLayerTreeFrameSink();
+  void DidCreateAndInitializeLayerTreeFrameSink();
 
   // Tests do not want to shut down until all possible BeginMainFrames have
   // occured to prevent flakiness.

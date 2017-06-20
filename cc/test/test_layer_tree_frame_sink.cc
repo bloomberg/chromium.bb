@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_compositor_frame_sink.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 
 #include <stdint.h>
 #include <utility>
@@ -10,18 +10,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/direct_renderer.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 
 namespace cc {
 
-static constexpr FrameSinkId kCompositorFrameSinkId(1, 1);
+static constexpr FrameSinkId kLayerTreeFrameSinkId(1, 1);
 
-TestCompositorFrameSink::TestCompositorFrameSink(
+TestLayerTreeFrameSink::TestLayerTreeFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
     SharedBitmapManager* shared_bitmap_manager,
@@ -31,16 +31,16 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     bool synchronous_composite,
     bool disable_display_vsync,
     double refresh_rate)
-    : CompositorFrameSink(std::move(compositor_context_provider),
-                          std::move(worker_context_provider),
-                          gpu_memory_buffer_manager,
-                          shared_bitmap_manager),
+    : LayerTreeFrameSink(std::move(compositor_context_provider),
+                         std::move(worker_context_provider),
+                         gpu_memory_buffer_manager,
+                         shared_bitmap_manager),
       synchronous_composite_(synchronous_composite),
       disable_display_vsync_(disable_display_vsync),
       renderer_settings_(renderer_settings),
       refresh_rate_(refresh_rate),
       task_runner_(std::move(task_runner)),
-      frame_sink_id_(kCompositorFrameSinkId),
+      frame_sink_id_(kLayerTreeFrameSinkId),
       surface_manager_(new SurfaceManager),
       local_surface_id_allocator_(new LocalSurfaceIdAllocator()),
       external_begin_frame_source_(this),
@@ -50,17 +50,17 @@ TestCompositorFrameSink::TestCompositorFrameSink(
   capabilities_.delegated_sync_points_required = true;
 }
 
-TestCompositorFrameSink::~TestCompositorFrameSink() {
+TestLayerTreeFrameSink::~TestLayerTreeFrameSink() {
   DCHECK(copy_requests_.empty());
 }
 
-void TestCompositorFrameSink::RequestCopyOfOutput(
+void TestLayerTreeFrameSink::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> request) {
   copy_requests_.push_back(std::move(request));
 }
 
-bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
-  if (!CompositorFrameSink::BindToClient(client))
+bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
+  if (!LayerTreeFrameSink::BindToClient(client))
     return false;
 
   std::unique_ptr<OutputSurface> display_output_surface =
@@ -113,7 +113,7 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   return true;
 }
 
-void TestCompositorFrameSink::DetachFromClient() {
+void TestLayerTreeFrameSink::DetachFromClient() {
   if (begin_frame_source_)
     surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
   client_->SetBeginFrameSource(nullptr);
@@ -123,15 +123,15 @@ void TestCompositorFrameSink::DetachFromClient() {
   local_surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
   test_client_ = nullptr;
-  CompositorFrameSink::DetachFromClient();
+  LayerTreeFrameSink::DetachFromClient();
 }
 
-void TestCompositorFrameSink::SetLocalSurfaceId(
+void TestLayerTreeFrameSink::SetLocalSurfaceId(
     const LocalSurfaceId& local_surface_id) {
   test_client_->DisplayReceivedLocalSurfaceId(local_surface_id);
 }
 
-void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
+void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
@@ -163,18 +163,18 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
     // calling the client to tell it that it is done.
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&TestCompositorFrameSink::SendCompositorFrameAckToClient,
+        base::BindOnce(&TestLayerTreeFrameSink::SendCompositorFrameAckToClient,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void TestCompositorFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
+void TestLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
   DCHECK(!ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
   support_->DidNotProduceFrame(ack);
 }
 
-void TestCompositorFrameSink::DidReceiveCompositorFrameAck(
+void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const ReturnedResourceArray& resources) {
   ReclaimResources(resources);
   // In synchronous mode, we manually send acks and this method should not be
@@ -184,38 +184,38 @@ void TestCompositorFrameSink::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void TestCompositorFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
+void TestLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   external_begin_frame_source_.OnBeginFrame(args);
 }
 
-void TestCompositorFrameSink::ReclaimResources(
+void TestLayerTreeFrameSink::ReclaimResources(
     const ReturnedResourceArray& resources) {
   client_->ReclaimResources(resources);
 }
 
-void TestCompositorFrameSink::WillDrawSurface(
+void TestLayerTreeFrameSink::WillDrawSurface(
     const LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
-void TestCompositorFrameSink::DisplayOutputSurfaceLost() {
-  client_->DidLoseCompositorFrameSink();
+void TestLayerTreeFrameSink::DisplayOutputSurfaceLost() {
+  client_->DidLoseLayerTreeFrameSink();
 }
 
-void TestCompositorFrameSink::DisplayWillDrawAndSwap(
+void TestLayerTreeFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const RenderPassList& render_passes) {
   test_client_->DisplayWillDrawAndSwap(will_draw_and_swap, render_passes);
 }
 
-void TestCompositorFrameSink::DisplayDidDrawAndSwap() {
+void TestLayerTreeFrameSink::DisplayDidDrawAndSwap() {
   test_client_->DisplayDidDrawAndSwap();
 }
 
-void TestCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
+void TestLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   support_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
-void TestCompositorFrameSink::SendCompositorFrameAckToClient() {
+void TestLayerTreeFrameSink::SendCompositorFrameAckToClient() {
   client_->DidReceiveCompositorFrameAck();
 }
 

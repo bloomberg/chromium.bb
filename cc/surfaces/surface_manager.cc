@@ -485,11 +485,11 @@ void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
 
   if (lifetime_type_ == LifetimeType::REFERENCES) {
     // We can get into a situation where multiple CompositorFrames arrive for
-    // a CompositorFrameSink before the client can add any references for the
-    // frame. When the second frame with a new size arrives, the first will be
-    // destroyed in SurfaceFactory and then if there are no references it will
-    // be deleted during surface GC. A temporary reference, removed when a
-    // real reference is received, is added to prevent this from happening.
+    // a FrameSink before the client can add any references for the frame. When
+    // the second frame with a new size arrives, the first will be destroyed in
+    // SurfaceFactory and then if there are no references it will be deleted
+    // during surface GC. A temporary reference, removed when a real reference
+    // is received, is added to prevent this from happening.
     AddTemporaryReference(surface_info.id());
   }
 

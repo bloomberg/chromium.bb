@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_H_
-#define CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_H_
+#ifndef CC_TEST_FAKE_LAYER_TREE_FRAME_SINK_H_
+#define CC_TEST_FAKE_LAYER_TREE_FRAME_SINK_H_
 
 #include <stddef.h>
 
@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_sink.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/software_output_device.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gles2_interface.h"
@@ -26,64 +26,61 @@ namespace cc {
 
 class BeginFrameSource;
 
-class FakeCompositorFrameSink : public CompositorFrameSink {
+class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
  public:
-  ~FakeCompositorFrameSink() override;
+  ~FakeLayerTreeFrameSink() override;
 
-  static std::unique_ptr<FakeCompositorFrameSink> Create3d() {
-    return base::WrapUnique(new FakeCompositorFrameSink(
+  static std::unique_ptr<FakeLayerTreeFrameSink> Create3d() {
+    return base::WrapUnique(new FakeLayerTreeFrameSink(
         TestContextProvider::Create(), TestContextProvider::CreateWorker()));
   }
 
-  static std::unique_ptr<FakeCompositorFrameSink> Create3d(
+  static std::unique_ptr<FakeLayerTreeFrameSink> Create3d(
       scoped_refptr<TestContextProvider> context_provider) {
-    return base::WrapUnique(new FakeCompositorFrameSink(
+    return base::WrapUnique(new FakeLayerTreeFrameSink(
         context_provider, TestContextProvider::CreateWorker()));
   }
 
-  static std::unique_ptr<FakeCompositorFrameSink> Create3d(
+  static std::unique_ptr<FakeLayerTreeFrameSink> Create3d(
       std::unique_ptr<TestWebGraphicsContext3D> context) {
-    return base::WrapUnique(new FakeCompositorFrameSink(
+    return base::WrapUnique(new FakeLayerTreeFrameSink(
         TestContextProvider::Create(std::move(context)),
         TestContextProvider::CreateWorker()));
   }
 
-  static std::unique_ptr<FakeCompositorFrameSink>
-  Create3dForGpuRasterization() {
+  static std::unique_ptr<FakeLayerTreeFrameSink> Create3dForGpuRasterization() {
     auto context = TestWebGraphicsContext3D::Create();
     context->set_gpu_rasterization(true);
     auto context_provider = TestContextProvider::Create(std::move(context));
-    return base::WrapUnique(new FakeCompositorFrameSink(
+    return base::WrapUnique(new FakeLayerTreeFrameSink(
         std::move(context_provider), TestContextProvider::CreateWorker()));
   }
 
-  static std::unique_ptr<FakeCompositorFrameSink> CreateSoftware() {
-    return base::WrapUnique(new FakeCompositorFrameSink(nullptr, nullptr));
+  static std::unique_ptr<FakeLayerTreeFrameSink> CreateSoftware() {
+    return base::WrapUnique(new FakeLayerTreeFrameSink(nullptr, nullptr));
   }
 
-  // CompositorFrameSink implementation.
+  // LayerTreeFrameSink implementation.
   void SubmitCompositorFrame(CompositorFrame frame) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
-  bool BindToClient(CompositorFrameSinkClient* client) override;
+  bool BindToClient(LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
 
   CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
-  CompositorFrameSinkClient* client() { return client_; }
+  LayerTreeFrameSinkClient* client() { return client_; }
 
   const TransferableResourceArray& resources_held_by_parent() {
     return resources_held_by_parent_;
   }
 
-  gfx::Rect last_swap_rect() const {
-    return last_swap_rect_;
-  }
+  gfx::Rect last_swap_rect() const { return last_swap_rect_; }
 
   void ReturnResourcesHeldByParent();
 
  protected:
-  FakeCompositorFrameSink(
+  FakeLayerTreeFrameSink(
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
 
@@ -99,9 +96,9 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   void DidReceiveCompositorFrameAck();
 
   std::unique_ptr<BeginFrameSource> begin_frame_source_;
-  base::WeakPtrFactory<FakeCompositorFrameSink> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeLayerTreeFrameSink> weak_ptr_factory_;
 };
 
 }  // namespace cc
 
-#endif  // CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_H_
+#endif  // CC_TEST_FAKE_LAYER_TREE_FRAME_SINK_H_

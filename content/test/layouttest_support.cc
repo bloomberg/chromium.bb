@@ -16,7 +16,7 @@
 #include "cc/base/switches.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/test/pixel_test_output_surface.h"
-#include "cc/test/test_compositor_frame_sink.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -286,24 +286,24 @@ namespace {
 // request at SwapBuffers time.
 class CopyRequestSwapPromise : public cc::SwapPromise {
  public:
-  using FindCompositorFrameSinkCallback =
-      base::Callback<cc::TestCompositorFrameSink*()>;
+  using FindLayerTreeFrameSinkCallback =
+      base::Callback<cc::TestLayerTreeFrameSink*()>;
   CopyRequestSwapPromise(
       std::unique_ptr<cc::CopyOutputRequest> request,
-      FindCompositorFrameSinkCallback find_compositor_frame_sink_callback)
+      FindLayerTreeFrameSinkCallback find_layer_tree_frame_sink_callback)
       : copy_request_(std::move(request)),
-        find_compositor_frame_sink_callback_(
-            std::move(find_compositor_frame_sink_callback)) {}
+        find_layer_tree_frame_sink_callback_(
+            std::move(find_layer_tree_frame_sink_callback)) {}
 
   // cc::SwapPromise implementation.
   void OnCommit() override {
-    compositor_frame_sink_from_commit_ =
-        find_compositor_frame_sink_callback_.Run();
-    DCHECK(compositor_frame_sink_from_commit_);
+    layer_tree_frame_sink_from_commit_ =
+        find_layer_tree_frame_sink_callback_.Run();
+    DCHECK(layer_tree_frame_sink_from_commit_);
   }
   void DidActivate() override {}
   void WillSwap(cc::CompositorFrameMetadata*) override {
-    compositor_frame_sink_from_commit_->RequestCopyOfOutput(
+    layer_tree_frame_sink_from_commit_->RequestCopyOfOutput(
         std::move(copy_request_));
   }
   void DidSwap() override {}
@@ -316,25 +316,25 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
 
  private:
   std::unique_ptr<cc::CopyOutputRequest> copy_request_;
-  FindCompositorFrameSinkCallback find_compositor_frame_sink_callback_;
-  cc::TestCompositorFrameSink* compositor_frame_sink_from_commit_ = nullptr;
+  FindLayerTreeFrameSinkCallback find_layer_tree_frame_sink_callback_;
+  cc::TestLayerTreeFrameSink* layer_tree_frame_sink_from_commit_ = nullptr;
 };
 
 }  // namespace
 
 class LayoutTestDependenciesImpl : public LayoutTestDependencies,
-                                   public cc::TestCompositorFrameSinkClient {
+                                   public cc::TestLayerTreeFrameSinkClient {
  public:
-  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
+  std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink(
       int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       CompositorDependencies* deps) override {
-    // This could override the GpuChannel for a CompositorFrameSink that was
+    // This could override the GpuChannel for a LayerTreeFrameSink that was
     // previously being created but in that case the old GpuChannel would be
-    // lost as would the CompositorFrameSink.
+    // lost as would the LayerTreeFrameSink.
     gpu_channel_ = gpu_channel;
 
     auto* task_runner = deps->GetCompositorImplThreadTaskRunner().get();
@@ -352,33 +352,33 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
     constexpr bool disable_display_vsync = false;
     constexpr double refresh_rate = 60.0;
-    auto compositor_frame_sink = base::MakeUnique<cc::TestCompositorFrameSink>(
+    auto layer_tree_frame_sink = base::MakeUnique<cc::TestLayerTreeFrameSink>(
         std::move(compositor_context_provider),
         std::move(worker_context_provider), nullptr /* shared_bitmap_manager */,
         gpu_memory_buffer_manager, renderer_settings, task_runner,
         synchronous_composite, disable_display_vsync, refresh_rate);
-    compositor_frame_sink->SetClient(this);
-    compositor_frame_sinks_[routing_id] = compositor_frame_sink.get();
-    return std::move(compositor_frame_sink);
+    layer_tree_frame_sink->SetClient(this);
+    layer_tree_frame_sinks_[routing_id] = layer_tree_frame_sink.get();
+    return std::move(layer_tree_frame_sink);
   }
 
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutput(
       int32_t routing_id,
       std::unique_ptr<cc::CopyOutputRequest> request) override {
-    // Note that we can't immediately check compositor_frame_sinks_, since it
+    // Note that we can't immediately check layer_tree_frame_sinks_, since it
     // may not have been created yet. Instead, we wait until OnCommit to find
-    // the currently active CompositorFrameSink for the given RenderWidget
+    // the currently active LayerTreeFrameSink for the given RenderWidget
     // routing_id.
     return base::MakeUnique<CopyRequestSwapPromise>(
         std::move(request),
         base::Bind(
-            &LayoutTestDependenciesImpl::FindCompositorFrameSink,
+            &LayoutTestDependenciesImpl::FindLayerTreeFrameSink,
             // |this| will still be valid, because its lifetime is tied to
             // RenderThreadImpl, which outlives layout test execution.
             base::Unretained(this), routing_id));
   }
 
-  // TestCompositorFrameSinkClient implementation.
+  // TestLayerTreeFrameSinkClient implementation.
   std::unique_ptr<cc::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<cc::ContextProvider> compositor_context_provider) override {
     // This is for an offscreen context for the compositor. So the default
@@ -419,17 +419,17 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
   void DisplayDidDrawAndSwap() override {}
 
  private:
-  cc::TestCompositorFrameSink* FindCompositorFrameSink(int32_t routing_id) {
-    auto it = compositor_frame_sinks_.find(routing_id);
-    return it == compositor_frame_sinks_.end() ? nullptr : it->second;
+  cc::TestLayerTreeFrameSink* FindLayerTreeFrameSink(int32_t routing_id) {
+    auto it = layer_tree_frame_sinks_.find(routing_id);
+    return it == layer_tree_frame_sinks_.end() ? nullptr : it->second;
   }
 
   // Entries are not removed, so this map can grow. However, it is only used in
   // layout tests, so this memory usage does not occur in production.
   // Entries in this map will outlive the output surface, because this object is
   // owned by RenderThreadImpl, which outlives layout test execution.
-  std::unordered_map<int32_t, cc::TestCompositorFrameSink*>
-      compositor_frame_sinks_;
+  std::unordered_map<int32_t, cc::TestLayerTreeFrameSink*>
+      layer_tree_frame_sinks_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 };
 

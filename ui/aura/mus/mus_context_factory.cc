@@ -38,14 +38,14 @@ void MusContextFactory::OnEstablishedGpuChannel(
       WindowTreeHost::GetForAcceleratedWidget(compositor->widget());
   WindowPortMus* window_port = WindowPortMus::Get(host->window());
   DCHECK(window_port);
-  std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink =
-      window_port->RequestCompositorFrameSink(
+  std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink =
+      window_port->RequestLayerTreeFrameSink(
           gpu_->CreateContextProvider(std::move(gpu_channel)),
           gpu_->gpu_memory_buffer_manager());
-  compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
+  compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-void MusContextFactory::CreateCompositorFrameSink(
+void MusContextFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
   gpu_->EstablishGpuChannel(
       base::Bind(&MusContextFactory::OnEstablishedGpuChannel,

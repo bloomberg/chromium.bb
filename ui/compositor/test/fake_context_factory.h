@@ -13,7 +13,7 @@
 namespace cc {
 class CompositorFrame;
 class ContextProvider;
-class FakeCompositorFrameSink;
+class FakeLayerTreeFrameSink;
 class ResourceSettings;
 class TestTaskGraphRunner;
 class TestGpuMemoryBufferManager;
@@ -29,7 +29,7 @@ class FakeContextFactory : public ui::ContextFactory {
   const cc::CompositorFrame& GetLastCompositorFrame() const;
 
   // ui::ContextFactory:
-  void CreateCompositorFrameSink(
+  void CreateLayerTreeFrameSink(
       base::WeakPtr<ui::Compositor> compositor) override;
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   void RemoveCompositor(ui::Compositor* compositor) override;
@@ -41,7 +41,7 @@ class FakeContextFactory : public ui::ContextFactory {
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
  private:
-  cc::FakeCompositorFrameSink* frame_sink_ = nullptr;
+  cc::FakeLayerTreeFrameSink* frame_sink_ = nullptr;
   cc::TestTaskGraphRunner task_graph_runner_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   cc::RendererSettings renderer_settings_;
