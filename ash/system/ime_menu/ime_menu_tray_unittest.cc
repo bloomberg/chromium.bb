@@ -34,8 +34,13 @@ ImeMenuTray* GetTray() {
 
 void SetCurrentIme(mojom::ImeInfo current_ime,
                    const std::vector<mojom::ImeInfo>& available_imes) {
-  Shell::Get()->ime_controller()->RefreshIme(current_ime, available_imes,
-                                             std::vector<mojom::ImeMenuItem>());
+  mojom::ImeInfoPtr current_ime_ptr = current_ime.Clone();
+  std::vector<mojom::ImeInfoPtr> available_ime_ptrs;
+  for (const auto& ime : available_imes)
+    available_ime_ptrs.push_back(ime.Clone());
+  Shell::Get()->ime_controller()->RefreshIme(
+      std::move(current_ime_ptr), std::move(available_ime_ptrs),
+      std::vector<mojom::ImeMenuItemPtr>());
 }
 
 }  // namespace

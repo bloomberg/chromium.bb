@@ -9,6 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
+#include "ash/ime/ime_controller.h"
 #include "ash/login/lock_screen_controller.h"
 #include "ash/media_controller.h"
 #include "ash/new_window_controller.h"
@@ -55,6 +56,12 @@ void BindCastConfigOnMainThread(
     const service_manager::BindSourceInfo& source_info,
     mojom::CastConfigRequest request) {
   Shell::Get()->cast_config()->BindRequest(std::move(request));
+}
+
+void BindImeControllerRequestOnMainThread(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::ImeControllerRequest request) {
+  Shell::Get()->ime_controller()->BindRequest(std::move(request));
 }
 
 void BindLocaleNotificationControllerOnMainThread(
@@ -147,6 +154,8 @@ void RegisterInterfaces(
       base::Bind(&BindAcceleratorControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindAppListRequestOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindImeControllerRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(
       base::Bind(&BindAshDisplayControllerRequestOnMainThread),

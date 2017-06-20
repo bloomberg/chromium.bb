@@ -8,18 +8,24 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+
+namespace ui {
+class Accelerator;
+}
 
 namespace ash {
 
 // Connects ash IME users (e.g. the system tray) to the IME implementation,
 // which might live in Chrome browser or in a separate mojo service.
-// TODO(jamescook): Convert to use mojo IME interface to Chrome browser.
-class ASH_EXPORT ImeController {
+class ASH_EXPORT ImeController
+    : public NON_EXPORTED_BASE(mojom::ImeController) {
  public:
   ImeController();
-  ~ImeController();
+  ~ImeController() override;
 
   const mojom::ImeInfo& current_ime() const { return current_ime_; }
 
@@ -33,18 +39,31 @@ class ASH_EXPORT ImeController {
     return current_ime_menu_items_;
   }
 
-  // Updates the cached IME information and refreshes the UI.
-  // TODO(jamescook): This should take an ID for current_ime.
-  void RefreshIme(const mojom::ImeInfo& current_ime,
-                  const std::vector<mojom::ImeInfo>& available_imes,
-                  const std::vector<mojom::ImeMenuItem>& menu_items);
+  // Binds the mojo interface to this object.
+  void BindRequest(mojom::ImeControllerRequest request);
 
-  void SetImesManagedByPolicy(bool managed);
+  // TODO(jamescook): Implement these. http://crbug.com/724305
+  bool CanSwitchIme() const;
+  void SwitchToNextIme();
+  void SwitchToPreviousIme();
+  bool CanSwitchImeWithAccelerator(const ui::Accelerator& accelerator) const;
+  void SwitchImeWithAccelerator(const ui::Accelerator& accelerator);
 
-  // Shows the IME menu on the shelf instead of inside the system tray menu.
-  void ShowImeMenuOnShelf(bool show);
+  // mojom::ImeController:
+  void SetClient(mojom::ImeControllerClientPtr client) override;
+  void RefreshIme(mojom::ImeInfoPtr current_ime,
+                  std::vector<mojom::ImeInfoPtr> available_imes,
+                  std::vector<mojom::ImeMenuItemPtr> menu_items) override;
+  void SetImesManagedByPolicy(bool managed) override;
+  void ShowImeMenuOnShelf(bool show) override;
 
  private:
+  // Bindings for users of the mojo interface.
+  mojo::BindingSet<mojom::ImeController> bindings_;
+
+  // Client interface back to IME code in chrome.
+  mojom::ImeControllerClientPtr client_;
+
   mojom::ImeInfo current_ime_;
 
   // "Available" IMEs are both installed and enabled by the user in settings.

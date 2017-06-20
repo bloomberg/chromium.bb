@@ -55,6 +55,9 @@ class TrayIMETest : public test::AshTestBase {
   void TearDown() override;
 
  private:
+  // Updates the ImeController with the latest IME test data.
+  void RefreshImeController();
+
   std::unique_ptr<TrayIME> tray_;
   std::unique_ptr<views::View> default_view_;
   std::unique_ptr<views::View> detailed_view_;
@@ -81,8 +84,7 @@ void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
 
 void TrayIMETest::SetActiveImeCount(int count) {
   available_imes_.resize(count);
-  Shell::Get()->ime_controller()->RefreshIme(current_ime_, available_imes_,
-                                             menu_items_);
+  RefreshImeController();
 }
 
 views::View* TrayIMETest::GetToggleView() const {
@@ -101,8 +103,7 @@ views::View* TrayIMETest::GetImeManagedIcon() {
 void TrayIMETest::SetCurrentImeMenuItems(
     const std::vector<mojom::ImeMenuItem>& items) {
   menu_items_ = items;
-  Shell::Get()->ime_controller()->RefreshIme(current_ime_, available_imes_,
-                                             menu_items_);
+  RefreshImeController();
 }
 
 void TrayIMETest::SuppressKeyboard() {
@@ -140,6 +141,22 @@ void TrayIMETest::SetUp() {
   tray_.reset(new TrayIME(GetPrimarySystemTray()));
   default_view_.reset(tray_->CreateDefaultView(LoginStatus::USER));
   detailed_view_.reset(tray_->CreateDetailedView(LoginStatus::USER));
+}
+
+void TrayIMETest::RefreshImeController() {
+  mojom::ImeInfoPtr current_ime_ptr = current_ime_.Clone();
+
+  std::vector<mojom::ImeInfoPtr> available_ime_ptrs;
+  for (const auto& ime : available_imes_)
+    available_ime_ptrs.push_back(ime.Clone());
+
+  std::vector<mojom::ImeMenuItemPtr> menu_item_ptrs;
+  for (const auto& item : menu_items_)
+    menu_item_ptrs.push_back(item.Clone());
+
+  Shell::Get()->ime_controller()->RefreshIme(std::move(current_ime_ptr),
+                                             std::move(available_ime_ptrs),
+                                             std::move(menu_item_ptrs));
 }
 
 void TrayIMETest::TearDown() {

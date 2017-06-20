@@ -13,13 +13,54 @@ ImeController::ImeController() = default;
 
 ImeController::~ImeController() = default;
 
-void ImeController::RefreshIme(
-    const mojom::ImeInfo& current_ime,
-    const std::vector<mojom::ImeInfo>& available_imes,
-    const std::vector<mojom::ImeMenuItem>& menu_items) {
-  current_ime_ = current_ime;
-  available_imes_ = available_imes;
-  current_ime_menu_items_ = menu_items;
+void ImeController::BindRequest(mojom::ImeControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void ImeController::SetClient(mojom::ImeControllerClientPtr client) {
+  client_ = std::move(client);
+}
+
+bool ImeController::CanSwitchIme() const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+void ImeController::SwitchToNextIme() {
+  NOTIMPLEMENTED();
+}
+
+void ImeController::SwitchToPreviousIme() {
+  NOTIMPLEMENTED();
+}
+
+bool ImeController::CanSwitchImeWithAccelerator(
+    const ui::Accelerator& accelerator) const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+void ImeController::SwitchImeWithAccelerator(
+    const ui::Accelerator& accelerator) {
+  NOTIMPLEMENTED();
+}
+
+// mojom::ImeController:
+void ImeController::RefreshIme(mojom::ImeInfoPtr current_ime,
+                               std::vector<mojom::ImeInfoPtr> available_imes,
+                               std::vector<mojom::ImeMenuItemPtr> menu_items) {
+  current_ime_ = *current_ime;
+
+  available_imes_.clear();
+  available_imes_.reserve(available_imes.size());
+  for (const auto& ime : available_imes)
+    available_imes_.push_back(*ime);
+
+  current_ime_menu_items_.clear();
+  current_ime_menu_items_.reserve(menu_items.size());
+  for (const auto& item : menu_items)
+    current_ime_menu_items_.push_back(*item);
+
   Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
 }
 
