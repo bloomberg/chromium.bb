@@ -121,7 +121,7 @@ class Resource::CachedMetadataHandlerImpl : public CachedMetadataHandler {
   DECLARE_VIRTUAL_TRACE();
   void SetCachedMetadata(uint32_t, const char*, size_t, CacheType) override;
   void ClearCachedMetadata(CacheType) override;
-  PassRefPtr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
+  RefPtr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
   String Encoding() const override;
   // Sets the serialized metadata retrieved from the platform's cache.
   void SetSerializedCachedMetadata(const char*, size_t);
@@ -169,12 +169,11 @@ void Resource::CachedMetadataHandlerImpl::ClearCachedMetadata(
     SendToPlatform();
 }
 
-PassRefPtr<CachedMetadata>
-Resource::CachedMetadataHandlerImpl::GetCachedMetadata(
+RefPtr<CachedMetadata> Resource::CachedMetadataHandlerImpl::GetCachedMetadata(
     uint32_t data_type_id) const {
   if (!cached_metadata_ || cached_metadata_->DataTypeID() != data_type_id)
     return nullptr;
-  return cached_metadata_.Get();
+  return cached_metadata_;
 }
 
 String Resource::CachedMetadataHandlerImpl::Encoding() const {
@@ -357,7 +356,7 @@ void Resource::AppendData(const char* data, size_t length) {
   SetEncodedSize(data_->size());
 }
 
-void Resource::SetResourceBuffer(PassRefPtr<SharedBuffer> resource_buffer) {
+void Resource::SetResourceBuffer(RefPtr<SharedBuffer> resource_buffer) {
   DCHECK(!is_revalidating_);
   DCHECK(!ErrorOccurred());
   DCHECK_EQ(options_.data_buffering_policy, kBufferData);

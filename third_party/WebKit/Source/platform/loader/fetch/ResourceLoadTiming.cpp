@@ -26,11 +26,11 @@ ResourceLoadTiming::ResourceLoadTiming()
       push_start_(0),
       push_end_(0) {}
 
-PassRefPtr<ResourceLoadTiming> ResourceLoadTiming::Create() {
+RefPtr<ResourceLoadTiming> ResourceLoadTiming::Create() {
   return AdoptRef(new ResourceLoadTiming);
 }
 
-PassRefPtr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {
+RefPtr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {
   RefPtr<ResourceLoadTiming> timing = Create();
   timing->request_time_ = request_time_;
   timing->proxy_start_ = proxy_start_;
@@ -48,7 +48,7 @@ PassRefPtr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {
   timing->ssl_end_ = ssl_end_;
   timing->push_start_ = push_start_;
   timing->push_end_ = push_end_;
-  return timing.Release();
+  return timing;
 }
 
 bool ResourceLoadTiming::operator==(const ResourceLoadTiming& other) const {

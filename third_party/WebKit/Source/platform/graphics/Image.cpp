@@ -78,7 +78,7 @@ bool Image::SupportsType(const String& type) {
   return MIMETypeRegistry::IsSupportedImageResourceMIMEType(type);
 }
 
-Image::SizeAvailability Image::SetData(PassRefPtr<SharedBuffer> data,
+Image::SizeAvailability Image::SetData(RefPtr<SharedBuffer> data,
                                        bool all_data_received) {
   encoded_image_data_ = std::move(data);
   if (!encoded_image_data_.Get())

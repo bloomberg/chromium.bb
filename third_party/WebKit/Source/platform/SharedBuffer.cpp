@@ -81,10 +81,10 @@ const char* SharedBuffer::Data() const {
   return buffer_.data();
 }
 
-void SharedBuffer::Append(PassRefPtr<SharedBuffer> data) {
+void SharedBuffer::Append(const SharedBuffer& data) {
   const char* segment;
   size_t position = 0;
-  while (size_t length = data->GetSomeDataInternal(segment, position)) {
+  while (size_t length = data.GetSomeDataInternal(segment, position)) {
     Append(segment, length);
     position += length;
   }

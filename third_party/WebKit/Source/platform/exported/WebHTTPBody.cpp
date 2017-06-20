@@ -157,15 +157,15 @@ void WebHTTPBody::SetContainsPasswordData(bool contains_password_data) {
   private_->SetContainsPasswordData(contains_password_data);
 }
 
-WebHTTPBody::WebHTTPBody(PassRefPtr<EncodedFormData> data)
+WebHTTPBody::WebHTTPBody(RefPtr<EncodedFormData> data)
     : private_(static_cast<WebHTTPBodyPrivate*>(data.LeakRef())) {}
 
-WebHTTPBody& WebHTTPBody::operator=(PassRefPtr<EncodedFormData> data) {
+WebHTTPBody& WebHTTPBody::operator=(RefPtr<EncodedFormData> data) {
   DCHECK(static_cast<WebHTTPBodyPrivate*>(data.LeakRef()));
   return *this;
 }
 
-WebHTTPBody::operator PassRefPtr<EncodedFormData>() const {
+WebHTTPBody::operator RefPtr<EncodedFormData>() const {
   return private_;
 }
 

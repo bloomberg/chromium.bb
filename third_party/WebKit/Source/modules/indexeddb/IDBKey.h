@@ -45,7 +45,7 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
     return new IDBKey(kNumberType, number);
   }
 
-  static IDBKey* CreateBinary(PassRefPtr<SharedBuffer> binary) {
+  static IDBKey* CreateBinary(RefPtr<SharedBuffer> binary) {
     return new IDBKey(std::move(binary));
   }
 
@@ -83,7 +83,7 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
     return array_;
   }
 
-  PassRefPtr<SharedBuffer> Binary() const {
+  RefPtr<SharedBuffer> Binary() const {
     DCHECK_EQ(type_, kBinaryType);
     return binary_;
   }

@@ -149,7 +149,7 @@ void HistoryItem::SetFormInfoFromRequest(const ResourceRequest& request) {
   }
 }
 
-void HistoryItem::SetFormData(PassRefPtr<EncodedFormData> form_data) {
+void HistoryItem::SetFormData(RefPtr<EncodedFormData> form_data) {
   form_data_ = std::move(form_data);
 }
 

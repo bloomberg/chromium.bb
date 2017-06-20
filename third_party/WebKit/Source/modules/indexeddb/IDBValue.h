@@ -48,12 +48,12 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
 
   IDBValue();
   IDBValue(const WebIDBValue&, v8::Isolate*);
-  IDBValue(PassRefPtr<SharedBuffer>,
+  IDBValue(RefPtr<SharedBuffer>,
            const WebVector<WebBlobInfo>&,
            IDBKey*,
            const IDBKeyPath&);
   IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
-  IDBValue(PassRefPtr<SharedBuffer> unwrapped_data,
+  IDBValue(RefPtr<SharedBuffer> unwrapped_data,
            std::unique_ptr<Vector<RefPtr<BlobDataHandle>>>,
            std::unique_ptr<Vector<WebBlobInfo>>);
 

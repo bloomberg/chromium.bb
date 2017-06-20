@@ -26,7 +26,7 @@ IDBValue::IDBValue(const WebIDBValue& value, v8::Isolate* isolate)
     isolate_->AdjustAmountOfExternalAllocatedMemory(external_allocated_size_);
 }
 
-IDBValue::IDBValue(PassRefPtr<SharedBuffer> data,
+IDBValue::IDBValue(RefPtr<SharedBuffer> data,
                    const WebVector<WebBlobInfo>& web_blob_info,
                    IDBKey* primary_key,
                    const IDBKeyPath& key_path)
@@ -60,7 +60,7 @@ IDBValue::IDBValue(const IDBValue* value,
   }
 }
 
-IDBValue::IDBValue(PassRefPtr<SharedBuffer> unwrapped_data,
+IDBValue::IDBValue(RefPtr<SharedBuffer> unwrapped_data,
                    std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data,
                    std::unique_ptr<Vector<WebBlobInfo>> blob_info)
     : data_(std::move(unwrapped_data)),

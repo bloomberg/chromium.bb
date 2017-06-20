@@ -81,7 +81,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   bool IsEmpty() const { return !size(); }
 
-  void Append(PassRefPtr<SharedBuffer>);
+  void Append(const SharedBuffer&);
 
   HAS_STRICTLY_TYPED_ARG
   void Append(const char* data, STRICTLY_TYPED_ARG(size)) {

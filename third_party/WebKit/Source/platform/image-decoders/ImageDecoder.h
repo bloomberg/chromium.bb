@@ -96,7 +96,7 @@ class PLATFORM_EXPORT ImageDecoder {
                                               AlphaOption,
                                               const ColorBehavior&);
   static std::unique_ptr<ImageDecoder> Create(
-      PassRefPtr<SharedBuffer> data,
+      RefPtr<SharedBuffer> data,
       bool data_complete,
       AlphaOption alpha_option,
       const ColorBehavior& color_behavior) {
@@ -121,7 +121,7 @@ class PLATFORM_EXPORT ImageDecoder {
     OnSetData(data_.Get());
   }
 
-  void SetData(PassRefPtr<SharedBuffer> data, bool all_data_received) {
+  void SetData(RefPtr<SharedBuffer> data, bool all_data_received) {
     SetData(SegmentReader::CreateFromSharedBuffer(std::move(data)),
             all_data_received);
   }

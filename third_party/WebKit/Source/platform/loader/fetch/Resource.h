@@ -214,10 +214,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   bool PassesAccessControlCheck(const SecurityOrigin*) const;
 
-  virtual PassRefPtr<const SharedBuffer> ResourceBuffer() const {
-    return data_;
-  }
-  void SetResourceBuffer(PassRefPtr<SharedBuffer>);
+  virtual RefPtr<const SharedBuffer> ResourceBuffer() const { return data_; }
+  void SetResourceBuffer(RefPtr<SharedBuffer>);
 
   virtual bool WillFollowRedirect(const ResourceRequest&,
                                   const ResourceResponse&);

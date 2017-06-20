@@ -33,7 +33,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

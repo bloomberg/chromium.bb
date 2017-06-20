@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PassRefPtr<ResourceTimingInfo> ResourceTimingInfo::Adopt(
+RefPtr<ResourceTimingInfo> ResourceTimingInfo::Adopt(
     std::unique_ptr<CrossThreadResourceTimingInfoData> data) {
   RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
       AtomicString(data->type_), data->initial_time_, data->is_main_resource_);
@@ -23,7 +23,7 @@ PassRefPtr<ResourceTimingInfo> ResourceTimingInfo::Adopt(
     info->redirect_chain_.push_back(ResourceResponse(response_data.get()));
   info->transfer_size_ = data->transfer_size_;
   info->negative_allowed_ = data->negative_allowed_;
-  return info.Release();
+  return info;
 }
 
 std::unique_ptr<CrossThreadResourceTimingInfoData>

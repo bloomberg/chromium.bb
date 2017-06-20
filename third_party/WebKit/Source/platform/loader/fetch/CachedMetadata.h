@@ -34,7 +34,6 @@
 #include <stdint.h>
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
@@ -47,14 +46,14 @@ namespace blink {
 // data type ID will reject data generated with a different byte-order.
 class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
  public:
-  static PassRefPtr<CachedMetadata> Create(uint32_t data_type_id,
-                                           const char* data,
-                                           size_t size) {
+  static RefPtr<CachedMetadata> Create(uint32_t data_type_id,
+                                       const char* data,
+                                       size_t size) {
     return AdoptRef(new CachedMetadata(data_type_id, data, size));
   }
 
-  static PassRefPtr<CachedMetadata> CreateFromSerializedData(const char* data,
-                                                             size_t size) {
+  static RefPtr<CachedMetadata> CreateFromSerializedData(const char* data,
+                                                         size_t size) {
     return AdoptRef(new CachedMetadata(data, size));
   }
 

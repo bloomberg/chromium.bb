@@ -29,7 +29,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -43,7 +42,7 @@ class SubstituteData {
   SubstituteData() : substitute_data_load_policy_(kLoadNormally) {}
 
   SubstituteData(
-      PassRefPtr<SharedBuffer> content,
+      RefPtr<SharedBuffer> content,
       const AtomicString& mime_type,
       const AtomicString& text_encoding,
       const KURL& failing_url,

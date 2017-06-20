@@ -155,10 +155,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   EncodedFormData* HttpBody() const;
-  void SetHTTPBody(PassRefPtr<EncodedFormData>);
+  void SetHTTPBody(RefPtr<EncodedFormData>);
 
   EncodedFormData* AttachedCredential() const;
-  void SetAttachedCredential(PassRefPtr<EncodedFormData>);
+  void SetAttachedCredential(RefPtr<EncodedFormData>);
 
   bool AllowStoredCredentials() const;
   void SetAllowStoredCredentials(bool allow_credentials);
@@ -238,7 +238,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   // Extra data associated with this request.
   ExtraData* GetExtraData() const { return extra_data_.Get(); }
-  void SetExtraData(PassRefPtr<ExtraData> extra_data) {
+  void SetExtraData(RefPtr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }
 
