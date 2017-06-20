@@ -224,12 +224,12 @@ void ResourceRequest::SetFirstPartyForCookies(
   first_party_for_cookies_ = first_party_for_cookies;
 }
 
-PassRefPtr<SecurityOrigin> ResourceRequest::RequestorOrigin() const {
+RefPtr<SecurityOrigin> ResourceRequest::RequestorOrigin() const {
   return requestor_origin_;
 }
 
 void ResourceRequest::SetRequestorOrigin(
-    PassRefPtr<SecurityOrigin> requestor_origin) {
+    RefPtr<SecurityOrigin> requestor_origin) {
   requestor_origin_ = std::move(requestor_origin);
 }
 

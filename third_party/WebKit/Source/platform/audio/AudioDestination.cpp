@@ -56,7 +56,7 @@ std::unique_ptr<AudioDestination> AudioDestination::Create(
     AudioIOCallback& callback,
     unsigned number_of_output_channels,
     const WebAudioLatencyHint& latency_hint,
-    PassRefPtr<SecurityOrigin> security_origin) {
+    RefPtr<SecurityOrigin> security_origin) {
   return WTF::WrapUnique(
       new AudioDestination(callback, number_of_output_channels, latency_hint,
                            std::move(security_origin)));
@@ -65,7 +65,7 @@ std::unique_ptr<AudioDestination> AudioDestination::Create(
 AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    unsigned number_of_output_channels,
                                    const WebAudioLatencyHint& latency_hint,
-                                   PassRefPtr<SecurityOrigin> security_origin)
+                                   RefPtr<SecurityOrigin> security_origin)
     : number_of_output_channels_(number_of_output_channels),
       is_playing_(false),
       fifo_(WTF::WrapUnique(

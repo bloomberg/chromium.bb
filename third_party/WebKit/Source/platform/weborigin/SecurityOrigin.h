@@ -46,17 +46,17 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   WTF_MAKE_NONCOPYABLE(SecurityOrigin);
 
  public:
-  static PassRefPtr<SecurityOrigin> Create(const KURL&);
-  static PassRefPtr<SecurityOrigin> CreateUnique();
+  static RefPtr<SecurityOrigin> Create(const KURL&);
+  static RefPtr<SecurityOrigin> CreateUnique();
 
-  static PassRefPtr<SecurityOrigin> CreateFromString(const String&);
-  static PassRefPtr<SecurityOrigin> Create(const String& protocol,
-                                           const String& host,
-                                           int port);
-  static PassRefPtr<SecurityOrigin> Create(const String& protocol,
-                                           const String& host,
-                                           int port,
-                                           const String& suborigin);
+  static RefPtr<SecurityOrigin> CreateFromString(const String&);
+  static RefPtr<SecurityOrigin> Create(const String& protocol,
+                                       const String& host,
+                                       int port);
+  static RefPtr<SecurityOrigin> Create(const String& protocol,
+                                       const String& host,
+                                       int port,
+                                       const String& suborigin);
 
   static void SetMap(URLSecurityOriginMap*);
 
@@ -75,7 +75,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
 
   // Create a deep copy of this SecurityOrigin. This method is useful
   // when marshalling a SecurityOrigin to another thread.
-  PassRefPtr<SecurityOrigin> IsolatedCopy() const;
+  RefPtr<SecurityOrigin> IsolatedCopy() const;
 
   // Set the domain property of this security origin to newDomain. This
   // function does not check whether newDomain is a suffix of the current
