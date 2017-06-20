@@ -246,12 +246,12 @@ enum class AXStringAttribute {
 
 enum class AXObjectAttribute {
   kAriaActiveDescendant,
+  kAriaDetails,
   kAriaErrorMessage,
 };
 
 enum class AXObjectVectorAttribute {
   kAriaControls,
-  kAriaDetails,
   kAriaFlowTo,
 };
 

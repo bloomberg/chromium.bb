@@ -2,8 +2,7 @@
 This text field has an error!
 
 
-Details 1
-Details 2
+Details
 Select All  
 {
   "nodeId": "<string>",
@@ -129,16 +128,11 @@ Select All
     {
       "name": "details",
       "value": {
-        "type": "idrefList",
-        "value": "",
+        "type": "idref",
         "relatedNodes": [
           {
-            "idref": "d1",
-            "nodeResult": "div#d1"
-          },
-          {
-            "idref": "d2",
-            "nodeResult": "div#d2"
+            "idref": "d",
+            "nodeResult": "div#d"
           }
         ]
       }

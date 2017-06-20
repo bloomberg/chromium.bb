@@ -3801,8 +3801,14 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
                             ui::AX_ATTR_FLOWTO_IDS);
   AddBidirectionalRelations(IA2_RELATION_LABELLED_BY, IA2_RELATION_LABEL_FOR,
                             ui::AX_ATTR_LABELLEDBY_IDS);
-  AddBidirectionalRelations(IA2_RELATION_DETAILS, IA2_RELATION_DETAILS_FOR,
-                            ui::AX_ATTR_DETAILS_IDS);
+
+  int32_t details_id;
+  if (GetIntAttribute(ui::AX_ATTR_DETAILS_ID, &details_id)) {
+    std::vector<int32_t> details_ids;
+    details_ids.push_back(details_id);
+    AddBidirectionalRelations(IA2_RELATION_DETAILS, IA2_RELATION_DETAILS_FOR,
+                              details_ids);
+  }
 
   int member_of_id;
   if (owner()->GetIntAttribute(ui::AX_ATTR_MEMBER_OF_ID, &member_of_id))
@@ -4813,6 +4819,13 @@ void BrowserAccessibilityComWin::AddBidirectionalRelations(
 
   const std::vector<int32_t>& target_ids =
       owner()->GetIntListAttribute(attribute);
+  AddBidirectionalRelations(relation_type, reverse_relation_type, target_ids);
+}
+
+void BrowserAccessibilityComWin::AddBidirectionalRelations(
+    const base::string16& relation_type,
+    const base::string16& reverse_relation_type,
+    const std::vector<int32_t>& target_ids) {
   // Reflexive relations don't need to be exposed through IA2.
   std::vector<int32_t> filtered_target_ids;
   int32_t current_id = owner()->GetId();

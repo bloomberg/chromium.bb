@@ -103,6 +103,9 @@ class AXContentNodeDataSparseAttributeAdapter
       case WebAXObjectAttribute::kAriaActiveDescendant:
         dst_->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, value.AxID());
         break;
+      case WebAXObjectAttribute::kAriaDetails:
+        dst_->AddIntAttribute(ui::AX_ATTR_DETAILS_ID, value.AxID());
+        break;
       case WebAXObjectAttribute::kAriaErrorMessage:
         dst_->AddIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, value.AxID());
         break;
@@ -117,10 +120,6 @@ class AXContentNodeDataSparseAttributeAdapter
     switch (attribute) {
       case WebAXObjectVectorAttribute::kAriaControls:
         AddIntListAttributeFromWebObjects(ui::AX_ATTR_CONTROLS_IDS, value,
-                                          dst_);
-        break;
-      case WebAXObjectVectorAttribute::kAriaDetails:
-        AddIntListAttributeFromWebObjects(ui::AX_ATTR_DETAILS_IDS, value,
                                           dst_);
         break;
       case WebAXObjectVectorAttribute::kAriaFlowTo:
