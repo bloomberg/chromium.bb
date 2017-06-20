@@ -614,8 +614,6 @@ class TestObserver : public WallpaperManager::Observer {
 
   ~TestObserver() override { wallpaper_manager_->RemoveObserver(this); }
 
-  void OnWallpaperAnimationFinished(const AccountId& account_id) override {}
-
   void OnUpdateWallpaperForTesting() override { ++update_wallpaper_count_; }
 
   int GetUpdateWallpaperCountAndReset() {

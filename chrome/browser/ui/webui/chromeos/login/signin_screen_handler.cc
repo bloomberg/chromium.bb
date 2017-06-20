@@ -930,9 +930,6 @@ void SigninScreenHandler::OnWallpaperColorsChanged() {
   SetSigninScreenColors(color.value());
 }
 
-void SigninScreenHandler::OnWallpaperAnimationFinished(
-    const AccountId& account_id) {}
-
 void SigninScreenHandler::ClearAndEnablePassword() {
   core_oobe_view_->ResetSignInUI(false);
 }

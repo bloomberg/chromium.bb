@@ -41,8 +41,6 @@ class TestWallpaperObserverPendingListEmpty
     wallpaper_manager_->RemoveObserver(this);
   }
 
-  void OnWallpaperAnimationFinished(const AccountId& account_id) override {}
-
   void OnPendingListEmptyForTesting() override {
     empty_ = true;
     base::MessageLoop::current()->QuitWhenIdle();
