@@ -28,7 +28,7 @@ class HyphenationCF : public Hyphenation {
   RetainPtr<CFLocaleRef> locale_cf_;
 };
 
-PassRefPtr<Hyphenation> Hyphenation::PlatformGetHyphenation(
+RefPtr<Hyphenation> Hyphenation::PlatformGetHyphenation(
     const AtomicString& locale) {
   RetainPtr<CFStringRef> locale_cf_string = locale.Impl()->CreateCFString();
   RetainPtr<CFLocaleRef> locale_cf =
