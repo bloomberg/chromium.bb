@@ -378,9 +378,6 @@ extern const char kGoogleProfileInfoDescription[];
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];
 
-extern const char kHideInactiveStackedTabCloseButtonsName[];
-extern const char kHideInactiveStackedTabCloseButtonsDescription[];
-
 extern const char kHistoryRequiresUserGestureName[];
 extern const char kHistoryRequiresUserGestureDescription[];
 extern const char kHyperlinkAuditingName[];

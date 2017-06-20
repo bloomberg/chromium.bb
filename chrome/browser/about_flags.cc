@@ -1660,14 +1660,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCloudPrintXpsDescription, kOsWin,
      SINGLE_VALUE_TYPE(switches::kEnableCloudPrintXps)},
 #endif  // OS_WIN
-#if defined(TOOLKIT_VIEWS)
-    {"disable-hide-inactive-stacked-tab-close-buttons",
-     flag_descriptions::kHideInactiveStackedTabCloseButtonsName,
-     flag_descriptions::kHideInactiveStackedTabCloseButtonsDescription,
-     kOsCrOS | kOsWin | kOsLinux,
-     SINGLE_DISABLE_VALUE_TYPE(
-         switches::kDisableHideInactiveStackedTabCloseButtons)},
-#endif  // TOOLKIT_VIEWS
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     {"enable-spelling-feedback-field-trial",
      flag_descriptions::kSpellingFeedbackFieldTrialName,
