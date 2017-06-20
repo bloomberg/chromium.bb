@@ -95,9 +95,7 @@ public class BottomSheetContentController extends BottomNavigationView
 
         @Override
         public void onSheetOpened() {
-            if (!mDefaultContentInitialized && mTabModelSelector.getCurrentTab() != null) {
-                initializeDefaultContent();
-            }
+            if (!mDefaultContentInitialized) initializeDefaultContent();
         }
 
         @Override
