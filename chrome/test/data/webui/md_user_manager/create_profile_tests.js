@@ -17,6 +17,13 @@ cr.define('user_manager.create_profile_tests', function() {
     /** @type {?CreateProfileElement} */
     var createProfileElement = null;
 
+    // Helper to select first signed in user from a dropdown menu.
+    var selectFirstSignedInUser = function(dropdownMenu) {
+      var option = dropdownMenu.querySelector('option:not([disabled])');
+      dropdownMenu.value = option.value;
+      dropdownMenu.dispatchEvent(new Event('change'));
+    };
+
     suite('CreateProfileTests', function() {
       setup(function() {
         browserProxy = new TestProfileBrowserProxy();
@@ -63,7 +70,7 @@ cr.define('user_manager.create_profile_tests', function() {
           assertTrue(!!createProfileElement.$$('#learn-more > a'));
 
           // The dropdown menu becomes visible when the checkbox is checked.
-          assertFalse(!!createProfileElement.$$('paper-dropdown-menu'));
+          assertFalse(!!createProfileElement.$$('.md-select'));
 
           // Simulate checking the supervised user checkbox.
           MockInteractions.tap(
@@ -71,9 +78,9 @@ cr.define('user_manager.create_profile_tests', function() {
           Polymer.dom.flush();
 
           // The dropdown menu is visible and is populated with signed in users.
-          var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
+          var dropdownMenu = createProfileElement.$$('.md-select');
           assertTrue(!!dropdownMenu);
-          var users = dropdownMenu.querySelectorAll('paper-item');
+          var users = dropdownMenu.querySelectorAll('option:not([disabled])');
           assertEquals(1, users.length);
         });
       });
@@ -143,11 +150,7 @@ cr.define('user_manager.create_profile_tests', function() {
 
         // There is an existing supervised user with this name on the device.
         createProfileElement.$.nameInput.value = 'existing name 1';
-
-        // Select the first signed in user.
-        var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-        var selector = dropdownMenu.querySelector('paper-listbox');
-        selector.selected = 0;
+        selectFirstSignedInUser(createProfileElement.$$('.md-select'));
 
         // Simulate clicking 'Create'.
         MockInteractions.tap(createProfileElement.$.save);
@@ -175,11 +178,7 @@ cr.define('user_manager.create_profile_tests', function() {
 
         // There is an existing supervised user with this name on the device.
         createProfileElement.$.nameInput.value = 'existing name 2';
-
-        // Select the first signed in user.
-        var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-        var selector = dropdownMenu.querySelector('paper-listbox');
-        selector.selected = 0;
+        selectFirstSignedInUser(createProfileElement.$$('.md-select'));
 
         // Simulate clicking 'Create'.
         MockInteractions.tap(createProfileElement.$.save);
@@ -207,10 +206,7 @@ cr.define('user_manager.create_profile_tests', function() {
           createProfileElement.$$("#makeSupervisedCheckbox"));
         Polymer.dom.flush();
 
-        // Select the first signed in user.
-        var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-        var selector = dropdownMenu.querySelector('paper-listbox');
-        selector.selected = 0;
+        selectFirstSignedInUser(createProfileElement.$$('.md-select'));
 
         // Simulate clicking 'Import supervised user'.
         MockInteractions.tap(createProfileElement.$$('#import-user'));
@@ -237,9 +233,7 @@ cr.define('user_manager.create_profile_tests', function() {
         Polymer.dom.flush();
 
         // Select the first signed in user.
-        var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-        var selector = dropdownMenu.querySelector('paper-listbox');
-        selector.selected = 0;
+        selectFirstSignedInUser(createProfileElement.$$('.md-select'));
 
         // Simulate clicking 'Create'.
         MockInteractions.tap(createProfileElement.$.save);
@@ -429,7 +423,7 @@ cr.define('user_manager.create_profile_tests', function() {
           Polymer.dom.flush();
 
           // The dropdown menu is not visible when there are no signed in users.
-          assertFalse(!!createProfileElement.$$('paper-dropdown-menu'));
+          assertFalse(!!createProfileElement.$$('.md-select'));
 
           // Instead a message containing a link to the Help Center on how
           // to sign in to Chrome is displaying.

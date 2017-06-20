@@ -38,7 +38,7 @@
       .md-select-wrapper {
         /* Mitigate for md-select's start padding, to make it look aligned with
          * other elements on the page. */
-        -webkit-margin-start: -12px;
+        -webkit-margin-start: calc(-1 * var(--md-select-side-padding));
       }
 
       .md-select {

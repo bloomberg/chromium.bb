@@ -82,18 +82,11 @@ cr.define('extension_keyboard_shortcut_tests', function() {
         var commands = card1.querySelectorAll('.command-entry');
         assertEquals(1, commands.length);
         expectTrue(isVisibleOnCard(commands[0], '.command-name'));
-        expectTrue(isVisibleOnCard(commands[0], 'paper-dropdown-menu'));
+        expectTrue(isVisibleOnCard(commands[0], 'select.md-select'));
 
         var card2 = cards[1];
         commands = card2.querySelectorAll('.command-entry');
         assertEquals(2, commands.length);
-
-        expectEquals(
-            1,
-            keyboardShortcuts.computeSelectedScope_(twoCommands.commands[0]));
-        expectEquals(
-            0,
-            keyboardShortcuts.computeSelectedScope_(twoCommands.commands[1]));
       });
     });
     suite(assert(TestNames.ShortcutUtil), function() {

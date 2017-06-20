@@ -7,20 +7,18 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 
 <dom-module id="create-profile">
   <template>
-    <style include="shared-styles iron-positioning">
+    <style include="shared-styles iron-positioning md-select">
       .container {
         color: var(--primary-text-color);
         width: var(--page-width);
@@ -72,8 +70,7 @@
         padding: 104px 0 16px;
       }
 
-      #nameInput,
-      paper-dropdown-menu {
+      #nameInput {
         --paper-input-container-focus-color: var(--google-blue-500);
         --paper-input-container-input: {
           font-size: inherit;
@@ -109,16 +106,9 @@
         line-height: 20px;
       }
 
-      #supervised-user-container paper-dropdown-menu {
+      #supervised-user-container .md-select-wrapper {
+        -webkit-margin-start: calc(-1 * var(--md-select-side-padding));
         margin-top: 4px;
-        width: 200px;
-      }
-
-      #supervised-user-container paper-listbox paper-item {
-        --paper-item: {
-          font-size: inherit;
-          min-height: 40px;
-        };
       }
 
       #supervised-user-container #import-user {
@@ -174,17 +164,17 @@
           </div>
           <template is="dom-if" if="[[isSupervised_]]">
             <template is="dom-if" if="[[isSignedIn_(signedInUsers_)]]">
-              <paper-dropdown-menu label="$i18n{selectAnAccount}" no-label-float>
-                <paper-listbox class="dropdown-content"
-                    selected="{{signedInUserIndex_}}"
-                    attr-for-selected="data-user-index">
+              <div class="md-select-wrapper">
+                <select class="md-select" on-change="onAccountChanged_">
+                  <option disabled selected>$i18n{selectAnAccount}</option>
                   <template is="dom-repeat" items="[[signedInUsers_]]">
-                    <paper-item data-user-index$="[[index]]">
+                    <option value="[[index]]">
                       [[item.username]]
-                    </paper-item>
+                    </option>
                   </template>
-                </paper-listbox>
-              </paper-dropdown-menu>
+                </select>
+                <span class="md-select-underline"></span>
+              </div>
               <a id="import-user" is="action-link" on-tap="onImportUserTap_"
                   hidden="[[isImportUserLinkHidden_(createInProgress_,
                                                     loadingSupervisedUsers_,

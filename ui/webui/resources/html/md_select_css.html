@@ -4,9 +4,8 @@
 <dom-module id="md-select">
   <template>
     <style>
-      .md-select,
-      .md-select-underline {
-        --md-side-padding: 12px;
+      :root {
+        --md-select-side-padding: 12px;
       }
 
       .md-select {
@@ -16,14 +15,14 @@
         --md-arrow-offset: 3%;
 
         -webkit-appearance: none;
-        -webkit-margin-end: calc(-1 * var(--md-side-padding));
+        -webkit-margin-end: calc(-1 * var(--md-select-side-padding));
         /* Ensure that there is a 3px space between the text and the arrow. */
-        -webkit-padding-end: calc(var(--md-side-padding) +
+        -webkit-padding-end: calc(var(--md-select-side-padding) +
             var(--md-arrow-offset) + var(--md-arrow-width) + 3px);
-        -webkit-padding-start: var(--md-side-padding);
+        -webkit-padding-start: var(--md-select-side-padding);
         background: url(
             chrome://resources/images/arrow_down.svg)
-            calc(100% - var(--md-arrow-offset) - var(--md-side-padding))
+            calc(100% - var(--md-arrow-offset) - var(--md-select-side-padding))
             center no-repeat;
         background-size: var(--md-arrow-width);
         border: none;
@@ -34,7 +33,7 @@
         outline: none;
         padding-bottom: 4px;
         padding-top: 3px;
-        width: calc(var(--md-select-width, 200px) + 2 * var(--md-side-padding));
+        width: calc(var(--md-select-width, 200px) + 2 * var(--md-select-side-padding));
       }
 
       /* Mirroring paper-dropdown-menu disabled style. */
@@ -49,14 +48,14 @@
       }
 
       :host-context([dir=rtl]) .md-select {
-        background-position-x: calc(var(--md-side-padding) +
+        background-position-x: calc(var(--md-select-side-padding) +
             var(--md-arrow-offset));
       }
 
       /* Persistent underline */
       .md-select-underline {
         -webkit-margin-end: 0;
-        -webkit-margin-start: var(--md-side-padding);
+        -webkit-margin-start: var(--md-select-side-padding);
         border-top: 1px solid var(--paper-grey-300);
         display: block;
         margin-bottom: 0;

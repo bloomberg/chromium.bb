@@ -14,6 +14,15 @@ cr.define('extensions', function() {
     properties: {
       /** @type {Array<!chrome.developerPrivate.ExtensionInfo>} */
       items: Array,
+
+      /**
+       * Proxying the enum to be used easily by the html template.
+       * @private
+       */
+      CommandScope_: {
+        type: Object,
+        value: chrome.developerPrivate.CommandScope
+      },
     },
 
     ready: function() {
@@ -57,25 +66,26 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Returns the scope index in the dropdown menu for the command's scope.
-     * @param {chrome.developerPrivate.Command} command
-     * @return {number}
-     * @private
+     * This function exists to force trigger an update when CommandScope_
+     * becomes available.
+     * @param {string} scope
+     * @return {string}
      */
-    computeSelectedScope_: function(command) {
-      // These numbers match the indexes in the dropdown menu in the html.
-      switch (command.scope) {
-        case chrome.developerPrivate.CommandScope.CHROME:
-          return 0;
-        case chrome.developerPrivate.CommandScope.GLOBAL:
-          return 1;
-      }
-      assertNotReached();
+    triggerScopeChange_: function(scope) {
+      return scope;
     },
 
     /** @private */
     onCloseButtonClick_: function() {
       this.fire('close');
+    },
+
+    /**
+     * @param {!{target: HTMLSelectElement, model: Object}} event
+     * @private
+     */
+    onScopeChanged_: function(event) {
+      event.model.set('command.scope', event.target.value);
     },
   });
 
