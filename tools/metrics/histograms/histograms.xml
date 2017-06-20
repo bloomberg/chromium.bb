@@ -67197,6 +67197,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Search.GsaProcessMemoryPss" units="KB">
+  <obsolete>
+    Deprecated 06/2017, no longer recorded.
+  </obsolete>
   <owner>lizeb@chromium.org</owner>
   <summary>
     On Android, when Chrome connects to a bound service exposed by GSA, the
