@@ -394,6 +394,8 @@ TEST_F(GoogleAPIKeysTest, OverrideAllKeys) {
   EXPECT_EQ("SECRET_REMOTING_HOST", secret_remoting_host);
 }
 
+#if !defined(GOOGLE_CHROME_BUILD)
+
 // Override all keys using both preprocessor defines and environment
 // variables.  The environment variables should win.
 namespace override_all_keys_env {
@@ -480,6 +482,8 @@ TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingEnvironment) {
   EXPECT_EQ("env-ID_REMOTING_HOST", id_remoting_host);
   EXPECT_EQ("env-SECRET_REMOTING_HOST", secret_remoting_host);
 }
+
+#endif  // !defined(GOOGLE_CHROME_BUILD)
 
 #if defined(OS_IOS)
 // Override all keys using both preprocessor defines and setters.
