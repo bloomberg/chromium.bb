@@ -25,19 +25,19 @@ share_test((t, webshare, mock) => {
 }, 'share of types other than string (expect implicitly converted to string)');
 
 share_test((t, webshare, mock) => {
-  // A null title should convert into the string 'null' (because the field is
+  // null fields should convert into the string 'null' (because the field is
   // not nullable, it just converts to a string like any other type).
-  mock.pushShareResult('null', '', '', webshare.ShareError.OK);
-  return callWithKeyDown(() => navigator.share({title: null, text: undefined}));
+  mock.pushShareResult('null', '', getAbsoluteUrl('null'),
+                       webshare.ShareError.OK);
+  return callWithKeyDown(() => navigator.share(
+        {title: null, text: undefined, url: null}));
 }, 'share of null/undefined dict values');
 
 promise_test(t => {
   // URL is invalid in that the URL Parser returns failure (port is too
   // large).
   const url = 'http://example.com:65536';
-  return promise_rejects(
-      t, new DOMException(undefined, 'TypeError'),
-      navigator.share({url: url}));
+  return promise_rejects(t, new TypeError(), navigator.share({url: url}));
 }, 'share with an invalid URL');
 
 </script>

@@ -8,9 +8,8 @@
 share_test((t, webshare, mock) => {
   mock.pushShareResult('the title', 'the message', 'data:the url',
                        webshare.ShareError.CANCELED);
-  // promise_rejects doesn't test the exception message, so just match against undefined.
   return callWithKeyDown(() => promise_rejects(
-      t, new DOMException(undefined, 'AbortError'),
+      t, 'AbortError',
       navigator.share({title: 'the title', text: 'the message', url: 'data:the url'})));
 }, 'share with user cancellation');
 
@@ -18,7 +17,7 @@ share_test((t, webshare, mock) => {
   mock.pushShareResult('the title', 'the message', 'data:the url',
                        webshare.ShareError.INTERNAL_ERROR);
   return callWithKeyDown(() => promise_rejects(
-      t, new DOMException(undefined, 'AbortError'),
+      t, 'AbortError',
       navigator.share({title: 'the title', text: 'the message', url: 'data:the url'})));
 }, 'share with invalid url template');
 
