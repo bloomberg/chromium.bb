@@ -52,10 +52,6 @@ enum DistanceMetric {
   // If a bubble has buttons, this is the margin between them and the rest of
   // the content.
   DISTANCE_BUBBLE_BUTTON_TOP_MARGIN = VIEWS_DISTANCE_START,
-  // Margin on the left and right of the contents of a bubble.
-  DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN,
-  // Margin on the top and bottom of the contents of a bubble.
-  DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN,
   // The default padding to add on each side of a button's label.
   DISTANCE_BUTTON_HORIZONTAL_PADDING,
   // The maximum width a button can have and still influence the sizes of
@@ -69,10 +65,6 @@ enum DistanceMetric {
   DISTANCE_DIALOG_BUTTON_BOTTOM_MARGIN,
   // The default minimum width of a dialog button.
   DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH,
-  // Margin on the left and right of the contents of a dialog.
-  DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN,
-  // Margin on the top and bottom of the contents of a dialog.
-  DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN,
   // The spacing between a pair of related horizontal buttons, used for
   // dialog layout.
   DISTANCE_RELATED_BUTTON_HORIZONTAL,

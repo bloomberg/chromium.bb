@@ -35,9 +35,7 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, VIEWS_INSETS_MAX);
   switch (metric) {
     case InsetsMetric::INSETS_BUBBLE_CONTENTS:
-      return gfx::Insets(
-          GetDistanceMetric(DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN),
-          GetDistanceMetric(DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN));
+      return gfx::Insets(13, 13);
     case InsetsMetric::INSETS_BUBBLE_TITLE: {
       const gfx::Insets bubble_contents =
           GetInsetsMetric(INSETS_BUBBLE_CONTENTS);
@@ -53,9 +51,7 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
           dialog_contents.right());
     }
     case InsetsMetric::INSETS_DIALOG_CONTENTS:
-      return gfx::Insets(
-          GetDistanceMetric(DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
-          GetDistanceMetric(DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN));
+      return gfx::Insets(13, 20);
     case InsetsMetric::INSETS_DIALOG_TITLE: {
       const gfx::Insets dialog_contents =
           GetInsetsMetric(INSETS_DIALOG_CONTENTS);
@@ -72,11 +68,6 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
 int LayoutProvider::GetDistanceMetric(int metric) const {
   DCHECK_GE(metric, VIEWS_INSETS_MAX);
   switch (metric) {
-    case DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN:
-      return 13;
-    case DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN:
-    case DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN:
-      return 13;
     case DistanceMetric::DISTANCE_BUTTON_HORIZONTAL_PADDING:
       return 16;
     case DistanceMetric::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
@@ -94,8 +85,6 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return 20;
     case DistanceMetric::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH:
       return 75;
-    case DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN:
-      return 20;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL:
       return 20;
   }
