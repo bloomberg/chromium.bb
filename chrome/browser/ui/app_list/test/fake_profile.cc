@@ -210,3 +210,9 @@ void FakeProfile::SetExitType(ExitType exit_type) {
 Profile::ExitType FakeProfile::GetLastSessionExitType() {
   return EXIT_NORMAL;
 }
+
+scoped_refptr<base::SequencedTaskRunner>
+FakeProfile::GetPrefServiceTaskRunner() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}

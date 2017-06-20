@@ -715,9 +715,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     profile->SetExitType(Profile::EXIT_CRASHED);
     profile->GetPrefs()->CommitPendingWrite();
     if (base::FeatureList::IsEnabled(features::kPrefService)) {
-      FlushTaskRunner(content::BrowserThread::GetTaskRunnerForThread(
-                          content::BrowserThread::IO)
-                          .get());
+      FlushTaskRunner(profile->GetPrefServiceTaskRunner().get());
     }
     FlushTaskRunner(profile->GetIOTaskRunner().get());
 
