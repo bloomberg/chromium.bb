@@ -264,8 +264,10 @@ void VideoCaptureDeviceWin::ScopedMediaType::DeleteMediaType(
 }
 
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(
-    const VideoCaptureDeviceDescriptor& device_descriptor)
+    const VideoCaptureDeviceDescriptor& device_descriptor,
+    bool allow_image_capture_controls)
     : device_descriptor_(device_descriptor),
+      allow_image_capture_controls_(allow_image_capture_controls),
       state_(kIdle),
       white_balance_mode_manual_(false),
       exposure_mode_manual_(false) {
@@ -466,8 +468,13 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   client_->OnStarted();
   state_ = kCapturing;
 
+  if (allow_image_capture_controls_)
+    InitializeVideoAndCameraControls();
+}
+
+void VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
   base::win::ScopedComPtr<IKsTopologyInfo> info;
-  hr = capture_filter_.CopyTo(info.GetAddressOf());
+  HRESULT hr = capture_filter_.CopyTo(info.GetAddressOf());
   if (FAILED(hr)) {
     SetErrorState(FROM_HERE, "Failed to obtain the topology info.", hr);
     return;
@@ -525,6 +532,10 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
 
 void VideoCaptureDeviceWin::TakePhoto(TakePhotoCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!allow_image_capture_controls_)
+    return;
+
   // DirectShow has other means of capturing still pictures, e.g. connecting a
   // SampleGrabber filter to a PIN_CATEGORY_STILL of |capture_filter_|. This
   // way, however, is not widespread and proves too cumbersome, so we just grab
@@ -535,7 +546,7 @@ void VideoCaptureDeviceWin::TakePhoto(TakePhotoCallback callback) {
 void VideoCaptureDeviceWin::GetPhotoState(GetPhotoStateCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!camera_control_ || !video_control_)
+  if (!camera_control_ || !video_control_ || !allow_image_capture_controls_)
     return;
 
   auto photo_capabilities = mojom::PhotoState::New();
@@ -627,7 +638,7 @@ void VideoCaptureDeviceWin::SetPhotoOptions(
     VideoCaptureDevice::SetPhotoOptionsCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!camera_control_ || !video_control_)
+  if (!camera_control_ || !video_control_ || !allow_image_capture_controls_)
     return;
 
   HRESULT hr;
