@@ -27,7 +27,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
@@ -726,39 +725,38 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 
   if (config->enable_quic) {
-    for (auto hint = config->quic_hints.begin();
-         hint != config->quic_hints.end(); ++hint) {
-      const URLRequestContextConfig::QuicHint& quic_hint = **hint;
-      if (quic_hint.host.empty()) {
-        LOG(ERROR) << "Empty QUIC hint host: " << quic_hint.host;
+    for (const auto& quic_hint : config->quic_hints) {
+      if (quic_hint->host.empty()) {
+        LOG(ERROR) << "Empty QUIC hint host: " << quic_hint->host;
         continue;
       }
 
       url::CanonHostInfo host_info;
-      std::string canon_host(net::CanonicalizeHost(quic_hint.host, &host_info));
+      std::string canon_host(
+          net::CanonicalizeHost(quic_hint->host, &host_info));
       if (!host_info.IsIPAddress() &&
           !net::IsCanonicalizedHostCompliant(canon_host)) {
-        LOG(ERROR) << "Invalid QUIC hint host: " << quic_hint.host;
+        LOG(ERROR) << "Invalid QUIC hint host: " << quic_hint->host;
         continue;
       }
 
-      if (quic_hint.port <= std::numeric_limits<uint16_t>::min() ||
-          quic_hint.port > std::numeric_limits<uint16_t>::max()) {
-        LOG(ERROR) << "Invalid QUIC hint port: "
-                   << quic_hint.port;
+      if (quic_hint->port <= std::numeric_limits<uint16_t>::min() ||
+          quic_hint->port > std::numeric_limits<uint16_t>::max()) {
+        LOG(ERROR) << "Invalid QUIC hint port: " << quic_hint->port;
         continue;
       }
 
-      if (quic_hint.alternate_port <= std::numeric_limits<uint16_t>::min() ||
-          quic_hint.alternate_port > std::numeric_limits<uint16_t>::max()) {
+      if (quic_hint->alternate_port <= std::numeric_limits<uint16_t>::min() ||
+          quic_hint->alternate_port > std::numeric_limits<uint16_t>::max()) {
         LOG(ERROR) << "Invalid QUIC hint alternate port: "
-                   << quic_hint.alternate_port;
+                   << quic_hint->alternate_port;
         continue;
       }
 
-      url::SchemeHostPort quic_server("https", canon_host, quic_hint.port);
+      url::SchemeHostPort quic_server("https", canon_host, quic_hint->port);
       net::AlternativeService alternative_service(
-          net::kProtoQUIC, "", static_cast<uint16_t>(quic_hint.alternate_port));
+          net::kProtoQUIC, "",
+          static_cast<uint16_t>(quic_hint->alternate_port));
       context_->http_server_properties()->SetAlternativeService(
           quic_server, alternative_service, base::Time::Max());
     }
@@ -779,7 +777,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 
   // Iterate through PKP configuration for every host.
-  for (auto* const pkp : config->pkp_list) {
+  for (const auto& pkp : config->pkp_list) {
     // Add the host pinning.
     context_->transport_security_state()->AddHPKP(
         pkp->host, pkp->expiration_date, pkp->include_subdomains,

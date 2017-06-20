@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/hash_value.h"
@@ -162,10 +162,10 @@ struct URLRequestContextConfig {
   const std::string cert_verifier_data;
 
   // App-provided list of servers that support QUIC.
-  ScopedVector<QuicHint> quic_hints;
+  std::vector<std::unique_ptr<QuicHint>> quic_hints;
 
   // The list of public key pins.
-  ScopedVector<Pkp> pkp_list;
+  std::vector<std::unique_ptr<Pkp>> pkp_list;
 
   // Experimental options that are recognized by the config parser.
   std::unique_ptr<base::DictionaryValue> effective_experimental_options =
