@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/threading/thread_checker.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace media {

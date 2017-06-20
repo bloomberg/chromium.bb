@@ -10,6 +10,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/gpu/arc_video_decode_accelerator.h"
 #include "components/arc/common/video_decode_accelerator.mojom.h"
 #include "components/arc/video_accelerator/video_accelerator.h"

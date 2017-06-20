@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_DEVICE_MEDIA_TO_MOJO_ADAPTER_H_
 #define SERVICES_VIDEO_CAPTURE_DEVICE_MEDIA_TO_MOJO_ADAPTER_H_
 
+#include "base/threading/thread_checker.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video_capture_types.h"
