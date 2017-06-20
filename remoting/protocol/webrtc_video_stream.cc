@@ -7,10 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/memory/ptr_util.h"
 #include "remoting/base/constants.h"
+#include "remoting/codec/webrtc_video_encoder_proxy.h"
 #include "remoting/codec/webrtc_video_encoder_vpx.h"
 #include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
@@ -42,11 +41,6 @@ struct WebrtcVideoStream::FrameStats {
   uint32_t capturer_id = 0;
 };
 
-struct WebrtcVideoStream::EncodedFrameWithStats {
-  std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame;
-  std::unique_ptr<FrameStats> stats;
-};
-
 WebrtcVideoStream::WebrtcVideoStream()
     : video_stats_dispatcher_(kStreamLabel), weak_factory_(this) {}
 
@@ -58,13 +52,12 @@ WebrtcVideoStream::~WebrtcVideoStream() {
     }
     peer_connection_->RemoveStream(stream_.get());
   }
-  encode_task_runner_->DeleteSoon(FROM_HERE, encoder_.release());
 }
 
 void WebrtcVideoStream::Start(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
     WebrtcTransport* webrtc_transport,
-    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> encode_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(webrtc_transport);
   DCHECK(desktop_capturer);
@@ -147,8 +140,8 @@ void WebrtcVideoStream::OnCaptureResult(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  captured_frame_stats_->capture_ended_time = base::TimeTicks::Now();
-  captured_frame_stats_->capture_delay =
+  current_frame_stats_->capture_ended_time = base::TimeTicks::Now();
+  current_frame_stats_->capture_delay =
       base::TimeDelta::FromMilliseconds(frame ? frame->capture_time_ms() : 0);
 
   WebrtcVideoEncoder::FrameParams frame_params;
@@ -168,17 +161,15 @@ void WebrtcVideoStream::OnCaptureResult(
       if (observer_)
         observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
     }
+
+    current_frame_stats_->capturer_id = frame->capturer_id();
   }
 
   DCHECK(encoder_);
-
-  base::PostTaskAndReplyWithResult(
-      encode_task_runner_.get(), FROM_HERE,
-      base::Bind(&WebrtcVideoStream::EncodeFrame, encoder_.get(),
-                 base::Passed(std::move(frame)), frame_params,
-                 base::Passed(std::move(captured_frame_stats_))),
-      base::Bind(&WebrtcVideoStream::OnFrameEncoded,
-                 weak_factory_.GetWeakPtr()));
+  current_frame_stats_->encode_started_time = base::TimeTicks::Now();
+  encoder_->Encode(
+      std::move(frame), frame_params,
+      base::Bind(&WebrtcVideoStream::OnFrameEncoded, base::Unretained(this)));
 }
 
 void WebrtcVideoStream::OnChannelInitialized(
@@ -194,44 +185,30 @@ void WebrtcVideoStream::OnChannelClosed(
 void WebrtcVideoStream::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  captured_frame_stats_.reset(new FrameStats());
-  captured_frame_stats_->capture_started_time = base::TimeTicks::Now();
-  captured_frame_stats_->input_event_timestamps =
+  current_frame_stats_.reset(new FrameStats());
+  current_frame_stats_->capture_started_time = base::TimeTicks::Now();
+  current_frame_stats_->input_event_timestamps =
       event_timestamps_source_->TakeLastEventTimestamps();
 
   capturer_->CaptureFrame();
 }
 
-// static
-WebrtcVideoStream::EncodedFrameWithStats WebrtcVideoStream::EncodeFrame(
-    WebrtcVideoEncoder* encoder,
-    std::unique_ptr<webrtc::DesktopFrame> frame,
-    WebrtcVideoEncoder::FrameParams params,
-    std::unique_ptr<WebrtcVideoStream::FrameStats> stats) {
-  EncodedFrameWithStats result;
-  result.stats = std::move(stats);
-  result.stats->encode_started_time = base::TimeTicks::Now();
-  result.frame = encoder->Encode(frame.get(), params);
-  result.stats->encode_ended_time = base::TimeTicks::Now();
-  if (frame) {
-    result.stats->capturer_id = frame->capturer_id();
-  }
-  return result;
-}
-
-void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithStats frame) {
+void WebrtcVideoStream::OnFrameEncoded(
+    std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  HostFrameStats stats;
-  scheduler_->OnFrameEncoded(frame.frame.get(), &stats);
+  current_frame_stats_->encode_ended_time = base::TimeTicks::Now();
 
-  if (!frame.frame) {
+  HostFrameStats stats;
+  scheduler_->OnFrameEncoded(frame.get(), &stats);
+
+  if (!frame) {
     return;
   }
 
   webrtc::EncodedImageCallback::Result result =
       webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
-          *frame.frame, frame.stats->capture_started_time);
+          *frame, current_frame_stats_->capture_started_time);
   if (result.error != webrtc::EncodedImageCallback::Result::OK) {
     // TODO(sergeyu): Stop the stream.
     LOG(ERROR) << "Failed to send video frame.";
@@ -240,30 +217,31 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithStats frame) {
 
   // Send FrameStats message.
   if (video_stats_dispatcher_.is_connected()) {
-    stats.frame_size = frame.frame ? frame.frame->data.size() : 0;
+    stats.frame_size = frame ? frame->data.size() : 0;
 
-    if (!frame.stats->input_event_timestamps.is_null()) {
+    if (!current_frame_stats_->input_event_timestamps.is_null()) {
       stats.capture_pending_delay =
-          frame.stats->capture_started_time -
-          frame.stats->input_event_timestamps.host_timestamp;
+          current_frame_stats_->capture_started_time -
+          current_frame_stats_->input_event_timestamps.host_timestamp;
       stats.latest_event_timestamp =
-          frame.stats->input_event_timestamps.client_timestamp;
+          current_frame_stats_->input_event_timestamps.client_timestamp;
     }
 
-    stats.capture_delay = frame.stats->capture_delay;
+    stats.capture_delay = current_frame_stats_->capture_delay;
 
     // Total overhead time for IPC and threading when capturing frames.
     stats.capture_overhead_delay =
-        (frame.stats->capture_ended_time - frame.stats->capture_started_time) -
+        (current_frame_stats_->capture_ended_time -
+         current_frame_stats_->capture_started_time) -
         stats.capture_delay;
 
-    stats.encode_pending_delay =
-        frame.stats->encode_started_time - frame.stats->capture_ended_time;
+    stats.encode_pending_delay = current_frame_stats_->encode_started_time -
+                                 current_frame_stats_->capture_ended_time;
 
-    stats.encode_delay =
-        frame.stats->encode_ended_time - frame.stats->encode_started_time;
+    stats.encode_delay = current_frame_stats_->encode_ended_time -
+                         current_frame_stats_->encode_started_time;
 
-    stats.capturer_id = frame.stats->capturer_id;
+    stats.capturer_id = current_frame_stats_->capturer_id;
 
     video_stats_dispatcher_.OnVideoFrameStats(result.frame_id, stats);
   }
@@ -272,9 +250,11 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithStats frame) {
 void WebrtcVideoStream::OnEncoderCreated(webrtc::VideoCodecType codec_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (codec_type == webrtc::kVideoCodecVP8) {
-    encoder_ = WebrtcVideoEncoderVpx::CreateForVP8();
+    encoder_ = base::MakeUnique<WebrtcVideoEncoderProxy>(
+        WebrtcVideoEncoderVpx::CreateForVP8(), encode_task_runner_);
   } else if (codec_type == webrtc::kVideoCodecVP9) {
-    encoder_ = WebrtcVideoEncoderVpx::CreateForVP9();
+    encoder_ = base::MakeUnique<WebrtcVideoEncoderProxy>(
+        WebrtcVideoEncoderVpx::CreateForVP9(), encode_task_runner_);
   } else {
     LOG(FATAL) << "Unknown codec type: " << codec_type;
   }
