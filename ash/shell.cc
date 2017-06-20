@@ -1236,6 +1236,15 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   // multiple times (e.g. initial login vs. multiprofile add session).
   if (state == session_manager::SessionState::ACTIVE) {
     InitializeShelf();
+  }
+  // Recreates keyboard on user profile change, to refresh keyboard
+  // extensions with the new profile and the extensions call proper IME.
+  // |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual keyboard works on
+  // supervised user creation. crbug.com/712873
+  // |ACTIVE| is also needed for guest user workflow.
+  if ((state == session_manager::SessionState::LOGGED_IN_NOT_ACTIVE ||
+       state == session_manager::SessionState::ACTIVE) &&
+      keyboard::IsKeyboardEnabled()) {
     if (GetAshConfig() != Config::MASH) {
       // Recreate the keyboard after initial login and after multiprofile login.
       CreateKeyboard();
