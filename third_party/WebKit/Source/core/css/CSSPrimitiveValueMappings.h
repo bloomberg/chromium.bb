@@ -554,44 +554,6 @@ inline BackgroundEdgeOrigin CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EFlexDirection e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EFlexDirection::kRow:
-      value_id_ = CSSValueRow;
-      break;
-    case EFlexDirection::kRowReverse:
-      value_id_ = CSSValueRowReverse;
-      break;
-    case EFlexDirection::kColumn:
-      value_id_ = CSSValueColumn;
-      break;
-    case EFlexDirection::kColumnReverse:
-      value_id_ = CSSValueColumnReverse;
-      break;
-  }
-}
-
-template <>
-inline EFlexDirection CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueRow:
-      return EFlexDirection::kRow;
-    case CSSValueRowReverse:
-      return EFlexDirection::kRowReverse;
-    case CSSValueColumn:
-      return EFlexDirection::kColumn;
-    case CSSValueColumnReverse:
-      return EFlexDirection::kColumnReverse;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EFlexDirection::kRow;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFlexWrap e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
