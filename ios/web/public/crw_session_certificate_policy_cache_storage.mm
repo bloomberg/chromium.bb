@@ -12,8 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
+namespace web {
 // CRWSessionCertificateStorage serialization keys.
 NSString* const kCertificateSerializationKey = @"CertificateSerializationKey";
 NSString* const kHostSerializationKey = @"HostSerializationKey";
@@ -22,6 +21,9 @@ NSString* const kStatusSerializationKey = @"StatusSerializationKey";
 // CRWSessionCertificatePolicyCacheStorage serialization keys.
 NSString* const kCertificateStoragesKey = @"kCertificateStoragesKey";
 NSString* const kCertificateStoragesDeprecatedKey = @"allowedCertificates";
+}  // namespace web
+
+namespace {
 
 // The deprecated serialization technique serialized each certificate policy as
 // an NSArray, where the necessary information is stored at the following
@@ -58,6 +60,12 @@ scoped_refptr<net::X509Certificate> NSDataToCertificate(NSData* data) {
   std::string _host;
 }
 
+// Initializes the CRWSessionCertificateStorage using decoded values.  Can
+// return nil if the parameters cannot be converted correctly to a cert storage.
+- (instancetype)initWithCertData:(NSData*)certData
+                        hostName:(NSString*)hostName
+                      certStatus:(NSNumber*)certStatus;
+
 // Initializes the CRWSessionCertificateStorage using the deprecated
 // serialization technique.  See DeprecatedSerializationIndices above for more
 // details.
@@ -73,6 +81,8 @@ scoped_refptr<net::X509Certificate> NSDataToCertificate(NSData* data) {
 - (instancetype)initWithCertificate:(scoped_refptr<net::X509Certificate>)cert
                                host:(const std::string&)host
                              status:(net::CertStatus)status {
+  DCHECK(cert);
+  DCHECK(host.length());
   if ((self = [super init])) {
     _certificate = cert;
     _host = host;
@@ -90,38 +100,42 @@ scoped_refptr<net::X509Certificate> NSDataToCertificate(NSData* data) {
 #pragma mark NSCoding
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder {
-  NSData* certData = [aDecoder decodeObjectForKey:kCertificateSerializationKey];
-  NSString* hostString = [aDecoder decodeObjectForKey:kHostSerializationKey];
-  NSNumber* statusNumber =
-      [aDecoder decodeObjectForKey:kStatusSerializationKey];
-  if (!certData.length || !hostString.length || !statusNumber)
-    return nil;
-  return [self initWithCertificate:NSDataToCertificate(certData)
-                              host:base::SysNSStringToUTF8(hostString)
-                            status:statusNumber.unsignedIntegerValue];
+  NSData* certData =
+      [aDecoder decodeObjectForKey:web::kCertificateSerializationKey];
+  NSString* hostName = [aDecoder decodeObjectForKey:web::kHostSerializationKey];
+  NSNumber* certStatus =
+      [aDecoder decodeObjectForKey:web::kStatusSerializationKey];
+  return
+      [self initWithCertData:certData hostName:hostName certStatus:certStatus];
 }
 
 - (void)encodeWithCoder:(NSCoder*)aCoder {
   [aCoder encodeObject:CertificateToNSData(_certificate.get())
-                forKey:kCertificateSerializationKey];
+                forKey:web::kCertificateSerializationKey];
   [aCoder encodeObject:base::SysUTF8ToNSString(_host)
-                forKey:kHostSerializationKey];
-  [aCoder encodeObject:@(_status) forKey:kStatusSerializationKey];
+                forKey:web::kHostSerializationKey];
+  [aCoder encodeObject:@(_status) forKey:web::kStatusSerializationKey];
 }
 
 #pragma mark Private
 
+- (instancetype)initWithCertData:(NSData*)certData
+                        hostName:(NSString*)hostName
+                      certStatus:(NSNumber*)certStatus {
+  scoped_refptr<net::X509Certificate> cert = NSDataToCertificate(certData);
+  std::string host = base::SysNSStringToUTF8(hostName);
+  if (!cert || !host.length() || !certStatus)
+    return nil;
+  net::CertStatus status = certStatus.unsignedIntegerValue;
+  return [self initWithCertificate:cert host:host status:status];
+}
+
 - (instancetype)initWithDeprecatedSerialization:(NSArray*)serialization {
   if (serialization.count != DeprecatedSerializationIndexCount)
     return nil;
-  NSData* certData = serialization[CertificateDataIndex];
-  NSString* hostString = serialization[HostStringIndex];
-  NSNumber* statusNumber = serialization[StatusIndex];
-  if (!certData.length || !hostString.length || !statusNumber)
-    return nil;
-  return [self initWithCertificate:NSDataToCertificate(certData)
-                              host:base::SysNSStringToUTF8(hostString)
-                            status:[statusNumber unsignedIntegerValue]];
+  return [self initWithCertData:serialization[CertificateDataIndex]
+                       hostName:serialization[HostStringIndex]
+                     certStatus:serialization[StatusIndex]];
 }
 
 @end
@@ -137,11 +151,11 @@ scoped_refptr<net::X509Certificate> NSDataToCertificate(NSData* data) {
 - (instancetype)initWithCoder:(NSCoder*)aDecoder {
   if ((self = [super init])) {
     _certificateStorages =
-        [aDecoder decodeObjectForKey:kCertificateStoragesKey];
+        [aDecoder decodeObjectForKey:web::kCertificateStoragesKey];
     if (!_certificateStorages.count) {
       // Attempt to use the deprecated serialization if none were decoded.
       NSMutableSet* deprecatedSerializations =
-          [aDecoder decodeObjectForKey:kCertificateStoragesDeprecatedKey];
+          [aDecoder decodeObjectForKey:web::kCertificateStoragesDeprecatedKey];
       NSMutableSet* certificateStorages = [[NSMutableSet alloc]
           initWithCapacity:deprecatedSerializations.count];
       for (NSArray* serialiazation in deprecatedSerializations) {
@@ -158,7 +172,8 @@ scoped_refptr<net::X509Certificate> NSDataToCertificate(NSData* data) {
 }
 
 - (void)encodeWithCoder:(NSCoder*)aCoder {
-  [aCoder encodeObject:self.certificateStorages forKey:kCertificateStoragesKey];
+  [aCoder encodeObject:self.certificateStorages
+                forKey:web::kCertificateStoragesKey];
 }
 
 @end
