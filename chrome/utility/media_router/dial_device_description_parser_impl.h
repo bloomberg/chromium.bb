@@ -6,6 +6,7 @@
 #define CHROME_UTILITY_MEDIA_ROUTER_DIAL_DEVICE_DESCRIPTION_PARSER_IMPL_H_
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/common/media_router/mojo/dial_device_description_parser.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 

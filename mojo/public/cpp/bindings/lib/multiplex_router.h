@@ -32,12 +32,6 @@
 #include "mojo/public/cpp/bindings/pipe_control_message_proxy.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
-// TODO(sammc): Remove these includes. Various files are not including what they
-// use, but are instead depending on mojo headers including what they use.
-// To avoid unrelated changes, these includes are left for now.
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_checker.h"
-
 namespace base {
 class SequencedTaskRunner;
 }
