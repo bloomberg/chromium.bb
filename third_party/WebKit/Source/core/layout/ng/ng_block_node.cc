@@ -250,18 +250,18 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     NGLayoutResult* layout_result) {
   NGPhysicalBoxFragment* physical_fragment =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
-
   if (box_->Style()->SpecifiesColumns())
     UpdateLegacyMultiColumnFlowThread(box_, physical_fragment);
   box_->SetWidth(physical_fragment->Size().width);
   box_->SetHeight(physical_fragment->Size().height);
-  NGBoxStrut border_and_padding = ComputeBorders(constraint_space, Style()) +
-                                  ComputePadding(constraint_space, Style());
+  NGBoxStrut border_scrollbar_padding =
+      ComputeBorders(constraint_space, Style()) +
+      ComputePadding(constraint_space, Style()) + GetScrollbarSizes(box_);
   LayoutUnit intrinsic_logical_height =
       box_->Style()->IsHorizontalWritingMode()
           ? physical_fragment->OverflowSize().height
           : physical_fragment->OverflowSize().width;
-  intrinsic_logical_height -= border_and_padding.BlockSum();
+  intrinsic_logical_height -= border_scrollbar_padding.BlockSum();
   box_->SetIntrinsicContentLogicalHeight(intrinsic_logical_height);
 
   // TODO(ikilpatrick) is this the right thing to do?
@@ -289,7 +289,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
         FromPlatformWritingMode(Style().GetWritingMode());
     NGBoxFragment fragment(writing_mode, physical_fragment);
     ToLayoutBlock(box_)->ComputeOverflow(fragment.OverflowSize().block_size -
-                                         border_and_padding.block_end);
+                                         border_scrollbar_padding.block_end);
   }
 
   box_->UpdateAfterLayout();

@@ -181,6 +181,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
 
   NGLogicalSize available_size{inline_size, block_size};
 
+  // TODO(atotic) will need to be adjusted for scrollbars.
   NGConstraintSpaceBuilder builder(writing_mode);
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(container_size);
