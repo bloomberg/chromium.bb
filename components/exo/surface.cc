@@ -441,7 +441,6 @@ void Surface::Commit() {
   if (delegate_) {
     delegate_->OnSurfaceCommit();
   } else {
-    CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces();
     CommitSurfaceHierarchy();
   }
 
@@ -484,14 +483,10 @@ void Surface::CommitSurfaceHierarchy() {
 
   UpdateSurface(false);
 
-  if (needs_commit_to_new_surface_) {
-    needs_commit_to_new_surface_ = false;
-    window_->layer()->SetFillsBoundsOpaquely(
-        !current_resource_has_alpha_ ||
-        state_.blend_mode == SkBlendMode::kSrc ||
-        state_.opaque_region.contains(
-            gfx::RectToSkIRect(gfx::Rect(content_size_))));
-  }
+  window_->layer()->SetFillsBoundsOpaquely(
+      !current_resource_has_alpha_ || state_.blend_mode == SkBlendMode::kSrc ||
+      state_.opaque_region.contains(
+          gfx::RectToSkIRect(gfx::Rect(content_size_))));
 
   // Reset damage.
   pending_damage_.setEmpty();
@@ -647,11 +642,6 @@ bool Surface::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) {
   return true;
 }
 
-void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
-  if (HasLayerHierarchyChanged())
-    SetSurfaceHierarchyNeedsCommitToNewSurfaces();
-}
-
 bool Surface::IsStylusOnly() {
   return window_->GetProperty(kStylusOnlyKey);
 }
@@ -749,24 +739,6 @@ void Surface::BufferAttachment::Reset(base::WeakPtr<Buffer> buffer) {
   if (buffer_)
     buffer_->OnDetach();
   buffer_ = buffer;
-}
-
-bool Surface::HasLayerHierarchyChanged() const {
-  if (needs_commit_surface_hierarchy_ && has_pending_layer_changes_)
-    return true;
-
-  for (const auto& sub_surface_entry : pending_sub_surfaces_) {
-    if (sub_surface_entry.first->HasLayerHierarchyChanged())
-      return true;
-  }
-  return false;
-}
-
-void Surface::SetSurfaceHierarchyNeedsCommitToNewSurfaces() {
-  needs_commit_to_new_surface_ = true;
-  for (auto& sub_surface_entry : pending_sub_surfaces_) {
-    sub_surface_entry.first->SetSurfaceHierarchyNeedsCommitToNewSurfaces();
-  }
 }
 
 void Surface::UpdateResource(bool client_usage) {

@@ -193,10 +193,6 @@ class Surface : public ui::ContextFactoryObserver,
   // Called when the begin frame source has changed.
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source);
 
-  // Check whether this Surface and its children need to create new cc::Surface
-  // IDs for their contents next time they get new buffer contents.
-  void CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces();
-
   // Returns the active contents size.
   gfx::Size content_size() const { return content_size_; }
 
@@ -266,13 +262,6 @@ class Surface : public ui::ContextFactoryObserver,
     return needs_commit_surface_hierarchy_;
   }
 
-  // Returns true if this surface or any child surface needs a commit and has
-  // has_pending_layer_changes_ true.
-  bool HasLayerHierarchyChanged() const;
-
-  // Sets that all children must create new cc::SurfaceIds for their contents.
-  void SetSurfaceHierarchyNeedsCommitToNewSurfaces();
-
   // Set SurfaceLayer contents to the current buffer.
   void SetSurfaceLayerContents(ui::Layer* layer);
 
@@ -299,11 +288,6 @@ class Surface : public ui::ContextFactoryObserver,
   // etc.) may have been modified since the last commit. Attaching a new
   // buffer with the same size as the old shouldn't set this to true.
   bool has_pending_layer_changes_ = true;
-
-  // This is true if the next commit to this surface should put its contents
-  // into a new cc::SurfaceId. This allows for synchronization between Surface
-  // and layer changes.
-  bool needs_commit_to_new_surface_ = true;
 
   // This is the size of the last committed contents.
   gfx::Size content_size_;

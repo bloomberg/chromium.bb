@@ -101,7 +101,6 @@ gfx::Size NotificationSurface::GetSize() const {
 }
 
 void NotificationSurface::OnSurfaceCommit() {
-  surface_->CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces();
   surface_->CommitSurfaceHierarchy();
 
   gfx::Rect bounds = window_->bounds();
