@@ -490,19 +490,29 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       // <canvas> element.
       element_font_description.SetComputedSize(
           element_font_description.SpecifiedSize());
+      element_font_description.SetAdjustedSize(
+          element_font_description.SpecifiedSize());
+
       font_style->SetFontDescription(element_font_description);
       font_style->GetFont().Update(font_style->GetFont().GetFontSelector());
       canvas()->GetDocument().EnsureStyleResolver().ComputeFont(
           font_style.Get(), *parsed_style);
-      fonts_resolved_using_current_style_.insert(new_font,
-                                                 font_style->GetFont());
+
+      // We need to reset Computed and Adjusted size so we skip zoom and
+      // minimum font size.
+      FontDescription final_description(
+          font_style->GetFont().GetFontDescription());
+      final_description.SetComputedSize(final_description.SpecifiedSize());
+      final_description.SetAdjustedSize(final_description.SpecifiedSize());
+      Font final_font(final_description);
+
+      fonts_resolved_using_current_style_.insert(new_font, final_font);
       DCHECK(!font_lru_list_.Contains(new_font));
       font_lru_list_.insert(new_font);
       PruneLocalFontCache(canvas_font_cache->HardMaxFonts());  // hard limit
       should_prune_local_font_cache_ = true;  // apply soft limit
       ModifiableState().SetFont(
-          font_style->GetFont(),
-          canvas()->GetDocument().GetStyleEngine().FontSelector());
+          final_font, canvas()->GetDocument().GetStyleEngine().FontSelector());
     }
   } else {
     Font resolved_font;
