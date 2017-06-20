@@ -328,7 +328,7 @@ void NetExportMessageHandler::ShowFileInShell(const base::FilePath& path) {
 
 // static
 bool NetExportMessageHandler::UsingMobileUI() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   return true;
 #else
   return false;

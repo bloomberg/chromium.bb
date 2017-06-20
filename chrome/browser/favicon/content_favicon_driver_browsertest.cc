@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, LoadIconFromWebManifest) {
       ui_test_utils::BROWSER_TEST_NONE);
   waiter.Wait();
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   EXPECT_TRUE(delegate->was_requested());
 #else
   EXPECT_FALSE(delegate->was_requested());

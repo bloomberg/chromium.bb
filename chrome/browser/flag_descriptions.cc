@@ -1578,7 +1578,7 @@ const char kEnableAppcontainerDescription[] =
 
 #endif  // defined(OS_WIN)
 
-#if defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
 const char kShowCertLinkOnPageInfoName[] = "Show certificate link";
 
@@ -1586,7 +1586,7 @@ const char kShowCertLinkOnPageInfoDescription[] =
     "Add a link from the Page Info bubble to the certificate viewer for HTTPS "
     "sites.";
 
-#endif  // defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
@@ -3191,7 +3191,7 @@ const char kEnableD3DVsyncDescription[] =
 
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 
 const char kAccountConsistencyName[] =
     "Identity consistency between browser and cookie jar";
@@ -3213,7 +3213,7 @@ const char kOneGoogleBarOnLocalNtpDescription[] =
     "Show a OneGoogleBar on the local New Tab page if Google is the default "
     "search engine.";
 
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
 extern const char kMacRTLName[] = "Enable RTL";

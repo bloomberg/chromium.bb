@@ -203,7 +203,7 @@ const base::Feature kMaterialDesignIncognitoNTP{
 #endif
 };
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 // Enables media content bitstream remoting, an optimization that can activate
 // during Cast Tab Mirroring.
 const base::Feature kMediaRemoting{"MediaRemoting",
@@ -214,7 +214,7 @@ const base::Feature kMediaRemoting{"MediaRemoting",
 // resources.
 const base::Feature kMediaRouterUIRouteController{
     "MediaRouterUIRouteController", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
 // Enables or disables modal permission prompts.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
@@ -243,7 +243,7 @@ const base::Feature kNativeNotifications{"NativeNotifications",
 const base::Feature kOfflinePageDownloadSuggestionsFeature{
     "NTPOfflinePageDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 // Enables or disabled the OneGoogleBar on the local NTP.
 const base::Feature kOneGoogleBarOnLocalNtp{"OneGoogleBarOnLocalNtp",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
