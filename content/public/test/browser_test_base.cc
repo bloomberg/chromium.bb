@@ -41,6 +41,7 @@
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/gfx/color_space_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
@@ -224,6 +225,10 @@ void BrowserTestBase::SetUp() {
   if (use_software_gl && !use_software_compositing_)
     command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
 
+  // Use an sRGB color profile to ensure that the machine's color profile does
+  // not affect the results.
+  command_line->AppendSwitchASCII(switches::kForceColorProfile, "srgb");
+
   test_host_resolver_ = base::MakeUnique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
@@ -238,6 +243,7 @@ void BrowserTestBase::SetUp() {
     base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
                                                           &disabled_features);
   }
+
   if (!enabled_features.empty()) {
     command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                     enabled_features);
