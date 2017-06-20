@@ -43,8 +43,15 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
 #endif
       card_label_(base::string16(kMidlineEllipsis) + card.LastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay()) {
-  if (legal_message)
-    LegalMessageLine::Parse(*legal_message, &legal_messages_);
+  if (legal_message) {
+    if (!LegalMessageLine::Parse(*legal_message, &legal_messages_)) {
+      AutofillMetrics::LogCreditCardInfoBarMetric(
+          AutofillMetrics::INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE, upload_,
+          pref_service_->GetInteger(
+              prefs::kAutofillAcceptSaveCreditCardPromptState));
+      return;
+    }
+  }
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
       AutofillMetrics::INFOBAR_SHOWN, upload_,
@@ -61,6 +68,12 @@ AutofillSaveCardInfoBarDelegateMobile::
 void AutofillSaveCardInfoBarDelegateMobile::OnLegalMessageLinkClicked(
     GURL url) {
   infobar()->owner()->OpenURL(url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+}
+
+bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
+  // If we are uploading to the server, verify that legal lines have been parsed
+  // into |legal_messages_|.
+  return !upload_ || !legal_messages_.empty();
 }
 
 int AutofillSaveCardInfoBarDelegateMobile::GetIconId() const {

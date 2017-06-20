@@ -45,6 +45,10 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // Called when a link in the legal message text was clicked.
   void OnLegalMessageLinkClicked(GURL url);
 
+  // Ensures the InfoBar is not shown if legal messages failed to parse.
+  // Legal messages are only specified for the upload case, not for local save.
+  bool LegalMessagesParsedSuccessfully();
+
   // ConfirmInfoBarDelegate:
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
