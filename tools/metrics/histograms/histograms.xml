@@ -51522,6 +51522,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.SettingsReconciliation.InitialAndFinalValues"
     enum="PasswordManagerPreferencesInitialAndFinalValues">
+  <obsolete>
+    Deprecated 06/2017
+  </obsolete>
   <owner>engedy@chromium.org</owner>
   <owner>melandory@chromium.org</owner>
   <summary>
@@ -51535,6 +51538,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.SettingsReconciliation.InitialValues"
     enum="PasswordManagerPreferencesInitialValues">
+  <obsolete>
+    Deprecated 06/2017
+  </obsolete>
   <owner>engedy@chromium.org</owner>
   <owner>melandory@chromium.org</owner>
   <summary>

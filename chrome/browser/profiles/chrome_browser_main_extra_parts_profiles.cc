@@ -36,7 +36,6 @@
 #include "chrome/browser/notifications/extension_welcome_notification_factory.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
-#include "chrome/browser/password_manager/password_manager_setting_migrator_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
@@ -285,7 +284,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   ContentSuggestionsServiceFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
-  PasswordManagerSettingMigratorServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
   ThemeServiceFactory::GetInstance();

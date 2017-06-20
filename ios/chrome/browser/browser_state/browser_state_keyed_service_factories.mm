@@ -24,7 +24,6 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_manager_setting_migrator_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -97,7 +96,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   IOSChromeLargeIconServiceFactory::GetInstance();
   IOSChromeFaviconLoaderFactory::GetInstance();
   IOSChromeContentSuggestionsServiceFactory::GetInstance();
-  IOSChromePasswordManagerSettingMigratorServiceFactory::GetInstance();
   IOSChromePasswordStoreFactory::GetInstance();
   IOSChromeProfileInvalidationProviderFactory::GetInstance();
   IOSChromeProfileSyncServiceFactory::GetInstance();
