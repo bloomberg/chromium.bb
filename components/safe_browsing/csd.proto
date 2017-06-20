@@ -994,6 +994,29 @@ message ClientSafeBrowsingReportRequest {
   // DANGEROUS_DOWNLOAD_WARNING, DANGEROUS_DOWNLOAD_BY_API or
   // PASSWORD_PROTECTION_PHISHING_URL.
   optional bytes token = 15;
+
+  enum SafeBrowsingUrlApiType {
+    SAFE_BROWSING_URL_API_TYPE_UNSPECIFIED = 0;
+    // Native implementation of Safe Browsing API v3 protocol.
+    PVER3_NATIVE = 1;
+    // Native implementation of Safe Browsing API v4 protocol.
+    PVER4_NATIVE = 2;
+    // Android SafetyNet API.
+    // https://developer.android.com/training/safetynet/safebrowsing.html
+    ANDROID_SAFETYNET = 3;
+    // Flywheel (data compression service).
+    FLYWHEEL = 4;
+  }
+
+  // The information propagated from the client about various environment
+  // variables including SDK version, Google Play Services version and so on.
+  message SafeBrowsingClientProperties {
+    optional string client_version = 1;
+    optional int64 google_play_services_version = 2;
+    optional bool is_instant_apps = 3;
+    optional SafeBrowsingUrlApiType url_api_type = 4;
+  }
+  optional SafeBrowsingClientProperties client_properties = 17;
 }
 
 // An HTML Element on the page (eg: iframe, div, script, etc).
