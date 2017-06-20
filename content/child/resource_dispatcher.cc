@@ -778,8 +778,17 @@ void ResourceDispatcher::ContinueForNavigation(
   // WebURLLoaderImpl::Context::OnReceivedResponse.
   client_ptr->OnReceiveResponse(ResourceResponseHead(), base::nullopt,
                                 mojom::DownloadedTempFilePtr());
+
+  // Abort if the request is cancelled.
+  if (!GetPendingRequestInfo(request_id))
+    return;
+
   // Start streaming now.
   client_ptr->OnStartLoadingResponseBody(std::move(consumer_handle));
+
+  // Abort if the request is cancelled.
+  if (!GetPendingRequestInfo(request_id))
+    return;
 
   // Call OnComplete now too, as it won't get called on the client.
   // TODO(kinuko): Fill this properly.
