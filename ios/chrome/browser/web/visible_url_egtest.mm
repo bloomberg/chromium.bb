@@ -496,7 +496,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL if user
 // issues 2 go forward commands to WebUI page (crbug.com/711465).
-- (void)testDoubleForwardNavigationToWebUIPage {
+// TODO(crbug.com/734856): Reenable test when fixed.
+- (void)DISABLED_testDoubleForwardNavigationToWebUIPage {
   // Create 3rd entry in the history, to be able to go back twice.
   GURL URL(kChromeUIVersionURL);
   [ChromeEarlGrey loadURL:GURL(kChromeUIVersionURL)];
