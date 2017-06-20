@@ -33,9 +33,12 @@ a:visited {
 .mv-tiles-old {
   -webkit-user-select: none;
   font-size: 0;
-  height: calc(146px + 130px);
-  line-height: 146px;
-  margin: 2px 0 0 0;
+  /* Two rows of tiles of 128px each, and 16px of spacing between the rows.
+   * If you change this, also change the corresponding values in
+   * local_ntp.css. */
+  height: calc(2*128px + 16px);
+  line-height: calc(128px + 16px);
+  margin: 4px 0 8px 0;
   opacity: 0;
   position: absolute;
   /* This align correctly for both LTR and RTL */
@@ -139,8 +142,6 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
 }
 
 .mv-thumb {
-  border: none;
-  border-radius: 0;
   cursor: pointer;
   display: block;
   height: 96px;

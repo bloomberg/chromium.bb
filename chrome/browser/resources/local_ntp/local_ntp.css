@@ -94,7 +94,7 @@ html[dir=rtl] #fakebox > input {
 
 #fakebox-text {
   bottom: 4px;
-  color: #bbb;
+  color: rgba(0, 0, 0, 0.38);
   font-family: arial, sans-serif;
   font-size: 16px;
   left: 13px;
@@ -165,9 +165,10 @@ body.fakebox-focused #cursor {
 }
 
 #mv-tiles {
-  /* We need a 16px margin and the tiles have 130px height. */
-  height: calc(2*130px + 16px);
-  line-height: calc(130px + 16px);
+  /* Two rows of tiles of 128px each, 16px of spacing between the rows, and
+   * 4px/8px of margin on top and bottom respectively. If you change this, also
+   * change the corresponding values in most_visited_single.css. */
+  height: calc(2*128px + 16px + 4px + 8px);
   margin: 0;
   position: relative;
   text-align: -webkit-auto;
