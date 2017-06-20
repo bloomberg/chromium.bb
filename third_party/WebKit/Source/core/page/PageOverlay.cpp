@@ -26,7 +26,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/PageOverlay.h"
+#include "core/page/PageOverlay.h"
 
 #include <memory>
 #include "core/frame/LocalFrame.h"
@@ -41,8 +41,6 @@
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebLayer.h"
-#include "public/web/WebViewClient.h"
-#include "web/WebDevToolsAgentImpl.h"
 
 namespace blink {
 
@@ -59,10 +57,7 @@ PageOverlay::PageOverlay(WebLocalFrameBase* frame_impl,
 PageOverlay::~PageOverlay() {
   if (!layer_)
     return;
-
   layer_->RemoveFromParent();
-  if (WebDevToolsAgentImpl* dev_tools = frame_impl_->DevToolsAgentImpl())
-    dev_tools->DidRemovePageOverlay(layer_.get());
   layer_ = nullptr;
 }
 
@@ -77,9 +72,6 @@ void PageOverlay::Update() {
   if (!layer_) {
     layer_ = GraphicsLayer::Create(this);
     layer_->SetDrawsContent(true);
-
-    if (WebDevToolsAgentImpl* dev_tools = frame_impl_->DevToolsAgentImpl())
-      dev_tools->WillAddPageOverlay(layer_.get());
 
     // This is required for contents of overlay to stay in sync with the page
     // while scrolling.

@@ -33,6 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/LayerTree.h"
+#include "core/page/PageOverlay.h"
 #include "platform/Timer.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -53,17 +54,21 @@ class CORE_EXPORT InspectorLayerTreeAgent final
   WTF_MAKE_NONCOPYABLE(InspectorLayerTreeAgent);
 
  public:
-  static InspectorLayerTreeAgent* Create(InspectedFrames* inspected_frames) {
-    return new InspectorLayerTreeAgent(inspected_frames);
+  class Client {
+   public:
+    virtual ~Client() {}
+    virtual bool IsInspectorLayer(GraphicsLayer*) = 0;
+  };
+
+  static InspectorLayerTreeAgent* Create(InspectedFrames* inspected_frames,
+                                         Client* client) {
+    return new InspectorLayerTreeAgent(inspected_frames, client);
   }
+
   ~InspectorLayerTreeAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
   void Restore() override;
-
-  // Called from InspectorController
-  void WillAddPageOverlay(const GraphicsLayer*);
-  void DidRemovePageOverlay(const GraphicsLayer*);
 
   // Called from InspectorInstrumentation
   void LayerTreeDidChange();
@@ -104,7 +109,7 @@ class CORE_EXPORT InspectorLayerTreeAgent final
  private:
   static unsigned last_snapshot_id_;
 
-  explicit InspectorLayerTreeAgent(InspectedFrames*);
+  InspectorLayerTreeAgent(InspectedFrames*, Client*);
 
   GraphicsLayer* RootGraphicsLayer();
 
@@ -124,7 +129,7 @@ class CORE_EXPORT InspectorLayerTreeAgent final
   int IdForNode(Node*);
 
   Member<InspectedFrames> inspected_frames_;
-  Vector<int, 2> page_overlay_layer_ids_;
+  Client* client_;
 
   typedef HashMap<String, RefPtr<PictureSnapshot>> SnapshotById;
   SnapshotById snapshot_by_id_;

@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/InspectorOverlayAgent.h"
+#include "core/inspector/InspectorOverlayAgent.h"
 
 #include <memory>
 
@@ -57,6 +57,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/page/PageOverlay.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -65,7 +66,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "v8/include/v8.h"
-#include "web/PageOverlay.h"
 
 namespace blink {
 
@@ -83,7 +83,7 @@ static const char kShowScrollBottleneckRects[] = "showScrollBottleneckRects";
 static const char kShowSizeOnResize[] = "showSizeOnResize";
 static const char kSuspended[] = "suspended";
 static const char kPausedInDebuggerMessage[] = "pausedInDebuggerMessage";
-}
+}  // namespace OverlayAgentState
 
 Node* HoveredNodeForPoint(LocalFrame* frame,
                           const IntPoint& point_in_root_frame,
@@ -519,6 +519,10 @@ void InspectorOverlayAgent::PaintOverlay() {
 void InspectorOverlayAgent::LayoutOverlay() {
   if (page_overlay_)
     page_overlay_->Update();
+}
+
+bool InspectorOverlayAgent::IsInspectorLayer(GraphicsLayer* layer) {
+  return page_overlay_ && page_overlay_->GetGraphicsLayer() == layer;
 }
 
 void InspectorOverlayAgent::UpdateAllLifecyclePhases() {

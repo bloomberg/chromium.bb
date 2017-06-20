@@ -169,8 +169,10 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
 }
 
 InspectorLayerTreeAgent::InspectorLayerTreeAgent(
-    InspectedFrames* inspected_frames)
+    InspectedFrames* inspected_frames,
+    Client* client)
     : inspected_frames_(inspected_frames),
+      client_(client),
       suppress_layer_paint_events_(false) {}
 
 InspectorLayerTreeAgent::~InspectorLayerTreeAgent() {}
@@ -282,9 +284,9 @@ void InspectorLayerTreeAgent::GatherGraphicsLayers(
     std::unique_ptr<Array<protocol::LayerTree::Layer>>& layers,
     bool has_wheel_event_handlers,
     int scrolling_layer_id) {
-  int layer_id = root->PlatformLayer()->Id();
-  if (page_overlay_layer_ids_.Find(layer_id) != WTF::kNotFound)
+  if (client_->IsInspectorLayer(root))
     return;
+  int layer_id = root->PlatformLayer()->Id();
   layers->addItem(BuildObjectForLayer(
       root, layer_id_to_node_id_map.at(layer_id),
       has_wheel_event_handlers && layer_id == scrolling_layer_id));
@@ -498,17 +500,6 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
   if (errors.hasErrors())
     return Response::Error(errors.errors());
   return Response::OK();
-}
-
-void InspectorLayerTreeAgent::WillAddPageOverlay(const GraphicsLayer* layer) {
-  page_overlay_layer_ids_.push_back(layer->PlatformLayer()->Id());
-}
-
-void InspectorLayerTreeAgent::DidRemovePageOverlay(const GraphicsLayer* layer) {
-  size_t index = page_overlay_layer_ids_.Find(layer->PlatformLayer()->Id());
-  if (index == WTF::kNotFound)
-    return;
-  page_overlay_layer_ids_.erase(index);
 }
 
 }  // namespace blink
