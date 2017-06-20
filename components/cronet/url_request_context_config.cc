@@ -86,14 +86,65 @@ const char kDisableIPv6OnWifi[] = "disable_ipv6_on_wifi";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
-// Returns the effective experimental options.
-std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
+}  // namespace
+
+URLRequestContextConfig::QuicHint::QuicHint(const std::string& host,
+                                            int port,
+                                            int alternate_port)
+    : host(host), port(port), alternate_port(alternate_port) {}
+
+URLRequestContextConfig::QuicHint::~QuicHint() {}
+
+URLRequestContextConfig::Pkp::Pkp(const std::string& host,
+                                  bool include_subdomains,
+                                  const base::Time& expiration_date)
+    : host(host),
+      include_subdomains(include_subdomains),
+      expiration_date(expiration_date) {}
+
+URLRequestContextConfig::Pkp::~Pkp() {}
+
+URLRequestContextConfig::URLRequestContextConfig(
+    bool enable_quic,
+    const std::string& quic_user_agent_id,
+    bool enable_spdy,
+    bool enable_sdch,
+    bool enable_brotli,
+    HttpCacheType http_cache,
+    int http_cache_max_size,
+    bool load_disable_cache,
+    const std::string& storage_path,
+    const std::string& user_agent,
     const std::string& experimental_options,
+    std::unique_ptr<net::CertVerifier> mock_cert_verifier,
+    bool enable_network_quality_estimator,
+    bool bypass_public_key_pinning_for_local_trust_anchors,
+    const std::string& cert_verifier_data)
+    : enable_quic(enable_quic),
+      quic_user_agent_id(quic_user_agent_id),
+      enable_spdy(enable_spdy),
+      enable_sdch(enable_sdch),
+      enable_brotli(enable_brotli),
+      http_cache(http_cache),
+      http_cache_max_size(http_cache_max_size),
+      load_disable_cache(load_disable_cache),
+      storage_path(storage_path),
+      user_agent(user_agent),
+      experimental_options(experimental_options),
+      mock_cert_verifier(std::move(mock_cert_verifier)),
+      enable_network_quality_estimator(enable_network_quality_estimator),
+      bypass_public_key_pinning_for_local_trust_anchors(
+          bypass_public_key_pinning_for_local_trust_anchors),
+      cert_verifier_data(cert_verifier_data) {}
+
+URLRequestContextConfig::~URLRequestContextConfig() {}
+
+void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     net::URLRequestContextBuilder* context_builder,
     net::NetLog* net_log,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   if (experimental_options.empty())
-    return nullptr;
+    return;
 
   DCHECK(net_log);
 
@@ -104,7 +155,7 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
   if (!options) {
     DCHECK(false) << "Parsing experimental options failed: "
                   << experimental_options;
-    return nullptr;
+    return;
   }
 
   std::unique_ptr<base::DictionaryValue> dict =
@@ -113,7 +164,7 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
   if (!dict) {
     DCHECK(false) << "Experimental options string is not a dictionary: "
                   << experimental_options;
-    return nullptr;
+    return;
   }
 
   bool async_dns_enable = false;
@@ -121,8 +172,7 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
   bool host_resolver_rules_enable = false;
   bool disable_ipv6_on_wifi = false;
 
-  std::unique_ptr<base::DictionaryValue> effective_experimental_options =
-      dict->CreateDeepCopy();
+  effective_experimental_options = dict->CreateDeepCopy();
   StaleHostResolver::StaleOptions stale_dns_options;
   std::string host_resolver_rules_string;
   for (base::DictionaryValue::Iterator it(*dict.get()); !it.IsAtEnd();
@@ -306,61 +356,7 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
     }
     context_builder->set_host_resolver(std::move(host_resolver));
   }
-  return effective_experimental_options;
 }
-
-}  // namespace
-
-URLRequestContextConfig::QuicHint::QuicHint(const std::string& host,
-                                            int port,
-                                            int alternate_port)
-    : host(host), port(port), alternate_port(alternate_port) {}
-
-URLRequestContextConfig::QuicHint::~QuicHint() {}
-
-URLRequestContextConfig::Pkp::Pkp(const std::string& host,
-                                  bool include_subdomains,
-                                  const base::Time& expiration_date)
-    : host(host),
-      include_subdomains(include_subdomains),
-      expiration_date(expiration_date) {}
-
-URLRequestContextConfig::Pkp::~Pkp() {}
-
-URLRequestContextConfig::URLRequestContextConfig(
-    bool enable_quic,
-    const std::string& quic_user_agent_id,
-    bool enable_spdy,
-    bool enable_sdch,
-    bool enable_brotli,
-    HttpCacheType http_cache,
-    int http_cache_max_size,
-    bool load_disable_cache,
-    const std::string& storage_path,
-    const std::string& user_agent,
-    const std::string& experimental_options,
-    std::unique_ptr<net::CertVerifier> mock_cert_verifier,
-    bool enable_network_quality_estimator,
-    bool bypass_public_key_pinning_for_local_trust_anchors,
-    const std::string& cert_verifier_data)
-    : enable_quic(enable_quic),
-      quic_user_agent_id(quic_user_agent_id),
-      enable_spdy(enable_spdy),
-      enable_sdch(enable_sdch),
-      enable_brotli(enable_brotli),
-      http_cache(http_cache),
-      http_cache_max_size(http_cache_max_size),
-      load_disable_cache(load_disable_cache),
-      storage_path(storage_path),
-      user_agent(user_agent),
-      experimental_options(experimental_options),
-      mock_cert_verifier(std::move(mock_cert_verifier)),
-      enable_network_quality_estimator(enable_network_quality_estimator),
-      bypass_public_key_pinning_for_local_trust_anchors(
-          bypass_public_key_pinning_for_local_trust_anchors),
-      cert_verifier_data(cert_verifier_data) {}
-
-URLRequestContextConfig::~URLRequestContextConfig() {}
 
 void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     net::URLRequestContextBuilder* context_builder,
@@ -391,8 +387,7 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   if (enable_quic)
     context_builder->set_quic_user_agent_id(quic_user_agent_id);
 
-  effective_experimental_options = ParseAndSetExperimentalOptions(
-      experimental_options, context_builder, net_log, file_task_runner);
+  ParseAndSetExperimentalOptions(context_builder, net_log, file_task_runner);
 
   std::unique_ptr<net::CertVerifier> cert_verifier;
   if (mock_cert_verifier) {
