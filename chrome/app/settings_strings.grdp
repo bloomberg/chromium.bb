@@ -425,17 +425,17 @@
   <message name="IDS_SETTINGS_CREDIT_CARD_CLEAR" desc="Label for a context menu item clears the locally cached credit card that is also saved on Google Payments. Clicking this will NOT remove the credit card from Google Payments.">
    Clear copy
   </message>
-  <message name="IDS_SETTINGS_EDIT_CREDIT_CARD_TITLE" desc="The title for the dialog that's shown when editing a card. This can be either credit, debit, or prepaid card..">
-    Edit card
+  <message name="IDS_SETTINGS_EDIT_CREDIT_CARD_TITLE" desc="The title for the dialog that's shown when editing a credit card.">
+    Edit credit card
   </message>
-  <message name="IDS_SETTINGS_ADD_CREDIT_CARD_TITLE" desc="The title for the dialog that's shown when entering the information for a new card. This can be either credit, debit, or prepaid card.">
-    Add card
+  <message name="IDS_SETTINGS_ADD_CREDIT_CARD_TITLE" desc="The title for the dialog that's shown when entering the information for a new credit card.">
+    Add credit card
   </message>
   <message name="IDS_SETTINGS_NAME_ON_CREDIT_CARD" desc="The title for the input that lets users modify the name on the credit card.">
     Name on card
   </message>
-  <message name="IDS_SETTINGS_CREDIT_CARD_NUMBER" desc="The title for the input that lets users modify the number for a card. This can be either credit, debit, or prepaid card.">
-    Card number
+  <message name="IDS_SETTINGS_CREDIT_CARD_NUMBER" desc="The title for the input that lets users modify the credit card number for a credit card.">
+    Credit card number
   </message>
   <message name="IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE" desc="Label for the expiration date fields of a credit card that has been or is being saved.">
     Expiration date
@@ -446,8 +446,8 @@
   <message name="IDS_SETTINGS_CREDIT_CARD_EXPIRATION_YEAR" desc="Accessibility label on the year drop down to let users know the field corresponds to the expiration year">
     Expiration year
   </message>
-  <message name="IDS_SETTINGS_CREDIT_CARD_EXPIRED" desc="The error message that is shown when user attempts to enter or save an expired card.">
-    Your card is expired
+  <message name="IDS_SETTINGS_CREDIT_CARD_EXPIRED" desc="The error message that is shown when user attempts to enter or save an expired credit card.">
+    Your credit card is expired
   </message>
   <message name="IDS_SETTINGS_PASSWORDS" desc="Name for the password section and toggle">
     Manage passwords

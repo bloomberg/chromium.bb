@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import static java.util.Arrays.asList;
+
 import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
@@ -130,9 +132,8 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         mViewCoreRef = new AtomicReference<>();
         mWebContentsRef = new AtomicReference<>();
         mTestFilePath = testFileName.startsWith("data:")
-                ? testFileName
-                : UrlUtils.getIsolatedTestFilePath(
-                          String.format("chrome/test/data/payments/%s", testFileName));
+                ? testFileName : UrlUtils.getIsolatedTestFilePath(
+                        String.format("chrome/test/data/payments/%s", testFileName));
     }
 
     public void startMainActivity() throws InterruptedException {
@@ -899,13 +900,18 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         installPaymentApp(methodName, instrumentPresence, responseSpeed, IMMEDIATE_CREATION);
     }
 
-    void installPaymentApp(final String appMethodName, final int instrumentPresence,
-            final int responseSpeed, final int creationSpeed) {
+    void installPaymentApp(
+            String methodName, int instrumentPresence, int responseSpeed, int creationSpeed) {
+        installPaymentApp(asList(methodName), instrumentPresence, responseSpeed, creationSpeed);
+    }
+
+    void installPaymentApp(final List<String> appMethodNames,
+            final int instrumentPresence, final int responseSpeed, final int creationSpeed) {
         PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
             public void create(WebContents webContents, Set<String> methodNames,
                     final PaymentAppFactory.PaymentAppCreatedCallback callback) {
-                final TestPay app = new TestPay(appMethodName, instrumentPresence, responseSpeed);
+                final TestPay app = new TestPay(appMethodNames, instrumentPresence, responseSpeed);
                 if (creationSpeed == IMMEDIATE_CREATION) {
                     callback.onPaymentAppCreated(app);
                     callback.onAllPaymentAppsCreated();
@@ -924,13 +930,13 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
 
     /** A payment app implementation for test. */
     static class TestPay implements PaymentApp {
-        private final String mDefaultMethodName;
+        private final List<String> mMethodNames;
         private final int mInstrumentPresence;
         private final int mResponseSpeed;
         private InstrumentsCallback mCallback;
 
-        TestPay(String defaultMethodName, int instrumentPresence, int responseSpeed) {
-            mDefaultMethodName = defaultMethodName;
+        TestPay(List<String> methodNames, int instrumentPresence, int responseSpeed) {
+            mMethodNames = methodNames;
             mInstrumentPresence = instrumentPresence;
             mResponseSpeed = responseSpeed;
         }
@@ -946,8 +952,10 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         void respond() {
             final List<PaymentInstrument> instruments = new ArrayList<>();
             if (mInstrumentPresence == HAVE_INSTRUMENTS) {
-                instruments.add(new TestPayInstrument(
-                        getAppIdentifier(), mDefaultMethodName, mDefaultMethodName));
+                for (String methodName : mMethodNames) {
+                    instruments.add(
+                            new TestPayInstrument(getAppIdentifier(), methodName, methodName));
+                }
             }
             Runnable instrumentsReady = new Runnable() {
                 @Override
@@ -965,9 +973,9 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
 
         @Override
         public Set<String> getAppMethodNames() {
-            Set<String> result = new HashSet<>();
-            result.add(mDefaultMethodName);
-            return result;
+            Set<String> methodNames = new HashSet<>();
+            methodNames.addAll(mMethodNames);
+            return methodNames;
         }
 
         @Override
@@ -982,26 +990,21 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         public String getAppIdentifier() {
             return TestPay.this.toString();
         }
-
-        @Override
-        public int getAdditionalAppTextResourceId() {
-            return 0;
-        }
     }
 
     /** A payment instrument implementation for test. */
     private static class TestPayInstrument extends PaymentInstrument {
-        private final String mDefaultMethodName;
+        private final String mMethodName;
 
-        TestPayInstrument(String appId, String defaultMethodName, String label) {
-            super(appId + defaultMethodName, label, null, null);
-            mDefaultMethodName = defaultMethodName;
+        TestPayInstrument(String appId, String methodName, String label) {
+            super(appId + methodName, label, null, null);
+            mMethodName = methodName;
         }
 
         @Override
         public Set<String> getInstrumentMethodNames() {
             Set<String> result = new HashSet<>();
-            result.add(mDefaultMethodName);
+            result.add(mMethodName);
             return result;
         }
 
@@ -1011,7 +1014,8 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
                 Map<String, PaymentMethodData> methodData, PaymentItem total,
                 List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentDetailsCallback detailsCallback) {
-            detailsCallback.onInstrumentDetailsReady(mDefaultMethodName, "{\"transaction\": 1337}");
+            detailsCallback.onInstrumentDetailsReady(
+                    mMethodName, "{\"transaction\": 1337}");
         }
 
         @Override

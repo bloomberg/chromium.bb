@@ -25,7 +25,6 @@ namespace payments {
 AutofillPaymentInstrument::AutofillPaymentInstrument(
     const std::string& method_name,
     const autofill::CreditCard& card,
-    bool matches_merchant_card_type_exactly,
     const std::vector<autofill::AutofillProfile*>& billing_profiles,
     const std::string& app_locale,
     PaymentRequestDelegate* payment_request_delegate)
@@ -35,7 +34,6 @@ AutofillPaymentInstrument::AutofillPaymentInstrument(
               .icon_resource_id,
           PaymentInstrument::Type::AUTOFILL),
       credit_card_(card),
-      matches_merchant_card_type_exactly_(matches_merchant_card_type_exactly),
       billing_profiles_(billing_profiles),
       app_locale_(app_locale),
       delegate_(nullptr),
@@ -85,10 +83,6 @@ bool AutofillPaymentInstrument::IsCompleteForPayment() {
   return autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
                                               billing_profiles_) <=
          autofill::CREDIT_CARD_EXPIRED;
-}
-
-bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() {
-  return matches_merchant_card_type_exactly_;
 }
 
 base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() {

@@ -28,6 +28,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -95,7 +96,8 @@ public class PaymentRequestPaymentAppTest {
     @Feature({"Payments"})
     public void testPaymentWithInstrumentsAppResponseAfterDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        final TestPay app = new TestPay("https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        final TestPay app = new TestPay(
+                Arrays.asList("https://bobpay.com"), HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
             public void create(WebContents webContents, Set<String> methodNames,
@@ -125,7 +127,8 @@ public class PaymentRequestPaymentAppTest {
     @Feature({"Payments"})
     public void testPaymentAppNoInstrumentsResponseAfterDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        final TestPay app = new TestPay("https://bobpay.com", NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        final TestPay app = new TestPay(
+                Arrays.asList("https://bobpay.com"), NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
         PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
             public void create(WebContents webContents, Set<String> methodNames,

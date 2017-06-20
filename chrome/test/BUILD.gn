@@ -2061,7 +2061,6 @@ test("browser_tests") {
         "../browser/ui/views/payments/payment_request_can_make_payment_metrics_browsertest.cc",
         "../browser/ui/views/payments/payment_request_completion_status_metrics_browsertest.cc",
         "../browser/ui/views/payments/payment_request_data_url_browsertest.cc",
-        "../browser/ui/views/payments/payment_request_debit_browsertest.cc",
         "../browser/ui/views/payments/payment_request_journey_logger_browsertest.cc",
         "../browser/ui/views/payments/payment_request_payment_app_browsertest.cc",
         "../browser/ui/views/payments/payment_request_payment_response_browsertest.cc",

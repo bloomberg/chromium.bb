@@ -375,11 +375,7 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     std::unique_ptr<views::Label> shipping_label =
         emphasize_label ? CreateMediumLabel(text)
                         : base::MakeUnique<views::Label>(text);
-    // Strings from the website may not match the locale of the device, so align
-    // them according to the language of the text. This will result, for
-    // example, in "he" labels being right-aligned in a browser that's using
-    // "en" locale.
-    shipping_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+    shipping_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     shipping_label->set_id(
         static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
     container->AddChildView(shipping_label.release());

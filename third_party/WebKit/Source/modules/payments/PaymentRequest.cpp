@@ -435,6 +435,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
 // Parses basic-card data to avoid parsing JSON in the browser.
 void SetBasicCardMethodData(const ScriptValue& input,
                             PaymentMethodDataPtr& output,
+                            ExecutionContext& execution_context,
                             ExceptionState& exception_state) {
   BasicCardRequest basic_card;
   V8BasicCardRequest::toImpl(input.GetIsolate(), input.V8Value(), basic_card,
@@ -483,6 +484,12 @@ void SetBasicCardMethodData(const ScriptValue& input,
         }
       }
     }
+
+    if (output->supported_types.size() != arraysize(kBasicCardTypes)) {
+      execution_context.AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel,
+          "Cannot yet distinguish credit, debit, and prepaid cards."));
+    }
   }
 }
 
@@ -490,6 +497,7 @@ void StringifyAndParseMethodSpecificData(
     const Vector<String>& supported_methods,
     const ScriptValue& input,
     PaymentMethodDataPtr& output,
+    ExecutionContext& execution_context,
     ExceptionState& exception_state) {
   DCHECK(!input.IsEmpty());
   v8::Local<v8::String> value;
@@ -522,15 +530,11 @@ void StringifyAndParseMethodSpecificData(
   }
   if (RuntimeEnabledFeatures::PaymentRequestBasicCardEnabled() &&
       supported_methods.Contains("basic-card")) {
-    SetBasicCardMethodData(input, output, exception_state);
+    SetBasicCardMethodData(input, output, execution_context, exception_state);
     if (exception_state.HadException())
       exception_state.ClearException();
   }
-}
 
-void CountPaymentRequestNetworkNameInSupportedMethods(
-    const Vector<String>& supported_methods,
-    ExecutionContext& execution_context) {
   for (size_t i = 0; i < arraysize(kBasicCardNetworks); ++i) {
     if (supported_methods.Contains(kBasicCardNetworks[i].name)) {
       Deprecation::CountDeprecation(
@@ -590,8 +594,6 @@ void ValidateAndConvertPaymentDetailsModifiers(
         return;
       }
     }
-    CountPaymentRequestNetworkNameInSupportedMethods(
-        modifier.supportedMethods(), execution_context);
 
     output.back()->method_data =
         payments::mojom::blink::PaymentMethodData::New();
@@ -600,7 +602,7 @@ void ValidateAndConvertPaymentDetailsModifiers(
     if (modifier.hasData() && !modifier.data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
           modifier.supportedMethods(), modifier.data(),
-          output.back()->method_data, exception_state);
+          output.back()->method_data, execution_context, exception_state);
     } else {
       output.back()->method_data->stringified_data = "";
     }
@@ -721,9 +723,6 @@ void ValidateAndConvertPaymentMethodData(
       }
     }
 
-    CountPaymentRequestNetworkNameInSupportedMethods(
-        payment_method_data.supportedMethods(), execution_context);
-
     output.push_back(payments::mojom::blink::PaymentMethodData::New());
     output.back()->supported_methods = payment_method_data.supportedMethods();
 
@@ -731,7 +730,7 @@ void ValidateAndConvertPaymentMethodData(
         !payment_method_data.data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
           payment_method_data.supportedMethods(), payment_method_data.data(),
-          output.back(), exception_state);
+          output.back(), execution_context, exception_state);
     } else {
       output.back()->stringified_data = "";
     }

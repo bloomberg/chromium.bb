@@ -28,7 +28,7 @@
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
-}  // namespace autofill
+}
 
 namespace content {
 class WebContents;
