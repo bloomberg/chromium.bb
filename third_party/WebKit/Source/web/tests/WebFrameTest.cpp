@@ -6142,14 +6142,14 @@ class DisambiguationPopupTestWebViewClient
   bool triggered_;
 };
 
-static WebCoalescedInputEvent FatTap(int x, int y) {
+static WebCoalescedInputEvent FatTap(int x, int y, int diameter) {
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::kTimeStampForTesting);
   event.source_device = kWebGestureDeviceTouchscreen;
   event.x = x;
   event.y = y;
-  event.data.tap.width = 50;
-  event.data.tap.height = 50;
+  event.data.tap.width = diameter;
+  event.data.tap.height = diameter;
   return WebCoalescedInputEvent(event);
 }
 
@@ -6158,6 +6158,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopup) {
   RegisterMockedHttpURLLoad(html_file);
 
   DisambiguationPopupTestWebViewClient client;
+  const int kTapDiameter = 100;
 
   // Make sure we initialize to minimum scale, even if the window size
   // only becomes available after the load begins.
@@ -6166,16 +6167,17 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopup) {
   web_view_helper.Resize(WebSize(1000, 1000));
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(0, 0));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(0, 0, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(200, 115));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(200, 115, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 
   for (int i = 0; i <= 46; i++) {
     client.ResetTriggered();
-    web_view_helper.WebView()->HandleInputEvent(FatTap(120, 230 + i * 5));
+    web_view_helper.WebView()->HandleInputEvent(
+        FatTap(120, 230 + i * 5, kTapDiameter));
 
     int j = i % 10;
     if (j >= 7 && j <= 9)
@@ -6186,7 +6188,8 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopup) {
 
   for (int i = 0; i <= 46; i++) {
     client.ResetTriggered();
-    web_view_helper.WebView()->HandleInputEvent(FatTap(10 + i * 5, 590));
+    web_view_helper.WebView()->HandleInputEvent(
+        FatTap(10 + i * 5, 590, kTapDiameter));
 
     int j = i % 10;
     if (j >= 7 && j <= 9)
@@ -6203,7 +6206,8 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopup) {
 
   for (int i = 0; i <= 46; i++) {
     client.ResetTriggered();
-    web_view_helper.WebView()->HandleInputEvent(FatTap(10 + i * 5, 590));
+    web_view_helper.WebView()->HandleInputEvent(
+        FatTap(10 + i * 5, 590, kTapDiameter));
     EXPECT_FALSE(client.Triggered());
   }
 }
@@ -6212,6 +6216,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupNoContainer) {
   RegisterMockedHttpURLLoad("disambiguation_popup_no_container.html");
 
   DisambiguationPopupTestWebViewClient client;
+  const int kTapDiameter = 100;
 
   // Make sure we initialize to minimum scale, even if the window size
   // only becomes available after the load begins.
@@ -6221,7 +6226,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupNoContainer) {
   web_view_helper.Resize(WebSize(1000, 1000));
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(50, 50));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(50, 50, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 }
 
@@ -6230,6 +6235,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupMobileSite) {
   RegisterMockedHttpURLLoad(html_file);
 
   DisambiguationPopupTestWebViewClient client;
+  const int kTapDiameter = 100;
 
   // Make sure we initialize to minimum scale, even if the window size
   // only becomes available after the load begins.
@@ -6239,22 +6245,24 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupMobileSite) {
   web_view_helper.Resize(WebSize(1000, 1000));
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(0, 0));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(0, 0, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(200, 115));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(200, 115, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 
   for (int i = 0; i <= 46; i++) {
     client.ResetTriggered();
-    web_view_helper.WebView()->HandleInputEvent(FatTap(120, 230 + i * 5));
+    web_view_helper.WebView()->HandleInputEvent(
+        FatTap(120, 230 + i * 5, kTapDiameter));
     EXPECT_FALSE(client.Triggered());
   }
 
   for (int i = 0; i <= 46; i++) {
     client.ResetTriggered();
-    web_view_helper.WebView()->HandleInputEvent(FatTap(10 + i * 5, 590));
+    web_view_helper.WebView()->HandleInputEvent(
+        FatTap(10 + i * 5, 590, kTapDiameter));
     EXPECT_FALSE(client.Triggered());
   }
 }
@@ -6264,6 +6272,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupViewportSite) {
   RegisterMockedHttpURLLoad(html_file);
 
   DisambiguationPopupTestWebViewClient client;
+  const int kTapDiameter = 100;
 
   // Make sure we initialize to minimum scale, even if the window size
   // only becomes available after the load begins.
@@ -6273,22 +6282,24 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupViewportSite) {
   web_view_helper.Resize(WebSize(1000, 1000));
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(0, 0));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(0, 0, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(200, 115));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(200, 115, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 
   for (int i = 0; i <= 46; i++) {
     client.ResetTriggered();
-    web_view_helper.WebView()->HandleInputEvent(FatTap(120, 230 + i * 5));
+    web_view_helper.WebView()->HandleInputEvent(
+        FatTap(120, 230 + i * 5, kTapDiameter));
     EXPECT_FALSE(client.Triggered());
   }
 
   for (int i = 0; i <= 46; i++) {
     client.ResetTriggered();
-    web_view_helper.WebView()->HandleInputEvent(FatTap(10 + i * 5, 590));
+    web_view_helper.WebView()->HandleInputEvent(
+        FatTap(10 + i * 5, 590, kTapDiameter));
     EXPECT_FALSE(client.Triggered());
   }
 }
@@ -6298,6 +6309,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
   RegisterMockedHttpURLLoad(html_file);
 
   DisambiguationPopupTestWebViewClient client;
+  const int kTapDiameter = 100;
 
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + html_file, nullptr, &client,
@@ -6323,7 +6335,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
 
   // Tap at the top: there is nothing there.
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(10, 60));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(10, 60, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 
   // Scroll visual viewport to the bottom of the main frame.
@@ -6332,7 +6344,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
 
   // Now the tap with the same coordinates should hit two elements.
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(10, 60));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(10, 60, kTapDiameter));
   EXPECT_TRUE(client.Triggered());
 
   // The same tap shouldn't trigger didTapMultipleTargets() after disabling the
@@ -6341,7 +6353,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
       ->GetSettings()
       ->SetMultiTargetTapNotificationEnabled(false);
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(10, 60));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(10, 60, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 }
 
@@ -6353,6 +6365,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupBlacklist) {
   RegisterMockedHttpURLLoad(html_file);
 
   DisambiguationPopupTestWebViewClient client;
+  const int kTapDiameter = 100;
 
   // Make sure we initialize to minimum scale, even if the window size
   // only becomes available after the load begins.
@@ -6362,21 +6375,22 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupBlacklist) {
 
   // Click somewhere where the popup shouldn't appear.
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(kViewportWidth / 2, 0));
+  web_view_helper.WebView()->HandleInputEvent(
+      FatTap(kViewportWidth / 2, 0, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 
   // Click directly in between two container divs with click handlers, with
   // children that don't handle clicks.
   client.ResetTriggered();
   web_view_helper.WebView()->HandleInputEvent(
-      FatTap(kViewportWidth / 2, kDivHeight));
+      FatTap(kViewportWidth / 2, kDivHeight, kTapDiameter));
   EXPECT_TRUE(client.Triggered());
 
   // The third div container should be blacklisted if you click on the link it
   // contains.
   client.ResetTriggered();
   web_view_helper.WebView()->HandleInputEvent(
-      FatTap(kViewportWidth / 2, kDivHeight * 3.25));
+      FatTap(kViewportWidth / 2, kDivHeight * 3.25, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 }
 
@@ -6384,6 +6398,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupPageScale) {
   RegisterMockedHttpURLLoad("disambiguation_popup_page_scale.html");
 
   DisambiguationPopupTestWebViewClient client;
+  const int kTapDiameter = 50;
 
   // Make sure we initialize to minimum scale, even if the window size
   // only becomes available after the load begins.
@@ -6393,22 +6408,22 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupPageScale) {
   web_view_helper.Resize(WebSize(1000, 1000));
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(80, 80));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(80, 80, kTapDiameter));
   EXPECT_TRUE(client.Triggered());
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(230, 190));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(230, 190, kTapDiameter));
   EXPECT_TRUE(client.Triggered());
 
   web_view_helper.WebView()->SetPageScaleFactor(3.0f);
   web_view_helper.WebView()->UpdateAllLifecyclePhases();
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(240, 240));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(240, 240, kTapDiameter));
   EXPECT_TRUE(client.Triggered());
 
   client.ResetTriggered();
-  web_view_helper.WebView()->HandleInputEvent(FatTap(690, 570));
+  web_view_helper.WebView()->HandleInputEvent(FatTap(690, 570, kTapDiameter));
   EXPECT_FALSE(client.Triggered());
 }
 
@@ -9504,7 +9519,12 @@ TEST_P(ParameterizedWebFrameTest, FrameWidgetTest) {
 
   helper.WebView()->Resize(WebSize(1000, 1000));
 
-  child_frame->FrameWidget()->HandleInputEvent(FatTap(20, 20));
+  WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+                        WebInputEvent::kTimeStampForTesting);
+  event.source_device = kWebGestureDeviceTouchscreen;
+  event.x = 20;
+  event.y = 20;
+  child_frame->FrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(child_widget_client.DidHandleGestureEvent());
 
   helper.Reset();
