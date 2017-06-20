@@ -5,6 +5,8 @@
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 import("//components/grpc_support/include/headers.gni")
+import("//ios/build/config.gni")
+import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
 config("config") {
@@ -197,6 +199,26 @@ ios_framework_bundle("cronet_web_view_combined") {
     "//build/config/compiler:symbols",
     "//build/config/compiler:enable_arc",
   ]
+}
+
+test("ios_web_view_unittests") {
+  testonly = true
+  sources = [
+    "internal/cwv_html_element_unittest.mm",
+  ]
+  sources += ios_web_view_sources
+
+  deps = [
+    "test:test_support",
+    "//base/test:run_all_unittests",
+    "//ios/testing:ios_test_support",
+    "//testing/gtest",
+  ]
+  deps += ios_web_view_deps
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  assert_no_deps = ios_assert_no_deps
 }
 
 repack("repack_resources") {
