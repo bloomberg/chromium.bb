@@ -22,6 +22,10 @@ namespace content {
 
 #if defined(OS_WIN)
 // These tests are flaky on WebRTC Windows bots: https://crbug.com/633242.
+// As a mitigation for https://crbug.com/722038, access to the image capture
+// controls has been put behind a feature flag kImageCaptureControls, which is
+// disabled by default on Windows. In order to re-activate these tests on
+// Windows, this feature must be enabled.
 #define MAYBE_GetPhotoCapabilities DISABLED_GetPhotoCapabilities
 #define MAYBE_GetPhotoSettings DISABLED_GetPhotoSettings
 #define MAYBE_TakePhoto DISABLED_TakePhoto

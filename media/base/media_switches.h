@@ -129,6 +129,7 @@ MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoding;
 MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;
+MEDIA_EXPORT extern const base::Feature kImageCaptureControls;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
 #endif  // defined(OS_WIN)
 
