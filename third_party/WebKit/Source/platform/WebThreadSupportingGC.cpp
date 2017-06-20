@@ -5,6 +5,7 @@
 #include "platform/WebThreadSupportingGC.h"
 
 #include <memory>
+#include "platform/MemoryCoordinator.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/PtrUtil.h"
@@ -36,11 +37,13 @@ WebThreadSupportingGC::WebThreadSupportingGC(const char* name,
     owning_thread_ = Platform::Current()->CreateThread(name);
     thread_ = owning_thread_.get();
   }
+  MemoryCoordinator::RegisterThread(thread_);
 }
 
 WebThreadSupportingGC::~WebThreadSupportingGC() {
   // WebThread's destructor blocks until all the tasks are processed.
   owning_thread_.reset();
+  MemoryCoordinator::UnregisterThread(thread_);
 }
 
 void WebThreadSupportingGC::Initialize() {
