@@ -237,13 +237,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,
                                               const char* trace_event_name);
 
-  // If a track is not found with the specified id, the returned track's
-  // |isNull| will return true.
-  blink::WebMediaStreamTrack GetRemoteAudioTrack(
-      const std::string& track_id) const;
-  blink::WebMediaStreamTrack GetRemoteVideoTrack(
-      const std::string& track_id) const;
-
   base::ThreadChecker thread_checker_;
 
   // |client_| is a weak pointer to the blink object (blink::RTCPeerConnection)

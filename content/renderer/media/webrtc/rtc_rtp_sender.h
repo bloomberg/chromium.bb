@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCRtpSender.h"
 #include "third_party/webrtc/api/rtpsenderinterface.h"
@@ -20,8 +21,9 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
  public:
   static uintptr_t getId(const webrtc::RtpSenderInterface* webrtc_rtp_sender);
 
-  RTCRtpSender(webrtc::RtpSenderInterface* webrtc_rtp_sender,
-               std::unique_ptr<blink::WebMediaStreamTrack> web_track);
+  RTCRtpSender(scoped_refptr<webrtc::RtpSenderInterface> webrtc_rtp_sender,
+               std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+                   track_adapter);
   ~RTCRtpSender() override;
 
   uintptr_t Id() const override;
@@ -31,7 +33,10 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
 
  private:
   const scoped_refptr<webrtc::RtpSenderInterface> webrtc_rtp_sender_;
-  std::unique_ptr<blink::WebMediaStreamTrack> web_track_;
+  // The track adapter is the glue between blink and webrtc layer tracks.
+  // Keeping a reference to the adapter ensures it is not disposed, as is
+  // required as long as the webrtc layer track is in use by the sender.
+  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter_;
 };
 
 }  // namespace content
