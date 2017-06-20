@@ -116,6 +116,10 @@ class ResourceChangeObserver {
         return "Idle wake ups";
       case ColumnSpecifier::MEMORY_STATE:
         return "Memory State";
+      case ColumnSpecifier::NETWORK_USE:
+        return "Network";
+      case ColumnSpecifier::TOTAL_NETWORK_USE:
+        return "Total Network";
     }
     return "N/A";
   }

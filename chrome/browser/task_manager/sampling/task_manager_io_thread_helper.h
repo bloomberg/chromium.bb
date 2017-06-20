@@ -19,13 +19,13 @@ class URLRequest;
 namespace task_manager {
 
 // Defines a wrapper of values that will be sent from IO to UI thread upon
-// reception of bytes read notifications.
-struct BytesReadParam {
+// reception and transmission of bytes notifications.
+struct BytesTransferredParam {
   // The PID of the originating process of the URLRequest, if the request is
   // sent on behalf of another process. Otherwise it's 0.
   int origin_pid;
 
-  // The unique ID of the host of the child process requestor.
+  // The unique ID of the host of the child process requester.
   int child_id;
 
   // The ID of the IPC route for the URLRequest (this identifies the
@@ -34,17 +34,21 @@ struct BytesReadParam {
   int route_id;
 
   // The number of bytes read.
-  int64_t byte_count;
+  int64_t byte_read_count;
 
-  BytesReadParam(int origin_pid,
-                 int child_id,
-                 int route_id,
-                 int64_t byte_count)
+  // The number of bytes sent.
+  int64_t byte_sent_count;
+
+  BytesTransferredParam(int origin_pid,
+                        int child_id,
+                        int route_id,
+                        int64_t byte_read_count,
+                        int64_t byte_sent_count)
       : origin_pid(origin_pid),
         child_id(child_id),
         route_id(route_id),
-        byte_count(byte_count) {
-  }
+        byte_read_count(byte_read_count),
+        byte_sent_count(byte_sent_count) {}
 };
 
 // Defines a utility class used to schedule the creation and removal of the
@@ -59,7 +63,7 @@ class IoThreadHelperManager {
 };
 
 // Defines a class used by the task manager to receive notifications of the
-// network bytes read by the various tasks.
+// network bytes transferred by the various tasks.
 // This object lives entirely only on the IO thread.
 class TaskManagerIoThreadHelper {
  public:
@@ -68,25 +72,33 @@ class TaskManagerIoThreadHelper {
   static void CreateInstance();
   static void DeleteInstance();
 
-  // This is used to forward the call to update the network bytes from the
-  // TaskManagerInterface if the new task manager is enabled.
+  // This is used to forward the call to update the network bytes with read
+  // bytes from the TaskManagerInterface if the new task manager is enabled.
   static void OnRawBytesRead(const net::URLRequest& request,
                              int64_t bytes_read);
+
+  // This is used to forward the call to update the network bytes with sent
+  // bytes from the TaskManagerInterface if the new task manager is enabled.
+  static void OnRawBytesSent(const net::URLRequest& request,
+                             int64_t bytes_sent);
 
  private:
   TaskManagerIoThreadHelper();
   ~TaskManagerIoThreadHelper();
 
   // We gather multiple notifications on the IO thread in one second before a
-  // call is made to the following function to start the processing.
-  void OnMultipleBytesReadIO();
+  // call is made to the following function to start the processing for
+  // transferred bytes.
+  void OnMultipleBytesTransferredIO();
 
   // This will update the task manager with the network bytes read.
-  void OnNetworkBytesRead(const net::URLRequest& request, int64_t bytes_read);
+  void OnNetworkBytesTransferred(const net::URLRequest& request,
+                                 int64_t bytes_read,
+                                 int64_t bytes_sent);
 
   // This buffer will be filled on IO thread with information about the number
-  // of bytes read from URLRequests.
-  std::vector<BytesReadParam> bytes_read_buffer_;
+  // of bytes transferred from URLRequests.
+  std::vector<BytesTransferredParam> bytes_transferred_buffer_;
 
   base::WeakPtrFactory<TaskManagerIoThreadHelper> weak_factory_;
 

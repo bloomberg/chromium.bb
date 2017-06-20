@@ -59,8 +59,23 @@ void TaskManagerIoThreadHelper::OnRawBytesRead(const net::URLRequest& request,
                                                int64_t bytes_read) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (g_io_thread_helper)
-    g_io_thread_helper->OnNetworkBytesRead(request, bytes_read);
+  if (g_io_thread_helper) {
+    int64_t bytes_sent = 0;
+    g_io_thread_helper->OnNetworkBytesTransferred(request, bytes_read,
+                                                  bytes_sent);
+  }
+}
+
+// static
+void TaskManagerIoThreadHelper::OnRawBytesSent(const net::URLRequest& request,
+                                               int64_t bytes_sent) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (g_io_thread_helper) {
+    int64_t bytes_read = 0;
+    g_io_thread_helper->OnNetworkBytesTransferred(request, bytes_read,
+                                                  bytes_sent);
+  }
 }
 
 TaskManagerIoThreadHelper::TaskManagerIoThreadHelper() : weak_factory_(this) {
@@ -71,24 +86,25 @@ TaskManagerIoThreadHelper::~TaskManagerIoThreadHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
-void TaskManagerIoThreadHelper::OnMultipleBytesReadIO() {
+void TaskManagerIoThreadHelper::OnMultipleBytesTransferredIO() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  DCHECK(!bytes_read_buffer_.empty());
+  DCHECK(!bytes_transferred_buffer_.empty());
 
-  std::vector<BytesReadParam>* bytes_read_buffer =
-      new std::vector<BytesReadParam>();
-  bytes_read_buffer_.swap(*bytes_read_buffer);
+  std::vector<BytesTransferredParam>* bytes_read_buffer =
+      new std::vector<BytesTransferredParam>();
+  bytes_transferred_buffer_.swap(*bytes_read_buffer);
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&TaskManagerImpl::OnMultipleBytesReadUI,
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&TaskManagerImpl::OnMultipleBytesTransferredUI,
                  base::Owned(bytes_read_buffer)));
 }
 
-void TaskManagerIoThreadHelper::OnNetworkBytesRead(
-    const net::URLRequest& request, int64_t bytes_read) {
+void TaskManagerIoThreadHelper::OnNetworkBytesTransferred(
+    const net::URLRequest& request,
+    int64_t bytes_read,
+    int64_t bytes_sent) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
@@ -107,7 +123,7 @@ void TaskManagerIoThreadHelper::OnNetworkBytesRead(
   // plugins - for renderer or browser initiated requests it will be zero.
   int origin_pid = info ? info->GetOriginPID() : 0;
 
-  if (bytes_read_buffer_.empty()) {
+  if (bytes_transferred_buffer_.empty()) {
     // Schedule a task to process the received bytes requests a second from now.
     // We're trying to calculate the tasks' network usage speed as bytes per
     // second so we collect as many requests during one seconds before the below
@@ -115,13 +131,13 @@ void TaskManagerIoThreadHelper::OnNetworkBytesRead(
     // after one second from now.
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&TaskManagerIoThreadHelper::OnMultipleBytesReadIO,
+        base::Bind(&TaskManagerIoThreadHelper::OnMultipleBytesTransferredIO,
                    weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(1));
   }
 
-  bytes_read_buffer_.push_back(
-      BytesReadParam(origin_pid, child_id, route_id, bytes_read));
+  bytes_transferred_buffer_.push_back(BytesTransferredParam(
+      origin_pid, child_id, route_id, bytes_read, bytes_sent));
 }
 
 }  // namespace task_manager

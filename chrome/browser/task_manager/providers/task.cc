@@ -30,8 +30,12 @@ Task::Task(const base::string16& title,
            base::ProcessHandle handle,
            base::ProcessId process_id)
     : task_id_(g_last_id++),
-      network_usage_(-1),
-      current_byte_count_(-1),
+      last_refresh_cumulative_bytes_sent_(0),
+      last_refresh_cumulative_bytes_read_(0),
+      cumulative_bytes_sent_(0),
+      cumulative_bytes_read_(0),
+      network_sent_rate_(0),
+      network_read_rate_(0),
       title_(title),
       rappor_sample_name_(rappor_sample),
       icon_(icon ? *icon : gfx::ImageSkia()),
@@ -70,24 +74,32 @@ void Task::Kill() {
 
 void Task::Refresh(const base::TimeDelta& update_interval,
                    int64_t refresh_flags) {
-  if ((refresh_flags & REFRESH_TYPE_NETWORK_USAGE) == 0)
+  if ((refresh_flags & REFRESH_TYPE_NETWORK_USAGE) == 0 ||
+      update_interval == base::TimeDelta())
     return;
 
-  if (current_byte_count_ == -1)
-    return;
+  int64_t current_cycle_read_byte_count =
+      cumulative_bytes_read_ - last_refresh_cumulative_bytes_read_;
+  network_read_rate_ =
+      (current_cycle_read_byte_count * base::TimeDelta::FromSeconds(1)) /
+      update_interval;
 
-  network_usage_ =
-      (current_byte_count_ * base::TimeDelta::FromSeconds(1)) / update_interval;
+  int64_t current_cycle_sent_byte_count =
+      cumulative_bytes_sent_ - last_refresh_cumulative_bytes_sent_;
+  network_sent_rate_ =
+      (current_cycle_sent_byte_count * base::TimeDelta::FromSeconds(1)) /
+      update_interval;
 
-  // Reset the current byte count for this task.
-  current_byte_count_ = 0;
+  last_refresh_cumulative_bytes_read_ = cumulative_bytes_read_;
+  last_refresh_cumulative_bytes_sent_ = cumulative_bytes_sent_;
 }
 
 void Task::OnNetworkBytesRead(int64_t bytes_read) {
-  if (current_byte_count_ == -1)
-    current_byte_count_ = 0;
+  cumulative_bytes_read_ += bytes_read;
+}
 
-  current_byte_count_ += bytes_read;
+void Task::OnNetworkBytesSent(int64_t bytes_sent) {
+  cumulative_bytes_sent_ += bytes_sent;
 }
 
 void Task::GetTerminationStatus(base::TerminationStatus* out_status,
@@ -145,10 +157,6 @@ blink::WebCache::ResourceTypeStats Task::GetWebCacheStats() const {
 
 int Task::GetKeepaliveCount() const {
   return -1;
-}
-
-bool Task::ReportsNetworkUsage() const {
-  return network_usage_ != -1;
 }
 
 }  // namespace task_manager

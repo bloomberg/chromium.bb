@@ -131,7 +131,6 @@ TEST_F(ChildProcessTaskTest, TestAll) {
   EXPECT_FALSE(task->ReportsSqliteMemory());
   EXPECT_FALSE(task->ReportsV8Memory());
   EXPECT_FALSE(task->ReportsWebCacheStats());
-  EXPECT_FALSE(task->ReportsNetworkUsage());
 
   // Make sure that the conversion from PID to Handle inside
   // |GetTaskOfUrlRequest()| is working properly.
@@ -143,8 +142,7 @@ TEST_F(ChildProcessTaskTest, TestAll) {
   found_task->Refresh(base::TimeDelta::FromSeconds(1),
                       REFRESH_TYPE_NETWORK_USAGE);
 
-  EXPECT_TRUE(task->ReportsNetworkUsage());
-  EXPECT_EQ(bytes_read, task->network_usage());
+  EXPECT_EQ(bytes_read, task->network_usage_rate());
 
   // Clearing the observer won't notify us of any tasks removals even though
   // tasks will be actually deleted.

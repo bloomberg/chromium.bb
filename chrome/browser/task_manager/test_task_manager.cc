@@ -135,11 +135,20 @@ void TestTaskManager::GetTerminationStatus(TaskId task_id,
 }
 
 int64_t TestTaskManager::GetNetworkUsage(TaskId task_id) const {
-  return -1;
+  return 0;
 }
 
 int64_t TestTaskManager::GetProcessTotalNetworkUsage(TaskId task_id) const {
   return -1;
+}
+
+int64_t TestTaskManager::GetCumulativeNetworkUsage(TaskId task_id) const {
+  return 0;
+}
+
+int64_t TestTaskManager::GetCumulativeProcessTotalNetworkUsage(
+    TaskId task_id) const {
+  return 0;
 }
 
 int64_t TestTaskManager::GetSqliteMemoryUsed(TaskId task_id) const {

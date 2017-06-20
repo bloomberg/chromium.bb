@@ -74,7 +74,9 @@ class TaskManagerImpl : public TaskManagerInterface,
                             base::TerminationStatus* out_status,
                             int* out_error_code) const override;
   int64_t GetNetworkUsage(TaskId task_id) const override;
+  int64_t GetCumulativeNetworkUsage(TaskId task_id) const override;
   int64_t GetProcessTotalNetworkUsage(TaskId task_id) const override;
+  int64_t GetCumulativeProcessTotalNetworkUsage(TaskId task_id) const override;
   int64_t GetSqliteMemoryUsed(TaskId task_id) const override;
   bool GetV8Memory(TaskId task_id,
                    int64_t* allocated,
@@ -94,9 +96,11 @@ class TaskManagerImpl : public TaskManagerInterface,
   void TaskRemoved(Task* task) override;
   void TaskUnresponsive(Task* task) override;
 
-  // The notification method on the UI thread when multiple bytes are read
-  // from URLRequests. This will be called by the |io_thread_helper_|
-  static void OnMultipleBytesReadUI(std::vector<BytesReadParam>* params);
+  // The notification method on the UI thread when multiple bytes are
+  // transferred from URLRequests. This will be called by the
+  // |io_thread_helper_|
+  static void OnMultipleBytesTransferredUI(
+      std::vector<BytesTransferredParam>* params);
 
  private:
   friend struct base::LazyInstanceTraitsBase<TaskManagerImpl>;
@@ -119,7 +123,7 @@ class TaskManagerImpl : public TaskManagerInterface,
   // false otherwise, at which point the caller must explicitly match these
   // bytes to the browser process by calling this method again with
   // |param.origin_pid = 0| and |param.child_id = param.route_id = -1|.
-  bool UpdateTasksWithBytesRead(const BytesReadParam& param);
+  bool UpdateTasksWithBytesTransferred(const BytesTransferredParam& param);
 
   TaskGroup* GetTaskGroupByTaskId(TaskId task_id) const;
   Task* GetTaskByTaskId(TaskId task_id) const;

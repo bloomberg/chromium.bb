@@ -112,6 +112,10 @@ void TaskManagerTester::ToggleColumnVisibility(ColumnSpecifier column) {
     case ColumnSpecifier::MEMORY_STATE:
       column_id = IDS_TASK_MANAGER_MEMORY_STATE_COLUMN;
       break;
+    case ColumnSpecifier::TOTAL_NETWORK_USE:
+    case ColumnSpecifier::NETWORK_USE:
+      column_id = IDS_TASK_MANAGER_NET_COLUMN;
+      break;
   }
   model_->ToggleColumnVisibility(column_id);
 }
@@ -138,6 +142,13 @@ int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
       break;
     case ColumnSpecifier::IDLE_WAKEUPS:
       value = task_manager()->GetIdleWakeupsPerSecond(task_id);
+      success = true;
+      break;
+    case ColumnSpecifier::NETWORK_USE:
+      value = task_manager()->GetNetworkUsage(task_id);
+      success = true;
+    case ColumnSpecifier::TOTAL_NETWORK_USE:
+      value = task_manager()->GetCumulativeNetworkUsage(task_id);
       success = true;
       break;
   }

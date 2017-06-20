@@ -228,11 +228,20 @@ void TaskManagerImpl::GetTerminationStatus(TaskId task_id,
 }
 
 int64_t TaskManagerImpl::GetNetworkUsage(TaskId task_id) const {
-  return GetTaskByTaskId(task_id)->network_usage();
+  return GetTaskByTaskId(task_id)->network_usage_rate();
+}
+
+int64_t TaskManagerImpl::GetCumulativeNetworkUsage(TaskId task_id) const {
+  return GetTaskByTaskId(task_id)->cumulative_network_usage();
 }
 
 int64_t TaskManagerImpl::GetProcessTotalNetworkUsage(TaskId task_id) const {
-  return GetTaskGroupByTaskId(task_id)->per_process_network_usage();
+  return GetTaskGroupByTaskId(task_id)->per_process_network_usage_rate();
+}
+
+int64_t TaskManagerImpl::GetCumulativeProcessTotalNetworkUsage(
+    TaskId task_id) const {
+  return GetTaskGroupByTaskId(task_id)->cumulative_per_process_network_usage();
 }
 
 int64_t TaskManagerImpl::GetSqliteMemoryUsed(TaskId task_id) const {
@@ -446,13 +455,13 @@ void TaskManagerImpl::TaskUnresponsive(Task* task) {
 }
 
 // static
-void TaskManagerImpl::OnMultipleBytesReadUI(
-    std::vector<BytesReadParam>* params) {
+void TaskManagerImpl::OnMultipleBytesTransferredUI(
+    std::vector<BytesTransferredParam>* params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(params);
 
-  for (BytesReadParam& param : *params) {
-    if (!GetInstance()->UpdateTasksWithBytesRead(param)) {
+  for (BytesTransferredParam& param : *params) {
+    if (!GetInstance()->UpdateTasksWithBytesTransferred(param)) {
       // We can't match a task to the notification.  That might mean the
       // tab that started a download was closed, or the request may have had
       // no originating task associated with it in the first place.
@@ -461,8 +470,7 @@ void TaskManagerImpl::OnMultipleBytesReadUI(
 
       param.origin_pid = 0;
       param.child_id = param.route_id = -1;
-
-      GetInstance()->UpdateTasksWithBytesRead(param);
+      GetInstance()->UpdateTasksWithBytesTransferred(param);
     }
   }
 }
@@ -530,13 +538,15 @@ Task* TaskManagerImpl::GetTaskByPidOrRoute(int origin_pid,
   return nullptr;
 }
 
-bool TaskManagerImpl::UpdateTasksWithBytesRead(const BytesReadParam& param) {
+bool TaskManagerImpl::UpdateTasksWithBytesTransferred(
+    const BytesTransferredParam& param) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   Task* task =
       GetTaskByPidOrRoute(param.origin_pid, param.child_id, param.route_id);
   if (task) {
-    task->OnNetworkBytesRead(param.byte_count);
+    task->OnNetworkBytesRead(param.byte_read_count);
+    task->OnNetworkBytesSent(param.byte_sent_count);
     return true;
   }
 

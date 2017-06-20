@@ -60,6 +60,8 @@ class TestTaskManager : public TaskManagerInterface {
                             int* out_error_code) const override;
   int64_t GetNetworkUsage(TaskId task_id) const override;
   int64_t GetProcessTotalNetworkUsage(TaskId task_id) const override;
+  int64_t GetCumulativeNetworkUsage(TaskId task_id) const override;
+  int64_t GetCumulativeProcessTotalNetworkUsage(TaskId task_id) const override;
   int64_t GetSqliteMemoryUsed(TaskId task_id) const override;
   bool GetV8Memory(TaskId task_id,
                    int64_t* allocated,
