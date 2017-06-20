@@ -154,3 +154,9 @@ class Octane(perf_benchmark.PerfBenchmark):
         ps, ps.base_dir, make_javascript_deterministic=False,
         name='http://chromium.github.io/octane/index.html?auto=1'))
     return ps
+
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Octane not disabled.
+    return StoryExpectations()
