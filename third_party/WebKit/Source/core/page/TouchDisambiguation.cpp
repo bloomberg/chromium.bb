@@ -152,12 +152,18 @@ void FindGoodTouchTargets(const IntRect& touch_box_in_root_frame,
     }
   }
 
+  // The scoring function uses the overlap area with the fat point as the score.
+  // We ignore the candidates that have less than this (empirically tuned)
+  // fraction of overlap than the best candidate to avoid excessive popups.
+  //
+  // If this value were 1, then the disambiguation feature would only be seen
+  // when two nodes have precisely the same overlap with the touch radius.  If
+  // it were 0, then any miniscule overlap with the edge of another node would
+  // trigger it.
+  const float kRelativeAmbiguityThreshold = 0.75f;
+
   for (const auto& touch_target : touch_targets) {
-    // Currently the scoring function uses the overlap area with the fat point
-    // as the score.  We ignore the candidates that has less than 1/2 overlap
-    // (we consider not really ambiguous enough) than the best candidate to
-    // avoid excessive popups.
-    if (touch_target.value.score < best_score * 0.5)
+    if (touch_target.value.score < best_score * kRelativeAmbiguityThreshold)
       continue;
     good_targets.push_back(touch_target.value.window_bounding_box);
     highlight_nodes.push_back(touch_target.key);
