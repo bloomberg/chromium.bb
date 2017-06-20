@@ -447,6 +447,12 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
     PermissionPromptDelegate* delegate) {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       request.render_process_id, request.render_frame_id);
+  // The RFH may have been destroyed by the time the request is processed.
+  if (!rfh) {
+    callback.Run(content::MediaStreamDevices(),
+                 content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+                 std::unique_ptr<content::MediaStreamUI>());
+  }
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   if (request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY) {
