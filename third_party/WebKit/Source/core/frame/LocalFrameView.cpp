@@ -4707,6 +4707,8 @@ LayoutRect LocalFrameView::ScrollIntoView(const LayoutRect& rect_in_content,
 
   // Scrolling the LocalFrameView cannot change the input rect's location
   // relative to the document.
+  // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
+  // value to the visible content rect, but this does not.
   return rect_in_content;
 }
 
