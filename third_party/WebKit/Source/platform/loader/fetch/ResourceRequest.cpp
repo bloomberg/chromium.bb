@@ -301,7 +301,7 @@ EncodedFormData* ResourceRequest::HttpBody() const {
   return http_body_.Get();
 }
 
-void ResourceRequest::SetHTTPBody(PassRefPtr<EncodedFormData> http_body) {
+void ResourceRequest::SetHTTPBody(RefPtr<EncodedFormData> http_body) {
   http_body_ = std::move(http_body);
 }
 
@@ -310,7 +310,7 @@ EncodedFormData* ResourceRequest::AttachedCredential() const {
 }
 
 void ResourceRequest::SetAttachedCredential(
-    PassRefPtr<EncodedFormData> attached_credential) {
+    RefPtr<EncodedFormData> attached_credential) {
   attached_credential_ = std::move(attached_credential);
 }
 

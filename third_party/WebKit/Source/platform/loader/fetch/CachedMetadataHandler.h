@@ -34,7 +34,7 @@ class CachedMetadataHandler
   virtual void ClearCachedMetadata(CacheType = kCacheLocally) = 0;
   // Returns cached metadata of the given type associated with this resource.
   // This cached metadata can be pruned at any time.
-  virtual PassRefPtr<CachedMetadata> GetCachedMetadata(
+  virtual RefPtr<CachedMetadata> GetCachedMetadata(
       uint32_t data_type_id) const = 0;
   // Returns the encoding to which the cache is specific.
   virtual String Encoding() const = 0;

@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 
 #if INSIDE_BLINK
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #endif
 
 namespace blink {
@@ -77,9 +77,10 @@ class BLINK_PLATFORM_EXPORT WebData {
   bool IsNull() const { return private_.IsNull(); }
 
 #if INSIDE_BLINK
-  WebData(PassRefPtr<SharedBuffer>);
-  WebData& operator=(PassRefPtr<SharedBuffer>);
-  operator PassRefPtr<SharedBuffer>() const;
+  WebData(RefPtr<SharedBuffer>);
+  WebData& operator=(RefPtr<SharedBuffer>);
+  operator RefPtr<SharedBuffer>() const;
+  operator const SharedBuffer&() const;
 #else
   template <class C>
   WebData(const C& c) {

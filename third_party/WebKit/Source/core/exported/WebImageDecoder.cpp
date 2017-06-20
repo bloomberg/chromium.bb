@@ -64,7 +64,7 @@ void WebImageDecoder::Init(Type type) {
 
 void WebImageDecoder::SetData(const WebData& data, bool all_data_received) {
   DCHECK(private_);
-  private_->SetData(PassRefPtr<SharedBuffer>(data).Get(), all_data_received);
+  private_->SetData(data, all_data_received);
 }
 
 bool WebImageDecoder::IsFailed() const {

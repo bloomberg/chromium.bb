@@ -51,12 +51,12 @@ class PLATFORM_EXPORT ResourceTimingInfo
   WTF_MAKE_NONCOPYABLE(ResourceTimingInfo);
 
  public:
-  static PassRefPtr<ResourceTimingInfo> Create(const AtomicString& type,
-                                               const double time,
-                                               bool is_main_resource) {
+  static RefPtr<ResourceTimingInfo> Create(const AtomicString& type,
+                                           const double time,
+                                           bool is_main_resource) {
     return AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
   }
-  static PassRefPtr<ResourceTimingInfo> Adopt(
+  static RefPtr<ResourceTimingInfo> Adopt(
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
 
   // Gets a copy of the data suitable for passing to another thread.

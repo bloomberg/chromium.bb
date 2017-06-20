@@ -83,7 +83,7 @@ class CORE_EXPORT ImageResource final
   bool CanReuse(const FetchParameters&) const override;
   bool CanUseCacheValidator() const override;
 
-  PassRefPtr<const SharedBuffer> ResourceBuffer() const override;
+  RefPtr<const SharedBuffer> ResourceBuffer() const override;
   void NotifyStartLoad() override;
   void ResponseReceived(const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;

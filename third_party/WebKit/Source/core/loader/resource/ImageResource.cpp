@@ -293,7 +293,7 @@ void ImageResource::AllClientsAndObserversRemoved() {
   Resource::AllClientsAndObserversRemoved();
 }
 
-PassRefPtr<const SharedBuffer> ImageResource::ResourceBuffer() const {
+RefPtr<const SharedBuffer> ImageResource::ResourceBuffer() const {
   if (Data())
     return Data();
   return GetContent()->ResourceBuffer();

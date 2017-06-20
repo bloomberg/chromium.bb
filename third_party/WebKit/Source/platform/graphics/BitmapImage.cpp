@@ -187,9 +187,9 @@ bool BitmapImage::GetHotSpot(IntPoint& hot_spot) const {
   return source_.GetHotSpot(hot_spot);
 }
 
-Image::SizeAvailability BitmapImage::SetData(PassRefPtr<SharedBuffer> data,
+Image::SizeAvailability BitmapImage::SetData(RefPtr<SharedBuffer> data,
                                              bool all_data_received) {
-  if (!data.Get())
+  if (!data)
     return kSizeAvailable;
 
   int length = data->size();

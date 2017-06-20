@@ -116,7 +116,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // Otherwise:
   //   Image loading is completed synchronously.
   //   ImageResourceObserver::AsyncLoadCompleted() is not called.
-  virtual SizeAvailability SetData(PassRefPtr<SharedBuffer> data,
+  virtual SizeAvailability SetData(RefPtr<SharedBuffer> data,
                                    bool all_data_received);
   virtual SizeAvailability DataChanged(bool /*all_data_received*/) {
     return kSizeUnavailable;

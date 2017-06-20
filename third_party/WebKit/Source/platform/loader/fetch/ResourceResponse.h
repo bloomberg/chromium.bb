@@ -212,10 +212,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetWasCached(bool);
 
   ResourceLoadTiming* GetResourceLoadTiming() const;
-  void SetResourceLoadTiming(PassRefPtr<ResourceLoadTiming>);
+  void SetResourceLoadTiming(RefPtr<ResourceLoadTiming>);
 
-  PassRefPtr<ResourceLoadInfo> GetResourceLoadInfo() const;
-  void SetResourceLoadInfo(PassRefPtr<ResourceLoadInfo>);
+  RefPtr<ResourceLoadInfo> GetResourceLoadInfo() const;
+  void SetResourceLoadInfo(RefPtr<ResourceLoadInfo>);
 
   HTTPVersion HttpVersion() const { return http_version_; }
   void SetHTTPVersion(HTTPVersion version) { http_version_ = version; }
@@ -355,7 +355,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // Extra data associated with this response.
   ExtraData* GetExtraData() const { return extra_data_.Get(); }
-  void SetExtraData(PassRefPtr<ExtraData> extra_data) {
+  void SetExtraData(RefPtr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }
 

@@ -66,7 +66,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   bool GetHotSpot(IntPoint&) const override;
   String FilenameExtension() const override;
 
-  SizeAvailability SetData(PassRefPtr<SharedBuffer> data,
+  SizeAvailability SetData(RefPtr<SharedBuffer> data,
                            bool all_data_received) override;
   SizeAvailability DataChanged(bool all_data_received) override;
 
