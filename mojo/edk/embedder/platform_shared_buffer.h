@@ -14,6 +14,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/synchronization/lock.h"
+#include "base/unguessable_token.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 
@@ -44,6 +45,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   static PlatformSharedBuffer* CreateFromPlatformHandle(
       size_t num_bytes,
       bool read_only,
+      const base::UnguessableToken& guid,
       ScopedPlatformHandle platform_handle);
 
   // Creates a shared buffer of size |num_bytes| from the existing pair of
@@ -51,6 +53,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   // |ro_platform_handle|. Returns null on failure.
   static PlatformSharedBuffer* CreateFromPlatformHandlePair(
       size_t num_bytes,
+      const base::UnguessableToken& guid,
       ScopedPlatformHandle rw_platform_handle,
       ScopedPlatformHandle ro_platform_handle);
 
@@ -66,6 +69,10 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
 
   // Returns whether this shared buffer is read-only.
   bool IsReadOnly() const;
+
+  // Returns a GUID which uniquely identifies the underlying shared buffer
+  // object.
+  base::UnguessableToken GetGUID() const;
 
   // Maps (some) of the shared buffer into memory; [|offset|, |offset + length|]
   // must be contained in [0, |num_bytes|], and |length| must be at least 1.
@@ -110,9 +117,11 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   // This is like |Init()|, but for |CreateFromPlatformHandle()|. (Note: It
   // should verify that |platform_handle| is an appropriate handle for the
   // claimed |num_bytes_|.)
-  bool InitFromPlatformHandle(ScopedPlatformHandle platform_handle);
+  bool InitFromPlatformHandle(const base::UnguessableToken& guid,
+                              ScopedPlatformHandle platform_handle);
 
-  bool InitFromPlatformHandlePair(ScopedPlatformHandle rw_platform_handle,
+  bool InitFromPlatformHandlePair(const base::UnguessableToken& guid,
+                                  ScopedPlatformHandle rw_platform_handle,
                                   ScopedPlatformHandle ro_platform_handle);
 
   void InitFromSharedMemoryHandle(base::SharedMemoryHandle handle);

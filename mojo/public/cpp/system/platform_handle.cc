@@ -47,8 +47,8 @@ ScopedHandle WrapPlatformFile(base::PlatformFile platform_file) {
 MojoResult UnwrapPlatformFile(ScopedHandle handle, base::PlatformFile* file) {
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = sizeof(MojoPlatformHandle);
-  MojoResult result = MojoUnwrapPlatformHandle(handle.release().value(),
-                                               &platform_handle);
+  MojoResult result =
+      MojoUnwrapPlatformHandle(handle.release().value(), &platform_handle);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -84,9 +84,12 @@ ScopedSharedBufferHandle WrapSharedMemoryHandle(
   if (read_only)
     flags |= MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY;
 
+  MojoSharedBufferGuid guid;
+  guid.high = memory_handle.GetGUID().GetHighForSerialization();
+  guid.low = memory_handle.GetGUID().GetLowForSerialization();
   MojoHandle mojo_handle;
   MojoResult result = MojoWrapPlatformSharedBufferHandle(
-      &platform_handle, size, flags, &mojo_handle);
+      &platform_handle, size, &guid, flags, &mojo_handle);
   CHECK_EQ(result, MOJO_RESULT_OK);
 
   return ScopedSharedBufferHandle(SharedBufferHandle(mojo_handle));
@@ -103,8 +106,10 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
 
   MojoPlatformSharedBufferHandleFlags flags;
   size_t num_bytes;
+  MojoSharedBufferGuid mojo_guid;
   MojoResult result = MojoUnwrapPlatformSharedBufferHandle(
-      handle.release().value(), &platform_handle, &num_bytes, &flags);
+      handle.release().value(), &platform_handle, &num_bytes, &mojo_guid,
+      &flags);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -114,8 +119,8 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
   if (read_only)
     *read_only = flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY;
 
-  // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
-  base::UnguessableToken guid = base::UnguessableToken::Create();
+  base::UnguessableToken guid =
+      base::UnguessableToken::Deserialize(mojo_guid.high, mojo_guid.low);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT);
   *memory_handle = base::SharedMemoryHandle(

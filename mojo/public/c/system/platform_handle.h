@@ -65,6 +65,13 @@ struct MOJO_ALIGNAS(8) MojoPlatformHandle {
 MOJO_STATIC_ASSERT(sizeof(MojoPlatformHandle) == 16,
                    "MojoPlatformHandle has wrong size");
 
+// |MojoSharedBufferGuid|: A GUID used to identify the buffer backing a shared
+//     buffer handle.
+struct MOJO_ALIGNAS(8) MojoSharedBufferGuid {
+  uint64_t high;
+  uint64_t low;
+};
+
 // |MojoPlatformSharedBufferHandleFlags|: Flags relevant to wrapped platform
 //     shared buffers.
 //
@@ -76,16 +83,16 @@ typedef uint32_t MojoPlatformSharedBufferHandleFlags;
 
 #ifdef __cplusplus
 const MojoPlatformSharedBufferHandleFlags
-MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE = 0;
+    MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE = 0;
 
 const MojoPlatformSharedBufferHandleFlags
-MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY = 1 << 0;
+    MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY = 1 << 0;
 #else
 #define MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE \
-    ((MojoPlatformSharedBufferHandleFlags)0)
+  ((MojoPlatformSharedBufferHandleFlags)0)
 
 #define MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY \
-    ((MojoPlatformSharedBufferHandleFlags)1 << 0)
+  ((MojoPlatformSharedBufferHandleFlags)1 << 0)
 #endif
 
 // Wraps a native platform handle as a Mojo handle which can be transferred
@@ -148,10 +155,10 @@ MojoUnwrapPlatformHandle(MojoHandle mojo_handle,
 //         |*mojo_handle| contains a Mojo shared buffer handle.
 //     |MOJO_RESULT_INVALID_ARGUMENT| if |platform_handle| was not a valid
 //         platform shared buffer handle.
-MOJO_SYSTEM_EXPORT MojoResult
-MojoWrapPlatformSharedBufferHandle(
+MOJO_SYSTEM_EXPORT MojoResult MojoWrapPlatformSharedBufferHandle(
     const struct MojoPlatformHandle* platform_handle,
     size_t num_bytes,
+    const struct MojoSharedBufferGuid* guid,
     MojoPlatformSharedBufferHandleFlags flags,
     MojoHandle* mojo_handle);  // Out
 
@@ -177,11 +184,11 @@ MojoWrapPlatformSharedBufferHandle(
 // Flags which may be set in |*flags| upon success:
 //    |MOJO_PLATFORM_SHARED_BUFFER_FLAG_READ_ONLY| is set iff the unwrapped
 //        shared buffer handle may only be mapped as read-only.
-MOJO_SYSTEM_EXPORT MojoResult
-MojoUnwrapPlatformSharedBufferHandle(
+MOJO_SYSTEM_EXPORT MojoResult MojoUnwrapPlatformSharedBufferHandle(
     MojoHandle mojo_handle,
     struct MojoPlatformHandle* platform_handle,
     size_t* num_bytes,
+    struct MojoSharedBufferGuid* guid,
     MojoPlatformSharedBufferHandleFlags* flags);
 
 #ifdef __cplusplus

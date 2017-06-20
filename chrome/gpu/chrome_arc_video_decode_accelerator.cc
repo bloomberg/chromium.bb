@@ -295,11 +295,6 @@ void ChromeArcVideoDecodeAccelerator::UseBuffer(
         return;
       }
       CreateInputRecord(bitstream_buffer_id, index, metadata.timestamp);
-      // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
-      // TODO(rockot): This fd comes from a mojo::ScopedHandle in
-      // GpuArcVideoService::BindSharedMemory. That should be passed through,
-      // rather than pulling out the fd. https://crbug.com/713763.
-      // TODO(rockot): Pass through a real size rather than |0|.
       base::UnguessableToken guid = base::UnguessableToken::Create();
       vda_->Decode(media::BitstreamBuffer(
           bitstream_buffer_id,

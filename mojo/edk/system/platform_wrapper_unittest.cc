@@ -16,6 +16,7 @@
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/platform_handle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -130,17 +131,28 @@ TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
     os_buffer.value = reinterpret_cast<uint64_t>(memory_handle.GetHandle());
 #endif
 
+    MojoSharedBufferGuid mojo_guid;
+    base::UnguessableToken guid = memory_handle.GetGUID();
+    mojo_guid.high = guid.GetHighForSerialization();
+    mojo_guid.low = guid.GetLowForSerialization();
+
     MojoHandle wrapped_handle;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWrapPlatformSharedBufferHandle(
-                  &os_buffer, kMessage.size(),
-                  MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE,
-                  &wrapped_handle));
+    ASSERT_EQ(MOJO_RESULT_OK, MojoWrapPlatformSharedBufferHandle(
+                                  &os_buffer, kMessage.size(), &mojo_guid,
+                                  MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE,
+                                  &wrapped_handle));
     WriteMessageWithHandles(h, kMessage, &wrapped_handle, 1);
+
+    // As a sanity check, send the GUID explicitly in a second message. We'll
+    // verify that the deserialized buffer handle holds the same GUID on the
+    // receiving end.
+    WriteMessageRaw(MessagePipeHandle(h), &mojo_guid, sizeof(mojo_guid),
+                    nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
   END_CHILD()
 }
 
-DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer, PlatformWrapperTest,
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer,
+                                  PlatformWrapperTest,
                                   h) {
   // Read a message and a wrapped shared buffer handle.
   MojoHandle wrapped_handle;
@@ -154,15 +166,16 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer, PlatformWrapperTest,
   MojoPlatformHandle os_buffer;
   os_buffer.struct_size = sizeof(MojoPlatformHandle);
   size_t size;
+  MojoSharedBufferGuid mojo_guid;
   MojoPlatformSharedBufferHandleFlags flags;
   ASSERT_EQ(MOJO_RESULT_OK,
             MojoUnwrapPlatformSharedBufferHandle(wrapped_handle, &os_buffer,
-                                                 &size, &flags));
+                                                 &size, &mojo_guid, &flags));
   bool read_only = flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE;
   EXPECT_FALSE(read_only);
 
-  // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
-  base::UnguessableToken guid = base::UnguessableToken::Create();
+  base::UnguessableToken guid =
+      base::UnguessableToken::Deserialize(mojo_guid.high, mojo_guid.low);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
@@ -184,6 +197,18 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer, PlatformWrapperTest,
 
   EXPECT_TRUE(std::equal(message.begin(), message.end(),
                          static_cast<const char*>(memory.memory())));
+
+  // Verify that the received buffer's internal GUID was preserved in transit.
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE));
+  std::vector<uint8_t> guid_bytes;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            ReadMessageRaw(MessagePipeHandle(h), &guid_bytes, nullptr,
+                           MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(MojoSharedBufferGuid), guid_bytes.size());
+  auto* expected_guid =
+      reinterpret_cast<MojoSharedBufferGuid*>(guid_bytes.data());
+  EXPECT_EQ(expected_guid->high, mojo_guid.high);
+  EXPECT_EQ(expected_guid->low, mojo_guid.low);
 }
 
 TEST_F(PlatformWrapperTest, InvalidHandle) {

@@ -208,10 +208,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/message_pipe.h":
-  MojoResult CreateMessagePipe(
-      const MojoCreateMessagePipeOptions* options,
-      MojoHandle* message_pipe_handle0,
-      MojoHandle* message_pipe_handle1);
+  MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
+                               MojoHandle* message_pipe_handle0,
+                               MojoHandle* message_pipe_handle1);
   MojoResult WriteMessage(MojoHandle message_pipe_handle,
                           MojoMessageHandle message_handle,
                           MojoWriteMessageFlags flags);
@@ -225,10 +224,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/data_pipe.h":
-  MojoResult CreateDataPipe(
-      const MojoCreateDataPipeOptions* options,
-      MojoHandle* data_pipe_producer_handle,
-      MojoHandle* data_pipe_consumer_handle);
+  MojoResult CreateDataPipe(const MojoCreateDataPipeOptions* options,
+                            MojoHandle* data_pipe_producer_handle,
+                            MojoHandle* data_pipe_consumer_handle);
   MojoResult WriteData(MojoHandle data_pipe_producer_handle,
                        const void* elements,
                        uint32_t* num_bytes,
@@ -252,10 +250,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/buffer.h":
-  MojoResult CreateSharedBuffer(
-      const MojoCreateSharedBufferOptions* options,
-      uint64_t num_bytes,
-      MojoHandle* shared_buffer_handle);
+  MojoResult CreateSharedBuffer(const MojoCreateSharedBufferOptions* options,
+                                uint64_t num_bytes,
+                                MojoHandle* shared_buffer_handle);
   MojoResult DuplicateBufferHandle(
       MojoHandle buffer_handle,
       const MojoDuplicateBufferHandleOptions* options,
@@ -276,12 +273,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult WrapPlatformSharedBufferHandle(
       const MojoPlatformHandle* platform_handle,
       size_t size,
+      const MojoSharedBufferGuid* guid,
       MojoPlatformSharedBufferHandleFlags flags,
       MojoHandle* mojo_handle);
   MojoResult UnwrapPlatformSharedBufferHandle(
       MojoHandle mojo_handle,
       MojoPlatformHandle* platform_handle,
       size_t* size,
+      MojoSharedBufferGuid* guid,
       MojoPlatformSharedBufferHandleFlags* flags);
 
   void GetActiveHandlesForTest(std::vector<MojoHandle>* handles);
