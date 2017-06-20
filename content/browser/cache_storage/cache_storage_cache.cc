@@ -1455,7 +1455,7 @@ void CacheStorageCache::InitGotCacheSize(const base::Closure& callback,
   // size. If the sizes aren't equal then there is a bug in how the cache size
   // is saved in the store's index.
   if (cache_size_ != CacheStorage::kSizeUnknown) {
-    LOG_IF(ERROR, cache_size_ != cache_size)
+    DLOG_IF(ERROR, cache_size_ != cache_size)
         << "Cache size: " << cache_size
         << " does not match size from index: " << cache_size_;
     UMA_HISTOGRAM_COUNTS_10M("ServiceWorkerCache.IndexSizeDifference",
