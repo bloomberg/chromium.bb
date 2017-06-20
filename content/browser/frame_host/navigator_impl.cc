@@ -230,7 +230,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
       validated_url, validated_redirect_chain,
       render_frame_host->frame_tree_node(), is_renderer_initiated,
-      false,  // is_same_page
+      false,  // is_same_document
       navigation_start, pending_nav_entry_id, started_from_context_menu,
       CSPDisposition::CHECK,  // should_check_main_world_csp
       false));                // is_form_submission

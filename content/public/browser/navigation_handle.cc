@@ -27,14 +27,14 @@ NavigationHandle::CreateNavigationHandleForTesting(
     RenderFrameHost* render_frame_host,
     bool committed,
     net::Error error,
-    bool is_same_page) {
+    bool is_same_document) {
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
   std::unique_ptr<NavigationHandleImpl> handle_impl =
       NavigationHandleImpl::Create(
           url, std::vector<GURL>(), rfhi->frame_tree_node(),
           true,  // is_renderer_initiated
-          is_same_page, base::TimeTicks::Now(), 0,
+          is_same_document, base::TimeTicks::Now(), 0,
           false,                  // started_from_context_menu
           CSPDisposition::CHECK,  // should_check_main_world_csp
           false);                 // is_form_submission
