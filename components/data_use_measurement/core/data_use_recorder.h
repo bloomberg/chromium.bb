@@ -64,25 +64,13 @@ class DataUseRecorder {
   // Merge another DataUseRecorder to this instance.
   void MergeFrom(DataUseRecorder* other);
 
- private:
-  friend class DataUseAscriber;
-
-  // Methods for tracking data use sources. These sources can initiate
-  // URLRequests directly or indirectly. The entity whose data use is being
-  // tracked by this recorder may comprise of sub-entities each of which use
-  // network data. These helper methods help track these sub-entities.
-  // A recorder will not be marked as having completed data use as long as it
-  // has pending data sources.
-  void AddPendingDataSource(void* source);
-  bool HasPendingDataSource(void* source);
-  void RemovePendingDataSource(void* source);
-
   // Network Delegate methods:
   void OnBeforeUrlRequest(net::URLRequest* request);
   void OnUrlRequestDestroyed(net::URLRequest* request);
   void OnNetworkBytesSent(net::URLRequest* request, int64_t bytes_sent);
   void OnNetworkBytesReceived(net::URLRequest* request, int64_t bytes_received);
 
+ private:
   // Pending URLRequests whose data is being tracked by this DataUseRecorder.
   base::hash_set<net::URLRequest*> pending_url_requests_;
 

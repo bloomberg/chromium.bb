@@ -33,24 +33,12 @@ void DataUseRecorder::OnBeforeUrlRequest(net::URLRequest* request) {}
 
 void DataUseRecorder::OnNetworkBytesReceived(net::URLRequest* request,
                                              int64_t bytes_received) {
-  data_use_.total_bytes_received_ += bytes_received;
+  data_use_.IncrementTotalBytes(bytes_received, 0);
 }
 
 void DataUseRecorder::OnNetworkBytesSent(net::URLRequest* request,
                                          int64_t bytes_sent) {
-  data_use_.total_bytes_sent_ += bytes_sent;
-}
-
-void DataUseRecorder::AddPendingDataSource(void* source) {
-  pending_data_sources_.insert(source);
-}
-
-bool DataUseRecorder::HasPendingDataSource(void* source) {
-  return pending_data_sources_.find(source) != pending_data_sources_.end();
-}
-
-void DataUseRecorder::RemovePendingDataSource(void* source) {
-  pending_data_sources_.erase(source);
+  data_use_.IncrementTotalBytes(0, bytes_sent);
 }
 
 void DataUseRecorder::MergeFrom(DataUseRecorder* other) {
