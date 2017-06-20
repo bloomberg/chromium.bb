@@ -47,6 +47,7 @@
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -240,9 +241,13 @@ void ChromeTranslateClient::RecordTranslateEvent(
 
 // static
 void ChromeTranslateClient::BindContentTranslateDriver(
-    content::RenderFrameHost* render_frame_host,
     const service_manager::BindSourceInfo& source_info,
-    translate::mojom::ContentTranslateDriverRequest request) {
+    translate::mojom::ContentTranslateDriverRequest request,
+    content::RenderFrameHost* render_frame_host) {
+  // Only valid for the main frame.
+  if (render_frame_host->GetParent())
+    return;
+
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents)

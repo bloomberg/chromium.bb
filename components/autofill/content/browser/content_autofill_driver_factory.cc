@@ -78,9 +78,9 @@ ContentAutofillDriverFactory* ContentAutofillDriverFactory::FromWebContents(
 
 // static
 void ContentAutofillDriverFactory::BindAutofillDriver(
-    content::RenderFrameHost* render_frame_host,
     const service_manager::BindSourceInfo& source_info,
-    mojom::AutofillDriverRequest request) {
+    mojom::AutofillDriverRequest request,
+    content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   // We try to bind to the driver of this render frame host,

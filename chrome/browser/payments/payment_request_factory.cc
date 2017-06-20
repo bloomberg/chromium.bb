@@ -13,11 +13,13 @@
 
 namespace payments {
 
-void CreatePaymentRequest(content::RenderFrameHost* render_frame_host,
-                          content::WebContents* web_contents,
-                          const service_manager::BindSourceInfo& source_info,
-                          mojom::PaymentRequestRequest request) {
-  DCHECK(web_contents);
+void CreatePaymentRequest(const service_manager::BindSourceInfo& source_info,
+                          mojom::PaymentRequestRequest request,
+                          content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(
           render_frame_host, web_contents,

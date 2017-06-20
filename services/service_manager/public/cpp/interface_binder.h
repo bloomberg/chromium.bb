@@ -44,7 +44,8 @@ template <typename Interface, typename... BinderArgs>
 class CallbackBinder : public InterfaceBinder<BinderArgs...> {
  public:
   using BindCallback = base::Callback<void(const BindSourceInfo&,
-                                           mojo::InterfaceRequest<Interface>)>;
+                                           mojo::InterfaceRequest<Interface>,
+                                           BinderArgs...)>;
 
   CallbackBinder(const BindCallback& callback,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner)

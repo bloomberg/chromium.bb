@@ -10,7 +10,6 @@
 
 namespace content {
 class RenderFrameHost;
-class WebContents;
 }
 
 namespace payments {
@@ -19,10 +18,9 @@ namespace payments {
 // |request| was initiated by the frame hosted by |render_frame_host|, which is
 // inside of |web_contents|. This function is called every time a new instance
 // of PaymentRequest is created in the renderer.
-void CreatePaymentRequest(content::RenderFrameHost* render_frame_host,
-                          content::WebContents* web_contents,
-                          const service_manager::BindSourceInfo& source_info,
-                          mojom::PaymentRequestRequest request);
+void CreatePaymentRequest(const service_manager::BindSourceInfo& source_info,
+                          mojom::PaymentRequestRequest request,
+                          content::RenderFrameHost* render_frame_host);
 
 }  // namespace payments
 

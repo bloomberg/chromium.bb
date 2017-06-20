@@ -2880,9 +2880,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   GetInterfaceRegistry()->AddInterface(base::Bind(
       &KeyboardLockServiceImpl::CreateMojoService));
-
-  GetContentClient()->browser()->ExposeInterfacesToFrame(GetInterfaceRegistry(),
-                                                         this);
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
@@ -3921,11 +3918,15 @@ void RenderFrameHostImpl::BindNFCRequest(
 void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (interface_registry_.get()) {
-    service_manager::BindSourceInfo source_info(
-        GetProcess()->GetChildIdentity(), service_manager::CapabilitySet());
+  service_manager::BindSourceInfo source_info(GetProcess()->GetChildIdentity(),
+                                              service_manager::CapabilitySet());
+  if (interface_registry_.get() &&
+      interface_registry_->CanBindInterface(interface_name)) {
     interface_registry_->BindInterface(source_info, interface_name,
                                        std::move(interface_pipe));
+  } else {
+    GetContentClient()->browser()->BindInterfaceRequestFromFrame(
+        this, source_info, interface_name, std::move(interface_pipe));
   }
 }
 

@@ -280,9 +280,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void ExposeInterfacesToMediaService(
       service_manager::BinderRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
-  void ExposeInterfacesToFrame(
-      service_manager::BinderRegistry* registry,
-      content::RenderFrameHost* render_frame_host) override;
+  void BindInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const service_manager::BindSourceInfo& source_info,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindInterfaceRequest(
       const service_manager::BindSourceInfo& source_info,
       const std::string& interface_name,
@@ -329,6 +331,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  private:
   friend class DisableWebRtcEncryptionFlagTest;
   friend class InProcessBrowserTest;
+
+  // Populate |frame_interfaces_|.
+  void InitFrameInterfaces();
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   // Copies disable WebRTC encryption switch depending on the channel.
@@ -381,6 +386,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   service_manager::BinderRegistry gpu_binder_registry_;
 
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
+
+  std::unique_ptr<service_manager::BinderRegistry> frame_interfaces_;
+  std::unique_ptr<
+      service_manager::BinderRegistryWithParams<content::RenderFrameHost*>>
+      frame_interfaces_parameterized_;
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 

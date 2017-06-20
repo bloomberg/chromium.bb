@@ -648,11 +648,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       service_manager::BinderRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
-  // Allows to register browser Mojo interfaces exposed through the
-  // RenderFrameHost.
-  virtual void ExposeInterfacesToFrame(
-      service_manager::BinderRegistry* registry,
-      RenderFrameHost* render_frame_host) {}
+  // Content was unable to bind a request for this interface, so the embedder
+  // should try.
+  virtual void BindInterfaceRequestFromFrame(
+      RenderFrameHost* render_frame_host,
+      const service_manager::BindSourceInfo& source_info,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) {}
 
   // (Currently called only from GPUProcessHost, move somewhere more central).
   // Called when a request to bind |interface_name| on |interface_pipe| is

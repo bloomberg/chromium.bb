@@ -143,7 +143,8 @@ class MojoLayoutTestHelper : public mojom::MojoLayoutTestHelper {
 };
 
 void BindLayoutTestHelper(const service_manager::BindSourceInfo& source_info,
-                          mojom::MojoLayoutTestHelperRequest request) {
+                          mojom::MojoLayoutTestHelperRequest request,
+                          RenderFrameHost* render_frame_host) {
   mojo::MakeStrongBinding(base::MakeUnique<MojoLayoutTestHelper>(),
                           std::move(request));
 }
@@ -162,6 +163,7 @@ ShellContentBrowserClient::ShellContentBrowserClient()
     : shell_browser_main_parts_(NULL) {
   DCHECK(!g_browser_client);
   g_browser_client = this;
+  frame_interfaces_.AddInterface(base::Bind(&BindLayoutTestHelper));
 }
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
@@ -218,10 +220,16 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }
 
-void ShellContentBrowserClient::ExposeInterfacesToFrame(
-    service_manager::BinderRegistry* registry,
-    RenderFrameHost* frame_host) {
-  registry->AddInterface(base::Bind(&BindLayoutTestHelper));
+void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
+    RenderFrameHost* render_frame_host,
+    const service_manager::BindSourceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  if (frame_interfaces_.CanBindInterface(interface_name)) {
+    frame_interfaces_.BindInterface(source_info, interface_name,
+                                    std::move(interface_pipe),
+                                    render_frame_host);
+  }
 }
 
 void ShellContentBrowserClient::RegisterInProcessServices(
