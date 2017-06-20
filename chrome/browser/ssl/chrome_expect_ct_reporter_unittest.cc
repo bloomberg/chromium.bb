@@ -236,6 +236,7 @@ void CheckReportSCTs(
 // |ssl_info|.
 void CheckExpectCTReport(const std::string& serialized_report,
                          const net::HostPortPair& host_port,
+                         const std::string& expiration,
                          const net::SSLInfo& ssl_info) {
   std::unique_ptr<base::Value> value(base::JSONReader::Read(serialized_report));
   ASSERT_TRUE(value);
@@ -250,6 +251,11 @@ void CheckExpectCTReport(const std::string& serialized_report,
   int report_port;
   EXPECT_TRUE(report_dict->GetInteger("port", &report_port));
   EXPECT_EQ(host_port.port(), report_port);
+
+  std::string report_expiration;
+  EXPECT_TRUE(
+      report_dict->GetString("effective-expiration-date", &report_expiration));
+  EXPECT_EQ(expiration, report_expiration);
 
   const base::ListValue* report_served_certificate_chain = nullptr;
   ASSERT_TRUE(report_dict->GetList("served-certificate-chain",
@@ -322,13 +328,14 @@ class ChromeExpectCTReporterWaitTest : public ::testing::Test {
   void SendReport(ChromeExpectCTReporter* reporter,
                   const net::HostPortPair& host_port,
                   const GURL& report_uri,
+                  base::Time expiration,
                   const net::SSLInfo& ssl_info) {
     base::RunLoop run_loop;
     network_delegate_.set_url_request_destroyed_callback(
         run_loop.QuitClosure());
-    reporter->OnExpectCTFailed(host_port, report_uri, ssl_info.cert.get(),
-                               ssl_info.unverified_cert.get(),
-                               ssl_info.signed_certificate_timestamps);
+    reporter->OnExpectCTFailed(
+        host_port, report_uri, expiration, ssl_info.cert.get(),
+        ssl_info.unverified_cert.get(), ssl_info.signed_certificate_timestamps);
     run_loop.Run();
   }
 
@@ -367,8 +374,8 @@ TEST(ChromeExpectCTReporterTest, FeatureDisabled) {
   net::HostPortPair host_port("example.test", 443);
   GURL report_uri("http://example-report.test");
 
-  reporter.OnExpectCTFailed(host_port, report_uri, ssl_info.cert.get(),
-                            ssl_info.unverified_cert.get(),
+  reporter.OnExpectCTFailed(host_port, report_uri, base::Time(),
+                            ssl_info.cert.get(), ssl_info.unverified_cert.get(),
                             ssl_info.signed_certificate_timestamps);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -389,7 +396,8 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
 
-  reporter.OnExpectCTFailed(net::HostPortPair(), GURL(), nullptr, nullptr,
+  reporter.OnExpectCTFailed(net::HostPortPair(), GURL(), base::Time(), nullptr,
+                            nullptr,
                             net::SignedCertificateTimestampAndStatusList());
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -415,7 +423,7 @@ TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
   GURL report_uri(
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
 
-  SendReport(&reporter, host_port, report_uri, ssl_info);
+  SendReport(&reporter, host_port, report_uri, base::Time(), ssl_info);
 
   histograms.ExpectTotalCount(kFailureHistogramName, 1);
   histograms.ExpectBucketCount(kFailureHistogramName,
@@ -487,15 +495,21 @@ TEST(ChromeExpectCTReporterTest, SendReport) {
   net::HostPortPair host_port("example.test", 443);
   GURL report_uri("http://example-report.test");
 
+  const char kExpirationTimeStr[] = "2017-01-01T00:00:00.000Z";
+  base::Time expiration;
+  ASSERT_TRUE(
+      base::Time::FromUTCExploded({2017, 1, 0, 1, 0, 0, 0, 0}, &expiration));
+
   // Check that the report is sent and contains the correct information.
-  reporter.OnExpectCTFailed(host_port, report_uri, ssl_info.cert.get(),
-                            ssl_info.unverified_cert.get(),
+  reporter.OnExpectCTFailed(host_port, report_uri, expiration,
+                            ssl_info.cert.get(), ssl_info.unverified_cert.get(),
                             ssl_info.signed_certificate_timestamps);
   EXPECT_EQ(report_uri, sender->latest_report_uri());
   EXPECT_FALSE(sender->latest_serialized_report().empty());
   EXPECT_EQ("application/json; charset=utf-8", sender->latest_content_type());
-  ASSERT_NO_FATAL_FAILURE(CheckExpectCTReport(
-      sender->latest_serialized_report(), host_port, ssl_info));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckExpectCTReport(sender->latest_serialized_report(), host_port,
+                          kExpirationTimeStr, ssl_info));
 
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 1);

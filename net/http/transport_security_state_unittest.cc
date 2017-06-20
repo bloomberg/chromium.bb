@@ -181,6 +181,7 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
 
   void OnExpectCTFailed(const HostPortPair& host_port_pair,
                         const GURL& report_uri,
+                        base::Time expiration,
                         const X509Certificate* validated_certificate_chain,
                         const X509Certificate* served_certificate_chain,
                         const SignedCertificateTimestampAndStatusList&
@@ -188,6 +189,7 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
     num_failures_++;
     host_port_pair_ = host_port_pair;
     report_uri_ = report_uri;
+    expiration_ = expiration;
     served_certificate_chain_ = served_certificate_chain;
     validated_certificate_chain_ = validated_certificate_chain;
     signed_certificate_timestamps_ = signed_certificate_timestamps;
@@ -195,6 +197,7 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
 
   const HostPortPair& host_port_pair() { return host_port_pair_; }
   const GURL& report_uri() { return report_uri_; }
+  const base::Time& expiration() { return expiration_; }
   uint32_t num_failures() { return num_failures_; }
   const X509Certificate* served_certificate_chain() {
     return served_certificate_chain_;
@@ -210,6 +213,7 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
  private:
   HostPortPair host_port_pair_;
   GURL report_uri_;
+  base::Time expiration_;
   uint32_t num_failures_;
   const X509Certificate* served_certificate_chain_;
   const X509Certificate* validated_certificate_chain_;
@@ -2125,6 +2129,7 @@ TEST_F(TransportSecurityStateTest, ExpectCTReporter) {
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ(host_port.host(), reporter.host_port_pair().host());
   EXPECT_EQ(host_port.port(), reporter.host_port_pair().port());
+  EXPECT_TRUE(reporter.expiration().is_null());
   EXPECT_EQ(GURL(kExpectCTStaticReportURI), reporter.report_uri());
   EXPECT_EQ(cert1.get(), reporter.served_certificate_chain());
   EXPECT_EQ(cert2.get(), reporter.validated_certificate_chain());
@@ -3182,6 +3187,7 @@ TEST_F(TransportSecurityStateTest,
   EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ("example.test", reporter.host_port_pair().host());
+  EXPECT_TRUE(reporter.expiration().is_null());
   EXPECT_EQ(cert1.get(), reporter.served_certificate_chain());
   EXPECT_EQ(cert2.get(), reporter.validated_certificate_chain());
   EXPECT_EQ(ssl.signed_certificate_timestamps.size(),
@@ -3247,6 +3253,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ("example.test", reporter.host_port_pair().host());
   EXPECT_EQ(443, reporter.host_port_pair().port());
+  EXPECT_EQ(expiry, reporter.expiration());
   EXPECT_EQ(cert1.get(), reporter.validated_certificate_chain());
   EXPECT_EQ(cert2.get(), reporter.served_certificate_chain());
   EXPECT_EQ(sct_list.size(), reporter.signed_certificate_timestamps().size());
@@ -3362,6 +3369,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCTAndDelegate) {
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ("example.test", reporter.host_port_pair().host());
   EXPECT_EQ(443, reporter.host_port_pair().port());
+  EXPECT_EQ(expiry, reporter.expiration());
   EXPECT_EQ(cert1.get(), reporter.validated_certificate_chain());
   EXPECT_EQ(cert2.get(), reporter.served_certificate_chain());
   EXPECT_EQ(sct_list.size(), reporter.signed_certificate_timestamps().size());
