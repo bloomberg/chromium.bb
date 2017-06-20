@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "components/password_manager/core/browser/affiliated_match_helper.h"
-#include "components/password_manager/core/browser/affiliation_service.h"
-#include "components/password_manager/core/browser/affiliation_utils.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 
