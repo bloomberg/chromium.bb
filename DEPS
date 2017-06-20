@@ -6,6 +6,7 @@ vars = {
   "clang_format_rev": "0653eee0c81ea04715c635dd0885e8096ff6ba6d",   # r302580
   "libcxx_revision": "3a07dd740be63878167a0ea19fe81869954badd7",    # r303878
   "libcxxabi_revision": "4072e8fd76febee37f60aeda76d6d9f5e3791daa", # r303806
+  "libunwind_revision": "86219d8c6a73f95e694b4e1594e1a8a0a33613b6", # r303130
 }
 
 deps = {
@@ -18,4 +19,7 @@ deps = {
   "third_party/libc++abi/trunk":
     Var("chromium_url") + "/chromium/llvm-project/libcxxabi.git" + "@" +
     Var("libcxxabi_revision"),
+  "third_party/libunwind/trunk":
+    Var("chromium_url") + "/external/llvm.org/libunwind.git" + "@" +
+    Var("libunwind_revision"),
 }

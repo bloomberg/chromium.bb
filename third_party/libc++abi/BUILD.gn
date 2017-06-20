@@ -4,6 +4,9 @@
 
 source_set("libc++abi") {
   visibility = [ "//buildtools/third_party/libc++" ]
+  if (is_linux && target_cpu == "arm") {
+    deps = [ "//buildtools/third_party/libunwind" ]
+  }
   sources = [
     "trunk/src/abort_message.cpp",
     "trunk/src/cxa_aux_runtime.cpp",
