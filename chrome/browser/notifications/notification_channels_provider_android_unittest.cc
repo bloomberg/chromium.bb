@@ -5,15 +5,22 @@
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using ::testing::_;
+using ::testing::InSequence;
+using ::testing::MockFunction;
 using ::testing::Return;
 
 namespace {
@@ -40,17 +47,24 @@ class NotificationChannelsProviderAndroidTest : public testing::Test {
   }
 
  protected:
-  // No leak because ownership is passed to channels_provider_ in constructor.
-  MockNotificationChannelsBridge* mock_bridge_;
-  std::unique_ptr<NotificationChannelsProviderAndroid> channels_provider_;
   void InitChannelsProvider(bool should_use_channels) {
     EXPECT_CALL(*mock_bridge_, ShouldUseChannelSettings())
         .WillOnce(Return(should_use_channels));
+    ON_CALL(*mock_bridge_, GetChannelStatus(_))
+        .WillByDefault(Return(NotificationChannelStatus::UNAVAILABLE));
+
     // Can't use base::MakeUnique because the provider's constructor is private.
     channels_provider_ =
         base::WrapUnique(new NotificationChannelsProviderAndroid(
             base::WrapUnique(mock_bridge_)));
   }
+
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+
+  // No leak because ownership is passed to channels_provider_ in constructor.
+  MockNotificationChannelsBridge* mock_bridge_;
+
+  std::unique_ptr<NotificationChannelsProviderAndroid> channels_provider_;
 };
 
 TEST_F(NotificationChannelsProviderAndroidTest,
@@ -216,4 +230,78 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             content_settings::ValueToContentSetting(second_rule.value.get()));
   EXPECT_FALSE(result->HasNext());
+}
+
+TEST_F(NotificationChannelsProviderAndroidTest,
+       GetRuleIteratorNotifiesObserversIfStatusChanges) {
+  InitChannelsProvider(true /* should_use_channels */);
+  content_settings::MockObserver mock_observer;
+  channels_provider_->AddObserver(&mock_observer);
+
+  // Set up sequenced expectations. The observer should be notified on the first
+  // GetRuleIterator, and then only if channel status has changed to blocked.
+  // See "Using Check Points" section of the GTest Cookbook:
+  // https://github.com/google/googletest/blob/master/googlemock/docs/CookBook.md#using-check-points
+  MockFunction<void(std::string check_point_name)> check;
+  {
+    InSequence s;
+    EXPECT_CALL(check, Call("0: GetRuleIterator never called"));
+    // Report channel as enabled initially.
+    std::vector<NotificationChannel> channels;
+    channels.emplace_back("https://example.com",
+                          NotificationChannelStatus::ENABLED);
+    EXPECT_CALL(*mock_bridge_, GetChannels()).WillOnce(Return(channels));
+
+    // Observer should be notified on first invocation of GetRuleIterator.
+    EXPECT_CALL(
+        mock_observer,
+        OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
+    EXPECT_CALL(check, Call("1: GetRuleIterator()"));
+
+    // Continue to report channel as enabled.
+    EXPECT_CALL(*mock_bridge_, GetChannels()).WillOnce(Return(channels));
+
+    // Observer should not be notified this time.
+    EXPECT_CALL(check, Call("2: GetRuleIterator()"));
+
+    // Now report channel as blocked.
+    channels[0].status_ = NotificationChannelStatus::BLOCKED;
+    EXPECT_CALL(*mock_bridge_, GetChannels()).WillOnce(Return(channels));
+
+    // GetRuleIterator should now notify observer.
+    EXPECT_CALL(
+        mock_observer,
+        OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
+    EXPECT_CALL(check, Call("3: GetRuleIterator()"));
+  }
+
+  check.Call("0: GetRuleIterator never called");
+  channels_provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      std::string(), false /* incognito */);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  check.Call("1: GetRuleIterator()");
+  channels_provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      std::string(), false /* incognito */);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  check.Call("2: GetRuleIterator()");
+  channels_provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      std::string(), false /* incognito */);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  check.Call("3: GetRuleIterator()");
+}
+
+TEST_F(NotificationChannelsProviderAndroidTest,
+       SetWebsiteSettingNotifiesObserver) {
+  InitChannelsProvider(true /* should_use_channels */);
+  content_settings::MockObserver mock_observer;
+  channels_provider_->AddObserver(&mock_observer);
+
+  EXPECT_CALL(*mock_bridge_, CreateChannel(kTestOrigin, true /* enabled */));
+  EXPECT_CALL(
+      mock_observer,
+      OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
+  channels_provider_->SetWebsiteSetting(
+      ContentSettingsPattern::FromString(kTestOrigin), ContentSettingsPattern(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+      new base::Value(CONTENT_SETTING_ALLOW));
 }
