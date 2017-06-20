@@ -27,7 +27,6 @@ source_set("libc++abi") {
     "trunk/src/fallback_malloc.cpp",
     "trunk/src/private_typeinfo.cpp",
     "trunk/src/stdlib_exception.cpp",
-    "trunk/src/stdlib_new_delete.cpp",
     "trunk/src/stdlib_stdexcept.cpp",
     "trunk/src/stdlib_typeinfo.cpp",
   ]
