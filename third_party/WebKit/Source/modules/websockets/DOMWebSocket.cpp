@@ -383,6 +383,7 @@ void DOMWebSocket::Connect(const String& url,
   if (!protocols.IsEmpty())
     protocol_string = JoinStrings(protocols, SubprotocolSeperator());
 
+  origin_string_ = SecurityOrigin::Create(url_)->ToString();
   channel_ = CreateChannel(GetExecutionContext(), this);
 
   if (!channel_->Connect(url_, protocol_string)) {
@@ -675,18 +676,22 @@ void DOMWebSocket::DidConnect(const String& subprotocol,
 void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
   NETWORK_DVLOG(1) << "WebSocket " << this
                    << " DidReceiveTextMessage() Text message " << msg;
+
   if (state_ != kOpen)
     return;
   RecordReceiveTypeHistogram(kWebSocketReceiveTypeString);
 
-  event_queue_->Dispatch(
-      MessageEvent::Create(msg, SecurityOrigin::Create(url_)->ToString()));
+  DCHECK(!origin_string_.IsNull());
+  event_queue_->Dispatch(MessageEvent::Create(msg, origin_string_));
 }
 
 void DOMWebSocket::DidReceiveBinaryMessage(
     std::unique_ptr<Vector<char>> binary_data) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidReceiveBinaryMessage() "
                    << binary_data->size() << " byte binary message";
+
+  DCHECK(!origin_string_.IsNull());
+
   switch (binary_type_) {
     case kBinaryTypeBlob: {
       size_t size = binary_data->size();
@@ -698,8 +703,7 @@ void DOMWebSocket::DidReceiveBinaryMessage(
           Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeBlob);
       RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeBlob, size);
-      event_queue_->Dispatch(
-          MessageEvent::Create(blob, SecurityOrigin::Create(url_)->ToString()));
+      event_queue_->Dispatch(MessageEvent::Create(blob, origin_string_));
       break;
     }
 
@@ -709,8 +713,8 @@ void DOMWebSocket::DidReceiveBinaryMessage(
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeArrayBuffer);
       RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeArrayBuffer,
                                         binary_data->size());
-      event_queue_->Dispatch(MessageEvent::Create(
-          array_buffer, SecurityOrigin::Create(url_)->ToString()));
+      event_queue_->Dispatch(
+          MessageEvent::Create(array_buffer, origin_string_));
       break;
   }
 }

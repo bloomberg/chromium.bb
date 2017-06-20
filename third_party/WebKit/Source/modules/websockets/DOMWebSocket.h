@@ -238,7 +238,10 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   Member<WebSocketChannel> channel_;
 
   State state_;
+
   KURL url_;
+  String origin_string_;
+
   uint64_t buffered_amount_;
   // The consumed buffered amount that will be reflected to m_bufferedAmount
   // later. It will be cleared once reflected.
