@@ -128,6 +128,10 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     onBeforeShow: function(data) {
       this.showing_ = true;
+
+      this.ownerDocument.addEventListener('click',
+          this.handleOwnerDocClick_.bind(this));
+
       chrome.send('loginUIStateChanged', ['account-picker', true]);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
       // Header bar should be always visible on Account Picker screen.
@@ -492,11 +496,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
 
       this.lockScreenAppsState_ = state;
       $('login-header-bar').lockScreenAppsState = state;
-      // When an lock screen app window is in background - i.e. visible behind
-      // the lock screen UI - dim the lock screen background, so it's more
-      // noticeable that the app widow in background is not actionable.
-      $('background').classList.toggle(
-          'dimmed-background', state == LOCK_SCREEN_APPS_STATE.BACKGROUND);
     },
 
     /**
@@ -507,8 +506,9 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * @param {Event} event The click event.
      */
     handleOwnerDocClick_: function(event) {
-      if (this.lockScreenAppsState_  != LOCK_SCREEN_APPS_STATE.BACKGROUND ||
-          event.target != $('outer-container')) {
+      if (this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.BACKGROUND ||
+          (event.target != $('account-picker') &&
+           event.target != $('version'))) {
         return;
       }
       chrome.send('setLockScreenAppsState',
