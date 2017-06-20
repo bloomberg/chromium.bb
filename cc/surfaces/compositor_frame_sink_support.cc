@@ -152,6 +152,8 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     }
 
     surface = CreateSurface(surface_info);
+    surface_manager_->SurfaceDamageExpected(surface->surface_id(),
+                                            last_begin_frame_args_);
   }
 
   bool result = surface->QueueFrame(
