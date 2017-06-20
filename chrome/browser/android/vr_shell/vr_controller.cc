@@ -106,26 +106,29 @@ void VrController::OnPause() {
 }
 
 device::GvrGamepadData VrController::GetGamepadData() {
-  device::GvrGamepadData pad;
-
+  device::GvrGamepadData pad = {};
+  pad.connected = IsConnected();
   pad.timestamp = controller_state_->GetLastOrientationTimestamp();
-  pad.touch_pos.set_x(TouchPosX());
-  pad.touch_pos.set_y(TouchPosY());
-  pad.orientation = Orientation();
 
-  // Use orientation to rotate acceleration/gyro into seated space.
-  gfx::Transform pose_mat(Orientation());
-  const gvr::Vec3f& accel = controller_state_->GetAccel();
-  const gvr::Vec3f& gyro = controller_state_->GetGyro();
-  pad.accel = gfx::Vector3dF(accel.x, accel.y, accel.z);
-  pose_mat.TransformVector(&pad.accel);
-  pad.gyro = gfx::Vector3dF(gyro.x, gyro.y, gyro.z);
-  pose_mat.TransformVector(&pad.gyro);
+  if (pad.connected) {
+    pad.touch_pos.set_x(TouchPosX());
+    pad.touch_pos.set_y(TouchPosY());
+    pad.orientation = Orientation();
 
-  pad.is_touching = controller_state_->IsTouching();
-  pad.controller_button_pressed =
-      controller_state_->GetButtonState(GVR_CONTROLLER_BUTTON_CLICK);
-  pad.right_handed = handedness_ == GVR_CONTROLLER_RIGHT_HANDED;
+    // Use orientation to rotate acceleration/gyro into seated space.
+    gfx::Transform pose_mat(Orientation());
+    const gvr::Vec3f& accel = controller_state_->GetAccel();
+    const gvr::Vec3f& gyro = controller_state_->GetGyro();
+    pad.accel = gfx::Vector3dF(accel.x, accel.y, accel.z);
+    pose_mat.TransformVector(&pad.accel);
+    pad.gyro = gfx::Vector3dF(gyro.x, gyro.y, gyro.z);
+    pose_mat.TransformVector(&pad.gyro);
+
+    pad.is_touching = controller_state_->IsTouching();
+    pad.controller_button_pressed =
+        controller_state_->GetButtonState(GVR_CONTROLLER_BUTTON_CLICK);
+    pad.right_handed = handedness_ == GVR_CONTROLLER_RIGHT_HANDED;
+  }
 
   return pad;
 }
