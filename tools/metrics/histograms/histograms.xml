@@ -46527,6 +46527,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of servicing requests that may contain offline page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.ArchiveManager.ArchiveDirsCreationResult"
+    enum="PlatformFileError">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    This is recorded every time the archive directory is being created. It
+    doesn't include the case which the archive directory exists.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Background.BackgroundLoadingFailedCode"
     enum="NetErrorCodes">
   <owner>chili@chromium.org</owner>
