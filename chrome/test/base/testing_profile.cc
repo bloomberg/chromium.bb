@@ -828,7 +828,8 @@ void TestingProfile::CreateIncognitoPrefService() {
   // Simplified version of ProfileImpl::GetOffTheRecordPrefs(). Note this
   // leaves testing_prefs_ unset.
   prefs_.reset(CreateIncognitoPrefServiceSyncable(
-      original_profile_->prefs_.get(), NULL));
+      original_profile_->prefs_.get(), nullptr,
+      std::set<PrefValueStore::PrefStoreType>(), nullptr, nullptr));
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
 

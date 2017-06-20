@@ -429,9 +429,6 @@ BrowserView::~BrowserView() {
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews(true);
   toolbar_ = nullptr;
-
-  // Explicitly set browser_ to null.
-  browser_.reset();
 }
 
 void BrowserView::Init(Browser* browser) {

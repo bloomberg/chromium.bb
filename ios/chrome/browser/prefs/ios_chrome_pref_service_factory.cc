@@ -13,6 +13,7 @@
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/pref_value_store.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/pref_service_syncable_factory.h"
@@ -80,5 +81,6 @@ CreateIncognitoBrowserStatePrefs(
   overlay_pref_names.push_back(proxy_config::prefs::kProxy);
   return base::WrapUnique(pref_service->CreateIncognitoPrefService(
       nullptr,  // incognito_extension_pref_store
-      overlay_pref_names));
+      overlay_pref_names, std::set<PrefValueStore::PrefStoreType>(), nullptr,
+      nullptr));
 }

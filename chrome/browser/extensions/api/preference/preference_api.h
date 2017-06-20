@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs_scope.h"
@@ -28,17 +29,25 @@ class Value;
 namespace extensions {
 class ExtensionPrefs;
 
-class PreferenceEventRouter {
+class PreferenceEventRouter : public content::NotificationObserver {
  public:
   explicit PreferenceEventRouter(Profile* profile);
-  virtual ~PreferenceEventRouter();
+  ~PreferenceEventRouter() override;
 
  private:
   void OnPrefChanged(PrefService* pref_service,
                      const std::string& pref_key);
 
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
+  void OnIncognitoProfileCreated(PrefService* prefs);
+
+  content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar registrar_;
-  PrefChangeRegistrar incognito_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> incognito_registrar_;
 
   // Weak, owns us (transitively via ExtensionService).
   Profile* profile_;
