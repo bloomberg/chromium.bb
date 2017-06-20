@@ -82,8 +82,9 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
 }
 
 QuicStream::~QuicStream() {
-  QUIC_LOG_IF(WARNING, session_ != nullptr && session_->use_stream_notifier() &&
-                           IsWaitingForAcks())
+  QUIC_DLOG_IF(WARNING, session_ != nullptr &&
+                            session_->use_stream_notifier() &&
+                            IsWaitingForAcks())
       << "Stream destroyed while waiting for acks.";
 }
 

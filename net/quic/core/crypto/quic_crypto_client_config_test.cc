@@ -538,9 +538,7 @@ TEST_F(QuicCryptoClientConfigTest, ProcessStatelessReject) {
                                     AllSupportedVersions().front(), "", &cached,
                                     out_params, &error));
   EXPECT_TRUE(cached.has_server_designated_connection_id());
-  EXPECT_EQ(QuicUtils::IsConnectionIdWireFormatBigEndian(Perspective::IS_CLIENT)
-                ? QuicEndian::NetToHost64(kConnectionId)
-                : kConnectionId,
+  EXPECT_EQ(QuicEndian::NetToHost64(kConnectionId),
             cached.GetNextServerDesignatedConnectionId());
   EXPECT_EQ(server_nonce, cached.GetNextServerNonce());
 }

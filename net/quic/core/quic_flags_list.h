@@ -7,10 +7,6 @@
 
 // This file contains the list of QUIC protocol flags.
 
-// If true, QUIC BBR congestion control may be enabled via Finch and/or via QUIC
-// connection options.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_allow_new_bbr, true)
-
 // Time period for which a given connection_id should live in the time-wait
 // state.
 QUIC_FLAG(int64_t, FLAGS_quic_time_wait_list_seconds, 200)
@@ -143,18 +139,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_38, true)
 // If true, enable QUIC v39.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_39, true)
 
-// If true, on client side, 8-byte connection ID in public header is read and
-// written in big endian.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_big_endian_connection_id_client,
-          true)
-
-// If true, on server side, 8-byte connection ID in public header is read and
-// written in big endian.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_big_endian_connection_id_server,
-          true)
-
 // Simplify QUIC\'s adaptive time loss detection to measure the necessary
 // reordering window for every spurious retransmit.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
@@ -162,10 +146,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 // If true, enable random padding of size [1, 256] when response body is
 // compressed for QUIC version >= 38.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_random_padding, true)
-
-// Use conservation in PROBE_BW ouside of super-unity gain and immediately
-// preceeding cycle.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_extra_conservation, false)
 
 // Increase BBR's inflight limit if recent ack rate is low.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slow_recent_delivery, false)
