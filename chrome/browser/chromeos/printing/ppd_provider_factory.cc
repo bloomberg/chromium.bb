@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/ppd_provider.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -22,16 +21,9 @@ scoped_refptr<PpdProvider> CreateProvider(Profile* profile) {
   base::FilePath ppd_cache_path =
       profile->GetPath().Append(FILE_PATH_LITERAL("PPDCache"));
 
-  auto cache = PpdCache::Create(ppd_cache_path,
-                                content::BrowserThread::GetTaskRunnerForThread(
-                                    content::BrowserThread::CACHE)
-                                    .get());
-
   return PpdProvider::Create(g_browser_process->GetApplicationLocale(),
-                             g_browser_process->system_request_context(), cache,
-                             content::BrowserThread::GetTaskRunnerForThread(
-                                 content::BrowserThread::FILE)
-                                 .get());
+                             g_browser_process->system_request_context(),
+                             PpdCache::Create(ppd_cache_path));
 }
 
 }  // namespace printing

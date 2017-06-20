@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_parser.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -24,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -156,6 +158,19 @@ std::string PpdReferenceToCacheKey(const Printer::PpdReference& reference) {
   }
 }
 
+// Handles the result after PPD storage.
+void OnPpdStored() {}
+
+// Fetch the file pointed at by |url| and store it in |file_contents|.
+// Returns true if the fetch was successful.
+bool FetchFile(const GURL& url, std::string* file_contents) {
+  CHECK(url.is_valid());
+  CHECK(url.SchemeIs("file"));
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  return base::ReadFileToString(base::FilePath(url.path()), file_contents);
+}
+
 struct ManufacturerMetadata {
   // Key used to look up the printer list on the server.  This is initially
   // populated.
@@ -201,12 +216,13 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       const std::string& browser_locale,
       scoped_refptr<net::URLRequestContextGetter> url_context_getter,
       scoped_refptr<PpdCache> ppd_cache,
-      scoped_refptr<base::SequencedTaskRunner> disk_task_runner,
       const PpdProvider::Options& options)
       : browser_locale_(browser_locale),
         url_context_getter_(url_context_getter),
         ppd_cache_(ppd_cache),
-        disk_task_runner_(disk_task_runner),
+        disk_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+            {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         options_(options),
         weak_factory_(this) {}
 
@@ -367,9 +383,6 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
                                 weak_factory_.GetWeakPtr(), reference, cb));
   }
 
-  // Our only sources of long running ops are cache fetches and network fetches.
-  bool Idle() const override { return ppd_cache_->Idle() && !fetch_inflight_; }
-
   // Common handler that gets called whenever a fetch completes.  Note this
   // is used both for |fetcher_| fetches (i.e. http[s]) and file-based fetches;
   // |source| may be null in the latter case.
@@ -456,20 +469,22 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
       fetcher_->Start();
     } else if (url.SchemeIs("file")) {
-      disk_task_runner_->PostTaskAndReply(
-          FROM_HERE, base::Bind(&PpdProviderImpl::FetchFile, this, url),
-          base::Bind(&PpdProviderImpl::OnURLFetchComplete, this, nullptr));
+      auto file_contents = base::MakeUnique<std::string>();
+      std::string* content_ptr = file_contents.get();
+      base::PostTaskAndReplyWithResult(
+          disk_task_runner_.get(), FROM_HERE,
+          base::Bind(&FetchFile, url, content_ptr),
+          base::Bind(&PpdProviderImpl::OnFileFetchComplete, this,
+                     base::Passed(&file_contents)));
     }
   }
 
-  // Fetch the file pointed at by url and store it in |file_fetch_contents_|.
-  // Use |file_fetch_success_| to indicate success or failure.
-  void FetchFile(const GURL& url) {
-    CHECK(url.is_valid());
-    CHECK(url.SchemeIs("file"));
-    base::ThreadRestrictions::AssertIOAllowed();
-    file_fetch_success_ = base::ReadFileToString(base::FilePath(url.path()),
-                                                 &file_fetch_contents_);
+  // Handle the result of a file fetch.
+  void OnFileFetchComplete(std::unique_ptr<std::string> file_contents,
+                           bool success) {
+    file_fetch_success_ = success;
+    file_fetch_contents_ = success ? *file_contents : "";
+    OnURLFetchComplete(nullptr);
   }
 
   void FinishPpdResolution(const ResolvePpdCallback& cb,
@@ -664,7 +679,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     } else {
       ppd_cache_->Store(
           PpdReferenceToCacheKey(ppd_resolution_queue_.front().first), contents,
-          base::Callback<void()>());
+          base::Bind(&OnPpdStored));
       FinishPpdResolution(ppd_resolution_queue_.front().second,
                           PpdProvider::SUCCESS, contents);
     }
@@ -1001,11 +1016,9 @@ scoped_refptr<PpdProvider> PpdProvider::Create(
     const std::string& browser_locale,
     scoped_refptr<net::URLRequestContextGetter> url_context_getter,
     scoped_refptr<PpdCache> ppd_cache,
-    scoped_refptr<base::SequencedTaskRunner> disk_task_runner,
     const PpdProvider::Options& options) {
-  return scoped_refptr<PpdProvider>(
-      new PpdProviderImpl(browser_locale, url_context_getter, ppd_cache,
-                          disk_task_runner, options));
+  return scoped_refptr<PpdProvider>(new PpdProviderImpl(
+      browser_locale, url_context_getter, ppd_cache, options));
 }
 }  // namespace printing
 }  // namespace chromeos
