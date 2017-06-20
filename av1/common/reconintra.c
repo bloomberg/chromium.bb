@@ -1166,7 +1166,7 @@ static void highbd_dr_prediction_z2(uint16_t *dst, ptrdiff_t stride, int bw,
       x = (c << 8) - y * dx;
       base = x >> frac_bits_x;
       if (base >= min_base_x) {
-        shift = (x << upsample_above) & 0xFF;
+        shift = (x * (1 << upsample_above)) & 0xFF;
 #if CONFIG_INTRA_INTERP
         val = highbd_intra_subpel_interp(base, shift, above, -1, bw - 1,
                                          filter_type);
@@ -1178,7 +1178,7 @@ static void highbd_dr_prediction_z2(uint16_t *dst, ptrdiff_t stride, int bw,
         x = c + 1;
         y = (r << 8) - x * dy;
         base = y >> frac_bits_y;
-        shift = (y << upsample_left) & 0xFF;
+        shift = (y * (1 << upsample_left)) & 0xFF;
 #if CONFIG_INTRA_INTERP
         val = highbd_intra_subpel_interp(base, shift, left, -1, bh - 1,
                                          filter_type);
