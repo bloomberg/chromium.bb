@@ -3045,7 +3045,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
 
       <?xml version='1.0' encoding='UTF-8'?>
       <response protocol='3.1'>
-        <app appid='nieaegbcncggjkpbaogejidgjnnfegoe'>
+        <app appid='gjpmebpgbhcamgdgjcmnjfhggjpgcimm'>
           <updatecheck status='ok'>
             <urls>
               <url codebase='http://localhost/download/'/>
@@ -3053,12 +3053,11 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
             <manifest version='1.0' prodversionmin='11.0.1.0'>
               <packages>
                 <package name='runaction_test_win.crx3'
-                         hash_sha256='22deba85698e9ce1b923ad9839741adfd41db7ac35
-                                      8365664e47996dc8e83ec2'/>
+                         hash_sha256='89290a0d2ff21ca5b45e109c6cc859ab5fe294e19c102d54acd321429c372cea'/>
               </packages>
             </manifest>
             <actions>"
-             <action run='recovery.crx3'/>"
+             <action run='ChromeRecovery.crx3'/>"
             </actions>"
           </updatecheck>
         </app>
@@ -3067,14 +3066,14 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
 
-      const std::string id = "nieaegbcncggjkpbaogejidgjnnfegoe";
+      const std::string id = "gjpmebpgbhcamgdgjcmnjfhggjpgcimm";
       EXPECT_EQ(id, ids_to_check[0]);
       EXPECT_EQ(1u, components.count(id));
 
       ProtocolParser::Result::Manifest::Package package;
       package.name = "runaction_test_win.crx3";
       package.hash_sha256 =
-          "22deba85698e9ce1b923ad9839741adfd41db7ac358365664e47996dc8e83ec2";
+          "89290a0d2ff21ca5b45e109c6cc859ab5fe294e19c102d54acd321429c372cea";
 
       ProtocolParser::Result result;
       result.extension_id = id;
@@ -3083,7 +3082,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       result.manifest.version = "1.0";
       result.manifest.browser_min_version = "11.0.1.0";
       result.manifest.packages.push_back(package);
-      result.action_run = "recovery.crx3";
+      result.action_run = "ChromeRecovery.crx3";
 
       auto& component = components.at(id);
       component->SetParseResult(result);
@@ -3166,12 +3165,12 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
 
   // The action is a program which returns 1877345072 as a hardcoded value.
   update_client->Install(
-      std::string("nieaegbcncggjkpbaogejidgjnnfegoe"),
+      std::string("gjpmebpgbhcamgdgjcmnjfhggjpgcimm"),
       base::Bind([](const std::vector<std::string>& ids,
                     std::vector<CrxComponent>* components) {
         CrxComponent crx;
         crx.name = "test_niea";
-        crx.pk_hash.assign(niea_hash, niea_hash + arraysize(niea_hash));
+        crx.pk_hash.assign(gjpm_hash, gjpm_hash + arraysize(gjpm_hash));
         crx.version = base::Version("0.0");
         crx.installer = base::MakeRefCounted<VersionedTestInstaller>();
         components->push_back(crx);
@@ -3208,17 +3207,17 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
 
       <?xml version='1.0' encoding='UTF-8'?>
       <response protocol='3.1'>
-        <app appid='nieaegbcncggjkpbaogejidgjnnfegoe'>
+        <app appid='gjpmebpgbhcamgdgjcmnjfhggjpgcimm'>
           <updatecheck status='noupdate'>
             <actions>"
-             <action run='recovery.crx3'/>"
+             <action run=ChromeRecovery.crx3'/>"
             </actions>"
           </updatecheck>
         </app>
       </response>
       */
       EXPECT_EQ(1u, ids_to_check.size());
-      const std::string id = "nieaegbcncggjkpbaogejidgjnnfegoe";
+      const std::string id = "gjpmebpgbhcamgdgjcmnjfhggjpgcimm";
       EXPECT_EQ(id, ids_to_check[0]);
       EXPECT_EQ(1u, components.count(id));
 
@@ -3227,7 +3226,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
       ProtocolParser::Result result;
       result.extension_id = id;
       result.status = "noupdate";
-      result.action_run = "recovery.crx3";
+      result.action_run = "ChromeRecovery.crx3";
 
       component->SetParseResult(result);
 
@@ -3276,7 +3275,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
     base::Closure quit_closure = runloop.QuitClosure();
 
     scoped_refptr<ComponentUnpacker> component_unpacker = new ComponentUnpacker(
-        std::vector<uint8_t>(std::begin(niea_hash), std::end(niea_hash)),
+        std::vector<uint8_t>(std::begin(gjpm_hash), std::end(gjpm_hash)),
         TestFilePath("runaction_test_win.crx3"), nullptr, nullptr,
         config()->GetSequencedTaskRunner());
 
@@ -3296,9 +3295,9 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
   EXPECT_FALSE(unpack_path.empty());
   EXPECT_TRUE(base::DirectoryExists(unpack_path));
   int64_t file_size = 0;
-  EXPECT_TRUE(
-      base::GetFileSize(unpack_path.AppendASCII("recovery.crx3"), &file_size));
-  EXPECT_EQ(44565, file_size);
+  EXPECT_TRUE(base::GetFileSize(unpack_path.AppendASCII("ChromeRecovery.crx3"),
+                                &file_size));
+  EXPECT_EQ(44582, file_size);
 
   base::ScopedTempDir unpack_path_owner;
   EXPECT_TRUE(unpack_path_owner.Set(unpack_path));
@@ -3309,7 +3308,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   // The action is a program which returns 1877345072 as a hardcoded value.
-  const std::vector<std::string> ids = {"nieaegbcncggjkpbaogejidgjnnfegoe"};
+  const std::vector<std::string> ids = {"gjpmebpgbhcamgdgjcmnjfhggjpgcimm"};
   update_client->Update(
       ids,
       base::Bind(
@@ -3318,7 +3317,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
              std::vector<CrxComponent>* components) {
             CrxComponent crx;
             crx.name = "test_niea";
-            crx.pk_hash.assign(niea_hash, niea_hash + arraysize(niea_hash));
+            crx.pk_hash.assign(gjpm_hash, gjpm_hash + arraysize(gjpm_hash));
             crx.version = base::Version("1.0");
             crx.installer =
                 base::MakeRefCounted<ReadOnlyTestInstaller>(unpack_path);
