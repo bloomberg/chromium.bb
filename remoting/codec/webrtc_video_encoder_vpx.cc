@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
@@ -273,9 +274,9 @@ void WebrtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
   }
 }
 
-std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
-    const webrtc::DesktopFrame* frame,
-    const FrameParams& params) {
+void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
+                                   const FrameParams& params,
+                                   EncodeCallback done) {
   webrtc::DesktopSize previous_frame_size =
       image_ ? webrtc::DesktopSize(image_->w, image_->h)
              : webrtc::DesktopSize();
@@ -284,7 +285,8 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
 
   // Don't need to send anything until we get the first non-null frame.
   if (frame_size.is_empty()) {
-    return nullptr;
+    std::move(done).Run(nullptr);
+    return;
   }
 
   DCHECK_GE(frame_size.width(), 32);
@@ -304,7 +306,7 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
 
   webrtc::DesktopRegion updated_region;
   // Convert the updated capture data ready for encode.
-  PrepareImage(frame, &updated_region);
+  PrepareImage(frame.get(), &updated_region);
 
   // Update active map based on updated region.
   if (params.clear_active_map)
@@ -373,7 +375,7 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
     }
   }
 
-  return encoded_frame;
+  std::move(done).Run(std::move(encoded_frame));
 }
 
 WebrtcVideoEncoderVpx::WebrtcVideoEncoderVpx(bool use_vp9)

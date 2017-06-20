@@ -15,6 +15,8 @@ source_set("encoder") {
     "video_encoder_verbatim.h",
     "video_encoder_vpx.cc",
     "video_encoder_vpx.h",
+    "webrtc_video_encoder_proxy.cc",
+    "webrtc_video_encoder_proxy.h",
     "webrtc_video_encoder_vpx.cc",
     "webrtc_video_encoder_vpx.h",
   ]
