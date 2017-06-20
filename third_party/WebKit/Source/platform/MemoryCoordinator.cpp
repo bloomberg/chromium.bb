@@ -10,6 +10,10 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/allocator/Partitions.h"
 
+#if OS(ANDROID)
+#include "base/android/sys_utils.h"
+#endif
+
 namespace blink {
 
 // static
@@ -30,6 +34,15 @@ int64_t MemoryCoordinator::GetPhysicalMemoryMB() {
 void MemoryCoordinator::SetPhysicalMemoryMBForTesting(
     int64_t physical_memory_mb) {
   physical_memory_mb_ = physical_memory_mb;
+}
+
+// static
+bool MemoryCoordinator::IsCurrentlyLowMemory() {
+#if OS(ANDROID)
+  return base::android::SysUtils::IsCurrentlyLowMemory();
+#else
+  return false;
+#endif
 }
 
 // static
