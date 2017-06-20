@@ -258,8 +258,6 @@ class DeployChrome(object):
     old_dbus_checksums = self._GetDBusChecksums()
 
     logging.info('Copying Chrome to %s on device...', self.options.target_dir)
-    # Show the output (status) for this command.
-    dest_path = _CHROME_DIR
     # CopyToDevice will fall back to scp if rsync is corrupted on stateful.
     # This does not work for deploy.
     if not self.device.HasRsync():
@@ -277,7 +275,7 @@ class DeployChrome(object):
       if p.mode:
         # Set mode if necessary.
         self.device.RunCommand('chmod %o %s/%s' % (
-            p.mode, dest_path, p.src if not p.dest else p.dest))
+            p.mode, self.options.target_dir, p.src if not p.dest else p.dest))
 
     new_dbus_checksums = self._GetDBusChecksums()
     if old_dbus_checksums != new_dbus_checksums:
