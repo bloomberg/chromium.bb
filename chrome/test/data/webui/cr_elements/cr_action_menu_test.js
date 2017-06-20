@@ -101,6 +101,26 @@ suite('CrActionMenu', function() {
     assertEquals(items[items.length - 1], menu.root.activeElement);
   });
 
+  test('can navigate to dynamically added items', function() {
+    // Can modify children after attached() and before showAt().
+    var item = document.createElement('button');
+    item.classList.add('dropdown-item');
+    menu.insertBefore(item, items[0]);
+    menu.showAt(document.querySelector('#dots'));
+
+    down();
+    assertEquals(item, menu.root.activeElement);
+    down();
+    assertEquals(items[0], menu.root.activeElement);
+
+    // Can modify children while menu is open.
+    menu.removeChild(item);
+
+    up();
+    // Focus should have wrapped around to final item.
+    assertEquals(items[2], menu.root.activeElement);
+  });
+
   test('close on resize', function() {
     menu.showAt(document.querySelector('#dots'));
     assertTrue(menu.open);

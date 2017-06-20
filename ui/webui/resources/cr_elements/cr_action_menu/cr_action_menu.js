@@ -98,12 +98,6 @@ Polymer({
   extends: 'dialog',
 
   /**
-   * List of all options in this action menu.
-   * @private {?NodeList<!Element>}
-   */
-  options_: null,
-
-  /**
    * The element which the action menu will be anchored to. Also the element
    * where focus will be returned after the menu is closed. Only populated if
    * menu is opened with showAt().
@@ -129,11 +123,6 @@ Polymer({
     'keydown': 'onKeyDown_',
     'mouseover': 'onMouseover_',
     'tap': 'onTap_',
-  },
-
-  /** override */
-  attached: function() {
-    this.options_ = this.querySelectorAll('.dropdown-item');
   },
 
   /** override */
@@ -219,9 +208,10 @@ Polymer({
     // hidden/disabled.
     var counter = 0;
     var nextOption = null;
-    var numOptions = this.options_.length;
+    var options = this.querySelectorAll('.dropdown-item');
+    var numOptions = options.length;
     var focusedIndex =
-        Array.prototype.indexOf.call(this.options_, this.root.activeElement);
+        Array.prototype.indexOf.call(options, this.root.activeElement);
 
     // Handle case where nothing is focused and up is pressed.
     if (focusedIndex === -1 && step === -1)
@@ -229,7 +219,7 @@ Polymer({
 
     do {
       focusedIndex = (numOptions + focusedIndex + step) % numOptions;
-      nextOption = this.options_[focusedIndex];
+      nextOption = options[focusedIndex];
       if (nextOption.disabled || nextOption.hidden)
         nextOption = null;
       counter++;
