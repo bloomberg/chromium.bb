@@ -79,6 +79,7 @@
 #include "third_party/WebKit/public/web/WebIconURL.h"
 #include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
+#include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -978,7 +979,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const Referrer& referrer,
       blink::WebNavigationPolicy policy,
       bool should_replace_current_entry,
-      bool is_history_navigation_in_new_child);
+      bool is_history_navigation_in_new_child,
+      blink::WebTriggeringEventInfo triggering_event_info);
 
   // Performs a navigation in the frame. This provides a unified function for
   // the current code path and the browser-side navigation path (in
@@ -1392,6 +1394,7 @@ class CONTENT_EXPORT RenderFrameImpl
     bool replaces_current_history_item;
     bool history_navigation_in_new_child_frame;
     bool client_redirect;
+    blink::WebTriggeringEventInfo triggering_event_info;
     bool cache_disabled;
     blink::WebFormElement form;
     blink::WebSourceLocation source_location;

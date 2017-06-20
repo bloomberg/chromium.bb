@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
+#include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
 #include "ui/base/window_open_disposition.h"
 
 class GURL;
@@ -123,7 +124,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       WindowOpenDisposition disposition,
       bool force_new_process_for_new_contents,
       bool should_replace_current_entry,
-      bool user_gesture) {}
+      bool user_gesture,
+      blink::WebTriggeringEventInfo triggering_event_info) {}
 
   // The RenderFrameHostImpl wants to transfer the request to a new renderer.
   // |redirect_chain| contains any redirect URLs (excluding |url|) that happened

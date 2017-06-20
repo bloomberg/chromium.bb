@@ -76,5 +76,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
+  "+third_party/WebKit/public/web/WebTriggeringEventInfo.h",
   "+third_party/WebKit/public/web/win/WebFontRendering.h"
 ]

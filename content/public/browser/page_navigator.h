@@ -19,6 +19,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -101,6 +102,11 @@ struct CONTENT_EXPORT OpenURLParams {
   // Indicates whether this navigation was triggered while processing a user
   // gesture if the navigation was initiated by the renderer.
   bool user_gesture;
+
+  // Whether the call to OpenURL was triggered by an Event, and what the
+  // isTrusted flag of the event was.
+  blink::WebTriggeringEventInfo triggering_event_info =
+      blink::WebTriggeringEventInfo::kUnknown;
 
   // Indicates whether this navigation was started via context menu.
   bool started_from_context_menu;
