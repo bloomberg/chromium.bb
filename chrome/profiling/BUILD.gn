@@ -7,10 +7,23 @@ import("//chrome/common/features.gni")
 if (enable_oop_heap_profiling) {
   static_library("profiling") {
     sources = [
+      "address.h",
+      "allocation_tracker.cc",
+      "allocation_tracker.h",
+      "backtrace.cc",
+      "backtrace.h",
+      "backtrace_storage.cc",
+      "backtrace_storage.h",
+      "memlog_connection_manager.cc",
+      "memlog_connection_manager.h",
+      "memlog_receiver.h",
+      "memlog_receiver_pipe_server.h",
       "memlog_receiver_pipe_server_win.cc",
       "memlog_receiver_pipe_server_win.h",
       "memlog_receiver_pipe_win.cc",
       "memlog_receiver_pipe_win.h",
+      "memlog_stream_parser.cc",
+      "memlog_stream_parser.h",
       "memlog_stream_receiver.h",
       "profiling_globals.cc",
       "profiling_globals.h",

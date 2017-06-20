@@ -32,6 +32,14 @@ base::TaskRunner* ProfilingGlobals::GetIORunner() {
   return io_thread_.task_runner().get();
 }
 
+MemlogConnectionManager* ProfilingGlobals::GetMemlogConnectionManager() {
+  return &memlog_connection_manager_;
+}
+
+BacktraceStorage* ProfilingGlobals::GetBacktraceStorage() {
+  return &backtrace_storage_;
+}
+
 scoped_refptr<base::SingleThreadTaskRunner> ProfilingGlobals::GetMainThread()
     const {
   CHECK(base::MessageLoop::current() == main_message_loop_);
