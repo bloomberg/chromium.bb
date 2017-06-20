@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_RULE_TEST_SUPPORT_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_RULE_TEST_SUPPORT_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_URL_RULE_TEST_SUPPORT_H_
+#define COMPONENTS_URL_PATTERN_INDEX_URL_RULE_TEST_SUPPORT_H_
 
 #include <string>
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
-#include "components/subresource_filter/core/common/url_pattern.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
+#include "components/url_pattern_index/url_pattern.h"
 
 class GURL;
 
@@ -18,7 +18,7 @@ namespace url {
 class Origin;
 }
 
-namespace subresource_filter {
+namespace url_pattern_index {
 namespace testing {
 
 // Constants -------------------------------------------------------------------
@@ -69,6 +69,6 @@ url::Origin GetOrigin(base::StringPiece origin_string);
 bool IsThirdParty(const GURL& url, const url::Origin& first_party_origin);
 
 }  // namespace testing
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_RULE_TEST_SUPPORT_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_URL_RULE_TEST_SUPPORT_H_

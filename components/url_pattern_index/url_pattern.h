@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_PATTERN_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_PATTERN_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_URL_PATTERN_H_
+#define COMPONENTS_URL_PATTERN_INDEX_URL_PATTERN_H_
 
 #include <iosfwd>
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 
 class GURL;
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace flat {
 struct UrlRule;  // The FlatBuffers version of UrlRule.
@@ -74,6 +74,6 @@ class UrlPattern {
 // Allow pretty-printing URLPatterns when they are used in GTest assertions.
 std::ostream& operator<<(std::ostream& out, const UrlPattern& pattern);
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_PATTERN_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_URL_PATTERN_H_

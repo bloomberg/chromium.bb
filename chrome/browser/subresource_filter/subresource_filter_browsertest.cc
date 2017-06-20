@@ -61,6 +61,7 @@
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -80,6 +81,8 @@
 #include "url/gurl.h"
 
 namespace {
+
+namespace proto = url_pattern_index::proto;
 
 // The path to a multi-frame document used for tests.
 static constexpr const char kTestFrameSetPath[] =

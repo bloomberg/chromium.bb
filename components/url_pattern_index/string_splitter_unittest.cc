@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/string_splitter.h"
+#include "components/url_pattern_index/string_splitter.h"
 
 #include <string>
 #include <vector>
@@ -10,7 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace {
 bool IsTestSeparator(char c) {
@@ -79,4 +79,4 @@ TEST(StringSplitterTest, SplitThreeWords) {
   }
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_STRING_SPLITTER_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_STRING_SPLITTER_H_
+#ifndef COMPONENTS_URL_PATTERN_INDEX_STRING_SPLITTER_H_
+#define COMPONENTS_URL_PATTERN_INDEX_STRING_SPLITTER_H_
 
 #include <iterator>
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 // A zero-allocation string splitter. Splits a string into non-empty tokens
 // divided by separator characters as defined by the IsSeparator predicate.
@@ -96,6 +96,6 @@ StringSplitter<IsSeparator> CreateStringSplitter(base::StringPiece text,
   return StringSplitter<IsSeparator>(text, is_separator);
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_STRING_SPLITTER_H_
+#endif  // COMPONENTS_URL_PATTERN_INDEX_STRING_SPLITTER_H_

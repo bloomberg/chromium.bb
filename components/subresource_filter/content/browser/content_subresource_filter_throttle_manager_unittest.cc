@@ -21,9 +21,9 @@
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
@@ -36,6 +36,8 @@
 #include "url/url_constants.h"
 
 namespace subresource_filter {
+
+namespace proto = url_pattern_index::proto;
 
 const char kTestURLWithActivation[] = "https://www.page-with-activation.com/";
 const char kTestURLWithActivation2[] =

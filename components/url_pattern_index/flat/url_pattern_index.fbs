@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-namespace subresource_filter.flat;
+namespace url_pattern_index.flat;
 
-// Corresponds to subresource_filter::proto::UrlPatternType.
+// Corresponds to url_pattern_index::proto::UrlPatternType.
 enum UrlPatternType : ubyte {
   SUBSTRING,
   WILDCARDED,
   REGEXP,
 }
 
-// Corresponds to subresource_filter::proto::AnchorType.
+// Corresponds to url_pattern_index::proto::AnchorType.
 enum AnchorType : ubyte {
   NONE,
   BOUNDARY,
@@ -19,7 +19,7 @@ enum AnchorType : ubyte {
 }
 
 // URL rule matching options. These correspond to multiple fields of
-// subresource_filter::proto::UrlRule, but here, they are represented as flags
+// url_pattern_index::proto::UrlRule, but here, they are represented as flags
 // of the same bitmask to allow for compact storage.
 enum OptionFlag : ubyte (bit_flags) {
   IS_WHITELIST,
@@ -29,7 +29,7 @@ enum OptionFlag : ubyte (bit_flags) {
 }
 
 // The flat representation of a single URL rule. For more details regarding the
-// fields please see the comments to subresource_filter::proto::UrlRule.
+// fields please see the comments to url_pattern_index::proto::UrlRule.
 table UrlRule {
   // Rule matching options, a bitmask consisting of OptionFlags.
   options : ubyte;

@@ -31,6 +31,7 @@
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -166,7 +167,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     Configure();
     test_io_task_runner_ = new base::TestMockTimeTaskRunner();
     // Note: Using NiceMock to allow uninteresting calls and suppress warnings.
-    std::vector<proto::UrlRule> rules;
+    std::vector<url_pattern_index::proto::UrlRule> rules;
     rules.push_back(testing::CreateSuffixRule("disallowed.html"));
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
         rules, &test_ruleset_pair_));

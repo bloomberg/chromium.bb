@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/fuzzy_pattern_matching.h"
+#include "components/url_pattern_index/fuzzy_pattern_matching.h"
 
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 TEST(SubresourceFilterFuzzyPatternMatchingTest, StartsWithFuzzy) {
   const struct {
@@ -105,4 +105,4 @@ TEST(SubresourceFilterFuzzyPatternMatchingTest, FindFuzzy) {
   }
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

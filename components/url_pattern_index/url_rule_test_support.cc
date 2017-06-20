@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/url_rule_test_support.h"
+#include "components/url_pattern_index/url_rule_test_support.h"
 
 #include "base/logging.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 namespace testing {
 
 proto::UrlRule MakeUrlRule(const UrlPattern& url_pattern) {
@@ -53,4 +53,4 @@ bool IsThirdParty(const GURL& url, const url::Origin& first_party_origin) {
 }
 
 }  // namespace testing
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

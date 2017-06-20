@@ -4,7 +4,7 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("proto") {
+proto_library("url_pattern_index") {
   sources = [
     "rules.proto",
   ]

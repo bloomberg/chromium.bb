@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/subresource_filter/core/common/flat/indexed_ruleset_generated.h"
-#include "components/subresource_filter/core/common/url_pattern_index.h"
+#include "components/url_pattern_index/url_pattern_index.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
 class GURL;
@@ -20,13 +20,15 @@ namespace url {
 class Origin;
 }
 
-namespace subresource_filter {
-
-class FirstPartyOrigin;
-
+namespace url_pattern_index {
 namespace proto {
 class UrlRule;
 }
+}
+
+namespace subresource_filter {
+
+class FirstPartyOrigin;
 
 // The class used to construct flat data structures representing the set of URL
 // filtering rules, as well as the index of those. Internally owns a
@@ -48,7 +50,7 @@ class RulesetIndexer {
   // Adds |rule| to the ruleset and the index unless the |rule| has unsupported
   // filter options, in which case the data structures remain unmodified.
   // Returns whether the |rule| has been serialized and added to the index.
-  bool AddUrlRule(const proto::UrlRule& rule);
+  bool AddUrlRule(const url_pattern_index::proto::UrlRule& rule);
 
   // Finalizes construction of the data structures.
   void Finish();
@@ -63,9 +65,9 @@ class RulesetIndexer {
  private:
   flatbuffers::FlatBufferBuilder builder_;
 
-  UrlPatternIndexBuilder blacklist_;
-  UrlPatternIndexBuilder whitelist_;
-  UrlPatternIndexBuilder deactivation_;
+  url_pattern_index::UrlPatternIndexBuilder blacklist_;
+  url_pattern_index::UrlPatternIndexBuilder whitelist_;
+  url_pattern_index::UrlPatternIndexBuilder deactivation_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetIndexer);
 };
@@ -91,22 +93,23 @@ class IndexedRulesetMatcher {
   bool ShouldDisableFilteringForDocument(
       const GURL& document_url,
       const url::Origin& parent_document_origin,
-      proto::ActivationType activation_type) const;
+      url_pattern_index::proto::ActivationType activation_type) const;
 
   // Returns whether the network request to |url| of |element_type| initiated by
   // |document_origin| is not allowed to proceed. Always returns false if the
   // |url| is not valid or |element_type| == ELEMENT_TYPE_UNSPECIFIED.
-  bool ShouldDisallowResourceLoad(const GURL& url,
-                                  const FirstPartyOrigin& first_party,
-                                  proto::ElementType element_type,
-                                  bool disable_generic_rules) const;
+  bool ShouldDisallowResourceLoad(
+      const GURL& url,
+      const FirstPartyOrigin& first_party,
+      url_pattern_index::proto::ElementType element_type,
+      bool disable_generic_rules) const;
 
  private:
   const flat::IndexedRuleset* root_;
 
-  UrlPatternIndexMatcher blacklist_;
-  UrlPatternIndexMatcher whitelist_;
-  UrlPatternIndexMatcher deactivation_;
+  url_pattern_index::UrlPatternIndexMatcher blacklist_;
+  url_pattern_index::UrlPatternIndexMatcher whitelist_;
+  url_pattern_index::UrlPatternIndexMatcher deactivation_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedRulesetMatcher);
 };

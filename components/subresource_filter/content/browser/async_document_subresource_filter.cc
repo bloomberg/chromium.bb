@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 
 namespace subresource_filter {
 
@@ -42,12 +43,12 @@ ActivationState ComputeActivationState(
   // TODO(pkalinnikov): Match several activation types in a batch.
   if (matcher.ShouldDisableFilteringForDocument(
           document_url, parent_document_origin,
-          proto::ACTIVATION_TYPE_DOCUMENT)) {
+          url_pattern_index::proto::ACTIVATION_TYPE_DOCUMENT)) {
     activation_state.filtering_disabled_for_document = true;
   } else if (!activation_state.generic_blocking_rules_disabled &&
              matcher.ShouldDisableFilteringForDocument(
                  document_url, parent_document_origin,
-                 proto::ACTIVATION_TYPE_GENERICBLOCK)) {
+                 url_pattern_index::proto::ACTIVATION_TYPE_GENERICBLOCK)) {
     activation_state.generic_blocking_rules_disabled = true;
   }
   return activation_state;
@@ -136,8 +137,9 @@ void AsyncDocumentSubresourceFilter::GetLoadPolicyForSubdocument(
             DCHECK(core);
             DocumentSubresourceFilter* filter = core->filter();
             return filter
-                       ? filter->GetLoadPolicy(subdocument_url,
-                                               proto::ELEMENT_TYPE_SUBDOCUMENT)
+                       ? filter->GetLoadPolicy(
+                             subdocument_url,
+                             url_pattern_index::proto::ELEMENT_TYPE_SUBDOCUMENT)
                        : LoadPolicy::ALLOW;
           },
           core_.get(), subdocument_url),

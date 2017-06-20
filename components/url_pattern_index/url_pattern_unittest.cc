@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/url_pattern.h"
+#include "components/url_pattern_index/url_pattern.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace {
 
@@ -121,4 +121,4 @@ TEST(SubresourceFilterUrlPatternTest, MatchesUrl) {
   }
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

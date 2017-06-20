@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/url_pattern_index.h"
+#include "components/url_pattern_index/url_pattern_index.h"
 
 #include <algorithm>
 #include <memory>
@@ -11,13 +11,13 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "components/subresource_filter/core/common/url_pattern.h"
-#include "components/subresource_filter/core/common/url_rule_test_support.h"
+#include "components/url_pattern_index/url_pattern.h"
+#include "components/url_pattern_index/url_rule_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 using namespace testing;
 
@@ -704,4 +704,4 @@ TEST_F(UrlPatternIndexTest, FindMatchReturnsCorrectRules) {
       FindMatch("http://example." + std::to_string(kNumOfPatterns) + ".com"));
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

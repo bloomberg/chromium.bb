@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/unindexed_ruleset.h"
+#include "components/url_pattern_index/unindexed_ruleset.h"
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 // UnindexedRulesetReader ------------------------------------------------------
 
@@ -68,4 +68,4 @@ bool UnindexedRulesetWriter::WritePendingChunk() {
   return !had_error() && chunk.SerializeToCodedStream(&coded_stream_);
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

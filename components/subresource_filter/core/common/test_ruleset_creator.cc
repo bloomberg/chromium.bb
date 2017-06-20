@@ -12,13 +12,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
-#include "components/subresource_filter/core/common/unindexed_ruleset.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
+#include "components/url_pattern_index/unindexed_ruleset.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace subresource_filter {
+
+namespace proto = url_pattern_index::proto;
 
 namespace {
 
@@ -39,7 +41,7 @@ std::vector<uint8_t> SerializeUnindexedRulesetWithMultipleRules(
     const std::vector<proto::UrlRule>& rules) {
   std::string ruleset_contents;
   google::protobuf::io::StringOutputStream output(&ruleset_contents);
-  UnindexedRulesetWriter ruleset_writer(&output);
+  url_pattern_index::UnindexedRulesetWriter ruleset_writer(&output);
   for (const auto& rule : rules)
     ruleset_writer.AddUrlRule(rule);
   ruleset_writer.Finish();

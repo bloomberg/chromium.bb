@@ -17,7 +17,7 @@
 #include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/load_policy.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
+#include "components/url_pattern_index/proto/rules.pb.h"
 
 class GURL;
 
@@ -52,8 +52,9 @@ class DocumentSubresourceFilter {
   // TODO(pkalinnikov): Find a better way to achieve this.
   DocumentLoadStatistics& statistics() { return statistics_; }
 
-  LoadPolicy GetLoadPolicy(const GURL& subresource_url,
-                           proto::ElementType subresource_type);
+  LoadPolicy GetLoadPolicy(
+      const GURL& subresource_url,
+      url_pattern_index::proto::ElementType subresource_type);
 
  private:
   const ActivationState activation_state_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/unindexed_ruleset.h"
+#include "components/url_pattern_index/unindexed_ruleset.h"
 
 #include <memory>
 #include <string>
@@ -11,17 +11,15 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/subresource_filter/core/common/url_pattern.h"
-#include "components/subresource_filter/core/common/url_rule_test_support.h"
+#include "components/url_pattern_index/url_pattern.h"
+#include "components/url_pattern_index/url_rule_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace {
-
-using namespace testing;
 
 bool IsEqual(const proto::UrlRule& lhs, const proto::UrlRule& rhs) {
   return lhs.SerializeAsString() == rhs.SerializeAsString();
@@ -52,7 +50,7 @@ class UnindexedRulesetTestBuilder {
   bool AddUrlRule(const UrlPattern& url_pattern,
                   proto::SourceType source_type,
                   bool is_whitelist = false) {
-    auto rule = MakeUrlRule(url_pattern);
+    auto rule = testing::MakeUrlRule(url_pattern);
     if (is_whitelist)
       rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
     rule.set_source_type(source_type);
@@ -65,7 +63,7 @@ class UnindexedRulesetTestBuilder {
   bool AddUrlRules(int number_of_rules) {
     for (int i = 0; i < number_of_rules; ++i) {
       std::string url_pattern = "example" + base::IntToString(i) + ".com";
-      if (!AddUrlRule(UrlPattern(url_pattern), kAnyParty, i & 1))
+      if (!AddUrlRule(UrlPattern(url_pattern), testing::kAnyParty, i & 1))
         return false;
     }
     return true;
@@ -127,7 +125,8 @@ TEST(UnindexedRulesetTest, EmptyRuleset) {
 
 TEST(UnindexedRulesetTest, OneUrlRule) {
   UnindexedRulesetTestBuilder builder;
-  EXPECT_TRUE(builder.AddUrlRule(UrlPattern("example.com"), kThirdParty));
+  EXPECT_TRUE(
+      builder.AddUrlRule(UrlPattern("example.com"), testing::kThirdParty));
   EXPECT_TRUE(builder.Finish());
   EXPECT_TRUE(IsRulesetValid(builder.ruleset_contents(), builder.url_rules()));
 }
@@ -179,4 +178,4 @@ TEST(UnindexedRulesetTest, ReadCorruptedInput) {
   }
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

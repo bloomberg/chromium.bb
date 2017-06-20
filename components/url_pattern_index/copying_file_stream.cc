@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/copying_file_stream.h"
+#include "components/url_pattern_index/copying_file_stream.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 // CopyingFileInputStream ------------------------------------------------------
 
@@ -28,4 +28,4 @@ bool CopyingFileOutputStream::Write(const void* buffer, int size) {
          size;
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

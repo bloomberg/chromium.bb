@@ -13,20 +13,20 @@
 // the following: '_', '-', '.', '%'. Note that the separator placeholder
 // character '^' is itself a separator, as well as '\0'.
 
-#include "components/subresource_filter/core/common/url_pattern.h"
+#include "components/url_pattern_index/url_pattern.h"
 
 #include <stddef.h>
 
 #include <ostream>
 
 #include "base/logging.h"
-#include "components/subresource_filter/core/common/flat/url_pattern_index_generated.h"
-#include "components/subresource_filter/core/common/fuzzy_pattern_matching.h"
-#include "components/subresource_filter/core/common/string_splitter.h"
+#include "components/url_pattern_index/flat/url_pattern_index_generated.h"
+#include "components/url_pattern_index/fuzzy_pattern_matching.h"
+#include "components/url_pattern_index/string_splitter.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 
-namespace subresource_filter {
+namespace url_pattern_index {
 
 namespace {
 
@@ -253,4 +253,4 @@ std::ostream& operator<<(std::ostream& out, const UrlPattern& pattern) {
   return out;
 }
 
-}  // namespace subresource_filter
+}  // namespace url_pattern_index

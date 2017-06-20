@@ -11,10 +11,12 @@ for more details about the presubmit API built into depot_tools.
 def CheckIndexedRulesetVersion(input_api, output_api):
   """ Checks that IndexedRuleset format version is modified when necessary.
 
-  Whenever a *.fbs or indexed_ruleset.cc file is touched in
-  components/subresource_filter/core/common and kIndexedFormatVersion constant
-  is not changed, this check returns a presubmit warning to make sure the value
-  should not be updated.
+  Whenever any of the following files is changed:
+   - components/subresource_filter/core/common/indexed_ruleset.cc
+   - components/url_pattern_index/flat/*.fbs
+   - components/url_pattern_index/url_pattern_index.cc
+  and kIndexedFormatVersion constant stays intact, this check returns a
+  presubmit warning to make sure the value should not be updated.
   """
 
   indexed_ruleset_changed = False
@@ -22,7 +24,8 @@ def CheckIndexedRulesetVersion(input_api, output_api):
 
   for affected_file in input_api.AffectedFiles():
     path = affected_file.LocalPath()
-    if not 'components/subresource_filter/core/common' in path:
+    if (not 'components/subresource_filter/core/common' in path and
+        not 'components/url_pattern_index/flat' in path):
       continue
     basename = input_api.basename(path)
 
@@ -37,9 +40,9 @@ def CheckIndexedRulesetVersion(input_api, output_api):
 
   if indexed_ruleset_changed and not indexed_ruleset_version_changed:
     return [output_api.PresubmitPromptWarning(
-        'Please make sure that IndexedRuleset modifications in *.fbs and '
-        'indexed_ruleset.cc do not require updating '
-        'RulesetIndexer::kIndexedFormatVersion.')]
+        'Please make sure that UrlPatternIndex/IndexedRuleset modifications in '
+        '*.fbs and url_pattern_index.cc/indexed_ruleset.cc do not require '
+        'updating RulesetIndexer::kIndexedFormatVersion.')]
   return []
 
 def CheckChangeOnUpload(input_api, output_api):

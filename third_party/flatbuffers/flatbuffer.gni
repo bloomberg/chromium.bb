@@ -68,6 +68,7 @@ template("flatbuffer") {
     tool = "//third_party/flatbuffers:flatc"
 
     sources = invoker.sources
+    deps = []
 
     if (defined(invoker.flatc_out_dir)) {
       out_dir = "$root_gen_dir/" + invoker.flatc_out_dir
@@ -137,6 +138,11 @@ template("flatbuffer") {
     # action won't link it).
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+
+    # Same for public_deps.
+    if (defined(invoker.public_deps)) {
+      public_deps += invoker.public_deps
     }
   }
 }
