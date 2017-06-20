@@ -18,7 +18,6 @@
 
 namespace base {
 class RefCountedMemory;
-class TaskRunner;
 }
 
 namespace printing {
@@ -41,8 +40,7 @@ class PRINTING_EXPORT PrintedDocument
   // originating source and settings.
   PrintedDocument(const PrintSettings& settings,
                   PrintedPagesSource* source,
-                  int cookie,
-                  base::TaskRunner* blocking_runner);
+                  int cookie);
 
   // Sets a page's data. 0-based. Takes metafile ownership.
   // Note: locks for a short amount of time.
@@ -154,8 +152,7 @@ class PRINTING_EXPORT PrintedDocument
   struct Immutable {
     Immutable(const PrintSettings& settings,
               PrintedPagesSource* source,
-              int cookie,
-              base::TaskRunner* blocking_runner);
+              int cookie);
     ~Immutable();
 
     // Print settings used to generate this document. Immutable.
@@ -171,9 +168,6 @@ class PRINTING_EXPORT PrintedDocument
     // simpler hash of PrintSettings since a new document is made each time the
     // print settings change.
     int cookie_;
-
-    // Native thread for blocking operations, like file access.
-    scoped_refptr<base::TaskRunner> blocking_runner_;
   };
 
   // All writable data member access must be guarded by this lock. Needs to be
