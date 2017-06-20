@@ -79,9 +79,15 @@ message UserEventSpecifics {
   // other events belonged to.
   optional fixed64 session_id = 3;
 
+  // 4-7 reserved for future scalars.
+
+  // Used for testing and debugging EventLog system.
+  message Test {}
+
   oneof event {
-    FieldTrialEvent field_trial_event = 4;
-    LanguageDetection language_detection = 5;
-    Translation translation = 6;
+    Test test = 8;
+    FieldTrialEvent field_trial_event = 9;
+    LanguageDetection language_detection = 10;
+    Translation translation = 11;
   }
 }

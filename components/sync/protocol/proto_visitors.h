@@ -877,10 +877,13 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(event_time_usec);
   VISIT(navigation_id);
   VISIT(session_id);
+  VISIT(test);
   VISIT(field_trial_event);
   VISIT(language_detection);
   VISIT(translation);
 }
+
+VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Test& proto) {}
 
 VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {
   VISIT(id);
