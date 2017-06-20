@@ -7411,10 +7411,7 @@ static int64_t motion_mode_rd(
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
     int_mv *const single_newmv,
 #if CONFIG_EXT_INTER
-    int rate2_bmc_nocoeff, MB_MODE_INFO *best_bmc_mbmi,
-#if CONFIG_MOTION_VAR
-    int rate_mv_bmc,
-#endif  // CONFIG_MOTION_VAR
+    int rate2_bmc_nocoeff, MB_MODE_INFO *best_bmc_mbmi, int rate_mv_bmc,
 #endif  // CONFIG_EXT_INTER
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
     int rs, int *skip_txfm_sb, int64_t *skip_sse_sb, BUFFER_SET *orig_dst) {
@@ -7864,9 +7861,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_EXT_INTER
   int rate2_bmc_nocoeff;
   MB_MODE_INFO best_bmc_mbmi;
-#if CONFIG_MOTION_VAR
   int rate_mv_bmc;
-#endif  // CONFIG_MOTION_VAR
 #endif  // CONFIG_EXT_INTER
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   int64_t rd = INT64_MAX;
@@ -8120,9 +8115,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   best_bmc_mbmi = *mbmi;
   rate2_bmc_nocoeff = rd_stats->rate;
   if (cm->interp_filter == SWITCHABLE) rate2_bmc_nocoeff += rs;
-#if CONFIG_MOTION_VAR
   rate_mv_bmc = rate_mv;
-#endif  // CONFIG_MOTION_VAR
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
@@ -8504,10 +8497,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
                            single_newmv,
 #if CONFIG_EXT_INTER
-                           rate2_bmc_nocoeff, &best_bmc_mbmi,
-#if CONFIG_MOTION_VAR
-                           rate_mv_bmc,
-#endif  // CONFIG_MOTION_VAR
+                           rate2_bmc_nocoeff, &best_bmc_mbmi, rate_mv_bmc,
 #endif  // CONFIG_EXT_INTER
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
                            rs, &skip_txfm_sb, &skip_sse_sb, &orig_dst);
