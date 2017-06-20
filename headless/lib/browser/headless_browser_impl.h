@@ -80,9 +80,10 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
   // platform specific headless implementation.
   // Helper for one time initialization of application
   void PlatformInitialize();
-  void PlatformCreateWindow();
-  void PlatformInitializeWebContents(const gfx::Size& initial_size,
-                                     HeadlessWebContentsImpl* web_contents);
+  void PlatformStart();
+  void PlatformInitializeWebContents(HeadlessWebContentsImpl* web_contents);
+  void PlatformSetWebContentsBounds(HeadlessWebContentsImpl* web_contents,
+                                    const gfx::Rect& bounds);
 
  protected:
   base::Callback<void(HeadlessBrowser*)> on_start_callback_;

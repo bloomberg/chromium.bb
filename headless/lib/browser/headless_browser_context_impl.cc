@@ -333,6 +333,21 @@ const std::string& HeadlessBrowserContextImpl::Id() const {
   return id_;
 }
 
+void HeadlessBrowserContextImpl::AddObserver(Observer* obs) {
+  observers_.AddObserver(obs);
+}
+
+void HeadlessBrowserContextImpl::RemoveObserver(Observer* obs) {
+  observers_.RemoveObserver(obs);
+}
+
+void HeadlessBrowserContextImpl::NotifyChildContentsCreated(
+    HeadlessWebContentsImpl* parent,
+    HeadlessWebContentsImpl* child) {
+  for (auto& observer : observers_)
+    observer.OnChildContentsCreated(parent, child);
+}
+
 HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)
     : browser_(browser),
       options_(new HeadlessBrowserContextOptions(browser->options())),

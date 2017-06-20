@@ -13,7 +13,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace headless {
 
@@ -27,34 +27,39 @@ void HeadlessBrowserImpl::PlatformInitialize() {
       base::MakeUnique<HeadlessClipboard>());
 }
 
-void HeadlessBrowserImpl::PlatformCreateWindow() {
+void HeadlessBrowserImpl::PlatformStart() {
   DCHECK(aura::Env::GetInstance());
   ui::DeviceDataManager::CreateInstance();
 }
 
 void HeadlessBrowserImpl::PlatformInitializeWebContents(
-    const gfx::Size& initial_size,
     HeadlessWebContentsImpl* web_contents) {
-  gfx::Rect initial_rect(initial_size);
-
-  auto window_tree_host =
-      base::MakeUnique<HeadlessWindowTreeHost>(initial_rect);
+  auto window_tree_host = base::MakeUnique<HeadlessWindowTreeHost>(gfx::Rect());
   window_tree_host->InitHost();
   gfx::NativeWindow parent_window = window_tree_host->window();
   parent_window->Show();
   window_tree_host->SetParentWindow(parent_window);
   web_contents->set_window_tree_host(std::move(window_tree_host));
 
-  gfx::NativeView contents = web_contents->web_contents()->GetNativeView();
-  DCHECK(!parent_window->Contains(contents));
-  parent_window->AddChild(contents);
-  contents->Show();
-  contents->SetBounds(initial_rect);
+  gfx::NativeView native_view = web_contents->web_contents()->GetNativeView();
+  DCHECK(!parent_window->Contains(native_view));
+  parent_window->AddChild(native_view);
+  native_view->Show();
+}
+
+void HeadlessBrowserImpl::PlatformSetWebContentsBounds(
+    HeadlessWebContentsImpl* web_contents,
+    const gfx::Rect& bounds) {
+  web_contents->window_tree_host()->SetBoundsInPixels(bounds);
+  web_contents->window_tree_host()->window()->SetBounds(bounds);
+
+  gfx::NativeView native_view = web_contents->web_contents()->GetNativeView();
+  native_view->SetBounds(bounds);
 
   content::RenderWidgetHostView* host_view =
       web_contents->web_contents()->GetRenderWidgetHostView();
   if (host_view)
-    host_view->SetSize(initial_size);
+    host_view->SetSize(bounds.size());
 }
 
 }  // namespace headless

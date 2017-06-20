@@ -149,7 +149,7 @@ class HeadlessDevToolsClientWindowManagementTest
       const browser::WindowState state,
       std::unique_ptr<browser::GetWindowBoundsResult> result) {
     const headless::browser::Bounds* actual_bounds = result->GetBounds();
-// https://crbug.com/726288: Mac does not currently support repositioning.
+// Mac does not support repositioning, as we don't show any actual window.
 #if !defined(OS_MACOSX)
     EXPECT_EQ(bounds.x(), actual_bounds->GetLeft());
     EXPECT_EQ(bounds.y(), actual_bounds->GetTop());

@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "content/public/test/browser_test.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/devtools/domains/security.h"
@@ -39,6 +40,24 @@ using testing::UnorderedElementsAre;
 
 namespace headless {
 
+#define EXPECT_CHILD_CONTENTS_CREATED(obs)                                    \
+  EXPECT_CALL((obs), OnChildContentsCreated(::testing::_, ::testing::_))      \
+      .WillOnce(::testing::DoAll(::testing::SaveArg<0>(&((obs).last_parent)), \
+                                 ::testing::SaveArg<1>(&((obs).last_child))))
+
+class MockHeadlessBrowserContextObserver
+    : public HeadlessBrowserContext::Observer {
+ public:
+  MOCK_METHOD2(OnChildContentsCreated,
+               void(HeadlessWebContents*, HeadlessWebContents*));
+
+  MockHeadlessBrowserContextObserver() {}
+  virtual ~MockHeadlessBrowserContextObserver() {}
+
+  HeadlessWebContents* last_parent;
+  HeadlessWebContents* last_child;
+};
+
 class HeadlessWebContentsTest : public HeadlessBrowserTest {};
 
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
@@ -63,14 +82,107 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
+  MockHeadlessBrowserContextObserver observer;
+  browser_context->AddObserver(&observer);
+  EXPECT_CHILD_CONTENTS_CREATED(observer);
+
   HeadlessWebContents* web_contents =
       browser_context->CreateWebContentsBuilder()
           .SetInitialURL(embedded_test_server()->GetURL("/window_open.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 
-  EXPECT_EQ(static_cast<size_t>(2),
-            browser_context->GetAllWebContents().size());
+  EXPECT_EQ(2u, browser_context->GetAllWebContents().size());
+
+  auto* parent = HeadlessWebContentsImpl::From(observer.last_parent);
+  auto* child = HeadlessWebContentsImpl::From(observer.last_child);
+  EXPECT_NE(nullptr, parent);
+  EXPECT_NE(nullptr, child);
+  EXPECT_NE(parent, child);
+
+  // Mac doesn't have WindowTreeHosts.
+  if (parent && child && parent->window_tree_host())
+    EXPECT_NE(parent->window_tree_host(), child->window_tree_host());
+}
+
+class HeadlessWindowOpenTabSocketTest : public HeadlessBrowserTest,
+                                        public HeadlessTabSocket::Listener,
+                                        public HeadlessBrowserContext::Observer,
+                                        public HeadlessWebContents::Observer {
+ public:
+  HeadlessWindowOpenTabSocketTest()
+      : devtools_client_(HeadlessDevToolsClient::Create()) {}
+
+  void SetUp() override {
+    options()->mojo_service_names.insert("headless::TabSocket");
+    HeadlessBrowserTest::SetUp();
+  }
+
+  // HeadlessTabSocket::Listener implementation.
+  void OnMessageFromTab(const std::string& message) override {
+    message_ = message;
+    FinishAsynchronousTest();
+  }
+
+  // HeadlessBrowserContext::Observer implementation.
+  void OnChildContentsCreated(HeadlessWebContents* parent,
+                              HeadlessWebContents* child) override {
+    EXPECT_EQ(nullptr, child_);
+    child_ = child;
+    child_->AddObserver(this);
+  }
+
+  // HeadlessWebContents::Observer implementation.
+  void DevToolsTargetReady() override {
+    child_->RemoveObserver(this);
+
+    // Verify tab socket of child_contents works.
+    child_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+    devtools_client_->GetRuntime()->Evaluate(
+        R"(window.TabSocket.onmessage =
+            function(message) {
+              window.TabSocket.send('Embedder sent us: ' + message);
+            };
+          )",
+        base::Bind(&HeadlessWindowOpenTabSocketTest::OnEvaluateResult,
+                   base::Unretained(this)));
+  }
+
+  void OnEvaluateResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    child_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
+
+    HeadlessTabSocket* tab_socket = child_->GetHeadlessTabSocket();
+    tab_socket->SendMessageToTab("One");
+    tab_socket->SetListener(this);
+  }
+
+ protected:
+  std::string message_;
+  HeadlessWebContents* child_ = nullptr;
+  std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessWindowOpenTabSocketTest,
+                       WindowOpenWithTabSocket) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+  browser_context->AddObserver(this);
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetTabSocketType(
+              HeadlessWebContents::Builder::TabSocketType::MAIN_WORLD)
+          .SetInitialURL(embedded_test_server()->GetURL("/window_open.html"))
+          .Build();
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  EXPECT_EQ(2u, browser_context->GetAllWebContents().size());
+  EXPECT_NE(nullptr, child_);
+
+  RunAsynchronousTest();
+  EXPECT_EQ("Embedder sent us: One", message_);
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Focus) {
