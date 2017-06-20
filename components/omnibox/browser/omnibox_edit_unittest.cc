@@ -185,7 +185,7 @@ TestingOmniboxClient::~TestingOmniboxClient() {
 std::unique_ptr<AutocompleteProviderClient>
 TestingOmniboxClient::CreateAutocompleteProviderClient() {
   std::unique_ptr<MockAutocompleteProviderClient> provider_client(
-      new MockAutocompleteProviderClient());
+      new testing::NiceMock<MockAutocompleteProviderClient>());
   EXPECT_CALL(*provider_client.get(), GetBuiltinURLs())
       .WillRepeatedly(testing::Return(std::vector<base::string16>()));
   EXPECT_CALL(*provider_client.get(), GetSchemeClassifier())
