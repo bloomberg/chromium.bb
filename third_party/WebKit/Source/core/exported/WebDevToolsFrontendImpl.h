@@ -31,6 +31,7 @@
 #ifndef WebDevToolsFrontendImpl_h
 #define WebDevToolsFrontendImpl_h
 
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
@@ -43,8 +44,9 @@ namespace blink {
 class DevToolsHost;
 class WebLocalFrameBase;
 
-class WebDevToolsFrontendImpl final : public WebDevToolsFrontend,
-                                      public InspectorFrontendClient {
+class CORE_EXPORT WebDevToolsFrontendImpl final
+    : public NON_EXPORTED_BASE(WebDevToolsFrontend),
+      public NON_EXPORTED_BASE(InspectorFrontendClient) {
   WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 
  public:
