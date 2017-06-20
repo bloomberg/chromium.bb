@@ -765,7 +765,7 @@ void CookieMonster::SetAllCookiesTask::Run() {
 
   bool result = true;
   if (positive_diff.size() > 0)
-    result = this->cookie_monster()->SetCanonicalCookies(list_);
+    result = this->cookie_monster()->SetAllCookies(list_);
 
   if (!callback_.is_null())
     callback_.Run(result);
@@ -1085,10 +1085,6 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
     return false;
   }
 
-  // Validate passed arguments against URL.
-  if (secure && !url.SchemeIsCryptographic())
-    return false;
-
   std::string cookie_domain;
   if (!cookie_util::GetCookieDomainWithString(url, domain, &cookie_domain))
     return false;
@@ -1111,11 +1107,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
       expiration_time, last_access_time, secure, http_only, same_site,
       priority));
 
-  CookieOptions options;
-  options.set_include_httponly();
-  options.set_same_site_cookie_mode(
-      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  return SetCanonicalCookie(std::move(cc), url, options);
+  return SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(), true);
 }
 
 CookieList CookieMonster::GetAllCookies() {
@@ -1434,7 +1426,7 @@ void CookieMonster::StoreLoadedCookies(
     if (creation_times_.insert(cookie_creation_time).second) {
       CanonicalCookie* cookie_ptr = cookie.get();
       CookieMap::iterator inserted = InternalInsertCookie(
-          GetKey(cookie_ptr->Domain()), std::move(cookie), GURL(), false);
+          GetKey(cookie_ptr->Domain()), std::move(cookie), false);
       const Time cookie_access_time(cookie_ptr->LastAccessDate());
       if (earliest_access_time_.is_null() ||
           cookie_access_time < earliest_access_time_)
@@ -1648,7 +1640,7 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
 
 bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
                                               const CanonicalCookie& ecc,
-                                              const GURL& source_url,
+                                              bool source_secure,
                                               bool skip_httponly,
                                               bool already_expired) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1671,7 +1663,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
     // attribute.
     //
     // See: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone
-    if (cc->IsSecure() && !source_url.SchemeIsCryptographic() &&
+    if (cc->IsSecure() && !source_secure &&
         ecc.IsEquivalentForSecureCookieMatching(*cc)) {
       skipped_secure_cookie = true;
       histogram_cookie_delete_equivalent_->Add(
@@ -1712,7 +1704,6 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
 CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     const std::string& key,
     std::unique_ptr<CanonicalCookie> cc,
-    const GURL& source_url,
     bool sync_to_store) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CanonicalCookie* cc_ptr = cc.get();
@@ -1734,27 +1725,6 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   type_sample |= cc_ptr->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
   type_sample |= cc_ptr->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
   histogram_cookie_type_->Add(type_sample);
-
-  // Histogram the type of scheme used on URLs that set cookies. This
-  // intentionally includes cookies that are set or overwritten by
-  // http:// URLs, but not cookies that are cleared by http:// URLs, to
-  // understand if the former behavior can be deprecated for Secure
-  // cookies.
-  if (!source_url.is_empty()) {
-    CookieSource cookie_source_sample;
-    if (source_url.SchemeIsCryptographic()) {
-      cookie_source_sample =
-          cc_ptr->IsSecure()
-              ? COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME
-              : COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME;
-    } else {
-      cookie_source_sample =
-          cc_ptr->IsSecure()
-              ? COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME
-              : COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME;
-    }
-    histogram_cookie_source_scheme_->Add(cookie_source_sample);
-  }
 
   RunCookieChangedCallbacks(*cc_ptr, CookieStore::ChangeCause::INSERTED);
 
@@ -1783,20 +1753,24 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
     return false;
   }
-  return SetCanonicalCookie(std::move(cc), url, options);
+  return SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(),
+                            !options.exclude_httponly());
 }
 
 bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
-                                       const GURL& source_url,
-                                       const CookieOptions& options) {
+                                       bool secure_source,
+                                       bool modify_http_only) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (cc->IsSecure() && !secure_source)
+    return false;
 
   Time creation_time = cc->CreationDate();
   const std::string key(GetKey(cc->Domain()));
   bool already_expired = cc->IsExpired(creation_time);
 
-  if (DeleteAnyEquivalentCookie(key, *cc, source_url,
-                                options.exclude_httponly(), already_expired)) {
+  if (DeleteAnyEquivalentCookie(key, *cc, secure_source, !modify_http_only,
+                                already_expired)) {
     std::string error;
     error =
         "SetCookie() not clobbering httponly cookie or secure cookie for "
@@ -1818,7 +1792,22 @@ bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
           (cc->ExpiryDate() - creation_time).InMinutes());
     }
 
-    InternalInsertCookie(key, std::move(cc), source_url, true);
+    // Histogram the type of scheme used on URLs that set cookies. This
+    // intentionally includes cookies that are set or overwritten by
+    // http:// URLs, but not cookies that are cleared by http:// URLs, to
+    // understand if the former behavior can be deprecated for Secure
+    // cookies.
+    CookieSource cookie_source_sample =
+        (secure_source
+             ? (cc->IsSecure()
+                    ? COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME
+                    : COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME)
+             : (cc->IsSecure()
+                    ? COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME
+                    : COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME));
+    histogram_cookie_source_scheme_->Add(cookie_source_sample);
+
+    InternalInsertCookie(key, std::move(cc), true);
   } else {
     VLOG(kVlogSetCookies) << "SetCookie() not storing already expired cookie.";
   }
@@ -1833,20 +1822,33 @@ bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   return true;
 }
 
-bool CookieMonster::SetCanonicalCookies(const CookieList& list) {
+bool CookieMonster::SetAllCookies(const CookieList& list) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  CookieOptions options;
-  options.set_include_httponly();
-
   for (const auto& cookie : list) {
-    // Use an empty GURL.  This method does not support setting secure cookies.
-    if (!SetCanonicalCookie(base::MakeUnique<CanonicalCookie>(cookie), GURL(),
-                            options)) {
-      return false;
+    const std::string key(GetKey(cookie.Domain()));
+    Time creation_time = cookie.CreationDate();
+    bool already_expired = cookie.IsExpired(creation_time);
+
+    bool result =
+        DeleteAnyEquivalentCookie(key, cookie, true, false, already_expired);
+    DCHECK(!result);
+
+    if (already_expired)
+      continue;
+
+    if (cookie.IsPersistent()) {
+      histogram_expiration_duration_minutes_->Add(
+          (cookie.ExpiryDate() - creation_time).InMinutes());
     }
+
+    InternalInsertCookie(key, base::MakeUnique<CanonicalCookie>(cookie), true);
+    GarbageCollect(creation_time, key);
   }
 
+  // TODO(rdsmith): If this function always returns the same value, it
+  // shouldn't have a return value.  But it should also be deleted (see
+  // https://codereview.chromium.org/2882063002/#msg64), which would
+  // solve the return value problem.
   return true;
 }
 

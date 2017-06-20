@@ -149,10 +149,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   ~CookieMonster() override;
 
-  // Replaces all the cookies by |list|. This method does not flush the backend.
-  // This method does not support setting secure cookies, which need source
-  // URLs.
-  // TODO(mmenke): This method is only used on iOS. Consider removing it.
+  // Writes all the cookies in |list| into the store, replacing existing
+  // cookies that collide.  Does not affect cookies not listed in |list|.
+  // This method does not flush the backend.
+  // TODO(rdsmith, mmenke): Do not use this function; it is deprecated
+  // and should be removed.
+  // See https://codereview.chromium.org/2882063002/#msg64.
   void SetAllCookiesAsync(const CookieList& list,
                           const SetCookiesCallback& callback);
 
@@ -515,7 +517,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
                          std::vector<CanonicalCookie*>* cookies);
 
   // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
-  // |source_url| is the URL that is attempting to set the cookie.
+  // |source_secure| indicates if the source may override existing secure
+  // cookies.
   // If |skip_httponly| is true, httponly cookies will not be deleted.  The
   // return value will be true if |skip_httponly| skipped an httponly cookie or
   // the cookie to delete was Secure and the scheme of |ecc| is insecure.  |key|
@@ -524,7 +527,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // NOTE: There should never be more than a single matching equivalent cookie.
   bool DeleteAnyEquivalentCookie(const std::string& key,
                                  const CanonicalCookie& ecc,
-                                 const GURL& source_url,
+                                 bool source_secure,
                                  bool skip_httponly,
                                  bool already_expired);
 
@@ -532,7 +535,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.
   CookieMap::iterator InternalInsertCookie(const std::string& key,
                                            std::unique_ptr<CanonicalCookie> cc,
-                                           const GURL& source_url,
                                            bool sync_to_store);
 
   // Helper function that sets cookies with more control.
@@ -543,15 +545,19 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                            const base::Time& creation_time,
                                            const CookieOptions& options);
 
-  // Helper function that sets a canonical cookie, deleting equivalents and
-  // performing garbage collection.
-  // |source_url| is the URL that's attempting to set the cookie.
-  bool SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
-                          const GURL& source_url,
-                          const CookieOptions& options);
+  // Sets a canonical cookie, deletes equivalents and performs garbage
+  // collection.  |source_secure| indicates if the cookie is being set
+  // from a secure source (e.g. a cryptographic scheme).
+  // |modify_http_only| indicates if this setting operation is allowed
+  // to affect http_only cookies.
+  bool SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cookie,
+                          bool secure_source,
+                          bool can_modify_httponly);
 
-  // Helper function calling SetCanonicalCookie() for all cookies in |list|.
-  bool SetCanonicalCookies(const CookieList& list);
+  // Sets all cookies from |list| after deleting any equivalent cookie.
+  // For data gathering purposes, this routine is treated as if it is
+  // restoring saved cookies; some statistics are not gathered in this case.
+  bool SetAllCookies(const CookieList& list);
 
   void InternalUpdateCookieAccessTime(CanonicalCookie* cc,
                                       const base::Time& current_time);
