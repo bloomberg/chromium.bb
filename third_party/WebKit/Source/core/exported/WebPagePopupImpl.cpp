@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebPagePopupImpl.h"
+#include "core/exported/WebPagePopupImpl.h"
 
 #include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/ContextFeatures.h"
@@ -40,6 +40,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -63,7 +64,6 @@
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidgetClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -202,12 +202,12 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void SetTouchAction(LocalFrame* frame, TouchAction touch_action) override {
     DCHECK(frame);
-    WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-    WebFrameWidgetBase* widget = web_frame->LocalRoot()->FrameWidget();
+    WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(frame);
+    WebFrameWidget* widget = web_frame->LocalRoot()->FrameWidget();
     if (!widget)
       return;
 
-    if (WebWidgetClient* client = widget->Client())
+    if (WebWidgetClient* client = ToWebFrameWidgetBase(widget)->Client())
       client->SetTouchAction(static_cast<WebTouchAction>(touch_action));
   }
 
@@ -219,9 +219,10 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   void SetToolTip(LocalFrame&,
                   const String& tooltip_text,
                   TextDirection dir) override {
-    if (popup_->WidgetClient())
+    if (popup_->WidgetClient()) {
       popup_->WidgetClient()->SetToolTipText(tooltip_text,
                                              ToWebTextDirection(dir));
+    }
   }
 
   WebPagePopupImpl* popup_;
@@ -416,9 +417,10 @@ void WebPagePopupImpl::UpdateAllLifecyclePhases() {
 }
 
 void WebPagePopupImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
-  if (!closing_)
+  if (!closing_) {
     PageWidgetDelegate::Paint(*page_, canvas, rect,
                               *page_->DeprecatedLocalMainFrame());
+  }
 }
 
 void WebPagePopupImpl::Resize(const WebSize& new_size_in_viewport) {

@@ -51,6 +51,8 @@ blink_core_sources("exported") {
     "WebNode.cpp",
     "WebOptionElement.cpp",
     "WebPageImportanceSignals.cpp",
+    "WebPagePopupImpl.cpp",
+    "WebPagePopupImpl.h",
     "WebPerformance.cpp",
     "WebPluginContainerBase.cpp",
     "WebPluginContainerBase.h",
