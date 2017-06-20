@@ -352,9 +352,7 @@ public class PersonalDataManager {
      */
     public static class CreditCard {
         // Note that while some of these fields are numbers, they're predominantly read,
-        // marshaled and compared as strings. To save conversions, we sometimes use strings.
-        @CardType
-        private final int mCardType;
+        // marshaled and compared as strings. To save conversions, we use strings everywhere.
         private String mGUID;
         private String mOrigin;
         private boolean mIsLocal;
@@ -373,17 +371,16 @@ public class PersonalDataManager {
         public static CreditCard create(String guid, String origin, boolean isLocal,
                 boolean isCached, String name, String number, String obfuscatedNumber, String month,
                 String year, String basicCardIssuerNetwork, int enumeratedIconId,
-                @CardType int cardType, String billingAddressId, String serverId) {
+                String billingAddressId, String serverId) {
             return new CreditCard(guid, origin, isLocal, isCached, name, number, obfuscatedNumber,
                     month, year, basicCardIssuerNetwork,
-                    ResourceId.mapToDrawableId(enumeratedIconId), cardType, billingAddressId,
-                    serverId);
+                    ResourceId.mapToDrawableId(enumeratedIconId), billingAddressId, serverId);
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
                 String name, String number, String obfuscatedNumber, String month, String year,
-                String basicCardIssuerNetwork, int issuerIconDrawableId, @CardType int cardType,
-                String billingAddressId, String serverId) {
+                String basicCardIssuerNetwork, int issuerIconDrawableId, String billingAddressId,
+                String serverId) {
             mGUID = guid;
             mOrigin = origin;
             mIsLocal = isLocal;
@@ -395,7 +392,6 @@ public class PersonalDataManager {
             mYear = year;
             mBasicCardIssuerNetwork = basicCardIssuerNetwork;
             mIssuerIconDrawableId = issuerIconDrawableId;
-            mCardType = cardType;
             mBillingAddressId = billingAddressId;
             mServerId = serverId;
         }
@@ -404,7 +400,7 @@ public class PersonalDataManager {
             this("" /* guid */, AutofillAndPaymentsPreferences.SETTINGS_ORIGIN /*origin */,
                     true /* isLocal */, false /* isCached */, "" /* name */, "" /* number */,
                     "" /* obfuscatedNumber */, "" /* month */, "" /* year */,
-                    "" /* basicCardIssuerNetwork */, 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
+                    "" /* basicCardIssuerNetwork */, 0 /* issuerIconDrawableId */,
                     "" /* billingAddressId */, "" /* serverId */);
         }
 
@@ -414,8 +410,7 @@ public class PersonalDataManager {
                 String obfuscatedNumber, String month, String year) {
             this(guid, origin, true /* isLocal */, false /* isCached */, name, number,
                     obfuscatedNumber, month, year, "" /* basicCardIssuerNetwork */,
-                    0 /* issuerIconDrawableId */, CardType.UNKNOWN, "" /* billingAddressId */,
-                    "" /* serverId */);
+                    0 /* issuerIconDrawableId */, "" /* billingAddressId */, "" /* serverId */);
         }
 
         @CalledByNative("CreditCard")
@@ -475,12 +470,6 @@ public class PersonalDataManager {
 
         public int getIssuerIconDrawableId() {
             return mIssuerIconDrawableId;
-        }
-
-        @CardType
-        @CalledByNative("CreditCard")
-        public int getCardType() {
-            return mCardType;
         }
 
         @CalledByNative("CreditCard")

@@ -162,8 +162,6 @@ struct FormFieldData;
 //   name_on_card
 //   network            Issuer network of the card. For example, "VISA". Renamed
 //                      from "type" in version 72.
-//   type               Card type. One of CreditCard::CardType enum values.
-//                      Added in version 73.
 //   last_four          Last four digits of the card number. For de-duping
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
@@ -466,7 +464,6 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion70AddSyncMetadata();
   bool MigrateToVersion71AddHasConvertedAndBillingAddressIdMetadata();
   bool MigrateToVersion72RenameCardTypeToIssuerNetwork();
-  bool MigrateToVersion73AddServerCardTypeColumn();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

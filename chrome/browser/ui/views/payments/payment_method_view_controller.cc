@@ -22,14 +22,12 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_instrument.h"
-#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -41,8 +39,8 @@ namespace payments {
 
 namespace {
 
-constexpr int kFirstTagValue =
-    static_cast<int>(PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
+constexpr int kFirstTagValue = static_cast<int>(
+    payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
 
 enum class PaymentMethodViewControllerTags : int {
   // The tag for the button that triggers the "add card" flow. Starts at
@@ -52,7 +50,7 @@ enum class PaymentMethodViewControllerTags : int {
   MAX_TAG,
 };
 
-class PaymentMethodListItem : public PaymentRequestItemList::Item {
+class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
  public:
   // Does not take ownership of |instrument|, which should not be null and
   // should outlive this object. |list| is the PaymentRequestItemList object
@@ -63,11 +61,11 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
                         PaymentRequestItemList* list,
                         PaymentRequestDialogView* dialog,
                         bool selected)
-      : PaymentRequestItemList::Item(spec,
-                                     state,
-                                     list,
-                                     selected,
-                                     /*show_edit_button=*/true),
+      : payments::PaymentRequestItemList::Item(spec,
+                                               state,
+                                               list,
+                                               selected,
+                                               /*show_edit_button=*/true),
         instrument_(instrument),
         dialog_(dialog) {}
   ~PaymentMethodListItem() override {}
@@ -92,7 +90,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     NOTREACHED();
   }
 
-  // PaymentRequestItemList::Item:
+  // payments::PaymentRequestItemList::Item:
   std::unique_ptr<views::View> CreateExtraView() override {
     std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
         instrument_->icon_resource_id(), instrument_->GetLabel());
@@ -103,12 +101,14 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
   std::unique_ptr<views::View> CreateContentView(
       base::string16* accessible_content) override {
     DCHECK(accessible_content);
-    auto card_info_container = base::MakeUnique<views::View>();
+    std::unique_ptr<views::View> card_info_container =
+        base::MakeUnique<views::View>();
     card_info_container->set_can_process_events_within_subtree(false);
 
-    auto box_layout = base::MakeUnique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
-        gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
+    std::unique_ptr<views::BoxLayout> box_layout =
+        base::MakeUnique<views::BoxLayout>(
+            views::BoxLayout::kVertical,
+            gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     card_info_container->SetLayoutManager(box_layout.release());
@@ -122,8 +122,9 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     base::string16 missing_info;
     if (!instrument_->IsCompleteForPayment()) {
       missing_info = instrument_->GetMissingInfoLabel();
-      auto missing_info_label = base::MakeUnique<views::Label>(
-          missing_info, CONTEXT_DEPRECATED_SMALL);
+      std::unique_ptr<views::Label> missing_info_label =
+          base::MakeUnique<views::Label>(missing_info,
+                                         CONTEXT_DEPRECATED_SMALL);
       missing_info_label->SetEnabledColor(
           missing_info_label->GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_LinkEnabled));
@@ -165,16 +166,6 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodListItem);
 };
 
-std::unique_ptr<views::View> CreateHeaderView(const base::string16& text) {
-  auto label = base::MakeUnique<views::Label>(text);
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetBorder(views::CreateEmptyBorder(
-      kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets, 0,
-      kPaymentRequestRowHorizontalInsets));
-  return label;
-}
-
 }  // namespace
 
 PaymentMethodViewController::PaymentMethodViewController(
@@ -184,10 +175,12 @@ PaymentMethodViewController::PaymentMethodViewController(
     : PaymentRequestSheetController(spec, state, dialog) {
   const std::vector<std::unique_ptr<PaymentInstrument>>& available_instruments =
       state->available_instruments();
-  for (const auto& instrument : available_instruments) {
-    auto item = base::MakeUnique<PaymentMethodListItem>(
-        instrument.get(), spec, state, &payment_method_list_, dialog,
-        instrument.get() == state->selected_instrument());
+  for (const std::unique_ptr<PaymentInstrument>& instrument :
+       available_instruments) {
+    std::unique_ptr<PaymentMethodListItem> item =
+        base::MakeUnique<PaymentMethodListItem>(
+            instrument.get(), spec, state, &payment_method_list_, dialog,
+            instrument.get() == state->selected_instrument());
     payment_method_list_.AddItem(std::move(item));
   }
 }
@@ -200,17 +193,7 @@ base::string16 PaymentMethodViewController::GetSheetTitle() {
 }
 
 void PaymentMethodViewController::FillContentView(views::View* content_view) {
-  auto layout = base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  content_view->SetLayoutManager(layout.release());
-
-  base::string16 sub_header =
-      GetCardTypesAreAcceptedText(spec()->supported_card_types_set());
-  if (!sub_header.empty())
-    content_view->AddChildView(CreateHeaderView(sub_header).release());
-
+  content_view->SetLayoutManager(new views::FillLayout);
   std::unique_ptr<views::View> list_view =
       payment_method_list_.CreateListView();
   list_view->set_id(
@@ -220,7 +203,7 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
 
 std::unique_ptr<views::View>
 PaymentMethodViewController::CreateExtraFooterView() {
-  auto extra_view = base::MakeUnique<views::View>();
+  std::unique_ptr<views::View> extra_view = base::MakeUnique<views::View>();
 
   extra_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),

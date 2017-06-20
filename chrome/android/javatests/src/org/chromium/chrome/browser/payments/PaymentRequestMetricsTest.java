@@ -28,7 +28,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
@@ -62,7 +61,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
     }
 
     /**

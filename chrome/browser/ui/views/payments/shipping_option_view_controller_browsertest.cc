@@ -51,9 +51,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
 
   // Go to the shipping address screen and select the first address (MI state).
   OpenShippingAddressSectionScreen();
-  EXPECT_EQ(base::ASCIIToUTF16(
-                "To see shipping methods and requirements, select an address"),
-            GetLabelText(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
+  // There is no error at the top of this screen, because no address has been
+  // selected yet.
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::SHIPPING_ADDRESS_OPTION_ERROR)));
 
   ResetEventObserverForSequence(std::list<DialogEvent>{
       DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
@@ -98,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
 
   // The address selector has this error.
   EXPECT_EQ(base::ASCIIToUTF16("We do not ship to this address"),
-            GetLabelText(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
+            GetLabelText(DialogViewID::SHIPPING_ADDRESS_OPTION_ERROR));
 
   // There is no a longer shipping option section, because no shipping options
   // are available for Canada.
@@ -107,6 +108,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
   EXPECT_EQ(nullptr,
             dialog_view()->GetViewByID(static_cast<int>(
                 DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)));
+
 }
 
 }  // namespace payments

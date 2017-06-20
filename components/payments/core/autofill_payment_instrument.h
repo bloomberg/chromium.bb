@@ -33,7 +33,6 @@ class AutofillPaymentInstrument
   AutofillPaymentInstrument(
       const std::string& method_name,
       const autofill::CreditCard& card,
-      bool matches_merchant_card_type_exactly,
       const std::vector<autofill::AutofillProfile*>& billing_profiles,
       const std::string& app_locale,
       PaymentRequestDelegate* payment_request_delegate);
@@ -42,7 +41,6 @@ class AutofillPaymentInstrument
   // PaymentInstrument:
   void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
   bool IsCompleteForPayment() override;
-  bool IsExactlyMatchingMerchantRequest() override;
   base::string16 GetMissingInfoLabel() override;
   bool IsValidForCanMakePayment() override;
   void RecordUse() override;
@@ -67,13 +65,6 @@ class AutofillPaymentInstrument
 
   // A copy of the card is owned by this object.
   autofill::CreditCard credit_card_;
-
-  // Whether the card type (credit, debit, prepaid) matches the merchant's
-  // requested card type exactly. If the merchant accepts all card types, then
-  // this variable is always "true". If the merchant accepts only a subset of
-  // the card types, then this variable is "false" for unknown card types.
-  const bool matches_merchant_card_type_exactly_;
-
   // Not owned by this object, should outlive this.
   const std::vector<autofill::AutofillProfile*>& billing_profiles_;
 

@@ -91,34 +91,6 @@ public abstract class PaymentInstrument extends PaymentOption {
     }
 
     /**
-     * @return Whether the instrument is exactly matching all filters provided by the merchant. For
-     * example, this can return false for unknown card types, if the merchant requested only debit
-     * cards.
-     */
-    public boolean isExactlyMatchingMerchantRequest() {
-        return true;
-    }
-
-    /** @return The country code (or null if none) associated with this payment instrument. */
-    @Nullable
-    public String getCountryCode() {
-        return null;
-    }
-
-    /**
-     * @return Whether presence of this payment instrument should cause the
-     * PaymentRequest.canMakePayment() to return true.
-     */
-    public boolean canMakePayment() {
-        return true;
-    }
-
-    /** @return Whether this payment instrument can be pre-selected for immediate payment. */
-    public boolean canPreselect() {
-        return true;
-    }
-
-    /**
      * Invoke the payment app to retrieve the instrument details.
      *
      * The callback will be invoked with the resulting payment details or error.

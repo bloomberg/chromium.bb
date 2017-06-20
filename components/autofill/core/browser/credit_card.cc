@@ -103,7 +103,6 @@ base::string16 NetworkForFill(const std::string& network) {
 CreditCard::CreditCard(const std::string& guid, const std::string& origin)
     : AutofillDataModel(guid, origin),
       record_type_(LOCAL_CARD),
-      card_type_(CARD_TYPE_UNKNOWN),
       network_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
@@ -491,7 +490,6 @@ void CreditCard::operator=(const CreditCard& credit_card) {
     return;
 
   record_type_ = credit_card.record_type_;
-  card_type_ = credit_card.card_type_;
   number_ = credit_card.number_;
   name_on_card_ = credit_card.name_on_card_;
   network_ = credit_card.network_;

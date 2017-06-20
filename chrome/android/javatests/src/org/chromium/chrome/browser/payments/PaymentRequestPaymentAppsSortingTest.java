@@ -19,7 +19,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
@@ -30,6 +29,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -56,7 +56,7 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
         // behind non-autofill payment instruments in payment request.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, billingAddressId, "" /* serverId */));
+                billingAddressId, "" /* serverId */));
     }
 
     @Test
@@ -67,42 +67,43 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
         // Install a payment app with Bob Pay and Alice Pay, and another payment app with Charlie
         // Pay.
         final TestPay appA =
-                new TestPay("https://alicepay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        final TestPay appB =
-                new TestPay("https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        final TestPay appC =
-                new TestPay("https://charliepay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+                new TestPay(Arrays.asList("https://alicepay.com", "https://bobpay.com"),
+                        HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        final TestPay appB = new TestPay(
+                Arrays.asList("https://charliepay.com"), HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
             public void create(WebContents webContents, Set<String> methodNames,
                     PaymentAppCreatedCallback callback) {
                 callback.onPaymentAppCreated(appA);
                 callback.onPaymentAppCreated(appB);
-                callback.onPaymentAppCreated(appC);
                 callback.onAllPaymentAppsCreated();
             }
         });
-        String alicePayId = appA.getAppIdentifier() + "https://alicepay.com";
-        String bobPayId = appB.getAppIdentifier() + "https://bobpay.com";
-        String charliePayId = appC.getAppIdentifier() + "https://charliepay.com";
+        String appAAlicePayId = appA.getAppIdentifier() + "https://alicepay.com";
+        String appABobPayId = appA.getAppIdentifier() + "https://bobpay.com";
+        String appBCharliePayId = appB.getAppIdentifier() + "https://charliepay.com";
 
         // The initial records for all payment methods are zeroes.
-        Assert.assertEquals(0, PaymentPreferencesUtil.getPaymentInstrumentUseCount(alicePayId));
-        Assert.assertEquals(0, PaymentPreferencesUtil.getPaymentInstrumentUseCount(bobPayId));
-        Assert.assertEquals(0, PaymentPreferencesUtil.getPaymentInstrumentUseCount(charliePayId));
-        Assert.assertEquals(0, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(alicePayId));
-        Assert.assertEquals(0, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(bobPayId));
+        Assert.assertEquals(0, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appAAlicePayId));
+        Assert.assertEquals(0, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appABobPayId));
         Assert.assertEquals(
-                0, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(charliePayId));
+                0, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appBCharliePayId));
+        Assert.assertEquals(
+                0, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appAAlicePayId));
+        Assert.assertEquals(
+                0, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appABobPayId));
+        Assert.assertEquals(
+                0, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appBCharliePayId));
 
         // Sets Alice Pay use count and use date to 5. Sets Bob Pay use count and use date to 10.
         // Sets Charlie Pay use count and use date to 15.
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(alicePayId, 5);
-        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(alicePayId, 5);
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(bobPayId, 10);
-        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(bobPayId, 10);
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(charliePayId, 15);
-        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(charliePayId, 15);
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(appAAlicePayId, 5);
+        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(appAAlicePayId, 5);
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(appABobPayId, 10);
+        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(appABobPayId, 10);
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(appBCharliePayId, 15);
+        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(appBCharliePayId, 15);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -125,17 +126,20 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
                 R.id.button_secondary, mPaymentRequestTestRule.getDismissed());
 
         // Checks the records for all payment instruments haven't been changed.
-        Assert.assertEquals(5, PaymentPreferencesUtil.getPaymentInstrumentUseCount(alicePayId));
-        Assert.assertEquals(10, PaymentPreferencesUtil.getPaymentInstrumentUseCount(bobPayId));
-        Assert.assertEquals(15, PaymentPreferencesUtil.getPaymentInstrumentUseCount(charliePayId));
-        Assert.assertEquals(5, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(alicePayId));
-        Assert.assertEquals(10, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(bobPayId));
+        Assert.assertEquals(5, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appAAlicePayId));
+        Assert.assertEquals(10, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appABobPayId));
         Assert.assertEquals(
-                15, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(charliePayId));
+                15, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appBCharliePayId));
+        Assert.assertEquals(
+                5, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appAAlicePayId));
+        Assert.assertEquals(
+                10, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appABobPayId));
+        Assert.assertEquals(
+                15, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appBCharliePayId));
 
         // Sets Alice Pay use count and use date to 20.
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(alicePayId, 20);
-        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(alicePayId, 20);
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(appAAlicePayId, 20);
+        PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(appAAlicePayId, 20);
 
         mPaymentRequestTestRule.reTriggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -147,9 +151,9 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
         Assert.assertEquals(
                 "https://alicepay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(0));
         Assert.assertEquals(
-                "https://charliepay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(1));
+                "https://bobpay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(1));
         Assert.assertEquals(
-                "https://bobpay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(2));
+                "https://charliepay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(2));
         Assert.assertEquals(
                 "Visa\u0020\u0020\u2022\u2006\u2022\u2006\u2022\u2006\u2022\u20061111\nJon Doe",
                 mPaymentRequestTestRule.getPaymentInstrumentLabel(3));
@@ -162,12 +166,16 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
 
         // Checks Alice Pay use count is increased by one after completing a payment request with
         // it.
-        Assert.assertEquals(21, PaymentPreferencesUtil.getPaymentInstrumentUseCount(alicePayId));
-        Assert.assertEquals(10, PaymentPreferencesUtil.getPaymentInstrumentUseCount(bobPayId));
-        Assert.assertEquals(15, PaymentPreferencesUtil.getPaymentInstrumentUseCount(charliePayId));
-        Assert.assertTrue(PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(alicePayId) > 20);
-        Assert.assertEquals(10, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(bobPayId));
         Assert.assertEquals(
-                15, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(charliePayId));
+                21, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appAAlicePayId));
+        Assert.assertEquals(10, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appABobPayId));
+        Assert.assertEquals(
+                15, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appBCharliePayId));
+        Assert.assertTrue(
+                PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appAAlicePayId) > 20);
+        Assert.assertEquals(
+                10, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appABobPayId));
+        Assert.assertEquals(
+                15, PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(appBCharliePayId));
     }
 }

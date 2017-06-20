@@ -77,10 +77,11 @@ void PaymentRequestState::OnSpecUpdated() {
 }
 
 bool PaymentRequestState::CanMakePayment() const {
-  for (const auto& instrument : available_instruments_) {
+  for (const std::unique_ptr<PaymentInstrument>& instrument :
+       available_instruments_) {
     if (instrument->IsValidForCanMakePayment()) {
       // AddAutofillPaymentInstrument() filters out available instruments based
-      // on supported card networks (visa, amex) and types (credit, debit).
+      // on supported card networks.
       DCHECK(spec_->supported_card_networks_set().find(
                  instrument->method_name()) !=
              spec_->supported_card_networks_set().end());
@@ -143,26 +144,15 @@ void PaymentRequestState::AddAutofillPaymentInstrument(
   std::string basic_card_network =
       autofill::data_util::GetPaymentRequestData(card.network())
           .basic_card_issuer_network;
-  if (!spec_->supported_card_networks_set().count(basic_card_network) ||
-      !spec_->supported_card_types_set().count(card.card_type())) {
+  if (!spec_->supported_card_networks_set().count(basic_card_network))
     return;
-  }
-
-  // The total number of card types: credit, debit, prepaid, unknown.
-  constexpr size_t kTotalNumberOfCardTypes = 4U;
-
-  // Whether the card type (credit, debit, prepaid) matches thetype that the
-  // merchant has requested exactly. This should be false for unknown card
-  // types, if the merchant cannot accept some card types.
-  bool matches_merchant_card_type_exactly =
-      card.card_type() != autofill::CreditCard::CARD_TYPE_UNKNOWN ||
-      spec_->supported_card_types_set().size() == kTotalNumberOfCardTypes;
 
   // AutofillPaymentInstrument makes a copy of |card| so it is effectively
   // owned by this object.
-  auto instrument = base::MakeUnique<AutofillPaymentInstrument>(
-      basic_card_network, card, matches_merchant_card_type_exactly,
-      shipping_profiles_, app_locale_, payment_request_delegate_);
+  std::unique_ptr<PaymentInstrument> instrument =
+      base::MakeUnique<AutofillPaymentInstrument>(
+          basic_card_network, card, shipping_profiles_, app_locale_,
+          payment_request_delegate_);
   available_instruments_.push_back(std::move(instrument));
 
   if (selected)
@@ -303,8 +293,7 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   auto first_complete_instrument =
       std::find_if(instruments.begin(), instruments.end(),
                    [](const std::unique_ptr<PaymentInstrument>& instrument) {
-                     return instrument->IsCompleteForPayment() &&
-                            instrument->IsExactlyMatchingMerchantRequest();
+                     return instrument->IsCompleteForPayment();
                    });
   selected_instrument_ = first_complete_instrument == instruments.end()
                              ? nullptr

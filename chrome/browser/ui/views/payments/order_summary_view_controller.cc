@@ -61,7 +61,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   row->SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  // The first column has resize_percent = 1 so that it stretches all the way
+  // The first column has resize_percent = 1 so that it streches all the way
   // across the row up to the amount label. This way the first label elides as
   // required.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
@@ -83,10 +83,6 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
     currency_text = CreateHintLabel(currency);
     amount_text = base::MakeUnique<views::Label>(amount);
   }
-  // Strings from the website may not match the locale of the device, so align
-  // them according to the language of the text. This will result, for example,
-  // in "he" labels being right-aligned in a browser that's using "en" locale.
-  label_text->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   amount_text->set_id(static_cast<int>(amount_label_id));
   amount_text->SetMultiLine(true);
   amount_text->SetAllowCharacterBreak(true);
