@@ -672,6 +672,80 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, SentDataObserved) {
+  ShowTaskManager();
+  GURL test_gurl = embedded_test_server()->GetURL("/title1.html");
+
+  ui_test_utils::NavigateToURL(browser(), test_gurl);
+  std::string test_js = R"(
+      document.title = 'network use';
+      var mem = new Uint8Array(16 << 20);
+      for (var i = 0; i < mem.length; i += 16) {
+        mem[i] = i;
+      }
+      var formData = new FormData();
+      formData.append('StringKey1', new Blob([mem]));
+      var request =
+          new Request(location.href, {method: 'POST', body: formData});
+      fetch(request).then(response => response.text());
+      )";
+
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetMainFrame()
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
+  // TODO(cburn): The assertion below currently assumes that the rate
+  // contribution of the entire 16MB upload arrives in a single refresh cycle.
+  // That's true now because it's only reported when the transaction completes,
+  // but if that changes in the future, this assertion may need to change.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("network use"), ColumnSpecifier::NETWORK_USE, 16000000));
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, TotalSentDataObserved) {
+  ShowTaskManager();
+  GURL test_gurl = embedded_test_server()->GetURL("/title1.html");
+
+  ui_test_utils::NavigateToURL(browser(), test_gurl);
+  std::string test_js = R"(
+      document.title = 'network use';
+      var mem = new Uint8Array(16 << 20);
+      for (var i = 0; i < mem.length; i += 16) {
+        mem[i] = i;
+      }
+      var formData = new FormData();
+      formData.append('StringKey1', new Blob([mem]));
+      var request =
+          new Request(location.href, {method: 'POST', body: formData});
+      fetch(request).then(response => response.text());
+      )";
+
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetMainFrame()
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
+
+  // This test uses |setTimeout| to exceed the Nyquist ratio to ensure that at
+  // least 1 refresh has happened of no traffic.
+  test_js = R"(
+      var request =
+          new Request(location.href, {method: 'POST', body: formData});
+      setTimeout(
+          () => {fetch(request).then(response => response.text())}, 2000);
+      )";
+
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetMainFrame()
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("network use"), ColumnSpecifier::TOTAL_NETWORK_USE,
+      16000000 * 2));
+}
+
 // Checks that task manager counts idle wakeups.
 // Flakily fails on Mac: http://crbug.com/639939
 #if defined(OS_MACOSX)

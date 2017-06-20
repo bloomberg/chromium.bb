@@ -359,6 +359,12 @@ void ChromeNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
 
 void ChromeNetworkDelegate::OnNetworkBytesSent(net::URLRequest* request,
                                                int64_t bytes_sent) {
+#if !defined(OS_ANDROID)
+  // Note: Currently, OnNetworkBytesSent is only implemented for HTTP jobs,
+  // not FTP or other types, so those kinds of bytes will not be reported here.
+  task_manager::TaskManagerInterface::OnRawBytesSent(*request, bytes_sent);
+#endif  // !defined(OS_ANDROID)
+
   ReportDataUsageStats(request, bytes_sent, 0 /* rx_bytes */);
 }
 

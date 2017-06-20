@@ -26,6 +26,8 @@ enum class ColumnSpecifier {
   SQLITE_MEMORY_USED,
   IDLE_WAKEUPS,
   MEMORY_STATE,
+  NETWORK_USE,
+  TOTAL_NETWORK_USE,
 
   COLUMN_NONE,  // Default value.
 };

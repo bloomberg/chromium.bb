@@ -91,7 +91,8 @@ TaskGroup::TaskGroup(
       cpu_usage_(0.0),
       gpu_memory_(-1),
       memory_state_(base::MemoryState::UNKNOWN),
-      per_process_network_usage_(-1),
+      per_process_network_usage_rate_(-1),
+      cumulative_per_process_network_usage_(0),
 #if defined(OS_WIN)
       gdi_current_handles_(-1),
       gdi_peak_handles_(-1),
@@ -155,7 +156,6 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
                         int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!empty());
-
   expected_on_bg_done_flags_ = refresh_flags & kBackgroundRefreshTypesMask;
   // If a refresh type was recently disabled, we need to account for that too.
   current_on_bg_done_flags_ &= expected_on_bg_done_flags_;
@@ -165,12 +165,15 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
   const bool network_usage_refresh_enabled =
       TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_NETWORK_USAGE,
                                                     refresh_flags);
-  per_process_network_usage_ = network_usage_refresh_enabled ? 0 : -1;
+
+  per_process_network_usage_rate_ = network_usage_refresh_enabled ? 0 : -1;
+  cumulative_per_process_network_usage_ = 0;
   for (Task* task : tasks_) {
     task->Refresh(update_interval, refresh_flags);
-
-    if (network_usage_refresh_enabled && task->ReportsNetworkUsage())
-      per_process_network_usage_ += task->network_usage();
+    if (network_usage_refresh_enabled) {
+      per_process_network_usage_rate_ += task->network_usage_rate();
+      cumulative_per_process_network_usage_ += task->cumulative_network_usage();
+    }
   }
 
   // 2- Refresh GPU memory (if enabled).

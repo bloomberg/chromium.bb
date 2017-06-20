@@ -47,6 +47,13 @@ void TaskManagerInterface::OnRawBytesRead(const net::URLRequest& request,
   TaskManagerIoThreadHelper::OnRawBytesRead(request, bytes_read);
 }
 
+// static
+void TaskManagerInterface::OnRawBytesSent(const net::URLRequest& request,
+                                          int64_t bytes_sent) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  TaskManagerIoThreadHelper::OnRawBytesSent(request, bytes_sent);
+}
+
 void TaskManagerInterface::AddObserver(TaskManagerObserver* observer) {
   observers_.AddObserver(observer);
   observer->observed_task_manager_ = this;

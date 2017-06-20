@@ -51,9 +51,14 @@ class TaskManagerInterface {
   static TaskManagerInterface* GetTaskManager();
 
   // This notification will be received on the IO thread from
-  // ChromeNetworkDelegate to update the task manager with network usage.
+  // ChromeNetworkDelegate to update the task manager with read network usage.
   static void OnRawBytesRead(const net::URLRequest& request,
                              int64_t bytes_read);
+
+  // This notification will be received on the IO thread from
+  // ChromeNetworkDelegate to update the task manager with sent network usage.
+  static void OnRawBytesSent(const net::URLRequest& request,
+                             int64_t bytes_sent);
 
   void AddObserver(TaskManagerObserver* observer);
   void RemoveObserver(TaskManagerObserver* observer);
@@ -172,10 +177,12 @@ class TaskManagerInterface {
                                     int* out_error_code) const = 0;
 
   // Returns the network usage (in bytes per second) during the current refresh
-  // cycle for the task with |task_id|. A value of -1 means no valid value is
-  // currently available or that task has never been notified of any network
-  // usage.
+  // cycle for the task with |task_id|.
   virtual int64_t GetNetworkUsage(TaskId task_id) const = 0;
+
+  // Returns the network usage during the current lifetime of the task
+  // for the task with |task_id|.
+  virtual int64_t GetCumulativeNetworkUsage(TaskId task_id) const = 0;
 
   // Returns the total network usage (in bytes per second) during the current
   // refresh cycle for the process on which the task with |task_id| is running.
@@ -183,6 +190,13 @@ class TaskManagerInterface {
   // can be gotten by the above GetNetworkUsage()). A value of -1 means network
   // usage calculation refresh is currently not available.
   virtual int64_t GetProcessTotalNetworkUsage(TaskId task_id) const = 0;
+
+  // Returns the total network usage during the lifetime of the process
+  // on which the task with |task_id| is running.
+  // This is the sum of all the network usage of the individual tasks (that
+  // can be gotten by the above GetTotalNetworkUsage()).
+  virtual int64_t GetCumulativeProcessTotalNetworkUsage(
+      TaskId task_id) const = 0;
 
   // Returns the Sqlite used memory (in bytes) for the task with |task_id|.
   // A value of -1 means no valid value is currently available.

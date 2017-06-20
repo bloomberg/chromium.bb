@@ -166,4 +166,355 @@ TEST_F(TaskGroupTest, NaclRefreshWithTask) {
   EXPECT_TRUE(task_group_.AreBackgroundCalculationsDone());
 }
 
+// Test the task has correct network usage rate when zero bytes read and sent.
+TEST_F(TaskGroupTest, NetworkBytesSentReadZero) {
+  const int zero_bytes = 0;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesRead(zero_bytes);
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(zero_bytes, fake_task.network_usage_rate());
+  fake_task.OnNetworkBytesSent(zero_bytes);
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(zero_bytes, fake_task.network_usage_rate());
+}
+
+// Test the task has correct network usage rate when only having read bytes.
+TEST_F(TaskGroupTest, NetworkBytesRead) {
+  const int read_bytes = 1024;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesRead(read_bytes);
+  EXPECT_EQ(0, fake_task.network_usage_rate());
+  EXPECT_EQ(read_bytes, fake_task.cumulative_network_usage());
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(read_bytes, fake_task.network_usage_rate());
+  EXPECT_EQ(read_bytes, fake_task.cumulative_network_usage());
+}
+
+// Test the task has correct network usage rate when only having sent bytes.
+TEST_F(TaskGroupTest, NetworkBytesSent) {
+  const int sent_bytes = 1023;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesSent(sent_bytes);
+  EXPECT_EQ(0, fake_task.network_usage_rate());
+  EXPECT_EQ(sent_bytes, fake_task.cumulative_network_usage());
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(sent_bytes, fake_task.network_usage_rate());
+  EXPECT_EQ(sent_bytes, fake_task.cumulative_network_usage());
+}
+
+// Test the task has correct network usage rate when only having read bytes and
+// having a non 1s refresh time.
+TEST_F(TaskGroupTest, NetworkBytesRead2SecRefresh) {
+  const int refresh_secs = 2;
+  const int read_bytes = 1024 * refresh_secs;  // for integer division
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesRead(read_bytes);
+  EXPECT_EQ(0, fake_task.network_usage_rate());
+  EXPECT_EQ(read_bytes, fake_task.cumulative_network_usage());
+  fake_task.Refresh(base::TimeDelta::FromSeconds(refresh_secs),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(read_bytes / refresh_secs, fake_task.network_usage_rate());
+  EXPECT_EQ(read_bytes, fake_task.cumulative_network_usage());
+}
+
+// Test the task has correct network usage rate when only having sent bytes and
+// having a non 1s refresh time.
+TEST_F(TaskGroupTest, NetworkBytesSent2SecRefresh) {
+  const int refresh_secs = 2;
+  const int sent_bytes = 1023 * refresh_secs;  // for integer division
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesSent(sent_bytes);
+  EXPECT_EQ(0, fake_task.network_usage_rate());
+  EXPECT_EQ(sent_bytes, fake_task.cumulative_network_usage());
+  fake_task.Refresh(base::TimeDelta::FromSeconds(refresh_secs),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(sent_bytes / refresh_secs, fake_task.network_usage_rate());
+  EXPECT_EQ(sent_bytes, fake_task.cumulative_network_usage());
+}
+
+// Tests the task has correct usage on receiving and then sending bytes.
+TEST_F(TaskGroupTest, NetworkBytesReadThenSent) {
+  const int read_bytes = 124;
+  const int sent_bytes = 1027;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesRead(read_bytes);
+  EXPECT_EQ(read_bytes, fake_task.cumulative_network_usage());
+  fake_task.OnNetworkBytesSent(sent_bytes);
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(read_bytes + sent_bytes, fake_task.network_usage_rate());
+  EXPECT_EQ(read_bytes + sent_bytes, fake_task.cumulative_network_usage());
+}
+
+// Tests the task has correct usage rate on sending and then receiving bytes.
+TEST_F(TaskGroupTest, NetworkBytesSentThenRead) {
+  const int read_bytes = 1025;
+  const int sent_bytes = 10;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesSent(sent_bytes);
+  fake_task.OnNetworkBytesRead(read_bytes);
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(read_bytes + sent_bytes, fake_task.network_usage_rate());
+}
+
+// Tests that the network usage rate goes to 0 after reading bytes then a
+// refresh with no traffic and that cumulative is still correct.
+TEST_F(TaskGroupTest, NetworkBytesReadRefreshNone) {
+  const int read_bytes = 1024;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesRead(read_bytes);
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  // Refresh to zero out the usage rate.
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(0, fake_task.network_usage_rate());
+  EXPECT_EQ(read_bytes, fake_task.cumulative_network_usage());
+}
+
+// Tests that the network usage rate goes to 0 after sending bytes then a
+// refresh with no traffic and that cumulative is still correct.
+TEST_F(TaskGroupTest, NetworkBytesSentRefreshNone) {
+  const int sent_bytes = 1024;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  fake_task.OnNetworkBytesSent(sent_bytes);
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  // Refresh to zero out the usage rate.
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(0, fake_task.network_usage_rate());
+  EXPECT_EQ(sent_bytes, fake_task.cumulative_network_usage());
+}
+
+// Tests that the network usage rate goes to 0 after a refresh with no traffic
+// and that cumulative is still correct.
+TEST_F(TaskGroupTest, NetworkBytesTransferredRefreshNone) {
+  const int read_bytes = 1024;
+  const int sent_bytes = 1;
+  const int number_of_cycles = 2;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  for (int i = 0; i < number_of_cycles; i++) {
+    fake_task.OnNetworkBytesRead(read_bytes);
+    fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
+    fake_task.OnNetworkBytesSent(sent_bytes);
+    fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
+  }
+  // Refresh to zero out the usage rate.
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(0, fake_task.network_usage_rate());
+  EXPECT_EQ((read_bytes + sent_bytes) * number_of_cycles,
+            fake_task.cumulative_network_usage());
+}
+
+// Tests that 2 tasks in 1 task group that both read bytes have correct usage
+// rates and correct cumulative network usage.
+TEST_F(TaskGroupTest, NetworkBytesReadAsGroup) {
+  const int read_bytes1 = 1024;
+  const int read_bytes2 = 789;
+  const int number_of_cycles = 2;
+  FakeTask fake_task1(base::Process::Current().Pid(), Task::RENDERER);
+  FakeTask fake_task2(base::Process::Current().Pid(), Task::RENDERER);
+
+  task_group_.AddTask(&fake_task1);
+  task_group_.AddTask(&fake_task2);
+
+  for (int i = 0; i < number_of_cycles; i++) {
+    fake_task1.OnNetworkBytesRead(read_bytes1);
+    fake_task2.OnNetworkBytesRead(read_bytes2);
+    task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                        base::TimeDelta::FromSeconds(1),
+                        REFRESH_TYPE_NETWORK_USAGE);
+    EXPECT_EQ(read_bytes1 + read_bytes2,
+              task_group_.per_process_network_usage_rate());
+  }
+
+  EXPECT_EQ((read_bytes1 + read_bytes2) * number_of_cycles,
+            task_group_.cumulative_per_process_network_usage());
+}
+
+// Tests that the network usage rate does not get affected until a refresh is
+// called and that the cumulative is as up to date as possible
+TEST_F(TaskGroupTest, NetworkBytesTransferredRefreshOutOfOrder) {
+  const int read_bytes = 1024;
+  const int sent_bytes = 1;
+  const int number_of_cycles = 4;
+  int number_of_bytes_transferred = 0;
+  FakeTask fake_task(base::Process::Current().Pid(), Task::RENDERER);
+  for (int i = 0; i < number_of_cycles; i++) {
+    fake_task.OnNetworkBytesRead(read_bytes * i);
+    number_of_bytes_transferred += read_bytes * i;
+    EXPECT_EQ(number_of_bytes_transferred,
+              fake_task.cumulative_network_usage());
+    fake_task.OnNetworkBytesSent(sent_bytes * i);
+    number_of_bytes_transferred += sent_bytes * i;
+    EXPECT_EQ(number_of_bytes_transferred,
+              fake_task.cumulative_network_usage());
+    if (i > 0) {
+      EXPECT_EQ((read_bytes + sent_bytes) * (i - 1),
+                fake_task.network_usage_rate());
+    }
+    fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
+    EXPECT_EQ((read_bytes + sent_bytes) * i, fake_task.network_usage_rate());
+  }
+  // Refresh to zero out the usage rate.
+  fake_task.Refresh(base::TimeDelta::FromSeconds(1),
+                    REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(0, fake_task.network_usage_rate());
+  EXPECT_EQ(number_of_bytes_transferred, fake_task.cumulative_network_usage());
+}
+
+// Tests that 2 tasks in 1 task group that both sent bytes have correct usage
+// rates and correct cumulative network usage.
+TEST_F(TaskGroupTest, NetworkBytesSentAsGroup) {
+  const int sent_bytes1 = 1123;
+  const int sent_bytes2 = 778;
+  FakeTask fake_task1(base::Process::Current().Pid(), Task::RENDERER);
+  FakeTask fake_task2(base::Process::Current().Pid(), Task::RENDERER);
+
+  task_group_.AddTask(&fake_task1);
+  task_group_.AddTask(&fake_task2);
+
+  fake_task1.OnNetworkBytesSent(sent_bytes1);
+  fake_task2.OnNetworkBytesSent(sent_bytes2);
+  task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                      base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(sent_bytes1 + sent_bytes2,
+            task_group_.per_process_network_usage_rate());
+
+  fake_task1.OnNetworkBytesSent(sent_bytes1);
+  fake_task2.OnNetworkBytesSent(sent_bytes2);
+  task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                      base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
+
+  EXPECT_EQ((sent_bytes1 + sent_bytes2) * 2,
+            task_group_.cumulative_per_process_network_usage());
+}
+
+// Tests that 2 tasks in 1  task group that have one sending and one reading
+// have correct usage rates for the group and correct cumulative network usage.
+TEST_F(TaskGroupTest, NetworkBytesTransferredAsGroup) {
+  const int sent_bytes = 1023;
+  const int read_bytes = 678;
+  const int number_of_cycles = 2;
+  FakeTask fake_task1(base::Process::Current().Pid(), Task::RENDERER);
+  FakeTask fake_task2(base::Process::Current().Pid(), Task::RENDERER);
+
+  task_group_.AddTask(&fake_task1);
+  task_group_.AddTask(&fake_task2);
+  for (int i = 0; i < number_of_cycles; i++) {
+    fake_task1.OnNetworkBytesSent(sent_bytes);
+    fake_task2.OnNetworkBytesRead(read_bytes);
+    task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                        base::TimeDelta::FromSeconds(1),
+                        REFRESH_TYPE_NETWORK_USAGE);
+    EXPECT_EQ(sent_bytes + read_bytes,
+              task_group_.per_process_network_usage_rate());
+  }
+
+  EXPECT_EQ((read_bytes + sent_bytes) * number_of_cycles,
+            task_group_.cumulative_per_process_network_usage());
+}
+
+// Tests that after two tasks in a task group read bytes that a refresh will
+// zero out network usage rate while maintaining the correct cumulative network
+// usage
+TEST_F(TaskGroupTest, NetworkBytesReadAsGroupThenNone) {
+  const int read_bytes1 = 1013;
+  const int read_bytes2 = 679;
+  const int number_of_cycles = 2;
+  FakeTask fake_task1(base::Process::Current().Pid(), Task::RENDERER);
+  FakeTask fake_task2(base::Process::Current().Pid(), Task::RENDERER);
+
+  task_group_.AddTask(&fake_task1);
+  task_group_.AddTask(&fake_task2);
+
+  for (int i = 0; i < number_of_cycles; i++) {
+    fake_task1.OnNetworkBytesRead(read_bytes1);
+    fake_task2.OnNetworkBytesRead(read_bytes2);
+    task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                        base::TimeDelta::FromSeconds(1),
+                        REFRESH_TYPE_NETWORK_USAGE);
+    EXPECT_EQ(read_bytes1 + read_bytes2,
+              task_group_.per_process_network_usage_rate());
+  }
+  task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                      base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(0, task_group_.per_process_network_usage_rate());
+  EXPECT_EQ((read_bytes1 + read_bytes2) * number_of_cycles,
+            task_group_.cumulative_per_process_network_usage());
+}
+
+// Tests that after two tasks in a task group send bytes that a refresh will
+// zero out network usage rate while maintaining the correct cumulative network
+// usage
+TEST_F(TaskGroupTest, NetworkBytesSentAsGroupThenNone) {
+  const int sent_bytes1 = 1023;
+  const int sent_bytes2 = 678;
+  const int number_of_cycles = 2;
+  FakeTask fake_task1(base::Process::Current().Pid(), Task::RENDERER);
+  FakeTask fake_task2(base::Process::Current().Pid(), Task::RENDERER);
+
+  task_group_.AddTask(&fake_task1);
+  task_group_.AddTask(&fake_task2);
+
+  for (int i = 0; i < number_of_cycles; i++) {
+    fake_task1.OnNetworkBytesSent(sent_bytes1);
+    fake_task2.OnNetworkBytesSent(sent_bytes2);
+    task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                        base::TimeDelta::FromSeconds(1),
+                        REFRESH_TYPE_NETWORK_USAGE);
+    EXPECT_EQ(sent_bytes1 + sent_bytes2,
+              task_group_.per_process_network_usage_rate());
+  }
+  task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                      base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(0, task_group_.per_process_network_usage_rate());
+  EXPECT_EQ((sent_bytes1 + sent_bytes2) * number_of_cycles,
+            task_group_.cumulative_per_process_network_usage());
+}
+
+// Tests that after two tasks in a task group transferred bytes that a refresh
+// will zero out network usage rate while maintaining the correct cumulative
+// network usage
+TEST_F(TaskGroupTest, NetworkBytesTransferredAsGroupThenNone) {
+  const int read_bytes = 321;
+  const int sent_bytes = 987;
+  const int number_of_cycles = 3;
+  FakeTask fake_task1(base::Process::Current().Pid(), Task::RENDERER);
+  FakeTask fake_task2(base::Process::Current().Pid(), Task::RENDERER);
+
+  task_group_.AddTask(&fake_task1);
+  task_group_.AddTask(&fake_task2);
+
+  for (int i = 0; i < number_of_cycles; i++) {
+    fake_task1.OnNetworkBytesRead(read_bytes);
+    fake_task2.OnNetworkBytesSent(sent_bytes);
+    task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                        base::TimeDelta::FromSeconds(1),
+                        REFRESH_TYPE_NETWORK_USAGE);
+    EXPECT_EQ(read_bytes + sent_bytes,
+              task_group_.per_process_network_usage_rate());
+  }
+  task_group_.Refresh(gpu::VideoMemoryUsageStats(),
+                      base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
+  EXPECT_EQ(0, task_group_.per_process_network_usage_rate());
+  EXPECT_EQ((read_bytes + sent_bytes) * number_of_cycles,
+            task_group_.cumulative_per_process_network_usage());
+}
+
 }  // namespace task_manager

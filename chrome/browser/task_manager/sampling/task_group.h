@@ -80,8 +80,11 @@ class TaskGroup {
   int64_t gpu_memory() const { return gpu_memory_; }
   bool gpu_memory_has_duplicates() const { return gpu_memory_has_duplicates_; }
   base::MemoryState memory_state() const { return memory_state_; }
-  int64_t per_process_network_usage() const {
-    return per_process_network_usage_;
+  int64_t per_process_network_usage_rate() const {
+    return per_process_network_usage_rate_;
+  }
+  int64_t cumulative_per_process_network_usage() const {
+    return cumulative_per_process_network_usage_;
   }
   bool is_backgrounded() const { return is_backgrounded_; }
 
@@ -162,7 +165,12 @@ class TaskGroup {
   base::MemoryState memory_state_;
   // The network usage in bytes per second as the sum of all network usages of
   // the individual tasks sharing the same process.
-  int64_t per_process_network_usage_;
+  int64_t per_process_network_usage_rate_;
+
+  // A continuously updating sum of all bytes that have been downloaded and
+  // uploaded by all tasks in this process.
+  int64_t cumulative_per_process_network_usage_;
+
 #if defined(OS_WIN)
   // Windows GDI and USER Handles.
   int64_t gdi_current_handles_;
