@@ -905,7 +905,7 @@
     // as per the spec, matching other Web engines.
     {
       name: "ScrollTopLeftInterop",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
