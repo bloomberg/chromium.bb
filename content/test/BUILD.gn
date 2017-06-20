@@ -1529,6 +1529,7 @@ test("content_unittests") {
     "//device/gamepad",
     "//device/gamepad:test_helpers",
     "//device/gamepad/public/cpp:shared_with_blink",
+    "//device/generic_sensor/public/cpp",
     "//device/sensors/public/cpp:full",
     "//device/sensors/public/interfaces",
     "//gin",

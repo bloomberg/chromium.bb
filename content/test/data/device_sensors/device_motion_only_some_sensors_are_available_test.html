@@ -1,15 +1,15 @@
 <html>
   <head>
-    <title>DeviceMotion test</title>
+    <title>DeviceMotion only some sensors are available test</title>
     <script type="text/javascript">
       let expectedInterval = Math.floor(1000 / 60);
       function checkMotionEvent(event) {
         return event.acceleration.x == 1 &&
                event.acceleration.y == 2 &&
                event.acceleration.z == 3 &&
-               event.accelerationIncludingGravity.x == 4 &&
-               event.accelerationIncludingGravity.y == 5 &&
-               event.accelerationIncludingGravity.z == 6 &&
+               event.accelerationIncludingGravity.x == null &&
+               event.accelerationIncludingGravity.y == null &&
+               event.accelerationIncludingGravity.z == null &&
                event.rotationRate.alpha == 7 &&
                event.rotationRate.beta == 8 &&
                event.rotationRate.gamma == 9 &&
