@@ -6,25 +6,19 @@ Polymer({
   is: 'navigation-bar',
 
   properties: {
-    backVisible: {
-      type: Boolean,
-      value: false
-    },
-    closeVisible: {
-      type: Boolean,
-      value: false
-    },
-    refreshVisible: {
-      type: Boolean,
-      value: false
-    },
-    disabled: {
-      type: Boolean,
-      value: false
-    }
+    backVisible: {type: Boolean, value: false},
+    closeVisible: {type: Boolean, value: false},
+    refreshVisible: {type: Boolean, value: false},
+    disabled: {type: Boolean, value: false}
   },
 
-  onBack_: function() { this.fire('back'); },
-  onClose_: function() { this.fire('close'); },
-  onRefresh_: function() { this.fire('refresh'); }
+  onBack_: function() {
+    this.fire('back');
+  },
+  onClose_: function() {
+    this.fire('close');
+  },
+  onRefresh_: function() {
+    this.fire('refresh');
+  }
 });

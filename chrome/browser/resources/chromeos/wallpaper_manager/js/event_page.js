@@ -9,8 +9,7 @@ var wallpaperPickerWindow = null;
 
 var surpriseWallpaper = null;
 
-function SurpriseWallpaper() {
-}
+function SurpriseWallpaper() {}
 
 /**
  * Gets SurpriseWallpaper instance. In case it hasn't been initialized, a new
@@ -40,7 +39,8 @@ SurpriseWallpaper.prototype.tryChangeWallpaper = function() {
   // wallpaper picker. If any other error occurs, proceed with local copy of
   // rss.
   WallpaperUtil.fetchURL(Constants.WallpaperRssURL, 'document', function(xhr) {
-    WallpaperUtil.saveToLocalStorage(Constants.AccessLocalRssKey,
+    WallpaperUtil.saveToLocalStorage(
+        Constants.AccessLocalRssKey,
         new XMLSerializer().serializeToString(xhr.responseXML));
     self.updateSurpriseWallpaper(xhr.responseXML);
   }, onFailure);
@@ -62,16 +62,16 @@ SurpriseWallpaper.prototype.retryLater_ = function() {
  */
 SurpriseWallpaper.prototype.fallbackToLocalRss_ = function() {
   var self = this;
-  Constants.WallpaperLocalStorage.get(Constants.AccessLocalRssKey,
-      function(items) {
-    var rssString = items[Constants.AccessLocalRssKey];
-    if (rssString) {
-      self.updateSurpriseWallpaper(new DOMParser().parseFromString(rssString,
-                                                                   'text/xml'));
-    } else {
-      self.updateSurpriseWallpaper();
-    }
-  });
+  Constants.WallpaperLocalStorage.get(
+      Constants.AccessLocalRssKey, function(items) {
+        var rssString = items[Constants.AccessLocalRssKey];
+        if (rssString) {
+          self.updateSurpriseWallpaper(
+              new DOMParser().parseFromString(rssString, 'text/xml'));
+        } else {
+          self.updateSurpriseWallpaper();
+        }
+      });
 };
 
 /**
@@ -85,26 +85,31 @@ SurpriseWallpaper.prototype.updateSurpriseWallpaper = function(opt_rss) {
     var date = new Date(new Date().toDateString()).getTime();
     for (var i = 0; i < items.length; i++) {
       item = items[i];
-      var disableDate = new Date(item.getElementsByTagNameNS(
-          Constants.WallpaperNameSpaceURI, 'disableDate')[0].textContent).
-              getTime();
-      var enableDate = new Date(item.getElementsByTagNameNS(
-          Constants.WallpaperNameSpaceURI, 'enableDate')[0].textContent).
-              getTime();
+      var disableDate =
+          new Date(item.getElementsByTagNameNS(
+                           Constants.WallpaperNameSpaceURI, 'disableDate')[0]
+                       .textContent)
+              .getTime();
+      var enableDate =
+          new Date(item.getElementsByTagNameNS(
+                           Constants.WallpaperNameSpaceURI, 'enableDate')[0]
+                       .textContent)
+              .getTime();
       var regionsString = item.getElementsByTagNameNS(
-          Constants.WallpaperNameSpaceURI, 'regions')[0].textContent;
+                                  Constants.WallpaperNameSpaceURI, 'regions')[0]
+                              .textContent;
       var regions = regionsString.split(', ');
       if (enableDate <= date && disableDate > date &&
           regions.indexOf(navigator.language) != -1) {
         var self = this;
-        this.setWallpaperFromRssItem_(item,
-                                      function() {},
-                                      function(status) {
-                                        if (status != 404)
-                                          self.retryLater_();
-                                        else
-                                          self.updateRandomWallpaper_();
-                                      });
+        this.setWallpaperFromRssItem_(
+            item, function() {},
+            function(status) {
+              if (status != 404)
+                self.retryLater_();
+              else
+                self.updateRandomWallpaper_();
+            });
         return;
       }
     }
@@ -147,34 +152,37 @@ SurpriseWallpaper.prototype.updateRandomWallpaper_ = function() {
  */
 SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
   var self = this;
-  Constants.WallpaperLocalStorage.get(Constants.AccessLocalManifestKey,
-                                      function(items) {
-    var manifest = items[Constants.AccessLocalManifestKey];
-    if (manifest && manifest.wallpaper_list) {
-      var filtered = manifest.wallpaper_list.filter(function(element) {
-        // Older version manifest do not have available_for_surprise_me field.
-        // In this case, no wallpaper should be filtered out.
-        return element.available_for_surprise_me ||
-            element.available_for_surprise_me == undefined;
+  Constants.WallpaperLocalStorage.get(
+      Constants.AccessLocalManifestKey, function(items) {
+        var manifest = items[Constants.AccessLocalManifestKey];
+        if (manifest && manifest.wallpaper_list) {
+          var filtered = manifest.wallpaper_list.filter(function(element) {
+            // Older version manifest do not have available_for_surprise_me
+            // field. In this case, no wallpaper should be filtered out.
+            return element.available_for_surprise_me ||
+                element.available_for_surprise_me == undefined;
+          });
+          var index = Math.floor(Math.random() * filtered.length);
+          var wallpaper = filtered[index];
+          var wallpaperURL =
+              wallpaper.base_url + Constants.HighResolutionSuffix;
+          var onSuccess = function() {
+            WallpaperUtil.saveWallpaperInfo(
+                wallpaperURL, wallpaper.default_layout,
+                Constants.WallpaperSourceEnum.Daily, '');
+            WallpaperUtil.saveToLocalStorage(
+                Constants.AccessLastSurpriseWallpaperChangedDate, dateString,
+                function() {
+                  WallpaperUtil.saveToSyncStorage(
+                      Constants.AccessLastSurpriseWallpaperChangedDate,
+                      dateString);
+                });
+          };
+          WallpaperUtil.setOnlineWallpaper(
+              wallpaperURL, wallpaper.default_layout, onSuccess,
+              self.retryLater_.bind(self));
+        }
       });
-      var index = Math.floor(Math.random() * filtered.length);
-      var wallpaper = filtered[index];
-      var wallpaperURL = wallpaper.base_url + Constants.HighResolutionSuffix;
-      var onSuccess = function() {
-        WallpaperUtil.saveWallpaperInfo(wallpaperURL, wallpaper.default_layout,
-            Constants.WallpaperSourceEnum.Daily, '');
-        WallpaperUtil.saveToLocalStorage(
-            Constants.AccessLastSurpriseWallpaperChangedDate,
-            dateString, function() {
-              WallpaperUtil.saveToSyncStorage(
-                Constants.AccessLastSurpriseWallpaperChangedDate,
-                dateString);
-            });
-      };
-      WallpaperUtil.setOnlineWallpaper(wallpaperURL, wallpaper.default_layout,
-          onSuccess, self.retryLater_.bind(self));
-    }
-  });
 };
 
 /**
@@ -185,26 +193,25 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
  * @param {function} onFailure Failure callback.
  * @private
  */
-SurpriseWallpaper.prototype.setWallpaperFromRssItem_ = function(item,
-                                                                onSuccess,
-                                                                onFailure) {
+SurpriseWallpaper.prototype.setWallpaperFromRssItem_ = function(
+    item, onSuccess, onFailure) {
   var url = item.querySelector('link').textContent;
-  var layout = item.getElementsByTagNameNS(
-        Constants.WallpaperNameSpaceURI, 'layout')[0].textContent;
+  var layout =
+      item.getElementsByTagNameNS(Constants.WallpaperNameSpaceURI, 'layout')[0]
+          .textContent;
   var self = this;
   WallpaperUtil.fetchURL(url, 'arraybuffer', function(xhr) {
     if (xhr.response != null) {
-      chrome.wallpaperPrivate.setCustomWallpaper(xhr.response, layout, false,
-                                                 'surprise_wallpaper',
-                                                 onSuccess);
-      WallpaperUtil.saveWallpaperInfo(url, layout,
-                                      Constants.WallpaperSourceEnum.Daily, '');
+      chrome.wallpaperPrivate.setCustomWallpaper(
+          xhr.response, layout, false, 'surprise_wallpaper', onSuccess);
+      WallpaperUtil.saveWallpaperInfo(
+          url, layout, Constants.WallpaperSourceEnum.Daily, '');
       var dateString = new Date().toDateString();
       WallpaperUtil.saveToLocalStorage(
-          Constants.AccessLastSurpriseWallpaperChangedDate,
-          dateString, function() {
+          Constants.AccessLastSurpriseWallpaperChangedDate, dateString,
+          function() {
             WallpaperUtil.saveToSyncStorage(
-              Constants.AccessLastSurpriseWallpaperChangedDate, dataString);
+                Constants.AccessLastSurpriseWallpaperChangedDate, dataString);
           });
     } else {
       self.updateRandomWallpaper_();
@@ -220,9 +227,9 @@ SurpriseWallpaper.prototype.disable = function() {
   // Makes last changed date invalid.
   WallpaperUtil.saveToLocalStorage(
       Constants.AccessLastSurpriseWallpaperChangedDate, '', function() {
-    WallpaperUtil.saveToSyncStorage(
-      Constants.AccessLastSurpriseWallpaperChangedDate, '');
-  });
+        WallpaperUtil.saveToSyncStorage(
+            Constants.AccessLastSurpriseWallpaperChangedDate, '');
+      });
 };
 
 /**
@@ -252,21 +259,23 @@ chrome.app.runtime.onLaunched.addListener(function() {
     return;
   }
 
-  chrome.app.window.create('main.html', {
-    frame: 'none',
-    width: WALLPAPER_PICKER_WIDTH,
-    height: WALLPAPER_PICKER_HEIGHT,
-    resizable: false,
-    alphaEnabled: true
-  }, function(w) {
-    wallpaperPickerWindow = w;
-    chrome.wallpaperPrivate.minimizeInactiveWindows();
-    w.onClosed.addListener(function() {
-      wallpaperPickerWindow = null;
-      chrome.wallpaperPrivate.restoreMinimizedWindows();
-    });
-    WallpaperUtil.testSendMessage('wallpaper-window-created');
-  });
+  chrome.app.window.create(
+      'main.html', {
+        frame: 'none',
+        width: WALLPAPER_PICKER_WIDTH,
+        height: WALLPAPER_PICKER_HEIGHT,
+        resizable: false,
+        alphaEnabled: true
+      },
+      function(w) {
+        wallpaperPickerWindow = w;
+        chrome.wallpaperPrivate.minimizeInactiveWindows();
+        w.onClosed.addListener(function() {
+          wallpaperPickerWindow = null;
+          chrome.wallpaperPrivate.restoreMinimizedWindows();
+        });
+        WallpaperUtil.testSendMessage('wallpaper-window-created');
+      });
 });
 
 chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
@@ -284,18 +293,17 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
       // custom wallpaper is set.
       Constants.WallpaperLocalStorage.get(
           Constants.AccessLocalWallpaperInfoKey, function(items) {
-        var localData = items[Constants.AccessLocalWallpaperInfoKey];
-        if (localData &&
-            localData.url == detail.fileEntry.name &&
-            localData.source == Constants.WallpaperSourceEnum.Custom) {
-          WallpaperUtil.setCustomWallpaperFromSyncFS(localData.url,
-                                                     localData.layout);
-        }
-      });
+            var localData = items[Constants.AccessLocalWallpaperInfoKey];
+            if (localData && localData.url == detail.fileEntry.name &&
+                localData.source == Constants.WallpaperSourceEnum.Custom) {
+              WallpaperUtil.setCustomWallpaperFromSyncFS(
+                  localData.url, localData.layout);
+            }
+          });
       // We only need to store the custom wallpaper if it was set by the
       // built-in wallpaper picker.
       if (!detail.fileEntry.name.startsWith(
-          Constants.ThirdPartyWallpaperPrefix)) {
+              Constants.ThirdPartyWallpaperPrefix)) {
         WallpaperUtil.storeWallpaperFromSyncFSToLocalFS(detail.fileEntry);
       }
     } else if (detail.action == 'deleted') {
@@ -344,19 +352,23 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
           wpDocument.querySelector('#wallpaper-grid').classList.remove('small');
           Constants.WallpaperSyncStorage.get(
               Constants.AccessSyncSurpriseMeEnabledKey, function(item) {
-            var enable = item[Constants.AccessSyncSurpriseMeEnabledKey];
-            if (enable) {
-              wpDocument.querySelector('#checkbox').classList.add('checked');
-              if (wpDocument.querySelector('.check'))
-                wpDocument.querySelector('.check').style.visibility = 'hidden';
-            } else {
-              wpDocument.querySelector('#checkbox').classList.remove('checked');
-              if (wpDocument.querySelector('.check'))
-                wpDocument.querySelector('.check').style.visibility = 'visible';
-            }
-            wpDocument.querySelector('#categories-list').disabled = enable;
-            wpDocument.querySelector('#wallpaper-grid').disabled = enable;
-          });
+                var enable = item[Constants.AccessSyncSurpriseMeEnabledKey];
+                if (enable) {
+                  wpDocument.querySelector('#checkbox')
+                      .classList.add('checked');
+                  if (wpDocument.querySelector('.check'))
+                    wpDocument.querySelector('.check').style.visibility =
+                        'hidden';
+                } else {
+                  wpDocument.querySelector('#checkbox')
+                      .classList.remove('checked');
+                  if (wpDocument.querySelector('.check'))
+                    wpDocument.querySelector('.check').style.visibility =
+                        'visible';
+                }
+                wpDocument.querySelector('#categories-list').disabled = enable;
+                wpDocument.querySelector('#wallpaper-grid').disabled = enable;
+              });
         }
       };
 
@@ -380,68 +392,84 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 
         Constants.WallpaperSyncStorage.get(
             Constants.AccessSyncSurpriseMeEnabledKey, function(enabledItems) {
-          var syncSurpriseMeEnabled =
-              enabledItems[Constants.AccessSyncSurpriseMeEnabledKey];
+              var syncSurpriseMeEnabled =
+                  enabledItems[Constants.AccessSyncSurpriseMeEnabledKey];
 
-          Constants.WallpaperSyncStorage.get(
-              Constants.AccessLastSurpriseWallpaperChangedDate,
-              function(items) {
-            var syncLastSurpriseMeChangedDate =
-                items[Constants.AccessLastSurpriseWallpaperChangedDate];
+              Constants.WallpaperSyncStorage.get(
+                  Constants.AccessLastSurpriseWallpaperChangedDate,
+                  function(items) {
+                    var syncLastSurpriseMeChangedDate =
+                        items[Constants.AccessLastSurpriseWallpaperChangedDate];
 
-            var today = new Date().toDateString();
-            // If SurpriseMe is enabled and surprise wallpaper hasn't been
-            // changed today, we should not sync the change, instead onAlarm()
-            // will be triggered to update a surprise me wallpaper.
-            if (!syncSurpriseMeEnabled ||
-                (syncSurpriseMeEnabled &&
-                 syncLastSurpriseMeChangedDate == today)) {
-              Constants.WallpaperLocalStorage.get(
-                  Constants.AccessLocalWallpaperInfoKey, function(infoItems) {
-                var localInfo =
-                    infoItems[Constants.AccessLocalWallpaperInfoKey];
-                // Normally, the wallpaper info saved in local storage and sync
-                // storage are the same. If the synced value changed by sync
-                // service, they may different. In that case, change wallpaper
-                // to the one saved in sync storage and update the local value.
-                if (!localInfo ||
-                    localInfo.url != syncInfo.url ||
-                    localInfo.layout != syncInfo.layout ||
-                    localInfo.source != syncInfo.source) {
-                  if (syncInfo.source == Constants.WallpaperSourceEnum.Online) {
-                    // TODO(bshe): Consider schedule an alarm to set online
-                    // wallpaper later when failed. Note that we need to cancel
-                    // the retry if user set another wallpaper before retry
-                    // alarm invoked.
-                    WallpaperUtil.setOnlineWallpaper(syncInfo.url,
-                        syncInfo.layout, function() {}, function() {});
-                  } else if (syncInfo.source ==
-                             Constants.WallpaperSourceEnum.Custom) {
-                    WallpaperUtil.setCustomWallpaperFromSyncFS(syncInfo.url,
-                                                               syncInfo.layout);
-                  } else if (syncInfo.source ==
-                              Constants.WallpaperSourceEnum.Default) {
-                    chrome.wallpaperPrivate.resetWallpaper();
-                  }
+                    var today = new Date().toDateString();
+                    // If SurpriseMe is enabled and surprise wallpaper hasn't
+                    // been changed today, we should not sync the change,
+                    // instead onAlarm() will be triggered to update a surprise
+                    // me wallpaper.
+                    if (!syncSurpriseMeEnabled ||
+                        (syncSurpriseMeEnabled &&
+                         syncLastSurpriseMeChangedDate == today)) {
+                      Constants.WallpaperLocalStorage.get(
+                          Constants.AccessLocalWallpaperInfoKey,
+                          function(infoItems) {
+                            var localInfo =
+                                infoItems[Constants
+                                              .AccessLocalWallpaperInfoKey];
+                            // Normally, the wallpaper info saved in local
+                            // storage and sync storage are the same. If the
+                            // synced value changed by sync service, they may
+                            // different. In that case, change wallpaper to the
+                            // one saved in sync storage and update the local
+                            // value.
+                            if (!localInfo || localInfo.url != syncInfo.url ||
+                                localInfo.layout != syncInfo.layout ||
+                                localInfo.source != syncInfo.source) {
+                              if (syncInfo.source ==
+                                  Constants.WallpaperSourceEnum.Online) {
+                                // TODO(bshe): Consider schedule an alarm to set
+                                // online wallpaper later when failed. Note that
+                                // we need to cancel the retry if user set
+                                // another wallpaper before retry alarm invoked.
+                                WallpaperUtil.setOnlineWallpaper(
+                                    syncInfo.url, syncInfo.layout,
+                                    function() {}, function() {});
+                              } else if (
+                                  syncInfo.source ==
+                                  Constants.WallpaperSourceEnum.Custom) {
+                                WallpaperUtil.setCustomWallpaperFromSyncFS(
+                                    syncInfo.url, syncInfo.layout);
+                              } else if (
+                                  syncInfo.source ==
+                                  Constants.WallpaperSourceEnum.Default) {
+                                chrome.wallpaperPrivate.resetWallpaper();
+                              }
 
-                  // If the old wallpaper is a third party wallpaper we should
-                  // remove it from the local & sync file system to free space.
-                  if (localInfo && localInfo.url.indexOf(
-                      Constants.ThirdPartyWallpaperPrefix) != -1) {
-                    WallpaperUtil.deleteWallpaperFromLocalFS(localInfo.url);
-                    WallpaperUtil.deleteWallpaperFromSyncFS(localInfo.url);
-                  }
+                              // If the old wallpaper is a third party wallpaper
+                              // we should remove it from the local & sync file
+                              // system to free space.
+                              if (localInfo &&
+                                  localInfo.url.indexOf(
+                                      Constants.ThirdPartyWallpaperPrefix) !=
+                                      -1) {
+                                WallpaperUtil.deleteWallpaperFromLocalFS(
+                                    localInfo.url);
+                                WallpaperUtil.deleteWallpaperFromSyncFS(
+                                    localInfo.url);
+                              }
 
-                  if (syncInfo && syncInfo.hasOwnProperty('appName'))
-                    updateCheckMarkAndAppNameIfAppliable(syncInfo.appName);
+                              if (syncInfo &&
+                                  syncInfo.hasOwnProperty('appName'))
+                                updateCheckMarkAndAppNameIfAppliable(
+                                    syncInfo.appName);
 
-                  WallpaperUtil.saveToLocalStorage(
-                      Constants.AccessLocalWallpaperInfoKey, syncInfo);
-                }
-              });
-            }
-          });
-        });
+                              WallpaperUtil.saveToLocalStorage(
+                                  Constants.AccessLocalWallpaperInfoKey,
+                                  syncInfo);
+                            }
+                          });
+                    }
+                  });
+            });
       }
     } else {
       // If sync theme is disabled, use values from chrome.storage.local to
@@ -465,9 +493,9 @@ chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function(
     wallpaper, thumbnail, layout, appName) {
   WallpaperUtil.saveToLocalStorage(
       Constants.AccessLocalSurpriseMeEnabledKey, false, function() {
-    WallpaperUtil.saveToSyncStorage(Constants.AccessSyncSurpriseMeEnabledKey,
-                                    false);
-  });
+        WallpaperUtil.saveToSyncStorage(
+            Constants.AccessSyncSurpriseMeEnabledKey, false);
+      });
   SurpriseWallpaper.getInstance().disable();
 
   // Make third party wallpaper syncable through different devices.

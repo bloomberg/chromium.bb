@@ -8,26 +8,24 @@
 
 login.createScreen('PasswordChangedScreen', 'password-changed', function() {
   return {
-    EXTERNAL_API: [
-      'show'
-    ],
+    EXTERNAL_API: ['show'],
 
     gaiaPasswordChanged_: null,
 
     /** @override */
     decorate: function() {
       this.gaiaPasswordChanged_ = $('gaia-password-changed');
-      this.gaiaPasswordChanged_.addEventListener('cancel',
-                                                 this.cancel.bind(this));
+      this.gaiaPasswordChanged_.addEventListener(
+          'cancel', this.cancel.bind(this));
 
       this.gaiaPasswordChanged_.addEventListener('passwordEnter', function(e) {
-          $('login-header-bar').disabled = true;
-          chrome.send('migrateUserData', [e.detail.password]);
+        $('login-header-bar').disabled = true;
+        chrome.send('migrateUserData', [e.detail.password]);
       });
 
       this.gaiaPasswordChanged_.addEventListener('proceedAnyway', function() {
-          $('login-header-bar').disabled = true;
-          chrome.send('resyncUserData');
+        $('login-header-bar').disabled = true;
+        chrome.send('resyncUserData');
       });
     },
 
@@ -36,8 +34,8 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
      */
     cancel: function() {
       if (!this.gaiaPasswordChanged_.disabled) {
-        chrome.send('cancelPasswordChangedFlow',
-                    [this.gaiaPasswordChanged_.email]);
+        chrome.send(
+            'cancelPasswordChangedFlow', [this.gaiaPasswordChanged_.email]);
       }
     },
 
@@ -72,4 +70,3 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     }
   };
 });
-

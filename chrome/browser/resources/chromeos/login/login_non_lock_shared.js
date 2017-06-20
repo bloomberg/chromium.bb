@@ -39,21 +39,21 @@
 // Register assets for async loading.
 [{
   id: SCREEN_OOBE_ENROLLMENT,
-  html: [{ url: 'chrome://oobe/enrollment.html', targetID: 'inner-container' }],
+  html: [{url: 'chrome://oobe/enrollment.html', targetID: 'inner-container'}],
   css: ['chrome://oobe/enrollment.css'],
   js: ['chrome://oobe/enrollment.js']
 }].forEach(cr.ui.login.ResourceLoader.registerAssets);
 
 (function() {
-  'use strict';
+'use strict';
 
-  document.addEventListener('DOMContentLoaded', function() {
-    // Immediately load async assets.
-    cr.ui.login.ResourceLoader.loadAssets(SCREEN_OOBE_ENROLLMENT, function() {
-      // This screen is async-loaded so we manually trigger i18n processing.
-      i18nTemplate.process($('oauth-enrollment'), loadTimeData);
-      // Delayed binding since this isn't defined yet.
-      login.OAuthEnrollmentScreen.register();
-    });
+document.addEventListener('DOMContentLoaded', function() {
+  // Immediately load async assets.
+  cr.ui.login.ResourceLoader.loadAssets(SCREEN_OOBE_ENROLLMENT, function() {
+    // This screen is async-loaded so we manually trigger i18n processing.
+    i18nTemplate.process($('oauth-enrollment'), loadTimeData);
+    // Delayed binding since this isn't defined yet.
+    login.OAuthEnrollmentScreen.register();
   });
+});
 })();

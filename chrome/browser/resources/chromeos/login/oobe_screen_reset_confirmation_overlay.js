@@ -10,8 +10,7 @@ cr.define('reset', function() {
    * Encapsulated handling of the 'Confirm reset device' overlay OOBE page.
    * @class
    */
-  function ConfirmResetOverlay() {
-  }
+  function ConfirmResetOverlay() {}
 
   cr.addSingletonGetter(ConfirmResetOverlay);
 
@@ -22,8 +21,9 @@ cr.define('reset', function() {
     initializePage: function() {
       var overlay = $('reset-confirm-overlay');
       overlay.addEventListener('cancelOverlay', function(e) {
-        $('reset').send(login.Screen.CALLBACK_USER_ACTED,
-                        USER_ACTION_RESET_CONFIRM_DISMISSED);
+        $('reset').send(
+            login.Screen.CALLBACK_USER_ACTED,
+            USER_ACTION_RESET_CONFIRM_DISMISSED);
         e.stopPropagation();
       });
       $('overlay-reset').removeAttribute('hidden');
@@ -31,7 +31,5 @@ cr.define('reset', function() {
   };
 
   // Export
-  return {
-    ConfirmResetOverlay: ConfirmResetOverlay
-  };
+  return {ConfirmResetOverlay: ConfirmResetOverlay};
 });

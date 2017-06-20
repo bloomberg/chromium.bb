@@ -58,13 +58,13 @@ WallpaperDirectories.prototype = {
       return;
     }
     var self = this;
-    window.webkitRequestFileSystem(window.PERSISTENT, WallpaperQuota,
-                                   function(fs) {
-      fs.root.getDirectory(dirName, {create: true}, function(dirEntry) {
-        self.wallpaperDirs_[dirName] = dirEntry;
-        success(dirEntry);
-      }, failure);
-    }, failure);
+    window.webkitRequestFileSystem(
+        window.PERSISTENT, WallpaperQuota, function(fs) {
+          fs.root.getDirectory(dirName, {create: true}, function(dirEntry) {
+            self.wallpaperDirs_[dirName] = dirEntry;
+            success(dirEntry);
+          }, failure);
+        }, failure);
   },
 
   /**

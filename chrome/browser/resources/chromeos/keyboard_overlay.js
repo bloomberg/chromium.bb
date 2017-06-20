@@ -4,19 +4,9 @@
 
 // <include src="keyboard_overlay_data.js">
 
-var BASE_KEYBOARD = {
-  top: 0,
-  left: 0,
-  width: 1237,
-  height: 514
-};
+var BASE_KEYBOARD = {top: 0, left: 0, width: 1237, height: 514};
 
-var BASE_INSTRUCTIONS = {
-  top: 194,
-  left: 370,
-  width: 498,
-  height: 142
-};
+var BASE_INSTRUCTIONS = {top: 194, left: 370, width: 498, height: 142};
 
 var MODIFIER_TO_CLASS = {
   'SHIFT': 'modifier-shift',
@@ -120,16 +110,16 @@ var KEYCODE_TO_LABEL = {
  * keys, their labels should change as well.
  */
 var TOP_ROW_KEY_LABEL_TO_FUNCTION_LABEL = {
-  'back' : 'f1',
-  'forward' : 'f2',
-  'reload' : 'f3',
-  'full screen' : 'f4',
-  'switch window' : 'f5',
-  'bright down' : 'f6',
-  'bright up' : 'f7',
-  'mute' : 'f8',
-  'vol. down' : 'f9',
-  'vol. up' : 'f10',
+  'back': 'f1',
+  'forward': 'f2',
+  'reload': 'f3',
+  'full screen': 'f4',
+  'switch window': 'f5',
+  'bright down': 'f6',
+  'bright up': 'f7',
+  'mute': 'f8',
+  'vol. down': 'f9',
+  'vol. up': 'f10',
 };
 
 /**
@@ -137,46 +127,46 @@ var TOP_ROW_KEY_LABEL_TO_FUNCTION_LABEL = {
  * These labels should be localized. (crbug.com/471025).
  */
 var LABEL_TO_LOCALIZED_LABEL_ID = {
-  'esc' : 'keyboardOverlayEscKeyLabel',
-  'back' : 'keyboardOverlayBackKeyLabel',
-  'forward' : 'keyboardOverlayForwardKeyLabel',
-  'reload' : 'keyboardOverlayReloadKeyLabel',
-  'full screen' : 'keyboardOverlayFullScreenKeyLabel',
-  'switch window' : 'keyboardOverlaySwitchWinKeyLabel',
-  'bright down' : 'keyboardOverlayBrightDownKeyLabel',
-  'bright up' : 'keyboardOverlayBrightUpKeyLabel',
-  'mute' : 'keyboardOverlayMuteKeyLabel',
-  'vol. down' : 'keyboardOverlayVolDownKeyLabel',
-  'vol. up' : 'keyboardOverlayVolUpKeyLabel',
-  'power' : 'keyboardOverlayPowerKeyLabel',
-  'backspace' : 'keyboardOverlayBackspaceKeyLabel',
-  'tab' : 'keyboardOverlayTabKeyLabel',
-  'search' : 'keyboardOverlaySearchKeyLabel',
-  'enter' : 'keyboardOverlayEnterKeyLabel',
-  'shift' : 'keyboardOverlayShiftKeyLabel',
-  'ctrl' : 'keyboardOverlayCtrlKeyLabel',
-  'alt' : 'keyboardOverlayAltKeyLabel',
-  'left' : 'keyboardOverlayLeftKeyLabel',
-  'right' : 'keyboardOverlayRightKeyLabel',
-  'up' : 'keyboardOverlayUpKeyLabel',
-  'down' : 'keyboardOverlayDownKeyLabel',
-  'f1' : 'keyboardOverlayF1',
-  'f2' : 'keyboardOverlayF2',
-  'f3' : 'keyboardOverlayF3',
-  'f4' : 'keyboardOverlayF4',
-  'f5' : 'keyboardOverlayF5',
-  'f6' : 'keyboardOverlayF6',
-  'f7' : 'keyboardOverlayF7',
-  'f8' : 'keyboardOverlayF8',
-  'f9' : 'keyboardOverlayF9',
-  'f10' : 'keyboardOverlayF10',
+  'esc': 'keyboardOverlayEscKeyLabel',
+  'back': 'keyboardOverlayBackKeyLabel',
+  'forward': 'keyboardOverlayForwardKeyLabel',
+  'reload': 'keyboardOverlayReloadKeyLabel',
+  'full screen': 'keyboardOverlayFullScreenKeyLabel',
+  'switch window': 'keyboardOverlaySwitchWinKeyLabel',
+  'bright down': 'keyboardOverlayBrightDownKeyLabel',
+  'bright up': 'keyboardOverlayBrightUpKeyLabel',
+  'mute': 'keyboardOverlayMuteKeyLabel',
+  'vol. down': 'keyboardOverlayVolDownKeyLabel',
+  'vol. up': 'keyboardOverlayVolUpKeyLabel',
+  'power': 'keyboardOverlayPowerKeyLabel',
+  'backspace': 'keyboardOverlayBackspaceKeyLabel',
+  'tab': 'keyboardOverlayTabKeyLabel',
+  'search': 'keyboardOverlaySearchKeyLabel',
+  'enter': 'keyboardOverlayEnterKeyLabel',
+  'shift': 'keyboardOverlayShiftKeyLabel',
+  'ctrl': 'keyboardOverlayCtrlKeyLabel',
+  'alt': 'keyboardOverlayAltKeyLabel',
+  'left': 'keyboardOverlayLeftKeyLabel',
+  'right': 'keyboardOverlayRightKeyLabel',
+  'up': 'keyboardOverlayUpKeyLabel',
+  'down': 'keyboardOverlayDownKeyLabel',
+  'f1': 'keyboardOverlayF1',
+  'f2': 'keyboardOverlayF2',
+  'f3': 'keyboardOverlayF3',
+  'f4': 'keyboardOverlayF4',
+  'f5': 'keyboardOverlayF5',
+  'f6': 'keyboardOverlayF6',
+  'f7': 'keyboardOverlayF7',
+  'f8': 'keyboardOverlayF8',
+  'f9': 'keyboardOverlayF9',
+  'f10': 'keyboardOverlayF10',
 };
 
 var COMPOUND_ENTER_KEY_DATA = [815, 107, 60, 120];
 var COMPOUND_ENTER_KEY_CLIP_PATH =
-  'polygon(0% 0%, 100% 0%, 100% 100%, 28% 100%, 28% 47%, 0% 47%)';
+    'polygon(0% 0%, 100% 0%, 100% 100%, 28% 100%, 28% 47%, 0% 47%)';
 var COMPOUND_ENTER_KEY_OVERLAY_DIV_CLIP_PATH =
-  'polygon(12% 0%, 100% 0%, 100% 97%, 12% 97%)';
+    'polygon(12% 0%, 100% 0%, 100% 97%, 12% 97%)';
 
 var IME_ID_PREFIX = '_comp_ime_';
 var EXTENSION_ID_LEN = 32;
@@ -277,8 +267,9 @@ function hex2char(hex) {
     result += String.fromCharCode(n);
   } else if (n <= 0x10FFFF) {
     n -= 0x10000;
-    result += (String.fromCharCode(0xD800 | (n >> 10)) +
-               String.fromCharCode(0xDC00 | (n & 0x3FF)));
+    result +=
+        (String.fromCharCode(0xD800 | (n >> 10)) +
+         String.fromCharCode(0xDC00 | (n & 0x3FF)));
   } else {
     console.error('hex2Char error: Code point out of range :' + hex);
   }
@@ -351,11 +342,15 @@ function getModifiers(e) {
   }
 
   // make the result array
-  return result = ['L_SHIFT', 'R_SHIFT', 'L_CTRL', 'R_CTRL', 'L_ALT', 'R_ALT',
-          'SEARCH'].filter(
-      function(modifier) {
-        return isPressed[modifier];
-      }).sort();
+  return result =
+             [
+               'L_SHIFT', 'R_SHIFT', 'L_CTRL', 'R_CTRL', 'L_ALT', 'R_ALT',
+               'SEARCH'
+             ]
+                 .filter(function(modifier) {
+                   return isPressed[modifier];
+                 })
+                 .sort();
 }
 
 /**
@@ -473,7 +468,7 @@ function getKeyLabel(keyData, modifiers) {
     keyLabel = hex2char(pos);
     if (!keyLabel) {
       continue;
-     }
+    }
     if (isAscii(keyLabel) &&
         getShortcutData()[getAction(keyLabel, modifiers)]) {
       break;
@@ -529,10 +524,10 @@ function getKeyTextValue(keyData) {
       // function-keys label (i.e. mute --> f8), and then use that label to get
       // a localized one.
       var topRowKeyAsFunctionLabel =
-        TOP_ROW_KEY_LABEL_TO_FUNCTION_LABEL[labelToBeLocalized];
+          TOP_ROW_KEY_LABEL_TO_FUNCTION_LABEL[labelToBeLocalized];
 
       labelToBeLocalized =
-        topRowKeyAsFunctionLabel ? topRowKeyAsFunctionLabel : keyData.label;
+          topRowKeyAsFunctionLabel ? topRowKeyAsFunctionLabel : keyData.label;
     }
 
     localizedLabelId = LABEL_TO_LOCALIZED_LABEL_ID[labelToBeLocalized];
@@ -569,8 +564,7 @@ function update(modifiers, normModifiers) {
     var classes = getKeyClasses(identifier, modifiers, normModifiers);
     var keyLabel = getKeyLabel(keyData, normModifiers);
     var shortcutId = shortcutData[getAction(keyLabel, normModifiers)];
-    if (modifiers.length == 0 &&
-        (identifier == '2A' || identifier == '36')) {
+    if (modifiers.length == 0 && (identifier == '2A' || identifier == '36')) {
       // Either the right or left shift keys are used to disable the caps lock
       // if it was enabled. To fix crbug.com/453623.
       shortcutId = 'keyboardOverlayDisableCapsLock';
@@ -598,9 +592,9 @@ function update(modifiers, normModifiers) {
     var keyText = $(keyTextId(identifier, i));
     var keyTextValue = getKeyTextValue(keyData);
     if (keyTextValue) {
-       keyText.style.visibility = 'visible';
+      keyText.style.visibility = 'visible';
     } else {
-       keyText.style.visibility = 'hidden';
+      keyText.style.visibility = 'hidden';
     }
     keyText.textContent = keyTextValue;
 
@@ -614,7 +608,7 @@ function update(modifiers, normModifiers) {
 
     if (layout[i][1] == 'COMPOUND_ENTER_KEY') {
       var overlayDivClasses =
-        getKeyClasses(identifier, modifiers, normModifiers);
+          getKeyClasses(identifier, modifiers, normModifiers);
       if (shortcutId)
         overlayDivClasses.push('is-shortcut');
       $(keyId(identifier, i) + '-sub').className = overlayDivClasses.join(' ');
@@ -787,7 +781,7 @@ function initLayout() {
       overlayDiv.style.width = overlayDivW + 'px';
       overlayDiv.style.height = overlayDivH + 'px';
       overlayDiv.style.webkitClipPath =
-        COMPOUND_ENTER_KEY_OVERLAY_DIV_CLIP_PATH;
+          COMPOUND_ENTER_KEY_OVERLAY_DIV_CLIP_PATH;
       keyboard.appendChild(overlayDiv);
     }
 
@@ -805,13 +799,17 @@ function initLayout() {
   keyboard.style.height = (height + 2 * (minY + 1)) + 'px';
 
   instructions.style.left = ((BASE_INSTRUCTIONS.left - BASE_KEYBOARD.left) *
-      width / BASE_KEYBOARD.width + minX) + 'px';
+                                 width / BASE_KEYBOARD.width +
+                             minX) +
+      'px';
   instructions.style.top = ((BASE_INSTRUCTIONS.top - BASE_KEYBOARD.top) *
-       height / BASE_KEYBOARD.height + minY) + 'px';
-  instructions.style.width = (width * BASE_INSTRUCTIONS.width /
-         BASE_KEYBOARD.width) + 'px';
-  instructions.style.height = (height * BASE_INSTRUCTIONS.height /
-          BASE_KEYBOARD.height) + 'px';
+                                height / BASE_KEYBOARD.height +
+                            minY) +
+      'px';
+  instructions.style.width =
+      (width * BASE_INSTRUCTIONS.width / BASE_KEYBOARD.width) + 'px';
+  instructions.style.height =
+      (height * BASE_INSTRUCTIONS.height / BASE_KEYBOARD.height) + 'px';
 }
 
 /**
@@ -836,12 +834,12 @@ function isDisplayUIScalingEnabled() {
  */
 function initDiamondKey() {
   var newLayoutData = {
-    '1D': [65.0, 287.0, 60.0, 60.0],  // left Ctrl
-    '38': [185.0, 287.0, 60.0, 60.0],  // left Alt
+    '1D': [65.0, 287.0, 60.0, 60.0],      // left Ctrl
+    '38': [185.0, 287.0, 60.0, 60.0],     // left Alt
     'E0 5B': [125.0, 287.0, 60.0, 60.0],  // search
-    '3A': [5.0, 167.0, 105.0, 60.0],  // caps lock
-    '5B': [803.0, 6.0, 72.0, 35.0],  // lock key
-    '5D': [5.0, 287.0, 60.0, 60.0]  // diamond key
+    '3A': [5.0, 167.0, 105.0, 60.0],      // caps lock
+    '5B': [803.0, 6.0, 72.0, 35.0],       // lock key
+    '5D': [5.0, 287.0, 60.0, 60.0]        // diamond key
   };
 
   var layout = getLayout();
@@ -891,10 +889,8 @@ function init() {
 function initIdentifierMap(remap) {
   for (var key in remap) {
     var val = remap[key];
-    if ((key in LABEL_TO_IDENTIFIER) &&
-        (val in LABEL_TO_IDENTIFIER)) {
-      identifierMap[LABEL_TO_IDENTIFIER[key]] =
-          LABEL_TO_IDENTIFIER[val];
+    if ((key in LABEL_TO_IDENTIFIER) && (val in LABEL_TO_IDENTIFIER)) {
+      identifierMap[LABEL_TO_IDENTIFIER[key]] = LABEL_TO_IDENTIFIER[val];
     } else {
       console.error('Invalid label map element: ' + key + ', ' + val);
     }
@@ -918,8 +914,8 @@ function initKeyboardOverlayId(inputMethodId) {
       // If the input method is a component extension IME, remove the prefix:
       //   _comp_ime_<ext_id>
       // The extension id is a hash value with 32 characters.
-      inputMethodId = inputMethodId.slice(
-          IME_ID_PREFIX.length + EXTENSION_ID_LEN);
+      inputMethodId =
+          inputMethodId.slice(IME_ID_PREFIX.length + EXTENSION_ID_LEN);
     }
     keyboardOverlayId = inputMethodIdToOverlayId[inputMethodId];
   }

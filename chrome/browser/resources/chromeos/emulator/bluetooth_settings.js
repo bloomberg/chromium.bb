@@ -61,13 +61,23 @@ Polymer({
      * A set of bluetooth devices.
      * @type !Array<!BluetoothDevice>
      */
-    devices: {type: Array, value: function() { return []; }},
+    devices: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
 
     /**
      * A set of predefined bluetooth devices.
      * @type !Array<!Bluetooth>
      */
-    predefinedDevices: {type: Array, value: function() { return []; }},
+    predefinedDevices: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
 
     /**
      * A bluetooth device object which is currently being edited.
@@ -75,7 +85,9 @@ Polymer({
      */
     currentEditableObject: {
       type: Object,
-      value: function() { return {}; }
+      value: function() {
+        return {};
+      }
     },
 
     /**
@@ -83,7 +95,12 @@ Polymer({
      * This is initially set to -1 (i.e. no device selected) because not custom
      * devices exist when the page loads.
      */
-    currentEditIndex: {type: Number, value: function() { return -1; }},
+    currentEditIndex: {
+      type: Number,
+      value: function() {
+        return -1;
+      }
+    },
 
     /**
      * A set of options for the possible bluetooth device classes/types.
@@ -95,12 +112,9 @@ Polymer({
       type: Array,
       value: function() {
         return [
-          {text: 'Unknown', value: 0},
-          {text: 'Mouse', value: 0x2580},
-          {text: 'Keyboard', value: 0x2540},
-          {text: 'Audio', value: 0x240408},
-          {text: 'Phone', value: 0x7a020c},
-          {text: 'Computer', value: 0x104}
+          {text: 'Unknown', value: 0}, {text: 'Mouse', value: 0x2580},
+          {text: 'Keyboard', value: 0x2540}, {text: 'Audio', value: 0x240408},
+          {text: 'Phone', value: 0x7a020c}, {text: 'Computer', value: 0x104}
         ];
       }
     },
@@ -112,7 +126,9 @@ Polymer({
      */
     deviceAuthenticationMethods: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
 
     /**
@@ -122,7 +138,9 @@ Polymer({
      */
     deviceAuthenticationActions: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
   },
 
@@ -149,8 +167,9 @@ Polymer({
   currentEditableObjectChanged: function(obj) {
     if (this.currentEditIndex >= 0) {
       var prop = obj.path.split('.')[1];
-      this.set('devices.' + this.currentEditIndex.toString() + '.' + prop,
-               obj.value);
+      this.set(
+          'devices.' + this.currentEditIndex.toString() + '.' + prop,
+          obj.value);
     }
   },
 
@@ -270,8 +289,9 @@ Polymer({
    * to the main adapter.
    * @param {!Array<!BluetoothDevice>} devices A list of bluetooth devices.
    */
-  updateBluetoothInfo: function(predefinedDevices, loadedCustomDevices,
-                                pairingMethodOptions, pairingActionOptions) {
+  updateBluetoothInfo: function(
+      predefinedDevices, loadedCustomDevices, pairingMethodOptions,
+      pairingActionOptions) {
     this.predefinedDevices = this.loadDevicesFromList(predefinedDevices, true);
     this.devices = this.loadDevicesFromList(loadedCustomDevices, false);
     this.deviceAuthenticationMethods = pairingMethodOptions;
@@ -288,7 +308,8 @@ Polymer({
     /** @type {!Array<!BluetoothDevice>} */ var deviceList = [];
 
     for (var i = 0; i < devices.length; ++i) {
-      if (this.devicePaths[devices[i].path] != undefined) continue;
+      if (this.devicePaths[devices[i].path] != undefined)
+        continue;
 
       // Get the label for the device class which should be selected.
       devices[i].class = this.getTextForDeviceClass(devices[i].classValue);
@@ -310,7 +331,8 @@ Polymer({
   devicePairedFromTray: function(path) {
     var obj = this.devicePaths[path];
 
-    if (obj == undefined) return;
+    if (obj == undefined)
+      return;
 
     var index = obj.index;
     var devicePath = (obj.predefined ? 'predefinedDevices.' : 'devices.');
@@ -359,7 +381,8 @@ Polymer({
   pairFailed: function(path) {
     var obj = this.devicePaths[path];
 
-    if (obj == undefined) return;
+    if (obj == undefined)
+      return;
 
     var devicePath = (obj.predefined ? 'predefinedDevices.' : 'devices.');
     devicePath += obj.index.toString();
@@ -482,7 +505,8 @@ Polymer({
    * @param {string} path A bluetooth device's path.
    */
   deviceRemovedFromMainAdapter: function(path) {
-    if (this.devicePaths[path] == undefined) return;
+    if (this.devicePaths[path] == undefined)
+      return;
 
     var obj = this.devicePaths[path];
     var devicePath = (obj.predefined ? 'predefinedDevices.' : 'devices.');

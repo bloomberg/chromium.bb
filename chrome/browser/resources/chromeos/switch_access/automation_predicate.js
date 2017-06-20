@@ -19,8 +19,8 @@ function AutomationPredicate() {}
  * @return {boolean}
  */
 AutomationPredicate.isSubtreeLeaf = function(node, scope) {
-  return AutomationPredicate.isInteresting(node)
-      || AutomationPredicate.isGroup(node, scope);
+  return AutomationPredicate.isInteresting(node) ||
+      AutomationPredicate.isGroup(node, scope);
 };
 
 /**
@@ -42,8 +42,8 @@ AutomationPredicate.isGroup = function(node, scope) {
   // Work around for client nested in client. No need to have user select both
   // clients for a window. Once locations for outer client updates correctly,
   // this won't be needed.
-  if (node.role === chrome.automation.RoleType.CLIENT
-      && node.role === scope.role && node !== scope)
+  if (node.role === chrome.automation.RoleType.CLIENT &&
+      node.role === scope.role && node !== scope)
     return false;
 
   let interestingBranches = 0;
@@ -67,8 +67,8 @@ AutomationPredicate.isGroup = function(node, scope) {
 AutomationPredicate.hasSameLocation_ = function(node1, node2) {
   let l1 = node1.location;
   let l2 = node2.location;
-  return l1.left === l2.left && l1.top === l2.top && l1.width === l2.width
-      && l1.height === l2.height;
+  return l1.left === l2.left && l1.top === l2.top && l1.width === l2.width &&
+      l1.height === l2.height;
 };
 
 /**
@@ -80,8 +80,8 @@ AutomationPredicate.hasSameLocation_ = function(node1, node2) {
  */
 AutomationPredicate.isInterestingSubtree = function(node) {
   let children = node.children || [];
-  return AutomationPredicate.isInteresting(node)
-      || children.some(AutomationPredicate.isInterestingSubtree);
+  return AutomationPredicate.isInteresting(node) ||
+      children.some(AutomationPredicate.isInterestingSubtree);
 };
 
 /**
@@ -102,21 +102,21 @@ AutomationPredicate.isInteresting = function(node) {
   // StateType.
 
   // Skip things that are offscreen
-  if (state[chrome.automation.StateType.OFFSCREEN]
-      || loc.top < 0 || loc.left < 0)
+  if (state[chrome.automation.StateType.OFFSCREEN] || loc.top < 0 ||
+      loc.left < 0)
     return false;
 
   // Should just leave these as groups
-  if (role === chrome.automation.RoleType.WEB_VIEW
-      || role === chrome.automation.RoleType.ROOT_WEB_AREA)
+  if (role === chrome.automation.RoleType.WEB_VIEW ||
+      role === chrome.automation.RoleType.ROOT_WEB_AREA)
     return false;
 
   if (parent) {
     // crbug.com/710559
     // Work around for browser tabs
-    if (role === chrome.automation.RoleType.TAB
-        && parent.role === chrome.automation.RoleType.TAB_LIST
-        && root.role === chrome.automation.RoleType.DESKTOP)
+    if (role === chrome.automation.RoleType.TAB &&
+        parent.role === chrome.automation.RoleType.TAB_LIST &&
+        root.role === chrome.automation.RoleType.DESKTOP)
       return true;
   }
 

@@ -63,13 +63,13 @@
    * Wallpaper sources enum.
    */
   WallpaperSourceEnum: {
-      Online: 'ONLINE',
-      Daily: 'DAILY',
-      OEM: 'OEM',
-      Custom: 'CUSTOM',
-      ThirdParty: 'THIRDPARTY',
-      AddNew: 'ADDNEW',
-      Default: 'DEFAULT'
+    Online: 'ONLINE',
+    Daily: 'DAILY',
+    OEM: 'OEM',
+    Custom: 'CUSTOM',
+    ThirdParty: 'THIRDPARTY',
+    AddNew: 'ADDNEW',
+    Default: 'DEFAULT'
   },
 
   /**
@@ -90,10 +90,7 @@
   /**
    * Wallpaper directory enum.
    */
-  WallpaperDirNameEnum: {
-      ORIGINAL: 'original',
-      THUMBNAIL: 'thumbnail'
-  },
+  WallpaperDirNameEnum: {ORIGINAL: 'original', THUMBNAIL: 'thumbnail'},
 
   /**
    * The filename prefix for a third party wallpaper.

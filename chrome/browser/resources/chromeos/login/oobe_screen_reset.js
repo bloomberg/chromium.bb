@@ -42,76 +42,62 @@ login.createScreen('ResetScreen', 'reset', function() {
     decorate: function() {
       var self = this;
 
-      this.declareUserAction($('powerwash-help-link'),
-                             { action_id: USER_ACTION_LEARN_MORE_PRESSED,
-                               event: 'click'
-                             });
-      this.declareUserAction($('reset-confirm-dismiss'),
-                             { action_id: USER_ACTION_RESET_CONFIRM_DISMISSED,
-                               event: 'click'
-                             });
-      this.declareUserAction($('reset-confirm-commit'),
-                             { action_id: USER_ACTION_POWERWASH_PRESSED,
-                               event: 'click'
-                             });
+      this.declareUserAction(
+          $('powerwash-help-link'),
+          {action_id: USER_ACTION_LEARN_MORE_PRESSED, event: 'click'});
+      this.declareUserAction(
+          $('reset-confirm-dismiss'),
+          {action_id: USER_ACTION_RESET_CONFIRM_DISMISSED, event: 'click'});
+      this.declareUserAction(
+          $('reset-confirm-commit'),
+          {action_id: USER_ACTION_POWERWASH_PRESSED, event: 'click'});
+
+      this.context.addObserver(CONTEXT_KEY_SCREEN_STATE, function(state) {
+        if (Oobe.getInstance().currentScreen != this) {
+          setTimeout(function() {
+            Oobe.resetSigninUI(false);
+            Oobe.showScreen({id: SCREEN_OOBE_RESET});
+          }, 0);
+        }
+        if (state == self.RESET_SCREEN_STATE.RESTART_REQUIRED)
+          self.ui_state = self.RESET_SCREEN_UI_STATE.RESTART_REQUIRED;
+        if (state == self.RESET_SCREEN_STATE.REVERT_PROMISE)
+          self.ui_state = self.RESET_SCREEN_UI_STATE.REVERT_PROMISE;
+        else if (state == self.RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
+          self.ui_state = self.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL;
+        self.setDialogView_();
+        if (state == self.RESET_SCREEN_STATE.REVERT_PROMISE) {
+          announceAccessibleMessage(
+              loadTimeData.getString('resetRevertSpinnerMessage'));
+        }
+      });
 
       this.context.addObserver(
-          CONTEXT_KEY_SCREEN_STATE,
-          function(state) {
-            if (Oobe.getInstance().currentScreen != this) {
-              setTimeout(function() {
-                Oobe.resetSigninUI(false);
-                Oobe.showScreen({id: SCREEN_OOBE_RESET});
-              }, 0);
-            }
-            if (state == self.RESET_SCREEN_STATE.RESTART_REQUIRED)
-              self.ui_state = self.RESET_SCREEN_UI_STATE.RESTART_REQUIRED;
-            if (state == self.RESET_SCREEN_STATE.REVERT_PROMISE)
-              self.ui_state = self.RESET_SCREEN_UI_STATE.REVERT_PROMISE;
-            else if (state == self.RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
-              self.ui_state = self.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL;
-            self.setDialogView_();
-            if (state == self.RESET_SCREEN_STATE.REVERT_PROMISE) {
-              announceAccessibleMessage(
-                loadTimeData.getString('resetRevertSpinnerMessage'));
-            }
-          }
-      );
-
-      this.context.addObserver(
-          CONTEXT_KEY_IS_OFFICIAL_BUILD,
-          function(isOfficial) {
+          CONTEXT_KEY_IS_OFFICIAL_BUILD, function(isOfficial) {
             $('powerwash-help-link').setAttribute('hidden', !isOfficial);
             $('oobe-reset-md').isOfficial_ = isOfficial;
-          }
-      );
+          });
       this.context.addObserver(
-          CONTEXT_KEY_ROLLBACK_CHECKED,
-          function(rollbackChecked) {
+          CONTEXT_KEY_ROLLBACK_CHECKED, function(rollbackChecked) {
             self.setRollbackOptionView();
-          }
-      );
+          });
       this.context.addObserver(
-          CONTEXT_KEY_ROLLBACK_AVAILABLE,
-          function(rollbackAvailable) {
+          CONTEXT_KEY_ROLLBACK_AVAILABLE, function(rollbackAvailable) {
             self.setRollbackOptionView();
-          }
-      );
+          });
       this.context.addObserver(
-          CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW,
-          function(is_confirmational) {
+          CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, function(is_confirmational) {
             if (is_confirmational) {
               console.log(self.context.get(CONTEXT_KEY_SCREEN_STATE, 0));
               if (self.context.get(CONTEXT_KEY_SCREEN_STATE, 0) !=
                   self.RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
-              return;
+                return;
               console.log(self);
               reset.ConfirmResetOverlay.getInstance().initializePage();
             } else {
               $('overlay-reset').setAttribute('hidden', true);
             }
-          }
-      );
+          });
     },
 
     /**
@@ -131,10 +117,9 @@ login.createScreen('ResetScreen', 'reset', function() {
       var restartButton = this.ownerDocument.createElement('button');
       restartButton.id = 'reset-restart-button';
       restartButton.textContent = loadTimeData.getString('resetButtonRestart');
-      this.declareUserAction(restartButton,
-                             { action_id: USER_ACTION_RESTART_PRESSED,
-                               event: 'click'
-                             });
+      this.declareUserAction(
+          restartButton,
+          {action_id: USER_ACTION_RESTART_PRESSED, event: 'click'});
       buttons.push(restartButton);
 
       // Button that leads to confirmation pop-up dialog.
@@ -142,19 +127,16 @@ login.createScreen('ResetScreen', 'reset', function() {
       toConfirmButton.id = 'reset-toconfirm-button';
       toConfirmButton.textContent =
           loadTimeData.getString('resetButtonPowerwash');
-      this.declareUserAction(toConfirmButton,
-                             { action_id: USER_ACTION_SHOW_CONFIRMATION,
-                               event: 'click'
-                             });
+      this.declareUserAction(
+          toConfirmButton,
+          {action_id: USER_ACTION_SHOW_CONFIRMATION, event: 'click'});
       buttons.push(toConfirmButton);
 
       var cancelButton = this.ownerDocument.createElement('button');
       cancelButton.id = 'reset-cancel-button';
       cancelButton.textContent = loadTimeData.getString('cancelButton');
-      this.declareUserAction(cancelButton,
-                             { action_id: USER_ACTION_CANCEL_RESET,
-                               event: 'click'
-                             });
+      this.declareUserAction(
+          cancelButton, {action_id: USER_ACTION_CANCEL_RESET, event: 'click'});
       buttons.push(cancelButton);
 
       return buttons;
@@ -167,8 +149,9 @@ login.createScreen('ResetScreen', 'reset', function() {
       // choose
       if (this.isMDMode_())
         return $('oobe-reset-md');
-      if (this.context.get(CONTEXT_KEY_SCREEN_STATE,
-                           this.RESET_SCREEN_STATE.RESTART_REQUIRED) ==
+      if (this.context.get(
+              CONTEXT_KEY_SCREEN_STATE,
+              this.RESET_SCREEN_STATE.RESTART_REQUIRED) ==
           this.RESET_SCREEN_STATE.RESTART_REQUIRED)
         return $('reset-restart-button');
       if (this.context.get(CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, false))
@@ -181,8 +164,9 @@ login.createScreen('ResetScreen', 'reset', function() {
      */
     cancel: function() {
       if (this.context.get(CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, false)) {
-        $('reset').send(login.Screen.CALLBACK_USER_ACTED,
-                        USER_ACTION_RESET_CONFIRM_DISMISSED);
+        $('reset').send(
+            login.Screen.CALLBACK_USER_ACTED,
+            USER_ACTION_RESET_CONFIRM_DISMISSED);
         return;
       }
       this.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_CANCEL_RESET);
@@ -276,13 +260,13 @@ login.createScreen('ResetScreen', 'reset', function() {
       if (this.context.get(CONTEXT_KEY_ROLLBACK_AVAILABLE, false) &&
           this.context.get(CONTEXT_KEY_ROLLBACK_CHECKED, false)) {
         // show rollback option
-        $('reset-toconfirm-button').textContent = loadTimeData.getString(
-            'resetButtonPowerwashAndRollback');
+        $('reset-toconfirm-button').textContent =
+            loadTimeData.getString('resetButtonPowerwashAndRollback');
         this.ui_state = this.RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL;
       } else {
         // hide rollback option
-        $('reset-toconfirm-button').textContent = loadTimeData.getString(
-            'resetButtonPowerwash');
+        $('reset-toconfirm-button').textContent =
+            loadTimeData.getString('resetButtonPowerwash');
         this.ui_state = this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL;
       }
       this.setDialogView_();

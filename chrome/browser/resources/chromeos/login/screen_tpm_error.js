@@ -8,9 +8,7 @@
 
 login.createScreen('TPMErrorMessageScreen', 'tpm-error-message', function() {
   return {
-    EXTERNAL_API: [
-      'show'
-    ],
+    EXTERNAL_API: ['show'],
 
     /**
      * Buttons in oobe wizard's button strip.
@@ -20,9 +18,9 @@ login.createScreen('TPMErrorMessageScreen', 'tpm-error-message', function() {
       var rebootButton = this.ownerDocument.createElement('button');
       rebootButton.id = 'reboot-button';
       rebootButton.textContent =
-        loadTimeData.getString('errorTpmFailureRebootButton');
+          loadTimeData.getString('errorTpmFailureRebootButton');
       rebootButton.addEventListener('click', function() {
-          chrome.send('rebootSystem');
+        chrome.send('rebootSystem');
       });
       return [rebootButton];
     },
@@ -35,4 +33,3 @@ login.createScreen('TPMErrorMessageScreen', 'tpm-error-message', function() {
     }
   };
 });
-

@@ -21,13 +21,10 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
       });
 
       var networkContainer = $('splash-config-network-container');
-      networkContainer.addEventListener(
-          'transitionend',
-          function(e) {
-            if (this.classList.contains('faded'))
-              $('splash-config-network').hidden = true;
-          }.bind(networkContainer)
-      );
+      networkContainer.addEventListener('transitionend', function(e) {
+        if (this.classList.contains('faded'))
+          $('splash-config-network').hidden = true;
+      }.bind(networkContainer));
 
       // Ensure the transitionend event gets called after a wait time.
       // The wait time should be inline with the transition duration time
@@ -55,8 +52,7 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
     /**
      * Event handler that is invoked just before the frame is hidden.
      */
-    onBeforeHide: function() {
-    },
+    onBeforeHide: function() {},
 
     /**
      * Toggles visibility of the network configuration option.

@@ -15,10 +15,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
   var ButtonImages = UserImagesGrid.ButtonImages;
 
   return {
-    EXTERNAL_API: [
-      'setDefaultImages',
-      'hideCurtain'
-    ],
+    EXTERNAL_API: ['setDefaultImages', 'hideCurtain'],
 
     /** @override */
     decorate: function(element) {
@@ -27,20 +24,21 @@ login.createScreen('UserImageScreen', 'user-image', function() {
 
       // Preview image will track the selected item's URL.
       var previewElement = $('user-image-preview');
-      previewElement.oncontextmenu = function(e) { e.preventDefault(); };
+      previewElement.oncontextmenu = function(e) {
+        e.preventDefault();
+      };
 
       imageGrid.previewElement = previewElement;
       imageGrid.selectionType = 'default';
       imageGrid.flipPhotoElement = $('flip-photo');
 
-      imageGrid.addEventListener('select',
-                                 this.handleSelect_.bind(this));
-      imageGrid.addEventListener('activate',
-                                 this.handleImageActivated_.bind(this));
-      imageGrid.addEventListener('phototaken',
-                                 this.handlePhotoTaken_.bind(this));
-      imageGrid.addEventListener('photoupdated',
-                                 this.handlePhotoUpdated_.bind(this));
+      imageGrid.addEventListener('select', this.handleSelect_.bind(this));
+      imageGrid.addEventListener(
+          'activate', this.handleImageActivated_.bind(this));
+      imageGrid.addEventListener(
+          'phototaken', this.handlePhotoTaken_.bind(this));
+      imageGrid.addEventListener(
+          'photoupdated', this.handlePhotoUpdated_.bind(this));
 
       // Set the title for camera item in the grid.
       imageGrid.setCameraTitles(
@@ -51,10 +49,10 @@ login.createScreen('UserImageScreen', 'user-image', function() {
 
       // Profile image data (if present).
       this.profileImage_ = imageGrid.addItem(
-          ButtonImages.PROFILE_PICTURE,           // Image URL.
-          loadTimeData.getString('profilePhoto'), // Title.
-          undefined,                              // Click handler.
-          0,                                      // Position.
+          ButtonImages.PROFILE_PICTURE,            // Image URL.
+          loadTimeData.getString('profilePhoto'),  // Title.
+          undefined,                               // Click handler.
+          0,                                       // Position.
           function(el) {
             // Custom decorator for Profile image element.
             var spinner = el.ownerDocument.createElement('div');
@@ -67,38 +65,38 @@ login.createScreen('UserImageScreen', 'user-image', function() {
           });
       this.profileImage_.type = 'profile';
 
-      $('take-photo').addEventListener(
-          'click', this.handleTakePhoto_.bind(this));
-      $('discard-photo').addEventListener(
-          'click', this.handleDiscardPhoto_.bind(this));
+      $('take-photo')
+          .addEventListener('click', this.handleTakePhoto_.bind(this));
+      $('discard-photo')
+          .addEventListener('click', this.handleDiscardPhoto_.bind(this));
 
       // Toggle 'animation' class for the duration of WebKit transition.
-      $('flip-photo').addEventListener(
-          'click', this.handleFlipPhoto_.bind(this));
-      $('user-image-stream-crop').addEventListener(
-          'transitionend', function(e) {
+      $('flip-photo')
+          .addEventListener('click', this.handleFlipPhoto_.bind(this));
+      $('user-image-stream-crop')
+          .addEventListener('transitionend', function(e) {
             previewElement.classList.remove('animation');
           });
-      $('user-image-preview-img').addEventListener(
-          'transitionend', function(e) {
+      $('user-image-preview-img')
+          .addEventListener('transitionend', function(e) {
             previewElement.classList.remove('animation');
           });
 
       var self = this;
-      this.context.addObserver(CONTEXT_KEY_IS_CAMERA_PRESENT,
-                               function(present) {
-        $('user-image-grid').cameraPresent = present;
-      });
-      this.context.addObserver(CONTEXT_KEY_SELECTED_IMAGE_URL,
-                               this.setSelectedImage_);
-      this.context.addObserver(CONTEXT_KEY_PROFILE_PICTURE_DATA_URL,
-                               function(url) {
-        self.profileImageLoading = false;
-        if (url) {
-          self.profileImage_ =
-              $('user-image-grid').updateItem(self.profileImage_, url);
-        }
-      });
+      this.context.addObserver(
+          CONTEXT_KEY_IS_CAMERA_PRESENT, function(present) {
+            $('user-image-grid').cameraPresent = present;
+          });
+      this.context.addObserver(
+          CONTEXT_KEY_SELECTED_IMAGE_URL, this.setSelectedImage_);
+      this.context.addObserver(
+          CONTEXT_KEY_PROFILE_PICTURE_DATA_URL, function(url) {
+            self.profileImageLoading = false;
+            if (url) {
+              self.profileImage_ =
+                  $('user-image-grid').updateItem(self.profileImage_, url);
+            }
+          });
 
       this.updateLocalizedContent();
 
@@ -146,8 +144,8 @@ login.createScreen('UserImageScreen', 'user-image', function() {
     },
     set profileImageLoading(value) {
       this.profileImageLoading_ = value;
-      $('user-image-screen-main').classList.toggle('profile-image-loading',
-                                                   value);
+      $('user-image-screen-main')
+          .classList.toggle('profile-image-loading', value);
       if (value)
         announceAccessibleMessage(loadTimeData.getString('syncingPreferences'));
       this.updateProfileImageCaption_();
@@ -199,16 +197,15 @@ login.createScreen('UserImageScreen', 'user-image', function() {
         if (imageGrid.selectionType == 'camera') {
           // Programmatic selection of camera item is done in
           // startCamera callback where streaming is started by itself.
-          imageGrid.startCamera(
-              function() {
-                // Start capture if camera is still the selected item.
-                $('user-image-preview-img').classList.toggle(
-                    'animated-transform', true);
-                return imageGrid.selectedItem == imageGrid.cameraImage;
-              });
+          imageGrid.startCamera(function() {
+            // Start capture if camera is still the selected item.
+            $('user-image-preview-img')
+                .classList.toggle('animated-transform', true);
+            return imageGrid.selectedItem == imageGrid.cameraImage;
+          });
         } else {
-          $('user-image-preview-img').classList.toggle('animated-transform',
-                                                       false);
+          $('user-image-preview-img')
+              .classList.toggle('animated-transform', false);
           imageGrid.stopCamera();
         }
       }
@@ -230,7 +227,8 @@ login.createScreen('UserImageScreen', 'user-image', function() {
       imageGrid.previewElement.classList.add('animation');
       imageGrid.flipPhoto = !imageGrid.flipPhoto;
       var flipMessageId = imageGrid.flipPhoto ?
-         'photoFlippedAccessibleText' : 'photoFlippedBackAccessibleText';
+          'photoFlippedAccessibleText' :
+          'photoFlippedBackAccessibleText';
       announceAccessibleMessage(loadTimeData.getString(flipMessageId));
     },
 
@@ -355,7 +353,8 @@ login.createScreen('UserImageScreen', 'user-image', function() {
     updateCaption_: function() {
       $('user-image-preview-caption').textContent =
           $('user-image-grid').selectionType == 'profile' ?
-          this.profileImageCaption : '';
+          this.profileImageCaption :
+          '';
     },
 
     /**
@@ -371,7 +370,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     updateProfileImageCaption_: function() {
       this.profileImageCaption = loadTimeData.getString(
-        this.profileImageLoading_ ? 'profilePhotoLoading' : 'profilePhoto');
+          this.profileImageLoading_ ? 'profilePhotoLoading' : 'profilePhoto');
     },
 
     /**
@@ -380,10 +379,10 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     notifyImageSelected_: function() {
       var imageGrid = $('user-image-grid');
-      chrome.send('selectImage',
-                  [imageGrid.selectedItemUrl,
-                   imageGrid.selectionType,
-                   !imageGrid.inProgramSelection]);
+      chrome.send('selectImage', [
+        imageGrid.selectedItemUrl, imageGrid.selectionType,
+        !imageGrid.inProgramSelection
+      ]);
     }
   };
 });

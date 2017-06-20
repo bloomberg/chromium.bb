@@ -23,15 +23,15 @@ function ensurePinKeyboardLoaded(onLoaded) {
   // Do not reload assets if they are already loaded. Run |onLoaded| once assets
   // are done loading, though.
   if (cr.ui.login.ResourceLoader.hasDeferredAssets('custom-elements')) {
-    cr.ui.login.ResourceLoader.waitUntilLayoutComplete(getPinKeyboard,
-                                                       onLoaded);
+    cr.ui.login.ResourceLoader.waitUntilLayoutComplete(
+        getPinKeyboard, onLoaded);
     return;
   }
 
   // Register loader for custom elements.
   cr.ui.login.ResourceLoader.registerAssets({
     id: 'custom-elements',
-    html: [{ url: 'chrome://oobe/custom_elements.html' }]
+    html: [{url: 'chrome://oobe/custom_elements.html'}]
   });
 
   // We only load the PIN element when it is actually shown so that lock screen
@@ -41,8 +41,8 @@ function ensurePinKeyboardLoaded(onLoaded) {
   // animations. We load the PIN after an idle notification to allow the pod
   // fly-in animation to complete without interruption.
   cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements', function() {
-    cr.ui.login.ResourceLoader.waitUntilLayoutComplete(getPinKeyboard,
-                                                       onLoaded);
+    cr.ui.login.ResourceLoader.waitUntilLayoutComplete(
+        getPinKeyboard, onLoaded);
   });
 }
 

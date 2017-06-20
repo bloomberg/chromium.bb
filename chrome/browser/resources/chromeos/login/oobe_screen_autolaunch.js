@@ -27,7 +27,7 @@ login.createScreen('AutolaunchScreen', 'autolaunch', function() {
       var confirmButton = this.ownerDocument.createElement('button');
       confirmButton.id = 'autolaunch-confirm-button';
       confirmButton.textContent =
-        loadTimeData.getString('autolaunchConfirmButton');
+          loadTimeData.getString('autolaunchConfirmButton');
       confirmButton.addEventListener('click', function(e) {
         chrome.send('autolaunchOnConfirm');
         e.stopPropagation();
@@ -91,6 +91,3 @@ login.createScreen('AutolaunchScreen', 'autolaunch', function() {
     }
   };
 });
-
-
-

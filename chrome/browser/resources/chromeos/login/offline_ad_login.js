@@ -23,25 +23,15 @@ Polymer({
     /**
      * Whether the UI disabled.
      */
-    disabled: {
-      type: Boolean,
-      value: false,
-      observer: 'disabledChanged_'
-    },
+    disabled: {type: Boolean, value: false, observer: 'disabledChanged_'},
     /**
      * Whether to show machine name input field.
      */
-    showMachineInput: {
-      type: Boolean,
-      value: false
-    },
+    showMachineInput: {type: Boolean, value: false},
     /**
      * The kerberos realm (AD Domain), the machine is part of.
      */
-    realm: {
-      type: String,
-      observer: 'realmChanged_'
-    },
+    realm: {type: String, observer: 'realmChanged_'},
     /**
      * The user kerberos default realm. Used for autocompletion.
      */
@@ -68,8 +58,8 @@ Polymer({
   },
 
   focus: function() {
-    if (this.showMachineInput && /** @type {string} */ (
-            this.$.machineNameInput.value) == '') {
+    if (this.showMachineInput &&
+        /** @type {string} */ (this.$.machineNameInput.value) == '') {
       this.$.machineNameInput.focus();
     } else if (/** @type {string} */ (this.$.userInput.value) == '') {
       this.$.userInput.focus();

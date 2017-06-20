@@ -110,8 +110,8 @@ cr.define('login', function() {
       }
 
       this.confirmDiagnosticMode_.show(
-          loadTimeData.getStringF('confirmKioskAppDiagnosticModeFormat',
-                                  app.label),
+          loadTimeData.getStringF(
+              'confirmKioskAppDiagnosticModeFormat', app.label),
           function() {
             chrome.send('launchKioskApp', [app.id, true]);
           });
@@ -150,11 +150,9 @@ cr.define('login', function() {
   AppsMenuButton.showError = function(message) {
     /** @const */ var BUBBLE_OFFSET = 25;
     /** @const */ var BUBBLE_PADDING = 12;
-    $('bubble').showTextForElement($('show-apps-button'),
-                                   message,
-                                   cr.ui.Bubble.Attachment.TOP,
-                                   BUBBLE_OFFSET,
-                                   BUBBLE_PADDING);
+    $('bubble').showTextForElement(
+        $('show-apps-button'), message, cr.ui.Bubble.Attachment.TOP,
+        BUBBLE_OFFSET, BUBBLE_PADDING);
   };
 
 
@@ -168,7 +166,5 @@ cr.define('login', function() {
     $('show-apps-button').findAndRunAppForTesting(id, opt_diagnostic_mode);
   };
 
-  return {
-    AppsMenuButton: AppsMenuButton
-  };
+  return {AppsMenuButton: AppsMenuButton};
 });

@@ -63,7 +63,6 @@ function sendNativeMessage(event, opt_props) {
  * Class to handle checkbox corresponding to a preference.
  */
 class PreferenceCheckbox {
-
   /**
    * Creates a Checkbox which handles the corresponding preference update.
    * @param {Element} container The container this checkbox corresponds to.
@@ -107,7 +106,9 @@ class PreferenceCheckbox {
    * different from the preference value, because the user's check is
    * not propagated to the preference until the user clicks "AGREE" button.
    */
-  isChecked() { return this.checkbox_.checked; }
+  isChecked() {
+    return this.checkbox_.checked;
+  }
 
   /**
    * Called when the preference value in native code is updated.
@@ -141,8 +142,8 @@ class PreferenceCheckbox {
  */
 class MetricsPreferenceCheckbox extends PreferenceCheckbox {
   constructor(
-      container, learnMoreContent, learnMoreLinkId, isOwner,
-      textDisabled, textEnabled, textManagedDisabled, textManagedEnabled) {
+      container, learnMoreContent, learnMoreLinkId, isOwner, textDisabled,
+      textEnabled, textManagedDisabled, textManagedEnabled) {
     // Do not use policy indicator.
     // Learn More link handling is done by this class.
     // So pass |null| intentionally.
@@ -154,8 +155,8 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     // Two dimensional array. First dimension is whether it is managed or not,
     // the second one is whether it is enabled or not.
     this.texts_ = [
-        [textDisabled, textEnabled],
-        [textManagedDisabled, textManagedEnabled]
+      [textDisabled, textEnabled],
+      [textManagedDisabled, textManagedEnabled],
     ];
   }
 
@@ -207,7 +208,6 @@ var LoadState = {
  * loading of Terms-Of-Service content.
  */
 class TermsOfServicePage {
-
   /**
    * @param {Element} container The container of the page.
    * @param {boolean} isManaged Set true if ARC is managed.
@@ -220,8 +220,8 @@ class TermsOfServicePage {
    *     location service.
    */
   constructor(
-      container, isManaged, countryCode,
-      metricsCheckbox, backupRestoreCheckbox, locationServiceCheckbox) {
+      container, isManaged, countryCode, metricsCheckbox, backupRestoreCheckbox,
+      locationServiceCheckbox) {
     this.loadingContainer_ =
         container.querySelector('#terms-of-service-loading');
     this.contentContainer_ =
@@ -245,17 +245,20 @@ class TermsOfServicePage {
     var scriptSetCountryCode =
         'document.countryCode = \'' + countryCode.toLowerCase() + '\';';
     this.termsView_.addContentScripts([
-      { name: 'preProcess',
+      {
+        name: 'preProcess',
         matches: ['https://play.google.com/*'],
-        js: { code: scriptSetCountryCode },
+        js: {code: scriptSetCountryCode},
         run_at: 'document_start'
       },
-      { name: 'postProcess',
+      {
+        name: 'postProcess',
         matches: ['https://play.google.com/*'],
-        css: { files: ['playstore.css'] },
-        js: { files: ['playstore.js'] },
+        css: {files: ['playstore.css']},
+        js: {files: ['playstore.js']},
         run_at: 'document_end'
-      }]);
+      }
+    ]);
 
     // webview is not allowed to open links in the new window. Hook these
     // events and open links in overlay dialog.
@@ -413,27 +416,19 @@ function initialize(data, deviceId) {
 
   // Initialize preference connected checkboxes in terms of service page.
   termsPage = new TermsOfServicePage(
-      doc.getElementById('terms'),
-      data.arcManaged,
-      data.countryCode,
+      doc.getElementById('terms'), data.arcManaged, data.countryCode,
       new MetricsPreferenceCheckbox(
-          doc.getElementById('metrics-preference'),
-          data.learnMoreStatistics,
-          '#learn-more-link-metrics',
-          data.isOwnerProfile,
-          data.textMetricsDisabled,
-          data.textMetricsEnabled,
-          data.textMetricsManagedDisabled,
-          data.textMetricsManagedEnabled),
+          doc.getElementById('metrics-preference'), data.learnMoreStatistics,
+          '#learn-more-link-metrics', data.isOwnerProfile,
+          data.textMetricsDisabled, data.textMetricsEnabled,
+          data.textMetricsManagedDisabled, data.textMetricsManagedEnabled),
       new PreferenceCheckbox(
           doc.getElementById('backup-restore-preference'),
-          data.learnMoreBackupAndRestore,
-          '#learn-more-link-backup-restore',
+          data.learnMoreBackupAndRestore, '#learn-more-link-backup-restore',
           data.controlledByPolicy),
       new PreferenceCheckbox(
           doc.getElementById('location-service-preference'),
-          data.learnMoreLocationServices,
-          '#learn-more-link-location-service',
+          data.learnMoreLocationServices, '#learn-more-link-location-service',
           data.controlledByPolicy));
 }
 
@@ -508,11 +503,11 @@ function showPage(pageDivId) {
 
   if (pageDivId == 'lso-loading') {
     lsoView.src = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' +
-                  '1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.' +
-                  'googleusercontent.com&response_type=code&redirect_uri=oob&' +
-                  'scope=https://www.google.com/accounts/OAuthLogin&' +
-                  'device_type=arc_plus_plus&device_id=' + currentDeviceId +
-                  '&hl=' + navigator.language;
+        '1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.' +
+        'googleusercontent.com&response_type=code&redirect_uri=oob&' +
+        'scope=https://www.google.com/accounts/OAuthLogin&' +
+        'device_type=arc_plus_plus&device_id=' + currentDeviceId +
+        '&hl=' + navigator.language;
   }
   appWindow.show();
   if (pageDivId == 'terms') {
@@ -618,10 +613,10 @@ function setWindowBounds() {
     return;
   }
 
-  var decorationWidth = appWindow.outerBounds.width -
-      appWindow.innerBounds.width;
-  var decorationHeight = appWindow.outerBounds.height -
-      appWindow.innerBounds.height;
+  var decorationWidth =
+      appWindow.outerBounds.width - appWindow.innerBounds.width;
+  var decorationHeight =
+      appWindow.outerBounds.height - appWindow.innerBounds.height;
 
   var outerWidth = INNER_WIDTH + decorationWidth;
   var outerHeight = INNER_HEIGHT + decorationHeight;
@@ -639,20 +634,19 @@ function setWindowBounds() {
   appWindow.outerBounds.width = outerWidth;
   appWindow.outerBounds.height = outerHeight;
   appWindow.outerBounds.left = Math.ceil((screen.availWidth - outerWidth) / 2);
-  appWindow.outerBounds.top =
-    Math.ceil((screen.availHeight - outerHeight) / 2);
+  appWindow.outerBounds.top = Math.ceil((screen.availHeight - outerHeight) / 2);
 }
 
 chrome.app.runtime.onLaunched.addListener(function() {
   var onAppContentLoad = function() {
     var doc = appWindow.contentWindow.document;
     lsoView = doc.getElementById('arc-support');
-    lsoView.addContentScripts([
-        { name: 'postProcess',
-          matches: ['https://accounts.google.com/*'],
-          css: { files: ['lso.css'] },
-          run_at: 'document_end'
-        }]);
+    lsoView.addContentScripts([{
+      name: 'postProcess',
+      matches: ['https://accounts.google.com/*'],
+      css: {files: ['lso.css']},
+      run_at: 'document_end'
+    }]);
 
     var isApprovalResponse = function(url) {
       var resultUrlPrefix = 'https://accounts.google.com/o/oauth2/approval?';
@@ -696,17 +690,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
           sendNativeMessage('onAuthSucceeded', {code: authCode});
         } else {
           sendNativeMessage('onAuthFailed');
-          showErrorPage(
-              appWindow.contentWindow.loadTimeData.getString(
-                  'authorizationFailed'));
+          showErrorPage(appWindow.contentWindow.loadTimeData.getString(
+              'authorizationFailed'));
         }
       });
     };
 
-    var requestFilter = {
-      urls: ['<all_urls>'],
-      types: ['main_frame']
-    };
+    var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
 
     lsoView.request.onResponseStarted.addListener(
         onLsoViewRequestResponseStarted, requestFilter);
@@ -726,8 +716,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
     doc.getElementById('button-send-feedback')
         .addEventListener('click', onSendFeedback);
     doc.getElementById('overlay-close').addEventListener('click', hideOverlay);
-    doc.getElementById('privacy-policy-link').addEventListener(
-        'click', showPrivacyPolicyOverlay);
+    doc.getElementById('privacy-policy-link')
+        .addEventListener('click', showPrivacyPolicyOverlay);
 
     var overlay = doc.getElementById('overlay-container');
     appWindow.contentWindow.cr.ui.overlay.setupOverlay(overlay);
@@ -762,14 +752,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
     'id': 'play_store_wnd',
     'resizable': false,
     'hidden': true,
-    'frame': {
-      type: 'chrome',
-      color: '#ffffff'
-    },
-    'innerBounds': {
-      'width': INNER_WIDTH,
-      'height': INNER_HEIGHT
-    }
+    'frame': {type: 'chrome', color: '#ffffff'},
+    'innerBounds': {'width': INNER_WIDTH, 'height': INNER_HEIGHT}
   };
   chrome.app.window.create('main.html', options, onWindowCreated);
 });

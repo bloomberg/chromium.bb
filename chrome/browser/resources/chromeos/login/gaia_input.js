@@ -3,28 +3,18 @@
 // found in the LICENSE file.
 
 Polymer((function() {
-  var INPUT_EMAIL_PATTERN = "^[a-zA-Z0-9.!#$%&'*+=?^_`{|}~-]+(@[^\\s@]+)?$";
+  var INPUT_EMAIL_PATTERN = '^[a-zA-Z0-9.!#$%&\'*+=?^_`{|}~-]+(@[^\\s@]+)?$';
 
   return {
     is: 'gaia-input',
 
     properties: {
       label: String,
-      value: {
-        notify: true,
-        observer: 'updateDomainVisibility_',
-        type: String
-      },
+      value: {notify: true, observer: 'updateDomainVisibility_', type: String},
 
-      type: {
-        observer: 'typeChanged_',
-        type: String
-      },
+      type: {observer: 'typeChanged_', type: String},
 
-      domain: {
-        observer: 'updateDomainVisibility_',
-        type: String
-      },
+      domain: {observer: 'updateDomainVisibility_', type: String},
 
       disabled: Boolean,
 

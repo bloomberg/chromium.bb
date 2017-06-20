@@ -37,10 +37,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
    * @enum {integer}
    */
   var ScreenMode = {
-    DEFAULT: 0,           // Default GAIA login flow.
-    OFFLINE: 1,           // GAIA offline login.
-    SAML_INTERSTITIAL: 2, // Interstitial page before SAML redirection.
-    AD_AUTH: 3            // Offline Active Directory login flow.
+    DEFAULT: 0,            // Default GAIA login flow.
+    OFFLINE: 1,            // GAIA offline login.
+    SAML_INTERSTITIAL: 2,  // Interstitial page before SAML redirection.
+    AD_AUTH: 3             // Offline Active Directory login flow.
   };
 
   return {
@@ -130,10 +130,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @type {boolean}
      */
     isAtTheBeginning: function() {
-      return !this.navigation_.backVisible &&
-             !this.isSAML() &&
-             !this.classList.contains('whitelist-error') &&
-             !this.authCompleted_;
+      return !this.navigation_.backVisible && !this.isSAML() &&
+          !this.classList.contains('whitelist-error') && !this.authCompleted_;
     },
 
     /**
@@ -142,22 +140,17 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     updateControlsState: function() {
       var isWhitelistError = this.classList.contains('whitelist-error');
 
-      this.navigation_.backVisible =
-        this.lastBackMessageValue_ &&
-        !isWhitelistError &&
-        !this.authCompleted_ &&
-        !this.loading &&
-        !this.isSAML();
+      this.navigation_.backVisible = this.lastBackMessageValue_ &&
+          !isWhitelistError && !this.authCompleted_ && !this.loading &&
+          !this.isSAML();
 
-      this.navigation_.refreshVisible =
-        !this.closable && this.isAtTheBeginning() &&
-        this.screenMode_ != ScreenMode.SAML_INTERSTITIAL;
+      this.navigation_.refreshVisible = !this.closable &&
+          this.isAtTheBeginning() &&
+          this.screenMode_ != ScreenMode.SAML_INTERSTITIAL;
 
-      this.navigation_.closeVisible =
-        !this.navigation_.refreshVisible &&
-        !isWhitelistError &&
-        !this.authCompleted_ &&
-        this.screenMode_ != ScreenMode.SAML_INTERSTITIAL;
+      this.navigation_.closeVisible = !this.navigation_.refreshVisible &&
+          !isWhitelistError && !this.authCompleted_ &&
+          this.screenMode_ != ScreenMode.SAML_INTERSTITIAL;
 
       $('login-header-bar').updateUI_();
     },
@@ -195,58 +188,58 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           'ready', this.onAuthReady_.bind(this));
 
       var that = this;
-      [this.gaiaAuthHost_, $('offline-gaia'), $('offline-ad-auth')].
-          forEach(function(frame) {
-        // Ignore events from currently inactive frame.
-        var frameFilter = function(callback) {
-          return function(e) {
-            var currentFrame = null;
-            switch (that.screenMode_) {
-              case ScreenMode.DEFAULT:
-              case ScreenMode.SAML_INTERSTITIAL:
-                currentFrame = that.gaiaAuthHost_;
-                break;
-              case ScreenMode.OFFLINE:
-                currentFrame = $('offline-gaia');
-                break;
-              case ScreenMode.AD_AUTH:
-                currentFrame = $('offline-ad-auth');
-                break;
-            }
-            if (frame === currentFrame)
-              callback.call(that, e);
-          };
-        };
+      [this.gaiaAuthHost_, $('offline-gaia'), $('offline-ad-auth')].forEach(
+          function(frame) {
+            // Ignore events from currently inactive frame.
+            var frameFilter = function(callback) {
+              return function(e) {
+                var currentFrame = null;
+                switch (that.screenMode_) {
+                  case ScreenMode.DEFAULT:
+                  case ScreenMode.SAML_INTERSTITIAL:
+                    currentFrame = that.gaiaAuthHost_;
+                    break;
+                  case ScreenMode.OFFLINE:
+                    currentFrame = $('offline-gaia');
+                    break;
+                  case ScreenMode.AD_AUTH:
+                    currentFrame = $('offline-ad-auth');
+                    break;
+                }
+                if (frame === currentFrame)
+                  callback.call(that, e);
+              };
+            };
 
-        frame.addEventListener('authCompleted',
-                               frameFilter(that.onAuthCompletedMessage_));
-        frame.addEventListener('backButton', frameFilter(that.onBackButton_));
-        frame.addEventListener('dialogShown', frameFilter(that.onDialogShown_));
-        frame.addEventListener('dialogHidden',
-                               frameFilter(that.onDialogHidden_));
-      });
+            frame.addEventListener(
+                'authCompleted', frameFilter(that.onAuthCompletedMessage_));
+            frame.addEventListener(
+                'backButton', frameFilter(that.onBackButton_));
+            frame.addEventListener(
+                'dialogShown', frameFilter(that.onDialogShown_));
+            frame.addEventListener(
+                'dialogHidden', frameFilter(that.onDialogHidden_));
+          });
 
       this.gaiaAuthHost_.addEventListener(
           'showView', this.onShowView_.bind(this));
       this.gaiaAuthHost_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
-      this.gaiaAuthHost_.noPasswordCallback =
-          this.onAuthNoPassword_.bind(this);
+      this.gaiaAuthHost_.noPasswordCallback = this.onAuthNoPassword_.bind(this);
       this.gaiaAuthHost_.insecureContentBlockedCallback =
           this.onInsecureContentBlocked_.bind(this);
       this.gaiaAuthHost_.missingGaiaInfoCallback =
           this.missingGaiaInfo_.bind(this);
-      this.gaiaAuthHost_.samlApiUsedCallback =
-          this.samlApiUsed_.bind(this);
-      this.gaiaAuthHost_.addEventListener('authDomainChange',
-          this.onAuthDomainChange_.bind(this));
-      this.gaiaAuthHost_.addEventListener('authFlowChange',
-          this.onAuthFlowChange_.bind(this));
-      this.gaiaAuthHost_.addEventListener('videoEnabledChange',
-          this.onVideoEnabledChange_.bind(this));
+      this.gaiaAuthHost_.samlApiUsedCallback = this.samlApiUsed_.bind(this);
+      this.gaiaAuthHost_.addEventListener(
+          'authDomainChange', this.onAuthDomainChange_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'authFlowChange', this.onAuthFlowChange_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'videoEnabledChange', this.onVideoEnabledChange_.bind(this));
 
-      this.gaiaAuthHost_.addEventListener('loadAbort',
-        this.onLoadAbortMessage_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'loadAbort', this.onLoadAbortMessage_.bind(this));
       this.gaiaAuthHost_.addEventListener(
           'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
 
@@ -263,7 +256,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       }.bind(this));
 
       $('gaia-whitelist-error').addEventListener('buttonclick', function() {
-         this.showWhitelistCheckFailedError(false);
+        this.showWhitelistCheckFailedError(false);
       }.bind(this));
 
       $('gaia-whitelist-error').addEventListener('linkclick', function() {
@@ -271,19 +264,19 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       });
 
       // Register handlers for the saml interstitial page events.
-      $('saml-interstitial').addEventListener('samlPageNextClicked',
-                                              function() {
-        this.screenMode = ScreenMode.DEFAULT;
-        this.loadGaiaAuthHost_(true /* doSamlRedirect */);
-      }.bind(this));
-      $('saml-interstitial').addEventListener('samlPageChangeAccountClicked',
-                                              function() {
-        // The user requests to change the account. We must clear the email
-        // field of the auth params.
-        this.gaiaAuthParams_.email = '';
-        this.screenMode = ScreenMode.DEFAULT;
-        this.loadGaiaAuthHost_(false /* doSamlRedirect */);
-      }.bind(this));
+      $('saml-interstitial')
+          .addEventListener('samlPageNextClicked', function() {
+            this.screenMode = ScreenMode.DEFAULT;
+            this.loadGaiaAuthHost_(true /* doSamlRedirect */);
+          }.bind(this));
+      $('saml-interstitial')
+          .addEventListener('samlPageChangeAccountClicked', function() {
+            // The user requests to change the account. We must clear the email
+            // field of the auth params.
+            this.gaiaAuthParams_.email = '';
+            this.screenMode = ScreenMode.DEFAULT;
+            this.loadGaiaAuthHost_(false /* doSamlRedirect */);
+          }.bind(this));
     },
 
     /**
@@ -297,8 +290,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.startLoadingTimer_();
 
       this.gaiaAuthParams_.doSamlRedirect = doSamlRedirect;
-      this.gaiaAuthHost_.load(cr.login.GaiaAuthHost.AuthMode.DEFAULT,
-                              this.gaiaAuthParams_);
+      this.gaiaAuthHost_.load(
+          cr.login.GaiaAuthHost.AuthMode.DEFAULT, this.gaiaAuthParams_);
     },
 
     /**
@@ -472,8 +465,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     startLoadingTimer_: function() {
       this.clearLoadingTimer_();
-      this.loadingTimer_ = setTimeout(this.onLoadingTimeOut_.bind(this),
-                                      MAX_GAIA_LOADING_TIME_SEC * 1000);
+      this.loadingTimer_ = setTimeout(
+          this.onLoadingTimeOut_.bind(this), MAX_GAIA_LOADING_TIME_SEC * 1000);
     },
 
     /**
@@ -652,8 +645,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Whether the current auth flow is SAML.
      */
     isSAML: function() {
-       return this.gaiaAuthHost_.authFlow ==
-           cr.login.GaiaAuthHost.AuthFlow.SAML;
+      return this.gaiaAuthHost_.authFlow == cr.login.GaiaAuthHost.AuthFlow.SAML;
     },
 
     /**
@@ -662,14 +654,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     updateSamlNotice_: function() {
       if (this.gaiaAuthHost_.videoEnabled) {
         $('saml-notice-message').textContent = loadTimeData.getStringF(
-            'samlNoticeWithVideo',
-            this.gaiaAuthHost_.authDomain);
+            'samlNoticeWithVideo', this.gaiaAuthHost_.authDomain);
         $('saml-notice-recording-indicator').hidden = false;
         $('saml-notice-container').style.justifyContent = 'flex-start';
       } else {
         $('saml-notice-message').textContent = loadTimeData.getStringF(
-            'samlNotice',
-            this.gaiaAuthHost_.authDomain);
+            'samlNotice', this.gaiaAuthHost_.authDomain);
         $('saml-notice-recording-indicator').hidden = true;
         $('saml-notice-container').style.justifyContent = 'center';
       }
@@ -698,8 +688,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onVideoEnabledChange_: function() {
       this.updateSamlNotice_();
       if (this.gaiaAuthHost_.videoEnabled && this.videoTimer_ === undefined) {
-        this.videoTimer_ = setTimeout(this.cancel.bind(this),
-            VIDEO_LOGIN_TIMEOUT);
+        this.videoTimer_ =
+            setTimeout(this.cancel.bind(this), VIDEO_LOGIN_TIMEOUT);
       } else {
         this.clearVideoTimer_();
       }
@@ -811,8 +801,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (this.samlPasswordConfirmAttempt_ < 2) {
         login.ConfirmPasswordScreen.show(
-            email,
-            false /* manual password entry */,
+            email, false /* manual password entry */,
             this.samlPasswordConfirmAttempt_,
             this.onConfirmPasswordCollected_.bind(this));
       } else {
@@ -845,8 +834,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onAuthNoPassword_: function(email) {
       chrome.send('scrapedPasswordCount', [0]);
       login.ConfirmPasswordScreen.show(
-          email,
-          true /* manual password entry */,
+          email, true /* manual password entry */,
           this.samlPasswordConfirmAttempt_,
           this.onManualPasswordCollected_.bind(this));
     },
@@ -907,36 +895,30 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onAuthCompleted_: function(credentials) {
       if (this.screenMode_ == ScreenMode.AD_AUTH) {
         this.email = credentials.username;
-        chrome.send('completeAdAuthentication',
-                    [credentials.username,
-                     credentials.password]);
+        chrome.send(
+            'completeAdAuthentication',
+            [credentials.username, credentials.password]);
       } else if (credentials.useOffline) {
         this.email = credentials.email;
-        chrome.send('authenticateUser',
-                    [credentials.email,
-                     credentials.password,
-                     false]);
+        chrome.send(
+            'authenticateUser',
+            [credentials.email, credentials.password, false]);
       } else if (credentials.authCode) {
         if (credentials.hasOwnProperty('authCodeOnly') &&
             credentials.authCodeOnly) {
-          chrome.send('completeAuthenticationAuthCodeOnly',
-                      [credentials.authCode]);
+          chrome.send(
+              'completeAuthenticationAuthCodeOnly', [credentials.authCode]);
         } else {
           chrome.send('completeAuthentication', [
-            credentials.gaiaId,
-            credentials.email,
-            credentials.password,
-            credentials.authCode,
-            credentials.usingSAML,
-            credentials.gapsCookie
+            credentials.gaiaId, credentials.email, credentials.password,
+            credentials.authCode, credentials.usingSAML, credentials.gapsCookie
           ]);
         }
       } else {
-        chrome.send('completeLogin',
-                    [credentials.gaiaId,
-                     credentials.email,
-                     credentials.password,
-                     credentials.usingSAML]);
+        chrome.send('completeLogin', [
+          credentials.gaiaId, credentials.email, credentials.password,
+          credentials.usingSAML
+        ]);
       }
 
       this.loading = true;
@@ -1027,9 +1009,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         chrome.send('offlineLogin', [this.email]);
       } else if (!this.loading) {
         // TODO(dzhioev): investigate if this branch ever get hit.
-        $('bubble').showContentForElement($('gaia-signin-form-container'),
-                                          cr.ui.Bubble.Attachment.LEFT,
-                                          error);
+        $('bubble').showContentForElement(
+            $('gaia-signin-form-container'), cr.ui.Bubble.Attachment.LEFT,
+            error);
       } else {
         // Defer the bubble until the frame has been loaded.
         this.errorBubble_ = [loginAttempts, error];
@@ -1110,9 +1092,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     showWhitelistCheckFailedError: function(show, opt_data) {
       if (show) {
         var isManaged = opt_data && opt_data.enterpriseManaged;
-        $('gaia-whitelist-error').textContent =
-            loadTimeData.getValue(isManaged ? 'whitelistErrorEnterprise' :
-                                              'whitelistErrorConsumer');
+        $('gaia-whitelist-error').textContent = loadTimeData.getValue(
+            isManaged ? 'whitelistErrorEnterprise' : 'whitelistErrorConsumer');
       }
 
       this.classList.toggle('whitelist-error', show);

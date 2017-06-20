@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  function Slow() {
-  }
+  function Slow() {}
   cr.addSingletonGetter(Slow);
 
-  Slow.prototype = {
-    initialized_: false
-  };
+  Slow.prototype = {initialized_: false};
 
   Slow.initialize = function() {
     $('slow-disable').addEventListener('click', function(event) {
@@ -35,14 +32,12 @@ cr.define('options', function() {
   };
 
   // Export
-  return {
-    Slow: Slow
-  };
+  return {Slow: Slow};
 });
 
 function load() {
   options.Slow.initialize();
-    chrome.send('loadComplete');
+  chrome.send('loadComplete');
 }
 
 document.addEventListener('DOMContentLoaded', load);

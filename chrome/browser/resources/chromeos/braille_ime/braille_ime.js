@@ -120,10 +120,15 @@ BrailleIme.prototype = {
    * @private
    * @const {Object<number>}
    */
-  CODE_TO_DOT_: {'KeyF': 0x01, 'KeyJ': 0x08,
-                 'KeyD': 0x02, 'KeyK': 0x10,
-                 'KeyS': 0x04, 'KeyL': 0x20,
-                 'Space': 0x100 },
+  CODE_TO_DOT_: {
+    'KeyF': 0x01,
+    'KeyJ': 0x08,
+    'KeyD': 0x02,
+    'KeyK': 0x10,
+    'KeyS': 0x04,
+    'KeyL': 0x20,
+    'Space': 0x100
+  },
 
   /**
    * The current engine ID as set by {@code onActivate}, or the empty string if
@@ -157,8 +162,8 @@ BrailleIme.prototype = {
     chrome.input.ime.onBlur.addListener(this.onBlur_.bind(this));
     chrome.input.ime.onInputContextUpdate.addListener(
         this.onInputContextUpdate_.bind(this));
-    chrome.input.ime.onKeyEvent.addListener(this.onKeyEvent_.bind(this),
-                                            ['async']);
+    chrome.input.ime.onKeyEvent.addListener(
+        this.onKeyEvent_.bind(this), ['async']);
     chrome.input.ime.onReset.addListener(this.onReset_.bind(this));
     chrome.input.ime.onMenuItemActivated.addListener(
         this.onMenuItemActivated_.bind(this));
@@ -298,8 +303,7 @@ BrailleIme.prototype = {
     if (event.code === 'Backspace' && event.type === 'keydown') {
       this.pressed_ = 0;
       this.accumulated_ = 0;
-      this.sendToChromeVox_(
-          {type: 'backspace', requestId: event.requestId});
+      this.sendToChromeVox_({type: 'backspace', requestId: event.requestId});
       return undefined;
     }
     var dot = this.CODE_TO_DOT_[event.code];
@@ -344,10 +348,8 @@ BrailleIme.prototype = {
     }
     this.port_ = chrome.runtime.connect(
         this.CHROMEVOX_EXTENSION_ID_, {name: this.PORT_NAME});
-    this.port_.onMessage.addListener(
-        this.onChromeVoxMessage_.bind(this));
-    this.port_.onDisconnect.addListener(
-        this.onChromeVoxDisconnect_.bind(this));
+    this.port_.onMessage.addListener(this.onChromeVoxMessage_.bind(this));
+    this.port_.onDisconnect.addListener(this.onChromeVoxDisconnect_.bind(this));
   },
 
   /**
@@ -366,8 +368,8 @@ BrailleIme.prototype = {
              *         newText: string}}
              */
             (message);
-        this.replaceText_(message.contextID, message.deleteBefore,
-                          message.newText);
+        this.replaceText_(
+            message.contextID, message.deleteBefore, message.newText);
         break;
       case 'keyEventHandled':
         message =
@@ -385,8 +387,8 @@ BrailleIme.prototype = {
         this.commitUncommitted_(message.contextID);
         break;
       default:
-        console.error('Unknown message from ChromeVox: ' +
-            JSON.stringify(message));
+        console.error(
+            'Unknown message from ChromeVox: ' + JSON.stringify(message));
         break;
     }
   },
@@ -426,8 +428,8 @@ BrailleIme.prototype = {
    * @private
    */
   sendActiveState_: function() {
-    this.sendToChromeVox_({type: 'activeState',
-                           active: this.engineID_.length > 0});
+    this.sendToChromeVox_(
+        {type: 'activeState', active: this.engineID_.length > 0});
   },
 
   /**
@@ -442,14 +444,24 @@ BrailleIme.prototype = {
     var addText = chrome.input.ime.commitText.bind(
         null, {contextID: contextID, text: toInsert}, function() {});
     if (deleteBefore > 0) {
-      var deleteText = chrome.input.ime.deleteSurroundingText.bind(null,
-          {engineID: this.engineID_, contextID: contextID,
-           offset: -deleteBefore, length: deleteBefore}, addText);
+      var deleteText = chrome.input.ime.deleteSurroundingText.bind(
+          null, {
+            engineID: this.engineID_,
+            contextID: contextID,
+            offset: -deleteBefore,
+            length: deleteBefore
+          },
+          addText);
       // Make sure there's no non-zero length selection so that
       // deleteSurroundingText works correctly.
       chrome.input.ime.deleteSurroundingText(
-          {engineID: this.engineID_, contextID: contextID,
-           offset: 0, length: 0}, deleteText);
+          {
+            engineID: this.engineID_,
+            contextID: contextID,
+            offset: 0,
+            length: 0
+          },
+          deleteText);
     } else {
       addText();
     }
@@ -496,18 +508,16 @@ BrailleIme.prototype = {
    */
   updateMenuItems_: function() {
     // TODO(plundblad): Localize when translations available.
-    chrome.input.ime.setMenuItems(
-        {engineID: this.engineID_,
-         items: [
-           {
-             id: this.USE_STANDARD_KEYBOARD_ID,
-             label: 'Use standard keyboard for braille',
-             style: 'check',
-             visible: true,
-             checked: this.useStandardKeyboard_,
-             enabled: true
-             }
-         ]
-        });
+    chrome.input.ime.setMenuItems({
+      engineID: this.engineID_,
+      items: [{
+        id: this.USE_STANDARD_KEYBOARD_ID,
+        label: 'Use standard keyboard for braille',
+        style: 'check',
+        visible: true,
+        checked: this.useStandardKeyboard_,
+        enabled: true
+      }]
+    });
   }
 };

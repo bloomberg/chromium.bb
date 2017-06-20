@@ -49,50 +49,42 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
 
       $('oobe-hid-detection-md').screen = this;
 
-      this.context.addObserver(
-          CONTEXT_KEY_MOUSE_STATE,
-          function(stateId) {
-            if (stateId === undefined)
-              return;
-            self.setDeviceBlockState_('hid-mouse-block', stateId);
-            $('oobe-hid-detection-md').setMouseState(stateId);
-          }
-      );
-      this.context.addObserver(
-        CONTEXT_KEY_KEYBOARD_STATE,
-        function(stateId) {
-          self.updatePincodeKeysState_();
-          if (stateId === undefined)
-            return;
-          self.setDeviceBlockState_('hid-keyboard-block', stateId);
-          $('oobe-hid-detection-md').setKeyboardState(stateId);
-          if (stateId == self.CONNECTION.PAIRED) {
-            var label = self.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '');
-            $('hid-keyboard-label-paired').textContent = label;
-            $('oobe-hid-detection-md').keyboardPairedLabel = label;
-          } else if (stateId == self.CONNECTION.PAIRING) {
-            var label = self.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '');
-            $('hid-keyboard-label-pairing').textContent = label;
-            $('oobe-hid-detection-md').keyboardPairingLabel = label;
-          }
+      this.context.addObserver(CONTEXT_KEY_MOUSE_STATE, function(stateId) {
+        if (stateId === undefined)
+          return;
+        self.setDeviceBlockState_('hid-mouse-block', stateId);
+        $('oobe-hid-detection-md').setMouseState(stateId);
+      });
+      this.context.addObserver(CONTEXT_KEY_KEYBOARD_STATE, function(stateId) {
+        self.updatePincodeKeysState_();
+        if (stateId === undefined)
+          return;
+        self.setDeviceBlockState_('hid-keyboard-block', stateId);
+        $('oobe-hid-detection-md').setKeyboardState(stateId);
+        if (stateId == self.CONNECTION.PAIRED) {
+          var label = self.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '');
+          $('hid-keyboard-label-paired').textContent = label;
+          $('oobe-hid-detection-md').keyboardPairedLabel = label;
+        } else if (stateId == self.CONNECTION.PAIRING) {
+          var label = self.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '');
+          $('hid-keyboard-label-pairing').textContent = label;
+          $('oobe-hid-detection-md').keyboardPairingLabel = label;
         }
-      );
+      });
       this.context.addObserver(
-        CONTEXT_KEY_KEYBOARD_PINCODE,
-        this.updatePincodeKeysState_.bind(this));
+          CONTEXT_KEY_KEYBOARD_PINCODE,
+          this.updatePincodeKeysState_.bind(this));
       this.context.addObserver(
-        CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED,
-        this.updatePincodeKeysState_.bind(this));
+          CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED,
+          this.updatePincodeKeysState_.bind(this));
       this.context.addObserver(
-        CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE,
-        this.updatePincodeKeysState_.bind(this));
+          CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE,
+          this.updatePincodeKeysState_.bind(this));
       this.context.addObserver(
-        CONTEXT_KEY_CONTINUE_BUTTON_ENABLED,
-        function(enabled) {
-          $('hid-continue-button').disabled = !enabled;
-          $('oobe-hid-detection-md').continueButtonDisabled = !enabled;
-        }
-      );
+          CONTEXT_KEY_CONTINUE_BUTTON_ENABLED, function(enabled) {
+            $('hid-continue-button').disabled = !enabled;
+            $('oobe-hid-detection-md').continueButtonDisabled = !enabled;
+          });
     },
 
     /**
@@ -103,8 +95,8 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       var buttons = [];
       var continueButton = this.ownerDocument.createElement('button');
       continueButton.id = 'hid-continue-button';
-      continueButton.textContent = loadTimeData.getString(
-          'hidDetectionContinue');
+      continueButton.textContent =
+          loadTimeData.getString('hidDetectionContinue');
       continueButton.addEventListener('click', function(e) {
         chrome.send('HIDDetectionOnContinue');
         e.stopPropagation();
@@ -117,7 +109,9 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     /**
      * Returns a control which should receive an initial focus.
      */
-    get defaultControl() { return $('hid-continue-button'); },
+    get defaultControl() {
+      return $('hid-continue-button');
+    },
 
     /**
      * Sets a device-block css class to reflect device state of searching, usb,
@@ -200,8 +194,8 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     onBeforeShow: function(data) {
       this.setMDMode_();
       this.setDeviceBlockState_('hid-mouse-block', this.CONNECTION.SEARCHING);
-      this.setDeviceBlockState_('hid-keyboard-block',
-                                this.CONNECTION.SEARCHING);
+      this.setDeviceBlockState_(
+          'hid-keyboard-block', this.CONNECTION.SEARCHING);
       $('oobe-hid-detection-md').setMouseState(this.CONNECTION.SEARCHING);
       $('oobe-hid-detection-md').setKeyboardState(this.CONNECTION.SEARCHING);
     },

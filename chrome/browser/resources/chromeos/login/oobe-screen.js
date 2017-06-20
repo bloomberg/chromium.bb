@@ -54,8 +54,9 @@ cr.define('login', function() {
     },
 
     userActed: function(e) {
-      this.send(CALLBACK_USER_ACTED,
-                e.detail.sourceEvent.target.getAttribute('action'));
+      this.send(
+          CALLBACK_USER_ACTED,
+          e.detail.sourceEvent.target.getAttribute('action'));
     },
 
     i18n: function(args) {
@@ -227,8 +228,5 @@ cr.define('login', function() {
     }
   };
 
-  return {
-    OobeScreenBehavior: OobeScreenBehavior
-  };
+  return {OobeScreenBehavior: OobeScreenBehavior};
 });
-

@@ -8,9 +8,7 @@
 
 login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
   return {
-    EXTERNAL_API: [
-      'show'
-    ],
+    EXTERNAL_API: ['show'],
 
     confirmPasswordForm_: null,
 
@@ -24,8 +22,8 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
     decorate: function() {
       this.confirmPasswordForm_ = $('saml-confirm-password');
       this.confirmPasswordForm_.addEventListener('cancel', function(e) {
-          Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
-          Oobe.resetSigninUI(true);
+        Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
+        Oobe.resetSigninUI(true);
       });
       this.confirmPasswordForm_.addEventListener('passwordEnter', function(e) {
         this.callback_(e.detail.password);

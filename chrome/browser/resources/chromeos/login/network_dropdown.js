@@ -45,8 +45,10 @@ cr.define('cr.ui', function() {
       var thisBottom = thisTop + this.offsetHeight;
       var itemTop = item.offsetTop;
       var itemBottom = itemTop + item.offsetHeight;
-      if (itemTop <= thisTop) return -1;
-      if (itemBottom >= thisBottom) return 1;
+      if (itemTop <= thisTop)
+        return -1;
+      if (itemBottom >= thisBottom)
+        return 1;
       return 0;
     },
 
@@ -170,8 +172,8 @@ cr.define('cr.ui', function() {
       }
       this.container.selectItem(this.container.firstItem, false);
 
-      var maxHeight = cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping(
-          this.container);
+      var maxHeight =
+          cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping(this.container);
       if (maxHeight < this.container.offsetHeight)
         this.container.style.maxHeight = maxHeight + 'px';
     },
@@ -300,8 +302,9 @@ cr.define('cr.ui', function() {
         if (this.inFocus && !this.controller.isShown &&
             (e.keyCode == DropDown.KEYCODE_ENTER ||
              e.keyCode == DropDown.KEYCODE_SPACE ||
-             (!useKeyboardFlow && (e.keyCode == DropDown.KEYCODE_UP ||
-                                   e.keyCode == DropDown.KEYCODE_DOWN)))) {
+             (!useKeyboardFlow &&
+              (e.keyCode == DropDown.KEYCODE_UP ||
+               e.keyCode == DropDown.KEYCODE_DOWN)))) {
           this.opening = true;
           this.controller.isShown = true;
           e.stopPropagation();
@@ -433,7 +436,5 @@ cr.define('cr.ui', function() {
     useKeyboardFlow = true;
   };
 
-  return {
-    DropDown: DropDown
-  };
+  return {DropDown: DropDown};
 });

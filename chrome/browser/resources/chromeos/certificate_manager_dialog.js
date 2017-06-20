@@ -31,8 +31,8 @@ function load() {
   for (var i = 0; i < containers.length; i++) {
     var overlay = containers[i];
     cr.ui.overlay.setupOverlay(overlay);
-    overlay.addEventListener('cancelOverlay',
-                             PageManager.cancelOverlay.bind(PageManager));
+    overlay.addEventListener(
+        'cancelOverlay', PageManager.cancelOverlay.bind(PageManager));
   }
 
   // Hide elements that should not be part of the dialog.
@@ -42,16 +42,19 @@ function load() {
   PageManager.isDialog = true;
   CertificateManager.getInstance().setIsKiosk(true);
   CertificateManager.getInstance().initializePage();
-  PageManager.registerOverlay(AlertOverlay.getInstance(),
+  PageManager.registerOverlay(
+      AlertOverlay.getInstance(), CertificateManager.getInstance());
+  PageManager.registerOverlay(
+      CertificateBackupOverlay.getInstance(), CertificateManager.getInstance());
+  PageManager.registerOverlay(
+      CertificateEditCaTrustOverlay.getInstance(),
       CertificateManager.getInstance());
-  PageManager.registerOverlay(CertificateBackupOverlay.getInstance(),
-      CertificateManager.getInstance());
-  PageManager.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
-      CertificateManager.getInstance());
-  PageManager.registerOverlay(CertificateImportErrorOverlay.getInstance(),
+  PageManager.registerOverlay(
+      CertificateImportErrorOverlay.getInstance(),
       CertificateManager.getInstance());
   PageManager.registerOverlay(CertificateManager.getInstance());
-  PageManager.registerOverlay(CertificateRestoreOverlay.getInstance(),
+  PageManager.registerOverlay(
+      CertificateRestoreOverlay.getInstance(),
       CertificateManager.getInstance());
 
   PageManager.showPageByName('certificates', false);
@@ -60,8 +63,7 @@ function load() {
 disableTextSelectAndDrag(function(e) {
   var src = e.target;
   return src instanceof HTMLTextAreaElement ||
-         src instanceof HTMLInputElement &&
-         /text|url/.test(src.type);
+      src instanceof HTMLInputElement && /text|url/.test(src.type);
 });
 
 document.addEventListener('DOMContentLoaded', load);

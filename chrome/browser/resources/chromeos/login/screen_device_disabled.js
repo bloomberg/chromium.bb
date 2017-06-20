@@ -8,10 +8,7 @@
 
 login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
   return {
-    EXTERNAL_API: [
-      'setEnrollmentDomain',
-      'setMessage'
-    ],
+    EXTERNAL_API: ['setEnrollmentDomain', 'setMessage'],
 
     /**
      * Ignore any accelerators the user presses on this screen.
@@ -31,8 +28,7 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
      * method will be shown when the user actually clicks the button. Make sure
      * that this is a no-op.
      */
-    cancel: function() {
-    },
+    cancel: function() {},
 
     /**
      * Event handler that is invoked just before the screen in shown.
@@ -46,31 +42,30 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
     },
 
     /**
-      * Updates the explanation shown to the user. The explanation will indicate
-      * that the device is owned by |enrollment_domain|. If |enrollment_domain|
-      * is null or empty, a generic explanation will be used instead that does
-      * not reference any domain.
-      * @param {string} enrollment_domain The domain that owns the device.
-      */
+     * Updates the explanation shown to the user. The explanation will indicate
+     * that the device is owned by |enrollment_domain|. If |enrollment_domain|
+     * is null or empty, a generic explanation will be used instead that does
+     * not reference any domain.
+     * @param {string} enrollment_domain The domain that owns the device.
+     */
     setEnrollmentDomain: function(enrollment_domain) {
       if (enrollment_domain) {
         // The contents of |enrollment_domain| is untrusted. Set the resulting
         // string as |textContent| so that it gets treated as plain text and
         // cannot be used to inject JS or HTML.
         $('device-disabled-explanation').textContent = loadTimeData.getStringF(
-            'deviceDisabledExplanationWithDomain',
-            enrollment_domain);
+            'deviceDisabledExplanationWithDomain', enrollment_domain);
       } else {
-        $('device-disabled-explanation').textContent = loadTimeData.getString(
-            'deviceDisabledExplanationWithoutDomain');
+        $('device-disabled-explanation').textContent =
+            loadTimeData.getString('deviceDisabledExplanationWithoutDomain');
       }
     },
 
 
     /**
-      * Sets the message to show to the user.
-      * @param {string} message The message to show to the user.
-      */
+     * Sets the message to show to the user.
+     * @param {string} message The message to show to the user.
+     */
     setMessage: function(message) {
       // The contents of |message| is untrusted. Set it as |textContent| so that
       // it gets treated as plain text and cannot be used to inject JS or HTML.

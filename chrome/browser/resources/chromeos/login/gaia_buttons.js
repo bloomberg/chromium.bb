@@ -6,11 +6,7 @@ Polymer({
   is: 'gaia-button',
 
   properties: {
-    disabled: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true
-    },
+    disabled: {type: Boolean, value: false, reflectToAttribute: true},
 
     type: {
       type: String,
@@ -21,7 +17,7 @@ Polymer({
   },
 
   focus: function() {
-   this.$.button.focus();
+    this.$.button.focus();
   },
 
   focusedChanged_: function() {
@@ -47,11 +43,7 @@ Polymer({
   is: 'gaia-icon-button',
 
   properties: {
-    disabled: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true
-    },
+    disabled: {type: Boolean, value: false, reflectToAttribute: true},
 
     icon: String,
 

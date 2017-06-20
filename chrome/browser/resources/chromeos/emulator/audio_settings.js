@@ -58,7 +58,9 @@ Polymer({
      */
     currentEditableObject: {
       type: Object,
-      value: function() { return {}; }
+      value: function() {
+        return {};
+      }
     },
 
     /**
@@ -66,20 +68,35 @@ Polymer({
      * This is initially set to -1 (i.e. no node selected) becuase no devices
      * have been copied.
      */
-    currentEditIndex: {type: Number, value: function() { return -1; }},
+    currentEditIndex: {
+      type: Number,
+      value: function() {
+        return -1;
+      }
+    },
 
     /**
      * A counter that will auto increment everytime a new node is added
      * or copied and used to set a new id. This allows the |AudioNode.id|
      * to allows be unique.
      */
-    nodeCount: {type: Number, value: function() { return 0; }},
+    nodeCount: {
+      type: Number,
+      value: function() {
+        return 0;
+      }
+    },
 
     /**
      * A set of audio nodes.
      * @type !Array<!AudioNode>
      */
-    nodes: {type: Array, value: function() { return []; }},
+    nodes: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
 
     /**
      * A set of options for the possible audio node types.

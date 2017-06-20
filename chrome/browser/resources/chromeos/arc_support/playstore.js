@@ -13,16 +13,16 @@
  */
 function processLangZoneTerms() {
   var doc = document;
-  var selectLangZoneTerms = doc.getElementById('play-footer').
-      getElementsByTagName('select')[0];
+  var selectLangZoneTerms =
+      doc.getElementById('play-footer').getElementsByTagName('select')[0];
 
-  var initialLoad = window.location.href ==
-      'https://play.google.com/about/play-terms.html';
+  var initialLoad =
+      window.location.href == 'https://play.google.com/about/play-terms.html';
   var langSegments = navigator.language.split('-');
   if (initialLoad) {
     var applyTermsForLangAndZone = function(termsLang) {
-      var matchByLangZone = '/intl/' + termsLang + '_' +
-          document.countryCode + '/about/play-terms.html';
+      var matchByLangZone = '/intl/' + termsLang + '_' + document.countryCode +
+          '/about/play-terms.html';
       for (var i = selectLangZoneTerms.options.length - 1; i >= 0; --i) {
         var option = selectLangZoneTerms.options[i];
         if (option.value == matchByLangZone) {
@@ -39,8 +39,7 @@ function processLangZoneTerms() {
     if (applyTermsForLangAndZone(navigator.language)) {
       return;
     }
-    if (langSegments.length == 2 &&
-        applyTermsForLangAndZone(langSegments[0])) {
+    if (langSegments.length == 2 && applyTermsForLangAndZone(langSegments[0])) {
       return;
     }
   }

@@ -23,7 +23,8 @@ Polymer({
    * @private
    */
   onNoThanksTap_: function() {
-    chrome.send('login.VoiceInteractionValuePropScreen.userActed',
+    chrome.send(
+        'login.VoiceInteractionValuePropScreen.userActed',
         ['no-thanks-pressed']);
   },
 
@@ -33,7 +34,8 @@ Polymer({
    * @private
    */
   onContinueTap_: function() {
-    chrome.send('login.VoiceInteractionValuePropScreen.userActed',
+    chrome.send(
+        'login.VoiceInteractionValuePropScreen.userActed',
         ['continue-pressed']);
   },
 });

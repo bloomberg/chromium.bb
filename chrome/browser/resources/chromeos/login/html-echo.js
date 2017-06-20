@@ -5,12 +5,7 @@
 Polymer({
   is: 'html-echo',
 
-  properties: {
-    content: {
-      type: String,
-      observer: 'contentChanged_'
-    }
-  },
+  properties: {content: {type: String, observer: 'contentChanged_'}},
 
   contentChanged_: function(content) {
     this.innerHTML = content;
