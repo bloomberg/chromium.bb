@@ -47,7 +47,7 @@ GamepadSource GvrGamepadDataFetcher::Factory::source() {
 GvrGamepadDataFetcher::GvrGamepadDataFetcher(
     GvrGamepadDataProvider* data_provider,
     unsigned int display_id)
-    : display_id_(display_id) {
+    : display_id_(display_id), gamepad_data_({}) {
   // Called on UI thread.
   DVLOG(1) << __FUNCTION__ << "=" << this;
   data_provider->RegisterGvrGamepadDataFetcher(this);
@@ -85,7 +85,6 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
     // This is the first time we've seen this device, so do some one-time
     // initialization
-    pad.connected = true;
     CopyToUString(pad.id, Gamepad::kIdLengthCap,
                   base::UTF8ToUTF16("Daydream Controller"));
     CopyToUString(pad.mapping, Gamepad::kMappingLengthCap,
@@ -99,6 +98,7 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
         provided_data.right_handed ? GamepadHand::kRight : GamepadHand::kLeft;
   }
 
+  pad.connected = provided_data.connected;
   pad.timestamp = provided_data.timestamp;
 
   if (provided_data.is_touching) {
