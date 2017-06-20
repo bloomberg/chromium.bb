@@ -16,6 +16,10 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const CGFloat kVerticalSpacing = 20;
 const CGFloat kUploadProgressSpacing = 5;
@@ -41,12 +45,20 @@ const NSTimeInterval kUploadTotalTime = 5;
 - (void)startBrowserFromSafeMode;
 @end
 
-@implementation SafeModeViewController
+@implementation SafeModeViewController {
+  __weak id<SafeModeViewControllerDelegate> delegate_;
+  UIView* innerView_;
+  PrimaryActionButton* startButton_;
+  UILabel* uploadDescription_;
+  UIProgressView* uploadProgress_;
+  NSDate* uploadStartTime_;
+  NSTimer* uploadTimer_;
+}
 
 - (id)initWithDelegate:(id<SafeModeViewControllerDelegate>)delegate {
   self = [super init];
   if (self) {
-    delegate_.reset(delegate);
+    delegate_ = delegate;
   }
   return self;
 }
@@ -139,15 +151,14 @@ const NSTimeInterval kUploadTotalTime = 5;
   if (IsLandscape()) {
     mainBounds.size = CGSizeMake(mainBounds.size.height, mainBounds.size.width);
   }
-  base::scoped_nsobject<UIScrollView> scrollView(
-      [[UIScrollView alloc] initWithFrame:mainBounds]);
+  UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:mainBounds];
   self.view = scrollView;
   [self.view setBackgroundColor:[UIColor colorWithWhite:0.902 alpha:1.0]];
   const CGFloat kIPadInset =
       (mainBounds.size.width - kIPadWidth - kHorizontalSpacing) / 2;
   const CGFloat widthInset = IsIPadIdiom() ? kIPadInset : kHorizontalSpacing;
-  innerView_.reset([[UIView alloc]
-      initWithFrame:CGRectInset(mainBounds, widthInset, kVerticalSpacing * 2)]);
+  innerView_ = [[UIView alloc]
+      initWithFrame:CGRectInset(mainBounds, widthInset, kVerticalSpacing * 2)];
   [innerView_ setBackgroundColor:[UIColor whiteColor]];
   [innerView_ layer].cornerRadius = 3;
   [innerView_ layer].borderWidth = 1;
@@ -157,8 +168,7 @@ const NSTimeInterval kUploadTotalTime = 5;
   [scrollView addSubview:innerView_];
 
   UIImage* fatalImage = [UIImage imageNamed:@"fatal_error.png"];
-  base::scoped_nsobject<UIImageView> imageView(
-      [[UIImageView alloc] initWithImage:fatalImage]);
+  UIImageView* imageView = [[UIImageView alloc] initWithImage:fatalImage];
   // Shift the image down a bit.
   CGRect imageFrame = [imageView frame];
   imageFrame.origin.y = kVerticalSpacing;
@@ -166,7 +176,7 @@ const NSTimeInterval kUploadTotalTime = 5;
   [self centerView:imageView afterView:nil];
   [innerView_ addSubview:imageView];
 
-  base::scoped_nsobject<UILabel> awSnap([[UILabel alloc] init]);
+  UILabel* awSnap = [[UILabel alloc] init];
   [awSnap setText:NSLocalizedString(@"IDS_IOS_SAFE_MODE_AW_SNAP", @"")];
   [awSnap setBackgroundColor:[UIColor clearColor]];
   [awSnap setTextColor:[UIColor blackColor]];
@@ -175,7 +185,7 @@ const NSTimeInterval kUploadTotalTime = 5;
   [self centerView:awSnap afterView:imageView];
   [innerView_ addSubview:awSnap];
 
-  base::scoped_nsobject<UILabel> description([[UILabel alloc] init]);
+  UILabel* description = [[UILabel alloc] init];
   [description setText:[self startupCrashModuleText]];
   [description setBackgroundColor:[UIColor clearColor]];
   [description setTextColor:[UIColor colorWithWhite:0.31 alpha:1.0]];
@@ -193,7 +203,7 @@ const NSTimeInterval kUploadTotalTime = 5;
   [self centerView:description afterView:awSnap];
   [innerView_ addSubview:description];
 
-  startButton_.reset([[PrimaryActionButton alloc] init]);
+  startButton_ = [[PrimaryActionButton alloc] init];
   NSString* startText =
       NSLocalizedString(@"IDS_IOS_SAFE_MODE_RELOAD_CHROME", @"");
   [startButton_ setTitle:startText forState:UIControlStateNormal];
@@ -223,7 +233,7 @@ const NSTimeInterval kUploadTotalTime = 5;
     if (![SafeModeViewController detectedThirdPartyMods]) {
       [startButton_ setEnabled:NO];
 
-      uploadDescription_.reset([[UILabel alloc] init]);
+      uploadDescription_ = [[UILabel alloc] init];
       [uploadDescription_
           setText:NSLocalizedString(@"IDS_IOS_SAFE_MODE_SENDING_CRASH_REPORT",
                                     @"")];
@@ -234,8 +244,8 @@ const NSTimeInterval kUploadTotalTime = 5;
       [self centerView:uploadDescription_ afterView:startButton_];
       [innerView_ addSubview:uploadDescription_];
 
-      uploadProgress_.reset([[UIProgressView alloc]
-          initWithProgressViewStyle:UIProgressViewStyleDefault]);
+      uploadProgress_ = [[UIProgressView alloc]
+          initWithProgressViewStyle:UIProgressViewStyleDefault];
       [self centerView:uploadProgress_ afterView:nil];
       frame = [uploadProgress_ frame];
       frame.origin.y =
@@ -265,13 +275,13 @@ const NSTimeInterval kUploadTotalTime = 5;
 #pragma mark - Private
 
 - (void)startUploadProgress {
-  uploadStartTime_.reset([[NSDate date] retain]);
-  uploadTimer_.reset(
-      [[NSTimer scheduledTimerWithTimeInterval:kUploadPumpInterval
-                                        target:self
-                                      selector:@selector(pumpUploadProgress)
-                                      userInfo:nil
-                                       repeats:YES] retain]);
+  uploadStartTime_ = [NSDate date];
+  uploadTimer_ =
+      [NSTimer scheduledTimerWithTimeInterval:kUploadPumpInterval
+                                       target:self
+                                     selector:@selector(pumpUploadProgress)
+                                     userInfo:nil
+                                      repeats:YES];
 }
 
 - (void)pumpUploadProgress {

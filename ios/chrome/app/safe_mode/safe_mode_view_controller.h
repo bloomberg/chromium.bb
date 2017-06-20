@@ -7,9 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
-
 @class PrimaryActionButton;
 
 // A protocol required by delegates of the SafeModeViewController.
@@ -19,16 +16,7 @@
 - (void)startBrowserFromSafeMode;
 @end
 
-@interface SafeModeViewController : UIViewController {
- @private
-  base::WeakNSProtocol<id<SafeModeViewControllerDelegate>> delegate_;
-  base::scoped_nsobject<UIView> innerView_;
-  base::scoped_nsobject<PrimaryActionButton> startButton_;
-  base::scoped_nsobject<UILabel> uploadDescription_;
-  base::scoped_nsobject<UIProgressView> uploadProgress_;
-  base::scoped_nsobject<NSDate> uploadStartTime_;
-  base::scoped_nsobject<NSTimer> uploadTimer_;
-}
+@interface SafeModeViewController : UIViewController
 
 - (id)initWithDelegate:(id<SafeModeViewControllerDelegate>)delegate;
 
