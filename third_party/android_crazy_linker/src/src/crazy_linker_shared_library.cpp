@@ -146,7 +146,6 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
   virtual void* LookupInWrap(const char* symbol_name, LibraryView* wrap) {
     if (wrap->IsSystem()) {
       void* address = ::dlsym(wrap->GetSystem(), symbol_name);
-#ifdef __arm__
       // Android libm.so defines isnanf as weak. This means that its
       // address cannot be found by dlsym(), which returns NULL for weak
       // symbols prior to Android 5.0. However, libm.so contains the real
@@ -162,7 +161,6 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
           !strcmp(symbol_name, "isnanf") &&
           !strcmp(wrap->GetName(), "libm.so"))
         address = ::dlsym(wrap->GetSystem(), "__isnanf");
-#endif
       return address;
     }
 
