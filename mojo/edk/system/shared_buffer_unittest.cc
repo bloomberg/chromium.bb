@@ -67,11 +67,11 @@ TEST_F(SharedBufferTest, PassSharedBufferCrossProcess) {
   const std::string message = "hello";
   MojoHandle b = CreateBuffer(message.size());
 
-  RUN_CHILD_ON_PIPE(CopyToBufferClient, h)
+  RunTestClient("CopyToBufferClient", [&](MojoHandle h) {
     MojoHandle dupe = DuplicateBuffer(b, false);
     WriteMessageWithHandles(h, message, &dupe, 1);
     WriteMessage(h, "quit");
-  END_CHILD()
+  });
 
   ExpectBufferContents(b, 0, message);
 }
@@ -90,11 +90,11 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateBufferClient, SharedBufferTest, h) {
 TEST_F(SharedBufferTest, PassSharedBufferFromChild) {
   const std::string message = "hello";
   MojoHandle b;
-  RUN_CHILD_ON_PIPE(CreateBufferClient, h)
+  RunTestClient("CreateBufferClient", [&](MojoHandle h) {
     WriteMessage(h, message);
     ReadMessageWithHandles(h, &b, 1);
     WriteMessage(h, "quit");
-  END_CHILD()
+  });
 
   ExpectBufferContents(b, 0, message);
 }
@@ -138,8 +138,8 @@ TEST_F(SharedBufferTest, PassSharedBufferFromChildToChild) {
   CreateMessagePipe(&p0, &p1);
 
   MojoHandle b;
-  RUN_CHILD_ON_PIPE(CreateAndPassBuffer, h0)
-    RUN_CHILD_ON_PIPE(ReceiveAndEditBuffer, h1)
+  RunTestClient("CreateAndPassBuffer", [&](MojoHandle h0) {
+    RunTestClient("ReceiveAndEditBuffer", [&](MojoHandle h1) {
       // Send one end of the pipe to each child. The first child will create
       // and pass a buffer to the second child and back to us. The second child
       // will write our message into the buffer.
@@ -150,17 +150,18 @@ TEST_F(SharedBufferTest, PassSharedBufferFromChildToChild) {
       ReadMessageWithHandles(h0, &b, 1);
 
       WriteMessage(h1, "quit");
-    END_CHILD()
+    });
     WriteMessage(h0, "quit");
-  END_CHILD()
+  });
 
   // The second child should have written this message.
   ExpectBufferContents(b, 0, message);
 }
 
-DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBufferParent, SharedBufferTest,
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBufferParent,
+                                  SharedBufferTest,
                                   parent) {
-  RUN_CHILD_ON_PIPE(CreateAndPassBuffer, child)
+  RunTestClient("CreateAndPassBuffer", [&](MojoHandle child) {
     // Read a pipe from the parent and forward it to our child.
     MojoHandle pipe;
     std::string message = ReadMessageWithHandles(parent, &pipe, 1);
@@ -174,12 +175,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBufferParent, SharedBufferTest,
 
     EXPECT_EQ("quit", ReadMessage(parent));
     WriteMessage(child, "quit");
-  END_CHILD()
+  });
 }
 
-DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBufferParent, SharedBufferTest,
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBufferParent,
+                                  SharedBufferTest,
                                   parent) {
-  RUN_CHILD_ON_PIPE(ReceiveAndEditBuffer, child)
+  RunTestClient("ReceiveAndEditBuffer", [&](MojoHandle child) {
     // Read a pipe from the parent and forward it to our child.
     MojoHandle pipe;
     std::string message = ReadMessageWithHandles(parent, &pipe, 1);
@@ -187,7 +189,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBufferParent, SharedBufferTest,
 
     EXPECT_EQ("quit", ReadMessage(parent));
     WriteMessage(child, "quit");
-  END_CHILD()
+  });
 }
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
@@ -206,8 +208,8 @@ TEST_F(SharedBufferTest, MAYBE_PassHandleBetweenCousins) {
   // Spawn two children who will each spawn their own child. Make sure the
   // grandchildren (cousins to each other) can pass platform handles.
   MojoHandle b;
-  RUN_CHILD_ON_PIPE(CreateAndPassBufferParent, child1)
-    RUN_CHILD_ON_PIPE(ReceiveAndEditBufferParent, child2)
+  RunTestClient("CreateAndPassBufferParent", [&](MojoHandle child1) {
+    RunTestClient("ReceiveAndEditBufferParent", [&](MojoHandle child2) {
       MojoHandle pipe[2];
       CreateMessagePipe(&pipe[0], &pipe[1]);
 
@@ -218,16 +220,17 @@ TEST_F(SharedBufferTest, MAYBE_PassHandleBetweenCousins) {
       ReadMessageWithHandles(child1, &b, 1);
 
       WriteMessage(child2, "quit");
-    END_CHILD()
+    });
     WriteMessage(child1, "quit");
-  END_CHILD()
+  });
 
   // The second grandchild should have written this message.
   ExpectBufferContents(b, 0, message);
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndMapWriteSharedBuffer,
-                                  SharedBufferTest, h) {
+                                  SharedBufferTest,
+                                  h) {
   // Receive the shared buffer.
   MojoHandle b;
   EXPECT_EQ("hello", ReadMessageWithHandles(h, &b, 1));
@@ -255,7 +258,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndMapWriteSharedBuffer,
 #define MAYBE_CreateAndPassReadOnlyBuffer CreateAndPassReadOnlyBuffer
 #endif
 TEST_F(SharedBufferTest, MAYBE_CreateAndPassReadOnlyBuffer) {
-  RUN_CHILD_ON_PIPE(ReadAndMapWriteSharedBuffer, h)
+  RunTestClient("ReadAndMapWriteSharedBuffer", [&](MojoHandle h) {
     // Create a new shared buffer.
     MojoHandle b = CreateBuffer(1234);
     WriteToBuffer(b, 0, "hello");
@@ -266,11 +269,12 @@ TEST_F(SharedBufferTest, MAYBE_CreateAndPassReadOnlyBuffer) {
 
     WriteMessage(h, "quit");
     EXPECT_EQ("ok", ReadMessage(h));
-  END_CHILD()
+  });
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassReadOnlyBuffer,
-                                  SharedBufferTest, h) {
+                                  SharedBufferTest,
+                                  h) {
   // Create a new shared buffer.
   MojoHandle b = CreateBuffer(1234);
   WriteToBuffer(b, 0, "hello");
@@ -286,13 +290,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassReadOnlyBuffer,
 #if defined(OS_ANDROID)
 // Android multi-process tests are not executing the new process. This is flaky.
 #define MAYBE_CreateAndPassFromChildReadOnlyBuffer \
-    DISABLED_CreateAndPassFromChildReadOnlyBuffer
+  DISABLED_CreateAndPassFromChildReadOnlyBuffer
 #else
 #define MAYBE_CreateAndPassFromChildReadOnlyBuffer \
-    CreateAndPassFromChildReadOnlyBuffer
+  CreateAndPassFromChildReadOnlyBuffer
 #endif
 TEST_F(SharedBufferTest, MAYBE_CreateAndPassFromChildReadOnlyBuffer) {
-  RUN_CHILD_ON_PIPE(CreateAndPassReadOnlyBuffer, h)
+  RunTestClient("CreateAndPassReadOnlyBuffer", [&](MojoHandle h) {
     MojoHandle b;
     EXPECT_EQ("", ReadMessageWithHandles(h, &b, 1));
     ExpectBufferContents(b, 0, "hello");
@@ -308,7 +312,7 @@ TEST_F(SharedBufferTest, MAYBE_CreateAndPassFromChildReadOnlyBuffer) {
 
     WriteMessage(h, "quit");
     EXPECT_EQ("ok", ReadMessage(h));
-  END_CHILD()
+  });
 }
 
 #endif  // !defined(OS_IOS)

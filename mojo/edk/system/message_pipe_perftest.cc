@@ -154,9 +154,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MessagePipePerfTest, h) {
 // Waits for the child to close its end before quitting once specified
 // number of messages has been sent.
 TEST_F(MessagePipePerfTest, MultiprocessPingPong) {
-  RUN_CHILD_ON_PIPE(PingPongClient, h)
-    RunPingPongServer(h);
-  END_CHILD()
+  RunTestClient("PingPongClient", [&](MojoHandle h) { RunPingPongServer(h); });
 }
 
 }  // namespace

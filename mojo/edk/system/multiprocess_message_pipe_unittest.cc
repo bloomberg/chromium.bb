@@ -151,9 +151,8 @@ DEFINE_TEST_CLIENT_WITH_PIPE(EchoEcho, MultiprocessMessagePipeTest, h) {
 
     std::string read_buffer(1000, '\0');
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-    CHECK_EQ(MojoReadMessage(h, &read_buffer[0],
-                             &read_buffer_size, nullptr,
-                             0, MOJO_READ_MESSAGE_FLAG_NONE),
+    CHECK_EQ(MojoReadMessage(h, &read_buffer[0], &read_buffer_size, nullptr, 0,
+                             MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
     VLOG(2) << "Child got: " << read_buffer;
@@ -174,12 +173,12 @@ DEFINE_TEST_CLIENT_WITH_PIPE(EchoEcho, MultiprocessMessagePipeTest, h) {
 }
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, Basic) {
-  RUN_CHILD_ON_PIPE(EchoEcho, h)
+  int exit_code = RunTestClientAndGetExitCode("EchoEcho", [&](MojoHandle h) {
     std::string hello("hello");
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h, hello.data(),
-                               static_cast<uint32_t>(hello.size()), nullptr, 0u,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(
+        MOJO_RESULT_OK,
+        MojoWriteMessage(h, hello.data(), static_cast<uint32_t>(hello.size()),
+                         nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     HandleSignalsState hss;
     ASSERT_EQ(MOJO_RESULT_OK,
@@ -192,8 +191,7 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, Basic) {
 
     std::string read_buffer(1000, '\0');
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-    CHECK_EQ(MojoReadMessage(h, &read_buffer[0],
-                             &read_buffer_size, nullptr, 0,
+    CHECK_EQ(MojoReadMessage(h, &read_buffer[0], &read_buffer_size, nullptr, 0,
                              MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
@@ -205,18 +203,19 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, Basic) {
                               static_cast<uint32_t>(quitquitquit.size()),
                               nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
-  END_CHILD_AND_EXPECT_EXIT_CODE(1 % 100);
+  });
+  EXPECT_EQ(1, exit_code);
 }
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, QueueMessages) {
   static const size_t kNumMessages = 1001;
-  RUN_CHILD_ON_PIPE(EchoEcho, h)
+  int exit_code = RunTestClientAndGetExitCode("EchoEcho", [&](MojoHandle h) {
     for (size_t i = 0; i < kNumMessages; i++) {
       std::string write_buffer(i, 'A' + (i % 26));
       ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h, write_buffer.data(),
-                               static_cast<uint32_t>(write_buffer.size()),
-                               nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
+                MojoWriteMessage(h, write_buffer.data(),
+                                 static_cast<uint32_t>(write_buffer.size()),
+                                 nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
     }
 
     for (size_t i = 0; i < kNumMessages; i++) {
@@ -231,10 +230,9 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, QueueMessages) {
 
       std::string read_buffer(kNumMessages * 2, '\0');
       uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-      ASSERT_EQ(MojoReadMessage(h, &read_buffer[0],
-                                &read_buffer_size, nullptr, 0,
-                                MOJO_READ_MESSAGE_FLAG_NONE),
-               MOJO_RESULT_OK);
+      ASSERT_EQ(MojoReadMessage(h, &read_buffer[0], &read_buffer_size, nullptr,
+                                0, MOJO_READ_MESSAGE_FLAG_NONE),
+                MOJO_RESULT_OK);
       read_buffer.resize(read_buffer_size);
 
       ASSERT_EQ(std::string(i * 2, 'A' + (i % 26)), read_buffer);
@@ -253,10 +251,12 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, QueueMessages) {
               WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE, &hss));
     ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
     ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
-  END_CHILD_AND_EXPECT_EXIT_CODE(static_cast<int>(kNumMessages % 100));
+  });
+  EXPECT_EQ(static_cast<int>(kNumMessages % 100), exit_code);
 }
 
-DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer, MultiprocessMessagePipeTest,
+DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer,
+                             MultiprocessMessagePipeTest,
                              h) {
   // Wait for the first message from our parent.
   HandleSignalsState hss;
@@ -267,16 +267,15 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer, MultiprocessMessagePipeTest,
   CHECK_EQ(hss.satisfied_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
   CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_READABLE |
-                                    MOJO_HANDLE_SIGNAL_WRITABLE |
-                                    MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+                                        MOJO_HANDLE_SIGNAL_WRITABLE |
+                                        MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   // It should have a shared buffer.
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
   MojoHandle handles[10];
   uint32_t num_handlers = arraysize(handles);  // Maximum number to receive
-  CHECK_EQ(MojoReadMessage(h, &read_buffer[0],
-                           &num_bytes, &handles[0],
+  CHECK_EQ(MojoReadMessage(h, &read_buffer[0], &num_bytes, &handles[0],
                            &num_handlers, MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(num_bytes);
@@ -298,9 +297,8 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer, MultiprocessMessagePipeTest,
 
   // And send a message to signal that we've written stuff.
   const std::string go2("go 2");
-  CHECK_EQ(MojoWriteMessage(h, go2.data(),
-                            static_cast<uint32_t>(go2.size()), nullptr, 0u,
-                            MOJO_WRITE_MESSAGE_FLAG_NONE),
+  CHECK_EQ(MojoWriteMessage(h, go2.data(), static_cast<uint32_t>(go2.size()),
+                            nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
 
   // Now wait for our parent to send us a message.
@@ -315,8 +313,8 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer, MultiprocessMessagePipeTest,
 
   read_buffer = std::string(100, '\0');
   num_bytes = static_cast<uint32_t>(read_buffer.size());
-  CHECK_EQ(MojoReadMessage(h, &read_buffer[0], &num_bytes,
-                           nullptr, 0, MOJO_READ_MESSAGE_FLAG_NONE),
+  CHECK_EQ(MojoReadMessage(h, &read_buffer[0], &num_bytes, nullptr, 0,
+                           MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(num_bytes);
   CHECK_EQ(read_buffer, std::string("go 3"));
@@ -331,7 +329,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer, MultiprocessMessagePipeTest,
 }
 
 TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
-  RUN_CHILD_ON_PIPE(CheckSharedBuffer, h)
+  RunTestClient("CheckSharedBuffer", [&](MojoHandle h) {
     // Make a shared buffer.
     MojoCreateSharedBufferOptions options;
     options.struct_size = sizeof(options);
@@ -346,16 +344,13 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
 
     MojoHandle duplicated_shared_buffer;
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoDuplicateBufferHandle(
-                  shared_buffer,
-                  nullptr,
-                  &duplicated_shared_buffer));
+              MojoDuplicateBufferHandle(shared_buffer, nullptr,
+                                        &duplicated_shared_buffer));
     MojoHandle handles[1];
     handles[0] = duplicated_shared_buffer;
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h, &go1[0],
-                               static_cast<uint32_t>(go1.size()), &handles[0],
-                               arraysize(handles),
+              MojoWriteMessage(h, &go1[0], static_cast<uint32_t>(go1.size()),
+                               &handles[0], arraysize(handles),
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for a message from the child.
@@ -368,8 +363,7 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
     std::string read_buffer(100, '\0');
     uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(h, &read_buffer[0],
-                              &num_bytes, nullptr, 0,
+              MojoReadMessage(h, &read_buffer[0], &num_bytes, nullptr, 0,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     read_buffer.resize(num_bytes);
     ASSERT_EQ(std::string("go 2"), read_buffer);
@@ -390,9 +384,8 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
     // And send a message to signal that we've written stuff.
     const std::string go3("go 3");
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h, &go3[0],
-                               static_cast<uint32_t>(go3.size()), nullptr, 0u,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              MojoWriteMessage(h, &go3[0], static_cast<uint32_t>(go3.size()),
+                               nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for |h| to become readable, which should fail.
     hss = HandleSignalsState();
@@ -400,11 +393,12 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
               WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE, &hss));
     ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
     ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
-  END_CHILD()
+  });
 }
 
 DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
-                             MultiprocessMessagePipeTest, h) {
+                             MultiprocessMessagePipeTest,
+                             h) {
   HandleSignalsState hss;
   CHECK_EQ(WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE, &hss),
            MOJO_RESULT_OK);
@@ -419,8 +413,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
   MojoHandle handles[255];  // Maximum number to receive.
   uint32_t num_handlers = arraysize(handles);
 
-  CHECK_EQ(MojoReadMessage(h, &read_buffer[0],
-                           &num_bytes, &handles[0],
+  CHECK_EQ(MojoReadMessage(h, &read_buffer[0], &num_bytes, &handles[0],
                            &num_handlers, MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
 
@@ -457,7 +450,7 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  RUN_CHILD_ON_PIPE(CheckPlatformHandleFile, h)
+  RunTestClient("CheckPlatformHandleFile", [&](MojoHandle h) {
     std::vector<MojoHandle> handles;
 
     size_t pipe_count = GetParam();
@@ -481,12 +474,11 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
     char message[128];
     snprintf(message, sizeof(message), "hello %d",
              static_cast<int>(pipe_count));
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h, message,
-                               static_cast<uint32_t>(strlen(message)),
-                               &handles[0],
-                               static_cast<uint32_t>(handles.size()),
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(
+        MOJO_RESULT_OK,
+        MojoWriteMessage(h, message, static_cast<uint32_t>(strlen(message)),
+                         &handles[0], static_cast<uint32_t>(handles.size()),
+                         MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for it to become readable, which should fail.
     HandleSignalsState hss;
@@ -494,7 +486,7 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
               WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE, &hss));
     ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
     ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
-  END_CHILD()
+  });
 }
 
 // Android multi-process tests are not executing the new process. This is flaky.
@@ -516,15 +508,14 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
   CHECK_EQ(hss.satisfied_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
   CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_READABLE |
-                                    MOJO_HANDLE_SIGNAL_WRITABLE |
-                                    MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+                                        MOJO_HANDLE_SIGNAL_WRITABLE |
+                                        MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   // It should have a message pipe.
   MojoHandle handles[10];
   uint32_t num_handlers = arraysize(handles);
-  CHECK_EQ(MojoReadMessage(h, nullptr,
-                           nullptr, &handles[0],
-                           &num_handlers, MOJO_READ_MESSAGE_FLAG_NONE),
+  CHECK_EQ(MojoReadMessage(h, nullptr, nullptr, &handles[0], &num_handlers,
+                           MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   CHECK_EQ(num_handlers, 1u);
 
@@ -534,14 +525,13 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
   CHECK_EQ(hss.satisfied_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
   CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_READABLE |
-                                    MOJO_HANDLE_SIGNAL_WRITABLE |
-                                    MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+                                        MOJO_HANDLE_SIGNAL_WRITABLE |
+                                        MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   std::string read_buffer(100, '\0');
   uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-  CHECK_EQ(MojoReadMessage(handles[0], &read_buffer[0],
-                           &read_buffer_size, nullptr,
-                           0, MOJO_READ_MESSAGE_FLAG_NONE),
+  CHECK_EQ(MojoReadMessage(handles[0], &read_buffer[0], &read_buffer_size,
+                           nullptr, 0, MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(read_buffer_size);
   CHECK_EQ(read_buffer, std::string("hello"));
@@ -557,25 +547,23 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
 }
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MessagePipePassing) {
-  RUN_CHILD_ON_PIPE(CheckMessagePipe, h)
+  RunTestClient("CheckMessagePipe", [&](MojoHandle h) {
     MojoCreateSharedBufferOptions options;
     options.struct_size = sizeof(options);
     options.flags = MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
 
     MojoHandle mp1, mp2;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoCreateMessagePipe(nullptr, &mp1, &mp2));
+    ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &mp1, &mp2));
 
     // Write a string into one end of the new message pipe and send the other
     // end.
     const std::string hello("hello");
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(mp1, &hello[0],
-                               static_cast<uint32_t>(hello.size()), nullptr, 0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h, nullptr, 0, &mp2, 1,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(
+        MOJO_RESULT_OK,
+        MojoWriteMessage(mp1, &hello[0], static_cast<uint32_t>(hello.size()),
+                         nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(h, nullptr, 0, &mp2, 1,
+                                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for a message from the child.
     HandleSignalsState hss;
@@ -586,33 +574,30 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MessagePipePassing) {
 
     std::string read_buffer(100, '\0');
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-    CHECK_EQ(MojoReadMessage(mp1, &read_buffer[0],
-                             &read_buffer_size, nullptr,
+    CHECK_EQ(MojoReadMessage(mp1, &read_buffer[0], &read_buffer_size, nullptr,
                              0, MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
     CHECK_EQ(read_buffer, std::string("world"));
 
     MojoClose(mp1);
-  END_CHILD()
+  });
 }
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MessagePipeTwoPassing) {
-  RUN_CHILD_ON_PIPE(CheckMessagePipe, h)
+  RunTestClient("CheckMessagePipe", [&](MojoHandle h) {
     MojoHandle mp1, mp2;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoCreateMessagePipe(nullptr, &mp2, &mp1));
+    ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &mp2, &mp1));
 
     // Write a string into one end of the new message pipe and send the other
     // end.
     const std::string hello("hello");
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(mp1, &hello[0],
-                               static_cast<uint32_t>(hello.size()), nullptr, 0u,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h, nullptr, 0u, &mp2, 1u,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(
+        MOJO_RESULT_OK,
+        MojoWriteMessage(mp1, &hello[0], static_cast<uint32_t>(hello.size()),
+                         nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(h, nullptr, 0u, &mp2, 1u,
+                                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for a message from the child.
     HandleSignalsState hss;
@@ -623,13 +608,12 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MessagePipeTwoPassing) {
 
     std::string read_buffer(100, '\0');
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-    CHECK_EQ(MojoReadMessage(mp1, &read_buffer[0],
-                             &read_buffer_size, nullptr,
+    CHECK_EQ(MojoReadMessage(mp1, &read_buffer[0], &read_buffer_size, nullptr,
                              0, MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
     CHECK_EQ(read_buffer, std::string("world"));
-  END_CHILD();
+  });
 }
 
 DEFINE_TEST_CLIENT_WITH_PIPE(DataPipeConsumer, MultiprocessMessagePipeTest, h) {
@@ -642,15 +626,14 @@ DEFINE_TEST_CLIENT_WITH_PIPE(DataPipeConsumer, MultiprocessMessagePipeTest, h) {
   CHECK_EQ(hss.satisfied_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
   CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_READABLE |
-                                    MOJO_HANDLE_SIGNAL_WRITABLE |
-                                    MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+                                        MOJO_HANDLE_SIGNAL_WRITABLE |
+                                        MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   // It should have a message pipe.
   MojoHandle handles[10];
   uint32_t num_handlers = arraysize(handles);
-  CHECK_EQ(MojoReadMessage(h, nullptr,
-                           nullptr, &handles[0],
-                           &num_handlers, MOJO_READ_MESSAGE_FLAG_NONE),
+  CHECK_EQ(MojoReadMessage(h, nullptr, nullptr, &handles[0], &num_handlers,
+                           MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   CHECK_EQ(num_handlers, 1u);
 
@@ -660,14 +643,13 @@ DEFINE_TEST_CLIENT_WITH_PIPE(DataPipeConsumer, MultiprocessMessagePipeTest, h) {
   CHECK_EQ(hss.satisfied_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
   CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_READABLE |
-                                    MOJO_HANDLE_SIGNAL_WRITABLE |
-                                    MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+                                        MOJO_HANDLE_SIGNAL_WRITABLE |
+                                        MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   std::string read_buffer(100, '\0');
   uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-  CHECK_EQ(MojoReadMessage(handles[0], &read_buffer[0],
-                           &read_buffer_size, nullptr,
-                           0, MOJO_READ_MESSAGE_FLAG_NONE),
+  CHECK_EQ(MojoReadMessage(handles[0], &read_buffer[0], &read_buffer_size,
+                           nullptr, 0, MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(read_buffer_size);
   CHECK_EQ(read_buffer, std::string("hello"));
@@ -675,33 +657,31 @@ DEFINE_TEST_CLIENT_WITH_PIPE(DataPipeConsumer, MultiprocessMessagePipeTest, h) {
   // Now write some data into the message pipe.
   std::string write_buffer = "world";
   CHECK_EQ(MojoWriteMessage(handles[0], write_buffer.data(),
-                            static_cast<uint32_t>(write_buffer.size()),
-                            nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE),
-            MOJO_RESULT_OK);
+                            static_cast<uint32_t>(write_buffer.size()), nullptr,
+                            0u, MOJO_WRITE_MESSAGE_FLAG_NONE),
+           MOJO_RESULT_OK);
   MojoClose(handles[0]);
   return 0;
 }
 
 TEST_F(MultiprocessMessagePipeTest, DataPipeConsumer) {
-  RUN_CHILD_ON_PIPE(DataPipeConsumer, h)
+  RunTestClient("DataPipeConsumer", [&](MojoHandle h) {
     MojoCreateSharedBufferOptions options;
     options.struct_size = sizeof(options);
     options.flags = MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
 
     MojoHandle mp1, mp2;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoCreateMessagePipe(nullptr, &mp2, &mp1));
+    ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &mp2, &mp1));
 
     // Write a string into one end of the new message pipe and send the other
     // end.
     const std::string hello("hello");
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(mp1, &hello[0],
-                               static_cast<uint32_t>(hello.size()), nullptr, 0u,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h, nullptr, 0, &mp2, 1u,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(
+        MOJO_RESULT_OK,
+        MojoWriteMessage(mp1, &hello[0], static_cast<uint32_t>(hello.size()),
+                         nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(h, nullptr, 0, &mp2, 1u,
+                                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for a message from the child.
     HandleSignalsState hss;
@@ -712,15 +692,14 @@ TEST_F(MultiprocessMessagePipeTest, DataPipeConsumer) {
 
     std::string read_buffer(100, '\0');
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-    CHECK_EQ(MojoReadMessage(mp1, &read_buffer[0],
-                             &read_buffer_size, nullptr,
+    CHECK_EQ(MojoReadMessage(mp1, &read_buffer[0], &read_buffer_size, nullptr,
                              0, MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
     CHECK_EQ(read_buffer, std::string("world"));
 
     MojoClose(mp1);
-  END_CHILD();
+  });
 }
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, CreateMessagePipe) {
@@ -762,7 +741,8 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, PassMessagePipeLocal) {
 }
 
 // Echos the primordial channel until "exit".
-DEFINE_TEST_CLIENT_WITH_PIPE(ChannelEchoClient, MultiprocessMessagePipeTest,
+DEFINE_TEST_CLIENT_WITH_PIPE(ChannelEchoClient,
+                             MultiprocessMessagePipeTest,
                              h) {
   for (;;) {
     std::string message = ReadMessage(h);
@@ -774,18 +754,19 @@ DEFINE_TEST_CLIENT_WITH_PIPE(ChannelEchoClient, MultiprocessMessagePipeTest,
 }
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MultiprocessChannelPipe) {
-  RUN_CHILD_ON_PIPE(ChannelEchoClient, h)
+  RunTestClient("ChannelEchoClient", [&](MojoHandle h) {
     VerifyEcho(h, "in an interstellar burst");
     VerifyEcho(h, "i am back to save the universe");
     VerifyEcho(h, std::string(10 * 1024 * 1024, 'o'));
 
     WriteMessage(h, "exit");
-  END_CHILD()
+  });
 }
 
 // Receives a pipe handle from the primordial channel and echos on it until
 // "exit". Used to test simple pipe transfer across processes via channels.
-DEFINE_TEST_CLIENT_WITH_PIPE(EchoServiceClient, MultiprocessMessagePipeTest,
+DEFINE_TEST_CLIENT_WITH_PIPE(EchoServiceClient,
+                             MultiprocessMessagePipeTest,
                              h) {
   MojoHandle p;
   ReadMessageWithHandles(h, &p, 1);
@@ -802,8 +783,7 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
        PassMessagePipeCrossProcess) {
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
-  RUN_CHILD_ON_PIPE(EchoServiceClient, h)
-
+  RunTestClient("EchoServiceClient", [&](MojoHandle h) {
     // Pass one end of the pipe to the other process.
     WriteMessageWithHandles(h, "here take this", &p1, 1);
 
@@ -812,14 +792,15 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
     VerifyEcho(p0, std::string(20 * 1024 * 1024, 'i'));
 
     WriteMessage(p0, "exit");
-  END_CHILD()
+  });
   CloseHandle(p0);
 }
 
 // Receives a pipe handle from the primordial channel and reads new handles
 // from it. Each read handle establishes a new echo channel.
 DEFINE_TEST_CLIENT_WITH_PIPE(EchoServiceFactoryClient,
-                             MultiprocessMessagePipeTest, h) {
+                             MultiprocessMessagePipeTest,
+                             h) {
   MojoHandle p;
   ReadMessageWithHandles(h, &p, 1);
 
@@ -869,14 +850,14 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
   MojoHandle echo_proxy_c, echo_request_c;
   CreateMessagePipe(&echo_proxy_c, &echo_request_c);
 
-  RUN_CHILD_ON_PIPE(EchoServiceFactoryClient, h)
-    WriteMessageWithHandles(
-        h, "gief factory naow plz", &echo_factory_request, 1);
+  RunTestClient("EchoServiceFactoryClient", [&](MojoHandle h) {
+    WriteMessageWithHandles(h, "gief factory naow plz", &echo_factory_request,
+                            1);
 
     WriteMessageWithHandles(echo_factory_proxy, "give me an echo service plz!",
-                           &echo_request_a, 1);
+                            &echo_request_a, 1);
     WriteMessageWithHandles(echo_factory_proxy, "give me one too!",
-                           &echo_request_b, 1);
+                            &echo_request_b, 1);
 
     VerifyEcho(echo_proxy_a, "i came here for an argument");
     VerifyEcho(echo_proxy_a, "shut your festering gob");
@@ -886,14 +867,14 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
     VerifyEcho(echo_proxy_b, "wubalubadubdub");
 
     WriteMessageWithHandles(echo_factory_proxy, "hook me up also thanks",
-                           &echo_request_c, 1);
+                            &echo_request_c, 1);
 
     VerifyEcho(echo_proxy_a, "the frobinators taste like frobinators");
     VerifyEcho(echo_proxy_b, "beep bop boop");
     VerifyEcho(echo_proxy_c, "zzzzzzzzzzzzzzzzzzzzzzzzzz");
 
     WriteMessage(h, "exit");
-  END_CHILD()
+  });
 
   CloseHandle(echo_factory_proxy);
   CloseHandle(echo_proxy_a);
@@ -903,21 +884,22 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
        ChannelPipesWithMultipleChildren) {
-  RUN_CHILD_ON_PIPE(ChannelEchoClient, a)
-    RUN_CHILD_ON_PIPE(ChannelEchoClient, b)
+  RunTestClient("ChannelEchoClient", [&](MojoHandle a) {
+    RunTestClient("ChannelEchoClient", [&](MojoHandle b) {
       VerifyEcho(a, "hello child 0");
       VerifyEcho(b, "hello child 1");
 
       WriteMessage(a, "exit");
       WriteMessage(b, "exit");
-    END_CHILD()
-  END_CHILD()
+    });
+  });
 }
 
 // Reads and turns a pipe handle some number of times to create lots of
 // transient proxies.
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(PingPongPipeClient,
-                                  MultiprocessMessagePipeTest, h) {
+                                  MultiprocessMessagePipeTest,
+                                  h) {
   const size_t kNumBounces = 50;
   MojoHandle p0, p1;
   ReadMessageWithHandles(h, &p0, 1);
@@ -936,7 +918,7 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, PingPongPipe) {
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
 
-  RUN_CHILD_ON_PIPE(PingPongPipeClient, h)
+  RunTestClient("PingPongPipeClient", [&](MojoHandle h) {
     const size_t kNumBounces = 50;
     WriteMessageWithHandles(h, "", &p0, 1);
     WriteMessageWithHandles(h, "", &p1, 1);
@@ -946,7 +928,7 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, PingPongPipe) {
     }
     ReadMessageWithHandles(h, &p0, 1);
     WriteMessage(h, "quit");
-  END_CHILD()
+  });
 
   EXPECT_EQ("bye", ReadMessage(p0));
 
@@ -955,7 +937,8 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, PingPongPipe) {
 }
 
 // Parses commands from the parent pipe and does whatever it's asked to do.
-DEFINE_TEST_CLIENT_WITH_PIPE(CommandDrivenClient, MultiprocessMessagePipeTest,
+DEFINE_TEST_CLIENT_WITH_PIPE(CommandDrivenClient,
+                             MultiprocessMessagePipeTest,
                              h) {
   base::hash_map<std::string, MojoHandle> named_pipes;
   for (;;) {
@@ -1030,8 +1013,8 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CommandDrivenClient, MultiprocessMessagePipeTest,
 }
 
 TEST_F(MultiprocessMessagePipeTest, ChildToChildPipes) {
-  RUN_CHILD_ON_PIPE(CommandDrivenClient, h0)
-    RUN_CHILD_ON_PIPE(CommandDrivenClient, h1)
+  RunTestClient("CommandDrivenClient", [&](MojoHandle h0) {
+    RunTestClient("CommandDrivenClient", [&](MojoHandle h1) {
       CommandDrivenClientController a(h0);
       CommandDrivenClientController b(h1);
 
@@ -1050,15 +1033,15 @@ TEST_F(MultiprocessMessagePipeTest, ChildToChildPipes) {
 
       a.Exit();
       b.Exit();
-    END_CHILD()
-  END_CHILD()
+    });
+  });
 }
 
 TEST_F(MultiprocessMessagePipeTest, MoreChildToChildPipes) {
-  RUN_CHILD_ON_PIPE(CommandDrivenClient, h0)
-    RUN_CHILD_ON_PIPE(CommandDrivenClient, h1)
-      RUN_CHILD_ON_PIPE(CommandDrivenClient, h2)
-        RUN_CHILD_ON_PIPE(CommandDrivenClient, h3)
+  RunTestClient("CommandDrivenClient", [&](MojoHandle h0) {
+    RunTestClient("CommandDrivenClient", [&](MojoHandle h1) {
+      RunTestClient("CommandDrivenClient", [&](MojoHandle h2) {
+        RunTestClient("CommandDrivenClient", [&](MojoHandle h3) {
           CommandDrivenClientController a(h0), b(h1), c(h2), d(h3);
 
           // Connect a to b and c to d
@@ -1125,32 +1108,34 @@ TEST_F(MultiprocessMessagePipeTest, MoreChildToChildPipes) {
           b.Exit();
           c.Exit();
           d.Exit();
-        END_CHILD()
-      END_CHILD()
-    END_CHILD()
-  END_CHILD()
+        });
+      });
+    });
+  });
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceivePipeWithClosedPeer,
-                                  MultiprocessMessagePipeTest, h) {
+                                  MultiprocessMessagePipeTest,
+                                  h) {
   MojoHandle p;
   EXPECT_EQ("foo", ReadMessageWithHandles(h, &p, 1));
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(p, MOJO_HANDLE_SIGNAL_PEER_CLOSED));
 }
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, SendPipeThenClosePeer) {
-  RUN_CHILD_ON_PIPE(ReceivePipeWithClosedPeer, h)
+  RunTestClient("ReceivePipeWithClosedPeer", [&](MojoHandle h) {
     MojoHandle a, b;
     CreateMessagePipe(&a, &b);
 
     // Send |a| and immediately close |b|. The child should observe closure.
     WriteMessageWithHandles(h, "foo", &a, 1);
     MojoClose(b);
-  END_CHILD()
+  });
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(SendOtherChildPipeWithClosedPeer,
-                                  MultiprocessMessagePipeTest, h) {
+                                  MultiprocessMessagePipeTest,
+                                  h) {
   // Create a new pipe and send one end to the parent, who will connect it to
   // a client running ReceivePipeWithClosedPeerFromOtherChild.
   MojoHandle application_proxy, application_request;
@@ -1170,7 +1155,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(SendOtherChildPipeWithClosedPeer,
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceivePipeWithClosedPeerFromOtherChild,
-                                  MultiprocessMessagePipeTest, h) {
+                                  MultiprocessMessagePipeTest,
+                                  h) {
   // Receive a pipe from the parent. This is akin to an "application request".
   MojoHandle application_client;
   EXPECT_EQ("c2a", ReadMessageWithHandles(h, &application_client, 1));
@@ -1191,26 +1177,27 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceivePipeWithClosedPeerFromOtherChild,
 #if defined(OS_ANDROID)
 // Android multi-process tests are not executing the new process. This is flaky.
 #define MAYBE_SendPipeWithClosedPeerBetweenChildren \
-    DISABLED_SendPipeWithClosedPeerBetweenChildren
+  DISABLED_SendPipeWithClosedPeerBetweenChildren
 #else
 #define MAYBE_SendPipeWithClosedPeerBetweenChildren \
-    SendPipeWithClosedPeerBetweenChildren
+  SendPipeWithClosedPeerBetweenChildren
 #endif
 TEST_F(MultiprocessMessagePipeTest,
        MAYBE_SendPipeWithClosedPeerBetweenChildren) {
-  RUN_CHILD_ON_PIPE(SendOtherChildPipeWithClosedPeer, kid_a)
-    RUN_CHILD_ON_PIPE(ReceivePipeWithClosedPeerFromOtherChild, kid_b)
-      // Receive an "application request" from the first child and forward it
-      // to the second child.
-      MojoHandle application_request;
-      EXPECT_EQ("c2a plz",
-                ReadMessageWithHandles(kid_a, &application_request, 1));
+  RunTestClient("SendOtherChildPipeWithClosedPeer", [&](MojoHandle kid_a) {
+    RunTestClient(
+        "ReceivePipeWithClosedPeerFromOtherChild", [&](MojoHandle kid_b) {
+          // Receive an "application request" from the first child and forward
+          // it to the second child.
+          MojoHandle application_request;
+          EXPECT_EQ("c2a plz",
+                    ReadMessageWithHandles(kid_a, &application_request, 1));
 
-      WriteMessageWithHandles(kid_b, "c2a", &application_request, 1);
-    END_CHILD()
+          WriteMessageWithHandles(kid_b, "c2a", &application_request, 1);
+        });
 
     WriteMessage(kid_a, "quit");
-  END_CHILD()
+  });
 }
 
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, SendClosePeerSend) {
@@ -1232,7 +1219,8 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, SendClosePeerSend) {
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(WriteCloseSendPeerClient,
-                                  MultiprocessMessagePipeTest, h) {
+                                  MultiprocessMessagePipeTest,
+                                  h) {
   MojoHandle pipe[2];
   EXPECT_EQ("foo", ReadMessageWithHandles(h, pipe, 2));
 
@@ -1259,7 +1247,7 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, WriteCloseSendPeer) {
   MojoHandle pipe[2];
   CreateMessagePipe(&pipe[0], &pipe[1]);
 
-  RUN_CHILD_ON_PIPE(WriteCloseSendPeerClient, h)
+  RunTestClient("WriteCloseSendPeerClient", [&](MojoHandle h) {
     // Pass the pipe to the child.
     WriteMessageWithHandles(h, "foo", pipe, 2);
 
@@ -1275,11 +1263,12 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, WriteCloseSendPeer) {
               WaitForSignals(p, MOJO_HANDLE_SIGNAL_PEER_CLOSED));
 
     WriteMessage(h, "quit");
-  END_CHILD()
+  });
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
-                                  MultiprocessMessagePipeTest, parent) {
+                                  MultiprocessMessagePipeTest,
+                                  parent) {
   // This test verifies that peer closure is detectable through various
   // mechanisms when it races with handle transfer.
   MojoHandle handles[4];
@@ -1329,15 +1318,18 @@ TEST_F(MultiprocessMessagePipeTest, MessagePipeStatusChangeInTransit) {
   for (size_t i = 0; i < 4; ++i)
     CreateMessagePipe(&local_handles[i], &sent_handles[i]);
 
-  RUN_CHILD_ON_PIPE(MessagePipeStatusChangeInTransitClient, child)
-    // Send 4 handles and let their transfer race with their peers' closure.
-    WriteMessageWithHandles(child, "o_O", sent_handles, 4);
-    for (size_t i = 0; i < 4; ++i)
-      CloseHandle(local_handles[i]);
-  END_CHILD()
+  RunTestClient("MessagePipeStatusChangeInTransitClient",
+                [&](MojoHandle child) {
+                  // Send 4 handles and let their transfer race with their
+                  // peers' closure.
+                  WriteMessageWithHandles(child, "o_O", sent_handles, 4);
+                  for (size_t i = 0; i < 4; ++i)
+                    CloseHandle(local_handles[i]);
+                });
 }
 
-DEFINE_TEST_CLIENT_TEST_WITH_PIPE(BadMessageClient, MultiprocessMessagePipeTest,
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(BadMessageClient,
+                                  MultiprocessMessagePipeTest,
                                   parent) {
   MojoHandle pipe;
   EXPECT_EQ("hi", ReadMessageWithHandles(parent, &pipe, 1));
@@ -1357,10 +1349,10 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
   std::string second_process_error;
 
   set_process_error_callback(base::Bind(&OnProcessError, &first_process_error));
-  RUN_CHILD_ON_PIPE(BadMessageClient, child1)
-    set_process_error_callback(base::Bind(&OnProcessError,
-                                          &second_process_error));
-    RUN_CHILD_ON_PIPE(BadMessageClient, child2)
+  RunTestClient("BadMessageClient", [&](MojoHandle child1) {
+    set_process_error_callback(
+        base::Bind(&OnProcessError, &second_process_error));
+    RunTestClient("BadMessageClient", [&](MojoHandle child2) {
       MojoHandle a, b, c, d;
       CreateMessagePipe(&a, &b);
       CreateMessagePipe(&c, &d);
@@ -1387,10 +1379,10 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
       EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
       WriteMessage(child2, "bye");
-    END_CHILD();
+    });
 
     WriteMessage(child1, "bye");
-  END_CHILD()
+  });
 
   // The error messages should match the processes which triggered them.
   EXPECT_NE(std::string::npos, first_process_error.find(kFirstErrorMessage));

@@ -213,11 +213,11 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageNoHandles, MessageTest, h) {
 }
 
 TEST_F(MessageTest, SerializeSimpleMessageNoHandlesWithContext) {
-  RUN_CHILD_ON_PIPE(ReceiveMessageNoHandles, h)
-  auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
-  MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
-                   MOJO_WRITE_MESSAGE_FLAG_NONE);
-  END_CHILD()
+  RunTestClient("ReceiveMessageNoHandles", [&](MojoHandle h) {
+    auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
+    MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
+                     MOJO_WRITE_MESSAGE_FLAG_NONE);
+  });
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageOneHandle, MessageTest, h) {
@@ -229,15 +229,15 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageOneHandle, MessageTest, h) {
 }
 
 TEST_F(MessageTest, SerializeSimpleMessageOneHandleWithContext) {
-  RUN_CHILD_ON_PIPE(ReceiveMessageOneHandle, h)
-  auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
-  mojo::MessagePipe pipe;
-  message->AddMessagePipe(std::move(pipe.handle0));
-  MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
-                   MOJO_WRITE_MESSAGE_FLAG_NONE);
-  EXPECT_EQ(kTestMessageWithContext2,
-            MojoTestBase::ReadMessage(pipe.handle1.get().value()));
-  END_CHILD()
+  RunTestClient("ReceiveMessageOneHandle", [&](MojoHandle h) {
+    auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
+    mojo::MessagePipe pipe;
+    message->AddMessagePipe(std::move(pipe.handle0));
+    MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
+                     MOJO_WRITE_MESSAGE_FLAG_NONE);
+    EXPECT_EQ(kTestMessageWithContext2,
+              MojoTestBase::ReadMessage(pipe.handle1.get().value()));
+  });
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageWithHandles, MessageTest, h) {
@@ -252,24 +252,24 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageWithHandles, MessageTest, h) {
 }
 
 TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
-  RUN_CHILD_ON_PIPE(ReceiveMessageWithHandles, h)
-  auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
-  mojo::MessagePipe pipes[4];
-  message->AddMessagePipe(std::move(pipes[0].handle0));
-  message->AddMessagePipe(std::move(pipes[1].handle0));
-  message->AddMessagePipe(std::move(pipes[2].handle0));
-  message->AddMessagePipe(std::move(pipes[3].handle0));
-  MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
-                   MOJO_WRITE_MESSAGE_FLAG_NONE);
-  EXPECT_EQ(kTestMessageWithContext1,
-            MojoTestBase::ReadMessage(pipes[0].handle1.get().value()));
-  EXPECT_EQ(kTestMessageWithContext2,
-            MojoTestBase::ReadMessage(pipes[1].handle1.get().value()));
-  EXPECT_EQ(kTestMessageWithContext3,
-            MojoTestBase::ReadMessage(pipes[2].handle1.get().value()));
-  EXPECT_EQ(kTestMessageWithContext4,
-            MojoTestBase::ReadMessage(pipes[3].handle1.get().value()));
-  END_CHILD()
+  RunTestClient("ReceiveMessageWithHandles", [&](MojoHandle h) {
+    auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
+    mojo::MessagePipe pipes[4];
+    message->AddMessagePipe(std::move(pipes[0].handle0));
+    message->AddMessagePipe(std::move(pipes[1].handle0));
+    message->AddMessagePipe(std::move(pipes[2].handle0));
+    message->AddMessagePipe(std::move(pipes[3].handle0));
+    MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
+                     MOJO_WRITE_MESSAGE_FLAG_NONE);
+    EXPECT_EQ(kTestMessageWithContext1,
+              MojoTestBase::ReadMessage(pipes[0].handle1.get().value()));
+    EXPECT_EQ(kTestMessageWithContext2,
+              MojoTestBase::ReadMessage(pipes[1].handle1.get().value()));
+    EXPECT_EQ(kTestMessageWithContext3,
+              MojoTestBase::ReadMessage(pipes[2].handle1.get().value()));
+    EXPECT_EQ(kTestMessageWithContext4,
+              MojoTestBase::ReadMessage(pipes[3].handle1.get().value()));
+  });
 }
 
 #endif  // !defined(OS_IOS)
