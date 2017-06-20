@@ -33,7 +33,6 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -1444,76 +1443,6 @@ TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportCorruptDmg) {
   CheckClientDownloadReportCorruptArchive(DMG);
 }
-
-// Test that downloaded files with no disk image extension that have a 'koly'
-// trailer are treated as disk images and processed accordingly.
-TEST_F(DownloadProtectionServiceTest,
-       CheckClientDownloadReportDmgWithoutExtension) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
-
-  base::FilePath test_data;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
-  test_data = test_data.AppendASCII("chrome")
-                  .AppendASCII("safe_browsing_dmg")
-                  .AppendASCII("mach_o_in_dmg.txt");
-
-  NiceMockDownloadItem item;
-  PrepareBasicDownloadItemWithFullPaths(
-      &item, {"http://www.evil.com/a.dmg"},                     // url_chain
-      "http://www.google.com/",                                 // referrer
-      test_data,                                                // tmp_path
-      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.dmg")));  // final_path
-
-  RunLoop run_loop;
-  download_service_->CheckClientDownload(
-      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                        base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-
-  ASSERT_TRUE(HasClientDownloadRequest());
-  EXPECT_TRUE(GetClientDownloadRequest()->archive_valid());
-  ClearClientDownloadRequest();
-
-  Mock::VerifyAndClearExpectations(sb_service_.get());
-  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
-}
-
-// Demonstrate that a .dmg file whose a) extension has been changed to .txt and
-// b) 'koly' signature has been removed is not processed as a disk image.
-TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
-
-  base::FilePath test_data;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
-  test_data = test_data.AppendASCII("chrome")
-                  .AppendASCII("safe_browsing_dmg")
-                  .AppendASCII("mach_o_in_dmg_no_koly_signature.txt");
-
-  NiceMockDownloadItem item;
-  PrepareBasicDownloadItemWithFullPaths(
-      &item, {"http://www.evil.com/a.dmg"},                     // url_chain
-      "http://www.google.com/",                                 // referrer
-      test_data,                                                // tmp_path
-      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.dmg")));  // final_path
-
-  RunLoop run_loop;
-  download_service_->CheckClientDownload(
-      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                        base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-
-  ASSERT_TRUE(HasClientDownloadRequest());
-  EXPECT_FALSE(GetClientDownloadRequest()->archive_valid());
-  ClearClientDownloadRequest();
-
-  Mock::VerifyAndClearExpectations(sb_service_.get());
-  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
-}
-
 #endif
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
@@ -1927,25 +1856,10 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
     EXPECT_CALL(*sb_service_->mock_database_manager(),
                 MatchDownloadWhitelistUrl(_))
         .WillRepeatedly(Return(false));
-
-#if defined(OS_MACOSX)
-    // Expects that MockDownloadItem will go out of scope while asynchronous
-    // processing is parsing file metadata, and thus ExtractFileOrDmgFeatures()
-    // will return rather than continuing to process the download.
-    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-        .Times(0);
-    EXPECT_CALL(*binary_feature_extractor_.get(),
-                ExtractImageFeatures(
-                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-        .Times(0);
-#else
-    // Expects synchronous processing that continues to extract features from
-    // download even after MockDownloadItem goes out of scope.
     EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
     EXPECT_CALL(*binary_feature_extractor_.get(),
                 ExtractImageFeatures(
                     tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
-#endif
 
     download_service_->CheckClientDownload(
         &item,
