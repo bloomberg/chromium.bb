@@ -74,7 +74,7 @@ LayoutBoxModelObject* FindFirstStickyBetween(LayoutObject* from,
                                              LayoutObject* to) {
   LayoutObject* maybe_sticky_ancestor = from;
   while (maybe_sticky_ancestor && maybe_sticky_ancestor != to) {
-    if (maybe_sticky_ancestor->IsStickyPositioned()) {
+    if (maybe_sticky_ancestor->Style()->HasStickyConstrainedPosition()) {
       return ToLayoutBoxModelObject(maybe_sticky_ancestor);
     }
 
@@ -252,7 +252,8 @@ void LayoutBoxModelObject::WillBeDestroyed() {
     // 0 during destruction.
     if (LocalFrame* frame = this->GetFrame()) {
       if (LocalFrameView* frame_view = frame->View()) {
-        if (Style()->HasViewportConstrainedPosition())
+        if (Style()->HasViewportConstrainedPosition() ||
+            Style()->HasStickyConstrainedPosition())
           frame_view->RemoveViewportConstrainedObject(*this);
       }
     }
@@ -439,9 +440,9 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
         Style()->GetPosition() == EPosition::kFixed;
     bool old_style_is_viewport_constrained =
         old_style && old_style->GetPosition() == EPosition::kFixed;
-    bool new_style_is_sticky = Style()->GetPosition() == EPosition::kSticky;
+    bool new_style_is_sticky = Style()->HasStickyConstrainedPosition();
     bool old_style_is_sticky =
-        old_style && old_style->GetPosition() == EPosition::kSticky;
+        old_style && old_style->HasStickyConstrainedPosition();
 
     if (new_style_is_sticky != old_style_is_sticky) {
       if (new_style_is_sticky) {
@@ -1068,6 +1069,8 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
     constraints.AddAnchorEdge(
         StickyPositionScrollingConstraints::kAnchorEdgeBottom);
   }
+  // At least one edge should be anchored if we are calculating constraints.
+  DCHECK(constraints.GetAnchorEdges());
   scrollable_area->GetStickyConstraintsMap().Set(Layer(), constraints);
 }
 

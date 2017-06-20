@@ -1772,7 +1772,8 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
        *viewport_constrained_objects_) {
     LayoutObject* layout_object = viewport_constrained_object;
     LayoutItem layout_item = LayoutItem(layout_object);
-    DCHECK(layout_item.Style()->HasViewportConstrainedPosition());
+    DCHECK(layout_item.Style()->HasViewportConstrainedPosition() ||
+           layout_item.Style()->HasStickyConstrainedPosition());
     DCHECK(layout_item.HasLayer());
     PaintLayer* layer = LayoutBoxModel(layout_item).Layer();
 

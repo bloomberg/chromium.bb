@@ -288,7 +288,7 @@ void CompositedLayerMapping::UpdateBackdropFilters(const ComputedStyle& style) {
 }
 
 bool CompositedLayerMapping::UsesCompositedStickyPosition() const {
-  return GetLayoutObject().Style()->GetPosition() == EPosition::kSticky &&
+  return GetLayoutObject().Style()->HasStickyConstrainedPosition() &&
          (owning_layer_.AncestorOverflowLayer()->IsRootLayer()
               ? GetLayoutObject().View()->GetFrameView()->IsScrollable()
               : owning_layer_.AncestorOverflowLayer()

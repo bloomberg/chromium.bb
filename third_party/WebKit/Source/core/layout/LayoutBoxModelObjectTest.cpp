@@ -340,14 +340,18 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
 TEST_F(LayoutBoxModelObjectTest,
        StickyPositionFindsCorrectStickyBoxShiftingAncestor) {
   SetBodyInnerHTML(
-      "<style>#stickyOuterDiv { position: sticky; }"
-      "#stickyOuterInline { position: sticky; display: inline; }"
-      "#stickyInnerInline { position: sticky; display: inline; }"
-      ".inline { display: inline; }</style>"
+      "<style>#stickyOuterDiv { position: sticky; top: 0;}"
+      "#stickyOuterInline { position: sticky; top: 0; display: inline; }"
+      "#unanchoredSticky { position: sticky; display: inline; }"
+      ".inline { display: inline; }"
+      "#stickyInnerInline { position: sticky; top: 0; display: inline; "
+      "}</style>"
       "<div id='stickyOuterDiv'>"
       "  <div id='stickyOuterInline'>"
-      "    <div class='inline'>"
-      "      <div id='stickyInnerInline'></div>"
+      "   <div id='unanchoredSticky'>"
+      "      <div class='inline'>"
+      "        <div id='stickyInnerInline'></div>"
+      "      </div>"
       "    </div>"
       "  </div>"
       "</div>");
@@ -356,6 +360,8 @@ TEST_F(LayoutBoxModelObjectTest,
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyOuterDiv"));
   LayoutBoxModelObject* sticky_outer_inline =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyOuterInline"));
+  LayoutBoxModelObject* unanchored_sticky =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("unanchoredSticky"));
   LayoutBoxModelObject* sticky_inner_inline =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyInnerInline"));
 
@@ -367,6 +373,7 @@ TEST_F(LayoutBoxModelObjectTest,
 
   ASSERT_TRUE(constraints_map.Contains(sticky_outer_div->Layer()));
   ASSERT_TRUE(constraints_map.Contains(sticky_outer_inline->Layer()));
+  ASSERT_FALSE(constraints_map.Contains(unanchored_sticky->Layer()));
   ASSERT_TRUE(constraints_map.Contains(sticky_inner_inline->Layer()));
 
   // The outer block element trivially has no sticky-box shifting ancestor.
@@ -395,12 +402,19 @@ TEST_F(LayoutBoxModelObjectTest,
   // We make the scroller itself sticky in order to check that elements do not
   // detect it as their containing-block shifting ancestor.
   SetBodyInnerHTML(
-      "<style>#scroller { overflow-y: scroll; position: sticky; }"
-      "#stickyParent { position: sticky; }"
-      "#stickyChild { position: sticky; }"
-      "#stickyNestedChild { position: sticky; }</style>"
-      "<div id='scroller'><div id='stickyParent'><div id='stickyChild'></div>"
-      "<div><div id='stickyNestedChild'></div></div></div></div>");
+      "<style>#scroller { overflow-y: scroll; position: sticky; top: 0;}"
+      "#stickyParent { position: sticky; top: 0;}"
+      "#stickyChild { position: sticky; top: 0;}"
+      "#unanchoredSticky { position: sticky; }"
+      "#stickyNestedChild { position: sticky; top: 0;}</style>"
+      "<div id='scroller'>"
+      "  <div id='stickyParent'>"
+      "    <div id='unanchoredSticky'>"
+      "      <div id='stickyChild'></div>"
+      "      <div><div id='stickyNestedChild'></div></div>"
+      "    </div>"
+      "  </div>"
+      "</div>");
 
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
@@ -428,7 +442,8 @@ TEST_F(LayoutBoxModelObjectTest,
                    .NearestStickyBoxShiftingContainingBlock());
 
   // Both inner children should detect the parent <div> as their
-  // containing-block shifting ancestor.
+  // containing-block shifting ancestor. They skip past unanchored sticky
+  // because it will never have a non-zero offset.
   EXPECT_EQ(sticky_parent, constraints_map.at(sticky_child->Layer())
                                .NearestStickyBoxShiftingContainingBlock());
   EXPECT_EQ(sticky_parent, constraints_map.at(sticky_nested_child->Layer())
@@ -443,8 +458,8 @@ TEST_F(LayoutBoxModelObjectTest,
 TEST_F(LayoutBoxModelObjectTest,
        StickyPositionFindsCorrectContainingBlockShiftingAncestorRoot) {
   SetBodyInnerHTML(
-      "<style>#stickyParent { position: sticky; }"
-      "#stickyGrandchild { position: sticky; }</style>"
+      "<style>#stickyParent { position: sticky; top: 0;}"
+      "#stickyGrandchild { position: sticky; top: 0;}</style>"
       "<div id='stickyParent'><div><div id='stickyGrandchild'></div></div>"
       "</div>");
 
@@ -476,8 +491,8 @@ TEST_F(LayoutBoxModelObjectTest,
        StickyPositionFindsCorrectContainingBlockShiftingAncestorTable) {
   SetBodyInnerHTML(
       "<style>#scroller { overflow-y: scroll; }"
-      "#stickyOuter { position: sticky; }"
-      "#stickyTh { position: sticky; }</style>"
+      "#stickyOuter { position: sticky; top: 0;}"
+      "#stickyTh { position: sticky; top: 0;}</style>"
       "<div id='scroller'><div id='stickyOuter'><table><thead><tr>"
       "<th id='stickyTh'></th></tr></thead></table></div></div>");
 
@@ -851,14 +866,17 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedInlineElements) {
       "<style>#scroller { width: 100px; height: 100px; overflow-y: scroll; }"
       "#paddingBefore { height: 50px; }"
       "#outerInline { display: inline; position: sticky; top: 0; }"
+      "#unanchoredSticky { position: sticky; display: inline; }"
       ".inline {display: inline;}"
       "#innerInline { display: inline; position: sticky; top: 25px; }"
       "#paddingAfter { height: 200px; }</style>"
       "<div id='scroller'>"
       "  <div id='paddingBefore'></div>"
       "  <div id='outerInline'>"
-      "    <div class='inline'>"
-      "      <div id='innerInline'></div>"
+      "    <div id='unanchoredSticky'>"
+      "      <div class='inline'>"
+      "        <div id='innerInline'></div>"
+      "      </div>"
       "    </div>"
       "  </div>"
       "  <div id='paddingAfter'></div>"

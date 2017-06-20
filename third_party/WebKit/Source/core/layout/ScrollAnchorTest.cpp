@@ -224,6 +224,23 @@ TEST_P(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
   EXPECT_EQ(101, viewport->ScrollOffsetInt().Height());
 }
 
+TEST_P(ScrollAnchorTest, AvoidStickyAnchorWhichMovesWithScroll) {
+  SetBodyInnerHTML(
+      "<style> body { height: 1000px } </style>"
+      "<div id='block1' style='height: 50px'>abc</div>"
+      "<div id='block2' style='height: 100px; position: sticky; top: 0;'>"
+      "    def</div>");
+
+  ScrollableArea* viewport = LayoutViewport();
+  ScrollLayoutViewport(ScrollOffset(0, 60));
+
+  GetDocument().getElementById("block1")->setAttribute(HTMLNames::styleAttr,
+                                                       "height: 100px");
+  Update();
+
+  EXPECT_EQ(60, viewport->ScrollOffsetInt().Height());
+}
+
 TEST_P(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
   SetBodyInnerHTML(
       "<style>"
