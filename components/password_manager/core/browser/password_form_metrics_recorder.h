@@ -5,11 +5,15 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_METRICS_RECORDER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_METRICS_RECORDER_H_
 
-#include "base/macros.h"
+#include <vector>
 
+#include "base/macros.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
 
 namespace password_manager {
+
+class FormFetcher;
 
 // The pupose of this class is to record various types of metrics about the
 // behavior of the PasswordFormManager and its interaction with the user and the
@@ -46,6 +50,24 @@ class PasswordFormMetricsRecorder {
     kSubmitResultMax
   };
 
+  // Enumerates whether there were `suppressed` credentials. These are stored
+  // credentials that were not filled, even though they might be related to the
+  // observed form. See FormFetcher::GetSuppressed* for details.
+  //
+  // If suppressed credentials exist, it is also recorded whether their username
+  // and/or password matched those submitted.
+  enum SuppressedAccountExistence {
+    kSuppressedAccountNone,
+    // Recorded when there exists a suppressed account, but there was no
+    // submitted form to compare its username and password to.
+    kSuppressedAccountExists,
+    // Recorded when there was a submitted form.
+    kSuppressedAccountExistsDifferentUsername,
+    kSuppressedAccountExistsSameUsername,
+    kSuppressedAccountExistsSameUsernameAndPassword,
+    kSuppressedAccountExistenceMax,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -56,6 +78,14 @@ class PasswordFormMetricsRecorder {
   static constexpr int kMaxNumActionsTakenNew =
       kManagerActionNewMax * static_cast<int>(UserAction::kMax) *
       kSubmitResultMax;
+
+  // The maximum number of combinations recorded into histograms in the
+  // PasswordManager.SuppressedAccount.* family.
+  static constexpr int kMaxSuppressedAccountStats =
+      kSuppressedAccountExistenceMax *
+      PasswordFormMetricsRecorder::kManagerActionNewMax *
+      static_cast<int>(UserAction::kMax) *
+      PasswordFormMetricsRecorder::kSubmitResultMax;
 
   // Called if the user could generate a password for this form.
   void MarkGenerationAvailable();
@@ -72,15 +102,43 @@ class PasswordFormMetricsRecorder {
   void LogSubmitPassed();
   void LogSubmitFailed();
 
+  // Records all histograms in the PasswordManager.SuppressedAccount.* family.
+  // Takes the FormFetcher intance which owns the login data from PasswordStore.
+  // |pending_credentials| stores credentials when the form was submitted but
+  // success was still unknown. It contains credentials that are ready to be
+  // written (saved or updated) to a password store.
+  void RecordHistogramsOnSuppressedAccounts(
+      bool observed_form_origin_has_cryptographic_scheme,
+      const FormFetcher& form_fetcher,
+      const autofill::PasswordForm& pending_credentials) const;
+
   // Converts the "ActionsTaken" fields (using ManagerActionNew) into an int so
   // they can be logged to UMA.
-  // TODO(battre): This should not be public.
+  // Public for testing.
   int GetActionsTakenNew() const;
 
  private:
   // Converts the "ActionsTaken" fields into an int so they can be logged to
   // UMA.
   int GetActionsTaken() const;
+
+  // When supplied with the list of all |suppressed_forms| that belong to
+  // certain suppressed credential type (see FormFetcher::GetSuppressed*),
+  // filters that list down to forms that are either |manual_or_generated|, and
+  // based on that, computes the histogram sample that is a mixed-based
+  // representation of a combination of four attributes:
+  //  -- whether there were suppressed credentials (and if so, their relation to
+  //     the submitted username/password).
+  //  -- whether the |observed_form_| got ultimately submitted
+  //  -- what action the password manager performed (|manager_action_|),
+  //  -- and what action the user performed (|user_action_|_).
+  // |pending_credentials| stores credentials when the form was submitted but
+  // success was still unknown. It contains credentials that are ready to be
+  // written (saved or updated) to a password store.
+  int GetHistogramSampleForSuppressedAccounts(
+      const std::vector<const autofill::PasswordForm*>& suppressed_forms,
+      autofill::PasswordForm::Type manual_or_generated,
+      const autofill::PasswordForm& pending_credentials) const;
 
   // True if the main frame's visible URL, at the time this PasswordFormManager
   // was created, is secure.

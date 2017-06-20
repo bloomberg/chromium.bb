@@ -283,32 +283,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
     kFoundGenerationElement
   };
 
-  // Enumerates whether there were `suppressed` credentials. These are stored
-  // credentials that were not filled, even though they might be related to the
-  // |observed_form_|. See FormFetcher::GetSuppressed* for details.
-  //
-  // If suppressed credentials exist, it is also recorded whether their username
-  // and/or password matched those submitted.
-  enum SuppressedAccountExistence {
-    kSuppressedAccountNone,
-    // Recorded when there exists a suppressed account, but there was no
-    // submitted form to compare its username and password to.
-    kSuppressedAccountExists,
-    // Recorded when there was a submitted form.
-    kSuppressedAccountExistsDifferentUsername,
-    kSuppressedAccountExistsSameUsername,
-    kSuppressedAccountExistsSameUsernameAndPassword,
-    kSuppressedAccountExistenceMax,
-  };
-
-  // The maximum number of combinations recorded into histograms in the
-  // PasswordManager.SuppressedAccount.* family.
-  static constexpr int kMaxSuppressedAccountStats =
-      kSuppressedAccountExistenceMax *
-      PasswordFormMetricsRecorder::kManagerActionNewMax *
-      static_cast<int>(UserAction::kMax) *
-      PasswordFormMetricsRecorder::kSubmitResultMax;
-
   // Through |driver|, supply the associated frame with appropriate information
   // (fill data, whether to allow password generation, etc.).
   void ProcessFrameInternal(const base::WeakPtr<PasswordManagerDriver>& driver);
@@ -378,23 +352,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // PasswordForm if it returns true.
   bool UpdatePendingCredentialsIfUsernameChanged(
       const autofill::PasswordForm& form);
-
-  // When supplied with the list of all |suppressed_forms| that belong to
-  // certain suppressed credential type (see FormFetcher::GetSuppressed*),
-  // filters that list down to forms that are either |manual_or_generated|, and
-  // based on that, computes the histogram sample that is a mixed-based
-  // representation of a combination of four attributes:
-  //  -- whether there were suppressed credentials (and if so, their relation to
-  //     the submitted username/password).
-  //  -- whether the |observed_form_| got ultimately submitted
-  //  -- what action the password manager performed (|manager_action_|),
-  //  -- and what action the user performed (|user_action_|_).
-  int GetHistogramSampleForSuppressedAccounts(
-      const std::vector<const autofill::PasswordForm*> suppressed_forms,
-      autofill::PasswordForm::Type manual_or_generated) const;
-
-  // Records all histograms in the PasswordManager.SuppressedAccount.* family.
-  void RecordHistogramsOnSuppressedAccounts() const;
 
   // Tries to set all votes (e.g. autofill field types, generation vote) to
   // a |FormStructure| and upload it to the server. Returns true on success.

@@ -122,7 +122,7 @@ TEST(PasswordFormMetricsRecorder, Generation) {
 // Test the recording of metrics around manager_action, user_action, and
 // submit_result.
 TEST(PasswordFormMetricsRecorder, Actions) {
-  static constexpr const struct {
+  static constexpr struct {
     // Stimuli:
     bool is_main_frame_secure;
     PasswordFormMetricsRecorder::ManagerAction manager_action;
