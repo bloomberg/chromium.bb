@@ -228,7 +228,6 @@ PasswordFormManager::PasswordFormManager(
           observed_form.IsPossibleChangePasswordFormWithoutUsername()),
       client_(client),
       user_action_(UserAction::kNone),
-      form_type_(kFormTypeUnspecified),
       form_saver_(std::move(form_saver)),
       owned_form_fetcher_(
           form_fetcher ? nullptr
@@ -255,15 +254,6 @@ PasswordFormManager::~PasswordFormManager() {
   metrics_recorder_.RecordHistogramsOnSuppressedAccounts(
       observed_form_.origin.SchemeIsCryptographic(), *form_fetcher_,
       pending_credentials_);
-
-  if (form_type_ != kFormTypeUnspecified) {
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType", form_type_,
-                              kFormTypeMax);
-    if (!is_main_frame_secure_) {
-      UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedNonSecureFormType",
-                                form_type_, kFormTypeMax);
-    }
-  }
 }
 
 // static
@@ -458,20 +448,23 @@ void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
       !form.new_password_value.empty() && form.password_value.empty();
   bool no_username = form.username_element.empty();
 
+  PasswordFormMetricsRecorder::SubmittedFormType type =
+      PasswordFormMetricsRecorder::kSubmittedFormTypeUnspecified;
   if (form.layout == PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP) {
-    form_type_ = kFormTypeLoginAndSignup;
+    type = PasswordFormMetricsRecorder::kSubmittedFormTypeLoginAndSignup;
   } else if (is_change_password_form) {
-    form_type_ = kFormTypeChangePasswordEnabled;
+    type = PasswordFormMetricsRecorder::kSubmittedFormTypeChangePasswordEnabled;
   } else if (is_signup_form) {
     if (no_username)
-      form_type_ = kFormTypeSignupNoUsername;
+      type = PasswordFormMetricsRecorder::kSubmittedFormTypeSignupNoUsername;
     else
-      form_type_ = kFormTypeSignup;
+      type = PasswordFormMetricsRecorder::kSubmittedFormTypeSignup;
   } else if (no_username) {
-    form_type_ = kFormTypeLoginNoUsername;
+    type = PasswordFormMetricsRecorder::kSubmittedFormTypeLoginNoUsername;
   } else {
-    form_type_ = kFormTypeLogin;
+    type = PasswordFormMetricsRecorder::kSubmittedFormTypeLogin;
   }
+  metrics_recorder_.SetSubmittedFormType(type);
 }
 
 void PasswordFormManager::ScoreMatches(

@@ -261,21 +261,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
       size_t filtered_count) override;
 
  private:
-  // What the form is used for. kFormTypeUnspecified is only set before
-  // the SetSubmittedForm() is called, and should never be actually uploaded.
-  enum FormType {
-    kFormTypeLogin,
-    kFormTypeLoginNoUsername,
-    kFormTypeChangePasswordEnabled,
-    kFormTypeChangePasswordDisabled,
-    kFormTypeChangePasswordNoUsername,
-    kFormTypeSignup,
-    kFormTypeSignupNoUsername,
-    kFormTypeLoginAndSignup,
-    kFormTypeUnspecified,
-    kFormTypeMax
-  };
-
   // The outcome of the form classifier.
   enum FormClassifierOutcome {
     kNoOutcome,
@@ -535,11 +520,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Records the action the user has taken while interacting with the password
   // form.
   UserAction user_action_;
-
-  // Form type of the form that |this| is managing. Set after SetSubmittedForm()
-  // as our classification of the form can change depending on what data the
-  // user has entered.
-  FormType form_type_;
 
   // FormSaver instance used by |this| to all tasks related to storing
   // credentials.
