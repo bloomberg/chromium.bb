@@ -238,6 +238,10 @@ class NotificationPlatformBridgeLinuxImpl
   explicit NotificationPlatformBridgeLinuxImpl(scoped_refptr<dbus::Bus> bus)
       : bus_(bus) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // While the tasks in NotificationPlatformBridgeLinux merely need
+    // to run in sequence, many APIs in ::dbus are required to be
+    // called from the same thread (https://crbug.com/130984), so
+    // |task_runner_| is created as the single-threaded flavor.
     task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
         {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
     registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
