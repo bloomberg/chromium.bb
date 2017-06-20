@@ -372,3 +372,146 @@ group("libwebp") {
     deps += [ ":libwebp_dsp_neon" ]
   }
 }
+
+###############################################################################
+# Executables
+
+if (current_toolchain == host_toolchain) {
+  source_set("example_util") {
+    sources = [
+      "examples/example_util.c",
+      "examples/example_util.h",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    if (set_opt_level) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
+    deps = [
+      ":libwebp_webp",
+    ]
+    configs += [ ":libwebp_config" ]
+    visibility = [ ":*" ]
+  }
+
+  source_set("imageio_util") {
+    sources = [
+      "imageio/imageio_util.c",
+      "imageio/imageio_util.h",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    if (set_opt_level) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
+    deps = [
+      ":libwebp_webp",
+    ]
+    configs += [ ":libwebp_config" ]
+    visibility = [ ":*" ]
+  }
+
+  source_set("imagedec") {
+    sources = [
+      "imageio/image_dec.c",
+      "imageio/image_dec.h",
+      "imageio/jpegdec.c",
+      "imageio/jpegdec.h",
+      "imageio/metadata.c",
+      "imageio/metadata.h",
+      "imageio/pngdec.c",
+      "imageio/pngdec.h",
+      "imageio/tiffdec.c",
+      "imageio/tiffdec.h",
+      "imageio/webpdec.c",
+      "imageio/webpdec.h",
+      "imageio/wicdec.c",
+      "imageio/wicdec.h",
+    ]
+    defines = [ "WEBP_HAVE_PNG" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    if (set_opt_level) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
+    deps = [
+      ":libwebp_webp",
+      "//third_party/libpng",
+      "//third_party/zlib",
+    ]
+    configs += [ ":libwebp_config" ]
+    visibility = [ ":*" ]
+  }
+
+  source_set("imageenc") {
+    sources = [
+      "imageio/image_enc.c",
+      "imageio/image_enc.h",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    if (set_opt_level) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
+    deps = [
+      ":libwebp_webp",
+    ]
+    configs += [ ":libwebp_config" ]
+    visibility = [ ":*" ]
+  }
+
+  executable("cwebp") {
+    sources = [
+      "examples/cwebp.c",
+      "examples/stopwatch.h",
+    ]
+
+    deps = [
+      ":example_util",
+      ":imagedec",
+      ":imageio_util",
+      ":libwebp",
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+      "//build/win:default_exe_manifest",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    if (set_opt_level) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+  }
+
+  executable("dwebp") {
+    sources = [
+      "examples/dwebp.c",
+      "examples/stopwatch.h",
+    ]
+
+    deps = [
+      ":example_util",
+      ":imagedec",
+      ":imageenc",
+      ":imageio_util",
+      ":libwebp",
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+      "//build/win:default_exe_manifest",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    if (set_opt_level) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+  }
+}
