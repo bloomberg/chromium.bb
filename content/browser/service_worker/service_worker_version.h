@@ -535,15 +535,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   };
 
   // The timeout timer interval.
-  static const int kTimeoutTimerDelaySeconds;
-  // Timeout for an installed worker to start.
-  static const int kStartInstalledWorkerTimeoutSeconds;
+  static constexpr base::TimeDelta kTimeoutTimerDelay =
+      base::TimeDelta::FromSeconds(30);
   // Timeout for a new worker to start.
-  static const int kStartNewWorkerTimeoutMinutes;
-  // Timeout for a request to be handled.
-  static const int kRequestTimeoutMinutes;
+  static constexpr base::TimeDelta kStartNewWorkerTimeout =
+      base::TimeDelta::FromMinutes(5);
   // Timeout for the worker to stop.
-  static const int kStopWorkerTimeoutSeconds;
+  static constexpr base::TimeDelta kStopWorkerTimeout =
+      base::TimeDelta::FromSeconds(5);
 
   ~ServiceWorkerVersion() override;
 

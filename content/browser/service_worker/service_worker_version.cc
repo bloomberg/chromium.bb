@@ -11,10 +11,8 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -23,16 +21,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
-#include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
-#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/origin_trials/trial_token_validator.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -56,14 +50,21 @@ using StatusCallback = ServiceWorkerVersion::StatusCallback;
 
 namespace {
 
-// Time to wait until stopping an idle worker.
-const int kIdleWorkerTimeoutSeconds = 30;
+// Timeout for an installed worker to start.
+constexpr base::TimeDelta kStartInstalledWorkerTimeout =
+    base::TimeDelta::FromSeconds(60);
 
-// Default delay for scheduled update.
-const int kUpdateDelaySeconds = 1;
+// Timeout for a request to be handled.
+constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromMinutes(5);
+
+// Time to wait until stopping an idle worker.
+constexpr base::TimeDelta kIdleWorkerTimeout = base::TimeDelta::FromSeconds(30);
 
 // Timeout for waiting for a response to a ping.
-const int kPingTimeoutSeconds = 30;
+constexpr base::TimeDelta kPingTimeout = base::TimeDelta::FromSeconds(30);
+
+// Default delay for scheduled update.
+constexpr base::TimeDelta kUpdateDelay = base::TimeDelta::FromSeconds(1);
 
 const char kClaimClientsStateErrorMesage[] =
     "Only the active worker can claim clients.";
@@ -202,11 +203,9 @@ void OnEventDispatcherConnectionError(
 
 }  // namespace
 
-const int ServiceWorkerVersion::kTimeoutTimerDelaySeconds = 30;
-const int ServiceWorkerVersion::kStartInstalledWorkerTimeoutSeconds = 60;
-const int ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes = 5;
-const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
-const int ServiceWorkerVersion::kStopWorkerTimeoutSeconds = 5;
+constexpr base::TimeDelta ServiceWorkerVersion::kTimeoutTimerDelay;
+constexpr base::TimeDelta ServiceWorkerVersion::kStartNewWorkerTimeout;
+constexpr base::TimeDelta ServiceWorkerVersion::kStopWorkerTimeout;
 
 void ServiceWorkerVersion::RestartTick(base::TimeTicks* time) const {
   *time = tick_clock_->NowTicks();
@@ -249,8 +248,7 @@ class ServiceWorkerVersion::PingController {
   // - OnPingTimeout() if the worker hasn't reponded within a certain period.
   // - PingWorker() if we're running ping timer and can send next ping.
   void CheckPingStatus() {
-    if (version_->GetTickDuration(ping_time_) >
-        base::TimeDelta::FromSeconds(kPingTimeoutSeconds)) {
+    if (version_->GetTickDuration(ping_time_) > kPingTimeout) {
       ping_state_ = PING_TIMED_OUT;
       version_->OnPingTimeout();
       return;
@@ -506,8 +504,7 @@ void ServiceWorkerVersion::ScheduleUpdate() {
   // Protect |this| until the timer fires, since we may be stopping
   // and soon no one might hold a reference to us.
   context_->ProtectVersion(make_scoped_refptr(this));
-  update_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromSeconds(kUpdateDelaySeconds),
+  update_timer_.Start(FROM_HERE, kUpdateDelay,
                       base::Bind(&ServiceWorkerVersion::StartUpdate,
                                  weak_factory_.GetWeakPtr()));
 }
@@ -529,9 +526,8 @@ void ServiceWorkerVersion::DeferScheduledUpdate() {
 int ServiceWorkerVersion::StartRequest(
     ServiceWorkerMetrics::EventType event_type,
     const StatusCallback& error_callback) {
-  return StartRequestWithCustomTimeout(
-      event_type, error_callback,
-      base::TimeDelta::FromMinutes(kRequestTimeoutMinutes), KILL_ON_TIMEOUT);
+  return StartRequestWithCustomTimeout(event_type, error_callback,
+                                       kRequestTimeout, KILL_ON_TIMEOUT);
 }
 
 int ServiceWorkerVersion::StartRequestWithCustomTimeout(
@@ -776,9 +772,7 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   }
 
   // Reactivate request timeouts, setting them all to the same expiration time.
-  SetAllRequestExpirations(
-      tick_clock_->NowTicks() +
-      base::TimeDelta::FromMinutes(kRequestTimeoutMinutes));
+  SetAllRequestExpirations(tick_clock_->NowTicks() + kRequestTimeout);
 }
 
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
@@ -877,8 +871,7 @@ void ServiceWorkerVersion::OnStopping() {
   // Shorten the interval so stalling in stopped can be fixed quickly. Once the
   // worker stops, the timer is disabled. The interval will be reset to normal
   // when the worker starts up again.
-  SetTimeoutTimerInterval(
-      base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds));
+  SetTimeoutTimerInterval(kStopWorkerTimeout);
   for (auto& observer : listeners_)
     observer.OnRunningStateChanged(this);
 }
@@ -1498,9 +1491,8 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
   // Ping will be activated in OnScriptLoaded.
   ping_controller_->Deactivate();
 
-  timeout_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromSeconds(kTimeoutTimerDelaySeconds),
-                       this, &ServiceWorkerVersion::OnTimeoutTimer);
+  timeout_timer_.Start(FROM_HERE, kTimeoutTimerDelay, this,
+                       &ServiceWorkerVersion::OnTimeoutTimer);
 }
 
 void ServiceWorkerVersion::StopTimeoutTimer() {
@@ -1536,8 +1528,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   MarkIfStale();
 
   // Stopping the worker hasn't finished within a certain period.
-  if (GetTickDuration(stop_time_) >
-      base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds)) {
+  if (GetTickDuration(stop_time_) > kStopWorkerTimeout) {
     DCHECK_EQ(EmbeddedWorkerStatus::STOPPING, running_status());
     if (IsInstalled(status())) {
       ServiceWorkerMetrics::RecordWorkerStopped(
@@ -1560,18 +1551,16 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 
   // Trigger update if worker is stale and we waited long enough for it to go
   // idle.
-  if (GetTickDuration(stale_time_) >
-      base::TimeDelta::FromMinutes(kRequestTimeoutMinutes)) {
+  if (GetTickDuration(stale_time_) > kRequestTimeout) {
     ClearTick(&stale_time_);
     if (!update_timer_.IsRunning())
       ScheduleUpdate();
   }
 
   // Starting a worker hasn't finished within a certain period.
-  const base::TimeDelta start_limit =
-      IsInstalled(status())
-          ? base::TimeDelta::FromSeconds(kStartInstalledWorkerTimeoutSeconds)
-          : base::TimeDelta::FromMinutes(kStartNewWorkerTimeoutMinutes);
+  const base::TimeDelta start_limit = IsInstalled(status())
+                                          ? kStartInstalledWorkerTimeout
+                                          : kStartNewWorkerTimeout;
   if (GetTickDuration(start_time_) > start_limit) {
     DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
            running_status() == EmbeddedWorkerStatus::STOPPING)
@@ -1605,8 +1594,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     return;
 
   // The worker has been idle for longer than a certain period.
-  if (GetTickDuration(idle_time_) >
-      base::TimeDelta::FromSeconds(kIdleWorkerTimeoutSeconds)) {
+  if (GetTickDuration(idle_time_) > kIdleWorkerTimeout) {
     StopWorkerIfIdle();
     return;
   }
@@ -1762,8 +1750,7 @@ void ServiceWorkerVersion::MarkIfStale() {
     return;
   base::TimeDelta time_since_last_check =
       base::Time::Now() - registration->last_update_check();
-  if (time_since_last_check >
-      base::TimeDelta::FromHours(kServiceWorkerScriptMaxCacheAgeInHours))
+  if (time_since_last_check > kServiceWorkerScriptMaxCacheAge)
     RestartTick(&stale_time_);
 }
 

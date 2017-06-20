@@ -767,10 +767,9 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_RunningWorker) {
 
   // Simulate it running for past the wait threshold. The update will be
   // scheduled.
-  version_->stale_time_ =
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromMinutes(
-          ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes + 1);
+  version_->stale_time_ = base::TimeTicks::Now() -
+                          ServiceWorkerVersion::kStartNewWorkerTimeout -
+                          base::TimeDelta::FromMinutes(1);
   version_->OnTimeoutTimer();
   EXPECT_TRUE(version_->stale_time_.is_null());
   EXPECT_TRUE(version_->update_timer_.IsRunning());
@@ -782,10 +781,9 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   registration_->set_last_update_check(GetYesterday());
-  base::TimeTicks stale_time =
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromMinutes(
-          ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes + 1);
+  base::TimeTicks stale_time = base::TimeTicks::Now() -
+                               ServiceWorkerVersion::kStartNewWorkerTimeout -
+                               base::TimeDelta::FromMinutes(1);
   version_->stale_time_ = stale_time;
 
   // Stale time is not deferred.
@@ -1134,10 +1132,9 @@ TEST_F(ServiceWorkerFailToStartTest, Timeout) {
 
   // Simulate timeout.
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  version_->start_time_ =
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromMinutes(
-          ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes + 1);
+  version_->start_time_ = base::TimeTicks::Now() -
+                          ServiceWorkerVersion::kStartNewWorkerTimeout -
+                          base::TimeDelta::FromMinutes(1);
   version_->timeout_timer_.user_task().Run();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
@@ -1163,15 +1160,13 @@ TEST_F(ServiceWorkerStallInStoppingTest, DetachThenStart) {
 
   // Worker is now stalled in stopping. Verify a fast timeout is in place.
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(
-                ServiceWorkerVersion::kStopWorkerTimeoutSeconds),
+  EXPECT_EQ(ServiceWorkerVersion::kStopWorkerTimeout,
             version_->timeout_timer_.GetCurrentDelay());
 
   // Simulate timeout.
-  version_->stop_time_ =
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromSeconds(
-          ServiceWorkerVersion::kStopWorkerTimeoutSeconds + 1);
+  version_->stop_time_ = base::TimeTicks::Now() -
+                         ServiceWorkerVersion::kStopWorkerTimeout -
+                         base::TimeDelta::FromSeconds(1);
   version_->timeout_timer_.user_task().Run();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
@@ -1187,8 +1182,7 @@ TEST_F(ServiceWorkerStallInStoppingTest, DetachThenStart) {
 
   // The timeout interval should be reset to normal.
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(
-                ServiceWorkerVersion::kTimeoutTimerDelaySeconds),
+  EXPECT_EQ(ServiceWorkerVersion::kTimeoutTimerDelay,
             version_->timeout_timer_.GetCurrentDelay());
 }
 
@@ -1215,10 +1209,9 @@ TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
 
   // Simulate timeout. The worker should stop and get restarted.
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  version_->stop_time_ =
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromSeconds(
-          ServiceWorkerVersion::kStopWorkerTimeoutSeconds + 1);
+  version_->stop_time_ = base::TimeTicks::Now() -
+                         ServiceWorkerVersion::kStopWorkerTimeout -
+                         base::TimeDelta::FromSeconds(1);
   version_->timeout_timer_.user_task().Run();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
