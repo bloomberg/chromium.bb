@@ -91,6 +91,12 @@ void WaitForAppModalDialog(Shell* window);
 // Extends the ToRenderFrameHost mechanism to content::Shells.
 RenderFrameHost* ConvertToRenderFrameHost(Shell* shell);
 
+// Writes an entry with the name and id of the first camera to the logs or
+// an entry indicating that no camera is available. This must be invoked from
+// the test method body, because at the time of invocation of
+// testing::Test::SetUp() the BrowserMainLoop does not yet exist.
+void LookupAndLogNameAndIdOfFirstCamera();
+
 // Used to wait for a new Shell window to be created. Instantiate this object
 // before the operation that will create the window.
 class ShellAddedObserver {
