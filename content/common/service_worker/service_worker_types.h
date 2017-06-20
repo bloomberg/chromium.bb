@@ -53,7 +53,8 @@ static const int kInvalidEmbeddedWorkerThreadId = -1;
 
 // The HTTP cache is bypassed for Service Worker scripts if the last network
 // fetch occurred over 24 hours ago.
-static const int kServiceWorkerScriptMaxCacheAgeInHours = 24;
+static constexpr base::TimeDelta kServiceWorkerScriptMaxCacheAge =
+    base::TimeDelta::FromHours(24);
 
 // ServiceWorker provider type.
 enum ServiceWorkerProviderType {
