@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
@@ -149,7 +149,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   mojom::ConnectorPtrInfo unbound_state_;
   mojom::ConnectorPtr connector_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   std::map<std::string, BinderOverrideMap> local_binder_overrides_;
   StartServiceCallback start_service_callback_;

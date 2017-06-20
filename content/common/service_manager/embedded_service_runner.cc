@@ -50,8 +50,8 @@ class EmbeddedServiceRunner::InstanceManager
     DCHECK(service_task_runner_);
     service_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&InstanceManager::BindServiceRequestOnServiceThread,
-                   this, base::Passed(&request)));
+        base::Bind(&InstanceManager::BindServiceRequestOnServiceSequence, this,
+                   base::Passed(&request)));
   }
 
   void ShutDown() {
@@ -59,11 +59,11 @@ class EmbeddedServiceRunner::InstanceManager
     if (!service_task_runner_)
       return;
     // Any extant ServiceContexts must be destroyed on the application thread.
-    if (service_task_runner_->BelongsToCurrentThread()) {
-      QuitOnServiceThread();
+    if (service_task_runner_->RunsTasksOnCurrentThread()) {
+      QuitOnServiceSequence();
     } else {
       service_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&InstanceManager::QuitOnServiceThread, this));
+          FROM_HERE, base::Bind(&InstanceManager::QuitOnServiceSequence, this));
     }
   }
 
@@ -76,9 +76,9 @@ class EmbeddedServiceRunner::InstanceManager
     DCHECK(!thread_);
   }
 
-  void BindServiceRequestOnServiceThread(
+  void BindServiceRequestOnServiceSequence(
       service_manager::mojom::ServiceRequest request) {
-    DCHECK(service_task_runner_->BelongsToCurrentThread());
+    DCHECK(service_task_runner_->RunsTasksOnCurrentThread());
 
     int instance_id = next_instance_id_++;
 
@@ -94,7 +94,7 @@ class EmbeddedServiceRunner::InstanceManager
   }
 
   void OnInstanceLost(int instance_id) {
-    DCHECK(service_task_runner_->BelongsToCurrentThread());
+    DCHECK(service_task_runner_->RunsTasksOnCurrentThread());
 
     auto id_iter = id_to_context_map_.find(instance_id);
     CHECK(id_iter != id_to_context_map_.end());
@@ -106,14 +106,14 @@ class EmbeddedServiceRunner::InstanceManager
 
     // If we've lost the last instance, run the quit closure.
     if (contexts_.empty())
-      QuitOnServiceThread();
+      QuitOnServiceSequence();
   }
 
-  void QuitOnServiceThread() {
-    DCHECK(service_task_runner_->BelongsToCurrentThread());
+  void QuitOnServiceSequence() {
+    DCHECK(service_task_runner_->RunsTasksOnCurrentThread());
 
     contexts_.clear();
-    if (quit_task_runner_->BelongsToCurrentThread()) {
+    if (quit_task_runner_->RunsTasksOnCurrentThread()) {
       QuitOnRunnerThread();
     } else {
       quit_task_runner_->PostTask(
@@ -142,7 +142,7 @@ class EmbeddedServiceRunner::InstanceManager
 
   // These fields must only be accessed from the runner's thread.
   std::unique_ptr<base::Thread> thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> service_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
 
   // These fields must only be accessed from the service thread, except in
   // the destructor which may run on either the runner thread or the service

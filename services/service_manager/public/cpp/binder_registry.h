@@ -32,11 +32,11 @@ class BinderRegistryWithParams {
   ~BinderRegistryWithParams() = default;
 
   template <typename Interface>
-  void AddInterface(const base::Callback<void(const BindSourceInfo&,
-                                              mojo::InterfaceRequest<Interface>,
-                                              BinderArgs...)>& callback,
-                    const scoped_refptr<base::SingleThreadTaskRunner>&
-                        task_runner = nullptr) {
+  void AddInterface(
+      const base::Callback<void(const BindSourceInfo&,
+                                mojo::InterfaceRequest<Interface>,
+                                BinderArgs...)>& callback,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(
         Interface::Name_,
         base::MakeUnique<CallbackBinder<Interface, BinderArgs...>>(
@@ -46,16 +46,15 @@ class BinderRegistryWithParams {
       const std::string& interface_name,
       const base::Callback<void(mojo::ScopedMessagePipeHandle, BinderArgs...)>&
           callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner =
-          nullptr) {
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(interface_name,
                        base::MakeUnique<GenericCallbackBinder<BinderArgs...>>(
                            callback, task_runner));
   }
-  void AddInterface(const std::string& interface_name,
-                    const Binder& callback,
-                    const scoped_refptr<base::SingleThreadTaskRunner>&
-                        task_runner = nullptr) {
+  void AddInterface(
+      const std::string& interface_name,
+      const Binder& callback,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(interface_name,
                        base::MakeUnique<GenericCallbackBinder<BinderArgs...>>(
                            callback, task_runner));

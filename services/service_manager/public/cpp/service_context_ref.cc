@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace service_manager {
 
@@ -17,17 +17,17 @@ class ServiceContextRefImpl : public ServiceContextRef {
  public:
   ServiceContextRefImpl(
       base::WeakPtr<ServiceContextRefFactory> factory,
-      scoped_refptr<base::SingleThreadTaskRunner> service_task_runner)
+      scoped_refptr<base::SequencedTaskRunner> service_task_runner)
       : factory_(factory), service_task_runner_(service_task_runner) {
     // This object is not thread-safe but may be used exclusively on a different
     // thread from the one which constructed it.
-    thread_checker_.DetachFromThread();
+    DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
   ~ServiceContextRefImpl() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    if (service_task_runner_->BelongsToCurrentThread() && factory_) {
+    if (service_task_runner_->RunsTasksOnCurrentThread() && factory_) {
       factory_->Release();
     } else {
       service_task_runner_->PostTask(
@@ -38,9 +38,9 @@ class ServiceContextRefImpl : public ServiceContextRef {
  private:
   // ServiceContextRef:
   std::unique_ptr<ServiceContextRef> Clone() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    if (service_task_runner_->BelongsToCurrentThread() && factory_) {
+    if (service_task_runner_->RunsTasksOnCurrentThread() && factory_) {
       factory_->AddRef();
     } else {
       service_task_runner_->PostTask(
@@ -52,8 +52,8 @@ class ServiceContextRefImpl : public ServiceContextRef {
   }
 
   base::WeakPtr<ServiceContextRefFactory> factory_;
-  scoped_refptr<base::SingleThreadTaskRunner> service_task_runner_;
-  base::ThreadChecker thread_checker_;
+  scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceContextRefImpl);
 };
@@ -69,7 +69,7 @@ ServiceContextRefFactory::~ServiceContextRefFactory() {}
 std::unique_ptr<ServiceContextRef> ServiceContextRefFactory::CreateRef() {
   AddRef();
   return base::MakeUnique<ServiceContextRefImpl>(
-      weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
+      weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
 }
 
 void ServiceContextRefFactory::AddRef() {

@@ -14,7 +14,7 @@ namespace service_manager {
 
 Connector::Connector(mojom::ConnectorPtrInfo unbound_state)
     : unbound_state_(std::move(unbound_state)), weak_factory_(this) {
-  thread_checker_.DetachFromThread();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 Connector::Connector(mojom::ConnectorPtr connector)
@@ -109,7 +109,7 @@ base::WeakPtr<Connector> Connector::GetWeakPtr() {
 // Connector, private:
 
 void Connector::OnConnectionError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connector_.reset();
 }
 
@@ -144,8 +144,8 @@ bool Connector::BindConnectorIfNecessary() {
       return false;
     }
 
-    // Bind the ThreadChecker to this thread.
-    DCHECK(thread_checker_.CalledOnValidThread());
+    // Bind the SequenceChecker to this thread.
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     connector_.Bind(std::move(unbound_state_));
     connector_.set_connection_error_handler(
