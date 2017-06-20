@@ -53,10 +53,10 @@ namespace mojo {
 // Before processing a sync call, the bindings call
 // SyncCallRestrictions::AssertSyncCallAllowed() to check whether sync calls are
 // allowed. By default, it is determined by the mojo system property
-// MOJO_PROPERTY_SYNC_CALL_ALLOWED. If the default setting says no but you have
-// a very compelling reason to disregard that (which should be very very rare),
-// you can override it by constructing a ScopedAllowSyncCall object, which
-// allows making sync calls on the current thread during its lifetime.
+// MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED. If the default setting says no but you
+// have a very compelling reason to disregard that (which should be very very
+// rare), you can override it by constructing a ScopedAllowSyncCall object,
+// which allows making sync calls on the current thread during its lifetime.
 class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
  public:
 #if ENABLE_SYNC_CALL_RESTRICTIONS
