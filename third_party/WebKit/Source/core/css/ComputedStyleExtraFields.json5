@@ -893,14 +893,6 @@
       include_paths: ["platform/transforms/TransformOperations.h"]
     },
     {
-      name: "Motion",
-      field_template: "storage_only",
-      type_name: "StyleMotionData",
-      field_group: "rare-non-inherited->transform",
-      default_value: "StyleMotionData(LengthPoint(Length(kAuto), Length(kAuto)), LengthPoint(Length(kAuto), Length(kAuto)), nullptr, Length(0, kFixed), StyleOffsetRotation(0, kOffsetRotationAuto))",
-      include_paths: ["core/style/StyleMotionData.h"],
-    },
-    {
       name: "NamedGridColumnLines",
       field_template: "external",
       type_name: "NamedGridLinesMap",

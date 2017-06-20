@@ -27,13 +27,13 @@ ALIGNMENT_ORDER = [
     # Aligns like double
     'ScaleTransformOperation', 'RotateTransformOperation', 'TranslateTransformOperation', 'double',
     # Aligns like a pointer (can be 32 or 64 bits)
-    'NamedGridLinesMap', 'OrderedNamedGridLines', 'NamedGridAreaMap', 'StyleMotionData', 'TransformOperations',
+    'NamedGridLinesMap', 'OrderedNamedGridLines', 'NamedGridAreaMap', 'TransformOperations',
     'Vector<CSSPropertyID>', 'Vector<GridTrackSize>', 'GridPosition', 'AtomicString',
     'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
     'Vector<String>', 'Font', 'FillLayer', 'NinePieceImage',
     # Aligns like float
-    'TransformOrigin', 'ScrollPadding', 'ScrollSnapMargin', 'LengthBox', 'LengthSize', 'FloatSize',
-    'LengthPoint', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
+    'StyleOffsetRotation', 'TransformOrigin', 'ScrollPadding', 'ScrollSnapMargin', 'LengthBox',
+    'LengthSize', 'FloatSize', 'LengthPoint', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
     # Aligns like int
     'ScrollSnapType', 'ScrollSnapAlign', 'BorderValue', 'StyleColor', 'Color', 'LayoutUnit',
     'LineClampValue', 'OutlineValue', 'unsigned', 'size_t', 'int',
