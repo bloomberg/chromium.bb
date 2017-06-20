@@ -38,7 +38,7 @@
 
 namespace blink {
 
-static PassRefPtr<SharedBuffer> ReadFile(const char* file_name) {
+static RefPtr<SharedBuffer> ReadFile(const char* file_name) {
   String file_path = testing::WebTestDataPath(file_name);
 
   return testing::ReadFromFile(file_path);
