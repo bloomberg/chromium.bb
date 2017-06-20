@@ -149,18 +149,45 @@ void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("background_fetch_context", R"(
+        semantics {
+          sender: "Background Fetch API"
+          description:
+            "The Background Fetch API enables developers to upload or download "
+            "files on behalf of the user. Such fetches will yield a user "
+            "visible notification to inform the user of the operation, through "
+            "which it can be suspended, resumed and/or cancelled. The "
+            "developer retains control of the file once the fetch is "
+            "completed,  similar to XMLHttpRequest and other mechanisms for "
+            "fetching resources using JavaScript."
+          trigger:
+            "When the website uses the Background Fetch API to request "
+            "fetching a file and/or a list of files. This is a Web Platform "
+            "API for which no express user permission is required."
+          data:
+            "The request headers and data as set by the website's developer."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification: "Not implemented."
+        })");
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
           registration_id, options, data_manager_.get(), browser_context_,
           request_context_getter_,
-          base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this));
+          base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this),
+          traffic_annotation);
 
   // TODO(peter): We should actually be able to use Background Fetch in layout
   // tests. That requires a download manager and a request context.
   if (request_context_getter_) {
     // Start fetching the |initial_requests| immediately. At some point in the
     // future we may want a more elaborate scheduling mechanism here.
-    controller->Start(std::move(initial_requests), NO_TRAFFIC_ANNOTATION_YET);
+    controller->Start(std::move(initial_requests));
   }
 
   active_fetches_.insert(
