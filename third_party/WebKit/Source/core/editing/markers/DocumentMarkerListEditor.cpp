@@ -38,7 +38,7 @@ bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
     if (marker.StartOffset() > end_offset)
       break;
 
-    // pin the marker to the specified range and apply the shift delta
+    // Trim the marker to fit in dst_list's text node
     if (marker.EndOffset() > end_offset)
       marker.SetEndOffset(end_offset);
 
