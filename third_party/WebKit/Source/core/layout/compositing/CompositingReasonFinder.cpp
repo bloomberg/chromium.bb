@@ -10,6 +10,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {
@@ -152,6 +153,12 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
 
   if (layer->NeedsCompositedScrolling())
     direct_reasons |= kCompositingReasonOverflowScrollingTouch;
+
+  // When RLS is disabled, the root layer may be the root scroller but
+  // the FrameView/Compositor handles its scrolling so there's no need to
+  // composite it.
+  if (RootScrollerUtil::IsGlobal(*layer) && !layer->IsScrolledByFrameView())
+    direct_reasons |= kCompositingReasonRootScroller;
 
   // Composite |layer| if it is inside of an ancestor scrolling layer, but that
   // scrolling layer is not on the stacking context ancestor chain of |layer|.

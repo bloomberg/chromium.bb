@@ -1023,6 +1023,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     self_painting_status_changed_ = false;
   }
 
+  // If RootLayerScrolling is off, the root layer delegates scrolling to the
+  // PaintLayerCompositor's special scrolling layers for the frame. In that
+  // case this method will return true. For all other layers or if we're in
+  // RLS mode it returns false.
+  bool IsScrolledByFrameView() const;
+
  private:
   void SetNeedsCompositingInputsUpdateInternal();
 

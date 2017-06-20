@@ -2393,7 +2393,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
     const RasterInvalidationTracking* invalidation_tracking =
         document->GetLayoutView()
             ->Layer()
-            ->GraphicsLayerBacking()
+            ->GraphicsLayerBacking(document->GetLayoutView())
             ->GetRasterInvalidationTracking();
     ASSERT_TRUE(invalidation_tracking);
     const auto* raster_invalidations = &invalidation_tracking->invalidations;
