@@ -9,7 +9,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
-#include "core/frame/ImageBitmap.h"
+#include "core/imagebitmap/ImageBitmap.h"
 #include "modules/EventTargetModules.h"
 #include "modules/imagecapture/MediaSettingsRange.h"
 #include "modules/imagecapture/PhotoCapabilities.h"

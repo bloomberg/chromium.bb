@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/ImageBitmap.h"
+#include "core/imagebitmap/ImageBitmap.h"
 
 #include "SkPixelRef.h"  // FIXME: qualify this skia header file.
 #include "core/dom/Document.h"

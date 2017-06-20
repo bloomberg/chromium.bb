@@ -31,7 +31,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Uint8ClampedArray.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/frame/ImageBitmap.h"
+#include "core/imagebitmap/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ColorBehavior.h"

@@ -188,7 +188,7 @@ core_idl_files = get_path_info([
                                  "frame/BarProp.idl",
                                  "frame/External.idl",
                                  "frame/History.idl",
-                                 "frame/ImageBitmap.idl",
+                                 "imagebitmap/ImageBitmap.idl",
                                  "frame/Location.idl",
                                  "frame/VisualViewport.idl",
                                  "html/FormData.idl",

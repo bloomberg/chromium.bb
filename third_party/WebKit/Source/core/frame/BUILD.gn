@@ -55,8 +55,6 @@ blink_core_sources("frame") {
     "History.h",
     "HostsUsingFeatures.cpp",
     "HostsUsingFeatures.h",
-    "ImageBitmap.cpp",
-    "ImageBitmap.h",
     "LayoutSubtreeRootList.cpp",
     "LayoutSubtreeRootList.h",
     "LocalDOMWindow.cpp",

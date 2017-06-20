@@ -4,8 +4,8 @@
 
 #include "core/html/canvas/ImageElementBase.h"
 
-#include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/imagebitmap/ImageBitmap.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/ImageLoader.h"
 #include "core/svg/graphics/SVGImageForContainer.h"

@@ -47,7 +47,7 @@
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
-#include "core/frame/ImageBitmap.h"
+#include "core/imagebitmap/ImageBitmap.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/DOMWrapperWorld.h"

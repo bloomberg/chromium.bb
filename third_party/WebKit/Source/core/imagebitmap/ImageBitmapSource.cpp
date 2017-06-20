@@ -4,7 +4,7 @@
 
 #include "core/imagebitmap/ImageBitmapSource.h"
 
-#include "core/frame/ImageBitmap.h"
+#include "core/imagebitmap/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 
 namespace blink {

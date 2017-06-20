@@ -152,7 +152,7 @@ def method_context(interface, method, is_visible=True):
         includes.add('bindings/core/v8/serialization/SerializedScriptValueFactory.h')
         includes.add('bindings/core/v8/serialization/Transferables.h')
         includes.add('core/dom/DOMArrayBufferBase.h')
-        includes.add('core/frame/ImageBitmap.h')
+        includes.add('core/imagebitmap/ImageBitmap.h')
 
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
