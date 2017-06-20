@@ -60,7 +60,7 @@ class Nigori {
   bool Decrypt(const std::string& value, std::string* decrypted) const;
 
   // Exports the raw derived keys.
-  bool ExportKeys(std::string* user_key,
+  void ExportKeys(std::string* user_key,
                   std::string* encryption_key,
                   std::string* mac_key) const;
 

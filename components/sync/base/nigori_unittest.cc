@@ -129,7 +129,7 @@ TEST(SyncNigoriTest, ExportImport) {
   std::string user_key;
   std::string encryption_key;
   std::string mac_key;
-  EXPECT_TRUE(nigori1.ExportKeys(&user_key, &encryption_key, &mac_key));
+  nigori1.ExportKeys(&user_key, &encryption_key, &mac_key);
 
   Nigori nigori2;
   EXPECT_TRUE(nigori2.InitByImport(user_key, encryption_key, mac_key));
@@ -159,7 +159,7 @@ TEST(SyncNigoriTest, InitByDerivationSetsUserKey) {
   std::string user_key = "";
   std::string encryption_key;
   std::string mac_key;
-  EXPECT_TRUE(nigori.ExportKeys(&user_key, &encryption_key, &mac_key));
+  nigori.ExportKeys(&user_key, &encryption_key, &mac_key);
 
   EXPECT_NE(user_key, "");
 }
@@ -171,7 +171,7 @@ TEST(SyncNigoriTest, ToleratesEmptyUserKey) {
   std::string user_key;
   std::string encryption_key;
   std::string mac_key;
-  EXPECT_TRUE(nigori1.ExportKeys(&user_key, &encryption_key, &mac_key));
+  nigori1.ExportKeys(&user_key, &encryption_key, &mac_key);
   EXPECT_FALSE(user_key.empty());
   EXPECT_FALSE(encryption_key.empty());
   EXPECT_FALSE(mac_key.empty());
@@ -180,7 +180,7 @@ TEST(SyncNigoriTest, ToleratesEmptyUserKey) {
   EXPECT_TRUE(nigori2.InitByImport("", encryption_key, mac_key));
 
   user_key = "non-empty-value";
-  EXPECT_TRUE(nigori2.ExportKeys(&user_key, &encryption_key, &mac_key));
+  nigori2.ExportKeys(&user_key, &encryption_key, &mac_key);
   EXPECT_TRUE(user_key.empty());
   EXPECT_FALSE(encryption_key.empty());
   EXPECT_FALSE(mac_key.empty());

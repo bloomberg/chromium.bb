@@ -51,11 +51,7 @@ bool DecryptContextImplClearKey::DoDecrypt(CastDecoderBuffer* buffer,
   output += data_offset;
 
   // Get the key.
-  std::string raw_key;
-  if (!key_->GetRawKey(&raw_key)) {
-    LOG(ERROR) << "Failed to get the underlying AES key";
-    return false;
-  }
+  const std::string& raw_key = key_->key();
   DCHECK_EQ(static_cast<int>(raw_key.length()), AES_BLOCK_SIZE);
   const uint8_t* key_u8 = reinterpret_cast<const uint8_t*>(raw_key.data());
   AES_KEY aes_key;
