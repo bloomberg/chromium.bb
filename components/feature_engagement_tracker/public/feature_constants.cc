@@ -23,4 +23,9 @@ const base::Feature kIPHDownloadHomeFeature{"IPH_DownloadHome",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OS_ANDROID
 
+#if defined(OS_WIN)
+const base::Feature kIPHNewTabFeature{"IPH_NewTab",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OS_WIN
+
 }  // namespace feature_engagement_tracker
