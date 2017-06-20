@@ -43,6 +43,7 @@
 #include "core/events/UIEventWithKeyState.h"
 #include "core/exported/SharedWorkerRepositoryClientImpl.h"
 #include "core/exported/WebDataSourceImpl.h"
+#include "core/exported/WebDevToolsFrontendImpl.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
@@ -107,7 +108,6 @@
 #include "public/web/WebViewClient.h"
 #include "v8/include/v8.h"
 #include "web/WebDevToolsAgentImpl.h"
-#include "web/WebDevToolsFrontendImpl.h"
 
 namespace blink {
 

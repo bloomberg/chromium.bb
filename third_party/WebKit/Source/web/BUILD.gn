@@ -43,8 +43,6 @@ component("web") {
     "LocalFrameClientImpl.h",
     "WebDevToolsAgentImpl.cpp",
     "WebDevToolsAgentImpl.h",
-    "WebDevToolsFrontendImpl.cpp",
-    "WebDevToolsFrontendImpl.h",
     "WebExport.h",
     "WebFactoryImpl.cpp",
     "WebFactoryImpl.h",

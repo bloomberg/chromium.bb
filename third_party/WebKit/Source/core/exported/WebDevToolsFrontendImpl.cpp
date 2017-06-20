@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebDevToolsFrontendImpl.h"
+#include "core/exported/WebDevToolsFrontendImpl.h"
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
