@@ -54,6 +54,23 @@ class StylePath;
 class TextSizeAdjust;
 class TranslateTransformOperation;
 
+class StyleBuilderConverterBase {
+  STATIC_ONLY(StyleBuilderConverterBase);
+
+ public:
+  static FontWeight ConvertFontWeight(const CSSValue&, FontWeight);
+  static FontDescription::FontVariantCaps ConvertFontVariantCaps(
+      const CSSValue&);
+  static FontDescription::FamilyDescription ConvertFontFamily(
+      const CSSValue&,
+      FontBuilder*,
+      const Document* document_for_count);
+  static FontDescription::Size ConvertFontSize(
+      const CSSValue&,
+      const CSSToLengthConversionData&,
+      FontDescription::Size parent_size);
+};
+
 // Note that we assume the parser only allows valid CSSValue types.
 class StyleBuilderConverter {
   STATIC_ONLY(StyleBuilderConverter);

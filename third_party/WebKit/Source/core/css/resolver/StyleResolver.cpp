@@ -1989,6 +1989,9 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
         rules->at(i)->SelectorList().SelectorsText());
 }
 
+// Font properties are also handled by FontStyleResolver outside the main
+// thread. If you add/remove properties here, make sure they are also properly
+// handled by FontStyleResolver.
 void StyleResolver::ComputeFont(ComputedStyle* style,
                                 const StylePropertySet& property_set) {
   CSSPropertyID properties[] = {

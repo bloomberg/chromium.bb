@@ -186,31 +186,33 @@ static FontDescription::GenericFamilyType ConvertGenericFamily(
 }
 
 static bool ConvertFontFamilyName(
-    StyleResolverState& state,
     const CSSValue& value,
     FontDescription::GenericFamilyType& generic_family,
-    AtomicString& family_name) {
+    AtomicString& family_name,
+    FontBuilder* font_builder,
+    const Document* document_for_count) {
   if (value.IsFontFamilyValue()) {
     generic_family = FontDescription::kNoFamily;
     family_name = AtomicString(ToCSSFontFamilyValue(value).Value());
 #if OS(MACOSX)
     if (family_name == FontCache::LegacySystemFontFamily()) {
-      UseCounter::Count(state.GetDocument(), WebFeature::kBlinkMacSystemFont);
+      UseCounter::Count(*document_for_count, WebFeature::kBlinkMacSystemFont);
       family_name = FontFamilyNames::system_ui;
     }
 #endif
-  } else if (state.GetDocument().GetSettings()) {
+  } else if (font_builder) {
     generic_family =
         ConvertGenericFamily(ToCSSIdentifierValue(value).GetValueID());
-    family_name = state.GetFontBuilder().GenericFontFamilyName(generic_family);
+    family_name = font_builder->GenericFontFamilyName(generic_family);
   }
 
   return !family_name.IsEmpty();
 }
 
-FontDescription::FamilyDescription StyleBuilderConverter::ConvertFontFamily(
-    StyleResolverState& state,
-    const CSSValue& value) {
+FontDescription::FamilyDescription StyleBuilderConverterBase::ConvertFontFamily(
+    const CSSValue& value,
+    FontBuilder* font_builder,
+    const Document* document_for_count) {
   DCHECK(value.IsValueList());
 
   FontDescription::FamilyDescription desc(FontDescription::kNoFamily);
@@ -221,7 +223,8 @@ FontDescription::FamilyDescription StyleBuilderConverter::ConvertFontFamily(
         FontDescription::kNoFamily;
     AtomicString family_name;
 
-    if (!ConvertFontFamilyName(state, *family, generic_family, family_name))
+    if (!ConvertFontFamilyName(*family, generic_family, family_name,
+                               font_builder, document_for_count))
       continue;
 
     if (!curr_family) {
@@ -239,6 +242,15 @@ FontDescription::FamilyDescription StyleBuilderConverter::ConvertFontFamily(
   }
 
   return desc;
+}
+
+FontDescription::FamilyDescription StyleBuilderConverter::ConvertFontFamily(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  return StyleBuilderConverterBase::ConvertFontFamily(
+      value,
+      state.GetDocument().GetSettings() ? &state.GetFontBuilder() : nullptr,
+      &state.GetDocument());
 }
 
 PassRefPtr<FontFeatureSettings>
@@ -276,29 +288,24 @@ StyleBuilderConverter::ConvertFontVariationSettings(StyleResolverState& state,
   return settings;
 }
 
-static float ComputeFontSize(StyleResolverState& state,
+static float ComputeFontSize(const CSSToLengthConversionData& conversion_data,
                              const CSSPrimitiveValue& primitive_value,
                              const FontDescription::Size& parent_size) {
   if (primitive_value.IsLength())
-    return primitive_value.ComputeLength<float>(state.FontSizeConversionData());
+    return primitive_value.ComputeLength<float>(conversion_data);
   if (primitive_value.IsCalculatedPercentageWithLength())
     return primitive_value.CssCalcValue()
-        ->ToCalcValue(state.FontSizeConversionData())
+        ->ToCalcValue(conversion_data)
         ->Evaluate(parent_size.value);
 
   NOTREACHED();
   return 0;
 }
 
-FontDescription::Size StyleBuilderConverter::ConvertFontSize(
-    StyleResolverState& state,
-    const CSSValue& value) {
-  FontDescription::Size parent_size(0, 0.0f, false);
-
-  // FIXME: Find out when parentStyle could be 0?
-  if (state.ParentStyle())
-    parent_size = state.ParentFontDescription().GetSize();
-
+FontDescription::Size StyleBuilderConverterBase::ConvertFontSize(
+    const CSSValue& value,
+    const CSSToLengthConversionData& conversion_data,
+    FontDescription::Size parent_size) {
   if (value.IsIdentifierValue()) {
     CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
     if (FontSize::IsValidValueID(value_id))
@@ -312,17 +319,26 @@ FontDescription::Size StyleBuilderConverter::ConvertFontSize(
     return FontBuilder::InitialSize();
   }
 
-  bool parent_is_absolute_size = state.ParentFontDescription().IsAbsoluteSize();
-
   const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
-  if (primitive_value.IsPercentage())
+  if (primitive_value.IsPercentage()) {
     return FontDescription::Size(
         0, (primitive_value.GetFloatValue() * parent_size.value / 100.0f),
-        parent_is_absolute_size);
+        parent_size.is_absolute);
+  }
 
   return FontDescription::Size(
-      0, ComputeFontSize(state, primitive_value, parent_size),
-      parent_is_absolute_size || !primitive_value.IsFontRelativeLength());
+      0, ComputeFontSize(conversion_data, primitive_value, parent_size),
+      parent_size.is_absolute || !primitive_value.IsFontRelativeLength());
+}
+
+FontDescription::Size StyleBuilderConverter::ConvertFontSize(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  return StyleBuilderConverterBase::ConvertFontSize(
+      value, state.FontSizeConversionData(),
+      // FIXME: Find out when parentStyle could be 0?
+      state.ParentStyle() ? state.ParentFontDescription().GetSize()
+                          : FontDescription::Size(0, 0.0f, false));
 }
 
 float StyleBuilderConverter::ConvertFontSizeAdjust(StyleResolverState& state,
@@ -366,24 +382,28 @@ double StyleBuilderConverter::ConvertValueToNumber(
   }
 }
 
-FontWeight StyleBuilderConverter::ConvertFontWeight(StyleResolverState& state,
-                                                    const CSSValue& value) {
+FontWeight StyleBuilderConverterBase::ConvertFontWeight(
+    const CSSValue& value,
+    FontWeight parent_weight) {
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
   switch (identifier_value.GetValueID()) {
     case CSSValueBolder:
-      return FontDescription::BolderWeight(
-          state.ParentStyle()->GetFontDescription().Weight());
+      return FontDescription::BolderWeight(parent_weight);
     case CSSValueLighter:
-      return FontDescription::LighterWeight(
-          state.ParentStyle()->GetFontDescription().Weight());
+      return FontDescription::LighterWeight(parent_weight);
     default:
       return identifier_value.ConvertTo<FontWeight>();
   }
 }
 
-FontDescription::FontVariantCaps StyleBuilderConverter::ConvertFontVariantCaps(
-    StyleResolverState&,
-    const CSSValue& value) {
+FontWeight StyleBuilderConverter::ConvertFontWeight(StyleResolverState& state,
+                                                    const CSSValue& value) {
+  return StyleBuilderConverterBase::ConvertFontWeight(
+      value, state.ParentStyle()->GetFontDescription().Weight());
+}
+
+FontDescription::FontVariantCaps
+StyleBuilderConverterBase::ConvertFontVariantCaps(const CSSValue& value) {
   SECURITY_DCHECK(value.IsIdentifierValue());
   CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
   switch (value_id) {
@@ -404,6 +424,12 @@ FontDescription::FontVariantCaps StyleBuilderConverter::ConvertFontVariantCaps(
     default:
       return FontDescription::kCapsNormal;
   }
+}
+
+FontDescription::FontVariantCaps StyleBuilderConverter::ConvertFontVariantCaps(
+    StyleResolverState&,
+    const CSSValue& value) {
+  return StyleBuilderConverterBase::ConvertFontVariantCaps(value);
 }
 
 FontDescription::VariantLigatures
