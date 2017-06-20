@@ -126,6 +126,8 @@ def _CheckChangeOnUploadOrCommit(input_api, output_api):
   if any(f for f in affected if f.LocalPath().endswith('vulcanize_gn.py')):
     results += RunVulcanizeTests(input_api, output_api)
   results += _CheckWebDevStyle(input_api, output_api)
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api,
+                                                         check_js=True)
   return results
 
 
