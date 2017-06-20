@@ -76,9 +76,12 @@ android_library("content_java") {
 
   java_files = [
     "java/src/org/chromium/content/app/ChildProcessService.java",
+    "java/src/org/chromium/content/app/ChildProcessServiceDelegate.java",
     "java/src/org/chromium/content/app/ChildProcessServiceImpl.java",
     "java/src/org/chromium/content/app/ChromiumLinkerParams.java",
     "java/src/org/chromium/content/app/ContentApplication.java",
+    "java/src/org/chromium/content/app/ContentChildProcessService.java",
+    "java/src/org/chromium/content/app/ContentChildProcessServiceDelegate.java",
     "java/src/org/chromium/content/app/ContentMain.java",
     "java/src/org/chromium/content/app/KillChildUncaughtExceptionHandler.java",
     "java/src/org/chromium/content/app/PrivilegedProcessService.java",
@@ -322,6 +325,7 @@ generate_jar_jni("jar_jni") {
 generate_jni("content_jni_headers") {
   sources = [
     "java/src/org/chromium/content/app/ChildProcessServiceImpl.java",
+    "java/src/org/chromium/content/app/ContentChildProcessServiceDelegate.java",
     "java/src/org/chromium/content/app/ContentMain.java",
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
