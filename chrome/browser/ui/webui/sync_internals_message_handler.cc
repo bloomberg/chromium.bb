@@ -297,7 +297,7 @@ void SyncInternalsMessageHandler::SendAboutInfo() {
 }
 
 SyncService* SyncInternalsMessageHandler::GetSyncService() {
-  return ProfileSyncServiceFactory::GetForProfile(
+  return ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
       Profile::FromWebUI(web_ui())->GetOriginalProfile());
 }
 
