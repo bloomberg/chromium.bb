@@ -23,6 +23,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "printing/page_number.h"
@@ -42,6 +44,8 @@ base::LazyInstance<base::FilePath>::Leaky g_debug_dump_info =
 
 void DebugDumpPageTask(const base::string16& doc_name,
                        const PrintedPage* page) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   if (g_debug_dump_info.Get().empty())
     return;
 
@@ -62,6 +66,8 @@ void DebugDumpPageTask(const base::string16& doc_name,
 void DebugDumpDataTask(const base::string16& doc_name,
                        const base::FilePath::StringType& extension,
                        const base::RefCountedMemory* data) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   base::FilePath path =
       PrintedDocument::CreateDebugDumpPath(doc_name, extension);
   if (path.empty())
@@ -72,8 +78,7 @@ void DebugDumpDataTask(const base::string16& doc_name,
 }
 
 void DebugDumpSettings(const base::string16& doc_name,
-                       const PrintSettings& settings,
-                       base::TaskRunner* blocking_runner) {
+                       const PrintSettings& settings) {
   base::DictionaryValue job_settings;
   PrintSettingsToJobSettingsDebug(settings, &job_settings);
   std::string settings_str;
@@ -81,18 +86,18 @@ void DebugDumpSettings(const base::string16& doc_name,
       job_settings, base::JSONWriter::OPTIONS_PRETTY_PRINT, &settings_str);
   scoped_refptr<base::RefCountedMemory> data =
       base::RefCountedString::TakeString(&settings_str);
-  blocking_runner->PostTask(FROM_HERE, base::Bind(&DebugDumpDataTask, doc_name,
-                                                  FILE_PATH_LITERAL(".json"),
-                                                  base::RetainedRef(data)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      base::BindOnce(&DebugDumpDataTask, doc_name, FILE_PATH_LITERAL(".json"),
+                     base::RetainedRef(data)));
 }
 
 }  // namespace
 
 PrintedDocument::PrintedDocument(const PrintSettings& settings,
                                  PrintedPagesSource* source,
-                                 int cookie,
-                                 base::TaskRunner* blocking_runner)
-    : mutable_(source), immutable_(settings, source, cookie, blocking_runner) {
+                                 int cookie)
+    : mutable_(source), immutable_(settings, source, cookie) {
   // Records the expected page count if a range is setup.
   if (!settings.ranges().empty()) {
     // If there is a range, set the number of page
@@ -103,7 +108,7 @@ PrintedDocument::PrintedDocument(const PrintSettings& settings,
   }
 
   if (!g_debug_dump_info.Get().empty())
-    DebugDumpSettings(name(), settings, blocking_runner);
+    DebugDumpSettings(name(), settings);
 }
 
 PrintedDocument::~PrintedDocument() {
@@ -134,9 +139,9 @@ void PrintedDocument::SetPage(int page_number,
   }
 
   if (!g_debug_dump_info.Get().empty()) {
-    immutable_.blocking_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DebugDumpPageTask, name(), base::RetainedRef(page)));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+        base::BindOnce(&DebugDumpPageTask, name(), base::RetainedRef(page)));
   }
 }
 
@@ -234,8 +239,9 @@ void PrintedDocument::DebugDumpData(
     const base::FilePath::StringType& extension) {
   if (g_debug_dump_info.Get().empty())
     return;
-  immutable_.blocking_runner_->PostTask(
-      FROM_HERE, base::Bind(&DebugDumpDataTask, name(), extension, data));
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      base::BindOnce(&DebugDumpDataTask, name(), extension, data));
 }
 
 PrintedDocument::Mutable::Mutable(PrintedPagesSource* source)
@@ -252,16 +258,10 @@ PrintedDocument::Mutable::~Mutable() {
 
 PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
                                       PrintedPagesSource* source,
-                                      int cookie,
-                                      base::TaskRunner* blocking_runner)
-    : settings_(settings),
-      name_(source->RenderSourceName()),
-      cookie_(cookie),
-      blocking_runner_(blocking_runner) {
-}
+                                      int cookie)
+    : settings_(settings), name_(source->RenderSourceName()), cookie_(cookie) {}
 
-PrintedDocument::Immutable::~Immutable() {
-}
+PrintedDocument::Immutable::~Immutable() {}
 
 #if defined(OS_ANDROID)
 // This function is not used on android.
