@@ -111,11 +111,9 @@ void IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe(
     int64_t database_id,
     int64_t blob_key,
     const base::FilePath& unused) {
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&IndexedDBActiveBlobRegistry::ReleaseBlobRef,
-                                   weak_ptr,
-                                   database_id,
-                                   blob_key));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&IndexedDBActiveBlobRegistry::ReleaseBlobRef,
+                                weak_ptr, database_id, blob_key));
 }
 
 storage::ShareableFileReference::FinalReleaseCallback
@@ -124,18 +122,14 @@ IndexedDBActiveBlobRegistry::GetFinalReleaseCallback(int64_t database_id,
   return base::Bind(
       &IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe,
       scoped_refptr<base::TaskRunner>(backing_store_->task_runner()),
-      weak_factory_.GetWeakPtr(),
-      database_id,
-      blob_key);
+      weak_factory_.GetWeakPtr(), database_id, blob_key);
 }
 
 base::Closure IndexedDBActiveBlobRegistry::GetAddBlobRefCallback(
     int64_t database_id,
     int64_t blob_key) {
   return base::Bind(&IndexedDBActiveBlobRegistry::AddBlobRef,
-                    weak_factory_.GetWeakPtr(),
-                    database_id,
-                    blob_key);
+                    weak_factory_.GetWeakPtr(), database_id, blob_key);
 }
 
 void IndexedDBActiveBlobRegistry::ForceShutdown() {

@@ -50,9 +50,10 @@ void CursorImpl::Advance(
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBSequenceHelper::Advance,
-                                              base::Unretained(helper_), count,
-                                              base::Passed(&callbacks)));
+  idb_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&IDBSequenceHelper::Advance, base::Unretained(helper_),
+                     count, base::Passed(&callbacks)));
 }
 
 void CursorImpl::Continue(
@@ -64,8 +65,8 @@ void CursorImpl::Continue(
                              std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::Continue, base::Unretained(helper_), key,
-                 primary_key, base::Passed(&callbacks)));
+      base::BindOnce(&IDBSequenceHelper::Continue, base::Unretained(helper_),
+                     key, primary_key, base::Passed(&callbacks)));
 }
 
 void CursorImpl::Prefetch(
@@ -74,9 +75,10 @@ void CursorImpl::Prefetch(
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBSequenceHelper::Prefetch,
-                                              base::Unretained(helper_), count,
-                                              base::Passed(&callbacks)));
+  idb_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&IDBSequenceHelper::Prefetch, base::Unretained(helper_),
+                     count, base::Passed(&callbacks)));
 }
 
 void CursorImpl::PrefetchReset(
@@ -87,9 +89,9 @@ void CursorImpl::PrefetchReset(
     dispatcher_host_->DropBlobData(uuid);
 
   idb_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IDBSequenceHelper::PrefetchReset, base::Unretained(helper_),
-                 used_prefetches, unused_prefetches));
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::PrefetchReset,
+                                base::Unretained(helper_), used_prefetches,
+                                unused_prefetches));
 }
 
 CursorImpl::IDBSequenceHelper::IDBSequenceHelper(

@@ -335,7 +335,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     // Add a dummy task which takes the place of the VersionChangeOperation
     // which kicks off the upgrade. This ensures that the transaction has
     // processed at least one task before the CreateObjectStore call.
-    transaction_->ScheduleTask(base::Bind(&DummyOperation));
+    transaction_->ScheduleTask(base::BindOnce(&DummyOperation));
   }
 
   void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }

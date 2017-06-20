@@ -53,7 +53,7 @@ struct SafeIOThreadConnectionWrapper {
   ~SafeIOThreadConnectionWrapper() {
     if (connection) {
       idb_runner->PostTask(
-          FROM_HERE, base::Bind(
+          FROM_HERE, base::BindOnce(
                          [](std::unique_ptr<IndexedDBConnection> connection) {
                            connection->ForceClose();
                          },
@@ -217,8 +217,8 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendError, base::Unretained(io_helper_.get()),
-                 error));
+      base::BindOnce(&IOThreadHelper::SendError,
+                     base::Unretained(io_helper_.get()), error));
   complete_ = true;
 
   if (!connection_open_start_time_.is_null()) {
@@ -236,8 +236,8 @@ void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendSuccessStringList,
-                 base::Unretained(io_helper_.get()), value));
+      base::BindOnce(&IOThreadHelper::SendSuccessStringList,
+                     base::Unretained(io_helper_.get()), value));
   complete_ = true;
 }
 
@@ -253,8 +253,8 @@ void IndexedDBCallbacks::OnBlocked(int64_t existing_version) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendBlocked,
-                 base::Unretained(io_helper_.get()), existing_version));
+      base::BindOnce(&IOThreadHelper::SendBlocked,
+                     base::Unretained(io_helper_.get()), existing_version));
 
   if (!connection_open_start_time_.is_null()) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -281,10 +281,10 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   SafeIOThreadConnectionWrapper wrapper(std::move(connection));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendUpgradeNeeded,
-                 base::Unretained(io_helper_.get()), base::Passed(&wrapper),
-                 old_version, data_loss_info.status, data_loss_info.message,
-                 metadata));
+      base::BindOnce(&IOThreadHelper::SendUpgradeNeeded,
+                     base::Unretained(io_helper_.get()), base::Passed(&wrapper),
+                     old_version, data_loss_info.status, data_loss_info.message,
+                     metadata));
 
   if (!connection_open_start_time_.is_null()) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -313,9 +313,9 @@ void IndexedDBCallbacks::OnSuccess(
 
   SafeIOThreadConnectionWrapper wrapper(std::move(database_connection));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&IOThreadHelper::SendSuccessDatabase,
-                                     base::Unretained(io_helper_.get()),
-                                     base::Passed(&wrapper), metadata));
+                          base::BindOnce(&IOThreadHelper::SendSuccessDatabase,
+                                         base::Unretained(io_helper_.get()),
+                                         base::Passed(&wrapper), metadata));
   complete_ = true;
 
   if (!connection_open_start_time_.is_null()) {
@@ -347,10 +347,10 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendSuccessCursor,
-                 base::Unretained(io_helper_.get()),
-                 base::Passed(&cursor_wrapper), key, primary_key,
-                 base::Passed(&mojo_value), base::Passed(&blob_info)));
+      base::BindOnce(&IOThreadHelper::SendSuccessCursor,
+                     base::Unretained(io_helper_.get()),
+                     base::Passed(&cursor_wrapper), key, primary_key,
+                     base::Passed(&mojo_value), base::Passed(&blob_info)));
   complete_ = true;
 }
 
@@ -372,9 +372,9 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendSuccessCursorContinue,
-                 base::Unretained(io_helper_.get()), key, primary_key,
-                 base::Passed(&mojo_value), base::Passed(&blob_info)));
+      base::BindOnce(&IOThreadHelper::SendSuccessCursorContinue,
+                     base::Unretained(io_helper_.get()), key, primary_key,
+                     base::Passed(&mojo_value), base::Passed(&blob_info)));
   complete_ = true;
 }
 
@@ -397,9 +397,9 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendSuccessCursorPrefetch,
-                 base::Unretained(io_helper_.get()), keys, primary_keys,
-                 base::Passed(&mojo_values), *values));
+      base::BindOnce(&IOThreadHelper::SendSuccessCursorPrefetch,
+                     base::Unretained(io_helper_.get()), keys, primary_keys,
+                     base::Passed(&mojo_values), *values));
   complete_ = true;
 }
 
@@ -418,9 +418,9 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendSuccessValue,
-                 base::Unretained(io_helper_.get()), base::Passed(&mojo_value),
-                 base::Passed(&blob_info)));
+      base::BindOnce(&IOThreadHelper::SendSuccessValue,
+                     base::Unretained(io_helper_.get()),
+                     base::Passed(&mojo_value), base::Passed(&blob_info)));
   complete_ = true;
 }
 
@@ -438,9 +438,9 @@ void IndexedDBCallbacks::OnSuccessArray(
     mojo_values.push_back(ConvertReturnValue(&(*values)[i]));
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&IOThreadHelper::SendSuccessArray,
-                                     base::Unretained(io_helper_.get()),
-                                     base::Passed(&mojo_values), *values));
+                          base::BindOnce(&IOThreadHelper::SendSuccessArray,
+                                         base::Unretained(io_helper_.get()),
+                                         base::Passed(&mojo_values), *values));
   complete_ = true;
 }
 
@@ -453,8 +453,8 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendSuccessKey,
-                 base::Unretained(io_helper_.get()), value));
+      base::BindOnce(&IOThreadHelper::SendSuccessKey,
+                     base::Unretained(io_helper_.get()), value));
   complete_ = true;
 }
 
@@ -464,8 +464,8 @@ void IndexedDBCallbacks::OnSuccess(int64_t value) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadHelper::SendSuccessInteger,
-                 base::Unretained(io_helper_.get()), value));
+      base::BindOnce(&IOThreadHelper::SendSuccessInteger,
+                     base::Unretained(io_helper_.get()), value));
   complete_ = true;
 }
 
@@ -477,8 +477,8 @@ void IndexedDBCallbacks::OnSuccess() {
   DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&IOThreadHelper::SendSuccess,
-                                     base::Unretained(io_helper_.get())));
+                          base::BindOnce(&IOThreadHelper::SendSuccess,
+                                         base::Unretained(io_helper_.get())));
   complete_ = true;
 }
 
@@ -498,8 +498,8 @@ IndexedDBCallbacks::IOThreadHelper::IOThreadHelper(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (callbacks_info.is_valid()) {
     callbacks_.Bind(std::move(callbacks_info));
-    callbacks_.set_connection_error_handler(
-        base::Bind(&IOThreadHelper::OnConnectionError, base::Unretained(this)));
+    callbacks_.set_connection_error_handler(base::BindOnce(
+        &IOThreadHelper::OnConnectionError, base::Unretained(this)));
   }
 }
 

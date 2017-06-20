@@ -157,8 +157,9 @@ void IndexedDBDispatcherHost::RenderProcessExited(
     int exit_code) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings,
+          base::Unretained(this)));
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNames(
@@ -174,9 +175,9 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
   scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       this->AsWeakPtr(), origin, std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
-      FROM_HERE, base::Bind(&IDBSequenceHelper::GetDatabaseNamesOnIDBThread,
-                            base::Unretained(idb_helper_),
-                            base::Passed(&callbacks), origin));
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::GetDatabaseNamesOnIDBThread,
+                                base::Unretained(idb_helper_),
+                                base::Passed(&callbacks), origin));
 }
 
 void IndexedDBDispatcherHost::Open(
@@ -201,10 +202,10 @@ void IndexedDBDispatcherHost::Open(
                                      std::move(database_callbacks_info)));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::OpenOnIDBThread,
-                 base::Unretained(idb_helper_), base::Passed(&callbacks),
-                 base::Passed(&database_callbacks), origin, name, version,
-                 transaction_id));
+      base::BindOnce(&IDBSequenceHelper::OpenOnIDBThread,
+                     base::Unretained(idb_helper_), base::Passed(&callbacks),
+                     base::Passed(&database_callbacks), origin, name, version,
+                     transaction_id));
 }
 
 void IndexedDBDispatcherHost::DeleteDatabase(
@@ -223,9 +224,9 @@ void IndexedDBDispatcherHost::DeleteDatabase(
       this->AsWeakPtr(), origin, std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBSequenceHelper::DeleteDatabaseOnIDBThread,
-                 base::Unretained(idb_helper_), base::Passed(&callbacks),
-                 origin, name, force_close));
+      base::BindOnce(&IDBSequenceHelper::DeleteDatabaseOnIDBThread,
+                     base::Unretained(idb_helper_), base::Passed(&callbacks),
+                     origin, name, force_close));
 }
 
 void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {

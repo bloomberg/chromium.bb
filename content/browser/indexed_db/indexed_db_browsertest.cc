@@ -132,9 +132,10 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   static void SetTempQuota(int per_host_quota_kilobytes,
                            scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                              base::Bind(&IndexedDBBrowserTest::SetTempQuota,
-                                         per_host_quota_kilobytes, qm));
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
+                         per_host_quota_kilobytes, qm));
       return;
     }
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -145,13 +146,11 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
 
   virtual int64_t RequestDiskUsage() {
     PostTaskAndReplyWithResult(
-        GetContext()->TaskRunner(),
-        FROM_HERE,
-        base::Bind(&IndexedDBContext::GetOriginDiskUsage,
-                   GetContext(),
-                   GURL("file:///")),
-        base::Bind(&IndexedDBBrowserTest::DidGetDiskUsage,
-                   base::Unretained(this)));
+        GetContext()->TaskRunner(), FROM_HERE,
+        base::BindOnce(&IndexedDBContext::GetOriginDiskUsage, GetContext(),
+                       GURL("file:///")),
+        base::BindOnce(&IndexedDBBrowserTest::DidGetDiskUsage,
+                       base::Unretained(this)));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(GetContext()->TaskRunner()));
     EXPECT_TRUE(helper->Run());
@@ -163,10 +162,10 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   virtual int RequestBlobFileCount() {
     PostTaskAndReplyWithResult(
         GetContext()->TaskRunner(), FROM_HERE,
-        base::Bind(&IndexedDBContextImpl::GetOriginBlobFileCount, GetContext(),
-                   Origin(GURL("file:///"))),
-        base::Bind(&IndexedDBBrowserTest::DidGetBlobFileCount,
-                   base::Unretained(this)));
+        base::BindOnce(&IndexedDBContextImpl::GetOriginBlobFileCount,
+                       GetContext(), Origin(GURL("file:///"))),
+        base::BindOnce(&IndexedDBBrowserTest::DidGetBlobFileCount,
+                       base::Unretained(this)));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(GetContext()->TaskRunner()));
     EXPECT_TRUE(helper->Run());
@@ -330,9 +329,8 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
   void SetUpOnMainThread() override {
     scoped_refptr<IndexedDBContextImpl> context = GetContext();
     context->TaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &CopyLevelDBToProfile, shell(), context, EnclosingLevelDBDir()));
+        FROM_HERE, base::BindOnce(&CopyLevelDBToProfile, shell(), context,
+                                  EnclosingLevelDBDir()));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(GetContext()->TaskRunner()));
     ASSERT_TRUE(helper->Run());
@@ -442,9 +440,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
   // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
   GetContext()->TaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
-                     &IndexedDBContextImpl::DeleteForOrigin),
-                 GetContext(), GURL("file:///")));
+      base::BindOnce(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
+                         &IndexedDBContextImpl::DeleteForOrigin),
+                     GetContext(), GURL("file:///")));
   EXPECT_EQ(0, RequestBlobFileCount());  // Start with no blob files.
   const GURL test_url = GetTestUrl("indexeddb", "empty_blob.html");
   // For some reason Android's futimes fails (EPERM) in this test. Do not assert
@@ -496,9 +494,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
   // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
   GetContext()->TaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
-                     &IndexedDBContextImpl::DeleteForOrigin),
-                 GetContext(), GURL("file:///")));
+      base::BindOnce(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
+                         &IndexedDBContextImpl::DeleteForOrigin),
+                     GetContext(), GURL("file:///")));
   scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(GetContext()->TaskRunner()));
   ASSERT_TRUE(helper->Run());
@@ -613,8 +611,8 @@ static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     context->TaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&CorruptIndexedDBDatabase, base::ConstRef(context), origin,
-                   &signal_when_finished));
+        base::BindOnce(&CorruptIndexedDBDatabase, base::ConstRef(context),
+                       origin, &signal_when_finished));
     signal_when_finished.Wait();
 
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
@@ -836,9 +834,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
   // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
   GetContext()->TaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
-                     &IndexedDBContextImpl::DeleteForOrigin),
-                 GetContext(), GURL("file:///")));
+      base::BindOnce(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
+                         &IndexedDBContextImpl::DeleteForOrigin),
+                     GetContext(), GURL("file:///")));
 
   base::string16 expected_title16(ASCIIToUTF16("connection closed"));
   TitleWatcher title_watcher(shell()->web_contents(), expected_title16);

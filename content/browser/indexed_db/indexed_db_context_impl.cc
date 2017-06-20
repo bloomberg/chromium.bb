@@ -468,8 +468,8 @@ void IndexedDBContextImpl::DatabaseDeleted(const Origin& origin) {
 IndexedDBContextImpl::~IndexedDBContextImpl() {
   if (factory_.get()) {
     TaskRunner()->PostTask(FROM_HERE,
-                           base::Bind(&IndexedDBFactory::ContextDestroyed,
-                                      base::Passed(&factory_)));
+                           base::BindOnce(&IndexedDBFactory::ContextDestroyed,
+                                          base::Passed(&factory_)));
   }
 
   if (data_path_.empty())
@@ -486,10 +486,9 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
   if (!has_session_only_databases)
     return;
 
-  TaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &ClearSessionOnlyOrigins, data_path_, special_storage_policy_));
+  TaskRunner()->PostTask(FROM_HERE,
+                         base::BindOnce(&ClearSessionOnlyOrigins, data_path_,
+                                        special_storage_policy_));
 }
 
 // static
