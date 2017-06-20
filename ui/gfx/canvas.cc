@@ -189,8 +189,8 @@ void Canvas::Translate(const Vector2d& offset) {
   canvas_->translate(SkIntToScalar(offset.x()), SkIntToScalar(offset.y()));
 }
 
-void Canvas::Scale(int x_scale, int y_scale) {
-  canvas_->scale(SkIntToScalar(x_scale), SkIntToScalar(y_scale));
+void Canvas::Scale(float x_scale, float y_scale) {
+  canvas_->scale(SkFloatToScalar(x_scale), SkFloatToScalar(y_scale));
 }
 
 void Canvas::DrawColor(SkColor color) {
