@@ -28,6 +28,7 @@ class ChromeExpectCTReporter
   // net::ExpectCTReporter:
   void OnExpectCTFailed(const net::HostPortPair& host_port_pair,
                         const GURL& report_uri,
+                        base::Time expiration,
                         const net::X509Certificate* validated_certificate_chain,
                         const net::X509Certificate* served_certificate_chain,
                         const net::SignedCertificateTimestampAndStatusList&

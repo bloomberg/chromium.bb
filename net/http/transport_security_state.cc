@@ -891,9 +891,10 @@ TransportSecurityState::CheckCTRequirements(
       GetDynamicExpectCTState(hostname, &state)) {
     if (expect_ct_reporter_ && !state.report_uri.is_empty() &&
         report_status == ENABLE_EXPECT_CT_REPORTS) {
-      MaybeNotifyExpectCTFailed(
-          host_port_pair, state.report_uri, validated_certificate_chain,
-          served_certificate_chain, signed_certificate_timestamps);
+      MaybeNotifyExpectCTFailed(host_port_pair, state.report_uri, state.expiry,
+                                validated_certificate_chain,
+                                served_certificate_chain,
+                                signed_certificate_timestamps);
     }
     if (state.enforce)
       return CT_REQUIREMENTS_NOT_MET;
@@ -1208,6 +1209,7 @@ bool TransportSecurityState::GetStaticExpectCTState(
 void TransportSecurityState::MaybeNotifyExpectCTFailed(
     const HostPortPair& host_port_pair,
     const GURL& report_uri,
+    base::Time expiration,
     const X509Certificate* validated_certificate_chain,
     const X509Certificate* served_certificate_chain,
     const SignedCertificateTimestampAndStatusList&
@@ -1228,7 +1230,7 @@ void TransportSecurityState::MaybeNotifyExpectCTFailed(
           base::TimeDelta::FromMinutes(kTimeToRememberReportsMins));
 
   expect_ct_reporter_->OnExpectCTFailed(
-      host_port_pair, report_uri, validated_certificate_chain,
+      host_port_pair, report_uri, expiration, validated_certificate_chain,
       served_certificate_chain, signed_certificate_timestamps);
 }
 
@@ -1476,7 +1478,7 @@ void TransportSecurityState::ProcessExpectCTHeader(
       return;
     ExpectCTState state;
     if (GetStaticExpectCTState(host_port_pair.host(), &state)) {
-      MaybeNotifyExpectCTFailed(host_port_pair, state.report_uri,
+      MaybeNotifyExpectCTFailed(host_port_pair, state.report_uri, base::Time(),
                                 ssl_info.cert.get(),
                                 ssl_info.unverified_cert.get(),
                                 ssl_info.signed_certificate_timestamps);
@@ -1512,7 +1514,8 @@ void TransportSecurityState::ProcessExpectCTHeader(
     // processing the header.
     if (expect_ct_reporter_ && !report_uri.is_empty() &&
         !GetDynamicExpectCTState(host_port_pair.host(), &state)) {
-      MaybeNotifyExpectCTFailed(host_port_pair, report_uri, ssl_info.cert.get(),
+      MaybeNotifyExpectCTFailed(host_port_pair, report_uri, base::Time(),
+                                ssl_info.cert.get(),
                                 ssl_info.unverified_cert.get(),
                                 ssl_info.signed_certificate_timestamps);
     }

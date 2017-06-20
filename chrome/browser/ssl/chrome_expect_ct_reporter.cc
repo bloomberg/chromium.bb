@@ -150,6 +150,7 @@ ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 void ChromeExpectCTReporter::OnExpectCTFailed(
     const net::HostPortPair& host_port_pair,
     const GURL& report_uri,
+    base::Time expiration,
     const net::X509Certificate* validated_certificate_chain,
     const net::X509Certificate* served_certificate_chain,
     const net::SignedCertificateTimestampAndStatusList&
@@ -160,13 +161,11 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
   if (!base::FeatureList::IsEnabled(features::kExpectCTReporting))
     return;
 
-  // TODO(estark): De-duplicate reports so that the same report isn't
-  // sent too often in some period of time.
-
   base::DictionaryValue report;
   report.SetString("hostname", host_port_pair.host());
   report.SetInteger("port", host_port_pair.port());
   report.SetString("date-time", TimeToISO8601(base::Time::Now()));
+  report.SetString("effective-expiration-date", TimeToISO8601(expiration));
   report.Set("served-certificate-chain",
              GetPEMEncodedChainAsList(served_certificate_chain));
   report.Set("validated-certificate-chain",
