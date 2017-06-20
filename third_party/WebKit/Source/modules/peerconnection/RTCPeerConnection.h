@@ -211,7 +211,14 @@ class MODULES_EXPORT RTCPeerConnection final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  friend class RTCPeerConnectionTest;
+  FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetAudioTrack);
+  FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetVideoTrack);
+  FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetAudioAndVideoTrack);
+  FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCAll);
+  FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest,
+                           GetTrackRemoveStreamAndGCWithPersistentComponent);
+  FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest,
+                           GetTrackRemoveStreamAndGCWithPersistentStream);
 
   typedef Function<bool()> BoolFunction;
   class EventWrapper : public GarbageCollectedFinalized<EventWrapper> {

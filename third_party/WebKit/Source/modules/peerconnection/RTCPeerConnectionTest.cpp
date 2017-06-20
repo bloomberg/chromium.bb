@@ -70,11 +70,6 @@ class RTCPeerConnectionTest : public ::testing::Test {
     EXPECT_EQ("", GetExceptionMessage(scope));
   }
 
-  MediaStreamTrack* GetTrack(RTCPeerConnection* pc,
-                             MediaStreamComponent* component) {
-    return pc->GetTrack(component);
-  }
-
  private:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithWebRTC> platform;
 };
@@ -93,9 +88,9 @@ TEST_F(RTCPeerConnectionTest, GetAudioTrack) {
       MediaStream::Create(scope.GetExecutionContext(), tracks);
   ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(GetTrack(pc, track->Component()));
+  EXPECT_FALSE(pc->GetTrack(track->Component()));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(GetTrack(pc, track->Component()));
+  EXPECT_TRUE(pc->GetTrack(track->Component()));
 }
 
 TEST_F(RTCPeerConnectionTest, GetVideoTrack) {
@@ -112,9 +107,9 @@ TEST_F(RTCPeerConnectionTest, GetVideoTrack) {
       MediaStream::Create(scope.GetExecutionContext(), tracks);
   ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(GetTrack(pc, track->Component()));
+  EXPECT_FALSE(pc->GetTrack(track->Component()));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(GetTrack(pc, track->Component()));
+  EXPECT_TRUE(pc->GetTrack(track->Component()));
 }
 
 TEST_F(RTCPeerConnectionTest, GetAudioAndVideoTrack) {
@@ -135,11 +130,11 @@ TEST_F(RTCPeerConnectionTest, GetAudioAndVideoTrack) {
       MediaStream::Create(scope.GetExecutionContext(), tracks);
   ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(GetTrack(pc, audio_track->Component()));
-  EXPECT_FALSE(GetTrack(pc, video_track->Component()));
+  EXPECT_FALSE(pc->GetTrack(audio_track->Component()));
+  EXPECT_FALSE(pc->GetTrack(video_track->Component()));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(GetTrack(pc, audio_track->Component()));
-  EXPECT_TRUE(GetTrack(pc, video_track->Component()));
+  EXPECT_TRUE(pc->GetTrack(audio_track->Component()));
+  EXPECT_TRUE(pc->GetTrack(video_track->Component()));
 }
 
 TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCAll) {
@@ -158,16 +153,16 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCAll) {
 
   MediaStreamComponent* track_component = track->Component();
 
-  EXPECT_FALSE(GetTrack(pc, track_component));
+  EXPECT_FALSE(pc->GetTrack(track_component));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(GetTrack(pc, track_component));
+  EXPECT_TRUE(pc->GetTrack(track_component));
 
   RemoveStream(scope, pc, stream);
   // This will destroy |MediaStream|, |MediaStreamTrack| and its
   // |MediaStreamComponent|, which will remove its mapping from the peer
   // connection.
   WebHeap::CollectAllGarbageForTesting();
-  EXPECT_FALSE(GetTrack(pc, track_component));
+  EXPECT_FALSE(pc->GetTrack(track_component));
 }
 
 TEST_F(RTCPeerConnectionTest,
@@ -187,16 +182,16 @@ TEST_F(RTCPeerConnectionTest,
 
   Persistent<MediaStreamComponent> track_component = track->Component();
 
-  EXPECT_FALSE(GetTrack(pc, track_component));
+  EXPECT_FALSE(pc->GetTrack(track_component.Get()));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(GetTrack(pc, track_component));
+  EXPECT_TRUE(pc->GetTrack(track_component.Get()));
 
   RemoveStream(scope, pc, stream);
   // This will destroy |MediaStream| and |MediaStreamTrack| (but not
   // |MediaStreamComponent|), which will remove its mapping from the peer
   // connection.
   WebHeap::CollectAllGarbageForTesting();
-  EXPECT_FALSE(GetTrack(pc, track_component));
+  EXPECT_FALSE(pc->GetTrack(track_component.Get()));
 }
 
 TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCWithPersistentStream) {
@@ -215,22 +210,22 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCWithPersistentStream) {
 
   MediaStreamComponent* track_component = track->Component();
 
-  EXPECT_FALSE(GetTrack(pc, track_component));
+  EXPECT_FALSE(pc->GetTrack(track_component));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(GetTrack(pc, track_component));
+  EXPECT_TRUE(pc->GetTrack(track_component));
 
   RemoveStream(scope, pc, stream);
   // With a persistent |MediaStream|, the |MediaStreamTrack| and
   // |MediaStreamComponent| will not be destroyed and continue to be mapped by
   // peer connection.
   WebHeap::CollectAllGarbageForTesting();
-  EXPECT_TRUE(GetTrack(pc, track_component));
+  EXPECT_TRUE(pc->GetTrack(track_component));
 
   stream = nullptr;
   // Now |MediaStream|, |MediaStreamTrack| and |MediaStreamComponent| will be
   // destroyed and the mapping removed from the peer connection.
   WebHeap::CollectAllGarbageForTesting();
-  EXPECT_FALSE(GetTrack(pc, track_component));
+  EXPECT_FALSE(pc->GetTrack(track_component));
 }
 
 }  // namespace blink
