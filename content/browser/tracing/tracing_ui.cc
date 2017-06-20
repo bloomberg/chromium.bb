@@ -89,24 +89,6 @@ bool GetTracingOptions(const std::string& data64,
   *trace_config = base::trace_event::TraceConfig(category_filter_string,
                                                  record_mode);
 
-  // When enabling memory-infra via tracing, use periodic dumping to trigger a
-  // detailed dump every 5s.
-  if (trace_config->IsCategoryGroupEnabled(
-          base::trace_event::MemoryDumpManager::kTraceCategory)) {
-    base::trace_event::TraceConfig::MemoryDumpConfig::Trigger trigger = {
-        5000,  // min_time_between_dumps_ms
-        base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
-        base::trace_event::MemoryDumpType::PERIODIC_INTERVAL};
-    base::trace_event::TraceConfig::MemoryDumpConfig memory_dump_config;
-    memory_dump_config.triggers.push_back(trigger);
-
-    // TODO(ssid): Make a newly constructed MemoryDumpConfig use the default
-    // dump modes.
-    memory_dump_config.allowed_dump_modes.insert(
-        base::trace_event::MemoryDumpLevelOfDetail::DETAILED);
-    trace_config->ResetMemoryDumpConfig(memory_dump_config);
-  }
-
   bool enable_systrace;
   options_ok &= options->GetBoolean("useSystemTracing", &enable_systrace);
   if (enable_systrace)

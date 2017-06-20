@@ -51,6 +51,11 @@ const char kEventFiltersParam[] = "event_filters";
 const char kFilterPredicateParam[] = "filter_predicate";
 const char kFilterArgsParam[] = "filter_args";
 
+// Default configuration of memory dumps.
+const TraceConfig::MemoryDumpConfig::Trigger kDefaultMemoryDumpTrigger = {
+    5000,  // min_time_between_dumps_ms
+    MemoryDumpLevelOfDetail::DETAILED, MemoryDumpType::PERIODIC_INTERVAL};
+
 class ConvertableTraceConfigToTraceFormat
     : public base::trace_event::ConvertableToTraceFormat {
  public:
@@ -454,6 +459,7 @@ void TraceConfig::SetMemoryDumpConfigFromConfigDict(
 
 void TraceConfig::SetDefaultMemoryDumpConfig() {
   memory_dump_config_.Clear();
+  memory_dump_config_.triggers.push_back(kDefaultMemoryDumpTrigger);
   memory_dump_config_.allowed_dump_modes = GetDefaultAllowedMemoryDumpModes();
 }
 
