@@ -56,6 +56,15 @@ Polymer({
   },
 
   /**
+   * Get the right icon to display when hiding/showing a password.
+   * @return {string}
+   * @private
+   */
+  getIconClass_: function() {
+    return this.password ? 'icon-visibility-off' : 'icon-visibility';
+  },
+
+  /**
    * Gets the text of the password. Will use the value of |password| unless it
    * cannot be shown, in which case it will be spaces. It can also be the
    * federated text.
