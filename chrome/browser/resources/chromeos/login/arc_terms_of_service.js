@@ -40,7 +40,7 @@ Polymer({
    *
    * @private
    */
-  onAccept_ : function() {
+  onAccept_: function() {
     this.screen.onAccept();
   },
 
@@ -49,7 +49,7 @@ Polymer({
    *
    * @private
    */
-  onRetry_ : function() {
+  onRetry_: function() {
     this.screen.reloadPlayStore();
   },
 
@@ -58,7 +58,7 @@ Polymer({
    *
    * @private
    */
-  onSkip_ : function() {
+  onSkip_: function() {
     this.screen.onSkip();
   }
 });

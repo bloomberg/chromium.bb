@@ -6,10 +6,7 @@
  * @fileoverview Oobe Auto-enrollment check screen implementation.
  */
 
-login.createScreen('AutoEnrollmentCheckScreen',
-                   'auto-enrollment-check',
-                   function() {
-  return {
-    EXTERNAL_API: []
-  };
-});
+login.createScreen(
+    'AutoEnrollmentCheckScreen', 'auto-enrollment-check', function() {
+      return {EXTERNAL_API: []};
+    });

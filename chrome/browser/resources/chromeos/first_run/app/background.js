@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create('main.html', {
-    'frame': 'none',
-    'resizable': false,
-    'hidden': true,
-  }, function(appWindow) {
-    appWindow.contentWindow.appWindow = appWindow;
-  });
+  chrome.app.window.create(
+      'main.html', {
+        'frame': 'none',
+        'resizable': false,
+        'hidden': true,
+      },
+      function(appWindow) {
+        appWindow.contentWindow.appWindow = appWindow;
+      });
 });

@@ -6,12 +6,10 @@
  * @fileoverview Oobe ARC Terms of Service screen implementation.
  */
 
-login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
-  function() { return {
+login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
+  return {
     EXTERNAL_API: [
-      'setMetricsMode',
-      'setBackupAndRestoreMode',
-      'setLocationServicesMode',
+      'setMetricsMode', 'setBackupAndRestoreMode', 'setLocationServicesMode',
       'setCountryCode'
     ],
 
@@ -48,15 +46,12 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       }
 
       var termsView = this.getElement_('arc-tos-view');
-      var requestFilter = {
-        urls: ['<all_urls>'],
-        types: ['main_frame']
-      };
+      var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
 
       termsView.request.onErrorOccurred.addListener(
           this.onTermsViewErrorOccurred.bind(this), requestFilter);
-      termsView.addEventListener('contentload',
-          this.onTermsViewContentLoad.bind(this));
+      termsView.addEventListener(
+          'contentload', this.onTermsViewContentLoad.bind(this));
 
       // Open links from webview in overlay dialog.
       var self = this;
@@ -65,18 +60,17 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
         self.showUrlOverlay(event.targetUrl);
       });
 
-      termsView.addContentScripts([
-        { name: 'postProcess',
-          matches: ['https://play.google.com/*'],
-          css: { files: ['playstore.css'] },
-          js: { files: ['playstore.js'] },
-          run_at: 'document_end'
-        }]);
+      termsView.addContentScripts([{
+        name: 'postProcess',
+        matches: ['https://play.google.com/*'],
+        css: {files: ['playstore.css']},
+        js: {files: ['playstore.js']},
+        run_at: 'document_end'
+      }]);
 
       this.getElement_('arc-policy-link').onclick = function() {
         termsView.executeScript(
-            {code: 'getPrivacyPolicyLink();'},
-            function(results) {
+            {code: 'getPrivacyPolicyLink();'}, function(results) {
               if (results && results.length == 1 &&
                   typeof results[0] == 'string') {
                 self.showUrlOverlay(results[0]);
@@ -141,8 +135,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      * @param {boolean} managed Defines whether this setting is set by policy.
      */
     setBackupAndRestoreMode: function(enabled, managed) {
-      this.setPreference('arc-enable-backup-restore',
-                         enabled, managed);
+      this.setPreference('arc-enable-backup-restore', enabled, managed);
     },
 
     /**
@@ -151,8 +144,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      * @param {boolean} managed Defines whether this setting is set by policy.
      */
     setLocationServicesMode: function(enabled, managed) {
-      this.setPreference('arc-enable-location-service',
-                         enabled, managed);
+      this.setPreference('arc-enable-location-service', enabled, managed);
     },
 
     /**
@@ -160,19 +152,19 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      * @param {string} countryCode Country code based on current timezone.
      */
     setCountryCode: function(countryCode) {
-      var scriptSetParameters = 'document.countryCode = \'' +
-          countryCode.toLowerCase() + '\';';
+      var scriptSetParameters =
+          'document.countryCode = \'' + countryCode.toLowerCase() + '\';';
       if (this.useMDOobe) {
         scriptSetParameters += 'document.viewMode = \'large-view\';';
       }
       var termsView = this.getElement_('arc-tos-view');
       termsView.removeContentScripts(['preProcess']);
-      termsView.addContentScripts([
-          { name: 'preProcess',
-            matches: ['https://play.google.com/*'],
-            js: { code: scriptSetParameters },
-            run_at: 'document_start'
-          }]);
+      termsView.addContentScripts([{
+        name: 'preProcess',
+        matches: ['https://play.google.com/*'],
+        js: {code: scriptSetParameters},
+        run_at: 'document_start'
+      }]);
 
       if (!$('arc-tos').hidden) {
         this.reloadPlayStore();
@@ -221,11 +213,12 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       this.enableButtons_(false);
 
       var isBackupRestoreEnabled =
-        this.getElement_('arc-enable-backup-restore').checked;
+          this.getElement_('arc-enable-backup-restore').checked;
       var isLocationServiceEnabled =
-        this.getElement_('arc-enable-location-service').checked;
+          this.getElement_('arc-enable-location-service').checked;
 
-      chrome.send('arcTermsOfServiceAccept',
+      chrome.send(
+          'arcTermsOfServiceAccept',
           [isBackupRestoreEnabled, isLocationServiceEnabled]);
     },
 
@@ -314,7 +307,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      *
      * @private
      */
-    addClass_: function (className) {
+    addClass_: function(className) {
       this.classList.add(className);
       $('arc-tos-md').getElement('arc-tos-dialog-md').classList.add(className);
     },
@@ -326,10 +319,11 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      *
      * @private
      */
-    removeClass_: function (className) {
+    removeClass_: function(className) {
       this.classList.remove(className);
-      $('arc-tos-md').getElement('arc-tos-dialog-md').classList.
-          remove(className);
+      $('arc-tos-md')
+          .getElement('arc-tos-dialog-md')
+          .classList.remove(className);
     },
 
     /**
@@ -386,7 +380,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       // Reload caption image in case it was not loaded during the
       // initialization phase.
       $('arc-tos-logo').src =
-        'https://play.google.com/about/images/play_logo.png';
+          'https://play.google.com/about/images/play_logo.png';
 
       this.hideOverlay();
       this.reloadPlayStore();
@@ -426,8 +420,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       var leanMoreBackupAndRestoreText =
           loadTimeData.getString('arcLearnMoreBackupAndRestore');
       var backupAndRestore = this.getElement_('arc-enable-backup-restore');
-      backupAndRestore.parentElement.querySelector(
-          '#learn-more-link-backup-restore').onclick = function(event) {
+      backupAndRestore.parentElement
+          .querySelector('#learn-more-link-backup-restore')
+          .onclick = function(event) {
         event.stopPropagation();
         self.showLearnMoreOverlay(leanMoreBackupAndRestoreText);
       };
@@ -435,8 +430,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       var leanMoreLocationServiceText =
           loadTimeData.getString('arcLearnMoreLocationService');
       var locationService = this.getElement_('arc-enable-location-service');
-      locationService.parentElement.querySelector(
-          '#learn-more-link-location-service').onclick = function(event) {
+      locationService.parentElement
+          .querySelector('#learn-more-link-location-service')
+          .onclick = function(event) {
         event.stopPropagation();
         self.showLearnMoreOverlay(leanMoreLocationServiceText);
       };

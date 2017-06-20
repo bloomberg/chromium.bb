@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (interval > 0) {
     $('refresh-message').textContent =
         '(Auto-refreshing page every ' + interval + 's)';
-    setTimeout(function() { window.location.reload(true); }, interval * 1000);
+    setTimeout(function() {
+      window.location.reload(true);
+    }, interval * 1000);
   }
 });

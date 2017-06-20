@@ -25,15 +25,16 @@ cr.define('cr.FirstRun', function() {
       this.name_ = this.getAttribute('id');
       var controlsContainer = this.getElementsByClassName('controls')[0];
       if (!controlsContainer)
-          throw Error('Controls not found.');
+        throw Error('Controls not found.');
       this.nextButton_ =
           controlsContainer.getElementsByClassName('next-button')[0];
       if (!this.nextButton_)
         throw Error('Next button not found.');
-      this.nextButton_.addEventListener('click', (function(e) {
-        chrome.send('nextButtonClicked', [this.getName()]);
-        e.stopPropagation();
-      }).bind(this));
+      this.nextButton_.addEventListener(
+          'click', (function(e) {
+                     chrome.send('nextButtonClicked', [this.getName()]);
+                     e.stopPropagation();
+                   }).bind(this));
       this.defaultControl_ = controlsContainer.children[0];
     },
 
@@ -52,14 +53,11 @@ cr.define('cr.FirstRun', function() {
     hide: function(animated, opt_onHidden) {
       var transitionDuration =
           animated ? cr.FirstRun.getDefaultTransitionDuration() : 0;
-      changeVisibility(this,
-                       false,
-                       transitionDuration,
-                       function() {
-                         this.classList.add('hidden');
-                         if (opt_onHidden)
-                            opt_onHidden();
-                       }.bind(this));
+      changeVisibility(this, false, transitionDuration, function() {
+        this.classList.add('hidden');
+        if (opt_onHidden)
+          opt_onHidden();
+      }.bind(this));
     },
 
     /**
@@ -71,13 +69,10 @@ cr.define('cr.FirstRun', function() {
       var transitionDuration =
           animated ? cr.FirstRun.getDefaultTransitionDuration() : 0;
       this.classList.remove('hidden');
-      changeVisibility(this,
-                       true,
-                       transitionDuration,
-                       function() {
-                         if (opt_onShown)
-                           opt_onShown(this);
-                       }.bind(this));
+      changeVisibility(this, true, transitionDuration, function() {
+        if (opt_onShown)
+          opt_onShown(this);
+      }.bind(this));
     },
 
     /**
@@ -112,55 +107,26 @@ cr.define('cr.FirstRun', function() {
   // '*' wildcard. The last suitable rule in list is choosen for arrow style.
   var ARROW_POSITION = {
     'app-list': [
-      {
-        position: ['points-down', 'left']
-      },
-      {
-        dir: 'rtl',
-        position: ['points-down', 'right']
-      },
-      {
-        shelf: 'left',
-        position: ['points-left', 'top']
-      },
-      {
-        shelf: 'right',
-        position: ['points-right', 'top']
-      }
+      {position: ['points-down', 'left']},
+      {dir: 'rtl', position: ['points-down', 'right']},
+      {shelf: 'left', position: ['points-left', 'top']},
+      {shelf: 'right', position: ['points-right', 'top']}
     ],
     'tray': [
-      {
-        position: ['points-right', 'top']
-      },
-      {
-        dir: 'rtl',
-        shelf: 'bottom',
-        position: ['points-left', 'top']
-      },
-      {
-        shelf: 'left',
-        position: ['points-left', 'top']
-      }
+      {position: ['points-right', 'top']},
+      {dir: 'rtl', shelf: 'bottom', position: ['points-left', 'top']},
+      {shelf: 'left', position: ['points-left', 'top']}
     ],
     'help': [
-      {
-        position: ['points-right', 'bottom']
-      },
-      {
-        dir: 'rtl',
-        shelf: 'bottom',
-        position: ['points-left', 'bottom']
-      },
-      {
-        shelf: 'left',
-        position: ['points-left', 'bottom']
-      }
+      {position: ['points-right', 'bottom']},
+      {dir: 'rtl', shelf: 'bottom', position: ['points-left', 'bottom']},
+      {shelf: 'left', position: ['points-left', 'bottom']}
     ]
   };
 
   var DISTANCE_TO_POINTEE = 10;
   var MINIMAL_SCREEN_OFFSET = 10;
-  var ARROW_LENGTH = 6; // Keep synced with .arrow border-width.
+  var ARROW_LENGTH = 6;  // Keep synced with .arrow border-width.
 
   Bubble.prototype = {
     __proto__: Step.prototype,
@@ -183,10 +149,10 @@ cr.define('cr.FirstRun', function() {
       var inputDirection = document.documentElement.getAttribute('dir');
       var shelfAlignment = document.documentElement.getAttribute('shelf');
       var isSuitable = function(rule) {
-        var inputDirectionMatch = !rule.hasOwnProperty('dir') ||
-                                  rule.dir === inputDirection;
-        var shelfAlignmentMatch = !rule.hasOwnProperty('shelf') ||
-                                  rule.shelf === shelfAlignment;
+        var inputDirectionMatch =
+            !rule.hasOwnProperty('dir') || rule.dir === inputDirection;
+        var shelfAlignmentMatch =
+            !rule.hasOwnProperty('shelf') || rule.shelf === shelfAlignment;
         return inputDirectionMatch && shelfAlignmentMatch;
       };
       var lastSuitableRule = null;
@@ -206,7 +172,7 @@ cr.define('cr.FirstRun', function() {
         this.direction_ = [1, 0];
       else if (list.contains('points-down'))
         this.direction_ = [0, 1];
-      else // list.contains('points-left')
+      else  // list.contains('points-left')
         this.direction_ = [-1, 0];
     },
 
@@ -224,8 +190,10 @@ cr.define('cr.FirstRun', function() {
         this.style.setProperty('opacity', '0');
         this.show(false);
       }
-      var arrow = [this.arrow_.offsetLeft + this.arrow_.offsetWidth / 2,
-                   this.arrow_.offsetTop + this.arrow_.offsetHeight / 2];
+      var arrow = [
+        this.arrow_.offsetLeft + this.arrow_.offsetWidth / 2,
+        this.arrow_.offsetTop + this.arrow_.offsetHeight / 2
+      ];
       var totalOffset = DISTANCE_TO_POINTEE + offset;
       var left = point[0] - totalOffset * this.direction_[0] - arrow[0];
       var top = point[1] - totalOffset * this.direction_[1] - arrow[1];
@@ -233,14 +201,18 @@ cr.define('cr.FirstRun', function() {
       if (this.arrow_.classList.contains('points-up') ||
           this.arrow_.classList.contains('points-down')) {
         left = Math.max(left, MINIMAL_SCREEN_OFFSET);
-        left = Math.min(left, document.body.offsetWidth - this.offsetWidth -
-            MINIMAL_SCREEN_OFFSET);
+        left = Math.min(
+            left,
+            document.body.offsetWidth - this.offsetWidth -
+                MINIMAL_SCREEN_OFFSET);
       }
       if (this.arrow_.classList.contains('points-left') ||
           this.arrow_.classList.contains('points-right')) {
         top = Math.max(top, MINIMAL_SCREEN_OFFSET);
-        top = Math.min(top, document.body.offsetHeight - this.offsetHeight -
-            MINIMAL_SCREEN_OFFSET);
+        top = Math.min(
+            top,
+            document.body.offsetHeight - this.offsetHeight -
+                MINIMAL_SCREEN_OFFSET);
       }
       this.style.setProperty('left', left + 'px');
       this.style.setProperty('top', top + 'px');
@@ -259,15 +231,14 @@ cr.define('cr.FirstRun', function() {
     setPosition: function(position) {
       var arrow = this.arrow_;
       // Increasing offset if it's from side where bubble points to.
-      [['top', 'points-up'],
-       ['right', 'points-right'],
-       ['bottom', 'points-down'],
-       ['left', 'points-left']].forEach(function(mapping) {
-          if (position.hasOwnProperty(mapping[0]) &&
-              arrow.classList.contains(mapping[1])) {
-            position[mapping[0]] += ARROW_LENGTH + DISTANCE_TO_POINTEE;
-          }
-        });
+      [['top', 'points-up'], ['right', 'points-right'],
+       ['bottom', 'points-down'], ['left', 'points-left']]
+          .forEach(function(mapping) {
+            if (position.hasOwnProperty(mapping[0]) &&
+                arrow.classList.contains(mapping[1])) {
+              position[mapping[0]] += ARROW_LENGTH + DISTANCE_TO_POINTEE;
+            }
+          });
       Step.prototype.setPosition.call(this, position);
     },
   };

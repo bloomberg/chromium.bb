@@ -28,8 +28,9 @@ var BatterySettings = Polymer({
      */
     batteryStateOptions: {
       type: Array,
-      value: function() { return ['Full', 'Charging', 'Discharging',
-                                  'Not Present']; },
+      value: function() {
+        return ['Full', 'Charging', 'Discharging', 'Not Present'];
+      },
     },
 
     /**
@@ -43,22 +44,72 @@ var BatterySettings = Polymer({
       type: Array,
       value: function() {
         return [
-          {id: '0', name: 'AC Charger 1', type: 'DedicatedCharger',
-           port: 0, connected: false, power: 'high'},
-          {id: '1', name: 'AC Charger 2', type: 'DedicatedCharger',
-           port: 0, connected: false, power: 'high'},
-          {id: '2', name: 'USB Charger 1', type: 'DedicatedCharger',
-           port: 0, connected: false, power: 'low', variablePower: true},
-          {id: '3', name: 'USB Charger 2', type: 'DedicatedCharger',
-           port: 0, connected: false, power: 'low', variablePower: true},
-          {id: '4', name: 'Dual-role USB 1', type: 'DualRoleUSB',
-           port: 0, connected: false, power: 'low'},
-          {id: '5', name: 'Dual-role USB 2', type: 'DualRoleUSB',
-           port: 1, connected: false, power: 'low'},
-          {id: '6', name: 'Dual-role USB 3', type: 'DualRoleUSB',
-           port: 2, connected: false, power: 'low'},
-          {id: '7', name: 'Dual-role USB 4', type: 'DualRoleUSB',
-           port: 3, connected: false, power: 'low'},
+          {
+            id: '0',
+            name: 'AC Charger 1',
+            type: 'DedicatedCharger',
+            port: 0,
+            connected: false,
+            power: 'high'
+          },
+          {
+            id: '1',
+            name: 'AC Charger 2',
+            type: 'DedicatedCharger',
+            port: 0,
+            connected: false,
+            power: 'high'
+          },
+          {
+            id: '2',
+            name: 'USB Charger 1',
+            type: 'DedicatedCharger',
+            port: 0,
+            connected: false,
+            power: 'low',
+            variablePower: true
+          },
+          {
+            id: '3',
+            name: 'USB Charger 2',
+            type: 'DedicatedCharger',
+            port: 0,
+            connected: false,
+            power: 'low',
+            variablePower: true
+          },
+          {
+            id: '4',
+            name: 'Dual-role USB 1',
+            type: 'DualRoleUSB',
+            port: 0,
+            connected: false,
+            power: 'low'
+          },
+          {
+            id: '5',
+            name: 'Dual-role USB 2',
+            type: 'DualRoleUSB',
+            port: 1,
+            connected: false,
+            power: 'low'
+          },
+          {
+            id: '6',
+            name: 'Dual-role USB 3',
+            type: 'DualRoleUSB',
+            port: 2,
+            connected: false,
+            power: 'low'
+          },
+          {
+            id: '7',
+            name: 'Dual-role USB 4',
+            type: 'DualRoleUSB',
+            port: 3,
+            connected: false,
+            power: 'low'
+          },
         ];
       },
     },

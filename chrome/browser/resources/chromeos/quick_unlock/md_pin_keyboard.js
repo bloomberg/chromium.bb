@@ -125,8 +125,7 @@ Polymer({
    */
   onPasswordElementAttached_: function(inputElement) {
     this.showPinInput_ = inputElement == this.$.pinInput.inputElement;
-    inputElement.addEventListener('input',
-        this.handleInputChanged_.bind(this));
+    inputElement.addEventListener('input', this.handleInputChanged_.bind(this));
   },
 
   /**
@@ -207,7 +206,7 @@ Polymer({
 
   /** Fires a submit event with the current PIN value. */
   firePinSubmitEvent_: function() {
-    this.fire('submit', { pin: this.value });
+    this.fire('submit', {pin: this.value});
   },
 
   /**
@@ -219,7 +218,7 @@ Polymer({
   onPinValueChange_: function(value, previous) {
     if (value != previous) {
       this.passwordElement.value = this.value;
-      this.fire('pin-change', { pin: value });
+      this.fire('pin-change', {pin: value});
     }
   },
 
@@ -254,8 +253,8 @@ Polymer({
    */
   onBackspacePointerDown_: function(event) {
     this.startAutoBackspaceId_ = setTimeout(function() {
-        this.repeatBackspaceIntervalId_ = setInterval(
-            this.onPinClear_.bind(this), REPEAT_BACKSPACE_DELAY_MS);
+      this.repeatBackspaceIntervalId_ =
+          setInterval(this.onPinClear_.bind(this), REPEAT_BACKSPACE_DELAY_MS);
     }.bind(this), INITIAL_BACKSPACE_DELAY_MS);
 
     if (!event.target.receivedFocusFromKeyboard)

@@ -24,11 +24,8 @@ Polymer((function() {
 
     /** @override */
     initialize: function() {
-      ['code',
-       'deviceName',
-       'enrollmentDomain',
-       'page',
-       'enrollmentError'].forEach(this.registerBoundContextField, this);
+      ['code', 'deviceName', 'enrollmentDomain', 'page', 'enrollmentError']
+          .forEach(this.registerBoundContextField, this);
       this.send(CALLBACK_CONTEXT_READY);
     },
 
@@ -37,8 +34,8 @@ Polymer((function() {
     },
 
     getEnrollmentStepTitle_: function(enrollmentDomain) {
-      return this.i18n(['loginHostPairingScreenEnrollingTitle',
-                       enrollmentDomain]);
+      return this.i18n(
+          ['loginHostPairingScreenEnrollingTitle', enrollmentDomain]);
     }
   };
 })());

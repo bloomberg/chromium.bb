@@ -52,8 +52,9 @@ cr.define('settime', function() {
       var currentTimezoneId = loadTimeData.getValue('currentTimezoneId');
       if (currentTimezoneId) {
         this.setTimezone_(currentTimezoneId);
-        $('timezone-select').addEventListener(
-            'change', this.onTimezoneChange_.bind(this), false);
+        $('timezone-select')
+            .addEventListener(
+                'change', this.onTimezoneChange_.bind(this), false);
         $('timezone').hidden = false;
       }
 
@@ -62,8 +63,8 @@ cr.define('settime', function() {
       $('time').addEventListener('blur', this.onTimeBlur_.bind(this), false);
       $('date').addEventListener('blur', this.onTimeBlur_.bind(this), false);
 
-      $('set-time').addEventListener(
-          'submit', this.onSubmit_.bind(this), false);
+      $('set-time')
+          .addEventListener('submit', this.onSubmit_.bind(this), false);
     },
 
     /**
@@ -96,8 +97,8 @@ cr.define('settime', function() {
 
       // Start timer to update these inputs every minute.
       var secondsRemaining = 60 - now.getSeconds();
-      this.timeTimeout_ = window.setTimeout(this.updateTime_.bind(this),
-                                            secondsRemaining * 1000);
+      this.timeTimeout_ = window.setTimeout(
+          this.updateTime_.bind(this), secondsRemaining * 1000);
     },
 
     /**
@@ -158,8 +159,8 @@ cr.define('settime', function() {
       // within the window.
       if (window.innerHeight < document.body.scrollHeight) {
         // Resize window to fit scrollHeight and the title bar.
-        var newHeight = document.body.scrollHeight +
-                        window.outerHeight - window.innerHeight;
+        var newHeight = document.body.scrollHeight + window.outerHeight -
+            window.innerHeight;
         window.resizeTo(window.outerWidth, newHeight);
       }
     },
@@ -177,8 +178,10 @@ cr.define('settime', function() {
       // JSON string is in local time.
       var localDate = new Date(date);
       localDate.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-      return {date: localDate.toISOString().slice(0, 10),
-              time: localDate.toISOString().slice(11, 16)};
+      return {
+        date: localDate.toISOString().slice(0, 10),
+        time: localDate.toISOString().slice(11, 16)
+      };
     },
   };
 
@@ -190,9 +193,7 @@ cr.define('settime', function() {
     TimeSetter.getInstance().updateTime_();
   };
 
-  return {
-    TimeSetter: TimeSetter
-  };
+  return {TimeSetter: TimeSetter};
 });
 
 document.addEventListener('DOMContentLoaded', function() {

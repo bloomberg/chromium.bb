@@ -10,25 +10,17 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
   return {
 
     /* Possible UI states of the enable debugging screen. */
-    UI_STATE: {
-      ERROR: -1,
-      NONE: 0,
-      REMOVE_PROTECTION: 1,
-      SETUP: 2,
-      WAIT: 3,
-      DONE: 4
-    },
+    UI_STATE:
+        {ERROR: -1, NONE: 0, REMOVE_PROTECTION: 1, SETUP: 2, WAIT: 3, DONE: 4},
 
-    EXTERNAL_API: [
-      'updateState'
-    ],
+    EXTERNAL_API: ['updateState'],
 
     /** @override */
     decorate: function() {
-      $('enable-debugging-help-link').addEventListener('click',
-        function(event) {
-          chrome.send('enableDebuggingOnLearnMore');
-      });
+      $('enable-debugging-help-link')
+          .addEventListener('click', function(event) {
+            chrome.send('enableDebuggingOnLearnMore');
+          });
 
       var password = $('enable-debugging-password');
       var password2 = $('enable-debugging-password2');
@@ -69,8 +61,8 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
       enableButton.textContent =
           loadTimeData.getString('enableDebuggingEnableButton');
       enableButton.addEventListener('click', function(e) {
-        chrome.send('enableDebuggingOnSetup',
-                    [$('enable-debugging-password').value]);
+        chrome.send(
+            'enableDebuggingOnSetup', [$('enable-debugging-password').value]);
         e.stopPropagation();
       });
       buttons.push(enableButton);
@@ -87,8 +79,7 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
 
       var okButton = this.ownerDocument.createElement('button');
       okButton.id = 'debugging-ok-button';
-      okButton.textContent =
-          loadTimeData.getString('enableDebuggingOKButton');
+      okButton.textContent = loadTimeData.getString('enableDebuggingOKButton');
       okButton.addEventListener('click', function(e) {
         chrome.send('enableDebuggingOnDone');
         e.stopPropagation();
@@ -106,8 +97,9 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
         return $('debugging-remove-protection-button');
       else if (this.state_ == this.UI_STATE.SETUP)
         return $('enable-debugging-password');
-      else if (this.state_ == this.UI_STATE.DONE ||
-               this.state_ == this.UI_STATE.ERROR) {
+      else if (
+          this.state_ == this.UI_STATE.DONE ||
+          this.state_ == this.UI_STATE.ERROR) {
         return $('debugging-ok-button');
       }
 
@@ -136,19 +128,20 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
       var password2 = $('enable-debugging-password2');
       var pwd = password.value;
       var pwd2 = password2.value;
-      enableButton.disabled = !((pwd.length == 0 && pwd2.length == 0) ||
-          (pwd == pwd2 && pwd.length >= 4));
+      enableButton.disabled =
+          !((pwd.length == 0 && pwd2.length == 0) ||
+            (pwd == pwd2 && pwd.length >= 4));
     },
 
     /**
-      * Sets css style for corresponding state of the screen.
-      * @param {number} state.
-      * @private
-      */
+     * Sets css style for corresponding state of the screen.
+     * @param {number} state.
+     * @private
+     */
     setDialogView_: function(state) {
       this.state_ = state;
-      this.classList.toggle('remove-protection-view',
-          state == this.UI_STATE.REMOVE_PROTECTION);
+      this.classList.toggle(
+          'remove-protection-view', state == this.UI_STATE.REMOVE_PROTECTION);
       this.classList.toggle('setup-view', state == this.UI_STATE.SETUP);
       this.classList.toggle('wait-view', state == this.UI_STATE.WAIT);
       this.classList.toggle('done-view', state == this.UI_STATE.DONE);

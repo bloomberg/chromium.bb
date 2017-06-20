@@ -48,8 +48,7 @@ function load() {
 disableTextSelectAndDrag(function(e) {
   var src = e.target;
   return src instanceof HTMLTextAreaElement ||
-         src instanceof HTMLInputElement &&
-         /text|url/.test(src.type);
+      src instanceof HTMLInputElement && /text|url/.test(src.type);
 });
 
 document.addEventListener('DOMContentLoaded', load);

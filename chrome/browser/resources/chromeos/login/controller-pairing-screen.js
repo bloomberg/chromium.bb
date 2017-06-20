@@ -3,24 +3,19 @@
 // found in the LICENSE file.
 
 Polymer((function() {
-  /** @const */ var ICON_COLORS = ['#F0B9CB', '#F0ACC3', '#F098B6', '#F084A9',
-                                   '#F06D99', '#F05287', '#F0467F', '#F03473',
-                                   '#F01E65', '#F00051'];
+  /** @const */ var ICON_COLORS = [
+    '#F0B9CB', '#F0ACC3', '#F098B6', '#F084A9', '#F06D99', '#F05287', '#F0467F',
+    '#F03473', '#F01E65', '#F00051'
+  ];
   return {
     is: 'pairing-device-list',
 
     properties: {
       devices: Array,
 
-      selected: {
-        type: String,
-        notify: true
-      },
+      selected: {type: String, notify: true},
 
-      connecting: {
-        type: Boolean,
-        reflectToAttribute: true
-      }
+      connecting: {type: Boolean, reflectToAttribute: true}
     },
 
     getStyleForDeviceIcon_: function(deviceName) {
@@ -46,15 +41,9 @@ Polymer({
     animationConfig: {
       value: function() {
         return {
-          'entry': [{
-            name: 'fade-in-animation',
-            node: this
-          }],
+          'entry': [{name: 'fade-in-animation', node: this}],
 
-          'exit': [{
-            name: 'fade-out-animation',
-            node: this
-          }]
+          'exit': [{name: 'fade-out-animation', node: this}]
         };
       }
     }
@@ -77,20 +66,12 @@ Polymer((function() {
   return {
     is: 'controller-pairing-screen',
 
-    behaviors: [
-      login.OobeScreenBehavior
-    ],
+    behaviors: [login.OobeScreenBehavior],
 
-    properties: {
-      selectedDevice: {
-        type: String,
-        observer: 'selectedDeviceChanged_'
-      }
-    },
+    properties:
+        {selectedDevice: {type: String, observer: 'selectedDeviceChanged_'}},
 
-    observers: [
-      'deviceListChanged_(C.devices)'
-    ],
+    observers: ['deviceListChanged_(C.devices)'],
 
     ready: function() {
       /**
@@ -100,17 +81,17 @@ Polymer((function() {
        */
       var pages = this.$.pages;
       delete pages._squelchNextFinishEvent;
-      Object.defineProperty(pages, '_squelchNextFinishEvent',
-          { get: function() { return false; } });
+      Object.defineProperty(pages, '_squelchNextFinishEvent', {
+        get: function() {
+          return false;
+        }
+      });
     },
 
     /** @override */
     initialize: function() {
-      ['code',
-       'controlsDisabled',
-       'devices',
-       'enrollmentDomain',
-       'page'].forEach(this.registerBoundContextField, this);
+      ['code', 'controlsDisabled', 'devices', 'enrollmentDomain', 'page']
+          .forEach(this.registerBoundContextField, this);
       this.context.set(CONTEXT_KEY_CONTROLS_DISABLED, true);
       this.commitContextChanges();
     },
@@ -124,8 +105,8 @@ Polymer((function() {
     },
 
     selectedDeviceChanged_: function(selectedDevice) {
-      this.context.set(CONTEXT_KEY_SELECTED_DEVICE,
-          selectedDevice ? selectedDevice : '');
+      this.context.set(
+          CONTEXT_KEY_SELECTED_DEVICE, selectedDevice ? selectedDevice : '');
       this.commitContextChanges();
     },
 
@@ -134,13 +115,13 @@ Polymer((function() {
     },
 
     getHostEnrollmentStepTitle_: function(domain) {
-      return this.i18n(['loginControllerPairingScreenEnrollmentInProgress',
-                       domain]);
+      return this.i18n(
+          ['loginControllerPairingScreenEnrollmentInProgress', domain]);
     },
 
     getSuccessMessage_: function(selectedDevice) {
-      return this.i18n(['loginControllerPairingScreenSuccessText',
-                       selectedDevice]);
+      return this.i18n(
+          ['loginControllerPairingScreenSuccessText', selectedDevice]);
     }
   };
 })());

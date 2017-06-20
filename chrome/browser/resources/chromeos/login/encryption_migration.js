@@ -30,67 +30,43 @@ Polymer({
      * Current UI state which corresponds to a sub step in migration process.
      * @type {EncryptionMigrationUIState}
      */
-    uiState: {
-      type: Number,
-      value: 0
-    },
+    uiState: {type: Number, value: 0},
 
     /**
      * Current migration progress in range [0, 1]. Negative value means that
      * the progress is unknown.
      */
-    progress: {
-      type: Number,
-      value: -1
-    },
+    progress: {type: Number, value: -1},
 
     /**
      * Whether the current migration is resuming the previous one.
      */
-    isResuming: {
-      type: Boolean,
-      value: false
-    },
+    isResuming: {type: Boolean, value: false},
 
     /**
      * Battery level.
      */
-    batteryPercent: {
-      type: Number,
-      value: 0
-    },
+    batteryPercent: {type: Number, value: 0},
 
     /**
      * True if the battery level is enough to start migration.
      */
-    isEnoughBattery: {
-      type: Boolean,
-      value: true
-    },
+    isEnoughBattery: {type: Boolean, value: true},
 
     /**
      * True if the device is charging.
      */
-    isCharging: {
-      type: Boolean,
-      value: false
-    },
+    isCharging: {type: Boolean, value: false},
 
     /**
      * Formatted string of the current available space size.
      */
-    availableSpaceInString: {
-      type: String,
-      value: ''
-    },
+    availableSpaceInString: {type: String, value: ''},
 
     /**
      * Formatted string of the necessary space size for migration.
      */
-    necessarySpaceInString: {
-      type: String,
-      value: ''
-    },
+    necessarySpaceInString: {type: String, value: ''},
   },
 
   /**

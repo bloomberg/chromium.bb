@@ -82,7 +82,5 @@ cr.define('wallpapers', function() {
     },
   };
 
-  return {
-    WallpaperCategoriesList: WallpaperCategoriesList
-  };
+  return {WallpaperCategoriesList: WallpaperCategoriesList};
 });

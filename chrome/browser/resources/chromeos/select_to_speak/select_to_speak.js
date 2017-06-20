@@ -20,10 +20,7 @@ function rectFromPoints(x1, y1, x2, y2) {
   var right = Math.max(x1, x2);
   var top = Math.min(y1, y2);
   var bottom = Math.max(y1, y2);
-  return {left: left,
-          top: top,
-          width: right - left,
-          height: bottom - top};
+  return {left: left, top: top, width: right - left, height: bottom - top};
 }
 
 /**
@@ -81,8 +78,7 @@ var SelectToSpeak = function() {
     // the center of that box using the automation API. The result of the
     // hit test is a MOUSE_RELEASED accessibility event.
     desktop.addEventListener(
-        EventType.MOUSE_RELEASED, this.onAutomationHitTest_.bind(this),
-        true);
+        EventType.MOUSE_RELEASED, this.onAutomationHitTest_.bind(this), true);
   }.bind(this));
 
   /** @private { ?string } */
@@ -98,7 +94,7 @@ var SelectToSpeak = function() {
   this.speechRate_ = 1.0;
 
   /** @const { string } */
-  this.color_ = "#f73a98";
+  this.color_ = '#f73a98';
 
   this.initPreferences_();
 
@@ -151,8 +147,7 @@ SelectToSpeak.prototype = {
       return false;
 
     var rect = rectFromPoints(
-        this.mouseStart_.x, this.mouseStart_.y,
-        evt.screenX, evt.screenY);
+        this.mouseStart_.x, this.mouseStart_.y, evt.screenX, evt.screenY);
     chrome.accessibilityPrivate.setFocusRing([rect], this.color_);
     return false;
   },
@@ -197,19 +192,17 @@ SelectToSpeak.prototype = {
     // container. In the future we might include other container-like
     // roles here.
     var root = evt.target;
-    while (root.parent &&
-        root.role != RoleType.WINDOW &&
-        root.role != RoleType.ROOT_WEB_AREA &&
-        root.role != RoleType.DESKTOP &&
-        root.role != RoleType.DIALOG &&
-        root.role != RoleType.ALERT_DIALOG &&
-        root.role != RoleType.TOOLBAR) {
+    while (root.parent && root.role != RoleType.WINDOW &&
+           root.role != RoleType.ROOT_WEB_AREA &&
+           root.role != RoleType.DESKTOP && root.role != RoleType.DIALOG &&
+           root.role != RoleType.ALERT_DIALOG &&
+           root.role != RoleType.TOOLBAR) {
       root = root.parent;
     }
 
     var rect = rectFromPoints(
-        this.mouseStart_.x, this.mouseStart_.y,
-        this.mouseEnd_.x, this.mouseEnd_.y);
+        this.mouseStart_.x, this.mouseStart_.y, this.mouseEnd_.x,
+        this.mouseEnd_.y);
     var nodes = [];
     this.findAllMatching_(root, rect, nodes);
     this.startSpeechQueue_(nodes);
@@ -322,19 +315,20 @@ SelectToSpeak.prototype = {
       var options = {
         rate: this.rate_,
         'enqueue': true,
-        onEvent: (function(node, isLast, event) {
-          if (event.type == 'start') {
-            chrome.accessibilityPrivate.setFocusRing(
-                [node.location], this.color_);
-          } else if (event.type == 'interrupted' ||
-                     event.type == 'cancelled') {
-            chrome.accessibilityPrivate.setFocusRing([]);
-          } else if (event.type == 'end') {
-            if (isLast) {
-              chrome.accessibilityPrivate.setFocusRing([]);
-            }
-          }
-        }).bind(this, node, isLast)
+        onEvent:
+            (function(node, isLast, event) {
+              if (event.type == 'start') {
+                chrome.accessibilityPrivate.setFocusRing(
+                    [node.location], this.color_);
+              } else if (
+                  event.type == 'interrupted' || event.type == 'cancelled') {
+                chrome.accessibilityPrivate.setFocusRing([]);
+              } else if (event.type == 'end') {
+                if (isLast) {
+                  chrome.accessibilityPrivate.setFocusRing([]);
+                }
+              }
+            }).bind(this, node, isLast)
       };
 
       // Pick the voice name from prefs first, or the one that matches
@@ -354,7 +348,8 @@ SelectToSpeak.prototype = {
       if (this.voiceNameFromPrefs_ &&
           this.validVoiceNames_.has(this.voiceNameFromPrefs_)) {
         options['voiceName'] = this.voiceNameFromPrefs_;
-      } else if (this.voiceNameFromLocale_ &&
+      } else if (
+          this.voiceNameFromLocale_ &&
           this.validVoiceNames_.has(this.voiceNameFromLocale_)) {
         options['voiceName'] = this.voiceNameFromLocale_;
       }
@@ -370,25 +365,27 @@ SelectToSpeak.prototype = {
    */
   initPreferences_: function() {
     var updatePrefs = (function() {
-      chrome.storage.sync.get(['voice', 'rate'], (function(prefs) {
-        if (prefs['voice']) {
-          this.voiceNameFromPrefs_ = prefs['voice'];
-        }
-        if (prefs['rate']) {
-          this.rate_ = parseFloat(prefs['rate']);
-        } else {
-          chrome.storage.sync.set({'rate': this.rate_});
-        }
-      }).bind(this));
-    }).bind(this);
+                        chrome.storage.sync.get(
+                            ['voice', 'rate'],
+                            (function(prefs) {
+                              if (prefs['voice']) {
+                                this.voiceNameFromPrefs_ = prefs['voice'];
+                              }
+                              if (prefs['rate']) {
+                                this.rate_ = parseFloat(prefs['rate']);
+                              } else {
+                                chrome.storage.sync.set({'rate': this.rate_});
+                              }
+                            }).bind(this));
+                      }).bind(this);
 
     updatePrefs();
     chrome.storage.onChanged.addListener(updatePrefs);
 
     this.updateDefaultVoice_();
     window.speechSynthesis.onvoiceschanged = (function() {
-      this.updateDefaultVoice_();
-    }).bind(this);
+                                               this.updateDefaultVoice_();
+                                             }).bind(this);
   },
 
   /**
@@ -398,37 +395,40 @@ SelectToSpeak.prototype = {
     var uiLocale = chrome.i18n.getMessage('@@ui_locale');
     uiLocale = uiLocale.replace('_', '-').toLowerCase();
 
-    chrome.tts.getVoices((function(voices) {
-      console.log('updateDefaultVoice_ voices: ' + voices.length);
-      this.validVoiceNames_ = new Set();
+    chrome.tts.getVoices(
+        (function(voices) {
+          console.log('updateDefaultVoice_ voices: ' + voices.length);
+          this.validVoiceNames_ = new Set();
 
-      if (voices.length == 0)
-        return;
+          if (voices.length == 0)
+            return;
 
-      voices.forEach((function(voice) {
-        this.validVoiceNames_.add(voice.voiceName);
-      }).bind(this));
+          voices.forEach((function(voice) {
+                           this.validVoiceNames_.add(voice.voiceName);
+                         }).bind(this));
 
-      voices.sort(function(a, b) {
-        function score(voice) {
-          var lang = voice.lang.toLowerCase();
-          var s = 0;
-          if (lang == uiLocale)
-            s += 2;
-          if (lang.substr(0, 2) == uiLocale.substr(0, 2))
-            s += 1;
-          return s;
-        }
-        return score(b) - score(a);
-      });
+          voices.sort(function(a, b) {
+            function score(voice) {
+              var lang = voice.lang.toLowerCase();
+              var s = 0;
+              if (lang == uiLocale)
+                s += 2;
+              if (lang.substr(0, 2) == uiLocale.substr(0, 2))
+                s += 1;
+              return s;
+            }
+            return score(b) - score(a);
+          });
 
-      this.voiceNameFromLocale_ = voices[0].voiceName;
+          this.voiceNameFromLocale_ = voices[0].voiceName;
 
-      chrome.storage.sync.get(['voice'], (function(prefs) {
-        if (!prefs['voice']) {
-          chrome.storage.sync.set({'voice': voices[0].voiceName});
-        }
-      }).bind(this));
-    }).bind(this));
+          chrome.storage.sync.get(
+              ['voice'],
+              (function(prefs) {
+                if (!prefs['voice']) {
+                  chrome.storage.sync.set({'voice': voices[0].voiceName});
+                }
+              }).bind(this));
+        }).bind(this));
   }
 };

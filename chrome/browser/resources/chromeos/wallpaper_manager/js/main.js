@@ -4,7 +4,7 @@
 
 /**
  * Global wallpaperManager reference useful for poking at from the console.
-*/
+ */
 var wallpaperManager;
 
 function init() {

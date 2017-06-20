@@ -51,7 +51,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     isCancelDisabled_: null,
 
-    get isCancelDisabled() { return this.isCancelDisabled_; },
+    get isCancelDisabled() {
+      return this.isCancelDisabled_;
+    },
     set isCancelDisabled(disabled) {
       this.isCancelDisabled_ = disabled;
     },
@@ -99,83 +101,83 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       // Establish an initial messaging between content script and
       // host script so that content script can message back.
-      $('oauth-enroll-auth-view').addEventListener('loadstop',
-          function(e) {
-            e.target.contentWindow.postMessage(
-                'initialMessage', $('oauth-enroll-auth-view').src);
-          });
+      $('oauth-enroll-auth-view').addEventListener('loadstop', function(e) {
+        e.target.contentWindow.postMessage(
+            'initialMessage', $('oauth-enroll-auth-view').src);
+      });
 
       // When we get the advancing focus command message from injected content
       // script, we can execute it on host script context.
-      window.addEventListener('message',
-          function(e) {
-            if (e.data == 'forwardFocus')
-              keyboard.onAdvanceFocus(false);
-            else if (e.data == 'backwardFocus')
-              keyboard.onAdvanceFocus(true);
-          });
+      window.addEventListener('message', function(e) {
+        if (e.data == 'forwardFocus')
+          keyboard.onAdvanceFocus(false);
+        else if (e.data == 'backwardFocus')
+          keyboard.onAdvanceFocus(true);
+      });
 
-      this.authenticator_.addEventListener('ready',
-          (function() {
-            if (this.currentStep_ != STEP_SIGNIN)
-              return;
-            this.isCancelDisabled = false;
-            chrome.send('frameLoadingCompleted');
-          }).bind(this));
+      this.authenticator_.addEventListener(
+          'ready', (function() {
+                     if (this.currentStep_ != STEP_SIGNIN)
+                       return;
+                     this.isCancelDisabled = false;
+                     chrome.send('frameLoadingCompleted');
+                   }).bind(this));
 
-      this.authenticator_.addEventListener('authCompleted',
+      this.authenticator_.addEventListener(
+          'authCompleted',
           (function(e) {
             var detail = e.detail;
             if (!detail.email || !detail.authCode) {
               this.showError(
-                  loadTimeData.getString('fatalEnrollmentError'),
-                  false);
+                  loadTimeData.getString('fatalEnrollmentError'), false);
               return;
             }
-            chrome.send('oauthEnrollCompleteLogin', [detail.email,
-                                                     detail.authCode]);
+            chrome.send(
+                'oauthEnrollCompleteLogin', [detail.email, detail.authCode]);
           }).bind(this));
 
       this.offlineAdUi_.addEventListener('authCompleted', function(e) {
         this.offlineAdUi_.disabled = true;
         this.activeDirectoryMachine_ = e.detail.machinename;
         this.activeDirectoryUsername_ = e.detail.username;
-        chrome.send('oauthEnrollAdCompleteLogin',
+        chrome.send(
+            'oauthEnrollAdCompleteLogin',
             [e.detail.machinename, e.detail.username, e.detail.password]);
       }.bind(this));
 
-      this.authenticator_.addEventListener('authFlowChange',
-          (function(e) {
-            var isSAML = this.authenticator_.authFlow ==
-                             cr.login.Authenticator.AuthFlow.SAML;
-            if (isSAML) {
-              $('oauth-saml-notice-message').textContent =
-                  loadTimeData.getStringF('samlNotice',
-                                          this.authenticator_.authDomain);
-            }
-            this.classList.toggle('saml', isSAML);
-            if (Oobe.getInstance().currentScreen == this)
-              Oobe.getInstance().updateScreenSize(this);
-            this.lastBackMessageValue_ = false;
-            this.updateControlsState();
-          }).bind(this));
+      this.authenticator_.addEventListener(
+          'authFlowChange', (function(e) {
+                              var isSAML = this.authenticator_.authFlow ==
+                                  cr.login.Authenticator.AuthFlow.SAML;
+                              if (isSAML) {
+                                $('oauth-saml-notice-message').textContent =
+                                    loadTimeData.getStringF(
+                                        'samlNotice',
+                                        this.authenticator_.authDomain);
+                              }
+                              this.classList.toggle('saml', isSAML);
+                              if (Oobe.getInstance().currentScreen == this)
+                                Oobe.getInstance().updateScreenSize(this);
+                              this.lastBackMessageValue_ = false;
+                              this.updateControlsState();
+                            }).bind(this));
 
-      this.authenticator_.addEventListener('backButton',
-          (function(e) {
-            this.lastBackMessageValue_ = !!e.detail;
-            $('oauth-enroll-auth-view').focus();
-            this.updateControlsState();
-          }).bind(this));
+      this.authenticator_.addEventListener(
+          'backButton', (function(e) {
+                          this.lastBackMessageValue_ = !!e.detail;
+                          $('oauth-enroll-auth-view').focus();
+                          this.updateControlsState();
+                        }).bind(this));
 
-      this.authenticator_.addEventListener('dialogShown',
-        (function(e) {
-          this.navigation_.disabled = true;
-        }).bind(this));
+      this.authenticator_.addEventListener(
+          'dialogShown', (function(e) {
+                           this.navigation_.disabled = true;
+                         }).bind(this));
 
-      this.authenticator_.addEventListener('dialogHidden',
-        (function(e) {
-          this.navigation_.disabled = false;
-        }).bind(this));
+      this.authenticator_.addEventListener(
+          'dialogHidden', (function(e) {
+                            this.navigation_.disabled = false;
+                          }).bind(this));
 
       this.authenticator_.insecureContentBlockedCallback =
           (function(url) {
@@ -187,24 +189,23 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.authenticator_.missingGaiaInfoCallback =
           (function() {
             this.showError(
-                loadTimeData.getString('fatalEnrollmentError'),
-                false);
+                loadTimeData.getString('fatalEnrollmentError'), false);
           }).bind(this);
 
-      $('oauth-enroll-error-card').addEventListener('buttonclick',
-                                                    this.doRetry_.bind(this));
+      $('oauth-enroll-error-card')
+          .addEventListener('buttonclick', this.doRetry_.bind(this));
       function doneCallback() {
         chrome.send('oauthEnrollClose', ['done']);
       }
 
-      $('oauth-enroll-attribute-prompt-error-card').addEventListener(
-          'buttonclick', doneCallback);
-      $('oauth-enroll-success-card').addEventListener(
-          'buttonclick', doneCallback);
-      $('oauth-enroll-abe-success-card').addEventListener(
-          'buttonclick', doneCallback);
-      $('oauth-enroll-active-directory-join-error-card').addEventListener(
-          'buttonclick', function() {
+      $('oauth-enroll-attribute-prompt-error-card')
+          .addEventListener('buttonclick', doneCallback);
+      $('oauth-enroll-success-card')
+          .addEventListener('buttonclick', doneCallback);
+      $('oauth-enroll-abe-success-card')
+          .addEventListener('buttonclick', doneCallback);
+      $('oauth-enroll-active-directory-join-error-card')
+          .addEventListener('buttonclick', function() {
             this.showStep(STEP_AD_JOIN);
           }.bind(this));
 
@@ -217,16 +218,16 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
           $('oauth-enroll-auth-view').back();
       }.bind(this));
 
-      $('oauth-enroll-attribute-prompt-card').addEventListener('submit',
-          this.onAttributesSubmitted.bind(this));
+      $('oauth-enroll-attribute-prompt-card')
+          .addEventListener('submit', this.onAttributesSubmitted.bind(this));
 
-      $('oauth-enroll-learn-more-link').addEventListener('click',
-          function(event) {
+      $('oauth-enroll-learn-more-link')
+          .addEventListener('click', function(event) {
             chrome.send('oauthEnrollOnLearnMore');
           });
 
-      $('oauth-enroll-skip-button').addEventListener('click',
-          this.onSkipButtonClicked.bind(this));
+      $('oauth-enroll-skip-button')
+          .addEventListener('click', this.onSkipButtonClicked.bind(this));
     },
 
     /**
@@ -251,7 +252,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-auth-view').addContentScripts([{
           name: 'injectedTabHandler',
           matches: ['http://*/*', 'https://*/*'],
-          js: { code: INJECTED_WEBVIEW_SCRIPT },
+          js: {code: INJECTED_WEBVIEW_SCRIPT},
           run_at: 'document_start'
         }]);
       }
@@ -271,13 +272,13 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         gaiaParams.emailDomain = data.management_domain;
       }
       gaiaParams.flow = data.flow;
-      this.authenticator_.load(cr.login.Authenticator.AuthMode.DEFAULT,
-                               gaiaParams);
+      this.authenticator_.load(
+          cr.login.Authenticator.AuthMode.DEFAULT, gaiaParams);
 
       var modes = ['manual', 'forced', 'recovery'];
       for (var i = 0; i < modes.length; ++i) {
-        this.classList.toggle('mode-' + modes[i],
-                              data.enrollment_mode == modes[i]);
+        this.classList.toggle(
+            'mode-' + modes[i], data.enrollment_mode == modes[i]);
       }
       this.isManualEnrollment_ = data.enrollment_mode === 'manual';
       this.isCancelDisabled = true;
@@ -348,8 +349,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-active-directory-join-error-card').submitButton.focus();
       } else if (step == STEP_AD_JOIN) {
         this.offlineAdUi_.disabled = false;
-        this.offlineAdUi_.setUser(this.activeDirectoryUsername_,
-                                  this.activeDirectoryMachine_);
+        this.offlineAdUi_.setUser(
+            this.activeDirectoryUsername_, this.activeDirectoryMachine_);
         this.offlineAdUi_.setInvalid(ACTIVE_DIRECTORY_ERROR_STATE.NONE);
       }
 
@@ -416,9 +417,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * |chrome| and launches the device attribute update negotiation.
      */
     onAttributesSubmitted: function() {
-      chrome.send('oauthEnrollAttributes',
-                  [$('oauth-enroll-asset-id').value,
-                   $('oauth-enroll-location').value]);
+      chrome.send(
+          'oauthEnrollAttributes',
+          [$('oauth-enroll-asset-id').value, $('oauth-enroll-location').value]);
     },
 
     /**
@@ -435,10 +436,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Updates visibility of navigation buttons.
      */
     updateControlsState: function() {
-      this.navigation_.backVisible = this.currentStep_ == STEP_SIGNIN &&
-                                     this.lastBackMessageValue_;
-      this.navigation_.refreshVisible = this.isAtTheBeginning() &&
-                                        !this.isManualEnrollment_;
+      this.navigation_.backVisible =
+          this.currentStep_ == STEP_SIGNIN && this.lastBackMessageValue_;
+      this.navigation_.refreshVisible =
+          this.isAtTheBeginning() && !this.isManualEnrollment_;
       this.navigation_.closeVisible =
           (this.currentStep_ == STEP_SIGNIN ||
            this.currentStep_ == STEP_ERROR ||

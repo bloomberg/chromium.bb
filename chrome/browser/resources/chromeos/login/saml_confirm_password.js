@@ -8,17 +8,10 @@ Polymer({
   properties: {
     email: String,
 
-    disabled: {
-      type: Boolean,
-      value: false,
-      observer: 'disabledChanged_'
-    },
+    disabled: {type: Boolean, value: false, observer: 'disabledChanged_'},
 
-    manualInput: {
-      type: Boolean,
-      value: false,
-      observer: 'manualInputChanged_'
-    }
+    manualInput:
+        {type: Boolean, value: false, observer: 'manualInputChanged_'}
   },
 
   ready: function() {
@@ -29,8 +22,11 @@ Polymer({
      */
     var pages = this.$.animatedPages;
     delete pages._squelchNextFinishEvent;
-    Object.defineProperty(pages, '_squelchNextFinishEvent',
-        { get: function() { return false; } });
+    Object.defineProperty(pages, '_squelchNextFinishEvent', {
+      get: function() {
+        return false;
+      }
+    });
   },
 
   reset: function() {
@@ -102,11 +98,12 @@ Polymer({
 
   manualInputChanged_: function() {
     var titleId =
-      this.manualInput ? 'manualPasswordTitle' : 'confirmPasswordTitle';
+        this.manualInput ? 'manualPasswordTitle' : 'confirmPasswordTitle';
     var passwordInputLabelId =
-      this.manualInput ? 'manualPasswordInputLabel' : 'confirmPasswordLabel';
+        this.manualInput ? 'manualPasswordInputLabel' : 'confirmPasswordLabel';
     var passwordInputErrorId = this.manualInput ?
-        'manualPasswordMismatch' : 'confirmPasswordIncorrectPassword';
+        'manualPasswordMismatch' :
+        'confirmPasswordIncorrectPassword';
 
     this.$.title.textContent = loadTimeData.getString(titleId);
     this.$.passwordInput.label = loadTimeData.getString(passwordInputLabelId);

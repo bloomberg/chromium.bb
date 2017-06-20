@@ -26,10 +26,8 @@ cr.define('wallpapers', function() {
    * @constructor
    * @extends {cr.ui.GridItem}
    */
-  function WallpaperThumbnailsGridItem(wallpaperInfo,
-                                       dataModelId,
-                                       thumbnail,
-                                       callback) {
+  function WallpaperThumbnailsGridItem(
+      wallpaperInfo, dataModelId, thumbnail, callback) {
     var el = new GridItem(wallpaperInfo);
     el.__proto__ = WallpaperThumbnailsGridItem.prototype;
     el.dataModelId_ = dataModelId;
@@ -100,68 +98,68 @@ cr.define('wallpapers', function() {
           var getThumbnail = function(fileName) {
             var setURL = function(fileEntry) {
               imageEl.src = fileEntry.toURL();
-              self.callback_(self.dataModelId_,
-                             self.dataItem.wallpaperId,
-                             imageEl);
+              self.callback_(
+                  self.dataModelId_, self.dataItem.wallpaperId, imageEl);
             };
             var fallback = function() {
               wallpaperDirectories.getDirectory(
                   Constants.WallpaperDirNameEnum.ORIGINAL, function(dirEntry) {
-                dirEntry.getFile(fileName, {create: false}, setURL,
-                                 errorHandler);
-              }, errorHandler);
+                    dirEntry.getFile(
+                        fileName, {create: false}, setURL, errorHandler);
+                  }, errorHandler);
             };
             var success = function(dirEntry) {
               dirEntry.getFile(fileName, {create: false}, setURL, fallback);
             };
             wallpaperDirectories.getDirectory(
-               Constants.WallpaperDirNameEnum.THUMBNAIL, success, errorHandler);
+                Constants.WallpaperDirNameEnum.THUMBNAIL, success,
+                errorHandler);
           };
           getThumbnail(self.dataItem.baseURL);
           break;
         case Constants.WallpaperSourceEnum.OEM:
         case Constants.WallpaperSourceEnum.Online:
-          chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL,
-                                               this.dataItem.source,
-                                               function(data) {
-            if (data) {
-              var blob = new Blob([new Int8Array(data)],
-                                  {'type': 'image\/png'});
-              imageEl.src = window.URL.createObjectURL(blob);
-              imageEl.addEventListener('load', function(e) {
-                self.callback_(self.dataModelId_,
-                               self.dataItem.wallpaperId,
-                               imageEl);
-                window.URL.revokeObjectURL(this.src);
-              });
-            } else if (self.dataItem.source ==
-                       Constants.WallpaperSourceEnum.Online) {
-              var xhr = new XMLHttpRequest();
-              xhr.open('GET', self.dataItem.baseURL + ThumbnailSuffix, true);
-              xhr.responseType = 'arraybuffer';
-              xhr.send(null);
-              xhr.addEventListener('load', function(e) {
-                if (xhr.status === 200) {
-                  chrome.wallpaperPrivate.saveThumbnail(self.dataItem.baseURL,
-                                                        xhr.response);
-                  var blob = new Blob([new Int8Array(xhr.response)],
-                                      {'type' : 'image\/png'});
+          chrome.wallpaperPrivate.getThumbnail(
+              this.dataItem.baseURL, this.dataItem.source, function(data) {
+                if (data) {
+                  var blob =
+                      new Blob([new Int8Array(data)], {'type': 'image\/png'});
                   imageEl.src = window.URL.createObjectURL(blob);
-                  // TODO(bshe): We currently use empty div to reserve space for
-                  // thumbnail. Use a placeholder like "loading" image may
-                  // better.
                   imageEl.addEventListener('load', function(e) {
-                    self.callback_(self.dataModelId_,
-                                   self.dataItem.wallpaperId,
-                                   this);
+                    self.callback_(
+                        self.dataModelId_, self.dataItem.wallpaperId, imageEl);
                     window.URL.revokeObjectURL(this.src);
                   });
-                } else {
-                  self.callback_(self.dataModelId_);
+                } else if (
+                    self.dataItem.source ==
+                    Constants.WallpaperSourceEnum.Online) {
+                  var xhr = new XMLHttpRequest();
+                  xhr.open(
+                      'GET', self.dataItem.baseURL + ThumbnailSuffix, true);
+                  xhr.responseType = 'arraybuffer';
+                  xhr.send(null);
+                  xhr.addEventListener('load', function(e) {
+                    if (xhr.status === 200) {
+                      chrome.wallpaperPrivate.saveThumbnail(
+                          self.dataItem.baseURL, xhr.response);
+                      var blob = new Blob(
+                          [new Int8Array(xhr.response)],
+                          {'type': 'image\/png'});
+                      imageEl.src = window.URL.createObjectURL(blob);
+                      // TODO(bshe): We currently use empty div to reserve space
+                      // for thumbnail. Use a placeholder like "loading" image
+                      // may better.
+                      imageEl.addEventListener('load', function(e) {
+                        self.callback_(
+                            self.dataModelId_, self.dataItem.wallpaperId, this);
+                        window.URL.revokeObjectURL(this.src);
+                      });
+                    } else {
+                      self.callback_(self.dataModelId_);
+                    }
+                  });
                 }
               });
-            }
-          });
           break;
         case Constants.WallpaperSourceEnum.Daily:
         case Constants.WallpaperSourceEnum.ThirdParty:
@@ -322,9 +320,7 @@ cr.define('wallpapers', function() {
      * @param {object} opt_thumbnail The thumbnail image that associated with
      *     the opt_wallpaperId.
      */
-    pendingItemComplete: function(dataModelId,
-                                  opt_wallpaperId,
-                                  opt_thumbnail) {
+    pendingItemComplete: function(dataModelId, opt_wallpaperId, opt_thumbnail) {
       if (dataModelId != this.dataModelId_)
         return;
       this.pendingItems_--;
@@ -352,9 +348,11 @@ cr.define('wallpapers', function() {
       this.itemConstructor = function(value) {
         var dataModelId = self.dataModelId_;
         self.pendingItems_++;
-        return WallpaperThumbnailsGridItem(value, dataModelId,
+        return WallpaperThumbnailsGridItem(
+            value, dataModelId,
             (value.wallpaperId == null) ?
-                null : self.thumbnailList_[value.wallpaperId],
+                null :
+                self.thumbnailList_[value.wallpaperId],
             self.pendingItemComplete.bind(self));
       };
       this.selectionModel = new ListSingleSelectionModel();
@@ -439,7 +437,5 @@ cr.define('wallpapers', function() {
     }
   };
 
-  return {
-    WallpaperThumbnailsGrid: WallpaperThumbnailsGrid
-  };
+  return {WallpaperThumbnailsGrid: WallpaperThumbnailsGrid};
 });

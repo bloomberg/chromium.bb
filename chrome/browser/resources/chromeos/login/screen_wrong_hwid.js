@@ -18,7 +18,7 @@ login.createScreen('WrongHWIDScreen', 'wrong-hwid', function() {
 
     /**
      * Updates state of login header so that necessary buttons are displayed.
-     **/
+     */
     onBeforeShow: function(data) {
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.WRONG_HWID_WARNING;
     },
@@ -27,14 +27,11 @@ login.createScreen('WrongHWIDScreen', 'wrong-hwid', function() {
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
-      $('wrong-hwid-message-content').innerHTML =
-          '<p>' +
-          loadTimeData.getStringF('wrongHWIDMessageFirstPart',
-              '<strong>', '</strong>') +
-          '</p><p>' +
-          loadTimeData.getString('wrongHWIDMessageSecondPart') +
+      $('wrong-hwid-message-content').innerHTML = '<p>' +
+          loadTimeData.getStringF(
+              'wrongHWIDMessageFirstPart', '<strong>', '</strong>') +
+          '</p><p>' + loadTimeData.getString('wrongHWIDMessageSecondPart') +
           '</p>';
     }
   };
 });
-

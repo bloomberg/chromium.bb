@@ -6,20 +6,11 @@ Polymer({
   is: 'notification-card',
 
   properties: {
-    buttonLabel: {
-      type: String,
-      value: ''
-    },
+    buttonLabel: {type: String, value: ''},
 
-    linkLabel: {
-      type: String,
-      value: ''
-    },
+    linkLabel: {type: String, value: ''},
 
-    type: {
-      type: String,
-      value: ''
-    }
+    type: {type: String, value: ''}
   },
 
   iconNameByType_: function(type) {

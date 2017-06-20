@@ -30,7 +30,8 @@ function changeVisibility(
     return;
   }
   var transitionDuration = (opt_transitionDuration === undefined) ?
-    cr.FirstRun.getDefaultTransitionDuration() : opt_transitionDuration;
+      cr.FirstRun.getDefaultTransitionDuration() :
+      opt_transitionDuration;
   var style = element.style;
   var oldDurationValue = style.getPropertyValue('transition-duration');
   style.setProperty('transition-duration', transitionDuration + 'ms');
@@ -170,8 +171,8 @@ cr.define('cr.FirstRun', function() {
      */
     removeHoles: function(opt_onHolesRemoved) {
       var mask = this.mask_;
-      var holes = Array.prototype.slice.call(
-          mask.getElementsByClassName('hole'));
+      var holes =
+          Array.prototype.slice.call(mask.getElementsByClassName('hole'));
       var holesLeft = holes.length;
       if (!holesLeft) {
         if (opt_onHolesRemoved)
@@ -179,8 +180,8 @@ cr.define('cr.FirstRun', function() {
         return;
       }
       holes.forEach(function(hole) {
-        changeVisibility(hole, false, this.getDefaultTransitionDuration(),
-            function() {
+        changeVisibility(
+            hole, false, this.getDefaultTransitionDuration(), function() {
               mask.removeChild(hole);
               --holesLeft;
               if (!holesLeft && opt_onHolesRemoved)
@@ -251,7 +252,8 @@ cr.define('cr.FirstRun', function() {
      *     changed.
      */
     setBackgroundVisible: function(visible, opt_onCompletion) {
-      changeVisibility(this.backgroundContainer_, visible,
+      changeVisibility(
+          this.backgroundContainer_, visible,
           this.getBackgroundTransitionDuration(), opt_onCompletion);
     },
 

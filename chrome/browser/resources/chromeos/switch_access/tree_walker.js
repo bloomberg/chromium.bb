@@ -145,7 +145,7 @@ AutomationTreeWalker.prototype = {
       return this.getYoungestDescendant_(sibling) || sibling;
 
     // No left-sibling. Return parent if it exists; otherwise return undefined.
-    //return node.parent;
+    // return node.parent;
     let parent = node.parent;
     if (parent)
       return parent;

@@ -49,32 +49,28 @@ cr.define('login', function() {
     /** @override */
     decorate: function() {
       document.addEventListener('click', this.handleClick_.bind(this));
-      $('shutdown-header-bar-item').addEventListener('click',
-          this.handleShutdownClick_);
-      $('shutdown-button').addEventListener('click',
-          this.handleShutdownClick_);
-      $('restart-header-bar-item').addEventListener('click',
-          this.handleShutdownClick_);
-      $('restart-button').addEventListener('click',
-          this.handleShutdownClick_);
-      $('add-user-button').addEventListener('click',
-          this.handleAddUserClick_);
-      $('more-settings-button').addEventListener('click',
-          this.handleMoreSettingsClick_.bind(this));
-      $('guest-user-header-bar-item').addEventListener('click',
-          this.handleGuestClick_);
-      $('guest-user-button').addEventListener('click',
-          this.handleGuestClick_);
-      $('sign-out-user-button').addEventListener('click',
-          this.handleSignoutClick_);
-      $('cancel-multiple-sign-in-button').addEventListener('click',
-          this.handleCancelMultipleSignInClick_);
-      $('unlock-user-button').addEventListener('click',
-          this.handleUnlockUserClick_);
-      this.addSupervisedUserMenu.addEventListener('click',
-          this.handleAddSupervisedUserClick_.bind(this));
-      this.addSupervisedUserMenu.addEventListener('keydown',
-          this.handleAddSupervisedUserKeyDown_.bind(this));
+      $('shutdown-header-bar-item')
+          .addEventListener('click', this.handleShutdownClick_);
+      $('shutdown-button').addEventListener('click', this.handleShutdownClick_);
+      $('restart-header-bar-item')
+          .addEventListener('click', this.handleShutdownClick_);
+      $('restart-button').addEventListener('click', this.handleShutdownClick_);
+      $('add-user-button').addEventListener('click', this.handleAddUserClick_);
+      $('more-settings-button')
+          .addEventListener('click', this.handleMoreSettingsClick_.bind(this));
+      $('guest-user-header-bar-item')
+          .addEventListener('click', this.handleGuestClick_);
+      $('guest-user-button').addEventListener('click', this.handleGuestClick_);
+      $('sign-out-user-button')
+          .addEventListener('click', this.handleSignoutClick_);
+      $('cancel-multiple-sign-in-button')
+          .addEventListener('click', this.handleCancelMultipleSignInClick_);
+      $('unlock-user-button')
+          .addEventListener('click', this.handleUnlockUserClick_);
+      this.addSupervisedUserMenu.addEventListener(
+          'click', this.handleAddSupervisedUserClick_.bind(this));
+      this.addSupervisedUserMenu.addEventListener(
+          'keydown', this.handleAddSupervisedUserKeyDown_.bind(this));
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
           Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
         if (Oobe.getInstance().newKioskUI)
@@ -241,8 +237,8 @@ cr.define('login', function() {
      * @private
      */
     handleUnlockUserClick_: function(e) {
-      chrome.send('setLockScreenAppsState',
-                  [LOCK_SCREEN_APPS_STATE.BACKGROUND]);
+      chrome.send(
+          'setLockScreenAppsState', [LOCK_SCREEN_APPS_STATE.BACKGROUND]);
       e.preventDefault();
     },
 
@@ -328,7 +324,7 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
       var supervisedUserCreationDialogIsActive =
           (this.signinUIState_ ==
-               SIGNIN_UI_STATE.SUPERVISED_USER_CREATION_FLOW);
+           SIGNIN_UI_STATE.SUPERVISED_USER_CREATION_FLOW);
       var wrongHWIDWarningIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
       var isSamlPasswordConfirm =
@@ -337,48 +333,32 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.PASSWORD_CHANGED);
       var isMultiProfilesUI =
           (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
-      var isLockScreen =
-          (Oobe.getInstance().displayType == DISPLAY_TYPE.LOCK);
-      var errorScreenIsActive =
-          (this.signinUIState_ == SIGNIN_UI_STATE.ERROR);
+      var isLockScreen = (Oobe.getInstance().displayType == DISPLAY_TYPE.LOCK);
+      var errorScreenIsActive = (this.signinUIState_ == SIGNIN_UI_STATE.ERROR);
 
-      $('add-user-button').hidden =
-          !accountPickerIsActive ||
-          isMultiProfilesUI ||
-          isLockScreen ||
-          errorScreenIsActive;
-      $('more-settings-header-bar-item').hidden =
-          !this.showCreateSupervised_ ||
-          gaiaIsActive ||
-          isLockScreen ||
-          errorScreenIsActive ||
+      $('add-user-button').hidden = !accountPickerIsActive ||
+          isMultiProfilesUI || isLockScreen || errorScreenIsActive;
+      $('more-settings-header-bar-item').hidden = !this.showCreateSupervised_ ||
+          gaiaIsActive || isLockScreen || errorScreenIsActive ||
           supervisedUserCreationDialogIsActive;
-      $('guest-user-header-bar-item').hidden =
-          !this.showGuest_ ||
-          isLockScreen ||
-          supervisedUserCreationDialogIsActive ||
-          wrongHWIDWarningIsActive ||
-          isSamlPasswordConfirm ||
-          isMultiProfilesUI ||
-          (gaiaIsActive && $('gaia-signin').closable) ||
+      $('guest-user-header-bar-item').hidden = !this.showGuest_ ||
+          isLockScreen || supervisedUserCreationDialogIsActive ||
+          wrongHWIDWarningIsActive || isSamlPasswordConfirm ||
+          isMultiProfilesUI || (gaiaIsActive && $('gaia-signin').closable) ||
           (enrollmentIsActive && !$('oauth-enrollment').isAtTheBeginning()) ||
           (gaiaIsActive && !$('gaia-signin').isAtTheBeginning());
-      $('restart-header-bar-item').hidden =
-          !this.showReboot_ ||
+      $('restart-header-bar-item').hidden = !this.showReboot_ ||
           this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
-      $('shutdown-header-bar-item').hidden =
-          !this.showShutdown_ ||
+      $('shutdown-header-bar-item').hidden = !this.showShutdown_ ||
           this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
-      $('sign-out-user-item').hidden =
-          !isLockScreen ||
+      $('sign-out-user-item').hidden = !isLockScreen ||
           this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
-      $('unlock-user-header-bar-item').hidden =
-          !isLockScreen ||
+      $('unlock-user-header-bar-item').hidden = !isLockScreen ||
           this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.FOREGROUND;
 
       $('add-user-header-bar-item').hidden = $('add-user-button').hidden;
-      $('apps-header-bar-item').hidden = !this.hasApps_ ||
-          (!gaiaIsActive && !accountPickerIsActive);
+      $('apps-header-bar-item').hidden =
+          !this.hasApps_ || (!gaiaIsActive && !accountPickerIsActive);
       $('cancel-multiple-sign-in-item').hidden = !isMultiProfilesUI;
 
       if (!Oobe.getInstance().newKioskUI) {
@@ -401,11 +381,10 @@ cr.define('login', function() {
      */
     animateOut: function(callback) {
       var launcher = this;
-      launcher.addEventListener(
-          'transitionend', function f(e) {
-            launcher.removeEventListener('transitionend', f);
-            callback();
-          });
+      launcher.addEventListener('transitionend', function f(e) {
+        launcher.removeEventListener('transitionend', f);
+        callback();
+      });
       // Guard timer for 2 seconds + 200 ms + epsilon.
       ensureTransitionEndEvent(launcher, 2250);
 
@@ -424,11 +403,10 @@ cr.define('login', function() {
     animateIn: function(fast, callback) {
       if (callback) {
         var launcher = this;
-        launcher.addEventListener(
-            'transitionend', function f(e) {
-              launcher.removeEventListener('transitionend', f);
-              callback();
-            });
+        launcher.addEventListener('transitionend', function f(e) {
+          launcher.removeEventListener('transitionend', f);
+          callback();
+        });
         // Guard timer for 2 seconds + 200 ms + epsilon.
         ensureTransitionEndEvent(launcher, 2250);
       }
@@ -459,7 +437,5 @@ cr.define('login', function() {
     $('login-header-bar').animateIn(fast, callback);
   };
 
-  return {
-    HeaderBar: HeaderBar
-  };
+  return {HeaderBar: HeaderBar};
 });

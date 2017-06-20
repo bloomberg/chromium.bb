@@ -12,8 +12,9 @@ function ToMegaByteString(bytes) {
   var mb = Math.floor(bytes / (1 << 20));
   return mb.toString().replace(
       /\d+?(?=(\d{3})+$)/g,  // Digit sequence (\d+) followed (?=) by 3n digits.
-      function(three_digit_block) { return three_digit_block + ','; }
-  );
+      function(three_digit_block) {
+        return three_digit_block + ',';
+      });
 }
 
 /**
@@ -191,8 +192,7 @@ function updateAppList(appList) {
 function updateLocalMetadata(localMetadata) {
   var changestamp = localMetadata['account-largest-changestamp-local'];
 
-  $('account-largest-changestamp-local').textContent =
-      changestamp.toString() +
+  $('account-largest-changestamp-local').textContent = changestamp.toString() +
       (changestamp > 0 ? ' (loaded)' : ' (not loaded)') +
       (localMetadata['account-metadata-refreshing'] ? ' (refreshing)' : '');
 }
@@ -203,11 +203,11 @@ function updateLocalMetadata(localMetadata) {
  */
 function updateDeltaUpdateStatus(deltaUpdateStatus) {
   $('push-notification-enabled').textContent =
-        deltaUpdateStatus['push-notification-enabled'];
+      deltaUpdateStatus['push-notification-enabled'];
   $('last-update-check-time').textContent =
-        deltaUpdateStatus['last-update-check-time'];
+      deltaUpdateStatus['last-update-check-time'];
   $('last-update-check-error').textContent =
-        deltaUpdateStatus['last-update-check-error'];
+      deltaUpdateStatus['last-update-check-error'];
 }
 
 /**

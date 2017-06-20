@@ -12,17 +12,9 @@ cr.define('mobile', function() {
   var INVALID_DEVICE_INFO_PAGE_URL =
       EXTENSION_BASE_URL + 'invalid_device_info.html';
 
-  var NetworkState = {
-    UNKNOWN: 0,
-    PORTAL_REACHABLE: 1,
-    PORTAL_UNREACHABLE: 2
-  };
+  var NetworkState = {UNKNOWN: 0, PORTAL_REACHABLE: 1, PORTAL_UNREACHABLE: 2};
 
-  var CarrierPageType = {
-    NOT_SET: 0,
-    PORTAL_OFFLINE: 1,
-    INVALID_DEVICE_INFO: 2
-  };
+  var CarrierPageType = {NOT_SET: 0, PORTAL_OFFLINE: 1, INVALID_DEVICE_INFO: 2};
 
   function PortalImpl() {
     // Mobile device information.
@@ -76,7 +68,7 @@ cr.define('mobile', function() {
         this.setCarrierPage_(CarrierPageType.PORTAL_OFFLINE);
         $('portalFrame').hidden = true;
         $('systemStatus').hidden = false;
-     } else {
+      } else {
         // If the portal is reachable and device info is valid, set and show
         // portalFrame; and hide system status displaying 'offline portal' page.
         this.setPortalFrameIfNeeded_(this.deviceInfo_);
@@ -158,34 +150,39 @@ cr.define('mobile', function() {
       var ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      var segmentCount = Math.min(12, canvas.width / 1.6); // Number of segments
-      var rotation = 0.75; // Counterclockwise rotation
+      var segmentCount =
+          Math.min(12, canvas.width / 1.6);  // Number of segments
+      var rotation = 0.75;                   // Counterclockwise rotation
 
       // Rotate canvas over time
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.rotate(Math.PI * 2 / (segmentCount + rotation));
       ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
-      var gap = canvas.width / 24; // Gap between segments
-      var oRadius = canvas.width / 2; // Outer radius
-      var iRadius = oRadius * 0.618; // Inner radius
-      var oCircumference = Math.PI * 2 * oRadius; // Outer circumference
-      var iCircumference = Math.PI * 2 * iRadius; // Inner circumference
-      var oGap = gap / oCircumference; // Gap size as fraction of  outer ring
-      var iGap = gap / iCircumference; // Gap size as fraction of  inner ring
-      var oArc = Math.PI * 2 * (1 / segmentCount - oGap); // Angle of outer arcs
-      var iArc = Math.PI * 2 * (1 / segmentCount - iGap); // Angle of inner arcs
+      var gap = canvas.width / 24;                 // Gap between segments
+      var oRadius = canvas.width / 2;              // Outer radius
+      var iRadius = oRadius * 0.618;               // Inner radius
+      var oCircumference = Math.PI * 2 * oRadius;  // Outer circumference
+      var iCircumference = Math.PI * 2 * iRadius;  // Inner circumference
+      var oGap = gap / oCircumference;  // Gap size as fraction of  outer ring
+      var iGap = gap / iCircumference;  // Gap size as fraction of  inner ring
+      var oArc =
+          Math.PI * 2 * (1 / segmentCount - oGap);  // Angle of outer arcs
+      var iArc =
+          Math.PI * 2 * (1 / segmentCount - iGap);  // Angle of inner arcs
 
-      for (i = 0; i < segmentCount; i++) { // Draw each segment
+      for (i = 0; i < segmentCount; i++) {  // Draw each segment
         var opacity = Math.pow(1.0 - i / segmentCount, 3.0);
-        opacity = (0.15 + opacity * 0.8); // Vary from 0.15 to 0.95
-        var angle = - Math.PI * 2 * i / segmentCount;
+        opacity = (0.15 + opacity * 0.8);  // Vary from 0.15 to 0.95
+        var angle = -Math.PI * 2 * i / segmentCount;
 
         ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, oRadius,
-            angle - oArc / 2, angle + oArc / 2, false);
-        ctx.arc(canvas.width / 2, canvas.height / 2, iRadius,
-            angle + iArc / 2, angle - iArc / 2, true);
+        ctx.arc(
+            canvas.width / 2, canvas.height / 2, oRadius, angle - oArc / 2,
+            angle + oArc / 2, false);
+        ctx.arc(
+            canvas.width / 2, canvas.height / 2, iRadius, angle + iArc / 2,
+            angle - iArc / 2, true);
         ctx.closePath();
         ctx.fillStyle = 'rgba(240, 30, 29, ' + opacity + ')';
         ctx.fill();
@@ -210,10 +207,8 @@ cr.define('mobile', function() {
   };
 
   // Export
-  return {
-    MobileSetupPortal: MobileSetupPortal
-  };
+  return {MobileSetupPortal: MobileSetupPortal};
 });
 
-document.addEventListener('DOMContentLoaded',
-                          mobile.MobileSetupPortal.loadPage);
+document.addEventListener(
+    'DOMContentLoaded', mobile.MobileSetupPortal.loadPage);

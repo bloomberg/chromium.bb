@@ -17,14 +17,14 @@ login.createScreen('EulaScreen', 'eula', function() {
       $('stats-help-link').addEventListener('click', function(event) {
         chrome.send('eulaOnLearnMore');
       });
-      $('installation-settings-link').addEventListener(
-          'click', function(event) {
+      $('installation-settings-link')
+          .addEventListener('click', function(event) {
             chrome.send('eulaOnInstallationSettingsPopupOpened');
             $('popup-overlay').hidden = false;
             $('installation-settings-ok-button').focus();
           });
-      $('installation-settings-ok-button').addEventListener(
-          'click', function(event) {
+      $('installation-settings-ok-button')
+          .addEventListener('click', function(event) {
             $('popup-overlay').hidden = true;
           });
 
@@ -118,12 +118,11 @@ login.createScreen('EulaScreen', 'eula', function() {
     enableKeyboardFlow: function() {
       $('eula-chrome-credits-link').hidden = false;
       $('eula-chromeos-credits-link').hidden = false;
-      $('eula-chrome-credits-link').addEventListener('click',
-          function(event) {
-            chrome.send('eulaOnChromeCredits');
-          });
-      $('eula-chromeos-credits-link').addEventListener('click',
-          function(event) {
+      $('eula-chrome-credits-link').addEventListener('click', function(event) {
+        chrome.send('eulaOnChromeCredits');
+      });
+      $('eula-chromeos-credits-link')
+          .addEventListener('click', function(event) {
             chrome.send('eulaOnChromeOSCredits');
           });
     },
@@ -157,4 +156,3 @@ login.createScreen('EulaScreen', 'eula', function() {
     },
   };
 });
-

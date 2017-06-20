@@ -14,33 +14,33 @@ var WallpaperUtil = {
  */
 WallpaperUtil.deleteWallpaperFromLocalFS = function(wallpaperFilename) {
   WallpaperUtil.requestLocalFS(function(fs) {
-    var originalPath = Constants.WallpaperDirNameEnum.ORIGINAL + '/' +
-                       wallpaperFilename;
-    var thumbnailPath = Constants.WallpaperDirNameEnum.THUMBNAIL + '/' +
-                        wallpaperFilename;
-    fs.root.getFile(originalPath,
-                    {create: false},
-                    function(fe) {
-                      fe.remove(function() {}, null);
-                    },
-                    // NotFoundError is expected. After we receive a delete
-                    // event from either original wallpaper or wallpaper
-                    // thumbnail, we delete both of them in local FS to achieve
-                    // a faster synchronization. So each file is expected to be
-                    // deleted twice and the second attempt is a noop.
-                    function(e) {
-                      if (e.name != 'NotFoundError')
-                        WallpaperUtil.onFileSystemError(e);
-                    });
-    fs.root.getFile(thumbnailPath,
-                    {create: false},
-                    function(fe) {
-                      fe.remove(function() {}, null);
-                    },
-                    function(e) {
-                      if (e.name != 'NotFoundError')
-                        WallpaperUtil.onFileSystemError(e);
-                    });
+    var originalPath =
+        Constants.WallpaperDirNameEnum.ORIGINAL + '/' + wallpaperFilename;
+    var thumbnailPath =
+        Constants.WallpaperDirNameEnum.THUMBNAIL + '/' + wallpaperFilename;
+    fs.root.getFile(
+        originalPath, {create: false},
+        function(fe) {
+          fe.remove(function() {}, null);
+        },
+        // NotFoundError is expected. After we receive a delete
+        // event from either original wallpaper or wallpaper
+        // thumbnail, we delete both of them in local FS to achieve
+        // a faster synchronization. So each file is expected to be
+        // deleted twice and the second attempt is a noop.
+        function(e) {
+          if (e.name != 'NotFoundError')
+            WallpaperUtil.onFileSystemError(e);
+        });
+    fs.root.getFile(
+        thumbnailPath, {create: false},
+        function(fe) {
+          fe.remove(function() {}, null);
+        },
+        function(e) {
+          if (e.name != 'NotFoundError')
+            WallpaperUtil.onFileSystemError(e);
+        });
   });
 };
 
@@ -69,36 +69,36 @@ WallpaperUtil.storeWallpaperFromSyncFSToLocalFS = function(wallpaperFileEntry) {
  * @param {string} wallpaperFilename Name of the file that will be deleted.
  */
 WallpaperUtil.deleteWallpaperFromSyncFS = function(wallpaperFilename) {
-  var thumbnailFilename = wallpaperFilename +
-                          Constants.CustomWallpaperThumbnailSuffix;
+  var thumbnailFilename =
+      wallpaperFilename + Constants.CustomWallpaperThumbnailSuffix;
   var success = function(fs) {
-    fs.root.getFile(wallpaperFilename,
-                    {create: false},
-                    function(fe) {
-                      fe.remove(function() {}, null);
-                    },
-                    function(e) {
-                      // NotFoundError is expected under the following scenario:
-                      // The user uses a same account on device A and device B.
-                      // The current wallpaper is a third party wallpaper. Then
-                      // the user changes it to a ONLINE wallpaper on device A.
-                      // Sync file system change and local file system change
-                      // will then both be fired on device B, which makes the
-                      // third party wallpaper be deleted twice from the sync
-                      // file system. We should ignore this error.
-                      if (e.name != 'NotFoundError')
-                        WallpaperUtil.onFileSystemError(e);
-                    });
-    fs.root.getFile(thumbnailFilename,
-                    {create: false},
-                    function(fe) {
-                      fe.remove(function() {}, null);
-                    },
-                    function(e) {
-                      // Same as above.
-                      if (e.name != 'NotFoundError')
-                        WallpaperUtil.onFileSystemError(e);
-                    });
+    fs.root.getFile(
+        wallpaperFilename, {create: false},
+        function(fe) {
+          fe.remove(function() {}, null);
+        },
+        function(e) {
+          // NotFoundError is expected under the following scenario:
+          // The user uses a same account on device A and device B.
+          // The current wallpaper is a third party wallpaper. Then
+          // the user changes it to a ONLINE wallpaper on device A.
+          // Sync file system change and local file system change
+          // will then both be fired on device B, which makes the
+          // third party wallpaper be deleted twice from the sync
+          // file system. We should ignore this error.
+          if (e.name != 'NotFoundError')
+            WallpaperUtil.onFileSystemError(e);
+        });
+    fs.root.getFile(
+        thumbnailFilename, {create: false},
+        function(fe) {
+          fe.remove(function() {}, null);
+        },
+        function(e) {
+          // Same as above.
+          if (e.name != 'NotFoundError')
+            WallpaperUtil.onFileSystemError(e);
+        });
   };
   WallpaperUtil.requestSyncFS(success);
 };
@@ -142,11 +142,11 @@ WallpaperUtil.requestLocalFS = function(callback) {
   if (WallpaperUtil.webkitFs) {
     callback(WallpaperUtil.webkitFs);
   } else {
-    window.webkitRequestFileSystem(window.PERSISTENT, 1024 * 1024 * 100,
-                                   function(fs) {
-                                     WallpaperUtil.webkitFs = fs;
-                                     callback(fs);
-                                   });
+    window.webkitRequestFileSystem(
+        window.PERSISTENT, 1024 * 1024 * 100, function(fs) {
+          WallpaperUtil.webkitFs = fs;
+          callback(fs);
+        });
   }
 };
 
@@ -180,20 +180,16 @@ WallpaperUtil.writeFile = function(fileEntry, wallpaperData, writeCallback) {
  * @param {string} wallpaperFilename The filename that going to be writen.
  * @param {ArrayBuffer} wallpaperData Data for image file.
  */
-WallpaperUtil.storeWallpaperToSyncFS = function(wallpaperFilename,
-                                                wallpaperData) {
+WallpaperUtil.storeWallpaperToSyncFS = function(
+    wallpaperFilename, wallpaperData) {
   var callback = function(fs) {
-    fs.root.getFile(wallpaperFilename,
-                    {create: false},
-                    function() {},  // already exists
-                    function(e) {  // not exists, create
-                      fs.root.getFile(wallpaperFilename, {create: true},
-                                      function(fe) {
-                                        WallpaperUtil.writeFile(
-                                            fe, wallpaperData);
-                                      },
-                                      WallpaperUtil.onFileSystemError);
-                    });
+    fs.root.getFile(
+        wallpaperFilename, {create: false}, function() {},  // already exists
+        function(e) {  // not exists, create
+          fs.root.getFile(wallpaperFilename, {create: true}, function(fe) {
+            WallpaperUtil.writeFile(fe, wallpaperData);
+          }, WallpaperUtil.onFileSystemError);
+        });
   };
   WallpaperUtil.requestSyncFS(callback);
 };
@@ -204,28 +200,25 @@ WallpaperUtil.storeWallpaperToSyncFS = function(wallpaperFilename,
  * @param {ArrayBuffer} wallpaperData The wallpaper data.
  * @param {string} saveDir The path to store wallpaper in local file system.
  */
-WallpaperUtil.storeWallpaperToLocalFS = function(wallpaperFilename,
-    wallpaperData, saveDir) {
+WallpaperUtil.storeWallpaperToLocalFS = function(
+    wallpaperFilename, wallpaperData, saveDir) {
   if (!wallpaperData) {
     console.error('wallpaperData is null');
     return;
   }
   var getDirSuccess = function(dirEntry) {
-    dirEntry.getFile(wallpaperFilename,
-                    {create: false},
-                    function() {},  // already exists
-                    function(e) {   // not exists, create
-                    dirEntry.getFile(wallpaperFilename, {create: true},
-                                     function(fe) {
-                                       WallpaperUtil.writeFile(fe,
-                                                               wallpaperData);
-                                     },
-                                     WallpaperUtil.onFileSystemError);
-                    });
+    dirEntry.getFile(
+        wallpaperFilename, {create: false}, function() {},  // already exists
+        function(e) {  // not exists, create
+          dirEntry.getFile(wallpaperFilename, {create: true}, function(fe) {
+            WallpaperUtil.writeFile(fe, wallpaperData);
+          }, WallpaperUtil.onFileSystemError);
+        });
   };
   WallpaperUtil.requestLocalFS(function(fs) {
-    fs.root.getDirectory(saveDir, {create: true}, getDirSuccess,
-                         WallpaperUtil.onFileSystemError);
+    fs.root.getDirectory(
+        saveDir, {create: true}, getDirSuccess,
+        WallpaperUtil.onFileSystemError);
   });
 };
 
@@ -244,29 +237,29 @@ WallpaperUtil.setCustomWallpaperFromSyncFS = function(
     }
     if (!wallpaperLayout)
       wallpaperLayout = 'CENTER_CROPPED';
-    fs.root.getFile(wallpaperFilename, {create: false}, function(fileEntry) {
-      fileEntry.file(function(file) {
-        var reader = new FileReader();
-        reader.onloadend = function() {
-          chrome.wallpaperPrivate.setCustomWallpaper(
-              reader.result,
-              wallpaperLayout,
-              true,
-              wallpaperFilename,
-              function(thumbnailData) {
-                // TODO(ranj): Ignore 'canceledWallpaper' error.
-                if (chrome.runtime.lastError) {
-                  console.error(chrome.runtime.lastError.message);
-                  return;
-                }
-                if (onSuccess)
-                  onSuccess();
-              });
-        };
-        reader.readAsArrayBuffer(file);
-      }, WallpaperUtil.onFileSystemError);
-    }, function(e) {}  // fail to read file, expected due to download delay
-    );
+    fs.root.getFile(
+        wallpaperFilename, {create: false},
+        function(fileEntry) {
+          fileEntry.file(function(file) {
+            var reader = new FileReader();
+            reader.onloadend = function() {
+              chrome.wallpaperPrivate.setCustomWallpaper(
+                  reader.result, wallpaperLayout, true, wallpaperFilename,
+                  function(thumbnailData) {
+                    // TODO(ranj): Ignore 'canceledWallpaper' error.
+                    if (chrome.runtime.lastError) {
+                      console.error(chrome.runtime.lastError.message);
+                      return;
+                    }
+                    if (onSuccess)
+                      onSuccess();
+                  });
+            };
+            reader.readAsArrayBuffer(file);
+          }, WallpaperUtil.onFileSystemError);
+        },
+        function(e) {}  // fail to read file, expected due to download delay
+        );
   };
   WallpaperUtil.requestSyncFS(setWallpaperFromSyncCallback);
 };
@@ -316,20 +309,22 @@ WallpaperUtil.saveWallpaperInfo = function(url, layout, source, appName) {
   // have to revert DAILY/THIRDPARTY type wallpaper info to ONLINE/CUSTOM type
   // after record the correct UMA stats.
   source = (source == Constants.WallpaperSourceEnum.Daily) ?
-      Constants.WallpaperSourceEnum.Online : source;
+      Constants.WallpaperSourceEnum.Online :
+      source;
   source = (source == Constants.WallpaperSourceEnum.ThirdParty) ?
-      Constants.WallpaperSourceEnum.Custom : source;
+      Constants.WallpaperSourceEnum.Custom :
+      source;
   var wallpaperInfo = {
-      url: url,
-      layout: layout,
-      source: source,
-      appName: appName,
+    url: url,
+    layout: layout,
+    source: source,
+    appName: appName,
   };
-  WallpaperUtil.saveToLocalStorage(Constants.AccessLocalWallpaperInfoKey,
-                              wallpaperInfo, function() {
-    WallpaperUtil.saveToSyncStorage(Constants.AccessSyncWallpaperInfoKey,
-                                wallpaperInfo);
-  });
+  WallpaperUtil.saveToLocalStorage(
+      Constants.AccessLocalWallpaperInfoKey, wallpaperInfo, function() {
+        WallpaperUtil.saveToSyncStorage(
+            Constants.AccessSyncWallpaperInfoKey, wallpaperInfo);
+      });
 };
 
 /**
@@ -385,8 +380,8 @@ WallpaperUtil.setOnlineWallpaper = function(url, layout, onSuccess, onFailure) {
 
     self.fetchURL(url, 'arraybuffer', function(xhr) {
       if (xhr.response != null) {
-        chrome.wallpaperPrivate.setWallpaper(xhr.response, layout, url,
-                                             onSuccess);
+        chrome.wallpaperPrivate.setWallpaper(
+            xhr.response, layout, url, onSuccess);
       } else {
         onFailure();
       }

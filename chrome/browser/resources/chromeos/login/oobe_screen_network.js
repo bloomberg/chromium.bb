@@ -9,16 +9,14 @@
 login.createScreen('NetworkScreen', 'connect', function() {
   var USER_ACTION_CONTINUE_BUTTON_CLICKED = 'continue';
   var USER_ACTION_CONNECT_DEBUGGING_FEATURES_CLICKED =
-        'connect-debugging-features';
+      'connect-debugging-features';
   var CONTEXT_KEY_LOCALE = 'locale';
   var CONTEXT_KEY_INPUT_METHOD = 'input-method';
   var CONTEXT_KEY_TIMEZONE = 'timezone';
   var CONTEXT_KEY_CONTINUE_BUTTON_ENABLED = 'continue-button-enabled';
 
   return {
-    EXTERNAL_API: [
-      'showError'
-    ],
+    EXTERNAL_API: ['showError'],
 
     /**
      * Dropdown element for networks selection.
@@ -27,15 +25,15 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
     /** @override */
     decorate: function() {
-      Oobe.setupSelect($('language-select'),
-                       loadTimeData.getValue('languageList'),
-                       this.onLanguageSelected_.bind(this));
-      Oobe.setupSelect($('keyboard-select'),
-                       loadTimeData.getValue('inputMethodsList'),
-                       this.onKeyboardSelected_.bind(this));
-      Oobe.setupSelect($('timezone-select'),
-                       loadTimeData.getValue('timezoneList'),
-                       this.onTimezoneSelected_.bind(this));
+      Oobe.setupSelect(
+          $('language-select'), loadTimeData.getValue('languageList'),
+          this.onLanguageSelected_.bind(this));
+      Oobe.setupSelect(
+          $('keyboard-select'), loadTimeData.getValue('inputMethodsList'),
+          this.onKeyboardSelected_.bind(this));
+      Oobe.setupSelect(
+          $('timezone-select'), loadTimeData.getValue('timezoneList'),
+          this.onTimezoneSelected_.bind(this));
 
       // ---------- Welcome screen
       var welcomeScreen = $('oobe-welcome-md');
@@ -57,35 +55,35 @@ login.createScreen('NetworkScreen', 'connect', function() {
       this.dropdown_ = $('networks-list');
       cr.ui.DropDown.decorate(this.dropdown_);
 
-      this.declareUserAction(
-          $('connect-debugging-features-link'),
-          { action_id: USER_ACTION_CONNECT_DEBUGGING_FEATURES_CLICKED,
-            event: 'click'
-          });
-      this.declareUserAction(
-          $('connect-debugging-features-link'),
-          { action_id: USER_ACTION_CONNECT_DEBUGGING_FEATURES_CLICKED,
-            condition: function(event) { return event.keyCode == 32; },
-            event: 'keyup'
-          });
+      this.declareUserAction($('connect-debugging-features-link'), {
+        action_id: USER_ACTION_CONNECT_DEBUGGING_FEATURES_CLICKED,
+        event: 'click'
+      });
+      this.declareUserAction($('connect-debugging-features-link'), {
+        action_id: USER_ACTION_CONNECT_DEBUGGING_FEATURES_CLICKED,
+        condition: function(event) {
+          return event.keyCode == 32;
+        },
+        event: 'keyup'
+      });
 
       this.context.addObserver(
-          CONTEXT_KEY_INPUT_METHOD,
-          function(inputMethodId) {
+          CONTEXT_KEY_INPUT_METHOD, function(inputMethodId) {
             $('oobe-welcome-md').setSelectedKeyboard(inputMethodId);
 
-            option = $('keyboard-select').querySelector(
-                'option[value="' + inputMethodId + '"]');
+            option =
+                $('keyboard-select')
+                    .querySelector('option[value="' + inputMethodId + '"]');
             if (option)
               option.selected = true;
           });
       this.context.addObserver(CONTEXT_KEY_TIMEZONE, function(timezoneId) {
         $('timezone-select').value = timezoneId;
       });
-      this.context.addObserver(CONTEXT_KEY_CONTINUE_BUTTON_ENABLED,
-                               function(enabled) {
-        $('continue-button').disabled = !enabled;
-      });
+      this.context.addObserver(
+          CONTEXT_KEY_CONTINUE_BUTTON_ENABLED, function(enabled) {
+            $('continue-button').disabled = !enabled;
+          });
     },
 
     onLanguageSelected_: function(languageId) {
@@ -107,7 +105,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
       this.setMDMode_();
       cr.ui.DropDown.show('networks-list', true, -1);
       var debuggingLinkVisible =
-        data && 'isDeveloperMode' in data && data['isDeveloperMode'];
+          data && 'isDeveloperMode' in data && data['isDeveloperMode'];
 
       this.classList.toggle('connect-debugging-view', debuggingLinkVisible);
       $('oobe-welcome-md').debuggingLinkVisible = debuggingLinkVisible;
@@ -133,8 +131,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
       var buttons = [];
 
       var continueButton = this.declareButton(
-          'continue-button',
-          USER_ACTION_CONTINUE_BUTTON_CLICKED);
+          'continue-button', USER_ACTION_CONTINUE_BUTTON_CLICKED);
       continueButton.disabled = !this.context.get(
           CONTEXT_KEY_CONTINUE_BUTTON_ENABLED, false /* default */);
       continueButton.textContent = loadTimeData.getString('continueButton');
@@ -166,9 +163,8 @@ login.createScreen('NetworkScreen', 'connect', function() {
       error.appendChild(messageDiv);
       error.setAttribute('role', 'alert');
 
-      $('bubble').showContentForElement($('networks-list'),
-                                        cr.ui.Bubble.Attachment.BOTTOM,
-                                        error);
+      $('bubble').showContentForElement(
+          $('networks-list'), cr.ui.Bubble.Attachment.BOTTOM, error);
     },
 
     /**
@@ -206,4 +202,3 @@ login.createScreen('NetworkScreen', 'connect', function() {
     },
   };
 });
-

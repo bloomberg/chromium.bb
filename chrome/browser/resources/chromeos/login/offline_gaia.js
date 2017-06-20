@@ -5,30 +5,17 @@
 Polymer((function() {
   var DEFAULT_EMAIL_DOMAIN = '@gmail.com';
 
-  var TRANSITION_TYPE = {
-    FORWARD: 0,
-    BACKWARD: 1,
-    NONE: 2
-  };
+  var TRANSITION_TYPE = {FORWARD: 0, BACKWARD: 1, NONE: 2};
 
   return {
     is: 'offline-gaia',
 
     properties: {
-      disabled: {
-        type: Boolean,
-        value: false
-      },
+      disabled: {type: Boolean, value: false},
 
-      showEnterpriseMessage: {
-        type: Boolean,
-        value: false
-      },
+      showEnterpriseMessage: {type: Boolean, value: false},
 
-      domain: {
-        type: String,
-        observer: 'onDomainChanged_'
-      },
+      domain: {type: String, observer: 'onDomainChanged_'},
 
       emailDomain: String
     },
@@ -41,8 +28,11 @@ Polymer((function() {
        */
       var pages = this.$.animatedPages;
       delete pages._squelchNextFinishEvent;
-      Object.defineProperty(pages, '_squelchNextFinishEvent',
-          { get: function() { return false; } });
+      Object.defineProperty(pages, '_squelchNextFinishEvent', {
+        get: function() {
+          return false;
+        }
+      });
     },
 
     focus: function() {
@@ -58,7 +48,7 @@ Polymer((function() {
 
     onDomainChanged_: function() {
       this.$.managedBy.textContent =
-        loadTimeData.getStringF('enterpriseInfoMessage', this.domain);
+          loadTimeData.getStringF('enterpriseInfoMessage', this.domain);
       this.showEnterpriseMessage = !!this.domain.length;
     },
 
@@ -157,9 +147,8 @@ Polymer((function() {
       }
       var isForward = transitionType === TRANSITION_TYPE.FORWARD;
       var isRTL = this.isRTL_();
-      this.$.animatedPages.entryAnimation =
-          'slide-from-' + (isForward === isRTL ? 'left' : 'right') +
-          '-animation';
+      this.$.animatedPages.entryAnimation = 'slide-from-' +
+          (isForward === isRTL ? 'left' : 'right') + '-animation';
       this.$.animatedPages.exitAnimation =
           'slide-' + (isForward === isRTL ? 'right' : 'left') + '-animation';
     }

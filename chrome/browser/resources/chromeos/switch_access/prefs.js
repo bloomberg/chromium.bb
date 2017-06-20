@@ -131,8 +131,5 @@ SwitchAccessPrefs.prototype = {
    *
    * @const
    */
-  DEFAULT_PREFS: {
-    'enableAutoScan': false,
-    'autoScanTime': 800
-  }
+  DEFAULT_PREFS: {'enableAutoScan': false, 'autoScanTime': 800}
 };

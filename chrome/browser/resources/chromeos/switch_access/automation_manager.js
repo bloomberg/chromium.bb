@@ -57,9 +57,9 @@ function AutomationManager(desktop) {
  * @const
  */
 AutomationManager.Color = {
-  SCOPE: '#de742f', // dark orange
-  GROUP: '#ffbb33', // light orange
-  LEAF: '#78e428' //light green
+  SCOPE: '#de742f',  // dark orange
+  GROUP: '#ffbb33',  // light orange
+  LEAF: '#78e428'    // light green
 };
 
 AutomationManager.prototype = {
@@ -74,8 +74,7 @@ AutomationManager.prototype = {
     this.printNode_(this.node_);
 
     this.desktop_.addEventListener(
-        chrome.automation.EventType.FOCUS,
-        this.handleFocusChange_.bind(this),
+        chrome.automation.EventType.FOCUS, this.handleFocusChange_.bind(this),
         false);
 
     // TODO(elichtenberg): Eventually use a more specific filter than
@@ -159,8 +158,8 @@ AutomationManager.prototype = {
     // tree is deleted. Once fixed, can delete this. Should only need to check
     // if target is current node.
     let removedByRWA =
-        treeChange.target.role === chrome.automation.RoleType.ROOT_WEB_AREA
-        && !this.node_.role;
+        treeChange.target.role === chrome.automation.RoleType.ROOT_WEB_AREA &&
+        !this.node_.role;
 
     if (!removedByRWA && treeChange.target !== this.node_)
       return;
@@ -300,19 +299,17 @@ AutomationManager.prototype = {
     let start = opt_start || scope;
 
     let leafPred = function(node) {
-      return (node !== scope && AutomationPredicate.isSubtreeLeaf(node, scope))
-          || !AutomationPredicate.isInterestingSubtree(node);
+      return (node !== scope &&
+              AutomationPredicate.isSubtreeLeaf(node, scope)) ||
+          !AutomationPredicate.isInterestingSubtree(node);
     };
     let visitPred = function(node) {
       // Avoid visiting the top-level root node (i.e., the desktop node).
-      return node !== this.desktop_
-          && AutomationPredicate.isSubtreeLeaf(node, scope);
+      return node !== this.desktop_ &&
+          AutomationPredicate.isSubtreeLeaf(node, scope);
     }.bind(this);
 
-    let restrictions = {
-      leaf: leafPred,
-      visit: visitPred
-    };
+    let restrictions = {leaf: leafPred, visit: visitPred};
     return new AutomationTreeWalker(start, scope, restrictions);
   },
 
@@ -334,8 +331,8 @@ AutomationManager.prototype = {
       else {
         let numSiblings = node.parent.children.length;
         console.log(
-            'At index ' + node.indexInParent + ', there are '
-            + numSiblings + ' siblings');
+            'At index ' + node.indexInParent + ', there are ' + numSiblings +
+            ' siblings');
       }
       console.log('Has ' + node.children.length + ' children');
     } else {

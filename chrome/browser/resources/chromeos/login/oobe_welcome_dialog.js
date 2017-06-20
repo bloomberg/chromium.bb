@@ -24,7 +24,7 @@ Polymer({
     /**
      * Controls displaying of "Enable debugging features" link.
      */
-     debuggingLinkVisible: Boolean,
+    debuggingLinkVisible: Boolean,
   },
 
   /**
@@ -34,28 +34,28 @@ Polymer({
   focusedElement_: 'languageSelectionButton',
 
   onLanguageClicked_: function() {
-    this.focusedElement_ = "languageSelectionButton";
+    this.focusedElement_ = 'languageSelectionButton';
     this.fire('language-button-clicked');
   },
 
   onAccessibilityClicked_: function() {
-    this.focusedElement_ = "accessibilitySettingsButton";
+    this.focusedElement_ = 'accessibilitySettingsButton';
     this.fire('accessibility-button-clicked');
   },
 
   onTimezoneClicked_: function() {
-    this.focusedElement_ = "timezoneSettingsButton";
+    this.focusedElement_ = 'timezoneSettingsButton';
     this.fire('timezone-button-clicked');
   },
 
   onNextClicked_: function() {
-    this.focusedElement_ = "welcomeNextButton";
+    this.focusedElement_ = 'welcomeNextButton';
     this.fire('next-button-clicked');
   },
 
   onDebuggingLinkClicked_: function() {
-    chrome.send('login.NetworkScreen.userActed',
-        ['connect-debugging-features']);
+    chrome.send(
+        'login.NetworkScreen.userActed', ['connect-debugging-features']);
   },
 
   attached: function() {
@@ -69,18 +69,18 @@ Polymer({
   },
 
   /**
-    * This is called from oobe_welcome when this dialog is shown.
-    */
+   * This is called from oobe_welcome when this dialog is shown.
+   */
   show: function() {
     this.focus();
   },
 
   /**
-    * This function formats message for labels.
-    * @param String label i18n string ID.
-    * @param String parameter i18n string parameter.
-    * @private
-    */
+   * This function formats message for labels.
+   * @param String label i18n string ID.
+   * @param String parameter i18n string parameter.
+   * @private
+   */
   formatMessage_: function(label, parameter) {
     return loadTimeData.getStringF(label, parameter);
   },

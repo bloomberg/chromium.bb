@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 
 module.exports = {
-  'env': {
-    'browser': true,
-    'es6': true
-  },
+  'env': {'browser': true, 'es6': true},
   'rules': {
     // Override restrictions for document.getElementById usage since,
     // chrome://resources/js/util.js is not accessible for select_to_speak.

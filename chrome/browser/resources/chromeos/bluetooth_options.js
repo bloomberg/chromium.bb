@@ -21,11 +21,8 @@ cr.define('options', function() {
     __proto__: Page.prototype,
   };
 
-  BluetoothOptions.updateDiscovery = function() {
-  };
+  BluetoothOptions.updateDiscovery = function() {};
 
   // Export
-  return {
-    BluetoothOptions: BluetoothOptions
-  };
+  return {BluetoothOptions: BluetoothOptions};
 });

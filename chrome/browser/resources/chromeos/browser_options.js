@@ -28,7 +28,5 @@ cr.define('options', function() {
   };
 
   // Export
-  return {
-    BrowserOptions: BrowserOptions
-  };
+  return {BrowserOptions: BrowserOptions};
 });

@@ -28,8 +28,7 @@ var keyboardHostOrigin;
  * @private
  */
 keyboard.onInitMessage_ = function(event) {
-  if (event.data == 'initialMessage' &&
-      event.origin == 'chrome://oobe') {
+  if (event.data == 'initialMessage' && event.origin == 'chrome://oobe') {
     keyboardHostWindow = event.source;
     keyboardHostOrigin = event.origin;
   }
@@ -50,15 +49,13 @@ keyboard.onAdvanceFocus = function(reverse) {
  * @private
  */
 keyboard.onKeyIgnore_ = function(event) {
-  event = /** @type {!KeyboardEvent} */(event);
+  event = /** @type {!KeyboardEvent} */ (event);
 
   if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
     return;
 
-  if (event.key == 'ArrowLeft' ||
-      event.key == 'ArrowRight' ||
-      event.key == 'ArrowUp' ||
-      event.key == 'ArrowDown') {
+  if (event.key == 'ArrowLeft' || event.key == 'ArrowRight' ||
+      event.key == 'ArrowUp' || event.key == 'ArrowDown') {
     event.stopPropagation();
     event.preventDefault();
   }
@@ -70,7 +67,7 @@ keyboard.onKeyIgnore_ = function(event) {
  * @private
  */
 keyboard.onKeyDown_ = function(event) {
-  event = /** @type {!KeyboardEvent} */(event);
+  event = /** @type {!KeyboardEvent} */ (event);
 
   if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
     return;
@@ -130,12 +127,9 @@ keyboard.onKeyDown_ = function(event) {
  * @param {boolean} injected true if script runs as an injected content script.
  */
 keyboard.initializeKeyboardFlow = function(injected) {
-  document.addEventListener('keydown',
-      keyboard.onKeyDown_, true);
-  document.addEventListener('keypress',
-      keyboard.onKeyIgnore_, true);
-  document.addEventListener('keyup',
-      keyboard.onKeyIgnore_, true);
+  document.addEventListener('keydown', keyboard.onKeyDown_, true);
+  document.addEventListener('keypress', keyboard.onKeyIgnore_, true);
+  document.addEventListener('keyup', keyboard.onKeyIgnore_, true);
   if (injected)
     window.addEventListener('message', keyboard.onInitMessage_);
 };
