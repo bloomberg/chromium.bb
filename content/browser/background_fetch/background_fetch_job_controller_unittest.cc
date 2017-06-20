@@ -92,7 +92,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
         browser_context(),
         make_scoped_refptr(storage_partition->GetURLRequestContext()),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
-                       base::Unretained(this)));
+                       base::Unretained(this)),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
  protected:
@@ -149,8 +150,7 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   EXPECT_EQ(controller->state(),
             BackgroundFetchJobController::State::INITIALIZED);
 
-  controller->Start(initial_requests /* deliberate copy */,
-                    TRAFFIC_ANNOTATION_FOR_TESTS);
+  controller->Start(initial_requests /* deliberate copy */);
   EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::FETCHING);
 
   // Mark the single download item as finished, completing the job.
@@ -194,8 +194,7 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
     base::RunLoop run_loop;
     job_completed_closure_ = run_loop.QuitClosure();
 
-    controller->Start(initial_requests /* deliberate copy */,
-                      TRAFFIC_ANNOTATION_FOR_TESTS);
+    controller->Start(initial_requests /* deliberate copy */);
     EXPECT_EQ(controller->state(),
               BackgroundFetchJobController::State::FETCHING);
 
@@ -226,8 +225,7 @@ TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
     base::RunLoop run_loop;
     job_completed_closure_ = run_loop.QuitClosure();
 
-    controller->Start(initial_requests /* deliberate copy */,
-                      TRAFFIC_ANNOTATION_FOR_TESTS);
+    controller->Start(initial_requests /* deliberate copy */);
     EXPECT_EQ(controller->state(),
               BackgroundFetchJobController::State::FETCHING);
 

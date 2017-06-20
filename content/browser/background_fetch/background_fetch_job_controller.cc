@@ -218,11 +218,13 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     BackgroundFetchDataManager* data_manager,
     BrowserContext* browser_context,
     scoped_refptr<net::URLRequestContextGetter> request_context,
-    CompletedCallback completed_callback)
+    CompletedCallback completed_callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : registration_id_(registration_id),
       options_(options),
       data_manager_(data_manager),
       completed_callback_(std::move(completed_callback)),
+      traffic_annotation_(traffic_annotation),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -238,8 +240,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
 BackgroundFetchJobController::~BackgroundFetchJobController() = default;
 
 void BackgroundFetchJobController::Start(
-    std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_LE(initial_requests.size(), kMaximumBackgroundFetchParallelRequests);
   DCHECK_EQ(state_, State::INITIALIZED);
@@ -247,17 +248,16 @@ void BackgroundFetchJobController::Start(
   state_ = State::FETCHING;
 
   for (const auto& request : initial_requests)
-    StartRequest(request, traffic_annotation);
+    StartRequest(request);
 }
 
 void BackgroundFetchJobController::StartRequest(
-    scoped_refptr<BackgroundFetchRequestInfo> request,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    scoped_refptr<BackgroundFetchRequestInfo> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(state_, State::FETCHING);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&Core::StartRequest, ui_core_ptr_,
-                                     std::move(request), traffic_annotation));
+                                     std::move(request), traffic_annotation_));
 }
 
 void BackgroundFetchJobController::DidStartRequest(
@@ -289,7 +289,7 @@ void BackgroundFetchJobController::DidGetNextRequest(
 
   // If a |request| has been given, start downloading the file and bail.
   if (request) {
-    StartRequest(std::move(request), NO_TRAFFIC_ANNOTATION_YET);
+    StartRequest(std::move(request));
     return;
   }
 
