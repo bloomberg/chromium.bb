@@ -28,18 +28,21 @@
 
 from webkitpy.common.net.buildbot import BuildBot
 
-
+# TODO(qyearsley): To be consistent with other fake ("mock") classes, this
+# could be changed so it's not a subclass of BuildBot.
 class MockBuildBot(BuildBot):
 
     def __init__(self):
         super(MockBuildBot, self).__init__()
         self._canned_results = {}
         self._canned_retry_summary_json = {}
+        self.fetched_builds = []
 
     def set_results(self, build, results):
         self._canned_results[build] = results
 
     def fetch_results(self, build):
+        self.fetched_builds.append(build)
         return self._canned_results.get(build)
 
     def set_retry_sumary_json(self, build, content):
