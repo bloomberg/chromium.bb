@@ -144,7 +144,7 @@ public class WebContentsAccessibility {
     }
 
     public void enable() {
-        nativeEnable(mNativeObj);
+        if (mNativeObj != 0) nativeEnable(mNativeObj);
     }
 
     /**
