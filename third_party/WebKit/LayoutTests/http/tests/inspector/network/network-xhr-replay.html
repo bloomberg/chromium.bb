@@ -29,25 +29,19 @@ function test()
         InspectorTest.assertEquals(request1.requestHeadersText, request2.requestHeadersText, "Requests have different requestHeadersText");
     }
 
-    function testXHRReplay(method, url, async, user, password, headers, withCredentials, payload, type, callback)
+    async function testXHRReplay(method, url, async, user, password, headers, withCredentials, payload, type, callback)
     {
-        InspectorTest.makeXHR(method, url, async, user, password, headers, withCredentials, payload, type, step2);
+        InspectorTest.makeXHR(method, url, async, user, password, headers, withCredentials, payload, type);
 
-        var originalRequest;
-        function step2()
-        {
-            originalRequest = lastRequest();
-            dumpRequest(originalRequest);
-            InspectorTest.NetworkAgent.replayXHR(originalRequest.requestId());
-            InspectorTest.addSniffer(Network.NetworkLogView.prototype, "_appendRequest", step3);
-        }
+        var originalRequest = await InspectorTest.waitForEvent(
+                NetworkLog.NetworkLog.Events.RequestAdded, NetworkLog.networkLog);
+        dumpRequest(originalRequest);
+        InspectorTest.NetworkAgent.replayXHR(originalRequest.requestId());
+        var replayedRequest = await InspectorTest.waitForEvent(
+                NetworkLog.NetworkLog.Events.RequestAdded, NetworkLog.networkLog);
 
-        function step3()
-        {
-            var replayedRequest = lastRequest();
-            assertRequestEqual(originalRequest, replayedRequest);
-            callback();
-        }
+        assertRequestEqual(originalRequest, replayedRequest);
+        callback();
     }
 
 

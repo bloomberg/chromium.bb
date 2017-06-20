@@ -7,7 +7,7 @@ function test() {
     var target = UI.panels.network._networkLogView;
     target._resourceCategoryFilterUI._toggleTypeFilter(Common.resourceTypes.XHR.category().title, false);
     InspectorTest.addResult("Clicked '" + Common.resourceTypes.XHR.name() + "' button.");
-    target.reset();
+    target._reset();
 
     function appendRequest(id, type, startTime, endTime)
     {
@@ -16,10 +16,10 @@ function test() {
         request.setRequestId(id);
         request.setIssueTime(startTime);
         request.endTime = endTime;
-        target._appendRequest(request);
+        InspectorTest.networkManager._dispatcher._startNetworkRequest(request);
         target._refresh();
 
-        var isFilteredOut = !!target._nodesByRequestId.get(request.requestId())[Network.NetworkLogView._isFilteredOutSymbol];
+        var isFilteredOut = !!target.nodeForRequest(request)[Network.NetworkLogView._isFilteredOutSymbol];
         InspectorTest.addResult("");
         InspectorTest.addResult("Appended request [" + request.requestId() + "] of type '" + request.resourceType().name() + "' is hidden: " + isFilteredOut + " from [" + request.startTime + "] to [" + request.endTime + "]");
         InspectorTest.addResult("Timeline: from [" + target._calculator.minimumBoundary() + "] to [" + target._calculator.maximumBoundary() + "]");

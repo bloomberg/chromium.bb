@@ -75,7 +75,7 @@ async function test()
 
             setNetworkLogFilter(filterObj.filterText, filterObj.isRegex);
 
-            var nodes = UI.panels.network._networkLogView._nodesByRequestId.valuesArray();
+            var nodes = UI.panels.network._networkLogView.flatNodesList();
             var foundNodesCount = 0;
             for (var i = 0; i < nodes.length; i++) {
                 if (!nodes[i][Network.NetworkLogView._isFilteredOutSymbol])

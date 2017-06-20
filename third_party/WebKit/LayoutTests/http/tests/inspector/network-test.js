@@ -75,14 +75,14 @@ InspectorTest.waitForRequestResponse = function(request)
 InspectorTest.waitForNetworkLogViewNodeForRequest = function(request)
 {
     var networkLogView = UI.panels.network._networkLogView;
-    var node = networkLogView._nodesByRequestId.get(request.requestId());
+    var node = networkLogView.nodeForRequest(request);
     if (node)
         return Promise.resolve(node);
 
-    var promise = InspectorTest.waitForEvent(Network.NetworkLogView.Events.UpdateRequest, networkLogView,
-        updateRequest => updateRequest === request);
-    return promise.then(() => {
-        var node = networkLogView._nodesByRequestId.get(request.requestId());
+    console.assert(networkLogView._staleRequests.has(request));
+
+    return InspectorTest.addSnifferPromise(networkLogView, '_didRefreshForTest').then(() => {
+        var node = networkLogView.nodeForRequest(request);
         console.assert(node);
         return node;
     });
@@ -113,7 +113,7 @@ InspectorTest.recordNetwork = function()
 
 InspectorTest.networkRequests = function()
 {
-    return NetworkLog.networkLog.requests().slice();
+    return Array.from(NetworkLog.networkLog.requests());
 }
 
 InspectorTest.dumpNetworkRequests = function()
@@ -159,10 +159,12 @@ InspectorTest.makeXHR = function(method, url, async, user, password, headers, wi
 
     function innerCallback(msg)
     {
-        if (msg.messageText.indexOf("XHR loaded") !== -1)
-            callback();
-        else
+        if (msg.messageText.indexOf("XHR loaded") !== -1) {
+            if (callback)
+                callback();
+        } else {
             InspectorTest.addConsoleSniffer(innerCallback);
+        }
     }
 
     InspectorTest.addConsoleSniffer(innerCallback);
