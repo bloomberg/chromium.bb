@@ -14,8 +14,15 @@
 #include "base/macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/pref_value_store.h"
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/synced_pref_observer.h"
+
+class OverlayUserPrefStore;
+
+namespace service_manager {
+class Connector;
+}
 
 namespace syncer {
 class SyncableService;
@@ -51,7 +58,10 @@ class PrefServiceSyncable : public PrefService {
   // whose changes will not be persisted by the returned incognito pref service.
   PrefServiceSyncable* CreateIncognitoPrefService(
       PrefStore* incognito_extension_pref_store,
-      const std::vector<const char*>& overlay_pref_names);
+      const std::vector<const char*>& overlay_pref_names,
+      std::set<PrefValueStore::PrefStoreType> already_connected_types,
+      service_manager::Connector* incognito_connector,
+      service_manager::Connector* user_connector);
 
   // Returns true if preferences state has synchronized with the remote
   // preferences. If true is returned it can be assumed the local preferences
@@ -104,6 +114,14 @@ class PrefServiceSyncable : public PrefService {
   // Process a local preference change. This can trigger new SyncChanges being
   // sent to the syncer.
   void ProcessPrefChange(const std::string& name);
+
+  // Create an |OverlayUserPrefStore| where the overlayed in-memory pref store
+  // is accessed remotely through the pref service.
+  OverlayUserPrefStore* CreateOverlayUsingPrefService(
+      user_prefs::PrefRegistrySyncable* pref_registry,
+      std::set<PrefValueStore::PrefStoreType> already_connected_types,
+      service_manager::Connector* incognito_connector,
+      service_manager::Connector* user_connector) const;
 
   // Whether CreateIncognitoPrefService() has been called to create a
   // "forked" PrefService.

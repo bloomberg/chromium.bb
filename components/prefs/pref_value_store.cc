@@ -55,9 +55,11 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
                                PrefStore* user_prefs,
                                PrefStore* recommended_prefs,
                                PrefStore* default_prefs,
-                               PrefNotifier* pref_notifier)
+                               PrefNotifier* pref_notifier,
+                               std::unique_ptr<Delegate> delegate)
     : pref_notifier_(pref_notifier),
-      initialization_failed_(false) {
+      initialization_failed_(false),
+      delegate_(std::move(delegate)) {
   InitPrefStore(MANAGED_STORE, managed_prefs);
   InitPrefStore(SUPERVISED_USER_STORE, supervised_user_prefs);
   InitPrefStore(EXTENSION_STORE, extension_prefs);
@@ -67,6 +69,11 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
   InitPrefStore(DEFAULT_STORE, default_prefs);
 
   CheckInitializationCompleted();
+  if (delegate_) {
+    delegate_->Init(managed_prefs, supervised_user_prefs, extension_prefs,
+                    command_line_prefs, user_prefs, recommended_prefs,
+                    default_prefs, pref_notifier);
+  }
 }
 
 PrefValueStore::~PrefValueStore() {}
@@ -79,7 +86,8 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
     PrefStore* user_prefs,
     PrefStore* recommended_prefs,
     PrefStore* default_prefs,
-    PrefNotifier* pref_notifier) {
+    PrefNotifier* pref_notifier,
+    std::unique_ptr<Delegate> delegate) {
   DCHECK(pref_notifier);
   if (!managed_prefs)
     managed_prefs = GetPrefStore(MANAGED_STORE);
@@ -96,9 +104,10 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
   if (!default_prefs)
     default_prefs = GetPrefStore(DEFAULT_STORE);
 
-  return new PrefValueStore(
-      managed_prefs, supervised_user_prefs, extension_prefs, command_line_prefs,
-      user_prefs, recommended_prefs, default_prefs, pref_notifier);
+  return new PrefValueStore(managed_prefs, supervised_user_prefs,
+                            extension_prefs, command_line_prefs, user_prefs,
+                            recommended_prefs, default_prefs, pref_notifier,
+                            std::move(delegate));
 }
 
 void PrefValueStore::set_callback(const PrefChangedCallback& callback) {
@@ -185,6 +194,8 @@ bool PrefValueStore::PrefValueExtensionModifiable(
 
 void PrefValueStore::UpdateCommandLinePrefStore(PrefStore* command_line_prefs) {
   InitPrefStore(COMMAND_LINE_STORE, command_line_prefs);
+  if (delegate_)
+    delegate_->UpdateCommandLinePrefStore(command_line_prefs);
 }
 
 bool PrefValueStore::PrefValueInStore(

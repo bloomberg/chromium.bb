@@ -191,6 +191,11 @@ class Profile : public content::BrowserContext {
   // time that this method is called.
   virtual PrefService* GetOffTheRecordPrefs() = 0;
 
+  // Like GetOffTheRecordPrefs but gives a read-only view of prefs that can be
+  // used even if there's no OTR profile at the moment
+  // (i.e. HasOffTheRecordProfile is false).
+  virtual PrefService* GetReadOnlyOffTheRecordPrefs();
+
   // Returns the main request context.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
