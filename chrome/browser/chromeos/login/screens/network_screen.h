@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -17,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
@@ -86,9 +88,10 @@ class NetworkScreen : public BaseScreen,
   // Currently We can only get unsecured Wifi network configuration from shark
   // that can be applied to remora. Returns the network ONC configuration.
   void GetConnectedWifiNetwork(std::string* out_onc_spec);
-  void CreateAndConnectNetworkFromOnc(const std::string& onc_spec,
-                                      const base::Closure& success_callback,
-                                      const base::Closure& failed_callback);
+  void CreateAndConnectNetworkFromOnc(
+      const std::string& onc_spec,
+      const base::Closure& success_callback,
+      const network_handler::ErrorCallback& error_callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

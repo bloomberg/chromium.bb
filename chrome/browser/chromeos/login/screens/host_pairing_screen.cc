@@ -11,8 +11,25 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "components/pairing/host_pairing_controller.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace chromeos {
+
+namespace {
+
+// Gets the fine-grained enrollment error code. It's calculated by concatenating
+// |main_error_code| and |sub_error_code| strings together. The reason that
+// string concatenation is preferred to arithmetic addition is that the number
+// of sub error states is not necessarily a one-digit number and may have
+// arbitrary digits.
+int GetEnrollmentErrorCode(
+    pairing_chromeos::HostPairingController::ErrorCode main_error_code,
+    int sub_error_code) {
+  return std::stoi(std::to_string(static_cast<int>(main_error_code)) +
+                   std::to_string(sub_error_code));
+}
+
+}  // namespace
 
 using namespace host_pairing;
 using namespace pairing_chromeos;
@@ -164,17 +181,25 @@ void HostPairingScreen::OnViewDestroyed(HostPairingScreenView* view) {
 
 void HostPairingScreen::OnAuthError(const GoogleServiceAuthError& error) {
   enrollment_error_string_ = view_->GetErrorStringFromAuthError(error);
+  enrollment_error_code_ =
+      GetEnrollmentErrorCode(HostPairingController::ErrorCode::AUTH_ERROR,
+                             static_cast<int>(error.state()));
   OnAnyEnrollmentError();
 }
 
 void HostPairingScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
   enrollment_error_string_ = view_->GetErrorStringFromEnrollmentError(status);
+  enrollment_error_code_ =
+      GetEnrollmentErrorCode(HostPairingController::ErrorCode::ENROLL_ERROR,
+                             static_cast<int>(status.status()));
   OnAnyEnrollmentError();
 }
 
 void HostPairingScreen::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
   enrollment_error_string_ = view_->GetErrorStringFromOtherError(error);
+  enrollment_error_code_ = GetEnrollmentErrorCode(
+      HostPairingController::ErrorCode::OTHER_ERROR, static_cast<int>(error));
   OnAnyEnrollmentError();
 }
 
@@ -204,6 +229,8 @@ void HostPairingScreen::OnAuthCleared() {
 void HostPairingScreen::OnAnyEnrollmentError() {
   enrollment_helper_->ClearAuth(base::Bind(&HostPairingScreen::OnAuthCleared,
                                            weak_ptr_factory_.GetWeakPtr()));
+  remora_controller_->SetErrorCodeAndMessage(enrollment_error_code_,
+                                             enrollment_error_string_);
   remora_controller_->OnEnrollmentStatusChanged(
       HostPairingController::ENROLLMENT_STATUS_FAILURE);
 }

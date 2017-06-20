@@ -155,9 +155,9 @@ void NetworkScreen::GetConnectedWifiNetwork(std::string* out_onc_spec) {
 void NetworkScreen::CreateAndConnectNetworkFromOnc(
     const std::string& onc_spec,
     const base::Closure& success_callback,
-    const base::Closure& failed_callback) {
+    const network_handler::ErrorCallback& error_callback) {
   network_state_helper_->CreateAndConnectNetworkFromOnc(
-      onc_spec, success_callback, failed_callback);
+      onc_spec, success_callback, error_callback);
 }
 
 void NetworkScreen::AddObserver(Observer* observer) {

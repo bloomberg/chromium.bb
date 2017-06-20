@@ -316,7 +316,9 @@ class WizardController : public BaseScreenDelegate,
 
   // Callback functions for AddNetworkRequested().
   void OnSetHostNetworkSuccessful();
-  void OnSetHostNetworkFailed();
+  void OnSetHostNetworkFailed(
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Start the enrollment screen using the config from
   // |prescribed_enrollment_config_|. If |force_interactive| is true,
