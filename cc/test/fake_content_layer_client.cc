@@ -45,7 +45,6 @@ scoped_refptr<DisplayItemList>
 FakeContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   auto display_list = make_scoped_refptr(new DisplayItemList);
-  display_list->SetRetainVisualRectsForTesting(true);
 
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
        it != draw_rects_.end(); ++it) {

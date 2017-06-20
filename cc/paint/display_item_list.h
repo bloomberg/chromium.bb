@@ -123,10 +123,6 @@ class CC_PAINT_EXPORT DisplayItemList
                                   std::vector<DrawImage>* images);
   gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
 
-  void SetRetainVisualRectsForTesting(bool retain) {
-    retain_visual_rects_ = retain;
-  }
-
   gfx::Rect VisualRectForTesting(int index) { return visual_rects_[index]; }
 
   void GatherDiscardableImages(DiscardableImageStore* image_store) const;
@@ -181,9 +177,6 @@ class CC_PAINT_EXPORT DisplayItemList
   bool in_painting_ = false;
 
   size_t op_count_ = 0u;
-  // For testing purposes only. Whether to keep visual rects across calls to
-  // Finalize().
-  bool retain_visual_rects_ = false;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, BytesUsed);
