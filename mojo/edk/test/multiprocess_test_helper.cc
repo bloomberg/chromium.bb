@@ -101,7 +101,7 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   // multiprocess client name and mojo message pipe handle; this allows test
   // clients to spawn other test clients.
   for (const auto& entry :
-          base::CommandLine::ForCurrentProcess()->GetSwitches()) {
+       base::CommandLine::ForCurrentProcess()->GetSwitches()) {
     if (uninherited_args.find(entry.first) == uninherited_args.end())
       command_line.AppendSwitchNative(entry.first, entry.second);
   }
@@ -260,7 +260,7 @@ int MultiprocessTestHelper::RunClientTestMain(
                    ? 1
                    : 0;
       },
-      true /* close_pipe_on_exit */);
+      true /* pass_pipe_ownership_to_main */);
 }
 
 // static

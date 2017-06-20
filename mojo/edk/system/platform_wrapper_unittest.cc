@@ -66,7 +66,7 @@ TEST_F(PlatformWrapperTest, WrapPlatformHandle) {
                             static_cast<int>(kMessage.size())),
             static_cast<int>(kMessage.size()));
 
-  RUN_CHILD_ON_PIPE(ReadPlatformFile, h)
+  RunTestClient("ReadPlatformFile", [&](MojoHandle h) {
     // Open the temporary file for reading, wrap its handle, and send it to
     // the child along with the expected message to be read.
     base::File file(temp_file_path,
@@ -83,7 +83,7 @@ TEST_F(PlatformWrapperTest, WrapPlatformHandle) {
               MojoWrapPlatformHandle(&os_file, &wrapped_handle));
 
     WriteMessageWithHandles(h, kMessage, &wrapped_handle, 1);
-  END_CHILD()
+  });
 
   base::DeleteFile(temp_file_path, false);
 }
@@ -115,7 +115,7 @@ TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
   CHECK(buffer.memory());
   memcpy(buffer.memory(), kMessage.data(), kMessage.size());
 
-  RUN_CHILD_ON_PIPE(ReadPlatformSharedBuffer, h)
+  RunTestClient("ReadPlatformSharedBuffer", [&](MojoHandle h) {
     // Wrap the shared memory handle and send it to the child along with the
     // expected message.
     base::SharedMemoryHandle memory_handle =
@@ -126,9 +126,9 @@ TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     os_buffer.value = static_cast<uint64_t>(memory_handle.GetMemoryObject());
 #elif defined(OS_POSIX)
-    os_buffer.value = static_cast<uint64_t>(memory_handle.GetHandle());
+  os_buffer.value = static_cast<uint64_t>(memory_handle.GetHandle());
 #elif defined(OS_WIN)
-    os_buffer.value = reinterpret_cast<uint64_t>(memory_handle.GetHandle());
+  os_buffer.value = reinterpret_cast<uint64_t>(memory_handle.GetHandle());
 #endif
 
     MojoSharedBufferGuid mojo_guid;
@@ -148,7 +148,7 @@ TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
     // receiving end.
     WriteMessageRaw(MessagePipeHandle(h), &mojo_guid, sizeof(mojo_guid),
                     nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
-  END_CHILD()
+  });
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer,
