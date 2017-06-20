@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import glob
 import os
+import re
 import shutil
 import socket
 import stat
@@ -408,7 +409,7 @@ class RemoteAccess(object):
 
   def Rsync(self, src, dest, to_local=False, follow_symlinks=False,
             recursive=True, inplace=False, verbose=False, sudo=False,
-            remote_sudo=False, **kwargs):
+            remote_sudo=False, compress=True, **kwargs):
     """Rsync a path to the remote device.
 
     Rsync a path to the remote device. If |to_local| is set True, it
@@ -426,13 +427,13 @@ class RemoteAccess(object):
       verbose: If set, print more verbose output during rsync file transfer.
       sudo: If set, invoke the command via sudo.
       remote_sudo: If set, run the command in remote shell with sudo.
+      compress: If set, compress file data during the transfer.
       **kwargs: See cros_build_lib.RunCommand documentation.
     """
     kwargs.setdefault('debug_level', self.debug_level)
 
     ssh_cmd = ' '.join(self._GetSSHCmd())
-    # TODO(ihf): make '--compress' optional.
-    rsync_cmd = ['rsync', '--perms', '--verbose', '--times', '--compress',
+    rsync_cmd = ['rsync', '--perms', '--verbose', '--times',
                  '--omit-dir-times', '--exclude', '.svn']
     rsync_cmd.append('--copy-links' if follow_symlinks else '--links')
     rsync_sudo = 'sudo' if (
@@ -446,6 +447,9 @@ class RemoteAccess(object):
       rsync_cmd.append('--recursive')
     if inplace:
       rsync_cmd.append('--inplace')
+    if compress:
+      rsync_cmd.append('--compress')
+    logging.info('Using rsync compression: %s', compress)
 
     if to_local:
       rsync_cmd += ['--rsh', ssh_cmd,
@@ -666,6 +670,16 @@ class RemoteDevice(object):
     result = self.GetAgent().RemoteSh(['PATH=%s:$PATH rsync' % DEV_BIN_PATHS,
                                        '--version'], error_code_ok=True)
     return result.returncode == 0
+
+  @cros_build_lib.MemoizedSingleCall
+  def HasGigabitEthernet(self):
+    """Checks if the device has a gigabit ethernet port.
+
+    The function checkes the device's first ethernet interface (eth0).
+    """
+    result = self.GetAgent().RemoteSh(['ethtool', 'eth0'], error_code_ok=True,
+                                      capture_output=True)
+    return re.search(r'Speed: \d+000Mb/s', result.output)
 
   def RegisterCleanupCmd(self, cmd, **kwargs):
     """Register a cleanup command to be run on the device in Cleanup().
