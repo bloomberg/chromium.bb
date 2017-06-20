@@ -1219,49 +1219,6 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
   return 0;
 }
 
-static Node* PreviousNodeConsideringAtomicNodes(const Node& start) {
-  if (start.previousSibling()) {
-    Node* node = start.previousSibling();
-    while (!IsAtomicNode(node) && node->lastChild())
-      node = node->lastChild();
-    return node;
-  }
-  return start.parentNode();
-}
-
-static Node* NextNodeConsideringAtomicNodes(const Node& start) {
-  if (!IsAtomicNode(&start) && start.hasChildren())
-    return start.firstChild();
-  if (start.nextSibling())
-    return start.nextSibling();
-  const Node* node = &start;
-  while (node && !node->nextSibling())
-    node = node->parentNode();
-  if (node)
-    return node->nextSibling();
-  return nullptr;
-}
-
-Node* PreviousAtomicLeafNode(const Node& start) {
-  Node* node = PreviousNodeConsideringAtomicNodes(start);
-  while (node) {
-    if (IsAtomicNode(node))
-      return node;
-    node = PreviousNodeConsideringAtomicNodes(*node);
-  }
-  return nullptr;
-}
-
-Node* NextAtomicLeafNode(const Node& start) {
-  Node* node = NextNodeConsideringAtomicNodes(start);
-  while (node) {
-    if (IsAtomicNode(node))
-      return node;
-    node = NextNodeConsideringAtomicNodes(*node);
-  }
-  return nullptr;
-}
-
 // Returns the visible position at the beginning of a node
 VisiblePosition VisiblePositionBeforeNode(Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
