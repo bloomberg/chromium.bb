@@ -32360,8 +32360,9 @@ from previous Chrome versions.
 
 <enum name="SBClientPhishingSkipClassificationReason">
   <int value="0" label="Not skipped"/>
-  <int value="1" label="Skipped: HTTPS"/>
+  <int value="1" label="(Deprecated) Skipped: HTTPS"/>
   <int value="2" label="Skipped: Not a GET request"/>
+  <int value="3" label="Skipped: Unsupported scheme"/>
 </enum>
 
 <enum name="SBDownloadFeedbackUploadResult">
