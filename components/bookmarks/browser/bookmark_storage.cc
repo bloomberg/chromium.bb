@@ -153,10 +153,10 @@ BookmarkStorage::BookmarkStorage(
     : model_(model),
       writer_(profile_path.Append(kBookmarksFileName),
               sequenced_task_runner,
-              base::TimeDelta::FromMilliseconds(kSaveDelayMS)),
+              base::TimeDelta::FromMilliseconds(kSaveDelayMS),
+              "BookmarkStorage"),
       sequenced_task_runner_(sequenced_task_runner),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 BookmarkStorage::~BookmarkStorage() {
   if (writer_.HasPendingWrite())
