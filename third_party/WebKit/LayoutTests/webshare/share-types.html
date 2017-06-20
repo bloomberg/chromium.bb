@@ -5,6 +5,10 @@
 <script src="resources/mock-share-service.js"></script>
 <script>
 
+function getAbsoluteUrl(url) {
+  return new URL(url, location).toString();
+}
+
 share_test((t, webshare, mock) => {
   mock.pushShareResult('', '', '', webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share(undefined));
@@ -21,9 +25,9 @@ share_test((t, webshare, mock) => {
 }, 'share of types other than string (expect implicitly converted to string)');
 
 share_test((t, webshare, mock) => {
-  // TODO(mgiuca): A null title should convert into the string 'null'.
-  // https://crbug.com/733063.
-  mock.pushShareResult('', '', '', webshare.ShareError.OK);
+  // A null title should convert into the string 'null' (because the field is
+  // not nullable, it just converts to a string like any other type).
+  mock.pushShareResult('null', '', '', webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share({title: null, text: undefined}));
 }, 'share of null/undefined dict values');
 

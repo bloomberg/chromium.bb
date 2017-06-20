@@ -63,14 +63,15 @@ share_test((t, webshare, mock) => {
 
 share_test((t, webshare, mock) => {
   // Title is a string with BMP and non-BMP characters.
+  // Text contains invalid surrogates which should be converted into U+FFFD.
   // URL contains non-ASCII characters in host and path.
   const title = 'f\xe1ncy \u5199\u4f5c \ud83d\ude31';
   const url = 'https://\u6d4b\u8bd5.example.com/\ud83d\udcc4';
   // Host is IDNA-encoded. Path is percent-encoded.
   const url_ascii = 'https://xn--0zwm56d.example.com/%F0%9F%93%84';
-  mock.pushShareResult(title, '', url_ascii, webshare.ShareError.OK);
+  mock.pushShareResult(title, '\ufffdx', url_ascii, webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share(
-        {title: title, text: '', url: url}));
+        {title: title, text: '\ud9a3x', url: url}));
 }, 'successful share with Unicode characters');
 
 </script>
