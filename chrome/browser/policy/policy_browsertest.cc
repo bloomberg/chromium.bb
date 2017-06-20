@@ -87,7 +87,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -3161,14 +3163,31 @@ class MediaStreamDevicesControllerBrowserTest
       : request_url_allowed_via_whitelist_(false),
         request_url_("https://www.example.com/foo") {
     policy_value_ = GetParam();
-    prompt_delegate_.set_response_type(PermissionRequestManager::ACCEPT_ALL);
   }
   virtual ~MediaStreamDevicesControllerBrowserTest() {}
 
   void SetUpOnMainThread() override {
     PolicyTest::SetUpOnMainThread();
     ui_test_utils::NavigateToURL(browser(), request_url_);
+
+    // Testing both the new (PermissionManager) and old code-paths is not simple
+    // since we are already using WithParamInterface. We only test whichever one
+    // is enabled in chrome_features.cc since we won't keep the old path around
+    // for long once we flip the flag.
+    if (base::FeatureList::IsEnabled(
+            features::kUsePermissionManagerForMediaRequests)) {
+      PermissionRequestManager* manager =
+          PermissionRequestManager::FromWebContents(
+              browser()->tab_strip_model()->GetActiveWebContents());
+      prompt_factory_.reset(new MockPermissionPromptFactory(manager));
+      prompt_factory_->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+      manager->DisplayPendingRequests();
+    } else {
+      prompt_delegate_.set_response_type(PermissionRequestManager::ACCEPT_ALL);
+    }
   }
+
+  void TearDownOnMainThread() override { prompt_factory_.reset(); }
 
   content::MediaStreamRequest CreateRequest(
       content::MediaStreamType audio_request_type,
@@ -3256,6 +3275,7 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   TestPermissionPromptDelegate prompt_delegate_;
+  std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
   bool policy_value_;
   bool request_url_allowed_via_whitelist_;
   GURL request_url_;
