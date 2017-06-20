@@ -1300,6 +1300,8 @@ void ProfileSyncService::OnConfigureDone(
     return;
   }
 
+  RecordMemoryUsageHistograms();
+
   StartSyncingWithServer();
 }
 
@@ -2390,6 +2392,16 @@ void ProfileSyncService::ReportPreviousSessionMemoryWarningCount() {
   // Will set to true during a clean shutdown, so crash or something else will
   // remain this as false.
   sync_prefs_.SetCleanShutdown(false);
+}
+
+void ProfileSyncService::RecordMemoryUsageHistograms() {
+  ModelTypeSet active_types = GetActiveDataTypes();
+  for (ModelTypeSet::Iterator type_it = active_types.First(); type_it.Good();
+       type_it.Inc()) {
+    auto dtc_it = data_type_controllers_.find(type_it.Get());
+    if (dtc_it != data_type_controllers_.end())
+      dtc_it->second->RecordMemoryUsageHistogram();
+  }
 }
 
 const GURL& ProfileSyncService::sync_service_url() const {

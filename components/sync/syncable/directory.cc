@@ -987,6 +987,42 @@ void Directory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   }
 }
 
+// Iterates over entries of |map|, sums memory usage estimate of entries whose
+// entry type is |model_type|. Passing owning container will also include memory
+// estimate of EntryKernel.
+template <typename Container>
+size_t EstimateFiteredMapMemoryUsage(const Container& map,
+                                     ModelType model_type) {
+  using base::trace_event::EstimateMemoryUsage;
+  size_t memory_usage = 0;
+  for (const auto& kv : map) {
+    const ModelType entry_type =
+        GetModelTypeFromSpecifics(kv.second->ref(SPECIFICS));
+    if (entry_type == model_type) {
+      memory_usage += EstimateMemoryUsage(kv);
+    }
+  }
+  return memory_usage;
+}
+
+size_t Directory::EstimateMemoryUsageByType(ModelType model_type) {
+  using base::trace_event::EstimateMemoryUsage;
+  ReadTransaction trans(FROM_HERE, this);
+  ScopedKernelLock lock(this);
+
+  size_t memory_usage = 0;
+  memory_usage +=
+      EstimateFiteredMapMemoryUsage(kernel_->metahandles_map, model_type);
+  memory_usage += EstimateFiteredMapMemoryUsage(kernel_->ids_map, model_type);
+  memory_usage +=
+      EstimateFiteredMapMemoryUsage(kernel_->server_tags_map, model_type);
+  memory_usage +=
+      EstimateFiteredMapMemoryUsage(kernel_->client_tags_map, model_type);
+  memory_usage += EstimateMemoryUsage(
+      kernel_->persisted_info.download_progress[model_type]);
+  return memory_usage;
+}
+
 void Directory::SetDownloadProgress(
     ModelType model_type,
     const sync_pb::DataTypeProgressMarker& new_progress) {
@@ -1174,13 +1210,12 @@ void Directory::GetMetaHandlesOfType(const ScopedKernelLock& lock,
                                      ModelType type,
                                      std::vector<int64_t>* result) {
   result->clear();
-  for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
-       it != kernel_->metahandles_map.end(); ++it) {
-    EntryKernel* entry = it->second.get();
+  for (const auto& handle_and_kernel : kernel_->metahandles_map) {
+    EntryKernel* entry = handle_and_kernel.second.get();
     const ModelType entry_type =
         GetModelTypeFromSpecifics(entry->ref(SPECIFICS));
     if (entry_type == type)
-      result->push_back(it->first);
+      result->push_back(handle_and_kernel.first);
   }
 }
 
