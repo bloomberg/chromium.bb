@@ -151,8 +151,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
       header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       header->SetBorder(views::CreateEmptyBorder(
           vertical_padding,
-          provider->GetDistanceMetric(
-              views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
+          provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).left(),
           vertical_padding, 0));
       scroll_container->AddChildView(header);
     }

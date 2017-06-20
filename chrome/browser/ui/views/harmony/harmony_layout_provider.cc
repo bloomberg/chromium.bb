@@ -7,6 +7,9 @@
 gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
   switch (metric) {
+    case views::INSETS_BUBBLE_CONTENTS:
+    case views::INSETS_DIALOG_CONTENTS:
+      return gfx::Insets(kHarmonyLayoutUnit, kHarmonyLayoutUnit);
     case views::INSETS_VECTOR_IMAGE_BUTTON:
       return gfx::Insets(kHarmonyLayoutUnit / 4);
     default:
@@ -18,10 +21,6 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
   DCHECK_GE(metric, views::VIEWS_INSETS_MAX);
   switch (metric) {
     case views::DISTANCE_BUBBLE_BUTTON_TOP_MARGIN:
-    case views::DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN:
-    case views::DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN:
-    case views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN:
-    case views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN:
       return kHarmonyLayoutUnit;
     case DISTANCE_CONTROL_LIST_VERTICAL:
       return kHarmonyLayoutUnit * 3 / 4;
