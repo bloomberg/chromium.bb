@@ -180,10 +180,6 @@ void IOSChromeSyncClient::Initialize() {
   }
 }
 
-base::SequencedWorkerPool* IOSChromeSyncClient::GetBlockingPool() {
-  return web::WebThread::GetBlockingPool();
-}
-
 syncer::SyncService* IOSChromeSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);

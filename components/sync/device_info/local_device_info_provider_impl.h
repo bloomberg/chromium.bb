@@ -28,10 +28,8 @@ class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
   const DeviceInfo* GetLocalDeviceInfo() const override;
   std::string GetSyncUserAgent() const override;
   std::string GetLocalSyncCacheGUID() const override;
-  void Initialize(
-      const std::string& cache_guid,
-      const std::string& signin_scoped_device_id,
-      const scoped_refptr<base::TaskRunner>& blocking_task_runner) override;
+  void Initialize(const std::string& cache_guid,
+                  const std::string& signin_scoped_device_id) override;
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) override;
   void Clear() override;

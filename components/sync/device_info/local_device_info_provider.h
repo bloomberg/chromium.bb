@@ -10,10 +10,6 @@
 
 #include "base/callback_list.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace syncer {
 
 class DeviceInfo;
@@ -43,10 +39,8 @@ class LocalDeviceInfoProvider {
   virtual std::string GetLocalSyncCacheGUID() const = 0;
 
   // Starts initializing local device info.
-  virtual void Initialize(
-      const std::string& cache_guid,
-      const std::string& signin_scoped_device_id,
-      const scoped_refptr<base::TaskRunner>& blocking_task_runner) = 0;
+  virtual void Initialize(const std::string& cache_guid,
+                          const std::string& signin_scoped_device_id) = 0;
 
   // Registers a callback to be called when local device info becomes available.
   // The callback will remain registered until the

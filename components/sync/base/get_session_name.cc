@@ -11,6 +11,8 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task_runner.h"
+#include "base/task_runner_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
@@ -32,6 +34,7 @@ namespace syncer {
 namespace {
 
 std::string GetSessionNameSynchronously() {
+  base::ThreadRestrictions::AssertIOAllowed();
   std::string session_name;
 #if defined(OS_CHROMEOS)
   switch (chromeos::GetDeviceType()) {
@@ -72,26 +75,14 @@ std::string GetSessionNameSynchronously() {
   return session_name;
 }
 
-void FillSessionName(std::string* session_name) {
-  *session_name = GetSessionNameSynchronously();
-}
-
-void OnSessionNameFilled(
-    const base::Callback<void(const std::string&)>& done_callback,
-    std::string* session_name) {
-  done_callback.Run(*session_name);
-}
-
 }  // namespace
 
 void GetSessionName(
     const scoped_refptr<base::TaskRunner>& task_runner,
     const base::Callback<void(const std::string&)>& done_callback) {
-  std::string* session_name = new std::string();
-  task_runner->PostTaskAndReply(
-      FROM_HERE, base::Bind(&FillSessionName, base::Unretained(session_name)),
-      base::Bind(&OnSessionNameFilled, done_callback,
-                 base::Owned(session_name)));
+  base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
+                                   base::Bind(&GetSessionNameSynchronously),
+                                   done_callback);
 }
 
 std::string GetSessionNameSynchronouslyForTesting() {
