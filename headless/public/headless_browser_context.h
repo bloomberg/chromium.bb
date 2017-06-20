@@ -40,6 +40,7 @@ using ProtocolHandlerMap = std::unordered_map<
 // When browser context is deleted, all associated web contents are closed.
 class HEADLESS_EXPORT HeadlessBrowserContext {
  public:
+  class Observer;
   class Builder;
 
   virtual ~HeadlessBrowserContext() {}
@@ -65,6 +66,9 @@ class HEADLESS_EXPORT HeadlessBrowserContext {
   // GUID for this browser context.
   virtual const std::string& Id() const = 0;
 
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
   // TODO(skyostil): Allow saving and restoring contexts (crbug.com/617931).
 
  protected:
@@ -72,6 +76,15 @@ class HEADLESS_EXPORT HeadlessBrowserContext {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContext);
+};
+
+class HEADLESS_EXPORT HeadlessBrowserContext::Observer {
+ public:
+  virtual void OnChildContentsCreated(HeadlessWebContents* parent,
+                                      HeadlessWebContents* child) = 0;
+
+ protected:
+  virtual ~Observer() {}
 };
 
 class HEADLESS_EXPORT HeadlessBrowserContext::Builder {

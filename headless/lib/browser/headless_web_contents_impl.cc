@@ -52,8 +52,8 @@ HeadlessWebContentsImpl* HeadlessWebContentsImpl::From(
 
 class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
  public:
-  explicit Delegate(HeadlessBrowserContextImpl* browser_context)
-      : browser_context_(browser_context) {}
+  explicit Delegate(HeadlessWebContentsImpl* headless_web_contents)
+      : headless_web_contents_(headless_web_contents) {}
 
   void WebContentsCreated(
       content::WebContents* source_contents,
@@ -64,13 +64,17 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
       content::WebContents* new_contents,
       const base::Optional<content::WebContents::CreateParams>& create_params)
       override {
-    std::unique_ptr<HeadlessWebContentsImpl> web_contents =
-        HeadlessWebContentsImpl::CreateFromWebContents(new_contents,
-                                                       browser_context_);
+    DCHECK(new_contents->GetBrowserContext() ==
+           headless_web_contents_->browser_context());
 
-    DCHECK(new_contents->GetBrowserContext() == browser_context_);
-
-    browser_context_->RegisterWebContents(std::move(web_contents));
+    std::unique_ptr<HeadlessWebContentsImpl> child_contents =
+        HeadlessWebContentsImpl::CreateForChildContents(headless_web_contents_,
+                                                        new_contents);
+    HeadlessWebContentsImpl* raw_child_contents = child_contents.get();
+    headless_web_contents_->browser_context()->RegisterWebContents(
+        std::move(child_contents));
+    headless_web_contents_->browser_context()->NotifyChildContentsCreated(
+        headless_web_contents_, raw_child_contents);
   }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -95,36 +99,23 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   }
 
   void CloseContents(content::WebContents* source) override {
-    if (!browser_context_) {
+    if (source != headless_web_contents_->web_contents())
       return;
-    }
-
-    std::vector<HeadlessWebContents*> all_contents =
-        browser_context_->GetAllWebContents();
-
-    for (HeadlessWebContents* wc : all_contents) {
-      if (!wc) {
-        continue;
-      }
-      HeadlessWebContentsImpl* hwc = HeadlessWebContentsImpl::From(wc);
-      if (hwc->web_contents() == source) {
-        wc->Close();
-        return;
-      }
-    }
+    headless_web_contents_->web_contents()->Close();
   }
 
  private:
-  HeadlessBrowserContextImpl* browser_context_;  // Not owned.
+  HeadlessWebContentsImpl* headless_web_contents_;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 namespace {
 
-void ForwardToServiceFactory(
-    const base::Callback<void(TabSocketRequest)>& service_factory,
+void CreateTabSocketMojoServiceForContents(
+    HeadlessWebContents* web_contents,
     mojo::ScopedMessagePipeHandle handle) {
-  service_factory.Run(TabSocketRequest(std::move(handle)));
+  HeadlessWebContentsImpl::From(web_contents)
+      ->CreateTabSocketMojoService(std::move(handle));
 }
 
 }  // namespace
@@ -148,17 +139,11 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
         builder->tab_socket_type_ == Builder::TabSocketType::ISOLATED_WORLD;
 
     builder->mojo_services_.emplace_back(
-        TabSocket::Name_,
-        base::Bind(
-            &ForwardToServiceFactory,
-            base::Bind(
-                &HeadlessTabSocketImpl::CreateMojoService,
-                base::Unretained(
-                    headless_web_contents->headless_tab_socket_.get()))));
+        TabSocket::Name_, base::Bind(&CreateTabSocketMojoServiceForContents));
   }
 
   headless_web_contents->mojo_services_ = std::move(builder->mojo_services_);
-  headless_web_contents->InitializeScreen(builder->window_size_);
+  headless_web_contents->InitializeWindow(gfx::Rect(builder->window_size_));
   if (!headless_web_contents->OpenURL(builder->initial_url_))
     return nullptr;
   return headless_web_contents;
@@ -166,29 +151,49 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
 
 // static
 std::unique_ptr<HeadlessWebContentsImpl>
-HeadlessWebContentsImpl::CreateFromWebContents(
-    content::WebContents* web_contents,
-    HeadlessBrowserContextImpl* browser_context) {
-  std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
-      base::WrapUnique(
-          new HeadlessWebContentsImpl(web_contents, browser_context));
+HeadlessWebContentsImpl::CreateForChildContents(
+    HeadlessWebContentsImpl* parent,
+    content::WebContents* child_contents) {
+  auto child = base::WrapUnique(
+      new HeadlessWebContentsImpl(child_contents, parent->browser_context()));
 
-  return headless_web_contents;
+  // Child contents should have their own root window.
+  child->InitializeWindow(child_contents->GetContainerBounds());
+
+  // Copy mojo services and tab socket settings from parent.
+  child->mojo_services_ = parent->mojo_services_;
+  if (parent->headless_tab_socket_) {
+    child->headless_tab_socket_ = base::MakeUnique<HeadlessTabSocketImpl>();
+    child->inject_mojo_services_into_isolated_world_ =
+        parent->inject_mojo_services_into_isolated_world_;
+  }
+
+  // There may already be frames, so make sure they also have our services.
+  for (content::RenderFrameHost* frame_host : child_contents->GetAllFrames())
+    child->RenderFrameCreated(frame_host);
+
+  return child;
 }
 
-void HeadlessWebContentsImpl::InitializeScreen(const gfx::Size& initial_size) {
+void HeadlessWebContentsImpl::InitializeWindow(
+    const gfx::Rect& initial_bounds) {
   static int window_id = 1;
   window_id_ = window_id++;
   window_state_ = "normal";
-  browser()->PlatformInitializeWebContents(initial_size, this);
+
+  browser()->PlatformInitializeWebContents(this);
+  SetBounds(initial_bounds);
+}
+
+void HeadlessWebContentsImpl::SetBounds(const gfx::Rect& bounds) {
+  browser()->PlatformSetWebContentsBounds(this, bounds);
 }
 
 HeadlessWebContentsImpl::HeadlessWebContentsImpl(
     content::WebContents* web_contents,
     HeadlessBrowserContextImpl* browser_context)
     : content::WebContentsObserver(web_contents),
-      web_contents_delegate_(
-          new HeadlessWebContentsImpl::Delegate(browser_context)),
+      web_contents_delegate_(new HeadlessWebContentsImpl::Delegate(this)),
       web_contents_(web_contents),
       agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
       inject_mojo_services_into_isolated_world_(false),
@@ -207,6 +212,17 @@ HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
   agent_host_->RemoveObserver(this);
   if (render_process_host_)
     render_process_host_->RemoveObserver(this);
+}
+
+void HeadlessWebContentsImpl::CreateTabSocketMojoService(
+    mojo::ScopedMessagePipeHandle handle) {
+  headless_tab_socket_->CreateMojoService(TabSocketRequest(std::move(handle)));
+}
+
+void HeadlessWebContentsImpl::CreateMojoService(
+    const MojoService::ServiceFactoryCallback& service_factory,
+    mojo::ScopedMessagePipeHandle handle) {
+  service_factory.Run(this, std::move(handle));
 }
 
 void HeadlessWebContentsImpl::RenderFrameCreated(
@@ -239,9 +255,11 @@ void HeadlessWebContentsImpl::RenderFrameCreated(
       render_frame_host->GetInterfaceRegistry();
 
   for (const MojoService& service : mojo_services_) {
-    interface_registry->AddInterface(service.service_name,
-                                     service.service_factory,
-                                     browser()->BrowserMainThread());
+    interface_registry->AddInterface(
+        service.service_name,
+        base::Bind(&HeadlessWebContentsImpl::CreateMojoService,
+                   base::Unretained(this), service.service_factory),
+        browser()->BrowserMainThread());
   }
 
   browser_context_->SetFrameTreeNodeId(render_frame_host->GetProcess()->GetID(),
@@ -419,8 +437,11 @@ HeadlessWebContents* HeadlessWebContents::Builder::Build() {
 HeadlessWebContents::Builder::MojoService::MojoService() {}
 
 HeadlessWebContents::Builder::MojoService::MojoService(
+    const MojoService& other) = default;
+
+HeadlessWebContents::Builder::MojoService::MojoService(
     const std::string& service_name,
-    const base::Callback<void(mojo::ScopedMessagePipeHandle)>& service_factory)
+    const ServiceFactoryCallback& service_factory)
     : service_name(service_name), service_factory(service_factory) {}
 
 HeadlessWebContents::Builder::MojoService::~MojoService() {}
