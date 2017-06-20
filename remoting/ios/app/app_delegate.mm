@@ -12,9 +12,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#import "remoting/ios/app/app_view_controller.h"
 #import "remoting/ios/app/remoting_view_controller.h"
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
+
+@interface AppDelegate () {
+  AppViewController* _appViewController;
+}
+@end
 
 @implementation AppDelegate
 
@@ -53,12 +59,39 @@
   return YES;
 }
 
+#pragma mark - Public
+- (void)showMenuAnimated:(BOOL)animated {
+  DCHECK(_appViewController != nil);
+  [_appViewController showMenuAnimated:animated];
+}
+
+- (void)hideMenuAnimated:(BOOL)animated {
+  DCHECK(_appViewController != nil);
+  [_appViewController hideMenuAnimated:animated];
+}
+
+- (void)presentSignInFlow {
+  DCHECK(_appViewController != nil);
+  [_appViewController presentSignInFlow];
+}
+
+#pragma mark - Properties
+
++ (AppDelegate*)instance {
+  return (AppDelegate*)UIApplication.sharedApplication.delegate;
+}
+
+#pragma mark - Private
+
 - (void)launchRemotingViewController {
   RemotingViewController* vc = [[RemotingViewController alloc] init];
   UINavigationController* navController =
       [[UINavigationController alloc] initWithRootViewController:vc];
   navController.navigationBarHidden = true;
-  self.window.rootViewController = navController;
+
+  _appViewController =
+      [[AppViewController alloc] initWithMainViewController:navController];
+  self.window.rootViewController = _appViewController;
   [self.window makeKeyAndVisible];
 }
 

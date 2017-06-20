@@ -10,7 +10,12 @@
 // Default created delegate class for the entire application.
 @interface AppDelegate : UIResponder<UIApplicationDelegate>
 
+- (void)showMenuAnimated:(BOOL)animated;
+- (void)hideMenuAnimated:(BOOL)animated;
+- (void)presentSignInFlow;
+
 @property(strong, nonatomic) UIWindow* window;
+@property(class, strong, nonatomic, readonly) AppDelegate* instance;
 
 @end
 

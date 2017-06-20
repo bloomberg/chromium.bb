@@ -163,6 +163,8 @@ source_set("material_components_ios") {
     "src/components/Typography/src/MDCTypography.h",
     "src/components/Typography/src/MDCTypography.m",
     "src/components/Typography/src/MaterialTypography.h",
+    "src/components/Typography/src/private/UIFont+MaterialTypographyPrivate.h",
+    "src/components/Typography/src/private/UIFont+MaterialTypographyPrivate.m",
     "src/components/private/Application/src/MaterialApplication.h",
     "src/components/private/Application/src/UIApplication+AppExtensions.h",
     "src/components/private/Application/src/UIApplication+AppExtensions.m",
