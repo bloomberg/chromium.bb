@@ -105,7 +105,7 @@ using LazyCOMSTATaskRunner =
   ALLOW_UNUSED_TYPE constexpr base::TaskTraits                            \
       LAZY_TASK_RUNNER_CONCATENATE_INTERNAL(kVerifyTraitsAreConstexpr,    \
                                             __LINE__) = traits;           \
-  ALLOW_UNUSED_TYPE constexpr SingleThreadTaskRunnerThreadMode            \
+  ALLOW_UNUSED_TYPE constexpr base::SingleThreadTaskRunnerThreadMode      \
       LAZY_TASK_RUNNER_CONCATENATE_INTERNAL(kVerifyThreadModeIsConstexpr, \
                                             __LINE__) = thread_mode
 
@@ -118,7 +118,7 @@ using LazyCOMSTATaskRunner =
   ALLOW_UNUSED_TYPE constexpr base::TaskTraits                            \
       LAZY_TASK_RUNNER_CONCATENATE_INTERNAL(kVerifyTraitsAreConstexpr,    \
                                             __LINE__) = traits;           \
-  ALLOW_UNUSED_TYPE constexpr SingleThreadTaskRunnerThreadMode            \
+  ALLOW_UNUSED_TYPE constexpr base::SingleThreadTaskRunnerThreadMode      \
       LAZY_TASK_RUNNER_CONCATENATE_INTERNAL(kVerifyThreadModeIsConstexpr, \
                                             __LINE__) = thread_mode
 
