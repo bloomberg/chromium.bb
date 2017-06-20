@@ -85,6 +85,14 @@ ContainerNode* HighestEditableRoot(const Position& position,
   return HighestEditableRoot(position);
 }
 
+ContainerNode* HighestEditableRootOfNode(const Node& node,
+                                         EditableType editable_type) {
+  // TODO(editing-dev): We should introduce |const Node&| version of
+  // |FirstPositionInOrBeforeNode()|. See http://crbug.com/734849
+  return HighestEditableRoot(
+      FirstPositionInOrBeforeNode(const_cast<Node*>(&node)), editable_type);
+}
+
 Node* PreviousNodeConsideringAtomicNodes(const Node& start) {
   if (start.previousSibling()) {
     Node* node = start.previousSibling();
@@ -288,8 +296,7 @@ Position PreviousRootInlineBoxCandidatePosition(
       FindNodeInPreviousLine(*node, visible_position, editable_type);
   for (Node* runner = previous_node; runner && !runner->IsShadowRoot();
        runner = PreviousLeafWithSameEditability(runner, editable_type)) {
-    if (HighestEditableRoot(FirstPositionInOrBeforeNode(runner),
-                            editable_type) != highest_root)
+    if (HighestEditableRootOfNode(*runner, editable_type) != highest_root)
       break;
 
     const Position& candidate =
@@ -315,8 +322,7 @@ Position NextRootInlineBoxCandidatePosition(
 
   for (Node* runner = next_node; runner && !runner->IsShadowRoot();
        runner = NextLeafWithSameEditability(runner, editable_type)) {
-    if (HighestEditableRoot(FirstPositionInOrBeforeNode(runner),
-                            editable_type) != highest_root)
+    if (HighestEditableRootOfNode(*runner, editable_type) != highest_root)
       break;
 
     const Position& candidate =
