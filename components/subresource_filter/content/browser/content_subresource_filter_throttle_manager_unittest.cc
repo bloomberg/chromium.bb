@@ -679,12 +679,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 
 TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
   base::HistogramTester tester;
-  NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   const char kActivationStateHistogram[] =
       "SubresourceFilter.PageLoad.ActivationState";
-  tester.ExpectBucketCount(kActivationStateHistogram,
-                           static_cast<int>(ActivationLevel::ENABLED), 1);
-
   NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
   tester.ExpectBucketCount(kActivationStateHistogram,
                            static_cast<int>(ActivationLevel::DRYRUN), 1);
@@ -692,6 +688,10 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
   tester.ExpectBucketCount(kActivationStateHistogram,
                            static_cast<int>(ActivationLevel::DISABLED), 1);
+
+  NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
+  tester.ExpectBucketCount(kActivationStateHistogram,
+                           static_cast<int>(ActivationLevel::ENABLED), 1);
 
   // Navigate a subframe that is not filtered, but should still activate.
   CreateSubframeWithTestNavigation(GURL("https://whitelist.com"), main_rfh());
