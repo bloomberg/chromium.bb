@@ -21,7 +21,7 @@
 @interface SafeModeCoordinator : ChromeRootCoordinator
 
 // Delegate for this coordinator.
-@property(nonatomic, nullable, assign) id<SafeModeCoordinatorDelegate> delegate;
+@property(nonatomic, nullable, weak) id<SafeModeCoordinatorDelegate> delegate;
 
 // If YES, there's a reason to show this coordinator.
 + (BOOL)shouldStart;

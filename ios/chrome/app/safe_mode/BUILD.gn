@@ -14,6 +14,7 @@ bundle_data("resources") {
 }
 
 source_set("safe_mode") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "safe_mode_coordinator.h",
     "safe_mode_coordinator.mm",
