@@ -108,9 +108,7 @@ std::string CreateSecurePasswordHash(const std::string& salt,
       crypto::SymmetricKey::DeriveKeyFromPassword(
           crypto::SymmetricKey::AES, password, salt, encoding.iteration_count,
           encoding.hash_bits));
-  std::string password_hash;
-  const bool success = password_key->GetRawKey(&password_hash);
-  DCHECK(success);
+  std::string password_hash = password_key->key();
   DCHECK_EQ(encoding.hash_bytes, password_hash.length());
 
   UMA_HISTOGRAM_TIMES("PasswordHash.CreateTime",

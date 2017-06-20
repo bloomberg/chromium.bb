@@ -47,9 +47,8 @@ std::string BuildRawHMACKey() {
   std::unique_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES,
                                               kHMACKeySizeInBits));
-  std::string raw_result, result;
-  key->GetRawKey(&raw_result);
-  base::Base64Encode(raw_result, &result);
+  std::string result;
+  base::Base64Encode(key->key(), &result);
   return result;
 }
 
