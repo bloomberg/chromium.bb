@@ -31,8 +31,8 @@ class SimpleScrollPage(SimplePage):
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollPage(direction='down', speed_in_pixels_per_second=300)
 
-class SimpleMobileSitesPageSet(story.StorySet):
 
+class SimpleMobileSitesPageSet(story.StorySet):
   """ Simple mobile sites """
 
   def __init__(self):
@@ -52,3 +52,7 @@ class SimpleMobileSitesPageSet(story.StorySet):
     for url in scroll_page_list:
       self.AddStory(SimpleScrollPage(url, self))
 
+
+class SimpleMobileSitesStoryExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass

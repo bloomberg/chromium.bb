@@ -266,3 +266,8 @@ class PolymerPageSet(story.StorySet):
 class PolymerRasterizeAndRecordStoryExpectations(story.expectations.StoryExpectations):
   def SetExpectations(self):
     pass # No tests disabled.
+
+
+class PolymerThreadTimesStoryExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass # No tests disabled.
