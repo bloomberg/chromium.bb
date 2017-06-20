@@ -310,7 +310,7 @@ struct PendingPaymentResponse {
 }
 
 - (void)disableCurrentWebState {
-  if (_webStateEnabled) {
+  if (_webState && _webStateEnabled) {
     _webState->RemoveScriptCommandCallback(kCommandPrefix);
     _webStateEnabled = NO;
   }
