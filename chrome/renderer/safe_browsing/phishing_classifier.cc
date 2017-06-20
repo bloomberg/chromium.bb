@@ -42,8 +42,9 @@ namespace {
 // Used for UMA, do not reorder.
 enum SkipClassificationReason {
   CLASSIFICATION_PROCEED = 0,
-  SKIP_HTTPS = 1,
+  DEPRECATED_SKIP_HTTPS = 1,
   SKIP_NONE_GET = 2,
+  SKIP_SCHEME_NOT_SUPPORTED = 3,
   SKIP_REASON_MAX
 };
 
@@ -126,10 +127,10 @@ void PhishingClassifier::BeginFeatureExtraction() {
   blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
 
   // Check whether the URL is one that we should classify.
-  // Currently, we only classify http: URLs that are GET requests.
+  // Currently, we only classify http/https URLs that are GET requests.
   GURL url(frame->GetDocument().Url());
-  if (!url.SchemeIs(url::kHttpScheme)) {
-    RecordReasonForSkippingClassificationToUMA(SKIP_HTTPS);
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    RecordReasonForSkippingClassificationToUMA(SKIP_SCHEME_NOT_SUPPORTED);
     RunFailureCallback();
     return;
   }
