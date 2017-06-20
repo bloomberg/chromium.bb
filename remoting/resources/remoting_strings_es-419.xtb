@@ -112,6 +112,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="3649256019230929621">Minimizar ventana</translation>
 <translation id="369442766917958684">Sin conexión</translation>
 <translation id="3695446226812920698">Más información</translation>
+<translation id="3718805989288361841">Se produjo un error con la configuración de la política para Escritorio remoto de Chrome. Comunícate con el administrador del sistema para obtener ayuda.</translation>
 <translation id="3776024066357219166">Se cerró tu sesión en Escritorio remoto de Chrome.</translation>
 <translation id="3785447812627779171">Host de
 Chromoting</translation>
@@ -249,7 +250,7 @@ remoto de Chrome</translation>
 <translation id="7401733114166276557">Escritorio remoto de Chrome</translation>
 <translation id="7434397035092923453">Acceso rechazado para cliente: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME" /></translation>
-<translation id="7589941250119944644">Escritorio remoto de Chrome llega la Web. Prueba nuestra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />. Es rápida y gratuita, y cuenta con las mismas funciones que antes.</translation>
+<translation id="7589941250119944644">Escritorio remoto de Chrome llega a la Web. Prueba nuestra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />. Es rápida y gratuita, y cuenta con las mismas funciones que antes.</translation>
 <translation id="7606912958770842224">Habilitar conexiones remotas</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

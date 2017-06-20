@@ -107,7 +107,7 @@
 <translation id="2089387485033699258">ca</translation>
 <translation id="2091933974477985526">Àrea de text editable anterior</translation>
 <translation id="2100350898815792233">Tots els signes de puntuació</translation>
-<translation id="2110480898214777136">Vés del principi al final o viceversa dins d'una pàgina, d'un quadre de diàleg o d'un altre espai delimitat</translation>
+<translation id="2110480898214777136">Ves del principi al final o viceversa dins d'una pàgina, d'un quadre de diàleg o d'un altre espai delimitat</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">clau d'accés: <ph name="KEY" /></translation>
 <translation id="2138345533858834403">Simula la sortida d'una pantalla per a braille que es pugui actualitzar al tauler de ChromeVox situat a la part superior de la pantalla.</translation>
@@ -162,7 +162,7 @@
 <translation id="2723001399770238859">àudio</translation>
 <translation id="2732718972699418926">a. m.</translation>
 <translation id="2749275490991666823">Comprovat</translation>
-<translation id="27527859628328957">Vés a l'element enfocable següent</translation>
+<translation id="27527859628328957">Ves a l'element enfocable següent</translation>
 <translation id="2770781857296573485">Entra a l'exploració de grups</translation>
 <translation id="2777845298774924149">S'ha sortit</translation>
 <translation id="2800204403141299078">No hi ha més elements diferents.</translation>
@@ -177,7 +177,7 @@
 <translation id="2844995807198708617">Menú contextual</translation>
 <translation id="2849332794118375855">No hi ha cap casella de selecció més.</translation>
 <translation id="2864481629947106776">Enllaç anterior</translation>
-<translation id="2873259058405069099">Vés al principi de la taula</translation>
+<translation id="2873259058405069099">Ves al principi de la taula</translation>
 <translation id="288178314850623291">Fes servir les ordres de salt per ometre tipus d'elements específics. Per avançar pels encapçalaments, prem Cerca+H i, per tornar enrere, prem Cerca+Maj+H.</translation>
 <translation id="2894654529758326923">Informació</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{clau d'obertura}other{# claus d'obertura}}</translation>
@@ -231,7 +231,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3241638166094654466">Cel·les en cada línia:</translation>
 <translation id="3286390186030710347">Control lliscant</translation>
 <translation id="3299925995433437805">No hi ha cap enllaç visitat següent.</translation>
-<translation id="3307886118343381874">Vés al final de la taula</translation>
+<translation id="3307886118343381874">Ves al final de la taula</translation>
 <translation id="3311969765485641742">Premeu Alt + Maj + A per revisar les alertes.</translation>
 <translation id="3312997241656799641">Enllaç visitat següent</translation>
 <translation id="3313245066383501820">Tecla modificadora de ChromeVox</translation>
@@ -583,7 +583,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="6142308968191113180">Capçalera 4</translation>
 <translation id="6164829606128959761">comptador</translation>
 <translation id="6169420925157477918">Imatge amb descripció llarga</translation>
-<translation id="6186305613600865047">Vés a la part inferior de la pàgina.</translation>
+<translation id="6186305613600865047">Ves a la part inferior de la pàgina.</translation>
 <translation id="6193330012414963395">a. m./p. m.</translation>
 <translation id="622484624075952240">Avall</translation>
 <translation id="6236061028292614533">Capçalera següent</translation>
@@ -615,7 +615,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="6508059270146105198">Mou la pantalla Braille a la part inferior de la pàgina.</translation>
 <translation id="6536864053412760904">Testimoni de MathML</translation>
 <translation id="6550720799683018100">Per canviar el mapa de teclat actual, seleccioneu una opció de la llista següent.</translation>
-<translation id="6561818612645211875">Vés al principi de la fila actual</translation>
+<translation id="6561818612645211875">Ves al principi de la fila actual</translation>
 <translation id="6587021927234520429">No hi ha cap capçalera més del nivell 4.</translation>
 <translation id="6601344353291556895">Activa les descripcions detallades</translation>
 <translation id="6615602925644411249">Cerqueu a la pàgina.</translation>
@@ -709,7 +709,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="7552432549459840808">Dreceres útils de Chrome</translation>
 <translation id="7579911500627256166">punt <ph name="DOT" /></translation>
 <translation id="7596919493010894443">S'ha esborrat la selecció.</translation>
-<translation id="7604026522577407655">Vés al principi de la columna actual</translation>
+<translation id="7604026522577407655">Ves al principi de la columna actual</translation>
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">Presenta l'URL de la pàgina actual.</translation>
 <translation id="7609363189280667021">Activa els subtítols en braille.</translation>
@@ -766,7 +766,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="820417203470636242">Cel·la buida</translation>
 <translation id="8215202828671303819">Selecció múltiple</translation>
 <translation id="8224171046658870249">S'ha passat a ChromeVox Next</translation>
-<translation id="8276439074553447000">Vés a l'element enfocable anterior</translation>
+<translation id="8276439074553447000">Ves a l'element enfocable anterior</translation>
 <translation id="8278417001922463147">No hi ha cap article anterior.</translation>
 <translation id="8283603667300770666">Camp de formulari següent</translation>
 <translation id="831207808878314375">Definició</translation>
@@ -852,7 +852,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="9150735707954472829">Pestanya</translation>
 <translation id="9151211641321628915">Anuncia una breu descripció de la posició actual.</translation>
 <translation id="9153606228985488238">Presenta un <ph name="PERCENT" /> per cent</translation>
-<translation id="9160096769946561184">Vés al final de la columna actual.</translation>
+<translation id="9160096769946561184">Ves al final de la columna actual.</translation>
 <translation id="9173115498289768110">Volum del <ph name="PERCENT" /> per cent</translation>
 <translation id="9178973770513562274">Utilitzeu les tecles de fletxa amunt o avall per navegar, o bé escriviu per cercar.</translation>
 <translation id="9192904702577636854">Marquesina</translation>

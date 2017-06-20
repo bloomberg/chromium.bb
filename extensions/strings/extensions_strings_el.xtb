@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Παράνομη διαδρομή (απόλυτη ή σχετική με ".."): "<ph name="IMAGE_PATH" />"</translation>
 <translation id="27822970480436970">Η επέκταση αυτή απέτυχε να τροποποιήσει ένα αίτημα δικτύου, επειδή η τροποποίηση ερχόταν σε σύγκρουση με μια άλλη προέκταση.</translation>
 <translation id="2857834222104759979">Το αρχείο δήλωσης δεν είναι έγκυρο.</translation>
+<translation id="2903070246402204397">Η επέκταση <ph name="EXTENSION_NAME" /> (αναγνωριστικό επέκτασης "<ph name="EXTENSION_ID" />") έχει αποκλειστεί από τον διαχειριστή. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Δεν ήταν δυνατή η εγκατάσταση του πακέτου: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από τον προμηθευτή <ph name="VENDOR_ID" /> (σειριακός αριθμός <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από τον προμηθευτή <ph name="VENDOR_ID" /></translation>

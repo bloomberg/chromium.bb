@@ -101,7 +101,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2871695793448672541">Hidden Password</translation>
 <translation id="2898963176829412617">New Folder…</translation>
 <translation id="2903493209154104877">Addresses</translation>
-<translation id="2909437209446960244">Recent tabs</translation>
+<translation id="2909437209446960244">Recent Tabs</translation>
 <translation id="291754862089661335">Position QR code or bar code in this frame</translation>
 <translation id="2921219216347069551">Cannot Share Page</translation>
 <translation id="292639812446257861">Mark Unread</translation>
@@ -150,6 +150,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Touch to Search</translation>
+<translation id="3742082982782149146">The site URL was copied.</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3783017676699494206">Save Image</translation>
 <translation id="3789841737615482174">Install</translation>
@@ -164,10 +165,12 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4038354071007134711">No application on this device can open the file.</translation>
 <translation id="4049507953662678203">Make sure you have a network connection, and try again.</translation>
 <translation id="411254640334432676">Download failed.</translation>
+<translation id="4117350985506774529">Your username was copied.</translation>
 <translation id="4121993058175073134">To send net-export data, please configure your email account in the Settings app.</translation>
 <translation id="4124987746317609294">Time Range</translation>
 <translation id="4172051516777682613">Always show</translation>
 <translation id="418156467088430727">View Offline Version in New Tab</translation>
+<translation id="4237682350741091554">Manage Chrome Sync and personalisation in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Enter Passphrase</translation>
 <translation id="4272631900155121838">To scan a QR code, enable the camera from settings</translation>
 <translation id="4281844954008187215">Terms of Service</translation>
@@ -312,6 +315,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7136892417564438900">Camera is unavailable</translation>
 <translation id="7159472599653637159">Request Mobile Site</translation>
 <translation id="7167621057293532233">Data Types</translation>
+<translation id="7175593937868963913">Compose Email</translation>
 <translation id="7189598951263744875">Share...</translation>
 <translation id="7203585745079012652">Speak Answers Back</translation>
 <translation id="722055596168483966">Personalise Google services</translation>

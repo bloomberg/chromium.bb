@@ -167,6 +167,7 @@
 <translation id="6403826409255603130">Chromium ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
 <translation id="6475912303565314141">Die Erweiterung legt auch die Seite fest, die beim Start von Chromium angezeigt wird.</translation>
 <translation id="6485906693002546646">Ihre E-Mail-Adresse <ph name="PROFILE_EMAIL" /> wird zurzeit für die Synchronisierung Ihrer Chromium-Inhalte verwendet. Wenn Sie Ihre Synchronisierungseinstellungen ändern oder Chromium ohne Google-Konto verwenden möchten, rufen Sie <ph name="SETTINGS_LINK" /> auf.</translation>
+<translation id="6505742536731484931">Chromium benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6510925080656968729">Chromium deinstallieren</translation>
 <translation id="6526111688217511984">Chromium benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="6584627348340620412">Künftige 32-Bit-Versionen von Chromium werden unter diesem Linux-System nicht mehr unterstützt. Aktualisieren Sie bitte auf die 64-Bit-Version von Chromium.</translation>
@@ -241,6 +242,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8563206822260884157">Starkes, von Chromium generiertes Passwort verwenden</translation>
 <translation id="85843667276690461">Hilfe für Chromium aufrufen</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
+<translation id="8590769996813453836">Chromium hat schädliche Software auf Ihrem Computer gefunden, die entfernt werden kann. Ihre Einstellungen werden dann wiederhergestellt, sodass Ihr Browser wieder wie gewohnt funktioniert.</translation>
 <translation id="8621669128220841554">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="8628626585870903697">Chromium verfügt nicht über den PDF-Viewer, der für die Druckvorschau erforderlich ist.</translation>
 <translation id="8667808506758191620">Ihr <ph name="DEVICE_TYPE" /> ist auf dem neuesten Stand.</translation>

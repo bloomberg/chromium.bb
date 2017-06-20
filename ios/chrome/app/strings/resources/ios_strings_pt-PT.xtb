@@ -150,6 +150,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3638472932233958418">Pré-carregar Páginas Web</translation>
 <translation id="3691593122358196899">Adicionado aos marcadores em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
+<translation id="3742082982782149146">O URL do site foi copiado.</translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
 <translation id="3783017676699494206">Guardar Imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -164,10 +165,12 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4038354071007134711">Nenhuma aplic. neste disp. pode abrir o ficheiro.</translation>
 <translation id="4049507953662678203">Certifique-se de que tem uma ligação de rede e tente novamente.</translation>
 <translation id="411254640334432676">A transferência falhou.</translation>
+<translation id="4117350985506774529">O seu nome de utilizador foi copiado.</translation>
 <translation id="4121993058175073134">P/enviar dados exp. da Int., config. a conta de email na ap. Definiç.</translation>
 <translation id="4124987746317609294">Intervalo de Tempo</translation>
 <translation id="4172051516777682613">Mostrar sempre</translation>
 <translation id="418156467088430727">Ver versão offline num novo separador</translation>
+<translation id="4237682350741091554">Gerir a Sincronização do Chrome e a personalização nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Introduzir frase de acesso</translation>
 <translation id="4272631900155121838">Para ler um código QR, ative a câmara nas definições</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
@@ -312,6 +315,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7136892417564438900">A câmara não está disponível</translation>
 <translation id="7159472599653637159">Pedir site para dispositivos móveis</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
+<translation id="7175593937868963913">Compor email</translation>
 <translation id="7189598951263744875">Partilhar...</translation>
 <translation id="7203585745079012652">Ouvir Respostas</translation>
 <translation id="722055596168483966">Personalizar os serviços Google</translation>

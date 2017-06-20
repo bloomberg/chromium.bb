@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Недопустимый путь (абсолютный или относительный с элементом ".."): <ph name="IMAGE_PATH" /></translation>
 <translation id="27822970480436970">Этому расширению не удалось изменить сетевой запрос, так как при этом возник конфликт с другим расширением.</translation>
 <translation id="2857834222104759979">Недопустимый файл манифеста.</translation>
+<translation id="2903070246402204397">Расширение <ph name="EXTENSION_NAME" /> (идентификатор: <ph name="EXTENSION_ID" />) заблокировано администратором. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Не удается установить пакет: "<ph name="ERROR_CODE" />"</translation>
 <translation id="3115238746683532089">Неизвестный продукт <ph name="PRODUCT_ID" /> от поставщика <ph name="VENDOR_ID" /> (серийный номер <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Неизвестный продукт <ph name="PRODUCT_ID" /> от поставщика <ph name="VENDOR_ID" /></translation>

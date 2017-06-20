@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1007441141628883408">Aktiverar komponentuppdateringar för alla komponenter i <ph name="PRODUCT_NAME" /> när principen inte är angiven eller när den är inställd på Sant.
-
-      Om den är inställd på Falskt är komponentuppdateringar inaktiverade. Vissa komponenter undantas dock från principen: uppdateringar för komponenter som inte innehåller körbar kod eller inte märkbart förändrar webbläsarens funktion eller är viktiga för dess säkerhet inaktiveras inte.
-      Exempel på sådana komponenter är uppgifter om listor över återkallade certifikat och uppgifter i säker webbsökning. </translation>
 <translation id="101438888985615157">Rotera skärmen 180 grader</translation>
 <translation id="1017967144265860778">Energibesparing på inloggningssidan</translation>
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
@@ -511,15 +507,6 @@
 
       Alla poster i listan anger en identifierare som används internt för att skilja de olika lokala kontona på enheten från varandra.</translation>
 <translation id="2769952903507981510">Konfigurera det obligatoriska domännamnet för fjärråtkomstvärdar</translation>
-<translation id="2785954641789149745">Aktiverar säker surf i <ph name="PRODUCT_NAME" /> och hindrar användarna från att ändra inställningen.
-
-      Om du aktiverar den här inställningen är säker surf alltid aktiverat.
-
-      Om du inaktiverar den här inställningen är säker surf aldrig aktiverat.
-
-      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta inställningen ”Aktivera skydd mot lösenordsfiske och skadlig programvara” i <ph name="PRODUCT_NAME" />.
-
-      Om den här principen inte anges är den aktiverad, men användarna kan ändra den.</translation>
 <translation id="2787173078141616821">Rapportera information om Android-status</translation>
 <translation id="2801230735743888564">Tillåt användare att spela påskäggsspelet med dinosaurier när enheten är offline.
 
@@ -532,9 +519,6 @@
           Om inställningen har inaktiverats och utgående UDP-anslutningar filtreras av brandväggen, tillåter datorn bara anslutningar från klientdatorer inom det lokala nätverket.
 
           Om policyn inte har angetts är inställningen aktiverad.</translation>
-<translation id="2811293057593285123">Med tjänsten Säker webbsökning visas en varningssida när användare navigerar till webbplatser som flaggats som skadliga. Om du aktiverar inställningen kan användare inte fortsätta från varningssidan till den skadliga webbplatsen.
-
-      Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
 <translation id="2844404652289407061">Aktiverar tillgången till Tryck för att söka i innehållsvyn i <ph name="PRODUCT_NAME" />.
 
@@ -941,7 +925,6 @@
 <translation id="4372704773119750918">Tillåt inte att företagsanvändare ingår i multiprofiler (primärt eller sekundärt)</translation>
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
 <translation id="4389091865841123886">Konfigurera fjärrattesteringen med TPM-mekanism.</translation>
-<translation id="4397469093966511008">Om den här principen är inställd på falskt kan inte användare skicka systeminformation eller innehåll på sidan till Googles servrar. Om inställningen är inställd på sant eller inte har konfigurerats kan användare skicka systeminformation och innehåll på sidan till Säker webbsökning och bidra till att skadliga appar och webbplatser identifieras.</translation>
 <translation id="4418726081189202489">Om principen är inställd på falskt förhindras att sökfrågor skickas från <ph name="PRODUCT_NAME" /> till en Google-server för att hämta en korrekt tidsstämpel. Dessa sökfrågor aktiveras om principen är inställd på sant eller inte inställd alls.</translation>
 <translation id="4423597592074154136">Ange proxyinställningar manuellt</translation>
 <translation id="4429220551923452215">Aktiverar eller inaktiverar genvägen Appar i bokmärkesfältet.
@@ -1070,7 +1053,7 @@
 
       Ett lämpligt fel visas om en användare försöker logga in med ett användarnamn som inte matchar detta mönster. 
 
-      Om denna policy inte anges eller lämnas tom kan alla användare logga in på <ph name="PRODUCT_NAME" />.</translation>
+      Om denna princip inte anges eller lämnas tom kan alla användare logga in på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillåt helskärmsläge</translation>
 <translation id="4869787217450099946">Anger om skärmaktiveringslåset är tillåtet. Skärmaktiveringslåset kan krävas av vissa tillägg via API:et för näthanteringstillägget.
 
@@ -1270,6 +1253,8 @@
       Om <ph name="PRODUCT_NAME" /> inte kan hämta statusinformation för återkallning kommer sådana certifikat att behandlas som återkallade ("hard-fail").
 
       Om ingen inställning görs för principen eller om den har värdet falskt använder <ph name="PRODUCT_NAME" /> de befintliga inställningarna för kontroller för återkallning online.</translation>
+<translation id="572720239788271400">Aktiverar komponentuppdateringar i <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Aktivera framställningen av roamingkopior för profiluppgifterna för <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importera formuläruppgifter för Autofyll från standardwebbläsaren första gången den körs</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
@@ -1499,6 +1484,7 @@
           Om policyn inte ställs in är skärmtangentbordet inaktiverat när inloggningsskärmen visas första gången. Användaren kan aktivera eller inaktivera skärmtangentbordet när som helst och dess status på inloggningsskärmen sparas för användaren.</translation>
 <translation id="6573305661369899995">Ange en extern källa för webbadressbegränsningar</translation>
 <translation id="6598235178374410284">Användarens avatarbild</translation>
+<translation id="6603004149426829878">Skicka alla tillgängliga platssignaler till servern när tidszon fastställs</translation>
 <translation id="6628646143828354685">Principen innebär att du kan ange om webbplatser får tillgång till Bluetooth-enheter i närheten. Åtkomsten kan blockeras helt eller så kan användaren bli tillfrågad varje gång en webbplats begär att få tillgång till Bluetooth-enheter i närheten.
 
           Om policyn inte anges används 3 och användaren kan ändra inställningen.</translation>
@@ -2089,7 +2075,7 @@
 <translation id="8906768759089290519">Aktivera gästläge</translation>
 <translation id="8908294717014659003">Gör att du kan ange om webbplatser ska kunna komma åt medieenheter. Åtkomst till medieenheter kan tillåtas som standard eller så kan användaren få en fråga varje gång en webbplats vill komma åt dem.
 
-         Om du inte anger någon policy kommer PromptOnAccess att användas och användaren kommer att kunna ändra den.</translation>
+         Om du inte anger någon princip kommer PromptOnAccess att användas och användaren kommer att kunna ändra den.</translation>
 <translation id="8909280293285028130">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska låsas när enheten är ansluten till elnätet.
 
           Om policyn är inställd på ett värde som är större än noll anger den hur länge användaren måste vara inaktiv innan skärmen låses av <ph name="PRODUCT_OS_NAME" />.
@@ -2137,8 +2123,8 @@
 <translation id="9147029539363974059">Skickar systemloggar till hanteringsservern så att administratörer kan
       övervaka systemloggarna.
 
-      Om policyn är inställd på sant kommer systemloggar att skickas.
-      Om policyn är inställd på falskt eller inte har angetts kommer inga systemloggar att skickas.</translation>
+      Om principen är inställd på sant kommer systemloggar att skickas.
+      Om principen är inställd på falskt eller inte har angetts kommer inga systemloggar att skickas.</translation>
 <translation id="9150416707757015439">Policyn är föråldrad. Använd IncognitoModeAvailability istället.
       Inkognitoläge i <ph name="PRODUCT_NAME" /> aktiveras.
 
@@ -2172,5 +2158,6 @@
 <translation id="922540222991413931">Konfigurera installationskällor för tillägg, appar och användarskript</translation>
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>
 <translation id="930930237275114205">Ange katalog för användardata i <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Aktiverar tvingad inloggning för <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Ange storlek för diskcache</translation>
 </translationbundle>

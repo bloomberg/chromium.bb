@@ -112,6 +112,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="3649256019230929621">Minimer vinduet</translation>
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Få flere oplysninger om, hvordan du gør</translation>
+<translation id="3718805989288361841">Der er en fejl i politikindstillingerne for Chrome Fjernskrivebord. Kontakt din systemadministrator for at få hjælp.</translation>
 <translation id="3776024066357219166">Din session med Chrome Fjernskrivebord er afsluttet.</translation>
 <translation id="3785447812627779171">Chromoting-
 host</translation>
@@ -232,7 +233,7 @@ Fjernskrivebord</translation>
 <translation id="6930242544192836755">Varighed</translation>
 <translation id="6939719207673461467">Vis/skjul tastatur.</translation>
 <translation id="6944854424004126054">Gendan vinduet</translation>
-<translation id="6948905685698011662">Chrome Fjernskrivebord er nu tilgængelig på nettet. Se vores <ph name="LINK_BEGIN" />gratis webapp<ph name="LINK_END" />.</translation>
+<translation id="6948905685698011662">Chrome Fjernskrivebord er nu tilgængeligt på nettet. Se vores <ph name="LINK_BEGIN" />gratis webapp<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Forbindelserne til fjerncomputeren er midlertidigt blokerede, fordi nogen forsøgte at få forbindelse til den med en ugyldig pinkode. Prøv igen senere.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME" />? Hvis du ombestemmer dig, skal du genaktivere forbindelserne på den computer.</translation>

@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">تحميل صفحات الويب مسبقًا</translation>
 <translation id="3691593122358196899">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">المس للبحث</translation>
+<translation id="3742082982782149146">‏تم نسخ عنوان URL للموقع.</translation>
 <translation id="3771033907050503522">علامات تبويب التصفح المتخفي</translation>
 <translation id="3783017676699494206">حفظ الصورة</translation>
 <translation id="3789841737615482174">تثبيت</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">لا يمكن فتح هذا الملف بأي تطبيق موجود على هذا الجهاز.</translation>
 <translation id="4049507953662678203">تأكد من اتصالك بالشبكة، وأعد المحاولة.</translation>
 <translation id="411254640334432676">فشلت عملية التنزيل</translation>
+<translation id="4117350985506774529">تم نسخ اسم المستخدم.</translation>
 <translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، الرجاء تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
 <translation id="4124987746317609294">النطاق الزمني</translation>
 <translation id="4172051516777682613">الإظهار دائمًا</translation>
 <translation id="418156467088430727">عرض إصدار بلا إنترنت في علامة تبويب جديدة</translation>
+<translation id="4237682350741091554">‏إدارة مزامنة Chrome والتخصيص في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">إدخال عبارة المرور</translation>
 <translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تمكين الكاميرا من الإعدادات</translation>
 <translation id="4281844954008187215">شروط الخدمة</translation>
@@ -312,6 +315,7 @@
 <translation id="7136892417564438900">الكاميرا غير متاحة</translation>
 <translation id="7159472599653637159">طلب موقع ويب متوافق مع الجوّال</translation>
 <translation id="7167621057293532233">أنواع البيانات</translation>
+<translation id="7175593937868963913">إنشاء بريد إلكتروني</translation>
 <translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7203585745079012652">النطق بالإجابات</translation>
 <translation id="722055596168483966">‏تخصيص خدمات Google</translation>

@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
-<translation id="1007441141628883408">Ativa as atualizações de componentes para todos os componentes no <ph name="PRODUCT_NAME" /> quando não estão definidas ou estão definidas como Verdadeiro.
-
-      Se estiverem definidas como Falso, as atualizações de componentes são desativadas. Contudo, alguns componentes estão isentos desta política: as atualizações de quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a respetiva segurança não são desativadas.
-      Alguns exemplos desses componentes incluem os dados da navegação segura e as listas de revogação de certificados. </translation>
 <translation id="101438888985615157">Rodar o ecrã 180 graus</translation>
 <translation id="1017967144265860778">Gestão de energia no ecrã de início de sessão</translation>
 <translation id="1019101089073227242">Definir diretório de dados do utilizador</translation>
@@ -154,7 +150,7 @@
       captura de vídeo é concedido nas páginas de início de sessão SAML. Caso não seja encontrada uma
       correspondência, o acesso é automaticamente negado. Não são permitidos padrões com
       carateres universais.</translation>
-<translation id="1634989431648355062">Permitir o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
+<translation id="1634989431648355062">Permitir que o plug-in <ph name="FLASH_PLUGIN_NAME" /> seja executado nestes sites</translation>
 <translation id="1655229863189977773">Definir o tamanho da cache do disco em bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
 <translation id="1668836044817793277">Se a aplicação de quiosque de início automático sem atraso tem permissão para controlar a versão do <ph name="PRODUCT_OS_NAME" />.
@@ -484,15 +480,6 @@
 
       Cada entrada da lista especifica um identificador, o qual é utilizado internamente para distinguir as diferentes contas locais do dispositivo.</translation>
 <translation id="2769952903507981510">Configurar o nome de domínio necessário para anfitriões de acesso remoto</translation>
-<translation id="2785954641789149745">Ativa a funcionalidade de Navegação Segura do <ph name="PRODUCT_NAME" /> e evita que os utilizadores alterem esta definição.
-
-      Se ativar esta definição, a Navegação Segura estará sempre ativa.
-
-      Se desativar esta definição, a Navegação Segura nunca estará ativa.
-
-      Se ativar ou desativar esta definição, os utilizadores não poderão alterar ou substituir a definição "Ativar proteção contra phishing e programas maliciosos" no <ph name="PRODUCT_NAME" />.
-
-      Se esta política não for definida, estará ativada, mas o utilizador poderá alterá-la.</translation>
 <translation id="2787173078141616821">Comunicar informações acerca do estado do Android</translation>
 <translation id="2801230735743888564">Permitir aos utilizadores jogar o jogo do ovo da Páscoa do dinossauro quando o dispositivo está offline.
 
@@ -505,9 +492,6 @@
           Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, esta máquina apenas permitirá ligações de máquinas cliente dentro da rede local.
 
           Se deixar esta política por definir, a definição será ativada.</translation>
-<translation id="2811293057593285123">O serviço de Navegação segura apresenta uma página de aviso se os utilizadores acederem a sites sinalizados como potencialmente maliciosos. A ativação desta definição impede que os utilizadores prossigam da página de aviso para o site com conteúdo maligno.
-
-      Se esta definição estiver desativada ou não estiver configurada, os utilizadores podem optar por prosseguir para o site sinalizado após a apresentação do aviso.</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
 <translation id="2844404652289407061">Ativa a disponibilidade de Tocar para pesquisar na vista de conteúdo do <ph name="PRODUCT_NAME" />.
 
@@ -710,7 +694,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se deixar estas políticas por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3758249152301468420">Desativar Ferramentas do Programador</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de encerramento de sessão por inatividade</translation>
-<translation id="376931976323225993">Permite-lhe definir se os Websites têm automaticamente permissão para executar o plug-in <ph name="FLASH_PLUGIN_NAME" />. A execução automática do plug-in <ph name="FLASH_PLUGIN_NAME" /> pode ser permitida ou negada para todos os Websites.
+<translation id="376931976323225993">Permite-lhe definir se os Websites têm automaticamente autorização para executar o plug-in <ph name="FLASH_PLUGIN_NAME" />. A execução automática do plug-in <ph name="FLASH_PLUGIN_NAME" /> pode ser permitida ou negada para todos os Websites.
 
           Clicar para reproduzir permite a execução do plug-in <ph name="FLASH_PLUGIN_NAME" />, mas o utilizador tem de clicar no marcador de posição para iniciar a sua execução.
 
@@ -894,7 +878,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4372704773119750918">Não permitir que o utilizador empresarial faça parte do multiperfil (principal ou secundário)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites mostrem todas as imagens</translation>
 <translation id="4389091865841123886">Configura a comprovação remota através do mecanismo TPM.</translation>
-<translation id="4397469093966511008">Definir esta política como falsa impede os utilizadores de optarem por enviar algumas informações do sistema e conteúdo de páginas para os servidores da Google. Caso esta definição seja verdadeira ou não esteja configurada, os utilizadores podem enviar algumas informações do sistema e conteúdo de páginas para a Navegação segura de modo a ajudar a detetar aplicações e sites perigosos.</translation>
 <translation id="4418726081189202489">Definir esta política como falsa impede o <ph name="PRODUCT_NAME" /> de enviar ocasionalmente consultas para um servidor da Google para obter uma data/hora exata. Estas consultas serão ativadas caso esta política esteja definida como verdadeira ou não esteja definida.</translation>
 <translation id="4423597592074154136">Especificar manualmente as definições de proxy</translation>
 <translation id="4429220551923452215">Ativa ou desativa o atalho de aplicações na barra de marcadores.
@@ -1187,6 +1170,8 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se o <ph name="PRODUCT_NAME" /> não conseguir obter informações sobre o estado da revogação, tais certificados serão considerados revogados ("falha grave").
 
       Se esta política não estiver definida ou estiver definida como falsa, o <ph name="PRODUCT_NAME" /> utilizará as definições de verificação da revogação online existentes.</translation>
+<translation id="572720239788271400">Permite atualizações de componentes no <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5728154254076636808">Permitir a criação de cópias de roaming para dados de perfis do <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importar dados do formulário de preenchimento automático a partir do navegador predefinido na primeira execução</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5770738360657678870">Canal para programadores (pode ser instável)</translation>
@@ -1310,7 +1295,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Caso contrário, pode ser definida para um dos seguintes valores: "sslv3", "tls1", "tls1.1" ou "tls1.2". Quando definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS inferiores à versão especificada. Um valor não reconhecido é ignorado.
 
       Tenha em atenção que, apesar do número, "sslv3" é uma versão mais antiga do que "tls1".</translation>
-<translation id="6181608880636987460">Permite-lhe definir uma lista de padrões de URL que especificam sites que não têm permissão para executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
+<translation id="6181608880636987460">Permite-lhe definir uma lista de padrões de URL que especificam sites que não têm autorização para executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, é utilizado o valor predefinido global para todos os sites da política "DefaultPluginsSetting", se esta estiver definida, ou, caso contrário, a configuração pessoal do utilizador.</translation>
 <translation id="6190022522129724693">Definição de pop-ups predefinida</translation>
@@ -1397,6 +1382,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se esta política não for definida, o teclado no ecrã é desativado quando o ecrã de início de sessão é apresentado pela primeira vez. Os utilizadores podem ativar ou desativar o teclado no ecrã a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
+<translation id="6603004149426829878">Enviar sempre quaisquer sinais de localização disponíveis para o servidor durante a resolução do fuso horário</translation>
 <translation id="6628646143828354685">Permite definir se os Sites estão autorizados a obter acesso a dispositivos Bluetooth próximos. É possível bloquear completamente o acesso ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos Bluetooth próximos.
 
           Se esta política não for definida, é utilizada a definição "3" e o utilizador pode alterá-la.</translation>
@@ -2016,5 +2002,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="922540222991413931">Configurar fontes de instalação de extensões, aplicações e scripts do utilizador</translation>
 <translation id="924557436754151212">Importar palavras-passe guardadas a partir do navegador predefinido na primeira execução</translation>
 <translation id="930930237275114205">Definir diretório de dados do utilizador do <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Permite o início de sessão forçado no <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Definir o tamanho da cache do disco</translation>
 </translationbundle>

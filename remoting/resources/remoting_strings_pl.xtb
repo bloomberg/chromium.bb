@@ -64,7 +64,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="225614027745146050">Witamy</translation>
 <translation id="228809120910082333">Potwierdź poniżej swoje konto i kod PIN, by móc korzystać z funkcji Chromoting.</translation>
 <translation id="2314101195544969792">Sesja aplikacji <ph name="APPLICATION_NAME" /> jest od jakiegoś czasu nieaktywna i zostanie wkrótce zakończona.</translation>
-<translation id="2317666076142640974">Dołącz do grupy użytkowników testujących nową <ph name="LINK_BEGIN" />aplikację internetową Pulpit zdalny Chrome<ph name="LINK_END" /> i podziel się z nami swoją opinią.</translation>
+<translation id="2317666076142640974">Zobacz, jak wygląda nowa <ph name="LINK_BEGIN" />aplikacja internetowa Pulpit zdalny Chrome<ph name="LINK_END" /> i podziel się z nami opinią.</translation>
 <translation id="2353140552984634198">Możesz bezpiecznie korzystać z tego komputera przez Chromoting.</translation>
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2366718077645204424">Nie można połączyć się z hostem. Problem prawdopodobnie wynika z konfiguracji Twojej sieci.</translation>
@@ -112,6 +112,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3649256019230929621">Minimalizuj okno</translation>
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Instrukcje</translation>
+<translation id="3718805989288361841">Wystąpił błąd związany z ustawieniami zasad dla Pulpitu zdalnego Chrome. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="3776024066357219166">Sesja Pulpitu zdalnego Chrome została zakończona.</translation>
 <translation id="3785447812627779171">Host funkcji
 Chromoting</translation>

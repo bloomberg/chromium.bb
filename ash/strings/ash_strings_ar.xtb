@@ -47,6 +47,7 @@
 <translation id="225680501294068881">جارٍ البحث عن أجهزة...</translation>
 <translation id="2268130516524549846">تم تعطيل البلوتوث</translation>
 <translation id="2268813581635650749">خروج الجميع</translation>
+<translation id="2292698582925480719">مقياس العرض</translation>
 <translation id="2303600792989757991">نظرة عامة لنافذة التبديل</translation>
 <translation id="2352467521400612932">إعدادات قلم الشاشة</translation>
 <translation id="2354174487190027830">تنشيط <ph name="NAME" /></translation>
@@ -182,6 +183,7 @@
 <translation id="6297287540776456956">استخدام قلم الشاشة لتحديد منطقة</translation>
 <translation id="6310121235600822547">تم تدوير <ph name="DISPLAY_NAME" /> إلى <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">تراكب لوحة المفاتيح</translation>
+<translation id="6395038768903208085">وضع الطبقة الوصفية</translation>
 <translation id="639644700271529076">‏مفتاح CAPS LOCK قيد الإيقاف</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">رفض</translation>
@@ -220,6 +222,7 @@
 <translation id="742594950370306541">الكاميرا قيد الاستخدام.</translation>
 <translation id="743058460480092004">الكاميرا والميكروفون قيد الاستخدام.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
+<translation id="7526573455193969409">قد تكون الشبكة خاضعة للمراقبة</translation>
 <translation id="7536035074519304529">‏عنوان IP: ‏<ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير الدقة إلى <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">لوحة ألوان الرموز التعبيرية</translation>
@@ -250,6 +253,7 @@
 <translation id="8433186206711564395">إعدادات الشبكة</translation>
 <translation id="8433977262951327081">تم تغيير اختصار عرض الفقاعة التفسيرية لقائمة خيارات الإدخال في الرف. الرجاء استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
+<translation id="847056008324733326">عرض إعدادات المقياس</translation>
 <translation id="8484916590211895857"><ph name="NAME" /> : جارٍ إعادة الاتصال ...</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
 <translation id="8639760480004882931">يتبقى <ph name="PERCENTAGE" /></translation>

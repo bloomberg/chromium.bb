@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Ugyldig sti (absolut eller relativ med '..'): '<ph name="IMAGE_PATH" /> '</translation>
 <translation id="27822970480436970">Denne udvidelse kunne ikke ændre en netværksanmodning, fordi ændringen var i strid med en anden udvidelse.</translation>
 <translation id="2857834222104759979">Manifestfilen er ugyldig.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (udvidelses-id "<ph name="EXTENSION_ID" />") er blokeret af administrator. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Pakken kunne ikke installeres: "<ph name="ERROR_CODE" />"</translation>
 <translation id="3115238746683532089">Ukendt produkt, <ph name="PRODUCT_ID" />, fra leverandøren <ph name="VENDOR_ID" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Ukendt produkt, <ph name="PRODUCT_ID" />, fra leverandøren <ph name="VENDOR_ID" /></translation>

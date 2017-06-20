@@ -169,6 +169,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6403826409255603130">Chromium är en webbläsare som kör webbsidor och appar blixtsnabbt. Den är snabb, stabil och lätt att använda. Surfa säkrare med Chromiums skydd mot skadliga program och lösenordsfiske.</translation>
 <translation id="6475912303565314141">Det styr också vilken sida som visas när du startar Chromium.</translation>
 <translation id="6485906693002546646">Du synkroniserar dina grejer i Chromium med <ph name="PROFILE_EMAIL" />. Om du vill ändra synkroniseringsinställningen eller använda Chromium utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6505742536731484931">Du behöver ge Chromium åtkomstbehörighet till din plats om den ska kunna delas med webbplatsen.</translation>
 <translation id="6510925080656968729">Avinstallera Chromium</translation>
 <translation id="6526111688217511984">Chromium måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
 <translation id="6584627348340620412">Framtida versioner av 32-bitarsversionen av Chromium kommer inte att ha stöd för det här Linux-systemet. Uppgradera till 64-bitarsversionen av Chromium.</translation>
@@ -243,6 +244,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="8563206822260884157">Använd ett starkt lösenord som genererats av Chromium</translation>
 <translation id="85843667276690461">Få hjälp med att använda Chromium</translation>
 <translation id="8586442755830160949">Upphovsrätt <ph name="YEAR" /> The Chromium Authors. Med ensamrätt.</translation>
+<translation id="8590769996813453836">Chromium har upptäckt skadlig programvara på datorn. Du kan låta Chromium ta bort den och återställa inställningarna så att webbläsaren fungerar som den ska igen.</translation>
 <translation id="8621669128220841554">Installationen misslyckades på grund av ett okänt fel. Ladda ned Chromium igen.</translation>
 <translation id="8628626585870903697">Chromium har inte det PDF-visningsprogram som krävs för att förhandsgranskning ska fungera.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> är uppdaterad.</translation>

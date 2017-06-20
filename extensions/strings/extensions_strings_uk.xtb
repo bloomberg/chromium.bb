@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Заборонений шлях (узагалі або у зв’язку з ".."): "<ph name="IMAGE_PATH" />"</translation>
 <translation id="27822970480436970">Цьому розширенню не вдалося змінити запит мережі, оскільки зміна не сумісна з іншим розширенням.</translation>
 <translation id="2857834222104759979">Файл маніфесту недійсний.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (ідентифікатор розширення "<ph name="EXTENSION_ID" />") заблоковано адміністратором. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Неможливо встановити пакет: "<ph name="ERROR_CODE" />"</translation>
 <translation id="3115238746683532089">Невідомий продукт <ph name="PRODUCT_ID" /> від постачальника <ph name="VENDOR_ID" /> (серійний номер: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Невідомий продукт <ph name="PRODUCT_ID" /> від постачальника <ph name="VENDOR_ID" /></translation>

@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">ウェブページのプリロード</translation>
 <translation id="3691593122358196899">「<ph name="FOLDER_TITLE" />」にブックマークしました</translation>
 <translation id="3738139272394829648">タップして検索</translation>
+<translation id="3742082982782149146">サイトの URL がコピーされました。</translation>
 <translation id="3771033907050503522">シークレットタブ</translation>
 <translation id="3783017676699494206">画像を保存</translation>
 <translation id="3789841737615482174">インストール</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">この端末のアプリケーションではファイルを開けません。</translation>
 <translation id="4049507953662678203">ネットワークに接続していることを確認してから、もう一度お試しください。</translation>
 <translation id="411254640334432676">ダウンロードできませんでした。</translation>
+<translation id="4117350985506774529">ユーザー名がコピーされました。</translation>
 <translation id="4121993058175073134">エクスポート データのみを送信するには、設定アプリでメール アカウントを設定してください。</translation>
 <translation id="4124987746317609294">期間</translation>
 <translation id="4172051516777682613">常に表示</translation>
 <translation id="418156467088430727">オフライン版を新しいタブで表示</translation>
+<translation id="4237682350741091554">[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で Chrome 同期とパーソナライズを管理できます</translation>
 <translation id="424315890655130736">パスフレーズの入力</translation>
 <translation id="4272631900155121838">QR コードをスキャンするには、設定でカメラを有効にしてください</translation>
 <translation id="4281844954008187215">利用規約</translation>
@@ -312,6 +315,7 @@
 <translation id="7136892417564438900">カメラを使用できません</translation>
 <translation id="7159472599653637159">モバイルサイトをリクエスト</translation>
 <translation id="7167621057293532233">データ タイプ</translation>
+<translation id="7175593937868963913">メールの作成</translation>
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7203585745079012652">回答を音声で聞く</translation>
 <translation id="722055596168483966">Google サービスのカスタマイズ</translation>

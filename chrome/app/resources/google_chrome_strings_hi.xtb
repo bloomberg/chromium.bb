@@ -11,6 +11,7 @@
 <translation id="127345590676626841">Chrome अपने आप अपडेट हो जाता है ताकि आपके पास हमेशा सबसे नवीनतम वर्शन रहे. जब यह डाउनलोड पूर्ण हो जाता है, तो Chrome पुन: प्रारंभ होगा और आप आगे बढ़ जाएंगे.</translation>
 <translation id="1302523850133262269">कृपया Chrome के द्वारा नवीनतम सिस्टम अपडेट इंस्टॉल करने के दौरान प्रतीक्षा करें.</translation>
 <translation id="1350930993895295930">Chrome ने असामान्‍य व्‍यवहार का पता लगाया है</translation>
+<translation id="137466361146087520">Google Chrome बीटा</translation>
 <translation id="1393853151966637042">Chrome का उपयोग करने के बारे में सहायता प्राप्त करें</translation>
 <translation id="1399397803214730675">इस कंप्यूटर में Google Chrome का अधिक नवीन वर्शन पहले से मौजूद है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome अनइंस्‍टॉल करें और फिर से प्रयास करें.</translation>
 <translation id="1434626383986940139">Chrome Canary ऐप्स </translation>
@@ -33,6 +34,7 @@
 <translation id="1773601347087397504">Chrome OS का उपयोग करने के बारे में सहायता प्राप्त करें</translation>
 <translation id="1795405610103747296">अपने फ़ोन पर Chrome इंस्टॉल करें. हम आपके फ़ोन पर एक SMS भेजेंगे: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1818142563254268765">Chrome स्वयं को नवीनतम वर्शन में अपडेट नहीं कर सका, इसलिए आप शानदार नई सुविधाओं और सुरक्षा समाधानों का लाभ नहीं ले पा रहे हैं. आपको Chrome को अपडेट करना होगा.</translation>
+<translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
 <translation id="2063848847527508675">अपडेट लागू करने के लिए Chrome OS को फिर से चालू करने की आवश्यकता होती है.</translation>
 <translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
@@ -110,6 +112,7 @@
 <translation id="4251615635259297716">आपके Chrome डेटा को इस खाते से लिंक करें?</translation>
 <translation id="4251625577313994583">अपने iPhone पर Chrome पाएं</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />पुन: प्रारंभ<ph name="END_BUTTON" /> करना आवश्यक है)</translation>
+<translation id="4328355335528187361">Google Chrome डेवलपर (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">यह कंप्यूटर अब Google Chrome अपडेट प्राप्त नहीं करेगा क्योंकि यह Linux सिस्टम अब समर्थित नहीं है.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
@@ -133,6 +136,7 @@
 <translation id="4921569541910214635">कंप्यूटर साझा करते हैं? अब आप Chrome जैसा चाहें वैसा सेट कर सकते हैं.</translation>
 <translation id="4953650215774548573">Google Chrome को अपने डिफ़ॉल्ट ब्राउज़र के रूप में सेट करना</translation>
 <translation id="495931528404527476">Chrome में</translation>
+<translation id="4965682129423310439">Chrome को आपके कंप्यूटर पर नुकसान पहुंचाने वाला सॉफ़्टवेयर मिला है. Chrome उसे निकाल सकता है और आपकी सेटिंग बहाल कर सकता है ताकि आपका ब्राउज़र फिर से सामान्य रूप से काम करने लगे.</translation>
 <translation id="4987308747895123092">कृपया सभी Google Chrome windows (Windows 8 मोड वाले भी) बंद कर दें और फिर से प्रयास करें.</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="5028489144783860647">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका. कृपया अपना समन्‍वयन पासफ़्रेज़ अपडेट करें.</translation>
@@ -178,6 +182,7 @@
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
 <translation id="6235018212288296708">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome के लिए इनबाउंड नियम.</translation>
 <translation id="6236285698028833233">Google Chrome ने अपडेट करना रोक दिया है और अब वह आपके ऑपरेटिंग सिस्टम के इस वर्शन का समर्थन नहीं करता.</translation>
+<translation id="6291089322031436445">Chrome डेवलपर ऐप्लिकेशन</translation>
 <translation id="6291549208091401781">Google Chrome आपके कंप्यूटर पर मौजूद सभी उपयोगकर्ताओं के लिए पहले से इंंस्टॉल है.</translation>
 <translation id="6338556085225130112">Google Chrome अपडेट हो रहा है</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> द्वारा संभव बनाया गया है.</translation>
@@ -192,10 +197,13 @@
 <translation id="6626317981028933585">खेद है, आपकी Mozilla Firefox सेटिंग उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग को Google Chrome पर आयात करने के लिए, अपने कार्य सहेजें और सभी Firefox विंडो बंद करें. इसके बाद जारी रखें पर क्लिक करें.</translation>
 <translation id="6634887557811630702">Google Chrome अद्यतित है</translation>
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
+<translation id="6697947395630195233">Chrome को इस साइट से आपका स्थान साझा करने के लिए आपके स्थान का एक्सेस चाहिए.</translation>
 <translation id="6757767188268205357">मुझे बग न करें</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
 <translation id="686561893457936865">Chrome को हर कहीं ले जाएं</translation>
 <translation id="6883876366448858277">Google खोज को कोई शब्‍द या उसके आस-पास का प्रसंग भेजता है, जो परिभाषाएं, चित्र, खोज परिणाम और अन्‍य विवरण लौटाता है.</translation>
+<translation id="6885412569789873916">Chrome बीटा ऐप्लिकेशन</translation>
+<translation id="6967962315388095737">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome बीटा का इनबाउंड नियम.</translation>
 <translation id="6970811910055250180">आपका डिवाइस अपडेट किया जा रहा है...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> चाहता है कि इस डिवाइस का उपयोग करने से पहले आप निम्न सेवा की शर्तों पढ़ लें और उन्हें स्वीकार करें. ये शर्तें Chrome OS शर्तों का विस्तार, उनमें बदलाव या उन्हें सीमित नहीं करतीं.</translation>
 <translation id="6989339256997917931">Google Chrome को अपडेट कर दिया गया  है, लेकिन आपने इसका कम से कम 30 दिन से उपयोग नहीं किया है.</translation>
@@ -222,6 +230,7 @@
 <translation id="7473891865547856676">जी रहने दें</translation>
 <translation id="7494905215383356681">Chrome ओपन सोर्स लाइसेंस</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{इससे इस डिवाइस से कम से कम $1 आइटम स्थायी रूप से हट जाएगा. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}one{इससे इस डिवाइस से कम से कम $1 आइटम स्थायी रूप से हट जाएंगे. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}other{इससे इस डिवाइस से कम से कम $1 आइटम स्थायी रूप से हट जाएंगे. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}}</translation>
+<translation id="7535429826459677826">Google Chrome डेवलपर</translation>
 <translation id="7552219221109926349">Chrome OS इस भाषा में दिखाएं</translation>
 <translation id="7592736734348559088">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका क्‍योंकि आपके खाते के प्रवेश विवरण पुराने हैं.</translation>
 <translation id="7626032353295482388">Chrome में आपका स्वागत है</translation>
@@ -253,6 +262,7 @@
 <translation id="8439301513305169426">Chrome इस पासवर्ड को <ph name="SAVED_PASSWORD_LINK" /> से सहेज लेगा. आपके इसे याद रखने की ज़रूरत नहीं है.</translation>
 <translation id="8455999171311319804">वैकल्पिक: Google को निदान और उपयोग डेटा अपने आप भेजकर Chrome OS को बेहतर बनाने में सहायता करें.</translation>
 <translation id="8478823064122749032">अपने फ़ोन पर Chrome इंस्टॉल करें. हम आपके खाता पुनर्प्राप्ति फ़ोन नंबर पर एक SMS भेजेंगे: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8521348052903287641">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome का इनबाउंड नियम.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome में ऐप चलाने का साधन Canary</translation>
 <translation id="8556340503434111824">Google Chrome का एक नया वर्शन उपलब्‍ध है, और यह अब तक का सबसे तेज़ है.</translation>

@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">Προφόρτ. ιστοσελίδων</translation>
 <translation id="3691593122358196899">Ο σελιδοδείκτης είναι στο "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
+<translation id="3742082982782149146">Το URL του ιστοτόπου αντιγράφηκε.</translation>
 <translation id="3771033907050503522">Καρτ.αν.περιήγ.</translation>
 <translation id="3783017676699494206">Αποθήκευση εικόνας</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">Καμία εφαρμογή στη συσκευή για άνοιγμα αρχείου.</translation>
 <translation id="4049507953662678203">Βεβαιωθείτε ότι έχετε μια σύνδεση δικτύου και δοκιμάστε ξανά.</translation>
 <translation id="411254640334432676">Αποτυχία λήψης.</translation>
+<translation id="4117350985506774529">Το όνομα χρήστη αντιγράφηκε.</translation>
 <translation id="4121993058175073134">Για αποστ. δεδομ.εξαγ.δικτ.,διαμορφ. το email σας στην εφ. "Ρυθμίσεις"</translation>
 <translation id="4124987746317609294">Χρονικό εύρος</translation>
 <translation id="4172051516777682613">Εμφάνιση πάντα</translation>
 <translation id="418156467088430727">Προβολή έκδοσης εκτός σύνδεσης σε νέα καρτέλα</translation>
+<translation id="4237682350741091554">Διαχειριστείτε το Chrome Sync και την εξατομίκευση στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Εισαγωγή φράσης πρόσβασης</translation>
 <translation id="4272631900155121838">Για να σαρώσετε έναν κώδικα QR, ενεργοποιήστε την κάμερα από τις ρυθμίσεις</translation>
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
@@ -312,6 +315,7 @@
 <translation id="7136892417564438900">Η κάμερα δεν είναι διαθέσιμη</translation>
 <translation id="7159472599653637159">Αίτηση ιστότ. για κινητά</translation>
 <translation id="7167621057293532233">Τύποι δεδομένων</translation>
+<translation id="7175593937868963913">Σύνταξη μηνύματος ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="7189598951263744875">Κοινή χρήση…</translation>
 <translation id="7203585745079012652">Εκφώνηση απαντήσεων</translation>
 <translation id="722055596168483966">Εξατομίκευση υπηρεσιών Google</translation>

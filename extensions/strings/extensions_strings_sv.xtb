@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Illegal sökväg (absolut eller relativ med ".."): <ph name="IMAGE_PATH" /></translation>
 <translation id="27822970480436970">Tillägget misslyckades att ändra en nätverksbegäran eftersom ändringen står i konflikt med ett annat tillägg.</translation>
 <translation id="2857834222104759979">Manifestfilen är ogiltig.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (tilläggs-id <ph name="EXTENSION_ID" />) har blockerats av administratören. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Det gick inte att installera paketet <ph name="ERROR_CODE" /></translation>
 <translation id="3115238746683532089">Okänd produkt (<ph name="PRODUCT_ID" />) från leverantören <ph name="VENDOR_ID" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Okänd produkt (<ph name="PRODUCT_ID" />) från leverantören <ph name="VENDOR_ID" /></translation>

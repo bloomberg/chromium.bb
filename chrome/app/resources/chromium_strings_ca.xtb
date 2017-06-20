@@ -167,6 +167,7 @@
 <translation id="6403826409255603130">Chromium és un navegador web que executa les pàgines web i les aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu per Internet amb més seguretat amb protecció inserida a Chromium contra el programari maliciós i contra la pesca (suplantació d'identitat).</translation>
 <translation id="6475912303565314141">També controla la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="6485906693002546646">Utilitzeu <ph name="PROFILE_EMAIL" /> per sincronitzar el contingut de Chromium. Per modificar la preferència de sincronització o per utilitzar Chromium sense cap compte de Google, dirigiu-vos a <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6505742536731484931">Chromium necessita accés a la teva ubicació per compartir-la amb aquest lloc web.</translation>
 <translation id="6510925080656968729">Desinstal·la Chromium</translation>
 <translation id="6526111688217511984">Chromium necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
 <translation id="6584627348340620412">Les versions futures de Chromium de 32 bits ja no admetran aquest sistema Linux. Feu l'actualització a Chromium de 64 bits.</translation>
@@ -241,6 +242,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="8563206822260884157">Utilitza una contrasenya segura generada per Chromium</translation>
 <translation id="85843667276690461">Obtén ajuda per a l'ús de Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Els autors de Chromium. Tots els drets reservats.</translation>
+<translation id="8590769996813453836">Chromium ha trobat programari maliciós al teu ordinador. Chromium el pot suprimir i restaurar la teva configuració perquè el navegador torni a funcionar amb normalitat.</translation>
 <translation id="8621669128220841554">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Chromium.</translation>
 <translation id="8628626585870903697">Chromium no inclou el lector de PDF que és necessari perquè la previsualització funcioni.</translation>
 <translation id="8667808506758191620">El dispositiu <ph name="DEVICE_TYPE" /> està actualitzat.</translation>

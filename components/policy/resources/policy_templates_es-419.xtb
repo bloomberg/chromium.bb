@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="1007441141628883408">Habilita actualizaciones para todos los componentes en <ph name="PRODUCT_NAME" /> cuando no se establece o se establece como verdadera.
-
-      Si se establece como falsa, se inhabilitan las actualizaciones de los componentes. Sin embargo, algunos componentes no están contemplados en esta política: no se inhabilitarán las actualizaciones de cualquier componente que no contenga un código ejecutable, no modifique el comportamiento del navegador de forma significativa o sea fundamental para la seguridad.
-      Entre estos componentes, se incluyen las listas de revocación de certificados y los datos de navegación segura. </translation>
 <translation id="101438888985615157">Rotar la pantalla 180 grados</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de acceso</translation>
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
@@ -477,15 +473,6 @@
 
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configura el nombre de dominio requerido para los hosts de acceso remoto.</translation>
-<translation id="2785954641789149745">Habilita la función Navegación segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta opción.
-
-      Si habilitas esta opción, la Navegación segura siempre estará activa.
-
-      Si inhabilitas esta opción, la Navegación segura nunca estará activa.
-
-      Si habilitas o inhabilitas esta opción, los usuarios no podrán modificar o anular la opción Habilitar protección contra robo de identidad (phishing) y software malicioso en <ph name="PRODUCT_NAME" />.
-
-      Si no se establece esta política, se habilitará, pero el usuario podrá modificarla.</translation>
 <translation id="2787173078141616821">Informar datos sobre el estado de Android</translation>
 <translation id="2801230735743888564">Permitir que los usuarios jueguen con el huevo de pascua del dinosaurio cuando el dispositivo se encuentra sin conexión
 
@@ -498,9 +485,6 @@
           Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta computadora solo permitirá las conexiones de computadoras cliente que se encuentren en la red local.
 
           Si esta política no se establece, la configuración estará habilitada.</translation>
-<translation id="2811293057593285123">El servicio de Navegación segura muestra una página de advertencia cuando los usuarios visitan sitios marcados como potencialmente maliciosos. Habilitar esta configuración evita que los usuarios procedan desde la página de advertencia al sitio malicioso.
-
-      Si esta configuración se inhabilita o no se configura, los usuarios podrán elegir continuar hacia el sitio marcado después de que se les haya mostrado la advertencia.</translation>
 <translation id="2824715612115726353">Activar el modo de incógnito</translation>
 <translation id="2844404652289407061">Habilita la disponibilidad de Tocar para buscar en la vista de contenido de <ph name="PRODUCT_NAME" />.
 
@@ -887,7 +871,6 @@
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir a todos los sitios que muestren todas las imágenes</translation>
 <translation id="4389091865841123886">Permite configurar la atestación remota con el mecanismo de TPM.</translation>
-<translation id="4397469093966511008">Si esta política se establece como falsa, los usuarios ya pueden enviar determinada información sobre el sistema y contenido de páginas a los servidores de Google. Si se establece como verdadera o no se configura, los usuarios podrán enviar información sobre el sistema y contenido de páginas a Navegación segura para que detecte apps y sitios peligrosos.</translation>
 <translation id="4418726081189202489">Si esta política se establece como falsa, evita que <ph name="PRODUCT_NAME" /> envíe de forma ocasional consultas a un servidor de Google para obtener una marca de tiempo exacta. Estas consultas se habilitarán si esta política se establece como verdadera o no se establece.</translation>
 <translation id="4423597592074154136">Especificar manualmente la configuración del proxy</translation>
 <translation id="4429220551923452215">Habilita o inhabilita el acceso directo a las aplicaciones en la barra de favoritos.
@@ -1176,6 +1159,8 @@
       Si <ph name="PRODUCT_NAME" /> no puede obtener información del estado de revocación, esos certificados se considerarán revocados ("rechazados").
 
       Si no se establece esta política o si se establece en false, <ph name="PRODUCT_NAME" /> utilizará la configuración para comprobar la revocación en línea actual.</translation>
+<translation id="572720239788271400">Habilita las actualizaciones de componentes en <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Habilita la creación de las copias de itinerancia para los datos de perfil de <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importar el formulario de Autocompletar del navegador predeterminado en la primera ejecución</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
@@ -1387,6 +1372,7 @@
           Si no se establece esta política, el teclado en pantalla se inhabilita la primera vez que aparece la pantalla de acceso. Los usuarios pueden habilitarlo o inhabilitarlo en cualquier momento, y esta selección persiste en el resto de los usuarios.</translation>
 <translation id="6573305661369899995">Establece una fuente externa de restrcicciones de URL</translation>
 <translation id="6598235178374410284">Imagen de avatar del usuario</translation>
+<translation id="6603004149426829878">Enviar siempre cualquier señal de ubicación disponible al servidor mientras se determina la zona horaria</translation>
 <translation id="6628646143828354685">Te permite establecer si los sitios web pueden acceder a dispositivos Bluetooth cercanos. El acceso se puede bloquear por completo o se puede preguntar al usuario cada vez que un sitio web desea acceder a dispositivos Bluetooth cercanos.
 
           Si no se configura esta política, se usará el valor "3", y el usuario podrá cambiarlo.</translation>
@@ -1415,7 +1401,7 @@
 <translation id="6689792153960219308">Informar estado de hardware</translation>
 <translation id="6693751878507293182">Si se habilita esta opción, se inhabilitará la búsqueda automática y la instalación de los complementos faltantes en <ph name="PRODUCT_NAME" />. Si se habilita o no se configura esta opción, el buscador de complementos estará activo.</translation>
 <translation id="6699880231565102694">Habilitar autenticación de dos factores para los hosts de acceso remoto.</translation>
-<translation id="6757438632136860443">Te permite establecer una lista de patrones de URL que especifica los sitios que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
+<translation id="6757438632136860443">Te permite establecer una lista de patrones de URL que especifican los sitios que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se establece, se usará el valor predeterminado global para todos los sitios, ya sea desde la política "DefaultPluginsSetting", si se establece, o desde otro tipo de configuración personal del usuario.</translation>
 <translation id="6766216162565713893">Permitir que los sitios soliciten permiso al usuario para acceder a un dispositivo Bluetooth cercano</translation>
@@ -2007,5 +1993,6 @@
 <translation id="922540222991413931">Configurar fuentes de instalación de secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas del navegador predeterminado en la primera ejecución</translation>
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Permite forzar el acceso a <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Configurar el tamaño de caché de disco</translation>
 </translationbundle>

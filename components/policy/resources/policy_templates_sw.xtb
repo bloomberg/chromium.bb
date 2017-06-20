@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
-<translation id="1007441141628883408">Huwasha masasisho ya kipengele kwa vipengele vyote katika <ph name="PRODUCT_NAME" /> wakati haijawekwa au ikiwekwa kuwa Ndivyo.
-
-      Ikiwekwa kuwa Sivyo, masasisho ya vipengele yatazimwa. Hata hivyo, baadhi ya vipengele havizingatii sera hii: masasisho kwenye kipengele chochote ambacho hakina msimbo unaotekelezeka, au ambacho hakibadilishi sana tabia ya kivinjari, au ni muhimu kwa usalama wake hakitazimwa.
-      Mifano ya vipengele hivyo ni pamoja na orodha za vyeti vilivyobatilishwa na data ya kuvinjari salama. </translation>
 <translation id="101438888985615157">Zungusha skrini kwa digrii 180</translation>
 <translation id="1017967144265860778">Udhibiti wa nishati kwenye skrini ya kuingia</translation>
 <translation id="1019101089073227242">Weka saraka ya data ya mtumiaji</translation>
@@ -497,11 +493,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 
       Kila ingizo la orodha hubainisha kitambulishi, kinachotumiwa ndani kutambua akaunti tofauti za kifaa cha karibu nawe zilizo mbali.</translation>
 <translation id="2769952903507981510">Sanidi jina la kikoa linalohitajika kwa wapangishaji wa ufikivu wa mbali</translation>
-<translation id="2785954641789149745">Huwasha kipengee cha Kuvinjari Salama cha <ph name="PRODUCT_NAME" />  na kuzuia watumiaji kutoka kubadilisha mpangilio huu. 
-Kama utawasha mpangilio huu, Kuvinjari Salama kutatumika kila wakati. 
-Kama utazima mpangilio huu, Kuvinjari Salama hakutatumika kamwe.
-Kama utawasha au kuzima mpangilio huu, watumiaji hawezi kubadilisha au kupuuza mpangilio wa "Washa ulinzi wa kuhadaa na programu hasidii" katika <ph name="PRODUCT_NAME" />. 
-Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</translation>
 <translation id="2787173078141616821">Ripoti maelezo kuhusu hali ya Android</translation>
 <translation id="2801230735743888564">Ruruhusu watumiaji wacheze mchezo fiche wa dinosau kifaa kinapokuwa nje ya mtandao.
 
@@ -514,9 +505,6 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
           Ikiwa mpangilio huu utazimwa na miunganisho ya kutoa ya UDP imechujwa na ngome, basi mashini hii itaweza tu kuruhusu miunganisho kutoka kwenye mashini ya seva teja katika mtandao wa karibu.
 
           Ikiwa sera hii itaachwa bila kuwekwa mpangilio utawashwa.</translation>
-<translation id="2811293057593285123">Huduma ya Kuvinjari Salama inaonyesha ukurasa wa kuonya wakati watumiaji wanapovinjari katika tovuti ambazo zimetiwa alama kuwa hasidi. Kuwasha mpangilio huu kunawazuia watumiaji kuondoka kwenye ukurasa wa kuonya hadi kwenye tovuti hasidi.
-
-      Ikiwa mpangilio huu utazimwa au hautasanidiwa basi watumiaji wanaweza kuchagua kuendelea hadi kwenye tovuti iliyotiwa alama baada ya kuonyeshwa onyo.</translation>
 <translation id="2824715612115726353">Washa hali Fiche</translation>
 <translation id="2844404652289407061">Huwasha kipengele cha Gusa ili Utafute katika mwonekano wa maudhui ya <ph name="PRODUCT_NAME" />.
 
@@ -733,7 +721,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3765260570442823273">Muda wa ujumbe wa tahadhari wa kuondoka tulivu</translation>
 <translation id="376931976323225993">Hukuruhusu kuweka ikiwa tovuti zinaruhusiwa kutumia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" /> kiotomatiki. Kutumia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" /> kiotomatiki kunaweza kuruhusiwa au kukataliwa kwa tovuti zote.
 
-          Bofya ili kucheza inairuhusu programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" /> kutumika lakini lazima mtumiaji abofye kwenye kishikilia nafasi ili ianze kutekeleza.
+          Bofya ili kucheza inairuhusu programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" /> kutumika lakini lazima mtumiaji abofye kishikilia nafasi ili ianze kutekeleza.
 
           Sera hii isipowekwa, mtumiaji ataweza kuibadilisha mipangilio hii mwenyewe.</translation>
 <translation id="3780152581321609624">Jumuisha lango lisiyo wastani katika Kerberos SPN</translation>
@@ -924,7 +912,6 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="4372704773119750918">Usiruhusu mtumiaji wa biashara kuwa sehemu ya wasifu nyingi (ya msingi au ya pili)</translation>
 <translation id="4377599627073874279">Ruhusu tovuti zote kuonyesha picha zote</translation>
 <translation id="4389091865841123886">Sanidi uthibitishaji wa mbali unaotumia mfumo wa TPM.</translation>
-<translation id="4397469093966511008">Kuweka sera hii kuwa sivyo kunazuia watumiaji kuchagua kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwa seva za Google. Ikiwa mipangilio hii imewekwa kuwa ndivyo au haijawekwa, basi watumiaji wataruhusiwa kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwa Kuvinjari Salama ili kusaidia kugundua programu na tovuti hatari.</translation>
 <translation id="4418726081189202489">Kuiweka sera hii kuwa sivyo kutasimamisha <ph name="PRODUCT_NAME" /> kutuma hoja mara kwa mara kwenye seva ya Google ili kurejesha muhuri sahihi wa muda. Hoja hizi zitawashwa iwapo sera hii itawekwa kuwa ndivyo au haitawekwa.</translation>
 <translation id="4423597592074154136">Bainisha mipangilio ya proksi mwenyewe</translation>
 <translation id="4429220551923452215">Huwasha au kuzima njia ya mkato ya programu katika sehemu ya alamisho.
@@ -1248,6 +1235,8 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Ikiwa <ph name="PRODUCT_NAME" /> haiwezi kupata maelezo ya hali ya ubatilishaji, vyeti kama hivyo vitachukuliwa kuwa vimebatilishwa ('hard-fail').
 
       Sera hii isipowekwa, au ikiwekwa kuwa sivyo, basi <ph name="PRODUCT_NAME" /> itatumia mipangilio iliyopo ya kukagua ubatilishaji wa mtandaoni.</translation>
+<translation id="572720239788271400">Huwasha masasisho ya vipengele katika <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5728154254076636808">Washa uundaji wa nakala za urandaji za data ya wasifu wa <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Leta data ya fomu ya kujaza otomatiki kutoka kwenye kivinjari chaguo-msingi wakati wa uendeshaji wa kwanza</translation>
 <translation id="5765780083710877561">Maelezo:</translation>
 <translation id="5770738360657678870">Kituo cha dev (huenda kikawa si imara)</translation>
@@ -1374,7 +1363,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
       Vinginevyo inaweza kuwekwa kuwa moja ya thamani zifuatazo: "sslv3", "tls1", "tls1.1" au "tls1.2". Ikiwekwa, <ph name="PRODUCT_NAME" /> haitatumia matoleo ya SSL/TLS chini ya toleo lililobainishwa. Thamani ambayo haitatambulika itapuuzwa.
 
       Kumbuka kwamba, licha ya nambari, "sslv3" ni toleo la awali kuliko "tls1".</translation>
-<translation id="6181608880636987460">Hukuruhusu kuweka orodha ya michoro ya url inayobainisha tovuti zisizoruhusiwa kutumia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" />.
+<translation id="6181608880636987460">Hukuruhusu kuweka orodha ya ruwaza za url inayobainisha tovuti zisizoruhusiwa kutumia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" />.
 
           Ikiwa sera hii haitawekwa, thamani chaguo-msingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultPluginsSetting' endapo itawekwa, au mtumiaji akiweka mipangilio mwenyewe.</translation>
 <translation id="6190022522129724693">Mpangilio chaguo-msingi za ibukizi</translation>
@@ -1471,6 +1460,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
           Sera hii isipowekwa, kibodi ya skrini inawashwa skrini ya kuingia katika akaunti inapoonyeshwa mara ya kwanza. Watumiaji wanaweza wakazima au kuwasha kibodi ya skrini wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inadumu kati ya watumiaji.</translation>
 <translation id="6573305661369899995">Weka chanzo cha nje cha vikwazo vya URL</translation>
 <translation id="6598235178374410284">Picha ya ishara ya mtumiaji</translation>
+<translation id="6603004149426829878">Kila wakati, tuma kwenye seva mawimbi yoyote ya mahali yanayopatikana unaporekebisha saa za eneo</translation>
 <translation id="6628646143828354685">Hukuruhusu kuweka ikiwa tovuti zinaruhusiwa kupata idhini ya kufikia vifaa vya karibu vya Bluetooth. Idhini ya kufikia inaweza kuzuiwa kabisa, au mtumiaji anaweza kuulizwa kila wakati tovuti inapotaka kufikia vifaa vya karibu vya Bluetooth.
 
           Sera hii ikiachwa bila kuwekwa, chaguo la '3' litatumiwa, na mtumiaji ataweza kulibadilisha.</translation>
@@ -1498,7 +1488,7 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
 
       Kuweka chaguo hili kulezama au kuiacha bila kuwekwa kipataji cha programu jalizi kitakuwa amilifu.</translation>
 <translation id="6699880231565102694">Wezesha uthibitishaji wa vipengee viwili kwa wapangishaji wa ufikivu wa mbali</translation>
-<translation id="6757438632136860443">Hukuruhusu kuweka orodha ya michoro ya url inayobainisha tovuti zinazoruhusiwa kutumia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" />.
+<translation id="6757438632136860443">Hukuruhusu kuweka orodha ya ruwaza za url inayobainisha tovuti zinazoruhusiwa kutumia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" />.
 
           Ikiwa sera hii haitawekwa, thamani chaguo-msingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultPluginsSetting' endapo itawekwa, au mtumiaji akiweka mipangilio mwenyewe.</translation>
 <translation id="6766216162565713893">Ruhusu tovuti zimwombe mtumiaji atoe idhini ya kufikia vifaa vya karibu vya Bluetooth</translation>
@@ -2135,5 +2125,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="922540222991413931">Sanidi viendelezi, programu, na vyanzo vya kusakinisha hati</translation>
 <translation id="924557436754151212">Leta manenosiri yaliyohifadhiwa kutoka kwenye kivinjari chaguo-msingi kwenye uendeshaji wa kwanza</translation>
 <translation id="930930237275114205">Weka saraka ya data ya mtumiaji wa <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Huwasha kulazimisha kuingia kwa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="944817693306670849">Weka ukubwa wa akiba ya diski</translation>
 </translationbundle>

@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">Попер.завантаж.стор.</translation>
 <translation id="3691593122358196899">Закладку збережено в папці "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
+<translation id="3742082982782149146">URL-адресу сайту скопійовано.</translation>
 <translation id="3771033907050503522">Анонімні вкладки</translation>
 <translation id="3783017676699494206">Зберегти зображення</translation>
 <translation id="3789841737615482174">Встановити</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">Немає додатків на пристрої, щоб відкрити цей файл.</translation>
 <translation id="4049507953662678203">Переконайтеся, що з’єднання з мережею встановлено, і повторіть спробу.</translation>
 <translation id="411254640334432676">Не завантажено.</translation>
+<translation id="4117350985506774529">Ім’я користувача скопійовано.</translation>
 <translation id="4121993058175073134">Щоб надсил. дані про чистий експорт, налашт. обл. запис у програмі Налаштування.</translation>
 <translation id="4124987746317609294">Період часу</translation>
 <translation id="4172051516777682613">Завжди показувати</translation>
 <translation id="418156467088430727">Переглянути офлайн-версію в новій вкладці</translation>
+<translation id="4237682350741091554">Керуйте синхронізацією та персоналізацією Chrome у <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Ввести парольну фразу</translation>
 <translation id="4272631900155121838">Щоб відсканувати QR-код, увімкніть камеру в налаштуваннях</translation>
 <translation id="4281844954008187215">Умови використання</translation>
@@ -312,6 +315,7 @@
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7159472599653637159">Мобільний сайт</translation>
 <translation id="7167621057293532233">Типи даних</translation>
+<translation id="7175593937868963913">Написати лист</translation>
 <translation id="7189598951263744875">Поділитися...</translation>
 <translation id="7203585745079012652">Озвучувати відповіді</translation>
 <translation id="722055596168483966">Персоналізувати служби Google</translation>

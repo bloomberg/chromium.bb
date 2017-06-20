@@ -64,7 +64,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="225614027745146050">Bun venit</translation>
 <translation id="228809120910082333">Confirmați mai jos contul și codul PIN pentru a permite accesarea prin intermediul Chromoting.</translation>
 <translation id="2314101195544969792">Sesiunea <ph name="APPLICATION_NAME" /> este inactivă de ceva timp și în curând va fi deconectată.</translation>
-<translation id="2317666076142640974">Încearcă noua <ph name="LINK_BEGIN" />aplicație web Desktop la distanță Chrome<ph name="LINK_END" />. Ne-ar face plăcere să primim feedbackul tău.</translation>
+<translation id="2317666076142640974">Încearcă în avans noua <ph name="LINK_BEGIN" />aplicație web Desktop la distanță Chrome<ph name="LINK_END" />. Ne-ar face plăcere să primim feedbackul tău.</translation>
 <translation id="2353140552984634198">Puteți accesa acest computer în siguranță utilizând Chromoting.</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2366718077645204424">Gazda nu poate fi accesată. Acest lucru este cauzat, probabil, de configurația rețelei pe care o utilizați.</translation>
@@ -112,6 +112,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="3649256019230929621">Minimizați fereastra</translation>
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Află cum</translation>
+<translation id="3718805989288361841">A apărut o eroare la setările politicii pentru Desktop la distanță Chrome. Contactează administratorul de sistem pentru asistență.</translation>
 <translation id="3776024066357219166">Sesiunea Desktop la distanță Chrome s-a încheiat.</translation>
 <translation id="3785447812627779171">Gazdă
 Chromoting</translation>

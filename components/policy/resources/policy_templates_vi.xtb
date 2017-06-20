@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1007441141628883408">Bật cập nhật thành phần cho tất cả các thành phần trong <ph name="PRODUCT_NAME" /> khi chưa được đặt hoặc đã được đặt thành True.
-
-      Nếu được đặt thành False, tùy chọn cập nhật thành phần bị tắt. Tuy nhiên, một số thành phần được loại trừ khỏi chính sách này: các bản cập nhật cho bất kỳ thành phần nào không chứa mã thực thi hoặc không làm thay đổi đáng kể hoạt động của trình duyệt hay có ý nghĩa quan trọng đối với tính bảo mật của trình duyệt sẽ không bị tắt.
-      Ví dụ về các thành phần như vậy gồm có danh sách thu hồi chứng chỉ và dữ liệu duyệt web an toàn. </translation>
 <translation id="101438888985615157">Xoay màn hình 180 độ</translation>
 <translation id="1017967144265860778">Quản lý nguồn trên màn hình đăng nhập</translation>
 <translation id="1019101089073227242">Thiết lập thư mục dữ liệu người dùng</translation>
@@ -501,15 +497,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Mỗi mục nhập trong danh sách chỉ định một định danh, được sử dụng nội bộ để cho biết riêng các tài khoản trong thiết bị khác nhau.</translation>
 <translation id="2769952903507981510">Định cấu hình tên miền bắt buộc cho máy chủ truy cập từ xa</translation>
-<translation id="2785954641789149745">Bật tính năng Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
-
-      Nếu bạn bật cài đặt này, Duyệt web an toàn luôn hoạt động.
-
-      Nếu bạn tắt cài đặt này, Duyệt web an toàn không bao giờ hoạt động.
-
-      Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt ''Bật tính năng bảo vệ chống lừa đảo và phần mềm độc hại'' trong <ph name="PRODUCT_NAME" />.
-
-      Nếu không đặt chính sách này, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="2787173078141616821">Báo cáo thông tin về trạng thái của Android</translation>
 <translation id="2801230735743888564">Cho phép người dùng chơi trò chơi trứng khủng long Phục sinh khi thiết bị ngoại tuyến.
 
@@ -523,9 +510,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu cài đặt này bị tắt và kết nối UDP đi bị lọc bởi tường lửa, máy tính này sẽ chỉ cho phép kết nối từ các máy khách trong mạng cục bộ.
 
           Nếu không đặt chính sách này, cài đặt này sẽ được bật.</translation>
-<translation id="2811293057593285123">Dịch vụ Duyệt web an toàn hiển thị trang cảnh báo khi người dùng điều hướng đến trang web được gắn cờ là có thể độc hại. Bật cài đặt này sẽ ngăn người dùng vẫn tiếp tục truy cập từ trang cảnh báo tới trang web độc hại.
-
-      Nếu cài đặt này bị tắt hoặc không được định cấu hình thì người dùng có thể chọn để tiếp tục tới trang bị gắn cờ sau khi được hiển thị cảnh báo.</translation>
 <translation id="2824715612115726353">Bật chế độ Ẩn danh</translation>
 <translation id="2844404652289407061">Cho phép sử dụng Chạm để tìm kiếm trong chế độ xem nội dung của <ph name="PRODUCT_NAME" />.
 
@@ -924,7 +908,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4372704773119750918">Không cho phép người dùng doanh nghiệp là một phần của đa cấu hình (chính hoặc phụ)</translation>
 <translation id="4377599627073874279">Cho phép tất cả các trang web hiển thị tất cả hình ảnh</translation>
 <translation id="4389091865841123886">Định cấu hình chứng thực từ xa với cơ chế TPM.</translation>
-<translation id="4397469093966511008">Đặt chính sách này thành false sẽ ngăn người dùng chọn gửi nội dung trang và thông tin hệ thống nhất định tới máy chủ Google. Nếu cài đặt này là true hoặc không được định cấu hình thì người dùng sẽ được phép gửi nội dung trang và thông tin hệ thống nhất định để Duyệt web an toàn nhằm giúp phát hiện các ứng dụng cũng như trang web nguy hiểm.</translation>
 <translation id="4418726081189202489">Đặt chính sách này thành False sẽ ngăn <ph name="PRODUCT_NAME" /> thỉnh thoảng gửi truy vấn tới máy chủ Google để truy xuất dấu thời gian chính xác. Các truy vấn này sẽ được kích hoạt nếu chính sách này được đặt thành True hoặc không được đặt.</translation>
 <translation id="4423597592074154136">Chỉ định cài đặt proxy theo cách thủ công</translation>
 <translation id="4429220551923452215">Bật hoặc tắt lối tắt ứng dụng trong thanh dấu trang.
@@ -1253,6 +1236,8 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu <ph name="PRODUCT_NAME" /> không thể nhận được thông tin trạng thái thu hồi thì những chứng chỉ đó sẽ được coi là bị thu hồi ('lỗi cứng').
 
       Nếu chính sách này không được đặt hoặc được đặt thành false thì <ph name="PRODUCT_NAME" /> sẽ sử dụng cài đặt kiểm tra thu hồi trực tuyến hiện có.</translation>
+<translation id="572720239788271400">Bật cập nhập thành phần trong <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Bật tạo bản sao chuyển vùng cho dữ liệu hồ sơ của <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Nhập dữ liệu biểu mẫu tự động điền từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="5770738360657678870">Kênh nhà phát triển (có thể không ổn định)</translation>
@@ -1477,6 +1462,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu chính sách này không được đặt, bàn phím ảo bị tắt khi màn hình đăng nhập được hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt bàn phím ảo bất kỳ lúc nào và trạng thái của bàn phím trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="6573305661369899995">Đặt nguồn bên ngoài cho hạn chế URL</translation>
 <translation id="6598235178374410284">Hình đại diện của người dùng</translation>
+<translation id="6603004149426829878">Luôn gửi mọi tín hiệu vị trí có sẵn cho máy chủ trong khi phân giải múi giờ</translation>
 <translation id="6628646143828354685">Cho phép bạn đặt có cho phép trang web truy cập vào các thiết bị Bluetooth lân cận hay không. Quyền truy cập có thể bị chặn hoàn toàn hoặc người dùng có thể được hỏi mỗi lần trang web muốn truy cập vào các thiết bị Bluetooth lân cận.
 
           Nếu chính sách này không được đặt, '3' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -2138,5 +2124,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="922540222991413931">Định cấu hình nguồn cài đặt tiện ích, ứng dụng và tập lệnh người dùng</translation>
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="930930237275114205">Thiết lập thư mục dữ liệu người dùng <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Bật bắt buộc đăng nhập cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Đặt kích thước bộ nhớ cache của đĩa</translation>
 </translationbundle>

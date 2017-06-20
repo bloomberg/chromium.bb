@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">गलत पथ (पूर्ण या '..' से संबंधित): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">य‍ह एक्‍सटेंशन, नेटवर्क अनुरोध संशोधित करने में विफल रहा क्‍योंकि संशोधन का अन्‍य एक्‍सटेंशन के साथ विरोध हुआ.</translation>
 <translation id="2857834222104759979">मालसूची फ़ाइल अमान्य है.</translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (एक्सटेंशन आईडी "<ph name="EXTENSION_ID" />") को व्यवस्थापक ने अवरोधित किया है. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">पैकेज इंस्टॉल नहीं कर सका: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> (क्रमांक <ph name="SERIAL_NUMBER" />) विक्रेता की ओर से <ph name="PRODUCT_ID" /> अज्ञात उत्पाद</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>

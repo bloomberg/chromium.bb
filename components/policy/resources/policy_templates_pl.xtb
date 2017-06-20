@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="1007441141628883408">Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, włączone są aktualizacje wszystkich komponentów <ph name="PRODUCT_NAME" />.
-
-      Jeśli zasada ma wartość fałsz, aktualizacje komponentów są wyłączone. Nie obejmuje to jednak niektórych komponentów: nie są wyłączane aktualizacje żadnych komponentów, które nie zawierają kodu wykonywalnego, nie mają znacznego wpływu na działanie przeglądarki lub mają kluczowe znaczenie dla bezpieczeństwa.
-      Przykładami takich komponentów są listy odwołanych certyfikatów i dane bezpiecznego przeglądania. </translation>
 <translation id="101438888985615157">Obróć ekran o 180 stopni</translation>
 <translation id="1017967144265860778">Zarządzanie energią na ekranie logowania</translation>
 <translation id="1019101089073227242">Ustaw katalog danych użytkownika</translation>
@@ -483,15 +479,6 @@
 
       Każdy wpis określa identyfikator używany wewnętrznie do rozróżniania lokalnych kont na urządzeniu.</translation>
 <translation id="2769952903507981510">Konfiguracja wymaganej nazwy domeny dla hostów zdalnego dostępu</translation>
-<translation id="2785954641789149745">Włącza funkcję Bezpieczne przeglądanie w <ph name="PRODUCT_NAME" /> i zapobiega zmianie tego ustawienia przez użytkowników.
-
-      Jeśli włączysz ustawienie, Bezpieczne przeglądanie jest zawsze aktywne.
-
-      W przeciwnym razie ta funkcja nigdy nie jest aktywna.
-
-      Gdy włączysz lub wyłączysz ustawienie, użytkownicy nie mogą zmienić ani zastąpić ustawienia „Włącz ochronę przed wyłudzaniem danych (phishingiem) i złośliwym oprogramowaniem” w <ph name="PRODUCT_NAME" />.
-
-      Jeśli zasada pozostanie nieustawiona, funkcja jest włączona, ale użytkownik może to zmienić.</translation>
 <translation id="2787173078141616821">Przesyłaj informacje o stanie Androida</translation>
 <translation id="2801230735743888564">Daje użytkownikom dostęp do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline.
 
@@ -504,9 +491,6 @@
           Jeśli ustawienie jest wyłączone i zapora sieciowa filtruje wychodzące połączenia UDP, z komputerem mogą łączyć się tylko komputery klienckie w sieci lokalnej.
 
           Jeśli nie skonfigurujesz tej zasady, ustawienie jest włączone.</translation>
-<translation id="2811293057593285123">Usługa Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Jeśli włączysz to ustawienie, użytkownicy nie będą mogli przechodzić ze strony ostrzeżenia na strony szkodliwe.
-
-      Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
 <translation id="2844404652289407061">Pozwala korzystać z funkcji „Dotknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
 
@@ -890,7 +874,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4372704773119750918">Nie zezwalaj użytkownikom firmowym na korzystanie z trybu wieloprofilowego (jako użytkownik główny ani dodatkowy)</translation>
 <translation id="4377599627073874279">Zezwalaj na wyświetlanie wszelkich grafik we wszystkich witrynach</translation>
 <translation id="4389091865841123886">Konfiguruje zdalne poświadczanie przy użyciu mechanizmu TPM</translation>
-<translation id="4397469093966511008">Wyłączenie tej zasady spowoduje, że użytkownicy nie będą mogli wysyłać na serwery Google pewnych informacji o systemie ani zawartości stron. Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownicy będą mogli wysyłać te dane do usługi Bezpieczne przeglądanie, by pomóc w wykrywaniu niebezpiecznych aplikacji i stron.</translation>
 <translation id="4418726081189202489">Wyłączenie tej zasady spowoduje, że <ph name="PRODUCT_NAME" /> nie będzie okresowo wysyłać zapytań do serwera Google w celu pobrania dokładnej sygnatury czasowej. Zapytania zostaną włączone, jeśli włączysz tę zasadę lub nie skonfigurujesz jej wcale.</translation>
 <translation id="4423597592074154136">Ręcznie określ ustawienia serwera proxy</translation>
 <translation id="4429220551923452215">Włącza lub wyłącza skróty aplikacji na pasku zakładek.
@@ -1178,6 +1161,8 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli <ph name="PRODUCT_NAME" /> nie może uzyskać informacji o stanie unieważnienia, takie certyfikaty są traktowane jak unieważnione (brak możliwości zignorowania błędu).
 
       Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, <ph name="PRODUCT_NAME" /> będzie korzystać z istniejących ustawień sprawdzania online, czy certyfikaty nie zostały unieważnione.</translation>
+<translation id="572720239788271400">Włącza aktualizacje komponentów <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Włącz tworzenie przenośnych kopii danych profilu <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importuj dane autouzupełniania formularzy z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5770738360657678870">Wersja deweloperska (może być niestabilna)</translation>
@@ -1388,6 +1373,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli nie skonfigurujesz tej zasady, klawiatura ekranowa będzie wyłączona po pierwszym wyświetleniu ekranu logowania. Użytkownicy będą mogli ją włączyć i wyłączyć w każdej chwili i jej stan na tym ekranie będzie utrzymywany między użytkownikami.</translation>
 <translation id="6573305661369899995">Pozwala na ustawianie zewnętrznego źródła ograniczeń URL</translation>
 <translation id="6598235178374410284">Obraz awatara użytkownika</translation>
+<translation id="6603004149426829878">Zawsze przesyłaj wszelkie dostępne sygnały o lokalizacji do serwera podczas określania strefy czasowej</translation>
 <translation id="6628646143828354685">Pozwala określić, czy strony mogą korzystać z urządzeń Bluetooth w pobliżu. Dostęp może być całkowicie zablokowany lub użytkownik może być pytany za każdym razem, gdy strona chce użyć takiego urządzenia.
 
           Jeśli ta zasada nie zostanie ustawiona, będzie stosowane ustawienie „3”, a użytkownik będzie mógł je zmienić.</translation>
@@ -1992,5 +1978,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="922540222991413931">Konfiguruj źródła instalacji rozszerzeń, aplikacji i skryptów użytkownika</translation>
 <translation id="924557436754151212">Importuj zapisane hasła z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="930930237275114205">Ustaw katalog danych użytkownika <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="934390688529359269">Włącza wymuszone logowania w usłudze <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Ustaw rozmiar dyskowej pamięci podręcznej.</translation>
 </translationbundle>

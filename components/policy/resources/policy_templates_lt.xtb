@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="1007441141628883408">Įgalinami visų „<ph name="PRODUCT_NAME" />“ komponentų naujiniai, kai nenustatyta arba nustatyta vertė „True“.
-
-      Jei nustatyta vertė „False“, komponentų naujiniai bus išjungti. Tačiau kai kuriems komponentams ši politika netaikoma: komponentų, kuriuose nėra vykdomojo kodo, kurie nežymiai pakeičia naršyklės veikimą arba kurie yra labai svarbūs jos saugai, nėra išjungiami.
-      Tokių komponentų pavyzdžiai yra sertifikatų anuliavimo sąrašai ir saugaus naršymo duomenys. </translation>
 <translation id="101438888985615157">Pasukti ekraną 180 laipsnių kampu</translation>
 <translation id="1017967144265860778">Energijos valdymas prisijungimo ekrane</translation>
 <translation id="1019101089073227242">Nustatyti naudotojo duomenų katalogą</translation>
@@ -510,15 +506,6 @@
 
       Kiekvienas sąrašo įrašas nurodo identifikatorių, naudojamą vidiniais tikslais siekiant atskirti skirtingas vietines įrenginio paskyras.</translation>
 <translation id="2769952903507981510">Konfigūruoti reikiamą nuotolinės prieigos prieglobų domeno pavadinimą</translation>
-<translation id="2785954641789149745">Įgalinama „<ph name="PRODUCT_NAME" />“ saugaus naršymo funkcija ir naudotojams neleidžiama keisti šio nustatymo.
-
-      Jei įgalinsite ši nustatymą, Saugus naršymas visada bus aktyvus.
-
-      Jei išjungsite šį nustatymą, Saugus naršymas neveiks.
-
-      Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės keisti arba nepaisyti „<ph name="PRODUCT_NAME" />“ nustatymo „Įgalinti apsaugą nuo sukčiavimo ir kenkėjiškų programų“.
-
-      Jei ši politika nenustatyta, šis nustatymas bus įgalintas, bet naudotojas galės jį keisti.</translation>
 <translation id="2787173078141616821">Informacijos apie „Android“ būseną ataskaita</translation>
 <translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
 
@@ -531,9 +518,6 @@
           Jei šis nustatymas neleidžiamas ir išeinantys UDP ryšiai filtruojami taikant užkardą, šiame įrenginyje leidžiami tik ryšiai iš klientų įrenginių vietiniame tinkle.
 
           Nenustačius šios politikos nustatymas bus įgalintas.</translation>
-<translation id="2811293057593285123">Naudojant Saugaus naršymo paslaugą rodomas įspėjimo puslapis, kai naudotojai naršo svetaines, kurios pažymėtos kaip potencialiai kenkėjiškos. Įgalinus šį nustatymą neleidžiama naudotojams iš įspėjimo puslapio tęsti veiksmų kenkėjiškoje svetainėje.
-
-      Jei nustatymas neleidžiamas arba nesukonfigūruotas, naudotojai gali pasirinkti tęsti veiksmus pažymėtoje svetainėje, kai parodomas įspėjimas.</translation>
 <translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
 <translation id="2844404652289407061">Įgalinamas paieškos palietus pasiekiamumas „<ph name="PRODUCT_NAME" />“ turinio rodinyje.
 
@@ -940,7 +924,6 @@
 <translation id="4372704773119750918">Neleisti įmonės naudotojui būti kelių profilių dalimi (pirminiu ar antriniu naudotoju)</translation>
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
 <translation id="4389091865841123886">Konfigūruojamas nuotolinis patvirtinimas naudojant TPM mechanizmą.</translation>
-<translation id="4397469093966511008">Nustačius šią politiką į „False“ naudotojai nebegalės pasirinkti siųsti tam tikros sistemos informacijos ir puslapių turinio į „Google“ serverius. Jei šis nustatymas nustatytas į „True“ arba nesukonfigūruotas, naudotojai galės siųsti tam tikrą sistemos informaciją ir puslapių turinį Saugaus naršymo funkcijai, kad padėtų aptikti pavojingas programas ir svetaines.</translation>
 <translation id="4418726081189202489">Nustačius šią politiką į „False“, „<ph name="PRODUCT_NAME" />“ nebesiunčia retkarčiais teikiamų užklausų į „Google“ serverį, kad gautų tikslią laiko žymę. Šios užklausos bus įgalintos, jei ši politika bus nustatyta į „True“ arba nenustatyta.</translation>
 <translation id="4423597592074154136">Pačiam nurodyti tarpinio serverio nustatymus</translation>
 <translation id="4429220551923452215">Įgalinamas arba išjungiamas programų spartusis klavišas žymių juostoje.
@@ -1269,6 +1252,8 @@
       Jei „<ph name="PRODUCT_NAME" />“ nepavyksta gauti panaikinimo būsenos informacijos, tokie sertifikatai laikomi atšauktais („įrangos triktis“).
 
       Jei ši politika nenustatyta arba nustatyta kaip „false“, „<ph name="PRODUCT_NAME" />“ naudoja esamus panaikinimo tikrinimo prisijungus nustatymus.</translation>
+<translation id="572720239788271400">Įgalinami „<ph name="PRODUCT_NAME" />“ komponentų naujiniai</translation>
+<translation id="5728154254076636808">Įgalinti „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimą</translation>
 <translation id="5732972008943405952">Automatinio pildymo formų duomenų importavimas iš numatytosios naršyklės paleidus pirmą kartą</translation>
 <translation id="5765780083710877561">Aprašas:</translation>
 <translation id="5770738360657678870">Kuriamas kanalas (gali būti nestabilus)</translation>
@@ -1496,6 +1481,7 @@
           Jei ši politika nenustatyta, ekrano klaviatūra išjungiama, kai prisijungimo ekranas parodomas pirmą kartą. Naudotojai gali įgalinti arba išjungti ekrano klaviatūrą bet kuriuo metu. Ekrano klaviatūros būsena prisijungimo ekrane yra nuolatinė visiems naudotojams.</translation>
 <translation id="6573305661369899995">Išorinio URL apribojimų šaltinio nustatymas</translation>
 <translation id="6598235178374410284">Naudotojo pseudoportreto vaizdas</translation>
+<translation id="6603004149426829878">Visada siųsti visus pasiekiamus vietovės signalus serveriui nustatant laiko juostą</translation>
 <translation id="6628646143828354685">Galite nustatyti, ar svetainės gali pasiekti netoliese esančius „Bluetooth“ įrenginius. Galimybę pasiekti įrenginius galima visiškai užblokuoti arba naudotojo gali būti paklausta kiekvieną kartą, kai svetainė nori pasiekti netoliese esančius „Bluetooth“ įrenginius.
 
           Jei ši politika nenustatyta, bus naudojama vertė „3“ ir naudotojas galės ją pakeisti.</translation>
@@ -2170,5 +2156,6 @@
 <translation id="922540222991413931">Konfigūruokite plėtinio, programos ir naudotojo scenarijaus įdiegimo šaltinius.</translation>
 <translation id="924557436754151212">Importuoti išsaugotus slaptažodžius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="930930237275114205">Nustatyti „<ph name="PRODUCT_FRAME_NAME" />“ naudotojo duomenų katalogą</translation>
+<translation id="934390688529359269">Įgalinamas „<ph name="PRODUCT_NAME" />“ priverstinis prisijungimas</translation>
 <translation id="944817693306670849">Nustatyti disko talpyklos dydį</translation>
 </translationbundle>

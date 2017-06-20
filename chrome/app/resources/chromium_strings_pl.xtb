@@ -165,6 +165,7 @@
 <translation id="6403826409255603130">Chromium to przeglądarka obsługująca strony i aplikacje z szybkością błyskawicy. Jest szybka, stabilna i łatwa w użyciu. Bezpiecznie przeglądaj internet dzięki wbudowanej w Chromium ochronie przed złośliwym oprogramowaniem i phishingiem.</translation>
 <translation id="6475912303565314141">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chromium.</translation>
 <translation id="6485906693002546646">Używasz adresu <ph name="PROFILE_EMAIL" /> do synchronizowania danych w Chromium. Aby zaktualizować ustawienia synchronizacji lub używać Chromium bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6505742536731484931">Chromium musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie.</translation>
 <translation id="6510925080656968729">Odinstaluj Chromium</translation>
 <translation id="6526111688217511984">Chromium musi mieć dostęp do pamięci, by pobierać pliki.</translation>
 <translation id="6584627348340620412">Przyszłe wersje 32-bitowego Chromium nie będą już obsługiwać tego systemu Linux. Uaktualnij Chromium do wersji 64-bitowej.</translation>
@@ -239,6 +240,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8563206822260884157">Użyj silnego hasła wygenerowanego przez Chromium</translation>
 <translation id="85843667276690461">Pomoc do Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
+<translation id="8590769996813453836">Przeglądarka Chromium znalazła na Twoim komputerze szkodliwe oprogramowanie. Może je usunąć i przywrócić ustawienia, by znów mogła działać normalnie.</translation>
 <translation id="8621669128220841554">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Chromium ponownie.</translation>
 <translation id="8628626585870903697">Chromium nie zawiera przeglądarki PDF wymaganej przez podgląd wydruku.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> używa aktualnej wersji oprogramowania.</translation>

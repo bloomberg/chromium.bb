@@ -150,6 +150,7 @@
 <translation id="3638472932233958418">வலைப்பக்கங்களை முன்னதாக ஏற்று</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> இல் புத்தகக்குறியைச் சேர்த்தது</translation>
 <translation id="3738139272394829648">தேடத் தொடவும்</translation>
+<translation id="3742082982782149146">தள URL நகலெடுக்கப்பட்டது.</translation>
 <translation id="3771033907050503522">மறைநிலைத் தாவல்கள்</translation>
 <translation id="3783017676699494206">படத்தைச் சேமி</translation>
 <translation id="3789841737615482174">நிறுவுக</translation>
@@ -164,10 +165,12 @@
 <translation id="4038354071007134711">கோப்பைத் திறக்கக்கூடிய பயன்பாடு சாதனத்தில் இல்லை.</translation>
 <translation id="4049507953662678203">இணைய இணைப்பு இருப்பதை உறுதிசெய்து, மீண்டும் முயலவும்.</translation>
 <translation id="411254640334432676">பதிவிறக்கம் தோல்வி.</translation>
+<translation id="4117350985506774529">பயனர்பெயர் நகலெடுக்கப்பட்டது.</translation>
 <translation id="4121993058175073134">மொத்த-ஏற்றுமதி தரவை அனுப்புவதற்கு, அமைப்புகளின் பயன்பாட்டில் உங்கள் மின்னஞ்சல் கணக்கை உள்ளமைக்கவும்.</translation>
 <translation id="4124987746317609294">நேர வரம்பு</translation>
 <translation id="4172051516777682613">எப்போதும் காட்டு</translation>
 <translation id="418156467088430727">புதிய தாவலில் ஆஃப்லைன் பதிப்பைக் காட்டு</translation>
+<translation id="4237682350741091554"><ph name="BEGIN_LINK" />அமைப்புகளில்<ph name="END_LINK" /> Chrome ஒத்திசைவையும் தனிப்பயனாக்கத்தையும் நிர்வகிக்கலாம்</translation>
 <translation id="424315890655130736">கடவுச்சொற்றொடரை உள்ளிடுக</translation>
 <translation id="4272631900155121838">QR குறியீட்டை ஸ்கேன் செய்ய, அமைப்புகளிலிருந்து கேமராவை இயக்கவும்</translation>
 <translation id="4281844954008187215">சேவை விதிமுறைகள்</translation>
@@ -312,6 +315,7 @@
 <translation id="7136892417564438900">கேமரா இல்லை</translation>
 <translation id="7159472599653637159">மொபைல் தளத்தைக் கோரு</translation>
 <translation id="7167621057293532233">தரவு வகைகள்</translation>
+<translation id="7175593937868963913">மின்னஞ்சலை எழுது</translation>
 <translation id="7189598951263744875">பகிர்...</translation>
 <translation id="7203585745079012652">பதில்களை மீண்டும் படி</translation>
 <translation id="722055596168483966">Google சேவைகளைத் தனிப்பயனாக்கு</translation>

@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
-<translation id="1007441141628883408">Slår på komponentoppdateringer for alle komponenter i <ph name="PRODUCT_NAME" /> når regelen ikke er angitt eller er angitt som «True» (sann).
-
-      Hvis regelen er angitt som «False» (usann), slås komponentoppdateringene av. Enkelte komponenter er imidlertid unntatt fra denne regelen og slås ikke av. Dette gjelder oppdateringer av komponenter som er avgjørende for sikkerheten, eller som ikke inneholder kjørbar kode eller endrer nettleserens atferd betydelig.
-      Slike komponenter kan for eksempel være Safe Browsing-data og lister over tilbaketrekking av sertifikater. </translation>
 <translation id="101438888985615157">Rotér skjermen 180 grader</translation>
 <translation id="1017967144265860778">Strømstyring på påloggingssiden</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
@@ -498,15 +494,6 @@
 
       Hvert bidrag på listen spesifiserer en identifikator, som brukes internt for å skille de ulike lokale kontoene på enheten fra hverandre.</translation>
 <translation id="2769952903507981510">Konfigurer det ønskede domenenavnet for verter med ekstern adgang</translation>
-<translation id="2785954641789149745">Aktiverer Safe Browsing for <ph name="PRODUCT_NAME" />, og forhindrer brukere fra å endre denne innstillingen.
-
-      Hvis du aktiverer denne innstillingen, er Safe Browsing alltid aktiv.
-
-      Hvis du deaktiverer denne innstillingen, er Safe Browsing aldri aktiv.
-
-      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukere endre eller overstyre innstillingen for å aktivere beskyttelse mot nettfisking og skadelig programvare i <ph name="PRODUCT_NAME" />.
-
-      Hvis innstillingen ikke angis, aktiveres dette, men brukeren kan endre det.</translation>
 <translation id="2787173078141616821">Rapportér informasjon om Android-status</translation>
 <translation id="2801230735743888564">Gir brukerne mulighet til å spille dinosaurspill-påskeegget når enheten ikke er koblet til.
 
@@ -519,9 +506,6 @@
           Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres ut av brannmuren, vil denne maskinen bare tillate forbindelser fra klientmaskiner i det lokale nettverket.
 
           Hvis denne retningslinjen ikke angis, er innstillingen aktivert.</translation>
-<translation id="2811293057593285123">Safe Browsing-tjenesten viser en varselside når brukere går til nettsteder som er rapportert som potensielt skadelige. Hvis du aktiverer denne innstillingen, forhindrer du brukere fra å ignorere varselsiden og fortsette til det potensielt skadelige nettstedet.
-
-      Hvis denne innstillingen er deaktivert eller ikke konfigurert, kan brukerne velge å fortsette til det rapporterte nettstedet etter å ha sett advarselen.</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="2844404652289407061">Gjør «Trykk for å søke» tilgjengelig i innholdsvisningen i <ph name="PRODUCT_NAME" />.
 
@@ -912,7 +896,6 @@
 <translation id="4372704773119750918">Ikke tilllat bedriftsbrukeren å være en del av flerprofilen (primær eller sekundær)</translation>
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
 <translation id="4389091865841123886">Konfigurer ekstern attestering med TPM-mekanisme</translation>
-<translation id="4397469093966511008">Hvis denne regelen settes til «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Googles tjenere. Hvis denne regelen settes til «true» (sann) eller ikke konfigureres, kan brukerne sende enkelte typer systeminformasjon eller innhold til Sikker Surfing for å bidra til å oppdage farlige apper og nettsteder.</translation>
 <translation id="4418726081189202489">Hvis du setter denne regelen til «false» (usann), forhindres <ph name="PRODUCT_NAME" /> fra å sende sporadiske forespørsler til en Google-tjeneste for å innhente et nøyaktig tidsstempel. Slike forespørsler er aktivert hvis regelen er satt til «true» (sann) eller ikke er angitt.</translation>
 <translation id="4423597592074154136">Manuell konfigurering av mellomtjenerinnstillinger</translation>
 <translation id="4429220551923452215">Aktiverer eller deaktiverer snarveien til appene i bokmerkefeltet.
@@ -1232,6 +1215,8 @@
       Hvis <ph name="PRODUCT_NAME" /> ikke finner informasjon om opphevelsesstatusen, blir disse sertifikatene behandlet som opphevede («hard-fail»).
 
       Hvis denne regelen ikke er spesifisert, eller hvis den er satt til «false», bruker <ph name="PRODUCT_NAME" /> de gjeldende alternativene for opphevelsessjekking på nettet.</translation>
+<translation id="572720239788271400">Slår på komponentoppdateringer i <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728154254076636808">Slå på oppretting av roaming-kopier for <ph name="PRODUCT_NAME" />-profildata</translation>
 <translation id="5732972008943405952">Importér autofylldata for skjemaer fra standardnettleseren ved den første kjøringen</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
@@ -1461,6 +1446,7 @@
 skjermtastaturet når som helst og statusen den har på påloggingsskjermen er vedvarende mellom brukerne.</translation>
 <translation id="6573305661369899995">Angi en ekstern kilde for nettadressebegrensninger</translation>
 <translation id="6598235178374410284">Brukerbilde</translation>
+<translation id="6603004149426829878">Send alltid eventuelle tilgjengelige posisjonssignaler til tjeneren mens tidssonen påvises</translation>
 <translation id="6628646143828354685">Gjør det mulig å velge om nettsteder har lov til å få tilgang til Bluetooth-enheter i nærheten. Tilgangen kan blokkeres helt, eller brukeren kan bli spurt hver gang et nettsted vil ha tilgang til Bluetooth-enheter i nærheten.
 
           Hvis denne regelen ikke angis, brukes «3», og brukeren kan endre denne innstillingen.</translation>
@@ -2119,5 +2105,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="922540222991413931">Konfigurering av installeringskilder for utvidelser, programmer og brukerskript</translation>
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>
 <translation id="930930237275114205">Angi <ph name="PRODUCT_FRAME_NAME" />-katalog for brukerdata</translation>
+<translation id="934390688529359269">Slår på tvunget pålogging for <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Angi størrelse på diskbuffer</translation>
 </translationbundle>

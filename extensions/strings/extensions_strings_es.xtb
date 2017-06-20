@@ -13,6 +13,7 @@
 <translation id="2753617847762399167">Ruta no válida (absoluta o relativa con ".."): <ph name="IMAGE_PATH" /></translation>
 <translation id="27822970480436970">Esta extensión no ha podido modificar una solicitud de red porque existe un conflicto con otra extensión.</translation>
 <translation id="2857834222104759979">El archivo de manifiesto no es válido.</translation>
+<translation id="2903070246402204397">El administrador ha bloqueado la extensión <ph name="EXTENSION_NAME" /> (ID de extensión "<ph name="EXTENSION_ID" />"). <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">No se ha podido instalar el paquete: "<ph name="ERROR_CODE" />".</translation>
 <translation id="3115238746683532089">Producto <ph name="PRODUCT_ID" /> del proveedor <ph name="VENDOR_ID" /> desconocido (número de serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">Producto <ph name="PRODUCT_ID" /> del proveedor <ph name="VENDOR_ID" /> desconocido</translation>

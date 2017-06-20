@@ -64,7 +64,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="225614027745146050">Selamat Datang</translation>
 <translation id="228809120910082333">Konfirmasi akun dan PIN Anda di bawah guna mengizinkan akses oleh Chromoting.</translation>
 <translation id="2314101195544969792">Sesi <ph name="APPLICATION_NAME" /> Anda tidak aktif untuk sementara waktu dan akan diputuskan sementara.</translation>
-<translation id="2317666076142640974">Lihat sekilas tentang <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" />. Kami ingin mendengar masukan Anda.</translation>
+<translation id="2317666076142640974">Coba <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" /> yang baru. Kami ingin mendengar masukan Anda.</translation>
 <translation id="2353140552984634198">Anda dapat mengakses komputer ini dengan aman menggunakan Chromoting.</translation>
 <translation id="2359808026110333948">Lanjut</translation>
 <translation id="2366718077645204424">Tidak dapat menjangkau inang. Ini mungkin karena konfigurasi jaringan yang Anda gunakan.</translation>
@@ -112,6 +112,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="3649256019230929621">Meminimalkan jendela</translation>
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Pelajari caranya</translation>
+<translation id="3718805989288361841">Terjadi error pada setelan kebijakan untuk Chrome Desktop Jarak Jauh. Hubungi administrator sistem untuk mendapatkan bantuan.</translation>
 <translation id="3776024066357219166">Sesi Chrome Desktop Jarak Jauh Anda telah berakhir.</translation>
 <translation id="3785447812627779171">Host
 Chromoting</translation>
@@ -249,7 +250,7 @@ Desktop Jarak Jauh</translation>
 <translation id="7401733114166276557">Chrome Desktop Jarak Jauh</translation>
 <translation id="7434397035092923453">Akses ditolak untuk klien: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klien tersambung: <ph name="CLIENT_USERNAME" />.</translation>
-<translation id="7589941250119944644">Chrome Desktop Jarak jauh kini dapat diakses di web. Coba <ph name="LINK_BEGIN" />aplikasi web<ph name="LINK_END" /> kami—cepat dan gratis, dengan fitur yang sama seperti sebelumnya.</translation>
+<translation id="7589941250119944644">Chrome Desktop Jarak Jauh kini dapat diakses di web. Coba <ph name="LINK_BEGIN" />aplikasi web<ph name="LINK_END" /> versi baru ini—cepat dan gratis, dengan fitur yang sama seperti sebelumnya.</translation>
 <translation id="7606912958770842224">Aktifkan sambungan jarak jauh</translation>
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>
