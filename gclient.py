@@ -1017,14 +1017,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       for i in d.subtree(include_all):
         yield i
 
-  def depth_first_tree(self):
-    """Depth-first recursion including the root node."""
-    yield self
-    for i in self.dependencies:
-      for j in i.depth_first_tree():
-        if j.should_process:
-          yield j
-
   @gclient_utils.lockedmethod
   def add_dependency(self, new_dep):
     self._dependencies.append(new_dep)
