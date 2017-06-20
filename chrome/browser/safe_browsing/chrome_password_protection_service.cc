@@ -55,8 +55,15 @@ ChromePasswordProtectionService::~ChromePasswordProtectionService() {
   if (content_settings()) {
     CleanUpExpiredVerdicts();
     UMA_HISTOGRAM_COUNTS_1000(
-        "PasswordProtection.NumberOfCachedVerdictBeforeShutdown",
-        GetStoredVerdictCount());
+        "PasswordProtection.NumberOfCachedVerdictBeforeShutdown."
+        "PasswordOnFocus",
+        GetStoredVerdictCount(
+            LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+    UMA_HISTOGRAM_COUNTS_1000(
+        "PasswordProtection.NumberOfCachedVerdictBeforeShutdown."
+        "ProtectedPasswordEntry",
+        GetStoredVerdictCount(
+            LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
   }
 }
 

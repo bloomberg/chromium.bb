@@ -51813,8 +51813,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PasswordProtection.NumberOfCachedVerdictBeforeShutdown"
-    units="count">
+<histogram base="true"
+    name="PasswordProtection.NumberOfCachedVerdictBeforeShutdown" units="count">
   <owner>jialiul@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
@@ -93282,6 +93282,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="PasswordProtectionTrigger" separator=".">
+  <affected-histogram
+      name="PasswordProtection.NumberOfCachedVerdictBeforeShutdown"/>
   <suffix name="PasswordFieldOnFocus"
       label="Password protection triggered by password field on focus event."/>
   <suffix name="ProtectedPasswordEntry"

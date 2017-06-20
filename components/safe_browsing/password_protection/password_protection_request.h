@@ -74,8 +74,8 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
 
   content::WebContents* web_contents() const { return web_contents_; }
 
-  LoginReputationClientRequest::TriggerType request_type() const {
-    return request_type_;
+  LoginReputationClientRequest::TriggerType trigger_type() const {
+    return trigger_type_;
   }
 
  private:
@@ -129,7 +129,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   const std::string saved_domain_;
 
   // If this request is for unfamiliar login page or for a password reuse event.
-  const LoginReputationClientRequest::TriggerType request_type_;
+  const LoginReputationClientRequest::TriggerType trigger_type_;
 
   // If there is a password field on the page.
   const bool password_field_exists_;
