@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
@@ -44,7 +43,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeEmpty,
   ItemTypeReadingList,
   ItemTypeMostVisited,
-  ItemTypePromo,
   ItemTypeUnknown,
 };
 
@@ -54,7 +52,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierArticles = kSectionIdentifierEnumZero,
   SectionIdentifierReadingList,
   SectionIdentifierMostVisited,
-  SectionIdentifierLogo,
   SectionIdentifierDefault,
 };
 
@@ -74,7 +71,7 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
   return ContentSuggestionTypeEmpty;
 }
 
-// Returns the item type corresponding to the section |info|.
+// Returns the section identifier corresponding to the section |info|.
 ItemType ItemTypeForInfo(ContentSuggestionsSectionInformation* info) {
   switch (info.sectionID) {
     case ContentSuggestionsSectionArticles:
@@ -83,8 +80,6 @@ ItemType ItemTypeForInfo(ContentSuggestionsSectionInformation* info) {
       return ItemTypeReadingList;
     case ContentSuggestionsSectionMostVisited:
       return ItemTypeMostVisited;
-    case ContentSuggestionsSectionLogo:
-      return ItemTypePromo;
 
     case ContentSuggestionsSectionUnknown:
       return ItemTypeUnknown;
@@ -101,8 +96,6 @@ SectionIdentifier SectionIdentifierForInfo(
       return SectionIdentifierReadingList;
     case ContentSuggestionsSectionMostVisited:
       return SectionIdentifierMostVisited;
-    case ContentSuggestionsSectionLogo:
-      return SectionIdentifierLogo;
 
     case ContentSuggestionsSectionUnknown:
       return SectionIdentifierDefault;
@@ -308,12 +301,11 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     if ([model hasSectionForSectionIdentifier:sectionIdentifier] &&
         [model numberOfItemsInSection:[model sectionForSectionIdentifier:
                                                  sectionIdentifier]] == 0) {
-      NSIndexPath* emptyItemIndexPath =
-          [self addEmptyItemForSection:
-                    [model sectionForSectionIdentifier:sectionIdentifier]];
-      if (emptyItemIndexPath) {
-        [indexPaths addObject:emptyItemIndexPath];
-      }
+      [indexPaths
+          addObject:[self
+                        addEmptyItemForSection:[model
+                                                   sectionForSectionIdentifier:
+                                                       sectionIdentifier]]];
     }
     return indexPaths;
   }
@@ -361,9 +353,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
              orderedSectionsInfo) {
       NSInteger orderedSectionIdentifier =
           SectionIdentifierForInfo(orderedSectionInfo);
-      if (orderedSectionIdentifier == sectionIdentifier) {
-        continue;
-      }
       if ([model hasSectionForSectionIdentifier:orderedSectionIdentifier]) {
         sectionIndex++;
       }
@@ -373,11 +362,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] = sectionInfo;
     [addedSectionIdentifiers addIndex:sectionIdentifier];
 
-    if (sectionIdentifier == SectionIdentifierLogo) {
-      [self addLogoHeaderIfNeeded];
-    } else {
-      [self addHeaderIfNeeded:sectionInfo];
-    }
+    [self addHeaderIfNeeded:sectionInfo];
     [self addFooterIfNeeded:sectionInfo];
   }
 
@@ -398,9 +383,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
       self.sectionInfoBySectionIdentifier[@(sectionIdentifier)];
 
   CSCollectionViewItem* item = [self emptyItemForSectionInfo:sectionInfo];
-  if (!item) {
-    return nil;
-  }
   return [self addItem:item toSectionWithIdentifier:sectionIdentifier];
 }
 
@@ -519,20 +501,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   }
 }
 
-// Adds the header for the first section, containing the logo and the omnibox,
-// if there is no header for the section.
-- (void)addLogoHeaderIfNeeded {
-  if (![self.collectionViewController.collectionViewModel
-          headerForSectionWithIdentifier:SectionIdentifierLogo]) {
-    ContentSuggestionsHeaderItem* header =
-        [[ContentSuggestionsHeaderItem alloc] initWithType:ItemTypeHeader];
-    header.view = self.dataSource.headerView;
-    [self.collectionViewController.collectionViewModel
-                       setHeader:header
-        forSectionWithIdentifier:SectionIdentifierLogo];
-  }
-}
-
 // Resets the models, removing the current CollectionViewItem and the
 // SectionInfo.
 - (void)resetModels {
@@ -631,11 +599,8 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 
 // Returns a item to be displayed when the section identified by |sectionInfo|
 // is empty.
-// Returns nil if there is no empty item for this section info.
 - (CSCollectionViewItem*)emptyItemForSectionInfo:
     (ContentSuggestionsSectionInformation*)sectionInfo {
-  if (!sectionInfo.emptyText)
-    return nil;
   ContentSuggestionsTextItem* item =
       [[ContentSuggestionsTextItem alloc] initWithType:ItemTypeEmpty];
   item.text = l10n_util::GetNSString(IDS_NTP_TITLE_NO_SUGGESTIONS);

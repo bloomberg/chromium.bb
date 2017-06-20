@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
@@ -23,7 +22,6 @@ namespace {
 
 TEST(ContentSuggestionsCollectionUpdaterTest, addEmptyItemToEmptySection) {
   // Setup.
-  NSString* emptyString = @"test empty";
   ContentSuggestionsCollectionUpdater* updater =
       [[ContentSuggestionsCollectionUpdater alloc] initWithDataSource:nil];
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
@@ -38,7 +36,6 @@ TEST(ContentSuggestionsCollectionUpdaterTest, addEmptyItemToEmptySection) {
       [[ContentSuggestionsSectionInformation alloc]
           initWithSectionID:ContentSuggestionsSectionArticles];
   suggestion.suggestionIdentifier.sectionInfo.showIfEmpty = YES;
-  suggestion.suggestionIdentifier.sectionInfo.emptyText = emptyString;
   [updater addSectionsForSectionInfoToModel:@[
     suggestion.suggestionIdentifier.sectionInfo
   ]];
@@ -49,42 +46,7 @@ TEST(ContentSuggestionsCollectionUpdaterTest, addEmptyItemToEmptySection) {
 
   // Test.
   EXPECT_TRUE([[NSIndexPath indexPathForItem:0 inSection:0] isEqual:addedItem]);
-  NSArray* items = [model
-      itemsInSectionWithIdentifier:[model sectionIdentifierForSection:0]];
   ASSERT_EQ(1, [model numberOfItemsInSection:0]);
-  ContentSuggestionsTextItem* item = items[0];
-  EXPECT_EQ(emptyString, item.detailText);
-}
-
-TEST(ContentSuggestionsCollectionUpdaterTest,
-     addEmptyItemToSectionWithoutText) {
-  // Setup.
-  ContentSuggestionsCollectionUpdater* updater =
-      [[ContentSuggestionsCollectionUpdater alloc] initWithDataSource:nil];
-  CollectionViewModel* model = [[CollectionViewModel alloc] init];
-  id mockCollection = OCMClassMock([ContentSuggestionsViewController class]);
-  OCMStub([mockCollection collectionViewModel]).andReturn(model);
-  updater.collectionViewController = mockCollection;
-
-  CollectionViewItem<SuggestedContent>* suggestion =
-      [[ContentSuggestionsTextItem alloc] initWithType:kItemTypeEnumZero];
-  suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
-  suggestion.suggestionIdentifier.sectionInfo =
-      [[ContentSuggestionsSectionInformation alloc]
-          initWithSectionID:ContentSuggestionsSectionArticles];
-  suggestion.suggestionIdentifier.sectionInfo.showIfEmpty = YES;
-  suggestion.suggestionIdentifier.sectionInfo.emptyText = nil;
-  [updater addSectionsForSectionInfoToModel:@[
-    suggestion.suggestionIdentifier.sectionInfo
-  ]];
-  ASSERT_EQ(0, [model numberOfItemsInSection:0]);
-
-  // Action.
-  NSIndexPath* addedItem = [updater addEmptyItemForSection:0];
-
-  // Test.
-  EXPECT_EQ(nil, addedItem);
-  ASSERT_EQ(0, [model numberOfItemsInSection:0]);
 }
 
 TEST(ContentSuggestionsCollectionUpdaterTest, addEmptyItemToSection) {
@@ -103,7 +65,6 @@ TEST(ContentSuggestionsCollectionUpdaterTest, addEmptyItemToSection) {
       [[ContentSuggestionsSectionInformation alloc]
           initWithSectionID:ContentSuggestionsSectionArticles];
   suggestion.suggestionIdentifier.sectionInfo.showIfEmpty = YES;
-  suggestion.suggestionIdentifier.sectionInfo.emptyText = @"empty";
   [updater addSectionsForSectionInfoToModel:@[
     suggestion.suggestionIdentifier.sectionInfo
   ]];
