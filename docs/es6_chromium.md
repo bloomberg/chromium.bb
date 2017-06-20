@@ -183,6 +183,47 @@ this document.
 
 ---
 
+## Classes
+
+OOP-style and boilerplate-free class syntax, including inheritance, `super()`,
+static members, and getters and setters.
+
+**Usage Example:**
+
+```js
+class Shape {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+// Note: let Shape = class {...}; is also valid.
+
+class Rectangle extends Shape {
+  constructor(x, y, width, height) {
+    super(id, x, y);
+    this.width  = width;
+    this.height = height;
+  }
+
+  static goldenRectangle() {
+    var PHI = (1 + Math.sqrt(5)) / 2;
+    return new Rectangle(0, 0, PHI, 1);
+  }
+}
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-class-definitions)
+
+**Discussion Notes / Link to Thread:**
+https://groups.google.com/a/chromium.org/d/msg/chromium-dev/S1h-0m2ohOw/jyaiMGDlCwAJ
+
+**Note**: Not fully supported in iOS9.  Don't use it in code that runs on Chrome
+for iOS, unless you can verify it works. TODO: Remove this note once support for
+iOS9 is dropped.
+
+---
+
 # Banned Features
 
 The following features are banned for Chromium development.
@@ -259,42 +300,6 @@ frobber.isFrobbing = false;  // Works.
 **Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-let-and-const-declarations)
 
 **See also:** [Object.freeze()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-## Classes
-
-OOP-style and boilerplate-free class syntax, including inheritance, `super()`,
-static members, and getters and setters.
-
-**Usage Example:**
-
-```js
-class Shape {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-// Note: let Shape = class {...}; is also valid.
-
-class Rectangle extends Shape {
-  constructor(x, y, width, height) {
-    super(id, x, y);
-    this.width  = width;
-    this.height = height;
-  }
-
-  static goldenRectangle() {
-		var PHI = (1 + Math.sqrt(5)) / 2;
-    return new Rectangle(0, 0, PHI, 1);
-  }
-}
-```
-
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-class-definitions)
 
 **Discussion Notes / Link to Thread:**
 
