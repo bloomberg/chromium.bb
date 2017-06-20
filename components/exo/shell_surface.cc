@@ -704,7 +704,6 @@ std::unique_ptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 // SurfaceDelegate overrides:
 
 void ShellSurface::OnSurfaceCommit() {
-  surface_->CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces();
   surface_->CommitSurfaceHierarchy();
 
   if (enabled() && !widget_) {
