@@ -793,58 +793,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_flow_, flow);
   }
 
-  // offset-anchor
-  static LengthPoint InitialOffsetAnchor() {
-    return LengthPoint(Length(kAuto), Length(kAuto));
-  }
-  const LengthPoint& OffsetAnchor() const {
-    return rare_non_inherited_data_->transform_data_->motion_.anchor_;
-  }
-  void SetOffsetAnchor(const LengthPoint& offset_anchor) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, motion_.anchor_,
-                   offset_anchor);
-  }
-
-  // offset-distance
-  static Length InitialOffsetDistance() { return Length(0, kFixed); }
-  const Length& OffsetDistance() const {
-    return rare_non_inherited_data_->transform_data_->motion_.distance_;
-  }
-  void SetOffsetDistance(const Length& offset_distance) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, motion_.distance_,
-                   offset_distance);
-  }
-
   // offset-path
   static BasicShape* InitialOffsetPath() { return nullptr; }
   BasicShape* OffsetPath() const {
-    return rare_non_inherited_data_->transform_data_->motion_.path_.Get();
+    return rare_non_inherited_data_->transform_data_->offset_path_.Get();
   }
   void SetOffsetPath(RefPtr<BasicShape>);
-
-  // offset-position
-  static LengthPoint InitialOffsetPosition() {
-    return LengthPoint(Length(kAuto), Length(kAuto));
-  }
-  const LengthPoint& OffsetPosition() const {
-    return rare_non_inherited_data_->transform_data_->motion_.position_;
-  }
-  void SetOffsetPosition(const LengthPoint& offset_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, motion_.position_,
-                   offset_position);
-  }
-
-  // offset-rotate
-  static StyleOffsetRotation InitialOffsetRotate() {
-    return StyleOffsetRotation(0, kOffsetRotationAuto);
-  }
-  const StyleOffsetRotation& OffsetRotate() const {
-    return rare_non_inherited_data_->transform_data_->motion_.rotation_;
-  }
-  void SetOffsetRotate(const StyleOffsetRotation& offset_rotate) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, motion_.rotation_,
-                   offset_rotate);
-  }
 
   // opacity (aka -webkit-opacity)
   static float InitialOpacity() { return 1.0f; }
