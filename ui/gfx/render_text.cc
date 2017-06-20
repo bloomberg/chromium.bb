@@ -60,8 +60,6 @@ const SkScalar kStrikeThroughOffset = (-SK_Scalar1 * 6 / 21);
 const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
 // Fraction of the text size to use for a strike through or under-line.
 const SkScalar kLineThickness = (SK_Scalar1 / 18);
-// Fraction of the text size to use for a top margin of a diagonal strike.
-const SkScalar kDiagonalStrikeMarginOffset = (SK_Scalar1 / 4);
 
 // Invalid value of baseline.  Assigning this value to |baseline_| causes
 // re-calculation of baseline.
@@ -249,26 +247,15 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
   canvas_skia_->drawPosText(&glyphs[0], byte_length, &pos[0], flags_);
 }
 
-void SkiaTextRenderer::DrawDecorations(int x, int y, int width, bool underline,
-                                       bool strike, bool diagonal_strike) {
+void SkiaTextRenderer::DrawDecorations(int x,
+                                       int y,
+                                       int width,
+                                       bool underline,
+                                       bool strike) {
   if (underline)
     DrawUnderline(x, y, width);
   if (strike)
     DrawStrike(x, y, width);
-  if (diagonal_strike) {
-    if (!diagonal_)
-      diagonal_.reset(new DiagonalStrike(canvas_, Point(x, y), flags_));
-    diagonal_->AddPiece(width, flags_.getColor());
-  } else if (diagonal_) {
-    EndDiagonalStrike();
-  }
-}
-
-void SkiaTextRenderer::EndDiagonalStrike() {
-  if (diagonal_) {
-    diagonal_->Draw();
-    diagonal_.reset();
-  }
 }
 
 void SkiaTextRenderer::DrawUnderline(int x, int y, int width) {
@@ -292,51 +279,6 @@ void SkiaTextRenderer::DrawStrike(int x, int y, int width) const {
   const SkRect r =
       SkRect::MakeLTRB(x_scalar, offset, x_scalar + width, offset + height);
   canvas_skia_->drawRect(r, flags_);
-}
-
-SkiaTextRenderer::DiagonalStrike::DiagonalStrike(Canvas* canvas,
-                                                 Point start,
-                                                 const cc::PaintFlags& flags)
-    : canvas_(canvas), start_(start), flags_(flags), total_length_(0) {}
-
-SkiaTextRenderer::DiagonalStrike::~DiagonalStrike() {
-}
-
-void SkiaTextRenderer::DiagonalStrike::AddPiece(int length, SkColor color) {
-  pieces_.push_back(Piece(length, color));
-  total_length_ += length;
-}
-
-void SkiaTextRenderer::DiagonalStrike::Draw() {
-  const SkScalar text_size = flags_.getTextSize();
-  const SkScalar offset = text_size * kDiagonalStrikeMarginOffset;
-  const int thickness = SkScalarCeilToInt(text_size * kLineThickness * 2);
-  const int height = SkScalarCeilToInt(text_size - offset);
-  const Point end = start_ + Vector2d(total_length_, -height);
-  const int clip_height = height + 2 * thickness;
-
-  flags_.setAntiAlias(true);
-  flags_.setStrokeWidth(SkIntToScalar(thickness));
-
-  const bool clipped = pieces_.size() > 1;
-  int x = start_.x();
-
-  for (size_t i = 0; i < pieces_.size(); ++i) {
-    flags_.setColor(pieces_[i].second);
-
-    if (clipped) {
-      canvas_->Save();
-      canvas_->ClipRect(
-          Rect(x, end.y() - thickness, pieces_[i].first, clip_height));
-    }
-
-    canvas_->DrawLine(start_, end, flags_);
-
-    if (clipped)
-      canvas_->Restore();
-
-    x += pieces_[i].first;
-  }
 }
 
 StyleIterator::StyleIterator(const BreakList<SkColor>& colors,

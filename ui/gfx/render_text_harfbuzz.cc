@@ -654,7 +654,6 @@ TextRunHarfBuzz::TextRunHarfBuzz(const Font& template_font)
       italic(false),
       weight(Font::Weight::NORMAL),
       strike(false),
-      diagonal_strike(false),
       underline(false) {}
 
 TextRunHarfBuzz::~TextRunHarfBuzz() {}
@@ -1322,14 +1321,11 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
                    SkIntToScalar(origin.x()))
                 : positions[colored_glyphs.end() - glyphs_range.start()].x());
         renderer->DrawDecorations(start_x, origin.y(), end_x - start_x,
-                                  run.underline, run.strike,
-                                  run.diagonal_strike);
+                                  run.underline, run.strike);
       }
       preceding_segment_widths += SkFloatToScalar(segment.width());
     }
   }
-
-  renderer->EndDiagonalStrike();
 
   UndoCompositionAndSelectionStyles();
 }
@@ -1399,7 +1395,6 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     run->italic = style.style(ITALIC);
     run->baseline_type = style.baseline();
     run->strike = style.style(STRIKE);
-    run->diagonal_strike = style.style(DIAGONAL_STRIKE);
     run->underline = style.style(UNDERLINE);
     run->weight = style.weight();
     int32_t script_item_break = 0;
@@ -1726,7 +1721,6 @@ bool RenderTextHarfBuzz::GetDecoratedTextForRange(
           run.font.Derive(0, style, run.weight));
 
       attribute.strike = run.strike;
-      attribute.diagonal_strike = run.diagonal_strike;
       decorated_text->attributes.push_back(attribute);
     }
   }

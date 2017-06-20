@@ -74,44 +74,22 @@ class GFX_EXPORT SkiaTextRenderer {
   // Draw underline and strike-through text decorations.
   // Based on |SkCanvas::DrawTextDecorations()| and constants from:
   //   third_party/skia/src/core/SkTextFormatParams.h
-  virtual void DrawDecorations(int x, int y, int width, bool underline,
-                               bool strike, bool diagonal_strike);
-  // Finishes any ongoing diagonal strike run.
-  void EndDiagonalStrike();
+  virtual void DrawDecorations(int x,
+                               int y,
+                               int width,
+                               bool underline,
+                               bool strike);
   void DrawUnderline(int x, int y, int width);
   void DrawStrike(int x, int y, int width) const;
 
  private:
   friend class test::RenderTextTestApi;
 
-  // Helper class to draw a diagonal line with multiple pieces of different
-  // lengths and colors; to support text selection appearances.
-  class DiagonalStrike {
-   public:
-    DiagonalStrike(Canvas* canvas, Point start, const cc::PaintFlags& flags);
-    ~DiagonalStrike();
-
-    void AddPiece(int length, SkColor color);
-    void Draw();
-
-   private:
-    typedef std::pair<int, SkColor> Piece;
-
-    Canvas* canvas_;
-    const Point start_;
-    cc::PaintFlags flags_;
-    int total_length_;
-    std::vector<Piece> pieces_;
-
-    DISALLOW_COPY_AND_ASSIGN(DiagonalStrike);
-  };
-
   Canvas* canvas_;
   cc::PaintCanvas* canvas_skia_;
   cc::PaintFlags flags_;
   SkScalar underline_thickness_;
   SkScalar underline_position_;
-  std::unique_ptr<DiagonalStrike> diagonal_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };
