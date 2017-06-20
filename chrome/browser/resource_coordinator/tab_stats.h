@@ -33,6 +33,7 @@ struct TabStats {
   // Playing audio, accessing cam/mic or mirroring display.
   bool is_media = false;
   bool is_pinned = false;
+  bool is_in_visible_window = false;
   bool is_selected = false;  // Selected in the currently active browser window.
   bool is_discarded = false;
   bool has_form_entry = false;  // User has entered text in a form.
