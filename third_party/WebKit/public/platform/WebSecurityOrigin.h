@@ -35,7 +35,7 @@
 #include "public/platform/WebString.h"
 
 #if INSIDE_BLINK
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #else
 #include "url/origin.h"
 #endif
@@ -111,10 +111,10 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT void GrantLoadLocalResources() const;
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebSecurityOrigin(WTF::PassRefPtr<SecurityOrigin>);
+  BLINK_PLATFORM_EXPORT WebSecurityOrigin(WTF::RefPtr<SecurityOrigin>);
   BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(
-      WTF::PassRefPtr<SecurityOrigin>);
-  BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<SecurityOrigin>() const;
+      WTF::RefPtr<SecurityOrigin>);
+  BLINK_PLATFORM_EXPORT operator WTF::RefPtr<SecurityOrigin>() const;
   BLINK_PLATFORM_EXPORT SecurityOrigin* Get() const;
 #else
   // TODO(mkwst): A number of properties don't survive a round-trip

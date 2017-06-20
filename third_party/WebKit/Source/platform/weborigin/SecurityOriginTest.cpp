@@ -217,7 +217,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
   for (const char* test : urls) {
     KURL url(kParsedURLString, test);
     EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-    SecurityPolicy::AddOriginTrustworthyWhiteList(SecurityOrigin::Create(url));
+    SecurityPolicy::AddOriginTrustworthyWhiteList(*SecurityOrigin::Create(url));
     EXPECT_TRUE(SecurityOrigin::IsSecure(url));
   }
 }

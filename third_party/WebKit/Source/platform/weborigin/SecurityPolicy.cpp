@@ -165,14 +165,14 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
 }
 
 void SecurityPolicy::AddOriginTrustworthyWhiteList(
-    PassRefPtr<SecurityOrigin> origin) {
+    const SecurityOrigin& origin) {
 #if DCHECK_IS_ON()
   // Must be called before we start other threads.
   DCHECK(WTF::IsBeforeThreadCreated());
 #endif
-  if (origin->IsUnique())
+  if (origin.IsUnique())
     return;
-  TrustworthyOriginSet().insert(origin->ToRawString());
+  TrustworthyOriginSet().insert(origin.ToRawString());
 }
 
 bool SecurityPolicy::IsOriginWhiteListedTrustworthy(

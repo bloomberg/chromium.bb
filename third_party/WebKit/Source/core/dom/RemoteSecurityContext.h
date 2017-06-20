@@ -20,7 +20,7 @@ class CORE_EXPORT RemoteSecurityContext
   DECLARE_VIRTUAL_TRACE();
 
   static RemoteSecurityContext* Create();
-  void SetReplicatedOrigin(PassRefPtr<SecurityOrigin>);
+  void SetReplicatedOrigin(RefPtr<SecurityOrigin>);
   void ResetReplicatedContentSecurityPolicy();
 
   // FIXME: implement

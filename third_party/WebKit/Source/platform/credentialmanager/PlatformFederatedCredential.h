@@ -17,20 +17,19 @@ class PLATFORM_EXPORT PlatformFederatedCredential final
   WTF_MAKE_NONCOPYABLE(PlatformFederatedCredential);
 
  public:
-  static PlatformFederatedCredential* Create(
-      const String& id,
-      PassRefPtr<SecurityOrigin> provider,
-      const String& name,
-      const KURL& icon_url);
+  static PlatformFederatedCredential* Create(const String& id,
+                                             RefPtr<SecurityOrigin> provider,
+                                             const String& name,
+                                             const KURL& icon_url);
   ~PlatformFederatedCredential() override;
 
-  PassRefPtr<SecurityOrigin> Provider() const { return provider_; }
+  RefPtr<SecurityOrigin> Provider() const { return provider_; }
 
   bool IsFederated() override { return true; }
 
  private:
   PlatformFederatedCredential(const String& id,
-                              PassRefPtr<SecurityOrigin> provider,
+                              RefPtr<SecurityOrigin> provider,
                               const String& name,
                               const KURL& icon_url);
 

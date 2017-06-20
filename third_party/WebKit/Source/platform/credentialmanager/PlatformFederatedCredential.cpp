@@ -8,7 +8,7 @@ namespace blink {
 
 PlatformFederatedCredential* PlatformFederatedCredential::Create(
     const String& id,
-    PassRefPtr<SecurityOrigin> provider,
+    RefPtr<SecurityOrigin> provider,
     const String& name,
     const KURL& icon_url) {
   return new PlatformFederatedCredential(id, std::move(provider), name,
@@ -17,7 +17,7 @@ PlatformFederatedCredential* PlatformFederatedCredential::Create(
 
 PlatformFederatedCredential::PlatformFederatedCredential(
     const String& id,
-    PassRefPtr<SecurityOrigin> provider,
+    RefPtr<SecurityOrigin> provider,
     const String& name,
     const KURL& icon_url)
     : PlatformCredential(id, name, icon_url), provider_(std::move(provider)) {

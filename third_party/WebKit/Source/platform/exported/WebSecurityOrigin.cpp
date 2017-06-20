@@ -32,7 +32,6 @@
 
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
@@ -131,17 +130,17 @@ bool WebSecurityOrigin::CanAccessPasswordManager() const {
   return private_->CanAccessPasswordManager();
 }
 
-WebSecurityOrigin::WebSecurityOrigin(WTF::PassRefPtr<SecurityOrigin> origin)
+WebSecurityOrigin::WebSecurityOrigin(WTF::RefPtr<SecurityOrigin> origin)
     : private_(static_cast<WebSecurityOriginPrivate*>(origin.LeakRef())) {}
 
 WebSecurityOrigin& WebSecurityOrigin::operator=(
-    WTF::PassRefPtr<SecurityOrigin> origin) {
+    WTF::RefPtr<SecurityOrigin> origin) {
   Assign(static_cast<WebSecurityOriginPrivate*>(origin.LeakRef()));
   return *this;
 }
 
-WebSecurityOrigin::operator WTF::PassRefPtr<SecurityOrigin>() const {
-  return PassRefPtr<SecurityOrigin>(
+WebSecurityOrigin::operator WTF::RefPtr<SecurityOrigin>() const {
+  return RefPtr<SecurityOrigin>(
       const_cast<WebSecurityOriginPrivate*>(private_));
 }
 
