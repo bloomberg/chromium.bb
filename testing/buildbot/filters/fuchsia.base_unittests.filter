@@ -162,7 +162,6 @@
 -ProcessUtilTest.LaunchProcess
 -ProcessUtilTest.PreExecHook
 -ProcessUtilTest.SpawnChild
--RTLTest.WrapPathWithLTRFormatting
 -RedirectionToTaskScheduler/SequencedWorkerPoolTest.AvoidsDeadlockOnShutdown/0
 -RedirectionToTaskScheduler/SequencedWorkerPoolTest.AvoidsDeadlockOnShutdownWithSequencedBlockingTasks/0
 -RedirectionToTaskScheduler/SequencedWorkerPoolTest.ContinueOnShutdown/0
