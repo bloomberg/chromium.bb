@@ -145,7 +145,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   ChromeBrowserFieldTrials browser_field_trials_;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   std::unique_ptr<WebUsbDetector> web_usb_detector_;
 #endif
 

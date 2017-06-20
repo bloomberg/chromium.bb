@@ -440,7 +440,7 @@ void PageInfo::OpenSiteSettingsView() {
 
 void PageInfo::Init(const GURL& url,
                     const security_state::SecurityInfo& security_info) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // On desktop, internal URLs aren't handled by this class. Instead, a
   // custom and simpler bubble is shown.
   DCHECK(!url.SchemeIs(content::kChromeUIScheme) &&
@@ -449,9 +449,9 @@ void PageInfo::Init(const GURL& url,
          !url.SchemeIs(content_settings::kExtensionScheme));
 #endif
 
-  bool isChromeUINativeScheme = false;
+  bool is_chrome_ui_native_scheme = false;
 #if defined(OS_ANDROID)
-  isChromeUINativeScheme = url.SchemeIs(chrome::kChromeUINativeScheme);
+  is_chrome_ui_native_scheme = url.SchemeIs(chrome::kChromeUINativeScheme);
 #endif
 
   security_level_ = security_info.security_level;
@@ -469,7 +469,7 @@ void PageInfo::Init(const GURL& url,
     return;
   }
 
-  if (url.SchemeIs(content::kChromeUIScheme) || isChromeUINativeScheme) {
+  if (url.SchemeIs(content::kChromeUIScheme) || is_chrome_ui_native_scheme) {
     site_identity_status_ = SITE_IDENTITY_STATUS_INTERNAL_PAGE;
     site_identity_details_ =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);

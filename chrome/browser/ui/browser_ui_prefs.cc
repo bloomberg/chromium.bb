@@ -23,7 +23,7 @@
 namespace {
 
 uint32_t GetHomeButtonAndHomePageIsNewTabPageFlags() {
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   return PrefRegistry::NO_REGISTRATION_FLAGS;
 #else
   return user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;

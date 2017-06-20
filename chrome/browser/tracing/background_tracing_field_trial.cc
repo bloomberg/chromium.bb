@@ -47,7 +47,7 @@ void UploadCallback(const std::string& upload_url,
   if (GURL(upload_url).is_valid())
     uploader->SetUploadURL(upload_url);
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   auto connection_type = net::NetworkChangeNotifier::GetConnectionType();
   if (connection_type != net::NetworkChangeNotifier::CONNECTION_WIFI &&
       connection_type != net::NetworkChangeNotifier::CONNECTION_ETHERNET &&
@@ -55,7 +55,7 @@ void UploadCallback(const std::string& upload_url,
     // Allow only 100KiB for uploads over data.
     uploader->SetMaxUploadBytes(100 * 1024);
   }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif
 
   uploader->DoUpload(
       file_contents->data(), content::TraceUploader::UNCOMPRESSED_UPLOAD,

@@ -2490,12 +2490,12 @@ const FeatureEntry kFeatureEntries[] = {
          chromeos::switches::kEnableEncryptionMigration,
          chromeos::switches::kDisableEncryptionMigration)},
 #endif  // OS_CHROMEOS
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",
      flag_descriptions::kGoogleBrandedContextMenuName,
      flag_descriptions::kGoogleBrandedContextMenuDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableGoogleBrandedContextMenu)},
-#endif  // !OS_ANDROID && !OS_IOS && GOOGLE_CHROME_BUILD
+#endif  // !OS_ANDROID && GOOGLE_CHROME_BUILD
 #if defined(OS_MACOSX)
     {"enable-fullscreen-in-tab-detaching",
      flag_descriptions::kTabDetachingInFullscreenName,
@@ -2685,7 +2685,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrossProcessGuestViewIsolationName,
      flag_descriptions::kCrossProcessGuestViewIsolationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kGuestViewCrossProcessFrames)},
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
     {"media-remoting", flag_descriptions::kMediaRemotingName,
      flag_descriptions::kMediaRemotingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMediaRemoting)},
@@ -2978,7 +2978,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableHeapProfilingDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableHeapProfilingChoices)},
 
-#if defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
     {"show-cert-link", flag_descriptions::kShowCertLinkOnPageInfoName,
      flag_descriptions::kShowCertLinkOnPageInfoDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kShowCertLink)},
@@ -3047,7 +3047,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kD3DVsync)},
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
     {"use-google-local-ntp", flag_descriptions::kUseGoogleLocalNtpName,
      flag_descriptions::kUseGoogleLocalNtpDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kUseGoogleLocalNtp)},
@@ -3056,7 +3056,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOneGoogleBarOnLocalNtpName,
      flag_descriptions::kOneGoogleBarOnLocalNtpDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kOneGoogleBarOnLocalNtp)},
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
     {"mac-rtl", flag_descriptions::kMacRTLName,
@@ -3071,12 +3071,12 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableNewVirtualKeyboardBehavior)},
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
     {"enable-picture-in-picture",
      flag_descriptions::kEnablePictureInPictureName,
      flag_descriptions::kEnablePictureInPictureDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnablePictureInPicture)},
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
     {"browser-side-navigation", flag_descriptions::kBrowserSideNavigationName,
      flag_descriptions::kBrowserSideNavigationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBrowserSideNavigation)},

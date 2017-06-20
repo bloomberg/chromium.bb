@@ -109,10 +109,10 @@ extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate;
 
 extern const base::Feature kMaterialDesignIncognitoNTP;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 extern const base::Feature kMediaRemoting;
 extern const base::Feature kMediaRouterUIRouteController;
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif
 
 extern const base::Feature kModalPermissionPrompts;
 
@@ -126,7 +126,7 @@ extern const base::Feature kNativeNotifications;
 
 extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 extern const base::Feature kOneGoogleBarOnLocalNtp;
 #endif
 

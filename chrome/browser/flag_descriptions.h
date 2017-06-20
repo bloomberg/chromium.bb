@@ -1397,7 +1397,7 @@ extern const char kWakeOnPacketsDescription[];
 
 // Desktop --------------------------------------------------------------------
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 
 extern const char kEnableNewAppMenuIconName[];
 extern const char kEnableNewAppMenuIconDescription[];
@@ -1507,12 +1507,12 @@ extern const char kUiSlowAnimationsDescription[];
 
 #endif  // defined(USE_ASH)
 
-#if defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
 extern const char kShowCertLinkOnPageInfoName[];
 extern const char kShowCertLinkOnPageInfoDescription[];
 
-#endif  // defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 

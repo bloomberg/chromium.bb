@@ -166,11 +166,11 @@ void CastRemotingConnector::CreateMediaRemoter(
 
 namespace {
 RemotingSinkCapabilities GetFeatureEnabledCapabilities() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kMediaRemoting)) {
     return RemotingSinkCapabilities::RENDERING_ONLY;
   }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif
   return RemotingSinkCapabilities::NONE;
 }
 }  // namespace

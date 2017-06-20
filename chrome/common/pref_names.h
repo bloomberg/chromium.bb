@@ -336,7 +336,7 @@ extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kAllowDeletingBrowserHistory[];
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 extern const char kMdHistoryMenuPromoShown[];
 #endif
 extern const char kForceGoogleSafeSearch[];

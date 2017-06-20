@@ -1012,7 +1012,7 @@ const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 // permitted.
 const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 // Whether the "Click here to clear your browsing data" tooltip promo has been
 // shown on the Material Design History page.
 const char kMdHistoryMenuPromoShown[] = "history.menu_promo_shown";

@@ -20,7 +20,6 @@
 
 namespace {
 
-#if !defined(OS_IOS)
 const base::FilePath* g_override_versioned_directory = NULL;
 
 // Return a retained (NOT autoreleased) NSBundle* as the internal
@@ -47,19 +46,14 @@ NSBundle* OuterAppBundleInternal() {
 
   return [[NSBundle bundleWithPath:outer_app_dir_ns] retain];
 }
-#endif  // !defined(OS_IOS)
 
 char* ProductDirNameForBundle(NSBundle* chrome_bundle) {
   const char* product_dir_name = NULL;
-#if !defined(OS_IOS)
   base::mac::ScopedNSAutoreleasePool pool;
 
   NSString* product_dir_name_ns =
       [chrome_bundle objectForInfoDictionaryKey:@"CrProductDirName"];
   product_dir_name = [product_dir_name_ns fileSystemRepresentation];
-#else
-  DCHECK(!chrome_bundle);
-#endif
 
   if (!product_dir_name) {
 #if defined(GOOGLE_CHROME_BUILD)
@@ -82,9 +76,6 @@ char* ProductDirNameForBundle(NSBundle* chrome_bundle) {
 // official canary channel, the Info.plist will have CrProductDirName set
 // to "Google/Chrome Canary".
 std::string ProductDirName() {
-#if defined(OS_IOS)
-  static const char* product_dir_name = ProductDirNameForBundle(nil);
-#else
   // Use OuterAppBundle() to get the main app's bundle. This key needs to live
   // in the main app's bundle because it will be set differently on the canary
   // channel, and the autoupdate system dictates that there can be no
@@ -96,7 +87,6 @@ std::string ProductDirName() {
   // browser .app's Info.plist for the CrProductDirName key.
   static const char* product_dir_name =
       ProductDirNameForBundle(chrome::OuterAppBundle());
-#endif
   return std::string(product_dir_name);
 }
 
@@ -160,8 +150,6 @@ bool GetUserPicturesDirectory(base::FilePath* result) {
 bool GetUserVideosDirectory(base::FilePath* result) {
   return base::mac::GetUserDirectory(NSMoviesDirectory, result);
 }
-
-#if !defined(OS_IOS)
 
 base::FilePath GetVersionedDirectory() {
   if (g_override_versioned_directory)
@@ -233,8 +221,6 @@ bool GetUserDataDirectoryForBrowserBundle(NSBundle* bundle,
       ProductDirNameForBundle(bundle));
   return GetDefaultUserDataDirectoryForProduct(product_dir_name.get(), result);
 }
-
-#endif  // !defined(OS_IOS)
 
 bool ProcessNeedsProfileDir(const std::string& process_type) {
   // For now we have no reason to forbid this on other MacOS as we don't

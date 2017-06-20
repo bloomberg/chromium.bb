@@ -703,7 +703,7 @@ TEST_F(PageInfoTest, AboutBlankPage) {
 
 // On desktop, internal URLs aren't handled by PageInfo class. Instead, a
 // custom and simpler bubble is shown, so no need to test.
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
 TEST_F(PageInfoTest, InternalPage) {
   SetURL("chrome://bookmarks");
   SetDefaultUIExpectations(mock_ui());
