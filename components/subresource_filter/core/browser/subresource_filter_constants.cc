@@ -30,11 +30,4 @@ const base::FilePath::CharType kUnindexedRulesetLicenseFileName[] =
 const base::FilePath::CharType kUnindexedRulesetDataFileName[] =
     FILE_PATH_LITERAL("Filtering Rules");
 
-// TODO(shivanisha): Update the strings when finalized.
-
-const std::string kActivationConsoleMessage =
-    "Subresource filter is activated on this site";
-
-const std::string kDisallowSubframeConsoleMessage =
-    "Subresource filtering disallowed loading this resource, ";
 }  // namespace subresource_filter

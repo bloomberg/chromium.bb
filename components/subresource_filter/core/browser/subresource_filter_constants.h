@@ -47,11 +47,14 @@ extern const base::FilePath::CharType kUnindexedRulesetLicenseFileName[];
 // The name of the file that stores the unindexed filtering rules.
 extern const base::FilePath::CharType kUnindexedRulesetDataFileName[];
 
+// TODO(shivanisha): Update the strings when finalized.
 // Console message to be displayed on activation.
-extern const std::string kActivationConsoleMessage;
+constexpr char kActivationConsoleMessage[] =
+    "Subresource filter is activated on this site";
 
 // Console message to be displayed on disallowing subframe.
-extern const std::string kDisallowSubframeConsoleMessage;
+constexpr char kDisallowSubframeConsoleMessage[] =
+    "Subresource filtering disallowed loading this resource, ";
 
 }  // namespace subresource_filter
 
