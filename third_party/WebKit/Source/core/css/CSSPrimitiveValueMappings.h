@@ -404,34 +404,6 @@ inline ControlPart CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EBackfaceVisibility e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EBackfaceVisibility::kVisible:
-      value_id_ = CSSValueVisible;
-      break;
-    case EBackfaceVisibility::kHidden:
-      value_id_ = CSSValueHidden;
-      break;
-  }
-}
-
-template <>
-inline EBackfaceVisibility CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueVisible:
-      return EBackfaceVisibility::kVisible;
-    case CSSValueHidden:
-      return EBackfaceVisibility::kHidden;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EBackfaceVisibility::kHidden;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFillAttachment e)
     : CSSValue(kIdentifierClass) {
   switch (e) {

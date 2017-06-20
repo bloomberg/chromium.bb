@@ -634,11 +634,10 @@
     },
     {
       name: "backface-visibility",
-      field_template: "storage_only",
-      type_name: "EBackfaceVisibility",
+      field_template: "keyword",
       field_group: "rare-non-inherited",
-      default_value: "EBackfaceVisibility::kVisible",
-      field_size: 1,
+      default_value: "visible",
+      keywords: ["visible", "hidden"],
     },
     {
       name: "background-attachment",
