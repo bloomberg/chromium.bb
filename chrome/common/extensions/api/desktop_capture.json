@@ -30,7 +30,7 @@
             "$ref": "tabs.Tab",
             "name": "targetTab",
             "optional": true,
-            "description": "Optional tab for which the stream is created. If not specified then the resulting stream can be used only by the calling extension. The stream can only be used by frames in the given tab whose security origin matches <code>tab.url</code>."
+            "description": "Optional tab for which the stream is created. If not specified then the resulting stream can be used only by the calling extension. The stream can only be used by frames in the given tab whose security origin matches <code>tab.url</code>. The tab's origin must be a secure origin, e.g. HTTPS."
           },
           {
             "type": "function",
