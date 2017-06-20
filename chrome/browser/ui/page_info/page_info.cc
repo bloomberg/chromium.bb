@@ -164,8 +164,8 @@ void CheckContentStatus(security_state::ContentStatus content_status,
 // If the |security_info| indicates that mixed content or certificate errors
 // were present, update |connection_status| and |connection_details|.
 void ReportAnyInsecureContent(const security_state::SecurityInfo& security_info,
-                              PageInfo::SiteConnectionStatus& connection_status,
-                              base::string16& connection_details) {
+                              PageInfo::SiteConnectionStatus* connection_status,
+                              base::string16* connection_details) {
   bool displayed_insecure_content = false;
   bool ran_insecure_content = false;
   CheckContentStatus(security_info.mixed_content_status,
@@ -183,27 +183,27 @@ void ReportAnyInsecureContent(const security_state::SecurityInfo& security_info,
 
   // Only one insecure content warning is displayed; show the most severe.
   if (ran_insecure_content) {
-    connection_status =
+    *connection_status =
         PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE;
-    connection_details.assign(l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, connection_details,
+    connection_details->assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, *connection_details,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR)));
     return;
   }
   if (security_info.contained_mixed_form) {
-    connection_status = PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION;
-    connection_details.assign(l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, connection_details,
+    *connection_status = PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION;
+    connection_details->assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, *connection_details,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_FORM_WARNING)));
     return;
   }
   if (displayed_insecure_content) {
-    connection_status =
+    *connection_status =
         PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE;
-    connection_details.assign(l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, connection_details,
+    connection_details->assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, *connection_details,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
   }
@@ -637,8 +637,8 @@ void PageInfo::Init(const GURL& url,
           subject_name));
     }
 
-    ReportAnyInsecureContent(security_info, site_connection_status_,
-                             site_connection_details_);
+    ReportAnyInsecureContent(security_info, &site_connection_status_,
+                             &site_connection_details_);
   }
 
   uint16_t cipher_suite =
