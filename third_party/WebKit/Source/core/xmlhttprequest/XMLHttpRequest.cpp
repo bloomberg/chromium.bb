@@ -670,7 +670,10 @@ void XMLHttpRequest::open(const AtomicString& method,
 }
 
 bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
-  if (!GetExecutionContext()) {
+  // We need to check ContextDestroyed because it is possible to create a
+  // XMLHttpRequest with already detached document.
+  // TODO(yhirano): Fix this.
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
     HandleNetworkError();
     ThrowForLoadFailureIfNeeded(exception_state,
                                 "Document is already detached.");

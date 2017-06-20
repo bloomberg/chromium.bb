@@ -156,7 +156,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&) override;
 
-  void Detach() override;
+  FetchContext* Detach() override;
 
   DECLARE_VIRTUAL_TRACE();
 

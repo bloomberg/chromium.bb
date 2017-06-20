@@ -216,7 +216,8 @@ class PLATFORM_EXPORT FetchContext
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
   // with "keepalive" specified).
-  virtual void Detach() {}
+  // Returns a "detached" fetch context which can be null.
+  virtual FetchContext* Detach() { return nullptr; }
 
  protected:
   FetchContext();
