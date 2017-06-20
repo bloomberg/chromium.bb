@@ -194,8 +194,6 @@ inline TextDecorationSkip& operator|=(TextDecorationSkip& a,
 
 enum OffsetRotationType { kOffsetRotationAuto, kOffsetRotationFixed };
 
-enum class EBackfaceVisibility { kVisible, kHidden };
-
 enum ELineClampType { kLineClampLineCount, kLineClampPercentage };
 
 enum class TextEmphasisMark {

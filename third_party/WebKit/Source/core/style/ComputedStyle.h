@@ -433,19 +433,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_NESTED_VAR(rare_non_inherited_data_, filter_, operations_, ops);
   }
 
-  // backface-visibility (aka -webkit-backface-visibility)
-  static EBackfaceVisibility InitialBackfaceVisibility() {
-    return EBackfaceVisibility::kVisible;
-  }
-  EBackfaceVisibility BackfaceVisibility() const {
-    return static_cast<EBackfaceVisibility>(
-        rare_non_inherited_data_->backface_visibility_);
-  }
-  void SetBackfaceVisibility(EBackfaceVisibility b) {
-    SET_VAR(rare_non_inherited_data_, backface_visibility_,
-            static_cast<unsigned>(b));
-  }
-
   // Background properties.
   // background-color
   static Color InitialBackgroundColor() { return Color::kTransparent; }
