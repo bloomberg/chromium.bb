@@ -6,6 +6,8 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
+#include "core/paint/BoxBorderPainter.h"
+#include "core/paint/NinePieceImagePainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
@@ -376,6 +378,27 @@ FloatRoundedRect BoxPainterBase::RoundedBorderRectForClip(
                                             info.include_right_edge);
   }
   return border;
+}
+
+void BoxPainterBase::PaintBorder(const ImageResourceObserver& obj,
+                                 const Document& document,
+                                 Node* node,
+                                 const PaintInfo& info,
+                                 const LayoutRect& rect,
+                                 const ComputedStyle& style,
+                                 BackgroundBleedAvoidance bleed_avoidance,
+                                 bool include_logical_left_edge,
+                                 bool include_logical_right_edge) {
+  // border-image is not affected by border-radius.
+  if (NinePieceImagePainter::Paint(info.context, obj, document, node, rect,
+                                   style, style.BorderImage())) {
+    return;
+  }
+
+  const BoxBorderPainter border_painter(rect, style, bleed_avoidance,
+                                        include_logical_left_edge,
+                                        include_logical_right_edge);
+  border_painter.PaintBorder(info, rect);
 }
 
 }  // namespace blink

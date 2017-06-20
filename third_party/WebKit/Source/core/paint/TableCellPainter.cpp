@@ -263,7 +263,9 @@ void TableCellPainter::PaintBoxDecorationBackground(
   if (!needs_to_paint_border)
     return;
 
-  BoxPainter::PaintBorder(layout_table_cell_, paint_info, paint_rect, style);
+  BoxPainter::PaintBorder(layout_table_cell_, layout_table_cell_.GetDocument(),
+                          layout_table_cell_.GeneratingNode(), paint_info,
+                          paint_rect, style);
 }
 
 void TableCellPainter::PaintMask(const PaintInfo& paint_info,

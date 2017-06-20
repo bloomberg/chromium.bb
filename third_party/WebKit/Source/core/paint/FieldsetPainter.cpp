@@ -87,7 +87,12 @@ void FieldsetPainter::PaintBoxDecorationBackground(
                             clip_width, legend->Size().Height()));
   }
 
-  BoxPainter::PaintBorder(layout_fieldset_, paint_info, paint_rect,
+  Node* node = nullptr;
+  const LayoutObject* layout_object = &layout_fieldset_;
+  for (; layout_object && !node; layout_object = layout_object->Parent())
+    node = layout_object->GeneratingNode();
+  BoxPainter::PaintBorder(layout_fieldset_, layout_fieldset_.GetDocument(),
+                          node, paint_info, paint_rect,
                           layout_fieldset_.StyleRef());
 }
 

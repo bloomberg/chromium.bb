@@ -10,6 +10,7 @@
 #include "core/style/StyleImage.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/wtf/Allocator.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace blink {
 
@@ -20,6 +21,7 @@ class LayoutPoint;
 class LayoutRect;
 class FillLayer;
 class LayoutRectOutsets;
+class ImageResourceObserver;
 struct PaintInfo;
 
 // Base class for box painting. Has no dependencies on the layout tree and thus
@@ -54,6 +56,16 @@ class BoxPainterBase {
       const ComputedStyle&,
       bool include_logical_left_edge = true,
       bool include_logical_right_edge = true);
+
+  static void PaintBorder(const ImageResourceObserver&,
+                          const Document&,
+                          Node*,
+                          const PaintInfo&,
+                          const LayoutRect&,
+                          const ComputedStyle&,
+                          BackgroundBleedAvoidance = kBackgroundBleedNone,
+                          bool include_logical_left_edge = true,
+                          bool include_logical_right_edge = true);
 
   static bool ShouldForceWhiteBackgroundForPrintEconomy(const Document&,
                                                         const ComputedStyle&);
