@@ -18,6 +18,8 @@
 #include "base/process/process_info.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -121,10 +123,17 @@ PersistentIncidentState ComputeIncidentState(const Incident& incident) {
 // Returns the shutdown behavior for the task runners of the incident reporting
 // service. Current metrics suggest that CONTINUE_ON_SHUTDOWN will reduce the
 // number of browser hangs on shutdown.
-base::SequencedWorkerPool::WorkerShutdown GetShutdownBehavior() {
+base::TaskShutdownBehavior GetShutdownBehavior() {
   return base::FeatureList::IsEnabled(features::kBrowserHangFixesExperiment)
-             ? base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN
-             : base::SequencedWorkerPool::SKIP_ON_SHUTDOWN;
+             ? base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN
+             : base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN;
+}
+
+// Returns a task runner for blocking tasks in the background.
+scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
+  return base::CreateTaskRunnerWithTraits({base::TaskPriority::BACKGROUND,
+                                           GetShutdownBehavior(),
+                                           base::MayBlock()});
 }
 
 }  // namespace
@@ -315,9 +324,7 @@ IncidentReportingService::IncidentReportingService(
           safe_browsing_service ? safe_browsing_service->url_request_context()
                                 : nullptr),
       collect_environment_data_fn_(&CollectEnvironmentData),
-      environment_collection_task_runner_(
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior())),
+      environment_collection_task_runner_(GetBackgroundTaskRunner()),
       environment_collection_pending_(),
       collation_timeout_pending_(),
       collation_timer_(FROM_HERE,
@@ -326,8 +333,7 @@ IncidentReportingService::IncidentReportingService(
                        &IncidentReportingService::OnCollationTimeout),
       delayed_analysis_callbacks_(
           base::TimeDelta::FromMilliseconds(kDefaultCallbackIntervalMs),
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior())),
+          GetBackgroundTaskRunner()),
       download_metadata_manager_(content::BrowserThread::GetBlockingPool()),
       receiver_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
@@ -408,9 +414,7 @@ IncidentReportingService::IncidentReportingService(
                             : nullptr),
       url_request_context_getter_(request_context_getter),
       collect_environment_data_fn_(&CollectEnvironmentData),
-      environment_collection_task_runner_(
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior())),
+      environment_collection_task_runner_(GetBackgroundTaskRunner()),
       environment_collection_pending_(),
       collation_timeout_pending_(),
       collation_timer_(FROM_HERE,
@@ -437,9 +441,7 @@ void IncidentReportingService::SetCollectEnvironmentHook(
     environment_collection_task_runner_ = task_runner;
   } else {
     collect_environment_data_fn_ = &CollectEnvironmentData;
-    environment_collection_task_runner_ =
-        content::BrowserThread::GetBlockingPool()
-            ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior());
+    environment_collection_task_runner_ = GetBackgroundTaskRunner();
   }
 }
 
