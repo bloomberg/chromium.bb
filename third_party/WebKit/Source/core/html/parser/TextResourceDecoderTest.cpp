@@ -8,15 +8,9 @@
 
 namespace blink {
 
-namespace {
-
-const char kUTF16TextMimeType[] = "text/plain; charset=utf-16";
-
-}  // namespace
-
 TEST(TextResourceDecoderTest, BasicUTF16) {
   std::unique_ptr<TextResourceDecoder> decoder =
-      TextResourceDecoder::Create(kUTF16TextMimeType);
+      TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent);
   WTF::String decoded;
 
   const unsigned char kFooLE[] = {0xff, 0xfe, 0x66, 0x00,
@@ -26,7 +20,7 @@ TEST(TextResourceDecoderTest, BasicUTF16) {
   decoded = decoded + decoder->Flush();
   EXPECT_EQ("foo", decoded);
 
-  decoder = TextResourceDecoder::Create(kUTF16TextMimeType);
+  decoder = TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent);
   const unsigned char kFooBE[] = {0xfe, 0xff, 0x00, 0x66,
                                   0x00, 0x6f, 0x00, 0x6f};
   decoded =
@@ -37,7 +31,7 @@ TEST(TextResourceDecoderTest, BasicUTF16) {
 
 TEST(TextResourceDecoderTest, UTF16Pieces) {
   std::unique_ptr<TextResourceDecoder> decoder =
-      TextResourceDecoder::Create(kUTF16TextMimeType);
+      TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent);
 
   WTF::String decoded;
   const unsigned char kFoo[] = {0xff, 0xfe, 0x66, 0x00, 0x6f, 0x00, 0x6f, 0x00};

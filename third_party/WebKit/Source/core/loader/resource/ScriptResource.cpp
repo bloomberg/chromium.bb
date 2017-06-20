@@ -55,7 +55,7 @@ ScriptResource::ScriptResource(const ResourceRequest& resource_request,
     : TextResource(resource_request,
                    kScript,
                    options,
-                   "application/javascript",
+                   TextResourceDecoder::kPlainTextContent,
                    charset) {}
 
 ScriptResource::~ScriptResource() {}

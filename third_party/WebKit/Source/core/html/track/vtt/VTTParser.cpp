@@ -82,7 +82,9 @@ bool VTTParser::ParseFloatPercentageValuePair(VTTScanner& value_scanner,
 VTTParser::VTTParser(VTTParserClient* client, Document& document)
     : document_(&document),
       state_(kInitial),
-      decoder_(TextResourceDecoder::Create("text/plain", UTF8Encoding())),
+      decoder_(
+          TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent,
+                                      UTF8Encoding())),
       current_start_time_(0),
       current_end_time_(0),
       client_(client) {}

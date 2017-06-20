@@ -1709,18 +1709,21 @@ void XMLHttpRequest::ParseDocumentChunk(const char* data, unsigned len) {
 }
 
 std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
-  if (response_type_code_ == kResponseTypeJSON)
-    return TextResourceDecoder::Create("application/json", UTF8Encoding());
+  if (response_type_code_ == kResponseTypeJSON) {
+    return TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent,
+                                       UTF8Encoding());
+  }
 
   if (!final_response_charset_.IsEmpty()) {
     return TextResourceDecoder::Create(
-        "text/plain", WTF::TextEncoding(final_response_charset_));
+        TextResourceDecoder::kPlainTextContent,
+        WTF::TextEncoding(final_response_charset_));
   }
 
   // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
   if (ResponseIsXML()) {
     std::unique_ptr<TextResourceDecoder> decoder =
-        TextResourceDecoder::Create("application/xml");
+        TextResourceDecoder::Create(TextResourceDecoder::kXMLContent);
     // Don't stop on encoding errors, unlike it is done for other kinds
     // of XML resources. This matches the behavior of previous WebKit
     // versions, Firefox and Opera.
@@ -1729,10 +1732,13 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
     return decoder;
   }
 
-  if (ResponseIsHTML())
-    return TextResourceDecoder::Create("text/html", UTF8Encoding());
+  if (ResponseIsHTML()) {
+    return TextResourceDecoder::Create(TextResourceDecoder::kHTMLContent,
+                                       UTF8Encoding());
+  }
 
-  return TextResourceDecoder::Create("text/plain", UTF8Encoding());
+  return TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent,
+                                     UTF8Encoding());
 }
 
 void XMLHttpRequest::DidReceiveData(const char* data, unsigned len) {

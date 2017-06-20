@@ -117,17 +117,6 @@ static WTF::TextEncoding FindTextEncoding(const char* encoding_name,
   return WTF::TextEncoding(buffer.data());
 }
 
-TextResourceDecoder::ContentType TextResourceDecoder::DetermineContentType(
-    const String& mime_type) {
-  if (DeprecatedEqualIgnoringCase(mime_type, "text/css"))
-    return kCSSContent;
-  if (DeprecatedEqualIgnoringCase(mime_type, "text/html"))
-    return kHTMLContent;
-  if (DOMImplementation::IsXMLMIMEType(mime_type))
-    return kXMLContent;
-  return kPlainTextContent;
-}
-
 const WTF::TextEncoding& TextResourceDecoder::DefaultEncoding(
     ContentType content_type,
     const WTF::TextEncoding& specified_default_encoding) {
@@ -141,11 +130,11 @@ const WTF::TextEncoding& TextResourceDecoder::DefaultEncoding(
 }
 
 TextResourceDecoder::TextResourceDecoder(
-    const String& mime_type,
+    ContentType content_type,
     const WTF::TextEncoding& specified_default_encoding,
     EncodingDetectionOption encoding_detection_option,
     const KURL& hint_url)
-    : content_type_(DetermineContentType(mime_type)),
+    : content_type_(content_type),
       encoding_(DefaultEncoding(content_type_, specified_default_encoding)),
       source_(kDefaultEncoding),
       hint_encoding_(0),
