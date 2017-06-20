@@ -3966,7 +3966,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "6",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
