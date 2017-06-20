@@ -83,6 +83,9 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
 
 CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge() {
   observer_ = nullptr;
+  if (web_layer_) {
+    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
+  }
 }
 
 void CanvasSurfaceLayerBridge::CreateSolidColorLayer() {
