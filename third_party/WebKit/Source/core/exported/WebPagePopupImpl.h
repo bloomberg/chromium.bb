@@ -31,6 +31,7 @@
 #ifndef WebPagePopupImpl_h
 #define WebPagePopupImpl_h
 
+#include "core/CoreExport.h"
 #include "core/page/PagePopup.h"
 #include "core/page/PageWidgetDelegate.h"
 #include "platform/wtf/RefCounted.h"
@@ -51,10 +52,11 @@ class WebLayer;
 class WebViewBase;
 class LocalDOMWindow;
 
-class WebPagePopupImpl final : public WebPagePopup,
-                               public PageWidgetEventHandler,
-                               public PagePopup,
-                               public RefCounted<WebPagePopupImpl> {
+class CORE_EXPORT WebPagePopupImpl final
+    : public NON_EXPORTED_BASE(WebPagePopup),
+      public NON_EXPORTED_BASE(PageWidgetEventHandler),
+      public NON_EXPORTED_BASE(PagePopup),
+      public NON_EXPORTED_BASE(RefCounted<WebPagePopupImpl>) {
   WTF_MAKE_NONCOPYABLE(WebPagePopupImpl);
   USING_FAST_MALLOC(WebPagePopupImpl);
 

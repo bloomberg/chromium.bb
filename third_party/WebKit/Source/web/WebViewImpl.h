@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "core/editing/spellcheck/SpellCheckerClientImpl.h"
+#include "core/exported/WebPagePopupImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/ResizeViewportAnchor.h"
 #include "core/page/ChromeClient.h"
@@ -68,7 +69,6 @@
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebPageImportanceSignals.h"
 #include "web/WebExport.h"
-#include "web/WebPagePopupImpl.h"
 
 namespace blink {
 
