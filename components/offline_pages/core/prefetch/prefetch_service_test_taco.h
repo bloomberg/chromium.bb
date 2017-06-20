@@ -48,11 +48,14 @@ class PrefetchServiceTestTaco {
 
   // Once CreatePrefetchService() is called, this accessor method starts
   // returning the PrefetchService.
-
   PrefetchService* prefetch_service() {
     CHECK(prefetch_service_);
     return prefetch_service_.get();
   }
+
+  // Creates and returns the ownership of the created PrefetchService instance.
+  // Leaves the taco empty, not usable.
+  std::unique_ptr<PrefetchService> CreateAndReturnPrefetchService();
 
  private:
   std::unique_ptr<OfflineMetricsCollector> metrics_collector_;

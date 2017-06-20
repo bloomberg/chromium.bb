@@ -12,8 +12,11 @@
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_request_job.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
+#include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/offline_page_item.h"
+#include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -41,6 +44,8 @@ OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  prefetch_service_ = PrefetchServiceFactory::GetForBrowserContext(
+      web_contents->GetBrowserContext());
 }
 
 OfflinePageTabHelper::~OfflinePageTabHelper() {}
@@ -63,6 +68,12 @@ void OfflinePageTabHelper::DidStartNavigation(
   if (offline_info_.offline_page.get() &&
       !navigation_handle->IsSameDocument()) {
     offline_info_.Clear();
+  }
+
+  // Report any attempted navigation as indication that browser is in use.
+  // This doesn't have to be a successful navigation.
+  if (prefetch_service_) {
+    prefetch_service_->GetOfflineMetricsCollector()->OnAppStartupOrResume();
   }
 }
 
@@ -95,6 +106,27 @@ void OfflinePageTabHelper::DidFinishNavigation(
         provisional_offline_info_.is_showing_offline_preview;
   }
   provisional_offline_info_.Clear();
+
+  // Report the kind of navigation (online/offline) to metrics collector.
+  // It accumulates this info to mark a day as 'offline' or 'online'.
+  if (!navigation_handle->IsErrorPage()) {
+    if (prefetch_service_) {
+      OfflineMetricsCollector* metrics_collector =
+          prefetch_service_->GetOfflineMetricsCollector();
+      DCHECK(metrics_collector);
+
+      if (offline_page()) {
+        // Note that navigation to offline page may happen even if network is
+        // connected. For the purposes of collecting offline usage statistics,
+        // we still count this as offline navigation.
+        metrics_collector->OnSuccessfulNavigationOffline();
+      } else {
+        metrics_collector->OnSuccessfulNavigationOnline();
+        // The device is apparently online, attempt to report stats to UMA.
+        metrics_collector->ReportAccumulatedStats();
+      }
+    }
+  }
 
   // If the offline page has been loaded successfully, nothing more to do.
   net::Error error_code = navigation_handle->GetNetErrorCode();
