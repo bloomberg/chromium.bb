@@ -72,3 +72,19 @@ TEST_F(CRWSessionCertificatePolicyCacheStorageTest, EncodeDecode) {
   id decoded = [NSKeyedUnarchiver unarchiveObjectWithData:data];
   EXPECT_TRUE(CacheStoragesAreEqual(cache_storage_.get(), decoded));
 }
+
+// Tests that unarchiving a CRWSessionCertificateStorage returns nil if the
+// certificate data does not correctly decode to a certificate.
+TEST(CRWSessionCertificateStorageTest, InvalidCertData) {
+  NSMutableData* data = [[NSMutableData alloc] init];
+  NSKeyedArchiver* archiver =
+      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
+  [archiver encodeObject:[@"not a  cert" dataUsingEncoding:NSUTF8StringEncoding]
+                  forKey:web::kCertificateSerializationKey];
+  [archiver encodeObject:@"host" forKey:web::kHostSerializationKey];
+  [archiver encodeObject:@(net::CERT_STATUS_INVALID)
+                  forKey:web::kStatusSerializationKey];
+  [archiver finishEncoding];
+  id decoded = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  EXPECT_FALSE(decoded);
+}

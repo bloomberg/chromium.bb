@@ -16,6 +16,14 @@ class X509Certificate;
 
 #pragma mark - CRWSessionCertificateStorage
 
+namespace web {
+// Serialization keys used in CRWSessionCertificateStorage's NSCoding
+// implementation.
+extern NSString* const kCertificateSerializationKey;
+extern NSString* const kHostSerializationKey;
+extern NSString* const kStatusSerializationKey;
+}  // namespace web
+
 // A serializable representation of a certificate.
 @interface CRWSessionCertificateStorage : NSObject<NSCoding>
 
@@ -36,6 +44,12 @@ class X509Certificate;
 @end
 
 #pragma mark - CRWSessionCertificatePolicyCacheStorage
+
+namespace web {
+// Serialization key used in CRWSessionCertificatePolicyCacheStorage's NSCoding
+// implementation.
+extern NSString* const kCertificateStoragesKey;
+}  // namespace web
 
 // A serializable representation of a list of allowed certificates.
 @interface CRWSessionCertificatePolicyCacheStorage : NSObject<NSCoding>
