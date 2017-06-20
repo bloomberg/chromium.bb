@@ -69,6 +69,8 @@ std::string SigninNotificationDelegate::id() const {
 
 }  // namespace
 
+namespace chromeos {
+
 AuthPolicyCredentialsManager::AuthPolicyCredentialsManager(Profile* profile)
     : profile_(profile) {
   const user_manager::User* user =
@@ -135,10 +137,10 @@ void AuthPolicyCredentialsManager::OnGetUserStatusCallback(
       break;
     case authpolicy::ActiveDirectoryUserStatus::PASSWORD_EXPIRED:
       ShowNotification(IDS_ACTIVE_DIRECTORY_PASSWORD_EXPIRED);
-      return;
+      break;
     case authpolicy::ActiveDirectoryUserStatus::PASSWORD_CHANGED:
       ShowNotification(IDS_ACTIVE_DIRECTORY_PASSWORD_CHANGED);
-      return;
+      break;
   }
 
   DCHECK(user_status.has_tgt_status());
@@ -149,10 +151,13 @@ void AuthPolicyCredentialsManager::OnGetUserStatusCallback(
     case authpolicy::ActiveDirectoryUserStatus::TGT_EXPIRED:
     case authpolicy::ActiveDirectoryUserStatus::TGT_NOT_FOUND:
       ShowNotification(IDS_ACTIVE_DIRECTORY_REFRESH_AUTH_TOKEN);
-      return;
+      break;
   }
-  // Everything is ok.
-  user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id_, false);
+  const bool ok = user_status.tgt_status() ==
+                      authpolicy::ActiveDirectoryUserStatus::TGT_VALID &&
+                  user_status.password_status() ==
+                      authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID;
+  user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id_, !ok);
 }
 
 void AuthPolicyCredentialsManager::ScheduleGetUserStatus() {
@@ -178,9 +183,9 @@ void AuthPolicyCredentialsManager::StartObserveNetwork() {
 }
 
 void AuthPolicyCredentialsManager::StopObserveNetwork() {
-  DCHECK(chromeos::NetworkHandler::IsInitialized());
   if (!is_observing_network_)
     return;
+  DCHECK(chromeos::NetworkHandler::IsInitialized());
   is_observing_network_ = false;
   chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
       this, FROM_HERE);
@@ -202,8 +207,6 @@ void AuthPolicyCredentialsManager::UpdateDisplayAndGivenName(
 }
 
 void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
-  user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id_, true);
-
   if (shown_notifications_.count(message_id) > 0)
     return;
 
@@ -263,13 +266,14 @@ AuthPolicyCredentialsManagerFactory::GetInstance() {
 }
 
 // static
-void AuthPolicyCredentialsManagerFactory::BuildForProfileIfActiveDirectory(
+KeyedService*
+AuthPolicyCredentialsManagerFactory::BuildForProfileIfActiveDirectory(
     Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user || !user->IsActiveDirectoryUser())
-    return;
-  GetInstance()->GetServiceForBrowserContext(profile, true /* create */);
+    return nullptr;
+  return GetInstance()->GetServiceForBrowserContext(profile, true /* create */);
 }
 
 AuthPolicyCredentialsManagerFactory::AuthPolicyCredentialsManagerFactory()
@@ -284,3 +288,5 @@ KeyedService* AuthPolicyCredentialsManagerFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   return new AuthPolicyCredentialsManager(profile);
 }
+
+}  // namespace chromeos

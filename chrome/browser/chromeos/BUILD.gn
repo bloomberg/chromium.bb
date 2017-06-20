@@ -1681,6 +1681,7 @@ source_set("unit_tests") {
     "attestation/fake_certificate.cc",
     "attestation/fake_certificate.h",
     "attestation/platform_verification_flow_unittest.cc",
+    "authpolicy/auth_policy_credentials_manager_unittest.cc",
     "base/file_flusher_unittest.cc",
     "certificate_provider/certificate_provider_service_unittest.cc",
     "customization/customization_document_unittest.cc",
