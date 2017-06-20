@@ -27,7 +27,7 @@
 - (void)setIcon:(WhatsNewIcon)icon;
 
 // Sets the value to use for the left and right margin.
-- (void)setSideMargin:(CGFloat)sideMargin forWidth:(CGFloat)width;
+- (void)setSideMargin:(CGFloat)sideMargin;
 
 // Returns the minimum height required for WhatsNewHeaderView to fit in |width|,
 // for a given |text|.

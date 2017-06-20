@@ -80,6 +80,7 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   toolbarView.frame = toolbarFrame;
   [toolbarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
 
+  [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   [self addSubview:[_toolbarController view]];
 }
 
