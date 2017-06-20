@@ -443,7 +443,10 @@ endif ()
 function (setup_av1_targets)
   add_library(aom_av1_common OBJECT ${AOM_AV1_COMMON_SOURCES})
   list(APPEND AOM_LIB_TARGETS aom_av1_common)
-  add_library(aom_av1 STATIC $<TARGET_OBJECTS:aom_av1_common>)
+
+  create_dummy_source_file("aom_av1" "c" "dummy_source_file")
+  add_library(aom_av1 OBJECT "${dummy_source_file}")
+  target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_av1_common>)
   list(APPEND AOM_LIB_TARGETS aom_av1)
 
   # Not all generators support libraries consisting only of object files. Add a
@@ -465,59 +468,57 @@ function (setup_av1_targets)
   if (HAVE_SSE2)
     require_flag_nomsvc("-msse2" NO)
     add_intrinsics_object_library("-msse2" "sse2" "aom_av1_common"
-                                  "AOM_AV1_COMMON_INTRIN_SSE2" "aom_av1")
+                                  "AOM_AV1_COMMON_INTRIN_SSE2" "aom")
     if (CONFIG_AV1_DECODER)
       if (AOM_AV1_DECODER_ASM_SSE2)
-        add_asm_library("aom_av1_decoder_sse2" "AOM_AV1_DECODER_ASM_SSE2"
-                        "aom_av1")
+        add_asm_library("aom_av1_decoder_sse2" "AOM_AV1_DECODER_ASM_SSE2" "aom")
       endif ()
 
       if (AOM_AV1_DECODER_INTRIN_SSE2)
         add_intrinsics_object_library("-msse2" "sse2" "aom_av1_decoder"
-                                      "AOM_AV1_DECODER_INTRIN_SSE2" "aom_av1")
+                                      "AOM_AV1_DECODER_INTRIN_SSE2" "aom")
       endif ()
     endif ()
 
     if (CONFIG_AV1_ENCODER)
-      add_asm_library("aom_av1_encoder_sse2" "AOM_AV1_ENCODER_ASM_SSE2"
-                      "aom_av1")
+      add_asm_library("aom_av1_encoder_sse2" "AOM_AV1_ENCODER_ASM_SSE2" "aom")
       add_intrinsics_object_library("-msse2" "sse2" "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_INTRIN_SSE2" "aom_av1")
+                                    "AOM_AV1_ENCODER_INTRIN_SSE2" "aom")
     endif ()
   endif ()
 
   if (HAVE_SSSE3)
     require_flag_nomsvc("-mssse3" NO)
     add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_common"
-                                  "AOM_AV1_COMMON_INTRIN_SSSE3" "aom_av1")
+                                  "AOM_AV1_COMMON_INTRIN_SSSE3" "aom")
 
     if (CONFIG_AV1_DECODER)
       if (AOM_AV1_DECODER_INTRIN_SSSE3)
         add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_decoder"
-                                      "AOM_AV1_DECODER_INTRIN_SSSE3" "aom_av1")
+                                      "AOM_AV1_DECODER_INTRIN_SSSE3" "aom")
       endif ()
     endif ()
 
     if (CONFIG_AV1_ENCODER)
       add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_INTRIN_SSSE3" "aom_av1")
+                                    "AOM_AV1_ENCODER_INTRIN_SSSE3" "aom")
     endif ()
   endif ()
 
   if (HAVE_SSE4_1)
     require_flag_nomsvc("-msse4.1" NO)
     add_intrinsics_object_library("-msse4.1" "sse4" "aom_av1_common"
-                                  "AOM_AV1_COMMON_INTRIN_SSE4_1" "aom_av1")
+                                  "AOM_AV1_COMMON_INTRIN_SSE4_1" "aom")
 
     if (CONFIG_AV1_ENCODER)
       if ("${AOM_TARGET_CPU}" STREQUAL "x86_64")
         add_asm_library("aom_av1_encoder_ssse3"
-                        "AOM_AV1_ENCODER_ASM_SSSE3_X86_64" "aom_av1")
+                        "AOM_AV1_ENCODER_ASM_SSSE3_X86_64" "aom")
       endif ()
 
       if (AOM_AV1_ENCODER_INTRIN_SSE4_1)
         add_intrinsics_object_library("-msse4.1" "sse4" "aom_av1_encoder"
-                                      "AOM_AV1_ENCODER_INTRIN_SSE4_1" "aom_av1")
+                                      "AOM_AV1_ENCODER_INTRIN_SSE4_1" "aom")
       endif ()
     endif ()
   endif ()
@@ -525,11 +526,11 @@ function (setup_av1_targets)
   if (HAVE_AVX2)
     require_flag_nomsvc("-mavx2" NO)
     add_intrinsics_object_library("-mavx2" "avx2" "aom_av1_common"
-                                  "AOM_AV1_COMMON_INTRIN_AVX2" "aom_av1")
+                                  "AOM_AV1_COMMON_INTRIN_AVX2" "aom")
 
     if (CONFIG_AV1_ENCODER)
       add_intrinsics_object_library("-mavx2" "avx2" "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_INTRIN_AVX2" "aom_av1")
+                                    "AOM_AV1_ENCODER_INTRIN_AVX2" "aom")
     endif ()
   endif ()
 
@@ -538,31 +539,31 @@ function (setup_av1_targets)
       add_intrinsics_object_library("${AOM_INTRIN_NEON_FLAG}"
                                     "neon"
                                     "aom_av1_common"
-                                    "AOM_AV1_COMMON_INTRIN_NEON" "aom_av1")
+                                    "AOM_AV1_COMMON_INTRIN_NEON" "aom")
     endif ()
 
     if (AOM_AV1_ENCODER_INTRIN_NEON)
       add_intrinsics_object_library("${AOM_INTRIN_NEON_FLAG}"
                                     "neon"
                                     "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_INTRIN_NEON" "aom_av1")
+                                    "AOM_AV1_ENCODER_INTRIN_NEON" "aom")
     endif ()
   endif ()
 
   if (HAVE_DSPR2)
     add_intrinsics_object_library("" "dspr2" "aom_av1_common"
-                                  "AOM_AV1_COMMON_INTRIN_DSPR2" "aom_av1")
+                                  "AOM_AV1_COMMON_INTRIN_DSPR2" "aom")
   endif ()
 
   if (HAVE_MSA)
     add_intrinsics_object_library("" "msa" "aom_av1_common"
-                                  "AOM_AV1_COMMON_INTRIN_MSA" "aom_av1")
+                                  "AOM_AV1_COMMON_INTRIN_MSA" "aom")
     add_intrinsics_object_library("" "msa" "aom_av1_encoder"
-                                  "AOM_AV1_ENCODER_INTRIN_MSA" "aom_av1")
+                                  "AOM_AV1_ENCODER_INTRIN_MSA" "aom")
   endif ()
 
-  target_link_libraries(aom_av1 PRIVATE aom_dsp aom_scale)
-  target_link_libraries(aom PRIVATE aom_av1)
+  target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_dsp>)
+  target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_scale>)
 
   # Pass the new lib targets up to the parent scope instance of
   # $AOM_LIB_TARGETS.

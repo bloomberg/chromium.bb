@@ -131,7 +131,7 @@ function (add_asm_library lib_name asm_sources dependent_target)
                        COMMENT "Building ASM object ${asm_object}"
                        WORKING_DIRECTORY "${AOM_CONFIG_DIR}"
                        VERBATIM)
-    target_sources(${lib_name} PRIVATE "${asm_object}")
+    target_sources(aom PRIVATE "${asm_object}")
   endforeach ()
 
   # The above created a target containing only ASM sources. Cmake needs help
@@ -140,8 +140,6 @@ function (add_asm_library lib_name asm_sources dependent_target)
   # property on the library target because not all generators obey it (looking
   # at you, xcode generator).
   add_dummy_source_file_to_target("${lib_name}" "c")
-
-  target_link_libraries(${dependent_target} PRIVATE ${lib_name})
 
   # Add the new lib target to the global list of aom library targets.
   list(APPEND AOM_LIB_TARGETS ${lib_name})
