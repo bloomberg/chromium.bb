@@ -11,6 +11,14 @@ login.createScreen(
     function() {
       return {
 
+        /**
+         * Returns a control which should receive an initial focus.
+         */
+        get defaultControl() {
+          return $('voice-interaction-value-prop-md')
+              .getElement('continueButton');
+        },
+
         /** @Override */
         onBeforeShow: function(data) {
           var valueView = $('voice-interaction-value-prop-md')

@@ -6099,6 +6099,12 @@ All users must sign out to continue.
   <message name="IDS_VOICE_INTERACTION_VALUE_PROP_CONTINUE_BUTTION" desc="tmp">
     Continue
   </message>
+  <message name="IDS_WAIT_FOR_CONTAINER_READY_TITLE" desc="tmp">
+    Just a sec
+  </message>
+  <message name="IDS_WAIT_FOR_CONTAINER_READY_INTRO_MESSAGE" desc="tmp">
+    Ask it questions. Tell it to do things. It's your personal Google, always ready to help.
+  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE" desc="Title of the printing-in-progress notification.">

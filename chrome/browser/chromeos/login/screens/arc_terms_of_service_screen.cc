@@ -54,6 +54,7 @@ void ArcTermsOfServiceScreen::OnAccept() {
 void ArcTermsOfServiceScreen::OnViewDestroyed(
     ArcTermsOfServiceScreenView* view) {
   DCHECK_EQ(view, view_);
+  view_->RemoveObserver(this);
   view_ = nullptr;
 }
 

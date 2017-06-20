@@ -46,6 +46,7 @@ const char* kScreenNames[] = {
     "ad-password-change",
     "encryption-migration",          // SCREEN_ENCRYPTION_MIGRATION
     "voice-interaction-value-prop",  // SCREEN_VOICE_INTERACTION_VALUE_PROP
+    "wait-for-container-ready",      // SCREEN_WAIT_FOR_CONTAINTER_READY
     "login",                         // SCREEN_SPECIAL_LOGIN
     "oobe",                          // SCREEN_SPECIAL_OOBE
     "test:nowindow",                 // SCREEN_TEST_NO_WINDOW

@@ -1,0 +1,25 @@
+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module id="wait-for-container-ready-md">
+  <template>
+    <link rel="stylesheet" href="oobe_wait_for_container_ready.css">
+    <link rel="stylesheet" href="oobe_dialog_parameters.css">
+    <oobe-dialog id="waitForContainerReadyDialog" role="dialog" hide-shadow>
+      <iron-icon src="https://www.gstatic.com/opa-chromeos/oobe/images/assistant_logo.png" class="oobe-icon">
+      </iron-icon>
+      <div class="header">
+        <h1 class="title" i18n-content="waitForContainerReadyTitle"></h1>
+        <div class="subtitle">
+          <div i18n-content="waitForContainerReadyIntroMessage"></div>
+        </div>
+        <div class="content">
+          <paper-progress class="slow" indeterminate></paper-progress>
+        </div>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

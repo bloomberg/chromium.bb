@@ -307,6 +307,8 @@ split_static_library("ui") {
     "webui/chromeos/login/user_image_screen_handler.h",
     "webui/chromeos/login/voice_interaction_value_prop_screen_handler.cc",
     "webui/chromeos/login/voice_interaction_value_prop_screen_handler.h",
+    "webui/chromeos/login/wait_for_container_ready_screen_handler.cc",
+    "webui/chromeos/login/wait_for_container_ready_screen_handler.h",
     "webui/chromeos/login/wrong_hwid_screen_handler.cc",
     "webui/chromeos/login/wrong_hwid_screen_handler.h",
     "webui/chromeos/mobile_setup_dialog.cc",
