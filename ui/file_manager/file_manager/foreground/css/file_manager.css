@@ -202,6 +202,7 @@ div.splitter {
   background: -webkit-image-set(
       url(../images/files/ui/eject.png) 1x,
       url(../images/files/ui/2x/eject.png) 2x) no-repeat center;
+  border-style: none;
   cursor: pointer;
   flex: none;
   height: 40px;
