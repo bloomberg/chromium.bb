@@ -348,30 +348,17 @@ OverlayPlane ScreenManager::GetModesetBuffer(
     HardwareDisplayController* controller,
     const gfx::Rect& bounds) {
   DrmWindow* window = FindWindowAt(bounds);
-
-  gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
-  uint32_t fourcc_format = ui::GetFourCCFormatForOpaqueFramebuffer(format);
-
   if (window) {
     const OverlayPlane* primary = window->GetLastModesetBuffer();
     const DrmDevice* drm = controller->GetAllocationDrmDevice().get();
     if (primary && primary->buffer->GetSize() == bounds.size() &&
-        primary->buffer->GetDrmDevice() == drm) {
-      // If the controller doesn't advertise modifiers, wont have a
-      // modifier either and we can reuse the buffer. Otherwise, check
-      // to see if the controller supports the buffers format
-      // modifier.
-      const auto& modifiers = controller->GetFormatModifiers(fourcc_format);
-      if (modifiers.empty())
-        return *primary;
-      for (const uint64_t modifier : modifiers) {
-        if (modifier == primary->buffer->GetFormatModifier())
-          return *primary;
-      }
-    }
+        primary->buffer->GetDrmDevice() == drm)
+      return *primary;
   }
 
+  gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
   scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
+  uint32_t fourcc_format = ui::GetFourCCFormatForOpaqueFramebuffer(format);
   scoped_refptr<ScanoutBuffer> buffer =
       buffer_generator_->Create(drm, fourcc_format, bounds.size());
   if (!buffer) {

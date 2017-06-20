@@ -17,19 +17,10 @@ scoped_refptr<ScanoutBuffer> MockScanoutBufferGenerator::Create(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t format,
     const gfx::Size& size) {
-  return CreateWithModifier(drm, format, DRM_FORMAT_MOD_NONE, size);
-}
-
-scoped_refptr<ScanoutBuffer> MockScanoutBufferGenerator::CreateWithModifier(
-    const scoped_refptr<DrmDevice>& drm,
-    uint32_t format,
-    uint64_t modifier,
-    const gfx::Size& size) {
   if (allocation_failure_)
     return nullptr;
 
-  scoped_refptr<MockScanoutBuffer> buffer(
-      new MockScanoutBuffer(size, format, modifier, drm));
+  scoped_refptr<MockScanoutBuffer> buffer(new MockScanoutBuffer(size, format));
 
   return buffer;
 }

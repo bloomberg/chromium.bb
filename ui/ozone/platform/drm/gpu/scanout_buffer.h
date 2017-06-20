@@ -34,9 +34,6 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   // scanout when used as an opaque buffer.
   virtual uint32_t GetOpaqueFramebufferPixelFormat() const = 0;
 
-  // Returns format modifier for buffer.
-  virtual uint64_t GetFormatModifier() const = 0;
-
   // Handle for the buffer. This is received when allocating the buffer.
   virtual uint32_t GetHandle() const = 0;
 

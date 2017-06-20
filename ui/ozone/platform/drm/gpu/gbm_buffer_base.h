@@ -32,7 +32,6 @@ class GbmBufferBase : public ScanoutBuffer {
   gfx::Size GetSize() const override;
   uint32_t GetFramebufferPixelFormat() const override;
   uint32_t GetOpaqueFramebufferPixelFormat() const override;
-  uint64_t GetFormatModifier() const override;
   const DrmDevice* GetDrmDevice() const override;
   bool RequiresGlFinish() const override;
 
@@ -55,7 +54,6 @@ class GbmBufferBase : public ScanoutBuffer {
   // otherwise it is set to 0.
   uint32_t opaque_framebuffer_ = 0;
   uint32_t opaque_framebuffer_pixel_format_ = 0;
-  uint64_t format_modifier_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBufferBase);
 };

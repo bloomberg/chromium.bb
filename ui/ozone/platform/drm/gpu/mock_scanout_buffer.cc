@@ -3,30 +3,16 @@
 // found in the LICENSE file.
 
 #include "ui/ozone/platform/drm/gpu/mock_scanout_buffer.h"
-#include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 
 namespace ui {
 
-namespace {
-
-uint32_t g_current_framebuffer_id = 1;
-
-}  // namespace
-
-MockScanoutBuffer::MockScanoutBuffer(const gfx::Size& size,
-                                     uint32_t format,
-                                     uint64_t modifier,
-                                     const scoped_refptr<DrmDevice>& drm)
-    : size_(size),
-      format_(format),
-      modifier_(modifier),
-      id_(g_current_framebuffer_id++),
-      drm_(drm) {}
+MockScanoutBuffer::MockScanoutBuffer(const gfx::Size& size, uint32_t format)
+    : size_(size), format_(format) {}
 
 MockScanoutBuffer::~MockScanoutBuffer() {}
 
 uint32_t MockScanoutBuffer::GetFramebufferId() const {
-  return id_;
+  return 1;
 }
 
 uint32_t MockScanoutBuffer::GetOpaqueFramebufferId() const {
@@ -49,12 +35,8 @@ uint32_t MockScanoutBuffer::GetOpaqueFramebufferPixelFormat() const {
   return format_;
 }
 
-uint64_t MockScanoutBuffer::GetFormatModifier() const {
-  return modifier_;
-}
-
 const DrmDevice* MockScanoutBuffer::GetDrmDevice() const {
-  return drm_.get();
+  return nullptr;
 }
 
 bool MockScanoutBuffer::RequiresGlFinish() const {
