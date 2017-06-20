@@ -543,43 +543,30 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     """Returns a new "deps" structure that is the deps sent in updated
     with information from deps_os (the deps_os section of the DEPS
     file) that matches the list of target os."""
-    os_overrides = {}
-    for the_target_os in target_os_list:
-      the_target_os_deps = deps_os.get(the_target_os, {})
-      for os_dep_key, os_dep_value in the_target_os_deps.iteritems():
-        overrides = os_overrides.setdefault(os_dep_key, [])
-        overrides.append((the_target_os, os_dep_value))
-
-    # If any os didn't specify a value (we have fewer value entries
-    # than in the os list), then it wants to use the default value.
-    for os_dep_key, os_dep_value in os_overrides.iteritems():
-      if len(os_dep_value) != len(target_os_list):
-        # Record the default value too so that we don't accidentally
-        # set it to None or miss a conflicting DEPS.
-        if os_dep_key in deps:
-          os_dep_value.append(('default', deps[os_dep_key]))
-
-    target_os_deps = {}
-    for os_dep_key, os_dep_value in os_overrides.iteritems():
-      # os_dep_value is a list of (os, value) pairs.
-      possible_values = set(x[1] for x in os_dep_value if x[1] is not None)
-      if not possible_values:
-        target_os_deps[os_dep_key] = None
-      else:
-        if len(possible_values) > 1:
-          raise gclient_utils.Error(
-              'Conflicting dependencies for %s: %s. (target_os=%s)' % (
-                  os_dep_key, os_dep_value, target_os_list))
-        # Sorting to get the same result every time in case of conflicts.
-        target_os_deps[os_dep_key] = sorted(possible_values)[0]
-
     new_deps = deps.copy()
-    for key, value in target_os_deps.iteritems():
-      if key in new_deps:
-        raise gclient_utils.Error(
-            ('Value from deps_os (%r: %r) conflicts with existing deps '
-             'entry (%r).') % (key, value, new_deps[key]))
-      new_deps[key] = value
+    for dep_os, os_deps in deps_os.iteritems():
+      for key, value in os_deps.iteritems():
+        if value is None:
+          # Make this condition very visible, so it's not a silent failure.
+          # It's unclear how to support None override in deps_os.
+          logging.error('Ignoring %r:%r in %r deps_os', key, value, dep_os)
+          continue
+        if isinstance(value, basestring):
+          value = {'url': value}
+        if key in new_deps and new_deps[key] != value:
+          if isinstance(new_deps[key], basestring):
+            existing_url = new_deps[key]
+          else:
+            assert isinstance(new_deps[key],
+                              collections.Mapping), (key, new_deps[key])
+            existing_url = new_deps[key]['url']
+          if value['url'] != existing_url:
+            raise gclient_utils.Error(
+                ('Value from deps_os (%r; %r: %r) conflicts with existing deps '
+                 'entry (%r).') % (dep_os, key, value, new_deps[key]))
+        assert isinstance(value, collections.Mapping), (key, value)
+        new_deps[key] = value
+        new_deps[key]['should_process'] = dep_os in target_os_list
     return new_deps
 
   def _postprocess_deps(self, deps, rel_prefix):
@@ -625,6 +612,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         # This should be guaranteed by schema checking in gclient_eval.
         assert isinstance(dep_value, collections.Mapping)
         url = dep_value['url']
+        # Take into account should_process metadata set by MergeWithOsDeps.
+        should_process = (should_process and
+                          dep_value.get('should_process', True))
         condition = dep_value.get('condition')
       if condition:
         # TODO(phajdan.jr): should we also take custom vars into account?
