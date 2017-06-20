@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "core/frame/FrameTestHelpers.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/PtrUtil.h"
@@ -237,7 +238,9 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
     return !actual_response_.HttpHeaderField(header_name_string).IsEmpty();
   }
 
-  WebFrame* MainFrame() const { return helper_.WebView()->MainFrame(); }
+  WebLocalFrameBase* MainFrame() const {
+    return helper_.WebView()->MainFrameImpl();
+  }
 
  protected:
   String frame_file_path_;

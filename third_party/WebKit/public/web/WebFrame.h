@@ -210,19 +210,6 @@ class BLINK_EXPORT WebFrame {
   // TODO(clamy): Remove the reload, reloadWithOverrideURL, and loadRequest
   // functions once RenderFrame only calls WebLoadFrame::load.
 
-  // Reload the current document.
-  // Note: reload() and reloadWithOverrideURL() will be deprecated.
-  // Do not use these APIs any more, but use loadRequest() instead.
-  virtual void Reload(WebFrameLoadType) = 0;
-
-  // This is used for situations where we want to reload a different URL because
-  // of a redirect.
-  virtual void ReloadWithOverrideURL(const WebURL& override_url,
-                                     WebFrameLoadType) = 0;
-
-  // Load the given URL.
-  virtual void LoadRequest(const WebURLRequest&) = 0;
-
   // Stops any pending loads on the frame and its children.
   virtual void StopLoading() = 0;
 

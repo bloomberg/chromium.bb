@@ -80,7 +80,7 @@ class ActivityLoggerTest : public testing::Test {
                               ->MainFrameImpl()
                               ->GetFrame()
                               ->GetScriptController();
-    FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrame(),
+    FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrameImpl(),
                                 "about:blank");
   }
 

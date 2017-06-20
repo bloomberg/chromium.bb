@@ -686,6 +686,19 @@ class WebLocalFrame : public WebFrame {
   // frame is attached to a document.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;
 
+  // Reload the current document.
+  // Note: reload() and reloadWithOverrideURL() will be deprecated.
+  // Do not use these APIs any more, but use loadRequest() instead.
+  virtual void Reload(WebFrameLoadType) = 0;
+
+  // This is used for situations where we want to reload a different URL because
+  // of a redirect.
+  virtual void ReloadWithOverrideURL(const WebURL& override_url,
+                                     WebFrameLoadType) = 0;
+
+  // Load the given URL.
+  virtual void LoadRequest(const WebURLRequest&) = 0;
+
   // Geometry -----------------------------------------------------------------
 
   // If set to false, do not draw scrollbars on this frame's view.

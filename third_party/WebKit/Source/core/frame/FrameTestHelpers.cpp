@@ -97,7 +97,7 @@ std::unique_ptr<T> CreateDefaultClientIfNeeded(T*& client) {
 
 }  // namespace
 
-void LoadFrame(WebFrame* frame, const std::string& url) {
+void LoadFrame(WebLocalFrame* frame, const std::string& url) {
   WebURLRequest url_request(URLTestHelpers::ToKURL(url));
   frame->LoadRequest(url_request);
   PumpPendingRequestsForFrameToLoad(frame);
@@ -110,22 +110,21 @@ void LoadHTMLString(WebLocalFrame* frame,
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
-void LoadHistoryItem(WebFrame* frame,
+void LoadHistoryItem(WebLocalFrame* frame,
                      const WebHistoryItem& item,
                      WebHistoryLoadType load_type,
                      WebCachePolicy cache_policy) {
-  WebURLRequest request =
-      frame->ToWebLocalFrame()->RequestFromHistoryItem(item, cache_policy);
-  frame->ToWebLocalFrame()->Load(request, WebFrameLoadType::kBackForward, item);
+  WebURLRequest request = frame->RequestFromHistoryItem(item, cache_policy);
+  frame->Load(request, WebFrameLoadType::kBackForward, item);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
-void ReloadFrame(WebFrame* frame) {
+void ReloadFrame(WebLocalFrame* frame) {
   frame->Reload(WebFrameLoadType::kReload);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
-void ReloadFrameBypassingCache(WebFrame* frame) {
+void ReloadFrameBypassingCache(WebLocalFrame* frame) {
   frame->Reload(WebFrameLoadType::kReloadBypassingCache);
   PumpPendingRequestsForFrameToLoad(frame);
 }
@@ -294,7 +293,7 @@ WebViewBase* WebViewHelper::InitializeAndLoad(
   Initialize(web_frame_client, web_view_client, web_widget_client,
              update_settings_func);
 
-  LoadFrame(WebView()->MainFrame(), url);
+  LoadFrame(WebView()->MainFrameImpl(), url);
 
   return WebView();
 }
