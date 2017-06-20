@@ -109,6 +109,7 @@ source_set("unit_tests") {
     "translate_ranker_impl_unittest.cc",
     "translate_script_unittest.cc",
     "translate_ui_delegate_unittest.cc",
+    "translate_url_util_unittest.cc",
   ]
   deps = [
     ":browser",
