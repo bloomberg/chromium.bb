@@ -46,7 +46,7 @@ sk_sp<SkImageFilter> FEMerge::CreateImageFilter() {
         InputEffect(i), OperatingInterpolationSpace());
   }
   SkImageFilter::CropRect rect = GetCropRect();
-  return SkMergeImageFilter::MakeN(input_refs.get(), size, nullptr, &rect);
+  return SkMergeImageFilter::Make(input_refs.get(), size, &rect);
 }
 
 TextStream& FEMerge::ExternalRepresentation(TextStream& ts, int indent) const {
