@@ -57,6 +57,7 @@
 #include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/InspectorMemoryAgent.h"
 #include "core/inspector/InspectorNetworkAgent.h"
+#include "core/inspector/InspectorOverlayAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
@@ -89,7 +90,6 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebSettings.h"
-#include "web/InspectorOverlayAgent.h"
 #include "web/WebFrameWidgetImpl.h"
 
 namespace blink {
@@ -281,7 +281,6 @@ DEFINE_TRACE(WebDevToolsAgentImpl) {
   visitor->Trace(trace_events_);
   visitor->Trace(page_agents_);
   visitor->Trace(network_agents_);
-  visitor->Trace(layer_tree_agents_);
   visitor->Trace(tracing_agents_);
   visitor->Trace(overlay_agents_);
   visitor->Trace(sessions_);
@@ -321,8 +320,7 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
   session->Append(dom_agent);
 
   InspectorLayerTreeAgent* layer_tree_agent =
-      InspectorLayerTreeAgent::Create(inspected_frames_.Get());
-  layer_tree_agents_.Set(session_id, layer_tree_agent);
+      InspectorLayerTreeAgent::Create(inspected_frames_.Get(), this);
   session->Append(layer_tree_agent);
 
   InspectorNetworkAgent* network_agent =
@@ -408,7 +406,6 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
 void WebDevToolsAgentImpl::DestroySession(int session_id) {
   overlay_agents_.erase(session_id);
   tracing_agents_.erase(session_id);
-  layer_tree_agents_.erase(session_id);
   network_agents_.erase(session_id);
   page_agents_.erase(session_id);
 
@@ -467,16 +464,6 @@ bool WebDevToolsAgentImpl::ScreencastEnabled() {
       return true;
   }
   return false;
-}
-
-void WebDevToolsAgentImpl::WillAddPageOverlay(const GraphicsLayer* layer) {
-  for (auto& it : layer_tree_agents_)
-    it.value->WillAddPageOverlay(layer);
-}
-
-void WebDevToolsAgentImpl::DidRemovePageOverlay(const GraphicsLayer* layer) {
-  for (auto& it : layer_tree_agents_)
-    it.value->DidRemovePageOverlay(layer);
 }
 
 void WebDevToolsAgentImpl::RootLayerCleared() {
@@ -595,6 +582,14 @@ void WebDevToolsAgentImpl::WaitForCreateWindow(LocalFrame* frame) {
   if (client_ &&
       client_->RequestDevToolsForFrame(WebLocalFrameBase::FromFrame(frame)))
     ClientMessageLoopAdapter::PauseForCreateWindow(web_local_frame_impl_);
+}
+
+bool WebDevToolsAgentImpl::IsInspectorLayer(GraphicsLayer* layer) {
+  for (auto& it : overlay_agents_) {
+    if (it.value->IsInspectorLayer(layer))
+      return true;
+  }
+  return false;
 }
 
 WebString WebDevToolsAgentImpl::EvaluateInWebInspectorOverlay(

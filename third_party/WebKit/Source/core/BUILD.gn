@@ -1400,6 +1400,7 @@ source_set("unit_tests") {
     "page/DragControllerTest.cpp",
     "page/EffectiveNavigationPolicyTest.cpp",
     "page/FocusControllerTest.cpp",
+    "page/PageOverlayTest.cpp",
     "page/PagePopupClientTest.cpp",
     "page/PrintContextTest.cpp",
     "page/WindowFeaturesTest.cpp",

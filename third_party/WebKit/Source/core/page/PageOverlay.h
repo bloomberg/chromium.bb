@@ -30,11 +30,11 @@
 #define PageOverlay_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/wtf/text/WTFString.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -42,8 +42,8 @@ class GraphicsContext;
 class WebLocalFrameBase;
 
 // Manages a layer that is overlaid on a WebLocalFrame's content.
-class WEB_EXPORT PageOverlay : public GraphicsLayerClient,
-                               public DisplayItemClient {
+class CORE_EXPORT PageOverlay : public GraphicsLayerClient,
+                                public DisplayItemClient {
  public:
   class Delegate {
    public:

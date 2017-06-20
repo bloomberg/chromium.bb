@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "core/inspector/InspectorEmulationAgent.h"
+#include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTracingAgent.h"
@@ -65,6 +66,7 @@ class WebDevToolsAgentImpl final
       public InspectorTracingAgent::Client,
       public InspectorPageAgent::Client,
       public InspectorSession::Client,
+      public InspectorLayerTreeAgent::Client,
       private WebThread::TaskObserver {
  public:
   static WebDevToolsAgentImpl* Create(WebLocalFrameBase*,
@@ -83,8 +85,6 @@ class WebDevToolsAgentImpl final
   void DidCommitLoadForLocalFrame(LocalFrame*);
   void DidStartProvisionalLoad(LocalFrame*);
   bool ScreencastEnabled();
-  void WillAddPageOverlay(const GraphicsLayer*);
-  void DidRemovePageOverlay(const GraphicsLayer*);
   void LayerTreeViewChanged(WebLayerTreeView*);
   void RootLayerCleared();
   bool CacheDisabled() override;
@@ -122,6 +122,9 @@ class WebDevToolsAgentImpl final
   void PageLayoutInvalidated(bool resized) override;
   void WaitForCreateWindow(LocalFrame*) override;
 
+  // InspectorLayerTreeAgent::Client implementation.
+  bool IsInspectorLayer(GraphicsLayer*) override;
+
   // InspectorSession::Client implementation.
   void SendProtocolMessage(int session_id,
                            int call_id,
@@ -158,7 +161,6 @@ class WebDevToolsAgentImpl final
 
   HeapHashMap<int, Member<InspectorPageAgent>> page_agents_;
   HeapHashMap<int, Member<InspectorNetworkAgent>> network_agents_;
-  HeapHashMap<int, Member<InspectorLayerTreeAgent>> layer_tree_agents_;
   HeapHashMap<int, Member<InspectorTracingAgent>> tracing_agents_;
   HeapHashMap<int, Member<InspectorOverlayAgent>> overlay_agents_;
 
