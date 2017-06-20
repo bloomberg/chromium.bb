@@ -371,6 +371,15 @@ Polymer({
   },
 
   /**
+   * Handler for a change in the supervised account dropdown.
+   * @param {!{target: HTMLSelectElement}} event
+   * @private
+   */
+  onAccountChanged_: function(event) {
+    this.signedInUserIndex_ = parseInt(event.target.value, 10);
+  },
+
+  /**
    * Handler for the 'import' event fired by #importUserPopup once a supervised
    * user is selected to be imported and the popup closes.
    * @param {!{detail: {supervisedUser: !SupervisedUser,

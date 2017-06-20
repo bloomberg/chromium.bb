@@ -1,13 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="icons.html">
@@ -17,7 +15,8 @@
   <template>
     <!-- TODO(michaelpg): Wrap the line below to fit within the 80-char limit.
          See https://github.com/Polymer/polymer/pull/3668. -->
-    <style include="device-emulator-shared-styles iron-flex iron-flex-alignment iron-positioning">
+    <style include="device-emulator-shared-styles iron-flex iron-flex-alignment
+        iron-positioning md-select">
     </style>
     <div class="layout vertical">
       <div class="element-label">
@@ -74,14 +73,14 @@
                 <div hidden$="[[isDualRole(item)]]">Source</div>
               </td>
               <td class="control-cell">
-                <paper-dropdown-menu class="device-class-group"
-                    disabled="[[!item.variablePower]]">
-                  <paper-listbox selected="{{item.power}}"
-                      class="dropdown-content" attr-for-selected="data-value">
-                    <paper-item data-value="high">High</paper-item>
-                    <paper-item data-value="low">Low</paper-item>
-                  </paper-listbox>
-                </paper-dropdown-menu>
+                <div class="md-select-wrapper">
+                  <select class="md-select" disabled$="[[!item.variablePower]]"
+                      on-change="onPowerChanged" value="[[item.power]]">
+                    <option value="high">High</option>
+                    <option value="low">Low</option>
+                  </select>
+                  <span class="md-select-underline"></span>
+                </div>
               </td>
           </template>
         </tbody>

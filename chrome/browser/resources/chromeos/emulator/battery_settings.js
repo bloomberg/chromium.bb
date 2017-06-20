@@ -170,6 +170,10 @@ var BatterySettings = Polymer({
       chrome.send('updateTimeToFull', [this.timeUntilFull]);
   },
 
+  onPowerChanged: function(e) {
+    e.model.set('item.power', e.target.value);
+  },
+
   updatePowerProperties: function(power_properties) {
     this.batteryPercent = power_properties.battery_percent;
     this.batteryState =

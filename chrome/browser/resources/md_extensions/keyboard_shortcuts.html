@@ -1,9 +1,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="chrome://extensions/animation_helper.html">
@@ -11,7 +9,7 @@
 
 <dom-module id="extensions-keyboard-shortcuts">
   <template>
-    <style>
+    <style include="md-select">
       [hidden] {
         display: none !important;
       }
@@ -39,7 +37,7 @@
         flex: 1;
       }
 
-      .command-entry paper-dropdown-menu {
+      .command-entry .md-select-wrapper {
         -webkit-margin-start: 40px;
       }
 
@@ -69,22 +67,6 @@
       #main {
         margin-top: 24px;
       }
-
-      #main paper-dropdown-menu {
-        --paper-input-container: {
-          margin-bottom: 14px;
-          padding: 0;
-        };
-        --paper-input-container-color: var(--paper-grey-400);
-        --paper-input-container-focus-color: var(--google-blue-500);
-        --paper-input-container-input: {
-          font-size: 13px;
-        };
-        --paper-input-container-underline-disabled: {
-          border-bottom: 1px solid;
-        };
-      }
-
     </style>
     <div id="main">
       <template is="dom-repeat" items="[[calculateShownItems_(items.*)]]">
@@ -101,14 +83,22 @@
                     shortcut="[[command.keybinding]]"
                     command-name="[[command.name]]">
                 </extensions-shortcut-input>
-                <paper-dropdown-menu
-                    disabled$="[[computeScopeDisabled_(command)]]">
-                  <paper-listbox class="dropdown-content"
-                      selected="[[computeSelectedScope_(command)]]">
-                    <paper-item>$i18n{shortcutScopeInChrome}</paper-item>
-                    <paper-item>$i18n{shortcutScopeGlobal}</paper-item>
-                  </paper-listbox>
-                </paper-dropdown>
+                <div class="md-select-wrapper">
+                  <!-- Binding "value" to triggerScopeChange_ to trigger update
+                      only after CommandScope_ becomes available. -->
+                  <select class="md-select" on-change="onScopeChanged_"
+                      disabled$="[[computeScopeDisabled_(command)]]"
+                      value="[[
+                          triggerScopeChange_(command.scope, CommandScope_)]]">
+                    <option value$="[[CommandScope_.CHROME]]">
+                      $i18n{shortcutScopeInChrome}
+                    </option>
+                    <option value$="[[CommandScope_.GLOBAL]]">
+                      $i18n{shortcutScopeGlobal}
+                    </option>
+                  </select>
+                  <span class="md-select-underline"></span>
+                </div>
               </div>
             </template>
           </div>
