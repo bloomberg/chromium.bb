@@ -613,6 +613,9 @@ void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
 }
 
 bool DownloadItemModel::ShouldNotifyUI() const {
+  if (download_->IsTransient())
+    return false;
+
   Profile* profile =
       Profile::FromBrowserContext(download_->GetBrowserContext());
   DownloadCoreService* download_core_service =
