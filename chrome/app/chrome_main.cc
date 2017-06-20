@@ -16,6 +16,7 @@
 #include "ui/gfx/switches.h"
 
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+#include "chrome/common/profiling/memlog_sender.h"
 #include "chrome/profiling/profiling_main.h"
 #endif
 
@@ -107,8 +108,13 @@ int ChromeMain(int argc, const char** argv) {
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+#if !defined(OS_WIN) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+  // The profiling server is only compiled into the browser process. On Windows,
+  // it should be called only for CHROME_MULTIPLE_DLL_BROWSER.
   if (command_line->HasSwitch(switches::kMemlog))
     return profiling::ProfilingMain(*command_line);
+#endif
+  profiling::InitMemlogSenderIfNecessary(*command_line);
 #endif  // ENABLE_OOP_HEAP_PROFILING
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)

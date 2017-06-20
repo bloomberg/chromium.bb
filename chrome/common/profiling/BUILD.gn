@@ -7,6 +7,10 @@ import("//chrome/common/features.gni")
 if (enable_oop_heap_profiling) {
   static_library("profiling") {
     sources = [
+      "memlog_allocator_shim.cc",
+      "memlog_allocator_shim.h",
+      "memlog_sender.cc",
+      "memlog_sender.h",
       "memlog_sender_pipe.h",
       "memlog_sender_pipe_win.cc",
       "memlog_sender_pipe_win.h",
