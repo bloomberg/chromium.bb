@@ -32,6 +32,8 @@ blink_core_sources("layout") {
     "GeneratedChildren.h",
     "Grid.cpp",
     "Grid.h",
+    "GridLayoutUtils.cpp",
+    "GridLayoutUtils.h",
     "GridTrackSizingAlgorithm.cpp",
     "GridTrackSizingAlgorithm.h",
     "HitTestCache.cpp",
