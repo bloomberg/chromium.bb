@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/dbus/upstart_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -154,6 +155,9 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
                 const std::string& realm) { EXPECT_EQ(kAdTestRealm, realm); }));
           }));
     });
+    static_cast<FakeAuthPolicyClient*>(
+        DBusThreadManager::Get()->GetAuthPolicyClient())
+        ->set_operation_delay(base::TimeDelta::FromSeconds(0));
   }
 
   void SetupActiveDirectoryJSNotifications() {

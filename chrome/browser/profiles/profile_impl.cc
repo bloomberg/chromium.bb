@@ -476,7 +476,8 @@ ProfileImpl::ProfileImpl(
   configuration_policy_provider_ =
       policy::UserPolicyManagerFactoryChromeOS::CreateForProfile(
           this, force_immediate_policy_load, sequenced_task_runner);
-  AuthPolicyCredentialsManagerFactory::BuildForProfileIfActiveDirectory(this);
+  chromeos::AuthPolicyCredentialsManagerFactory::
+      BuildForProfileIfActiveDirectory(this);
 #else
   configuration_policy_provider_ =
       policy::UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(

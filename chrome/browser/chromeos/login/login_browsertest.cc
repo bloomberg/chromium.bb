@@ -213,14 +213,14 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
-    fake_auth_policy_client_ = static_cast<FakeAuthPolicyClient*>(
-        DBusThreadManager::Get()->GetAuthPolicyClient());
+    fake_auth_policy_client()->set_operation_delay(
+        base::TimeDelta::FromSeconds(0));
   }
 
   void MarkAsActiveDirectoryEnterprise() {
     StartupUtils::MarkOobeCompleted();
     base::RunLoop loop;
-    fake_auth_policy_client_->RefreshDevicePolicy(
+    fake_auth_policy_client()->RefreshDevicePolicy(
         base::Bind(&ActiveDirectoryLoginTest::OnRefreshedPolicy,
                    base::Unretained(this), loop.QuitClosure()));
     loop.Run();
@@ -309,7 +309,10 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     return "document.querySelector('#offline-ad-auth /deep/ #" + element_id +
            "')";
   }
-  FakeAuthPolicyClient* fake_auth_policy_client_ = nullptr;
+  FakeAuthPolicyClient* fake_auth_policy_client() {
+    return static_cast<FakeAuthPolicyClient*>(
+        DBusThreadManager::Get()->GetAuthPolicyClient());
+  }
 
  private:
   // Used for the callback from FakeAuthPolicy::RefreshDevicePolicy.
@@ -469,14 +472,14 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   TestUserError();
   TestDomainHidden();
 
-  fake_auth_policy_client_->set_auth_error(authpolicy::ERROR_BAD_USER_NAME);
+  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_BAD_USER_NAME);
   SubmitActiveDirectoryCredentials(
       std::string(kTestActiveDirectoryUser) + "@" + kTestRealm, kPassword);
   WaitForMessage(&message_queue, "\"ShowAuthError\"");
   TestUserError();
   TestDomainVisible();
 
-  fake_auth_policy_client_->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
+  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
   SubmitActiveDirectoryCredentials(kTestActiveDirectoryUser, kPassword);
   WaitForMessage(&message_queue, "\"ShowAuthError\"");
   TestPasswordError();

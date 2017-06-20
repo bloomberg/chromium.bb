@@ -48,9 +48,44 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
     auth_error_ = auth_error;
   }
 
+  void set_display_name(const std::string& display_name) {
+    display_name_ = display_name;
+  }
+
+  void set_given_name(const std::string& given_name) {
+    given_name_ = given_name;
+  }
+
+  void set_password_status(
+      authpolicy::ActiveDirectoryUserStatus::PasswordStatus password_status) {
+    password_status_ = password_status;
+  }
+
+  void set_tgt_status(
+      authpolicy::ActiveDirectoryUserStatus::TgtStatus tgt_status) {
+    tgt_status_ = tgt_status;
+  }
+
+  void set_on_get_status_closure(base::OnceClosure on_get_status_closure) {
+    on_get_status_closure_ = std::move(on_get_status_closure);
+  }
+
+  void set_operation_delay(const base::TimeDelta operation_delay) {
+    operation_delay_ = operation_delay;
+  }
+
  private:
   bool started_ = false;
+  // If valid called after GetUserStatusCallback is called.
+  base::OnceClosure on_get_status_closure_;
   authpolicy::ErrorType auth_error_ = authpolicy::ERROR_NONE;
+  std::string display_name_;
+  std::string given_name_;
+  authpolicy::ActiveDirectoryUserStatus::PasswordStatus password_status_ =
+      authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID;
+  authpolicy::ActiveDirectoryUserStatus::TgtStatus tgt_status_ =
+      authpolicy::ActiveDirectoryUserStatus::TGT_VALID;
+  base::TimeDelta operation_delay_;
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClient);
 };
 
