@@ -407,12 +407,21 @@ void TextResourceDecoder::CheckForMetaCharset(const char* data, size_t length) {
 //   relationship is compliant to the same-origin policy. If they're from
 //   different domains, |m_source| would not be set to EncodingFromParentFrame
 //   in the first place.
-bool TextResourceDecoder::ShouldAutoDetect() const {
-  // Just checking m_hintEncoding suffices here because it's only set
-  // in setHintEncoding when the source is AutoDetectedEncoding.
-  return encoding_detection_option_ == kUseAllAutoDetection &&
-         (source_ == kDefaultEncoding ||
-          (source_ == kEncodingFromParentFrame && hint_encoding_));
+void TextResourceDecoder::AutoDetectEncodingIfAllowed(const char* data,
+                                                      size_t len) {
+  if (encoding_detection_option_ != kUseAllAutoDetection)
+    return;
+
+  // Just checking hint_encoding_ suffices here because it's only set
+  // in SetHintEncoding when the source is AutoDetectedEncoding.
+  if (!(source_ == kDefaultEncoding ||
+        (source_ == kEncodingFromParentFrame && hint_encoding_)))
+    return;
+
+  WTF::TextEncoding detected_encoding;
+  if (DetectTextEncoding(data, len, hint_encoding_, hint_url_, hint_language_,
+                         &detected_encoding))
+    SetEncoding(detected_encoding, kEncodingFromContentSniffing);
 }
 
 String TextResourceDecoder::Decode(const char* data, size_t len) {
@@ -463,12 +472,7 @@ String TextResourceDecoder::Decode(const char* data, size_t len) {
   if (content_type_ == kHTMLContent && !checked_for_meta_charset_)
     CheckForMetaCharset(data_for_decode, length_for_decode);
 
-  if (ShouldAutoDetect()) {
-    WTF::TextEncoding detected_encoding;
-    if (DetectTextEncoding(data, len, hint_encoding_, hint_url_, hint_language_,
-                           &detected_encoding))
-      SetEncoding(detected_encoding, kEncodingFromContentSniffing);
-  }
+  AutoDetectEncodingIfAllowed(data, len);
 
   DCHECK(encoding_.IsValid());
 
@@ -487,14 +491,11 @@ String TextResourceDecoder::Flush() {
   // If we can not identify the encoding even after a document is completely
   // loaded, we need to detect the encoding if other conditions for
   // autodetection is satisfied.
-  if (buffer_.size() && ShouldAutoDetect() &&
+  if (buffer_.size() &&
       ((!checked_for_xml_charset_ &&
         (content_type_ == kHTMLContent || content_type_ == kXMLContent)) ||
        (!checked_for_css_charset_ && (content_type_ == kCSSContent)))) {
-    WTF::TextEncoding detected_encoding;
-    if (DetectTextEncoding(buffer_.data(), buffer_.size(), hint_encoding_,
-                           hint_url_, hint_language_, &detected_encoding))
-      SetEncoding(detected_encoding, kEncodingFromContentSniffing);
+    AutoDetectEncodingIfAllowed(buffer_.data(), buffer_.size());
   }
 
   if (!codec_)

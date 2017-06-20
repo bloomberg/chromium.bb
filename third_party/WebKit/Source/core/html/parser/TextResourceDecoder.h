@@ -133,7 +133,7 @@ class CORE_EXPORT TextResourceDecoder {
   bool CheckForCSSCharset(const char*, size_t, bool& moved_data_to_buffer);
   bool CheckForXMLCharset(const char*, size_t, bool& moved_data_to_buffer);
   void CheckForMetaCharset(const char*, size_t);
-  bool ShouldAutoDetect() const;
+  void AutoDetectEncodingIfAllowed(const char* data, size_t len);
 
   ContentType content_type_;
   WTF::TextEncoding encoding_;
