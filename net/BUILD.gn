@@ -42,7 +42,7 @@ enable_net_mojo = !is_ios && !is_proto_quic
 # in addition to use_openssl_certs or use_nss_certs, in that case byte certs
 # are used internally but OpenSSL or NSS are used for certificate verification.
 # TODO(mattm): crbug.com/671420: Implement and enable this for all platforms.
-use_byte_certs = is_mac || is_android || is_nacl || is_ios
+use_byte_certs = is_mac || is_android || is_nacl || is_ios || is_win
 
 buildflag_header("features") {
   header = "net_features.h"
@@ -608,6 +608,8 @@ component("net") {
       "cert/x509_util_mac.h",
       "cert/x509_util_nss.cc",
       "cert/x509_util_nss.h",
+      "cert/x509_util_win.cc",
+      "cert/x509_util_win.h",
       "cert_net/cert_net_fetcher_impl.cc",
       "cert_net/cert_net_fetcher_impl.h",
       "cert_net/nss_ocsp.cc",
@@ -3460,6 +3462,7 @@ bundle_data("net_unittests_bundle_data") {
     "data/parse_certificate_unittest/serial_negative.pem",
     "data/parse_certificate_unittest/serial_zero_padded.pem",
     "data/parse_certificate_unittest/serial_zero_padded_21_bytes.pem",
+    "data/parse_certificate_unittest/signature_algorithm_null.pem",
     "data/parse_certificate_unittest/subject_alt_name.pem",
     "data/parse_certificate_unittest/subject_t61string.pem",
     "data/parse_certificate_unittest/subject_t61string_1-32.pem",

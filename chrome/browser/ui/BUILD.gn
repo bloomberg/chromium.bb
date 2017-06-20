@@ -103,6 +103,7 @@ split_static_library("ui") {
     "chrome_select_file_policy.h",
     "confirm_bubble.h",
     "crypto_module_password_dialog.h",
+    "cryptuiapi_shim.h",
     "find_bar/find_bar.h",
     "find_bar/find_bar_state.h",
     "find_bar/find_bar_state_factory.cc",
