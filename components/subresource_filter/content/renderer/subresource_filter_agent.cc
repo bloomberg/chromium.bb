@@ -153,7 +153,10 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
                          AsWeakPtr()));
 
       auto ruleset = ruleset_dealer_->GetRuleset();
-      DCHECK(ruleset);
+      // TODO(csharrison): Replace with DCHECK when crbug.com/734102 is
+      // resolved.
+      CHECK(ruleset);
+      CHECK(ruleset->data());
       auto filter = base::MakeUnique<WebDocumentSubresourceFilterImpl>(
           url::Origin(url), activation_state_for_next_commit_,
           std::move(ruleset), std::move(first_disallowed_load_callback));
