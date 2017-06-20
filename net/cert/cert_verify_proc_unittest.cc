@@ -487,7 +487,7 @@ TEST_P(CertVerifyProcInternalTest, InvalidTarget) {
   base::FilePath certs_dir =
       GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
   scoped_refptr<X509Certificate> bad_cert =
-      ImportCertFromFile(certs_dir, "extensions_data_after_sequence.pem");
+      ImportCertFromFile(certs_dir, "signature_algorithm_null.pem");
   ASSERT_TRUE(bad_cert);
 
   scoped_refptr<X509Certificate> ok_cert(
@@ -515,7 +515,7 @@ TEST_P(CertVerifyProcInternalTest, InvalidIntermediate) {
   base::FilePath certs_dir =
       GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
   scoped_refptr<X509Certificate> bad_cert =
-      ImportCertFromFile(certs_dir, "extensions_data_after_sequence.pem");
+      ImportCertFromFile(certs_dir, "signature_algorithm_null.pem");
   ASSERT_TRUE(bad_cert);
 
   scoped_refptr<X509Certificate> ok_cert(

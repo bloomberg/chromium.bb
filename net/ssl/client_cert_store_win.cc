@@ -16,10 +16,12 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/wincrypt_shim.h"
 #include "net/cert/x509_util.h"
+#include "net/cert/x509_util_win.h"
 #include "net/ssl/ssl_platform_key_win.h"
 #include "net/ssl/ssl_private_key.h"
 
@@ -160,7 +162,7 @@ void GetClientCertsImpl(HCERTSTORE cert_store,
     }
 
     // Grab the intermediates, if any.
-    X509Certificate::OSCertHandles intermediates;
+    std::vector<PCCERT_CONTEXT> intermediates;
     for (DWORD i = 1; i < chain_context->rgpChain[0]->cElement; ++i) {
       PCCERT_CONTEXT chain_intermediate =
           chain_context->rgpChain[0]->rgpElement[i]->pCertContext;
@@ -180,18 +182,21 @@ void GetClientCertsImpl(HCERTSTORE cert_store,
     // The leaf or a intermediate may also have a weak signature algorithm but,
     // in that case, assume it is a configuration error.
     if (!intermediates.empty() &&
-        X509Certificate::IsSelfSigned(intermediates.back())) {
+        x509_util::IsSelfSigned(intermediates.back())) {
       CertFreeCertificateContext(intermediates.back());
       intermediates.pop_back();
     }
 
+    // TODO(mattm): The following comment is only true when not using
+    // USE_BYTE_CERTS. Remove it once the non-byte-certs code is also removed.
     // TODO(svaldez): cert currently wraps cert_context2 which may be backed
     // by a smartcard with threading difficulties. Instead, create a fresh
     // X509Certificate with CreateFromBytes and route cert_context2 into the
     // SSLPrivateKey. Probably changing CertificateList to be a
     // pair<X509Certificate, SSLPrivateKeyCallback>.
-    scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromHandle(
-        cert_context2, intermediates);
+    scoped_refptr<X509Certificate> cert =
+        x509_util::CreateX509CertificateFromCertContexts(cert_context2,
+                                                         intermediates);
     if (cert) {
       selected_identities->push_back(base::MakeUnique<ClientCertIdentityWin>(
           std::move(cert),
@@ -259,11 +264,18 @@ bool ClientCertStoreWin::SelectClientCertsForTesting(
   for (size_t i = 0; i < input_certs.size(); ++i) {
     // Add the certificate to the test store.
     PCCERT_CONTEXT cert = NULL;
-    if (!CertAddCertificateContextToStore(test_store,
-                                          input_certs[i]->os_cert_handle(),
-                                          CERT_STORE_ADD_NEW, &cert)) {
+    std::string der_cert;
+    X509Certificate::GetDEREncoded(input_certs[i]->os_cert_handle(), &der_cert);
+    if (!CertAddEncodedCertificateToStore(
+            test_store, X509_ASN_ENCODING,
+            reinterpret_cast<const BYTE*>(der_cert.data()),
+            base::checked_cast<DWORD>(der_cert.size()), CERT_STORE_ADD_NEW,
+            &cert)) {
       return false;
     }
+    // Hold the reference to the certificate (since we requested a copy).
+    ScopedPCCERT_CONTEXT scoped_cert(cert);
+
     // Add dummy private key data to the certificate - otherwise the certificate
     // would be discarded by the filtering routines.
     CRYPT_KEY_PROV_INFO private_key_data;
@@ -273,10 +285,6 @@ bool ClientCertStoreWin::SelectClientCertsForTesting(
                                            0, &private_key_data)) {
       return false;
     }
-    // Decrement the reference count of the certificate (since we requested a
-    // copy).
-    if (!CertFreeCertificateContext(cert))
-      return false;
   }
 
   GetClientCertsImpl(test_store.get(), request, selected_identities);

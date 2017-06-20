@@ -5,7 +5,6 @@
 #include "chrome/browser/certificate_viewer.h"
 
 #include <windows.h>
-#include <cryptuiapi.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,7 +15,9 @@
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ui/cryptuiapi_shim.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_win.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
@@ -53,23 +54,26 @@ class CertificateViewerDialog : public ui::BaseShellDialogImpl {
                           const scoped_refptr<net::X509Certificate>& cert) {
     // Create a new cert context and store containing just the certificate
     // and its intermediate certificates.
-    PCCERT_CONTEXT cert_list = cert->CreateOSCertChainForCert();
-    CHECK(cert_list);
+    net::ScopedPCCERT_CONTEXT cert_list(
+        net::x509_util::CreateCertContextWithChain(cert.get()));
+    // Perhaps this should show an error instead of silently failing, but it's
+    // probably not even possible to get here with a cert that can't be
+    // converted to a CERT_CONTEXT.
+    if (!cert_list)
+      return;
 
     CRYPTUI_VIEWCERTIFICATE_STRUCT view_info = {0};
     view_info.dwSize = sizeof(view_info);
     view_info.hwndParent = run_state.owner;
     view_info.dwFlags =
         CRYPTUI_DISABLE_EDITPROPERTIES | CRYPTUI_DISABLE_ADDTOSTORE;
-    view_info.pCertContext = cert_list;
+    view_info.pCertContext = cert_list.get();
     HCERTSTORE cert_store = cert_list->hCertStore;
     view_info.cStores = 1;
     view_info.rghStores = &cert_store;
 
     BOOL properties_changed;
     ::CryptUIDlgViewCertificate(&view_info, &properties_changed);
-
-    CertFreeCertificateContext(cert_list);
   }
 
   void OnDialogClosed(const RunState& run_state,
