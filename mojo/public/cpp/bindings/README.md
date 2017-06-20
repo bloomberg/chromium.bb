@@ -366,10 +366,18 @@ parameters.
 
 ### Connection Errors
 
-If there are no remaining messages available on a pipe and the remote end has
-been closed, a connection error will be triggered on the local end. Connection
-errors may also be triggered by automatic forced local pipe closure due to
-*e.g.* a validation error when processing a received message.
+If a pipe is disconnected, both endpoints will be able to observe the connection
+error (unless the disconnection is caused by closing/destroying an endpoint, in
+which case that endpoint won't get such a notification). If there are remaining
+incoming messages for an endpoint on disconnection, the connection error won't
+be triggered until the messages are drained.
+
+Pipe disconnecition may be caused by:
+* Mojo system-level causes: process terminated, resource exhausted, etc.
+* The bindings close the pipe due to a validation error when processing a
+  received message.
+* The peer endpoint is closed. For example, the remote side is a bound
+  `mojo::InterfacePtr<T>` and it is destroyed.
 
 Regardless of the underlying cause, when a connection error is encountered on
 a binding endpoint, that endpoint's **connection error handler** (if set) is
