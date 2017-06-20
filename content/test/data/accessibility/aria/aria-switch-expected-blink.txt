@@ -1,0 +1,4 @@
+rootWebArea
+++switch name='Switch1' checkedState=1
+++switch name='Switch2' checkedState=2
+++switch name='Switch3' checkedState=1
