@@ -200,13 +200,12 @@ TEST_F(SpdyServerPropertiesTest, Set) {
   impl_.SetSpdyServers(&spdy_servers3, false);
 
   // Verify the entries are in the same order.
+  impl_.GetSpdyServerList(&spdy_server_list, kMaxSupportsSpdyServerHosts);
+  EXPECT_EQ(2U, spdy_server_list.GetSize());
+
   ASSERT_TRUE(spdy_server_list.GetString(0, &string_value_g));
   ASSERT_EQ(spdy_server_g, string_value_g);
-  ASSERT_TRUE(spdy_server_list.GetString(1, &string_value_p));
-  ASSERT_EQ(spdy_server_p, string_value_p);
-  ASSERT_TRUE(spdy_server_list.GetString(2, &string_value_m));
-  ASSERT_EQ(spdy_server_m, string_value_m);
-  ASSERT_TRUE(spdy_server_list.GetString(3, &string_value_d));
+  ASSERT_TRUE(spdy_server_list.GetString(1, &string_value_d));
   ASSERT_EQ(spdy_server_d, string_value_d);
 
   // Verify photos and mail servers don't support SPDY and other servers support
