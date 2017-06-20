@@ -87,7 +87,7 @@ Rotated text!
         },
         {
           "name": "src",
-          "value": "../../http/tests/inspector-protocol/inspector-protocol-test.js"
+          "value": "../../http/tests/inspector-protocol/resources/inspector-protocol-test.js"
         }
       ]
     },
