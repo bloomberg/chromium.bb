@@ -332,20 +332,12 @@ void TabHelper::DidFinishNavigation(
     ExtensionActionAPI::Get(context)->ClearAllValuesForTab(web_contents());
 }
 
-bool TabHelper::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
-                        OnDidGetWebApplicationInfo)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 bool TabHelper::OnMessageReceived(const IPC::Message& message,
-                                  content::RenderFrameHost* render_frame_host) {
+                                  content::RenderFrameHost* sender) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(TabHelper, message, render_frame_host)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(TabHelper, message, sender)
+    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_DidGetWebApplicationInfo,
+                        OnDidGetWebApplicationInfo)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
                         OnGetAppInstallState)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
@@ -366,7 +358,8 @@ void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
   new_helper->extension_app_icon_ = extension_app_icon_;
 }
 
-void TabHelper::OnDidGetWebApplicationInfo(const WebApplicationInfo& info) {
+void TabHelper::OnDidGetWebApplicationInfo(content::RenderFrameHost* sender,
+                                           const WebApplicationInfo& info) {
   web_app_info_ = info;
 
   NavigationEntry* entry =
@@ -624,7 +617,9 @@ void TabHelper::GetApplicationInfo(WebAppAction action) {
   pending_web_app_action_ = action;
   last_committed_nav_entry_unique_id_ = entry->GetUniqueID();
 
-  Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  main_frame->Send(
+      new ChromeFrameMsg_GetWebApplicationInfo(main_frame->GetRoutingID()));
 }
 
 void TabHelper::Observe(int type,

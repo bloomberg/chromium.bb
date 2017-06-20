@@ -26,6 +26,7 @@
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_selector.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
@@ -97,7 +98,9 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
   DCHECK(minimum_splash_image_size_in_px <= ideal_splash_image_size_in_px);
 
   // Send a message to the renderer to retrieve information about the page.
-  Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
+  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  main_frame->Send(
+      new ChromeFrameMsg_GetWebApplicationInfo(main_frame->GetRoutingID()));
 }
 
 void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
@@ -166,14 +169,15 @@ AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {
 }
 
 bool AddToHomescreenDataFetcher::OnMessageReceived(
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    content::RenderFrameHost* sender) {
   if (!is_waiting_for_web_application_info_)
     return false;
 
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(AddToHomescreenDataFetcher, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
+    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_DidGetWebApplicationInfo,
                         OnDidGetWebApplicationInfo)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

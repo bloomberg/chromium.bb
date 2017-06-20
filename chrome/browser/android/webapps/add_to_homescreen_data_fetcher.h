@@ -96,7 +96,8 @@ class AddToHomescreenDataFetcher
   ~AddToHomescreenDataFetcher() override;
 
   // WebContentsObserver:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* sender) override;
 
   // Called if either InstallableManager or the favicon fetch takes too long.
   void OnDataTimedout();
