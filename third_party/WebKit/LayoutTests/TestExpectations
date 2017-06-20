@@ -839,7 +839,7 @@ crbug.com/410974 fast/scroll-behavior/scroll-customization/touch-scroll-customiz
 crbug.com/707865 fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Skip ]
 
 # These tests will pass once the --enable-features=TouchpadAndWheelScrollLatching flag is enabled by default.
-crbug.com/526463 fast/events/wheel/mouse-wheel-scroll-latching.html [ Failure ]
+crbug.com/526463 fast/events/wheel/mouse-wheel-scroll-latching.html [ Failure Pass ]
 crbug.com/526463 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Timeout ]
 crbug.com/526463 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Failure Timeout ]
 
