@@ -379,7 +379,7 @@ class _DiffArchiveManager(object):
           supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
           size_paths = [os.path.join(a.dir, a.build.size_name)
                         for a in self.build_archives]
-          logging.info('Enter supersize console via: %s, console %s %s',
+          logging.info('Enter supersize console via: %s console %s %s',
                        os.path.relpath(supersize_path),
                        os.path.relpath(size_paths[0]),
                        os.path.relpath(size_paths[1]))
