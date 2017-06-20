@@ -6,10 +6,7 @@
  */
 
 podrow {
-  /* Temporarily disabled because animation interferes with updating screen's
-   size. */
   overflow: visible;
-  position: absolute;
 }
 
 /* Hide the pod row while images are loading. */
@@ -77,7 +74,7 @@ pin-keyboard {
 
 html[dir=rtl] .user-image-pane {
   left: auto;
-  right: 10px;
+  right: 105px;
 }
 
 .user-image-container {
@@ -142,13 +139,7 @@ html:not([screen=login-add-user]) .pod.focused .user-image {
 }
 
 .main-pane {
-  position: absolute;
   z-index: 2;
-}
-
-html[dir=rtl] .main-pane {
-  left: auto;
-  right: 10px;
 }
 
 .name-container {
@@ -172,6 +163,11 @@ html[dir=rtl] .main-pane {
 <if expr="chromeos">
   width: 204px;
 </if>
+}
+
+html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
+  left: auto;
+  right: 51px;
 }
 
 .auth-container .submit-button[disabled] {
@@ -222,6 +218,7 @@ html[dir=rtl] .main-pane {
   stroke: #FFFFFF;
   stroke-width: 1px;
   top: 40px;
+  width: 204px;
 }
 
 .input-present .input-line {
@@ -508,12 +505,6 @@ html[dir=rtl] .main-pane {
   z-index: 4;
 }
 
-html[dir=rtl] .action-box-area {
-  left: 0;
-  position: absolute;
-  right: auto;
-}
-
 .action-box-area:focus,
 .action-box-area.hovered,
 .action-box-area.active,
@@ -522,8 +513,9 @@ html[dir=rtl] .action-box-area {
 }
 
 .action-box-button {
+  -webkit-margin-start: 8px;
   height: 24px;
-  margin: 3px 0 0 8px;
+  margin-top: 3px;
   padding: 0;
   width: 24px;
 }
@@ -619,12 +611,13 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .action-box-area.active ~ .action-box-menu {
+  -webkit-margin-start: 12px;
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 2px;
   display: flex;
   flex-direction: column;
   font-size: 13px;
-  margin: 3px 0 0 12px;
+  margin-top: 3px;
   width: 220px;
 }
 
@@ -646,11 +639,6 @@ html[dir=rtl] .user-type-icon-area {
 
 .action-box-area.menu-moved-up {
   transform: rotate(180deg);
-}
-
-html[dir=rtl] .action-box-area.active ~ .action-box-menu {
-  left: 5px;
-  right: auto;
 }
 
 .action-box-menu-title {
@@ -754,7 +742,7 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
 
 html[dir=rtl] .user-type-bubble {
   left: auto;
-  right: 5px;
+  right: 36px;
 }
 
 .bubble-shown,
@@ -878,11 +866,11 @@ html[dir=rtl] .expanded-pane {
 }
 
 .public-account-info-container .info {
+  -webkit-padding-start: 8px;
   color: rgba(255, 255, 255, .67);
   font-family: "Roboto";
   font-size: 13px;
   overflow: hidden;
-  padding-left: 8px;
   position: absolute;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -897,6 +885,11 @@ html[dir=rtl] .expanded-pane {
   position: absolute;
   top: 59px;
   width: 40px;
+}
+
+html[dir=rtl] .pod.public-account .button-container {
+  left: auto;
+  right: 133px;
 }
 
 .pod.public-account .button-container.forced,
@@ -1000,9 +993,14 @@ html[dir=rtl] .expanded-pane {
   width: 40px;
 }
 
+html[dir=rtl] .enter-button-container {
+  left: 28px;
+  right: auto;
+}
+
 .language-and-input-dropdown {
+  -webkit-margin-start: 6px;
   height: 16px;
-  margin-left: 6px;
   padding: 0;
   width: 16px;
 }
@@ -1103,10 +1101,20 @@ html[dir=rtl] .expanded-pane {
   width: 214px;
 }
 
+html[dir=rtl] .small-pod-name {
+  left: auto;
+  right: 90px;
+}
+
 .small-pod.extra-small .small-pod-name {
   left: 76px;
   padding: 16px 0;
   width: 190px;
+}
+
+html[dir=rtl] .small-pod.extra-small .small-pod-name {
+  left: auto;
+  right: 76px;
 }
 
 @keyframes switch-image {
