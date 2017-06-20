@@ -1380,6 +1380,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateStyleInvalidationIfNeeded();
   void UpdateStyle();
   void NotifyLayoutTreeOfSubtreeChanges();
+  void UpdateHasOverflowClipForBody();
 
   // ImplicitClose() actually does the work of closing the input stream.
   void ImplicitClose();
