@@ -633,7 +633,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     assert not self.dependencies
 
     deps_content = None
-    use_strict = False
 
     # First try to locate the configured deps file.  If it's missing, fallback
     # to DEPS.
@@ -654,25 +653,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if os.path.isfile(filepath):
       deps_content = gclient_utils.FileRead(filepath)
       logging.debug('ParseDepsFile(%s) read:\n%s', self.name, deps_content)
-      use_strict = 'use strict' in deps_content.splitlines()[0]
 
     local_scope = {}
     if deps_content:
       # One thing is unintuitive, vars = {} must happen before Var() use.
       var = self.VarImpl(self.custom_vars, local_scope)
-      if use_strict:
-        logging.info(
-          'ParseDepsFile(%s): Strict Mode Enabled', self.name)
-        global_scope = {
-          '__builtins__': {'None': None},
-          'Var': var.Lookup,
-          'deps_os': {},
-        }
-      else:
-        global_scope = {
-          'Var': var.Lookup,
-          'deps_os': {},
-        }
+      global_scope = {
+        'Var': var.Lookup,
+        'deps_os': {},
+      }
       # Eval the content.
       try:
         if self._get_option('validate_syntax', False):
@@ -681,12 +670,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           exec(deps_content, global_scope, local_scope)
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
-      if use_strict:
-        for key, val in local_scope.iteritems():
-          if not isinstance(val, (dict, list, tuple, str)):
-            raise gclient_utils.Error(
-              'ParseDepsFile(%s): Strict mode disallows %r -> %r' %
-              (self.name, key, val))
 
     if 'allowed_hosts' in local_scope:
       try:
