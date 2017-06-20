@@ -12,8 +12,25 @@
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
+
+namespace {
+
+WebURLRequest::FetchCredentialsMode ParseCredentialsOption(
+    const String& credentials_option) {
+  if (credentials_option == "omit")
+    return WebURLRequest::kFetchCredentialsModeOmit;
+  if (credentials_option == "same-origin")
+    return WebURLRequest::kFetchCredentialsModeSameOrigin;
+  if (credentials_option == "include")
+    return WebURLRequest::kFetchCredentialsModeInclude;
+  NOTREACHED();
+  return WebURLRequest::kFetchCredentialsModeOmit;
+}
+
+}  // namespace
 
 Worklet::Worklet(LocalFrame* frame)
     : ContextLifecycleObserver(frame->GetDocument()) {
@@ -73,18 +90,6 @@ void Worklet::ContextDestroyed(ExecutionContext* execution_context) {
   DCHECK(IsMainThread());
   for (const auto& proxy : proxies_)
     proxy->TerminateWorkletGlobalScope();
-}
-
-WebURLRequest::FetchCredentialsMode Worklet::ParseCredentialsOption(
-    const String& credentials_option) {
-  if (credentials_option == "omit")
-    return WebURLRequest::kFetchCredentialsModeOmit;
-  if (credentials_option == "same-origin")
-    return WebURLRequest::kFetchCredentialsModeSameOrigin;
-  if (credentials_option == "include")
-    return WebURLRequest::kFetchCredentialsModeInclude;
-  NOTREACHED();
-  return WebURLRequest::kFetchCredentialsModeOmit;
 }
 
 WorkletGlobalScopeProxy* Worklet::FindAvailableGlobalScope() const {
