@@ -4,49 +4,70 @@
 
 #include "platform/graphics/paint/GeometryMapperTransformCache.h"
 
+#include "platform/graphics/paint/TransformPaintPropertyNode.h"
+
 namespace blink {
 
 // All transform caches invalidate themselves by tracking a local cache
 // generation, and invalidating their cache if their cache generation disagrees
-// with s_transformCacheGeneration.
-static unsigned g_transform_cache_generation = 0;
-
-GeometryMapperTransformCache::GeometryMapperTransformCache()
-    : cache_generation_(g_transform_cache_generation) {}
+// with s_global_generation.
+unsigned GeometryMapperTransformCache::s_global_generation;
 
 void GeometryMapperTransformCache::ClearCache() {
-  g_transform_cache_generation++;
+  s_global_generation++;
 }
 
-void GeometryMapperTransformCache::InvalidateCacheIfNeeded() {
-  if (cache_generation_ != g_transform_cache_generation) {
-    transform_cache_.clear();
-    cache_generation_ = g_transform_cache_generation;
-  }
+// Computes flatten(m) ^ -1, return true if the inversion succeeded.
+static bool InverseProjection(TransformationMatrix m,
+                              TransformationMatrix& out) {
+  m.FlattenTo2d();
+  if (!m.IsInvertible())
+    return false;
+  out = m.Inverse();
+  return true;
 }
 
-const TransformationMatrix* GeometryMapperTransformCache::GetCachedTransform(
-    const TransformPaintPropertyNode* ancestor_transform) {
-  InvalidateCacheIfNeeded();
-  for (const auto& entry : transform_cache_) {
-    if (entry.ancestor_node == ancestor_transform) {
-      return &entry.to_ancestor;
-    }
-  }
-  return nullptr;
-}
+void GeometryMapperTransformCache::Update(
+    const TransformPaintPropertyNode& node) {
+  DCHECK_NE(cache_generation_, s_global_generation);
+  cache_generation_ = s_global_generation;
 
-void GeometryMapperTransformCache::SetCachedTransform(
-    const TransformPaintPropertyNode* ancestor_transform,
-    const TransformationMatrix& matrix) {
-  InvalidateCacheIfNeeded();
-#if DCHECK_IS_ON()
-  for (const auto& entry : transform_cache_) {
-    if (entry.ancestor_node == ancestor_transform)
-      DCHECK(false);  // There should be no existing entry.
+  if (!node.Parent()) {
+    to_screen_.MakeIdentity();
+    to_screen_is_invertible_ = true;
+    projection_from_screen_.MakeIdentity();
+    projection_from_screen_is_valid_ = true;
+    plane_root_ = &node;
+    to_plane_root_.MakeIdentity();
+    from_plane_root_.MakeIdentity();
+    return;
   }
-#endif
-  transform_cache_.push_back(TransformCacheEntry(ancestor_transform, matrix));
+
+  const GeometryMapperTransformCache& parent =
+      node.Parent()->GetTransformCache();
+
+  TransformationMatrix local = node.Matrix();
+  local.ApplyTransformOrigin(node.Origin());
+
+  to_screen_ = parent.to_screen_;
+  if (node.FlattensInheritedTransform())
+    to_screen_.FlattenTo2d();
+  to_screen_.Multiply(local);
+  to_screen_is_invertible_ = to_screen_.IsInvertible();
+  projection_from_screen_is_valid_ =
+      InverseProjection(to_screen_, projection_from_screen_);
+
+  if (!local.IsFlat() || !local.IsInvertible()) {
+    plane_root_ = &node;
+    to_plane_root_.MakeIdentity();
+    from_plane_root_.MakeIdentity();
+  } else {  // (local.IsFlat() && local.IsInvertible())
+    plane_root_ = parent.plane_root_;
+    to_plane_root_ = parent.to_plane_root_;
+    to_plane_root_.Multiply(local);
+    from_plane_root_ = local.Inverse();
+    from_plane_root_.Multiply(parent.from_plane_root_);
+  }
 }
 
 }  // namespace blink

@@ -458,12 +458,12 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
   if (HasOverflowClip(layer_)) {
     FloatClipRect clip_rect((FloatRect(LocalVisualRect())));
     clip_rect.MoveBy(FloatPoint(layer_.GetLayoutObject().PaintOffset()));
-    GeometryMapper::SourceToDestinationVisualRect(
+    GeometryMapper::LocalToAncestorVisualRect(
         source_property_tree_state, destination_property_tree_state, clip_rect);
     output.SetRect(clip_rect);
   } else {
     const FloatClipRect& clipped_rect_in_root_layer_space =
-        GeometryMapper::SourceToDestinationClipRect(
+        GeometryMapper::LocalToAncestorClipRect(
             source_property_tree_state, destination_property_tree_state);
     output.SetRect(clipped_rect_in_root_layer_space);
   }
