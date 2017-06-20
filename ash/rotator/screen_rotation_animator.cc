@@ -164,8 +164,6 @@ class ScreenRotationAnimationMetricsReporter
 
 ScreenRotationAnimator::ScreenRotationAnimator(aura::Window* root_window)
     : root_window_(root_window),
-      screen_rotation_container_layer_(
-          GetScreenRotationContainer(root_window_)->layer()),
       screen_rotation_state_(IDLE),
       rotation_request_id_(0),
       metrics_reporter_(
@@ -241,9 +239,11 @@ void ScreenRotationAnimator::SetRotation(
 
 void ScreenRotationAnimator::RequestCopyScreenRotationContainerLayer(
     std::unique_ptr<cc::CopyOutputRequest> copy_output_request) {
+  ui::Layer* screen_rotation_container_layer =
+      GetScreenRotationContainer(root_window_)->layer();
   copy_output_request->set_area(
-      gfx::Rect(screen_rotation_container_layer_->size()));
-  screen_rotation_container_layer_->RequestCopyOfOutput(
+      gfx::Rect(screen_rotation_container_layer->size()));
+  screen_rotation_container_layer->RequestCopyOfOutput(
       std::move(copy_output_request));
 }
 
@@ -326,9 +326,6 @@ void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedAfterRotation(
 
 void ScreenRotationAnimator::CreateOldLayerTreeForSlowAnimation() {
   old_layer_tree_owner_ = ::wm::RecreateLayers(root_window_);
-  // |screen_rotation_container_layer_| needs update after |RecreateLayers()|.
-  screen_rotation_container_layer_ =
-      GetScreenRotationContainer(root_window_)->layer();
   AddLayerAtTopOfWindowLayers(root_window_, old_layer_tree_owner_->root());
 }
 
@@ -338,8 +335,8 @@ std::unique_ptr<ui::LayerTreeOwner> ScreenRotationAnimator::CopyLayerTree(
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
-
-  const gfx::Rect rect(screen_rotation_container_layer_->size());
+  const gfx::Rect rect(
+      GetScreenRotationContainer(root_window_)->layer()->size());
   std::unique_ptr<ui::Layer> copy_layer = base::MakeUnique<ui::Layer>();
   copy_layer->SetBounds(rect);
   copy_layer->SetTextureMailbox(texture_mailbox, std::move(release_callback),
@@ -361,15 +358,17 @@ void ScreenRotationAnimator::AnimateRotation(
   const gfx::Point pivot = gfx::Point(rotated_screen_bounds.width() / 2,
                                       rotated_screen_bounds.height() / 2);
 
+  ui::Layer* screen_rotation_container_layer =
+      GetScreenRotationContainer(root_window_)->layer();
   ui::Layer* new_root_layer;
   if (!new_layer_tree_owner_ ||
       has_switch_ash_disable_smooth_screen_rotation_) {
-    new_root_layer = screen_rotation_container_layer_;
+    new_root_layer = screen_rotation_container_layer;
   } else {
     new_root_layer = new_layer_tree_owner_->root();
-    // Add a black mask layer on top of |screen_rotation_container_layer_|.
+    // Add a black mask layer on top of |screen_rotation_container_layer|.
     mask_layer_tree_owner_ = CreateMaskLayerTreeOwner(
-        gfx::Rect(screen_rotation_container_layer_->size()));
+        gfx::Rect(screen_rotation_container_layer->size()));
     AddLayerBelowWindowLayer(root_window_, new_root_layer,
                              mask_layer_tree_owner_->root());
   }

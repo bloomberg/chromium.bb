@@ -117,11 +117,11 @@ void DisplayConfigurationController::SetDisplayRotation(
     int64_t display_id,
     display::Display::Rotation rotation,
     display::Display::RotationSource source) {
-  if (display_manager_->GetDisplayInfo(display_id).GetActiveRotation() ==
-      rotation)
-    return;
-
   if (display_manager_->IsDisplayIdValid(display_id)) {
+    if (display_manager_->GetDisplayInfo(display_id).GetActiveRotation() ==
+        rotation) {
+      return;
+    }
     ScreenRotationAnimator* screen_rotation_animator =
         GetScreenRotationAnimatorForDisplay(display_id);
     screen_rotation_animator->Rotate(rotation, source);
