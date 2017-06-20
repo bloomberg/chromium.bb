@@ -920,27 +920,6 @@ std::set<RTCPeerConnectionHandler*>* GetPeerConnectionHandlers() {
   return handlers;
 }
 
-blink::WebMediaStreamTrack GetRemoteTrack(
-    const std::map<webrtc::MediaStreamInterface*,
-                   std::unique_ptr<content::RemoteMediaStreamImpl>>&
-        remote_streams,
-    const blink::WebString& id,
-    blink::WebMediaStreamTrack (blink::WebMediaStream::*get_track_method)(
-        const blink::WebString& trackId) const) {
-  // TODO(hbos): Tracks and streams are currently added/removed on a per-stream
-  // basis, but tracks could be removed from a stream or added to an existing
-  // stream. We need to listen to events of tracks being added and removed, and
-  // have a list of tracks that is separate from the list of streams.
-  // https://crbug.com/705901
-  for (const auto& remote_stream_pair : remote_streams) {
-    blink::WebMediaStreamTrack web_track =
-        (remote_stream_pair.second->webkit_stream().*get_track_method)(id);
-    if (!web_track.IsNull())
-      return web_track;
-  }
-  return blink::WebMediaStreamTrack();
-}
-
 }  // namespace
 
 // Implementation of LocalRTCStatsRequest.
@@ -1671,32 +1650,16 @@ RTCPeerConnectionHandler::GetSenders() {
   for (size_t i = 0; i < web_senders.size(); ++i) {
     rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track =
         webrtc_senders[i]->track();
-    std::unique_ptr<blink::WebMediaStreamTrack> web_track;
-
+    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter;
     if (webrtc_track) {
-      std::string track_id = webrtc_track->id();
-      bool is_audio_track = (webrtc_track->kind() ==
-                             webrtc::MediaStreamTrackInterface::kAudioKind);
-      for (const auto& stream_adapter : local_streams_) {
-        blink::WebVector<blink::WebMediaStreamTrack> tracks;
-        if (is_audio_track)
-          stream_adapter->web_stream().AudioTracks(tracks);
-        else
-          stream_adapter->web_stream().VideoTracks(tracks);
-        for (const blink::WebMediaStreamTrack& track : tracks) {
-          if (track.Id() == track_id.c_str()) {
-            web_track.reset(new blink::WebMediaStreamTrack(track));
-            break;
-          }
-        }
-        if (web_track)
-          break;
-      }
-      DCHECK(web_track);
+      track_adapter =
+          track_adapter_map_->GetLocalTrackAdapter(webrtc_track->id());
+      DCHECK(track_adapter);
     }
-
+    // Create a reference to the sender. Multiple |RTCRtpSender|s can reference
+    // the same webrtc track, see |id|.
     web_senders[i] = base::MakeUnique<RTCRtpSender>(webrtc_senders[i].get(),
-                                                    std::move(web_track));
+                                                    std::move(track_adapter));
   }
   return web_senders;
 }
@@ -1713,22 +1676,14 @@ RTCPeerConnectionHandler::GetReceivers() {
     rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track =
         webrtc_receivers[i]->track();
     DCHECK(webrtc_track);
+    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+        track_adapter =
+            track_adapter_map_->GetRemoteTrackAdapter(webrtc_track->id());
+    DCHECK(track_adapter);
     // Create a reference to the receiver. Multiple |RTCRtpReceiver|s can
     // reference the same webrtc track, see |id|.
-    blink::WebMediaStreamTrack web_track;
-    if (webrtc_track->kind() == webrtc::MediaStreamTrackInterface::kAudioKind) {
-      web_track = GetRemoteAudioTrack(webrtc_track->id());
-    } else {
-      web_track = GetRemoteVideoTrack(webrtc_track->id());
-    }
-    // TODO(hbos): Any existing remote track should be known but the case of a
-    // track being added or removed separately from streams is not handled
-    // properly, see todo in |GetRemoteTrack|. When that is addressed, DCHECK
-    // that the track is not null. https://crbug.com/705901
-    if (!web_track.IsNull()) {
-      web_receivers.push_back(base::MakeUnique<RTCRtpReceiver>(
-          webrtc_receivers[i].get(), web_track));
-    }
+    web_receivers.push_back(base::MakeUnique<RTCRtpReceiver>(
+        webrtc_receivers[i].get(), std::move(track_adapter)));
   }
 
   // |blink::WebVector|'s size must be known at construction, that is why
@@ -2100,20 +2055,6 @@ void RTCPeerConnectionHandler::RunSynchronousClosureOnSignalingThread(
                    base::Unretained(&event)));
     event.Wait();
   }
-}
-
-blink::WebMediaStreamTrack RTCPeerConnectionHandler::GetRemoteAudioTrack(
-    const std::string& track_id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return GetRemoteTrack(remote_streams_, blink::WebString::FromUTF8(track_id),
-                        &blink::WebMediaStream::GetAudioTrack);
-}
-
-blink::WebMediaStreamTrack RTCPeerConnectionHandler::GetRemoteVideoTrack(
-    const std::string& track_id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return GetRemoteTrack(remote_streams_, blink::WebString::FromUTF8(track_id),
-                        &blink::WebMediaStream::GetVideoTrack);
 }
 
 void RTCPeerConnectionHandler::ReportICEState(

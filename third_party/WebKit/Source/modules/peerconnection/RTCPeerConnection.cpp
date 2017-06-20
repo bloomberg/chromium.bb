@@ -1135,9 +1135,6 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
   stream->UnregisterObserver(this);
 
   peer_handler_->RemoveStream(stream->Descriptor());
-
-  // The senders of removed tracks will have become inactive.
-  RemoveInactiveSenders();
 }
 
 MediaStreamVector RTCPeerConnection::getLocalStreams() const {
@@ -1288,32 +1285,6 @@ MediaStreamTrack* RTCPeerConnection::GetTrack(
   return tracks_.at(static_cast<MediaStreamComponent*>(web_track));
 }
 
-void RTCPeerConnection::RemoveInactiveSenders() {
-  std::set<uintptr_t> inactive_sender_ids;
-  for (uintptr_t id : rtp_senders_.Keys()) {
-    inactive_sender_ids.insert(id);
-  }
-  for (const auto& web_rtp_sender : peer_handler_->GetSenders()) {
-    inactive_sender_ids.erase(web_rtp_sender->Id());
-  }
-  for (uintptr_t id : inactive_sender_ids) {
-    rtp_senders_.erase(id);
-  }
-}
-
-void RTCPeerConnection::RemoveInactiveReceivers() {
-  std::set<uintptr_t> inactive_receiver_ids;
-  for (uintptr_t id : rtp_receivers_.Keys()) {
-    inactive_receiver_ids.insert(id);
-  }
-  for (const auto& web_rtp_receiver : peer_handler_->GetReceivers()) {
-    inactive_receiver_ids.erase(web_rtp_receiver->Id());
-  }
-  for (uintptr_t id : inactive_receiver_ids) {
-    rtp_receivers_.erase(id);
-  }
-}
-
 RTCDTMFSender* RTCPeerConnection::createDTMFSender(
     MediaStreamTrack* track,
     ExceptionState& exception_state) {
@@ -1442,9 +1413,6 @@ void RTCPeerConnection::DidRemoveRemoteStream(
   DCHECK(pos != kNotFound);
   remote_streams_.erase(pos);
   stream->UnregisterObserver(this);
-
-  // The receivers of removed tracks will have become inactive.
-  RemoveInactiveReceivers();
 
   ScheduleDispatchEvent(
       MediaStreamEvent::Create(EventTypeNames::removestream, stream));

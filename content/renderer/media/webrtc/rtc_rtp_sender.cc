@@ -12,11 +12,12 @@ namespace content {
 namespace {
 
 inline bool operator==(
-    const std::unique_ptr<blink::WebMediaStreamTrack>& web_track,
+    const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
+        track_adapter,
     const webrtc::MediaStreamTrackInterface* webrtc_track) {
-  if (!web_track)
+  if (!track_adapter)
     return !webrtc_track;
-  return webrtc_track && web_track->Id() == webrtc_track->id().c_str();
+  return track_adapter->webrtc_track() == webrtc_track;
 }
 
 }  // namespace
@@ -27,11 +28,12 @@ uintptr_t RTCRtpSender::getId(
 }
 
 RTCRtpSender::RTCRtpSender(
-    webrtc::RtpSenderInterface* webrtc_rtp_sender,
-    std::unique_ptr<blink::WebMediaStreamTrack> web_track)
-    : webrtc_rtp_sender_(webrtc_rtp_sender), web_track_(std::move(web_track)) {
+    scoped_refptr<webrtc::RtpSenderInterface> webrtc_rtp_sender,
+    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter)
+    : webrtc_rtp_sender_(std::move(webrtc_rtp_sender)),
+      track_adapter_(std::move(track_adapter)) {
   DCHECK(webrtc_rtp_sender_);
-  DCHECK(web_track_ == webrtc_track());
+  DCHECK(track_adapter_ == webrtc_rtp_sender_->track());
 }
 
 RTCRtpSender::~RTCRtpSender() {}
@@ -41,12 +43,13 @@ uintptr_t RTCRtpSender::Id() const {
 }
 
 const blink::WebMediaStreamTrack* RTCRtpSender::Track() const {
-  DCHECK(web_track_ == webrtc_track());
-  return web_track_.get();
+  DCHECK(track_adapter_ == webrtc_rtp_sender_->track());
+  return track_adapter_ ? &track_adapter_->web_track() : nullptr;
 }
 
 const webrtc::MediaStreamTrackInterface* RTCRtpSender::webrtc_track() const {
-  return webrtc_rtp_sender_->track();
+  DCHECK(track_adapter_ == webrtc_rtp_sender_->track());
+  return track_adapter_ ? track_adapter_->webrtc_track() : nullptr;
 }
 
 }  // namespace content
