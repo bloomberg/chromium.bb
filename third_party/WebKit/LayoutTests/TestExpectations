@@ -917,6 +917,9 @@ crbug.com/734744 virtual/mojo-loading/http/tests/inspector/indexeddb/resources-p
 crbug.com/734793 http/tests/inspector/indexeddb/database-names.html [ Pass Failure Timeout ]
 crbug.com/734793 virtual/mojo-loading/http/tests/inspector/indexeddb/database-names.html [ Pass Failure Timeout ]
 
+crbug.com/735259 http/tests/inspector/indexeddb/upgrade-events.html [ Pass Failure ]
+crbug.com/735259 virtual/mojo-loading/http/tests/inspector/indexeddb/upgrade-events.html [ Pass Failure ]
+
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 
