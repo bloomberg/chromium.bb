@@ -39,6 +39,9 @@
 # http://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.*
 
+# https://crbug.com/734670
+-RenderProcessHostTest.KillProcessZerosAudioStreams
+
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
 -BrowserSideNavigationBrowserTest.FailedNavigation
 -CrossSiteResourceHandlerTest.NoDeliveryToDetachedFrame
@@ -137,6 +140,7 @@
 -TouchInputBrowserTest.MultiPointTouchPress
 -TouchInputBrowserTest.TouchHandlerNoConsume
 -WebContentsImplBrowserTest.ClearNonVisiblePendingOnFail
+-WebContentsImplBrowserTest.DismissingBeforeUnloadDialogInvalidatesUrl
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 -WebContentsImplBrowserTest.GetSizeForNewRenderView
 -WebContentsImplBrowserTest.UserAgentOverride
