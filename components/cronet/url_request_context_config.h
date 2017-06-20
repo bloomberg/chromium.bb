@@ -12,11 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "net/base/hash_value.h"
 #include "net/cert/cert_verifier.h"
 
 namespace base {
-class DictionaryValue;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -30,6 +30,8 @@ namespace cronet {
 
 // Common configuration parameters used by Cronet to configure
 // URLRequestContext.
+// TODO(mgersh): This shouldn't be a struct, and experimental option parsing
+// should be kept more separate from applying the configuration.
 struct URLRequestContextConfig {
   // Type of HTTP cache.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net.impl
@@ -166,9 +168,17 @@ struct URLRequestContextConfig {
   ScopedVector<Pkp> pkp_list;
 
   // Experimental options that are recognized by the config parser.
-  std::unique_ptr<base::DictionaryValue> effective_experimental_options;
+  std::unique_ptr<base::DictionaryValue> effective_experimental_options =
+      nullptr;
 
  private:
+  // Parses experimental options and makes appropriate changes to settings in
+  // the URLRequestContextConfig and URLRequestContextBuilder.
+  void ParseAndSetExperimentalOptions(
+      net::URLRequestContextBuilder* context_builder,
+      net::NetLog* net_log,
+      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfig);
 };
 
