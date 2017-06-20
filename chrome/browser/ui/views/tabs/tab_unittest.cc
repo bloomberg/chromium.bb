@@ -233,6 +233,13 @@ class TabTest : public views::ViewsTestBase {
     }
   }
 
+  void FastForwardThrobberStateTimer(Tab* tab) {
+    EXPECT_TRUE(tab->delayed_throbber_show_timer_.IsRunning());
+    auto closure = tab->delayed_throbber_show_timer_.user_task();
+    tab->delayed_throbber_show_timer_.Stop();
+    closure.Run();
+  }
+
  protected:
   void InitWidget(Widget* widget) {
     Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
@@ -442,47 +449,68 @@ TEST_F(TabTest, LayeredThrobber) {
   tab.SetBoundsRect(gfx::Rect(Tab::GetStandardSize()));
 
   views::View* throbber = GetThrobberView(tab);
+  TabRendererData data;
+  data.url = GURL("http://example.com");
   EXPECT_FALSE(throbber->visible());
   EXPECT_EQ(TabRendererData::NETWORK_STATE_NONE, tab.data().network_state);
   EXPECT_EQ(throbber->bounds(), GetFaviconBounds(tab));
 
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_NONE);
-  EXPECT_FALSE(throbber->visible());
-
   // Simulate a "normal" tab load: should paint to a layer.
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_WAITING);
+  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  tab.SetData(data);
   EXPECT_TRUE(tab_controller.CanPaintThrobberToLayer());
   EXPECT_TRUE(throbber->visible());
   EXPECT_TRUE(throbber->layer());
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_LOADING);
+  data.network_state = TabRendererData::NETWORK_STATE_LOADING;
+  tab.SetData(data);
   EXPECT_TRUE(throbber->visible());
   EXPECT_TRUE(throbber->layer());
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_NONE);
+  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  tab.SetData(data);
+  EXPECT_FALSE(throbber->visible());
+
+  // After loading is done, simulate another resource starting to load. The
+  // throbber shouldn't immediately become visible again.
+  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  tab.SetData(data);
+  EXPECT_FALSE(throbber->visible());
+  FastForwardThrobberStateTimer(&tab);
+  EXPECT_TRUE(throbber->visible());
+
+  // Reset.
+  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  tab.SetData(data);
   EXPECT_FALSE(throbber->visible());
 
   // Simulate a drag started and stopped during a load: layer painting stops
   // temporarily.
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_WAITING);
+  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  tab.SetData(data);
+  FastForwardThrobberStateTimer(&tab);
   EXPECT_TRUE(throbber->visible());
   EXPECT_TRUE(throbber->layer());
   tab_controller.set_paint_throbber_to_layer(false);
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_WAITING);
+  tab.StepLoadingAnimation();
   EXPECT_TRUE(throbber->visible());
   EXPECT_FALSE(throbber->layer());
   tab_controller.set_paint_throbber_to_layer(true);
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_WAITING);
+  tab.StepLoadingAnimation();
   EXPECT_TRUE(throbber->visible());
   EXPECT_TRUE(throbber->layer());
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_NONE);
+  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  tab.SetData(data);
   EXPECT_FALSE(throbber->visible());
 
   // Simulate a tab load starting and stopping during tab dragging (or with
   // stacked tabs): no layer painting.
   tab_controller.set_paint_throbber_to_layer(false);
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_WAITING);
+  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  tab.SetData(data);
+  FastForwardThrobberStateTimer(&tab);
   EXPECT_TRUE(throbber->visible());
   EXPECT_FALSE(throbber->layer());
-  tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_NONE);
+  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  tab.SetData(data);
   EXPECT_FALSE(throbber->visible());
 }
 
