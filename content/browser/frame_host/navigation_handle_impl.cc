@@ -64,16 +64,17 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const std::vector<GURL>& redirect_chain,
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
-    bool is_same_page,
+    bool is_same_document,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
     bool is_form_submission) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
-      url, redirect_chain, frame_tree_node, is_renderer_initiated, is_same_page,
-      navigation_start, pending_nav_entry_id, started_from_context_menu,
-      should_check_main_world_csp, is_form_submission));
+      url, redirect_chain, frame_tree_node, is_renderer_initiated,
+      is_same_document, navigation_start, pending_nav_entry_id,
+      started_from_context_menu, should_check_main_world_csp,
+      is_form_submission));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -81,7 +82,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     const std::vector<GURL>& redirect_chain,
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
-    bool is_same_page,
+    bool is_same_document,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu,
@@ -94,7 +95,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       net_error_code_(net::OK),
       render_frame_host_(nullptr),
       is_renderer_initiated_(is_renderer_initiated),
-      is_same_page_(is_same_page),
+      is_same_document_(is_same_document),
       was_redirected_(false),
       did_replace_entry_(false),
       should_update_history_(false),
@@ -171,7 +172,7 @@ NavigationHandleImpl::NavigationHandleImpl(
         navigation_start, "Initial URL", url_.spec());
   }
 
-  if (is_same_page_) {
+  if (is_same_document_) {
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "Same document");
   }
@@ -309,7 +310,7 @@ RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
 }
 
 bool NavigationHandleImpl::IsSameDocument() {
-  return is_same_page_;
+  return is_same_document_;
 }
 
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
@@ -784,8 +785,9 @@ void NavigationHandleImpl::DidCommitNavigation(
     // navigation having been blocked with BLOCK_REQUEST_AND_COLLAPSE.
     if (!frame_tree_node()->IsMainFrame()) {
       // The last committed load in collapsed frames will be an error page with
-      // |kUnreachableWebDataURL|. Same-page navigation should not be possible.
-      DCHECK(!is_same_page_ || !frame_tree_node()->is_collapsed());
+      // |kUnreachableWebDataURL|. Same-document navigation should not be
+      // possible.
+      DCHECK(!is_same_document_ || !frame_tree_node()->is_collapsed());
       frame_tree_node()->SetCollapsed(false);
     }
   }

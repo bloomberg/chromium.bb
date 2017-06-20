@@ -88,7 +88,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const std::vector<GURL>& redirect_chain,
       FrameTreeNode* frame_tree_node,
       bool is_renderer_initiated,
-      bool is_same_page,
+      bool is_same_document,
       const base::TimeTicks& navigation_start,
       int pending_nav_entry_id,
       bool started_from_context_menu,
@@ -389,7 +389,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                        const std::vector<GURL>& redirect_chain,
                        FrameTreeNode* frame_tree_node,
                        bool is_renderer_initiated,
-                       bool is_same_page,
+                       bool is_same_document,
                        const base::TimeTicks& navigation_start,
                        int pending_nav_entry_id,
                        bool started_from_context_menu,
@@ -444,7 +444,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   net::Error net_error_code_;
   RenderFrameHostImpl* render_frame_host_;
   const bool is_renderer_initiated_;
-  const bool is_same_page_;
+  const bool is_same_document_;
   bool was_redirected_;
   bool did_replace_entry_;
   bool should_update_history_;
