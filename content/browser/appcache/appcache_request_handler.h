@@ -17,6 +17,7 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 
@@ -76,7 +77,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
   static std::unique_ptr<AppCacheRequestHandler>
   InitializeForNavigationNetworkService(
       const ResourceRequest& request,
-      AppCacheNavigationHandleCore* appcache_handle_core);
+      AppCacheNavigationHandleCore* appcache_handle_core,
+      URLLoaderFactoryGetter* url_loader_factory_getter);
 
  private:
   friend class AppCacheHost;
@@ -148,6 +150,12 @@ class CONTENT_EXPORT AppCacheRequestHandler
   void MaybeCreateLoader(const ResourceRequest& resource_request,
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;
+  mojom::URLLoaderFactoryPtr MaybeCreateSubresourceFactory() override;
+
+  void set_network_url_loader_factory_getter(
+      URLLoaderFactoryGetter* url_loader_factory_getter) {
+    network_url_loader_factory_getter_ = url_loader_factory_getter;
+  }
 
   // Data members -----------------------------------------------
 
@@ -216,7 +224,12 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // the AppCache, we delete the job.
   std::unique_ptr<AppCacheJob> navigation_request_job_;
 
+  // In the network service world, points to the getter for the network URL
+  // loader.
+  scoped_refptr<URLLoaderFactoryGetter> network_url_loader_factory_getter_;
+
   friend class content::AppCacheRequestHandlerTest;
+
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);
 };
 

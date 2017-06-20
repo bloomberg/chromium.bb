@@ -205,7 +205,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                          std::unique_ptr<NavigationData> navigation_data,
                          const GlobalRequestID& request_id,
                          bool is_download,
-                         bool is_stream) override;
+                         bool is_stream,
+                         mojom::URLLoaderFactoryPtrInfo
+                             subresource_url_loader_factory_info) override;
   void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
@@ -285,6 +287,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   mojo::ScopedDataPipeConsumerHandle handle_;
 
   base::Closure on_start_checks_complete_closure_;
+
+  // Used in the network service world to pass the subressource loader factory
+  // to the renderer. Currently only used by AppCache.
+  mojom::URLLoaderFactoryPtrInfo subresource_loader_factory_info_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

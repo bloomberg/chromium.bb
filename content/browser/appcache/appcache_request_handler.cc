@@ -13,7 +13,7 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_request.h"
-#include "content/browser/appcache/appcache_url_loader_factory.h"
+#include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
@@ -232,11 +232,13 @@ void AppCacheRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
 std::unique_ptr<AppCacheRequestHandler>
 AppCacheRequestHandler::InitializeForNavigationNetworkService(
     const ResourceRequest& request,
-    AppCacheNavigationHandleCore* appcache_handle_core) {
+    AppCacheNavigationHandleCore* appcache_handle_core,
+    URLLoaderFactoryGetter* url_loader_factory_getter) {
   std::unique_ptr<AppCacheRequestHandler> handler =
       appcache_handle_core->host()->CreateRequestHandler(
           AppCacheURLLoaderRequest::Create(request), request.resource_type,
           request.should_reset_appcache);
+  handler->set_network_url_loader_factory_getter(url_loader_factory_getter);
   return handler;
 }
 
@@ -543,6 +545,12 @@ void AppCacheRequestHandler::MaybeCreateLoader(
   }
   navigation_request_job_->AsURLLoaderJob()->set_loader_callback(
       std::move(callback));
+}
+
+mojom::URLLoaderFactoryPtr
+AppCacheRequestHandler::MaybeCreateSubresourceFactory() {
+  return AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
+      network_url_loader_factory_getter_.get());
 }
 
 }  // namespace content

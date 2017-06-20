@@ -64,7 +64,8 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
-    bool is_stream) {
+    bool is_stream,
+    mojom::URLLoaderFactoryPtrInfo loader_factory_ptr_info) {
   response_ = response;
   body_ = std::move(body);
   handle_ = std::move(consumer_handle);
