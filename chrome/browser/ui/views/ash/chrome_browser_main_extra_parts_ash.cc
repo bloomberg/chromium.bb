@@ -31,9 +31,15 @@
 #include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/user_activity_forwarder.h"
 #include "ui/base/class_property.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/mus/mus_client.h"
@@ -81,6 +87,16 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (ash_util::IsRunningInMash()) {
     immersive_context_ = base::MakeUnique<ImmersiveContextMus>();
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryMus>();
+
+    // Enterprise support in the browser can monitor user activity. Connect to
+    // the UI service to monitor activity. The ash process has its own monitor.
+    user_activity_detector_ = base::MakeUnique<ui::UserActivityDetector>();
+    ui::mojom::UserActivityMonitorPtr user_activity_monitor;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ui::mojom::kServiceName, &user_activity_monitor);
+    user_activity_forwarder_ = base::MakeUnique<aura::UserActivityForwarder>(
+        std::move(user_activity_monitor), user_activity_detector_.get());
   }
 
   session_controller_client_ = base::MakeUnique<SessionControllerClient>();
