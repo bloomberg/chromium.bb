@@ -1722,6 +1722,10 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
     frame_tree_node_->render_manager()->OnBeforeUnloadACK(
         unload_ack_is_for_navigation_, proceed, before_unload_end_time);
   }
+
+  // If canceled, notify the delegate to cancel its pending navigation entry.
+  if (!proceed)
+    render_view_host_->GetDelegate()->DidCancelLoading();
 }
 
 bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
