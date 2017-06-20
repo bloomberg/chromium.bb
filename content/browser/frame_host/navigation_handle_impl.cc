@@ -715,7 +715,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   ready_to_commit_time_ = base::TimeTicks::Now();
 
   // For back-forward navigations, record metrics.
-  if (transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) {
+  if ((transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) && !IsSameDocument()) {
     bool is_same_process =
         render_frame_host_->GetProcess()->GetID() ==
         frame_tree_node_->current_frame_host()->GetProcess()->GetID();
@@ -756,7 +756,7 @@ void NavigationHandleImpl::DidCommitNavigation(
 
   // For back-forward navigations, record metrics.
   if ((transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) &&
-      !ready_to_commit_time_.is_null()) {
+      !ready_to_commit_time_.is_null() && !IsSameDocument()) {
     UMA_HISTOGRAM_TIMES("Navigation.BackForward.ReadyToCommitUntilCommit",
                         base::TimeTicks::Now() - ready_to_commit_time_);
   }
