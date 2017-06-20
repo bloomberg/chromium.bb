@@ -75,13 +75,7 @@ void CastWindowTreeHost::DispatchEvent(ui::Event* event) {
     return;
   }
 
-  if (event->IsKeyEvent()) {
-    // Convert a RawKeyDown into a character insertion; otherwise
-    // the WebContents will ignore most keyboard input.
-    GetInputMethod()->DispatchKeyEvent(event->AsKeyEvent());
-  } else {
-    WindowTreeHostPlatform::DispatchEvent(event);
-  }
+  WindowTreeHostPlatform::DispatchEvent(event);
 }
 
 // A layout manager owned by the root window.
