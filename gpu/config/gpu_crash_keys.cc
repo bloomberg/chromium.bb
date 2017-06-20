@@ -19,10 +19,5 @@ const char kGPUGLVersion[] = "gpu-glver";
 const char kGPUVendor[] = "gpu-gl-vendor";
 const char kGPURenderer[] = "gpu-gl-renderer";
 #endif
-
-// TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
-const char kGpuChannelFilterTrace[] = "gpu-channel-filter-trace";
-const char kMediaGpuChannelFilterTrace[] = "media-gpu-channel-filter-trace";
-
 }  // namespace crash_keys
 }  // namespace gpu
