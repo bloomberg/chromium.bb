@@ -30,9 +30,6 @@ class AutofillProfile;
 // The country code for the currently selected country, if any.
 @property(nonatomic, strong) NSString* selectedCountryCode;
 
-// The list of region names used for the autofill::ADDRESS_HOME_STATE field.
-@property(nonatomic, strong) NSArray<NSString*>* regions;
-
 // Initializes this object with an instance of PaymentRequest which has a copy
 // of web::PaymentRequest as provided by the page invoking the Payment Request
 // API as well as |address| which is the address to be edited, if any.

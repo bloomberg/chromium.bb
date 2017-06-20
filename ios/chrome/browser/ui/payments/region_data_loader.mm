@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/payments/region_data_loader.h"
 
+#include <string>
+#include <utility>
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/region_data_loader.h"
 #include "ui/base/models/combobox_model.h"
@@ -38,12 +41,16 @@ void RegionDataLoader::OnComboboxModelChanged(ui::ComboboxModel* model) {
   if (region_model->IsPendingRegionDataLoad())
     return;
 
-  NSMutableArray<NSString*>* regions = [[NSMutableArray alloc] init];
+  NSMutableDictionary<NSString*, NSString*>* regions =
+      [[NSMutableDictionary alloc] init];
   if (!region_model->failed_to_load_data()) {
     for (int i = 0; i < region_model->GetItemCount(); ++i) {
-      if (!region_model->IsItemSeparatorAt(i))
-        [regions
-            addObject:base::SysUTF16ToNSString(region_model->GetItemAt(i))];
+      if (!region_model->IsItemSeparatorAt(i)) {
+        const std::pair<std::string, std::string>& region =
+            region_model->GetRegions()[i];
+        [regions setObject:base::SysUTF8ToNSString(region.second)
+                    forKey:base::SysUTF8ToNSString(region.first)];
+      }
     }
   }
   [consumer_ regionDataLoaderDidSucceedWithRegions:regions];
