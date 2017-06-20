@@ -46,8 +46,9 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
 
   content::RenderFrameHostTester::For(main_rfh())
       ->InitializeRenderFrameIfNeeded();
-  RenderViewHostTester::TestOnMessageReceived(
-      rvh(), ChromeViewHostMsg_DidGetWebApplicationInfo(0, web_app_info));
+  content::RenderFrameHostTester::TestOnMessageReceived(
+      rvh()->GetMainFrame(),
+      ChromeFrameHostMsg_DidGetWebApplicationInfo(0, web_app_info));
   std::unique_ptr<web_app::ShortcutInfo> info =
       web_app::GetShortcutInfoForTab(web_contents());
 

@@ -59,6 +59,12 @@ RenderFrameHostTester* RenderFrameHostTester::For(RenderFrameHost* host) {
 }
 
 // static
+bool RenderFrameHostTester::TestOnMessageReceived(RenderFrameHost* rfh,
+                                                  const IPC::Message& msg) {
+  return static_cast<RenderFrameHostImpl*>(rfh)->OnMessageReceived(msg);
+}
+
+// static
 void RenderFrameHostTester::CommitPendingLoad(
     NavigationController* controller) {
   // This function is currently used by BrowserWithTestWindowTest. It would be

@@ -48,7 +48,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
                                     content::BrowserControlsState current,
                                     bool animate);
 #endif
-  void OnGetWebApplicationInfo();
   void OnSetWindowFeatures(const blink::mojom::WindowFeatures& window_features);
 
   // Determines if a host is in the strict security host set.

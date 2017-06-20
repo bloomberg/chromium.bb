@@ -52,7 +52,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
 };
 
-// Intercepts the ChromeViewHostMsg_DidGetWebApplicationInfo that would usually
+// Intercepts the ChromeFrameHostMsg_DidGetWebApplicationInfo that would usually
 // get sent to extensions::TabHelper to create a BookmarkAppHelper that lets us
 // detect when icons are downloaded and the dialog is ready to show.
 class WebAppReadyMsgWatcher : public content::BrowserMessageFilter {
@@ -96,14 +96,14 @@ class WebAppReadyMsgWatcher : public content::BrowserMessageFilter {
   // BrowserMessageFilter:
   void OverrideThreadForMessage(const IPC::Message& message,
                                 content::BrowserThread::ID* thread) override {
-    if (message.type() == ChromeViewHostMsg_DidGetWebApplicationInfo::ID)
+    if (message.type() == ChromeFrameHostMsg_DidGetWebApplicationInfo::ID)
       *thread = content::BrowserThread::UI;
   }
 
   bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(WebAppReadyMsgWatcher, message)
-      IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
+      IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_DidGetWebApplicationInfo,
                           OnDidGetWebApplicationInfo)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
