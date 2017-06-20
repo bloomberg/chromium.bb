@@ -231,6 +231,16 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
         ntp_tiles::switches::kDisableNtpMostLikelyFaviconsFromServer);
   }
 
+  // Populate command line flag for the native to WKBackForwardList based
+  // navigation manager experiment.
+  NSString* enableSlimNavigationManager =
+      [defaults stringForKey:@"EnableSlimNavigationManager"];
+  if ([enableSlimNavigationManager isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableSlimNavigationManager);
+  } else if ([enableSlimNavigationManager isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableSlimNavigationManager);
+  }
+
   // Freeform commandline flags.  These are added last, so that any flags added
   // earlier in this function take precedence.
   if ([defaults boolForKey:@"EnableFreeformCommandLineFlags"]) {
