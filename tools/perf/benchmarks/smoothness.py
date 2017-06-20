@@ -211,6 +211,9 @@ class SmoothnessKeySilkCases(_Smoothness):
       stories.RemoveStory(story)
     return stories
 
+  def GetExpectations(self):
+     return page_sets.KeySilkCasesStoryExpectations()
+
 
 @benchmark.Enabled('android')
 @benchmark.Owner(emails=['vmiura@chromium.org'])
