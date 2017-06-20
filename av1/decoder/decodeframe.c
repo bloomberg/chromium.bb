@@ -5001,16 +5001,16 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_DELTA_Q && !CONFIG_EC_ADAPT
 #if CONFIG_EXT_DELTA_Q
   if (cm->delta_q_present_flag) {
-    for (k = 0; k < DELTA_Q_PROBS; ++k)
-      av1_diff_update_prob(&r, &fc->delta_q_prob[k], ACCT_STR);
+    for (i = 0; i < DELTA_Q_PROBS; ++i)
+      av1_diff_update_prob(&r, &fc->delta_q_prob[i], ACCT_STR);
   }
   if (cm->delta_lf_present_flag) {
-    for (k = 0; k < DELTA_LF_PROBS; ++k)
-      av1_diff_update_prob(&r, &fc->delta_lf_prob[k], ACCT_STR);
+    for (i = 0; i < DELTA_LF_PROBS; ++i)
+      av1_diff_update_prob(&r, &fc->delta_lf_prob[i], ACCT_STR);
   }
 #else
-  for (k = 0; k < DELTA_Q_PROBS; ++k)
-    av1_diff_update_prob(&r, &fc->delta_q_prob[k], ACCT_STR);
+  for (i = 0; i < DELTA_Q_PROBS; ++i)
+    av1_diff_update_prob(&r, &fc->delta_q_prob[i], ACCT_STR);
 #endif
 #endif
 
