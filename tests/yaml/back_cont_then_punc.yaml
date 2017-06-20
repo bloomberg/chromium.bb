@@ -1,0 +1,15 @@
+# Tests for #360: contractions followed by punctuation.
+table: [tables/unicode.dis, tests/tables/back_cont_then_punc.ctb]
+flags: {testmode: backward}
+tests:
+  # Words followed by punctuation. Begword/midword should not apply.
+  # Punctuation which also has begword rule:
+  - [⠃⠲, "but."]
+  # Punctuation which also has midword rule:
+  - [⠃⠂, "but,"]
+
+  # Make sure begword and midword apply as and when they should.
+  # Begword:
+  - [⠲⠁, "disa"]
+  # Midword:
+  - [⠃⠂⠙, "bead"]

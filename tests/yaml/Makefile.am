@@ -1,6 +1,7 @@
 EXTRA_DIST =					\
 	ar-ar-g1_harness.yaml			\
 	ar-fa_harness.yaml			\
+	back_cont_then_punc.yaml		\
 	begcaps_endcaps.yaml			\
 	capsnocont.yaml				\
 	capsword_for_back.yaml		\
