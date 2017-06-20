@@ -27,6 +27,17 @@ Polymer({
     /** @private {boolean} Whether a low-power (USB) charger is being used. */
     lowPowerCharger_: Boolean,
 
+    /** @private {boolean} Whether the idle behavior is controlled by policy. */
+    idleControlled_: Boolean,
+
+    /** @private {boolean} Whether the lid-closed behavior is controlled by
+      * policy.
+      */
+    lidClosedControlled_: Boolean,
+
+    /** @private {boolean} Whether the system posesses a lid. */
+    hasLid_: Boolean,
+
     /**
      * List of available dual-role power sources, if enablePowerSettings is on.
      * @private {!Array<!settings.PowerSource>|undefined}
@@ -55,6 +66,18 @@ Polymer({
       type: String,
       computed: 'computePowerSourceName_(powerSources_, lowPowerCharger_)',
     },
+
+    /** @private */
+    idleOptions_: {
+      type: Array,
+      computed: 'computeIdleOptions_(idleControlled_)',
+    },
+
+    /** @private */
+    lidClosedOptions_: {
+      type: Array,
+      computed: 'computeLidClosedOptions_(lidClosedControlled_)',
+    },
   },
 
   /** @override */
@@ -72,6 +95,12 @@ Polymer({
     this.addWebUIListener(
         'power-sources-changed', this.powerSourcesChanged_.bind(this));
     settings.DevicePageBrowserProxyImpl.getInstance().updatePowerStatus();
+
+    this.addWebUIListener(
+        'power-management-settings-changed',
+        this.powerManagementSettingsChanged_.bind(this));
+    settings.DevicePageBrowserProxyImpl.getInstance()
+        .requestPowerManagementSettings();
   },
 
   /**
@@ -113,9 +142,85 @@ Polymer({
     return '';
   },
 
+  /**
+   * @param {boolean} idleControlled
+   * @return {!Array<!{value: settings.IdleBehavior, name: string}>} Options to
+   *     display in idle-behavior select.
+   * @private
+   */
+  computeIdleOptions_: function(idleControlled) {
+    var options = [
+      {
+        value: settings.IdleBehavior.DISPLAY_OFF_SLEEP,
+        name: loadTimeData.getString('powerIdleDisplayOffSleep'),
+      },
+      {
+        value: settings.IdleBehavior.DISPLAY_OFF_STAY_AWAKE,
+        name: loadTimeData.getString('powerIdleDisplayOffStayAwake'),
+      },
+      {
+        value: settings.IdleBehavior.DISPLAY_ON,
+        name: loadTimeData.getString('powerIdleDisplayOn'),
+      },
+    ];
+    if (idleControlled) {
+      options.push({
+        value: settings.IdleBehavior.OTHER,
+        name: loadTimeData.getString('powerIdleOther'),
+      });
+    }
+    return options;
+  },
+
+  /**
+   * @param {boolean} lidClosedControlled
+   * @return {!Array<!{value: settings.LidClosedBehavior, name: string}>}
+   *     Options to display in lid-closed-behavior select.
+   * @private
+   */
+  computeLidClosedOptions_: function(lidClosedControlled) {
+    var options = [
+      {
+        value: settings.LidClosedBehavior.SUSPEND,
+        name: loadTimeData.getString('powerLidClosedSleep'),
+      },
+      {
+        value: settings.LidClosedBehavior.DO_NOTHING,
+        name: loadTimeData.getString('powerLidClosedStayAwake'),
+      },
+    ];
+    if (lidClosedControlled) {
+      // Some options are only settable via policy.
+      options.push({
+        value: settings.LidClosedBehavior.STOP_SESSION,
+        name: loadTimeData.getString('powerLidClosedSignOut'),
+      }, {
+        value: settings.LidClosedBehavior.SHUT_DOWN,
+        name: loadTimeData.getString('powerLidClosedShutDown'),
+      });
+    }
+    return options;
+  },
+
+  /** @private */
   onPowerSourceChange_: function() {
     settings.DevicePageBrowserProxyImpl.getInstance().setPowerSource(
-        this.$$('#powerSource').value);
+        this.$.powerSource.value);
+  },
+
+  /** @private */
+  onIdleSelectChange_: function() {
+    var behavior = /** @type {settings.IdleBehavior} */
+        (parseInt(this.$.idleSelect.value, 10));
+    settings.DevicePageBrowserProxyImpl.getInstance().setIdleBehavior(behavior);
+  },
+
+  /** @private */
+  onLidClosedSelectChange_: function() {
+    var behavior = /** @type {settings.LidClosedBehavior} */
+        (parseInt(this.$.lidClosedSelect.value, 10));
+    settings.DevicePageBrowserProxyImpl.getInstance().setLidClosedBehavior(
+        behavior);
   },
 
   /**
@@ -129,6 +234,25 @@ Polymer({
     this.powerSources_ = sources;
     this.selectedPowerSourceId_ = selectedId;
     this.lowPowerCharger_ = lowPowerCharger;
+  },
+
+  /**
+   * @param {!settings.PowerManagementSettings} settings Current power
+   *     management settings.
+   * @private
+   */
+  powerManagementSettingsChanged_: function(settings) {
+    this.idleControlled_ = settings.idleControlled;
+    this.lidClosedControlled_ = settings.lidClosedControlled;
+    this.hasLid_ = settings.hasLid;
+
+    // The select elements include "Other" options when controlled but omit them
+    // otherwise. Make sure that the options are there before we potentially try
+    // to select them.
+    this.async(function() {
+      this.$.idleSelect.value = settings.idleBehavior;
+      this.$.lidClosedSelect.value = settings.lidClosedBehavior;
+    });
   },
 
   /**

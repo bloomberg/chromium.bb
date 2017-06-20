@@ -20,6 +20,7 @@ cr.define('device_page_tests', function() {
   function TestDevicePageBrowserProxy() {
     this.keyboardShortcutsOverlayShown_ = 0;
     this.updatePowerStatusCalled_ = 0;
+    this.requestPowerManagementSettingsCalled_ = 0;
     this.onNoteTakingAppsUpdated_ = null;
     this.requestNoteTakingApps_ = 0;
     this.setPreferredNoteTakingApp_ = '';
@@ -63,6 +64,21 @@ cr.define('device_page_tests', function() {
     /** @override */
     setPowerSource: function(powerSourceId) {
       this.powerSourceId_ = powerSourceId;
+    },
+
+    /** @override */
+    requestPowerManagementSettings: function() {
+      this.requestPowerManagementSettingsCalled_++;
+    },
+
+    /** @override */
+    setIdleBehavior: function(behavior) {
+      this.idleBehavior_ = behavior;
+    },
+
+    /** @override */
+    setLidClosedBehavior: function(behavior) {
+      this.lidClosedBehavior_ = behavior;
     },
 
     /** @override */
@@ -260,6 +276,38 @@ cr.define('device_page_tests', function() {
         return assert(page);
       });
     };
+
+    /**
+     * @param {settings.IdleBehavior} idleBehavior
+     * @param {boolean} idleControlled
+     * @param {settings.LidClosedBehavior} lidClosedBehavior
+     * @param {boolean} lidClosedControlled
+     * @param {boolean} hasLid
+     */
+    function sendPowerManagementSettings(idleBehavior, idleControlled,
+                                         lidClosedBehavior, lidClosedControlled,
+                                         hasLid) {
+      cr.webUIListenerCallback(
+          'power-management-settings-changed',
+          {
+            idleBehavior: idleBehavior,
+            idleControlled: idleControlled,
+            lidClosedBehavior: lidClosedBehavior,
+            lidClosedControlled: lidClosedControlled,
+            hasLid: hasLid,
+          });
+      Polymer.dom.flush();
+    };
+
+    /**
+     * @param {!HTMLElement} select
+     * @param {!value} string
+     */
+    function selectValue(select, value) {
+      select.value = value;
+      select.dispatchEvent(new CustomEvent('change'));
+      Polymer.dom.flush();
+    }
 
     /**
      * @param {!HTMLElement} pointersPage
@@ -613,6 +661,13 @@ cr.define('device_page_tests', function() {
       }
 
       suite('no power settings', function() {
+        suiteSetup(function() {
+          // Never show power settings.
+          loadTimeData.overrideValues({
+            enablePowerSettings: false,
+          });
+        });
+
         test('power row hidden', function() {
           assertEquals(null, devicePage.$$('#powerRow'));
           assertEquals(0,
@@ -626,6 +681,8 @@ cr.define('device_page_tests', function() {
         var powerSourceRow;
         var powerSourceWrapper;
         var powerSourceSelect;
+        var idleSelect;
+        var lidClosedSelect;
 
         suiteSetup(function() {
           // Always show power settings.
@@ -646,6 +703,19 @@ cr.define('device_page_tests', function() {
                     1,
                     settings.DevicePageBrowserProxyImpl.getInstance()
                         .updatePowerStatusCalled_);
+
+                idleSelect = assert(powerPage.$$('#idleSelect'));
+                lidClosedSelect = assert(powerPage.$$('#lidClosedSelect'));
+
+                assertEquals(
+                    1,
+                    settings.DevicePageBrowserProxyImpl.getInstance()
+                    .requestPowerManagementSettingsCalled_);
+                sendPowerManagementSettings(
+                    settings.IdleBehavior.DISPLAY_OFF_SLEEP,
+                    false /* idleControlled */,
+                    settings.LidClosedBehavior.SUSPEND,
+                    false /* lidClosedControlled */, true /* hasLid */);
               });
         });
 
@@ -713,12 +783,109 @@ cr.define('device_page_tests', function() {
           Polymer.dom.flush();
 
           // Select the device.
-          powerSourceSelect.value = powerSourceSelect.children[1].value;
-          powerSourceSelect.dispatchEvent(new CustomEvent('change'));
-          Polymer.dom.flush();
+          selectValue(powerSourceSelect, powerSourceSelect.children[1].value);
           expectEquals(
               powerSource.id,
               settings.DevicePageBrowserProxyImpl.getInstance().powerSourceId_);
+        });
+
+        test('set idle behavior', function() {
+          selectValue(idleSelect, settings.IdleBehavior.DISPLAY_ON);
+          expectEquals(
+              settings.IdleBehavior.DISPLAY_ON,
+              settings.DevicePageBrowserProxyImpl.getInstance().idleBehavior_);
+
+          selectValue(idleSelect, settings.IdleBehavior.DISPLAY_OFF_STAY_AWAKE);
+          expectEquals(
+              settings.IdleBehavior.DISPLAY_OFF_STAY_AWAKE,
+              settings.DevicePageBrowserProxyImpl.getInstance().idleBehavior_);
+        });
+
+        test('set lid behavior', function() {
+          selectValue(lidClosedSelect, settings.LidClosedBehavior.DO_NOTHING);
+          expectEquals(
+              settings.LidClosedBehavior.DO_NOTHING,
+              settings.DevicePageBrowserProxyImpl.getInstance()
+                  .lidClosedBehavior_);
+
+          selectValue(lidClosedSelect, settings.LidClosedBehavior.SUSPEND);
+          expectEquals(
+              settings.LidClosedBehavior.SUSPEND,
+              settings.DevicePageBrowserProxyImpl.getInstance()
+                  .lidClosedBehavior_);
+        });
+
+        test('display idle and lid behavior', function() {
+          return new Promise(function(resolve) {
+            sendPowerManagementSettings(
+                settings.IdleBehavior.DISPLAY_ON, false /* idleControlled */,
+                settings.LidClosedBehavior.DO_NOTHING,
+                false /* lidClosedControlled */, true /* hasLid */);
+            powerPage.async(resolve);
+          }).then(function() {
+            expectEquals(
+                settings.IdleBehavior.DISPLAY_ON.toString(), idleSelect.value);
+            expectFalse(idleSelect.disabled);
+            expectEquals(null, powerPage.$$('#idleControlledIndicator'));
+            expectEquals(
+                settings.LidClosedBehavior.DO_NOTHING.toString(),
+                lidClosedSelect.value);
+            expectFalse(lidClosedSelect.disabled);
+            expectEquals(null, powerPage.$$('#lidClosedControlledIndicator'));
+          }).then(function() {
+            sendPowerManagementSettings(
+                settings.IdleBehavior.DISPLAY_OFF_STAY_AWAKE,
+                false /* idleControlled */, settings.LidClosedBehavior.SUSPEND,
+                false /* lidClosedControlled */, true /* hasLid */);
+            return new Promise(function(resolve) { powerPage.async(resolve); });
+          }).then(function() {
+            expectEquals(
+                settings.IdleBehavior.DISPLAY_OFF_STAY_AWAKE.toString(),
+                idleSelect.value);
+            expectFalse(idleSelect.disabled);
+            expectEquals(null, powerPage.$$('#idleControlledIndicator'));
+            expectEquals(
+                settings.LidClosedBehavior.SUSPEND.toString(),
+                lidClosedSelect.value);
+            expectFalse(lidClosedSelect.disabled);
+            expectEquals(null, powerPage.$$('#lidClosedControlledIndicator'));
+          });
+        });
+
+        test('display controlled idle and lid behavior', function() {
+          // When settings are controlled, the selects should be disabled and
+          // the indicators should be shown.
+          return new Promise(function(resolve) {
+            sendPowerManagementSettings(
+                settings.IdleBehavior.OTHER, true /* idleControlled */,
+                settings.LidClosedBehavior.SUSPEND,
+                true /* lidClosedControlled */, true /* hasLid */);
+            powerPage.async(resolve);
+          }).then(function() {
+            expectEquals(
+                settings.IdleBehavior.OTHER.toString(), idleSelect.value);
+            expectTrue(idleSelect.disabled);
+            expectNotEquals(null, powerPage.$$('#idleControlledIndicator'));
+            expectEquals(
+                settings.LidClosedBehavior.SUSPEND.toString(),
+                lidClosedSelect.value);
+            expectTrue(lidClosedSelect.disabled);
+            expectNotEquals(
+                null, powerPage.$$('#lidClosedControlledIndicator'));
+          });
+        });
+
+        test('hide lid behavior when lid not present', function() {
+          return new Promise(function(resolve) {
+            expectFalse(powerPage.$$('#lidClosedRow').hidden);
+            sendPowerManagementSettings(
+                settings.IdleBehavior.DISPLAY_OFF_SLEEP,
+                false /* idleControlled */, settings.LidClosedBehavior.SUSPEND,
+                false /* lidClosedControlled */, false /* hasLid */);
+            powerPage.async(resolve);
+          }).then(function() {
+            expectTrue(powerPage.$$('#lidClosedRow').hidden);
+          });
         });
       });
     });

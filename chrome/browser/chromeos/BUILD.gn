@@ -1871,6 +1871,7 @@ source_set("unit_tests") {
     "../ui/webui/chromeos/login/l10n_util_unittest.cc",
     "../ui/webui/chromeos/login/oobe_display_chooser_unittest.cc",
     "../ui/webui/chromeos/login/signin_userlist_unittest.cc",
+    "../ui/webui/settings/chromeos/device_power_handler_unittest.cc",
     "../ui/webui/settings/chromeos/easy_unlock_settings_handler_unittest.cc",
     "//components/drive/change_list_loader_unittest.cc",
     "//components/drive/change_list_processor_unittest.cc",

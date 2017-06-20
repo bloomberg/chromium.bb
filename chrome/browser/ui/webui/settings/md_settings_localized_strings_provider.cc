@@ -748,7 +748,19 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"powerSourceAcAdapter", IDS_SETTINGS_POWER_SOURCE_AC_ADAPTER},
       {"powerSourceLowPowerCharger",
        IDS_SETTINGS_POWER_SOURCE_LOW_POWER_CHARGER},
-      {"calculatingPower", IDS_SETTINGS_POWER_SOURCE_CALCULATING}};
+      {"calculatingPower", IDS_SETTINGS_POWER_SOURCE_CALCULATING},
+      {"powerIdleLabel", IDS_SETTINGS_POWER_IDLE_LABEL},
+      {"powerIdleDisplayOffSleep", IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF_SLEEP},
+      {"powerIdleDisplayOffStayAwake",
+       IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF_STAY_AWAKE},
+      {"powerIdleDisplayOn", IDS_SETTINGS_POWER_IDLE_DISPLAY_ON},
+      {"powerIdleOther", IDS_SETTINGS_POWER_IDLE_OTHER},
+      {"powerLidClosedLabel", IDS_SETTINGS_POWER_LID_CLOSED_LABEL},
+      {"powerLidClosedSleep", IDS_SETTINGS_POWER_LID_CLOSED_SLEEP},
+      {"powerLidClosedStayAwake", IDS_SETTINGS_POWER_LID_CLOSED_STAY_AWAKE},
+      {"powerLidClosedSignOut", IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT},
+      {"powerLidClosedShutDown", IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN},
+  };
   AddLocalizedStringsBulk(html_source, power_strings, arraysize(power_strings));
 
   html_source->AddString("naturalScrollLearnMoreLink",

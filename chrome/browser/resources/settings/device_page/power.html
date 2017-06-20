@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
@@ -33,6 +34,48 @@
       </div>
       <div hidden$="[[showPowerSourceDropdown_]]">
         [[powerSourceName_]]
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <div class="start">$i18n{powerIdleLabel}</div>
+      <template is="dom-if" if="[[idleControlled_]]" restamp>
+        <cr-policy-indicator id="idleControlledIndicator"
+            indicator-type="devicePolicy"
+            icon-aria-label="$i18n{powerIdleLabel}">
+        </cr-policy-indicator>
+      </template>
+      <div class="md-select-wrapper">
+        <select id="idleSelect" class="md-select"
+            on-change="onIdleSelectChange_" disabled="[[idleControlled_]]"
+            aria-label="$i18n{powerIdleLabel}">
+          <template is="dom-repeat" items="[[idleOptions_]]">
+            <option value="[[item.value]]">[[item.name]]</option>
+          </template>
+        </select>
+        <span class="md-select-underline"></span>
+      </div>
+    </div>
+
+    <div id="lidClosedRow" class="settings-box continuation"
+        hidden$="[[!hasLid_]]">
+      <div class="start">$i18n{powerLidClosedLabel}</div>
+      <template is="dom-if" if="[[lidClosedControlled_]]" restamp>
+        <cr-policy-indicator id="lidClosedControlledIndicator"
+            indicator-type="devicePolicy"
+            icon-aria-label="$i18n{powerLidClosedLabel}">
+        </cr-policy-indicator>
+      </template>
+      <div class="md-select-wrapper">
+        <select id="lidClosedSelect" class="md-select"
+            on-change="onLidClosedSelectChange_"
+            disabled="[[lidClosedControlled_]]"
+            aria-label="$i18n{powerLidClosedLabel}">
+          <template is="dom-repeat" items="[[lidClosedOptions_]]">
+            <option value="[[item.value]]">[[item.name]]</option>
+          </template>
+        </select>
+        <span class="md-select-underline"></span>
       </div>
     </div>
   </template>
