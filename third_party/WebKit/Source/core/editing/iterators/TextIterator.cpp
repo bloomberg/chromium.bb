@@ -79,10 +79,14 @@ TextIteratorBehavior AdjustBehaviorFlags<EditingInFlatTreeStrategy>(
       .Build();
 }
 
+static inline bool HasDisplayContents(const Node& node) {
+  return node.IsElementNode() && ToElement(node).HasDisplayContentsStyle();
+}
+
 // Checks if |advance()| skips the descendants of |node|, which is the case if
 // |node| is neither a shadow root nor the owner of a layout object.
 static bool NotSkipping(const Node& node) {
-  return node.GetLayoutObject() ||
+  return node.GetLayoutObject() || HasDisplayContents(node) ||
          (node.IsShadowRoot() && node.OwnerShadowHost()->GetLayoutObject());
 }
 
@@ -293,13 +297,13 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 
     LayoutObject* layout_object = node_->GetLayoutObject();
     if (!layout_object) {
-      if (node_->IsShadowRoot()) {
-        // A shadow root doesn't have a layoutObject, but we want to visit
-        // children anyway.
+      if (node_->IsShadowRoot() || HasDisplayContents(*node_)) {
+        // Shadow roots or display: contents elements don't have LayoutObjects,
+        // but we want to visit children anyway.
         iteration_progress_ = iteration_progress_ < kHandledNode
                                   ? kHandledNode
                                   : iteration_progress_;
-        handle_shadow_root_ = true;
+        handle_shadow_root_ = node_->IsShadowRoot();
       } else {
         iteration_progress_ = kHandledChildren;
       }

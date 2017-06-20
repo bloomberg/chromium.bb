@@ -934,4 +934,12 @@ TEST_F(TextIteratorTest, StartAtRemainingTextInPre) {
   EXPECT_EQ("xyz", String(buffer.Data()));
 }
 
+TEST_F(TextIteratorTest, VisitsDisplayContentsChildren) {
+  SetBodyContent(
+      "<p>Hello, \ntext</p><p style='display: contents'>iterator.</p>");
+
+  EXPECT_EQ("[Hello, ][text][iterator.]", Iterate<DOMTree>());
+  EXPECT_EQ("[Hello, ][text][iterator.]", Iterate<FlatTree>());
+}
+
 }  // namespace blink
