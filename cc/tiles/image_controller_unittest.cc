@@ -129,6 +129,7 @@ class TestableCache : public ImageDecodeCache {
   void SetShouldAggressivelyFreeResources(
       bool aggressively_free_resources) override {}
   void ClearCache() override {}
+  void NotifyImageUnused(uint32_t skimage_id) override {}
   size_t GetMaximumMemoryLimitBytes() const override {
     return 256 * 1024 * 1024;
   }

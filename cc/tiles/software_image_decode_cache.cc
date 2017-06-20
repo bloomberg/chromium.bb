@@ -856,6 +856,10 @@ size_t SoftwareImageDecodeCache::GetMaximumMemoryLimitBytes() const {
   return locked_images_budget_.total_limit_bytes();
 }
 
+void SoftwareImageDecodeCache::NotifyImageUnused(uint32_t skimage_id) {
+  // TODO(sohanjg) :Implement it, crbug.com/734982.
+}
+
 void SoftwareImageDecodeCache::RemovePendingTask(const ImageKey& key,
                                                  DecodeTaskType task_type) {
   base::AutoLock lock(lock_);

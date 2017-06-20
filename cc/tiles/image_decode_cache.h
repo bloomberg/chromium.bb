@@ -124,6 +124,12 @@ class CC_EXPORT ImageDecodeCache {
   // memory. It is used as an esimate of whether an image can fit into the
   // locked budget before creating a task.
   virtual size_t GetMaximumMemoryLimitBytes() const = 0;
+
+  // Indicate to the cache that the image is no longer going
+  // to be used. This means it can be deleted altogether. If the
+  // image is locked, then the cache can do its best to clean it
+  // up later.
+  virtual void NotifyImageUnused(uint32_t skimage_id) = 0;
 };
 
 }  // namespace cc

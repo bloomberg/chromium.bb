@@ -659,6 +659,23 @@ size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
   return normal_max_cache_bytes_;
 }
 
+void GpuImageDecodeCache::NotifyImageUnused(uint32_t skimage_id) {
+  auto it = persistent_cache_.Peek(skimage_id);
+  if (it != persistent_cache_.end()) {
+    if (it->second->decode.ref_count != 0 ||
+        it->second->upload.ref_count != 0) {
+      it->second->is_orphaned = true;
+    } else if (it->second->upload.image()) {
+      DCHECK(!it->second->decode.is_locked());
+      bytes_used_ -= it->second->size;
+      images_pending_deletion_.push_back(it->second->upload.image());
+      it->second->upload.SetImage(nullptr);
+      it->second->upload.budgeted = false;
+    }
+    persistent_cache_.Erase(it);
+  }
+}
+
 bool GpuImageDecodeCache::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
