@@ -37,7 +37,7 @@ namespace blink {
 TypeAhead::TypeAhead(TypeAheadDataSource* data_source)
     : data_source_(data_source), repeating_char_(0) {}
 
-static const TimeDelta kTypeAheadTimeout = TimeDelta::FromSecondsD(1);
+constexpr TimeDelta kTypeAheadTimeout = TimeDelta::FromSecondsD(1);
 
 static String StripLeadingWhiteSpace(const String& string) {
   unsigned length = string.length();

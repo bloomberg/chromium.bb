@@ -42,7 +42,7 @@ namespace blink {
 namespace {
 
 // A mapping from the algorithm ID to information about the algorithm.
-const WebCryptoAlgorithmInfo kAlgorithmIdToInfo[] = {
+constexpr WebCryptoAlgorithmInfo kAlgorithmIdToInfo[] = {
     {// Index 0
      "AES-CBC",
      {

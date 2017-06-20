@@ -16,7 +16,7 @@ namespace content {
 namespace {
 
 const size_t kTenSeconds = 10 * 1000 * 1000;
-const base::TimeDelta kMaxRafDelay =
+constexpr base::TimeDelta kMaxRafDelay =
     base::TimeDelta::FromMilliseconds(5 * 1000);
 
 class QueuedClosure : public MainThreadEventQueueTask {
@@ -40,7 +40,7 @@ class QueuedClosure : public MainThreadEventQueueTask {
 
 // Time interval at which touchmove events during scroll will be skipped
 // during rAF signal.
-const base::TimeDelta kAsyncTouchMoveInterval =
+constexpr base::TimeDelta kAsyncTouchMoveInterval =
     base::TimeDelta::FromMilliseconds(200);
 
 }  // namespace

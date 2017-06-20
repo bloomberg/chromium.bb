@@ -62,11 +62,11 @@ const double kFakeMouseMoveInterval = 0.1;
 #if OS(MACOSX)
 const int kDragThresholdX = 3;
 const int kDragThresholdY = 3;
-const TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.15);
+constexpr TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.15);
 #else
 const int kDragThresholdX = 4;
 const int kDragThresholdY = 4;
-const TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.0);
+constexpr TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.0);
 #endif
 
 }  // namespace

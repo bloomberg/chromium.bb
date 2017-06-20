@@ -197,7 +197,7 @@ static void RecordPairedEndDisplayItems(const Vector<int>& needed_restores,
   }
 }
 
-static gfx::Rect g_large_rect(-200000, -200000, 400000, 400000);
+constexpr gfx::Rect g_large_rect(-200000, -200000, 400000, 400000);
 static void AppendDisplayItemToCcDisplayItemList(
     const DisplayItem& display_item,
     cc::DisplayItemList& cc_list) {
