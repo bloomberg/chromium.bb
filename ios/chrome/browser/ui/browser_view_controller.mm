@@ -4404,7 +4404,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)updateFindBar:(BOOL)initialUpdate shouldFocus:(BOOL)shouldFocus {
-  DCHECK([_model currentTab]);
+  // TODO(crbug.com/731045): This early return temporarily replaces a DCHECK.
+  // For unknown reasons, this DCHECK sometimes was hit in the wild, resulting
+  // in a crash.
+  if (![_model currentTab]) {
+    return;
+  }
   auto* helper = FindTabHelper::FromWebState([_model currentTab].webState);
   if (helper && helper->IsFindUIActive()) {
     if (initialUpdate && !_isOffTheRecord) {
