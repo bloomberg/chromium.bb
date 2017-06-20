@@ -261,3 +261,8 @@ class PolymerPageSet(story.StorySet):
               PolymerPage.RunPageInteractions), (
               'Pages in this page set must not override PolymerPage\' '
               'RunPageInteractions method.')
+
+
+class PolymerRasterizeAndRecordStoryExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass # No tests disabled.
