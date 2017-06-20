@@ -107,3 +107,9 @@ class Speedometer(perf_benchmark.PerfBenchmark):
         make_javascript_deterministic=False,
         name='http://browserbench.org/Speedometer/'))
     return ps
+
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # http://browserbench.org/Speedometer/ not disabled.
+    return StoryExpectations()
