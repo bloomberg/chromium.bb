@@ -192,36 +192,36 @@ Polymer({
   },
 
   /**
-   * Pads the given number |num| with leading zeros such that its length as a
-   * string is 2.
-   * @param {number} num
+   * Converts the time of day, given as |hour| and |minutes|, to its language-
+   * sensitive time string representation.
+   * @param {number} hour The hour of the day (0 - 23).
+   * @param {number} minutes The minutes of the hour (0 - 59).
    * @return {string}
    * @private
    */
-  pad2_: function(num) {
-    var s = String(num);
-    if (s.length == 2)
-      return s;
+  getLocaleTimeString_: function(hour, minutes) {
+    var d = new Date();
+    d.setHours(hour);
+    d.setMinutes(minutes);
+    d.setSeconds(0);
+    d.setMilliseconds(0);
 
-    return '0' + s;
+    return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   },
 
   /**
    * Converts the |offsetMinutes| value (which the number of minutes since
-   * 00:00) to its string representation in the format 6:30 PM.
+   * 00:00) to its language-sensitive time string representation.
    * @param {number} offsetMinutes The time of day represented as the number of
    * minutes from 00:00.
    * @return {string}
    * @private
    */
   offsetMinutesToTimeString_: function(offsetMinutes) {
-    // TODO(afakhry): Check if these values need to be localized.
     var hour = Math.floor(offsetMinutes / 60);
-    var amPm = hour >= 12 ? ' PM' : ' AM';
-    hour %= 12;
-    hour = hour == 0 ? 12 : hour;
     var minute = Math.floor(offsetMinutes % 60);
-    return hour + ':' + this.pad2_(minute) + amPm;
+
+    return this.getLocaleTimeString_(hour, minute);
   },
 
   /**
