@@ -2967,6 +2967,30 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
     )
 
 
+def FactoryBuilders(site_config, boards_dict, ge_build_config):
+  """Create all factory build configs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    boards_dict: A dict mapping board types to board name collections.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+  """
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
+
+  _factory_boards = _arm_internal_release_boards | _x86_internal_release_boards
+  _factory_boards -= _nofactory_boards
+
+  for board in _factory_boards:
+    site_config.Add(
+        '%s-%s' % (board, config_lib.CONFIG_TYPE_FACTORY),
+        site_config.templates.factory,
+        board_configs[board],
+        site_config.templates.no_vmtest_builder,
+    )
+
+
 def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   """Create all release builders.
 
@@ -3478,14 +3502,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       prebuilts=False,
   )
 
-  # This is an example factory branch configuration.
-  # Modify it to match your factory branch.
-  site_config.Add(
-      'x86-mario-factory',
-      site_config.templates.factory,
-      boards=['x86-mario'],
-  )
-
 
 def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
   """Make sure VMTests have a builder than can run them.
@@ -3539,6 +3555,8 @@ def GetConfig():
   InformationalBuilders(site_config, boards_dict, ge_build_config)
 
   FirmwareBuilders(site_config, boards_dict, ge_build_config)
+
+  FactoryBuilders(site_config, boards_dict, ge_build_config)
 
   AndroidPfqBuilders(site_config, boards_dict, ge_build_config)
 
