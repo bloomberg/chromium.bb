@@ -460,8 +460,14 @@ TEST_F(TabManagerTest, ActivateTabResetPurgeState) {
   TabStripDummyDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
   tabstrip.AddObserver(&tab_manager);
-  tab_manager.test_tab_strip_models_.push_back(
-      TabManager::TestTabStripModel(&tabstrip, false /* !is_app */));
+
+  TabManager::BrowserInfo browser_info;
+  browser_info.tab_strip_model = &tabstrip;
+  browser_info.window_is_active = true;
+  browser_info.window_is_minimized = false;
+  browser_info.window_bounds = gfx::Rect(0, 0, 0, 0);
+  browser_info.browser_is_app = false;
+  tab_manager.test_browser_info_list_.push_back(browser_info);
 
   base::SimpleTestTickClock test_clock;
   tab_manager.set_test_tick_clock(&test_clock);
@@ -490,6 +496,86 @@ TEST_F(TabManagerTest, ActivateTabResetPurgeState) {
   // Activate tab2. Tab2's PurgeAndSuspend state should be NOT_PURGED.
   tabstrip.ActivateTabAt(1, true /* user_gesture */);
   EXPECT_FALSE(tab_manager.GetWebContentsData(tab2)->is_purged());
+}
+
+// Verify that the |is_in_visible_window| field of TabStats returned by
+// GetUnsortedTabStats() is set correctly.
+TEST_F(TabManagerTest, GetUnsortedTabStatsIsInVisibleWindow) {
+  TabManager tab_manager;
+  TabStripDummyDelegate delegate;
+
+  WebContents* web_contents1a = CreateWebContents();
+  WebContents* web_contents1b = CreateWebContents();
+  WebContents* web_contents2a = CreateWebContents();
+  WebContents* web_contents2b = CreateWebContents();
+  WebContents* web_contents3a = CreateWebContents();
+  WebContents* web_contents3b = CreateWebContents();
+
+  // Create 3 TabStripModels.
+  TabStripModel tab_strip1(&delegate, profile());
+  tab_strip1.AppendWebContents(web_contents1a, true);
+  tab_strip1.AppendWebContents(web_contents1b, false);
+
+  TabStripModel tab_strip2(&delegate, profile());
+  tab_strip2.AppendWebContents(web_contents2a, true);
+  tab_strip2.AppendWebContents(web_contents2b, false);
+
+  TabStripModel tab_strip3(&delegate, profile());
+  tab_strip3.AppendWebContents(web_contents3a, true);
+  tab_strip3.AppendWebContents(web_contents3b, false);
+
+  // Add the 3 TabStripModels to the TabManager.
+  // The window for |tab_strip1| covers the window for |tab_strip2|. The window
+  // for |tab_strip3| is minimized.
+  TabManager::BrowserInfo browser_info1;
+  browser_info1.tab_strip_model = &tab_strip1;
+  browser_info1.window_is_active = true;
+  browser_info1.window_is_minimized = false;
+  browser_info1.window_bounds = gfx::Rect(0, 0, 100, 100);
+  browser_info1.browser_is_app = false;
+  tab_manager.test_browser_info_list_.push_back(browser_info1);
+
+  TabManager::BrowserInfo browser_info2;
+  browser_info2.tab_strip_model = &tab_strip2;
+  browser_info2.window_is_active = false;
+  browser_info2.window_is_minimized = false;
+  browser_info2.window_bounds = gfx::Rect(10, 10, 50, 50);
+  browser_info2.browser_is_app = false;
+  tab_manager.test_browser_info_list_.push_back(browser_info2);
+
+  TabManager::BrowserInfo browser_info3;
+  browser_info3.tab_strip_model = &tab_strip3;
+  browser_info3.window_is_active = false;
+  browser_info3.window_is_minimized = true;
+  browser_info3.window_bounds = gfx::Rect();
+  browser_info3.browser_is_app = false;
+  tab_manager.test_browser_info_list_.push_back(browser_info3);
+
+  // Get TabStats and verify the the |is_in_visible_window| field of each
+  // TabStats is set correctly.
+  auto tab_stats = tab_manager.GetUnsortedTabStats();
+
+  ASSERT_EQ(6U, tab_stats.size());
+
+  EXPECT_EQ(tab_stats[0].tab_contents_id,
+            tab_manager.IdFromWebContents(web_contents1a));
+  EXPECT_EQ(tab_stats[1].tab_contents_id,
+            tab_manager.IdFromWebContents(web_contents1b));
+  EXPECT_EQ(tab_stats[2].tab_contents_id,
+            tab_manager.IdFromWebContents(web_contents2a));
+  EXPECT_EQ(tab_stats[3].tab_contents_id,
+            tab_manager.IdFromWebContents(web_contents2b));
+  EXPECT_EQ(tab_stats[4].tab_contents_id,
+            tab_manager.IdFromWebContents(web_contents3a));
+  EXPECT_EQ(tab_stats[5].tab_contents_id,
+            tab_manager.IdFromWebContents(web_contents3b));
+
+  EXPECT_TRUE(tab_stats[0].is_in_visible_window);
+  EXPECT_TRUE(tab_stats[1].is_in_visible_window);
+  EXPECT_FALSE(tab_stats[2].is_in_visible_window);
+  EXPECT_FALSE(tab_stats[3].is_in_visible_window);
+  EXPECT_FALSE(tab_stats[4].is_in_visible_window);
+  EXPECT_FALSE(tab_stats[5].is_in_visible_window);
 }
 
 }  // namespace resource_coordinator
