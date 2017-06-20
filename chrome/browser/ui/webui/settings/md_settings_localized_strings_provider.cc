@@ -1915,6 +1915,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"noSitesAdded", IDS_SETTINGS_SITE_NO_SITES_ADDED},
     {"siteSettingsAds", IDS_SETTINGS_SITE_SETTINGS_ADS},
     {"siteSettingsAdsBlock", IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK},
+    {"siteSettingsAdsBlockRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_RECOMMENDED},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
