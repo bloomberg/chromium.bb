@@ -191,7 +191,6 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   static int LastOffsetInNode(Node* anchor_node);
   static PositionTemplate<Strategy> FirstPositionInNode(Node* anchor_node);
   static PositionTemplate<Strategy> LastPositionInNode(Node* anchor_node);
-  static int MinOffsetForNode(Node* anchor_node, int offset);
   static PositionTemplate<Strategy> FirstPositionInOrBeforeNode(
       Node* anchor_node);
   static PositionTemplate<Strategy> LastPositionInOrAfterNode(
