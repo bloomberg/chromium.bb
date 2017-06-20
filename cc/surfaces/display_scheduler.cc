@@ -275,11 +275,7 @@ void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
     NOTIMPLEMENTED();
 }
 
-void DisplayScheduler::OnSurfaceCreated(const SurfaceInfo& surface_info) {
-  SurfaceId surface_id = surface_info.id();
-  DCHECK(!base::ContainsKey(surface_states_, surface_id));
-  surface_states_[surface_id] = SurfaceBeginFrameState();
-}
+void DisplayScheduler::OnSurfaceCreated(const SurfaceInfo& surface_info) {}
 
 void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
   auto it = surface_states_.find(surface_id);
@@ -306,10 +302,12 @@ void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                                const BeginFrameArgs& args) {
   TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamageExpected", "surface_id",
                surface_id.ToString());
-  auto it = surface_states_.find(surface_id);
-  if (it == surface_states_.end())
-    return;
-  it->second.last_args = args;
+  // Insert a new state for the surface if we don't know of it yet. We don't use
+  // OnSurfaceCreated for this, because it may not be called if a
+  // CompositorFrameSinkSupport starts submitting frames to a different Display,
+  // but continues using the same Surface, or if a Surface does not activate its
+  // first CompositorFrame immediately.
+  surface_states_[surface_id].last_args = args;
   if (UpdateHasPendingSurfaces())
     ScheduleBeginFrameDeadline();
 }
