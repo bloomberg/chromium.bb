@@ -71,6 +71,9 @@ the changes refer to [[https://github.com/liblouis/liblouis/milestone/10?closed=
 ** Backwards incompatible changes
 - The old Greek table gr-gr-g1.utb is gone. Use el.ctb instead
 - The doctests are gone. They have been superseded by the YAML tests.
+- The internal API which was previously in louis.h has been made
+  internal, i.e. the file is renamed to internal.h and the function
+  names are prepended with underscores ('_').
 
 ** New, renamed or removed tables
 *** New
