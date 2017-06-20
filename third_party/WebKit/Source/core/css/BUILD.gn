@@ -498,6 +498,8 @@ blink_core_sources("css") {
     "properties/CSSPropertyAnimationNameUtils.h",
     "properties/CSSPropertyBorderImageUtils.cpp",
     "properties/CSSPropertyBorderImageUtils.h",
+    "properties/CSSPropertyBoxShadowUtils.cpp",
+    "properties/CSSPropertyBoxShadowUtils.h",
     "properties/CSSPropertyColumnUtils.cpp",
     "properties/CSSPropertyColumnUtils.h",
     "properties/CSSPropertyCounterUtils.cpp",
