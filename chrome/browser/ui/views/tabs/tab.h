@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/timer/timer.h"
 #include "cc/paint/paint_record.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
@@ -94,8 +95,8 @@ class Tab : public gfx::AnimationDelegate,
   void SetData(const TabRendererData& data);
   const TabRendererData& data() const { return data_; }
 
-  // Sets the network state.
-  void UpdateLoadingAnimation(TabRendererData::NetworkState state);
+  // Redraws the loading animation if one is visible. Otherwise, no-op.
+  void StepLoadingAnimation();
 
   // Starts/Stops a pulse animation.
   void StartPulse();
@@ -259,8 +260,11 @@ class Tab : public gfx::AnimationDelegate,
   // Paints the favicon, mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
 
-  // Invoked if data_.network_state changes, or the network_state is not none.
-  void AdvanceLoadingAnimation();
+  // Updates the throbber.
+  void UpdateThrobber(const TabRendererData& old);
+
+  // Sets the throbber visibility according to the state in |data_|.
+  void RefreshThrobber();
 
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.
@@ -362,6 +366,11 @@ class Tab : public gfx::AnimationDelegate,
   // data().favicon and may be modified for theming. It is created on demand
   // and thus may be null.
   gfx::ImageSkia favicon_;
+
+  // This timer allows us to delay updating the visibility of the loading
+  // indicator so that state changes of a very brief duration aren't visually
+  // apparent to the user.
+  base::OneShotTimer delayed_throbber_show_timer_;
 
   class BackgroundCache {
    public:

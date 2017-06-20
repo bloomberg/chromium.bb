@@ -313,16 +313,8 @@ void BrowserTabStripController::ShowContextMenuForTab(
 }
 
 void BrowserTabStripController::UpdateLoadingAnimations() {
-  // Don't use the model count here as it's possible for this to be invoked
-  // before we've applied an update from the model (Browser::TabInsertedAt may
-  // be processed before us and invokes this).
-  for (int i = 0, tab_count = tabstrip_->tab_count(); i < tab_count; ++i) {
-    if (model_->ContainsIndex(i)) {
-      Tab* tab = tabstrip_->tab_at(i);
-      WebContents* contents = model_->GetWebContentsAt(i);
-      tab->UpdateLoadingAnimation(TabContentsNetworkState(contents));
-    }
-  }
+  for (int i = 0, tab_count = tabstrip_->tab_count(); i < tab_count; ++i)
+    tabstrip_->tab_at(i)->StepLoadingAnimation();
 }
 
 int BrowserTabStripController::HasAvailableDragActions() const {
