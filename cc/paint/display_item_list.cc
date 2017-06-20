@@ -73,8 +73,7 @@ void DisplayItemList::Finalize() {
   paint_op_buffer_.ShrinkToFit();
   rtree_.Build(visual_rects_);
 
-  if (!retain_visual_rects_)
-    visual_rects_.clear();
+  visual_rects_.clear();
   visual_rects_.shrink_to_fit();
   begin_paired_indices_.shrink_to_fit();
 }
@@ -110,15 +109,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     state->BeginArray("items");
 
     for (size_t i = 0; i < paint_op_buffer_.size(); ++i) {
-      gfx::Rect visual_rect = visual_rects_[i];
-
       state->BeginDictionary();
-      state->BeginArray("visualRect");
-      state->AppendInteger(visual_rect.x());
-      state->AppendInteger(visual_rect.y());
-      state->AppendInteger(visual_rect.width());
-      state->AppendInteger(visual_rect.height());
-      state->EndArray();
 
       SkPictureRecorder recorder;
       SkCanvas* canvas =
@@ -130,6 +121,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
       std::string b64_picture;
       PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);
       state->SetString("skp64", b64_picture);
+
       state->EndDictionary();
     }
 

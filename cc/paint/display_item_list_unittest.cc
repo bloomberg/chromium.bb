@@ -380,7 +380,6 @@ TEST(DisplayItemListTest, BytesUsed) {
 
 TEST(DisplayItemListTest, AsValueWithNoOps) {
   auto list = make_scoped_refptr(new DisplayItemList);
-  list->SetRetainVisualRectsForTesting(true);
   list->Finalize();
 
   // Pass |true| to ask for PaintOps even though there are none.
@@ -442,7 +441,6 @@ TEST(DisplayItemListTest, AsValueWithNoOps) {
 TEST(DisplayItemListTest, AsValueWithOps) {
   gfx::Rect layer_rect = gfx::Rect(1, 2, 8, 9);
   auto list = make_scoped_refptr(new DisplayItemList);
-  list->SetRetainVisualRectsForTesting(true);
   gfx::Transform transform;
   transform.Translate(6.f, 7.f);
 
@@ -505,20 +503,12 @@ TEST(DisplayItemListTest, AsValueWithOps) {
 
       for (int i = 0; i < 6; ++i) {
         const base::DictionaryValue* item_dict;
-        const base::ListValue* visual_rect_list;
 
         ASSERT_TRUE(list->GetDictionary(i, &item_dict));
 
         // The SkPicture for each item exists.
         EXPECT_TRUE(
             item_dict->GetString("skp64", static_cast<std::string*>(nullptr)));
-        // The range has a visual rect, it is the same for each item here.
-        EXPECT_TRUE(item_dict->GetList("visualRect", &visual_rect_list));
-        ASSERT_EQ(4u, visual_rect_list->GetSize());
-        EXPECT_TRUE(visual_rect_list->GetDouble(0, &d) && d == 2) << d;
-        EXPECT_TRUE(visual_rect_list->GetDouble(1, &d) && d == 3) << d;
-        EXPECT_TRUE(visual_rect_list->GetDouble(2, &d) && d == 8) << d;
-        EXPECT_TRUE(visual_rect_list->GetDouble(3, &d) && d == 9) << d;
       }
     }
   }
