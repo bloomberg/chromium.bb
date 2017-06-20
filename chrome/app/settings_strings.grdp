@@ -2104,6 +2104,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK" desc="The block label for ads in site settings.">
     Blocked on sites that tend to show intrusive ads
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_RECOMMENDED" desc="The block label for ads in site settings (with the 'recommended' suffix).">
+    Blocked on sites that tend to show intrusive ads (recommended)
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOAD_ASK" desc="The allow label for automatic download in site settings.">
     Ask when a site tries to download files automatically after the first file
   </message>

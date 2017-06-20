@@ -873,7 +873,7 @@ Your Google account may have other forms of browsing history like searches and a
         Blocked from some sites
       </message>
       <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ADS_BLOCK" desc="The Blocked string for the ads permission on Site Details">
-         Block if site tends to show intrusive ads
+         Block if site tends to show intrusive ads (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_LOCATION_ASK" desc="Summary text explaining that sites need to ask for permission before knowing location and that it is the recommended setting.">
         Ask before allowing sites to know your location (recommended)
