@@ -2240,7 +2240,8 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   // TODO(clamy): Remove this once we understand the reason behind the
   // back-forward PLT regression with PlzNavigate
   if ((info->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK) &&
-      IsResourceTypeFrame(info->GetResourceType())) {
+      IsResourceTypeFrame(info->GetResourceType()) &&
+      request->url().SchemeIsHTTPOrHTTPS()) {
     LogBackForwardNavigationFlagsHistogram(request->load_flags());
   }
 

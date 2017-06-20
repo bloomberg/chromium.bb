@@ -645,7 +645,7 @@ void ResourceLoader::CompleteResponseStarted() {
   // of PLT for b/f navigations in PlzNavigate.
   if ((info->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK) &&
       IsResourceTypeFrame(info->GetResourceType()) &&
-      !request_->url().SchemeIsBlob()) {
+      request_->url().SchemeIsHTTPOrHTTPS()) {
     UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.WasCached",
                           request_->was_cached());
   }
