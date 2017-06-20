@@ -31,11 +31,11 @@
 #ifndef AXObjectImpl_h
 #define AXObjectImpl_h
 
-#include "core/dom/AXObject.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/inspector/protocol/Accessibility.h"
 #include "modules/ModulesExport.h"
+#include "modules/accessibility/AXObject.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"

@@ -36,6 +36,8 @@ blink_modules_sources("accessibility") {
     "AXMockObject.h",
     "AXNodeObject.cpp",
     "AXNodeObject.h",
+    "AXObject.cpp",
+    "AXObject.h",
     "AXObjectCacheImpl.cpp",
     "AXObjectCacheImpl.h",
     "AXObjectImpl.cpp",
