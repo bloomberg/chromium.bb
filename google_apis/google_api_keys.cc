@@ -34,6 +34,10 @@
 #define GOOGLE_API_KEY DUMMY_API_TOKEN
 #endif
 
+#if !defined(GOOGLE_API_KEY_REMOTING)
+#define GOOGLE_API_KEY_REMOTING DUMMY_API_TOKEN
+#endif
+
 #if !defined(GOOGLE_CLIENT_ID_MAIN)
 #define GOOGLE_CLIENT_ID_MAIN DUMMY_API_TOKEN
 #endif
@@ -110,6 +114,14 @@ class APIKeyCache {
 #else
     api_key_non_stable_ = api_key_;
 #endif
+
+    api_key_remoting_ =
+        CalculateKeyValue(GOOGLE_API_KEY_REMOTING,
+                          STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING),
+                          NULL,
+                          std::string(),
+                          environment.get(),
+                          command_line);
 
     std::string default_client_id =
         CalculateKeyValue(GOOGLE_DEFAULT_CLIENT_ID,
@@ -198,6 +210,7 @@ class APIKeyCache {
   void set_api_key(const std::string& api_key) { api_key_ = api_key; }
 #endif
   std::string api_key_non_stable() const { return api_key_non_stable_; }
+  std::string api_key_remoting() const { return api_key_remoting_; }
 
   std::string GetClientID(OAuth2Client client) const {
     DCHECK_LT(client, CLIENT_NUM_ITEMS);
@@ -293,6 +306,7 @@ class APIKeyCache {
 
   std::string api_key_;
   std::string api_key_non_stable_;
+  std::string api_key_remoting_;
   std::string client_ids_[CLIENT_NUM_ITEMS];
   std::string client_secrets_[CLIENT_NUM_ITEMS];
 };
@@ -321,6 +335,10 @@ std::string GetAPIKey() {
 
 std::string GetNonStableAPIKey() {
   return g_api_key_cache.Get().api_key_non_stable();
+}
+
+std::string GetRemotingAPIKey() {
+  return g_api_key_cache.Get().api_key_remoting();
 }
 
 #if defined(OS_IOS)
