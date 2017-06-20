@@ -45,7 +45,7 @@ class AXMenuListPopup final : public AXMockObject {
   bool IsEnabled() const override;
   bool IsOffScreen() const override;
 
-  void DidUpdateActiveOption(int option_index);
+  void DidUpdateActiveOption(int option_index, bool fire_notifications = true);
   void DidShow();
   void DidHide();
   AXObjectImpl* ActiveDescendant() final;

@@ -31,3 +31,10 @@ function buildAccessibilityTree(accessibilityObject, indent, allAttributesRequir
 
     return true;
 }
+
+function traverseAccessibilityTree(accessibilityObject) {
+    var count = accessibilityObject.childrenCount;
+    for (var i = 0; i < count; i++)
+        traverseAccessibilityTree(accessibilityObject.childAtIndex(i));
+}
+

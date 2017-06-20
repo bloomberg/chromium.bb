@@ -31,7 +31,6 @@
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/layout/LayoutText.h"
@@ -445,11 +444,6 @@ static bool ShouldUpdateLayoutByReattaching(const Text& text_node,
   if (!text_node.GetDocument().ChildNeedsDistributionRecalc() &&
       !text_node.TextLayoutObjectIsNeeded(*text_layout_object->Style(),
                                           *text_layout_object->Parent())) {
-    return true;
-  }
-  // Check whether this node may be about to be redistributed.
-  if (text_node.ParentElementShadow() &&
-      text_node.ParentElementShadow()->NeedsDistributionRecalc()) {
     return true;
   }
   if (text_layout_object->IsTextFragment()) {
