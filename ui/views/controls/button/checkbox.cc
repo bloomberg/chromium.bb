@@ -14,7 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -143,8 +143,10 @@ void Checkbox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
-  std::unique_ptr<InkDrop> ink_drop = LabelButton::CreateInkDrop();
+  // Completely removes the highlight.
+  std::unique_ptr<InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
+  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
   return ink_drop;
 }
 
