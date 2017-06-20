@@ -89,6 +89,16 @@ using gn - see [crbug.com/611087](https://crbug.com/611087).
 
 ## Get the code
 
+First, configure Git:
+
+```shell
+$ git config --global user.name "My Name"
+$ git config --global user.email "my-name@chromium.org"
+$ git config --global core.autocrlf false
+$ git config --global core.filemode false
+$ git config --global branch.autosetuprebase always
+```
+
 Create a `chromium` directory for the checkout and change to it (you can call
 this whatever you like and put it wherever you like, as
 long as the full path has no spaces):
