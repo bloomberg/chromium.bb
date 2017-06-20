@@ -124,6 +124,8 @@ template("implement_content_app") {
         "android/app_jni_registrar.h",
         "android/child_process_service_impl.cc",
         "android/child_process_service_impl.h",
+        "android/content_child_process_service_delegate.cc",
+        "android/content_child_process_service_delegate.h",
         "android/content_jni_onload.cc",
         "android/content_main.cc",
         "android/content_main.h",

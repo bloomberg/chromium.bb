@@ -10,6 +10,7 @@ import android.os.IBinder;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.content.app.ChildProcessServiceImpl;
+import org.chromium.content.app.ContentChildProcessServiceDelegate;
 
 /**
  * This class exposes ChildProcessServiceImpl so that WebApkSandboxedProcessService can access it
@@ -20,7 +21,8 @@ public class WebApkChildProcessServiceImpl {
     private final ChildProcessServiceImpl mChildProcessServiceImpl;
 
     public WebApkChildProcessServiceImpl() {
-        mChildProcessServiceImpl = new ChildProcessServiceImpl();
+        mChildProcessServiceImpl =
+                new ChildProcessServiceImpl(new ContentChildProcessServiceDelegate());
     }
 
     @UsedByReflection("WebApkSandboxedProcessService")
