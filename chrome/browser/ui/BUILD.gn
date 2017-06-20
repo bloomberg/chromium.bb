@@ -475,6 +475,7 @@ split_static_library("ui") {
     "//chrome/browser:resource_prefetch_predictor_proto",
     "//chrome/browser/devtools",
     "//chrome/browser/engagement:mojo_bindings",
+    "//chrome/browser/safe_browsing",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
     "//chrome/common",
