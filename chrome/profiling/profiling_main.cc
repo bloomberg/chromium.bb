@@ -97,6 +97,8 @@ int ProfilingMain(const base::CommandLine& cmdline) {
   base::Process process = base::Process::Current();
   std::string pipe_id = base::IntToString(static_cast<int>(process.Pid()));
 
+  globals->GetMemlogConnectionManager()->StartConnections(pipe_id);
+
   if (!LaunchBrowser(cmdline, pipe_id))
     return 1;
 
