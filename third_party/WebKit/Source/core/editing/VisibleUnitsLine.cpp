@@ -85,6 +85,53 @@ ContainerNode* HighestEditableRoot(const Position& position,
   return HighestEditableRoot(position);
 }
 
+Node* PreviousNodeConsideringAtomicNodes(const Node& start) {
+  if (start.previousSibling()) {
+    Node* node = start.previousSibling();
+    while (!IsAtomicNode(node) && node->lastChild())
+      node = node->lastChild();
+    return node;
+  }
+  return start.parentNode();
+}
+
+Node* NextNodeConsideringAtomicNodes(const Node& start) {
+  if (!IsAtomicNode(&start) && start.hasChildren())
+    return start.firstChild();
+  if (start.nextSibling())
+    return start.nextSibling();
+  const Node* node = &start;
+  while (node && !node->nextSibling())
+    node = node->parentNode();
+  if (node)
+    return node->nextSibling();
+  return nullptr;
+}
+
+// Returns the previous leaf node or nullptr if there are no more. Delivers leaf
+// nodes as if the whole DOM tree were a linear chain of its leaf nodes.
+Node* PreviousAtomicLeafNode(const Node& start) {
+  Node* node = PreviousNodeConsideringAtomicNodes(start);
+  while (node) {
+    if (IsAtomicNode(node))
+      return node;
+    node = PreviousNodeConsideringAtomicNodes(*node);
+  }
+  return nullptr;
+}
+
+// Returns the next leaf node or nullptr if there are no more. Delivers leaf
+// nodes as if the whole DOM tree were a linear chain of its leaf nodes.
+Node* NextAtomicLeafNode(const Node& start) {
+  Node* node = NextNodeConsideringAtomicNodes(start);
+  while (node) {
+    if (IsAtomicNode(node))
+      return node;
+    node = NextNodeConsideringAtomicNodes(*node);
+  }
+  return nullptr;
+}
+
 Node* PreviousLeafWithSameEditability(Node* node, EditableType editable_type) {
   const bool editable = HasEditableStyle(*node, editable_type);
   for (Node* runner = PreviousAtomicLeafNode(*node); runner;
