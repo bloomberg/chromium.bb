@@ -115,9 +115,11 @@ cr.define('extensions', function() {
     return label;
   }
 
-  return {isEnabled: isEnabled,
-          userCanChangeEnablement: userCanChangeEnablement,
-          getItemSource: getItemSource,
-          getItemSourceString: getItemSourceString,
-          computeInspectableViewLabel: computeInspectableViewLabel};
+  return {
+    isEnabled: isEnabled,
+    userCanChangeEnablement: userCanChangeEnablement,
+    getItemSource: getItemSource,
+    getItemSourceString: getItemSourceString,
+    computeInspectableViewLabel: computeInspectableViewLabel
+  };
 });

@@ -75,6 +75,5 @@ cr.define('extensions', function() {
     },
   });
 
-  return {PackDialog: PackDialog,
-          PackDialogDelegate: PackDialogDelegate};
+  return {PackDialog: PackDialog, PackDialogDelegate: PackDialogDelegate};
 });

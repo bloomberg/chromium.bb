@@ -96,8 +96,7 @@ cr.define('extensions', function() {
       assert(path);
       var state = {url: path};
       var currentPage = this.getCurrentPage();
-      var isDialogNavigation =
-          currentPage.page == entry.page &&
+      var isDialogNavigation = currentPage.page == entry.page &&
           currentPage.extensionId == entry.extensionId;
       // Navigating to a dialog doesn't visually change pages; it just opens
       // a dialog. As such, we replace state rather than pushing a new state
