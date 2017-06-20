@@ -860,18 +860,6 @@ hooks = [
     ],
   },
   {
-    "name": "wasm_asmjs_fuzzer",
-    "pattern": ".",
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                "--no_resume",
-                "--no_auth",
-                "-u",
-                "--bucket", "v8-wasm-asmjs-fuzzer",
-                "-s", "src/v8/test/fuzzer/wasm_asmjs_corpus.tar.gz.sha1",
-    ],
-  },
-  {
     'name': 'devtools_install_node',
     'action': [ 'python',
                 'src/third_party/WebKit/Source/devtools/scripts/local_node/node.py',
