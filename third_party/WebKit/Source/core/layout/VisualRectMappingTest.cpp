@@ -46,7 +46,7 @@ class VisualRectMappingTest : public RenderingTest {
     FloatClipRect geometry_mapper_rect((FloatRect(local_rect)));
     if (object.PaintProperties() || object.LocalBorderBoxProperties()) {
       geometry_mapper_rect.MoveBy(FloatPoint(object.PaintOffset()));
-      GeometryMapper::SourceToDestinationVisualRect(
+      GeometryMapper::LocalToAncestorVisualRect(
           *object.LocalBorderBoxProperties(), ancestor.ContentsProperties(),
           geometry_mapper_rect);
       geometry_mapper_rect.MoveBy(-FloatPoint(ancestor.PaintOffset()));

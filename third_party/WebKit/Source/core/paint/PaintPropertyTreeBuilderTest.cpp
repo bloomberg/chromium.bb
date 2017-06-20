@@ -87,7 +87,7 @@ void PaintPropertyTreeBuilderTest::TearDown() {
       source.MoveBy((source_object)->PaintOffset());                           \
       auto contents_properties = (ancestor)->ContentsProperties();             \
       FloatClipRect actual_float_rect((FloatRect(source)));                    \
-      GeometryMapper::SourceToDestinationVisualRect(                           \
+      GeometryMapper::LocalToAncestorVisualRect(                               \
           *(source_object)->LocalBorderBoxProperties(), contents_properties,   \
           actual_float_rect);                                                  \
       LayoutRect actual(actual_float_rect.Rect());                             \
