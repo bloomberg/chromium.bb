@@ -499,8 +499,8 @@ void FrameLoader::UpdateForSameDocumentNavigation(
   // handler. See https://bugs.webkit.org/show_bug.cgi?id=31838
   // Do not fire the notifications if the frame is concurrently navigating away
   // from the document, since a new document is already loading.
-  if (frame_->GetDocument()->LoadEventFinished() &&
-      !provisional_document_loader_)
+  bool was_loading = frame_->IsLoading();
+  if (!was_loading)
     Client()->DidStartLoading(kNavigationWithinSameDocument);
 
   // Update the data source's request with the new URL to fake the URL change
@@ -508,10 +508,7 @@ void FrameLoader::UpdateForSameDocumentNavigation(
   GetDocumentLoader()->UpdateForSameDocumentNavigation(
       new_url, same_document_navigation_source, std::move(data),
       scroll_restoration_type, type, initiating_document);
-
-  Client()->DispatchDidReceiveTitle(frame_->GetDocument()->title());
-  if (frame_->GetDocument()->LoadEventFinished() &&
-      !provisional_document_loader_)
+  if (!was_loading)
     Client()->DidStopLoading();
 }
 
