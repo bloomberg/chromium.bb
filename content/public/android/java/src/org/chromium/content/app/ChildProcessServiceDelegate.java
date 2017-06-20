@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.SparseArray;
 
 /**
  * The interface that embedders should implement to specialize child service creation.
@@ -39,6 +40,16 @@ public interface ChildProcessServiceDelegate {
      * service stops.
      */
     boolean loadNativeLibrary(Context hostContext);
+
+    /**
+     * Should return a map that associatesfile descriptors' IDs to keys.
+     * This is needed as at the moment we use 2 different stores for the FDs in native code:
+     * base::FileDescriptorStore which associates FDs with string identifiers (the key), and
+     * base::GlobalDescriptors which associates FDs with int ids.
+     * FDs for which the returned map contains a mapping are added to base::FileDescriptorStore with
+     * the associated key, all others are added to base::GlobalDescriptors.
+     */
+    SparseArray<String> getFileDescriptorsIdsToKeys();
 
     /** Called before the main method is invoked. */
     void onBeforeMain();

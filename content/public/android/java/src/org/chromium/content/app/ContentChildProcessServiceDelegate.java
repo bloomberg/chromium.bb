@@ -10,6 +10,7 @@ import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.SparseArray;
 import android.view.Surface;
 
 import org.chromium.base.CommandLine;
@@ -48,6 +49,8 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     private int mCpuCount;
     private long mCpuFeatures;
+
+    private SparseArray<String> mFdsIdsToKeys;
 
     @Override
     public void onServiceCreated() {
@@ -133,7 +136,19 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
             Log.w(TAG, "startup failed: %s", e);
             return false;
         }
+
+        // Now that the library is loaded, get the FD map,
+        // TODO(jcivelli): can this be done in onBeforeMain? We would have to mode onBeforeMain
+        // so it's called before FDs are registered.
+        nativeRetrieveFileDescriptorsIdsToKeys();
+
         return true;
+    }
+
+    @Override
+    public SparseArray<String> getFileDescriptorsIdsToKeys() {
+        assert mFdsIdsToKeys != null;
+        return mFdsIdsToKeys;
     }
 
     @Override
@@ -163,6 +178,16 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
                     mLinkerParams.mTestRunnerClassNameForTesting);
         }
         return Linker.getInstance();
+    }
+
+    @CalledByNative
+    private void setFileDescriptorsIdsToKeys(int[] ids, String[] keys) {
+        assert ids.length == keys.length;
+        assert mFdsIdsToKeys == null;
+        mFdsIdsToKeys = new SparseArray<>();
+        for (int i = 0; i < ids.length; ++i) {
+            mFdsIdsToKeys.put(ids[i], keys[i]);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -213,4 +238,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     private native void nativeInitChildProcess(int cpuCount, long cpuFeatures);
 
     private native void nativeShutdownMainThread();
+
+    // Retrieves the FD IDs to keys map and set it by calling setFileDescriptorsIdsToKeys().
+    private native void nativeRetrieveFileDescriptorsIdsToKeys();
 }
