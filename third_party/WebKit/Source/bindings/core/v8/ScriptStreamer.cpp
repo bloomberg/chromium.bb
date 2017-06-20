@@ -426,8 +426,9 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
         return;
       }
 
-      std::unique_ptr<TextResourceDecoder> decoder(TextResourceDecoder::Create(
-          "application/javascript", WTF::TextEncoding(resource->Encoding())));
+      std::unique_ptr<TextResourceDecoder> decoder(
+          TextResourceDecoder::Create(TextResourceDecoder::kPlainTextContent,
+                                      WTF::TextEncoding(resource->Encoding())));
       decoder->CheckForBOM(maybe_bom, kMaximumLengthOfBOM);
 
       // The encoding may change when we see the BOM. Check for BOM now

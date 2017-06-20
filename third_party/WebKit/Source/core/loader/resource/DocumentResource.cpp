@@ -42,7 +42,11 @@ DocumentResource* DocumentResource::FetchSVGDocument(FetchParameters& params,
 DocumentResource::DocumentResource(const ResourceRequest& request,
                                    Type type,
                                    const ResourceLoaderOptions& options)
-    : TextResource(request, type, options, "application/xml", String()) {
+    : TextResource(request,
+                   type,
+                   options,
+                   TextResourceDecoder::kXMLContent,
+                   String()) {
   // FIXME: We'll support more types to support HTMLImports.
   DCHECK_EQ(type, kSVGDocument);
 }

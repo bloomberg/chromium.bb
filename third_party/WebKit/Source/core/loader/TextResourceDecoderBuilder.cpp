@@ -86,6 +86,16 @@ static const WTF::TextEncoding GetEncodingFromDomain(const KURL& url) {
   return WTF::TextEncoding();
 }
 
+TextResourceDecoder::ContentType DetermineContentType(const String& mime_type) {
+  if (DeprecatedEqualIgnoringCase(mime_type, "text/css"))
+    return TextResourceDecoder::kCSSContent;
+  if (DeprecatedEqualIgnoringCase(mime_type, "text/html"))
+    return TextResourceDecoder::kHTMLContent;
+  if (DOMImplementation::IsXMLMIMEType(mime_type))
+    return TextResourceDecoder::kXMLContent;
+  return TextResourceDecoder::kPlainTextContent;
+}
+
 }  // namespace
 
 TextResourceDecoderBuilder::TextResourceDecoderBuilder(
@@ -107,14 +117,17 @@ TextResourceDecoderBuilder::CreateDecoderInstance(Document* document) {
               : WTF::TextEncoding(settings->GetDefaultTextEncodingName());
       // Disable autodetection for XML to honor the default encoding (UTF-8) for
       // unlabelled documents.
-      if (DOMImplementation::IsXMLMIMEType(mime_type_))
-        return TextResourceDecoder::Create(mime_type_, hint_encoding);
+      if (DOMImplementation::IsXMLMIMEType(mime_type_)) {
+        return TextResourceDecoder::Create(TextResourceDecoder::kXMLContent,
+                                           hint_encoding);
+      }
       return TextResourceDecoder::CreateWithAutoDetection(
-          mime_type_, hint_encoding, document->Url());
+          DetermineContentType(mime_type_), hint_encoding, document->Url());
     }
   }
 
-  return TextResourceDecoder::Create(mime_type_, encoding_from_domain);
+  return TextResourceDecoder::Create(DetermineContentType(mime_type_),
+                                     encoding_from_domain);
 }
 
 inline void TextResourceDecoderBuilder::SetupEncoding(

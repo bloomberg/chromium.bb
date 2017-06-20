@@ -5,9 +5,10 @@
 #ifndef TextResource_h
 #define TextResource_h
 
-#include "core/CoreExport.h"
-#include "platform/loader/fetch/Resource.h"
 #include <memory>
+#include "core/CoreExport.h"
+#include "core/html/parser/TextResourceDecoder.h"
+#include "platform/loader/fetch/Resource.h"
 
 namespace blink {
 
@@ -27,7 +28,7 @@ class CORE_EXPORT TextResource : public Resource {
   TextResource(const ResourceRequest&,
                Type,
                const ResourceLoaderOptions&,
-               const String& mime_type,
+               TextResourceDecoder::ContentType,
                const String& charset);
   ~TextResource() override;
 

@@ -26,4 +26,8 @@ bool FuzzedDataProvider::ConsumeBool() {
   return provider_.ConsumeBool();
 }
 
+int FuzzedDataProvider::ConsumeInt32InRange(int min, int max) {
+  return provider_.ConsumeInt32InRange(min, max);
+}
+
 }  // namespace blink

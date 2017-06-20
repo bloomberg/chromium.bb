@@ -75,7 +75,7 @@ XSLStyleSheetResource::XSLStyleSheetResource(
     : StyleSheetResource(resource_request,
                          kXSLStyleSheet,
                          options,
-                         "text/xsl",
+                         TextResourceDecoder::kXMLContent,
                          charset) {}
 
 void XSLStyleSheetResource::DidAddClient(ResourceClient* c) {

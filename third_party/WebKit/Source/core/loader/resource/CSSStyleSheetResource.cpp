@@ -69,7 +69,7 @@ CSSStyleSheetResource::CSSStyleSheetResource(
     : StyleSheetResource(resource_request,
                          kCSSStyleSheet,
                          options,
-                         "text/css",
+                         TextResourceDecoder::kCSSContent,
                          charset),
       did_notify_first_data_(false) {}
 
