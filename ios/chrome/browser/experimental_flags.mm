@@ -42,6 +42,8 @@ NSString* const kMDMIntegrationDisabled = @"MDMIntegrationDisabled";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kSafariVCSignInDisabled = @"SafariVCSignInDisabled";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
+const base::Feature kEnableSlimNavigationManager{
+    "EnableSlimNavigationManager", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -292,6 +294,19 @@ bool IsNewFeedbackKitEnabled() {
 bool IsKeyboardAccessoryViewWithCameraSearchEnabled() {
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:@"NewKeyboardAccessoryViewEnabled"];
+}
+
+bool IsSlimNavigationManagerEnabled() {
+  // Check if the experimental flag is forced on or off.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSlimNavigationManager)) {
+    return true;
+  } else if (command_line->HasSwitch(switches::kDisableSlimNavigationManager)) {
+    return false;
+  }
+
+  // Check if the Finch experiment is turned on.
+  return base::FeatureList::IsEnabled(kEnableSlimNavigationManager);
 }
 
 }  // namespace experimental_flags

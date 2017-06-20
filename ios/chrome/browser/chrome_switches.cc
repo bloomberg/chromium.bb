@@ -56,6 +56,9 @@ const char kDisableSuggestionsUI[] = "disable-suggestions-ui";
 // Disables bookmark reordering.
 const char kDisableBookmarkReordering[] = "disable-bookmark-reordering";
 
+// Disables the WKBackForwardList based navigation manager experiment.
+const char kDisableSlimNavigationManager[] = "disable-slim-navigation-manager";
+
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
 
@@ -98,6 +101,9 @@ const char kEnableSuggestionsUI[] = "enable-suggestions-ui";
 
 // Enables bookmark reordering.
 const char kEnableBookmarkReordering[] = "enable-bookmark-reordering";
+
+// Enables the WKBackForwardList based navigation manager experiment.
+const char kEnableSlimNavigationManager[] = "enable-slim-navigation-manager";
 
 // Forces additional Chrome Variation Ids that will be sent in X-Client-Data
 // header, specified as a 64-bit encoded list of numeric experiment ids. Ids

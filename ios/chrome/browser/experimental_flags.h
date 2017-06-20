@@ -112,6 +112,9 @@ bool IsNewFeedbackKitEnabled();
 // Whether the keyboard accessory view with camera search is enabled.
 bool IsKeyboardAccessoryViewWithCameraSearchEnabled();
 
+// Whether the WKBackForwardList based navigation manager is enabled.
+bool IsSlimNavigationManagerEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
