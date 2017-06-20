@@ -137,7 +137,7 @@ function openInspector()
     var scriptTags = document.getElementsByTagName("script");
     var scriptUrlBasePath = "";
     for (var i = 0; i < scriptTags.length; ++i) {
-        var index = scriptTags[i].src.lastIndexOf("/inspector-protocol-test.js");
+        var index = scriptTags[i].src.lastIndexOf("/resources/inspector-protocol-test.js");
         if (index > -1 ) {
             scriptUrlBasePath = scriptTags[i].src.slice(0, index);
             break;

@@ -20,7 +20,7 @@ E
         "type",
         "text/javascript",
         "src",
-        "../../http/tests/inspector-protocol/inspector-protocol-test.js"
+        "../../http/tests/inspector-protocol/resources/inspector-protocol-test.js"
       ]
     },
     {
