@@ -151,7 +151,7 @@ const base::Feature kContentSuggestionsLargeThumbnail{
     "ContentSuggestionsLargeThumbnail", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsSettings{
-    "ContentSuggestionsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContentSuggestionsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsShowSummary{
     "ContentSuggestionsShowSummary", base::FEATURE_DISABLED_BY_DEFAULT};
