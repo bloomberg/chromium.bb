@@ -13,6 +13,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
+import android.util.SparseArray;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
@@ -207,18 +208,26 @@ public class ChildProcessServiceImpl {
                         }
                     }
 
+                    SparseArray<String> idsToKeys = mDelegate.getFileDescriptorsIdsToKeys();
+
                     int[] fileIds = new int[mFdInfos.length];
+                    String[] keys = new String[mFdInfos.length];
                     int[] fds = new int[mFdInfos.length];
                     long[] regionOffsets = new long[mFdInfos.length];
                     long[] regionSizes = new long[mFdInfos.length];
                     for (int i = 0; i < mFdInfos.length; i++) {
                         FileDescriptorInfo fdInfo = mFdInfos[i];
-                        fileIds[i] = fdInfo.id;
+                        String key = idsToKeys != null ? idsToKeys.get(fdInfo.id) : null;
+                        if (key != null) {
+                            keys[i] = key;
+                        } else {
+                            fileIds[i] = fdInfo.id;
+                        }
                         fds[i] = fdInfo.fd.detachFd();
                         regionOffsets[i] = fdInfo.offset;
                         regionSizes[i] = fdInfo.size;
                     }
-                    nativeRegisterFileDescriptors(fileIds, fds, regionOffsets, regionSizes);
+                    nativeRegisterFileDescriptors(keys, fileIds, fds, regionOffsets, regionSizes);
 
                     mDelegate.onBeforeMain();
                     if (mActivitySemaphore.tryAcquire()) {
@@ -310,7 +319,7 @@ public class ChildProcessServiceImpl {
      * files.
      */
     private static native void nativeRegisterFileDescriptors(
-            int[] id, int[] fd, long[] offset, long[] size);
+            String[] keys, int[] id, int[] fd, long[] offset, long[] size);
 
     /**
      * Force the child process to exit.

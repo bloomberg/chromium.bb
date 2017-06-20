@@ -7,6 +7,7 @@
 #include <android/native_window_jni.h>
 #include <cpu-features.h>
 
+#include "base/android/jni_array.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/android/unguessable_token_android.h"
@@ -128,6 +129,31 @@ void InitChildProcess(JNIEnv* env,
 
 void ShutdownMainThread(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   ChildThreadImpl::ShutdownThread();
+}
+
+void RetrieveFileDescriptorsIdsToKeys(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj) {
+  std::map<int, std::string> ids_to_keys;
+  std::string file_switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          service_manager::switches::kSharedFiles);
+
+  std::vector<int> ids;
+  std::vector<std::string> keys;
+  if (!file_switch_value.empty()) {
+    base::Optional<std::map<int, std::string>> ids_to_keys_from_command_line =
+        service_manager::ParseSharedFileSwitchValue(file_switch_value);
+    if (ids_to_keys_from_command_line) {
+      for (auto iter : *ids_to_keys_from_command_line) {
+        ids.push_back(iter.first);
+        keys.push_back(iter.second);
+      }
+    }
+  }
+
+  Java_ContentChildProcessServiceDelegate_setFileDescriptorsIdsToKeys(
+      env, obj, base::android::ToJavaIntArray(env, ids),
+      base::android::ToJavaArrayOfStrings(env, keys));
 }
 
 bool RegisterContentChildProcessServiceDelegate(JNIEnv* env) {
