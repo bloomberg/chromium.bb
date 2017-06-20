@@ -6,6 +6,7 @@
 #define NGPositionedFloat_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/geometry/ng_logical_offset.h"
 
 namespace blink {
 
@@ -15,7 +16,7 @@ class NGPhysicalBoxFragment;
 struct CORE_EXPORT NGPositionedFloat {
   NGPositionedFloat(RefPtr<NGPhysicalBoxFragment> fragment,
                     const NGLogicalOffset& logical_offset,
-                    const NGPhysicalOffset& paint_offset)
+                    const NGLogicalOffset& paint_offset)
       : fragment(fragment),
         logical_offset(logical_offset),
         paint_offset(paint_offset) {}
@@ -30,7 +31,7 @@ struct CORE_EXPORT NGPositionedFloat {
   // parent.
   // {@code paint_offset} is calculated when we know to which parent this float
   // would be attached.
-  NGPhysicalOffset paint_offset;
+  NGLogicalOffset paint_offset;
 };
 
 }  // namespace blink

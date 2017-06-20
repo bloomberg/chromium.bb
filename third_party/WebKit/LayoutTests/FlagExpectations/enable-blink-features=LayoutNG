@@ -14828,7 +14828,6 @@ crbug.com/591099 fast/writing-mode/flipped-blocks-hit-test-overflow-scroll.html 
 crbug.com/591099 fast/writing-mode/flipped-blocks-hit-test-overflow.html [ Failure ]
 crbug.com/591099 fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Crash Failure ]
 crbug.com/591099 fast/writing-mode/flipped-blocks-text-map-local-to-container.html [ Failure ]
-crbug.com/591099 fast/writing-mode/floats-in-block-layout.html [ Failure ]
 crbug.com/591099 fast/writing-mode/html-and-body-direction-propagation.html [ Failure Pass ]
 crbug.com/591099 fast/writing-mode/html-and-body-writing-mode-propagation.html [ Crash Failure Pass ]
 crbug.com/591099 fast/writing-mode/html-direction-propagation.html [ Crash Failure Pass ]

@@ -89,20 +89,19 @@ NGExclusion CreateExclusion(const NGFragment& fragment,
   return exclusion;
 }
 
-// Updates the Floating Object's left and top offsets.
-NGPhysicalOffset CalculateFloatingObjectPaintOffset(
+// Updates the Floating object's offsets.
+NGLogicalOffset CalculateFloatingObjectPaintOffset(
     const NGConstraintSpace& new_parent_space,
     const NGLogicalOffset& float_logical_offset,
     const NGUnpositionedFloat& unpositioned_float) {
-  // TODO(glebl): We should use physical offset here.
-  LayoutUnit left_offset = unpositioned_float.from_offset.inline_offset -
-                           new_parent_space.BfcOffset().inline_offset +
-                           float_logical_offset.inline_offset;
+  LayoutUnit inline_offset = unpositioned_float.from_offset.inline_offset -
+                             new_parent_space.BfcOffset().inline_offset +
+                             float_logical_offset.inline_offset;
   DCHECK(unpositioned_float.parent_bfc_block_offset);
-  LayoutUnit top_offset = unpositioned_float.from_offset.block_offset -
-                          unpositioned_float.parent_bfc_block_offset.value() +
-                          float_logical_offset.block_offset;
-  return {left_offset, top_offset};
+  LayoutUnit block_offset = unpositioned_float.from_offset.block_offset -
+                            unpositioned_float.parent_bfc_block_offset.value() +
+                            float_logical_offset.block_offset;
+  return {inline_offset, block_offset};
 }
 
 WTF::Optional<LayoutUnit> CalculateFragmentationOffset(
@@ -270,7 +269,7 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
 
   NGLogicalOffset logical_offset = CalculateLogicalOffsetForOpportunity(
       opportunity, float_offset, unpositioned_float);
-  NGPhysicalOffset paint_offset = CalculateFloatingObjectPaintOffset(
+  NGLogicalOffset paint_offset = CalculateFloatingObjectPaintOffset(
       *new_parent_space, logical_offset, *unpositioned_float);
 
   return NGPositionedFloat(std::move(physical_fragment), logical_offset,

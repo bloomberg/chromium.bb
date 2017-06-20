@@ -76,11 +76,17 @@ void FloatingObjectPositionedUpdated(const NGPositionedFloat& positioned_float,
   DCHECK(layout_box->IsFloating());
 
   if (parent && parent->IsLayoutBlockFlow()) {
+    LayoutBlockFlow& containing_block = *ToLayoutBlockFlow(parent);
     FloatingObject* floating_object =
-        ToLayoutBlockFlow(parent)->InsertFloatingObject(*layout_box);
+        containing_block.InsertFloatingObject(*layout_box);
     floating_object->SetIsInPlacedTree(false);
-    floating_object->SetX(positioned_float.paint_offset.left);
-    floating_object->SetY(positioned_float.paint_offset.top);
+    LayoutUnit logical_left = positioned_float.paint_offset.inline_offset;
+    LayoutUnit logical_top = positioned_float.paint_offset.block_offset;
+    // Update floating_object's logical left and top position (which is the same
+    // as inline and block offset). Note that this does not update the actual
+    // LayoutObject established by the float, just the FloatingObject.
+    containing_block.SetLogicalLeftForFloat(*floating_object, logical_left);
+    containing_block.SetLogicalTopForFloat(*floating_object, logical_top);
     floating_object->SetIsPlaced(true);
     floating_object->SetIsInPlacedTree(true);
   }
