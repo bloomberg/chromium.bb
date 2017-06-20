@@ -1196,7 +1196,7 @@ component("base") {
 
   # Allow more direct string conversions on platforms with native utf8
   # strings
-  if (is_mac || is_ios || is_chromeos || is_chromecast) {
+  if (is_mac || is_ios || is_chromeos || is_chromecast || is_fuchsia) {
     defines += [ "SYSTEM_NATIVE_UTF8" ]
   }
 
@@ -2323,7 +2323,7 @@ test("base_unittests") {
 
   # Allow more direct string conversions on platforms with native utf8
   # strings
-  if (is_mac || is_ios || is_chromeos || is_chromecast) {
+  if (is_mac || is_ios || is_chromeos || is_chromecast || is_fuchsia) {
     defines += [ "SYSTEM_NATIVE_UTF8" ]
   }
 
