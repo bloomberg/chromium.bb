@@ -163,9 +163,12 @@ if ((use_afl || use_libfuzzer) && sanitizer_coverage_flags == "") {
   sanitizer_coverage_flags = "trace-pc-guard,indirect-calls"
 }
 
+# Whether we are linking against a sanitizer runtime library. Among other
+# things, this changes the default symbol level and other settings in order to
+# prepare to create stack traces "live" using the sanitizer runtime.
 using_sanitizer =
     is_asan || is_lsan || is_tsan || is_msan || is_ubsan || is_ubsan_null ||
-    is_ubsan_vptr || is_ubsan_security || use_sanitizer_coverage
+    is_ubsan_vptr || is_ubsan_security || use_sanitizer_coverage || use_cfi_diag
 
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
