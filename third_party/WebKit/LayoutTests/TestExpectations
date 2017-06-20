@@ -2780,5 +2780,4 @@ crbug.com/732839 [ Win ] external/wpt/payment-request/payment-request-constructo
 crbug.com/733357 [ Win Mac ] inspector/elements/styles-4/styles-history.html [ Failure Pass ]
 crbug.com/733448 virtual/mojo-loading/http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733448 http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
-crbug.com/729075 [ Mac10.11 Retina ] css3/blending/background-blend-mode-gif-color-2.html [ Failure Pass ]
 crbug.com/733524 [ Mac ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.php [ Timeout Pass ]
