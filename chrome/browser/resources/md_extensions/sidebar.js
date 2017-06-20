@@ -58,4 +58,3 @@ cr.define('extensions', function() {
     SidebarListDelegate: SidebarListDelegate,
   };
 });
-

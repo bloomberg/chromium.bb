@@ -25,8 +25,8 @@ cr.define('extensions', function() {
       return 0;
     }
     return compareLocation(a, b) ||
-           compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
-           compare(a.id, b.id);
+        compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
+        compare(a.id, b.id);
   };
 
   var Manager = Polymer({
@@ -86,13 +86,17 @@ cr.define('extensions', function() {
       /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions: {
         type: Array,
-        value: function() { return []; },
+        value: function() {
+          return [];
+        },
       },
 
       /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       apps: {
         type: Array,
-        value: function() { return []; },
+        value: function() {
+          return [];
+        },
       },
     },
 
@@ -108,17 +112,17 @@ cr.define('extensions', function() {
     ready: function() {
       /** @type {extensions.Sidebar} */
       this.sidebar =
-          /** @type {extensions.Sidebar} */(this.$$('extensions-sidebar'));
+          /** @type {extensions.Sidebar} */ (this.$$('extensions-sidebar'));
       this.toolbar =
-          /** @type {extensions.Toolbar} */(this.$$('extensions-toolbar'));
+          /** @type {extensions.Toolbar} */ (this.$$('extensions-toolbar'));
       this.listHelper_ = new ListHelper(this);
       this.sidebar.setListDelegate(this.listHelper_);
       this.readyPromiseResolver.resolve();
       this.currentPage_ = {page: Page.LIST};
       this.navigationHelper_ =
           new extensions.NavigationHelper(function(newPage) {
-        this.changePage(newPage, true);
-      }.bind(this));
+            this.changePage(newPage, true);
+          }.bind(this));
       this.optionsDialog.addEventListener('close', function() {
         // We update the page when the options dialog closes, but only if we're
         // still on the details page. We could be on a different page if the
@@ -228,7 +232,7 @@ cr.define('extensions', function() {
      */
     getData_: function(id) {
       return this.extensions[this.getIndexInList_('extensions', id)] ||
-             this.apps[this.getIndexInList_('apps', id)];
+          this.apps[this.getIndexInList_('apps', id)];
     },
 
     /**
@@ -276,8 +280,9 @@ cr.define('extensions', function() {
       if (this.detailViewItem_ && this.detailViewItem_.id == item.id &&
           this.$.pages.selected == Page.DETAILS) {
         this.detailViewItem_ = item;
-      } else if (this.errorPageItem_ && this.errorPageItem_.id == item.id &&
-                 this.$.pages.selected == Page.ERRORS) {
+      } else if (
+          this.errorPageItem_ && this.errorPageItem_.id == item.id &&
+          this.$.pages.selected == Page.ERRORS) {
         this.errorPageItem_ = item;
       }
     },
@@ -346,8 +351,8 @@ cr.define('extensions', function() {
       if (fromPage != toPage) {
         var entry;
         var exit;
-        if (fromPage == Page.LIST && (toPage == Page.DETAILS ||
-                                           toPage == Page.ERRORS)) {
+        if (fromPage == Page.LIST &&
+            (toPage == Page.DETAILS || toPage == Page.ERRORS)) {
           this.$['items-list'].willShowItemSubpage(data.id);
           entry = [extensions.Animation.HERO];
           // The item grid can be larger than the detail view that we're
@@ -357,8 +362,7 @@ cr.define('extensions', function() {
           entry = [extensions.Animation.FADE_IN];
           exit = [extensions.Animation.SCALE_DOWN];
         } else {
-          assert(toPage == Page.DETAILS ||
-                 toPage == Page.SHORTCUTS);
+          assert(toPage == Page.DETAILS || toPage == Page.SHORTCUTS);
           entry = [extensions.Animation.FADE_IN];
           exit = [extensions.Animation.FADE_OUT];
         }
@@ -440,7 +444,7 @@ cr.define('extensions', function() {
           break;
       }
 
-      this.manager_.$/* hack */ ['items-list'].set('items', assert(items));
+      this.manager_.$ /* hack */['items-list'].set('items', assert(items));
       this.manager_.changePage({page: Page.LIST});
     },
 

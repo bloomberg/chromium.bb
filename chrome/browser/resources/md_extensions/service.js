@@ -30,8 +30,7 @@ cr.define('extensions', function() {
       this.manager_.errorPage.delegate = this;
       var keyboardShortcuts = this.manager_.keyboardShortcuts;
       keyboardShortcuts.addEventListener(
-          'shortcut-updated',
-          this.onExtensionCommandUpdated_.bind(this));
+          'shortcut-updated', this.onExtensionCommandUpdated_.bind(this));
       keyboardShortcuts.addEventListener(
           'shortcut-capture-started',
           this.onShortcutCaptureChanged_.bind(this, true));
@@ -45,13 +44,13 @@ cr.define('extensions', function() {
       chrome.developerPrivate.getExtensionsInfo(
           {includeDisabled: true, includeTerminated: true},
           function(extensions) {
-        /** @private {Array<chrome.developerPrivate.ExtensionInfo>} */
-        this.extensions_ = extensions;
-        for (let extension of extensions)
-          this.manager_.addItem(extension);
+            /** @private {Array<chrome.developerPrivate.ExtensionInfo>} */
+            this.extensions_ = extensions;
+            for (let extension of extensions)
+              this.manager_.addItem(extension);
 
-        this.manager_.initPage();
-      }.bind(this));
+            this.manager_.initPage();
+          }.bind(this));
       chrome.developerPrivate.getProfileConfiguration(
           this.onProfileStateChanged_.bind(this));
     },
@@ -117,13 +116,13 @@ cr.define('extensions', function() {
       return new Promise(function(resolve, reject) {
         chrome.developerPrivate.choosePath(
             selectType, fileType, function(path) {
-          if (chrome.runtime.lastError &&
-              chrome.runtime.lastError != 'File selection was canceled.') {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve(path || '');
-          }
-        });
+              if (chrome.runtime.lastError &&
+                  chrome.runtime.lastError != 'File selection was canceled.') {
+                reject(chrome.runtime.lastError);
+              } else {
+                resolve(path || '');
+              }
+            });
       });
     },
 
@@ -165,16 +164,16 @@ cr.define('extensions', function() {
       chrome.developerPrivate.loadUnpacked(
           {failQuietly: true, populateError: true, retryGuid: opt_retryGuid},
           (loadError) => {
-        if (chrome.runtime.lastError &&
-            chrome.runtime.lastError.message !=
-                'File selection was canceled.') {
-          throw new Error(chrome.runtime.lastError.message);
-        }
-        if (loadError) {
-          this.manager_.loadError.loadError = loadError;
-          this.manager_.loadError.show();
-        }
-      });
+            if (chrome.runtime.lastError &&
+                chrome.runtime.lastError.message !=
+                    'File selection was canceled.') {
+              throw new Error(chrome.runtime.lastError.message);
+            }
+            if (loadError) {
+              this.manager_.loadError.loadError = loadError;
+              this.manager_.loadError.show();
+            }
+          });
     },
 
     /** @override */

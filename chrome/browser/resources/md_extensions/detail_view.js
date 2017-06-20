@@ -39,7 +39,9 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
-    isEnabled_: function() { return extensions.isEnabled(this.data.state); },
+    isEnabled_: function() {
+      return extensions.isEnabled(this.data.state);
+    },
 
     /**
      * @return {boolean}
@@ -109,15 +111,14 @@ cr.define('extensions', function() {
      */
     shouldShowOptionsSection_: function() {
       return this.data.incognitoAccess.isEnabled ||
-             this.data.fileAccess.isEnabled ||
-             this.data.runOnAllUrls.isEnabled ||
-             this.data.errorCollection.isEnabled;
+          this.data.fileAccess.isEnabled || this.data.runOnAllUrls.isEnabled ||
+          this.data.errorCollection.isEnabled;
     },
 
     /** @private */
     onEnableChange_: function() {
-      this.delegate.setItemEnabled(this.data.id,
-                                   this.$['enable-toggle'].checked);
+      this.delegate.setItemEnabled(
+          this.data.id, this.$['enable-toggle'].checked);
     },
 
     /**

@@ -6,10 +6,7 @@ cr.define('extensions', function() {
   var ItemList = Polymer({
     is: 'extensions-item-list',
 
-    behaviors: [
-      Polymer.NeonAnimatableBehavior,
-      Polymer.IronResizableBehavior
-    ],
+    behaviors: [Polymer.NeonAnimatableBehavior, Polymer.IronResizableBehavior],
 
     properties: {
       /** @type {Array<!chrome.developerPrivate.ExtensionInfo>} */

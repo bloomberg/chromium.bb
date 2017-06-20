@@ -110,7 +110,7 @@ cr.define('extensions', function() {
     onDeleteErrorTap_: function(event) {
       // TODO(devlin): It would be cleaner if we could cast this to a
       // PolymerDomRepeatEvent-type thing, but that doesn't exist yet.
-      var e = /** @type {!{model:Object}} */(event);
+      var e = /** @type {!{model:Object}} */ (event);
       this.delegate.deleteErrors(this.data.id, [e.model.item.id]);
     },
 
@@ -134,7 +134,8 @@ cr.define('extensions', function() {
           // slice(1) because pathname starts with a /.
           args.pathSuffix = new URL(error.source).pathname.slice(1);
           args.lineNumber = error.stackTrace && error.stackTrace[0] ?
-                                error.stackTrace[0].lineNumber : 0;
+              error.stackTrace[0].lineNumber :
+              0;
           break;
       }
       this.delegate.requestFileSource(args).then(function(code) {
@@ -151,8 +152,7 @@ cr.define('extensions', function() {
      * @private
      */
     computeErrorClass_: function(selectedError, error) {
-      return selectedError == error ?
-          'error-item selected' : 'error-item';
+      return selectedError == error ? 'error-item selected' : 'error-item';
     },
 
     /**

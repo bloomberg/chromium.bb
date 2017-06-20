@@ -37,15 +37,12 @@ cr.define('extensions', function() {
       };
 
       var onSizeChanged = function(e) {
-        var minHeaderWidth =
-            this.$['icon-and-name-wrapper'].offsetWidth +
-            this.$['close-button'].offsetWidth +
-            HEADER_PADDING;
+        var minHeaderWidth = this.$['icon-and-name-wrapper'].offsetWidth +
+            this.$['close-button'].offsetWidth + HEADER_PADDING;
         var minWidth = Math.max(minHeaderWidth, MIN_WIDTH);
         this.$.main.style.height =
             bounded(MIN_HEIGHT, MAX_HEIGHT, e.height) + 'px';
-        this.$.main.style.width =
-            bounded(minWidth, MAX_WIDTH, e.width) + 'px';
+        this.$.main.style.width = bounded(minWidth, MAX_WIDTH, e.width) + 'px';
       }.bind(this);
 
       this.extensionOptions_.onpreferredsizechanged = onSizeChanged;

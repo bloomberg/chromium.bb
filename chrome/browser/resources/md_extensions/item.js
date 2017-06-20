@@ -109,7 +109,7 @@ cr.define('extensions', function() {
      */
     computeErrorsHidden_: function() {
       return !this.data.manifestErrors.length &&
-             !this.data.runtimeErrors.length;
+          !this.data.runtimeErrors.length;
     },
 
     /** @private */
@@ -119,8 +119,8 @@ cr.define('extensions', function() {
 
     /** @private */
     onEnableChange_: function() {
-      this.delegate.setItemEnabled(this.data.id,
-                                   this.$['enable-toggle'].checked);
+      this.delegate.setItemEnabled(
+          this.data.id, this.$['enable-toggle'].checked);
     },
 
     /** @private */
@@ -160,7 +160,9 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
-    isEnabled_: function() { return extensions.isEnabled(this.data.state); },
+    isEnabled_: function() {
+      return extensions.isEnabled(this.data.state);
+    },
 
     /**
      * @return {boolean}
@@ -224,8 +226,9 @@ cr.define('extensions', function() {
      */
     computeSourceIndicatorText_: function() {
       var sourceType = extensions.getItemSource(this.data);
-      return sourceType == SourceType.WEBSTORE ? '' :
-             extensions.getItemSourceString(sourceType);
+      return sourceType == SourceType.WEBSTORE ?
+          '' :
+          extensions.getItemSourceString(sourceType);
     },
 
     /**
@@ -281,8 +284,8 @@ cr.define('extensions', function() {
      * @private
      */
     computeExtraInspectLabel_: function() {
-      return loadTimeData.getStringF('itemInspectViewsExtra',
-                                     this.data.views.length - 1);
+      return loadTimeData.getStringF(
+          'itemInspectViewsExtra', this.data.views.length - 1);
     },
 
     /**
@@ -291,8 +294,8 @@ cr.define('extensions', function() {
      */
     hasWarnings_: function() {
       return this.data.disableReasons.corruptInstall ||
-             this.data.disableReasons.suspiciousInstall ||
-             !!this.data.blacklistText;
+          this.data.disableReasons.suspiciousInstall ||
+          !!this.data.blacklistText;
     },
 
     /**
@@ -309,4 +312,3 @@ cr.define('extensions', function() {
     ItemDelegate: ItemDelegate,
   };
 });
-

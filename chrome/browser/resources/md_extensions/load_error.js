@@ -64,6 +64,5 @@ cr.define('extensions', function() {
     },
   });
 
-  return {LoadError: LoadError,
-          LoadErrorDelegate: LoadErrorDelegate};
+  return {LoadError: LoadError, LoadErrorDelegate: LoadErrorDelegate};
 });

@@ -35,8 +35,8 @@ cr.define('extensions', function() {
      */
     isEmpty: function() {
       return !this.code ||
-             (!this.code.beforeHighlight && !this.code.highlight &&
-              !this.code.afterHighlight);
+          (!this.code.beforeHighlight && !this.code.highlight &&
+           !this.code.afterHighlight);
     },
 
     /**
@@ -49,9 +49,9 @@ cr.define('extensions', function() {
       if (!this.code)
         return '';
 
-      var lines = [this.code.beforeHighlight,
-                   this.code.highlight,
-                   this.code.afterHighlight].join('').match(/\n/g);
+      var lines = [
+        this.code.beforeHighlight, this.code.highlight, this.code.afterHighlight
+      ].join('').match(/\n/g);
       var lineCount = lines ? lines.length : 0;
       var textContent = '';
       for (var i = 1; i <= lineCount; ++i)
