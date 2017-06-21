@@ -184,12 +184,12 @@ TEST_F(PaymentRequestContactInfoEditCoordinatorTest, DidFinishCreating) {
   // Expect an autofill profile to be added to the PaymentRequest.
   EXPECT_CALL(*payment_request_,
               AddAutofillProfile(
-                  ProfileMatches("John Doe", "john@doe.com", "16502111111")))
+                  ProfileMatches("John Doe", "john@doe.com", "1 650-211-1111")))
       .Times(1);
   // Expect an autofill profile to be added to the PersonalDataManager.
   EXPECT_CALL(
       personal_data_manager_,
-      AddProfile(ProfileMatches("John Doe", "john@doe.com", "16502111111")))
+      AddProfile(ProfileMatches("John Doe", "john@doe.com", "1 650-211-1111")))
       .Times(1);
   // No autofill profile should get updated in the PersonalDataManager.
   EXPECT_CALL(personal_data_manager_, UpdateProfile(_)).Times(0);
@@ -250,14 +250,14 @@ TEST_F(PaymentRequestContactInfoEditCoordinatorTest, DidFinishEditing) {
   // No autofill profile should get added to the PersonalDataManager.
   EXPECT_CALL(personal_data_manager_, AddProfile(_)).Times(0);
   // Expect an autofill profile to be updated in the PersonalDataManager.
-  EXPECT_CALL(
-      personal_data_manager_,
-      UpdateProfile(ProfileMatches("John Doe", "john@doe.com", "16502111111")))
+  EXPECT_CALL(personal_data_manager_,
+              UpdateProfile(
+                  ProfileMatches("John Doe", "john@doe.com", "1 650-211-1111")))
       .Times(1);
   // Expect an autofill profile to be invalidated in PaymentsProfileComparator.
   EXPECT_CALL(
       *profile_comparator_,
-      Invalidate(ProfileMatches("John Doe", "john@doe.com", "16502111111")))
+      Invalidate(ProfileMatches("John Doe", "john@doe.com", "1 650-211-1111")))
       .Times(1);
 
   // Call the controller delegate method.

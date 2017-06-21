@@ -384,7 +384,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 // This method is called as the text is being typed in, pasted, or deleted. Asks
-// the delegate if the text should be changed. Should always return YES. During
+// the delegate if the text should be changed. Should always return NO. During
 // typing/pasting text, |newText| contains one or more new characters. When user
 // deletes text, |newText| is empty. |range| is the range of characters to be
 // replaced.
@@ -401,24 +401,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
       [model itemAtIndexPath:indexPath]);
 
-  // Find the respective editor field and update its value.
+  // Find the respective editor field and update its value to the proposed text.
   NSNumber* key = [NSNumber numberWithInt:sectionIdentifier];
   EditorField* field = self.fieldsMap[key];
   DCHECK(field);
-  // Obtain the text being typed.
-  NSString* updatedText =
-      [textField.text stringByReplacingCharactersInRange:range
-                                              withString:newText];
-  field.value = updatedText;
+  field.value = [textField.text stringByReplacingCharactersInRange:range
+                                                        withString:newText];
+
+  // Format the proposed text if necessary.
+  [_dataSource formatValueForEditorField:field];
+
+  // Since this method is returning NO, update the text field's value now.
+  textField.text = field.value;
 
   // Get the icon that identifies the field value and reload the cell if the
   // icon changes.
   UIImage* oldIcon = item.identifyingIcon;
   item.identifyingIcon = [_dataSource iconIdentifyingEditorField:field];
-  if (item.identifyingIcon != oldIcon)
+  if (item.identifyingIcon != oldIcon) {
+    item.textFieldValue = field.value;
     [self reconfigureCellsForItems:@[ item ]];
+  }
 
-  return YES;
+  return NO;
 }
 
 #pragma mark - AutofillEditAccessoryDelegate

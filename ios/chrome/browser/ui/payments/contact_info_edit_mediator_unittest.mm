@@ -105,7 +105,7 @@ TEST_F(PaymentRequestContactInfoEditMediatorTest, TestFieldsWhenEdit) {
     field = fields[1];
     EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
     editor_field = base::mac::ObjCCastStrict<EditorField>(field);
-    EXPECT_TRUE([editor_field.value isEqualToString:@"16502111111"]);
+    EXPECT_TRUE([editor_field.value isEqualToString:@"+1 650-211-1111"]);
 
     field = fields[2];
     EXPECT_TRUE([field isKindOfClass:[EditorField class]]);

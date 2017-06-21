@@ -30,6 +30,9 @@ typedef NS_ENUM(NSInteger, EditViewControllerState) {
 // Returns whether the header item should hide its background.
 - (BOOL)shouldHideBackgroundForHeaderItem;
 
+// Formats the editor field value, if necessary.
+- (void)formatValueForEditorField:(EditorField*)field;
+
 // Returns an icon that identifies |field| or its current value. May be nil.
 - (UIImage*)iconIdentifyingEditorField:(EditorField*)field;
 

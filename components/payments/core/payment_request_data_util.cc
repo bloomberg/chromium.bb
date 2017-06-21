@@ -6,6 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -189,6 +190,26 @@ std::string FormatPhoneForResponse(const std::string& phone_number,
                                    const std::string& country_code) {
   return FormatPhoneNumber(phone_number, country_code,
                            PhoneNumberUtil::PhoneNumberFormat::E164);
+}
+
+base::string16 FormatCardNumberForDisplay(const base::string16& card_number) {
+  base::string16 number = autofill::CreditCard::StripSeparators(card_number);
+  if (number.empty() || !base::IsAsciiDigit(number[0]))
+    return card_number;
+
+  std::vector<size_t> positions = {4U, 9U, 14U};
+  if (autofill::CreditCard::GetCardNetwork(number) ==
+      autofill::kAmericanExpressCard) {
+    positions = {4U, 11U};
+  }
+
+  static const base::char16 kSeparator = base::ASCIIToUTF16(" ")[0];
+  for (size_t i : positions) {
+    if (number.size() > i)
+      number.insert(i, 1U, kSeparator);
+  }
+
+  return number;
 }
 
 std::string GetCountryCodeWithFallback(const autofill::AutofillProfile* profile,

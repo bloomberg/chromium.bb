@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -153,6 +154,14 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   return !_creditCard || autofill::IsCreditCardLocal(*_creditCard);
 }
 
+- (void)formatValueForEditorField:(EditorField*)field {
+  if (field.autofillUIType == AutofillUITypeCreditCardNumber) {
+    field.value = base::SysUTF16ToNSString(
+        payments::data_util::FormatCardNumberForDisplay(
+            base::SysNSStringToUTF16(field.value)));
+  }
+}
+
 - (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
   // Early return if the field is not the credit card number field.
   if (field.autofillUIType != AutofillUITypeCreditCardNumber)
@@ -253,7 +262,10 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 
   // Credit Card number field.
   NSString* creditCardNumber =
-      _creditCard ? base::SysUTF16ToNSString(_creditCard->number()) : nil;
+      _creditCard ? base::SysUTF16ToNSString(
+                        payments::data_util::FormatCardNumberForDisplay(
+                            _creditCard->number()))
+                  : nil;
   fieldKey = [NSNumber numberWithInt:AutofillUITypeCreditCardNumber];
   EditorField* creditCardNumberField = self.fieldsMap[fieldKey];
   if (!creditCardNumberField) {

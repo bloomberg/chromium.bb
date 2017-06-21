@@ -11,6 +11,7 @@
 #include "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/test_region_data_loader.h"
 #include "components/payments/core/payments_profile_comparator.h"
@@ -102,6 +103,7 @@ class PaymentRequestAddressEditCoordinatorTest : public PlatformTest {
  protected:
   PaymentRequestAddressEditCoordinatorTest()
       : pref_service_(autofill::test::PrefServiceForTesting()) {
+    autofill::CountryNames::SetLocaleString("en-US");
     personal_data_manager_.SetTestingPrefService(pref_service_.get());
     payment_request_ = base::MakeUnique<MockTestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
@@ -193,12 +195,12 @@ TEST_F(PaymentRequestAddressEditCoordinatorTest, DidFinishCreating) {
   // Expect an autofill profile to be added to the PaymentRequest.
   EXPECT_CALL(*payment_request_,
               AddAutofillProfile(ProfileMatches("John Doe", "CA" /* Canada */,
-                                                "Quebec", "16502111111")))
+                                                "Quebec", "1 650-211-1111")))
       .Times(1);
   // Expect an autofill profile to be added to the PersonalDataManager.
   EXPECT_CALL(personal_data_manager_,
               AddProfile(ProfileMatches("John Doe", "CA" /* Canada */, "Quebec",
-                                        "16502111111")))
+                                        "1 650-211-1111")))
       .Times(1);
   // No autofill profile should get updated in the PersonalDataManager.
   EXPECT_CALL(personal_data_manager_, UpdateProfile(_)).Times(0);
@@ -261,12 +263,12 @@ TEST_F(PaymentRequestAddressEditCoordinatorTest, DidFinishEditing) {
   // Expect an autofill profile to be updated in the PersonalDataManager.
   EXPECT_CALL(personal_data_manager_,
               UpdateProfile(ProfileMatches("John Doe", "CA" /* Canada */,
-                                           "Quebec", "16502111111")))
+                                           "Quebec", "1 650-211-1111")))
       .Times(1);
   // Expect an autofill profile to be invalidated in PaymentsProfileComparator.
   EXPECT_CALL(*profile_comparator_,
               Invalidate(ProfileMatches("John Doe", "CA" /* Canada */, "Quebec",
-                                        "16502111111")))
+                                        "1 650-211-1111")))
       .Times(1);
 
   // Call the controller delegate method.

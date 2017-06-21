@@ -8,12 +8,14 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/credit_card_edit_mediator.h"
@@ -187,9 +189,10 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
     } else if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
       creditCard.set_billing_address_id(base::SysNSStringToUTF8(field.value));
     } else {
-      creditCard.SetRawInfo(
-          AutofillTypeFromAutofillUIType(field.autofillUIType),
-          base::SysNSStringToUTF16(field.value));
+      creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
+                             field.autofillUIType)),
+                         base::SysNSStringToUTF16(field.value),
+                         GetApplicationContext()->GetApplicationLocale());
     }
   }
 
