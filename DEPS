@@ -437,7 +437,7 @@ deps_os = {
 
     # Wayland protocols that add functionality not available in the core protocol.
     'src/third_party/wayland-protocols/src':
-      Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland-protocols.git' + '@' + '2e541a36deff5f2e16e25e27f7f93d26822eecc2',
+      Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland-protocols.git' + '@' + '26c99346ab5f2273fe5581bc4f6397bbb834f747',
 
     # The libevdev library (Chrome OS version).
     'src/third_party/libevdev/src':

@@ -69,8 +69,8 @@
 
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
-      <entry name="invalid_notification_id" value="1"
-       summary="invalid notification id"/>
+      <entry name="invalid_notification_key" value="1"
+       summary="invalid notification key"/>
     </enum>
 
     <enum name="layout_mode">
@@ -122,7 +122,7 @@
       </description>
       <arg name="id" type="new_id" interface="zcr_notification_surface_v1"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="notification_id" type="string" />
+      <arg name="notification_key" type="string" />
     </request>
 
     <event name="configuration_changed">
