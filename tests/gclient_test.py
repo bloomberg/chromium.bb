@@ -548,7 +548,7 @@ class GclientTest(trial_dir.TestCase):
         {'os1': { 'bar': 'os1_bar' }},
         ['os1'],
         {'foo': 'default_foo',
-         'bar': 'os1_bar'}
+         'bar': {'should_process': True, 'url': 'os1_bar'}}
         ),
       (
         # One OS wants to add a module. One doesn't care.
@@ -556,7 +556,7 @@ class GclientTest(trial_dir.TestCase):
         {'os1': { 'bar': 'os1_bar' }},
         ['os1', 'os2'],
         {'foo': 'default_foo',
-         'bar': 'os1_bar'}
+         'bar': {'should_process': True, 'url': 'os1_bar'}}
         ),
       (
         # Two OSes want to add a module with the same definition.
@@ -565,7 +565,29 @@ class GclientTest(trial_dir.TestCase):
          'os2': { 'bar': 'os12_bar' }},
         ['os1', 'os2'],
         {'foo': 'default_foo',
-         'bar': 'os12_bar'}
+         'bar': {'should_process': True, 'url': 'os12_bar'}}
+        ),
+      (
+        # One OS doesn't need module, one OS wants the default.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None },
+         'os2': {}},
+        ['os1', 'os2'],
+        {'foo': 'default_foo'}
+        ),
+      (
+        # OS doesn't need module.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None } },
+        ['os1'],
+        {'foo': 'default_foo'}
+        ),
+      (
+        # No-op override. Regression test for http://crbug.com/735418 .
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': 'default_foo' } },
+        [],
+        {'foo': {'should_process': True, 'url': 'default_foo'}}
         ),
       ]
     for deps, deps_os, target_os_list, expected_deps in test_data:
@@ -578,23 +600,10 @@ class GclientTest(trial_dir.TestCase):
     test_data = [
       # Tuples of deps, deps_os, os_list.
       (
-        # OS doesn't need module.
-        {'foo': 'default_foo'},
-        {'os1': { 'foo': None } },
-        ['os1'],
-        ),
-      (
         # OS wants a different version of module.
         {'foo': 'default_foo'},
         {'os1': { 'foo': 'os1_foo'} },
         ['os1'],
-        ),
-      (
-        # One OS doesn't need module, one OS wants the default.
-        {'foo': 'default_foo'},
-        {'os1': { 'foo': None },
-         'os2': {}},
-        ['os1', 'os2'],
         ),
       (
         # One OS doesn't need module, another OS wants a special version.
