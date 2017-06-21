@@ -44,11 +44,11 @@ CGFloat kToolbarHeight = 50.0f;
   containerView.backgroundColor = [UIColor redColor];
   containerView.translatesAutoresizingMaskIntoConstraints = NO;
 
-  ToolbarViewController* toolbarViewController =
-      [[ToolbarViewController alloc] init];
-  toolbarViewController.dispatcher =
+  id dispatcher =
       static_cast<id<NavigationCommands, TabGridCommands, TabStripCommands,
                      ToolsMenuCommands>>(self.alerter);
+  ToolbarViewController* toolbarViewController =
+      [[ToolbarViewController alloc] initWithDispatcher:dispatcher];
   [containerViewController addChildViewController:toolbarViewController];
   toolbarViewController.view.frame = containerView.frame;
   [containerView addSubview:toolbarViewController.view];

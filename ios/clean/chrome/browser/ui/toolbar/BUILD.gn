@@ -59,8 +59,11 @@ source_set("toolbar_components_ui") {
   ]
   deps = [
     "//base",
+    "//components/strings",
+    "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
+    "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
