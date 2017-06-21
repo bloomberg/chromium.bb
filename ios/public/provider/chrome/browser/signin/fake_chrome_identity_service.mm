@@ -142,25 +142,25 @@ FakeChromeIdentityService::GetInstanceFromChromeProvider() {
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
 }
 
-base::scoped_nsobject<UINavigationController>
-FakeChromeIdentityService::NewAccountDetails(
+UINavigationController*
+FakeChromeIdentityService::CreateAccountDetailsController(
     ChromeIdentity* identity,
     id<ChromeIdentityBrowserOpener> browser_opener) {
   base::scoped_nsobject<UIViewController> accountDetailsViewController(
       [[FakeAccountDetailsViewController alloc] initWithIdentity:identity]);
-  base::scoped_nsobject<UINavigationController> navigationController(
-      [[UINavigationController alloc]
-          initWithRootViewController:accountDetailsViewController]);
+  UINavigationController* navigationController =
+      [[[UINavigationController alloc]
+          initWithRootViewController:accountDetailsViewController] autorelease];
   return navigationController;
 }
 
-base::scoped_nsobject<ChromeIdentityInteractionManager>
-FakeChromeIdentityService::NewChromeIdentityInteractionManager(
+ChromeIdentityInteractionManager*
+FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
     ios::ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
-  base::scoped_nsobject<ChromeIdentityInteractionManager> manager(
-      [[FakeChromeIdentityInteractionManager alloc] init]);
-  manager.get().delegate = delegate;
+  ChromeIdentityInteractionManager* manager =
+      [[[FakeChromeIdentityInteractionManager alloc] init] autorelease];
+  manager.delegate = delegate;
   return manager;
 }
 
