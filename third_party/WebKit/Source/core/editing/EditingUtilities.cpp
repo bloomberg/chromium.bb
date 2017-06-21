@@ -330,7 +330,7 @@ bool IsNodeFullyContained(const EphemeralRange& range, Node& node) {
   if (!NodeTraversal::CommonAncestor(*range.StartPosition().AnchorNode(), node))
     return false;
 
-  return range.StartPosition() <= Position::BeforeNode(&node) &&
+  return range.StartPosition() <= Position::BeforeNode(node) &&
          Position::AfterNode(&node) <= range.EndPosition();
 }
 
@@ -850,7 +850,7 @@ PositionTemplate<Strategy> PreviousPositionOfAlgorithm(
 
   if (offset > 0) {
     if (EditingIgnoresContent(*node))
-      return PositionTemplate<Strategy>::BeforeNode(node);
+      return PositionTemplate<Strategy>::BeforeNode(*node);
     if (Node* child = Strategy::ChildAt(*node, offset - 1))
       return PositionTemplate<Strategy>::LastPositionInOrAfterNode(child);
 
@@ -876,7 +876,7 @@ PositionTemplate<Strategy> PreviousPositionOfAlgorithm(
 
   if (ContainerNode* parent = Strategy::Parent(*node)) {
     if (EditingIgnoresContent(*parent))
-      return PositionTemplate<Strategy>::BeforeNode(parent);
+      return PositionTemplate<Strategy>::BeforeNode(*parent);
     // TODO(yosin) We should use |Strategy::index(Node&)| instead of
     // |Node::nodeIndex()|.
     return PositionTemplate<Strategy>(parent, node->NodeIndex());

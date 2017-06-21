@@ -244,11 +244,11 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithInputElement) {
   SetBodyContent("<input>123");
   Element* const input = GetDocument().QuerySelector("input");
 
-  EXPECT_EQ(Position::BeforeNode(input),
+  EXPECT_EQ(Position::BeforeNode(*input),
             CanonicalPositionOf(Position::FirstPositionInNode(
                 GetDocument().documentElement())));
 
-  EXPECT_EQ(PositionInFlatTree::BeforeNode(input),
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(*input),
             CanonicalPositionOf(PositionInFlatTree::FirstPositionInNode(
                 GetDocument().documentElement())));
 }
@@ -1341,7 +1341,7 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionFirstLetter) {
                 Position::FirstPositionInNode(GetDocument().body())));
   EXPECT_EQ(
       Position(sample, 1),
-      MostForwardCaretPosition(Position::BeforeNode(sample->parentNode())));
+      MostForwardCaretPosition(Position::BeforeNode(*sample->parentNode())));
   EXPECT_EQ(Position(sample, 1),
             MostForwardCaretPosition(
                 Position::FirstPositionInNode(sample->parentNode())));
@@ -1905,7 +1905,7 @@ TEST_F(VisibleUnitsTest,
 
   Node* paragraph = GetDocument().QuerySelector("p");
   Node* text = paragraph->firstChild();
-  Position start = CanonicalPositionOf(Position::BeforeNode(paragraph));
+  Position start = CanonicalPositionOf(Position::BeforeNode(*paragraph));
   EXPECT_EQ(Position(text, 2), start);
 }
 

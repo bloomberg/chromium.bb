@@ -187,7 +187,7 @@ static void AdjustPositionForUserSelectAll(VisiblePosition& pos,
                          Position::AfterNode(root_user_select_all),
                          kCanCrossEditingBoundary)
                    : MostBackwardCaretPosition(
-                         Position::BeforeNode(root_user_select_all),
+                         Position::BeforeNode(*root_user_select_all),
                          kCanCrossEditingBoundary));
 }
 

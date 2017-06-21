@@ -791,7 +791,7 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
       } else if (Element* table = TableElementJustBefore(visible_start)) {
         SetEndingSelection(
             SelectionInDOMTree::Builder()
-                .Collapse(Position::BeforeNode(table))
+                .Collapse(Position::BeforeNode(*table))
                 .Extend(EndingSelection().Start())
                 .SetIsDirectional(EndingSelection().IsDirectional())
                 .Build());

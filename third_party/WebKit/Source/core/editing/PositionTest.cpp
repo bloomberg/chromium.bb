@@ -20,13 +20,13 @@ TEST_F(PositionTest, IsEquivalent) {
   EXPECT_TRUE(
       Position(sample, 0).IsEquivalent(Position::FirstPositionInNode(sample)));
   EXPECT_TRUE(Position(sample, 0).IsEquivalent(
-      Position::BeforeNode(sample->firstChild())));
+      Position::BeforeNode(*sample->firstChild())));
   EXPECT_TRUE(Position(sample, 1).IsEquivalent(
       Position::AfterNode(sample->firstChild())));
   EXPECT_TRUE(Position(sample, 1).IsEquivalent(
-      Position::BeforeNode(sample->firstChild()->nextSibling())));
+      Position::BeforeNode(*sample->firstChild()->nextSibling())));
   EXPECT_TRUE(Position(sample, 2).IsEquivalent(
-      Position::BeforeNode(sample->lastChild())));
+      Position::BeforeNode(*sample->lastChild())));
   EXPECT_TRUE(Position(sample, 3).IsEquivalent(
       Position::AfterNode(sample->lastChild())));
   EXPECT_TRUE(
@@ -48,7 +48,7 @@ TEST_F(PositionTest, editingPositionOfWithEditingIgnoresContent) {
   SetBodyContent(body_content);
   Node* textarea = GetDocument().getElementById("textarea");
 
-  EXPECT_EQ(Position::BeforeNode(textarea),
+  EXPECT_EQ(Position::BeforeNode(*textarea),
             Position::EditingPositionOf(textarea, 0));
   EXPECT_EQ(Position::AfterNode(textarea),
             Position::EditingPositionOf(textarea, 1));
@@ -62,7 +62,7 @@ TEST_F(PositionTest, editingPositionOfWithEditingIgnoresContent) {
   textarea->appendChild(child1);
   textarea->appendChild(child2);
 
-  EXPECT_EQ(Position::BeforeNode(textarea),
+  EXPECT_EQ(Position::BeforeNode(*textarea),
             Position::EditingPositionOf(textarea, 0));
   EXPECT_EQ(Position::AfterNode(textarea),
             Position::EditingPositionOf(textarea, 1));

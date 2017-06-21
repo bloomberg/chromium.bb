@@ -96,7 +96,7 @@ PositionIteratorAlgorithm<Strategy>::DeprecatedComputePosition() const {
     // editing
     if (EditingIgnoresContent(
             *Strategy::Parent(*node_after_position_in_anchor_)))
-      return PositionTemplate<Strategy>::BeforeNode(anchor_node_);
+      return PositionTemplate<Strategy>::BeforeNode(*anchor_node_);
     return PositionTemplate<Strategy>(
         anchor_node_, offsets_in_anchor_node_[depth_to_anchor_node_]);
   }

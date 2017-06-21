@@ -576,7 +576,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
     if (previous_list)
       AppendNode(list_item_element, previous_list, editing_state);
     else
-      InsertNodeAt(list_item_element, Position::BeforeNode(next_list),
+      InsertNodeAt(list_item_element, Position::BeforeNode(*next_list),
                    editing_state);
     if (editing_state->IsAborted())
       return;
@@ -605,7 +605,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
         InsertBlockPlaceholder(start_pos, editing_state);
     if (editing_state->IsAborted())
       return;
-    start_pos = Position::BeforeNode(placeholder);
+    start_pos = Position::BeforeNode(*placeholder);
   }
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();

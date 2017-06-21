@@ -1068,7 +1068,7 @@ bool ApplyStyleCommand::ShouldApplyInlineStyleToRun(EditingStyle* style,
     if (!style->StyleIsPresentInComputedStyleOfNode(node))
       return true;
     if (styled_inline_element_ &&
-        !EnclosingElementWithTag(Position::BeforeNode(node),
+        !EnclosingElementWithTag(Position::BeforeNode(*node),
                                  styled_inline_element_->TagQName()))
       return true;
   }
@@ -1590,7 +1590,7 @@ void ApplyStyleCommand::SplitTextElementAtStart(const Position& start,
 
   SplitTextNodeContainingElement(ToText(start.ComputeContainerNode()),
                                  start.OffsetInContainerNode());
-  UpdateStartEnd(Position::BeforeNode(start.ComputeContainerNode()), new_end);
+  UpdateStartEnd(Position::BeforeNode(*start.ComputeContainerNode()), new_end);
 }
 
 void ApplyStyleCommand::SplitTextElementAtEnd(const Position& start,
@@ -1834,11 +1834,11 @@ Position ApplyStyleCommand::PositionToComputeInlineStyleChange(
   // relevant styles from the current run.
   if (!start_node->IsElementNode()) {
     dummy_element = HTMLSpanElement::Create(GetDocument());
-    InsertNodeAt(dummy_element, Position::BeforeNode(start_node),
+    InsertNodeAt(dummy_element, Position::BeforeNode(*start_node),
                  editing_state);
     if (editing_state->IsAborted())
       return Position();
-    return Position::BeforeNode(dummy_element);
+    return Position::BeforeNode(*dummy_element);
   }
 
   return FirstPositionInOrBeforeNode(start_node);

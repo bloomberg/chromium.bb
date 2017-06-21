@@ -127,7 +127,7 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
   // beginning of the previous line, or (HR,0) when forward deleting, but in
   // these cases, we want to delete it, so manually expand the selection
   if (isHTMLHRElement(*start.AnchorNode()))
-    start = Position::BeforeNode(start.AnchorNode());
+    start = Position::BeforeNode(*start.AnchorNode());
   else if (isHTMLHRElement(*end.AnchorNode()))
     end = Position::AfterNode(end.AnchorNode());
 

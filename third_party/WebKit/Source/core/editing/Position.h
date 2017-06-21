@@ -67,7 +67,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
                                                       int offset);
 
   // For creating before/after positions:
-  PositionTemplate(Node* anchor_node, PositionAnchorType);
+  PositionTemplate(const Node* anchor_node, PositionAnchorType);
 
   // For creating offset positions:
   PositionTemplate(const Node& anchor_node, int offset);
@@ -188,7 +188,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   bool AtStartOfTree() const;
   bool AtEndOfTree() const;
 
-  static PositionTemplate<Strategy> BeforeNode(Node* anchor_node);
+  static PositionTemplate<Strategy> BeforeNode(const Node& anchor_node);
   static PositionTemplate<Strategy> AfterNode(Node* anchor_node);
   static PositionTemplate<Strategy> InParentBeforeNode(const Node& anchor_node);
   static PositionTemplate<Strategy> InParentAfterNode(const Node& anchor_node);

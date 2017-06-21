@@ -199,9 +199,9 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
 
     first_node = NextPositionOf(visible_start).DeepEquivalent().AnchorNode();
 
-    if (past_end && PositionTemplate<Strategy>::BeforeNode(first_node)
+    if (past_end && PositionTemplate<Strategy>::BeforeNode(*first_node)
                             .CompareTo(PositionTemplate<Strategy>::BeforeNode(
-                                past_end)) >= 0) {
+                                *past_end)) >= 0) {
       // This condition hits in editing/pasteboard/copy-display-none.html.
       return markup_accumulator.TakeResults();
     }

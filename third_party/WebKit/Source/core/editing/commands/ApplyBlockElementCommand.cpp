@@ -151,7 +151,7 @@ void ApplyBlockElementCommand::FormatSelection(
     if (editing_state->IsAborted())
       return;
     SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(placeholder))
+                           .Collapse(Position::BeforeNode(*placeholder))
                            .SetIsDirectional(EndingSelection().IsDirectional())
                            .Build());
     return;

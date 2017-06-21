@@ -127,7 +127,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     }
 
     SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(node_to_insert))
+                           .Collapse(Position::BeforeNode(*node_to_insert))
                            .SetIsDirectional(EndingSelection().IsDirectional())
                            .Build());
   } else if (pos.ComputeEditingOffset() <= CaretMinOffset(pos.AnchorNode())) {
