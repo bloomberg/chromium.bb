@@ -40,15 +40,9 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-// Windows headers will redefine SendMessage.
-#ifdef SendMessage
-#undef SendMessage
-#endif
 
 namespace net {
 class HttpResponseInfo;
@@ -404,13 +398,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
-  friend class ServiceWorkerJobTest;
-  friend class ServiceWorkerMetrics;
   friend class ServiceWorkerReadFromCacheJobTest;
-  friend class ServiceWorkerStallInStoppingTest;
-  friend class ServiceWorkerURLRequestJobTest;
   friend class ServiceWorkerVersionBrowserTest;
-  friend class ServiceWorkerVersionTest;
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
@@ -446,7 +435,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerActivationTest,
                            SkipWaitingWithInflightRequest);
 
-  class Metrics;
   class PingController;
 
   struct RequestInfo {
@@ -487,15 +475,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
     bool is_dispatched = false;
   };
 
-
-  typedef ServiceWorkerVersion self;
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
   using RequestInfoPriorityQueue =
       std::priority_queue<RequestInfo,
                           std::vector<RequestInfo>,
                           std::greater<RequestInfo>>;
-  using WebStatusCallback =
-      base::Callback<void(int, blink::WebServiceWorkerEventResult)>;
 
   // EmbeddedWorkerInstance Listener implementation which calls a callback
   // on receiving a particular IPC message. ResponseMessage is the type of
