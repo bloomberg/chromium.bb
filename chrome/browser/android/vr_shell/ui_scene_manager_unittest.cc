@@ -118,7 +118,7 @@ TEST_F(UiSceneManagerTest, WebVrWarningsShowWhenInitiallyInWebVr) {
   EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
 
-  manager_->SetWebVrMode(false, false, false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_FALSE(IsVisible(kWebVrTransientHttpSecurityWarning));
 }
@@ -129,33 +129,9 @@ TEST_F(UiSceneManagerTest, WebVrWarningsDoNotShowWhenInitiallyOutsideWebVr) {
   EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_FALSE(IsVisible(kWebVrTransientHttpSecurityWarning));
 
-  manager_->SetWebVrMode(true, false, false);
+  manager_->SetWebVrMode(true, false);
   EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
-}
-
-// Tests toast not showing when directly entering VR though WebVR presentation.
-TEST_F(UiSceneManagerTest, WebVrToastNotShowingWhenInitiallyInWebVr) {
-  MakeManager(kNotInCct, kInWebVr);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
-}
-
-// Tests toast visibility is controlled by show_toast parameter.
-TEST_F(UiSceneManagerTest, WebVrToastShowAndHide) {
-  MakeManager(kNotInCct, kNotInWebVr);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
-
-  manager_->SetWebVrMode(true, false, true);
-  EXPECT_TRUE(IsVisible(kPresentationToast));
-
-  manager_->SetWebVrMode(true, false, false);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
-
-  manager_->SetWebVrMode(false, false, true);
-  EXPECT_TRUE(IsVisible(kPresentationToast));
-
-  manager_->SetWebVrMode(false, false, false);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
 }
 
 TEST_F(UiSceneManagerTest, CloseButtonVisibleInCctFullscreen) {
@@ -176,7 +152,7 @@ TEST_F(UiSceneManagerTest, CloseButtonVisibleInCctFullscreen) {
   // Button should not be visible when in WebVR.
   MakeManager(kInCct, kInWebVr);
   EXPECT_FALSE(IsVisible(kCloseButton));
-  manager_->SetWebVrMode(false, false, false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_TRUE(IsVisible(kCloseButton));
 
   // Button should be visible in Cct across transistions in fullscreen.
@@ -259,8 +235,7 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
   // Enter WebVR with autopresentation.
-  manager_->SetWebVrMode(true, true, false);
-
+  manager_->SetWebVrMode(true, true);
   VerifyElementsVisible("Autopresented",
                         std::set<UiElementDebugId>{kTransientUrlBar});
 }
@@ -350,7 +325,7 @@ TEST_F(UiSceneManagerTest, UiUpdateTransitionToWebVR) {
   manager_->SetLocationAccessIndicator(true);
 
   // Transition to WebVR mode
-  manager_->SetWebVrMode(true, false, false);
+  manager_->SetWebVrMode(true, false);
   manager_->SetWebVrSecureOrigin(true);
 
   // All elements should be hidden.
@@ -374,13 +349,13 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
   EXPECT_TRUE(IsVisible(kScreenCaptureIndicator));
   EXPECT_TRUE(IsVisible(kLocationAccessIndicator));
 
-  manager_->SetWebVrMode(true, false, false);
+  manager_->SetWebVrMode(true, false);
   EXPECT_FALSE(IsVisible(kAudioCaptureIndicator));
   EXPECT_FALSE(IsVisible(kVideoCaptureIndicator));
   EXPECT_FALSE(IsVisible(kScreenCaptureIndicator));
   EXPECT_FALSE(IsVisible(kLocationAccessIndicator));
 
-  manager_->SetWebVrMode(false, false, false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_TRUE(IsVisible(kAudioCaptureIndicator));
   EXPECT_TRUE(IsVisible(kVideoCaptureIndicator));
   EXPECT_TRUE(IsVisible(kScreenCaptureIndicator));

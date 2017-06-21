@@ -12323,8 +12323,8 @@ read aloud to screenreader users to announce that a completion is available.">
       Chrome is being controlled by automated test software.
     </message>
 
-    <!-- VR specific strings -->
-    <if expr="enable_vr">
+    <!-- Media capture notification strings -->
+    <if expr="is_android or enable_vr">
       <message name="IDS_VIDEO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress." formatter_data="android_java">
         Accessing video input
       </message>
@@ -12336,9 +12336,6 @@ read aloud to screenreader users to announce that a completion is available.">
       </message>
       <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when screen capture is in progress.">
         Sharing screen
-      </message>
-      <message name="IDS_PRESS_APP_TO_EXIT" desc="Text displayed in a transient bubble to tell users how to return from cinema mode (where the page displayed in a cinema like environment) or presentation mode (where the WebVR page occupies the entire screen) to normal mode.">
-        Press App button to exit
       </message>
     </if>
   </messages>
