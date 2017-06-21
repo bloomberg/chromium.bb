@@ -7,10 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 class Browser;
 class Profile;
+@class FirstRunKeyResponder;
 
 // Manages the first run bubble.
 @interface FirstRunBubbleController : BaseBubbleController {
@@ -18,6 +20,7 @@ class Profile;
   IBOutlet NSTextField* header_;
   Browser* browser_;
   Profile* profile_;
+  base::scoped_nsobject<FirstRunKeyResponder> keyResponder_;
 }
 
 // Creates and shows a first run bubble. |browser| is NULL in unittests.
