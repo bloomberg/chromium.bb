@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -167,6 +168,14 @@ class ControllerImpl : public Controller,
   // Schedules a cleanup task in future based on status of entries.
   void ScheduleCleanupTask();
 
+  // Posts a task to cancel the downloads in future based on the cancel_after
+  // time of the entries. If cancel time for an entry is already surpassed, the
+  // task will be posted right away which will clean the entry.
+  void ScheduleKillDownloadTaskIfNecessary();
+
+  // Kills the downloads which have surpassed their cancel_after time.
+  void KillTimedOutDownloads();
+
   Configuration* config_;
 
   // The directory in which the downloaded files are stored.
@@ -191,6 +200,7 @@ class ControllerImpl : public Controller,
   std::set<std::string> externally_active_downloads_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
   std::map<DownloadTaskType, TaskFinishedCallback> task_finished_callbacks_;
+  base::CancelableClosure cancel_downloads_callback_;
 
   // Only used to post tasks on the same thread.
   base::WeakPtrFactory<ControllerImpl> weak_ptr_factory_;

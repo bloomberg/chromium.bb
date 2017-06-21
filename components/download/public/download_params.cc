@@ -9,7 +9,8 @@
 namespace download {
 
 SchedulingParams::SchedulingParams()
-    : priority(Priority::DEFAULT),
+    : cancel_time(base::Time::Max()),
+      priority(Priority::DEFAULT),
       network_requirements(NetworkRequirements::NONE),
       battery_requirements(BatteryRequirements::BATTERY_INSENSITIVE) {}
 
