@@ -161,4 +161,10 @@ CSSFontFeatureValue* CSSPropertyFontUtils::ConsumeFontFeatureTag(
   return CSSFontFeatureValue::Create(tag, tag_value);
 }
 
+CSSIdentifierValue* CSSPropertyFontUtils::ConsumeFontVariantCSS21(
+    CSSParserTokenRange& range) {
+  return CSSPropertyParserHelpers::ConsumeIdent<CSSValueNormal,
+                                                CSSValueSmallCaps>(range);
+}
+
 }  // namespace blink

@@ -111,11 +111,13 @@ bool IsCSSWideKeyword(StringView);
 
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange&);
 
+enum class IsImplicitProperty { kNotImplicit, kImplicit };
+
 void AddProperty(CSSPropertyID resolved_property,
                  CSSPropertyID current_shorthand,
                  const CSSValue&,
                  bool important,
-                 bool implicit,
+                 IsImplicitProperty,
                  HeapVector<CSSProperty, 256>& properties);
 
 // Template implementations are at the bottom of the file for readability.

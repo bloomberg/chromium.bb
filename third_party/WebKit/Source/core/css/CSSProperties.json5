@@ -3664,10 +3664,14 @@
     {
       name: "font",
       longhands: "font-style;font-variant-ligatures;font-variant-caps;font-variant-numeric;font-weight;font-stretch;font-size;line-height;font-family",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "font-variant",
       longhands: "font-variant-ligatures;font-variant-caps;font-variant-numeric",
+      api_class: true,
+      api_methods: ["parseShorthand"],
       is_descriptor: true,
     },
     {
@@ -3738,6 +3742,8 @@
     {
       name: "overflow",
       longhands: "overflow-x;overflow-y",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "padding",
