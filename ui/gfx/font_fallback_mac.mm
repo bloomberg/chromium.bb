@@ -4,45 +4,32 @@
 
 #include "ui/gfx/font_fallback.h"
 
-#include <CoreText/CoreText.h>
+#include <dlfcn.h>
 #import <Foundation/Foundation.h>
+#include <string>
+#include <vector>
 
 #include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #import "base/strings/sys_string_conversions.h"
 #include "ui/gfx/font.h"
 
+// TODO(thakis): Remove this prototype once the deployment target is 10.8+.
+extern "C" CFArrayRef CTFontCopyDefaultCascadeListForLanguages(
+    CTFontRef font,
+    CFArrayRef languagePrefList);
+
 namespace gfx {
-namespace {
-
-// CTFontCreateForString() sometimes re-wraps its result in a new CTFontRef with
-// identical attributes. This wastes time shaping the text run and confounds
-// Skia's internal typeface cache.
-bool FontsEqual(CTFontRef lhs, CTFontRef rhs) {
-  if (lhs == rhs)
-    return true;
-
-  // Compare ATSFontRef typeface IDs. These are typedef uint32_t. Typically if
-  // RenderText decided to hunt for a fallback in the first place, this check
-  // fails and FontsEqual returns here.
-  if (CTFontGetPlatformFont(lhs, nil) != CTFontGetPlatformFont(rhs, nil))
-    return false;
-
-  // Comparing addresses of descriptors seems to be sufficient for other cases.
-  base::ScopedCFTypeRef<CTFontDescriptorRef> lhs_descriptor(
-      CTFontCopyFontDescriptor(lhs));
-  base::ScopedCFTypeRef<CTFontDescriptorRef> rhs_descriptor(
-      CTFontCopyFontDescriptor(rhs));
-  return lhs_descriptor.get() == rhs_descriptor.get();
-}
-
-}  // namespace
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
   // On Mac "There is a system default cascade list (which is polymorphic, based
   // on the user's language setting and current font)" - CoreText Programming
   // Guide.
+  // The CoreText APIs provide CTFontCreateForString(font, string, range), but
+  // it requires a text string "hint", and the returned font can't be
+  // represented by name for easy retrieval later.
+  // In 10.8, CTFontCopyDefaultCascadeListForLanguages(font, language_list)
+  // showed up which is a good fit GetFallbackFonts().
   NSArray* languages = [[NSUserDefaults standardUserDefaults]
       stringArrayForKey:@"AppleLanguages"];
   CFArrayRef languages_cf = base::mac::NSToCFCast(languages);
@@ -67,23 +54,6 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
     return std::vector<Font>(1, font);
 
   return fallback_fonts;
-}
-
-bool GetFallbackFont(const Font& font,
-                     const base::char16* text,
-                     int text_length,
-                     Font* result) {
-  base::ScopedCFTypeRef<CFStringRef> cf_string(
-      CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, text, text_length,
-                                         kCFAllocatorNull));
-  CTFontRef ct_font = base::mac::NSToCFCast(font.GetNativeFont());
-  base::ScopedCFTypeRef<CTFontRef> ct_result(
-      CTFontCreateForString(ct_font, cf_string, {0, text_length}));
-  if (FontsEqual(ct_font, ct_result))
-    return false;
-
-  *result = Font(base::mac::CFToNSCast(ct_result.get()));
-  return true;
 }
 
 }  // namespace gfx
