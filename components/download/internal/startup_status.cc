@@ -10,12 +10,13 @@ StartupStatus::StartupStatus() = default;
 StartupStatus::~StartupStatus() = default;
 
 bool StartupStatus::Complete() const {
-  return driver_ok.has_value() && model_ok.has_value();
+  return driver_ok.has_value() && model_ok.has_value() &&
+         file_monitor_ok.has_value();
 }
 
 bool StartupStatus::Ok() const {
   DCHECK(Complete());
-  return driver_ok.value() && model_ok.value();
+  return driver_ok.value() && model_ok.value() && file_monitor_ok.value();
 }
 
 }  // namespace download

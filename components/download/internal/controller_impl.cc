@@ -89,6 +89,8 @@ void ControllerImpl::Initialize() {
   initializing_internals_ = true;
   driver_->Initialize(this);
   model_->Initialize(this);
+  file_monitor_->Initialize(base::Bind(&ControllerImpl::OnFileMonitorReady,
+                                       weak_ptr_factory_.GetWeakPtr()));
 }
 
 const StartupStatus* ControllerImpl::GetStartupStatus() {
@@ -347,6 +349,12 @@ void ControllerImpl::OnDownloadUpdated(const DriverEntry& download) {
       FROM_HERE, base::Bind(&ControllerImpl::SendOnDownloadUpdated,
                             weak_ptr_factory_.GetWeakPtr(), entry->client,
                             download.guid, download.bytes_downloaded));
+}
+
+void ControllerImpl::OnFileMonitorReady(bool success) {
+  DCHECK(!startup_status_.file_monitor_ok.has_value());
+  startup_status_.file_monitor_ok = success;
+  AttemptToFinalizeSetup();
 }
 
 void ControllerImpl::OnModelReady(bool success) {

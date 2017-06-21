@@ -24,6 +24,11 @@ struct Entry;
 // An utility class containing various file cleanup methods.
 class FileMonitor {
  public:
+  using InitCallback = base::Callback<void(bool)>;
+
+  // Creates the file directory for the downloads if it doesn't exist.
+  virtual void Initialize(const InitCallback& callback) = 0;
+
   // Deletes the files in storage directory that are not related to any entries
   // in either database.
   virtual void DeleteUnknownFiles(

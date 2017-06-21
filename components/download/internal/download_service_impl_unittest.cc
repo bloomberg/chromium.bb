@@ -55,6 +55,7 @@ TEST_F(DownloadServiceImplTest, TestGetStatus) {
 
   startup_status.driver_ok = true;
   startup_status.model_ok = true;
+  startup_status.file_monitor_ok = true;
   EXPECT_EQ(DownloadService::ServiceStatus::READY, service_->GetStatus());
 
   startup_status.driver_ok = false;

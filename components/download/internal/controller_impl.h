@@ -88,6 +88,9 @@ class ControllerImpl : public Controller,
                      DownloadClient client,
                      const std::string& guid) override;
 
+  // Called when the file monitor and download file directory are initialized.
+  void OnFileMonitorReady(bool success);
+
   // DeviceStatusListener::Observer implementation.
   void OnDeviceStatusChanged(const DeviceStatus& device_status) override;
 
