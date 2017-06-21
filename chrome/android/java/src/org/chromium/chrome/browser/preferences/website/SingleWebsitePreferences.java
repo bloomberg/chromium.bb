@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.website;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,10 +21,12 @@ import android.text.format.Formatter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -326,7 +329,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         } else if (PREF_MIDI_SYSEX_PERMISSION.equals(key)) {
             setUpListPreference(preference, mSite.getMidiPermission());
         } else if (PREF_NOTIFICATIONS_PERMISSION.equals(key)) {
-            setUpListPreference(preference, mSite.getNotificationPermission());
+            setUpNotificationsPreference(preference);
         } else if (PREF_POPUP_PERMISSION.equals(key)) {
             setUpListPreference(preference, mSite.getPopupPermission());
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(key)) {
@@ -351,6 +354,65 @@ public class SingleWebsitePreferences extends PreferenceFragment
         } else {
             getPreferenceScreen().removePreference(preference);
         }
+    }
+
+    private void setUpNotificationsPreference(Preference listPreference) {
+        if (BuildInfo.isAtLeastO()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)) {
+            final ContentSetting value = mSite.getNotificationPermission();
+            if (!(value == ContentSetting.ALLOW || value == ContentSetting.BLOCK)) {
+                // TODO(crbug.com/735110): Figure out if this is the correct thing to do, for values
+                // that are non-null, but not ALLOW or BLOCK either. (In setupListPreference we
+                // treat non-ALLOW settings as BLOCK, but here we are simply removing them.)
+                getPreferenceScreen().removePreference(listPreference);
+                return;
+            }
+            // On Android O this preference is read-only, so we replace the ListPreference with a
+            // regular Preference that takes users to OS settings on click.
+            Preference preference = new Preference(listPreference.getContext());
+            preference.setKey(listPreference.getKey());
+            setUpPreferenceCommon(preference);
+
+            preference.setSummary(
+                    getResources().getString(ContentSettingsResources.getSiteSummary(value)));
+            preference.setDefaultValue(value);
+
+            // This preference is read-only so should not attempt to persist to shared prefs.
+            preference.setPersistent(false);
+
+            preference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // There is no guarantee that a channel has been initialized yet for sites
+                    // that were granted permission before the channel-initialization-on-grant
+                    // code was in place. So initialize it here before launching the settings.
+                    // TODO(awdf): Once upgrade code is in place, quickly check this ran instead.
+                    // (Right now this is laggy!)
+                    SiteChannelsManager.getInstance().createSiteChannel(
+                            mSite.getAddress().getOrigin(), value == ContentSetting.ALLOW);
+
+                    launchOsChannelSettings(preference.getContext(),
+                            SiteChannelsManager.toChannelId(mSite.getAddress().getOrigin()));
+                    return true;
+                }
+            });
+            preference.setOrder(listPreference.getOrder());
+            getPreferenceScreen().removePreference(listPreference);
+            getPreferenceScreen().addPreference(preference);
+        } else {
+            setUpListPreference(listPreference, mSite.getNotificationPermission());
+        }
+    }
+
+    private static void launchOsChannelSettings(Context context, String channelId) {
+        // TODO(crbug.com/707804): Refer to these ACTION & EXTRA constants by name not value, i.e.
+        // Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
+        // intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelId);
+        // intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
+        Intent intent = new Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS");
+        intent.putExtra("android.provider.extra.CHANNEL_ID", channelId);
+        intent.putExtra("android.provider.extra.APP_PACKAGE", context.getPackageName());
+        context.startActivity(intent);
     }
 
     private void setUpUsbPreferences(int maxPermissionOrder) {
@@ -476,10 +538,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(preference);
             return;
         }
-
+        setUpPreferenceCommon(preference);
         ListPreference listPreference = (ListPreference) preference;
 
-        int contentType = getContentSettingsTypeFromPreferenceKey(preference.getKey());
         CharSequence[] keys = new String[2];
         CharSequence[] descriptions = new String[2];
         keys[0] = ContentSetting.ALLOW.toString();
@@ -490,29 +551,37 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 ContentSettingsResources.getSiteSummary(ContentSetting.BLOCK));
         listPreference.setEntryValues(keys);
         listPreference.setEntries(descriptions);
+        // TODO(crbug.com/735110): Figure out if this is the correct thing to do - here we are
+        // effectively treating non-ALLOW values as BLOCK.
         int index = (value == ContentSetting.ALLOW ? 0 : 1);
         listPreference.setValueIndex(index);
+        listPreference.setOnPreferenceChangeListener(this);
+        listPreference.setSummary("%s");
+    }
+
+    /**
+     * Sets some properties that apply to both regular Preferences and ListPreferences, i.e.
+     * preference title, enabled-state, and icon, based on the preference's key.
+     */
+    private void setUpPreferenceCommon(Preference preference) {
+        int contentType = getContentSettingsTypeFromPreferenceKey(preference.getKey());
         int explanationResourceId = ContentSettingsResources.getExplanation(contentType);
         if (explanationResourceId != 0) {
-            listPreference.setTitle(explanationResourceId);
+            preference.setTitle(explanationResourceId);
         }
-
-        if (listPreference.isEnabled()) {
+        if (preference.isEnabled()) {
             SiteSettingsCategory category =
                     SiteSettingsCategory.fromContentSettingsType(contentType);
             if (category != null && !category.enabledInAndroid(getActivity())) {
-                listPreference.setIcon(category.getDisabledInAndroidIcon(getActivity()));
-                listPreference.setEnabled(false);
+                preference.setIcon(category.getDisabledInAndroidIcon(getActivity()));
+                preference.setEnabled(false);
             } else {
-                listPreference.setIcon(ContentSettingsResources.getIcon(contentType));
+                preference.setIcon(ContentSettingsResources.getIcon(contentType));
             }
         } else {
-            listPreference.setIcon(
+            preference.setIcon(
                     ContentSettingsResources.getDisabledIcon(contentType, getResources()));
         }
-
-        preference.setSummary("%s");
-        listPreference.setOnPreferenceChangeListener(this);
     }
 
     private void setUpLocationPreference(Preference preference) {
