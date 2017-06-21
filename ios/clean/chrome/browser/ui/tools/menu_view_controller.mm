@@ -11,13 +11,13 @@
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#import "ios/clean/chrome/browser/ui/commands/find_in_page_visibility_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_constants.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
-#import "ios/clean/chrome/browser/ui/tools/tools_actions.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -33,7 +33,7 @@ const CGFloat kOverflowControlsMargin = 58.0;
 const CGFloat kCloseButtonHeight = 44.0;
 }
 
-@interface MenuViewController ()<ToolsActions>
+@interface MenuViewController ()
 @property(nonatomic, strong) UIScrollView* menuScrollView;
 @property(nonatomic, strong) UIStackView* menuStackView;
 @property(nonatomic, strong) NSArray<ToolsMenuItem*>* menuItems;
@@ -237,6 +237,8 @@ const CGFloat kCloseButtonHeight = 44.0;
     // CloseMenu Button Constraint.
     [self.closeMenuButton.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor],
+    [self.closeMenuButton.topAnchor
+        constraintEqualToAnchor:self.menuScrollView.topAnchor],
   ]];
 }
 
