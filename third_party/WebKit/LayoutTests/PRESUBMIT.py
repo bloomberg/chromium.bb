@@ -55,38 +55,6 @@ def _TestharnessBaselineFilesToCheck(input_api):
     return baseline_files
 
 
-def _CheckIdenticalFiles(input_api, output_api):
-    """Verifies that certain files are identical in various locations.
-
-    These files should always be updated together. If this list is modified,
-    consider also changing the list of files to copy from web-platform-tests
-    when importing in Tools/Scripts/webkitpy/deps_updater.py.
-    """
-    dirty_files = set(input_api.LocalPaths())
-
-    groups = [
-        ('external/wpt/resources/idlharness.js', 'resources/idlharness.js'),
-        ('external/wpt/resources/testharness.js', 'resources/testharness.js'),
-    ]
-
-    def _absolute_path(s):
-        return input_api.os_path.join(input_api.PresubmitLocalPath(), *s.split('/'))
-
-    def _local_path(s):
-        return input_api.os_path.join('third_party', 'WebKit', 'LayoutTests', *s.split('/'))
-
-    errors = []
-    for group in groups:
-        if any(_local_path(p) in dirty_files for p in group):
-            a = group[0]
-            for b in group[1:]:
-                if not filecmp.cmp(_absolute_path(a), _absolute_path(b), shallow=False):
-                    errors.append(output_api.PresubmitError(
-                        'Files that should match differ: (see https://crbug.com/362788)\n' +
-                        '  %s <=> %s' % (_local_path(a), _local_path(b))))
-    return errors
-
-
 def _CheckFilesUsingEventSender(input_api, output_api):
     """Check if any new layout tests still use eventSender. If they do, we encourage replacing them with
        chrome.gpuBenchmarking.pointerActionSequence.
@@ -107,7 +75,6 @@ def _CheckFilesUsingEventSender(input_api, output_api):
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CheckTestharnessResults(input_api, output_api))
-    results.extend(_CheckIdenticalFiles(input_api, output_api))
     results.extend(_CheckFilesUsingEventSender(input_api, output_api))
     return results
 
@@ -115,6 +82,5 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
     results = []
     results.extend(_CheckTestharnessResults(input_api, output_api))
-    results.extend(_CheckIdenticalFiles(input_api, output_api))
     results.extend(_CheckFilesUsingEventSender(input_api, output_api))
     return results

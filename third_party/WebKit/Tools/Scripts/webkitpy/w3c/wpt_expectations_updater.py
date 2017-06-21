@@ -137,6 +137,10 @@ class WPTExpectationsUpdater(object):
         test_dict = {}
         for result in test_results:
             test_name = result.test_name()
+
+            if not self.port.is_wpt_test(test_name):
+                continue
+
             test_dict[test_name] = {
                 full_port_name: {
                     'expected': result.expected_results(),
@@ -283,6 +287,7 @@ class WPTExpectationsUpdater(object):
         line_list = []
         for test_name, port_results in sorted(merged_results.iteritems()):
             if not self.port.is_wpt_test(test_name):
+                _log.warning('Non-WPT test "%s" unexpectedly passed to create_line_list.', test_name)
                 continue
             for port_names, results in sorted(port_results.iteritems()):
                 line_list.append(self._create_line(test_name, port_names, results))
