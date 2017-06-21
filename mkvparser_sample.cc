@@ -16,6 +16,11 @@
 #include "mkvparser/mkvparser.h"
 #include "mkvparser/mkvreader.h"
 
+// disable deprecation warnings for auto_ptr
+#if defined(__GNUC__) && __GNUC__ >= 5
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 namespace {
 const wchar_t* utf8towcs(const char* str) {
   if (str == NULL)

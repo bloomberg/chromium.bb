@@ -24,6 +24,11 @@
 #include "mkvmuxer/mkvwriter.h"
 #include "mkvparser/mkvparser.h"
 
+// disable deprecation warnings for auto_ptr
+#if defined(__GNUC__) && __GNUC__ >= 5
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 namespace mkvmuxer {
 
 const float PrimaryChromaticity::kChromaticityMin = 0.0f;
