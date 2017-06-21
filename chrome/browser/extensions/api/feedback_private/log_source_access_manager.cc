@@ -64,7 +64,7 @@ void GetLogLinesFromSystemLogsResponse(const SystemLogsResponse& response,
                                        std::vector<std::string>* log_lines) {
   for (const std::pair<std::string, std::string>& pair : response) {
     std::vector<std::string> new_lines = base::SplitString(
-        pair.second, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        pair.second, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     log_lines->reserve(log_lines->size() + new_lines.size());
     log_lines->insert(log_lines->end(), new_lines.begin(), new_lines.end());
   }
