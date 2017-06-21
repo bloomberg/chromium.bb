@@ -54,10 +54,6 @@ bool ClearanceMayAffectLayout(
   return false;
 }
 
-bool IsLegacyBlock(NGLayoutInputNode node) {
-  return node.IsBlock() && !ToNGBlockNode(node).CanUseNewLayout();
-}
-
 // Whether we've run out of space in this flow. If so, there will be no work
 // left to do for this block in this fragmentainer.
 bool IsOutOfSpace(const NGConstraintSpace& space, LayoutUnit content_size) {
@@ -338,6 +334,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child) {
+  // TODO(ikilpatrick): Determine which of the child's margins need to be
+  // included for the static position.
   NGLogicalOffset offset = {border_scrollbar_padding_.inline_start,
                             previous_inflow_position.logical_block_offset};
 
@@ -393,7 +391,7 @@ NGInflowChildData NGBlockLayoutAlgorithm::PrepareChildLayout(
   NGMarginStrut margin_strut = previous_inflow_position.margin_strut;
 
   bool should_position_pending_floats =
-      !IsNewFormattingContextForBlockLevelChild(Style(), child) &&
+      !child.CreatesNewFormattingContext() &&
       ClearanceMayAffectLayout(ConstraintSpace(),
                                container_builder_.UnpositionedFloats(),
                                child.Style());
@@ -416,29 +414,11 @@ NGInflowChildData NGBlockLayoutAlgorithm::PrepareChildLayout(
           border_scrollbar_padding_.inline_start + margins.inline_start,
       bfc_block_offset};
 
-  bool is_new_fc = IsNewFormattingContextForBlockLevelChild(Style(), child);
-
   // Append the current margin strut with child's block start margin.
   // Non empty border/padding, and new FC use cases are handled inside of the
   // child's layout.
-  if (!is_new_fc)
-    margin_strut.Append(margins.block_start);
+  margin_strut.Append(margins.block_start);
 
-  // TODO(crbug.com/716930): We should also collapse margins below once we
-  // remove LayoutInline splitting.
-
-  // Should collapse margins if our child is a legacy block.
-  // TODO(ikilpatrick): I think this can be removed.
-  if (IsLegacyBlock(child) && !is_new_fc) {
-    child_bfc_offset.block_offset += margin_strut.Sum();
-    MaybeUpdateFragmentBfcOffset(
-        ConstraintSpace(), child_bfc_offset.block_offset, &container_builder_);
-    // TODO(ikilpatrick): Check if child_bfc_offset.block_offset is correct -
-    // MaybeUpdateFragmentBfcOffset might have changed it due to clearance.
-    PositionPendingFloats(child_bfc_offset.block_offset, &container_builder_,
-                          MutableConstraintSpace());
-    margin_strut = {};
-  }
   return {child_bfc_offset, margin_strut, margins};
 }
 
@@ -460,13 +440,11 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::FinishChildLayout(
 
   // Determine the fragment's position in the parent space.
   WTF::Optional<NGLogicalOffset> child_bfc_offset;
-  if (child_space.IsNewFormattingContext())
+  if (child.CreatesNewFormattingContext())
     child_bfc_offset = PositionNewFc(child, previous_inflow_position, fragment,
                                      child_data, child_space);
   else if (fragment.BfcOffset())
     child_bfc_offset = PositionWithBfcOffset(fragment);
-  else if (IsLegacyBlock(child))
-    child_bfc_offset = PositionLegacy(child_space, child_data);
   else if (container_builder_.BfcOffset())
     child_bfc_offset = PositionWithParentBfc(child_space, child_data, fragment);
 
@@ -610,17 +588,6 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
   return bfc_offset;
 }
 
-NGLogicalOffset NGBlockLayoutAlgorithm::PositionLegacy(
-    const NGConstraintSpace& child_space,
-    const NGInflowChildData& child_data) {
-  NGLogicalOffset bfc_offset = {ConstraintSpace().BfcOffset().inline_offset +
-                                    border_scrollbar_padding_.inline_start +
-                                    child_data.margins.inline_start,
-                                child_data.bfc_offset_estimate.block_offset};
-  AdjustToClearance(child_space.ClearanceOffset(), &bfc_offset);
-  return bfc_offset;
-}
-
 void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   LayoutUnit used_block_size =
       BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
@@ -695,13 +662,14 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   space_builder.SetAvailableSize(child_available_size_)
       .SetPercentageResolutionSize(child_percentage_size_);
 
-  const ComputedStyle& child_style = child.Style();
-  bool is_new_bfc = IsNewFormattingContextForBlockLevelChild(Style(), child);
-  space_builder.SetIsNewFormattingContext(is_new_bfc)
+  bool is_new_fc = child.CreatesNewFormattingContext();
+  space_builder.SetIsNewFormattingContext(is_new_fc)
       .SetBfcOffset(child_data.bfc_offset_estimate)
       .SetMarginStrut(child_data.margin_strut);
 
-  if (!is_new_bfc) {
+  if (!is_new_fc) {
+    // This clears the current layout's unpositioned floats as they may be
+    // positioned by the child.
     space_builder.SetUnpositionedFloats(
         container_builder_.MutableUnpositionedFloats());
   }
@@ -713,6 +681,7 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
         FromPlatformWritingMode(Style().GetWritingMode()));
   }
 
+  const ComputedStyle& child_style = child.Style();
   space_builder
       .SetClearanceOffset(GetClearanceOffset(constraint_space_->Exclusions(),
                                              child_style.Clear()))
@@ -725,7 +694,7 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // If a block establishes a new formatting context we must know our
     // position in the formatting context, and are able to adjust the
     // fragmentation line.
-    if (is_new_bfc) {
+    if (is_new_fc) {
       space_available -= child_data.bfc_offset_estimate.block_offset;
     }
   }

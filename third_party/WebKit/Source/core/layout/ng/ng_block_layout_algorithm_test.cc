@@ -2480,5 +2480,51 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   EXPECT_THAT(body_fragment->Offset(),
               NGPhysicalOffset(LayoutUnit(8), LayoutUnit(8)));
 }
+
+TEST_F(NGBlockLayoutAlgorithmTest, NewFcAvoidsFloats) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        width: 200px;
+      }
+      #float {
+        float: left; width: 100px; height: 30px; background: red;
+      }
+      #fc {
+        width: 150px; height: 120px; display: flow-root;
+      }
+    </style>
+    <div id="container">
+      <div id="float"></div>
+      <div id="fc"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+
+  RefPtr<const NGPhysicalFragment> fragment =
+      NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(150)), fragment->Size());
+
+  const NGPhysicalBoxFragment* float_child =
+      ToNGPhysicalBoxFragment(fragment.Get())
+          ->PositionedFloats()[0]
+          .fragment.Get();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit(30)),
+            float_child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(0)),
+            float_child->Offset());
+
+  FragmentChildIterator iterator(ToNGPhysicalBoxFragment(fragment.Get()));
+
+  const NGPhysicalBoxFragment* child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(120)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(30)), child->Offset());
+}
+
 }  // namespace
 }  // namespace blink
