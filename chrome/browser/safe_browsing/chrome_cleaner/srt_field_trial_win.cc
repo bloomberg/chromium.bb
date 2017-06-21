@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
@@ -43,6 +44,9 @@ namespace safe_browsing {
 const base::Feature kInBrowserCleanerUIFeature{
     "InBrowserCleanerUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCleanerDownloadFeature{"DownloadCleanupToolByBitness",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsInSRTPromptFieldTrialGroups() {
   return !base::StartsWith(base::FieldTrialList::FindFullName(kSRTPromptTrial),
                            kSRTPromptOffGroup, base::CompareCase::SENSITIVE);
@@ -70,8 +74,8 @@ GURL GetLegacyDownloadURL() {
 
 GURL GetSRTDownloadURL() {
   constexpr char kDownloadGroupParam[] = "download_group";
-  const std::string download_group =
-      variations::GetVariationParamValue(kSRTPromptTrial, kDownloadGroupParam);
+  const std::string download_group = base::GetFieldTrialParamValueByFeature(
+      kCleanerDownloadFeature, kDownloadGroupParam);
   if (download_group.empty())
     return GetLegacyDownloadURL();
 
