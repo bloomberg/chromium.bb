@@ -141,24 +141,5 @@ group("libcxx_proxy") {
   deps = [
     ":libc++",
   ]
-  public_configs = [ ":link_helper" ]
-}
-
-# This config is only used by binaries and shared library targets.
-# //build/config/sanitizers:default_sanitizer_flags sets the include paths for
-# everything else.
-config("link_helper") {
-  configs = [ ":no_libstdcpp" ]
-
-  if (!is_mac) {
-    ldflags = [
-      # Normally the generator takes care of RPATH. Our case is special because
-      # the generator is unaware of the libc++.so dependency. Note that setting
-      # RPATH here is a potential security issue. See the following for another
-      # example of this issue: https://code.google.com/p/gyp/issues/detail?id=315
-      "-Wl,-rpath,\$ORIGIN/",
-    ]
-  }
-
-  lib_dirs = [ root_build_dir ]
+  public_configs = [ ":no_libstdcpp" ]
 }
