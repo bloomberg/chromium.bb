@@ -12,13 +12,6 @@
 
 namespace base {
 
-namespace {
-
-std::string GetDumpNameForTracing(const UnguessableToken& id) {
-  return "shared_memory/" + id.ToString();
-}
-}
-
 // static
 SharedMemoryTracker* SharedMemoryTracker::GetInstance() {
   static SharedMemoryTracker* instance = new SharedMemoryTracker;
@@ -26,27 +19,29 @@ SharedMemoryTracker* SharedMemoryTracker::GetInstance() {
 }
 
 // static
-trace_event::MemoryAllocatorDumpGuid SharedMemoryTracker::GetDumpGUIDForTracing(
+std::string SharedMemoryTracker::GetDumpNameForTracing(
     const UnguessableToken& id) {
-  std::string dump_name = GetDumpNameForTracing(id);
-  return trace_event::MemoryAllocatorDumpGuid(dump_name);
+  return "shared_memory/" + id.ToString();
 }
 
 // static
 trace_event::MemoryAllocatorDumpGuid
 SharedMemoryTracker::GetGlobalDumpGUIDForTracing(const UnguessableToken& id) {
-  return GetDumpGUIDForTracing(id);
+  std::string dump_name = GetDumpNameForTracing(id);
+  return trace_event::MemoryAllocatorDumpGuid(dump_name);
 }
 
 void SharedMemoryTracker::IncrementMemoryUsage(
     const SharedMemory& shared_memory) {
   AutoLock hold(usages_lock_);
+  DCHECK(usages_.find(&shared_memory) == usages_.end());
   usages_[&shared_memory] = shared_memory.mapped_size();
 }
 
 void SharedMemoryTracker::DecrementMemoryUsage(
     const SharedMemory& shared_memory) {
   AutoLock hold(usages_lock_);
+  DCHECK(usages_.find(&shared_memory) != usages_.end());
   usages_.erase(&shared_memory);
 }
 
@@ -75,8 +70,12 @@ bool SharedMemoryTracker::OnMemoryDump(const trace_event::MemoryDumpArgs& args,
     } else {
       dump_name = GetDumpNameForTracing(memory_guid);
     }
-    auto dump_guid = GetDumpGUIDForTracing(memory_guid);
     // Discard duplicates that might be seen in single-process mode.
+    // TODO(hajimehoshi): This logic depends on the old fact that dumps were not
+    // created nowhere but SharedMemoryTracker::OnMemoryDump. Now this is not
+    // true since ProcessMemoryDump::CreateSharedMemoryOwnershipEdge creates
+    // dumps, and the logic needs to be fixed. See the discussion at
+    // https://chromium-review.googlesource.com/c/535378.
     if (pmd->GetAllocatorDump(dump_name))
       continue;
     trace_event::MemoryAllocatorDump* local_dump =
@@ -85,8 +84,9 @@ bool SharedMemoryTracker::OnMemoryDump(const trace_event::MemoryDumpArgs& args,
     // Fix this to record resident size.
     local_dump->AddScalar(trace_event::MemoryAllocatorDump::kNameSize,
                           trace_event::MemoryAllocatorDump::kUnitsBytes, size);
+    auto global_dump_guid = GetGlobalDumpGUIDForTracing(memory_guid);
     trace_event::MemoryAllocatorDump* global_dump =
-        pmd->CreateSharedGlobalAllocatorDump(dump_guid);
+        pmd->CreateSharedGlobalAllocatorDump(global_dump_guid);
     global_dump->AddScalar(trace_event::MemoryAllocatorDump::kNameSize,
                            trace_event::MemoryAllocatorDump::kUnitsBytes, size);
 
