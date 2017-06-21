@@ -91773,21 +91773,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="NetHttpContentLengthType" separator=".">
-  <suffix name="Http">
-    <obsolete>
-      Replaced by HttpContentLength Direct/ViaDRP variants.
-    </obsolete>
-  </suffix>
-  <suffix name="Https">
-    <obsolete>
-      Replaced by HttpContentLength Direct/ViaDRP variants.
-    </obsolete>
-  </suffix>
-  <suffix name="Video">
-    <obsolete>
-      Replaced by HttpContentLength Direct/ViaDRP variants.
-    </obsolete>
-  </suffix>
+  <suffix name="Http"/>
+  <suffix name="Https"/>
+  <suffix name="Video"/>
   <affected-histogram name="Net.HttpContentLength"/>
   <affected-histogram name="Net.HttpOriginalContentLength"/>
 </histogram_suffixes>
