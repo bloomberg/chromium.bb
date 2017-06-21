@@ -89,8 +89,6 @@ class TestImporter(object):
 
         self.clean_up_temp_repo(temp_repo_path)
 
-        self._copy_resources()
-
         has_changes = self._has_changes()
         if not has_changes:
             _log.info('Done: no changes to import.')
@@ -161,25 +159,6 @@ class TestImporter(object):
         """Removes the temporary copy of the wpt repo that was downloaded."""
         _log.info('Deleting temp repo directory %s.', temp_repo_path)
         self.fs.rmtree(temp_repo_path)
-
-    def _copy_resources(self):
-        """Copies resources from wpt to LayoutTests/resources.
-
-        We copy idlharness.js and testharness.js in wpt to LayoutTests/resources
-        in order to use them in non-imported tests.
-
-        If this method is changed, the lists of files expected to be identical
-        in LayoutTests/PRESUBMIT.py should also be changed.
-        """
-        resources_to_copy_from_wpt = [
-            ('idlharness.js', 'resources'),
-            ('testharness.js', 'resources'),
-        ]
-        for filename, wpt_subdir in resources_to_copy_from_wpt:
-            source = self.finder.path_from_layout_tests('external', WPT_DEST_NAME, wpt_subdir, filename)
-            destination = self.finder.path_from_layout_tests('resources', filename)
-            self.copyfile(source, destination)
-            self.run(['git', 'add', destination])
 
     def _generate_manifest(self, dest_path):
         """Generates MANIFEST.json for imported tests.

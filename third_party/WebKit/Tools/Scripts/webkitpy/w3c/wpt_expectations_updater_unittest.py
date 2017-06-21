@@ -133,41 +133,83 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         host = self.mock_host()
         host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
             'tests': {
-                'test': {
-                    'passing-test.html': {
-                        'expected': 'PASS',
-                        'actual': 'PASS',
+                'external': {
+                    'wpt': {
+                        'x': {
+                            'passing-test.html': {
+                                'expected': 'PASS',
+                                'actual': 'PASS',
+                            },
+                        },
                     },
                 },
             },
         }))
         updater = WPTExpectationsUpdater(host)
-        self.assertEqual(updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
+        self.assertEqual(
+            updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
 
     def test_get_failing_results_dict_unexpected_pass(self):
         host = self.mock_host()
         host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
             'tests': {
-                'x': {
-                    'passing-test.html': {
-                        'expected': 'FAIL TIMEOUT',
-                        'actual': 'PASS',
-                        'is_unexpected': True,
+                'external': {
+                    'wpt': {
+                        'x': {
+                            'passing-test.html': {
+                                'expected': 'FAIL TIMEOUT',
+                                'actual': 'PASS',
+                                'is_unexpected': True,
+                            },
+                        },
                     },
                 },
             },
         }))
         updater = WPTExpectationsUpdater(host)
-        self.assertEqual(updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
+        self.assertEqual(
+            updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
 
     def test_get_failing_results_dict_no_results(self):
         host = self.mock_host()
         host.buildbot = MockBuildBot()
         host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), None)
         updater = WPTExpectationsUpdater(host)
-        self.assertEqual(updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
+        self.assertEqual(
+            updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
 
     def test_get_failing_results_dict_some_failing_results(self):
+        host = self.mock_host()
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
+            'tests': {
+                'external': {
+                    'wpt': {
+                        'x': {
+                            'failing-test.html': {
+                                'expected': 'PASS',
+                                'actual': 'IMAGE',
+                                'is_unexpected': True,
+                            },
+                        },
+                    },
+                },
+            },
+        }))
+        updater = WPTExpectationsUpdater(host)
+        results_dict = updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123))
+        self.assertEqual(
+            results_dict,
+            {
+                'external/wpt/x/failing-test.html': {
+                    'test-mac-mac10.10': {
+                        'actual': 'IMAGE',
+                        'expected': 'PASS',
+                        'bug': 'crbug.com/626703',
+                    },
+                },
+            })
+
+    def test_get_failing_results_dict_non_wpt_test(self):
         host = self.mock_host()
         host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
             'tests': {
@@ -182,17 +224,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         }))
         updater = WPTExpectationsUpdater(host)
         results_dict = updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123))
-        self.assertEqual(
-            results_dict,
-            {
-                'x/failing-test.html': {
-                    'test-mac-mac10.10': {
-                        'actual': 'IMAGE',
-                        'expected': 'PASS',
-                        'bug': 'crbug.com/626703',
-                    },
-                },
-            })
+        self.assertEqual(results_dict, {})
 
     def test_merge_same_valued_keys_all_match(self):
         updater = WPTExpectationsUpdater(self.mock_host())
@@ -247,7 +279,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             {'Skip'})
 
     def test_create_line_list_old_tests(self):
-        # In this example, there are two failures that are not in w3c tests.
+        # In this example, there are two failures that are not in wpt.
         updater = WPTExpectationsUpdater(self.mock_host())
         results = {
             'fake/test/path.html': {
@@ -370,7 +402,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(self.mock_host())
         layout_test_list = [
             LayoutTestResult(
-                'test/name.html', {
+                'external/wpt/test/name.html', {
                     'expected': 'bar',
                     'actual': 'foo',
                     'is_unexpected': True,
@@ -378,7 +410,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 })
         ]
         self.assertEqual(updater.generate_results_dict('test-mac-mac10.10', layout_test_list), {
-            'test/name.html': {
+            'external/wpt/test/name.html': {
                 'test-mac-mac10.10': {
                     'expected': 'bar',
                     'actual': 'foo',
