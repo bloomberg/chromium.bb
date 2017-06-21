@@ -762,7 +762,7 @@
     ],
 
     'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan': [
-      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'arm_no_neon', 'clang', 'asan',
+      'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm_no_neon', 'clang', 'asan',
     ],
 
     'android_cronet_release_bot_minimal_symbols_mipsel': [
