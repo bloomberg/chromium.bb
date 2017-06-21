@@ -50,8 +50,6 @@ source_set("gbm") {
     "gpu/drm_window_proxy.h",
     "gpu/gbm_buffer.cc",
     "gpu/gbm_buffer.h",
-    "gpu/gbm_buffer_base.cc",
-    "gpu/gbm_buffer_base.h",
     "gpu/gbm_device.cc",
     "gpu/gbm_device.h",
     "gpu/gbm_surface.cc",
