@@ -277,9 +277,12 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
         RenderThreadImpl::current()->GetIOTaskRunner().get()));
     web_database_observer_impl_.reset(
         new WebDatabaseObserverImpl(sync_message_filter_.get()));
+    gpu_memory_buffer_manager_ =
+        RenderThreadImpl::current()->GetGpuMemoryBufferManager();
   } else {
     service_manager::mojom::ConnectorRequest request;
     connector_ = service_manager::Connector::Create(&request);
+    gpu_memory_buffer_manager_ = nullptr;
   }
 
   top_level_blame_context_.Initialize();
@@ -1081,8 +1084,8 @@ RendererBlinkPlatformImpl::CreateSharedOffscreenGraphicsContext3DProvider() {
 
 gpu::GpuMemoryBufferManager*
 RendererBlinkPlatformImpl::GetGpuMemoryBufferManager() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  return thread ? thread->GetGpuMemoryBufferManager() : nullptr;
+  DCHECK(gpu_memory_buffer_manager_);  // Does not work in unit tests
+  return gpu_memory_buffer_manager_;
 }
 
 //------------------------------------------------------------------------------

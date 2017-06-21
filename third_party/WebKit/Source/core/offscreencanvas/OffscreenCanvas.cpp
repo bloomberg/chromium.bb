@@ -230,6 +230,29 @@ bool OffscreenCanvas::IsAccelerated() const {
   return context_ && context_->IsAccelerated();
 }
 
+bool OffscreenCanvas::ShouldUseGpuMemoryBuffer() const {
+  DCHECK(context_);
+  if (!Platform::Current()->IsGPUCompositingEnabled())
+    return false;
+
+  if (!current_frame_->IsTextureBacked() ||
+      current_frame_is_web_gl_software_rendering_)
+    return true;
+
+  // TODO(crbug.com/646022): Make the GPU-accelerated code paths work with
+  // GpuMemoryBuffer.  The following lines are currently commented out because
+  // they break pixel tests on mac.
+  /*
+  if (context_->Is2d())
+    return RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled();
+
+  if (context_->Is3d())
+    return RuntimeEnabledFeatures::WebGLImageChromiumEnabled();
+  NOTREACHED();
+  */
+  return false;
+}
+
 OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
   if (!frame_dispatcher_) {
     // The frame dispatcher connects the current thread of OffscreenCanvas
@@ -331,9 +354,13 @@ void OffscreenCanvas::DoCommit() {
   TRACE_EVENT0("blink", "OffscreenCanvas::DoCommit");
   double commit_start_time = WTF::MonotonicallyIncreasingTime();
   DCHECK(current_frame_);
+  OffscreenCanvasFrameDispatcherImpl::GpuMemoryBufferMode mode =
+      ShouldUseGpuMemoryBuffer()
+          ? OffscreenCanvasFrameDispatcher::kUseGpuMemoryBuffer
+          : OffscreenCanvasFrameDispatcher::kDontUseGpuMemoryBuffer;
   GetOrCreateFrameDispatcher()->DispatchFrame(
       std::move(current_frame_), commit_start_time, current_frame_damage_rect_,
-      current_frame_is_web_gl_software_rendering_);
+      current_frame_is_web_gl_software_rendering_, mode);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 
