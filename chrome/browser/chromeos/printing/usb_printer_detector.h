@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/printing/printer_detector.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -18,16 +17,29 @@ class Profile;
 
 namespace chromeos {
 
-// Observes device::UsbService for addition of USB printers.  When a new USB
-// printer that is not already configured for this user is found, if it can be
-// automatically configured for printing, that is done.  USB printers that
-// cannot be automatically configured are exposed via the PrinterDetector
-// interface so that higher level processing can handle them.
-class UsbPrinterDetector : public PrinterDetector, public KeyedService {
+// Observes device::UsbService for addition of USB printers (devices with
+// interface class 7).  When a device is detected, it is forwarded to the
+// printing subsystem for either autoconfiguration or user guidance.
+class UsbPrinterDetector : public KeyedService {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+
+    // The set of available printers has changed.
+    virtual void OnAvailableUsbPrintersChanged(
+        const std::vector<Printer>& printers) = 0;
+  };
+
   // Factory function for the CUPS implementation.
   static std::unique_ptr<UsbPrinterDetector> Create(Profile* profile);
   ~UsbPrinterDetector() override = default;
+
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Get the current set of detected printers.
+  virtual std::vector<Printer> GetPrinters() = 0;
 
  protected:
   UsbPrinterDetector() = default;
