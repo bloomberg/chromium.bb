@@ -269,6 +269,11 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
 
   EXPECT_FALSE(results.destroyed);
   EXPECT_FALSE(results.continue_with_certificate_called);
+
+  // Close the tab. Delegate should be destroyed without continuing.
+  chrome::CloseTab(browser());
+  EXPECT_TRUE(results.destroyed);
+  EXPECT_FALSE(results.continue_with_certificate_called);
 }
 
 @interface DeallocTrackingSSLClientCertificateSelectorCocoa
