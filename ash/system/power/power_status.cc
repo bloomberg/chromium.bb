@@ -22,14 +22,115 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ash {
 namespace {
+
+static PowerStatus* g_power_status = nullptr;
+
+// Minimum battery percentage rendered in UI.
+const int kMinBatteryPercent = 1;
+
+// The minimum height (in dp) of the charged region of the battery icon when the
+// battery is present and has a charge greater than 0.
+const int kMinVisualChargeLevel = 1;
+
+// The color of the battery's badge (bolt, unreliable, X).
+const SkColor kBatteryBadgeColor = SkColorSetA(SK_ColorBLACK, 0xB2);
+
+// The color used for the battery's badge and charged color when the battery
+// charge level is critically low and the device is not plugged in.
+const SkColor kBatteryAlertColor = SkColorSetRGB(0xDA, 0x27, 0x12);
+
+class BatteryImageSource : public gfx::CanvasImageSource {
+ public:
+  BatteryImageSource(const PowerStatus::BatteryImageInfo& info,
+                     int height,
+                     SkColor bg_color,
+                     SkColor fg_color)
+      : gfx::CanvasImageSource(gfx::Size(height, height), false),
+        info_(info),
+        bg_color_(bg_color),
+        fg_color_(fg_color) {}
+
+  ~BatteryImageSource() override {}
+
+  // gfx::ImageSkiaSource implementation.
+  void Draw(gfx::Canvas* canvas) override {
+    canvas->Save();
+    const float dsf = canvas->UndoDeviceScaleFactor();
+    // All constants below are expressed relative to a canvas size of 16. The
+    // actual canvas size (i.e. |size()|) may not be 16.
+    const float kAssumedCanvasSize = 16;
+    const float const_scale = dsf * size().height() / kAssumedCanvasSize;
+
+    // The two shapes in this path define the outline of the battery icon.
+    SkPath path;
+    gfx::RectF top(6.5f, 2, 3, 1);
+    top.Scale(const_scale);
+    top = gfx::RectF(gfx::ToEnclosingRect(top));
+    path.addRect(gfx::RectFToSkRect(top));
+
+    gfx::RectF bottom(4.5f, 3, 7, 11);
+    bottom.Scale(const_scale);
+    // Align the top of bottom rect to the bottom of the top one. Otherwise,
+    // they may overlap and the top will be too small.
+    bottom.set_y(top.bottom());
+    const float corner_radius = const_scale;
+    path.addRoundRect(gfx::RectToSkRect(gfx::ToEnclosingRect(bottom)),
+                      corner_radius, corner_radius);
+    // Paint the battery's base (background) color.
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(bg_color_);
+    canvas->DrawPath(path, flags);
+
+    // |charge_level| is a value between 0 and the visual height of the icon
+    // representing the number of device pixels the battery image should be
+    // shown charged. The exception is when |charge_level| is very low; in this
+    // case, still draw 1dip of charge.
+    SkRect icon_bounds = path.getBounds();
+    float charge_level =
+        std::floor(info_.charge_percent / 100.0 * icon_bounds.height());
+    const float min_charge_level = dsf * kMinVisualChargeLevel;
+    charge_level = std::max(std::min(charge_level, icon_bounds.height()),
+                            min_charge_level);
+
+    const float charge_y = icon_bounds.bottom() - charge_level;
+    gfx::RectF clip_rect(0, charge_y, size().width() * dsf,
+                         size().height() * dsf);
+    canvas->ClipRect(clip_rect);
+
+    const bool use_alert_color =
+        charge_level == min_charge_level && info_.alert_if_low;
+    flags.setColor(use_alert_color ? kBatteryAlertColor : fg_color_);
+    canvas->DrawPath(path, flags);
+
+    canvas->Restore();
+
+    // Paint the badge over top of the battery, if applicable.
+    if (info_.icon_badge) {
+      const SkColor badge_color =
+          use_alert_color ? kBatteryAlertColor : kBatteryBadgeColor;
+      PaintVectorIcon(canvas, *info_.icon_badge, badge_color);
+    }
+  }
+
+  bool HasRepresentationAtAllScales() const override { return true; }
+
+ private:
+  PowerStatus::BatteryImageInfo info_;
+  SkColor bg_color_;
+  SkColor fg_color_;
+
+  DISALLOW_COPY_AND_ASSIGN(BatteryImageSource);
+};
 
 // Updates |proto| to ensure that its fields are consistent.
 void SanitizeProto(power_manager::PowerSupplyProperties* proto) {
@@ -101,43 +202,19 @@ int PowerSourceToMessageID(
   return 0;
 }
 
-static PowerStatus* g_power_status = NULL;
-
-// Minimum battery percentage rendered in UI.
-const int kMinBatteryPercent = 1;
-
-// The height of the battery icon (as measured from the user-visible bottom of
-// the icon to the user-visible top of the icon).
-const int kBatteryImageHeight = 12;
-
-// The dimensions of the canvas containing the battery icon.
-const int kBatteryCanvasSize = 16;
-
-// The minimum height (in dp) of the charged region of the battery icon when the
-// battery is present and has a charge greater than 0.
-const int kMinVisualChargeLevel = 1;
-
-// The empty background color of the battery icon in the system tray.
-// TODO(tdanderson): Move these constants to a shared location if they are
-// shared by more than one material design system icon.
-const SkColor kBatteryBaseColor = SkColorSetA(SK_ColorWHITE, 0x4C);
-
-// The background color of the charged region of the battery in the system
-// tray.
-const SkColor kBatteryChargeColor = SK_ColorWHITE;
-
-// The color of the battery's badge (bolt, unreliable, X).
-const SkColor kBatteryBadgeColor = SkColorSetA(SK_ColorBLACK, 0xB2);
-
-// The color used for the battery's badge and charged color when the battery
-// charge level is critically low.
-const SkColor kBatteryAlertColor = SkColorSetRGB(0xDA, 0x27, 0x12);
-
 }  // namespace
 
-bool PowerStatus::BatteryImageInfo::operator==(
+bool PowerStatus::BatteryImageInfo::ApproximatelyEqual(
     const BatteryImageInfo& o) const {
-  return icon_badge == o.icon_badge && charge_level == o.charge_level;
+  // 100% is distinct from all else.
+  if ((charge_percent != o.charge_percent) &&
+      (charge_percent == 100 || o.charge_percent == 100)) {
+    return false;
+  }
+
+  // Otherwise, consider close values such as 42% and 45% as about the same.
+  return icon_badge == o.icon_badge && o.alert_if_low == o.alert_if_low &&
+         std::abs(charge_percent - o.charge_percent) < 5;
 }
 
 const int PowerStatus::kMaxBatteryTimeToDisplaySec = 24 * 60 * 60;
@@ -154,12 +231,12 @@ void PowerStatus::Initialize() {
 void PowerStatus::Shutdown() {
   CHECK(g_power_status);
   delete g_power_status;
-  g_power_status = NULL;
+  g_power_status = nullptr;
 }
 
 // static
 bool PowerStatus::IsInitialized() {
-  return g_power_status != NULL;
+  return g_power_status != nullptr;
 }
 
 // static
@@ -301,9 +378,11 @@ PowerStatus::BatteryImageInfo PowerStatus::GetBatteryImageInfo() const {
 }
 
 void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
+  info->alert_if_low = !IsLinePowerConnected();
+
   if (!IsUsbChargerConnected() && !IsBatteryPresent()) {
     info->icon_badge = &kSystemTrayBatteryXIcon;
-    info->charge_level = 0;
+    info->charge_percent = 0;
     return;
   }
 
@@ -314,14 +393,7 @@ void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
   else
     info->icon_badge = nullptr;
 
-  // |charge_state| is a value between 0 and kBatteryImageHeight representing
-  // the number of device pixels the battery image should be shown charged. The
-  // exception is when |charge_state| is 0 (a critically-low battery); in this
-  // case, still draw 1dp of charge.
-  int charge_state =
-      static_cast<int>(GetBatteryPercent() / 100.0 * kBatteryImageHeight);
-  charge_state = std::max(std::min(charge_state, kBatteryImageHeight), 0);
-  info->charge_level = std::max(charge_state, kMinVisualChargeLevel);
+  info->charge_percent = GetBatteryPercent();
 
   // Use an alert badge if the battery is critically low and does not already
   // have a badge assigned.
@@ -332,61 +404,12 @@ void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
 }
 
 // static
-gfx::Size PowerStatus::GetBatteryImageSizeInDip() {
-  return gfx::Size(kBatteryCanvasSize, kBatteryCanvasSize);
-}
-
-gfx::ImageSkiaRep PowerStatus::GetBatteryImage(const BatteryImageInfo& info,
-                                               float scale) const {
-  const bool use_alert_color =
-      (info.charge_level == kMinVisualChargeLevel && !IsLinePowerConnected());
-  const SkColor badge_color =
-      use_alert_color ? kBatteryAlertColor : kBatteryBadgeColor;
-  const SkColor charge_color =
-      use_alert_color ? kBatteryAlertColor : kBatteryChargeColor;
-
-  gfx::Canvas canvas(GetBatteryImageSizeInDip(), scale, false /* opaque */);
-
-  // Routine to paint the icon image, aligned to pixel boundaries no matter what
-  // the scale factor.
-  auto paint_icon = [&canvas](SkColor color) {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(color);
-
-    SkPath path;
-    gfx::ScopedCanvas scoped(&canvas);
-    const float dsf = canvas.UndoDeviceScaleFactor();
-    gfx::RectF bottom(4.5f, 3, 7, 11);
-    bottom.Scale(dsf);
-    path.addRoundRect(gfx::RectToSkRect(gfx::ToEnclosingRect(bottom)), 1, 1);
-
-    gfx::RectF top(6.5f, 2, 3, 1);
-    top.Scale(dsf);
-    path.addRect(gfx::RectToSkRect(gfx::ToEnclosingRect(top)));
-    canvas.DrawPath(path, flags);
-  };
-
-  // Paint the battery's base (background) color.
-  paint_icon(kBatteryBaseColor);
-
-  // Paint the charged portion of the battery. Note that |charge_height| adjusts
-  // for the 2dp of padding between the bottom of the battery icon and the
-  // bottom edge of |canvas|.
-  const int charge_height = info.charge_level + 2;
-  gfx::Rect clip_rect(0, kBatteryCanvasSize - charge_height, kBatteryCanvasSize,
-                      charge_height);
-  canvas.Save();
-  canvas.ClipRect(clip_rect);
-  paint_icon(charge_color);
-  canvas.Restore();
-
-  // Paint the badge over top of the battery, if applicable.
-  if (info.icon_badge)
-    PaintVectorIcon(&canvas, *info.icon_badge, kBatteryCanvasSize, badge_color);
-
-  return gfx::ImageSkiaRep(canvas.GetBitmap(), scale);
+gfx::ImageSkia PowerStatus::GetBatteryImage(const BatteryImageInfo& info,
+                                            int height,
+                                            SkColor bg_color,
+                                            SkColor fg_color) {
+  auto* source = new BatteryImageSource(info, height, bg_color, fg_color);
+  return gfx::ImageSkia(source, source->size());
 }
 
 base::string16 PowerStatus::GetAccessibleNameString(

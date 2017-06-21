@@ -118,41 +118,19 @@ class PowerTrayView : public TrayItemView {
   }
 
  private:
-  class PowerTrayImageSource : public gfx::ImageSkiaSource {
-   public:
-    explicit PowerTrayImageSource(const PowerStatus::BatteryImageInfo& info)
-        : info_(info) {}
-
-    // gfx::ImageSkiaSource implementation.
-    gfx::ImageSkiaRep GetImageForScale(float scale) override {
-      return PowerStatus::Get()->GetBatteryImage(info_, scale);
-    }
-
-    bool HasRepresentationAtAllScales() const override { return true; }
-
-    const PowerStatus::BatteryImageInfo& info() const { return info_; }
-
-   private:
-    PowerStatus::BatteryImageInfo info_;
-
-    DISALLOW_COPY_AND_ASSIGN(PowerTrayImageSource);
-  };
-
   void UpdateImage() {
     const PowerStatus::BatteryImageInfo& info =
         PowerStatus::Get()->GetBatteryImageInfo();
     // Only change the image when the info changes. http://crbug.com/589348
-    if (image_source_ && image_source_->info() == info)
+    if (info_ && info_->ApproximatelyEqual(info))
       return;
-    image_source_ = new PowerTrayImageSource(info);
-    // gfx::ImageSkia takes ownership of image_source_. It will stay alive until
-    // we call SetImage() again, which only happens here.
-    image_view()->SetImage(
-        gfx::ImageSkia(image_source_, PowerStatus::GetBatteryImageSizeInDip()));
+    image_view()->SetImage(PowerStatus::GetBatteryImage(
+        info, kTrayIconSize, SkColorSetA(kTrayIconColor, 0x4C),
+        kTrayIconColor));
   }
 
   base::string16 accessible_name_;
-  PowerTrayImageSource* image_source_ = nullptr;
+  base::Optional<PowerStatus::BatteryImageInfo> info_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
 };
