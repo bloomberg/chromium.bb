@@ -10,7 +10,9 @@
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -120,6 +122,9 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void RequestTokenRefresh();
   void RefreshToken(const std::string& token);
 
+  // Lazily create |file_task_runner_| and return a reference.
+  scoped_refptr<base::SequencedTaskRunner> GetFileTaskRunner();
+
   const GURL url_;
   net::URLFetcher::RequestType request_type_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
@@ -140,6 +145,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   std::string upload_content_type_;
   base::FilePath upload_file_path_;
   std::unique_ptr<net::URLFetcher> url_fetcher_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   base::WeakPtrFactory<PrivetURLFetcher> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(PrivetURLFetcher);

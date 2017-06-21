@@ -11,6 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -27,9 +29,9 @@ namespace {
 const int kMaxRestartAttempts = 10;
 const char kPrivetDeviceTypeDnsString[] = "\x07_privet";
 
-void GetNetworkListOnFileThread(
+void GetNetworkListInBackground(
     const base::Callback<void(const net::NetworkInterfaceList&)> callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   net::NetworkInterfaceList networks;
   if (!GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
     return;
@@ -102,9 +104,9 @@ void PrivetTrafficDetector::ScheduleRestart() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   socket_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&GetNetworkListOnFileThread,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      base::BindOnce(&GetNetworkListInBackground,
                      base::Bind(&PrivetTrafficDetector::Restart,
                                 weak_ptr_factory_.GetWeakPtr())),
       base::TimeDelta::FromSeconds(3));
