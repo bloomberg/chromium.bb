@@ -33,7 +33,16 @@ cr.define('bookmarks', function() {
       },
 
       /** @private {Set<string>} */
-      menuIds_: Object,
+      menuIds_: {
+        type: Object,
+        observer: 'onMenuIdsChanged_',
+      },
+
+      /** @private */
+      hasAnySublabel_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
 
       /** @private */
       globalCanEdit_: Boolean,
@@ -425,7 +434,8 @@ cr.define('bookmarks', function() {
      * @private
      */
     onCommandClick_: function(e) {
-      this.handle(e.target.getAttribute('command'), assert(this.menuIds_));
+      this.handle(
+          e.currentTarget.getAttribute('command'), assert(this.menuIds_));
       this.closeCommandMenu();
     },
 
@@ -491,6 +501,35 @@ cr.define('bookmarks', function() {
       }
 
       return loadTimeData.getString(assert(label));
+    },
+
+    /**
+     * @param {Command} command
+     * @return {string}
+     * @private
+     */
+    getCommandSublabel_: function(command) {
+      var multipleNodes = this.menuIds_.size > 1 ||
+          this.containsMatchingNode_(this.menuIds_, function(node) {
+            return !node.url;
+          });
+      switch (command) {
+        case Command.OPEN_NEW_TAB:
+          var urls = this.expandUrls_(this.menuIds_);
+          return multipleNodes && urls.length > 0 ? String(urls.length) : '';
+        default:
+          return '';
+      }
+    },
+
+    /** @private */
+    onMenuIdsChanged_: function() {
+      if (!this.menuIds_)
+        return;
+
+      this.hasAnySublabel_ = this.menuCommands_.some(function(command) {
+        return this.getCommandSublabel_(command) != '';
+      }.bind(this));
     },
 
     /**
