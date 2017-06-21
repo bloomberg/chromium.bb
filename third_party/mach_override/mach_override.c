@@ -41,7 +41,7 @@ long kIslandTemplate[] = {
 #define kInstructionHi		10
 #define kInstructionLo		11
 
-#elif defined(__i386__) 
+#elif defined(__i386__)
 
 #define kOriginalInstructionsSize 16
 
@@ -61,6 +61,7 @@ char kIslandTemplate[] = {
 #define kOriginalInstructionsSize 32
 
 #define kJumpAddress    kOriginalInstructionsSize + 6
+#define kMaxJumpOffset  (0x7fffffffUL)
 
 char kIslandTemplate[] = {
 	// kOriginalInstructionsSize nop instructions so that we 
@@ -267,7 +268,13 @@ mach_override_ptr(
 
 #if defined(__i386__) || defined(__x86_64__)
 	if (!err) {
-		uint32_t addressOffset = ((char*)escapeIsland - (char*)originalFunctionPtr - 5);
+		// TODO: On 64-bit, move to opcode FF/4 (jmp 64-bit absolute indirect)
+		// instead of E9 (jmp 32-bit relative to RIP). Then we should update
+		// allocateBranchIsland to simply allocate any page in the address space.
+		// See the 64-bit version of kIslandTemplate array.
+		int64_t addressOffset64 = ((char*)escapeIsland - (char*)originalFunctionPtr - 5);
+		int32_t addressOffset = addressOffset64;
+		assert(addressOffset64 == addressOffset);
 		addressOffset = OSSwapInt32(addressOffset);
 		
 		jumpRelativeInstruction |= 0xE900000000000000LL; 
@@ -385,7 +392,7 @@ allocateBranchIsland(
 		void *originalFunctionAddress)
 {
 	assert( island );
-	
+
 	mach_error_t	err = err_none;
 	
 	if( allocateHigh ) {
@@ -401,23 +408,41 @@ allocateBranchIsland(
 		vm_address_t first = 0xfeffffff;
 		vm_address_t last = 0xfe000000 + PAGE_SIZE;
 #elif defined(__x86_64__)
-		// 64-bit ASLR is in bits 13-28
-		vm_address_t first = ((uint64_t)originalFunctionAddress & ~( (0xFUL << 28) | (PAGE_SIZE - 1) ) ) | (0x1UL << 31);
-		vm_address_t last = (uint64_t)originalFunctionAddress & ~((0x1UL << 32) - 1);
+		// This logic is more complex due to the 32-bit limit of the jump out
+		// of the original function. Once that limitation is removed, we can
+		// use vm_allocate with VM_FLAGS_ANYWHERE as in the i386 code above.
+		const uint64_t kPageMask = ~(PAGE_SIZE - 1);
+		vm_address_t first = (uint64_t)originalFunctionAddress - kMaxJumpOffset;
+		first = (first & kPageMask) + PAGE_SIZE; // Align up to the next page start
+		if (first > (uint64_t)originalFunctionAddress) first = 0;
+		vm_address_t last = (uint64_t)originalFunctionAddress + kMaxJumpOffset;
+		if (last < (uint64_t)originalFunctionAddress) last = ULONG_MAX;
 #endif
 
 		page = first;
 		int allocated = 0;
 		vm_map_t task_self = mach_task_self();
 
-		while( !err && !allocated && page != last ) {
+		while( !err && !allocated && page < last ) {
 
 			err = vm_allocate( task_self, &page, PAGE_SIZE, 0 );
 			if( err == err_none )
 				allocated = 1;
 			else if( err == KERN_NO_SPACE ) {
 #if defined(__x86_64__)
-				page -= PAGE_SIZE;
+				// This memory region is not suitable, skip it:
+				vm_size_t region_size;
+				mach_msg_type_number_t int_count = VM_REGION_BASIC_INFO_COUNT_64;
+				vm_region_basic_info_data_64_t vm_region_info;
+				mach_port_t object_name;
+				// The call will move 'page' to the beginning of the region:
+				err = vm_region_64(task_self, &page, &region_size,
+							VM_REGION_BASIC_INFO_64, (vm_region_info_t)&vm_region_info,
+							&int_count, &object_name);
+				if (err == KERN_SUCCESS)
+					page += region_size;
+				else
+					break;
 #else
 				page += PAGE_SIZE;
 #endif
@@ -438,7 +463,7 @@ allocateBranchIsland(
 	}
 	if( !err )
 		(**island).allocatedHigh = allocateHigh;
-	
+
 	return err;
 }
 
