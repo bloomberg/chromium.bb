@@ -65,19 +65,22 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // updating onscreen icons (GetBatteryImage() creates a new image on each
   // call).
   struct BatteryImageInfo {
-    BatteryImageInfo() : icon_badge(nullptr), charge_level(-1) {}
+    BatteryImageInfo()
+        : icon_badge(nullptr), alert_if_low(false), charge_percent(-1) {}
 
-    bool operator==(const BatteryImageInfo& o) const;
-
-    bool operator!=(const BatteryImageInfo& o) const { return !(*this == o); }
+    // Returns true if |this| and |o| are similar enough in terms of the image
+    // they'd generate.
+    bool ApproximatelyEqual(const BatteryImageInfo& o) const;
 
     // The badge (lightning bolt, exclamation mark, etc) that should be drawn
     // on top of the battery icon.
     const gfx::VectorIcon* icon_badge;
 
-    // A value between 0 and kBatteryImageHeight representing the height
-    // of the battery's charge level in dp.
-    int charge_level;
+    // When true and |charge_percent| is very low, special colors will be used
+    // to alert the user.
+    bool alert_if_low;
+
+    double charge_percent;
   };
 
   // Maximum battery time-to-full or time-to-empty that should be displayed
@@ -85,7 +88,7 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // get very large; avoid displaying these large numbers.
   static const int kMaxBatteryTimeToDisplaySec;
 
-  // An alert badge is drawn over the battery icon if the battery is not
+  // An alert_if_low badge is drawn over the battery icon if the battery is not
   // connected to a charger and has less than |kCriticalBatteryChargePercentage|
   // percentage of charge remaining.
   static const double kCriticalBatteryChargePercentage;
@@ -195,12 +198,11 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // |info|.
   void CalculateBatteryImageInfo(BatteryImageInfo* info) const;
 
-  // The size of the image GetBatteryImage will return, in DIP.
-  static gfx::Size GetBatteryImageSizeInDip();
-
   // Creates a new image that should be shown for the battery's current state.
-  gfx::ImageSkiaRep GetBatteryImage(const BatteryImageInfo& info,
-                                    float scale) const;
+  static gfx::ImageSkia GetBatteryImage(const BatteryImageInfo& info,
+                                        int height,
+                                        SkColor bg_color,
+                                        SkColor fg_color);
 
   // Returns an string describing the current state for accessibility.
   base::string16 GetAccessibleNameString(bool full_description) const;

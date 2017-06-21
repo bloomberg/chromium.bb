@@ -12,6 +12,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 using power_manager::PowerSupplyProperties;
 
@@ -167,25 +169,29 @@ TEST_F(PowerStatusTest, GetBatteryImageInfo) {
   // 99% should use the same icon as 98%.
   prop.set_battery_percent(99.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(info_charging_98, power_status_->GetBatteryImageInfo());
+  EXPECT_TRUE(info_charging_98.ApproximatelyEqual(
+      power_status_->GetBatteryImageInfo()));
 
   // A different icon should be used when the battery is full.
   prop.set_battery_state(PowerSupplyProperties::FULL);
   prop.set_battery_percent(100.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_NE(info_charging_98, power_status_->GetBatteryImageInfo());
+  EXPECT_FALSE(info_charging_98.ApproximatelyEqual(
+      power_status_->GetBatteryImageInfo()));
 
   // A much-lower battery level should use a different icon.
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
   prop.set_battery_percent(20.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_NE(info_charging_98, power_status_->GetBatteryImageInfo());
+  EXPECT_FALSE(info_charging_98.ApproximatelyEqual(
+      power_status_->GetBatteryImageInfo()));
 
   // Ditto for 98%, but on USB instead of AC.
   prop.set_external_power(PowerSupplyProperties::USB);
   prop.set_battery_percent(98.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_NE(info_charging_98, power_status_->GetBatteryImageInfo());
+  EXPECT_FALSE(info_charging_98.ApproximatelyEqual(
+      power_status_->GetBatteryImageInfo()));
 }
 
 // Tests that the |icon_badge| member of BatteryImageInfo is set correctly
@@ -253,8 +259,8 @@ TEST_F(PowerStatusTest, BatteryImageInfoIconBadge) {
   EXPECT_NE(x_icon, alert_icon);
 }
 
-// Tests that the |charge_level| member of BatteryImageInfo is set correctly
-// with various power supply property values.
+// Tests that the battery image changes appropriately with various power supply
+// property values.
 TEST_F(PowerStatusTest, BatteryImageInfoChargeLevel) {
   PowerSupplyProperties prop;
 
@@ -262,36 +268,43 @@ TEST_F(PowerStatusTest, BatteryImageInfoChargeLevel) {
   prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
   prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(0, power_status_->GetBatteryImageInfo().charge_level);
+  EXPECT_EQ(0, power_status_->GetBatteryImageInfo().charge_percent);
 
-  // A charge level of 0 when the battery is 0% full.
+  PowerStatus* power_status = power_status_;
+  auto get_battery_image = [&power_status]() {
+    return gfx::Image(
+        power_status->GetBatteryImage(power_status->GetBatteryImageInfo(), 16,
+                                      SK_ColorYELLOW, SK_ColorGREEN));
+  };
+
   prop.set_external_power(PowerSupplyProperties::AC);
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
   prop.set_battery_percent(0.0);
-  EXPECT_EQ(0, power_status_->GetBatteryImageInfo().charge_level);
+  EXPECT_EQ(0, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image empty_image = get_battery_image();
 
-  // A charge level of 1 when the battery is up to 16% full, and a level of 2
-  // for 17% full.
+  // 16% and 17% look different (assuming a height of 16, i.e. kTrayIconSize).
   prop.set_battery_percent(16.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(1, power_status_->GetBatteryImageInfo().charge_level);
+  EXPECT_EQ(16, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image image_16 = get_battery_image();
+  EXPECT_FALSE(gfx::test::AreImagesEqual(empty_image, image_16));
   prop.set_battery_percent(17.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(2, power_status_->GetBatteryImageInfo().charge_level);
+  EXPECT_EQ(17, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image image_17 = get_battery_image();
+  EXPECT_FALSE(gfx::test::AreImagesEqual(image_16, image_17));
 
-  // A charge level of 6 when the battery is 50% full.
-  prop.set_battery_percent(50.0);
-  power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(6, power_status_->GetBatteryImageInfo().charge_level);
-
-  // A charge level of 11 when the battery is 99% full, and a level of 12 when
-  // the battery is 100% full.
+  // 99% and 100% look different.
   prop.set_battery_percent(99.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(11, power_status_->GetBatteryImageInfo().charge_level);
+  EXPECT_EQ(99, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image image_99 = get_battery_image();
   prop.set_battery_percent(100.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(12, power_status_->GetBatteryImageInfo().charge_level);
+  EXPECT_EQ(100, power_status_->GetBatteryImageInfo().charge_percent);
+  gfx::Image image_100 = get_battery_image();
+  EXPECT_FALSE(gfx::test::AreImagesEqual(image_99, image_100));
 }
 
 }  // namespace ash
