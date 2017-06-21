@@ -26,6 +26,10 @@ namespace history {
 
 class HistoryBackendClient;
 
+// The minimum number of days after which last_requested field gets updated.
+// All earlier updates are ignored.
+static const int kFaviconUpdateLastRequestedAfterDays = 14;
+
 // This database interface is owned by the history backend and runs on the
 // history thread. It is a totally separate component from history partially
 // because we may want to move it to its own thread in the future. The
@@ -87,36 +91,35 @@ class ThumbnailDatabase {
                         scoped_refptr<base::RefCountedMemory>* png_icon_data,
                         gfx::Size* pixel_size);
 
-  // Adds a bitmap component at |pixel_size| for the favicon with |icon_id|.
-  // Only favicons representing a .ico file should have multiple favicon bitmaps
-  // per favicon.
+  // Adds a bitmap component of |type| at |pixel_size| for the favicon with
+  // |icon_id|. Only favicons representing a .ico file should have multiple
+  // favicon bitmaps per favicon.
   // |icon_data| is the png encoded data.
-  // The |time| indicates the access time, and is used to detect when the
-  // favicon should be refreshed.
+  // The |type| indicates how the lifetime of this icon should be managed.
+  // The |time| is used for lifetime management of the bitmap (should be Now()).
   // |pixel_size| is the pixel dimensions of |icon_data|.
   // Returns the id of the added bitmap or 0 if unsuccessful.
   FaviconBitmapID AddFaviconBitmap(
       favicon_base::FaviconID icon_id,
       const scoped_refptr<base::RefCountedMemory>& icon_data,
+      FaviconBitmapType type,
       base::Time time,
       const gfx::Size& pixel_size);
 
   // Sets the bitmap data and the last updated time for the favicon bitmap at
-  // |bitmap_id|.
+  // |bitmap_id|. Should not be called for bitmaps of type ON_DEMAND as they
+  // should never get updated (the call silently changes the type to ON_VISIT).
   // Returns true if successful.
   bool SetFaviconBitmap(FaviconBitmapID bitmap_id,
                         scoped_refptr<base::RefCountedMemory> bitmap_data,
                         base::Time time);
 
-  // Sets the last updated time for the favicon bitmap at |bitmap_id|.
-  // Returns true if successful.
+  // Sets the last_updated time for the favicon bitmap at |bitmap_id|. Should
+  // not be called for bitmaps of type ON_DEMAND as last_updated time is only
+  // tracked for ON_VISIT bitmaps (the call silently changes the type to
+  // ON_VISIT). Returns true if successful.
   bool SetFaviconBitmapLastUpdateTime(FaviconBitmapID bitmap_id,
                                       base::Time time);
-
-  // Sets the last requested time for the favicon bitmap at |bitmap_id|.
-  // Returns true if successful.
-  bool SetFaviconBitmapLastRequestedTime(FaviconBitmapID bitmap_id,
-                                         base::Time time);
 
   // Deletes the favicon bitmap with |bitmap_id|.
   // Returns true if successful.
@@ -127,6 +130,16 @@ class ThumbnailDatabase {
   // Sets the the favicon as out of date. This will set |last_updated| for all
   // of the bitmaps for |icon_id| to be out of date.
   bool SetFaviconOutOfDate(favicon_base::FaviconID icon_id);
+
+  // Mark all bitmaps of type ON_DEMAND at |icon_url| as requested at |time|.
+  // This postpones their automatic eviction from the database. Not all calls
+  // end up in a write into the DB:
+  // - it is no-op if the bitmaps are not of type ON_DEMAND;
+  // - the updates of the "last requested time" have limited frequency for each
+  //   particular bitmap (e.g. once per week). This limits the overhead of
+  //   cache management for on-demand favicons.
+  // Returns true if successful.
+  bool TouchOnDemandFavicon(const GURL& icon_url, base::Time time);
 
   // Returns the id of the entry in the favicon database with the specified url
   // and icon type.
@@ -146,11 +159,12 @@ class ThumbnailDatabase {
                                      favicon_base::IconType icon_type);
 
   // Adds a favicon with a single bitmap. This call is equivalent to calling
-  // AddFavicon and AddFaviconBitmap.
+  // AddFavicon and AddFaviconBitmap of type |type|.
   favicon_base::FaviconID AddFavicon(
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const scoped_refptr<base::RefCountedMemory>& icon_data,
+      FaviconBitmapType type,
       base::Time time,
       const gfx::Size& pixel_size);
 

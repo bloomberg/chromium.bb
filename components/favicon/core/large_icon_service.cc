@@ -297,9 +297,9 @@ void OnFetchIconFromGoogleServerComplete(
   // something else could've been written). By marking the icons initially
   // expired (out-of-date), they will be refetched when we visit the original
   // page any time in the future.
-  favicon_service->SetLastResortFavicons(page_url, GURL(original_icon_url),
-                                         favicon_base::IconType::TOUCH_ICON,
-                                         image, callback);
+  favicon_service->SetOnDemandFavicons(page_url, GURL(original_icon_url),
+                                       favicon_base::IconType::TOUCH_ICON,
+                                       image, callback);
 }
 
 }  // namespace

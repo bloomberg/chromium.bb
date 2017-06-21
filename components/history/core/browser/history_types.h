@@ -506,6 +506,24 @@ struct FaviconBitmapIDSize {
   gfx::Size pixel_size;
 };
 
+enum FaviconBitmapType {
+  // The bitmap gets downloaded while visiting its page. Their life-time is
+  // bound to the life-time of the corresponding visit in history.
+  //  - These bitmaps are re-downloaded when visiting the page again and the
+  //  last_updated timestamp is old enough.
+  ON_VISIT,
+
+  // The bitmap gets downloaded because it is demanded by some Chrome UI (while
+  // not visiting its page). For this reason, their life-time cannot be bound to
+  // the life-time of the corresponding visit in history.
+  // - These bitmaps are evicted from the database based on the last time they
+  //   were requested.
+  // - Furthermore, on-demand bitmaps are immediately marked as expired. Hence,
+  //   they are always replaced by ON_VISIT favicons whenever their page gets
+  //   visited.
+  ON_DEMAND
+};
+
 // Defines a favicon bitmap stored in the history backend.
 struct FaviconBitmap {
   FaviconBitmap();

@@ -89,6 +89,7 @@ class MockFaviconService : public FaviconService {
                    const favicon_base::FaviconRawBitmapCallback& callback,
                    base::CancelableTaskTracker* tracker));
   MOCK_METHOD1(SetFaviconOutOfDateForPage, void(const GURL& page_url));
+  MOCK_METHOD1(TouchOnDemandFavicon, void(const GURL& icon_url));
   MOCK_METHOD1(SetImportedFavicons,
                void(const favicon_base::FaviconUsageDataList& favicon_usage));
   MOCK_METHOD5(MergeFavicon,
@@ -102,7 +103,7 @@ class MockFaviconService : public FaviconService {
                     const GURL& icon_url,
                     favicon_base::IconType icon_type,
                     const gfx::Image& image));
-  MOCK_METHOD5(SetLastResortFavicons,
+  MOCK_METHOD5(SetOnDemandFavicons,
                void(const GURL& page_url,
                     const GURL& icon_url,
                     favicon_base::IconType icon_type,

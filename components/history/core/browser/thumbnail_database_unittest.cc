@@ -85,7 +85,8 @@ void AddAndMapFaviconSimple(ThumbnailDatabase* db,
   scoped_refptr<base::RefCountedStaticMemory> data(
       new base::RefCountedStaticMemory(kBlob1, sizeof(kBlob1)));
   favicon_base::FaviconID favicon_id =
-      db->AddFavicon(icon_url, icon_type, data, base::Time::Now(), gfx::Size());
+      db->AddFavicon(icon_url, icon_type, data, FaviconBitmapType::ON_VISIT,
+                     base::Time::Now(), gfx::Size());
   db->AddIconMapping(page_url, favicon_id);
 }
 
@@ -213,7 +214,8 @@ TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
   GURL url("http://google.com");
   base::Time time = base::Time::Now();
   favicon_base::FaviconID id =
-      db.AddFavicon(url, favicon_base::TOUCH_ICON, favicon, time, gfx::Size());
+      db.AddFavicon(url, favicon_base::TOUCH_ICON, favicon,
+                    FaviconBitmapType::ON_VISIT, time, gfx::Size());
   EXPECT_NE(0, id);
 
   EXPECT_NE(0, db.AddIconMapping(url, id));
@@ -224,37 +226,145 @@ TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
   EXPECT_EQ(id, icon_mappings.front().icon_id);
 }
 
-TEST_F(ThumbnailDatabaseTest, LastRequestedTime) {
-  ThumbnailDatabase db(NULL);
+TEST_F(ThumbnailDatabaseTest,
+       AddOnDemandFaviconBitmapCreatesCorrectTimestamps) {
+  ThumbnailDatabase db(nullptr);
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
   db.BeginTransaction();
 
+  base::Time add_time;
+  ASSERT_TRUE(
+      base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &add_time));
   std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
-  base::Time now = base::Time::Now();
-  favicon_base::FaviconID id =
-      db.AddFavicon(url, favicon_base::TOUCH_ICON, favicon, now, gfx::Size());
-  ASSERT_NE(0, id);
+  favicon_base::FaviconID icon = db.AddFavicon(url, favicon_base::FAVICON);
+  ASSERT_NE(0, icon);
+  FaviconBitmapID bitmap = db.AddFaviconBitmap(
+      icon, favicon, FaviconBitmapType::ON_DEMAND, add_time, gfx::Size());
+  ASSERT_NE(0, bitmap);
 
-  // Fetching the last requested time of a non-existent bitmap should fail.
-  base::Time last_requested = base::Time::UnixEpoch();
-  EXPECT_FALSE(db.GetFaviconBitmap(id + 1, NULL, &last_requested, NULL, NULL));
-  EXPECT_EQ(last_requested, base::Time::UnixEpoch());  // Remains unchanged.
+  base::Time last_updated;
+  base::Time last_requested;
+  ASSERT_TRUE(db.GetFaviconBitmap(bitmap, &last_updated, &last_requested,
+                                  nullptr, nullptr));
+  EXPECT_EQ(base::Time(), last_updated);
+  EXPECT_EQ(add_time, last_requested);
+}
 
-  // Fetching the last requested time of a bitmap that has no last request
-  // should return a null timestamp.
-  last_requested = base::Time::UnixEpoch();
-  EXPECT_TRUE(db.GetFaviconBitmap(id, NULL, &last_requested, NULL, NULL));
-  EXPECT_TRUE(last_requested.is_null());
+TEST_F(ThumbnailDatabaseTest, AddFaviconBitmapCreatesCorrectTimestamps) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
 
-  // Setting the last requested time of an existing bitmap should succeed, and
-  // the set time should be returned by the corresponding "Get".
-  last_requested = base::Time::UnixEpoch();
-  EXPECT_TRUE(db.SetFaviconBitmapLastRequestedTime(id, now));
-  EXPECT_TRUE(db.GetFaviconBitmap(id, NULL, &last_requested, NULL, NULL));
-  EXPECT_EQ(last_requested, now);
+  base::Time add_time;
+  ASSERT_TRUE(
+      base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &add_time));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  GURL url("http://google.com");
+  favicon_base::FaviconID icon = db.AddFavicon(url, favicon_base::FAVICON);
+  ASSERT_NE(0, icon);
+  FaviconBitmapID bitmap = db.AddFaviconBitmap(
+      icon, favicon, FaviconBitmapType::ON_VISIT, add_time, gfx::Size());
+  ASSERT_NE(0, bitmap);
+
+  base::Time last_updated;
+  base::Time last_requested;
+  ASSERT_TRUE(db.GetFaviconBitmap(bitmap, &last_updated, &last_requested,
+                                  nullptr, nullptr));
+  EXPECT_EQ(add_time, last_updated);
+  EXPECT_EQ(base::Time(), last_requested);
+}
+
+TEST_F(ThumbnailDatabaseTest, TouchUpdatesOnDemandFavicons) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  base::Time start;
+  ASSERT_TRUE(base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &start));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  // Create an on-demand favicon.
+  GURL url("http://google.com");
+  favicon_base::FaviconID icon = db.AddFavicon(url, favicon_base::FAVICON);
+  ASSERT_NE(0, icon);
+  FaviconBitmapID bitmap = db.AddFaviconBitmap(
+      icon, favicon, FaviconBitmapType::ON_DEMAND, start, gfx::Size());
+  ASSERT_NE(0, bitmap);
+
+  base::Time end =
+      start + base::TimeDelta::FromDays(kFaviconUpdateLastRequestedAfterDays);
+  EXPECT_TRUE(db.TouchOnDemandFavicon(url, end));
+
+  base::Time last_updated;
+  base::Time last_requested;
+  EXPECT_TRUE(db.GetFaviconBitmap(bitmap, &last_updated, &last_requested,
+                                  nullptr, nullptr));
+  // Does not mess with the last_updated field.
+  EXPECT_EQ(base::Time(), last_updated);
+  EXPECT_EQ(end, last_requested);  // Updates the last_requested field.
+}
+
+TEST_F(ThumbnailDatabaseTest, TouchUpdatesOnlyInfrequently) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  base::Time start;
+  ASSERT_TRUE(base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &start));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  // Create an on-demand favicon.
+  GURL url("http://google.com");
+  favicon_base::FaviconID icon = db.AddFavicon(url, favicon_base::FAVICON);
+  ASSERT_NE(0, icon);
+  FaviconBitmapID bitmap = db.AddFaviconBitmap(
+      icon, favicon, FaviconBitmapType::ON_DEMAND, start, gfx::Size());
+  ASSERT_NE(0, bitmap);
+
+  base::Time end = start + base::TimeDelta::FromMinutes(1);
+  EXPECT_TRUE(db.TouchOnDemandFavicon(url, end));
+
+  base::Time last_requested;
+  EXPECT_TRUE(
+      db.GetFaviconBitmap(bitmap, nullptr, &last_requested, nullptr, nullptr));
+  EXPECT_EQ(start, last_requested);  // No update.
+}
+
+TEST_F(ThumbnailDatabaseTest, TouchDoesNotUpdateStandardFavicons) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  base::Time start;
+  ASSERT_TRUE(base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &start));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  // Create a standard favicon.
+  GURL url("http://google.com");
+  favicon_base::FaviconID icon = db.AddFavicon(url, favicon_base::FAVICON);
+  EXPECT_NE(0, icon);
+  FaviconBitmapID bitmap = db.AddFaviconBitmap(
+      icon, favicon, FaviconBitmapType::ON_VISIT, start, gfx::Size());
+  EXPECT_NE(0, bitmap);
+
+  base::Time end =
+      start + base::TimeDelta::FromDays(kFaviconUpdateLastRequestedAfterDays);
+  db.TouchOnDemandFavicon(url, end);
+
+  base::Time last_updated;
+  base::Time last_requested;
+  EXPECT_TRUE(db.GetFaviconBitmap(bitmap, &last_updated, &last_requested,
+                                  nullptr, nullptr));
+  EXPECT_EQ(start, last_updated);           // Does not mess with last_updated.
+  EXPECT_EQ(base::Time(), last_requested);  // No update.
 }
 
 TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
@@ -268,7 +378,8 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   GURL url("http://google.com");
   favicon_base::FaviconID id = db.AddFavicon(url, favicon_base::TOUCH_ICON);
   base::Time time = base::Time::Now();
-  db.AddFaviconBitmap(id, favicon, time, gfx::Size());
+  db.AddFaviconBitmap(id, favicon, FaviconBitmapType::ON_VISIT, time,
+                      gfx::Size());
   EXPECT_LT(0, db.AddIconMapping(url, id));
 
   favicon_base::FaviconID id2 = db.AddFavicon(url, favicon_base::FAVICON);
@@ -299,13 +410,16 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
 
   favicon_base::FaviconID id1 = db.AddFavicon(url, favicon_base::TOUCH_ICON);
   base::Time time = base::Time::Now();
-  db.AddFaviconBitmap(id1, favicon, time, kSmallSize);
-  db.AddFaviconBitmap(id1, favicon, time, kLargeSize);
+  db.AddFaviconBitmap(id1, favicon, FaviconBitmapType::ON_VISIT, time,
+                      kSmallSize);
+  db.AddFaviconBitmap(id1, favicon, FaviconBitmapType::ON_VISIT, time,
+                      kLargeSize);
   EXPECT_LT(0, db.AddIconMapping(url, id1));
 
   favicon_base::FaviconID id2 = db.AddFavicon(url, favicon_base::FAVICON);
   EXPECT_NE(id1, id2);
-  db.AddFaviconBitmap(id2, favicon, time, kSmallSize);
+  db.AddFaviconBitmap(id2, favicon, FaviconBitmapType::ON_VISIT, time,
+                      kSmallSize);
   EXPECT_LT(0, db.AddIconMapping(url, id2));
 
   std::vector<IconMapping> icon_mappings;
@@ -341,19 +455,22 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
 
   favicon_base::FaviconID kept_id1 =
       db.AddFavicon(kIconUrl1, favicon_base::FAVICON);
-  db.AddFaviconBitmap(kept_id1, favicon1, base::Time::Now(), kLargeSize);
+  db.AddFaviconBitmap(kept_id1, favicon1, FaviconBitmapType::ON_VISIT,
+                      base::Time::Now(), kLargeSize);
   db.AddIconMapping(kPageUrl1, kept_id1);
   db.AddIconMapping(kPageUrl3, kept_id1);
   db.AddIconMapping(kPageUrl4, kept_id1);
 
   favicon_base::FaviconID unkept_id =
       db.AddFavicon(kIconUrl2, favicon_base::FAVICON);
-  db.AddFaviconBitmap(unkept_id, favicon1, base::Time::Now(), kLargeSize);
+  db.AddFaviconBitmap(unkept_id, favicon1, FaviconBitmapType::ON_VISIT,
+                      base::Time::Now(), kLargeSize);
   db.AddIconMapping(kPageUrl2, unkept_id);
 
   favicon_base::FaviconID kept_id2 =
       db.AddFavicon(kIconUrl5, favicon_base::FAVICON);
-  db.AddFaviconBitmap(kept_id2, favicon2, base::Time::Now(), kLargeSize);
+  db.AddFaviconBitmap(kept_id2, favicon2, FaviconBitmapType::ON_VISIT,
+                      base::Time::Now(), kLargeSize);
   db.AddIconMapping(kPageUrl5, kept_id2);
 
   // RetainDataForPageUrls() uses schema manipulations for efficiency.
@@ -406,8 +523,8 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrlsExpiresRetainedFavicons) {
   scoped_refptr<base::RefCountedStaticMemory> favicon1(
       new base::RefCountedStaticMemory(kBlob1, sizeof(kBlob1)));
   favicon_base::FaviconID kept_id = db.AddFavicon(
-      kIconUrl1, favicon_base::FAVICON, favicon1, base::Time::Now(),
-      gfx::Size());
+      kIconUrl1, favicon_base::FAVICON, favicon1, FaviconBitmapType::ON_VISIT,
+      base::Time::Now(), gfx::Size());
   db.AddIconMapping(kPageUrl1, kept_id);
 
   EXPECT_TRUE(db.RetainDataForPageUrls(std::vector<GURL>(1u, kPageUrl1)));
@@ -439,8 +556,10 @@ TEST_F(ThumbnailDatabaseTest, DeleteFavicon) {
   GURL url("http://google.com");
   favicon_base::FaviconID id = db.AddFavicon(url, favicon_base::FAVICON);
   base::Time last_updated = base::Time::Now();
-  db.AddFaviconBitmap(id, favicon1, last_updated, kSmallSize);
-  db.AddFaviconBitmap(id, favicon2, last_updated, kLargeSize);
+  db.AddFaviconBitmap(id, favicon1, FaviconBitmapType::ON_VISIT, last_updated,
+                      kSmallSize);
+  db.AddFaviconBitmap(id, favicon2, FaviconBitmapType::ON_VISIT, last_updated,
+                      kLargeSize);
 
   EXPECT_TRUE(db.GetFaviconBitmaps(id, NULL));
 
@@ -461,8 +580,9 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   GURL icon_url("http://google.com/favicon.ico");
   base::Time time = base::Time::Now();
 
-  favicon_base::FaviconID id = db.AddFavicon(
-      icon_url, favicon_base::FAVICON, favicon, time, gfx::Size());
+  favicon_base::FaviconID id =
+      db.AddFavicon(icon_url, favicon_base::FAVICON, favicon,
+                    FaviconBitmapType::ON_VISIT, time, gfx::Size());
   EXPECT_NE(0, db.AddIconMapping(page_url, id));
   std::vector<IconMapping> icon_mappings;
   EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url, &icon_mappings));
@@ -477,8 +597,9 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   scoped_refptr<base::RefCountedBytes> favicon2 =
       new base::RefCountedBytes(data);
 
-  favicon_base::FaviconID id2 = db.AddFavicon(
-      icon_url, favicon_base::TOUCH_ICON, favicon2, time, gfx::Size());
+  favicon_base::FaviconID id2 =
+      db.AddFavicon(icon_url, favicon_base::TOUCH_ICON, favicon2,
+                    FaviconBitmapType::ON_VISIT, time, gfx::Size());
   EXPECT_NE(0, db.AddIconMapping(page_url, id2));
 
   icon_mappings.clear();
@@ -494,11 +615,8 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
       new base::RefCountedBytes(data2);
 
   favicon_base::FaviconID id3 =
-      db.AddFavicon(icon_url,
-                    favicon_base::TOUCH_PRECOMPOSED_ICON,
-                    favicon3,
-                    time,
-                    gfx::Size());
+      db.AddFavicon(icon_url, favicon_base::TOUCH_PRECOMPOSED_ICON, favicon3,
+                    FaviconBitmapType::ON_VISIT, time, gfx::Size());
   EXPECT_NE(0, db.AddIconMapping(page_url, id3));
 
   icon_mappings.clear();
@@ -548,31 +666,23 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
 
   // Add a favicon which will have icon_mappings
   base::Time time = base::Time::Now();
-  favicon_base::FaviconID id1 = db.AddFavicon(GURL("http://google.com"),
-                                              favicon_base::FAVICON,
-                                              favicon,
-                                              time,
-                                              gfx::Size());
+  favicon_base::FaviconID id1 =
+      db.AddFavicon(GURL("http://google.com"), favicon_base::FAVICON, favicon,
+                    FaviconBitmapType::ON_VISIT, time, gfx::Size());
   EXPECT_NE(id1, 0);
 
   // Add another type of favicon
   time = base::Time::Now();
-  favicon_base::FaviconID id2 =
-      db.AddFavicon(GURL("http://www.google.com/icon"),
-                    favicon_base::TOUCH_ICON,
-                    favicon,
-                    time,
-                    gfx::Size());
+  favicon_base::FaviconID id2 = db.AddFavicon(
+      GURL("http://www.google.com/icon"), favicon_base::TOUCH_ICON, favicon,
+      FaviconBitmapType::ON_VISIT, time, gfx::Size());
   EXPECT_NE(id2, 0);
 
   // Add 3rd favicon
   time = base::Time::Now();
-  favicon_base::FaviconID id3 =
-      db.AddFavicon(GURL("http://www.google.com/icon"),
-                    favicon_base::TOUCH_ICON,
-                    favicon,
-                    time,
-                    gfx::Size());
+  favicon_base::FaviconID id3 = db.AddFavicon(
+      GURL("http://www.google.com/icon"), favicon_base::TOUCH_ICON, favicon,
+      FaviconBitmapType::ON_VISIT, time, gfx::Size());
   EXPECT_NE(id3, 0);
 
   // Add 2 icon mapping

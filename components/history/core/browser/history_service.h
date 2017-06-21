@@ -756,17 +756,36 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // 2) If |icon_url| is known to the database, |bitmaps| will be ignored (i.e.
   //    the icon won't be overwritten) but the mappings from |page_url| to
   //    |icon_url| will be stored (conditioned to point 1 above).
-  // 3) If |icon_url| is stored, it will be marked as expired.
+  // 3) If |icon_url| is stored, it will be marked as "on-demand".
+  //
+  // On-demand favicons are those that are fetched without visiting their page.
+  // For this reason, their life-time cannot be bound to the life-time of the
+  // corresponding visit in history.
+  // - These bitmaps are evicted from the database based on the last time they
+  //   get requested. The last requested time is initially set to Now() and is
+  //   further updated by calling TouchOnDemandFavicon().
+  // - Furthermore, on-demand bitmaps are immediately marked as expired. Hence,
+  //   they are always replaced by standard favicons whenever their page gets
+  //   visited.
   // The callback will receive whether the write actually happened.
-  void SetLastResortFavicons(const GURL& page_url,
-                             favicon_base::IconType icon_type,
-                             const GURL& icon_url,
-                             const std::vector<SkBitmap>& bitmaps,
-                             base::Callback<void(bool)> callback);
+  void SetOnDemandFavicons(const GURL& page_url,
+                           favicon_base::IconType icon_type,
+                           const GURL& icon_url,
+                           const std::vector<SkBitmap>& bitmaps,
+                           base::Callback<void(bool)> callback);
 
   // Used by the FaviconService to mark the favicon for the page as being out
   // of date.
   void SetFaviconsOutOfDateForPage(const GURL& page_url);
+
+  // Mark that the on-demand favicon at |icon_url| was requested now. This
+  // postpones the automatic eviction of the favicon from the database. Not all
+  // calls end up in a write into the DB:
+  // - it is no-op if the bitmaps are not stored using SetOnDemandFavicons();
+  // - the updates of the "last requested time" have limited frequency for each
+  //   particular favicon (e.g. once per week). This limits the overhead of
+  //   cache management for on-demand favicons.
+  void TouchOnDemandFavicon(const GURL& icon_url);
 
   // Used by the FaviconService for importing many favicons for many pages at
   // once. The pages must exist, any favicon sets for unknown pages will be
