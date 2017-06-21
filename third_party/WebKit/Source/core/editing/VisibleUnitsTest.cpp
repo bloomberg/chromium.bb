@@ -1909,4 +1909,20 @@ TEST_F(VisibleUnitsTest,
   EXPECT_EQ(Position(text, 2), start);
 }
 
+TEST_F(VisibleUnitsTest,
+       PreviousRootInlineBoxCandidatePositionWithDisplayNone) {
+  SetBodyContent(
+      "<div contenteditable>"
+      "<div id=one>one abc</div>"
+      "<div id=two>two <b id=none style=display:none>def</b> ghi</div>"
+      "</div>");
+  Element* const one = GetDocument().getElementById("one");
+  Element* const two = GetDocument().getElementById("two");
+  const VisiblePosition& visible_position =
+      CreateVisiblePosition(Position::LastPositionInNode(two));
+  EXPECT_EQ(Position(one->firstChild(), 7),
+            PreviousRootInlineBoxCandidatePosition(
+                two->lastChild(), visible_position, kContentIsEditable));
+}
+
 }  // namespace blink
