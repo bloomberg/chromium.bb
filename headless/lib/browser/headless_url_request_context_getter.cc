@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_network_delegate.h"
@@ -22,14 +22,14 @@ namespace headless {
 
 HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     content::ProtocolHandlerMap* protocol_handlers,
     ProtocolHandlerMap context_protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors,
     HeadlessBrowserContextOptions* options,
     net::NetLog* net_log)
     : io_task_runner_(std::move(io_task_runner)),
-      file_task_runner_(std::move(file_task_runner)),
+      file_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
       user_agent_(options->user_agent()),
       host_resolver_rules_(options->host_resolver_rules()),
       proxy_server_(options->proxy_server()),
@@ -68,8 +68,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     // TODO(skyostil): Make these configurable.
     builder.set_data_enabled(true);
     builder.set_file_enabled(true);
-    builder.SetFileTaskRunner(content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::FILE));
+    builder.SetFileTaskRunner(file_task_runner_);
     if (!proxy_server_.IsEmpty()) {
       builder.set_proxy_service(
           net::ProxyService::CreateFixed(proxy_server_.ToString()));
@@ -103,8 +102,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 HeadlessURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::IO);
+  return io_task_runner_;
 }
 
 net::HostResolver* HeadlessURLRequestContextGetter::host_resolver() const {

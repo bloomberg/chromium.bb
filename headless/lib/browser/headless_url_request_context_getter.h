@@ -32,7 +32,6 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   HeadlessURLRequestContextGetter(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       content::ProtocolHandlerMap* protocol_handlers,
       ProtocolHandlerMap context_protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors,
@@ -51,6 +50,8 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // TODO(eseckler): This should become a SequencedTaskRunner once net:: APIs
+  // accept a SequencedTaskRunner, see https://crbug.com/735368.
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   // The |options| object given to the constructor is not guaranteed to outlive
