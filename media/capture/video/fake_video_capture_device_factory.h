@@ -18,6 +18,7 @@ struct CAPTURE_EXPORT FakeVideoCaptureDeviceSettings {
   std::string device_id;
   FakeVideoCaptureDevice::DeliveryMode delivery_mode;
   VideoCaptureFormats supported_formats;
+  FakePhotoDeviceConfig photo_device_config;
 };
 
 // Implementation of VideoCaptureDeviceFactory that creates fake devices
@@ -30,12 +31,18 @@ struct CAPTURE_EXPORT FakeVideoCaptureDeviceSettings {
 class CAPTURE_EXPORT FakeVideoCaptureDeviceFactory
     : public VideoCaptureDeviceFactory {
  public:
+  static constexpr const char kDeviceConfigForGetPhotoStateFails[] =
+      "GetPhotoStateFails";
+  static constexpr const char kDeviceConfigForSetPhotoOptionsFails[] =
+      "SetPhotoOptionsFails";
+  static constexpr const char kDeviceConfigForTakePhotoFails[] =
+      "TakePhotoFails";
+
   FakeVideoCaptureDeviceFactory();
   ~FakeVideoCaptureDeviceFactory() override;
 
-  static std::unique_ptr<VideoCaptureDevice> CreateDeviceWithSupportedFormats(
-      FakeVideoCaptureDevice::DeliveryMode delivery_mode,
-      const VideoCaptureFormats& formats);
+  static std::unique_ptr<VideoCaptureDevice> CreateDeviceWithSettings(
+      const FakeVideoCaptureDeviceSettings& settings);
 
   static std::unique_ptr<VideoCaptureDevice> CreateDeviceWithDefaultResolutions(
       VideoPixelFormat pixel_format,

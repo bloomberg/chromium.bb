@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
@@ -17,7 +18,36 @@ namespace {
 // If all buffers are still in use by consumers when new frames are produced
 // those frames get dropped.
 static const int kMaxBufferCount = 3;
+
+void RunSuccessfulGetPhotoStateCallback(
+    video_capture::mojom::Device::GetPhotoStateCallback callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    media::mojom::PhotoStatePtr result) {
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
 }
+
+void RunFailedGetPhotoStateCallback(
+    base::Callback<void(media::mojom::PhotoStatePtr)> cb) {
+  cb.Run(nullptr);
+}
+
+void RunFailedSetOptionsCallback(base::Callback<void(bool)> cb) {
+  cb.Run(false);
+}
+
+void RunSuccessfulTakePhotoCallback(
+    video_capture::mojom::Device::TakePhotoCallback callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    media::mojom::BlobPtr blob) {
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&blob)));
+}
+
+void RunFailedTakePhotoCallback(
+    base::Callback<void(media::mojom::BlobPtr blob)> cb) {
+  cb.Run(nullptr);
+}
+
+}  // anonymous namespace
 
 namespace video_capture {
 
@@ -76,6 +106,56 @@ void DeviceMediaToMojoAdapter::OnReceiverReportingUtilization(
     double utilization) {
   DCHECK(thread_checker_.CalledOnValidThread());
   device_->OnUtilizationReport(frame_feedback_id, utilization);
+}
+
+void DeviceMediaToMojoAdapter::RequestRefreshFrame() {
+  if (!device_started_)
+    return;
+  device_->RequestRefreshFrame();
+}
+
+void DeviceMediaToMojoAdapter::MaybeSuspend() {
+  if (!device_started_)
+    return;
+  device_->MaybeSuspend();
+}
+
+void DeviceMediaToMojoAdapter::Resume() {
+  if (!device_started_)
+    return;
+  device_->Resume();
+}
+
+void DeviceMediaToMojoAdapter::GetPhotoState(
+    const GetPhotoStateCallback& callback) {
+  media::VideoCaptureDevice::GetPhotoStateCallback scoped_callback(
+      // Cannot use BindToCurrentLoop() here, because it does not support
+      // callbacks with unbound move-only parameters.
+      base::Bind(&RunSuccessfulGetPhotoStateCallback, std::move(callback),
+                 base::ThreadTaskRunnerHandle::Get()),
+      media::BindToCurrentLoop(base::Bind(&RunFailedGetPhotoStateCallback)));
+  device_->GetPhotoState(std::move(scoped_callback));
+}
+
+void DeviceMediaToMojoAdapter::SetPhotoOptions(
+    media::mojom::PhotoSettingsPtr settings,
+    const SetPhotoOptionsCallback& callback) {
+  media::ScopedResultCallback<media::mojom::ImageCapture::SetOptionsCallback>
+      scoped_callback(
+          media::BindToCurrentLoop(std::move(callback)),
+          media::BindToCurrentLoop(base::Bind(&RunFailedSetOptionsCallback)));
+  device_->SetPhotoOptions(std::move(settings), std::move(scoped_callback));
+}
+
+void DeviceMediaToMojoAdapter::TakePhoto(const TakePhotoCallback& callback) {
+  media::ScopedResultCallback<media::mojom::ImageCapture::TakePhotoCallback>
+      scoped_callback(
+          // Cannot use BindToCurrentLoop() here, because it does not support
+          // callbacks with unbound move-only parameters.
+          base::Bind(&RunSuccessfulTakePhotoCallback, std::move(callback),
+                     base::ThreadTaskRunnerHandle::Get()),
+          media::BindToCurrentLoop(base::Bind(&RunFailedTakePhotoCallback)));
+  device_->TakePhoto(std::move(scoped_callback));
 }
 
 void DeviceMediaToMojoAdapter::Stop() {

@@ -121,20 +121,36 @@ class FrameDelivererFactory {
   const FakeDeviceState* device_state_ = nullptr;
 };
 
+struct FakePhotoDeviceConfig {
+  FakePhotoDeviceConfig()
+      : should_fail_get_photo_capabilities(false),
+        should_fail_set_photo_options(false),
+        should_fail_take_photo(false) {}
+
+  bool should_fail_get_photo_capabilities;
+  bool should_fail_set_photo_options;
+  bool should_fail_take_photo;
+};
+
 // Implements the photo functionality of a FakeVideoCaptureDevice
 class FakePhotoDevice {
  public:
   FakePhotoDevice(std::unique_ptr<PacmanFramePainter> sk_n32_painter,
-                  const FakeDeviceState* fake_device_state);
+                  const FakeDeviceState* fake_device_state,
+                  const FakePhotoDeviceConfig& config);
   ~FakePhotoDevice();
 
   void GetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
+  void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
+                       VideoCaptureDevice::SetPhotoOptionsCallback callback,
+                       FakeDeviceState* device_state_write_access);
   void TakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
                  base::TimeDelta elapsed_time);
 
  private:
   const std::unique_ptr<PacmanFramePainter> sk_n32_painter_;
   const FakeDeviceState* const fake_device_state_;
+  const FakePhotoDeviceConfig config_;
 };
 
 }  // namespace media
