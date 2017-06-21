@@ -7,8 +7,7 @@
 #include "base/strings/string_util.h"
 #include "components/ui_devtools/Protocol.h"
 
-namespace ui {
-namespace devtools {
+namespace ui_devtools {
 namespace protocol {
 
 // static
@@ -20,5 +19,4 @@ std::unique_ptr<Value> StringUtil::parseJSON(const String& string) {
 };
 
 }  // namespace protocol
-}  // namespace ws
-}  // namespace ui
+}  // namespace ui_devtools

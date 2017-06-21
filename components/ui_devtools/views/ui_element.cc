@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/devtools/ui_element.h"
+#include "components/ui_devtools/views/ui_element.h"
 
 #include <algorithm>
 
-#include "ash/devtools/ui_element_delegate.h"
-#include "ash/devtools/view_element.h"
-#include "ash/devtools/widget_element.h"
-#include "ash/devtools/window_element.h"
+#include "components/ui_devtools/views/ui_element_delegate.h"
+#include "components/ui_devtools/views/view_element.h"
+#include "components/ui_devtools/views/widget_element.h"
+#include "components/ui_devtools/views/window_element.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 namespace {
 
 static int node_ids = 0;
@@ -63,7 +62,7 @@ void UIElement::ReorderChild(UIElement* child, int new_index) {
   children_.erase(iter);
 
   // Move child to new position |new_index| in vector |children_|.
-  new_index = std::min(children_.size() - 1, static_cast<size_t>(new_index));
+  new_index = std::min(static_cast<int>(children_.size()) - 1, new_index);
   iter = children_.begin() + new_index;
   children_.insert(iter, child);
   delegate()->OnUIElementReordered(child->parent(), child);
@@ -76,5 +75,4 @@ UIElement::UIElement(const UIElementType type,
   delegate_->OnUIElementAdded(0, this);
 }
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools

@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DEVTOOLS_WINDOW_ELEMENT_H_
-#define ASH_DEVTOOLS_WINDOW_ELEMENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_WINDOW_ELEMENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_WINDOW_ELEMENT_H_
 
-#include "ash/ash_export.h"
-#include "ash/devtools/ui_element.h"
 #include "base/macros.h"
+#include "components/ui_devtools/views/ui_element.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 
-class ASH_EXPORT WindowElement : public aura::WindowObserver, public UIElement {
+class WindowElement : public aura::WindowObserver, public UIElement {
  public:
   WindowElement(aura::Window* window,
                 UIElementDelegate* ui_element_delegate,
@@ -48,7 +46,6 @@ class ASH_EXPORT WindowElement : public aura::WindowObserver, public UIElement {
   DISALLOW_COPY_AND_ASSIGN(WindowElement);
 };
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools
 
-#endif  // ASH_DEVTOOLS_WINDOW_ELEMENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_WINDOW_ELEMENT_H_

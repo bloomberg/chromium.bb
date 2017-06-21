@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/devtools/view_element.h"
+#include "components/ui_devtools/views/view_element.h"
 
-#include "ash/devtools/ui_element_delegate.h"
+#include "components/ui_devtools/views/ui_element_delegate.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 
 ViewElement::ViewElement(views::View* view,
                          UIElementDelegate* ui_element_delegate,
@@ -85,5 +84,4 @@ views::View* ViewElement::From(UIElement* element) {
   return static_cast<ViewElement*>(element)->view_;
 }
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools

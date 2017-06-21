@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/devtools/window_element.h"
+#include "components/ui_devtools/views/window_element.h"
 
-#include "ash/devtools/ui_element_delegate.h"
+#include "components/ui_devtools/views/ui_element_delegate.h"
 #include "ui/aura/window.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 namespace {
 
 int GetIndexOfChildInParent(aura::Window* window) {
@@ -96,5 +95,4 @@ aura::Window* WindowElement::From(UIElement* element) {
   return static_cast<WindowElement*>(element)->window_;
 }
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools

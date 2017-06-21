@@ -7,12 +7,10 @@
 
 #include "components/ui_devtools/devtools_export.h"
 
-namespace ui {
-namespace devtools {
+namespace ui_devtools {
 
 extern UI_DEVTOOLS_EXPORT const char kEnableUiDevTools[];
 
-}  // namespace devtools
-}  // namespace ui
+}  // namespace ui_devtools
 
 #endif  // COMPONENTS_UI_DEVTOOLS_SWITCHES_H_

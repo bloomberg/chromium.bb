@@ -7,8 +7,7 @@
 
 #include "components/ui_devtools/Protocol.h"
 
-namespace ui {
-namespace devtools {
+namespace ui_devtools {
 
 class UiDevToolsAgent {
  public:
@@ -39,12 +38,12 @@ class UiDevToolsBaseAgent : public UiDevToolsAgent,
 
   // Common methods between all generated Backends, subclasses may
   // choose to override them (but not necessary).
-  ui::devtools::protocol::Response enable() override {
-    return ui::devtools::protocol::Response::OK();
+  ui_devtools::protocol::Response enable() override {
+    return ui_devtools::protocol::Response::OK();
   };
 
-  ui::devtools::protocol::Response disable() override {
-    return ui::devtools::protocol::Response::OK();
+  ui_devtools::protocol::Response disable() override {
+    return ui_devtools::protocol::Response::OK();
   };
 
  protected:
@@ -59,7 +58,6 @@ class UiDevToolsBaseAgent : public UiDevToolsAgent,
   DISALLOW_COPY_AND_ASSIGN(UiDevToolsBaseAgent);
 };
 
-}  // namespace devtools
-}  // namespace ui
+}  // namespace ui_devtools
 
 #endif  // COMPONENTS_UI_DEVTOOLS_DEVTOOLS_BASE_AGENT_H_

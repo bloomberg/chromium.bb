@@ -14,13 +14,14 @@
 #include "components/ui_devtools/Forward.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/devtools_client.h"
+#include "components/ui_devtools/devtools_export.h"
 #include "components/ui_devtools/string_util.h"
 #include "net/server/http_server.h"
 
-namespace ui {
-namespace devtools {
+namespace ui_devtools {
 
-class UiDevToolsServer : public net::HttpServer::Delegate {
+class UI_DEVTOOLS_EXPORT UiDevToolsServer
+    : public NON_EXPORTED_BASE(net::HttpServer::Delegate) {
  public:
   ~UiDevToolsServer() override;
 
@@ -68,7 +69,6 @@ class UiDevToolsServer : public net::HttpServer::Delegate {
   DISALLOW_COPY_AND_ASSIGN(UiDevToolsServer);
 };
 
-}  // namespace devtools
-}  // namespace ui
+}  // namespace ui_devtools
 
 #endif  // COMPONENTS_UI_DEVTOOLS_DEVTOOLS_SERVER_H_

@@ -2,29 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/devtools/ash_devtools_css_agent.h"
-#include "ash/devtools/ash_devtools_dom_agent.h"
-#include "ash/devtools/ui_element.h"
-#include "ash/devtools/view_element.h"
-#include "ash/devtools/widget_element.h"
-#include "ash/devtools/window_element.h"
-#include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/wm/widget_finder.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/ui_devtools/views/ui_devtools_css_agent.h"
+#include "components/ui_devtools/views/ui_devtools_dom_agent.h"
+#include "components/ui_devtools/views/ui_element.h"
+#include "components/ui_devtools/views/view_element.h"
+#include "components/ui_devtools/views/widget_element.h"
+#include "components/ui_devtools/views/window_element.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/views/background.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-namespace ash {
+namespace ui_devtools {
 namespace {
 
-using namespace ui::devtools::protocol;
+using namespace ui_devtools::protocol;
 
 const int kDefaultChildNodeCount = -1;
 const SkColor kBackgroundColor = SK_ColorRED;
@@ -88,7 +86,7 @@ std::string GetAttributeValue(const std::string& attribute, DOM::Node* node) {
 
 bool Equals(aura::Window* window, DOM::Node* node) {
   int children_count = static_cast<int>(window->children().size());
-  if (GetInternalWidgetForWindow(window))
+  if (views::Widget::GetWidgetForNativeView(window))
     children_count++;
   return "Window" == node->getNodeName() &&
          window->GetName() == GetAttributeValue("name", node) &&
@@ -173,53 +171,83 @@ void ExpectHighlighted(const gfx::Rect& bounds, aura::Window* root_window) {
   aura::Window* highlighting_window = GetHighlightingWindow(root_window);
   EXPECT_TRUE(highlighting_window->IsVisible());
   EXPECT_EQ(bounds, highlighting_window->GetBoundsInScreen());
-  EXPECT_EQ(kBackgroundColor, GetInternalWidgetForWindow(highlighting_window)
-                                  ->GetRootView()
-                                  ->background()
-                                  ->get_color());
+  EXPECT_EQ(kBackgroundColor,
+            views::Widget::GetWidgetForNativeView(highlighting_window)
+                ->GetRootView()
+                ->background()
+                ->get_color());
 }
 
 }  // namespace
 
-class AshDevToolsTest : public test::AshTestBase {
+class UIDevToolsTest : public views::ViewsTestBase {
  public:
-  AshDevToolsTest() {}
-  ~AshDevToolsTest() override {}
+  UIDevToolsTest() {}
+  ~UIDevToolsTest() override {}
 
   views::internal::NativeWidgetPrivate* CreateTestNativeWidget() {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
+    params.parent = GetPrimaryRootWindow();
     widget->Init(params);
     return widget->native_widget_private();
   }
 
   std::unique_ptr<views::Widget> CreateTestWidget(const gfx::Rect& bounds) {
-    return AshTestBase::CreateTestWidget(nullptr, kShellWindowId_Invalid,
-                                         bounds);
+    std::unique_ptr<views::Widget> widget(new views::Widget);
+    views::Widget::InitParams params;
+    params.delegate = nullptr;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = bounds;
+    params.parent = GetPrimaryRootWindow();
+    widget->Init(params);
+    widget->Show();
+    return widget;
+  }
+
+  std::unique_ptr<aura::Window> CreateChildWindow(
+      aura::Window* parent,
+      aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL) {
+    std::unique_ptr<aura::Window> window =
+        base::MakeUnique<aura::Window>(nullptr, type);
+    window->Init(ui::LAYER_NOT_DRAWN);
+    window->SetBounds(gfx::Rect());
+    parent->AddChild(window.get());
+    window->Show();
+    return window;
   }
 
   void SetUp() override {
     fake_frontend_channel_ = base::MakeUnique<FakeFrontendChannel>();
     uber_dispatcher_ =
         base::MakeUnique<UberDispatcher>(fake_frontend_channel_.get());
-    dom_agent_ = base::MakeUnique<devtools::AshDevToolsDOMAgent>();
+    dom_agent_ = base::MakeUnique<ui_devtools::UIDevToolsDOMAgent>();
     dom_agent_->Init(uber_dispatcher_.get());
     css_agent_ =
-        base::MakeUnique<devtools::AshDevToolsCSSAgent>(dom_agent_.get());
+        base::MakeUnique<ui_devtools::UIDevToolsCSSAgent>(dom_agent_.get());
     css_agent_->Init(uber_dispatcher_.get());
     css_agent_->enable();
+
     // We need to create |dom_agent| first to observe creation of
-    // WindowTreeHosts in AshTestBase::SetUp().
-    AshTestBase::SetUp();
+    // WindowTreeHosts in ViewTestBase::SetUp().
+    views::ViewsTestBase::SetUp();
+
+    top_window = CreateChildWindow(GetPrimaryRootWindow());
+    top_default_container_window = CreateChildWindow(GetPrimaryRootWindow());
+    top_overlay_window = CreateChildWindow(GetPrimaryRootWindow(),
+                                           aura::client::WINDOW_TYPE_UNKNOWN);
   }
 
   void TearDown() override {
+    top_overlay_window.reset();
+    top_default_container_window.reset();
+    top_window.reset();
     css_agent_.reset();
     dom_agent_.reset();
     uber_dispatcher_.reset();
     fake_frontend_channel_.reset();
-    AshTestBase::TearDown();
+    views::ViewsTestBase::TearDown();
   }
 
   void ExpectChildNodeInserted(int parent_id, int prev_sibling_id) {
@@ -299,19 +327,23 @@ class AshDevToolsTest : public test::AshTestBase {
     return dom_agent()->root_windows()[0];
   }
 
-  devtools::AshDevToolsCSSAgent* css_agent() { return css_agent_.get(); }
-  devtools::AshDevToolsDOMAgent* dom_agent() { return dom_agent_.get(); }
+  ui_devtools::UIDevToolsCSSAgent* css_agent() { return css_agent_.get(); }
+  ui_devtools::UIDevToolsDOMAgent* dom_agent() { return dom_agent_.get(); }
+
+  std::unique_ptr<aura::Window> top_overlay_window;
+  std::unique_ptr<aura::Window> top_window;
+  std::unique_ptr<aura::Window> top_default_container_window;
 
  private:
   std::unique_ptr<UberDispatcher> uber_dispatcher_;
   std::unique_ptr<FakeFrontendChannel> fake_frontend_channel_;
-  std::unique_ptr<devtools::AshDevToolsDOMAgent> dom_agent_;
-  std::unique_ptr<devtools::AshDevToolsCSSAgent> css_agent_;
+  std::unique_ptr<ui_devtools::UIDevToolsDOMAgent> dom_agent_;
+  std::unique_ptr<ui_devtools::UIDevToolsCSSAgent> css_agent_;
 
-  DISALLOW_COPY_AND_ASSIGN(AshDevToolsTest);
+  DISALLOW_COPY_AND_ASSIGN(UIDevToolsTest);
 };
 
-TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
+TEST_F(UIDevToolsTest, GetDocumentWithWindowWidgetView) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   aura::Window* parent_window = widget->GetNativeWindow();
@@ -322,7 +354,7 @@ TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   views::View* child_view = new TestView("child_view");
   widget->GetRootView()->AddChildView(child_view);
 
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(parent_window, root.get());
@@ -339,13 +371,13 @@ TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   Compare(child_view, widget_children->get(0)->getChildren(nullptr)->get(1));
 }
 
-TEST_F(AshDevToolsTest, GetDocumentNativeWidgetOwnsWidget) {
+TEST_F(UIDevToolsTest, GetDocumentNativeWidgetOwnsWidget) {
   views::internal::NativeWidgetPrivate* native_widget_private =
       CreateTestNativeWidget();
   views::Widget* widget = native_widget_private->GetWidget();
   aura::Window* parent_window = widget->GetNativeWindow();
 
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(parent_window, root.get());
@@ -356,9 +388,12 @@ TEST_F(AshDevToolsTest, GetDocumentNativeWidgetOwnsWidget) {
   widget->CloseNow();
 }
 
-TEST_F(AshDevToolsTest, WindowAddedChildNodeInserted) {
+TEST_F(UIDevToolsTest, WindowAddedChildNodeInserted) {
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<aura::Window> window_child =
+      CreateChildWindow(top_window.get());
+
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   aura::Window* root_window = GetPrimaryRootWindow();
@@ -372,9 +407,12 @@ TEST_F(AshDevToolsTest, WindowAddedChildNodeInserted) {
   ExpectChildNodeInserted(parent_node->getNodeId(), sibling_node->getNodeId());
 }
 
-TEST_F(AshDevToolsTest, WindowDestroyedChildNodeRemoved) {
+TEST_F(UIDevToolsTest, WindowDestroyedChildNodeRemoved) {
+  std::unique_ptr<aura::Window> child_1 = CreateChildWindow(top_window.get());
+  std::unique_ptr<aura::Window> child_2 = CreateChildWindow(child_1.get());
+
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   aura::Window* root_window = GetPrimaryRootWindow();
@@ -388,13 +426,18 @@ TEST_F(AshDevToolsTest, WindowDestroyedChildNodeRemoved) {
 
   Compare(parent_window, parent_node);
   Compare(child_window, child_node);
-  delete child_window;
+  child_2.reset();
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
 }
 
-TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
+TEST_F(UIDevToolsTest, WindowReorganizedChildNodeRearranged) {
+  std::unique_ptr<aura::Window> child_1 = CreateChildWindow(top_window.get());
+  std::unique_ptr<aura::Window> child_2 = CreateChildWindow(top_window.get());
+  std::unique_ptr<aura::Window> child_11 = CreateChildWindow(child_1.get());
+  std::unique_ptr<aura::Window> child_21 = CreateChildWindow(child_2.get());
+
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   aura::Window* root_window = GetPrimaryRootWindow();
@@ -420,7 +463,12 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
   ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
 }
 
-TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
+TEST_F(UIDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
+  std::unique_ptr<aura::Window> child_1 = CreateChildWindow(top_window.get());
+  std::unique_ptr<aura::Window> child_2 = CreateChildWindow(top_window.get());
+  std::unique_ptr<aura::Window> child_21 = CreateChildWindow(child_2.get());
+  std::unique_ptr<aura::Window> child_22 = CreateChildWindow(child_2.get());
+
   aura::Window* root_window = GetPrimaryRootWindow();
   aura::Window* rotation_window = root_window->children()[0];
   aura::Window* parent_window = rotation_window->children()[0];
@@ -428,7 +476,7 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
   std::unique_ptr<aura::Window> child_window(CreateChildWindow(parent_window));
 
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
   DOM::Node* root_node =
       root->getChildren(nullptr)->get(0)->getChildren(nullptr)->get(0);
@@ -450,9 +498,13 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
   ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
 }
 
-TEST_F(AshDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
+TEST_F(UIDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
+  std::unique_ptr<aura::Window> child_11 = CreateChildWindow(top_window.get());
+  std::unique_ptr<aura::Window> child_12 = CreateChildWindow(top_window.get());
+  std::unique_ptr<aura::Window> child_13 = CreateChildWindow(top_window.get());
+
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   aura::Window* root_window = GetPrimaryRootWindow();
@@ -474,14 +526,14 @@ TEST_F(AshDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
   ExpectChildNodeInserted(parent_id, sibling_node->getNodeId());
 }
 
-TEST_F(AshDevToolsTest, ViewInserted) {
+TEST_F(UIDevToolsTest, ViewInserted) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   aura::Window* window = widget->GetNativeWindow();
   widget->Show();
 
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(window, root.get());
@@ -498,7 +550,7 @@ TEST_F(AshDevToolsTest, ViewInserted) {
                           sibling_view_node->getNodeId());
 }
 
-TEST_F(AshDevToolsTest, ViewRemoved) {
+TEST_F(UIDevToolsTest, ViewRemoved) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   // Need to store |view| in unique_ptr because it is removed from the widget
@@ -510,7 +562,7 @@ TEST_F(AshDevToolsTest, ViewRemoved) {
   root_view->AddChildView(child_view.get());
 
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(window, root.get());
@@ -528,7 +580,7 @@ TEST_F(AshDevToolsTest, ViewRemoved) {
                          child_view_node->getNodeId());
 }
 
-TEST_F(AshDevToolsTest, ViewRearranged) {
+TEST_F(UIDevToolsTest, ViewRearranged) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   aura::Window* window = widget->GetNativeWindow();
@@ -545,7 +597,7 @@ TEST_F(AshDevToolsTest, ViewRearranged) {
   parent_view->AddChildView(child_view_1);
 
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(window, root.get());
@@ -581,7 +633,7 @@ TEST_F(AshDevToolsTest, ViewRearranged) {
   ExpectChildNodeInserted(target_view_node->getNodeId(), 0);
 }
 
-TEST_F(AshDevToolsTest, ViewRearrangedRemovedAndInserted) {
+TEST_F(UIDevToolsTest, ViewRearrangedRemovedAndInserted) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   aura::Window* window = widget->GetNativeWindow();
@@ -595,7 +647,7 @@ TEST_F(AshDevToolsTest, ViewRearrangedRemovedAndInserted) {
   parent_view->AddChildView(child_view);
 
   // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(window, root.get());
@@ -620,14 +672,14 @@ TEST_F(AshDevToolsTest, ViewRearrangedRemovedAndInserted) {
   ExpectChildNodeInserted(target_view_node->getNodeId(), 0);
 }
 
-TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
+TEST_F(UIDevToolsTest, WindowWidgetViewHighlight) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(0, 0, 400, 400)));
   aura::Window* parent_window = widget->GetNativeWindow();
   std::unique_ptr<aura::Window> window(CreateChildWindow(parent_window));
   views::View* root_view = widget->GetRootView();
 
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(parent_window, root.get());
@@ -640,9 +692,9 @@ TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
 
   HighlightNode(window_node->getNodeId());
   ExpectHighlighted(window->GetBoundsInScreen(), GetPrimaryRootWindow());
-  devtools::UIElement* element =
+  ui_devtools::UIElement* element =
       dom_agent()->GetElementFromNodeId(window_node->getNodeId());
-  ASSERT_EQ(devtools::UIElementType::WINDOW, element->type());
+  ASSERT_EQ(ui_devtools::UIElementType::WINDOW, element->type());
   EXPECT_EQ(element->GetNodeWindowAndBounds().first, window.get());
   EXPECT_EQ(element->GetNodeWindowAndBounds().second,
             window->GetBoundsInScreen());
@@ -653,7 +705,7 @@ TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
   ExpectHighlighted(widget->GetWindowBoundsInScreen(), GetPrimaryRootWindow());
 
   element = dom_agent()->GetElementFromNodeId(widget_node->getNodeId());
-  ASSERT_EQ(devtools::UIElementType::WIDGET, element->type());
+  ASSERT_EQ(ui_devtools::UIElementType::WIDGET, element->type());
   EXPECT_EQ(element->GetNodeWindowAndBounds().first, widget->GetNativeWindow());
   EXPECT_EQ(element->GetNodeWindowAndBounds().second,
             widget->GetWindowBoundsInScreen());
@@ -664,7 +716,7 @@ TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
   ExpectHighlighted(root_view->GetBoundsInScreen(), GetPrimaryRootWindow());
 
   element = dom_agent()->GetElementFromNodeId(root_view_node->getNodeId());
-  ASSERT_EQ(devtools::UIElementType::VIEW, element->type());
+  ASSERT_EQ(ui_devtools::UIElementType::VIEW, element->type());
   EXPECT_EQ(element->GetNodeWindowAndBounds().first,
             root_view->GetWidget()->GetNativeWindow());
   EXPECT_EQ(element->GetNodeWindowAndBounds().second,
@@ -677,15 +729,16 @@ TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
   EXPECT_FALSE(GetHighlightingWindow(GetPrimaryRootWindow())->IsVisible());
 }
 
-int GetNodeIdFromWindow(devtools::UIElement* ui_element, aura::Window* window) {
+int GetNodeIdFromWindow(ui_devtools::UIElement* ui_element,
+                        aura::Window* window) {
   for (auto* child : ui_element->children()) {
-    if (child->type() == devtools::UIElementType::WINDOW &&
-        static_cast<devtools::WindowElement*>(child)->window() == window) {
+    if (child->type() == ui_devtools::UIElementType::WINDOW &&
+        static_cast<ui_devtools::WindowElement*>(child)->window() == window) {
       return child->node_id();
     }
   }
   for (auto* child : ui_element->children()) {
-    if (child->type() == devtools::UIElementType::WINDOW) {
+    if (child->type() == ui_devtools::UIElementType::WINDOW) {
       int node_id = GetNodeIdFromWindow(child, window);
       if (node_id > 0)
         return node_id;
@@ -697,7 +750,7 @@ int GetNodeIdFromWindow(devtools::UIElement* ui_element, aura::Window* window) {
 // TODO(thanhph): Make test AshDevToolsTest.MultipleDisplayHighlight work with
 // multiple displays. https://crbug.com/726831.
 
-TEST_F(AshDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
+TEST_F(UIDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   aura::Window* parent_window = widget->GetNativeWindow();
@@ -709,7 +762,7 @@ TEST_F(AshDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
   widget->SetBounds(widget_bounds);
   widget->GetRootView()->SetBoundsRect(view_bounds);
 
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(parent_window, root.get());
@@ -723,13 +776,13 @@ TEST_F(AshDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
                     view_bounds);
 }
 
-TEST_F(AshDevToolsTest, WindowWidgetViewStyleSheetChanged) {
+TEST_F(UIDevToolsTest, WindowWidgetViewStyleSheetChanged) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   aura::Window* widget_window = widget->GetNativeWindow();
   std::unique_ptr<aura::Window> child(CreateChildWindow(widget_window));
 
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   gfx::Rect child_bounds(2, 2, 3, 3);
@@ -747,21 +800,20 @@ TEST_F(AshDevToolsTest, WindowWidgetViewStyleSheetChanged) {
   EXPECT_EQ(1, GetStyleSheetChangedCount(widget_node->getNodeId()));
   EXPECT_EQ(
       1, GetStyleSheetChangedCount(widget_node_children->get(1)->getNodeId()));
-  EXPECT_EQ(2,
-            GetStyleSheetChangedCount(widget_node_children->get(0)
-                                          ->getChildren(nullptr)
-                                          ->get(0)
-                                          ->getNodeId()));
+  EXPECT_EQ(2, GetStyleSheetChangedCount(widget_node_children->get(0)
+                                             ->getChildren(nullptr)
+                                             ->get(0)
+                                             ->getNodeId()));
 }
 
-TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
+TEST_F(UIDevToolsTest, WindowWidgetViewSetStyleText) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(0, 0, 400, 400)));
   aura::Window* parent_window = widget->GetNativeWindow();
   std::unique_ptr<aura::Window> window(CreateChildWindow(parent_window));
   views::View* root_view = widget->GetRootView();
 
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(parent_window, root.get());
@@ -826,4 +878,4 @@ TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
   EXPECT_TRUE(root_view->visible());
 }
 
-}  // namespace ash
+}  // namespace ui_devtools

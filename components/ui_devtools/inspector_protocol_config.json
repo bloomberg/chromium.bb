@@ -3,7 +3,7 @@
         "path": "protocol.json",
         "package": "components/ui_devtools",
         "output": "",
-        "namespace": ["ui", "devtools", "protocol"],
+        "namespace": ["ui_devtools", "protocol"],
         "export_macro": "UI_DEVTOOLS_EXPORT",
         "export_header": "components/ui_devtools/devtools_export.h"
     },

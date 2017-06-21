@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DEVTOOLS_UI_ELEMENT_DELEGATE_H_
-#define ASH_DEVTOOLS_UI_ELEMENT_DELEGATE_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_DELEGATE_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_DELEGATE_H_
 
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 
 class UIElement;
 
-class ASH_EXPORT UIElementDelegate {
+class UIElementDelegate {
  public:
   UIElementDelegate(){};
   virtual ~UIElementDelegate(){};
@@ -38,7 +36,6 @@ class ASH_EXPORT UIElementDelegate {
   DISALLOW_COPY_AND_ASSIGN(UIElementDelegate);
 };
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools
 
-#endif  // ASH_DEVTOOLS_UI_ELEMENT_DELEGATE_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_DELEGATE_H_

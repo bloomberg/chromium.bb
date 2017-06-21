@@ -4,12 +4,10 @@
 
 #include "components/ui_devtools/switches.h"
 
-namespace ui {
-namespace devtools {
+namespace ui_devtools {
 
 // Enables DevTools server for UI (mus, ash, etc). Value should be the port the
 // server is started on. Default port is 9332.
 const char kEnableUiDevTools[] = "enable-ui-devtools";
 
-}  // namespace devtools
-}  // namespace ui
+}  // namespace ui_devtools

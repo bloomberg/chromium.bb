@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DEVTOOLS_UI_ELEMENT_H_
-#define ASH_DEVTOOLS_UI_ELEMENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_H_
 
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 
 class UIElementDelegate;
 
 // UIElement type.
 enum UIElementType { WINDOW, WIDGET, VIEW };
 
-class ASH_EXPORT UIElement {
+class UIElement {
  public:
   virtual ~UIElement();
   int node_id() const { return node_id_; };
@@ -72,7 +70,6 @@ class ASH_EXPORT UIElement {
   DISALLOW_COPY_AND_ASSIGN(UIElement);
 };
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools
 
-#endif  // ASH_DEVTOOLS_UI_ELEMENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_UI_ELEMENT_H_
