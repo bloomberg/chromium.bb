@@ -17,13 +17,11 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/printing/combining_printer_detector.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/printing/printer_discoverer.h"
 #include "chrome/browser/chromeos/printing/printer_info.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
-#include "chrome/browser/chromeos/printing/usb_printer_detector.h"
-#include "chrome/browser/chromeos/printing/usb_printer_detector_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -128,11 +126,11 @@ std::string GetPrinterQueue(const base::DictionaryValue& printer_dict) {
 }  // namespace
 
 CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
-    : printer_detector_(nullptr),
+    : printer_discoverer_(nullptr),
       profile_(Profile::FromWebUI(webui)),
       weak_factory_(this) {
   ppd_provider_ = printing::CreateProvider(profile_);
-  printer_configurer_ = PrinterConfigurer::Create(profile_);
+  printer_configurer_ = chromeos::PrinterConfigurer::Create(profile_);
 }
 
 CupsPrintersHandler::~CupsPrintersHandler() {}
@@ -226,7 +224,8 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
   Printer::PrinterProtocol protocol = printer->GetProtocol();
   prefs->RemovePrinter(printer_id);
 
-  DebugDaemonClient* client = DBusThreadManager::Get()->GetDebugDaemonClient();
+  chromeos::DebugDaemonClient* client =
+      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   client->CupsRemovePrinter(printer_name,
                             base::Bind(&OnRemovedPrinter, protocol),
                             base::Bind(&base::DoNothing));
@@ -291,9 +290,10 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
     }
   }
 
-  QueryIppPrinter(host.as_string(), port, printer_queue,
-                  base::Bind(&CupsPrintersHandler::OnPrinterInfo,
-                             weak_factory_.GetWeakPtr(), callback_id));
+  ::chromeos::QueryIppPrinter(
+      host.as_string(), port, printer_queue,
+      base::Bind(&CupsPrintersHandler::OnPrinterInfo,
+                 weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CupsPrintersHandler::OnPrinterInfo(const std::string& callback_id,
@@ -390,13 +390,14 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
                  weak_factory_.GetWeakPtr(), base::Passed(&printer)));
 }
 
-void CupsPrintersHandler::OnAddedPrinter(std::unique_ptr<Printer> printer,
-                                         PrinterSetupResult result_code) {
+void CupsPrintersHandler::OnAddedPrinter(
+    std::unique_ptr<Printer> printer,
+    chromeos::PrinterSetupResult result_code) {
   std::string printer_name = printer->display_name();
   UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterSetupResult", result_code,
-                            PrinterSetupResult::kMaxValue);
+                            chromeos::PrinterSetupResult::kMaxValue);
   switch (result_code) {
-    case PrinterSetupResult::kSuccess: {
+    case chromeos::PrinterSetupResult::kSuccess: {
       UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
                                 printer->GetProtocol(), Printer::kProtocolMax);
       auto* manager = PrintersManagerFactory::GetForBrowserContext(profile_);
@@ -404,32 +405,32 @@ void CupsPrintersHandler::OnAddedPrinter(std::unique_ptr<Printer> printer,
       manager->RegisterPrinter(std::move(printer));
       break;
     }
-    case PrinterSetupResult::kPpdNotFound:
+    case chromeos::PrinterSetupResult::kPpdNotFound:
       LOG(WARNING) << "Could not locate requested PPD";
       break;
-    case PrinterSetupResult::kPpdTooLarge:
+    case chromeos::PrinterSetupResult::kPpdTooLarge:
       LOG(WARNING) << "PPD is too large";
       break;
-    case PrinterSetupResult::kPpdUnretrievable:
+    case chromeos::PrinterSetupResult::kPpdUnretrievable:
       LOG(WARNING) << "Could not retrieve PPD from server";
       break;
-    case PrinterSetupResult::kInvalidPpd:
+    case chromeos::PrinterSetupResult::kInvalidPpd:
       LOG(WARNING) << "Provided PPD is invalid.";
       break;
-    case PrinterSetupResult::kPrinterUnreachable:
+    case chromeos::PrinterSetupResult::kPrinterUnreachable:
       LOG(WARNING) << "Could not contact printer for configuration";
       break;
-    case PrinterSetupResult::kDbusError:
-    case PrinterSetupResult::kFatalError:
+    case chromeos::PrinterSetupResult::kDbusError:
+    case chromeos::PrinterSetupResult::kFatalError:
       LOG(ERROR) << "Unrecoverable error.  Reboot required.";
       break;
-    case PrinterSetupResult::kMaxValue:
+    case chromeos::PrinterSetupResult::kMaxValue:
       NOTREACHED() << "This is not an expected value";
       break;
   }
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("on-add-cups-printer"),
-      base::Value(result_code == PrinterSetupResult::kSuccess),
+      base::Value(result_code == chromeos::PrinterSetupResult::kSuccess),
       base::Value(printer_name));
 }
 
@@ -494,28 +495,30 @@ void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
 
 void CupsPrintersHandler::ResolveManufacturersDone(
     const std::string& js_callback,
-    printing::PpdProvider::CallbackResultCode result_code,
+    chromeos::printing::PpdProvider::CallbackResultCode result_code,
     const std::vector<std::string>& manufacturers) {
   auto manufacturers_value = base::MakeUnique<base::ListValue>();
-  if (result_code == printing::PpdProvider::SUCCESS) {
+  if (result_code == chromeos::printing::PpdProvider::SUCCESS) {
     manufacturers_value->AppendStrings(manufacturers);
   }
   base::DictionaryValue response;
-  response.SetBoolean("success", result_code == printing::PpdProvider::SUCCESS);
+  response.SetBoolean("success",
+                      result_code == chromeos::printing::PpdProvider::SUCCESS);
   response.Set("manufacturers", std::move(manufacturers_value));
   ResolveJavascriptCallback(base::Value(js_callback), response);
 }
 
 void CupsPrintersHandler::ResolvePrintersDone(
     const std::string& js_callback,
-    printing::PpdProvider::CallbackResultCode result_code,
+    chromeos::printing::PpdProvider::CallbackResultCode result_code,
     const std::vector<std::string>& printers) {
   auto printers_value = base::MakeUnique<base::ListValue>();
-  if (result_code == printing::PpdProvider::SUCCESS) {
+  if (result_code == chromeos::printing::PpdProvider::SUCCESS) {
     printers_value->AppendStrings(printers);
   }
   base::DictionaryValue response;
-  response.SetBoolean("success", result_code == printing::PpdProvider::SUCCESS);
+  response.SetBoolean("success",
+                      result_code == chromeos::printing::PpdProvider::SUCCESS);
   response.Set("models", std::move(printers_value));
   ResolveJavascriptCallback(base::Value(js_callback), response);
 }
@@ -530,45 +533,31 @@ void CupsPrintersHandler::FileSelected(const base::FilePath& path,
 }
 
 void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
-  // Create (or recreate) the printer_detector_.  If one already existed, we
-  // want to start over anyways.
-  printer_detector_ = CombiningPrinterDetector::Create();
-  PrinterDetector* usb_detector =
-      UsbPrinterDetectorFactory::GetInstance()->Get(profile_);
-  DCHECK(usb_detector);
-  printer_detector_->AddDetector(usb_detector);
-  printer_detector_->AddObserver(this);
-  OnPrintersFound(printer_detector_->GetPrinters());
-  printer_detector_->Start();
+  if (!printer_discoverer_.get()) {
+    printer_discoverer_ =
+        chromeos::PrinterDiscoverer::CreateForProfile(profile_);
+  }
+
+  printer_discoverer_->AddObserver(this);
 }
 
 void CupsPrintersHandler::HandleStopDiscovery(const base::ListValue* args) {
-  printer_detector_.reset();
+  printer_discoverer_.reset();
 }
 
 void CupsPrintersHandler::OnPrintersFound(
     const std::vector<Printer>& printers) {
   std::unique_ptr<base::ListValue> printers_list =
       base::MakeUnique<base::ListValue>();
-  // Filter out already-configured printers as we go.
-  PrintersManager* printers_manager =
-      PrintersManagerFactory::GetForBrowserContext(profile_);
-  if (printers_manager != nullptr) {
-    for (const auto& printer : printers) {
-      if (printers_manager->GetPrinter(printer.id()).get() == nullptr) {
-        printers_list->Append(GetPrinterInfo(printer));
-      }
-    }
-  } else {
-    LOG(WARNING) << "Failing to get available printers because no "
-                    "PrintersManager exists.";
+  for (const auto& printer : printers) {
+    printers_list->Append(GetPrinterInfo(printer));
   }
+
   FireWebUIListener("on-printer-discovered", *printers_list);
 }
 
-void CupsPrintersHandler::OnPrinterScanComplete() {
-  UMA_HISTOGRAM_COUNTS_100("Printing.CUPS.PrintersDiscovered",
-                           printer_detector_->GetPrinters().size());
+void CupsPrintersHandler::OnDiscoveryInitialScanDone(int printer_count) {
+  UMA_HISTOGRAM_COUNTS_100("Printing.CUPS.PrintersDiscovered", printer_count);
   FireWebUIListener("on-printer-discovery-done");
 }
 

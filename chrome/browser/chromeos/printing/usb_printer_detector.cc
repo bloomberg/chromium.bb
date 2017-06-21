@@ -107,15 +107,6 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     return GetPrintersLocked();
   }
 
-  void Start() override {
-    started_ = true;
-    observer_list_->Notify(FROM_HERE,
-                           &PrinterDetector::Observer::OnPrintersFound,
-                           GetPrintersLocked());
-    observer_list_->Notify(FROM_HERE,
-                           &PrinterDetector::Observer::OnPrinterScanComplete);
-  }
-
  private:
   std::vector<Printer> GetPrintersLocked() {
     pp_lock_.AssertAcquired();
@@ -152,14 +143,13 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     base::AutoLock auto_lock(pp_lock_);
     if (base::ContainsKey(present_printers_, device->guid())) {
       present_printers_.erase(device->guid());
-      if (started_) {
-        auto printers = GetPrintersLocked();
-        // We already have pp_lock_, so need to call the pre-locked version of
-        // GetPrinters to prevent deadlock.
-        observer_list_->Notify(FROM_HERE,
-                               &PrinterDetector::Observer::OnPrintersFound,
-                               GetPrintersLocked());
-      }
+      auto printers = GetPrintersLocked();
+      // We already have pp_lock_, so need to call the pre-locked version of
+      // GetPrinters to prevent deadlock.
+      observer_list_->Notify(
+          FROM_HERE,
+          &UsbPrinterDetector::Observer::OnAvailableUsbPrintersChanged,
+          GetPrintersLocked());
     } else {
       // If the device has been removed but it's not in present_printers_, it
       // must still be in the setup flow.
@@ -284,15 +274,12 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     } else {
       base::AutoLock auto_lock(pp_lock_);
       present_printers_.emplace(data->device->guid(), std::move(data->printer));
-      if (started_) {
-        observer_list_->Notify(FROM_HERE,
-                               &PrinterDetector::Observer::OnPrintersFound,
-                               GetPrintersLocked());
-      }
+      observer_list_->Notify(
+          FROM_HERE,
+          &UsbPrinterDetector::Observer::OnAvailableUsbPrintersChanged,
+          GetPrintersLocked());
     }
   }
-  // Has Start() been called yet?
-  bool started_ = false;
 
   // Map from USB GUID to Printer that we have detected as being currently
   // plugged in and have finished processing.  Note present_printers_ may be

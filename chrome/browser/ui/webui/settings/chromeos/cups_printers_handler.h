@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
-#include "chrome/browser/chromeos/printing/printer_detector.h"
+#include "chrome/browser/chromeos/printing/printer_discoverer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -28,15 +28,12 @@ namespace chromeos {
 namespace printing {
 class PpdProvider;
 }
-
-class CombiningPrinterDetector;
-
 namespace settings {
 
 // Chrome OS CUPS printing settings page UI handler.
 class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                             public ui::SelectFileDialog::Listener,
-                            public PrinterDetector::Observer {
+                            public chromeos::PrinterDiscoverer::Observer {
  public:
   explicit CupsPrintersHandler(content::WebUI* webui);
   ~CupsPrintersHandler() override;
@@ -71,7 +68,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   void HandleAddCupsPrinter(const base::ListValue* args);
   void OnAddedPrinter(std::unique_ptr<Printer> printer,
-                      PrinterSetupResult result);
+                      chromeos::PrinterSetupResult result);
   void OnAddPrinterError();
 
   // Get a list of all manufacturers for which we have at least one model of
@@ -91,11 +88,11 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // PpdProvider callback handlers.
   void ResolveManufacturersDone(
       const std::string& js_callback,
-      printing::PpdProvider::CallbackResultCode result_code,
+      chromeos::printing::PpdProvider::CallbackResultCode result_code,
       const std::vector<std::string>& available);
   void ResolvePrintersDone(
       const std::string& js_callback,
-      printing::PpdProvider::CallbackResultCode result_code,
+      chromeos::printing::PpdProvider::CallbackResultCode result_code,
       const std::vector<std::string>& available);
 
   // ui::SelectFileDialog::Listener override:
@@ -106,9 +103,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleStartDiscovery(const base::ListValue* args);
   void HandleStopDiscovery(const base::ListValue* args);
 
-  // PrinterDetector::Observer implementations:
+  // chromeos::PrinterDiscoverer::Observer override:
   void OnPrintersFound(const std::vector<Printer>& printers) override;
-  void OnPrinterScanComplete() override;
+  void OnDiscoveryInitialScanDone(int printer_count) override;
 
   // Invokes debugd to add the printer to CUPS.  If |ipp_everywhere| is true,
   // automatic configuration will be attempted  and |ppd_path| is ignored.
@@ -119,9 +116,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                         const base::FilePath& ppd_path,
                         bool ipp_everywhere);
 
-  std::unique_ptr<CombiningPrinterDetector> printer_detector_;
-  scoped_refptr<printing::PpdProvider> ppd_provider_;
-  std::unique_ptr<PrinterConfigurer> printer_configurer_;
+  std::unique_ptr<chromeos::PrinterDiscoverer> printer_discoverer_;
+  scoped_refptr<chromeos::printing::PpdProvider> ppd_provider_;
+  std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;
 
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
