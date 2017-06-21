@@ -52,17 +52,17 @@ struct LayoutRect;
 @property(nonatomic, readonly) NSArray* cards;
 // The card corresponding to the currently selected tab in the tab model.
 // Setting this property will change the selection in the tab model.
-@property(nonatomic, assign, readwrite) StackCard* currentCard;
+@property(nonatomic) StackCard* currentCard;
 // Set to the card that is currently animating closed, if any.
-@property(nonatomic, assign, readwrite) StackCard* closingCard;
+@property(nonatomic) StackCard* closingCard;
 // The view that cards should be displayed in. Changing the display view will
 // remove cards from the previous view, but they will not be re-displayed in the
 // new view without a call to updateCardVisibilities.
-@property(nonatomic, retain, readwrite) UIView* displayView;
+@property(nonatomic, strong, readwrite) UIView* displayView;
 // The side on which the close button should be displayed.
 @property(nonatomic, readonly) CardCloseButtonSide closeButtonSide;
 // The object to be notified about addition and removal of cards.
-@property(nonatomic, assign, readwrite) id<CardSetObserver> observer;
+@property(nonatomic, weak, readwrite) id<CardSetObserver> observer;
 // While YES, changes to the tab model will not affect the card stack. When
 // this is changed back to NO, the card stack will be completely rebuilt, so
 // this should be used very carefully.
@@ -87,6 +87,10 @@ struct LayoutRect;
 // Initializes a card set backed by |model|. |model| is not retained, and must
 // outlive the card set.
 - (id)initWithModel:(TabModel*)model;
+
+// Tears down any observation or other state. After this method is called, the
+// receiver should be set to nil or otherwise marked for deallocation.
+- (void)disconnect;
 
 // The tab model backing the card set.
 // TODO(stuartmorgan): See if this can reasonably be internalized.

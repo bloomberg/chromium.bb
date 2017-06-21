@@ -27,8 +27,8 @@ class GURL;
 // Controller for the tab-switching UI displayed as a stack of tabs.
 @interface StackViewController : UIViewController<TabSwitcher>
 
-@property(nonatomic, assign) id<TabSwitcherDelegate> delegate;
-@property(nonatomic, assign) id<StackViewControllerTestDelegate> testDelegate;
+@property(nonatomic, weak) id<TabSwitcherDelegate> delegate;
+@property(nonatomic, weak) id<StackViewControllerTestDelegate> testDelegate;
 
 // Initializes with the given tab models, which must not be nil.
 // |activeTabModel| is the model which starts active, and must be one of the

@@ -12,13 +12,11 @@
 
 #include "base/format_macros.h"
 #import "base/ios/block_types.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
+
 #include "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -57,6 +55,10 @@
 #include "ios/web/public/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using base::UserMetricsAction;
 
@@ -441,45 +443,44 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 @end
 
 @implementation StackViewController {
-  base::scoped_nsobject<UIScrollView> _scrollView;
+  UIScrollView* _scrollView;
   // The view containing the stack view's background.
-  base::scoped_nsobject<UIView> _backgroundView;
+  UIView* _backgroundView;
   // The main card set.
-  base::scoped_nsobject<CardSet> _mainCardSet;
+  CardSet* _mainCardSet;
   // The off-the-record card set.
-  base::scoped_nsobject<CardSet> _otrCardSet;
+  CardSet* _otrCardSet;
   // The currently active card set; one of _mainCardSet or _otrCardSet.
-  CardSet* _activeCardSet;                            // weak
-  id<TabSwitcherDelegate> _delegate;                  // weak
-  id<StackViewControllerTestDelegate> _testDelegate;  // weak
+  __weak CardSet* _activeCardSet;
+  __weak id<TabSwitcherDelegate> _delegate;
+  __weak id<StackViewControllerTestDelegate> _testDelegate;
   // Controller for the stack view toolbar.
-  base::scoped_nsobject<StackViewToolbarController> _toolbarController;
+  StackViewToolbarController* _toolbarController;
   // The size of a card at the time the stack was first shown.
   CGSize _initialCardSize;
   // The previous orientation of the interface.
   UIInterfaceOrientation _lastInterfaceOrientation;
   // Gesture recognizer to catch taps on the inactive stack.
-  base::scoped_nsobject<UITapGestureRecognizer> _modeSwitchRecognizer;
+  UITapGestureRecognizer* _modeSwitchRecognizer;
   // Gesture recognizer to catch pinches in the active scroll view.
-  base::scoped_nsobject<UIGestureRecognizer> _pinchRecognizer;
+  UIGestureRecognizer* _pinchRecognizer;
   // Gesture recognizer to catch swipes to switch decks/dismiss cards.
-  base::scoped_nsobject<UIGestureRecognizer> _swipeGestureRecognizer;
+  UIGestureRecognizer* _swipeGestureRecognizer;
   // Gesture recognizer that determines whether an ambiguous swipe action
   // (i.e., a swipe on an active card in the direction that would cause a deck
   // change) should trigger a change of decks or a card dismissal.
-  base::scoped_nsobject<UILongPressGestureRecognizer>
-      _swipeDismissesCardRecognizer;
+  UILongPressGestureRecognizer* _swipeDismissesCardRecognizer;
   // Tracks the parameters of gesture-related events.
-  base::scoped_nsobject<GestureStateTracker> _gestureStateTracker;
+  GestureStateTracker* _gestureStateTracker;
   // If |YES|, callbacks to |scrollViewDidScroll:| do not trigger scrolling.
   // Default is |NO|.
   BOOL _ignoreScrollCallbacks;
   // The scroll view's pan gesture recognizer.
-  UIPanGestureRecognizer* _scrollGestureRecognizer;  // weak
+  __weak UIPanGestureRecognizer* _scrollGestureRecognizer;
   // Because the removal of the StackCard during a swipe happens in a callback,
   // track which direction the animation should dismiss with.
   // |_reverseDismissCard| is only set when the dismissal happens in reverse.
-  base::scoped_nsobject<StackCard> _reverseDismissCard;
+  StackCard* _reverseDismissCard;
   // |YES| if the stack view is in the process of being dismissed.
   BOOL _isBeingDismissed;
   // |YES| if the stack view is currently active.
@@ -489,8 +490,6 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // |YES| if there is card set animation being processed. For testing only.
   // Save last touch point used by new tab animation.
   CGPoint _lastTapPoint;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaserStackViewController;
 }
 
 @synthesize activeCardSet = _activeCardSet;
@@ -513,25 +512,23 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   DCHECK(activeCardSet == otrCardSet || activeCardSet == mainCardSet);
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _propertyReleaserStackViewController.Init(self,
-                                              [StackViewController class]);
     [self setUpWithMainCardSet:mainCardSet
                     otrCardSet:otrCardSet
                  activeCardSet:activeCardSet];
-    _swipeDismissesCardRecognizer.reset([[UILongPressGestureRecognizer alloc]
+    _swipeDismissesCardRecognizer = [[UILongPressGestureRecognizer alloc]
         initWithTarget:self
-                action:@selector(handleLongPressFrom:)]);
+                action:@selector(handleLongPressFrom:)];
     [_swipeDismissesCardRecognizer
         setMinimumPressDuration:
             kPressDurationForAmbiguousSwipeToTriggerDismissal];
     [_swipeDismissesCardRecognizer setDelegate:self];
-    _pinchRecognizer.reset([[CardStackPinchGestureRecognizer alloc]
+    _pinchRecognizer = [[CardStackPinchGestureRecognizer alloc]
         initWithTarget:self
-                action:@selector(handlePinchFrom:)]);
+                action:@selector(handlePinchFrom:)];
     [_pinchRecognizer setDelegate:self];
-    _modeSwitchRecognizer.reset([[UITapGestureRecognizer alloc]
+    _modeSwitchRecognizer = [[UITapGestureRecognizer alloc]
         initWithTarget:self
-                action:@selector(handleTapFrom:)]);
+                action:@selector(handleTapFrom:)];
     [_modeSwitchRecognizer setDelegate:self];
   }
   return self;
@@ -543,12 +540,10 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   DCHECK(mainModel);
   DCHECK(otrModel);
   DCHECK(activeModel == otrModel || activeModel == mainModel);
-  base::scoped_nsobject<CardSet> mainCardSet(
-      [[CardSet alloc] initWithModel:mainModel]);
-  base::scoped_nsobject<CardSet> otrCardSet(
-      [[CardSet alloc] initWithModel:otrModel]);
+  CardSet* mainCardSet = [[CardSet alloc] initWithModel:mainModel];
+  CardSet* otrCardSet = [[CardSet alloc] initWithModel:otrModel];
   CardSet* activeCardSet =
-      (activeModel == mainModel) ? mainCardSet.get() : otrCardSet.get();
+      (activeModel == mainModel) ? mainCardSet : otrCardSet;
   return [self initWithMainCardSet:mainCardSet
                         otrCardSet:otrCardSet
                      activeCardSet:activeCardSet];
@@ -568,21 +563,21 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 - (void)setUpWithMainCardSet:(CardSet*)mainCardSet
                   otrCardSet:(CardSet*)otrCardSet
                activeCardSet:(CardSet*)activeCardSet {
-  _mainCardSet.reset([mainCardSet retain]);
-  _otrCardSet.reset([otrCardSet retain]);
+  _mainCardSet = mainCardSet;
+  _otrCardSet = otrCardSet;
   if (experimental_flags::IsLRUSnapshotCacheEnabled()) {
     [_mainCardSet setKeepOnlyVisibleCardViewsAlive:YES];
     [_otrCardSet setKeepOnlyVisibleCardViewsAlive:YES];
   }
   _activeCardSet = (activeCardSet == mainCardSet) ? mainCardSet : otrCardSet;
-  _gestureStateTracker.reset([[GestureStateTracker alloc] init]);
-  _pinchRecognizer.reset([[CardStackPinchGestureRecognizer alloc]
+  _gestureStateTracker = [[GestureStateTracker alloc] init];
+  _pinchRecognizer = [[CardStackPinchGestureRecognizer alloc]
       initWithTarget:self
-              action:@selector(handlePinchFrom:)]);
+              action:@selector(handlePinchFrom:)];
   [_pinchRecognizer setDelegate:self];
-  _modeSwitchRecognizer.reset([[UITapGestureRecognizer alloc]
-      initWithTarget:self
-              action:@selector(handleTapFrom:)]);
+  _modeSwitchRecognizer =
+      [[UITapGestureRecognizer alloc] initWithTarget:self
+                                              action:@selector(handleTapFrom:)];
   [_modeSwitchRecognizer setDelegate:self];
 }
 
@@ -593,12 +588,10 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   DCHECK(otrModel);
   DCHECK(activeModel == otrModel || activeModel == mainModel);
   DCHECK(!_isActive);
-  base::scoped_nsobject<CardSet> mainCardSet(
-      [[CardSet alloc] initWithModel:mainModel]);
-  base::scoped_nsobject<CardSet> otrCardSet(
-      [[CardSet alloc] initWithModel:otrModel]);
+  CardSet* mainCardSet = [[CardSet alloc] initWithModel:mainModel];
+  CardSet* otrCardSet = [[CardSet alloc] initWithModel:otrModel];
   CardSet* activeCardSet =
-      (activeModel == mainModel) ? mainCardSet.get() : otrCardSet.get();
+      (activeModel == mainModel) ? mainCardSet : otrCardSet;
   [self setUpWithMainCardSet:mainCardSet
                   otrCardSet:otrCardSet
                activeCardSet:activeCardSet];
@@ -630,16 +623,20 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // memory notification is not received and the view is never unloaded.
   [self deregisterForNotifications];
 
-  _mainCardSet.reset();
-  _otrCardSet.reset();
+  [_mainCardSet disconnect];
+  _mainCardSet = nil;
+
+  [_otrCardSet disconnect];
+  _otrCardSet = nil;
+
   _activeCardSet = nil;
 
   // Remove gesture recognizers and notifications.
   [self prepareForDismissal];
-  _gestureStateTracker.reset();
-  _pinchRecognizer.reset();
-  _modeSwitchRecognizer.reset();
-  _swipeGestureRecognizer.reset();
+  _gestureStateTracker = nil;
+  _pinchRecognizer = nil;
+  _modeSwitchRecognizer = nil;
+  _swipeGestureRecognizer = nil;
 
   // The cards need to recompute their sizes the next time they are shown.
   _initialCardSize.height = _initialCardSize.width = 0.0f;
@@ -676,12 +673,10 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 - (void)setUpDisplayViews {
   CGRect displayViewFrame = CGRectMake(0, 0, [_scrollView frame].size.width,
                                        [_scrollView frame].size.height);
-  base::scoped_nsobject<UIView> mainDisplayView(
-      [[UIView alloc] initWithFrame:displayViewFrame]);
+  UIView* mainDisplayView = [[UIView alloc] initWithFrame:displayViewFrame];
   [mainDisplayView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                        UIViewAutoresizingFlexibleHeight];
-  base::scoped_nsobject<UIView> otrDisplayView(
-      [[UIView alloc] initWithFrame:displayViewFrame]);
+  UIView* otrDisplayView = [[UIView alloc] initWithFrame:displayViewFrame];
   [otrDisplayView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                       UIViewAutoresizingFlexibleHeight];
 
@@ -714,7 +709,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
       [[UIPanGestureRecognizer alloc] initWithTarget:self
                                               action:@selector(handlePanFrom:)];
   [panGestureRecognizer setMaximumNumberOfTouches:1];
-  _swipeGestureRecognizer.reset(panGestureRecognizer);
+  _swipeGestureRecognizer = panGestureRecognizer;
   [[self view] addGestureRecognizer:_swipeGestureRecognizer];
   [_swipeGestureRecognizer setDelegate:self];
 }
@@ -722,13 +717,13 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 - (void)loadView {
   [super loadView];
 
-  _backgroundView.reset([[UIView alloc] initWithFrame:self.view.bounds]);
+  _backgroundView = [[UIView alloc] initWithFrame:self.view.bounds];
   [_backgroundView setAutoresizingMask:(UIViewAutoresizingFlexibleHeight |
                                         UIViewAutoresizingFlexibleWidth)];
   [self.view addSubview:_backgroundView];
 
-  _toolbarController.reset(
-      [[StackViewToolbarController alloc] initWithStackViewToolbar]);
+  _toolbarController =
+      [[StackViewToolbarController alloc] initWithStackViewToolbar];
   CGRect toolbarFrame = [self.view bounds];
   toolbarFrame.origin.y = CGRectGetMinY([[_toolbarController view] frame]);
   toolbarFrame.size.height = CGRectGetHeight([[_toolbarController view] frame]);
@@ -742,7 +737,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
       toolbarFrame.size.height - kVerticalToolbarOverlap, 0.0, 0.0, 0.0);
   CGRect scrollViewFrame =
       UIEdgeInsetsInsetRect(self.view.bounds, contentInsets);
-  _scrollView.reset([[UIScrollView alloc] initWithFrame:scrollViewFrame]);
+  _scrollView = [[UIScrollView alloc] initWithFrame:scrollViewFrame];
   [self.view addSubview:_scrollView];
   [_scrollView setAutoresizingMask:(UIViewAutoresizingFlexibleHeight |
                                     UIViewAutoresizingFlexibleWidth)];
@@ -783,7 +778,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 
   // Reset the gesture state tracker to clear gesture-related information from
   // the last time the stack view was shown.
-  _gestureStateTracker.reset([[GestureStateTracker alloc] init]);
+  _gestureStateTracker = [[GestureStateTracker alloc] init];
 
   [super viewWillAppear:animated];
 }
@@ -816,7 +811,6 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   [_mainCardSet setObserver:nil];
   [_otrCardSet setObserver:nil];
   [self cleanUpViewsAndNotifications];
-  [super dealloc];
 }
 
 // Overridden to always return NO, ensuring that the status bar shows in
@@ -960,8 +954,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // Stop pre-loading cards.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   [_scrollView setDelegate:nil];
-  _scrollView.reset();
-  _backgroundView.reset();
+  _scrollView = nil;
+  _backgroundView = nil;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -1077,8 +1071,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // world.
   // (see the comment in -cardSet:willRemoveCard:atIndex for details).
   [_scrollView setScrollEnabled:NO];
-  _pinchRecognizer.get().enabled = NO;
-  _swipeGestureRecognizer.get().enabled = NO;
+  _pinchRecognizer.enabled = NO;
+  _swipeGestureRecognizer.enabled = NO;
 }
 
 - (void)enableGestureHandlers {
@@ -1087,8 +1081,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // world.
   // (see the comment in -cardSet:willRemoveCard:atIndex for details).
   [_scrollView setScrollEnabled:YES];
-  _pinchRecognizer.get().enabled = YES;
-  _swipeGestureRecognizer.get().enabled = YES;
+  _pinchRecognizer.enabled = YES;
+  _swipeGestureRecognizer.enabled = YES;
 }
 
 - (void)activeCardCountChanged {
@@ -1217,11 +1211,11 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 #pragma mark Current Set Handling
 
 - (BOOL)isCurrentSetIncognito {
-  return _activeCardSet == _otrCardSet.get();
+  return _activeCardSet == _otrCardSet;
 }
 
 - (CardSet*)inactiveCardSet {
-  return [self isCurrentSetIncognito] ? _mainCardSet.get() : _otrCardSet.get();
+  return [self isCurrentSetIncognito] ? _mainCardSet : _otrCardSet;
 }
 
 - (void)setActiveCardSet:(CardSet*)cardSet {
@@ -1474,7 +1468,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     [_activeCardSet fanOutCardsWithStartIndex:0];
     [self postOpenTabsAccessibilityNotification];
     UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
-                                    _toolbarController.get().view);
+                                    _toolbarController.view);
   }
 }
 
@@ -1585,8 +1579,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   self.transitionToolbarFrame = self.transitionToolbarController.view.frame;
 
   // Create dummy toolbar background view.
-  self.dummyToolbarBackgroundView =
-      [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+  self.dummyToolbarBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
   [self.dummyToolbarBackgroundView setClipsToBounds:YES];
 
   // Set the transition completion block.
@@ -2065,8 +2058,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   CGRect viewBounds, remainder;
   CGRectDivide([self.view bounds], &remainder, &viewBounds, statusBarHeight,
                CGRectMinYEdge);
-  UIImageView* newCard =
-      [[[UIImageView alloc] initWithFrame:viewBounds] autorelease];
+  UIImageView* newCard = [[UIImageView alloc] initWithFrame:viewBounds];
   // Temporarily resize the tab's view to ensure it matches the card while
   // generating a snapshot, but then restore the original frame.
   CGRect originalTabFrame = [tab view].frame;
@@ -2112,7 +2104,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     return NO;
 
   if ((recognizer == _pinchRecognizer) ||
-      (recognizer == _swipeGestureRecognizer.get()))
+      (recognizer == _swipeGestureRecognizer))
     return YES;
 
   // Only the mode switch recognizer should be triggered in the inactive deck
@@ -2120,7 +2112,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   CGPoint touchLocation = [touch locationInView:_scrollView];
   BOOL inInactiveDeckRegion =
       CGRectContainsPoint([self inactiveDeckRegion], touchLocation);
-  if (recognizer == _modeSwitchRecognizer.get())
+  if (recognizer == _modeSwitchRecognizer)
     return inInactiveDeckRegion;
   else if (inInactiveDeckRegion)
     return NO;
@@ -2128,7 +2120,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // Extract the card on which the touch is occurring.
   CardView* cardView = nil;
   StackCard* card = nil;
-  if (recognizer == _swipeDismissesCardRecognizer.get()) {
+  if (recognizer == _swipeDismissesCardRecognizer) {
     UIView* activeView = _activeCardSet.displayView;
     CGPoint locationInActiveView = [touch locationInView:activeView];
     NSUInteger cardIndex = [self indexOfCardAtPoint:locationInActiveView];
@@ -2180,8 +2172,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
       (gestureRecognizer == _swipeGestureRecognizer ||
        otherGestureRecognizer == _swipeGestureRecognizer);
   BOOL swipeDismissesCardRecognizerInvolved =
-      (gestureRecognizer == _swipeDismissesCardRecognizer.get() ||
-       otherGestureRecognizer == _swipeDismissesCardRecognizer.get());
+      (gestureRecognizer == _swipeDismissesCardRecognizer ||
+       otherGestureRecognizer == _swipeDismissesCardRecognizer);
   if (swipeRecognizerInvolved && swipeDismissesCardRecognizerInvolved)
     return YES;
 
@@ -2244,7 +2236,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   DCHECK(!_isBeingDismissed);
   DCHECK(_isActive);
 
-  if (recognizer == _swipeDismissesCardRecognizer.get())
+  if (recognizer == _swipeDismissesCardRecognizer)
     return;
 
   UIGestureRecognizerState state = [recognizer state];
@@ -2419,7 +2411,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   if (recognizer.state != UIGestureRecognizerStateEnded)
     return;
 
-  if (recognizer == _modeSwitchRecognizer.get()) {
+  if (recognizer == _modeSwitchRecognizer) {
     DCHECK(CGRectContainsPoint([self inactiveDeckRegion],
                                [recognizer locationInView:_scrollView]));
     [self setActiveCardSet:[self inactiveCardSet]];
@@ -2659,7 +2651,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
       // Track card if animation should dismiss in reverse from the norm of
       // clockwise in portrait, counter-clockwise in landscape.
       if ((isPortrait && !clockwise) || (!isPortrait && clockwise))
-        _reverseDismissCard.reset([card retain]);
+        _reverseDismissCard = card;
       // This will trigger the completion of the close card animation.
       [self closeTab:card.view];
     } else {
@@ -2729,8 +2721,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 }
 
 - (void)showToolsMenuPopup {
-  base::scoped_nsobject<ToolsMenuConfiguration> configuration(
-      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]]);
+  ToolsMenuConfiguration* configuration =
+      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]];
   [configuration setInTabSwitcher:YES];
   // When checking for the existence of tabs, catch the case where the main set
   // is both active and empty, but the incognito set has some cards.
@@ -2919,7 +2911,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
                   completion:nil];
     // Reset |reverseDismissCard| if that card was the one dismissed.
     if ((isPortrait && !clockwise) || (!isPortrait && clockwise))
-      _reverseDismissCard.reset();
+      _reverseDismissCard = nil;
   }
   // Nil out the the closing card after all closing animations have finished.
   [CATransaction begin];
@@ -2927,7 +2919,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     cardSet.closingCard = nil;
   }];
   // If the last incognito card closes, switch back to just the main set.
-  if ([cardSet.cards count] == 0 && cardSet == _otrCardSet.get()) {
+  if ([cardSet.cards count] == 0 && cardSet == _otrCardSet) {
     [self displayMainCardSetOnly];
   } else {
     NSUInteger numCards = [[cardSet cards] count];
@@ -2976,18 +2968,18 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   [card.view addAccessibilityTarget:self
                              action:@selector(accessibilityFocusedOnElement:)];
 
-  base::scoped_nsobject<UIGestureRecognizer> tapRecognizer([
-      [UITapGestureRecognizer alloc] initWithTarget:self
-                                             action:@selector(handleTapFrom:)]);
-  tapRecognizer.get().delegate = self;
-  [card.view addGestureRecognizer:tapRecognizer.get()];
+  UIGestureRecognizer* tapRecognizer =
+      [[UITapGestureRecognizer alloc] initWithTarget:self
+                                              action:@selector(handleTapFrom:)];
+  tapRecognizer.delegate = self;
+  [card.view addGestureRecognizer:tapRecognizer];
 
-  base::scoped_nsobject<UIGestureRecognizer> longPressRecognizer(
+  UIGestureRecognizer* longPressRecognizer =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
-                  action:@selector(handleLongPressFrom:)]);
-  longPressRecognizer.get().delegate = self;
-  [card.view addGestureRecognizer:longPressRecognizer.get()];
+                  action:@selector(handleLongPressFrom:)];
+  longPressRecognizer.delegate = self;
+  [card.view addGestureRecognizer:longPressRecognizer];
 }
 
 - (void)cardSetRecreatedCards:(CardSet*)cardSet {
@@ -3473,15 +3465,12 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
-  base::WeakNSObject<StackViewController> weakSelf(self);
+  __weak StackViewController* weakSelf = self;
 
   // Block to execute a command from the |tag|.
-  base::mac::ScopedBlock<void (^)(NSInteger)> execute(
-      ^(NSInteger tag) {
-        [weakSelf
-            chromeExecuteCommand:[GenericChromeCommand commandWithTag:tag]];
-      },
-      base::scoped_policy::RETAIN);
+  void (^execute)(NSInteger) = ^(NSInteger tag) {
+    [weakSelf chromeExecuteCommand:[GenericChromeCommand commandWithTag:tag]];
+  };
 
   return @[
     [UIKeyCommand cr_keyCommandWithInput:@"t"
@@ -3490,9 +3479,9 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
                                              IDS_IOS_TOOLS_MENU_NEW_TAB)
                                   action:^{
                                     if ([weakSelf isCurrentSetIncognito])
-                                      execute.get()(IDC_NEW_INCOGNITO_TAB);
+                                      execute(IDC_NEW_INCOGNITO_TAB);
                                     else
-                                      execute.get()(IDC_NEW_TAB);
+                                      execute(IDC_NEW_TAB);
                                   }],
     [UIKeyCommand
         cr_keyCommandWithInput:@"n"
@@ -3500,16 +3489,16 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
                          title:l10n_util::GetNSStringWithFixup(
                                    IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB)
                         action:^{
-                          execute.get()(IDC_NEW_INCOGNITO_TAB);
+                          execute(IDC_NEW_INCOGNITO_TAB);
                         }],
     [UIKeyCommand cr_keyCommandWithInput:@"n"
                            modifierFlags:UIKeyModifierCommand
                                    title:nil
                                   action:^{
                                     if ([weakSelf isCurrentSetIncognito])
-                                      execute.get()(IDC_NEW_INCOGNITO_TAB);
+                                      execute(IDC_NEW_INCOGNITO_TAB);
                                     else
-                                      execute.get()(IDC_NEW_TAB);
+                                      execute(IDC_NEW_TAB);
                                   }],
   ];
 }
@@ -3519,7 +3508,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 @implementation StackViewController (Testing)
 
 - (UIScrollView*)scrollView {
-  return _scrollView.get();
+  return _scrollView;
 }
 
 @end

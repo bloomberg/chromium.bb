@@ -52,7 +52,7 @@ typedef enum {
 @property(nonatomic, assign) BOOL isActiveTab;
 
 // The snapshot displayed on the card.
-@property(nonatomic, retain) UIImage* image;
+@property(nonatomic, strong) UIImage* image;
 
 // Whether the card view should render its shadow.
 @property(nonatomic, assign) BOOL shouldShowShadow;
