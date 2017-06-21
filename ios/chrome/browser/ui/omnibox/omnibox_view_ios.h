@@ -94,8 +94,6 @@ class OmniboxViewIOS : public OmniboxView {
   void OnAccept();
   void OnClear();
   bool OnCopy();
-  bool OnCopyURL();
-  bool CanCopyURL();
   void WillPaste();
   void OnDeleteBackward();
 

@@ -19,13 +19,6 @@
 // that allows the delegate to handle the copy.
 - (BOOL)onCopy;
 
-// Called when the OmniboxTextField performs a 'Copy URL' operation.
-- (BOOL)onCopyURL;
-
-// Returns true if the 'Copy URL' operation can performed (i.e. the text in the
-// omnibox still reflects the current navigation entry).
-- (BOOL)canCopyURL;
-
 // Called before the OmniboxTextField performs a paste operation.
 - (void)willPaste;
 

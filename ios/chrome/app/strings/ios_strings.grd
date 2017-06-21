@@ -581,9 +581,6 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE" desc="Context menu text for option to perform a search for image [Length: 25em] [iOS only]">
         Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> For This Image
       </message>
-      <message name="IDS_IOS_COPY_URL" desc="The 'Copy URL' option in context menu which is shown if there is currently a search query shown in the omnibox and will put the URL for the search into the pasteboard. [Length: 10em] [iOS only]">
-        Copy URL
-      </message>
       <message name="IDS_IOS_COPY_VERSION_HINT" desc="The accessibility hint for the label showing the Chrome version. [iOS only]">
         Double tap to copy.
       </message>
