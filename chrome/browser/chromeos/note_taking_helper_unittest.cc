@@ -363,6 +363,7 @@ TEST_P(NoteTakingHelperTest, ListChromeApps) {
                          kProdKeepAppName, false /* preferred */,
                          NoteTakingLockScreenSupport::kNotSupported),
             GetAppString(apps[1]));
+  EXPECT_FALSE(helper()->GetPreferredChromeAppInfo(profile()));
 
   // Now install a random extension and check that it's ignored.
   const extensions::ExtensionId kOtherId = crx_file::id_util::GenerateId("a");
@@ -380,6 +381,7 @@ TEST_P(NoteTakingHelperTest, ListChromeApps) {
                          kProdKeepAppName, false /* preferred */,
                          NoteTakingLockScreenSupport::kNotSupported),
             GetAppString(apps[1]));
+  EXPECT_FALSE(helper()->GetPreferredChromeAppInfo(profile()));
 
   // Mark the prod version as preferred.
   helper()->SetPreferredApp(profile(), NoteTakingHelper::kProdKeepExtensionId);
@@ -393,6 +395,14 @@ TEST_P(NoteTakingHelperTest, ListChromeApps) {
                          kProdKeepAppName, true /* preferred */,
                          NoteTakingLockScreenSupport::kNotSupported),
             GetAppString(apps[1]));
+
+  std::unique_ptr<NoteTakingAppInfo> preferred_info =
+      helper()->GetPreferredChromeAppInfo(profile());
+  ASSERT_TRUE(preferred_info);
+  EXPECT_EQ(GetAppString(NoteTakingHelper::kProdKeepExtensionId,
+                         kProdKeepAppName, true /* preferred */,
+                         NoteTakingLockScreenSupport::kNotSupported),
+            GetAppString(*preferred_info));
 }
 
 TEST_P(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
@@ -419,6 +429,7 @@ TEST_P(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
                          kProdKeepAppName, false /* preferred */,
                          NoteTakingLockScreenSupport::kNotSupported),
             GetAppString(apps[0]));
+  EXPECT_FALSE(helper()->GetPreferredChromeAppInfo(profile()));
 
   std::unique_ptr<base::Value> lock_enabled_action_handler =
       extensions::ListBuilder()
@@ -447,6 +458,7 @@ TEST_P(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
                          kProdKeepAppName, false /* preferred */,
                          NoteTakingLockScreenSupport::kNotSupported),
             GetAppString(apps[1]));
+  EXPECT_FALSE(helper()->GetPreferredChromeAppInfo(profile()));
 }
 
 TEST_P(NoteTakingHelperTest, PreferredAppEnabledOnLockScreen) {
@@ -478,6 +490,7 @@ TEST_P(NoteTakingHelperTest, PreferredAppEnabledOnLockScreen) {
                          false /* preferred */,
                          NoteTakingLockScreenSupport::kSupported),
             GetAppString(apps[0]));
+  EXPECT_FALSE(helper()->GetPreferredChromeAppInfo(profile()));
 
   // When the lock screen note taking pref is set and the Keep app is set as the
   // preferred note taking app, the app should be reported as selected as lock
@@ -491,6 +504,13 @@ TEST_P(NoteTakingHelperTest, PreferredAppEnabledOnLockScreen) {
                          true /* preferred */,
                          NoteTakingLockScreenSupport::kSelected),
             GetAppString(apps[0]));
+  std::unique_ptr<NoteTakingAppInfo> preferred_info =
+      helper()->GetPreferredChromeAppInfo(profile());
+  ASSERT_TRUE(preferred_info);
+  EXPECT_EQ(GetAppString(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+                         true /* preferred */,
+                         NoteTakingLockScreenSupport::kSelected),
+            GetAppString(*preferred_info));
 
   // When lock screen note taking pref is reset, the app should not be reported
   // as selected on lock screen.
@@ -502,6 +522,12 @@ TEST_P(NoteTakingHelperTest, PreferredAppEnabledOnLockScreen) {
                          true /* preferred */,
                          NoteTakingLockScreenSupport::kSupported),
             GetAppString(apps[0]));
+  preferred_info = helper()->GetPreferredChromeAppInfo(profile());
+  ASSERT_TRUE(preferred_info);
+  EXPECT_EQ(GetAppString(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+                         true /* preferred */,
+                         NoteTakingLockScreenSupport::kSupported),
+            GetAppString(*preferred_info));
 }
 
 TEST_P(NoteTakingHelperTest, PreferredAppWithNoLockScreenPermission) {
@@ -926,6 +952,21 @@ TEST_P(NoteTakingHelperTest, ListAndroidApps) {
   EXPECT_EQ(GetAppString(kPackage2, kName2, false /* preferred */,
                          NoteTakingLockScreenSupport::kNotSupported),
             GetAppString(apps[1]));
+
+  helper()->SetPreferredApp(profile(), kPackage1);
+
+  apps = helper()->GetAvailableApps(profile());
+  ASSERT_EQ(2u, apps.size());
+  EXPECT_EQ(GetAppString(kPackage1, kName1, true /* preferred */,
+                         NoteTakingLockScreenSupport::kNotSupported),
+            GetAppString(apps[0]));
+  EXPECT_EQ(GetAppString(kPackage2, kName2, false /* preferred */,
+                         NoteTakingLockScreenSupport::kNotSupported),
+            GetAppString(apps[1]));
+
+  std::unique_ptr<NoteTakingAppInfo> preferred_info =
+      helper()->GetPreferredChromeAppInfo(profile());
+  EXPECT_FALSE(preferred_info);
 
   // TODO(victorhsieh): Opt-out on Persistent ARC is special.  Skip until
   // implemented.

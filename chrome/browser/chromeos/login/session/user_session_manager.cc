@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/first_run/goodies_displayer.h"
+#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/logging.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
@@ -1251,6 +1252,8 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCerts(profile);
     InitializeCRLSetFetcher(user);
     InitializeCertificateTransparencyComponents(user);
+    if (lock_screen_apps::StateController::IsEnabled())
+      lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
 
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
 

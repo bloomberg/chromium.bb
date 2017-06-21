@@ -7,8 +7,14 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/lock_screen_apps/app_manager_impl.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -34,7 +40,7 @@ StateController* StateController::Get() {
   return g_instance;
 }
 
-StateController::StateController() : binding_(this) {
+StateController::StateController() : binding_(this), session_observer_(this) {
   DCHECK(!g_instance);
   DCHECK(IsEnabled());
 
@@ -55,6 +61,12 @@ void StateController::FlushTrayActionForTesting() {
   tray_action_ptr_.FlushForTesting();
 }
 
+void StateController::SetAppManagerForTesting(
+    std::unique_ptr<AppManager> app_manager) {
+  DCHECK(!app_manager_);
+  app_manager_ = std::move(app_manager);
+}
+
 void StateController::Initialize() {
   // The tray action ptr might be set previously if the client was being created
   // for testing.
@@ -66,6 +78,18 @@ void StateController::Initialize() {
   ash::mojom::TrayActionClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   tray_action_ptr_->SetClient(std::move(client), lock_screen_note_state_);
+}
+
+void StateController::SetPrimaryProfile(Profile* profile) {
+  // App manager might have been set previously by a test.
+  if (!app_manager_)
+    app_manager_ = base::MakeUnique<AppManagerImpl>();
+  app_manager_->Initialize(
+      profile,
+      chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile());
+
+  session_observer_.Add(session_manager::SessionManager::Get());
+  OnSessionStateChanged();
 }
 
 void StateController::AddObserver(StateObserver* observer) {
@@ -81,16 +105,37 @@ TrayActionState StateController::GetLockScreenNoteState() const {
 }
 
 void StateController::RequestNewLockScreenNote() {
-  if (lock_screen_note_state_ != TrayActionState::kAvailable) {
+  if (lock_screen_note_state_ != TrayActionState::kAvailable)
+    return;
+
+  DCHECK(app_manager_->IsNoteTakingAppAvailable());
+
+  // Update state to launching even if app fails to launch - this is to notify
+  // listeners that a lock screen note request was handled.
+  UpdateLockScreenNoteState(TrayActionState::kLaunching);
+  if (!app_manager_->LaunchNoteTaking())
+    UpdateLockScreenNoteState(TrayActionState::kAvailable);
+}
+
+void StateController::OnSessionStateChanged() {
+  if (!session_manager::SessionManager::Get()->IsScreenLocked()) {
+    app_manager_->Stop();
+    UpdateLockScreenNoteState(TrayActionState::kNotAvailable);
     return;
   }
 
-  // TODO(tbarzic): Implement this properly.
-  UpdateLockScreenNoteState(TrayActionState::kActive);
+  // base::Unretained is safe here because |app_manager_| is owned by |this|,
+  // and the callback will not be invoked after |app_manager_| goes out of
+  // scope.
+  app_manager_->Start(
+      base::Bind(&StateController::OnNoteTakingAvailabilityChanged,
+                 base::Unretained(this)));
+  OnNoteTakingAvailabilityChanged();
 }
 
 void StateController::MoveToBackground() {
-  if (GetLockScreenNoteState() != TrayActionState::kActive)
+  TrayActionState state = GetLockScreenNoteState();
+  if (state != TrayActionState::kActive && state != TrayActionState::kLaunching)
     return;
   UpdateLockScreenNoteState(TrayActionState::kBackground);
 }
@@ -104,6 +149,16 @@ void StateController::MoveToForeground() {
 void StateController::SetLockScreenNoteStateForTesting(
     ash::mojom::TrayActionState state) {
   lock_screen_note_state_ = state;
+}
+
+void StateController::OnNoteTakingAvailabilityChanged() {
+  if (!app_manager_->IsNoteTakingAppAvailable()) {
+    UpdateLockScreenNoteState(TrayActionState::kNotAvailable);
+    return;
+  }
+
+  if (GetLockScreenNoteState() == TrayActionState::kNotAvailable)
+    UpdateLockScreenNoteState(TrayActionState::kAvailable);
 }
 
 bool StateController::UpdateLockScreenNoteState(TrayActionState state) {
