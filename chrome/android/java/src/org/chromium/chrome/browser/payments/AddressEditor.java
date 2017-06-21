@@ -70,7 +70,7 @@ public class AddressEditor
      * @param phoneNumber The phone number to possibly add.
      */
     public void addPhoneNumberIfValid(@Nullable CharSequence phoneNumber) {
-        if (TextUtils.isEmpty(phoneNumber)) mPhoneNumbers.add(phoneNumber.toString());
+        if (!TextUtils.isEmpty(phoneNumber)) mPhoneNumbers.add(phoneNumber.toString());
     }
 
     /**
@@ -143,6 +143,12 @@ public class AddressEditor
         // that's being edited. This will not fire the dropdown callback.
         mCountryField.setValue(AutofillAddress.getCountryCode(mProfile));
 
+        // Phone number validator and formatter are cached, so their contry code needs to be updated
+        // for the new profile that's being edited.
+        assert mCountryField.getValue() != null;
+        mPhoneValidator.setCountryCode(mCountryField.getValue().toString());
+        mPhoneFormatter.setCountryCode(mCountryField.getValue().toString());
+
         // There's a finite number of fields for address editing. Changing the country will re-order
         // and relabel the fields. The meaning of each field remains the same.
         if (mAddressFields.isEmpty()) {
@@ -170,9 +176,6 @@ public class AddressEditor
 
         // Phone number is present and required for all countries.
         if (mPhoneField == null) {
-            assert mCountryField.getValue() != null;
-            mPhoneValidator.setCountryCode(mCountryField.getValue().toString());
-            mPhoneFormatter.setCountryCode(mCountryField.getValue().toString());
             mPhoneField = EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
                     mContext.getString(R.string.autofill_profile_editor_phone_number),
                     mPhoneNumbers, mPhoneFormatter, mPhoneValidator, null,
