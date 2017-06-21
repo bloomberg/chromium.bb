@@ -111,8 +111,12 @@ void WindowManager::Init(
     std::unique_ptr<ShellDelegate> shell_delegate) {
   // Only create InputDeviceClient in MASH mode. For MUS mode WindowManager is
   // created by chrome, which creates InputDeviceClient.
-  if (config_ == Config::MASH)
+  if (config_ == Config::MASH) {
     input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+  } else {
+    // In Config::MUS ash handles all drag and drop.
+    window_tree_client->DisableDragDropClient();
+  }
 
   DCHECK(window_manager_client_);
   DCHECK(!window_tree_client_);

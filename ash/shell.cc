@@ -1028,7 +1028,10 @@ void Shell::Init(const ShellInitParams& init_params) {
         std::move(user_activity_monitor), user_activity_detector_.get());
   }
 
-  drag_drop_controller_.reset(new DragDropController);
+  // In mash drag and drop is handled by mus.
+  if (config != Config::MASH)
+    drag_drop_controller_ = base::MakeUnique<DragDropController>();
+
   // |screenshot_controller_| needs to be created (and prepended as a
   // pre-target handler) at this point, because |mouse_cursor_filter_| needs to
   // process mouse events prior to screenshot session.
@@ -1132,13 +1135,17 @@ void Shell::Init(const ShellInitParams& init_params) {
 void Shell::InitRootWindow(aura::Window* root_window) {
   DCHECK(focus_controller_);
   DCHECK(visibility_controller_.get());
-  DCHECK(drag_drop_controller_.get());
 
   aura::client::SetFocusClient(root_window, focus_controller_.get());
   ::wm::SetActivationClient(root_window, focus_controller_.get());
   root_window->AddPreTargetHandler(focus_controller_.get());
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
-  aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
+  if (drag_drop_controller_) {
+    DCHECK_NE(Config::MASH, GetAshConfig());
+    aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
+  } else {
+    DCHECK_EQ(Config::MASH, GetAshConfig());
+  }
   aura::client::SetScreenPositionClient(root_window,
                                         screen_position_controller_.get());
   aura::client::SetCursorClient(root_window, cursor_manager_.get());
