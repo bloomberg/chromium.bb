@@ -280,11 +280,11 @@ void NaClBrowser::EnsureIrtAvailable() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (IsOk() && irt_state_ == NaClResourceUninitialized) {
     irt_state_ = NaClResourceRequested;
-    // TODO(ncbray) use blocking pool.
+    auto task_runner = base::CreateTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
     std::unique_ptr<base::FileProxy> file_proxy(
-        new base::FileProxy(content::BrowserThread::GetTaskRunnerForThread(
-                                content::BrowserThread::FILE)
-                                .get()));
+        new base::FileProxy(task_runner.get()));
     base::FileProxy* proxy = file_proxy.get();
     if (!proxy->CreateOrOpen(
             irt_filepath_, base::File::FLAG_OPEN | base::File::FLAG_READ,
