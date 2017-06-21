@@ -555,8 +555,6 @@ void ProfileImplIOData::InitializeInternal(
       std::move(profile_params->protocol_handler_interceptor),
       main_context->network_delegate(),
       io_thread_globals->system_request_context->host_resolver()));
-  main_context->set_network_quality_estimator(
-      io_thread_globals->network_quality_estimator.get());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   InitializeExtensionsRequestContext(profile_params);
