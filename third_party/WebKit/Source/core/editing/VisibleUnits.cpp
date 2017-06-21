@@ -766,9 +766,10 @@ static InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
       return InlineBoxPosition(inline_box, caret_offset);
 
     // For example, abc 123 ^ CBA
-    inline_box = InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
-        *inline_box, level);
-    return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
+    InlineBox* const result_box =
+        InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(*inline_box,
+                                                             level);
+    return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
   }
 
   if (IsStartOfDifferentDirection(inline_box))
@@ -781,9 +782,9 @@ static InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
   if (next_box && next_box->BidiLevel() == level)
     return InlineBoxPosition(inline_box, caret_offset);
 
-  inline_box =
+  InlineBox* const result_box =
       InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(*inline_box, level);
-  return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
+  return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
 }
 
 static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
