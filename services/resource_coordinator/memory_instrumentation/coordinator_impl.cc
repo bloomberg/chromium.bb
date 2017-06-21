@@ -27,14 +27,15 @@ namespace {
 
 memory_instrumentation::CoordinatorImpl* g_coordinator_impl;
 
+using OSMemDump = base::trace_event::MemoryDumpCallbackResult::OSMemDump;
+
 // Returns the private memory footprint calcualted from given |os_dump|.
 //
 // See design docs linked in the bugs for the rationale of the computation:
 // - Linux/Android: https://crbug.com/707019 .
 // - Mac OS: https://crbug.com/707021 .
 // - Win: https://crbug.com/707022 .
-uint32_t CalculatePrivateFootprintKb(
-    const base::trace_event::MemoryDumpCallbackResult::OSMemDump& os_dump) {
+uint32_t CalculatePrivateFootprintKb(const OSMemDump& os_dump) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   uint64_t rss_anon_bytes = os_dump.platform_private_footprint.rss_anon_bytes;
   uint64_t vm_swap_bytes = os_dump.platform_private_footprint.vm_swap_bytes;
@@ -57,6 +58,16 @@ uint32_t CalculatePrivateFootprintKb(
 #else
   return 0;
 #endif
+}
+
+memory_instrumentation::mojom::OSMemDumpPtr CreatePublicOSDump(
+    const OSMemDump& internal_os_dump) {
+  memory_instrumentation::mojom::OSMemDumpPtr os_dump =
+      memory_instrumentation::mojom::OSMemDump::New();
+
+  os_dump->resident_set_kb = internal_os_dump.resident_set_kb;
+  os_dump->private_footprint_kb = CalculatePrivateFootprintKb(internal_os_dump);
+  return os_dump;
 }
 
 }  // namespace
@@ -247,30 +258,36 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   // processes. A concrete case is Linux, where the browser process provides
   // details for the child processes to get around sandbox restrictions on
   // opening /proc pseudo files.
+
+  std::map<base::ProcessId, OSMemDump> os_dumps;
+  for (auto& result : request.process_memory_dumps) {
+    const base::ProcessId pid = result.first;
+    const OSMemDump dump = result.second->os_dump;
+
+    // TODO(hjd): We should have a better way to tell if os_dump is filled.
+    if (dump.resident_set_kb > 0) {
+      DCHECK_EQ(0u, os_dumps.count(pid));
+      os_dumps[pid] = dump;
+    }
+
+    for (auto& extra : result.second->extra_processes_dumps) {
+      const base::ProcessId extra_pid = extra.first;
+      const OSMemDump extra_dump = extra.second;
+      DCHECK_EQ(0u, os_dumps.count(extra_pid));
+      os_dumps[extra_pid] = extra_dump;
+    }
+  }
+
   std::map<base::ProcessId, mojom::ProcessMemoryDumpPtr> finalized_pmds;
   for (auto& result : request.process_memory_dumps) {
     const base::ProcessId pid = result.first;
     mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
     if (!pmd)
       pmd = mojom::ProcessMemoryDump::New();
-    pmd->chrome_dump = result.second->chrome_dump;
-
-    // TODO(hjd): We should have a better way to tell if os_dump is filled.
-    if (result.second->os_dump.resident_set_kb > 0) {
-      DCHECK_EQ(0u, pmd->os_dump.resident_set_kb);
-      pmd->os_dump = result.second->os_dump;
-    }
-
-    for (auto& pair : result.second->extra_processes_dumps) {
-      const base::ProcessId extra_pid = pair.first;
-      mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[extra_pid];
-      if (!pmd)
-        pmd = mojom::ProcessMemoryDump::New();
-      DCHECK_EQ(0u, pmd->os_dump.resident_set_kb);
-      pmd->os_dump = result.second->extra_processes_dumps[extra_pid];
-    }
 
     pmd->process_type = result.second->process_type;
+    pmd->chrome_dump = result.second->chrome_dump;
+    pmd->os_dump = CreatePublicOSDump(os_dumps[pid]);
   }
 
   mojom::GlobalMemoryDumpPtr global_dump(mojom::GlobalMemoryDump::New());
@@ -283,7 +300,6 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     mojom::ProcessMemoryDumpPtr& pmd = pair.second;
     if (!pmd || !pmd->chrome_dump.malloc_total_kb)
       continue;
-    pmd->private_footprint = CalculatePrivateFootprintKb(pmd->os_dump);
     global_dump->process_dumps.push_back(std::move(pmd));
   }
 
