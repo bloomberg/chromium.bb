@@ -93,20 +93,7 @@ const ShadowDetails& ShadowDetails::Get(int elevation, int corner_radius) {
       std::make_pair(elevation, corner_radius), ShadowDetails()));
   DCHECK(insertion.second);
   ShadowDetails* shadow = &insertion.first->second;
-  // To match the CSS notion of blur (spread outside the bounding box) to the
-  // Skia notion of blur (spread outside and inside the bounding box), we have
-  // to double the designer-provided blur values.
-  const int kBlurCorrection = 2;
-  // "Key shadow": y offset is elevation and blur is twice the elevation.
-  shadow->values.emplace_back(gfx::Vector2d(0, elevation),
-                              kBlurCorrection * elevation * 2,
-                              SkColorSetA(SK_ColorBLACK, 0x3d));
-  // "Ambient shadow": no offset and blur matches the elevation.
-  shadow->values.emplace_back(gfx::Vector2d(), kBlurCorrection * elevation,
-                              SkColorSetA(SK_ColorBLACK, 0x1f));
-  // To see what this looks like for elevation 24, try this CSS:
-  //   box-shadow: 0 24px 48px rgba(0, 0, 0, .24),
-  //               0 0 24px rgba(0, 0, 0, .12);
+  shadow->values = ShadowValue::MakeMdShadowValues(elevation);
   auto* source = new ShadowNineboxSource(shadow->values, corner_radius);
   shadow->ninebox_image = ImageSkia(source, source->size());
   return *shadow;
