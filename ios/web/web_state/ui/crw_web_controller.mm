@@ -471,10 +471,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Returns YES if the user interacted with the page recently.
 @property(nonatomic, readonly) BOOL userClickedRecently;
 
-// User agent type of the transient item if any, the pending item if a
-// navigation is in progress or the last committed item otherwise.
-// Returns MOBILE, the default type, if navigation manager is nullptr or empty.
-@property(nonatomic, readonly) web::UserAgentType userAgentType;
+// Whether or not desktop user agent is used for the currentItem.
+@property(nonatomic, readonly) BOOL usesDesktopUserAgent;
 
 // Facade for Mojo API.
 @property(nonatomic, readonly) web::MojoFacade* mojoFacade;
@@ -495,18 +493,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // loaded.
 @property(nonatomic, readwrite) BOOL userInteractionRegistered;
 
-// Updates web view's user agent according to |userAgentType|. It is no-op if
-// |userAgentType| is NONE.
-- (void)updateWebViewUserAgentFromUserAgentType:
-    (web::UserAgentType)userAgentType;
-
-// Requires that the next load rebuild the web view. This is expensive, and
-// should be used only in the case where something has changed that web view
-// only checks on creation, such that the whole object needs to be rebuilt.
-// TODO(stuartmorgan): Merge this and reinitializeWebViewAndReload:. They are
-// currently subtly different in terms of implementation, but are for
-// fundamentally the same purpose.
-- (void)requirePageReconstruction;
+// Requires page reconstruction if |item| has a non-NONE UserAgentType and it
+// differs from that of |fromItem|.
+- (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
+                previousUserAgentType:(web::UserAgentType)userAgentType;
 
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
@@ -1645,13 +1635,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self ensureWebViewCreated];
 
-  // Update web view's user agent is called for every load, which may have
-  // performance implications because update web view's user agent may
-  // potentially send a message to a separate thread. However, this is not an
-  // issue for WKWebView because WKWebView's |setCustomUserAgent| is non-op if
-  // user agent stays thesame.
-  [self updateWebViewUserAgentFromUserAgentType:self.userAgentType];
-
   [self loadRequestForCurrentNavigationItem];
 }
 
@@ -2073,11 +2056,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   // Update the user agent before attempting the navigation.
   web::NavigationItem* toItem = items[index].get();
-  [self updateWebViewUserAgentFromUserAgentType:toItem->GetUserAgentType()];
+  web::NavigationItem* previousItem = sessionController.currentItem;
+  web::UserAgentType previousUserAgentType =
+      previousItem ? previousItem->GetUserAgentType()
+                   : web::UserAgentType::NONE;
+  [self updateDesktopUserAgentForItem:toItem
+                previousUserAgentType:previousUserAgentType];
 
-  web::NavigationItem* fromItem = sessionController.currentItem;
   BOOL sameDocumentNavigation =
-      [sessionController isSameDocumentNavigationBetweenItem:fromItem
+      [sessionController isSameDocumentNavigationBetweenItem:previousItem
                                                      andItem:toItem];
   if (sameDocumentNavigation) {
     [sessionController goToItemAtIndex:index discardNonCommittedItems:YES];
@@ -2234,9 +2221,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return rendererInitiatedWithoutInteraction || noNavigationItems;
 }
 
-- (web::UserAgentType)userAgentType {
+- (BOOL)usesDesktopUserAgent {
   web::NavigationItem* item = self.currentNavItem;
-  return item ? item->GetUserAgentType() : web::UserAgentType::MOBILE;
+  return item && item->GetUserAgentType() == web::UserAgentType::DESKTOP;
 }
 
 - (web::MojoFacade*)mojoFacade {
@@ -2275,14 +2262,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return _passKitDownloader.get();
 }
 
-- (void)updateWebViewUserAgentFromUserAgentType:
-    (web::UserAgentType)userAgentType {
-  if (userAgentType == web::UserAgentType::NONE)
+- (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
+                previousUserAgentType:(web::UserAgentType)userAgentType {
+  if (!item)
     return;
-
-  NSString* userAgent =
-      base::SysUTF8ToNSString(web::GetWebClient()->GetUserAgent(userAgentType));
-  [_webView setCustomUserAgent:userAgent];
+  web::UserAgentType itemUserAgentType = item->GetUserAgentType();
+  if (itemUserAgentType == web::UserAgentType::NONE)
+    return;
+  if (itemUserAgentType != userAgentType)
+    [self requirePageReconstruction];
 }
 
 #pragma mark -
@@ -3985,7 +3973,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // delegate must be specified.
   return web::BuildWKWebView(CGRectZero, config,
                              self.webStateImpl->GetBrowserState(),
-                             self.userAgentType);
+                             self.usesDesktopUserAgent);
 }
 
 - (void)setWebView:(WKWebView*)webView {
