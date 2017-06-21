@@ -6,25 +6,19 @@
 
 #include <unistd.h>
 
-#include "base/base64.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/sha1.h"
-#include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "components/version_info/version_info.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -35,7 +29,7 @@ void CreateAppShimHost(mojo::edk::ScopedPlatformHandle handle) {
 
 base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
   base::FilePath temp_dir;
-  CHECK(PathService::Get(base::DIR_TEMP, &temp_dir));
+  CHECK(base::PathService::Get(base::DIR_TEMP, &temp_dir));
   // Check that it's shorter than the IPC socket length (104) minus the
   // intermediate folder ("/chrome-XXXXXX/") and kAppShimSocketShortName.
   DCHECK_GT(83u, temp_dir.value().length());
@@ -45,6 +39,8 @@ base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
 void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
                        const base::FilePath& symlink_path,
                        const base::FilePath& version_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   // Delete in reverse order of creation.
   if (!version_path.empty())
     base::DeleteFile(version_path, false);
@@ -56,17 +52,20 @@ void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
 
 }  // namespace
 
-AppShimHostManager::AppShimHostManager() {
-}
+AppShimHostManager::AppShimHostManager() {}
 
 void AppShimHostManager::Init() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!extension_app_shim_handler_);
   extension_app_shim_handler_.reset(new apps::ExtensionAppShimHandler());
   apps::AppShimHandler::SetDefaultHandler(extension_app_shim_handler_.get());
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&AppShimHostManager::InitOnFileThread, this));
+
+  // If running the shim triggers Chrome startup, the user must wait for the
+  // socket to be set up before the shim will be usable. This also requires
+  // IO, so use MayBlock() with USER_VISIBLE.
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&AppShimHostManager::InitOnBackgroundThread, this));
 }
 
 AppShimHostManager::~AppShimHostManager() {
@@ -82,22 +81,22 @@ AppShimHostManager::~AppShimHostManager() {
   base::FilePath user_data_dir;
   base::FilePath symlink_path;
   base::FilePath version_path;
-  if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+  if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     symlink_path = user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
     version_path =
         user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
   }
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &DeleteSocketFiles, directory_in_tmp_, symlink_path, version_path));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                           base::BindOnce(&DeleteSocketFiles, directory_in_tmp_,
+                                          symlink_path, version_path));
 }
 
-void AppShimHostManager::InitOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+void AppShimHostManager::InitOnBackgroundThread() {
+  base::ThreadRestrictions::AssertIOAllowed();
   base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;
 
   // The socket path must be shorter than 104 chars (IPC::kMaxSocketNameLength).
@@ -143,26 +142,26 @@ void AppShimHostManager::InitOnFileThread() {
   base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
                            version_path);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AppShimHostManager::ListenOnIOThread, this));
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      ->PostTask(FROM_HERE,
+                 base::Bind(&AppShimHostManager::ListenOnIOThread, this));
 }
 
 void AppShimHostManager::ListenOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!acceptor_->Listen()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&AppShimHostManager::OnListenError, this));
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+        ->PostTask(FROM_HERE,
+                   base::Bind(&AppShimHostManager::OnListenError, this));
   }
 }
 
 void AppShimHostManager::OnClientConnected(
     mojo::edk::ScopedPlatformHandle handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&CreateAppShimHost, base::Passed(&handle)));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+      ->PostTask(FROM_HERE,
+                 base::Bind(&CreateAppShimHost, base::Passed(&handle)));
 }
 
 void AppShimHostManager::OnListenError() {
