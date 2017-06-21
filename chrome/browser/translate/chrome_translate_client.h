@@ -31,6 +31,8 @@ class LanguageState;
 class TranslateAcceptLanguages;
 class TranslatePrefs;
 class TranslateManager;
+
+struct LanguageDetectionDetails;
 }  // namespace translate
 
 enum class ShowTranslateBubbleResult;
@@ -95,6 +97,8 @@ class ChromeTranslateClient
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;
 #endif
+  void RecordLanguageDetectionEvent(
+      const translate::LanguageDetectionDetails& details) const override;
   void ShowTranslateUI(translate::TranslateStep step,
                        const std::string& source_language,
                        const std::string& target_language,

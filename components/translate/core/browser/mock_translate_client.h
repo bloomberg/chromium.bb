@@ -14,6 +14,7 @@
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/common/language_detection_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace translate {
@@ -47,6 +48,9 @@ class MockTranslateClient : public TranslateClient {
     return base::WrapUnique(CreateInfoBarMock(delegate.get()));
   }
 #endif
+
+  MOCK_CONST_METHOD1(RecordLanguageDetectionEvent,
+                     void(const LanguageDetectionDetails&));
 
   MOCK_METHOD5(ShowTranslateUI,
                void(translate::TranslateStep,

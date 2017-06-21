@@ -17,6 +17,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_step.h"
+#include "components/translate/core/common/language_detection_details.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web_view/internal/pref_names.h"
@@ -110,6 +111,11 @@ WebViewTranslateClient::GetTranslateAcceptLanguages() {
 int WebViewTranslateClient::GetInfobarIconID() const {
   NOTREACHED();
   return 0;
+}
+
+void WebViewTranslateClient::RecordLanguageDetectionEvent(
+    const translate::LanguageDetectionDetails& details) const {
+  // TODO(crbug.com/722679): Implementing gaia-keyed logging.
 }
 
 void WebViewTranslateClient::RecordTranslateEvent(
