@@ -1594,6 +1594,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       self_keep_alive_(this) {
   DCHECK(client_);
   g_frame_count++;
+  client_->BindToFrame(this);
 }
 
 WebLocalFrameImpl::WebLocalFrameImpl(
