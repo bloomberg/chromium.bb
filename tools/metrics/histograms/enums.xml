@@ -35962,7 +35962,7 @@ from previous Chrome versions.
   <int value="3" label="Infobar dismissed"/>
 </enum>
 
-<enum name="ThumbnailTopSitesEvent" type="int">
+<enum name="ThumbnailTopSitesEvent">
   <int value="0" label="Not added: Failure"/>
   <int value="1" label="Not added: TopSites is full"/>
   <int value="2" label="Not added: Existing thumbnail is better"/>
