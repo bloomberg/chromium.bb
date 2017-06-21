@@ -6,11 +6,10 @@
 #define DocumentShutdownObserver_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Document.h"
 #include "platform/LifecycleObserver.h"
 
 namespace blink {
-
-class Document;
 
 // This class is a base class for classes which observe Document shutdown
 // synchronously.
