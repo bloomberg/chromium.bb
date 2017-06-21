@@ -35,7 +35,7 @@ PageInfoInfoBarDelegate::GetIdentifier() const {
 }
 
 const gfx::VectorIcon& PageInfoInfoBarDelegate::GetVectorIcon() const {
-  return kGlobeIcon;
+  return kSettingsIcon;
 }
 
 base::string16 PageInfoInfoBarDelegate::GetMessageText() const {
