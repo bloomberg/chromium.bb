@@ -32,7 +32,7 @@ const char kDisableInProcessStackTraces[] = "disable-in-process-stack-traces";
 const char kEnableLogging[] = "enable-logging";
 
 // Indicates the type of process to run. This may be "service-manager",
-// "service", or any other arbitrary value supported by the embedder.
+// "service-runner", or any other arbitrary value supported by the embedder.
 const char kProcessType[] = "type";
 
 // The value of the |kProcessType| switch which tells the executable to assume
@@ -41,7 +41,7 @@ const char kProcessTypeServiceManager[] = "service-manager";
 
 // The value of the |kProcessType| switch which tells the executable to assume
 // the role of a service instance.
-const char kProcessTypeService[] = "service";
+const char kProcessTypeService[] = "service-runner";
 
 // Describes the file descriptors passed to a child process in the following
 // list format:

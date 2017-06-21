@@ -213,8 +213,8 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, base::string16* error) {
       OverrideLaunchURL(extension, gallery_url);
     }
   } else if (extension->id() == extension_misc::kCloudPrintAppId) {
-    // In order for the --cloud-print-service switch to work, we must update
-    // the launch URL and web extent.
+    // In order for the --type=service switch to work, we must update the launch
+    // URL and web extent.
     GURL url =
         cloud_devices::GetCloudPrintRelativeURL("enable_chrome_connector");
     if (!url.is_empty()) {

@@ -77,7 +77,7 @@ constexpr wchar_t kRegValueName[] = L"name";
 constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
-constexpr wchar_t kCloudPrintServiceProcess[] = L"cloud-print-service";
+constexpr wchar_t kCloudPrintServiceProcess[] = L"service";
 constexpr wchar_t kCrashpadHandlerProcess[] = L"crashpad-handler";
 #if !defined(DISABLE_NACL)
 constexpr wchar_t kNaClBrokerProcess[] = L"nacl-broker";
