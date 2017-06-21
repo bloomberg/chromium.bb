@@ -2,17 +2,6 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
-.bad-clock .icon {
-  background-image: -webkit-image-set(
-      url(images/1x/clock.png) 1x,
-      url(images/2x/clock.png) 2x);
-}
-
-body.safe-browsing {
-  background-color: rgb(206, 52, 38);
-  color: white;
-}
-
 button {
   background: rgb(66, 133, 244);
   border: 0;
@@ -149,48 +138,9 @@ input[type=checkbox]:focus ~ .checkbox {
   width: 100%;
 }
 
-.safe-browsing :-webkit-any(
-    a, #details, #details-button, h1, h2, p, .small-link) {
-  color: white;
-}
-
-.safe-browsing button {
-  background-color: rgba(255, 255, 255, .15);
-}
-
-.safe-browsing button:active {
-  background-color: rgba(255, 255, 255, .25);
-}
-
-.safe-browsing button:hover {
-  box-shadow: 0 2px 3px rgba(0, 0, 0, .5);
-}
-
-.safe-browsing .error-code {
-  display: none;
-}
-
-.safe-browsing .icon {
-  background-image: -webkit-image-set(
-      url(images/1x/triangle_white.png) 1x,
-      url(images/2x/triangle_white.png) 2x);
-}
-
 .small-link {
   color: #696969;
   font-size: .875em;
-}
-
-.ssl .icon {
-  background-image: -webkit-image-set(
-      url(images/1x/triangle_red.png) 1x,
-      url(images/2x/triangle_red.png) 2x);
-}
-
-.captive-portal .icon {
-  background-image: -webkit-image-set(
-      url(images/1x/captive_portal_page_icon.png) 1x,
-      url(images/2x/captive_portal_page_icon.png) 2x);
 }
 
 .checkboxes {
@@ -223,14 +173,6 @@ input[type=checkbox]:focus ~ .checkbox {
   top: 3px;
   transform: rotate(-45deg);
   width: 9px;
-}
-
-.ssl-opt-in .checkbox {
-  border-color: #696969;
-}
-
-.ssl-opt-in .checkbox::before {
-  border-color: #696969;
 }
 
 input[type=checkbox]:checked ~ .checkbox::before {
@@ -326,11 +268,6 @@ input[type=checkbox]:checked ~ .checkbox::before {
     padding-right: 48px;
     position: fixed;
     z-index: 2;
-  }
-
-  body.safe-browsing .nav-wrapper {
-    background: rgb(206, 52, 38);
-    box-shadow: 0 -22px 40px rgb(206, 52, 38);
   }
 
   .interstitial-wrapper {
