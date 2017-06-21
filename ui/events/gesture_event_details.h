@@ -45,15 +45,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     device_type_ = device_type;
   }
 
-  bool is_source_touch_event_set_non_blocking() const {
-    return is_source_touch_event_set_non_blocking_;
-  }
-  void set_is_source_touch_event_set_non_blocking(
-      bool is_source_touch_event_set_non_blocking) {
-    is_source_touch_event_set_non_blocking_ =
-        is_source_touch_event_set_non_blocking;
-  }
-
   int touch_points() const { return touch_points_; }
   void set_touch_points(int touch_points) {
     DCHECK_GT(touch_points, 0);
@@ -233,8 +224,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   } data_;
 
   GestureDeviceType device_type_;
-
-  bool is_source_touch_event_set_non_blocking_ = false;
 
   int touch_points_;  // Number of active touch points in the gesture.
 

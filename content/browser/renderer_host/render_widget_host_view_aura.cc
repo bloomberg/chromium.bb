@@ -1057,9 +1057,8 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
   for (size_t i = 0; i < touch.event.touches_length; ++i) {
     if (touch.event.touches[i].state == required_state) {
       DCHECK(!sent_ack);
-      host->dispatcher()->ProcessedTouchEvent(
-          touch.event.unique_touch_event_id, window_, result,
-          InputEventAckStateIsSetNonBlocking(ack_result));
+      host->dispatcher()->ProcessedTouchEvent(touch.event.unique_touch_event_id,
+                                              window_, result);
       sent_ack = true;
     }
   }
