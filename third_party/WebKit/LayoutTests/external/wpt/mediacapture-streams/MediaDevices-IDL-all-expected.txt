@@ -1,0 +1,90 @@
+This is a testharness.js-based test.
+Found 86 tests; 71 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS Test driver 
+PASS Navigator interface: attribute mediaDevices 
+PASS Navigator interface: operation getUserMedia(MediaStreamConstraints,NavigatorUserMediaSuccessCallback,NavigatorUserMediaErrorCallback) 
+PASS Navigator must be primary interface of navigator 
+PASS Stringification of navigator 
+PASS Navigator interface: navigator must inherit property "mediaDevices" with the proper type (0) 
+PASS Navigator interface: navigator must inherit property "getUserMedia" with the proper type (1) 
+PASS Navigator interface: calling getUserMedia(MediaStreamConstraints,NavigatorUserMediaSuccessCallback,NavigatorUserMediaErrorCallback) on navigator with too few arguments must throw TypeError 
+PASS MediaStream interface: existence and properties of interface object 
+PASS MediaStream interface object length 
+PASS MediaStream interface object name 
+PASS MediaStream interface: existence and properties of interface prototype object 
+PASS MediaStream interface: existence and properties of interface prototype object's "constructor" property 
+PASS MediaStream interface: attribute id 
+PASS MediaStream interface: operation getAudioTracks() 
+PASS MediaStream interface: operation getVideoTracks() 
+PASS MediaStream interface: operation getTracks() 
+PASS MediaStream interface: operation getTrackById(DOMString) 
+PASS MediaStream interface: operation addTrack(MediaStreamTrack) 
+PASS MediaStream interface: operation removeTrack(MediaStreamTrack) 
+PASS MediaStream interface: operation clone() 
+PASS MediaStream interface: attribute active 
+PASS MediaStream interface: attribute onaddtrack 
+PASS MediaStream interface: attribute onremovetrack 
+PASS MediaStreamTrack interface: existence and properties of interface object 
+PASS MediaStreamTrack interface object length 
+PASS MediaStreamTrack interface object name 
+PASS MediaStreamTrack interface: existence and properties of interface prototype object 
+PASS MediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property 
+PASS MediaStreamTrack interface: attribute kind 
+PASS MediaStreamTrack interface: attribute id 
+PASS MediaStreamTrack interface: attribute label 
+PASS MediaStreamTrack interface: attribute enabled 
+PASS MediaStreamTrack interface: attribute muted 
+PASS MediaStreamTrack interface: attribute onmute 
+PASS MediaStreamTrack interface: attribute onunmute 
+PASS MediaStreamTrack interface: attribute readyState 
+PASS MediaStreamTrack interface: attribute onended 
+PASS MediaStreamTrack interface: operation clone() 
+PASS MediaStreamTrack interface: operation stop() 
+PASS MediaStreamTrack interface: operation getCapabilities() 
+PASS MediaStreamTrack interface: operation getConstraints() 
+PASS MediaStreamTrack interface: operation getSettings() 
+PASS MediaStreamTrack interface: operation applyConstraints(MediaTrackConstraints) 
+FAIL MediaStreamTrack interface: attribute onoverconstrained assert_true: The prototype object must have a property "onoverconstrained" expected true got false
+FAIL MediaStreamTrackEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS MediaStreamTrackEvent interface object length 
+PASS MediaStreamTrackEvent interface object name 
+FAIL MediaStreamTrackEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS MediaStreamTrackEvent interface: existence and properties of interface prototype object's "constructor" property 
+PASS MediaStreamTrackEvent interface: attribute track 
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface object assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface object length assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface object name assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: attribute error assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+PASS MediaDevices interface: existence and properties of interface object 
+PASS MediaDevices interface object length 
+PASS MediaDevices interface object name 
+PASS MediaDevices interface: existence and properties of interface prototype object 
+PASS MediaDevices interface: existence and properties of interface prototype object's "constructor" property 
+PASS MediaDevices interface: attribute ondevicechange 
+PASS MediaDevices interface: operation enumerateDevices() 
+PASS MediaDevices interface: operation getSupportedConstraints() 
+PASS MediaDevices interface: operation getUserMedia(MediaStreamConstraints) 
+PASS MediaDevices interface: navigator.mediaDevices must inherit property "ondevicechange" with the proper type (0) 
+PASS MediaDevices interface: navigator.mediaDevices must inherit property "enumerateDevices" with the proper type (1) 
+PASS MediaDevices interface: navigator.mediaDevices must inherit property "getSupportedConstraints" with the proper type (2) 
+PASS MediaDevices interface: navigator.mediaDevices must inherit property "getUserMedia" with the proper type (3) 
+PASS MediaDevices interface: calling getUserMedia(MediaStreamConstraints) on navigator.mediaDevices with too few arguments must throw TypeError 
+PASS MediaDeviceInfo interface: existence and properties of interface object 
+PASS MediaDeviceInfo interface object length 
+PASS MediaDeviceInfo interface object name 
+PASS MediaDeviceInfo interface: existence and properties of interface prototype object 
+PASS MediaDeviceInfo interface: existence and properties of interface prototype object's "constructor" property 
+PASS MediaDeviceInfo interface: attribute deviceId 
+PASS MediaDeviceInfo interface: attribute kind 
+PASS MediaDeviceInfo interface: attribute label 
+PASS MediaDeviceInfo interface: attribute groupId 
+FAIL InputDeviceInfo interface: existence and properties of interface object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface object length assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface object name assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: existence and properties of interface prototype object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: operation getCapabilities() assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+Harness: the test ran to completion.
+
