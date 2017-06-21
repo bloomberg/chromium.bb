@@ -337,7 +337,10 @@ TEST(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(1.25f, ComputeDeviceScaleFactor(14.0f, gfx::Rect(1920, 1080)));
 
   // 11.6" 1920x1080
-  EXPECT_EQ(1.5f, ComputeDeviceScaleFactor(11.6f, gfx::Rect(1920, 1080)));
+  EXPECT_EQ(1.25f, ComputeDeviceScaleFactor(11.6f, gfx::Rect(1920, 1080)));
+
+  // 12.02" 2160x1440
+  EXPECT_EQ(1.6f, ComputeDeviceScaleFactor(12.02f, gfx::Rect(2160, 1440)));
 
   // 12.85" 2560x1700
   EXPECT_EQ(2.0f, ComputeDeviceScaleFactor(12.85f, gfx::Rect(2560, 1700)));

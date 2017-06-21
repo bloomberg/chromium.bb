@@ -153,11 +153,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   static ManagedDisplayInfo CreateFromSpecWithID(const std::string& spec,
                                                  int64_t id);
 
-  // When this is set to true on the device whose internal display has
-  // 1.25 dsf, Chrome uses 1.0f as a default scale factor, and uses
-  // dsf 1.25 when UI scaling is set to 0.8f.
-  static void SetUse125DSFForUIScalingForTest(bool enable);
-
   ManagedDisplayInfo();
   ManagedDisplayInfo(int64_t id, const std::string& name, bool has_overscan);
   ManagedDisplayInfo(const ManagedDisplayInfo& other);
