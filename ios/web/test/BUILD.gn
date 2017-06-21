@@ -58,6 +58,7 @@ source_set("test_support") {
     "//ios/web:web",
     "//ios/web/public/test/fakes",
     "//ios/web/public/test/http_server",
+    "//ios/web/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",

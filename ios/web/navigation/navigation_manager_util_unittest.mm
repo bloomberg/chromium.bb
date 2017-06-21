@@ -10,6 +10,7 @@
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
+#import "ios/web/test/fakes/test_navigation_manager_delegate.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,6 +32,8 @@ class NavigationManagerUtilTest : public PlatformTest,
     bool test_legacy_navigation_manager = GetParam();
     if (test_legacy_navigation_manager) {
       manager_.reset(new LegacyNavigationManagerImpl);
+      manager_->SetBrowserState(&browser_state_);
+      manager_->SetDelegate(&delegate_);
       manager_->SetSessionController(controller_);
     } else {
       DCHECK(false) << "Not yet implemented.";
@@ -38,6 +41,7 @@ class NavigationManagerUtilTest : public PlatformTest,
   }
 
   std::unique_ptr<NavigationManagerImpl> manager_;
+  web::TestNavigationManagerDelegate delegate_;
   CRWSessionController* controller_;
 
  private:
@@ -46,9 +50,7 @@ class NavigationManagerUtilTest : public PlatformTest,
 
 // Tests GetCommittedItemWithUniqueID, GetCommittedItemIndexWithUniqueID and
 // GetItemWithUniqueID functions.
-// TODO(crbug.com/733658): test was incorrectly moved to a separate target
-// and not run and a refactoring broke it. Disable until the issue is fixed.
-TEST_P(NavigationManagerUtilTest, DISABLED_GetCommittedItemWithUniqueID) {
+TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   // Start with NavigationManager that only has a pending item.
   manager_->AddPendingItem(
       GURL("http://chromium.org"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -61,12 +63,18 @@ TEST_P(NavigationManagerUtilTest, DISABLED_GetCommittedItemWithUniqueID) {
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Commit that pending item.
-  [controller_ commitPendingItem];
+  manager_->CommitPendingItem();
   EXPECT_EQ(item, GetCommittedItemWithUniqueID(manager_.get(), unique_id));
   EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), unique_id));
   EXPECT_EQ(0, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
-  // Remove committed item.
+  // Commit another navigation so that the current item is updated.  This allows
+  // for removing the item with |unique_id|.
+  manager_->AddPendingItem(
+      GURL("http://test.org"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  manager_->CommitPendingItem();
   manager_->RemoveItemAtIndex(0);
   EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));
   EXPECT_FALSE(GetItemWithUniqueID(manager_.get(), unique_id));
@@ -75,6 +83,7 @@ TEST_P(NavigationManagerUtilTest, DISABLED_GetCommittedItemWithUniqueID) {
   // Add transient item.
   [controller_ addTransientItemWithURL:GURL("http://chromium.org")];
   item = manager_->GetTransientItem();
+  unique_id = item->GetUniqueID();
   EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));
   EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), unique_id));
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
