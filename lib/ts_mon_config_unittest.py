@@ -29,6 +29,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     time_mock.time.side_effect = itertools.count(0)
     self.flush_mock = self.PatchObject(ts_mon_config.metrics, 'Flush')
     self.PatchObject(ts_mon_config, 'SetupTsMonGlobalState')
+    self.PatchObject(ts_mon_config, '_WasSetup', True)
     self.mock_metric = self.PatchObject(metrics, 'Boolean')
 
 
@@ -37,7 +38,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     q = Queue.Queue()
     q.put(None)
 
-    ts_mon_config._ConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
 
     ts_mon_config.SetupTsMonGlobalState.assert_called_once_with(
         '', auto_flush=False)
@@ -52,7 +53,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
                              False))
     q.put(None)
 
-    ts_mon_config._ConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
 
     self.assertEqual(2, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
@@ -72,7 +73,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
                              False))
     q.put(None)
 
-    ts_mon_config._ConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
 
     self.assertEqual(3, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
@@ -106,7 +107,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.assertEqual(0, processes[0].exitcode)
 
   def testCatchesException(self):
-    """Tests that the _ConsumeMessages loop catches exceptions."""
+    """Tests that the _SetupAndConsumeMessages loop catches exceptions."""
     q = Queue.Queue()
 
     class RaisesException(object):
@@ -122,7 +123,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
 
     mock_logging = self.PatchObject(ts_mon_config.logging, 'exception')
 
-    ts_mon_config._ConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
 
     self.assertEqual(1, mock_logging.call_count)
     self.assertEqual(2, ts_mon_config.time.time.call_count)
@@ -139,10 +140,18 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
                              reset_after=True))
     q.put(None)
 
-    ts_mon_config._ConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
 
     self.assertEqual(
         [self.mock_metric.return_value],
         ts_mon_config.metrics.Flush.call_args[1]['reset_after'])
     self.mock_metric.return_value.mock_name.assert_called_once_with(
         'arg1', kwarg1='value1')
+
+  def testSubprocessQuitsWhenNotSetup(self):
+    self.PatchObject(ts_mon_config.logging, 'exception')
+    self.PatchObject(ts_mon_config, '_WasSetup', False)
+    ts_mon_config._SetupAndConsumeMessages(None, [''], {})
+    self.assertEqual(False, ts_mon_config._WasSetup)
+    # The entry should not have been consumed by _ConsumeMessages
+    self.assertEqual(0, ts_mon_config.logging.exception.call_count)

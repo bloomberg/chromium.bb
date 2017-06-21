@@ -137,7 +137,8 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
     message_q = manager.Queue()
 
     metrics.FLUSHING_PROCESS = multiprocessing.Process(
-        target=lambda: _ConsumeMessages(message_q, setup_args, setup_kwargs))
+        target=lambda: _SetupAndConsumeMessages(
+            message_q, setup_args, setup_kwargs))
     metrics.FLUSHING_PROCESS.start()
 
     # this makes the chromite.lib.metric functions use the queue.
@@ -178,6 +179,35 @@ def _CleanupMetricsFlushingProcess():
   if flushing_process.exitcode:
     logging.warning("ts_mon_config flushing process did not exit cleanly.")
   logging.info("Finished waiting for ts_mon process.")
+
+
+def _SetupAndConsumeMessages(message_q, setup_args, setup_kwargs):
+  """Configures ts_mon and gets metrics from a message queue.
+
+  This function is meant to be called in a subprocess. It configures itself
+  to receive a SIGHUP signal when the parent process dies, and catches the
+  signal in order to have a chance to flush any pending metrics one more time
+  before quitting.
+
+  Args:
+    message_q: A multiprocessing.Queue to read metrics from.
+    setup_args: Arguments to pass to SetupTsMonGlobalState.
+    setup_kwargs: Keyword arguments to pass to SetupTsMonGlobalState.
+  """
+  # If our parent dies, finish flushing before exiting.
+  reset_after = []
+  if parallel.ExitWithParent(signal.SIGHUP):
+    signal.signal(signal.SIGHUP,
+                  lambda _sig, _stack: _WaitToFlush(last_flush,
+                                                    reset_after=reset_after))
+
+  # Configure ts-mon, but don't start up a sending thread.
+  setup_kwargs['auto_flush'] = False
+  SetupTsMonGlobalState(*setup_args, **setup_kwargs)
+  if not _WasSetup:
+    return
+
+  _ConsumeMessages(message_q, reset_after)
 
 
 def _WaitToFlush(last_flush, reset_after=()):
@@ -230,30 +260,21 @@ def _MethodCallRepr(obj, method, args, kwargs):
   return '%s.%s(%s)' % (repr(obj), method, ', '.join(args_strings))
 
 
-def _ConsumeMessages(message_q, setup_args, setup_kwargs):
-  """Configures ts_mon and gets metrics from a message queue.
+def _ConsumeMessages(message_q, reset_after):
+  """Emits metrics from |message_q|, flushing periodically.
+
+  The loop is terminated by a None entry on the Queue, which is a friendly
+  signal from the parent process that it's time to shut down. Before returning,
+  we wait to flush one more time to make sure that all the metrics were sent.
 
   Args:
-    message_q: A multiprocessing.Queue to read metrics from.
-    setup_args: Arguments to pass to SetupTsMonGlobalState.
-    setup_kwargs: Keyword arguments to pass to SetupTsMonGlobalState.
+    message_q: A multiprocessing.Queue to read metrics messages from.
+    reset_after: A list of met
   """
-
   last_flush = 0
   pending = False
-
-  # If our parent dies, finish flushing before exiting.
-  reset_after = []
-  if parallel.ExitWithParent(signal.SIGHUP):
-    signal.signal(signal.SIGHUP,
-                  lambda _sig, _stack: _WaitToFlush(last_flush,
-                                                    reset_after=reset_after))
-
-  # Configure ts-mon, but don't start up a sending thread.
-  setup_kwargs['auto_flush'] = False
-  SetupTsMonGlobalState(*setup_args, **setup_kwargs)
-
   message = message_q.get()
+
   while message:
     try:
       cls = getattr(metrics, message.metric_name)
@@ -287,3 +308,4 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
 
   if pending:
     _WaitToFlush(last_flush, reset_after=reset_after)
+
