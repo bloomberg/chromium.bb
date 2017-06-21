@@ -281,29 +281,6 @@ void project_points_homography(const int32_t *mat, int *points, int *proj,
   }
 }
 
-// 'points' are at original scale, output 'proj's are scaled up by
-// 1 << WARPEDPIXEL_PREC_BITS
-void project_points(const WarpedMotionParams *wm_params, int *points, int *proj,
-                    const int n, const int stride_points, const int stride_proj,
-                    const int subsampling_x, const int subsampling_y) {
-  switch (wm_params->wmtype) {
-    case AFFINE:
-      project_points_affine(wm_params->wmmat, points, proj, n, stride_points,
-                            stride_proj, subsampling_x, subsampling_y);
-      break;
-    case ROTZOOM:
-      project_points_rotzoom(wm_params->wmmat, points, proj, n, stride_points,
-                             stride_proj, subsampling_x, subsampling_y);
-      break;
-    case HOMOGRAPHY:
-      project_points_homography(wm_params->wmmat, points, proj, n,
-                                stride_points, stride_proj, subsampling_x,
-                                subsampling_y);
-      break;
-    default: assert(0 && "Invalid warped motion type!"); return;
-  }
-}
-
 static const int16_t
     filter_ntap[WARPEDPIXEL_PREC_SHIFTS][WARPEDPIXEL_FILTER_TAPS] = {
 #if WARPEDPIXEL_PREC_BITS == 6
