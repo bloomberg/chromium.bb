@@ -102,11 +102,6 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
         return mDialog;
     }
 
-    @VisibleForTesting
-    public int getQueueLengthForTesting() {
-        return mRequestQueue.size();
-    }
-
     @Override
     public void onAndroidPermissionAccepted() {
         mDialogDelegate.onAccept(mSwitchView.isChecked());
