@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -65,6 +67,7 @@ class ChromeConfigurator : public update_client::Configurator {
       const override;
   PrefService* GetPrefService() const override;
   bool IsPerUserInstall() const override;
+  std::vector<uint8_t> GetRunActionKeyHash() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
@@ -197,6 +200,10 @@ PrefService* ChromeConfigurator::GetPrefService() const {
 
 bool ChromeConfigurator::IsPerUserInstall() const {
   return component_updater::IsPerUserInstall();
+}
+
+std::vector<uint8_t> ChromeConfigurator::GetRunActionKeyHash() const {
+  return configurator_impl_.GetRunActionKeyHash();
 }
 
 }  // namespace

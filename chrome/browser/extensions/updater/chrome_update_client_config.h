@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_CHROME_UPDATE_CLIENT_CONFIG_H_
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_CHROME_UPDATE_CLIENT_CONFIG_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -46,6 +48,7 @@ class ChromeUpdateClientConfig : public UpdateClientConfig {
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
   bool IsPerUserInstall() const override;
+  std::vector<uint8_t> GetRunActionKeyHash() const override;
 
  protected:
   friend class base::RefCountedThreadSafe<ChromeUpdateClientConfig>;

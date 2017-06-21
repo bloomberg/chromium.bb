@@ -4,6 +4,8 @@
 
 #include "components/update_client/test_configurator.h"
 
+#include <utility>
+
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/version.h"
@@ -173,6 +175,10 @@ PrefService* TestConfigurator::GetPrefService() const {
 
 bool TestConfigurator::IsPerUserInstall() const {
   return true;
+}
+
+std::vector<uint8_t> TestConfigurator::GetRunActionKeyHash() const {
+  return std::vector<uint8_t>(std::begin(gjpm_hash), std::end(gjpm_hash));
 }
 
 }  // namespace update_client

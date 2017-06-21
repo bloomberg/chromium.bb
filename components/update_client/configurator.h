@@ -133,6 +133,12 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // called only from a blocking pool thread, as it may access the file system.
   virtual bool IsPerUserInstall() const = 0;
 
+  // Returns the key hash corresponding to a CRX trusted by ActionRun. The
+  // CRX payloads are signed with this key, and their integrity is verified
+  // during the unpacking by the action runner. This is a dependency injection
+  // feature to support testing.
+  virtual std::vector<uint8_t> GetRunActionKeyHash() const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<Configurator>;
 
