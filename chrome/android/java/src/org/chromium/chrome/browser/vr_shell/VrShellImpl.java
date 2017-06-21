@@ -538,9 +538,9 @@ public class VrShellImpl
     }
 
     @Override
-    public void setWebVrModeEnabled(boolean enabled, boolean autoPresented, boolean showToast) {
+    public void setWebVrModeEnabled(boolean enabled, boolean autoPresented) {
         mContentVrWindowAndroid.setVSyncPaused(enabled);
-        nativeSetWebVrMode(mNativeVrShell, enabled, autoPresented, showToast);
+        nativeSetWebVrMode(mNativeVrShell, enabled, autoPresented);
 
         updateWebVrDisplaySize(enabled);
     }
@@ -721,7 +721,7 @@ public class VrShellImpl
     private native void nativeContentPhysicalBoundsChanged(long nativeVrShell, int width,
             int height, float dpr);
     private native void nativeSetWebVrMode(
-            long nativeVrShell, boolean enabled, boolean autoPresented, boolean showToast);
+            long nativeVrShell, boolean enabled, boolean autoPresented);
     private native boolean nativeGetWebVrMode(long nativeVrShell);
     private native void nativeOnTabListCreated(long nativeVrShell, Tab[] mainTabs,
             Tab[] incognitoTabs);

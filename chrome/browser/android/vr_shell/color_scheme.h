@@ -45,8 +45,6 @@ struct ColorScheme {
   SkColor exit_warning_background;
   SkColor transient_warning_foreground;
   SkColor transient_warning_background;
-  SkColor presentation_toast_foreground;
-  SkColor presentation_toast_background;
   SkColor permanent_warning_foreground;
   SkColor permanent_warning_background;
   SkColor system_indicator_foreground;

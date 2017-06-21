@@ -185,13 +185,11 @@ void VrGLThread::SetURL(const GURL& gurl) {
                                                 weak_scene_manager_, gurl));
 }
 
-void VrGLThread::SetWebVrMode(bool enabled,
-                              bool auto_presented,
-                              bool show_toast) {
+void VrGLThread::SetWebVrMode(bool enabled, bool auto_presented) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&UiSceneManager::SetWebVrMode, weak_scene_manager_,
-                            enabled, auto_presented, show_toast));
+                            enabled, auto_presented));
 }
 
 void VrGLThread::SetWebVrSecureOrigin(bool secure) {

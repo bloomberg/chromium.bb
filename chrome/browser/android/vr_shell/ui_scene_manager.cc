@@ -17,7 +17,6 @@
 #include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/location_access_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
-#include "chrome/browser/android/vr_shell/ui_elements/presentation_toast.h"
 #include "chrome/browser/android/vr_shell/ui_elements/screen_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
@@ -91,11 +90,6 @@ static constexpr float kTransientUrlBarVerticalOffset =
     -0.2 * kTransientUrlBarDistance;
 static constexpr int kTransientUrlBarTimeoutSeconds = 6;
 
-static constexpr float kToastDistance = 1.4;
-static constexpr float kToastWidth = 0.512 * kToastDistance;
-static constexpr float kToastHeight = 0.16 * kToastDistance;
-static constexpr int kToastTimeoutSeconds = kTransientUrlBarTimeoutSeconds;
-
 static constexpr float kCloseButtonDistance = 2.4;
 static constexpr float kCloseButtonHeight =
     kUrlBarHeightDMM * kCloseButtonDistance;
@@ -145,7 +139,6 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateCloseButton();
   CreateScreenDimmer();
   CreateExitPrompt();
-  CreateToasts();
 
   ConfigureScene();
   ConfigureSecurityWarnings();
@@ -432,39 +425,19 @@ void UiSceneManager::CreateExitPrompt() {
   scene_->AddUiElement(std::move(element));
 }
 
-void UiSceneManager::CreateToasts() {
-  std::unique_ptr<UiElement> element = base::MakeUnique<PresentationToast>(512);
-  element->set_debug_id(kPresentationToast);
-  element->set_id(AllocateId());
-  element->set_fill(vr_shell::Fill::NONE);
-  element->set_size({kToastWidth, kToastHeight, 1});
-  element->set_translation({0, 0, -kToastDistance});
-  element->set_visible(false);
-  element->set_hit_testable(false);
-  element->set_lock_to_fov(true);
-  presentation_toast_ = element.get();
-  scene_->AddUiElement(std::move(element));
-}
-
 base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void UiSceneManager::SetWebVrMode(bool web_vr,
-                                  bool auto_presented,
-                                  bool show_toast) {
-  if (web_vr_mode_ == web_vr && web_vr_autopresented_ == auto_presented &&
-      web_vr_show_toast_ == show_toast) {
+void UiSceneManager::SetWebVrMode(bool web_vr, bool auto_presented) {
+  if (web_vr_mode_ == web_vr)
     return;
-  }
   web_vr_mode_ = web_vr;
   web_vr_autopresented_ = auto_presented;
-  web_vr_show_toast_ = show_toast;
   ConfigureScene();
   ConfigureSecurityWarnings();
   ConfigureTransientUrlBar();
   ConfigureIndicators();
-  ConfigurePresentationToast();
 }
 
 void UiSceneManager::ConfigureScene() {
@@ -605,17 +578,6 @@ void UiSceneManager::ConfigureIndicators() {
   location_access_indicator_->set_visible(!web_vr_mode_ && location_access_);
 }
 
-void UiSceneManager::ConfigurePresentationToast() {
-  presentation_toast_->set_visible(web_vr_show_toast_);
-  if (web_vr_show_toast_) {
-    presentation_toast_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kToastTimeoutSeconds), this,
-        &UiSceneManager::OnPresentationToastTimer);
-  } else {
-    presentation_toast_timer_.Stop();
-  }
-}
-
 void UiSceneManager::OnSecurityWarningTimer() {
   transient_security_warning_->set_visible(false);
 }
@@ -634,10 +596,6 @@ void UiSceneManager::ConfigureTransientUrlBar() {
 
 void UiSceneManager::OnTransientUrlBarTimer() {
   transient_url_bar_->set_visible(false);
-}
-
-void UiSceneManager::OnPresentationToastTimer() {
-  presentation_toast_->set_visible(false);
 }
 
 void UiSceneManager::OnBackButtonClicked() {

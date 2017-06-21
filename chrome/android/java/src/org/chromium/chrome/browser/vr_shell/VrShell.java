@@ -37,8 +37,7 @@ public interface VrShell {
     /**
      * Sets whether we're presenting WebVR content or not.
      */
-    // TODO: Refactor needed. See crbug.com/735169.
-    void setWebVrModeEnabled(boolean enabled, boolean autoPresented, boolean showToast);
+    void setWebVrModeEnabled(boolean enabled, boolean autoPresented);
 
     /**
      * Returns true if we're presenting WebVR content.
