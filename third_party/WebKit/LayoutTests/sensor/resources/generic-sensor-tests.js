@@ -280,6 +280,44 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
       + ' visibility changes.');
 
   sensor_test(sensor => {
+    let sensorObject = new sensorType;
+    sensorObject.start();
+
+    // Create a focused editbox inside a cross-origin iframe, sensor notification must suspend.
+    const iframeSrc = 'data:text/html;charset=utf-8,<html><body><input type="text" autofocus></body></html>';
+    let iframe = document.createElement('iframe');
+    iframe.src = encodeURI(iframeSrc);
+
+    return sensor.mockSensorProvider.getCreatedSensor()
+        .then(mockSensor => mockSensor.setUpdateSensorReadingFunction(updateReading))
+        .then(mockSensor => new Promise((resolve, reject) => {
+          let wrapper = new CallbackWrapper(() => {
+            assert_true(verifyReading(sensorObject));
+            resolve(mockSensor);
+          }, reject);
+
+          sensorObject.onchange = wrapper.callback;
+          sensorObject.onerror = reject;
+        }))
+        .then(mockSensor => {
+          document.body.appendChild(iframe);
+          return mockSensor.suspendCalled();
+        })
+        .then(mockSensor => {
+          window.focus();
+          return mockSensor.resumeCalled();
+        })
+        .then(mockSensor => new Promise((resolve, reject) => {
+          sensorObject.stop();
+          document.body.removeChild(iframe);
+          resolve(mockSensor);
+          sensorObject.onerror = reject;
+        }))
+        .then(mockSensor => mockSensor.removeConfigurationCalled());
+  }, prefix + 'Test that sensor receives suspend / resume notifications when'
+      + ' cross-origin subframe is focused');
+
+  sensor_test(sensor => {
     let sensor1 = new sensorType({frequency: 60});
     sensor1.start();
 

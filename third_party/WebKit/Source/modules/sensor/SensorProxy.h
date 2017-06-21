@@ -6,6 +6,7 @@
 #define SensorProxy_h
 
 #include "core/dom/ExceptionCode.h"
+#include "core/page/FocusChangedObserver.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "device/generic_sensor/public/cpp/sensor_reading.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
@@ -25,7 +26,8 @@ class SensorReading;
 // JS sensor instances of the same type (within a single frame).
 class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
                           public device::mojom::blink::SensorClient,
-                          public PageVisibilityObserver {
+                          public PageVisibilityObserver,
+                          public FocusChangedObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SensorProxy);
   USING_PRE_FINALIZER(SensorProxy, Dispose);
   WTF_MAKE_NONCOPYABLE(SensorProxy);
@@ -95,6 +97,9 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   // PageVisibilityObserver overrides.
   void PageVisibilityChanged() override;
 
+  // FocusChangedObserver overrides.
+  void FocusedFrameChanged() override;
+
   // Generic handler for a fatal error.
   void HandleSensorError();
 
@@ -113,6 +118,8 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   // Starts polling timer if needed (continuous reporting, initialized, not
   // suspended and has configurations added).
   void UpdatePollingStatus();
+
+  void UpdateSuspendedStatus();
 
   device::mojom::blink::SensorType type_;
   device::mojom::blink::ReportingMode mode_;
