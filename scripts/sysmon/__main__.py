@@ -22,6 +22,7 @@ from chromite.scripts.sysmon import git_metrics
 from chromite.scripts.sysmon import loop
 from chromite.scripts.sysmon import net_metrics
 from chromite.scripts.sysmon import osinfo_metrics
+from chromite.scripts.sysmon import proc_metrics
 from chromite.scripts.sysmon import prod_metrics
 from chromite.scripts.sysmon import puppet_metrics
 from chromite.scripts.sysmon import system_metrics
@@ -51,7 +52,7 @@ class _MetricCollector(object):
     system_metrics.collect_disk_info()
     system_metrics.collect_mem_info()
     net_metrics.collect_net_info()
-    system_metrics.collect_proc_info()
+    proc_metrics.collect_proc_info()
     system_metrics.collect_load_avg()
     puppet_metrics.collect_puppet_summary()
     git_metrics.collect_git_metrics()
