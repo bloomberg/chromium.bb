@@ -77,7 +77,6 @@
 -FileUtilTest.ExecutableExistsInPath
 -FileUtilTest.FileToFILE
 -FileUtilTest.NormalizeFilePathSymlinks
--FileUtilTest.TouchFile
 -HeapDumpWriterTest.BacktraceIndex
 -HeapDumpWriterTest.TypeId
 -LoggingTest.CheckCausesDistinctBreakpoints
