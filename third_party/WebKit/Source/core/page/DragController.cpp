@@ -76,6 +76,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -1078,6 +1079,29 @@ static std::unique_ptr<DragImage> DragImageForLink(
                       mouse_dragged_point.Y() + drag_image_offset.Y());
 
   return drag_image;
+}
+
+// static
+std::unique_ptr<DragImage> DragController::DragImageForSelection(
+    const LocalFrame& frame,
+    float opacity) {
+  if (!frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())
+    return nullptr;
+
+  frame.View()->UpdateAllLifecyclePhasesExceptPaint();
+  DCHECK(frame.GetDocument()->IsActive());
+
+  FloatRect painting_rect = FloatRect(frame.Selection().Bounds());
+  GlobalPaintFlags paint_flags =
+      kGlobalPaintSelectionOnly | kGlobalPaintFlattenCompositingLayers;
+
+  PaintRecordBuilder builder(
+      DataTransfer::DeviceSpaceBounds(painting_rect, frame));
+  frame.View()->PaintContents(builder.Context(), paint_flags,
+                              EnclosingIntRect(painting_rect));
+  return DataTransfer::CreateDragImageForFrame(
+      frame, opacity, kDoNotRespectImageOrientation, painting_rect, builder,
+      PropertyTreeState::Root());
 }
 
 bool DragController::StartDrag(LocalFrame* src,
