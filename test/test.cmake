@@ -327,13 +327,16 @@ endif ()
 # exist before this function is called.
 function (setup_aom_test_targets)
   add_library(test_aom_common OBJECT ${AOM_UNIT_TEST_COMMON_SOURCES})
+  add_dependencies(test_aom_common aom)
 
   if (CONFIG_AV1_DECODER)
     add_library(test_aom_decoder OBJECT ${AOM_UNIT_TEST_DECODER_SOURCES})
+    add_dependencies(test_aom_decoder aom)
   endif ()
 
   if (CONFIG_AV1_ENCODER)
     add_library(test_aom_encoder OBJECT ${AOM_UNIT_TEST_ENCODER_SOURCES})
+    add_dependencies(test_aom_encoder aom)
   endif ()
 
   add_executable(test_libaom ${AOM_UNIT_TEST_WRAPPER_SOURCES}
