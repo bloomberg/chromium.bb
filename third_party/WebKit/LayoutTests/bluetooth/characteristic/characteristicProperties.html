@@ -2,25 +2,25 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
-    .then(service => {
-      return Promise.all([service.getCharacteristic('body_sensor_location'),
-                          service.getCharacteristic('heart_rate_measurement')]);
-    }).then(characteristics => {
-      let bsl_properties = characteristics[0].properties;
-      let bsl_expected_properties = new TestCharacteristicProperties({read: true});
-      assert_properties_equal(bsl_properties, bsl_expected_properties);
+  return getHealthThermometerService()
+    .then(({service}) => Promise.all([
+      service.getCharacteristic('temperature_measurement'),
+      service.getCharacteristic('measurement_interval')]))
+    .then(([temperature_measurement, measurement_interval]) => {
+      let tm_expected_properties = new TestCharacteristicProperties([
+        'indicate']);
+      assert_properties_equal(temperature_measurement.properties,
+                              tm_expected_properties);
 
-      let hrm_properties = characteristics[1].properties;
-      let hrm_expected_properties = new TestCharacteristicProperties({notify: true});
-      assert_properties_equal(hrm_properties, hrm_expected_properties);
+      let mi_expected_properties = new TestCharacteristicProperties([
+        'read', 'write', 'indicate']);
+      assert_properties_equal(measurement_interval.properties,
+                              mi_expected_properties);
     });
 }, 'HeartRate device properties');
 </script>

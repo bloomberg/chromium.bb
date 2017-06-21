@@ -89,6 +89,28 @@ void FakeCentral::AddFakeService(const std::string& peripheral_address,
   std::move(callback).Run(fake_peripheral->AddFakeService(service_uuid));
 }
 
+void FakeCentral::AddFakeCharacteristic(
+    const device::BluetoothUUID& characteristic_uuid,
+    mojom::CharacteristicPropertiesPtr properties,
+    const std::string& service_id,
+    const std::string& peripheral_address,
+    AddFakeCharacteristicCallback callback) {
+  auto device_iter = devices_.find(peripheral_address);
+  if (device_iter == devices_.end()) {
+    std::move(callback).Run(base::nullopt);
+  }
+
+  FakeRemoteGattService* fake_remote_gatt_service =
+      static_cast<FakeRemoteGattService*>(
+          device_iter->second.get()->GetGattService(service_id));
+  if (fake_remote_gatt_service == nullptr) {
+    std::move(callback).Run(base::nullopt);
+  }
+
+  std::move(callback).Run(fake_remote_gatt_service->AddFakeCharacteristic(
+      characteristic_uuid, std::move(properties)));
+}
+
 std::string FakeCentral::GetAddress() const {
   NOTREACHED();
   return std::string();

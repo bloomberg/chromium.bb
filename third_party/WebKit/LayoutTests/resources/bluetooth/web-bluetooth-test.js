@@ -21,6 +21,7 @@
       FakeBluetoothPtr: mojo_.FakeBluetoothPtr,
       FakeCentral: mojo_.FakeCentral,
       FakeCentralPtr: mojo_.FakeCentralPtr,
+      CharacteristicProperties: mojo_.CharacteristicProperties,
     }] = mojo_.modules;
 
     return mojo_;
@@ -37,6 +38,37 @@
       default:
         throw `Unsupported value ${state} for state.`;
     }
+  }
+
+  // Mapping of the property names of
+  // BluetoothCharacteristicProperties defined in
+  // https://webbluetoothcg.github.io/web-bluetooth/#characteristicproperties
+  // to property names of the CharacteristicProperties mojo struct.
+  const CHARACTERISTIC_PROPERTIES_WEB_TO_MOJO = {
+    broadcast: 'broadcast',
+    read: 'read',
+    write_without_response: 'write_without_response',
+    write: 'write',
+    notify: 'notify',
+    indicate: 'indicate',
+    authenticatedSignedWrites: 'authenticated_signed_writes',
+    extended_properties: 'extended_properties',
+  };
+
+  function ArrayToMojoCharacteristicProperties(arr) {
+    let struct = new mojo_.CharacteristicProperties();
+
+    arr.forEach(val => {
+      let mojo_property =
+        CHARACTERISTIC_PROPERTIES_WEB_TO_MOJO[val];
+
+      if (struct.hasOwnProperty(mojo_property))
+        struct[mojo_property] = true;
+      else
+        throw `Invalid member '${val}' for CharacteristicProperties`;
+    });
+
+    return struct;
   }
 
   class FakeBluetooth {
@@ -150,7 +182,6 @@
   class FakePeripheral {
     constructor(address, fake_central_ptr) {
       this.address = address;
-      this.services_ = [];
       this.fake_central_ptr_ = fake_central_ptr;
     }
 
@@ -177,12 +208,8 @@
 
       if (service_id === null) throw 'addFakeService failed';
 
-      let fake_service = new FakeRemoteGATTService(
+      return new FakeRemoteGATTService(
         service_id, this.address, this.fake_central_ptr_);
-
-      this.services_.push(fake_service);
-
-      return fake_service;
     }
 
     // Sets the next GATT Discovery request response for peripheral with
@@ -212,6 +239,34 @@
 
   class FakeRemoteGATTService {
     constructor(service_id, peripheral_address, fake_central_ptr) {
+      this.service_id_ = service_id;
+      this.peripheral_address_ = peripheral_address;
+      this.fake_central_ptr_ = fake_central_ptr;
+    }
+
+    // Adds a fake GATT Characteristic with |uuid| and |properties|
+    // to this fake service. The characteristic will be found when discovering
+    // the peripheral's GATT Attributes. Returns a FakeRemoteGATTCharacteristic
+    // corresponding to the added characteristic.
+    async addFakeCharacteristic({uuid, properties}) {
+      let {characteristic_id} = await this.fake_central_ptr_.addFakeCharacteristic(
+        {uuid: BluetoothUUID.getCharacteristic(uuid)},
+        ArrayToMojoCharacteristicProperties(properties),
+        this.service_id_,
+        this.peripheral_address_
+      );
+
+      if (characteristic_id === null) throw 'addFakeCharacteristic failed';
+
+      return new FakeRemoteGATTCharacteristic(
+        characteristic_id, this.service_id_,
+        this.peripheral_address_, this.fake_central_ptr_);
+    }
+  }
+
+  class FakeRemoteGATTCharacteristic {
+    constructor(characteristic_id, service_id, peripheral_address, fake_central_ptr) {
+      this.characteristic_id_ = characteristic_id;
       this.service_id_ = service_id;
       this.peripheral_address_ = peripheral_address;
       this.fake_central_ptr_ = fake_central_ptr;
