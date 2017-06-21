@@ -4,7 +4,6 @@
 
 #include "core/dom/DocumentShutdownObserver.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/DocumentShutdownNotifier.h"
 
 namespace blink {
