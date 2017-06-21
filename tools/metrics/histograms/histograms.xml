@@ -88392,6 +88392,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="SafeBrowsing"/>
   <suffix name="UpdateClient"/>
   <suffix name="WebResourceService"/>
+  <suffix name="LargeIconService"/>
   <affected-histogram name="DataUse.MessageSize"/>
 </histogram_suffixes>
 
