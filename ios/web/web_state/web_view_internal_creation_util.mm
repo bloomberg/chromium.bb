@@ -36,7 +36,7 @@ void VerifyWKWebViewCreationPreConditions(
 WKWebView* BuildWKWebView(CGRect frame,
                           WKWebViewConfiguration* configuration,
                           BrowserState* browser_state,
-                          UserAgentType user_agent_type,
+                          BOOL use_desktop_user_agent,
                           id<CRWContextMenuDelegate> context_menu_delegate) {
   VerifyWKWebViewCreationPreConditions(browser_state, configuration);
 
@@ -44,10 +44,11 @@ WKWebView* BuildWKWebView(CGRect frame,
   WKWebView* web_view =
       [[WKWebView alloc] initWithFrame:frame configuration:configuration];
 
-  if (user_agent_type != web::UserAgentType::NONE) {
-    web_view.customUserAgent = base::SysUTF8ToNSString(
-        web::GetWebClient()->GetUserAgent(user_agent_type));
-  }
+  // Set the user agent.
+  UserAgentType user_agent_type =
+      use_desktop_user_agent ? UserAgentType::DESKTOP : UserAgentType::MOBILE;
+  web_view.customUserAgent = base::SysUTF8ToNSString(
+      web::GetWebClient()->GetUserAgent(user_agent_type));
 
   // By default the web view uses a very sluggish scroll speed. Set it to a more
   // reasonable value.
@@ -76,16 +77,17 @@ WKWebView* BuildWKWebView(CGRect frame,
 WKWebView* BuildWKWebView(CGRect frame,
                           WKWebViewConfiguration* configuration,
                           BrowserState* browser_state,
-                          UserAgentType user_agent_type) {
-  return BuildWKWebView(frame, configuration, browser_state, user_agent_type,
-                        nil);
+                          BOOL use_desktop_user_agent) {
+  return BuildWKWebView(frame, configuration, browser_state,
+                        use_desktop_user_agent, nil);
 }
 
 WKWebView* BuildWKWebView(CGRect frame,
                           WKWebViewConfiguration* configuration,
                           BrowserState* browser_state) {
+  BOOL use_desktop_user_agent = NO;
   return BuildWKWebView(frame, configuration, browser_state,
-                        UserAgentType::MOBILE);
+                        use_desktop_user_agent);
 }
 
 }  // namespace web

@@ -1283,6 +1283,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType {
+  // This removes the web view, which will be recreated at the end of this.
+  [self.webController requirePageReconstruction];
+
   // TODO(crbug.com/228171): A hack in session_controller -addPendingItem
   // discusses making tab responsible for distinguishing history stack
   // navigation from new navigations.
