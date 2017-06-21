@@ -215,7 +215,6 @@ void ScreenLocker::Init() {
     // Create delegate that calls into the views-based lock screen via mojo.
     views_screen_locker_ = base::MakeUnique<ViewsScreenLocker>(this);
     delegate_ = views_screen_locker_.get();
-    views_screen_locker_->Init();
 
     // Create and display lock screen.
     LockScreenClient::Get()->ShowLockScreen(base::BindOnce(
@@ -224,6 +223,8 @@ void ScreenLocker::Init() {
           screen_locker->OnLockScreenReady();
         },
         views_screen_locker_.get()));
+
+    views_screen_locker_->Init();
   } else {
     web_ui_.reset(new WebUIScreenLocker(this));
     delegate_ = web_ui_.get();

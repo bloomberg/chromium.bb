@@ -48,7 +48,7 @@ void LockContentsView::ButtonPressed(views::Button* sender,
       user_session->user_info->account_id, std::string(),
       false /* authenticated_by_pin */, base::BindOnce([](bool success) {
         if (success)
-          DestroyLockScreen();
+          ash::LockScreen::Get()->Destroy();
       }));
 }
 
