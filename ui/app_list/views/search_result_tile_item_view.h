@@ -48,12 +48,18 @@ class APP_LIST_EXPORT SearchResultTileItemView
                               ui::MenuSourceType source_type) override;
 
  private:
+  // Overridden from views::View:
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
+
   SearchResultContainerView* result_container_;  // Parent view
 
   // Owned by the model provided by the AppListViewDelegate.
   SearchResult* item_;
 
   AppListViewDelegate* view_delegate_;
+
+  const bool is_fullscreen_app_list_enabled_;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 

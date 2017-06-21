@@ -21,8 +21,6 @@ constexpr int kTopPadding = 5;
 constexpr int kTileSize = 90;
 constexpr int kIconTitleSpacing = 6;
 
-constexpr int kBadgeBackgroundRadius = 10;
-
 // The background image source for badge.
 class BadgeBackgroundImageSource : public gfx::CanvasImageSource {
  public:
@@ -154,20 +152,9 @@ void TileItemView::StateChanged(ButtonState old_state) {
 
 void TileItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty())
-    return;
 
   rect.Inset(0, kTopPadding, 0, 0);
   icon_->SetBoundsRect(rect);
-
-  if (badge_) {
-    gfx::Rect badge_rect(rect);
-    gfx::Size icon_size = icon_->GetImage().size();
-    badge_rect.Offset(
-        (icon_size.width() - kAppBadgeIconSize) / 2,
-        icon_size.height() - kBadgeBackgroundRadius - kAppBadgeIconSize / 2);
-    badge_->SetBoundsRect(badge_rect);
-  }
 
   rect.Inset(0, kGridIconDimension + kIconTitleSpacing, 0, 0);
   rect.set_height(title_->GetPreferredSize().height());
@@ -181,6 +168,22 @@ const char* TileItemView::GetClassName() const {
 void TileItemView::ImageShadowAnimationProgressed(
     ImageShadowAnimator* animator) {
   icon_->SetImage(animator->shadow_image());
+}
+
+gfx::Size TileItemView::CalculatePreferredSize() const {
+  return gfx::Size(kTileSize, kTileSize);
+}
+
+bool TileItemView::GetTooltipText(const gfx::Point& p,
+                                  base::string16* tooltip) const {
+  // Use the label to generate a tooltip, so that it will consider its text
+  // truncation in making the tooltip. We do not want the label itself to have a
+  // tooltip, so we only temporarily enable it to get the tooltip text from the
+  // label, then disable it again.
+  title_->SetHandlesTooltips(true);
+  bool handled = title_->GetTooltipText(p, tooltip);
+  title_->SetHandlesTooltips(false);
+  return handled;
 }
 
 void TileItemView::UpdateBackgroundColor() {
@@ -207,22 +210,6 @@ void TileItemView::UpdateBackgroundColor() {
 
   SetBackground(std::move(background));
   SchedulePaint();
-}
-
-gfx::Size TileItemView::CalculatePreferredSize() const {
-  return gfx::Size(kTileSize, kTileSize);
-}
-
-bool TileItemView::GetTooltipText(const gfx::Point& p,
-                                  base::string16* tooltip) const {
-  // Use the label to generate a tooltip, so that it will consider its text
-  // truncation in making the tooltip. We do not want the label itself to have a
-  // tooltip, so we only temporarily enable it to get the tooltip text from the
-  // label, then disable it again.
-  title_->SetHandlesTooltips(true);
-  bool handled = title_->GetTooltipText(p, tooltip);
-  title_->SetHandlesTooltips(false);
-  return handled;
 }
 
 }  // namespace app_list
