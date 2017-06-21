@@ -40,6 +40,7 @@
           <template is="dom-if" if="[[!androidAppsInfo_.playStoreEnabled]]">
             <div class="separator"></div>
             <paper-button id="enable" class="secondary-button"
+                disabled="[[isEnforced_(prefs.arc.enabled)]]"
                 on-tap="onEnableTap_"
                 aria-label="$i18n{androidAppsPageTitle}"
                 aria-describedby="secondaryText">
