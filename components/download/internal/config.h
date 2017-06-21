@@ -54,8 +54,8 @@ struct Configuration {
   // only Active state.
   uint32_t max_running_downloads;
 
-  // The maximum number of downloads that are scheduled but not yet in Active
-  // state, for each client using the download service.
+  // The maximum number of downloads that are scheduled for each client using
+  // the download service.
   uint32_t max_scheduled_downloads;
 
   // The maximum number of retries before the download is aborted.
