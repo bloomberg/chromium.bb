@@ -103,7 +103,7 @@ public class SiteChannelsManager {
      * site notification channels, i.e. channels with ids beginning with
      * {@link ChannelDefinitions#CHANNEL_ID_PREFIX_SITES}.
      */
-    static String toSiteOrigin(String channelId) {
+    public static String toSiteOrigin(String channelId) {
         assert channelId.startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES);
         return channelId.substring(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES.length());
     }
