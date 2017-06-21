@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
+#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -56,10 +57,20 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
 };
 }  // namespace
 
-// Test fixture for NavigationManagerImpl testing.
-class NavigationManagerTest : public PlatformTest {
+// Programmatic test fixture for NavigationManagerImpl testing.
+// GetParam() chooses whether to run tests on LegacyNavigationManagerImpl or
+// (the soon-to-be-implemented) WKBasedNavigationManagerImpl.
+// TODO(crbug.com/734150): cleanup the LegacyNavigationManagerImpl use case.
+class NavigationManagerTest : public PlatformTest,
+                              public ::testing::WithParamInterface<bool> {
  protected:
-  NavigationManagerTest() : manager_(new NavigationManagerImpl()) {
+  NavigationManagerTest() {
+    bool test_legacy_navigation_manager = GetParam();
+    if (test_legacy_navigation_manager) {
+      manager_.reset(new LegacyNavigationManagerImpl);
+    } else {
+      DCHECK(false) << "Not implemented.";
+    }
     // Setup rewriter.
     BrowserURLRewriter::GetInstance()->AddURLRewriter(UrlRewriter);
     url::AddStandardScheme(kSchemeToRewrite, url::SCHEME_WITHOUT_PORT);
@@ -72,6 +83,7 @@ class NavigationManagerTest : public PlatformTest {
   }
   CRWSessionController* session_controller() { return controller_; }
   NavigationManagerImpl* navigation_manager() { return manager_.get(); }
+
   TestNavigationManagerDelegate navigation_manager_delegate() {
     return delegate_;
   }
@@ -84,7 +96,7 @@ class NavigationManagerTest : public PlatformTest {
 };
 
 // Tests state of an empty navigation manager.
-TEST_F(NavigationManagerTest, EmptyManager) {
+TEST_P(NavigationManagerTest, EmptyManager) {
   EXPECT_EQ(0, navigation_manager()->GetItemCount());
   EXPECT_EQ(-1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_EQ(-1, navigation_manager()->GetLastCommittedItemIndex());
@@ -94,7 +106,7 @@ TEST_F(NavigationManagerTest, EmptyManager) {
 }
 
 // Tests that GetPendingItemIndex() returns -1 if there is no pending entry.
-TEST_F(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
+TEST_P(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -105,7 +117,7 @@ TEST_F(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
 
 // Tests that GetPendingItemIndex() returns current item index if there is a
 // pending entry.
-TEST_F(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
+TEST_P(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -120,7 +132,7 @@ TEST_F(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
 
 // Tests that GetPendingItemIndex() returns same index as was set by
 // -[CRWSessionController setPendingItemIndex:].
-TEST_F(NavigationManagerTest, GetPendingItemIndexWithIndexedPendingEntry) {
+TEST_P(NavigationManagerTest, GetPendingItemIndexWithIndexedPendingEntry) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -139,14 +151,14 @@ TEST_F(NavigationManagerTest, GetPendingItemIndexWithIndexedPendingEntry) {
 
 // Tests that going back or negative offset is not possible without a committed
 // item.
-TEST_F(NavigationManagerTest, CanGoBackWithoutCommitedItem) {
+TEST_P(NavigationManagerTest, CanGoBackWithoutCommitedItem) {
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
 }
 
 // Tests that going back or negative offset is not possible if there is a
 // transient item, but not committed items.
-TEST_F(NavigationManagerTest, CanGoBackWithTransientItem) {
+TEST_P(NavigationManagerTest, CanGoBackWithTransientItem) {
   [session_controller() addTransientItemWithURL:GURL("http://www.url.com")];
 
   EXPECT_FALSE(navigation_manager()->CanGoBack());
@@ -155,7 +167,7 @@ TEST_F(NavigationManagerTest, CanGoBackWithTransientItem) {
 
 // Tests that going back or negative offset is possible if there is a transient
 // item and at least one committed item.
-TEST_F(NavigationManagerTest, CanGoBackWithTransientItemAndCommittedItem) {
+TEST_P(NavigationManagerTest, CanGoBackWithTransientItemAndCommittedItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -169,7 +181,7 @@ TEST_F(NavigationManagerTest, CanGoBackWithTransientItemAndCommittedItem) {
 
 // Tests that going back or negative offset is not possible if there is ony one
 // committed item and no transient item.
-TEST_F(NavigationManagerTest, CanGoBackWithSingleCommitedItem) {
+TEST_P(NavigationManagerTest, CanGoBackWithSingleCommitedItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -181,7 +193,7 @@ TEST_F(NavigationManagerTest, CanGoBackWithSingleCommitedItem) {
 }
 
 // Tests going back possibility with multiple committed items.
-TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
+TEST_P(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -216,14 +228,14 @@ TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
 
 // Tests that going forward or positive offset is not possible without a
 // committed item.
-TEST_F(NavigationManagerTest, CanGoForwardWithoutCommitedItem) {
+TEST_P(NavigationManagerTest, CanGoForwardWithoutCommitedItem) {
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 }
 
 // Tests that going forward or positive offset is not possible if there is ony
 // one committed item and no transient item.
-TEST_F(NavigationManagerTest, CanGoForwardWithSingleCommitedItem) {
+TEST_P(NavigationManagerTest, CanGoForwardWithSingleCommitedItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -235,7 +247,7 @@ TEST_F(NavigationManagerTest, CanGoForwardWithSingleCommitedItem) {
 }
 
 // Tests going forward possibility with multiple committed items.
-TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
+TEST_P(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -275,7 +287,7 @@ TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
 // Tests CanGoToOffset API for positive, negative and zero delta. Tested
 // navigation manager will have redirect entries to make sure they are
 // appropriately skipped.
-TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
+TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_LINK,
       web::NavigationInitiationType::USER_INITIATED,
@@ -502,7 +514,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
 // Tests offsets with pending transient entries (specifically gong back and
 // forward from a pending navigation entry that is added to the middle of the
 // navigation stack).
-TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
+TEST_P(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
   // Create a transient item in the middle of the navigation stack and go back
   // to it (pending index is 1, current index is 2).
   navigation_manager()->AddPendingItem(
@@ -542,7 +554,7 @@ TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
 
 // Tests that when given a pending item, adding a new pending item replaces the
 // existing pending item if their URLs are different.
-TEST_F(NavigationManagerTest, ReplacePendingItemIfDiffernetURL) {
+TEST_P(NavigationManagerTest, ReplacePendingItemIfDiffernetURL) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -565,7 +577,7 @@ TEST_F(NavigationManagerTest, ReplacePendingItemIfDiffernetURL) {
 // Tests that when given a pending item, adding a new pending item with the same
 // URL doesn't replace the existing pending item if new pending item is not a
 // form submission.
-TEST_F(NavigationManagerTest, NotReplaceSameUrlPendingItemIfNotFormSubmission) {
+TEST_P(NavigationManagerTest, NotReplaceSameUrlPendingItemIfNotFormSubmission) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -591,7 +603,7 @@ TEST_F(NavigationManagerTest, NotReplaceSameUrlPendingItemIfNotFormSubmission) {
 // Tests that when given a pending item, adding a new pending item with the same
 // URL replaces the existing pending item if new pending item is a form
 // submission while existing pending item is not.
-TEST_F(NavigationManagerTest, ReplaceSameUrlPendingItemIfFormSubmission) {
+TEST_P(NavigationManagerTest, ReplaceSameUrlPendingItemIfFormSubmission) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -617,7 +629,7 @@ TEST_F(NavigationManagerTest, ReplaceSameUrlPendingItemIfFormSubmission) {
 // Tests that when given a pending item, adding a new pending item with the same
 // URL doesn't replace the existing pending item if the user agent override
 // option is INHERIT.
-TEST_F(NavigationManagerTest, NotReplaceSameUrlPendingItemIfOverrideInherit) {
+TEST_P(NavigationManagerTest, NotReplaceSameUrlPendingItemIfOverrideInherit) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -644,7 +656,7 @@ TEST_F(NavigationManagerTest, NotReplaceSameUrlPendingItemIfOverrideInherit) {
 // Tests that when given a pending item, adding a new pending item with the same
 // URL replaces the existing pending item if the user agent override option is
 // DESKTOP.
-TEST_F(NavigationManagerTest, ReplaceSameUrlPendingItemIfOverrideDesktop) {
+TEST_P(NavigationManagerTest, ReplaceSameUrlPendingItemIfOverrideDesktop) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -672,7 +684,7 @@ TEST_F(NavigationManagerTest, ReplaceSameUrlPendingItemIfOverrideDesktop) {
 // Tests that when given a pending item, adding a new pending item with the same
 // URL replaces the existing pending item if the user agent override option is
 // MOBILE.
-TEST_F(NavigationManagerTest, ReplaceSameUrlPendingItemIfOverrideMobile) {
+TEST_P(NavigationManagerTest, ReplaceSameUrlPendingItemIfOverrideMobile) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -699,7 +711,7 @@ TEST_F(NavigationManagerTest, ReplaceSameUrlPendingItemIfOverrideMobile) {
 
 // Tests that when the last committed item exists, adding a pending item
 // succeeds if the new item's URL is different from the last committed item.
-TEST_F(NavigationManagerTest, AddPendingItemIfDiffernetURL) {
+TEST_P(NavigationManagerTest, AddPendingItemIfDiffernetURL) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -723,7 +735,7 @@ TEST_F(NavigationManagerTest, AddPendingItemIfDiffernetURL) {
 
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL fails if the new item is not form submission.
-TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfNotFormSubmission) {
+TEST_P(NavigationManagerTest, NotAddSameUrlPendingItemIfNotFormSubmission) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -748,7 +760,7 @@ TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfNotFormSubmission) {
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL succeeds if the new item is a form submission while the last
 // committed item is not.
-TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfFormSubmission) {
+TEST_P(NavigationManagerTest, AddSameUrlPendingItemIfFormSubmission) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -777,7 +789,7 @@ TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfFormSubmission) {
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL fails if both the new item and the last committed item are form
 // submissions.
-TEST_F(NavigationManagerTest,
+TEST_P(NavigationManagerTest,
        NotAddSameUrlPendingItemIfDuplicateFormSubmission) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
@@ -799,7 +811,7 @@ TEST_F(NavigationManagerTest,
 
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL fails if the user agent override option is INHERIT.
-TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfOverrideInherit) {
+TEST_P(NavigationManagerTest, NotAddSameUrlPendingItemIfOverrideInherit) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -822,7 +834,7 @@ TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfOverrideInherit) {
 
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL succeeds if the user agent override option is DESKTOP.
-TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfOverrideDesktop) {
+TEST_P(NavigationManagerTest, AddSameUrlPendingItemIfOverrideDesktop) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -851,7 +863,7 @@ TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfOverrideDesktop) {
 
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL succeeds if the user agent override option is MOBILE.
-TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfOverrideMobile) {
+TEST_P(NavigationManagerTest, AddSameUrlPendingItemIfOverrideMobile) {
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -879,7 +891,7 @@ TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfOverrideMobile) {
 
 // Tests that desktop user agent can be enforced to use for next pending item
 // when UserAgentOverrideOption is DESKTOP.
-TEST_F(NavigationManagerTest, OverrideUserAgentWithDesktop) {
+TEST_P(NavigationManagerTest, OverrideUserAgentWithDesktop) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -902,7 +914,7 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithDesktop) {
 
 // Tests that mobile user agent can be enforced to use for next pending item
 // when UserAgentOverrideOption is MOBILE.
-TEST_F(NavigationManagerTest, OverrideUserAgentWithMobile) {
+TEST_P(NavigationManagerTest, OverrideUserAgentWithMobile) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -924,7 +936,7 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithMobile) {
 
 // Tests that the UserAgentType of an INHERIT item is propagated to subsequent
 // item when UserAgentOverrideOption is INHERIT
-TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterInherit) {
+TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterInherit) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -946,7 +958,7 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterInherit) {
 
 // Tests that the UserAgentType of a MOBILE item is propagated to subsequent
 // item when UserAgentOverrideOption is INHERIT
-TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterMobile) {
+TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterMobile) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -968,7 +980,7 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterMobile) {
 
 // Tests that the UserAgentType of a DESKTOP item is propagated to subsequent
 // item when UserAgentOverrideOption is INHERIT
-TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterDesktop) {
+TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterDesktop) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -990,7 +1002,7 @@ TEST_F(NavigationManagerTest, OverrideUserAgentWithInheritAfterDesktop) {
 
 // Tests that the UserAgentType is propagated to subsequent NavigationItems if
 // a native URL exists in between naviations.
-TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
+TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   // GURL::Replacements that will replace a GURL's scheme with the test native
   // scheme.
   GURL::Replacements native_scheme_replacement;
@@ -1047,7 +1059,7 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
 
 // Tests that adding transient item for a pending item with mobile user agent
 // type results in a transient item with mobile user agent type.
-TEST_F(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
+TEST_P(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -1066,7 +1078,7 @@ TEST_F(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
 
 // Tests that adding transient item for a pending item with desktop user agent
 // type results in a transient item with desktop user agent type.
-TEST_F(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
+TEST_P(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -1085,7 +1097,7 @@ TEST_F(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
 
 // Tests that calling |Reload| with web::ReloadType::NORMAL is no-op when there
 // are no transient, pending and committed items.
-TEST_F(NavigationManagerTest, ReloadEmptyWithNormalType) {
+TEST_P(NavigationManagerTest, ReloadEmptyWithNormalType) {
   ASSERT_FALSE(navigation_manager()->GetTransientItem());
   ASSERT_FALSE(navigation_manager()->GetPendingItem());
   ASSERT_FALSE(navigation_manager()->GetLastCommittedItem());
@@ -1101,7 +1113,7 @@ TEST_F(NavigationManagerTest, ReloadEmptyWithNormalType) {
 
 // Tests that calling |Reload| with web::ReloadType::NORMAL leaves the url of
 // the renderer initiated pending item unchanged when there is one.
-TEST_F(NavigationManagerTest, ReloadRendererPendingItemWithNormalType) {
+TEST_P(NavigationManagerTest, ReloadRendererPendingItemWithNormalType) {
   GURL url_before_reload = GURL("http://www.url.com");
   navigation_manager()->AddPendingItem(
       url_before_reload, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1119,7 +1131,7 @@ TEST_F(NavigationManagerTest, ReloadRendererPendingItemWithNormalType) {
 
 // Tests that calling |Reload| with web::ReloadType::NORMAL leaves the url of
 // the user initiated pending item unchanged when there is one.
-TEST_F(NavigationManagerTest, ReloadUserPendingItemWithNormalType) {
+TEST_P(NavigationManagerTest, ReloadUserPendingItemWithNormalType) {
   GURL url_before_reload = GURL("http://www.url.com");
   navigation_manager()->AddPendingItem(
       url_before_reload, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1137,7 +1149,7 @@ TEST_F(NavigationManagerTest, ReloadUserPendingItemWithNormalType) {
 
 // Tests that calling |Reload| with web::ReloadType::NORMAL leaves the url of
 // the last committed item unchanged when there is no pending item.
-TEST_F(NavigationManagerTest, ReloadLastCommittedItemWithNormalType) {
+TEST_P(NavigationManagerTest, ReloadLastCommittedItemWithNormalType) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -1163,7 +1175,7 @@ TEST_F(NavigationManagerTest, ReloadLastCommittedItemWithNormalType) {
 // Tests that calling |Reload| with web::ReloadType::NORMAL leaves the url of
 // the last committed item unchanged when there is no pending item, but there
 // forward items after last committed item.
-TEST_F(NavigationManagerTest,
+TEST_P(NavigationManagerTest,
        ReloadLastCommittedItemWithNormalTypeWithForwardItems) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1198,7 +1210,7 @@ TEST_F(NavigationManagerTest,
 
 // Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL is
 // no-op when there are no transient, pending and committed items.
-TEST_F(NavigationManagerTest, ReloadEmptyWithOriginalType) {
+TEST_P(NavigationManagerTest, ReloadEmptyWithOriginalType) {
   ASSERT_FALSE(navigation_manager()->GetTransientItem());
   ASSERT_FALSE(navigation_manager()->GetPendingItem());
   ASSERT_FALSE(navigation_manager()->GetLastCommittedItem());
@@ -1215,7 +1227,7 @@ TEST_F(NavigationManagerTest, ReloadEmptyWithOriginalType) {
 // Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL
 // changes the renderer initiated pending item's url to its original request url
 // when there is one.
-TEST_F(NavigationManagerTest, ReloadRendererPendingItemWithOriginalType) {
+TEST_P(NavigationManagerTest, ReloadRendererPendingItemWithOriginalType) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::RENDERER_INITIATED,
@@ -1237,7 +1249,7 @@ TEST_F(NavigationManagerTest, ReloadRendererPendingItemWithOriginalType) {
 // Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL
 // changes the user initiated pending item's url to its original request url
 // when there is one.
-TEST_F(NavigationManagerTest, ReloadUserPendingItemWithOriginalType) {
+TEST_P(NavigationManagerTest, ReloadUserPendingItemWithOriginalType) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -1259,7 +1271,7 @@ TEST_F(NavigationManagerTest, ReloadUserPendingItemWithOriginalType) {
 // Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL
 // changes the last committed item's url to its original request url when there
 // is no pending item.
-TEST_F(NavigationManagerTest, ReloadLastCommittedItemWithOriginalType) {
+TEST_P(NavigationManagerTest, ReloadLastCommittedItemWithOriginalType) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -1288,7 +1300,7 @@ TEST_F(NavigationManagerTest, ReloadLastCommittedItemWithOriginalType) {
 // Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL
 // changes the last committed item's url to its original request url when there
 // is no pending item, but there are forward items after last committed item.
-TEST_F(NavigationManagerTest,
+TEST_P(NavigationManagerTest,
        ReloadLastCommittedItemWithOriginalTypeWithForwardItems) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1326,7 +1338,7 @@ TEST_F(NavigationManagerTest,
 
 // Tests that app-specific URLs are not rewritten for renderer-initiated loads
 // unless requested by a page with app-specific url.
-TEST_F(NavigationManagerTest, RewritingAppSpecificUrls) {
+TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
   // URL should not be rewritten as there is no committed URL.
   GURL url1(url::SchemeHostPort(kSchemeToRewrite, "test", 0).Serialize());
   navigation_manager()->AddPendingItem(
@@ -1367,7 +1379,7 @@ TEST_F(NavigationManagerTest, RewritingAppSpecificUrls) {
 }
 
 // Tests that GetIndexOfItem() returns the correct values.
-TEST_F(NavigationManagerTest, GetIndexOfItem) {
+TEST_P(NavigationManagerTest, GetIndexOfItem) {
   // Create two items and add them to the NavigationManagerImpl.
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1389,5 +1401,10 @@ TEST_F(NavigationManagerTest, GetIndexOfItem) {
   EXPECT_EQ(1, navigation_manager()->GetIndexOfItem(item1));
   EXPECT_EQ(-1, navigation_manager()->GetIndexOfItem(item_not_found.get()));
 }
+
+INSTANTIATE_TEST_CASE_P(
+    ProgrammaticNavigationManagerTest,
+    NavigationManagerTest,
+    ::testing::Values(true /* test_legacy_navigation_manager */));
 
 }  // namespace web

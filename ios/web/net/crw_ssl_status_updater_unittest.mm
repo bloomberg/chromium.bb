@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
@@ -86,7 +87,7 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
     delegate_ =
         [OCMockObject mockForProtocol:@protocol(CRWSSLStatusUpdaterDelegate)];
 
-    nav_manager_.reset(new NavigationManagerImpl());
+    nav_manager_.reset(new LegacyNavigationManagerImpl());
     nav_manager_->SetBrowserState(GetBrowserState());
 
     ssl_status_updater_ =

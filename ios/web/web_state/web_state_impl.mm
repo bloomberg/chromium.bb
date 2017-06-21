@@ -13,6 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/session_storage_builder.h"
 #include "ios/web/public/browser_state.h"
@@ -80,7 +81,8 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
     SessionStorageBuilder session_storage_builder;
     session_storage_builder.ExtractSessionState(this, session_storage);
   } else {
-    navigation_manager_ = base::MakeUnique<NavigationManagerImpl>();
+    navigation_manager_ = base::WrapUnique<NavigationManagerImpl>(
+        new LegacyNavigationManagerImpl);
     certificate_policy_cache_ =
         base::MakeUnique<SessionCertificatePolicyCacheImpl>();
   }
