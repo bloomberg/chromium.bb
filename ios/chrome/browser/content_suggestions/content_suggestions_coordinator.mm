@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
+#import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -313,6 +314,29 @@
   self.alertCoordinator = nil;
 }
 
+- (void)handlePromoTapped {
+  NotificationPromoWhatsNew* notificationPromo =
+      [self.contentSuggestionsMediator notificationPromo];
+  DCHECK(notificationPromo);
+  notificationPromo->HandleClosed();
+
+  if (notificationPromo->IsURLPromo()) {
+    [self.URLLoader webPageOrderedOpen:notificationPromo->url()
+                              referrer:web::Referrer()
+                          inBackground:NO
+                              appendTo:kCurrentTab];
+    return;
+  }
+
+  if (notificationPromo->IsChromeCommand()) {
+    GenericChromeCommand* command = [[GenericChromeCommand alloc]
+        initWithTag:notificationPromo->command_id()];
+    [self.baseViewController chromeExecuteCommand:command];
+    return;
+  }
+  NOTREACHED();
+}
+
 #pragma mark - Private
 
 - (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito {
@@ -322,7 +346,7 @@
                             referrer:web::Referrer()
                          inIncognito:incognito
                         inBackground:NO
-                            appendTo:kLastTab];
+                            appendTo:kCurrentTab];
 
   [self stop];
 }

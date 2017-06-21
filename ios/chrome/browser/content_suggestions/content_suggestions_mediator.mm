@@ -8,12 +8,14 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_provider.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
@@ -21,6 +23,7 @@
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
@@ -28,6 +31,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
+#import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
+#include "ios/public/provider/chrome/browser/images/whats_new_icon.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -52,6 +59,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
   std::unique_ptr<ContentSuggestionsServiceBridge> _suggestionBridge;
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
+  std::unique_ptr<NotificationPromoWhatsNew> _notificationPromo;
 }
 
 // Most visited items from the MostVisitedSites service currently displayed.
@@ -117,6 +125,11 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
     _mostVisitedSectionInfo = MostVisitedSectionInformation();
     _logoSectionInfo = LogoSectionInformation();
+
+    _notificationPromo = base::MakeUnique<NotificationPromoWhatsNew>(
+        GetApplicationContext()->GetLocalState());
+    _notificationPromo->Init();
+
     _mostVisitedSites = std::move(mostVisitedSites);
     _mostVisitedBridge =
         base::MakeUnique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
@@ -134,6 +147,10 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 - (void)whitelistMostVisitedURL:(GURL)URL {
   _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, false);
   [self useFreshMostVisited];
+}
+
+- (NotificationPromoWhatsNew*)notificationPromo {
+  return _notificationPromo.get();
 }
 
 #pragma mark - ContentSuggestionsDataSource
@@ -169,7 +186,15 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       [NSMutableArray array];
 
   if (sectionInfo == self.logoSectionInfo) {
-    // TODO(crbug.com/732416): Add promo.
+    if (_notificationPromo->CanShow()) {
+      ContentSuggestionsWhatsNewItem* item =
+          [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
+      item.image = ios::GetChromeBrowserProvider()
+                       ->GetBrandedImageProvider()
+                       ->GetWhatsNewIconImage(_notificationPromo->icon());
+      item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
+      [convertedSuggestions addObject:item];
+    }
   } else if (sectionInfo == self.mostVisitedSectionInfo) {
     [convertedSuggestions addObjectsFromArray:self.mostVisitedItems];
   } else {
