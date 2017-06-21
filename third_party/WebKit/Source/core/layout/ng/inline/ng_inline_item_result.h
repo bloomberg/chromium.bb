@@ -48,6 +48,9 @@ struct CORE_EXPORT NGInlineItemResult {
   LayoutUnit borders_paddings_block_start;
   LayoutUnit borders_paddings_block_end;
 
+  // Create a box when the box is empty, for open/close tags.
+  unsigned needs_box_when_empty : 1;
+
   // Inside of this is not breakable.
   // Used only during line breaking.
   unsigned no_break_opportunities_inside : 1;

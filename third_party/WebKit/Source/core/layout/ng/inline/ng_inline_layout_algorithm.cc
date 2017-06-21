@@ -30,6 +30,14 @@
 namespace blink {
 namespace {
 
+inline bool ShouldCreateBoxFragment(const NGInlineItem& item,
+                                    const NGInlineItemResult& item_result) {
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
+  // TODO(kojii): We might need more conditions to create box fragments.
+  return style.HasBoxDecorationBackground() || item_result.needs_box_when_empty;
+}
+
 NGLogicalOffset GetOriginPointForFloats(
     const NGLogicalOffset& container_bfc_offset,
     LayoutUnit content_size) {
@@ -176,19 +184,21 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
                                       item_result.end_offset);
       line_box.AddChild(std::move(text_fragment), {position, box->text_top});
     } else if (item.Type() == NGInlineItem::kOpenTag) {
-      box = box_states_.OnOpenTag(item, &line_box);
+      box = box_states_.OnOpenTag(item, item_result, &line_box, position);
       // Compute text metrics for all inline boxes since even empty inlines
       // influence the line height.
       // https://drafts.csswg.org/css2/visudet.html#line-height
       box->ComputeTextMetrics(*item.Style(), baseline_type_);
       text_builder.SetDirection(box->style->Direction());
-      // TODO(kojii): We may need more conditions to create box fragments.
-      if (item.Style()->HasBoxDecorationBackground())
-        box->SetNeedsBoxFragment(item, item_result, position);
+      if (ShouldCreateBoxFragment(item, item_result))
+        box->SetNeedsBoxFragment(item_result.needs_box_when_empty);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
       position += item_result.inline_size;
-      if (box->needs_box_fragment)
+      if (box->needs_box_fragment || item_result.needs_box_when_empty) {
+        if (item_result.needs_box_when_empty)
+          box->SetNeedsBoxFragment(true);
         box->SetLineRightForBoxFragment(item, item_result, position);
+      }
       box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_);
       continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
@@ -271,7 +281,8 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
     NGTextFragmentBuilder* text_builder) {
   DCHECK(item_result->layout_result);
 
-  NGInlineBoxState* box = box_states_.OnOpenTag(item, line_box);
+  NGInlineBoxState* box =
+      box_states_.OnOpenTag(item, *item_result, line_box, position);
 
   // For replaced elements, inline-block elements, and inline-table elements,
   // the height is the height of their margin box.

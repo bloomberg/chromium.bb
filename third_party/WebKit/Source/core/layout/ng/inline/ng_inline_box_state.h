@@ -51,6 +51,7 @@ struct NGInlineBoxState {
   Vector<NGPendingPositions> pending_descendants;
   bool include_used_fonts = false;
   bool needs_box_fragment = false;
+  bool needs_box_fragment_when_empty = false;
 
   // Compute text metrics for a box. All text in a box share the same metrics.
   void ComputeTextMetrics(const ComputedStyle& style, FontBaseline);
@@ -60,9 +61,7 @@ struct NGInlineBoxState {
                            FontBaseline);
 
   // Create a box fragment for this box.
-  void SetNeedsBoxFragment(const NGInlineItem&,
-                           const NGInlineItemResult&,
-                           LayoutUnit position);
+  void SetNeedsBoxFragment(bool when_empty);
   void SetLineRightForBoxFragment(const NGInlineItem&,
                                   const NGInlineItemResult&,
                                   LayoutUnit position);
@@ -82,7 +81,10 @@ class NGInlineLayoutStateStack {
   NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle*, FontBaseline);
 
   // Push a box state stack.
-  NGInlineBoxState* OnOpenTag(const NGInlineItem&, NGLineBoxFragmentBuilder*);
+  NGInlineBoxState* OnOpenTag(const NGInlineItem&,
+                              const NGInlineItemResult&,
+                              NGLineBoxFragmentBuilder*,
+                              LayoutUnit position);
 
   // Pop a box state stack.
   NGInlineBoxState* OnCloseTag(const NGInlineItem&,

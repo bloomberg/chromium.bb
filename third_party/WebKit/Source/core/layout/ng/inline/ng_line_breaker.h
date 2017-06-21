@@ -43,10 +43,11 @@ class CORE_EXPORT NGLineBreaker {
   RefPtr<NGInlineBreakToken> CreateBreakToken() const;
 
  private:
-  void BreakLine(NGLineInfo*, const NGLogicalOffset&);
+  void BreakLine(NGLineInfo*);
 
-  void ResolveBFCOffset();
-  LayoutUnit ComputeAvailableWidth(const NGLogicalOffset&) const;
+  bool HasAvailableWidth() const { return available_width_.has_value(); }
+  LayoutUnit AvailableWidth() const { return available_width_.value(); }
+  void UpdateAvailableWidth();
 
   enum class LineBreakState {
     // The current position is not breakable.
@@ -60,7 +61,6 @@ class CORE_EXPORT NGLineBreaker {
   };
 
   LineBreakState HandleText(const NGInlineItem&,
-                            LayoutUnit available_width,
                             NGInlineItemResult*);
   void BreakText(NGInlineItemResult*,
                  const NGInlineItem&,
@@ -69,15 +69,15 @@ class CORE_EXPORT NGLineBreaker {
   LineBreakState HandleControlItem(const NGInlineItem&, NGInlineItemResult*);
   LineBreakState HandleAtomicInline(const NGInlineItem&, NGInlineItemResult*);
   void HandleFloat(const NGInlineItem&,
-                   const NGLogicalOffset&,
-                   WTF::Optional<LayoutUnit>* available_width,
                    NGInlineItemResults*);
 
   void HandleOpenTag(const NGInlineItem&, NGInlineItemResult*);
   void HandleCloseTag(const NGInlineItem&, NGInlineItemResult*);
 
-  void HandleOverflow(LayoutUnit available_width, NGLineInfo*);
+  void HandleOverflow(NGLineInfo*);
   void Rewind(NGLineInfo*, unsigned new_end);
+
+  void SetShouldCreateLineBox();
 
   void SetCurrentStyle(const ComputedStyle&);
 
@@ -92,11 +92,14 @@ class CORE_EXPORT NGLineBreaker {
   unsigned item_index_;
   unsigned offset_;
   LayoutUnit position_;
+  WTF::Optional<LayoutUnit> available_width_;
+  NGLogicalOffset content_offset_;
   LazyLineBreakIterator break_iterator_;
   HarfBuzzShaper shaper_;
   ShapeResultSpacing<String> spacing_;
 
   unsigned auto_wrap_ : 1;
+  unsigned should_create_line_box_ : 1;
 };
 
 }  // namespace blink
