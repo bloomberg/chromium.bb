@@ -12,15 +12,15 @@
 #include "media/base/android/media_jni_registrar.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/gmock_callback_support.h"
 #include "media/base/test_helpers.h"
 #include "media/gpu/android/fake_codec_allocator.h"
 #include "media/gpu/android/mock_device_info.h"
+#include "media/gpu/android/video_frame_factory.h"
 #include "media/gpu/android_video_surface_chooser_impl.h"
 #include "media/gpu/fake_android_video_surface_chooser.h"
+#include "media/gpu/mock_surface_texture_gl_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_surface.h"
-#include "ui/gl/init/gl_factory.h"
 
 using testing::_;
 using testing::InvokeWithoutArgs;
@@ -40,6 +40,29 @@ gpu::GpuCommandBufferStub* GetStubCb() {
 
 }  // namespace
 
+class MockVideoFrameFactory : public VideoFrameFactory {
+ public:
+  MOCK_METHOD3(Initialize,
+               void(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+                    GetStubCb get_stub_cb,
+                    InitCb init_cb));
+  MOCK_METHOD5(MockCreateVideoFrame,
+               void(CodecOutputBuffer* raw_output_buffer,
+                    scoped_refptr<SurfaceTextureGLOwner> surface_texture,
+                    base::TimeDelta timestamp,
+                    gfx::Size natural_size,
+                    FrameCreatedCb frame_created_cb));
+
+  void CreateVideoFrame(std::unique_ptr<CodecOutputBuffer> output_buffer,
+                        scoped_refptr<SurfaceTextureGLOwner> surface_texture,
+                        base::TimeDelta timestamp,
+                        gfx::Size natural_size,
+                        FrameCreatedCb frame_created_cb) override {
+    MockCreateVideoFrame(output_buffer.get(), surface_texture, timestamp,
+                         natural_size, frame_created_cb);
+  }
+};
+
 class MediaCodecVideoDecoderTest : public testing::Test {
  public:
   MediaCodecVideoDecoderTest() = default;
@@ -48,34 +71,30 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     JNIEnv* env = base::android::AttachCurrentThread();
     RegisterJni(env);
 
-    // We set up GL so that we can create SurfaceTextures.
-    // TODO(watk): Create a mock SurfaceTexture so we don't have to
-    // do this.
-    ASSERT_TRUE(gl::init::InitializeGLOneOff());
-    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(16, 16));
-    context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                         gl::GLContextAttribs());
-    context_->MakeCurrent(surface_.get());
-
     codec_allocator_ = base::MakeUnique<FakeCodecAllocator>();
     device_info_ = base::MakeUnique<NiceMock<MockDeviceInfo>>();
     auto surface_chooser = base::MakeUnique<NiceMock<FakeSurfaceChooser>>();
     surface_chooser_ = surface_chooser.get();
+
+    auto surface_texture = make_scoped_refptr(
+        new NiceMock<MockSurfaceTextureGLOwner>(0, nullptr, nullptr));
+    surface_texture_ = surface_texture.get();
+
+    auto video_frame_factory =
+        base::MakeUnique<NiceMock<MockVideoFrameFactory>>();
+    video_frame_factory_ = video_frame_factory.get();
+    // Set up VFF to pass |surface_texture_| via its InitCb.
+    ON_CALL(*video_frame_factory_, Initialize(_, _, _))
+        .WillByDefault(RunCallback<2>(surface_texture));
+
     mcvd_ = base::MakeUnique<MediaCodecVideoDecoder>(
         base::ThreadTaskRunnerHandle::Get(), base::Bind(&GetStubCb),
-        device_info_.get(), codec_allocator_.get(), std::move(surface_chooser));
+        device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
+        std::move(video_frame_factory));
   }
 
-  ~MediaCodecVideoDecoderTest() override {
-    // ~AVDASurfaceBundle() might rely on GL being available, so we have to
-    // explicitly drop references to them before tearing down GL.
-    mcvd_ = nullptr;
-    codec_allocator_ = nullptr;
-    context_ = nullptr;
-    surface_ = nullptr;
-    gl::init::ShutdownGL();
-  }
-
+  // Just call Initialize(). MCVD will be waiting for a call to Decode() before
+  // continuining initialization.
   bool Initialize(const VideoDecoderConfig& config) {
     bool result = false;
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
@@ -85,6 +104,8 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     return result;
   }
 
+  // Call Initialize() and Decode() to start lazy init. MCVD will be waiting for
+  // a codec.
   MockAndroidOverlay* InitializeWithOverlay() {
     Initialize(TestVideoConfig::NormalH264());
     mcvd_->Decode(nullptr, decode_cb_.Get());
@@ -94,6 +115,8 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     return overlay;
   }
 
+  // Call Initialize() and Decode() to start lazy init. MCVD will be waiting for
+  // a codec.
   void InitializeWithSurfaceTexture() {
     Initialize(TestVideoConfig::NormalH264());
     mcvd_->Decode(nullptr, decode_cb_.Get());
@@ -101,14 +124,15 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<MediaCodecVideoDecoder> mcvd_;
   std::unique_ptr<MockDeviceInfo> device_info_;
   std::unique_ptr<FakeCodecAllocator> codec_allocator_;
   FakeSurfaceChooser* surface_chooser_;
+  MockSurfaceTextureGLOwner* surface_texture_;
+  MockVideoFrameFactory* video_frame_factory_;
   base::MockCallback<VideoDecoder::DecodeCB> decode_cb_;
 
-  scoped_refptr<gl::GLSurface> surface_;
-  scoped_refptr<gl::GLContext> context_;
+  // mcvd_ is last so it's destructed after its dependencies.
+  std::unique_ptr<MediaCodecVideoDecoder> mcvd_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
@@ -130,9 +154,16 @@ TEST_F(MediaCodecVideoDecoderTest, SmallVp8IsRejected) {
 }
 
 TEST_F(MediaCodecVideoDecoderTest, InitializeDoesntInitSurfaceOrCodec) {
+  EXPECT_CALL(*video_frame_factory_, Initialize(_, _, _)).Times(0);
   EXPECT_CALL(*surface_chooser_, MockInitialize()).Times(0);
   EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecAsync(_, _)).Times(0);
   Initialize(TestVideoConfig::NormalH264());
+}
+
+TEST_F(MediaCodecVideoDecoderTest, FirstDecodeTriggersFrameFactoryInit) {
+  Initialize(TestVideoConfig::NormalH264());
+  EXPECT_CALL(*video_frame_factory_, Initialize(_, _, _));
+  mcvd_->Decode(nullptr, decode_cb_.Get());
 }
 
 TEST_F(MediaCodecVideoDecoderTest, FirstDecodeTriggersSurfaceChooserInit) {
@@ -148,7 +179,16 @@ TEST_F(MediaCodecVideoDecoderTest, CodecIsCreatedAfterSurfaceChosen) {
   surface_chooser_->ProvideSurfaceTexture();
 }
 
-TEST_F(MediaCodecVideoDecoderTest, DecodeCbsAreRunOnError) {
+TEST_F(MediaCodecVideoDecoderTest, FrameFactoryInitFailureIsAnError) {
+  Initialize(TestVideoConfig::NormalH264());
+  ON_CALL(*video_frame_factory_, Initialize(_, _, _))
+      .WillByDefault(RunCallback<2>(nullptr));
+  EXPECT_CALL(decode_cb_, Run(DecodeStatus::DECODE_ERROR)).Times(1);
+  EXPECT_CALL(*surface_chooser_, MockInitialize()).Times(0);
+  mcvd_->Decode(nullptr, decode_cb_.Get());
+}
+
+TEST_F(MediaCodecVideoDecoderTest, CodecCreationFailureIsAnError) {
   InitializeWithSurfaceTexture();
   mcvd_->Decode(nullptr, decode_cb_.Get());
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::DECODE_ERROR)).Times(2);

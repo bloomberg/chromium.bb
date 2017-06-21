@@ -15,6 +15,7 @@
 #include "media/base/video_decoder.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/device_info.h"
+#include "media/gpu/android/video_frame_factory.h"
 #include "media/gpu/android_video_surface_chooser.h"
 #include "media/gpu/avda_codec_allocator.h"
 #include "media/gpu/media_gpu_export.h"
@@ -54,10 +55,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
  public:
   MediaCodecVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-      base::Callback<gpu::GpuCommandBufferStub*()> get_command_buffer_stub_cb,
+      base::Callback<gpu::GpuCommandBufferStub*()> get_stub_cb,
       DeviceInfo* device_info,
       AVDACodecAllocator* codec_allocator,
-      std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser);
+      std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
+      std::unique_ptr<VideoFrameFactory> video_frame_factory);
   ~MediaCodecVideoDecoder() override;
 
   // VideoDecoder implementation:
@@ -102,6 +104,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   // Finishes initialization.
   void StartLazyInit();
+  void OnVideoFrameFactoryInitialized(
+      scoped_refptr<SurfaceTextureGLOwner> surface_texture);
 
   // Initializes |surface_chooser_|.
   void InitializeSurfaceChooser();
@@ -158,6 +162,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   // A SurfaceTexture that is kept for the lifetime of MCVD so that if we have
   // to synchronously switch surfaces we always have one available.
+  // TODO: Remove this once onSurfaceDestroyed() callbacks are not delivered
+  // via the gpu thread. We can't post a task to the gpu thread to
+  // create a SurfaceTexture inside the onSurfaceDestroyed() handler without
+  // deadlocking currently, because the gpu thread might be blocked waiting
+  // for the SurfaceDestroyed to be handled.
   scoped_refptr<SurfaceTextureGLOwner> surface_texture_;
 
   // The current overlay info, which possibly specifies an overlay to render to.
@@ -166,6 +175,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // The surface chooser we use to decide which kind of surface to configure the
   // codec with.
   std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser_;
+
+  // The factory for creating VideoFrames from CodecOutputBuffers.
+  std::unique_ptr<VideoFrameFactory> video_frame_factory_;
 
   // An optional factory callback for creating mojo AndroidOverlays.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;

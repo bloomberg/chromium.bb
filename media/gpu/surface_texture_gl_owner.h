@@ -6,6 +6,9 @@
 #define MEDIA_GPU_SURFACE_TEXTURE_GL_OWNER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/sequenced_task_runner_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "media/gpu/media_gpu_export.h"
@@ -22,13 +25,15 @@ struct FrameAvailableEvent;
 // A SurfaceTexture wrapper that creates and maintains ownership of the
 // attached GL texture. The texture is destroyed with the object but it's
 // possible to call ReleaseSurfaceTexture() without destroying the GL texture.
-// It must be deleted on the thread it was constructed on.
-// This is a virtual interface to make it mockable; see
-// SurfaceTextureGLOwnerImpl.
+// It should only be accessed on the thread it was created on, with the
+// exception of CreateJavaSurface(), which can be called on any thread.
+// It's safe to keep and drop refptrs to it on any thread; it will be
+// automatically destructed on the thread it was constructed on.
+// Virtual for testing; see SurfaceTextureGLOwnerImpl.
 class MEDIA_GPU_EXPORT SurfaceTextureGLOwner
-    : public base::RefCountedThreadSafe<SurfaceTextureGLOwner> {
+    : public base::RefCountedDeleteOnSequence<SurfaceTextureGLOwner> {
  public:
-  SurfaceTextureGLOwner() = default;
+  SurfaceTextureGLOwner();
 
   // Returns the GL texture id that the SurfaceTexture is attached to.
   virtual GLuint GetTextureId() const = 0;
@@ -64,7 +69,8 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner
   virtual void WaitForFrameAvailable() = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<SurfaceTextureGLOwner>;
+  friend class base::RefCountedDeleteOnSequence<SurfaceTextureGLOwner>;
+  friend class base::DeleteHelper<SurfaceTextureGLOwner>;
   virtual ~SurfaceTextureGLOwner() = default;
 
  private:
@@ -107,7 +113,8 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwnerImpl
   base::TimeTicks release_time_;
   scoped_refptr<FrameAvailableEvent> frame_available_event_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwnerImpl);
 };
 
