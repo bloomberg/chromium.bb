@@ -81,6 +81,7 @@ class MockFileMonitor : public FileMonitor {
   MockFileMonitor() = default;
   ~MockFileMonitor() override = default;
 
+  void Initialize(const FileMonitor::InitCallback& callback) override;
   MOCK_METHOD2(DeleteUnknownFiles,
                void(const Model::EntryList&, const std::vector<DriverEntry>&));
   MOCK_METHOD1(CleanupFilesForCompletedEntries,
@@ -89,6 +90,10 @@ class MockFileMonitor : public FileMonitor {
                void(const std::vector<base::FilePath>&,
                     stats::FileCleanupReason));
 };
+
+void MockFileMonitor::Initialize(const FileMonitor::InitCallback& callback) {
+  callback.Run(true);
+}
 
 class DownloadServiceControllerImplTest : public testing::Test {
  public:

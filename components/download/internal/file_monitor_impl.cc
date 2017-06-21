@@ -10,9 +10,23 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace download {
+
+namespace {
+
+bool CreateDirectoryIfNotExists(const base::FilePath& dir_path) {
+  bool success = base::PathExists(dir_path);
+  if (!success) {
+    base::File::Error error;
+    success = base::CreateDirectoryAndGetError(dir_path, &error);
+  }
+  return success;
+}
+
+}  // namespace
 
 FileMonitorImpl::FileMonitorImpl(
     const base::FilePath& download_file_dir,
@@ -24,6 +38,12 @@ FileMonitorImpl::FileMonitorImpl(
       weak_factory_(this) {}
 
 FileMonitorImpl::~FileMonitorImpl() = default;
+
+void FileMonitorImpl::Initialize(const InitCallback& callback) {
+  base::PostTaskAndReplyWithResult(
+      file_thread_task_runner_.get(), FROM_HERE,
+      base::Bind(&CreateDirectoryIfNotExists, download_file_dir_), callback);
+}
 
 void FileMonitorImpl::DeleteUnknownFiles(
     const Model::EntryList& known_entries,

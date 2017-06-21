@@ -34,18 +34,12 @@ class FileMonitorImpl : public FileMonitor {
       base::TimeDelta file_keep_alive_time);
   ~FileMonitorImpl() override;
 
-  // Deletes the files in storage directory that are not related to any entries
-  // in either database.
+  void Initialize(const InitCallback& callback) override;
   void DeleteUnknownFiles(
       const Model::EntryList& known_entries,
       const std::vector<DriverEntry>& known_driver_entries) override;
-
-  // Deletes the files for the database entries which have been completed and
-  // ready for cleanup. Returns the entries eligible for clean up.
   std::vector<Entry*> CleanupFilesForCompletedEntries(
       const Model::EntryList& entries) override;
-
-  // Deletes a list of files and logs UMA.
   void DeleteFiles(const std::vector<base::FilePath>& files_to_remove,
                    stats::FileCleanupReason reason) override;
 
