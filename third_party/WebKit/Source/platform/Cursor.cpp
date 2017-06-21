@@ -24,6 +24,8 @@
  */
 
 #include "platform/Cursor.h"
+#include "platform/wtf/Assertions.h"
+#include "public/platform/WebCursorInfo.h"
 
 namespace blink {
 
@@ -306,4 +308,59 @@ const Cursor& GrabbingCursor() {
   return c;
 }
 
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypePointer, Cursor::kPointer);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCross, Cursor::kCross);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeHand, Cursor::kHand);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeIBeam, Cursor::kIBeam);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWait, Cursor::kWait);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeHelp, Cursor::kHelp);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastResize, Cursor::kEastResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthResize, Cursor::kNorthResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastResize,
+                   Cursor::kNorthEastResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestResize,
+                   Cursor::kNorthWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthResize, Cursor::kSouthResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthEastResize,
+                   Cursor::kSouthEastResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthWestResize,
+                   Cursor::kSouthWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWestResize, Cursor::kWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthSouthResize,
+                   Cursor::kNorthSouthResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastWestResize, Cursor::kEastWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastSouthWestResize,
+                   Cursor::kNorthEastSouthWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestSouthEastResize,
+                   Cursor::kNorthWestSouthEastResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeColumnResize, Cursor::kColumnResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeRowResize, Cursor::kRowResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeMiddlePanning, Cursor::kMiddlePanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastPanning, Cursor::kEastPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthPanning, Cursor::kNorthPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastPanning,
+                   Cursor::kNorthEastPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestPanning,
+                   Cursor::kNorthWestPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthPanning, Cursor::kSouthPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthEastPanning,
+                   Cursor::kSouthEastPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthWestPanning,
+                   Cursor::kSouthWestPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWestPanning, Cursor::kWestPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeMove, Cursor::kMove);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeVerticalText, Cursor::kVerticalText);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCell, Cursor::kCell);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeContextMenu, Cursor::kContextMenu);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeAlias, Cursor::kAlias);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeProgress, Cursor::kProgress);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNoDrop, Cursor::kNoDrop);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCopy, Cursor::kCopy);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNone, Cursor::kNone);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNotAllowed, Cursor::kNotAllowed);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeZoomIn, Cursor::kZoomIn);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeZoomOut, Cursor::kZoomOut);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeGrab, Cursor::kGrab);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeGrabbing, Cursor::kGrabbing);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCustom, Cursor::kCustom);
 }  // namespace blink

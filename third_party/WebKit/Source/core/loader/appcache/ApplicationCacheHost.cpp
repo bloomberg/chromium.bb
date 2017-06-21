@@ -49,6 +49,8 @@
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
+#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
@@ -358,5 +360,33 @@ DEFINE_TRACE(ApplicationCacheHost) {
   visitor->Trace(dom_application_cache_);
   visitor->Trace(document_loader_);
 }
+
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUncached,
+                   ApplicationCacheHost::kUncached);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle, ApplicationCacheHost::kIdle);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChecking,
+                   ApplicationCacheHost::kChecking);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloading,
+                   ApplicationCacheHost::kDownloading);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReady,
+                   ApplicationCacheHost::kUpdateready);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsolete,
+                   ApplicationCacheHost::kObsolete);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCheckingEvent,
+                   ApplicationCacheHost::kCheckingEvent);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kErrorEvent,
+                   ApplicationCacheHost::kErrorEvent);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kNoUpdateEvent,
+                   ApplicationCacheHost::kNoupdateEvent);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloadingEvent,
+                   ApplicationCacheHost::kDownloadingEvent);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kProgressEvent,
+                   ApplicationCacheHost::kProgressEvent);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReadyEvent,
+                   ApplicationCacheHost::kUpdatereadyEvent);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCachedEvent,
+                   ApplicationCacheHost::kCachedEvent);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsoleteEvent,
+                   ApplicationCacheHost::kObsoleteEvent);
 
 }  // namespace blink
