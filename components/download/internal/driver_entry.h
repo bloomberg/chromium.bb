@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "url/gurl.h"
 
@@ -53,6 +54,15 @@ struct DriverEntry {
   // The expected total size of the download, set to 0 if the Content-Length
   // http header is not presented.
   uint64_t expected_total_size;
+
+  // The physical file path for the download. It can be different from the
+  // target file path requested while the file is downloading, as it may
+  // download to a temporary path.
+  base::FilePath temporary_physical_file_path;
+
+  // Time the download was marked as complete, base::Time() if the download is
+  // not yet complete.
+  base::Time completion_time;
 
   // The response headers for the most recent download request.
   scoped_refptr<const net::HttpResponseHeaders> response_headers;

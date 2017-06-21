@@ -27,6 +27,7 @@ namespace download {
 
 class ClientSet;
 class DownloadDriver;
+class FileMonitor;
 class Model;
 class Scheduler;
 
@@ -47,7 +48,9 @@ class ControllerImpl : public Controller,
                  std::unique_ptr<Model> model,
                  std::unique_ptr<DeviceStatusListener> device_status_listener,
                  std::unique_ptr<Scheduler> scheduler,
-                 std::unique_ptr<TaskScheduler> task_scheduler);
+                 std::unique_ptr<TaskScheduler> task_scheduler,
+                 std::unique_ptr<FileMonitor> file_monitor,
+                 const base::FilePath& download_file_dir);
   ~ControllerImpl() override;
 
   // Controller implementation.
@@ -99,6 +102,9 @@ class ControllerImpl : public Controller,
   // Cancels and cleans upany requests that are no longer associated with a
   // Client in |clients_|.
   void CancelOrphanedRequests();
+
+  // Cleans up any files that are left on the disk without any entries.
+  void CleanupUnknownFiles();
 
   // Fixes any discrepancies in state between |model_| and |driver_|.  Meant to
   // resolve state issues during startup.
@@ -155,7 +161,13 @@ class ControllerImpl : public Controller,
                             const std::string& guid,
                             download::Client::FailureReason reason);
 
+  // Schedules a cleanup task in future based on status of entries.
+  void ScheduleCleanupTask();
+
   Configuration* config_;
+
+  // The directory in which the downloaded files are stored.
+  const base::FilePath download_file_dir_;
 
   // Owned Dependencies.
   std::unique_ptr<ClientSet> clients_;
@@ -164,6 +176,7 @@ class ControllerImpl : public Controller,
   std::unique_ptr<DeviceStatusListener> device_status_listener_;
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<TaskScheduler> task_scheduler_;
+  std::unique_ptr<FileMonitor> file_monitor_;
 
   // Internal state.
   // Is set to true if this class is currently in the process of initializing

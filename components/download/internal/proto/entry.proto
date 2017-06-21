@@ -45,7 +45,9 @@ message Entry {
 
   // Internal Tracking States.
   optional State state = 5;
+  optional string target_file_path = 6;
 
-  // Creation time of the entry, measured in milliseconds.
-  optional int64 create_time = 6;
+  // Uses internal time representation.
+  optional int64 create_time = 7;
+  optional int64 completion_time = 8;
 }
