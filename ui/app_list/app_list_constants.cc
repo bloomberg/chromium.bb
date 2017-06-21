@@ -82,6 +82,8 @@ const int kGridIconDimension = 48;
 
 // The preferred app badge icon size.
 const int kAppBadgeIconSize = 12;
+// The preferred badge background(circle) radius.
+const int kBadgeBackgroundRadius = 10;
 
 // Preferred search result icon sizes.
 const int kListIconSize = 24;
