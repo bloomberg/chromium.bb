@@ -86,10 +86,12 @@ UkmRecorderImpl::UkmRecorderImpl() : recording_enabled_(false) {}
 UkmRecorderImpl::~UkmRecorderImpl() = default;
 
 void UkmRecorderImpl::EnableRecording() {
+  DVLOG(1) << "UkmRecorderImpl::EnableRecording";
   recording_enabled_ = true;
 }
 
 void UkmRecorderImpl::DisableRecording() {
+  DVLOG(1) << "UkmRecorderImpl::DisableRecording";
   recording_enabled_ = false;
 }
 
