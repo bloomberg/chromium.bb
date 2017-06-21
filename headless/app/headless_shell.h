@@ -10,6 +10,7 @@
 
 #include "base/files/file_proxy.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "headless/app/shell_navigation_request.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/inspector.h"
@@ -101,6 +102,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   HeadlessBrowserContext* browser_context_;
 #endif
   bool processed_page_ready_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   std::unique_ptr<base::FileProxy> file_proxy_;
   std::unique_ptr<DeterministicDispatcher> deterministic_dispatcher_;
   base::WeakPtrFactory<HeadlessShell> weak_factory_;

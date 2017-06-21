@@ -15,9 +15,11 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell.h"
@@ -74,6 +76,8 @@ HeadlessShell::~HeadlessShell() {}
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 void HeadlessShell::OnStart(HeadlessBrowser* browser) {
   browser_ = browser;
+  file_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
   HeadlessBrowserContext::Builder context_builder =
       browser_->CreateBrowserContextBuilder();
@@ -410,7 +414,7 @@ void HeadlessShell::WriteFile(const std::string& file_path_switch,
   if (file_name.empty())
     file_name = base::FilePath().AppendASCII(default_file_name);
 
-  file_proxy_.reset(new base::FileProxy(browser_->BrowserFileThread().get()));
+  file_proxy_ = base::MakeUnique<base::FileProxy>(file_task_runner_.get());
   if (!file_proxy_->CreateOrOpen(
           file_name, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
           base::Bind(&HeadlessShell::OnFileOpened, weak_factory_.GetWeakPtr(),

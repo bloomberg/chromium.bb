@@ -249,8 +249,6 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
       new HeadlessURLRequestContextGetter(
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::IO),
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::FILE),
           protocol_handlers, context_options_->TakeProtocolHandlers(),
           std::move(request_interceptors), context_options_.get(),
           browser_->browser_main_parts()->net_log()));
