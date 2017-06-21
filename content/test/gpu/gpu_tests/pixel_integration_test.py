@@ -11,6 +11,7 @@ from gpu_tests import cloud_storage_integration_test_base
 from gpu_tests import path_util
 from gpu_tests import pixel_expectations
 from gpu_tests import pixel_test_pages
+from gpu_tests import color_profile_manager
 
 from py_utils import cloud_storage
 from telemetry.util import image_util
@@ -55,6 +56,7 @@ class PixelIntegrationTest(
 
   @classmethod
   def SetUpProcess(cls):
+    color_profile_manager.ForceUntilExitSRGB()
     super(PixelIntegrationTest, cls).SetUpProcess()
     cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
@@ -66,6 +68,7 @@ class PixelIntegrationTest(
       browser_args = []
     # All tests receive the following options.
     return [
+      '--force-color-profile=srgb',
       '--enable-gpu-benchmarking',
       '--test-type=gpu'] + browser_args
 
