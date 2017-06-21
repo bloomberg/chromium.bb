@@ -21,8 +21,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef _VC4_DRM_H_
-#define _VC4_DRM_H_
+#ifndef _UAPI_VC4_DRM_H_
+#define _UAPI_VC4_DRM_H_
 
 #include "drm.h"
 
@@ -38,6 +38,8 @@ extern "C" {
 #define DRM_VC4_CREATE_SHADER_BO                  0x05
 #define DRM_VC4_GET_HANG_STATE                    0x06
 #define DRM_VC4_GET_PARAM                         0x07
+#define DRM_VC4_SET_TILING                        0x08
+#define DRM_VC4_GET_TILING                        0x09
 
 #define DRM_IOCTL_VC4_SUBMIT_CL           DRM_IOWR(DRM_COMMAND_BASE + DRM_VC4_SUBMIT_CL, struct drm_vc4_submit_cl)
 #define DRM_IOCTL_VC4_WAIT_SEQNO          DRM_IOWR(DRM_COMMAND_BASE + DRM_VC4_WAIT_SEQNO, struct drm_vc4_wait_seqno)
@@ -47,6 +49,8 @@ extern "C" {
 #define DRM_IOCTL_VC4_CREATE_SHADER_BO    DRM_IOWR(DRM_COMMAND_BASE + DRM_VC4_CREATE_SHADER_BO, struct drm_vc4_create_shader_bo)
 #define DRM_IOCTL_VC4_GET_HANG_STATE      DRM_IOWR(DRM_COMMAND_BASE + DRM_VC4_GET_HANG_STATE, struct drm_vc4_get_hang_state)
 #define DRM_IOCTL_VC4_GET_PARAM           DRM_IOWR(DRM_COMMAND_BASE + DRM_VC4_GET_PARAM, struct drm_vc4_get_param)
+#define DRM_IOCTL_VC4_SET_TILING          DRM_IOWR(DRM_COMMAND_BASE + DRM_VC4_SET_TILING, struct drm_vc4_set_tiling)
+#define DRM_IOCTL_VC4_GET_TILING          DRM_IOWR(DRM_COMMAND_BASE + DRM_VC4_GET_TILING, struct drm_vc4_get_tiling)
 
 struct drm_vc4_submit_rcl_surface {
 	__u32 hindex; /* Handle index, or ~0 if not present. */
@@ -295,8 +299,20 @@ struct drm_vc4_get_param {
 	__u64 value;
 };
 
+struct drm_vc4_get_tiling {
+	__u32 handle;
+	__u32 flags;
+	__u64 modifier;
+};
+
+struct drm_vc4_set_tiling {
+	__u32 handle;
+	__u32 flags;
+	__u64 modifier;
+};
+
 #if defined(__cplusplus)
 }
 #endif
 
-#endif /* _VC4_DRM_H_ */
+#endif /* _UAPI_VC4_DRM_H_ */
