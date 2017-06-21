@@ -29,10 +29,8 @@ const CGFloat kSearchHintMargin = 3;
 
 const CGFloat kMaxSearchFieldFrameMargin = 200;
 const CGFloat kDoodleTopMarginIPad = 82;
-const CGFloat kDoodleTopMarginIPhonePortrait = 66;
-const CGFloat kDoodleTopMarginIPhoneLandscape = 56;
-const CGFloat kSearchFieldTopMarginIPhonePortrait = 32;
-const CGFloat kSearchFieldTopMarginIPhoneLandscape = 16;
+const CGFloat kDoodleTopMarginIPhone = 56;
+const CGFloat kSearchFieldTopMarginIPhone = 16;
 const CGFloat kNTPSearchFieldBottomPadding = 16;
 
 const CGFloat kTopSpacingMaterialPortrait = 56;
@@ -93,19 +91,13 @@ CGFloat doodleHeight(BOOL logoIsShowing) {
 CGFloat doodleTopMargin() {
   if (IsIPadIdiom())
     return kDoodleTopMarginIPad;
-  if (IsPortrait())
-    return kDoodleTopMarginIPhonePortrait;
-  return kDoodleTopMarginIPhoneLandscape;
+  return kDoodleTopMarginIPhone;
 }
 
 CGFloat searchFieldTopMargin() {
-  if (IsIPadIdiom()) {
+  if (IsIPadIdiom())
     return kDoodleTopMarginIPad;
-  } else if (IsPortrait()) {
-    return kSearchFieldTopMarginIPhonePortrait;
-  } else {
-    return kSearchFieldTopMarginIPhoneLandscape;
-  }
+  return kSearchFieldTopMarginIPhone;
 }
 
 CGFloat searchFieldWidth(CGFloat superviewWidth) {

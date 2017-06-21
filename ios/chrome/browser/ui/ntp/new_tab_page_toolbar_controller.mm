@@ -30,10 +30,9 @@ namespace {
 const CGFloat kButtonYOffset = 4.0;
 const CGFloat kBackButtonLeading = 0;
 const CGFloat kForwardButtonLeading = 48;
-const CGFloat kOmniboxFocuserLeading = 96;
 const CGSize kBackButtonSize = {48, 48};
 const CGSize kForwardButtonSize = {48, 48};
-const CGSize kOmniboxFocuserSize = {128, 48};
+const CGFloat kOmniboxFocuserTrailing = 96;
 
 enum {
   NTPToolbarButtonNameBack = NumberOfToolbarButtonNames,
@@ -85,19 +84,27 @@ enum {
     [_forwardButton
         setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                             UIViewAutoresizingFlexibleBottomMargin];
-    LayoutRect omniboxFocuserLayout =
-        LayoutRectMake(kOmniboxFocuserLeading, boundingWidth, kButtonYOffset,
-                       kOmniboxFocuserSize.width, kOmniboxFocuserSize.height);
-    _omniboxFocuser = [[UIButton alloc]
-        initWithFrame:LayoutRectGetRect(omniboxFocuserLayout)];
+    _omniboxFocuser = [[UIButton alloc] init];
     [_omniboxFocuser
         setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_LOCATION)];
 
-    [_omniboxFocuser setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+    _omniboxFocuser.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.view addSubview:_backButton];
     [self.view addSubview:_forwardButton];
     [self.view addSubview:_omniboxFocuser];
+    [NSLayoutConstraint activateConstraints:@[
+      [_omniboxFocuser.leadingAnchor
+          constraintEqualToAnchor:_forwardButton.trailingAnchor],
+      [_omniboxFocuser.trailingAnchor
+          constraintEqualToAnchor:self.view.trailingAnchor
+                         constant:-kOmniboxFocuserTrailing],
+      [_omniboxFocuser.topAnchor
+          constraintEqualToAnchor:_forwardButton.topAnchor],
+      [_omniboxFocuser.bottomAnchor
+          constraintEqualToAnchor:_forwardButton.bottomAnchor]
+    ]];
+
     [_backButton setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, 0, 0, -10)];
     [_forwardButton setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, -7, 0, 0)];
 
