@@ -22,7 +22,6 @@ class PrefService;
 
 namespace base {
 class SingleThreadTaskRunner;
-class TaskRunner;
 }
 
 namespace metrics {
@@ -46,12 +45,10 @@ class ExternalMetrics;
 class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
                                  public ::metrics::EnabledStateProvider {
  public:
+  CastMetricsServiceClient(PrefService* pref_service,
+                           net::URLRequestContextGetter* request_context);
   ~CastMetricsServiceClient() override;
 
-  static std::unique_ptr<CastMetricsServiceClient> Create(
-      base::TaskRunner* io_task_runner,
-      PrefService* pref_service,
-      net::URLRequestContextGetter* request_context);
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Use |client_id| when starting MetricsService instead of generating a new
@@ -96,14 +93,9 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   std::string client_id() const { return client_id_; }
 
  private:
-  CastMetricsServiceClient(base::TaskRunner* io_task_runner,
-                           PrefService* pref_service,
-                           net::URLRequestContextGetter* request_context);
-
   std::unique_ptr<::metrics::ClientInfo> LoadClientInfo();
   void StoreClientInfo(const ::metrics::ClientInfo& client_info);
 
-  base::TaskRunner* const io_task_runner_;
   PrefService* const pref_service_;
   CastService* cast_service_;
   std::string client_id_;

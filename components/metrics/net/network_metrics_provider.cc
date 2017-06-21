@@ -17,7 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
@@ -101,15 +101,10 @@ class NetworkMetricsProvider::EffectiveConnectionTypeObserver
   DISALLOW_COPY_AND_ASSIGN(EffectiveConnectionTypeObserver);
 };
 
-NetworkMetricsProvider::NetworkMetricsProvider(base::TaskRunner* io_task_runner)
-    : NetworkMetricsProvider(nullptr, io_task_runner) {}
-
 NetworkMetricsProvider::NetworkMetricsProvider(
     std::unique_ptr<NetworkQualityEstimatorProvider>
-        network_quality_estimator_provider,
-    base::TaskRunner* io_task_runner)
-    : io_task_runner_(io_task_runner),
-      connection_type_is_ambiguous_(false),
+        network_quality_estimator_provider)
+    : connection_type_is_ambiguous_(false),
       wifi_phy_layer_protocol_is_ambiguous_(false),
       wifi_phy_layer_protocol_(net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN),
       total_aborts_(0),
@@ -312,12 +307,13 @@ NetworkMetricsProvider::GetEffectiveConnectionType() const {
 
 void NetworkMetricsProvider::ProbeWifiPHYLayerProtocol() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  PostTaskAndReplyWithResult(
-      io_task_runner_,
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::Bind(&net::GetWifiPHYLayerProtocol),
-      base::Bind(&NetworkMetricsProvider::OnWifiPHYLayerProtocolResult,
-                 weak_ptr_factory_.GetWeakPtr()));
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&net::GetWifiPHYLayerProtocol),
+      base::BindOnce(&NetworkMetricsProvider::OnWifiPHYLayerProtocolResult,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NetworkMetricsProvider::OnWifiPHYLayerProtocolResult(
