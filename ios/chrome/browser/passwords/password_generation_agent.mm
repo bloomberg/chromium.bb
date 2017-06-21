@@ -356,9 +356,8 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
       return;
     if (strongSelf->_passwordManager) {
       // Might be null in tests.
-      strongSelf->_passwordManager->SetHasGeneratedPasswordForForm(
-          strongSelf->_passwordManagerDriver,
-          *strongSelf->_possibleAccountCreationForm, true);
+      strongSelf->_passwordManager->OnPresaveGeneratedPassword(
+          *strongSelf->_possibleAccountCreationForm);
     }
     if (strongSelf->_accessoryViewReadyCompletion) {
       strongSelf->_accessoryViewReadyCompletion(

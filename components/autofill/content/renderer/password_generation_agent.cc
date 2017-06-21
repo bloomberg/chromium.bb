@@ -334,6 +334,7 @@ void PasswordGenerationAgent::FormNotBlacklisted(const PasswordForm& form) {
 void PasswordGenerationAgent::GeneratedPasswordAccepted(
     const base::string16& password) {
   password_is_generated_ = true;
+  password_edited_ = false;
   password_generation::LogPasswordGenerationEvent(
       password_generation::PASSWORD_ACCEPTED);
   LogMessage(Logger::STRING_GENERATION_RENDERER_GENERATED_PASSWORD_ACCEPTED);
@@ -565,6 +566,7 @@ void PasswordGenerationAgent::HidePopup() {
 void PasswordGenerationAgent::PasswordNoLongerGenerated() {
   // Do not treat the password as generated, either here or in the browser.
   password_is_generated_ = false;
+  password_edited_ = false;
   generation_element_.SetShouldRevealPassword(false);
   for (blink::WebInputElement& password :
        generation_form_data_->password_elements)

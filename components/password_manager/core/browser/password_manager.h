@@ -101,14 +101,10 @@ class PasswordManager : public LoginModel {
   void GenerationAvailableForForm(const autofill::PasswordForm& form);
 
   // Presaves the form with generated password.
-  void OnPresaveGeneratedPassword(const autofill::PasswordForm& password_form);
+  void OnPresaveGeneratedPassword(const autofill::PasswordForm& form);
 
-  // Update the state of generation for this form.
-  // If |password_is_generated| == false, removes the presaved form.
-  void SetHasGeneratedPasswordForForm(
-      password_manager::PasswordManagerDriver* driver,
-      const autofill::PasswordForm& form,
-      bool password_is_generated);
+  // Stops treating a password as generated.
+  void OnPasswordNoLongerGenerated(const autofill::PasswordForm& form);
 
   // Update the generation element and whether generation was triggered
   // manually.

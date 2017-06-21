@@ -197,27 +197,23 @@ void PasswordManager::OnPresaveGeneratedPassword(
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
-    form_manager->form_saver()->PresaveGeneratedPassword(form);
+    form_manager->PresaveGeneratedPassword(form);
+    UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
+                          false);
     return;
   }
+
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager", true);
 }
 
-void PasswordManager::SetHasGeneratedPasswordForForm(
-    password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& form,
-    bool password_is_generated) {
+void PasswordManager::OnPasswordNoLongerGenerated(const PasswordForm& form) {
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
 
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
-    if (!password_is_generated)
-      form_manager->form_saver()->RemovePresavedPassword();
-    form_manager->SetHasGeneratedPassword(password_is_generated);
+    form_manager->PasswordNoLongerGenerated();
     return;
   }
-
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
-                        password_is_generated);
 }
 
 void PasswordManager::SetGenerationElementAndReasonForForm(

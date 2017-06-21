@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -306,7 +307,8 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   // Simulate the user generating the password and submitting the form.
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
+  EXPECT_CALL(*store_, AddLogin(_));
+  manager()->OnPresaveGeneratedPassword(form);
   OnPasswordFormSubmitted(form);
 
   // The user should not need to confirm saving as they have already given
@@ -315,7 +317,8 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   // occured.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   PasswordForm form_to_save;
-  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&form_to_save));
+  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _))
+      .WillOnce(SaveArg<0>(&form_to_save));
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
 
   // Now the password manager waits for the navigation to complete.
@@ -1219,7 +1222,8 @@ TEST_F(PasswordManagerTest, PasswordGeneration_FailedSubmission) {
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
+  EXPECT_CALL(*store_, AddLogin(_));
+  manager()->OnPresaveGeneratedPassword(form);
 
   // Do not save generated password when the password form reappears.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
@@ -1246,7 +1250,8 @@ TEST_F(PasswordManagerTest, PasswordGenerationPasswordEdited_FailedSubmission) {
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
+  EXPECT_CALL(*store_, AddLogin(_));
+  manager()->OnPresaveGeneratedPassword(form);
 
   // Simulate user editing and submitting a different password. Verify that
   // the edited password is the one that is saved.
@@ -1279,11 +1284,13 @@ TEST_F(PasswordManagerTest,
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
+  EXPECT_CALL(*store_, AddLogin(_));
+  manager()->OnPresaveGeneratedPassword(form);
 
   // Simulate user removing generated password and adding a new one.
   form.new_password_value = ASCIIToUTF16("different_password");
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, false);
+  EXPECT_CALL(*store_, RemoveLogin(_));
+  manager()->OnPasswordNoLongerGenerated(form);
 
   OnPasswordFormSubmitted(form);
 
@@ -1311,11 +1318,13 @@ TEST_F(PasswordManagerTest,
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
+  EXPECT_CALL(*store_, AddLogin(_));
+  manager()->OnPresaveGeneratedPassword(form);
 
   // Simulate user removing generated password and adding a new one.
   form.new_password_value = ASCIIToUTF16("different_password");
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, false);
+  EXPECT_CALL(*store_, RemoveLogin(_));
+  manager()->OnPasswordNoLongerGenerated(form);
 
   OnPasswordFormSubmitted(form);
 
@@ -1342,7 +1351,8 @@ TEST_F(PasswordManagerTest, PasswordGenerationUsernameChanged) {
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
+  EXPECT_CALL(*store_, AddLogin(_));
+  manager()->OnPresaveGeneratedPassword(form);
 
   // Simulate user changing the password and username, without ever completely
   // deleting the password.
@@ -1352,7 +1362,8 @@ TEST_F(PasswordManagerTest, PasswordGenerationUsernameChanged) {
 
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   PasswordForm form_to_save;
-  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&form_to_save));
+  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _))
+      .WillOnce(SaveArg<0>(&form_to_save));
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
 
   observed.clear();
@@ -1375,11 +1386,12 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePassword) {
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
+  base::HistogramTester histogram_tester;
+
   // The user accepts a generated password.
   form.password_value = base::ASCIIToUTF16("password");
   EXPECT_CALL(*store_, AddLogin(form)).WillOnce(Return());
   manager()->OnPresaveGeneratedPassword(form);
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
 
   // The user updates the generated password.
   PasswordForm updated_form(form);
@@ -1387,10 +1399,36 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePassword) {
   EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(updated_form, form))
       .WillOnce(Return());
   manager()->OnPresaveGeneratedPassword(updated_form);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.GeneratedFormHasNoFormManager", false, 2);
 
   // The user removes the generated password.
   EXPECT_CALL(*store_, RemoveLogin(updated_form)).WillOnce(Return());
-  manager()->SetHasGeneratedPasswordForForm(&driver_, updated_form, false);
+  manager()->OnPasswordNoLongerGenerated(updated_form);
+}
+
+TEST_F(PasswordManagerTest, PasswordGenerationPresavePassword_NoFormManager) {
+  // Checks that GeneratedFormHasNoFormManager metric is sent if there is no
+  // corresponding PasswordFormManager for the given form. It should be uncommon
+  // case.
+  std::vector<PasswordForm> observed;
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  base::HistogramTester histogram_tester;
+
+  // The user accepts a generated password.
+  PasswordForm form(MakeFormWithOnlyNewPasswordField());
+  form.password_value = base::ASCIIToUTF16("password");
+  EXPECT_CALL(*store_, AddLogin(_)).Times(0);
+
+  manager()->OnPresaveGeneratedPassword(form);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.GeneratedFormHasNoFormManager", true, 1);
 }
 
 TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
@@ -1428,7 +1466,6 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     // The user accepts generated password and makes successful login.
     EXPECT_CALL(*store_, AddLogin(form)).WillOnce(Return());
     manager()->OnPresaveGeneratedPassword(form);
-    manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
     ::testing::Mock::VerifyAndClearExpectations(store_.get());
 
     if (!found_matched_logins_in_store)
