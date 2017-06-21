@@ -59,6 +59,9 @@ struct OpenOptions {
   // https://code.google.com/p/chromium/issues/detail?id=227313#c11 for
   // details.)
   int32 max_open_files = 80;
+
+  // Default size is 8 megabytes.
+  uint64 block_cache_size = 8388608;
 };
 
 // Service which hands out databases.

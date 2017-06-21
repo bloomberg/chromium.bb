@@ -52,6 +52,16 @@ const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
 const int64_t kMinSchemaVersion = 1;
 const int64_t kCurrentSchemaVersion = 1;
 
+// Use a smaller block cache on android. Because of the extra caching done in
+// LevelDBWrapperImpl the block cache isn't particularly useful, but it still
+// provides some benefit with speeding up compaction. And since this is a once
+// per profile overhead, the overhead should be fairly minimal on desktop.
+#if defined(OS_ANDROID)
+const size_t kMaxBlockCacheSize = 100 * 1024;
+#else
+const size_t kMaxBlockCacheSize = 2 * 1024 * 1024;
+#endif
+
 const char kStorageOpenHistogramName[] = "LocalStorageContext.OpenError";
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
@@ -610,6 +620,10 @@ void LocalStorageContextMojo::OnDirectoryOpened(
   // Default write_buffer_size is 4 MB but that might leave a 3.999
   // memory allocation in RAM from a log file recovery.
   options->write_buffer_size = 64 * 1024;
+  // Default block_cache_size is 8 MB, but we don't really want to cache that
+  // much data, so instead set it to a lower value. LevelDBWrapperImpl takes
+  // care of almost all the actual block caching we care about.
+  options->block_cache_size = kMaxBlockCacheSize;
   leveldb_service_->OpenWithOptions(
       std::move(options), std::move(directory_clone), "leveldb",
       memory_dump_id_, MakeRequest(&database_),

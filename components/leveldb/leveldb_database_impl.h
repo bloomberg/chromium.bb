@@ -11,6 +11,7 @@
 #include "base/unguessable_token.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace leveldb {
@@ -21,6 +22,7 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
  public:
   LevelDBDatabaseImpl(std::unique_ptr<leveldb::Env> environment,
                       std::unique_ptr<leveldb::DB> db,
+                      std::unique_ptr<leveldb::Cache> cache,
                       base::Optional<base::trace_event::MemoryAllocatorDumpGuid>
                           memory_dump_id);
   ~LevelDBDatabaseImpl() override;
@@ -75,6 +77,7 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
                                        leveldb::WriteBatch* batch);
 
   std::unique_ptr<leveldb::Env> environment_;
+  std::unique_ptr<leveldb::Cache> cache_;
   std::unique_ptr<leveldb::DB> db_;
   base::Optional<base::trace_event::MemoryAllocatorDumpGuid> memory_dump_id_;
 

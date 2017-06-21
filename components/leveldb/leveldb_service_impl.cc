@@ -64,13 +64,18 @@ void LevelDBServiceImpl::OpenWithOptions(
   std::unique_ptr<MojoEnv> env_mojo(new MojoEnv(thread_, dir));
   options.env = env_mojo.get();
 
+  std::unique_ptr<leveldb::Cache> cache(
+      leveldb::NewLRUCache(open_options->block_cache_size));
+  options.block_cache = cache.get();
+
   leveldb::DB* db = nullptr;
   leveldb::Status s = leveldb::DB::Open(options, dbname, &db);
 
   if (s.ok()) {
     mojo::MakeStrongAssociatedBinding(
-        base::MakeUnique<LevelDBDatabaseImpl>(
-            std::move(env_mojo), base::WrapUnique(db), memory_dump_id),
+        base::MakeUnique<LevelDBDatabaseImpl>(std::move(env_mojo),
+                                              base::WrapUnique(db),
+                                              std::move(cache), memory_dump_id),
         std::move(database));
   }
 
@@ -96,7 +101,7 @@ void LevelDBServiceImpl::OpenInMemory(
   if (s.ok()) {
     mojo::MakeStrongAssociatedBinding(
         base::MakeUnique<LevelDBDatabaseImpl>(
-            std::move(env), base::WrapUnique(db), memory_dump_id),
+            std::move(env), base::WrapUnique(db), nullptr, memory_dump_id),
         std::move(database));
   }
 
