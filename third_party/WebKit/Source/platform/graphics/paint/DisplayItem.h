@@ -103,15 +103,7 @@ class PLATFORM_EXPORT DisplayItem {
     kScrollbarTrackBackground,
     kScrollbarCompositedScrollbar,
     kSelectionTint,
-    // Table collapsed borders can be painted together (e.g., left & top) but
-    // there are at most 4 phases of collapsed border painting for a single
-    // cell. To disambiguate these phases of collapsed border painting, a mask
-    // is used. TableCollapsedBorderBase can be larger than
-    // TableCollapsedBorderUnalignedBase to ensure the base lower bits are 0's.
-    kTableCollapsedBorderUnalignedBase,
-    kTableCollapsedBorderBase =
-        (((kTableCollapsedBorderUnalignedBase - 1) >> 4) + 1) << 4,
-    kTableCollapsedBorderLast = kTableCollapsedBorderBase + 0x0f,
+    kTableCollapsedBorders,
     kVideoBitmap,
     kWebPlugin,
     kWebFont,
@@ -183,19 +175,6 @@ class PLATFORM_EXPORT DisplayItem {
     kEndClipPath,
     kUninitializedType,
     kTypeLast = kUninitializedType
-  };
-
-  static_assert(kTableCollapsedBorderBase >= kTableCollapsedBorderUnalignedBase,
-                "TableCollapsedBorder types overlap with other types");
-  static_assert((kTableCollapsedBorderBase & 0xf) == 0,
-                "The lowest 4 bits of TableCollapsedBorderBase should be zero");
-  // Bits or'ed onto TableCollapsedBorderBase to generate a real table collapsed
-  // border type.
-  enum TableCollapsedBorderSides {
-    kTableCollapsedBorderTop = 1 << 0,
-    kTableCollapsedBorderRight = 1 << 1,
-    kTableCollapsedBorderBottom = 1 << 2,
-    kTableCollapsedBorderLeft = 1 << 3,
   };
 
   DisplayItem(const DisplayItemClient& client, Type type, size_t derived_size)

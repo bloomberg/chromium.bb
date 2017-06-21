@@ -9,127 +9,152 @@
 
 namespace blink {
 
-TEST(CollapsedBorderValueTest, Default) {
+class CollapsedBorderValueTest : public testing::Test {
+ protected:
+  void ExpectInvisible(const CollapsedBorderValue& v,
+                       unsigned expected_width = 0) {
+    EXPECT_EQ(expected_width, v.Width());
+    EXPECT_FALSE(v.IsVisible());
+    EXPECT_FALSE(v.LessThan(v));
+    EXPECT_FALSE(v.LessThan(CollapsedBorderValue()));
+    EXPECT_TRUE(v.VisuallyEquals(v));
+    EXPECT_TRUE(v.VisuallyEquals(CollapsedBorderValue()));
+    EXPECT_TRUE(CollapsedBorderValue().VisuallyEquals(v));
+    EXPECT_TRUE(v.IsSameIgnoringColor(v));
+  }
+
+  void ExpectVisible(const CollapsedBorderValue& v, unsigned expected_width) {
+    EXPECT_EQ(expected_width, v.Width());
+    EXPECT_TRUE(CollapsedBorderValue().LessThan(v));
+    EXPECT_FALSE(v.LessThan(CollapsedBorderValue()));
+    EXPECT_TRUE(v.IsVisible());
+    EXPECT_FALSE(v.VisuallyEquals(CollapsedBorderValue()));
+    EXPECT_FALSE(CollapsedBorderValue().VisuallyEquals(v));
+    EXPECT_TRUE(v.IsSameIgnoringColor(v));
+  }
+
+  CollapsedBorderValue Border(
+      unsigned width,
+      EBorderStyle border_style,
+      const Color& color = Color::kBlack,
+      EBorderPrecedence precedence = kBorderPrecedenceCell) {
+    auto style = ComputedStyle::Create();
+    style->SetBorderLeftWidth(width);
+    style->SetBorderLeftStyle(border_style);
+    CollapsedBorderValue v(style->BorderLeft(), color, precedence);
+    EXPECT_EQ(border_style, v.Style());
+    EXPECT_EQ(color, v.GetColor());
+    EXPECT_TRUE(v.Exists());
+    EXPECT_FALSE(v.LessThan(v));
+    EXPECT_TRUE(v.VisuallyEquals(v));
+    return v;
+  }
+};
+
+TEST_F(CollapsedBorderValueTest, Default) {
   CollapsedBorderValue v;
-  EXPECT_EQ(0u, v.Width());
-  EXPECT_EQ(EBorderStyle::kNone, v.Style());
+  ExpectInvisible(v);
   EXPECT_FALSE(v.Exists());
-  EXPECT_EQ(kBorderPrecedenceOff, v.Precedence());
-  EXPECT_FALSE(v.IsVisible());
-
-  EXPECT_TRUE(v.IsSameIgnoringColor(v));
-  EXPECT_TRUE(v.VisuallyEquals(v));
-  EXPECT_TRUE(v.IsSameIgnoringColor(CollapsedBorderValue()));
-  EXPECT_TRUE(v.VisuallyEquals(CollapsedBorderValue()));
 }
 
-TEST(CollapsedBorderValueTest, SolidZeroWidth) {
-  auto style = ComputedStyle::Create();
-  style->SetBorderLeftWidth(0);
-  style->SetBorderLeftStyle(EBorderStyle::kSolid);
-  CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
-                         kBorderPrecedenceCell);
-  EXPECT_TRUE(v.Exists());
-  EXPECT_EQ(0u, v.Width());
-  EXPECT_FALSE(v.IsTransparent());
-  EXPECT_FALSE(v.IsVisible());
-
-  EXPECT_TRUE(v.IsSameIgnoringColor(v));
-  EXPECT_TRUE(v.VisuallyEquals(v));
-  EXPECT_FALSE(v.IsSameIgnoringColor(CollapsedBorderValue()));
-  EXPECT_FALSE(v.IsSameIgnoringColor(
-      CollapsedBorderValue(ComputedStyle::Create()->BorderLeft(),
-                           Color(0, 255, 0), kBorderPrecedenceCell)));
-  EXPECT_TRUE(v.VisuallyEquals(CollapsedBorderValue()));
+TEST_F(CollapsedBorderValueTest, ZeroWidth) {
+  ExpectInvisible(Border(0, EBorderStyle::kSolid));
 }
 
-TEST(CollapsedBorderValueTest, SolidNonZeroWidthTransparent) {
-  auto style = ComputedStyle::Create();
-  style->SetBorderLeftWidth(5);
-  style->SetBorderLeftStyle(EBorderStyle::kSolid);
-  EXPECT_EQ(style->BorderLeft().Width(), 5);
-  CollapsedBorderValue v(style->BorderLeft(), Color(), kBorderPrecedenceCell);
-  EXPECT_TRUE(v.Exists());
-  EXPECT_EQ(5u, v.Width());
-  EXPECT_TRUE(v.IsTransparent());
-  EXPECT_FALSE(v.IsVisible());
-
-  EXPECT_TRUE(v.IsSameIgnoringColor(v));
-  EXPECT_TRUE(v.VisuallyEquals(v));
-  EXPECT_FALSE(v.IsSameIgnoringColor(CollapsedBorderValue()));
-  EXPECT_TRUE(v.IsSameIgnoringColor(CollapsedBorderValue(
-      style->BorderLeft(), Color(0, 255, 0), kBorderPrecedenceCell)));
-  EXPECT_TRUE(v.VisuallyEquals(CollapsedBorderValue()));
+TEST_F(CollapsedBorderValueTest, Transparent) {
+  ExpectInvisible(Border(5, EBorderStyle::kSolid, Color()), 5);
 }
 
-TEST(CollapsedBorderValueTest, None) {
-  auto style = ComputedStyle::Create();
-  style->SetBorderLeftWidth(5);
-  style->SetBorderLeftStyle(EBorderStyle::kNone);
-  EXPECT_EQ(style->BorderLeft().Width(), 5);
-  CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
-                         kBorderPrecedenceCell);
-  EXPECT_TRUE(v.Exists());
-  EXPECT_EQ(0u, v.Width());
-  EXPECT_FALSE(v.IsTransparent());
-  EXPECT_FALSE(v.IsVisible());
-
-  EXPECT_TRUE(v.IsSameIgnoringColor(v));
-  EXPECT_TRUE(v.VisuallyEquals(v));
-  EXPECT_FALSE(v.IsSameIgnoringColor(CollapsedBorderValue()));
-  EXPECT_TRUE(v.IsSameIgnoringColor(
-      CollapsedBorderValue(ComputedStyle::Create()->BorderLeft(),
-                           Color(0, 255, 0), kBorderPrecedenceCell)));
-  EXPECT_TRUE(v.VisuallyEquals(CollapsedBorderValue()));
+TEST_F(CollapsedBorderValueTest, None) {
+  ExpectInvisible(Border(5, EBorderStyle::kNone));
 }
 
-TEST(CollapsedBorderValueTest, Hidden) {
-  auto style = ComputedStyle::Create();
-  style->SetBorderLeftWidth(5);
-  style->SetBorderLeftStyle(EBorderStyle::kHidden);
-  EXPECT_EQ(style->BorderLeft().Width(), 5);
-  CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
-                         kBorderPrecedenceCell);
-  EXPECT_TRUE(v.Exists());
-  EXPECT_EQ(0u, v.Width());
-  EXPECT_FALSE(v.IsTransparent());
-  EXPECT_FALSE(v.IsVisible());
-
-  EXPECT_TRUE(v.IsSameIgnoringColor(v));
-  EXPECT_TRUE(v.VisuallyEquals(v));
-  EXPECT_FALSE(v.IsSameIgnoringColor(CollapsedBorderValue()));
-  EXPECT_FALSE(v.IsSameIgnoringColor(
-      CollapsedBorderValue(ComputedStyle::Create()->BorderLeft(),
-                           Color(0, 255, 0), kBorderPrecedenceCell)));
-  EXPECT_TRUE(v.VisuallyEquals(CollapsedBorderValue()));
+TEST_F(CollapsedBorderValueTest, Hidden) {
+  ExpectInvisible(Border(5, EBorderStyle::kHidden));
 }
 
-TEST(CollapsedBorderValueTest, SolidNonZeroWidthNonTransparent) {
-  auto style = ComputedStyle::Create();
-  style->SetBorderLeftWidth(5);
-  style->SetBorderLeftStyle(EBorderStyle::kSolid);
-  EXPECT_EQ(style->BorderLeft().Width(), 5);
-  CollapsedBorderValue v(style->BorderLeft(), Color(255, 0, 0),
-                         kBorderPrecedenceCell);
-  EXPECT_TRUE(v.Exists());
-  EXPECT_EQ(5u, v.Width());
-  EXPECT_FALSE(v.IsTransparent());
-  EXPECT_TRUE(v.IsVisible());
+TEST_F(CollapsedBorderValueTest, Visible) {
+  ExpectVisible(Border(5, EBorderStyle::kSolid), 5);
+}
 
-  EXPECT_TRUE(v.IsSameIgnoringColor(v));
-  EXPECT_TRUE(v.VisuallyEquals(v));
-  EXPECT_FALSE(v.IsSameIgnoringColor(CollapsedBorderValue()));
-  EXPECT_FALSE(v.VisuallyEquals(CollapsedBorderValue()));
+TEST_F(CollapsedBorderValueTest, Compare) {
+  const size_t kCount = 13;
+  CollapsedBorderValue values[kCount] = {
+      CollapsedBorderValue(),
+      Border(1, EBorderStyle::kNone),
+      Border(0, EBorderStyle::kSolid),
+      Border(1, EBorderStyle::kDashed, Color::kWhite, kBorderPrecedenceTable),
+      Border(1, EBorderStyle::kDashed),
+      Border(1, EBorderStyle::kSolid, Color::kWhite, kBorderPrecedenceTable),
+      Border(1, EBorderStyle::kSolid),
+      Border(1, EBorderStyle::kSolid, Color::kWhite),
+      Border(1, EBorderStyle::kSolid, Color()),
+      Border(5, EBorderStyle::kSolid, Color()),
+      Border(10, EBorderStyle::kSolid, Color::kWhite, kBorderPrecedenceTable),
+      Border(10, EBorderStyle::kSolid),
+      Border(1, EBorderStyle::kHidden)};
+  const char* explanations[kCount] = {
+      "default",
+      "border style none",
+      "zero width solid",
+      "dashed white thin table",
+      "dashed white thin cell",
+      "solid white thin table",
+      "solid black thin cell",
+      "solid white thin cell",
+      "solid transparent thin cell",
+      "medium transparent",
+      "solid black thick table"
+      "solid black thick cell",
+      "border style hidden",
+  };
+  int rank[kCount] = {
+      0,         // The default ranks the lowest.
+      1,         // Then border-style: none.
+      2,         // Then zero width hidden.
+      3,         // Dashed thin table border.
+      4,         // Dashed thin cell border.
+      5,         // Solid thin table border.
+      6,  6, 6,  // Solid thin cell borders. Color doesn't affect ranking.
+      7,         // Medium transparent.
+      8,         // Thick table border.
+      9,         // Thick cell border.
+      10,        // The hidden border ranks the highest.
+  };
+  bool expected_covers_joint[kCount][kCount] = {
+      // An invisible border doesn't cover joint.
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      // A visible border cover joint if the other border is invisible has
+      // lower priority.
+      {1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1},
+      {1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
+      {1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1},
+      // A transparent border which is invisible doesn't cover joint.
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+      {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+      // A hidden border which is invisible doesn't cover joint.
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  };
 
-  EXPECT_TRUE(v.IsSameIgnoringColor(CollapsedBorderValue(
-      style->BorderLeft(), Color(0, 255, 0), kBorderPrecedenceCell)));
-  EXPECT_FALSE(v.VisuallyEquals(CollapsedBorderValue(
-      style->BorderLeft(), Color(0, 255, 0), kBorderPrecedenceCell)));
-
-  EXPECT_FALSE(v.IsSameIgnoringColor(CollapsedBorderValue(
-      style->BorderLeft(), Color(255, 0, 0), kBorderPrecedenceTable)));
-  EXPECT_TRUE(v.VisuallyEquals(CollapsedBorderValue(
-      style->BorderLeft(), Color(255, 0, 0), kBorderPrecedenceTable)));
+  for (unsigned i = 0; i < kCount; ++i) {
+    SCOPED_TRACE(
+        String::Format("i: %u %s rank=%d", i, explanations[i], rank[i]));
+    for (unsigned j = 0; j < kCount; ++j) {
+      SCOPED_TRACE(
+          String::Format("j: %u %s rank=%d", j, explanations[j], rank[j]));
+      // j is put before i to make testing logs easier to understand because
+      // SCOPED_TRACE prints j first.
+      EXPECT_EQ(rank[j] < rank[i], values[j].LessThan(values[i]));
+      EXPECT_EQ(rank[j] == rank[i], values[j].IsSameIgnoringColor(values[i]));
+      EXPECT_EQ(expected_covers_joint[j][i], values[j].CoversJoint(values[i]));
+    }
+  }
 }
 
 }  // namespace blink
