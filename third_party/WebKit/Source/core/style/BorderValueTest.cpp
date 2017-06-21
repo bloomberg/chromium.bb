@@ -55,12 +55,12 @@ TEST(BorderValueTest, BorderValueWidth) {
 }
 
 TEST(BorderValueTest, BorderValueColor) {
-  BorderValue border1 = BorderValue(
-      EBorderStyle::kSolid, StyleColor::CurrentColor(), 5, kOutlineIsAutoOff);
+  BorderValue border1 =
+      BorderValue(EBorderStyle::kSolid, StyleColor::CurrentColor(), 5);
   EXPECT_EQ(border1.ColorIsCurrentColor(), true);
 
-  BorderValue border2 = BorderValue(
-      EBorderStyle::kSolid, StyleColor(Color(128, 0, 0)), 5, kOutlineIsAutoOff);
+  BorderValue border2 =
+      BorderValue(EBorderStyle::kSolid, StyleColor(Color(128, 0, 0)), 5);
   EXPECT_EQ(border2.ColorIsCurrentColor(), false);
 }
 

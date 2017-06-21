@@ -1455,7 +1455,6 @@ source_set("unit_tests") {
     "style/BorderValueTest.cpp",
     "style/ComputedStyleTest.cpp",
     "style/FilterOperationsTest.cpp",
-    "style/OutlineValueTest.cpp",
     "style/SVGComputedStyleTest.cpp",
     "style/StyleDifferenceTest.cpp",
     "svg/SVGPathParserTest.cpp",
