@@ -216,7 +216,6 @@ static_library("common") {
     "//chrome/common/media_router/mojo:dial_utility_interfaces",
     "//chrome/common/net",
     "//chrome/common/profiling",
-    "//chrome/common/safe_browsing:proto",
     "//chrome/installer/util:with_no_strings",
     "//components/cast_certificate",
     "//components/cdm/common",
@@ -243,7 +242,6 @@ static_library("common") {
     "//components/policy:generated",
     "//components/policy/core/common",
     "//components/prefs",
-    "//components/safe_browsing:csd_proto",
     "//components/signin/core/common",
     "//components/strings",
     "//components/translate/content/common",
@@ -252,7 +250,6 @@ static_library("common") {
     "//components/variations",
     "//components/visitedlink/common",
     "//content/public/common",
-    "//crypto",
     "//extensions/common:common_constants",
     "//extensions/features",
     "//google_apis",
@@ -270,7 +267,6 @@ static_library("common") {
     "//third_party/icu",
     "//third_party/re2",
     "//third_party/widevine/cdm:headers",
-    "//third_party/zlib/google:zip",
     "//ui/accessibility",
     "//ui/base",
     "//ui/gfx/ipc",
@@ -489,43 +485,7 @@ static_library("common") {
   }
 
   if (safe_browsing_mode != 0) {
-    sources += [
-      "safe_browsing/file_type_policies.cc",
-      "safe_browsing/file_type_policies.h",
-    ]
-
-    if (safe_browsing_mode == 1) {
-      sources += [
-        "safe_browsing/archive_analyzer_results.cc",
-        "safe_browsing/archive_analyzer_results.h",
-        "safe_browsing/binary_feature_extractor.cc",
-        "safe_browsing/binary_feature_extractor.h",
-        "safe_browsing/binary_feature_extractor_mac.cc",
-        "safe_browsing/binary_feature_extractor_posix.cc",
-        "safe_browsing/binary_feature_extractor_win.cc",
-        "safe_browsing/download_protection_util.cc",
-        "safe_browsing/download_protection_util.h",
-        "safe_browsing/ipc_protobuf_message_macros.h",
-        "safe_browsing/ipc_protobuf_message_null_macros.h",
-        "safe_browsing/mach_o_image_reader_mac.cc",
-        "safe_browsing/mach_o_image_reader_mac.h",
-        "safe_browsing/pe_image_reader_win.cc",
-        "safe_browsing/pe_image_reader_win.h",
-        "safe_browsing/protobuf_message_log_macros.h",
-        "safe_browsing/protobuf_message_param_traits.h",
-        "safe_browsing/protobuf_message_read_macros.h",
-        "safe_browsing/protobuf_message_size_macros.h",
-        "safe_browsing/protobuf_message_write_macros.h",
-        "safe_browsing/zip_analyzer.cc",
-        "safe_browsing/zip_analyzer.h",
-      ]
-
-      public_deps += [ "//ipc" ]
-
-      # safe_archive_analyzer.mojom has a [Native] trait that depends on
-      # the protobuf headers in the sources list above.
-      allow_circular_includes_from = [ ":mojo_bindings" ]
-    }
+    public_deps += [ "//chrome/common/safe_browsing" ]
   }
 
   if (is_linux) {
