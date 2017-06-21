@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Equivalence test assert_equals: interface object expected function "function DOMMatrix() { [native code] }" but got function "function WebKitCSSMatrix() { [native code] }"
-PASS Property descriptor for WebKitCSSMatrix 
-PASS Property descriptor for DOMMatrix 
-Harness: the test ran to completion.
-

@@ -22,7 +22,7 @@ PASS SharedWorker() threw exception TypeError: Failed to construct 'SharedWorker
 PASS Uint16Array() threw exception TypeError: Constructor Uint16Array requires 'new'.
 PASS Uint32Array() threw exception TypeError: Constructor Uint32Array requires 'new'.
 PASS Uint8Array() threw exception TypeError: Constructor Uint8Array requires 'new'.
-PASS WebKitCSSMatrix() threw exception TypeError: Failed to construct 'WebKitCSSMatrix': Please use the 'new' operator, this DOM object constructor cannot be called as a function..
+PASS WebKitCSSMatrix() threw exception TypeError: Failed to construct 'DOMMatrix': Please use the 'new' operator, this DOM object constructor cannot be called as a function..
 PASS WebSocket() threw exception TypeError: Failed to construct 'WebSocket': Please use the 'new' operator, this DOM object constructor cannot be called as a function..
 PASS Worker() threw exception TypeError: Failed to construct 'Worker': Please use the 'new' operator, this DOM object constructor cannot be called as a function..
 PASS XMLHttpRequest() threw exception TypeError: Failed to construct 'XMLHttpRequest': Please use the 'new' operator, this DOM object constructor cannot be called as a function..
