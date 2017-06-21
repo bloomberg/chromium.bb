@@ -176,7 +176,7 @@ void ProfileImplIOData::Handle::Init(
   PrefService* pref_service = profile_->GetPrefs();
   lazy_params->http_server_properties_manager.reset(
       chrome_browser_net::HttpServerPropertiesManagerFactory::CreateManager(
-          pref_service));
+          pref_service, g_browser_process->io_thread()->net_log()));
   io_data_->http_server_properties_manager_ =
       lazy_params->http_server_properties_manager.get();
 
