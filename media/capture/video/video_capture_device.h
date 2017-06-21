@@ -272,11 +272,14 @@ class CAPTURE_EXPORT VideoCaptureDevice
   virtual void StopAndDeAllocate() = 0;
 
   // Retrieve the photo capabilities and settings of the device (e.g. zoom
-  // levels etc).
+  // levels etc). On success, invokes |callback|. On failure, drops callback
+  // without invoking it.
   using GetPhotoStateCallback =
       ScopedResultCallback<base::Callback<void(mojom::PhotoStatePtr)>>;
   virtual void GetPhotoState(GetPhotoStateCallback callback);
 
+  // On success, invokes |callback| with value |true|. On failure, drops
+  // callback without invoking it.
   using SetPhotoOptionsCallback =
       ScopedResultCallback<base::Callback<void(bool)>>;
   virtual void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
@@ -284,7 +287,8 @@ class CAPTURE_EXPORT VideoCaptureDevice
 
   // Asynchronously takes a photo, possibly reconfiguring the capture objects
   // and/or interrupting the capture flow. Runs |callback| on the thread
-  // where TakePhoto() is called, if the photo was successfully taken.
+  // where TakePhoto() is called, if the photo was successfully taken. On
+  // failure, drops callback without invoking it.
   using TakePhotoCallback =
       ScopedResultCallback<base::Callback<void(mojom::BlobPtr blob)>>;
   virtual void TakePhoto(TakePhotoCallback callback);

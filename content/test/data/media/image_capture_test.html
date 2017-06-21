@@ -16,8 +16,8 @@ function delayedResolver(object, delayInMs) {
   });
 }
 
-// Runs an ImageCapture.getPhotoCapabilities().
-function testCreateAndGetPhotoCapabilities() {
+// Runs an ImageCapture.getPhotoCapabilities() and expects it to succeed.
+function testCreateAndGetPhotoCapabilitiesSucceeds() {
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
@@ -35,8 +35,8 @@ function testCreateAndGetPhotoCapabilities() {
       });
 }
 
-// Runs an ImageCapture.getPhotoSettings().
-function testCreateAndGetPhotoSettings() {
+// Runs an ImageCapture.getPhotoSettings() and expects it to succeed.
+function testCreateAndGetPhotoSettingsSucceeds() {
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
@@ -54,8 +54,8 @@ function testCreateAndGetPhotoSettings() {
       });
 }
 
-// Runs an ImageCapture.takePhoto().
-function testCreateAndTakePhoto() {
+// Runs an ImageCapture.takePhoto() and expects it to succeed.
+function testCreateAndTakePhotoSucceeds() {
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
@@ -75,8 +75,28 @@ function testCreateAndTakePhoto() {
       });
 }
 
-// Runs an ImageCapture.grabFrame().
-function testCreateAndGrabFrame() {
+// Runs an ImageCapture.takePhoto() and expects it to get rejected.
+function testCreateAndTakePhotoIsRejected() {
+  navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
+      .then(stream => {
+        assertEquals('video', stream.getVideoTracks()[0].kind);
+        return new ImageCapture(stream.getVideoTracks()[0]);
+      })
+      .then(capturer => {
+        return capturer.takePhoto();
+      })
+      .then(blob => {
+        failTest('Expected promise to get rejected but it was fulfilled');
+      }, err => {
+        reportTestSuccess();
+      })
+      .catch(err => {
+        return failTest(err.toString());
+      });
+}
+
+// Runs an ImageCapture.grabFrame() and expects it to succeed.
+function testCreateAndGrabFrameSucceeds() {
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
