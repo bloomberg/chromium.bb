@@ -52,13 +52,14 @@ function test()
         InspectorTest.override(Timeline.TimelineLoader, "_createFileReader", createFileReader);
         var delegate = new InspectorTest.TestTimelineLoaderClient(onTimelineLoaded);
         Timeline.TimelineLoader.loadFromFile({}, delegate);
-        function onTimelineLoaded()
+        async function onTimelineLoaded()
         {
             var saver = new Timeline.TracingTimelineSaver();
             var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
             var storage = delegate.model.backingStorage();
-            stream.open("", storage.writeToStream.bind(storage, stream, saver));
-        };
+            await stream.open("");
+            storage.writeToStream(stream, saver);
+        }
     }
 
     function runTestOnMalformedInput(input, callback)

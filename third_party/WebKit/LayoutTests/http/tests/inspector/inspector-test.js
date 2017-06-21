@@ -823,16 +823,11 @@ InspectorTest.StringOutputStream = function(callback)
 };
 
 InspectorTest.StringOutputStream.prototype = {
-    open: function(fileName, callback)
-    {
-        callback(true);
-    },
+    open: async fileName => true,
 
-    write: function(chunk, callback)
+    write: async function(chunk)
     {
         this._buffer += chunk;
-        if (callback)
-            callback(this);
     },
 
     close: function()
@@ -872,43 +867,40 @@ InspectorTest.TempFileMock = function(dirPath, name)
 InspectorTest.TempFileMock.prototype = {
     /**
      * @param {!Array.<string>} chunks
-     * @param {!function(boolean)} callback
+     * @return {!Promise<boolean>}
      */
-    write: function(chunks, callback)
+    write: async function(chunks)
     {
-        var size = 0;
-        for (var i = 0; i < chunks.length; ++i)
-            size += chunks[i].length;
+        var size = chunks.reduce((total, chunk) => total + chunk.length, 0);
         this._chunks.push.apply(this._chunks, chunks);
-        setTimeout(callback.bind(this, size), 1);
+        await new Promise(resolve => setTimeout(resolve, 1));
+        return size;
     },
 
     finishWriting: function() { },
 
     /**
-     * @param {function(?string)} callback
+     * @return {!Promise<?string>}
      */
-    read: function(callback)
+    read: function()
     {
-        this.readRange(undefined, undefined, callback);
+        return this.readRange();
     },
 
     /**
-     * @param {number|undefined} startOffset
-     * @param {number|undefined} endOffset
-     * @param {function(?string)} callback
+     * @param {number=} startOffset
+     * @param {number=} endOffset
+     * @return {!Promise<?string>}
      */
-    readRange: function(startOffset, endOffset, callback)
+    readRange: function(startOffset, endOffset)
     {
-        var blob = new Blob(this._chunks);
-        blob = blob.slice(startOffset || 0, endOffset || blob.size);
-        reader = new FileReader();
-        var self = this;
-        reader.onloadend = function()
-        {
-            callback(reader.result);
-        }
-        reader.readAsText(blob);
+        return new Promise(resolve => {
+            var blob = new Blob(this._chunks);
+            blob = blob.slice(startOffset || 0, endOffset || blob.size);
+            reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsText(blob);
+        });
     },
 
     /**
