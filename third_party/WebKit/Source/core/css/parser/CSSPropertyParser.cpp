@@ -713,34 +713,6 @@ static CSSValue* ConsumePerspective(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSValue* ConsumeReflect(CSSParserTokenRange& range,
-                                const CSSParserContext* context) {
-  CSSIdentifierValue* direction =
-      ConsumeIdent<CSSValueAbove, CSSValueBelow, CSSValueLeft, CSSValueRight>(
-          range);
-  if (!direction)
-    return nullptr;
-
-  CSSPrimitiveValue* offset = nullptr;
-  if (range.AtEnd()) {
-    offset = CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kPixels);
-  } else {
-    offset = ConsumeLengthOrPercent(range, context->Mode(), kValueRangeAll,
-                                    UnitlessQuirk::kForbid);
-    if (!offset)
-      return nullptr;
-  }
-
-  CSSValue* mask = nullptr;
-  if (!range.AtEnd()) {
-    mask =
-        CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range, context);
-    if (!mask)
-      return nullptr;
-  }
-  return CSSReflectValue::Create(direction, offset, mask);
-}
-
 static CSSValue* ConsumeBackgroundBlendMode(CSSParserTokenRange& range) {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNormal || id == CSSValueOverlay ||
@@ -1401,8 +1373,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
   }
 
   switch (property) {
-    case CSSPropertyFontWeight:
-      return CSSPropertyFontUtils::ConsumeFontWeight(range_);
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(
@@ -1422,48 +1392,16 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
       return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range_, *context_);
-    case CSSPropertyObjectPosition:
-      return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
-                             WebFeature::kThreeValuedPositionObjectPosition);
-    case CSSPropertyPerspectiveOrigin:
-      return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
-                             WebFeature::kThreeValuedPositionPerspectiveOrigin);
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLocale:
       return ConsumeLocale(range_);
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
       return ConsumeCommaSeparatedList(ConsumeTime, range_, kValueRangeAll);
-    case CSSPropertyAnimationDirection:
-      return ConsumeCommaSeparatedList(
-          ConsumeIdent<CSSValueNormal, CSSValueAlternate, CSSValueReverse,
-                       CSSValueAlternateReverse>,
-          range_);
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
       return ConsumeCommaSeparatedList(ConsumeTime, range_,
                                        kValueRangeNonNegative);
-    case CSSPropertyAnimationFillMode:
-      return ConsumeCommaSeparatedList(
-          ConsumeIdent<CSSValueNone, CSSValueForwards, CSSValueBackwards,
-                       CSSValueBoth>,
-          range_);
-    case CSSPropertyAnimationIterationCount:
-      return ConsumeCommaSeparatedList(CSSPropertyAnimationIterationCountUtils::
-                                           ConsumeAnimationIterationCount,
-                                       range_);
-    case CSSPropertyAnimationPlayState:
-      return ConsumeCommaSeparatedList(
-          ConsumeIdent<CSSValueRunning, CSSValuePaused>, range_);
-    case CSSPropertyTransitionProperty: {
-      CSSValueList* list = ConsumeCommaSeparatedList(
-          CSSPropertyTransitionPropertyUtils::ConsumeTransitionProperty,
-          range_);
-      if (!list ||
-          !CSSPropertyTransitionPropertyUtils::IsValidPropertyList(*list))
-        return nullptr;
-      return list;
-    }
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
       return ConsumeCommaSeparatedList(ConsumeAnimationTimingFunction, range_);
@@ -1472,8 +1410,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumeLengthOrPercent(range_, context_->Mode(),
                                     kValueRangeNonNegative);
     case CSSPropertyColor:
-    case CSSPropertyBackgroundColor:
-      return ConsumeColor(range_, context_->Mode(), InQuirksMode());
     case CSSPropertyBorderBottomColor:
     case CSSPropertyBorderLeftColor:
     case CSSPropertyBorderRightColor:
@@ -1495,12 +1431,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return CSSPropertyWebkitBorderWidthUtils::ConsumeBorderWidth(
           range_, context_->Mode(), unitless);
     }
-    case CSSPropertyTextShadow:
-      return CSSPropertyBoxShadowUtils::ConsumeShadow(
-          range_, context_->Mode(), AllowInsetAndSpread::kForbid);
-    case CSSPropertyBoxShadow:
-      return CSSPropertyBoxShadowUtils::ConsumeShadow(
-          range_, context_->Mode(), AllowInsetAndSpread::kAllow);
     case CSSPropertyFilter:
     case CSSPropertyBackdropFilter:
       return ConsumeFilter(range_, context_);
@@ -1560,8 +1490,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitBorderImage:
       return CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range_,
                                                                    context_);
-    case CSSPropertyWebkitBoxReflect:
-      return ConsumeReflect(range_, context_);
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundClip:
