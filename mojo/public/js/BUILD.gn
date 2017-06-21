@@ -37,7 +37,7 @@ group("bindings") {
 
   deps = [
     ":new_bindings",
-    "//mojo/public/interfaces/bindings:bindings__generator",
+    "//mojo/public/interfaces/bindings:bindings_js__generator",
   ]
 }
 
@@ -81,7 +81,7 @@ action("new_bindings") {
   args += [ rebase_path(compiled_file, root_build_dir) ]
 
   deps = [
-    "//mojo/public/interfaces/bindings:new_bindings__generator",
+    "//mojo/public/interfaces/bindings:new_bindings_js__generator",
   ]
 }
 

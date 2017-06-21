@@ -4236,17 +4236,14 @@ grit("resources") {
 
   deps = [
     ":chrome_internal_resources_gen",
-
-    # Depend only on the generated mojo bindings since we read the .mojom.js
-    # file, rather than the whole mojo target which will link the C++ bindings.
     "//chrome/app:chrome_content_manifest_overlays",
-    "//chrome/browser/engagement:mojo_bindings__generator",
-    "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
-    "//chrome/browser/ui/webui/usb_internals:mojo_bindings__generator",
-    "//device/bluetooth/public/interfaces:experimental_interfaces__generator",
-    "//device/bluetooth/public/interfaces:interfaces__generator",
-    "//url/mojo:url_mojom_gurl__generator",
-    "//url/mojo:url_mojom_origin__generator",
+    "//chrome/browser/engagement:mojo_bindings_js",
+    "//chrome/browser/ui/webui/omnibox:mojo_bindings_js",
+    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
+    "//device/bluetooth/public/interfaces:experimental_interfaces_js",
+    "//device/bluetooth/public/interfaces:interfaces_js",
+    "//url/mojo:url_mojom_gurl_js",
+    "//url/mojo:url_mojom_origin_js",
   ]
 
   if (use_vulcanize) {

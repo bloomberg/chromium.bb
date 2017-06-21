@@ -4,18 +4,17 @@
 
 import("../../../tools/bindings/mojom.gni")
 
-group("tests") {
+group("test_data_deps") {
   testonly = true
-  deps = [
-    ":test_interfaces",
-  ]
   data_deps = [
-    ":test_data",
-    ":test_data_list",
+    ":test_interfaces_js_data_deps",
+    ":test_associated_interfaces_js_data_deps",
+    ":validation_test_data",
+    ":validation_test_data_list",
   ]
 }
 
-copy("test_data") {
+copy("validation_test_data") {
   testonly = true
   sources = [
     "data/validation",
@@ -25,7 +24,7 @@ copy("test_data") {
   ]
 }
 
-action_foreach("test_data_list") {
+action_foreach("validation_test_data_list") {
   testonly = true
   script = "//mojo/public/tools/bindings/gen_data_files_list.py"
   sources = [

@@ -35,7 +35,7 @@ grit("resources") {
     "${root_gen_dir}/ios/web/test/mojo_test.mojom.js",
   ]
   deps = [
-    ":mojo_bindings",
+    ":mojo_bindings_js",
   ]
   outputs = [
     "grit/test_resources.h",

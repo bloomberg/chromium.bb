@@ -41,6 +41,10 @@ test("mojo_js_integration_tests") {
     "js_to_cpp_tests.js",
   ]
 
+  data_deps = [
+    ":js_to_cpp_bindings_js_data_deps",
+  ]
+
   configs += [ "//v8:external_startup_data" ]
 }
 
@@ -61,8 +65,6 @@ test("mojo_js_unittests") {
     "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
     "//mojo/public/cpp/system",
-    "//mojo/public/interfaces/bindings/tests:test_associated_interfaces",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//mojo/public/js:tests",
   ]
 

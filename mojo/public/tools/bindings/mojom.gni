@@ -101,14 +101,19 @@ if (enable_mojom_typemapping) {
 # is the target name):
 #
 #   foo
-#       C++ and Javascript bindings. Other mojom targets should also depend on
-#       this target.
+#       C++ bindings.
 #
 #   foo_blink
 #       C++ bindings using Blink standard types.
 #
 #   foo_java
 #       Java bindings.
+#
+#   foo_js
+#       JavaScript bindings; used as compile-time dependency.
+#
+#   foo_js_data_deps
+#       JavaScript bindings; used as run-time dependency.
 #
 # Parameters:
 #
@@ -231,6 +236,11 @@ template("mojom") {
       defined(invoker.component_deps_blink)) {
     assert(defined(invoker.overridden_deps_blink))
     assert(defined(invoker.component_deps_blink))
+  }
+
+  if (defined(invoker.use_new_js_bindings)) {
+    assert(invoker.use_new_js_bindings || !invoker.use_new_js_bindings,
+           "Surpress unused variable error when JS bindings are not needed.")
   }
 
   all_deps = []
@@ -456,7 +466,6 @@ template("mojom") {
     enabled_sources = []
     if (defined(invoker.sources)) {
       generator_cpp_outputs = []
-      generator_js_outputs = []
       generator_java_outputs = []
       variant_dash_suffix = ""
       if (defined(variant)) {
@@ -540,8 +549,6 @@ template("mojom") {
       }
 
       if (!cpp_only) {
-        generator_js_outputs =
-            [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
         generator_java_outputs =
             [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
       }
@@ -554,8 +561,7 @@ template("mojom") {
           ":$type_mappings_target_name",
           "//mojo/public/tools/bindings:precompile_templates",
         ]
-        outputs = generator_cpp_outputs + generator_java_outputs +
-                  generator_js_outputs
+        outputs = generator_cpp_outputs + generator_java_outputs
         args = common_generator_args
 
         if (cpp_only) {
@@ -566,7 +572,7 @@ template("mojom") {
         } else {
           args += [
             "-g",
-            "c++,javascript,java",
+            "c++,java",
           ]
         }
 
@@ -623,11 +629,6 @@ template("mojom") {
 
         if (!defined(invoker.use_once_callback) || invoker.use_once_callback) {
           args += [ "--use_once_callback" ]
-        }
-
-        if (!defined(invoker.use_new_js_bindings) ||
-            invoker.use_new_js_bindings) {
-          args += [ "--use_new_js_bindings" ]
         }
       }
     }
@@ -710,9 +711,6 @@ template("mojom") {
       }
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
-      }
-      if (defined(invoker.sources) && !defined(bindings_configuration.variant)) {
-        data = process_file_template(enabled_sources, generator_js_outputs)
       }
       defines = []
       if (defined(invoker.testonly)) {
@@ -853,6 +851,64 @@ template("mojom") {
 
         srcjar_deps = [ ":$java_srcjar_target_name" ]
         run_findbugs_override = false
+      }
+    }
+  }
+
+  if (!defined(invoker.cpp_only) || !invoker.cpp_only) {
+    if (defined(invoker.sources)) {
+      generator_js_target_name = "${target_name}_js__generator"
+      generator_js_outputs =
+          [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
+      action_foreach(generator_js_target_name) {
+        script = mojom_generator_script
+        inputs = mojom_generator_sources
+        sources = []
+        if (defined(invoker.sources)) {
+          sources += invoker.sources
+        }
+        deps = [
+          "//mojo/public/tools/bindings:precompile_templates",
+        ]
+        outputs = generator_js_outputs
+        args = common_generator_args
+        args += [
+          "-g",
+          "javascript",
+        ]
+
+        if (!defined(invoker.use_new_js_bindings) ||
+            invoker.use_new_js_bindings) {
+          args += [ "--use_new_js_bindings" ]
+        }
+      }
+    }
+
+    js_target_name = target_name + "_js"
+    group(js_target_name) {
+      public_deps = []
+      if (defined(invoker.sources)) {
+        public_deps += [ ":$generator_js_target_name" ]
+      }
+
+      foreach(d, all_deps) {
+        full_name = get_label_info(d, "label_no_toolchain")
+        public_deps += [ "${full_name}_js" ]
+      }
+    }
+
+    js_data_deps_target_name = target_name + "_js_data_deps"
+    group(js_data_deps_target_name) {
+      deps = []
+      if (defined(invoker.sources)) {
+        data = process_file_template(invoker.sources, generator_js_outputs)
+        deps += [ ":$generator_js_target_name" ]
+      }
+
+      data_deps = []
+      foreach(d, all_deps) {
+        full_name = get_label_info(d, "label_no_toolchain")
+        data_deps += [ "${full_name}_js_data_deps" ]
       }
     }
   }

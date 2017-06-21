@@ -26,12 +26,12 @@ grit("resources") {
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    "//chrome/common/media_router/mojo:media_controller__generator",
-    "//chrome/common/media_router/mojo:media_router__generator",
-    "//mojo/common:common_custom_types__generator",
-    "//net/interfaces:interfaces__generator",
-    "//url/mojo:url_mojom_gurl__generator",
-    "//url/mojo:url_mojom_origin__generator",
+    "//chrome/common/media_router/mojo:media_controller_js",
+    "//chrome/common/media_router/mojo:media_router_js",
+    "//mojo/common:common_custom_types_js",
+    "//net/interfaces:interfaces_js",
+    "//url/mojo:url_mojom_gurl_js",
+    "//url/mojo:url_mojom_origin_js",
   ]
 }
 

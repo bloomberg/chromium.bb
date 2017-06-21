@@ -831,6 +831,7 @@ test("content_browsertests") {
   data = []
 
   data_deps = [
+    ":web_ui_test_mojo_bindings_js_data_deps",
     "//content/shell:pak",
     "//testing/buildbot/filters:content_browsertests_filters",
     "//third_party/mesa:osmesa",

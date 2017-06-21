@@ -126,8 +126,8 @@ grit("resources") {
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    ":headless_render_frame_controller__generator",
-    ":tab_socket__generator",
+    ":headless_render_frame_controller_js",
+    ":tab_socket_js",
   ]
 }
 
