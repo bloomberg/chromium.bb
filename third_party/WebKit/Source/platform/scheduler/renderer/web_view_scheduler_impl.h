@@ -102,8 +102,6 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   // number of active connections.
   void UpdateBackgroundBudgetPoolThrottlingState();
 
-  void EnableBackgroundThrottling();
-
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   std::set<unsigned long> pending_loads_;
   std::set<WebFrameSchedulerImpl*> provisional_loads_;
@@ -115,7 +113,6 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   TaskHandle virtual_time_budget_expired_task_handle_;
   int background_parser_count_;
   bool page_visible_;
-  bool should_throttle_frames_;
   bool disable_background_timer_throttling_;
   bool allow_virtual_time_to_advance_;
   bool virtual_time_paused_;
@@ -125,7 +122,6 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool reported_background_throttling_since_navigation_;
   bool has_active_connection_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
-  CancelableClosureHolder delayed_background_throttling_enabler_;
   WebViewScheduler::WebViewSchedulerDelegate* delegate_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
