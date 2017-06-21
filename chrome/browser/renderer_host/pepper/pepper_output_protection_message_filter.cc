@@ -70,7 +70,9 @@ PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter(
   proxy_.reset(new OutputProtectionProxy(render_process_id, render_frame_id));
 }
 
-PepperOutputProtectionMessageFilter::~PepperOutputProtectionMessageFilter() {}
+PepperOutputProtectionMessageFilter::~PepperOutputProtectionMessageFilter() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+}
 
 scoped_refptr<base::TaskRunner>
 PepperOutputProtectionMessageFilter::OverrideTaskRunnerForMessage(
@@ -114,19 +116,47 @@ int32_t PepperOutputProtectionMessageFilter::OnEnableProtection(
   return PP_OK_COMPLETIONPENDING;
 }
 
+// static
 void PepperOutputProtectionMessageFilter::OnQueryStatusComplete(
+    base::WeakPtr<PepperOutputProtectionMessageFilter> filter,
     ppapi::host::ReplyMessageContext reply_context,
     bool success,
     uint32_t link_mask,
     uint32_t protection_mask) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &PepperOutputProtectionMessageFilter::OnQueryStatusCompleteOnIOThread,
+          filter, reply_context, success, link_mask, protection_mask));
+}
+
+void PepperOutputProtectionMessageFilter::OnQueryStatusCompleteOnIOThread(
+    ppapi::host::ReplyMessageContext reply_context,
+    bool success,
+    uint32_t link_mask,
+    uint32_t protection_mask) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   reply_context.params.set_result(success ? PP_OK : PP_ERROR_FAILED);
   SendReply(reply_context, PpapiPluginMsg_OutputProtection_QueryStatusReply(
                                link_mask, protection_mask));
 }
 
+// static
 void PepperOutputProtectionMessageFilter::OnEnableProtectionComplete(
+    base::WeakPtr<PepperOutputProtectionMessageFilter> filter,
     ppapi::host::ReplyMessageContext reply_context,
     bool success) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&PepperOutputProtectionMessageFilter::
+                     OnEnableProtectionCompleteOnIOThread,
+                 filter, reply_context, success));
+}
+
+void PepperOutputProtectionMessageFilter::OnEnableProtectionCompleteOnIOThread(
+    ppapi::host::ReplyMessageContext reply_context,
+    bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   reply_context.params.set_result(success ? PP_OK : PP_ERROR_FAILED);
   SendReply(reply_context,
             PpapiPluginMsg_OutputProtection_EnableProtectionReply());
