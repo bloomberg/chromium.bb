@@ -966,9 +966,9 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
 int ChromeMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
-// ANDROID doesn't support "cloud-print-service", so no
-// CloudPrintServiceProcessMain, and arraysize doesn't support empty array. So
-// we comment out the block for Android.
+// ANDROID doesn't support "service", so no CloudPrintServiceProcessMain, and
+// arraysize doesn't support empty array. So we comment out the block for
+// Android.
 #if !defined(OS_ANDROID)
   static const MainFunction kMainFunctions[] = {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD)

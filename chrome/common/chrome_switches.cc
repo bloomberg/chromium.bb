@@ -117,8 +117,12 @@ const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
 // print job. Defaults to null if unspecified.
 const char kCloudPrintPrintTicket[]         = "cloud-print-print-ticket";
 
-// Causes the process to run as a cloud print service process.
-const char kCloudPrintServiceProcess[]      = "cloud-print-service";
+// The process type value which causes a process to run as a cloud print service
+// process.
+//
+// DO NOT CHANGE THIS VALUE. Cloud printing relies on an external binary
+// launching Chrome with this process type.
+const char kCloudPrintServiceProcess[]      = "service";
 
 // Setup cloud print proxy for provided printers. This does not start
 // service or register proxy for autostart.
@@ -315,8 +319,8 @@ const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 const char kEnableClearBrowsingDataCounters[] =
     "enable-clear-browsing-data-counters";
 
-// This applies only when the process type is "cloud-print-service". Enables the
-// Cloud Print Proxy component within the service process.
+// This applies only when the process type is "service". Enables the Cloud Print
+// Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
 // Enable device discovery notifications.
