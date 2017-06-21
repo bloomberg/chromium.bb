@@ -13,21 +13,10 @@
 
 namespace blink {
 
-CSSParserToken::CSSParserToken(CSSParserTokenType type, BlockType block_type)
-    : type_(type), block_type_(block_type) {}
-
 // Just a helper used for Delimiter tokens.
 CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar c)
     : type_(type), block_type_(kNotBlock), delimiter_(c) {
   DCHECK_EQ(type_, static_cast<unsigned>(kDelimiterToken));
-}
-
-CSSParserToken::CSSParserToken(CSSParserTokenType type,
-                               StringView value,
-                               BlockType block_type)
-    : type_(type), block_type_(block_type) {
-  InitValueFromStringView(value);
-  id_ = -1;
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type,
