@@ -133,6 +133,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual Color PlatformSpellingMarkerUnderlineColor() const;
   virtual Color PlatformGrammarMarkerUnderlineColor() const;
 
+  Color PlatformActiveSpellingMarkerHighlightColor() const;
+
   // Highlight and text colors for TextMatches.
   Color PlatformTextSearchHighlightColor(bool active_match) const;
   Color PlatformTextSearchColor(bool active_match) const;
