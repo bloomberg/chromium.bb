@@ -415,7 +415,20 @@ DesktopAutomationHandler.prototype = {
           cursors.Range.fromNode(evt.target));
     }
 
-    this.createTextEditHandlerIfNeeded_(evt.target);
+    // Re-target the node to the root of the editable.
+    var target = evt.target;
+    while (target.parent && target.parent.state.editable)
+      target = target.parent;
+    var voxTarget = ChromeVoxState.instance.currentRange.start.node;
+    while (voxTarget && voxTarget.parent && voxTarget.parent.state.editable)
+      voxTarget = voxTarget.parent;
+
+    // It is possible that ChromeVox has range over some other node
+    // when a text field is focused.
+    if (!target.state.focused || target != voxTarget)
+      return;
+
+    this.createTextEditHandlerIfNeeded_(target);
 
     // Sync the ChromeVox range to the editable, if a selection exists.
     var anchorObject = evt.target.root.anchorObject;
