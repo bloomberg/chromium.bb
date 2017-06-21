@@ -841,9 +841,11 @@ blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
     blink::WebSandboxFlags sandbox_flags,
     const blink::WebParsedFeaturePolicy& container_policy,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
-  blink::WebLocalFrame* frame =
-      parent->CreateLocalChild(scope, this, nullptr, nullptr);
-  return frame;
+  // This is called when printing a selection and when this selection contains
+  // an iframe. This is not supported yet. An empty rectangle will be displayed
+  // instead.
+  // Please see: https://crbug.com/732780.
+  return nullptr;
 }
 
 std::unique_ptr<blink::WebURLLoader>

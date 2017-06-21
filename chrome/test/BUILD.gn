@@ -1386,6 +1386,7 @@ test("browser_tests") {
       "../browser/previews/previews_service_browser_test.cc",
       "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
       "../browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc",
+      "../browser/printing/print_browsertest.cc",
       "../browser/printing/print_preview_dialog_controller_browsertest.cc",
       "../browser/printing/print_preview_pdf_generated_browsertest.cc",
       "../browser/process_singleton_browsertest.cc",
@@ -2554,6 +2555,7 @@ test("browser_tests") {
     if (!enable_print_preview) {
       sources -= [
         "../browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc",
+        "../browser/printing/print_browsertest.cc",
         "../browser/printing/print_preview_dialog_controller_browsertest.cc",
         "../browser/printing/print_preview_pdf_generated_browsertest.cc",
         "../browser/service_process/service_process_control_browsertest.cc",
