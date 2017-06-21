@@ -33,7 +33,7 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
       public net::URLRequestContextGetterObserver {
  public:
   using EntryAndBoolCallback =
-      base::Callback<void(disk_cache::ScopedEntryPtr, bool)>;
+      base::OnceCallback<void(disk_cache::ScopedEntryPtr, bool)>;
 
   // The buffer size used for reading from blobs and writing to disk cache.
   static const int kBufferSize;
@@ -49,7 +49,7 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
       int disk_cache_body_index,
       net::URLRequestContextGetter* request_context_getter,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-      const EntryAndBoolCallback& callback);
+      EntryAndBoolCallback callback);
 
   // net::URLRequest::Delegate overrides for reading blobs.
   void OnResponseStarted(net::URLRequest* request, int net_error) override;

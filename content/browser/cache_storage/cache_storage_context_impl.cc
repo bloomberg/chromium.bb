@@ -50,9 +50,9 @@ void CacheStorageContextImpl::Init(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CacheStorageContextImpl::CreateCacheStorageManager, this,
-                 user_data_directory, cache_task_runner,
-                 std::move(quota_manager_proxy)));
+      base::BindOnce(&CacheStorageContextImpl::CreateCacheStorageManager, this,
+                     user_data_directory, cache_task_runner,
+                     std::move(quota_manager_proxy)));
 }
 
 void CacheStorageContextImpl::Shutdown() {
@@ -60,7 +60,7 @@ void CacheStorageContextImpl::Shutdown() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CacheStorageContextImpl::ShutdownOnIO, this));
+      base::BindOnce(&CacheStorageContextImpl::ShutdownOnIO, this));
 }
 
 CacheStorageManager* CacheStorageContextImpl::cache_manager() const {
@@ -86,7 +86,7 @@ void CacheStorageContextImpl::GetAllOriginsInfo(
   if (!cache_manager_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(callback, std::vector<CacheStorageUsageInfo>()));
+        base::BindOnce(callback, std::vector<CacheStorageUsageInfo>()));
     return;
   }
 

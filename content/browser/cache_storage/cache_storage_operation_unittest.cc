@@ -39,7 +39,7 @@ class CacheStorageOperationTest : public testing::Test {
   CacheStorageOperationTest()
       : mock_task_runner_(new base::TestMockTimeTaskRunner()) {
     operation_ = base::MakeUnique<CacheStorageOperation>(
-        base::Bind(&TestTask::Run, base::Unretained(&task_)),
+        base::BindOnce(&TestTask::Run, base::Unretained(&task_)),
         CacheStorageSchedulerClient::CLIENT_STORAGE, mock_task_runner_);
   }
 

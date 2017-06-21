@@ -47,16 +47,16 @@ class CacheStorageSchedulerTest : public testing::Test {
 
 TEST_F(CacheStorageSchedulerTest, ScheduleOne) {
   scheduler_.ScheduleOperation(
-      base::Bind(&TestTask::Run, base::Unretained(&task1_)));
+      base::BindOnce(&TestTask::Run, base::Unretained(&task1_)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, task1_.callback_count());
 }
 
 TEST_F(CacheStorageSchedulerTest, ScheduleTwo) {
   scheduler_.ScheduleOperation(
-      base::Bind(&TestTask::Run, base::Unretained(&task1_)));
+      base::BindOnce(&TestTask::Run, base::Unretained(&task1_)));
   scheduler_.ScheduleOperation(
-      base::Bind(&TestTask::Run, base::Unretained(&task2_)));
+      base::BindOnce(&TestTask::Run, base::Unretained(&task2_)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, task1_.callback_count());
   EXPECT_EQ(0, task2_.callback_count());
@@ -70,7 +70,7 @@ TEST_F(CacheStorageSchedulerTest, ScheduleTwo) {
 
 TEST_F(CacheStorageSchedulerTest, ScheduledOperations) {
   scheduler_.ScheduleOperation(
-      base::Bind(&TestTask::Run, base::Unretained(&task1_)));
+      base::BindOnce(&TestTask::Run, base::Unretained(&task1_)));
   EXPECT_TRUE(scheduler_.ScheduledOperations());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, task1_.callback_count());

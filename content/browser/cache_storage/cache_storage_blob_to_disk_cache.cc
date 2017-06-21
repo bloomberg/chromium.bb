@@ -35,7 +35,7 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
     int disk_cache_body_index,
     net::URLRequestContextGetter* request_context_getter,
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-    const EntryAndBoolCallback& callback) {
+    EntryAndBoolCallback callback) {
   DCHECK(entry);
   DCHECK_LE(0, disk_cache_body_index);
   DCHECK(blob_data_handle);
@@ -43,14 +43,14 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
   DCHECK(request_context_getter);
 
   if (!request_context_getter->GetURLRequestContext()) {
-    callback.Run(std::move(entry), false /* success */);
+    std::move(callback).Run(std::move(entry), false /* success */);
     return;
   }
 
   disk_cache_body_index_ = disk_cache_body_index;
 
   entry_ = std::move(entry);
-  callback_ = callback;
+  callback_ = std::move(callback);
   request_context_getter_ = request_context_getter;
 
   blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
@@ -87,8 +87,9 @@ void CacheStorageBlobToDiskCache::OnReadCompleted(net::URLRequest* request,
   }
 
   net::CompletionCallback cache_write_callback =
-      base::Bind(&CacheStorageBlobToDiskCache::DidWriteDataToEntry,
-                 weak_ptr_factory_.GetWeakPtr(), bytes_read);
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&CacheStorageBlobToDiskCache::DidWriteDataToEntry,
+                         weak_ptr_factory_.GetWeakPtr(), bytes_read));
 
   int rv = entry_->WriteData(disk_cache_body_index_, cache_entry_offset_,
                              buffer_.get(), bytes_read, cache_write_callback,
@@ -149,7 +150,7 @@ void CacheStorageBlobToDiskCache::RunCallbackAndRemoveObserver(bool success) {
 
   request_context_getter_->RemoveObserver(this);
   blob_request_.reset();
-  callback_.Run(std::move(entry_), success);
+  std::move(callback_).Run(std::move(entry_), success);
 }
 
 }  // namespace content
