@@ -135,7 +135,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
                 0 /* Afghanistan */, mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.setTextInEditorAndWait(
                 new String[] {
-                        "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "650-253-0000"},
+                        "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "020-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
@@ -146,7 +146,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {
-                "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "+16502530000"});
+                "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "+93202530000"});
     }
 
     /** Quickly pressing on "add address" and then [X] should not crash. */

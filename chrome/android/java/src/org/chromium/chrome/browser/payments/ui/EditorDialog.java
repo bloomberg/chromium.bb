@@ -39,7 +39,6 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.preferences.autofill.CreditCardNumberFormattingTextWatcher;
@@ -155,7 +154,6 @@ public class EditorDialog
         };
 
         mCardNumberFormatter = new CreditCardNumberFormattingTextWatcher();
-        mPhoneFormatter = new PhoneNumberUtil.FormatTextWatcher();
     }
 
     /** Prevents screenshots of this editor. */
@@ -446,6 +444,8 @@ public class EditorDialog
                 filter = mCardNumberInputFilter;
                 formatter = mCardNumberFormatter;
             } else if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
+                mPhoneFormatter = fieldModel.getFormatter();
+                assert mPhoneFormatter != null;
                 formatter = mPhoneFormatter;
             }
 
