@@ -11,12 +11,11 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace memory_instrumentation {
-
-ClientProcessImpl::Config::~Config() {}
 
 // static
 void ClientProcessImpl::CreateInstance(const Config& config) {
@@ -29,25 +28,23 @@ void ClientProcessImpl::CreateInstance(const Config& config) {
 }
 
 ClientProcessImpl::ClientProcessImpl(const Config& config)
-    : binding_(this),
-      config_(config),
-      task_runner_(nullptr),
-      pending_memory_dump_guid_(0) {
-  if (config.connector() != nullptr) {
-    config.connector()->BindInterface(config.service_name(),
-                                      mojo::MakeRequest(&coordinator_));
-  } else {
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    config.coordinator()->BindCoordinatorRequest(
-        service_manager::BindSourceInfo(), mojo::MakeRequest(&coordinator_));
-  }
-
+    : binding_(this), process_type_(config.process_type), task_runner_() {
+  config.connector->BindInterface(config.service_name,
+                                  mojo::MakeRequest(&coordinator_));
   mojom::ClientProcessPtr process;
   binding_.Bind(mojo::MakeRequest(&process));
   coordinator_->RegisterClientProcess(std::move(process));
 
-  // Only one process should handle periodic dumping.
-  bool is_coordinator_process = !!config.coordinator();
+  // Initialize the public-facing MemoryInstrumentation helper.
+  MemoryInstrumentation::CreateInstance(config.connector, config.service_name);
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+
+  // TODO(primiano): this is a temporary workaround to tell the
+  // base::MemoryDumpManager that it is special and should coordinate periodic
+  // dumps for tracing. Remove this once the periodic dump scheduler is moved
+  // from base to the service. MDM should not care about being the coordinator.
+  bool is_coordinator_process =
+      config.process_type == mojom::ProcessType::BROWSER;
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
       base::BindRepeating(&ClientProcessImpl::RequestGlobalMemoryDump,
                           base::Unretained(this)),
@@ -71,7 +68,7 @@ void ClientProcessImpl::OnProcessMemoryDumpDone(
     const base::Optional<base::trace_event::MemoryDumpCallbackResult>& result) {
   mojom::RawProcessMemoryDumpPtr process_memory_dump(
       mojom::RawProcessMemoryDump::New());
-  process_memory_dump->process_type = config_.process_type();
+  process_memory_dump->process_type = process_type_;
   if (result) {
     process_memory_dump->os_dump = result->os_dump;
     process_memory_dump->chrome_dump = result->chrome_dump;
@@ -144,8 +141,13 @@ void ClientProcessImpl::MemoryDumpCallbackProxy(
   callback.Run(dump_guid, success);
 }
 
-void ClientProcessImpl::SetAsNonCoordinatorForTesting() {
-  task_runner_ = nullptr;
-}
+ClientProcessImpl::Config::Config(service_manager::Connector* connector,
+                                  const std::string& service_name,
+                                  mojom::ProcessType process_type)
+    : connector(connector),
+      service_name(service_name),
+      process_type(process_type) {}
+
+ClientProcessImpl::Config::~Config() {}
 
 }  // namespace memory_instrumentation

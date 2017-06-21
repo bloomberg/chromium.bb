@@ -21,6 +21,7 @@
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
 namespace content {
 namespace protocol {
@@ -290,19 +291,21 @@ void TracingHandler::RequestMemoryDump(
     return;
   }
 
-  base::trace_event::MemoryDumpManager::GetInstance()->RequestGlobalDump(
-      base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
+  auto on_memory_dump_finished =
       base::Bind(&TracingHandler::OnMemoryDumpFinished,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(std::move(callback))));
+                 weak_factory_.GetWeakPtr(), base::Passed(std::move(callback)));
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestGlobalDumpAndAppendToTrace(
+          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+          base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
+          on_memory_dump_finished);
 }
 
 void TracingHandler::OnMemoryDumpFinished(
     std::unique_ptr<RequestMemoryDumpCallback> callback,
-    uint64_t dump_guid,
-    bool success) {
-  callback->sendSuccess(base::StringPrintf("0x%" PRIx64, dump_guid), success);
+    bool success,
+    uint64_t dump_id) {
+  callback->sendSuccess(base::StringPrintf("0x%" PRIx64, dump_id), success);
 }
 
 Response TracingHandler::RecordClockSyncMarker(const std::string& sync_id) {

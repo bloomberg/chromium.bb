@@ -67,7 +67,6 @@ source_set("tests") {
     "coordination_unit/process_coordination_unit_impl_unittest.cc",
     "memory_instrumentation/coordinator_impl_unittest.cc",
     "memory_instrumentation/process_map_unittest.cc",
-    "public/cpp/memory_instrumentation/client_process_impl_unittest.cc",
     "public/cpp/tracing/chrome_trace_event_agent_unittest.cc",
     "tracing/agent_registry_unittest.cc",
     "tracing/recorder_unittest.cc",

@@ -29,35 +29,16 @@ namespace memory_instrumentation {
 class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
     : public NON_EXPORTED_BASE(mojom::ClientProcess) {
  public:
-  class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT Config {
+  struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT Config {
    public:
     Config(service_manager::Connector* connector,
            const std::string& service_name,
-           mojom::ProcessType process_type)
-        : connector_(connector),
-          service_name_(service_name),
-          process_type_(process_type),
-          coordinator_(nullptr) {}
-    Config(Coordinator* coordinator, mojom::ProcessType process_type)
-        : connector_(nullptr),
-          process_type_(process_type),
-          coordinator_(coordinator) {}
+           mojom::ProcessType process_type);
     ~Config();
 
-    service_manager::Connector* connector() const { return connector_; }
-
-    const std::string& service_name() const { return service_name_; }
-
-    mojom::ProcessType process_type() const { return process_type_; }
-
-    Coordinator* coordinator() const { return coordinator_; }
-
-   private:
-    service_manager::Connector* connector_;
-    const std::string service_name_;
-    const mojom::ProcessType process_type_;
-    Coordinator* coordinator_;
-    bool is_test_config_;
+    service_manager::Connector* const connector;
+    const std::string service_name;
+    const mojom::ProcessType process_type;
   };
 
   static void CreateInstance(const Config& config);
@@ -67,9 +48,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
       const base::trace_event::GlobalMemoryDumpCallback& callback);
-
-  Config config() { return config_; }
-  void SetAsNonCoordinatorForTesting();
 
  private:
   friend std::default_delete<ClientProcessImpl>;  // For testing
@@ -99,7 +77,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
 
   mojom::CoordinatorPtr coordinator_;
   mojo::Binding<mojom::ClientProcess> binding_;
-  const Config config_;
+  const mojom::ProcessType process_type_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   uint64_t pending_memory_dump_guid_;
 

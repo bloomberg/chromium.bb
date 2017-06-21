@@ -5,13 +5,15 @@
 #include "content/browser/tracing/background_memory_tracing_observer.h"
 
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_request_args.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
 namespace content {
 
 // static
 BackgroundMemoryTracingObserver*
 BackgroundMemoryTracingObserver::GetInstance() {
-  static auto* instance = new BackgroundMemoryTracingObserver;
+  static auto* instance = new BackgroundMemoryTracingObserver();
   return instance;
 }
 
@@ -23,13 +25,16 @@ void BackgroundMemoryTracingObserver::OnScenarioActivated(
 
 void BackgroundMemoryTracingObserver::OnTracingEnabled(
     BackgroundTracingConfigImpl::CategoryPreset preset) {
-  if (preset ==
-      BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_MEMORY_LIGHT) {
-    auto* dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
-    dump_manager->RequestGlobalDump(
-        base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-        base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
-  }
+  if (preset !=
+      BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_MEMORY_LIGHT)
+    return;
+
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestGlobalDumpAndAppendToTrace(
+          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+          base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
+          memory_instrumentation::MemoryInstrumentation::
+              RequestGlobalDumpAndAppendToTraceCallback());
 }
 
 }  // namespace content

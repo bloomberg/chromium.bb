@@ -10,6 +10,8 @@ component("resource_coordinator_cpp") {
     "memory_instrumentation/client_process_impl.cc",
     "memory_instrumentation/client_process_impl.h",
     "memory_instrumentation/coordinator.h",
+    "memory_instrumentation/memory_instrumentation.cc",
+    "memory_instrumentation/memory_instrumentation.h",
     "resource_coordinator_features.cc",
     "resource_coordinator_features.h",
     "resource_coordinator_interface.cc",

@@ -14,6 +14,7 @@
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "url/gurl.h"
 
 namespace {
@@ -21,8 +22,8 @@ namespace {
 using base::trace_event::MemoryDumpType;
 
 void RequestGlobalDumpCallback(base::Closure quit_closure,
-                               uint64_t,
-                               bool success) {
+                               bool success,
+                               uint64_t) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
   ASSERT_TRUE(success);
 }
@@ -30,9 +31,10 @@ void RequestGlobalDumpCallback(base::Closure quit_closure,
 void OnStartTracingDoneCallback(
     base::trace_event::MemoryDumpLevelOfDetail explicit_dump_type,
     base::Closure quit_closure) {
-  base::trace_event::MemoryDumpManager::GetInstance()->RequestGlobalDump(
-      MemoryDumpType::EXPLICITLY_TRIGGERED, explicit_dump_type,
-      Bind(&RequestGlobalDumpCallback, quit_closure));
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestGlobalDumpAndAppendToTrace(
+          MemoryDumpType::EXPLICITLY_TRIGGERED, explicit_dump_type,
+          Bind(&RequestGlobalDumpCallback, quit_closure));
 }
 
 class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
