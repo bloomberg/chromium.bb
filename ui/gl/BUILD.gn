@@ -10,7 +10,8 @@ import("//ui/ozone/ozone.gni")
 import("//testing/test.gni")
 
 declare_args() {
-  enable_swiftshader = (is_win || (is_linux && !is_chromeos && use_x11)) &&
+  enable_swiftshader = (is_win || (is_linux && use_x11) ||
+                        (is_chromeos && ozone_platform_x11)) &&
                        (target_cpu == "x86" || target_cpu == "x64")
 }
 
