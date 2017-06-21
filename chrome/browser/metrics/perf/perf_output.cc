@@ -5,23 +5,22 @@
 #include "chrome/browser/metrics/perf/perf_output.h"
 
 #include "base/bind.h"
+#include "base/task_scheduler/post_task.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 
-PerfOutputCall::PerfOutputCall(
-    scoped_refptr<base::TaskRunner> blocking_task_runner,
-    base::TimeDelta duration,
-    const std::vector<std::string>& perf_args,
-    const DoneCallback& callback)
-    : blocking_task_runner_(blocking_task_runner),
-      duration_(duration),
+PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
+                               const std::vector<std::string>& perf_args,
+                               const DoneCallback& callback)
+    : duration_(duration),
       perf_args_(perf_args),
       done_callback_(callback),
       weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   perf_data_pipe_reader_.reset(new chromeos::PipeReaderForString(
-      blocking_task_runner_,
+      base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}),
       base::Bind(&PerfOutputCall::OnIOComplete, weak_factory_.GetWeakPtr())));
 
   base::ScopedFD pipe_write_end = perf_data_pipe_reader_->StartIO();
