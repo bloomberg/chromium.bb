@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
@@ -42,15 +43,18 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
   DCHECK(navigation_manager);
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.hasOpener = web_state->HasOpener();
-  CRWSessionController* session_controller =
-      navigation_manager->GetSessionController();
   session_storage.lastCommittedItemIndex =
-      session_controller.lastCommittedItemIndex;
-  session_storage.previousItemIndex = session_controller.previousItemIndex;
+      navigation_manager->GetLastCommittedItemIndex();
+  session_storage.previousItemIndex =
+      static_cast<NSInteger>(navigation_manager->GetPreviousItemIndex());
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
   NavigationItemStorageBuilder item_storage_builder;
-  for (size_t index = 0; index < session_controller.items.size(); ++index) {
-    web::NavigationItemImpl* item = session_controller.items[index].get();
+  for (size_t index = 0;
+       index < static_cast<size_t>(navigation_manager->GetItemCount());
+       ++index) {
+    web::NavigationItemImpl* item =
+        navigation_manager->GetNavigationItemImplAtIndex(index);
+    ;
     [item_storages addObject:item_storage_builder.BuildStorage(item)];
   }
   session_storage.itemStorages = item_storages;
@@ -85,8 +89,11 @@ void SessionStorageBuilder::ExtractSessionState(
                  navigationItems:std::move(items)
           lastCommittedItemIndex:last_committed_item_index]);
   [session_controller setPreviousItemIndex:storage.previousItemIndex];
-  web_state->navigation_manager_.reset(new NavigationManagerImpl());
-  web_state->navigation_manager_->SetSessionController(session_controller);
+
+  auto navigation_manager = base::MakeUnique<LegacyNavigationManagerImpl>();
+  navigation_manager->SetSessionController(session_controller);
+  web_state->navigation_manager_.reset(navigation_manager.release());
+
   SessionCertificatePolicyCacheStorageBuilder cert_builder;
   std::unique_ptr<SessionCertificatePolicyCacheImpl> cert_policy_cache =
       cert_builder.BuildSessionCertificatePolicyCache(

@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "testing/platform_test.h"
@@ -18,16 +18,26 @@
 
 namespace web {
 
-// Test fixture testing navigation_manager_util.h functions.
-class NavigationManagerUtilTest : public PlatformTest {
+// Parameterized fixture testing navigation_manager_util.h functions.
+// GetParam() chooses whether to run the tests on LegacyNavigationManagerImpl
+// or (the soon-to-be-added) WKBasedNavigationManagerImpl.
+// TODO(crbug.com/734150): cleanup LegacyNavigationManagerImpl use case.
+class NavigationManagerUtilTest : public PlatformTest,
+                                  public ::testing::WithParamInterface<bool> {
  protected:
   NavigationManagerUtilTest()
       : controller_([[CRWSessionController alloc]
             initWithBrowserState:&browser_state_]) {
-    manager_.SetSessionController(controller_);
+    bool test_legacy_navigation_manager = GetParam();
+    if (test_legacy_navigation_manager) {
+      manager_.reset(new LegacyNavigationManagerImpl);
+      manager_->SetSessionController(controller_);
+    } else {
+      DCHECK(false) << "Not yet implemented.";
+    }
   }
 
-  NavigationManagerImpl manager_;
+  std::unique_ptr<NavigationManagerImpl> manager_;
   CRWSessionController* controller_;
 
  private:
@@ -38,36 +48,41 @@ class NavigationManagerUtilTest : public PlatformTest {
 // GetItemWithUniqueID functions.
 // TODO(crbug.com/733658): test was incorrectly moved to a separate target
 // and not run and a refactoring broke it. Disable until the issue is fixed.
-TEST_F(NavigationManagerUtilTest, DISABLED_GetCommittedItemWithUniqueID) {
+TEST_P(NavigationManagerUtilTest, DISABLED_GetCommittedItemWithUniqueID) {
   // Start with NavigationManager that only has a pending item.
-  manager_.AddPendingItem(
+  manager_->AddPendingItem(
       GURL("http://chromium.org"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  NavigationItem* item = manager_.GetPendingItem();
+  NavigationItem* item = manager_->GetPendingItem();
   int unique_id = item->GetUniqueID();
-  EXPECT_FALSE(GetCommittedItemWithUniqueID(&manager_, unique_id));
-  EXPECT_EQ(item, GetItemWithUniqueID(&manager_, unique_id));
-  EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(&manager_, unique_id));
+  EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Commit that pending item.
   [controller_ commitPendingItem];
-  EXPECT_EQ(item, GetCommittedItemWithUniqueID(&manager_, unique_id));
-  EXPECT_EQ(item, GetItemWithUniqueID(&manager_, unique_id));
-  EXPECT_EQ(0, GetCommittedItemIndexWithUniqueID(&manager_, unique_id));
+  EXPECT_EQ(item, GetCommittedItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(0, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Remove committed item.
-  manager_.RemoveItemAtIndex(0);
-  EXPECT_FALSE(GetCommittedItemWithUniqueID(&manager_, unique_id));
-  EXPECT_FALSE(GetItemWithUniqueID(&manager_, unique_id));
-  EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(&manager_, unique_id));
+  manager_->RemoveItemAtIndex(0);
+  EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_FALSE(GetItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Add transient item.
   [controller_ addTransientItemWithURL:GURL("http://chromium.org")];
-  item = manager_.GetTransientItem();
-  EXPECT_FALSE(GetCommittedItemWithUniqueID(&manager_, unique_id));
-  EXPECT_EQ(item, GetItemWithUniqueID(&manager_, unique_id));
-  EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(&manager_, unique_id));
+  item = manager_->GetTransientItem();
+  EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 }
+
+INSTANTIATE_TEST_CASE_P(
+    ProgrammaticNavigationManagerUtilTest,
+    NavigationManagerUtilTest,
+    ::testing::Values(true /* test_legacy_navigation_manager */));
 
 }  // namespace web
