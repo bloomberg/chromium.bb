@@ -23347,6 +23347,7 @@ crbug.com/591099 virtual/mojo-loading/http/tests/inspector-protocol/request-refe
 crbug.com/591099 virtual/mojo-loading/http/tests/inspector/appcache/appcache-iframe-manifests.html [ Pass Timeout ]
 crbug.com/591099 virtual/mojo-loading/http/tests/inspector/appcache/appcache-manifest-with-non-existing-file.html [ Pass Timeout ]
 crbug.com/591099 virtual/mojo-loading/http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]
+crbug.com/591099 virtual/mojo-loading/http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout ]
 crbug.com/591099 virtual/mojo-loading/http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Failure Pass Timeout ]
 crbug.com/591099 virtual/mojo-loading/http/tests/inspector/network/network-fetch.html [ Pass Timeout ]
 crbug.com/591099 virtual/mojo-loading/http/tests/inspector/network/network-filters.html [ Failure Pass ]
