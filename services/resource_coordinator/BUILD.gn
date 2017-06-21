@@ -14,6 +14,8 @@ source_set("lib") {
   sources = [
     "coordination_unit/coordination_unit_factory.cc",
     "coordination_unit/coordination_unit_factory.h",
+    "coordination_unit/coordination_unit_graph_observer.cc",
+    "coordination_unit/coordination_unit_graph_observer.h",
     "coordination_unit/coordination_unit_impl.cc",
     "coordination_unit/coordination_unit_impl.h",
     "coordination_unit/coordination_unit_manager.cc",
@@ -58,6 +60,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "coordination_unit/coordination_unit_graph_observer_unittest.cc",
     "coordination_unit/coordination_unit_impl_unittest.cc",
     "coordination_unit/coordination_unit_impl_unittest_util.cc",
     "coordination_unit/coordination_unit_impl_unittest_util.h",

@@ -6,22 +6,29 @@
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_H_
 
 #include <list>
+#include <map>
 #include <memory>
 #include <set>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
+#include "base/callback.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
+#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace resource_coordinator {
+
+class CoordinationUnitGraphObserver;
 
 class CoordinationUnitImpl : public mojom::CoordinationUnit {
  public:
@@ -55,9 +62,13 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   // Clear property from internal key-value store
   void ClearProperty(mojom::PropertyType property);
   // Retrieve property from internal key-value store
-  base::Value GetProperty(mojom::PropertyType property);
+  base::Value GetProperty(mojom::PropertyType property) const;
   // Set property from internal key-value store
   void SetProperty(mojom::PropertyType property, base::Value value);
+
+  void WillBeDestroyed();
+  void AddObserver(CoordinationUnitGraphObserver* observer);
+  void RemoveObserver(CoordinationUnitGraphObserver* observer);
 
  protected:
   const CoordinationUnitID id_;
@@ -91,6 +102,8 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
   mojom::CoordinationPolicyCallbackPtr policy_callback_;
   mojom::CoordinationPolicyPtr current_policy_;
+
+  base::ObserverList<CoordinationUnitGraphObserver> observers_;
 
   base::Optional<bool> state_flags_[kNumStateFlags];
 

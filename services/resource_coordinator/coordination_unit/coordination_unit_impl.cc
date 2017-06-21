@@ -10,6 +10,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
 namespace resource_coordinator {
@@ -157,7 +158,16 @@ bool CoordinationUnitImpl::AddChild(CoordinationUnitImpl* child) {
   // We don't recalculate the policy here as policies are only dependent
   // on the current CU or its parents, not its children. In other words,
   // policies only bubble down.
-  return children_.count(child) ? false : children_.insert(child).second;
+  bool success =
+      children_.count(child) ? false : children_.insert(child).second;
+
+  if (success) {
+    for (auto& observer : observers_) {
+      observer.OnChildAdded(this, child);
+    }
+  }
+
+  return success;
 }
 
 void CoordinationUnitImpl::RemoveChild(const CoordinationUnitID& child_id) {
@@ -181,12 +191,24 @@ void CoordinationUnitImpl::RemoveChild(const CoordinationUnitID& child_id) {
 
 bool CoordinationUnitImpl::RemoveChild(CoordinationUnitImpl* child) {
   size_t children_removed = children_.erase(child);
-  return children_removed > 0;
+  bool success = children_removed > 0;
+
+  if (success) {
+    for (auto& observer : observers_) {
+      observer.OnChildRemoved(this, child);
+    }
+  }
+
+  return success;
 }
 
 void CoordinationUnitImpl::AddParent(CoordinationUnitImpl* parent) {
   DCHECK_EQ(0u, parents_.count(parent));
   parents_.insert(parent);
+
+  for (auto& observer : observers_) {
+    observer.OnParentAdded(this, parent);
+  }
 
   RecalcCoordinationPolicy();
 }
@@ -194,6 +216,12 @@ void CoordinationUnitImpl::AddParent(CoordinationUnitImpl* parent) {
 void CoordinationUnitImpl::RemoveParent(CoordinationUnitImpl* parent) {
   size_t parents_removed = parents_.erase(parent);
   DCHECK_EQ(1u, parents_removed);
+
+  // TODO(matthalp, oysteine) should this go before or
+  // after RecalcCoordinationPolicy?
+  for (auto& observer : observers_) {
+    observer.OnParentRemoved(this, parent);
+  }
 
   RecalcCoordinationPolicy();
 }
@@ -238,7 +266,8 @@ double CoordinationUnitImpl::GetCPUUsageForTesting() {
   return kCPUUsageUnmeasuredForTesting;
 }
 
-base::Value CoordinationUnitImpl::GetProperty(mojom::PropertyType property) {
+base::Value CoordinationUnitImpl::GetProperty(
+    mojom::PropertyType property) const {
   auto value_it = property_store_.find(property);
 
   return value_it != property_store_.end() ? value_it->second : base::Value();
@@ -262,6 +291,26 @@ void CoordinationUnitImpl::SetProperty(mojom::PropertyType property,
   }
 
   property_store_[property] = value;
+
+  for (auto& observer : observers_) {
+    observer.OnPropertyChanged(this, property);
+  }
+}
+
+void CoordinationUnitImpl::WillBeDestroyed() {
+  for (auto& observer : observers_) {
+    observer.OnCoordinationUnitWillBeDestroyed(this);
+  }
+}
+
+void CoordinationUnitImpl::AddObserver(
+    CoordinationUnitGraphObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CoordinationUnitImpl::RemoveObserver(
+    CoordinationUnitGraphObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace resource_coordinator
