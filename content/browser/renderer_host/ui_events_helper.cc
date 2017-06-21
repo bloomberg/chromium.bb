@@ -90,4 +90,14 @@ bool MakeUITouchEventsFromWebTouchEvents(
   return true;
 }
 
+bool InputEventAckStateIsSetNonBlocking(InputEventAckState ack_state) {
+  switch (ack_state) {
+    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING:
+    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace content

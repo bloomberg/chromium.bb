@@ -41,7 +41,9 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
 
   // To be called upon asynchronous and synchronous ack of an event that was
   // forwarded after a successful call to |OnTouchEvent()|.
-  void OnTouchEventAck(uint32_t unique_event_id, bool event_consumed);
+  void OnTouchEventAck(uint32_t unique_event_id,
+                       bool event_consumed,
+                       bool is_source_touch_event_set_non_blocking);
 
   // Methods delegated to |gesture_provider_|.
   void ResetDetection();

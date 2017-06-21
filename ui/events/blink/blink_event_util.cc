@@ -627,6 +627,9 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       break;
   }
 
+  gesture.is_source_touch_event_set_non_blocking =
+      details.is_source_touch_event_set_non_blocking();
+
   gesture.unique_touch_event_id = unique_touch_event_id;
 
   switch (details.type()) {
