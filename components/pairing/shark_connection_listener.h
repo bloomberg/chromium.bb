@@ -13,7 +13,7 @@
 #include "components/pairing/host_pairing_controller.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class TaskRunner;
 }
 
 namespace pairing_chromeos {
@@ -29,7 +29,7 @@ class SharkConnectionListener : public HostPairingController::Observer {
       base::Callback<void(std::unique_ptr<HostPairingController>)>;
 
   SharkConnectionListener(
-      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner,
+      scoped_refptr<base::TaskRunner> input_service_task_runner,
       OnConnectedCallback callback);
   ~SharkConnectionListener() override;
 

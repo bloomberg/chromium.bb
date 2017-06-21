@@ -6,39 +6,60 @@
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/lazy_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 using device::InputServiceLinux;
 
-typedef device::InputServiceLinux::InputDeviceInfo InputDeviceInfo;
-
 namespace chromeos {
 
-// static
-BrowserThread::ID InputServiceProxy::thread_identifier_ = BrowserThread::FILE;
+namespace {
+
+using InputDeviceInfo = device::InputServiceLinux::InputDeviceInfo;
+
+bool use_ui_thread_for_test = false;
+
+// SequencedTaskRunner could be used after InputServiceLinux and friends
+// are updated to check on sequence instead of thread.
+base::LazySingleThreadTaskRunner default_input_service_task_runner =
+    LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits({base::TaskPriority::BACKGROUND, base::MayBlock()}),
+        base::SingleThreadTaskRunnerThreadMode::SHARED);
+
+}  // namespace
 
 class InputServiceProxy::ServiceObserver : public InputServiceLinux::Observer {
  public:
-  ServiceObserver() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
-  ~ServiceObserver() override { DCHECK(CalledOnValidThread()); }
+  ServiceObserver() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    // Detach since this object is constructed on UI thread and forever after
+    // used from another sequence.
+    DETACH_FROM_SEQUENCE(sequence_checker_);
+  }
+  ~ServiceObserver() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
 
   void Initialize(const base::WeakPtr<InputServiceProxy>& proxy) {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     InputServiceLinux::GetInstance()->AddObserver(this);
     proxy_ = proxy;
   }
 
   void Shutdown() {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (InputServiceLinux::HasInstance())
       InputServiceLinux::GetInstance()->RemoveObserver(this);
     delete this;
   }
 
   std::vector<InputDeviceInfo> GetDevices() {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     std::vector<InputDeviceInfo> devices;
     if (InputServiceLinux::HasInstance())
       InputServiceLinux::GetInstance()->GetDevices(&devices);
@@ -47,81 +68,72 @@ class InputServiceProxy::ServiceObserver : public InputServiceLinux::Observer {
 
   void GetDeviceInfo(const std::string& id,
                      const InputServiceProxy::GetDeviceInfoCallback& callback) {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     bool success = false;
     InputDeviceInfo info;
     info.id = id;
     if (InputServiceLinux::HasInstance())
       success = InputServiceLinux::GetInstance()->GetDeviceInfo(id, &info);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(callback, success, info));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(callback, success, info));
   }
 
   // InputServiceLinux::Observer implementation:
   void OnInputDeviceAdded(
       const InputServiceLinux::InputDeviceInfo& info) override {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&InputServiceProxy::OnDeviceAdded, proxy_, info));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&InputServiceProxy::OnDeviceAdded, proxy_, info));
   }
 
   void OnInputDeviceRemoved(const std::string& id) override {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&InputServiceProxy::OnDeviceRemoved, proxy_, id));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&InputServiceProxy::OnDeviceRemoved, proxy_, id));
   }
 
  private:
-  bool CalledOnValidThread() const {
-    return BrowserThread::CurrentlyOn(InputServiceProxy::thread_identifier_);
-  }
-
   base::WeakPtr<InputServiceProxy> proxy_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceObserver);
 };
 
 InputServiceProxy::InputServiceProxy()
     : service_observer_(new ServiceObserver()),
-      task_runner_(BrowserThread::GetTaskRunnerForThread(thread_identifier_)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&InputServiceProxy::ServiceObserver::Initialize,
-                 base::Unretained(service_observer_.get()),
-                 weak_factory_.GetWeakPtr()));
+  GetInputServiceTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&InputServiceProxy::ServiceObserver::Initialize,
+                                base::Unretained(service_observer_.get()),
+                                weak_factory_.GetWeakPtr()));
 }
 
 InputServiceProxy::~InputServiceProxy() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&InputServiceProxy::ServiceObserver::Shutdown,
-                 base::Unretained(service_observer_.release())));
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  GetInputServiceTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&InputServiceProxy::ServiceObserver::Shutdown,
+                                base::Unretained(service_observer_.release())));
 }
 
 void InputServiceProxy::AddObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (observer)
     observers_.AddObserver(observer);
 }
 
 void InputServiceProxy::RemoveObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (observer)
     observers_.RemoveObserver(observer);
 }
 
 void InputServiceProxy::GetDevices(const GetDevicesCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::PostTaskAndReplyWithResult(
-      task_runner_.get(),
-      FROM_HERE,
+      GetInputServiceTaskRunner().get(), FROM_HERE,
       base::Bind(&InputServiceProxy::ServiceObserver::GetDevices,
                  base::Unretained(service_observer_.get())),
       callback);
@@ -129,29 +141,36 @@ void InputServiceProxy::GetDevices(const GetDevicesCallback& callback) {
 
 void InputServiceProxy::GetDeviceInfo(const std::string& id,
                                       const GetDeviceInfoCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  task_runner_->PostTask(
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  GetInputServiceTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&InputServiceProxy::ServiceObserver::GetDeviceInfo,
-                 base::Unretained(service_observer_.release()),
-                 id,
-                 callback));
+      base::BindOnce(&InputServiceProxy::ServiceObserver::GetDeviceInfo,
+                     base::Unretained(service_observer_.get()), id, callback));
 }
 
 // static
-void InputServiceProxy::SetThreadIdForTesting(BrowserThread::ID thread_id) {
-  InputServiceProxy::thread_identifier_ = thread_id;
+scoped_refptr<base::SequencedTaskRunner>
+InputServiceProxy::GetInputServiceTaskRunner() {
+  if (use_ui_thread_for_test)
+    return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+
+  return default_input_service_task_runner.Get();
+}
+
+// static
+void InputServiceProxy::SetUseUIThreadForTesting(bool use_ui_thread) {
+  use_ui_thread_for_test = use_ui_thread;
 }
 
 void InputServiceProxy::OnDeviceAdded(
     const InputServiceLinux::InputDeviceInfo& info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : observers_)
     observer.OnInputDeviceAdded(info);
 }
 
 void InputServiceProxy::OnDeviceRemoved(const std::string& id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : observers_)
     observer.OnInputDeviceRemoved(id);
 }

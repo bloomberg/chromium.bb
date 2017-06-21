@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/device/input_service_proxy.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
@@ -422,7 +423,7 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
     if (!remora_controller_) {
       remora_controller_.reset(
           new pairing_chromeos::BluetoothHostPairingController(
-              BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
+              InputServiceProxy::GetInputServiceTaskRunner()));
       remora_controller_->StartPairing();
     }
     return new HostPairingScreen(this, this,
@@ -1620,7 +1621,7 @@ void WizardController::MaybeStartListeningForSharkConnection() {
   if (!shark_connection_listener_) {
     shark_connection_listener_.reset(
         new pairing_chromeos::SharkConnectionListener(
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+            InputServiceProxy::GetInputServiceTaskRunner(),
             base::Bind(&WizardController::OnSharkConnected,
                        weak_factory_.GetWeakPtr())));
   }

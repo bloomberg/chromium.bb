@@ -10,11 +10,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "content/public/browser/browser_thread.h"
 #include "device/hid/input_service_linux.h"
 
 namespace chromeos {
@@ -47,12 +47,15 @@ class InputServiceProxy {
   void GetDeviceInfo(const std::string& id,
                      const GetDeviceInfoCallback& callback);
 
+  // Returns the SequencedTaskRunner for device::InputServiceLinux. Make it
+  // static so that all InputServiceProxy instances and code that needs access
+  // to device::InputServiceLinux uses the same sequence.
+  static scoped_refptr<base::SequencedTaskRunner> GetInputServiceTaskRunner();
+
   // Should be called once before any InputServiceProxy instance is created.
-  static void SetThreadIdForTesting(content::BrowserThread::ID thread_id);
+  static void SetUseUIThreadForTesting(bool use_ui_thread);
 
  private:
-  static content::BrowserThread::ID thread_identifier_;
-
   class ServiceObserver;
 
   void OnDeviceAdded(const device::InputServiceLinux::InputDeviceInfo& info);
@@ -61,9 +64,7 @@ class InputServiceProxy {
   base::ObserverList<Observer> observers_;
   std::unique_ptr<ServiceObserver> service_observer_;
 
-  base::ThreadChecker thread_checker_;
-
-  scoped_refptr<base::TaskRunner> task_runner_;
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<InputServiceProxy> weak_factory_;
 
