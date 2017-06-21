@@ -8,7 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
@@ -26,6 +26,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #import "ui/gfx/ios/uikit_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -56,24 +60,22 @@ const CGFloat kFaviconSize = 16.0;
   GTMFadeTruncatingLabel* _titleLabel;
 
   // Background image for this tab.
-  base::scoped_nsobject<UIImageView> _backgroundImageView;
+  UIImageView* _backgroundImageView;
   // This view is used to draw a separator line at the bottom of the tab view.
   // This view is hidden when the tab view is in a selected state.
-  base::scoped_nsobject<UIView> _lineSeparator;
+  UIView* _lineSeparator;
   BOOL _incognitoStyle;
 
   // Set to YES when the layout constraints have been initialized.
   BOOL _layoutConstraintsInitialized;
 
   // Image view used to draw the favicon and spinner.
-  base::scoped_nsobject<UIImageView> _faviconView;
+  UIImageView* _faviconView;
 
   // If |YES|, this view will adjust its appearance and draw as a collapsed tab.
   BOOL _collapsed;
 
-  base::scoped_nsobject<MDCActivityIndicator> _activityIndicator;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaser_TabView;
+  MDCActivityIndicator* _activityIndicator;
 }
 @end
 
@@ -115,7 +117,6 @@ const CGFloat kFaviconSize = 16.0;
 
 - (id)initWithEmptyView:(BOOL)emptyView selected:(BOOL)selected {
   if ((self = [super initWithFrame:CGRectZero])) {
-    _propertyReleaser_TabView.Init(self, [TabView class]);
     [self setOpaque:NO];
     [self createCommonViews];
     // -setSelected only calls -updateBackgroundImage if the selected state
@@ -236,19 +237,19 @@ const CGFloat kFaviconSize = 16.0;
 #pragma mark - Private
 
 - (void)createCommonViews {
-  _backgroundImageView.reset([[UIImageView alloc] init]);
+  _backgroundImageView = [[UIImageView alloc] init];
   [_backgroundImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self addSubview:_backgroundImageView];
 
-  _lineSeparator.reset([[UIView alloc] initWithFrame:CGRectZero]);
+  _lineSeparator = [[UIView alloc] initWithFrame:CGRectZero];
   [_lineSeparator setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self addSubview:_lineSeparator];
 }
 
 - (void)addCommonConstraints {
   NSDictionary* commonViewsDictionary = @{
-    @"backgroundImageView" : _backgroundImageView.get(),
-    @"lineSeparator" : _lineSeparator.get()
+    @"backgroundImageView" : _backgroundImageView,
+    @"lineSeparator" : _lineSeparator
   };
   NSArray* commonConstraints = @[
     @"H:|-0-[backgroundImageView]-0-|",
@@ -265,7 +266,7 @@ const CGFloat kFaviconSize = 16.0;
 }
 
 - (void)createButtonsAndLabel {
-  _closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+  _closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
   [_closeButton setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_closeButton setImage:[UIImage imageNamed:@"tabstrip_tab_close"]
                 forState:UIControlStateNormal];
@@ -293,15 +294,15 @@ const CGFloat kFaviconSize = 16.0;
   [self addSubview:_titleLabel];
 
   CGRect faviconFrame = CGRectMake(0, 0, kFaviconSize, kFaviconSize);
-  _faviconView.reset([[UIImageView alloc] initWithFrame:faviconFrame]);
+  _faviconView = [[UIImageView alloc] initWithFrame:faviconFrame];
   [_faviconView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_faviconView setContentMode:UIViewContentModeScaleAspectFit];
   [_faviconView setImage:[self defaultFaviconImage]];
   [_faviconView setAccessibilityIdentifier:@"Favicon"];
   [self addSubview:_faviconView];
 
-  _activityIndicator.reset(
-      [[MDCActivityIndicator alloc] initWithFrame:faviconFrame]);
+  _activityIndicator =
+      [[MDCActivityIndicator alloc] initWithFrame:faviconFrame];
   [_activityIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_activityIndicator
       setCycleColors:@[ [[MDCPalette cr_bluePalette] tint500] ]];

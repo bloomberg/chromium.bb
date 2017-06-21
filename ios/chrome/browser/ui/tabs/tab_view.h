@@ -15,11 +15,11 @@
 // View class that draws a Chrome-style tab.
 @interface TabView : UIControl
 
-@property(nonatomic, readonly, retain) UIButton* closeButton;
-@property(nonatomic, readonly, retain) GTMFadeTruncatingLabel* titleLabel;
-@property(nonatomic, retain) UIImage* favicon;
+@property(nonatomic, readonly, strong) UIButton* closeButton;
+@property(nonatomic, readonly, strong) GTMFadeTruncatingLabel* titleLabel;
+@property(nonatomic, strong) UIImage* favicon;
 @property(nonatomic, assign, getter=isCollapsed) BOOL collapsed;
-@property(nonatomic, retain) UIImage* background;
+@property(nonatomic, strong) UIImage* background;
 @property(nonatomic, assign) BOOL incognitoStyle;
 
 // Designated initializer.  Creates a TabView with frame equal to CGRectZero.

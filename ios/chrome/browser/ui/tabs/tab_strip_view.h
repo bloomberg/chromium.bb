@@ -28,10 +28,10 @@ extern NSString* const kTabStripViewFrameDidChangeNotification;
 // tab overflow behavior.
 @interface TabStripView : UIScrollView {
  @private
-  id<TabStripViewLayoutDelegate> layoutDelegate_;
+  id<TabStripViewLayoutDelegate> __weak layoutDelegate_;
 }
 
-@property(nonatomic, readwrite, assign) id<TabStripViewLayoutDelegate>
+@property(nonatomic, readwrite, weak) id<TabStripViewLayoutDelegate>
     layoutDelegate;
 
 @end
