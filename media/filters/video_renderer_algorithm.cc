@@ -13,10 +13,6 @@ namespace media {
 
 const int kMaxOutOfOrderFrameLogs = 10;
 
-// The number of frames to store for moving average calculations.  Value picked
-// after experimenting with playback of various local media and YouTube clips.
-const int kMovingAverageSamples = 32;
-
 VideoRendererAlgorithm::ReadyFrame::ReadyFrame(
     const scoped_refptr<VideoFrame>& ready_frame)
     : frame(ready_frame),
