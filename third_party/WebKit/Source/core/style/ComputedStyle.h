@@ -694,36 +694,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void SetContent(ContentData*);
 
-  // Flex properties.
-  // flex-basis (aka -webkit-flex-basis)
-  static Length InitialFlexBasis() { return Length(kAuto); }
-  const Length& FlexBasis() const {
-    return rare_non_inherited_data_->flexible_box_data_->flex_basis_;
-  }
-  void SetFlexBasis(const Length& length) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_basis_,
-                   length);
-  }
-
-  // flex-grow (aka -webkit-flex-grow)
-  static float InitialFlexGrow() { return 0; }
-  float FlexGrow() const {
-    return rare_non_inherited_data_->flexible_box_data_->flex_grow_;
-  }
-  void SetFlexGrow(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_grow_, f);
-  }
-
-  // flex-shrink (aka -webkit-flex-shrink)
-  static float InitialFlexShrink() { return 1; }
-  float FlexShrink() const {
-    return rare_non_inherited_data_->flexible_box_data_->flex_shrink_;
-  }
-  void SetFlexShrink(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_shrink_,
-                   f);
-  }
-
   // -webkit-box-ordinal-group
   static unsigned InitialBoxOrdinalGroup() { return 1; }
   unsigned BoxOrdinalGroup() const {
