@@ -8,7 +8,7 @@ function test()
     function createNetworkRequestWithJSONMIMEType(type)
     {
         InspectorTest.addResult("Creating a NetworkRequest with type: " + type);
-        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), 0, 'http://localhost');
+        var request = new SDK.NetworkRequest(0, 'http://localhost');
         request.mimeType = type;
         request._contentData = Promise.resolve({ error: null, content: '{"number": 42}', encoded: false });
         return request;

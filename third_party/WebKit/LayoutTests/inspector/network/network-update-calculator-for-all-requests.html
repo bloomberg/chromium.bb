@@ -11,7 +11,7 @@ function test() {
 
     function appendRequest(id, type, startTime, endTime)
     {
-        var request = new SDK.NetworkRequest(InspectorTest.networkManager, "", "", "", "", "");
+        var request = new SDK.NetworkRequest("", "", "", "", "");
         request.setResourceType(type);
         request.setRequestId(id);
         request.setIssueTime(startTime);

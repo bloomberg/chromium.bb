@@ -10,7 +10,7 @@ function test()
 
     InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Secure, true, [], insecureContentStatus, null));
 
-    var request = new SDK.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
+    var request = new SDK.NetworkRequest(0, "http://foo.test", "https://foo.test", 0, 0, null);
     InspectorTest.dispatchRequestFinished(request);
 
     var explanations = Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");

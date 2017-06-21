@@ -7,7 +7,7 @@ function test() {
     function checkQuery(query)
     {
         var url = "http://webkit.org?" + query;
-        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), url, url, "", "", "");
+        var request = new SDK.NetworkRequest(url, url, "", "", "");
         InspectorTest.addResult("Query: " + request.queryString());
         var params = request.queryParameters;
         InspectorTest.addResult("Parameters: ");

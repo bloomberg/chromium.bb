@@ -18,7 +18,7 @@ function test()
 
     function responseReceived(requestId, time, resourceType, response)
     {
-        var request = InspectorTest.networkLog.requestForId(InspectorTest.networkManager, requestId);
+        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         if (/download\.zzz/.exec(request.url())) {
             InspectorTest.addResult("Received response for download.zzz");
             InspectorTest.addResult("SUCCESS");
@@ -28,14 +28,14 @@ function test()
 
     function loadingFinished(requestId, finishTime)
     {
-        var request = InspectorTest.networkLog.requestForId(InspectorTest.networkManager, requestId);
+        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         if (/download\.zzz/.exec(request.url()))
             InspectorTest.completeTest();
     }
 
     function loadingFailed(requestId, time, localizedDescription, canceled)
     {
-        var request = InspectorTest.networkLog.requestForId(InspectorTest.networkManager, requestId);
+        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         if (/download\.zzz/.exec(request.url()))
             InspectorTest.completeTest();
     }

@@ -8,7 +8,7 @@ async function test()
     function createNetworkRequest(mimeType, content, statusCode)
     {
         InspectorTest.addResult("Creating a NetworkRequest with mimeType: " + mimeType);
-        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), 0, 'http://localhost');
+        var request = new SDK.NetworkRequest(0, 'http://localhost');
         InspectorTest.addResult("Content: " + content.replace(/\0/g, "**NULL**"));
         request.mimeType = mimeType;
         request._contentData = Promise.resolve({error: null, content: content, encoded: false});
