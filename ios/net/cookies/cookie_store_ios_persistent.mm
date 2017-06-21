@@ -57,6 +57,18 @@ void CookieStoreIOSPersistent::SetCookieWithDetailsAsync(
       WrapSetCallback(callback));
 }
 
+void CookieStoreIOSPersistent::SetCanonicalCookieAsync(
+    std::unique_ptr<CanonicalCookie> cookie,
+    bool secure_source,
+    bool modify_http_only,
+    const SetCookiesCallback& callback) {
+  DCHECK(thread_checker().CalledOnValidThread());
+
+  cookie_monster()->SetCanonicalCookieAsync(std::move(cookie), secure_source,
+                                            modify_http_only,
+                                            WrapSetCallback(callback));
+}
+
 void CookieStoreIOSPersistent::GetCookiesWithOptionsAsync(
     const GURL& url,
     const net::CookieOptions& options,

@@ -864,6 +864,17 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    .IsCanonical());
 }
 
+TEST(CanonicalCookieTest, TestSetCreationDate) {
+  CanonicalCookie cookie("A", "B", "x.y", "/path", base::Time(), base::Time(),
+                         base::Time(), false, false,
+                         CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW);
+  EXPECT_TRUE(cookie.CreationDate().is_null());
+
+  base::Time now(base::Time::Now());
+  cookie.SetCreationDate(now);
+  EXPECT_EQ(now, cookie.CreationDate());
+}
+
 TEST(CanonicalCookieTest, TestPrefixHistograms) {
   base::HistogramTester histograms;
   const char kCookiePrefixHistogram[] = "Cookie.CookiePrefix";

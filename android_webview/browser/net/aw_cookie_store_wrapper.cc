@@ -16,8 +16,8 @@ namespace android_webview {
 namespace {
 
 // Posts |task| to the thread that the global CookieStore lives on.
-void PostTaskToCookieStoreTaskRunner(const base::Closure& task) {
-  GetCookieStoreTaskRunner()->PostTask(FROM_HERE, task);
+void PostTaskToCookieStoreTaskRunner(base::OnceClosure task) {
+  GetCookieStoreTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 
 // Wraps a subscription to cookie change notifications for the global
@@ -128,6 +128,15 @@ void SetCookieWithDetailsAsyncOnCookieThread(
       last_access_time, secure, http_only, same_site, priority, callback);
 }
 
+void SetCanonicalCookieAsyncOnCookieThread(
+    std::unique_ptr<net::CanonicalCookie> cookie,
+    bool secure_source,
+    bool modify_http_only,
+    const net::CookieStore::SetCookiesCallback& callback) {
+  GetCookieStore()->SetCanonicalCookieAsync(std::move(cookie), secure_source,
+                                            modify_http_only, callback);
+}
+
 void GetCookiesWithOptionsAsyncOnCookieThread(
     const GURL& url,
     const net::CookieOptions& options,
@@ -228,6 +237,17 @@ void AwCookieStoreWrapper::SetCookieWithDetailsAsync(
                  domain, path, creation_time, expiration_time, last_access_time,
                  secure, http_only, same_site, priority,
                  CreateWrappedCallback<bool>(callback)));
+}
+
+void AwCookieStoreWrapper::SetCanonicalCookieAsync(
+    std::unique_ptr<net::CanonicalCookie> cookie,
+    bool secure_source,
+    bool modify_http_only,
+    const SetCookiesCallback& callback) {
+  DCHECK(client_task_runner_->RunsTasksOnCurrentThread());
+  PostTaskToCookieStoreTaskRunner(base::BindOnce(
+      &SetCanonicalCookieAsyncOnCookieThread, std::move(cookie), secure_source,
+      modify_http_only, CreateWrappedCallback<bool>(callback)));
 }
 
 void AwCookieStoreWrapper::GetCookiesWithOptionsAsync(

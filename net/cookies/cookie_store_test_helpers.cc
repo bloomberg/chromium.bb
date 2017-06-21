@@ -92,6 +92,14 @@ void DelayedCookieMonster::SetCookieWithDetailsAsync(
   NOTREACHED();
 }
 
+void DelayedCookieMonster::SetCanonicalCookieAsync(
+    std::unique_ptr<CanonicalCookie> cookie,
+    bool secure_source,
+    bool modify_http_only,
+    const SetCookiesCallback& callback) {
+  NOTREACHED();
+}
+
 void DelayedCookieMonster::GetCookiesWithOptionsAsync(
     const GURL& url,
     const CookieOptions& options,

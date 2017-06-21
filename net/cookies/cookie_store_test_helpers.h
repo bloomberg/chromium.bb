@@ -45,6 +45,11 @@ class DelayedCookieMonster : public CookieStore {
                                  CookiePriority priority,
                                  const SetCookiesCallback& callback) override;
 
+  void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
+                               bool secure_source,
+                               bool modify_http_only,
+                               const SetCookiesCallback& callback) override;
+
   void GetCookiesWithOptionsAsync(
       const GURL& url,
       const CookieOptions& options,

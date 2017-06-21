@@ -694,6 +694,42 @@ int CookieMonster::DeleteCanonicalCookieTask::RunDeleteTask() {
   return this->cookie_monster()->DeleteCanonicalCookie(cookie_);
 }
 
+// Task class for SetCanonicalCookie call.
+class CookieMonster::SetCanonicalCookieTask : public CookieMonsterTask {
+ public:
+  SetCanonicalCookieTask(CookieMonster* cookie_monster,
+                         std::unique_ptr<CanonicalCookie> cookie,
+                         bool secure_source,
+                         bool modify_http_only,
+                         const SetCookiesCallback& callback)
+      : CookieMonsterTask(cookie_monster),
+        cookie_(std::move(cookie)),
+        secure_source_(secure_source),
+        modify_http_only_(modify_http_only),
+        callback_(callback) {}
+
+  // CookieMonsterTask:
+  void Run() override;
+
+ protected:
+  ~SetCanonicalCookieTask() override {}
+
+ private:
+  std::unique_ptr<CanonicalCookie> cookie_;
+  bool secure_source_;
+  bool modify_http_only_;
+  SetCookiesCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetCanonicalCookieTask);
+};
+
+void CookieMonster::SetCanonicalCookieTask::Run() {
+  bool result = this->cookie_monster()->SetCanonicalCookie(
+      std::move(cookie_), secure_source_, modify_http_only_);
+  if (!callback_.is_null())
+    callback_.Run(result);
+}
+
 // Task class for SetCookieWithOptions call.
 class CookieMonster::SetCookieWithOptionsTask : public CookieMonsterTask {
  public:
@@ -902,6 +938,22 @@ void CookieMonster::SetAllCookiesAsync(const CookieList& list,
   DoCookieTask(task);
 }
 
+void CookieMonster::SetCanonicalCookieAsync(
+    std::unique_ptr<CanonicalCookie> cookie,
+    bool secure_source,
+    bool modify_http_only,
+    const SetCookiesCallback& callback) {
+  DCHECK(cookie->IsCanonical());
+  scoped_refptr<SetCanonicalCookieTask> task = new SetCanonicalCookieTask(
+      this, std::move(cookie), secure_source, modify_http_only, callback);
+
+  // TODO(rdsmith): Switch to DoCookieTaskForURL (or the equivalent).
+  // This is tricky because we don't have the scheme in this routine
+  // and DoCookieTaskForURL uses cookie_util::GetEffectiveDomain(scheme, host)
+  // to generate the database key to block behind.
+  DoCookieTask(task);
+}
+
 void CookieMonster::SetCookieWithOptionsAsync(
     const GURL& url,
     const std::string& cookie_line,
@@ -1067,16 +1119,6 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   if (!HasCookieableScheme(url))
     return false;
 
-  // TODO(mmenke): This class assumes each cookie to have a unique creation
-  // time. Allowing the caller to set the creation time violates that
-  // assumption. Worth fixing? Worth noting that time changes between browser
-  // restarts can cause the same issue.
-  base::Time actual_creation_time = creation_time;
-  if (creation_time.is_null()) {
-    actual_creation_time = CurrentTime();
-    last_time_seen_ = actual_creation_time;
-  }
-
   // Validate consistency of passed arguments.
   if (ParsedCookie::ParseTokenString(name) != name ||
       ParsedCookie::ParseValueString(value) != value ||
@@ -1103,9 +1145,8 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                             canon_path_component.len);
 
   std::unique_ptr<CanonicalCookie> cc(base::MakeUnique<CanonicalCookie>(
-      name, value, cookie_domain, cookie_path, actual_creation_time,
-      expiration_time, last_access_time, secure, http_only, same_site,
-      priority));
+      name, value, cookie_domain, cookie_path, creation_time, expiration_time,
+      last_access_time, secure, http_only, same_site, priority));
 
   return SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(), true);
 }
@@ -1765,9 +1806,19 @@ bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   if (cc->IsSecure() && !secure_source)
     return false;
 
-  Time creation_time = cc->CreationDate();
   const std::string key(GetKey(cc->Domain()));
-  bool already_expired = cc->IsExpired(creation_time);
+
+  // TODO(mmenke): This class assumes each cookie to have a unique creation
+  // time. Allowing the caller to set the creation time violates that
+  // assumption. Worth fixing? Worth noting that time changes between browser
+  // restarts can cause the same issue.
+  base::Time creation_date = cc->CreationDate();
+  if (creation_date.is_null()) {
+    creation_date = CurrentTime();
+    cc->SetCreationDate(creation_date);
+    last_time_seen_ = creation_date;
+  }
+  bool already_expired = cc->IsExpired(creation_date);
 
   if (DeleteAnyEquivalentCookie(key, *cc, secure_source, !modify_http_only,
                                 already_expired)) {
@@ -1789,7 +1840,7 @@ bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     // See InitializeHistograms() for details.
     if (cc->IsPersistent()) {
       histogram_expiration_duration_minutes_->Add(
-          (cc->ExpiryDate() - creation_time).InMinutes());
+          (cc->ExpiryDate() - creation_date).InMinutes());
     }
 
     // Histogram the type of scheme used on URLs that set cookies. This
@@ -1817,7 +1868,7 @@ bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   // make sure that we garbage collect...  We can also make the assumption that
   // if a cookie was set, in the common case it will be used soon after,
   // and we will purge the expired cookies in GetCookies().
-  GarbageCollect(creation_time, key);
+  GarbageCollect(creation_date, key);
 
   return true;
 }
