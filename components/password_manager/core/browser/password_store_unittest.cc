@@ -31,6 +31,9 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -981,28 +984,28 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
-  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterStringPref(prefs::kSyncPasswordHash, std::string(),
+                                       PrefRegistry::NO_REGISTRATION_FLAGS);
+  ASSERT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
+  store->Init(syncer::SyncableService::StartSyncFlare(), &prefs);
 
   const base::string16 sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveSyncPasswordHash(sync_password);
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
 
-  // Check that sync password reuse is found.
-  MockPasswordReuseDetectorConsumer mock_consumer;
-  EXPECT_CALL(
-      mock_consumer,
-      OnReuseFound(sync_password, std::string(kSyncPasswordDomain), 1, 0));
-  store->CheckReuse(input, "https://facebook.com", &mock_consumer);
-  base::RunLoop().RunUntilIdle();
-  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+  // TODO(crbug.com/657041): Check that password reuse works when sync hash
+  // calculation is implemented.
 
   // Check that no sync password reuse is found after clearing the saved sync
   // password hash.
   store->ClearSyncPasswordHash();
-  EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
-  store->CheckReuse(input, "https://facebook.com", &mock_consumer);
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
+  // TODO(crbug.com/657041): Check that no password reuse happens here when sync
+  // hash calculation is implemented.
 
   store->ShutdownOnUIThread();
   base::RunLoop().RunUntilIdle();

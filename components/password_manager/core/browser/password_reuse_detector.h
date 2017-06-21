@@ -15,10 +15,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-
-class PrefService;
 
 namespace password_manager {
 
@@ -39,7 +38,7 @@ extern const char kSyncPasswordDomain[];
 // a password reuse.
 class PasswordReuseDetector : public PasswordStoreConsumer {
  public:
-  explicit PasswordReuseDetector(PrefService* prefs);
+  PasswordReuseDetector();
   ~PasswordReuseDetector() override;
 
   // PasswordStoreConsumer
@@ -58,8 +57,8 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
                   const std::string& domain,
                   PasswordReuseDetectorConsumer* consumer);
 
-  // Saves a hash of |password| for password reuse checking.
-  void SaveSyncPasswordHash(const base::string16& password);
+  // Stores internal |sync_password_data| for password reuse checking.
+  void UseSyncPasswordHash(base::Optional<SyncPasswordData> sync_password_data);
 
   // Clears a sync password hash if it was saved.
   void ClearSyncPasswordHash();
@@ -99,8 +98,7 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // of times how many different sites it's saved on.
   int saved_passwords_ = 0;
 
-  base::Optional<uint64_t> sync_password_hash_;
-  PrefService* const prefs_;
+  base::Optional<SyncPasswordData> sync_password_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetector);
 };

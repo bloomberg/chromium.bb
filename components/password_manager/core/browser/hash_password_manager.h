@@ -23,7 +23,7 @@ struct SyncPasswordData {
 // All methods should be called on UI thread.
 class HashPasswordManager {
  public:
-  explicit HashPasswordManager(PrefService* prefs);
+  HashPasswordManager() = default;
   ~HashPasswordManager() = default;
 
   void SavePasswordHash(const base::string16& password);
@@ -32,8 +32,10 @@ class HashPasswordManager {
   // Returns empty if no hash is available.
   base::Optional<SyncPasswordData> RetrievePasswordHash();
 
+  void set_prefs(PrefService* prefs) { prefs_ = prefs; }
+
  private:
-  PrefService* const prefs_;
+  PrefService* prefs_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(HashPasswordManager);
 };
