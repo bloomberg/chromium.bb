@@ -104,6 +104,7 @@ source_set("unit_tests") {
     "ranker_model_unittest.cc",
     "translate_accept_languages_unittest.cc",
     "translate_browser_metrics_unittest.cc",
+    "translate_experiment_unittest.cc",
     "translate_language_list_unittest.cc",
     "translate_manager_unittest.cc",
     "translate_prefs_unittest.cc",
