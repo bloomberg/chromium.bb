@@ -18,6 +18,7 @@
 #include <string>
 
 #include "base/environment.h"
+#include "base/files/file.h"
 #include "base/i18n/case_conversion.h"
 #include "base/scoped_generic.h"
 #include "base/strings/string_util.h"
@@ -217,6 +218,21 @@ void GetCatalogCertificateInfo(const base::FilePath& filename,
   certificate_info->subject = subject;
 }
 
+// Helper function to get a value at a specific offset in a buffer. Also does
+// bounds checking.
+template <typename T>
+bool GetValueAtOffset(const char* buffer,
+                      uint64_t offset,
+                      const size_t buffer_size,
+                      T* result) {
+  // Bounds checking.
+  if (offset + sizeof(T) >= buffer_size)
+    return false;
+
+  memcpy(result, &buffer[offset], sizeof(T));
+  return true;
+}
+
 }  // namespace
 
 // ModuleDatabase::CertificateInfo ---------------------------------------------
@@ -288,4 +304,54 @@ void CollapseMatchingPrefixInPath(const StringMapping& prefix_mapping,
       }
     }
   }
+}
+
+bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
+                                        uint32_t* size_of_image,
+                                        uint32_t* time_date_stamp) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return false;
+
+  // The values fetched here from the NT header live in the first 4k bytes of
+  // the file in a well-formed dll.
+  constexpr size_t kPageSize = 4096;
+
+  char buffer[kPageSize];
+  int bytes_read = file.Read(0, buffer, kPageSize);
+  if (bytes_read == -1)
+    return false;
+
+  // Get NT header offset.
+  uint64_t nt_header_offset = offsetof(IMAGE_DOS_HEADER, e_lfanew);
+
+  LONG e_lfanew = 0;
+  if (!GetValueAtOffset(buffer, nt_header_offset, bytes_read, &e_lfanew))
+    return false;
+
+  // Check magic signature.
+  uint64_t nt_signature_offset =
+      e_lfanew + offsetof(IMAGE_NT_HEADERS, Signature);
+
+  DWORD nt_signature = 0;
+  if (!GetValueAtOffset(buffer, nt_signature_offset, bytes_read, &nt_signature))
+    return false;
+
+  if (nt_signature != IMAGE_NT_SIGNATURE)
+    return false;
+
+  // Get SizeOfImage.
+  uint64_t size_of_image_offset = e_lfanew +
+                                  offsetof(IMAGE_NT_HEADERS, OptionalHeader) +
+                                  offsetof(IMAGE_OPTIONAL_HEADER, SizeOfImage);
+  if (!GetValueAtOffset(buffer, size_of_image_offset, bytes_read,
+                        size_of_image))
+    return false;
+
+  // Get TimeDateStamp.
+  uint64_t time_date_stamp_offset = e_lfanew +
+                                    offsetof(IMAGE_NT_HEADERS, FileHeader) +
+                                    offsetof(IMAGE_FILE_HEADER, TimeDateStamp);
+  return GetValueAtOffset(buffer, time_date_stamp_offset, bytes_read,
+                          time_date_stamp);
 }
