@@ -55,10 +55,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(zakerinasab): check / generate reference images.
     self.Fail('Pixel_Canvas2DUntagged', bug=713632)
 
-    # TODO(fmalita): remove when new baselines are available.
-    self.Fail('Pixel_CSSFilterEffects', bug=731693)
-    self.Fail('Pixel_CSSFilterEffects_NoOverlays', bug=731693)
-
     # Failures on Haswell GPUs on macOS after upgrade to 10.12.4.
     self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker',
               ['mac', ('intel', 0x0a2e)], bug=718183)
