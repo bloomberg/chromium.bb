@@ -481,13 +481,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetBrowserContext(
       base::MakeUnique<CastBrowserContext>(url_request_context_factory_));
   cast_browser_process_->SetMetricsServiceClient(
-      metrics::CastMetricsServiceClient::Create(
-          content::BrowserThread::GetBlockingPool(),
+      base::MakeUnique<metrics::CastMetricsServiceClient>(
           cast_browser_process_->pref_service(),
           content::BrowserContext::GetDefaultStoragePartition(
-              cast_browser_process_->browser_context())->
-                  GetURLRequestContext()));
-
+              cast_browser_process_->browser_context())
+              ->GetURLRequestContext()));
   cast_browser_process_->SetRemoteDebuggingServer(
       base::MakeUnique<RemoteDebuggingServer>(
           cast_browser_process_->browser_client()

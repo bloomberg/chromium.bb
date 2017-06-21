@@ -49,18 +49,12 @@ class NetworkMetricsProvider
     DISALLOW_COPY_AND_ASSIGN(NetworkQualityEstimatorProvider);
   };
 
-  // Creates a NetworkMetricsProvider, where |io_task_runner| is used to post
-  // network info collection tasks.
-  explicit NetworkMetricsProvider(base::TaskRunner* io_task_runner);
-
-  // Creates a NetworkMetricsProvider, where |io_task_runner| is used to post
-  // network info collection tasks.  |network_quality_estimator_provider|
-  // should be set if it is useful to attach the quality of the network to the
-  // metrics report.
-  NetworkMetricsProvider(std::unique_ptr<NetworkQualityEstimatorProvider>
-                             network_quality_estimator_provider,
-                         base::TaskRunner* io_task_runner);
-
+  // Creates a NetworkMetricsProvider, where
+  // |network_quality_estimator_provider| should be set if it is useful to
+  // attach the quality of the network to the metrics report.
+  explicit NetworkMetricsProvider(
+      std::unique_ptr<NetworkQualityEstimatorProvider>
+          network_quality_estimator_provider = nullptr);
   ~NetworkMetricsProvider() override;
 
  private:
@@ -103,9 +97,6 @@ class NetworkMetricsProvider
   // Notifies |this| that the effective connection type of the current network
   // has changed to |type|.
   void OnEffectiveConnectionTypeChanged(net::EffectiveConnectionType type);
-
-  // Task runner used for blocking file I/O.
-  base::TaskRunner* io_task_runner_;
 
   // True if |connection_type_| changed during the lifetime of the log.
   bool connection_type_is_ambiguous_;

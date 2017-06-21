@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "net/base/network_change_notifier.h"
@@ -49,7 +49,9 @@ class TestNetworkQualityEstimatorProvider
 
 class NetworkMetricsProviderTest : public testing::Test {
  protected:
-  NetworkMetricsProviderTest() : loop_(base::MessageLoop::TYPE_IO) {
+  NetworkMetricsProviderTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
 #if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
@@ -57,7 +59,7 @@ class NetworkMetricsProviderTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Verifies that the effective connection type is correctly set.
@@ -68,7 +70,7 @@ TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
           new TestNetworkQualityEstimatorProvider(&estimator)));
   SystemProfileProto system_profile;
   NetworkMetricsProvider network_metrics_provider(
-      std::move(estimator_provider), base::ThreadTaskRunnerHandle::Get().get());
+      std::move(estimator_provider));
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             network_metrics_provider.effective_connection_type_);
@@ -126,7 +128,7 @@ TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
           new TestNetworkQualityEstimatorProvider(&estimator)));
   SystemProfileProto system_profile;
   NetworkMetricsProvider network_metrics_provider(
-      std::move(estimator_provider), base::ThreadTaskRunnerHandle::Get().get());
+      std::move(estimator_provider));
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             network_metrics_provider.effective_connection_type_);
