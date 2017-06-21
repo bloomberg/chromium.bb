@@ -115,12 +115,6 @@ class PresentationServiceDelegateImpl
   void Terminate(int render_process_id,
                  int render_frame_id,
                  const std::string& presentation_id) override;
-  void ListenForConnectionMessages(
-      int render_process_id,
-      int render_frame_id,
-      const content::PresentationInfo& presentation_info,
-      const content::PresentationConnectionMessageCallback& message_cb)
-      override;
   void SendMessage(int render_process_id,
                    int render_frame_id,
                    const content::PresentationInfo& presentation_info,
@@ -185,6 +179,8 @@ class PresentationServiceDelegateImpl
                            DefaultPresentationUrlCallback);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            TestCloseConnectionForOffscreenPresentation);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
+                           ConnectToOffscreenPresentation);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            ConnectToPresentation);
 

@@ -489,14 +489,8 @@ void PresentationDispatcher::OnDefaultPresentationStarted(
           presentation_info.presentation_url,
           blink::WebString::FromUTF8(presentation_info.presentation_id)));
 
-  if (connection) {
+  if (connection)
     SetControllerConnection(presentation_info, connection);
-    // Change blink connection state to 'connected' before listening to
-    // connection message. Remove ListenForConnectionMessage() after
-    // TODO(crbug.com/687011): use BrowserPresentationConnectionProxy to send
-    // message from route to blink connection.
-    presentation_service_->ListenForConnectionMessages(presentation_info);
-  }
 }
 
 void PresentationDispatcher::OnConnectionCreated(
@@ -516,12 +510,7 @@ void PresentationDispatcher::OnConnectionCreated(
   callback->OnSuccess(blink::WebPresentationInfo(
       presentation_info->presentation_url,
       blink::WebString::FromUTF8(presentation_info->presentation_id)));
-  // Change blink connection state to 'connected' before listening to
-  // connection message. Remove ListenForConnectionMessage() after
-  // TODO(crbug.com/687011): use BrowserPresentationConnectionProxy to send
-  // message from route to blink connection.
   SetControllerConnection(presentation_info.value(), callback->GetConnection());
-  presentation_service_->ListenForConnectionMessages(presentation_info.value());
 }
 
 void PresentationDispatcher::OnReceiverConnectionAvailable(
@@ -571,32 +560,6 @@ void PresentationDispatcher::OnConnectionClosed(
           blink::WebString::FromUTF8(presentation_info.presentation_id)),
       GetWebPresentationConnectionCloseReason(reason),
       blink::WebString::FromUTF8(message));
-}
-
-void PresentationDispatcher::OnConnectionMessagesReceived(
-    const PresentationInfo& presentation_info,
-    std::vector<PresentationConnectionMessage> messages) {
-  if (!controller_)
-    return;
-
-  for (size_t i = 0; i < messages.size(); ++i) {
-    // Note: Passing batches of messages to the Blink layer would be more
-    // efficient.
-    auto web_presentation_info = blink::WebPresentationInfo(
-        presentation_info.presentation_url,
-        blink::WebString::FromUTF8(presentation_info.presentation_id));
-
-    if (messages[i].is_binary()) {
-      controller_->DidReceiveConnectionBinaryMessage(
-          web_presentation_info, &(messages[i].data->front()),
-          messages[i].data->size());
-    } else {
-      DCHECK(messages[i].message);
-      controller_->DidReceiveConnectionTextMessage(
-          web_presentation_info,
-          blink::WebString::FromUTF8(*messages[i].message));
-    }
-  }
 }
 
 void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {

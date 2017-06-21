@@ -26,4 +26,7 @@ MockMediaRoutesObserver::MockMediaRoutesObserver(MediaRouter* router,
 MockMediaRoutesObserver::~MockMediaRoutesObserver() {
 }
 
+MockPresentationConnectionProxy::MockPresentationConnectionProxy() {}
+MockPresentationConnectionProxy::~MockPresentationConnectionProxy() {}
+
 }  // namespace media_router

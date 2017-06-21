@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_BROWSER_PRESENTATION_CONNECTION_PROXY_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_BROWSER_PRESENTATION_CONNECTION_PROXY_H_
 
+#include <vector>
+
+#include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/common/media_router/media_route.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/common/presentation_connection_message.h"
@@ -37,7 +40,8 @@ class MediaRouter;
 // |route_| is closed or terminated, instance of this class will be destroyed.
 
 class BrowserPresentationConnectionProxy
-    : public NON_EXPORTED_BASE(blink::mojom::PresentationConnection) {
+    : public NON_EXPORTED_BASE(blink::mojom::PresentationConnection),
+      public RouteMessageObserver {
  public:
   using OnMessageCallback = base::OnceCallback<void(bool)>;
 
@@ -66,6 +70,9 @@ class BrowserPresentationConnectionProxy
   // Underlying media route is always connected. Media route class does not
   // support state change.
   void OnClose() override {}
+
+  // RouteMessageObserver implementation.
+  void OnMessagesReceived(const std::vector<RouteMessage>& messages) override;
 
  private:
   // |router_| not owned by this class.

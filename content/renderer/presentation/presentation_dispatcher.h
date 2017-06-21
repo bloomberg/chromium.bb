@@ -166,9 +166,6 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnConnectionClosed(const PresentationInfo& presentation_info,
                           PresentationConnectionCloseReason reason,
                           const std::string& message) override;
-  void OnConnectionMessagesReceived(
-      const PresentationInfo& presentation_info,
-      std::vector<PresentationConnectionMessage> messages) override;
   void OnDefaultPresentationStarted(
       const PresentationInfo& presentation_info) override;
 

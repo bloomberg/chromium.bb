@@ -631,10 +631,7 @@ TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {
   service_impl.SetClient(std::move(client_ptr));
   EXPECT_FALSE(callback.is_null());
 
-  // NO-OP for ControllerPresentationServiceDelegate API functions
   PresentationInfo presentation_info(presentation_url1_, kPresentationId);
-  EXPECT_CALL(mock_delegate_, ListenForConnectionMessages(_, _, _, _)).Times(0);
-  service_impl.ListenForConnectionMessages(presentation_info);
 
   // Client gets notified of receiver connections.
   blink::mojom::PresentationConnectionPtr controller_connection;
