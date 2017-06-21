@@ -2588,7 +2588,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Bad disable reasons"/>
 </enum>
 
-<enum name="BaseRelocationType">
+<enum name="BankNameDisplayedFormEvent" type="int">
+  <int value="0" label="Suggestions shown with bank name available (once)"/>
+  <int value="1"
+      label="Server suggestion filled with bank name available (once)"/>
+</enum>
+
+<enum name="BaseRelocationType" type="int">
   <int value="0" label="IMAGE_REL_BASED_ABSOLUTE"/>
   <int value="1" label="IMAGE_REL_BASED_HIGH"/>
   <int value="2" label="IMAGE_REL_BASED_LOW"/>
@@ -22072,6 +22078,7 @@ from previous Chrome versions.
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1847776781"
       label="enable-loading-ipc-optimization-for-small-resources"/>
+  <int value="-1839637286" label="AutofillCreditCardBankNameDisplay:disabled"/>
   <int value="-1838482444" label="disable-settings-window"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
@@ -22379,6 +22386,7 @@ from previous Chrome versions.
   <int value="-770319039" label="enable-touch-editing"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-759830869" label="enable-tab-discarding"/>
+  <int value="-751273871" label="AutofillCreditCardBankNameDisplay:enabled"/>
   <int value="-750175757" label="ClientLoFi:enabled"/>
   <int value="-749048160" label="enable-panels"/>
   <int value="-747463111" label="ContentSuggestionsNotifications:disabled"/>
