@@ -4,19 +4,20 @@ EXTRA_DIST =					\
 	back_cont_then_punc.yaml		\
 	begcaps_endcaps.yaml			\
 	capsnocont.yaml				\
-	capsword_for_back.yaml		\
+	capsword_for_back.yaml			\
 	chr-us-g1_harness.yaml			\
+	before_begmidword.yaml			\
 	da-dk-g08.yaml				\
-	da-dk-g16.yaml	\
+	da-dk-g16.yaml				\
 	da-dk-g16-dictionary_harness.yaml	\
-	da-dk-g16-lit.yaml	\
+	da-dk-g16-lit.yaml			\
 	da-dk-g18-dictionary_harness.yaml	\
 	da-dk-g18.yaml				\
-	da-dk-g26.yaml	\
+	da-dk-g26.yaml				\
 	da-dk-g26-dictionary_harness.yaml	\
-	da-dk-g26-lit.yaml	\
-	da-dk-g26l.yaml	\
-	da-dk-g26l-lit.yaml	\
+	da-dk-g26-lit.yaml			\
+	da-dk-g26l.yaml				\
+	da-dk-g26l-lit.yaml			\
 	da-dk-g28-dictionary_harness.yaml	\
 	da-dk-g28.yaml				\
 	da-dk-g28l.yaml				\

@@ -125,17 +125,18 @@ dist_yaml_TESTS =				\
 	yaml/capsnocont.yaml			\
 	yaml/capsword_for_back.yaml		\
 	yaml/chr-us-g1_harness.yaml		\
+	yaml/before_begmidword.yaml		\
 	yaml/da-dk-g08.yaml			\
-	yaml/da-dk-g16.yaml	\
+	yaml/da-dk-g16.yaml			\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
-		yaml/da-dk-g16-lit.yaml	\
-yaml/da-dk-g18-dictionary_harness.yaml	\
+	yaml/da-dk-g16-lit.yaml			\
+	yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/da-dk-g18.yaml			\
-	yaml/da-dk-g26.yaml	\
+	yaml/da-dk-g26.yaml			\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
-		yaml/da-dk-g26-lit.yaml	\
-	yaml/da-dk-g26l.yaml	\
-	yaml/da-dk-g26l-lit.yaml	\
+	yaml/da-dk-g26-lit.yaml			\
+	yaml/da-dk-g26l.yaml			\
+	yaml/da-dk-g26l-lit.yaml		\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
 	yaml/da-dk-g28.yaml			\
 	yaml/da-dk-g28l.yaml			\
