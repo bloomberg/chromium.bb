@@ -28,6 +28,7 @@ class MostVisitedSites;
 @protocol ContentSuggestionsHeaderProvider;
 @class ContentSuggestionIdentifier;
 class GURL;
+class NotificationPromoWhatsNew;
 
 // Mediator for ContentSuggestions. Makes the interface between a
 // ntp_snippets::ContentSuggestionsService and the Objective-C services using
@@ -51,6 +52,9 @@ initWithContentService:
 
 @property(nonatomic, weak, nullable) id<ContentSuggestionsHeaderProvider>
     headerProvider;
+
+// The notification promo owned by this mediator.
+- (nonnull NotificationPromoWhatsNew*)notificationPromo;
 
 // Blacklists the URL from the Most Visited sites.
 - (void)blacklistMostVisitedURL:(GURL)URL;

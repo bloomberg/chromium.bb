@@ -35,6 +35,8 @@ source_set("cells_ui") {
     "content_suggestions_most_visited_cell.mm",
     "content_suggestions_text_item.h",
     "content_suggestions_text_item.mm",
+    "content_suggestions_whats_new_item.h",
+    "content_suggestions_whats_new_item.mm",
     "suggested_content.h",
   ]
   deps = [
@@ -45,6 +47,7 @@ source_set("cells_ui") {
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -57,6 +60,7 @@ source_set("unit_tests") {
     "content_suggestions_header_item_unittest.mm",
     "content_suggestions_item_unittest.mm",
     "content_suggestions_most_visited_item_unittest.mm",
+    "content_suggestions_whats_new_item_unittest.mm",
   ]
   deps = [
     ":cells",

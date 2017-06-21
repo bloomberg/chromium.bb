@@ -22,6 +22,7 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
   ContentSuggestionTypeArticle,
   ContentSuggestionTypeReadingList,
   ContentSuggestionTypeMostVisited,
+  ContentSuggestionTypePromo,
 };
 
 // Updater for a CollectionViewController populating it with some items and
@@ -70,6 +71,10 @@ addSuggestionsToModel:
 
 // Returns whether |section| contains the Most Visited tiles.
 - (BOOL)isMostVisitedSection:(NSInteger)section;
+
+// Returns whether |section| contains the promo if there is one and with a
+// header containing the fake omnibox and the logo.
+- (BOOL)isHeaderSection:(NSInteger)section;
 
 // Updates the number of Most Visited tiles shown for the |size|.
 - (void)updateMostVisitedForSize:(CGSize)size;

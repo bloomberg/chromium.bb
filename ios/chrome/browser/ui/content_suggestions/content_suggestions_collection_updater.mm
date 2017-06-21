@@ -68,6 +68,8 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
     return ContentSuggestionTypeReadingList;
   if (type == ItemTypeMostVisited)
     return ContentSuggestionTypeMostVisited;
+  if (type == ItemTypePromo)
+    return ContentSuggestionTypePromo;
   // Add new type here
 
   // Default type.
@@ -408,6 +410,11 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   return
       [self.collectionViewController.collectionViewModel
           sectionIdentifierForSection:section] == SectionIdentifierMostVisited;
+}
+
+- (BOOL)isHeaderSection:(NSInteger)section {
+  return [self.collectionViewController.collectionViewModel
+             sectionIdentifierForSection:section] == SectionIdentifierLogo;
 }
 
 - (void)updateMostVisitedForSize:(CGSize)size {
