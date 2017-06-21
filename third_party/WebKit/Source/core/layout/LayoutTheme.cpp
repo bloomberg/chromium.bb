@@ -340,6 +340,10 @@ Color LayoutTheme::PlatformGrammarMarkerUnderlineColor() const {
   return Color(192, 192, 192);
 }
 
+Color LayoutTheme::PlatformActiveSpellingMarkerHighlightColor() const {
+  return Color(255, 0, 0, 102);
+}
+
 Color LayoutTheme::PlatformActiveSelectionBackgroundColor() const {
   // Use a blue color by default if the platform theme doesn't define anything.
   return Color(0, 0, 255);
