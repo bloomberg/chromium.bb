@@ -1780,9 +1780,21 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 
   event_recorder_.reset();
 
-  bool should_restart = !is_redundant() && !start_callbacks_.empty() &&
-                        (old_status != EmbeddedWorkerStatus::STARTING) &&
-                        !in_dtor_ && !ping_controller_->IsTimedOut();
+  // |start_callbacks_| can be non-empty if a start worker request arrived while
+  // the worker was stopping. The worker must be restarted to fulfill the
+  // request.
+  bool should_restart = !start_callbacks_.empty();
+  if (is_redundant() || in_dtor_) {
+    // This worker will be destroyed soon.
+    should_restart = false;
+  } else if (ping_controller_->IsTimedOut()) {
+    // This worker is unresponsive and restart may fail.
+    should_restart = false;
+  } else if (old_status == EmbeddedWorkerStatus::STARTING) {
+    // This worker unexpectedly stopped because of start failure (e.g., process
+    // allocation failure) and restart is likely to fail again.
+    should_restart = false;
+  }
 
   if (!stop_time_.is_null()) {
     TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::StopWorker",
