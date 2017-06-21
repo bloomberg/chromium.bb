@@ -325,14 +325,20 @@ bool Configuration::operator!=(const Configuration& rhs) const {
   return !(*this == rhs);
 }
 
+std::unique_ptr<base::trace_event::TracedValue>
+Configuration::ActivationConditions::ToTracedValue() const {
+  auto value = base::MakeUnique<base::trace_event::TracedValue>();
+  value->SetString("activation_scope", StreamToString(activation_scope));
+  value->SetString("activation_list", StreamToString(activation_list));
+  value->SetInteger("priority", priority);
+  return value;
+}
+
 std::unique_ptr<base::trace_event::TracedValue> Configuration::ToTracedValue()
     const {
   auto value = base::MakeUnique<base::trace_event::TracedValue>();
-  value->SetString("activation_scope",
-                   StreamToString(activation_conditions.activation_scope));
-  value->SetString("activation_list",
-                   StreamToString(activation_conditions.activation_list));
-  value->SetInteger("priority", activation_conditions.priority);
+  auto traced_conditions = activation_conditions.ToTracedValue();
+  value->SetValue("activation_conditions", *traced_conditions);
   value->SetString("activation_level",
                    StreamToString(activation_options.activation_level));
   value->SetDouble("performance_measurement_rate",
