@@ -215,13 +215,16 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // For access to getTransformCache() and setCachedTransform.
   friend class GeometryMapper;
   friend class GeometryMapperTest;
-  friend class GeometryMapperTransformCache;
 
-  const GeometryMapperTransformCache& GetTransformCache() const {
-    if (!transform_cache_)
-      transform_cache_.reset(new GeometryMapperTransformCache);
-    transform_cache_->UpdateIfNeeded(*this);
-    return *transform_cache_;
+  GeometryMapperTransformCache& GetTransformCache() const {
+    return const_cast<TransformPaintPropertyNode*>(this)->GetTransformCache();
+  }
+
+  GeometryMapperTransformCache& GetTransformCache() {
+    if (!geometry_mapper_transform_cache_)
+      geometry_mapper_transform_cache_.reset(
+          new GeometryMapperTransformCache());
+    return *geometry_mapper_transform_cache_.get();
   }
 
   RefPtr<const TransformPaintPropertyNode> parent_;
@@ -233,7 +236,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   CompositorElementId compositor_element_id_;
   RefPtr<ScrollPaintPropertyNode> scroll_;
 
-  mutable std::unique_ptr<GeometryMapperTransformCache> transform_cache_;
+  std::unique_ptr<GeometryMapperTransformCache>
+      geometry_mapper_transform_cache_;
 };
 
 // Redeclared here to avoid ODR issues.

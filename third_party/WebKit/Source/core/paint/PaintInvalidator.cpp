@@ -126,7 +126,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
           context.tree_builder_context_->current.clip, nullptr);
 
       FloatClipRect float_rect((FloatRect(rect)));
-      GeometryMapper::LocalToAncestorVisualRect(
+      GeometryMapper::SourceToDestinationVisualRect(
           current_tree_state, container_contents_properties, float_rect);
       result = LayoutRect(float_rect.Rect());
     }
