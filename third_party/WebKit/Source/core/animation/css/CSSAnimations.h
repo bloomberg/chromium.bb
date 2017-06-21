@@ -68,7 +68,7 @@ class CSSAnimations final {
                                        const Element* animating_element,
                                        Element&,
                                        const ComputedStyle&,
-                                       ComputedStyle* parent_style,
+                                       const ComputedStyle* parent_style,
                                        StyleResolver*);
   static void CalculateCompositorAnimationUpdate(
       CSSAnimationUpdate&,

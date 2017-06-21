@@ -117,13 +117,12 @@ class CORE_EXPORT StyleResolverState {
     is_animating_custom_properties_ = value;
   }
 
-  void SetParentStyle(PassRefPtr<ComputedStyle> parent_style) {
+  void SetParentStyle(RefPtr<const ComputedStyle> parent_style) {
     parent_style_ = std::move(parent_style);
   }
   const ComputedStyle* ParentStyle() const { return parent_style_.Get(); }
-  ComputedStyle* ParentStyle() { return parent_style_.Get(); }
 
-  void SetLayoutParentStyle(PassRefPtr<ComputedStyle> parent_style) {
+  void SetLayoutParentStyle(RefPtr<const ComputedStyle> parent_style) {
     layout_parent_style_ = std::move(parent_style);
   }
   const ComputedStyle* LayoutParentStyle() const {
@@ -229,7 +228,7 @@ class CORE_EXPORT StyleResolverState {
 
   // parent_style_ is not always just ElementResolveContext::ParentStyle(),
   // so we keep it separate.
-  RefPtr<ComputedStyle> parent_style_;
+  RefPtr<const ComputedStyle> parent_style_;
   // This will almost-always be the same that parent_style_, except in the
   // presence of display: contents. This is the style against which we have to
   // do adjustment.

@@ -15,6 +15,11 @@
       default: false,
     },
 
+    // Controls whether the field has the "mutable" C++ keyword.
+    mutable: {
+      default: false,
+    },
+
     // The rest is the same as CSSProperties.json5, but the only relevant ones in
     // this file are:
     // name, field_template, include_paths, default_value, type_name, keyword,
@@ -82,6 +87,7 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
+      mutable: true,
     },
     // Whether this style is affected by these pseudo-classes.
     {
@@ -127,6 +133,7 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
+      mutable: true,
     },
     // These are set if we used viewport or rem units when resolving a length.
     // TODO(shend): HasViewportUnits should be a monotonic_flag.
