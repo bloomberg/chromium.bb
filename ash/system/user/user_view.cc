@@ -292,7 +292,7 @@ void UserView::AddLogoutButton(LoginStatus login) {
 void UserView::AddUserCard(LoginStatus login) {
   DCHECK(!user_card_container_);
   DCHECK(!user_card_view_);
-  user_card_view_ = new UserCardView(login, 0);
+  user_card_view_ = new UserCardView(0);
   // The entry is clickable when no system modal dialog is open and the multi
   // profile option is active.
   if (!ShellPort::Get()->IsSystemModalWindowOpen() &&
@@ -369,9 +369,8 @@ void UserView::ToggleUserDropdownWidget() {
 
   // Add other logged in users.
   for (int i = 1; i < session_controller->NumberOfLoggedInUsers(); ++i) {
-    user_dropdown_padding->AddChildView(
-        new ButtonFromView(new UserCardView(LoginStatus::USER, i), this,
-                           TrayPopupInkDropStyle::INSET_BOUNDS));
+    user_dropdown_padding->AddChildView(new ButtonFromView(
+        new UserCardView(i), this, TrayPopupInkDropStyle::INSET_BOUNDS));
   }
 
   // Add the "add user" option or the "can't add another user" message.

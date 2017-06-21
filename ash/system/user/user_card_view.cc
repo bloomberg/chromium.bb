@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/ash_view_ids.h"
-#include "ash/login_status.h"
 #include "ash/media_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
@@ -57,17 +56,18 @@ const int kUserDetailsVerticalPadding = 5;
 // and end of the user's display name in the public account user card's text.
 const base::char16 kDisplayNameMark[] = {0x2060, 0};
 
-views::View* CreateUserAvatarView(LoginStatus login_status, int user_index) {
+views::View* CreateUserAvatarView(int user_index) {
+  const mojom::UserSession* const user_session =
+      Shell::Get()->session_controller()->GetUserSession(user_index);
+
   RoundedImageView* image_view = new RoundedImageView(kTrayItemSize / 2);
-  if (login_status == LoginStatus::GUEST) {
+  if (user_session->user_info->type == user_manager::USER_TYPE_GUEST) {
     gfx::ImageSkia icon =
         gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
     image_view->SetImage(icon, icon.size());
   } else {
-    SessionController* controller = Shell::Get()->session_controller();
-    image_view->SetImage(
-        controller->GetUserSession(user_index)->user_info->avatar,
-        gfx::Size(kTrayItemSize, kTrayItemSize));
+    image_view->SetImage(user_session->user_info->avatar,
+                         gfx::Size(kTrayItemSize, kTrayItemSize));
   }
 
   image_view->SetBorder(views::CreateEmptyBorder(gfx::Insets(
@@ -281,8 +281,7 @@ void PublicAccountUserDetails::DeterminePreferredSize() {
 
 }  // namespace
 
-UserCardView::UserCardView(LoginStatus login_status, int user_index)
-    : user_index_(user_index) {
+UserCardView::UserCardView(int user_index) : user_index_(user_index) {
   auto* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
                            kTrayPopupLabelHorizontalPadding);
@@ -296,10 +295,12 @@ UserCardView::UserCardView(LoginStatus login_status, int user_index)
 
   Shell::Get()->media_controller()->AddObserver(this);
 
-  if (login_status == LoginStatus::PUBLIC)
+  const mojom::UserSession* const user_session =
+      Shell::Get()->session_controller()->GetUserSession(user_index_);
+  if (user_session->user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     AddPublicModeUserContent();
   else
-    AddUserContent(layout, login_status);
+    AddUserContent(layout);
 }
 
 UserCardView::~UserCardView() {
@@ -375,20 +376,22 @@ void UserCardView::OnMediaCaptureChanged(
 }
 
 void UserCardView::AddPublicModeUserContent() {
-  views::View* avatar = CreateUserAvatarView(LoginStatus::PUBLIC, 0);
+  // Public account user should be the only user in the system.
+  DCHECK_EQ(0, user_index_);
+  views::View* avatar = CreateUserAvatarView(user_index_);
   AddChildView(avatar);
   AddChildView(new PublicAccountUserDetails());
 }
 
-void UserCardView::AddUserContent(views::BoxLayout* layout,
-                                  LoginStatus login_status) {
-  AddChildView(CreateUserAvatarView(login_status, user_index_));
-  SessionController* controller = Shell::Get()->session_controller();
-  base::string16 user_name_string =
-      login_status == LoginStatus::GUEST
-          ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL)
-          : base::UTF8ToUTF16(controller->GetUserSession(user_index_)
-                                  ->user_info->display_name);
+void UserCardView::AddUserContent(views::BoxLayout* layout) {
+  AddChildView(CreateUserAvatarView(user_index_));
+  const mojom::UserSession* const user_session =
+      Shell::Get()->session_controller()->GetUserSession(user_index_);
+  const bool is_guest =
+      user_session->user_info->type == user_manager::USER_TYPE_GUEST;
+  const base::string16 user_name_string =
+      is_guest ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL)
+               : base::UTF8ToUTF16(user_session->user_info->display_name);
   user_name_ = new views::Label(user_name_string);
   user_name_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   TrayPopupItemStyle user_name_style(
@@ -399,12 +402,11 @@ void UserCardView::AddUserContent(views::BoxLayout* layout,
   user_email_style.set_color_style(TrayPopupItemStyle::ColorStyle::INACTIVE);
   auto* user_email = new views::Label();
   base::string16 user_email_string;
-  if (login_status != LoginStatus::GUEST) {
+  if (!is_guest) {
     user_email_string =
         Shell::Get()->session_controller()->IsUserSupervised()
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL)
-            : base::UTF8ToUTF16(controller->GetUserSession(user_index_)
-                                    ->user_info->display_email);
+            : base::UTF8ToUTF16(user_session->user_info->display_email);
   }
   user_email->SetText(user_email_string);
   user_email->SetHorizontalAlignment(gfx::ALIGN_LEFT);
