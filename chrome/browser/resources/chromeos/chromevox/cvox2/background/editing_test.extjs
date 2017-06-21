@@ -492,65 +492,164 @@ TEST_F('EditingTest', 'EditableLineEquality', function() {
     // The same position -- sanity check.
     var e1 = new editing.EditableLine(thisIsATest, 0, thisIsATest, 0);
     assertEquals('this ', e1.text);
-    assertTrue(e1.equals(e1));
+    assertTrue(e1.isSameLine(e1));
 
     // Offset into the same soft line.
     var e2 = new editing.EditableLine(thisIsATest, 1, thisIsATest, 1);
-    assertTrue(e1.equals(e2));
+    assertTrue(e1.isSameLine(e2));
 
     // Boundary.
     e2 = new editing.EditableLine(thisIsATest, 4, thisIsATest, 4);
-    assertTrue(e1.equals(e2));
+    assertTrue(e1.isSameLine(e2));
 
     // Offsets into different soft lines.
     e2 = new editing.EditableLine(thisIsATest, 5, thisIsATest, 5);
     assertEquals('is ', e2.text);
-    assertFalse(e1.equals(e2));
+    assertFalse(e1.isSameLine(e2));
 
     // Sanity check; second soft line.
-    assertTrue(e2.equals(e2));
+    assertTrue(e2.isSameLine(e2));
 
     // Different offsets into second soft line.
     e1 = new editing.EditableLine(thisIsATest, 6, thisIsATest, 6);
-    assertTrue(e1.equals(e2));
+    assertTrue(e1.isSameLine(e2));
 
     // Boundary.
     e1 = new editing.EditableLine(thisIsATest, 7, thisIsATest, 7);
-    assertTrue(e1.equals(e2));
+    assertTrue(e1.isSameLine(e2));
 
     // Third line.
     e1 = new editing.EditableLine(thisIsATest, 8, thisIsATest, 8);
     assertEquals('a ', e1.text);
-    assertFalse(e1.equals(e2));
+    assertFalse(e1.isSameLine(e2));
 
     // Last line.
     e2 = new editing.EditableLine(thisIsATest, 10, thisIsATest, 10);
     assertEquals('test', e2.text);
-    assertFalse(e1.equals(e2));
+    assertFalse(e1.isSameLine(e2));
 
     // Boundary.
     e1 = new editing.EditableLine(thisIsATest, 13, thisIsATest, 13);
-    assertTrue(e1.equals(e2));
+    assertTrue(e1.isSameLine(e2));
 
     // Cross into new paragraph.
     e2 = new editing.EditableLine(hello, 0, hello, 0);
     assertEquals('hello world', e2.text);
-    assertFalse(e1.equals(e2));
+    assertFalse(e1.isSameLine(e2));
 
     // On same node, with multi-static text line.
     e1 = new editing.EditableLine(hello, 1, hello, 1);
-    assertTrue(e1.equals(e2));
+    assertTrue(e1.isSameLine(e2));
 
     // On same node, with multi-static text line; boundary.
     e1 = new editing.EditableLine(hello, 5, hello, 5);
-    assertTrue(e1.equals(e2));
+    assertTrue(e1.isSameLine(e2));
 
     // On different node, with multi-static text line.
     e1 = new editing.EditableLine(world, 1, world, 1);
-    assertTrue(e1.equals(e2));
+    assertTrue(e1.isSameLine(e2));
 
     // Another mix of lines.
     e2 = new editing.EditableLine(thisIsATest, 9, thisIsATest, 9);
-    assertFalse(e1.equals(e2));
+    assertFalse(e1.isSameLine(e2));
   });
+});
+
+TEST_F('EditingTest', 'EditableLineStrictEquality', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div contenteditable role="textbox">
+      <p style="word-spacing:100000px">this is a test</p>
+      <p>hello <b>world</b></p>
+    </div>
+  */}, function(root) {
+    var thisIsATest = root.findAll({role: RoleType.PARAGRAPH})[0].firstChild;
+    var hello = root.findAll({role: RoleType.PARAGRAPH})[1].firstChild;
+    var world = root.findAll({role: RoleType.PARAGRAPH})[1].lastChild;
+
+    // The same position -- sanity check.
+    var e1 = new editing.EditableLine(thisIsATest, 0, thisIsATest, 0);
+    assertEquals('this ', e1.text);
+    assertTrue(e1.isSameLineAndSelection(e1));
+
+    // Offset into the same soft line.
+    var e2 = new editing.EditableLine(thisIsATest, 1, thisIsATest, 1);
+    assertFalse(e1.isSameLineAndSelection(e2));
+
+    // Boundary.
+    e2 = new editing.EditableLine(thisIsATest, 4, thisIsATest, 4);
+    assertFalse(e1.isSameLineAndSelection(e2));
+
+    // Offsets into different soft lines.
+    e2 = new editing.EditableLine(thisIsATest, 5, thisIsATest, 5);
+    assertEquals('is ', e2.text);
+    assertFalse(e1.isSameLineAndSelection(e2));
+
+    // Sanity check; second soft line.
+    assertTrue(e2.isSameLineAndSelection(e2));
+
+    // Different offsets into second soft line.
+    e1 = new editing.EditableLine(thisIsATest, 6, thisIsATest, 6);
+    assertFalse(e1.isSameLineAndSelection(e2));
+
+    // Boundary.
+    e1 = new editing.EditableLine(thisIsATest, 7, thisIsATest, 7);
+    assertFalse(e1.isSameLineAndSelection(e2));
+
+    // Cross into new paragraph.
+    e2 = new editing.EditableLine(hello, 0, hello, 0);
+    assertEquals('hello world', e2.text);
+    assertFalse(e1.isSameLineAndSelection(e2));
+
+    // On same node, with multi-static text line.
+    e1 = new editing.EditableLine(hello, 1, hello, 1);
+    assertFalse(e1.isSameLineAndSelection(e2));
+
+    // On same node, with multi-static text line; boundary.
+    e1 = new editing.EditableLine(hello, 5, hello, 5);
+    assertFalse(e1.isSameLineAndSelection(e2));
+  });
+});
+
+TEST_F('EditingTest', 'EditableLineBaseLineAnchorOrFocus', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div contenteditable role="textbox">
+      <p style="word-spacing:100000px">this is a test</p>
+      <p>hello <b>world</b></p>
+    </div>
+  */}, function(root) {
+    var thisIsATest = root.findAll({role: RoleType.PARAGRAPH})[0].firstChild;
+    var hello = root.findAll({role: RoleType.PARAGRAPH})[1].firstChild;
+    var world = root.findAll({role: RoleType.PARAGRAPH})[1].lastChild;
+
+    // The same position -- sanity check.
+    var e1 = new editing.EditableLine(thisIsATest, 0, thisIsATest, 0, true);
+    assertEquals('this ', e1.text);
+
+    // Offsets into different soft lines; base on focus (default).
+    e1 = new editing.EditableLine(thisIsATest, 0, thisIsATest, 6);
+    assertEquals('is ', e1.text);
+    // Notice that the offset is truncated at the beginning of the line.
+    assertEquals(0, e1.startOffset);
+    // Notice that the end offset is properly retained.
+    assertEquals(1, e1.endOffset);
+
+    // Offsets into different soft lines; base on anchor.
+    e1 = new editing.EditableLine(thisIsATest, 0, thisIsATest, 6, true);
+    assertEquals('this ', e1.text);
+    assertEquals(0, e1.startOffset);
+    // Notice            that the end offset is truncated up to the end of line.
+    assertEquals(5, e1.endOffset);
+
+    // Across paragraph selection with base line on focus.
+    e1 = new editing.EditableLine(thisIsATest, 5, hello, 2);
+    assertEquals('hello world', e1.text);
+    assertEquals(0, e1.startOffset);
+    assertEquals(2, e1.endOffset);
+
+    // Across paragraph selection with base line on anchor.
+    e1 = new editing.EditableLine(thisIsATest, 5, hello, 2, true);
+    assertEquals('is ', e1.text);
+    assertEquals(0, e1.startOffset);
+    assertEquals(3, e1.endOffset);
+  })
 });
