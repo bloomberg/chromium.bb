@@ -25,7 +25,7 @@ function test() {
 
         var filteredSelectionDialog = new QuickOpen.FilteredListWidget(provider, history);
         filteredSelectionDialog.showAsDialog();
-        var promise = TestRunner.addSniffer(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
+        var promise = TestRunner.addSnifferPromise(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
         filteredSelectionDialog.setQuery(query);
         filteredSelectionDialog._updateAfterItemsLoaded();
         return promise;

@@ -249,6 +249,7 @@ BlinkTestController* BlinkTestController::Get() {
 
 BlinkTestController::BlinkTestController()
     : main_window_(NULL),
+      secondary_window_(nullptr),
       devtools_window_(nullptr),
       test_phase_(BETWEEN_TESTS),
       is_leak_detection_enabled_(
@@ -296,10 +297,9 @@ bool BlinkTestController::PrepareForLayoutTest(
   current_working_directory_ = current_working_directory;
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
-  if (test_url.spec().find("/inspector-unit/") == std::string::npos)
-    test_url_ = test_url;
-  else
-    test_url_ = LayoutTestDevToolsBindings::MapJSTestURL(test_url);
+  bool is_devtools_js_test = false;
+  test_url_ = LayoutTestDevToolsBindings::MapTestURLIfNeeded(
+      test_url, &is_devtools_js_test);
   did_send_initial_test_configuration_ = false;
   printer_->reset();
   frame_to_layout_dump_map_.clear();
@@ -326,7 +326,10 @@ bool BlinkTestController::PrepareForLayoutTest(
     current_pid_ = base::kNullProcessId;
     default_prefs_ =
       main_window_->web_contents()->GetRenderViewHost()->GetWebkitPreferences();
-    main_window_->LoadURL(test_url_);
+    if (is_devtools_js_test)
+      LoadDevToolsJSTest();
+    else
+      main_window_->LoadURL(test_url_);
   } else {
 #if defined(OS_MACOSX)
     // Shell::SizeTo is not implemented on all platforms.
@@ -352,17 +355,40 @@ bool BlinkTestController::PrepareForLayoutTest(
     render_view_host->UpdateWebkitPreferences(default_prefs_);
     HandleNewRenderFrameHost(render_view_host->GetMainFrame());
 
-    NavigationController::LoadURLParams params(test_url_);
-    params.transition_type = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    params.should_clear_history_list = true;
-    main_window_->web_contents()->GetController().LoadURLWithParams(params);
-    main_window_->web_contents()->Focus();
+    if (is_devtools_js_test) {
+      LoadDevToolsJSTest();
+    } else {
+      NavigationController::LoadURLParams params(test_url_);
+      params.transition_type = ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+      params.should_clear_history_list = true;
+      main_window_->web_contents()->GetController().LoadURLWithParams(params);
+      main_window_->web_contents()->Focus();
+    }
   }
   main_window_->web_contents()->GetRenderViewHost()->GetWidget()->SetActive(
       true);
   main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
   return true;
+}
+
+Shell* BlinkTestController::SecondaryWindow() {
+  if (!secondary_window_) {
+    ShellBrowserContext* browser_context =
+        ShellContentBrowserClient::Get()->browser_context();
+    secondary_window_ = content::Shell::CreateNewWindow(browser_context, GURL(),
+                                                        nullptr, initial_size_);
+  }
+  return secondary_window_;
+}
+
+void BlinkTestController::LoadDevToolsJSTest() {
+  devtools_window_ = main_window_;
+  Shell* secondary = SecondaryWindow();
+  devtools_bindings_.reset(LayoutTestDevToolsBindings::LoadDevTools(
+      devtools_window_->web_contents(), secondary->web_contents(), "",
+      test_url_.spec()));
+  secondary->LoadURL(GURL(url::kAboutBlankURL));
 }
 
 bool BlinkTestController::ResetAfterLayoutTest() {
@@ -379,6 +405,7 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   prefs_ = WebPreferences();
   should_override_prefs_ = false;
   LayoutTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
+  devtools_bindings_.reset();
 
 #if defined(OS_ANDROID)
   // Re-using the shell's main window on Android causes issues with networking
@@ -843,13 +870,7 @@ void BlinkTestController::OnClearDevToolsLocalStorage() {
 
 void BlinkTestController::OnShowDevTools(const std::string& settings,
                                          const std::string& frontend_url) {
-  if (!devtools_window_) {
-    ShellBrowserContext* browser_context =
-        ShellContentBrowserClient::Get()->browser_context();
-    devtools_window_ = content::Shell::CreateNewWindow(browser_context, GURL(),
-                                                       nullptr, initial_size_);
-  }
-
+  devtools_window_ = SecondaryWindow();
   devtools_bindings_.reset(LayoutTestDevToolsBindings::LoadDevTools(
       devtools_window_->web_contents(), main_window_->web_contents(), settings,
       frontend_url));
@@ -926,7 +947,7 @@ void BlinkTestController::OnCloseRemainingWindows() {
   DevToolsAgentHost::DetachAllClients();
   std::vector<Shell*> open_windows(Shell::windows());
   for (size_t i = 0; i < open_windows.size(); ++i) {
-    if (open_windows[i] != main_window_ && open_windows[i] != devtools_window_)
+    if (open_windows[i] != main_window_ && open_windows[i] != secondary_window_)
       open_windows[i]->Close();
   }
   base::RunLoop().RunUntilIdle();

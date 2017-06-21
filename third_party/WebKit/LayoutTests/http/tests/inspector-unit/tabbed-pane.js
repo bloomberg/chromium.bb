@@ -11,7 +11,7 @@ class FocusableWidget extends UI.Widget {
 
 var tabbedPane = new UI.TabbedPane();
 tabbedPane.show(UI.inspectorView.element);
-TestRunner.addSniffer(tabbedPane, '_innerUpdateTabElements').then(tabsAdded);
+TestRunner.addSnifferPromise(tabbedPane, '_innerUpdateTabElements').then(tabsAdded);
 for (var i = 0; i < 10; i++)
   tabbedPane.appendTab(i.toString(), 'Tab ' + i, new FocusableWidget('Widget ' + i));
 

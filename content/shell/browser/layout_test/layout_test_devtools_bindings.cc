@@ -58,12 +58,26 @@ GURL LayoutTestDevToolsBindings::GetDevToolsPathAsURL(
 }
 
 // static.
-GURL LayoutTestDevToolsBindings::MapJSTestURL(const GURL& test_url) {
+GURL LayoutTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
+                                                    bool* is_devtools_js_test) {
+  std::string spec = test_url.spec();
+  *is_devtools_js_test = spec.find("/devtools-js/") != std::string::npos;
+  bool is_unit_test = spec.find("/inspector-unit/") != std::string::npos;
+  if (!*is_devtools_js_test && !is_unit_test)
+    return test_url;
+  return MapJSTestURL(test_url, is_unit_test ? "unit_test_runner.html"
+                                             : "integration_test_runner.html");
+}
+
+// static.
+GURL LayoutTestDevToolsBindings::MapJSTestURL(
+    const GURL& test_url,
+    const std::string& entry_filename) {
   std::string url_string = GetDevToolsPathAsURL(std::string()).spec();
   std::string inspector_file_name = "inspector.html";
   size_t start_position = url_string.find(inspector_file_name);
   url_string.replace(start_position, inspector_file_name.length(),
-                     "unit_test_runner.html");
+                     entry_filename);
   url_string += "&test=" + test_url.spec();
   return GURL(url_string);
 }
@@ -84,7 +98,6 @@ LayoutTestDevToolsBindings* LayoutTestDevToolsBindings::LoadDevTools(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   bindings->web_contents()->GetController().LoadURLWithParams(params);
   bindings->web_contents()->Focus();
-  bindings->CreateFrontendHost();
   return bindings;
 }
 

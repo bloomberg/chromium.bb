@@ -36,7 +36,7 @@ function test() {
   ]);
 
   function setProvider(provider) {
-    var promise = TestRunner.addSniffer(filteredListWidget, "_itemsFilteredForTest").then(dump);
+    var promise = TestRunner.addSnifferPromise(filteredListWidget, "_itemsFilteredForTest").then(dump);
     filteredListWidget.setProvider(provider);
     return promise;
   }

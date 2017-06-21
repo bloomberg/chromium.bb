@@ -61,12 +61,10 @@ class ShellDevToolsBindings : public WebContentsObserver,
 
   void SetPreferences(const std::string& json);
   virtual void HandleMessageFromDevToolsFrontend(const std::string& message);
-  void CreateFrontendHost();
 
  private:
   // WebContentsObserver overrides
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
-  void RenderViewCreated(RenderViewHost* render_view_host) override;
   void DocumentAvailableInMainFrame() override;
   void WebContentsDestroyed() override;
 

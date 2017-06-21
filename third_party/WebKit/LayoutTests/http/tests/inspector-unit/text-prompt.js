@@ -7,7 +7,7 @@ var div = document.createElement("div");
 UI.inspectorView.element.appendChild(div);
 prompt.attachAndStartEditing(div);
 prompt.setText("hey");
-TestRunner.addSniffer(prompt, "_completionsReady").then(step2);
+TestRunner.addSnifferPromise(prompt, "_completionsReady").then(step2);
 prompt.complete();
 function step2() {
     TestRunner.addResult("Text:" + prompt.text());
@@ -16,7 +16,7 @@ function step2() {
     TestRunner.addResult("Test with inexact match:");
     prompt.clearAutocomplete();
     prompt.setText("inexactmatch");
-    TestRunner.addSniffer(prompt, "_completionsReady").then(step3);
+    TestRunner.addSnifferPromise(prompt, "_completionsReady").then(step3);
     prompt.complete();
 }
 function step3() {
