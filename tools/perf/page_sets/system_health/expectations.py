@@ -90,6 +90,8 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
                       [expectations.ALL], 'crbug.com/728152')
     self.DisableStory('browse:media:flickr_infinite_scroll',
                       [expectations.ALL], 'crbug.com/728785')
+    self.DisableStory('browse:chrome:newtab',
+                      [expectations.ALL_ANDROID], 'crbug.com/735405')
     # TODO(rnephew): This disabling should move to CanRunOnBrowser.
     self.DisableStory('browse:chrome:omnibox',
                       [expectations.ANDROID_WEBVIEW],
@@ -126,6 +128,8 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
                       [expectations.ALL], 'crbug.com/728152')
     self.DisableStory('browse:media:flickr_infinite_scroll',
                       [expectations.ALL], 'crbug.com/728785')
+    self.DisableStory('browse:chrome:newtab',
+                      [expectations.ALL_ANDROID], 'crbug.com/735405')
     # TODO(rnephew): This disabling should move to CanRunOnBrowser.
     self.DisableStory('browse:chrome:omnibox',
                       [expectations.ANDROID_WEBVIEW],
@@ -207,6 +211,8 @@ class V8BrowsingMobileExpecations(expectations.StoryExpectations):
                       [expectations.ALL], 'crbug.com/728152')
     self.DisableStory('browse:media:flickr_infinite_scroll',
                       [expectations.ALL], 'crbug.com/728785')
+    self.DisableStory('browse:chrome:newtab',
+                      [expectations.ALL_ANDROID], 'crbug.com/735405')
     # TODO(rnephew): This disabling should move to CanRunOnBrowser.
     self.DisableStory('browse:chrome:omnibox',
                       [expectations.ANDROID_WEBVIEW],
