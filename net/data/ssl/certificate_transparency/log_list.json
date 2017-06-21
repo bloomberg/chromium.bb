@@ -67,6 +67,16 @@
    "dns_api_endpoint": "digicert.ct.googleapis.com"
   },
   {
+   "description": "DigiCert Log Server 2",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzF05L2a4TH/BLgOhNKPoioYCrkoRxvcmajeb8Dj4XQmNY+gxa4Zmz3mzJTwe33i0qMVp+rfwgnliQ/bM/oFmhA==",
+   "url": "ct2.digicert-ct.com/log/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    1
+   ],
+   "dns_api_endpoint": "digicert2.ct.googleapis.com"
+  },
+  {
    "description": "Symantec log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEluqsHEYMG1XcDfy1lCdGV0JwOmkY4r87xNuroPS2bMBTP01CEDPwWJePa75y9CrsHEKqAy8afig1dpkIPSEUhg==",
    "url": "ct.ws.symantec.com/",
@@ -85,6 +95,16 @@
     2
    ],
    "dns_api_endpoint": "symantec-vega.ct.googleapis.com"
+  },
+  {
+   "description": "Symantec 'Sirius' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEowJkhCK7JewN47zCyYl93UXQ7uYVhY/Z5xcbE4Dq7bKFN61qxdglnfr0tPNuFiglN+qjN2Syxwv9UeXBBfQOtQ==",
+   "url": "sirius.ws.symantec.com/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    2
+   ],
+   "dns_api_endpoint": "symantec-sirius.ct.googleapis.com"
   },
   {
    "description": "Certly.IO log",
