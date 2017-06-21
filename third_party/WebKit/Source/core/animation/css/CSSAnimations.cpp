@@ -284,7 +284,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
                                              const Element* animating_element,
                                              Element& element,
                                              const ComputedStyle& style,
-                                             ComputedStyle* parent_style,
+                                             const ComputedStyle* parent_style,
                                              StyleResolver* resolver) {
   const ElementAnimations* element_animations =
       animating_element ? animating_element->GetElementAnimations() : nullptr;

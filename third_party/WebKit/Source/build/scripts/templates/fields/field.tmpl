@@ -63,7 +63,7 @@ const {{field.type_name}}&
 
 {% macro declare_storage(field) %}
 {% if field.is_bit_field %}
-unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
+{{print_if(field.mutable, "mutable ")}}unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
 {%- else %}
 {{field.type_name}} {{field.name}};
 {%- endif %}

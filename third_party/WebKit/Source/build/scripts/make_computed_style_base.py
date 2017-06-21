@@ -155,7 +155,7 @@ class Field(object):
     """
 
     def __init__(self, field_role, name_for_methods, property_name, type_name, wrapper_pointer_name,
-                 field_template, size, default_value, custom_copy, custom_compare,
+                 field_template, size, default_value, custom_copy, custom_compare, mutable,
                  getter_method_name, setter_method_name, initial_method_name, **kwargs):
         """Creates a new field."""
         self.name = class_member_name(name_for_methods)
@@ -168,6 +168,7 @@ class Field(object):
         self.default_value = default_value
         self.custom_copy = custom_copy
         self.custom_compare = custom_compare
+        self.mutable = mutable
         self.group = None
 
         # Field role: one of these must be true
@@ -359,6 +360,7 @@ def _create_property_field(property_):
         default_value=default_value,
         custom_copy=property_['custom_copy'],
         custom_compare=property_['custom_compare'],
+        mutable=property_['mutable'],
         getter_method_name=property_['getter'],
         setter_method_name=property_['setter'],
         initial_method_name=property_['initial'],
@@ -382,6 +384,7 @@ def _create_inherited_flag_field(property_):
         default_value='true',
         custom_copy=False,
         custom_compare=False,
+        mutable=False,
         getter_method_name=method_name(name_for_methods),
         setter_method_name=method_name(join_name('set', name_for_methods)),
         initial_method_name=method_name(join_name('initial', name_for_methods)),
@@ -457,7 +460,7 @@ def _reorder_fields(fields):
 
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def __init__(self, json5_file_paths):
-        # Read CSS properties
+        # Read CSSProperties.json5
         super(ComputedStyleBaseWriter, self).__init__([json5_file_paths[0]])
 
         # Ignore shorthand properties
@@ -469,17 +472,21 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         css_properties = [value for value in self._properties.values() if not value['longhands']]
 
         for property_ in css_properties:
-            # All CSS properties from CSSProperties.json5 do not have custom comparison and copy logic.
+            # Set default values for extra parameters in ComputedStyleExtraFields.json5.
             property_['custom_copy'] = False
             property_['custom_compare'] = False
+            property_['mutable'] = False
 
-        # Read extra fields using the parameter specification from the CSS properties file.
+        # Read ComputedStyleExtraFields.json5 using the parameter specification from the CSS properties file.
         extra_fields = json5_generator.Json5File.load_from_files(
             [json5_file_paths[1]],
             default_parameters=self.json5_file.parameters
         ).name_dictionaries
 
         for property_ in extra_fields:
+            if property_['mutable']:
+                assert property_['field_template'] == 'monotonic_flag', \
+                    'mutable keyword only implemented for monotonic_flag'
             make_style_builder.apply_property_naming_defaults(property_)
 
         all_properties = css_properties + extra_fields
