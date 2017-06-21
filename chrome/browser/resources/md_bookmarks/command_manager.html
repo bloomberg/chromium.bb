@@ -10,7 +10,22 @@
 
 <dom-module id="bookmarks-command-manager">
   <template>
-    <style include="shared-style"></style>
+    <style include="shared-style">
+      .label {
+        flex: 1;
+      }
+
+      .sublabel {
+        -webkit-margin-start: 8px;
+        color: var(--secondary-text-color);
+        text-align: end;
+        width: 3ch;
+      }
+
+      :host(:not([has-any-sublabel_])) .sublabel {
+        display: none;
+      }
+    </style>
     <dialog is="cr-action-menu" id="dropdown" on-mousedown="onMenuMousedown_">
       <template is="dom-repeat" items="[[menuCommands_]]" as="command">
         <button class="dropdown-item"
@@ -18,7 +33,12 @@
             hidden$="[[!isCommandVisible_(command, menuIds_)]]"
             disabled$="[[!isCommandEnabled_(command, menuIds_)]]"
             on-tap="onCommandClick_">
-          [[getCommandLabel_(command, menuIds_)]]
+          <span class="label">
+            [[getCommandLabel_(command, menuIds_)]]
+          </span>
+          <span class="sublabel">
+            [[getCommandSublabel_(command, menuIds_)]]
+          </span>
         </button>
         <hr hidden$="[[!showDividerAfter_(command, menuIds_)]]"></hr>
       </template>
