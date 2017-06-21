@@ -2438,8 +2438,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 #endif
 
-  if (PopupBlockerTabHelper::ConsiderForPopupBlocking(web_contents,
-                                                      user_gesture)) {
+  if (PopupBlockerTabHelper::ConsiderForPopupBlocking(
+          web_contents, user_gesture, /*open_url_params=*/nullptr)) {
     if (content_settings->GetContentSetting(
             opener_top_level_frame_url, opener_top_level_frame_url,
             CONTENT_SETTINGS_TYPE_POPUPS,

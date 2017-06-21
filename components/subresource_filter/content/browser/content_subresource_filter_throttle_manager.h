@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
+struct OpenURLParams;
 class NavigationHandle;
 class NavigationThrottle;
 class RenderFrameHost;
@@ -81,7 +82,7 @@ class ContentSubresourceFilterThrottleManager
 
   // Returns whether or not the current WebContents is allowed to create a new
   // window.
-  bool ShouldDisallowNewWindow();
+  bool ShouldDisallowNewWindow(const content::OpenURLParams* open_url_params);
 
   VerifiedRuleset::Handle* ruleset_handle_for_testing() {
     return ruleset_handle_.get();

@@ -1126,9 +1126,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockOpenURLFromTab) {
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
                            0);
 
-  // Make sure the popup UI was shown.
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+  // TODO(csharrison): Make this EXPECT_TRUE (e.g. turn the feature on for
+  // spoofed clicked). See crbug.com/733330 for more details.
+  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
+                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 
   // Navigate to |b_url|, which should successfully open the popup.
 
@@ -1140,6 +1141,29 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockOpenURLFromTab) {
   navigation_observer.Wait();
 
   // Popup UI should not be shown.
+  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
+                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       TraditionalWindowOpen_NotBlocked) {
+  Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
+  config.activation_options.should_strengthen_popup_blocker = true;
+  ResetConfiguration(std::move(config));
+  GURL url(GetTestUrl("/title2.html"));
+  ConfigureAsPhishingURL(url);
+  ui_test_utils::NavigateToURL(browser(), GetTestUrl("/title1.html"));
+
+  // Only necessary so we have a valid ruleset.
+  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
+
+  // Navigate to a_url, should trigger the popup blocker.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 }
