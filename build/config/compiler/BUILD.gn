@@ -407,9 +407,10 @@ config("compiler") {
     # merged.  See also https://crbug.com/663886
     # `linux_use_bundled_binutils` is to avoid breaking Linux distros which may
     # still have a buggy gold.
+    # chromeos binutils has been patched with the fix, so always use icf there.
     # The bug only affects x86 and x64, so we can still use ICF when targeting
     # other architectures.
-    if ((!is_android && linux_use_bundled_binutils) ||
+    if ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
         !(current_cpu == "x86" || current_cpu == "x64")) {
       ldflags += [ "-Wl,--icf=all" ]
     }
