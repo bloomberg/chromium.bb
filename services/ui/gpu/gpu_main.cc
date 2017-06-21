@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
-#include "components/viz/common/server_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_compositor/gpu_display_provider.h"
 #include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
@@ -174,37 +173,22 @@ void GpuMain::CreateFrameSinkManagerInternal(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group());
 
-  gpu::ImageFactory* image_factory = gpu_service_->gpu_image_factory();
-
-  // If the FrameSinkManager creation was delayed because GpuService had not
-  // been created yet, then this is called, in gpu thread, right after
-  // GpuService is created.
-  mojom::GpuServicePtr gpu_service;
-  BindGpuInternalOnGpuThread(mojo::MakeRequest(&gpu_service));
   compositor_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuMain::CreateFrameSinkManagerOnCompositorThread,
-                            base::Unretained(this), image_factory,
-                            base::Passed(gpu_service.PassInterface()),
-                            base::Passed(std::move(request)),
-                            base::Passed(std::move(client_info))));
+      FROM_HERE,
+      base::Bind(&GpuMain::CreateFrameSinkManagerOnCompositorThread,
+                 base::Unretained(this), base::Passed(std::move(request)),
+                 base::Passed(std::move(client_info))));
 }
 
 void GpuMain::CreateFrameSinkManagerOnCompositorThread(
-    gpu::ImageFactory* image_factory,
-    mojom::GpuServicePtrInfo gpu_service_info,
     cc::mojom::FrameSinkManagerRequest request,
     cc::mojom::FrameSinkManagerClientPtrInfo client_info) {
   DCHECK(!frame_sink_manager_);
   cc::mojom::FrameSinkManagerClientPtr client;
   client.Bind(std::move(client_info));
 
-  gpu_internal_.Bind(std::move(gpu_service_info));
-
   display_provider_ = base::MakeUnique<viz::GpuDisplayProvider>(
-      gpu_command_service_,
-      base::MakeUnique<viz::ServerGpuMemoryBufferManager>(gpu_internal_.get(),
-                                                          1 /* client_id */),
-      image_factory);
+      gpu_command_service_, gpu_service_->gpu_channel_manager());
 
   frame_sink_manager_ = base::MakeUnique<viz::MojoFrameSinkManager>(
       true, display_provider_.get());
@@ -215,7 +199,6 @@ void GpuMain::CreateFrameSinkManagerOnCompositorThread(
 void GpuMain::TearDownOnCompositorThread() {
   frame_sink_manager_.reset();
   display_provider_.reset();
-  gpu_internal_.reset();
 }
 
 void GpuMain::TearDownOnGpuThread() {
@@ -240,10 +223,6 @@ void GpuMain::CreateGpuServiceOnGpuThread(
         std::move(pending_frame_sink_manager_request_),
         std::move(pending_frame_sink_manager_client_info_));
   }
-}
-
-void GpuMain::BindGpuInternalOnGpuThread(mojom::GpuServiceRequest request) {
-  gpu_service_->Bind(std::move(request));
 }
 
 void GpuMain::PreSandboxStartup() {
