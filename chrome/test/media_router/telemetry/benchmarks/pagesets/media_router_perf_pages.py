@@ -180,7 +180,7 @@ class MediaRouterDialogPageSet(story.StorySet):
 
   def __init__(self):
     super(MediaRouterDialogPageSet, self).__init__(
-        cloud_storage_bucket=story.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET, verify_names=False)
     self.AddStory(CastDialogPage(self))
 
 
@@ -189,7 +189,7 @@ class MediaRouterCPUMemoryPageSet(story.StorySet):
 
   def __init__(self):
     super(MediaRouterCPUMemoryPageSet, self).__init__(
-        cloud_storage_bucket=story.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET, verify_names=False)
     self.AddStory(CastIdlePage(self))
     self.AddStory(CastFlingingPage(self))
     self.AddStory(CastMirroringPage(self))
@@ -200,5 +200,5 @@ class CPUMemoryPageSet(story.StorySet):
 
   def __init__(self):
     super(CPUMemoryPageSet, self).__init__(
-        cloud_storage_bucket=story.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET, verify_names=False)
     self.AddStory(CastIdlePage(self))
