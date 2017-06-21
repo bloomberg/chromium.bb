@@ -640,6 +640,10 @@ bool ArcNotificationContentView::HandleAccessibleAction(
 void ArcNotificationContentView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->AddStringAttribute(
+      ui::AX_ATTR_ROLE_DESCRIPTION,
+      l10n_util::GetStringUTF8(
+          IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
   node_data->SetName(accessible_name_);
 }
 
