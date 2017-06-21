@@ -192,8 +192,7 @@ void NGInlineNode::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineNode represent a collection of adjacent non-atomic inlines.
   CollectInlines(Data().start_inline_, GetLayoutBlockFlow());
-  if (Data().is_bidi_enabled_)
-    SegmentText();
+  SegmentText();
   ShapeText();
 }
 
@@ -282,21 +281,30 @@ LayoutObject* NGInlineNode::CollectInlines(LayoutObject* start,
 }
 
 void NGInlineNode::SegmentText() {
-  // TODO(kojii): Move this to caller, this will be used again after line break.
-  NGBidiParagraph bidi;
-  MutableData().text_content_.Ensure16Bit();
-  if (!bidi.SetParagraph(Data().text_content_, Style())) {
-    // On failure, give up bidi resolving and reordering.
-    MutableData().is_bidi_enabled_ = false;
-    return;
-  }
-  if (bidi.Direction() == UBIDI_LTR) {
-    // All runs are LTR, no need to reorder.
-    MutableData().is_bidi_enabled_ = false;
+  NGInlineNodeData& data = MutableData();
+  if (!data.is_bidi_enabled_) {
+    data.SetBaseDirection(TextDirection::kLtr);
     return;
   }
 
-  Vector<NGInlineItem>& items = MutableData().items_;
+  NGBidiParagraph bidi;
+  data.text_content_.Ensure16Bit();
+  if (!bidi.SetParagraph(data.text_content_, Style())) {
+    // On failure, give up bidi resolving and reordering.
+    data.is_bidi_enabled_ = false;
+    data.SetBaseDirection(TextDirection::kLtr);
+    return;
+  }
+
+  data.SetBaseDirection(bidi.BaseDirection());
+
+  if (bidi.IsUnidirectional() && IsLtr(bidi.BaseDirection())) {
+    // All runs are LTR, no need to reorder.
+    data.is_bidi_enabled_ = false;
+    return;
+  }
+
+  Vector<NGInlineItem>& items = data.items_;
   unsigned item_index = 0;
   for (unsigned start = 0; start < Data().text_content_.length();) {
     UBiDiLevel level;

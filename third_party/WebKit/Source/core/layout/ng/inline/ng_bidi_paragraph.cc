@@ -18,20 +18,30 @@ bool NGBidiParagraph::SetParagraph(const String& text,
                                    const ComputedStyle& block_style) {
   DCHECK(!ubidi_);
   ubidi_ = ubidi_open();
+
+  bool use_heuristic_base_direction =
+      block_style.GetUnicodeBidi() == UnicodeBidi::kPlaintext;
+  UBiDiLevel para_level;
+  if (use_heuristic_base_direction) {
+    para_level = UBIDI_DEFAULT_LTR;
+  } else {
+    base_direction_ = block_style.Direction();
+    para_level = IsLtr(base_direction_) ? UBIDI_LTR : UBIDI_RTL;
+  }
+
   ICUError error;
-  ubidi_setPara(
-      ubidi_, text.Characters16(), text.length(),
-      block_style.GetUnicodeBidi() == UnicodeBidi::kPlaintext
-          ? UBIDI_DEFAULT_LTR
-          : (block_style.Direction() == TextDirection::kRtl ? UBIDI_RTL
-                                                            : UBIDI_LTR),
-      nullptr, &error);
+  ubidi_setPara(ubidi_, text.Characters16(), text.length(), para_level, nullptr,
+                &error);
   if (U_FAILURE(error)) {
     NOTREACHED();
     ubidi_close(ubidi_);
     ubidi_ = nullptr;
     return false;
   }
+
+  if (use_heuristic_base_direction)
+    base_direction_ = DirectionFromLevel(ubidi_getParaLevel(ubidi_));
+
   return true;
 }
 
