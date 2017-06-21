@@ -142,10 +142,31 @@ class BASE_EXPORT RefCountedThreadSafeBase {
 
   ~RefCountedThreadSafeBase();
 
-  void AddRef() const;
+  void AddRef() const {
+#if DCHECK_IS_ON()
+    DCHECK(!in_dtor_);
+    DCHECK(!needs_adopt_ref_)
+        << "This RefCounted object is created with non-zero reference count."
+        << " The first reference to such a object has to be made by AdoptRef or"
+        << " MakeRefCounted.";
+#endif
+    AtomicRefCountInc(&ref_count_);
+  }
 
   // Returns true if the object should self-delete.
-  bool Release() const;
+  bool Release() const {
+#if DCHECK_IS_ON()
+    DCHECK(!in_dtor_);
+    DCHECK(!AtomicRefCountIsZero(&ref_count_));
+#endif
+    if (!AtomicRefCountDec(&ref_count_)) {
+#if DCHECK_IS_ON()
+      in_dtor_ = true;
+#endif
+      return true;
+    }
+    return false;
+  }
 
  private:
   template <typename U>

@@ -28,31 +28,6 @@ RefCountedThreadSafeBase::~RefCountedThreadSafeBase() {
 #endif
 }
 
-void RefCountedThreadSafeBase::AddRef() const {
-#if DCHECK_IS_ON()
-  DCHECK(!in_dtor_);
-  DCHECK(!needs_adopt_ref_)
-      << "This RefCounted object is created with non-zero reference count."
-      << " The first reference to such a object has to be made by AdoptRef or"
-      << " MakeRefCounted.";
-#endif
-  AtomicRefCountInc(&ref_count_);
-}
-
-bool RefCountedThreadSafeBase::Release() const {
-#if DCHECK_IS_ON()
-  DCHECK(!in_dtor_);
-  DCHECK(!AtomicRefCountIsZero(&ref_count_));
-#endif
-  if (!AtomicRefCountDec(&ref_count_)) {
-#if DCHECK_IS_ON()
-    in_dtor_ = true;
-#endif
-    return true;
-  }
-  return false;
-}
-
 #if DCHECK_IS_ON()
 bool RefCountedBase::CalledOnValidSequence() const {
   return sequence_checker_.CalledOnValidSequence() ||
