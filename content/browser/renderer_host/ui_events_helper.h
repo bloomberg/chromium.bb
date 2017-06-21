@@ -10,7 +10,6 @@
 
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_event_ack_state.h"
 
 namespace ui {
 class TouchEvent;
@@ -37,10 +36,6 @@ CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
     const TouchEventWithLatencyInfo& touch,
     std::vector<std::unique_ptr<ui::TouchEvent>>* list,
     TouchEventCoordinateSystem coordinate_system);
-
-// Utility to map the event ack state from the renderer, returns true if the
-// event could be handled non-blocking.
-bool InputEventAckStateIsSetNonBlocking(InputEventAckState);
 
 }  // namespace content
 

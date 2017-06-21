@@ -37,7 +37,6 @@ class WebGestureEvent : public WebInputEvent {
   int global_x;
   int global_y;
   WebGestureDevice source_device;
-  bool is_source_touch_event_set_non_blocking;
 
   // If the WebGestureEvent has sourceDevice=WebGestureDeviceTouchscreen, this
   // field contains the unique identifier for the touch event that released

@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
-#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/grit/content_resources.h"
 #include "content/public/common/content_client.h"
@@ -259,12 +258,10 @@ void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
     return;
 
   const bool event_consumed = true;
-  const bool is_source_touch_event_set_non_blocking = false;
   // Block emulated event when emulated native stream is active.
   if (native_stream_active_sequence_count_) {
     gesture_provider_->OnTouchEventAck(event.unique_touch_event_id,
-                                       event_consumed,
-                                       is_source_touch_event_set_non_blocking);
+                                       event_consumed);
     return;
   }
 
@@ -272,8 +269,7 @@ void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
   // Do not allow middle-sequence event to pass through, if start was blocked.
   if (!emulated_stream_active_sequence_count_ && !is_sequence_start) {
     gesture_provider_->OnTouchEventAck(event.unique_touch_event_id,
-                                       event_consumed,
-                                       is_source_touch_event_set_non_blocking);
+                                       event_consumed);
     return;
   }
 
@@ -293,9 +289,8 @@ bool TouchEmulator::HandleTouchEventAck(
 
     const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
     if (gesture_provider_)
-      gesture_provider_->OnTouchEventAck(
-          event.unique_touch_event_id, event_consumed,
-          InputEventAckStateIsSetNonBlocking(ack_result));
+      gesture_provider_->OnTouchEventAck(event.unique_touch_event_id,
+                                         event_consumed);
     return true;
   }
 
