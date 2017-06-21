@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/open_url_util.h"
 #import "ios/chrome/browser/web/mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -170,8 +169,7 @@ NSString* PromptActionString(NSString* scheme) {
   }
 
   // Replaces |URL| with a rewritten URL if it is of mailto: scheme.
-  if (!experimental_flags::IsNativeAppLauncherEnabled() &&
-      gURL.SchemeIs(url::kMailToScheme)) {
+  if (gURL.SchemeIs(url::kMailToScheme)) {
     MailtoURLRewriter* rewriter =
         [[MailtoURLRewriter alloc] initWithStandardHandlers];
     NSString* launchURL = [rewriter rewriteMailtoURL:gURL];

@@ -70,15 +70,6 @@ class GURL;
 - (BOOL)webController:(CRWWebController*)webController
     shouldOpenExternalURL:(const GURL&)URL;
 
-// Called when |URL| is deemed suitable to be opened in a matching native app.
-// Needs to return whether |URL| was opened in a matching native app.
-// Also triggering user action |linkClicked| is passed to use it when needed.
-// The return value indicates if the native app was launched, not if a native
-// app was found.
-- (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
-                         sourceURL:(const GURL&)sourceURL
-                       linkClicked:(BOOL)linkClicked;
-
 // Called to ask the delegate for a controller to display the given url,
 // which contained content that the UIWebView couldn't display. Returns
 // the native controller to display if the delegate can handle the url,

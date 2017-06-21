@@ -755,11 +755,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)shouldOpenURL:(const GURL&)url
       mainDocumentURL:(const GURL&)mainDocumentURL
           linkClicked:(BOOL)linkClicked;
-// Called when |URL| needs to be opened in a matching native app.
-// Returns YES if the url was succesfully opened in the native app.
-- (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
-                         sourceURL:(const GURL&)sourceURL
-           linkActivatedNavigation:(BOOL)linkActivatedNavigation;
 // Returns YES if the navigation action is associated with a main frame request.
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
 // Returns whether external URL navigation action should be opened.
@@ -2947,43 +2942,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
 // method, which provides less information than the WKWebView version. Audit
 // this for things that should be handled in the subclass instead.
 - (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action {
-  NSURLRequest* request = action.request;
-  GURL requestURL = net::GURLWithNSURL(request.URL);
-
   // External application launcher needs |isNavigationTypeLinkActivated| to
   // decide if the user intended to open the application by clicking on a link.
   BOOL isNavigationTypeLinkActivated =
       action.navigationType == WKNavigationTypeLinkActivated;
 
-  // Checks if the link navigation leads to a launch of an external app.
-  // TODO(crbug.com/704417): External apps will not be launched from clicking
-  // a Bookmarked URL or a Recently Closed URL.
-  // TODO(crbug.com/607780): Revise the logic of allowing external app launch
-  // and move it to externalAppLauncher.
-  BOOL isOpenInNewTabNavigation = !(self.navigationManagerImpl->GetItemCount());
-  BOOL isPossibleLinkClick = [self isLinkNavigation:action.navigationType];
-  if (isPossibleLinkClick || isOpenInNewTabNavigation) {
-    web::NavigationItem* item = self.currentNavItem;
-    const GURL currentNavigationURL =
-        item ? item->GetVirtualURL() : GURL::EmptyGURL();
-    // Check If the URL is handled by a native app.
-    if ([self urlTriggersNativeAppLaunch:requestURL
-                               sourceURL:currentNavigationURL
-                 linkActivatedNavigation:isNavigationTypeLinkActivated]) {
-      // External app has been launched successfully. Stop the current page
-      // load operation (e.g. notifying all observers) and record the URL so
-      // that errors reported following the 'NO' reply can be safely ignored.
-      if ([self shouldClosePageOnNativeApplicationLoad])
-        _webStateImpl->CloseWebState();
-      [self stopLoading];
-      [_openedApplicationURL addObject:request.URL];
-      return NO;
-    }
-  }
-
   // The WebDelegate may instruct the CRWWebController to stop loading, and
   // instead instruct the next page to be loaded in an animation.
+  NSURLRequest* request = action.request;
+  GURL requestURL = net::GURLWithNSURL(request.URL);
   GURL mainDocumentURL = net::GURLWithNSURL(request.mainDocumentURL);
+  BOOL isPossibleLinkClick = [self isLinkNavigation:action.navigationType];
   DCHECK(_webView);
   if (![self shouldOpenURL:requestURL
            mainDocumentURL:mainDocumentURL
@@ -3819,19 +3788,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return [_delegate respondsToSelector:@selector(webController:
                                            shouldOpenExternalURL:)] &&
          [_delegate webController:self shouldOpenExternalURL:requestURL];
-}
-
-- (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
-                         sourceURL:(const GURL&)sourceURL
-           linkActivatedNavigation:(BOOL)linkActivatedNavigation {
-  if (![_delegate respondsToSelector:@selector(urlTriggersNativeAppLaunch:
-                                                                sourceURL:
-                                                              linkClicked:)]) {
-    return NO;
-  }
-  return [_delegate urlTriggersNativeAppLaunch:URL
-                                     sourceURL:sourceURL
-                                   linkClicked:linkActivatedNavigation];
 }
 
 - (CGFloat)headerHeight {

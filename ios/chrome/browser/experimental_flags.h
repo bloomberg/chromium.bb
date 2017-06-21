@@ -103,9 +103,6 @@ bool IsSigninPromoEnabled();
 // Whether Bookmark reordering is enabled.
 bool IsBookmarkReorderingEnabled();
 
-// Whether Google Native App Launcher is enabled.
-bool IsNativeAppLauncherEnabled();
-
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
 bool IsNewFeedbackKitEnabled();
 

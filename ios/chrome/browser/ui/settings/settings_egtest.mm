@@ -21,7 +21,6 @@
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
@@ -130,10 +129,6 @@ id<GREYMatcher> SearchEngineButton() {
 // Matcher for the Autofill Forms cell on the main Settings screen.
 id<GREYMatcher> AutofillButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_AUTOFILL);
-}
-// Matcher for the Google Apps cell on the main Settings screen.
-id<GREYMatcher> GoogleAppsButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_GOOGLE_APPS_SM_SETTINGS);
 }
 // Matcher for the Google Chrome cell on the main Settings screen.
 id<GREYMatcher> GoogleChromeButton() {
@@ -877,17 +872,6 @@ bool IsCertificateCleared() {
 - (void)testAccessibilityOnAutofillForms {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:AutofillButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  [self closeSubSettingsMenu];
-}
-
-// Verifies the UI elements are accessible on the Google Apps page.
-- (void)testAccessibilityOnGoogleApps {
-  // TODO(crbug/711511): Remove when Native App Launcher is full deprecated.
-  if (!experimental_flags::IsNativeAppLauncherEnabled())
-    return;
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:GoogleAppsButton()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
 }
