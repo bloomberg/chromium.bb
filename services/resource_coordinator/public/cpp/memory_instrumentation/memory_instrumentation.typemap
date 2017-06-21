@@ -18,5 +18,5 @@ type_mappings = [
   "memory_instrumentation.mojom.RequestArgs=base::trace_event::MemoryDumpRequestArgs",
   "memory_instrumentation.mojom.PlatformPrivateFootprint=base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint",
   "memory_instrumentation.mojom.ChromeMemDump=base::trace_event::MemoryDumpCallbackResult::ChromeMemDump",
-  "memory_instrumentation.mojom.OSMemDump=base::trace_event::MemoryDumpCallbackResult::OSMemDump",
+  "memory_instrumentation.mojom.RawOSMemDump=base::trace_event::MemoryDumpCallbackResult::OSMemDump",
 ]

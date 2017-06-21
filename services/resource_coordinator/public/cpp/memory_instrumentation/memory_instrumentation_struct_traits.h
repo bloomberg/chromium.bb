@@ -124,7 +124,7 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
 
 template <>
 struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
-    StructTraits<memory_instrumentation::mojom::OSMemDumpDataView,
+    StructTraits<memory_instrumentation::mojom::RawOSMemDumpDataView,
                  base::trace_event::MemoryDumpCallbackResult::OSMemDump> {
   static uint32_t resident_set_kb(
       const base::trace_event::MemoryDumpCallbackResult::OSMemDump& args) {
@@ -135,7 +135,7 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
       const base::trace_event::MemoryDumpCallbackResult::OSMemDump& args) {
     return args.platform_private_footprint;
   }
-  static bool Read(memory_instrumentation::mojom::OSMemDumpDataView input,
+  static bool Read(memory_instrumentation::mojom::RawOSMemDumpDataView input,
                    base::trace_event::MemoryDumpCallbackResult::OSMemDump* out);
 };
 

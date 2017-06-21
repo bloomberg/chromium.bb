@@ -17,20 +17,20 @@ namespace {
 
 void EmitBrowserMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Resident",
-                                pmd->os_dump.resident_set_kb / 1024);
+                                pmd->os_dump->resident_set_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Malloc",
                                 pmd->chrome_dump.malloc_total_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Browser2.PrivateMemoryFootprint",
-      pmd->private_footprint / 1024);
+      pmd->os_dump->private_footprint_kb / 1024);
 }
 
 void EmitRendererMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.Resident",
-                                pmd->os_dump.resident_set_kb / 1024);
+                                pmd->os_dump->resident_set_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Renderer2.PrivateMemoryFootprint",
-      pmd->private_footprint / 1024);
+      pmd->os_dump->private_footprint_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.Malloc",
                                 pmd->chrome_dump.malloc_total_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
@@ -44,7 +44,7 @@ void EmitRendererMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
 
 void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Resident",
-                                pmd->os_dump.resident_set_kb / 1024);
+                                pmd->os_dump->resident_set_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Malloc",
                                 pmd->chrome_dump.malloc_total_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
@@ -52,7 +52,7 @@ void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
       pmd->chrome_dump.command_buffer_total_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Gpu2.PrivateMemoryFootprint",
-      pmd->private_footprint / 1024);
+      pmd->os_dump->private_footprint_kb / 1024);
 }
 
 }  // namespace
@@ -88,7 +88,7 @@ void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
 
   uint32_t private_footprint_total_kb = 0;
   for (const ProcessMemoryDumpPtr& pmd : ptr->process_dumps) {
-    private_footprint_total_kb += pmd->private_footprint;
+    private_footprint_total_kb += pmd->os_dump->private_footprint_kb;
     switch (pmd->process_type) {
       case memory_instrumentation::mojom::ProcessType::BROWSER:
         EmitBrowserMemoryMetrics(pmd);
