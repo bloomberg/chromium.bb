@@ -203,6 +203,16 @@ size_t CalculatePositionsInFrame(
   return 17;
 }
 
+- (NSText*)setUpFieldEditorAttributes:(NSText*)textObj {
+  NSText* fieldEditor = [super setUpFieldEditorAttributes:textObj];
+
+  // -[NSTextFieldCell setUpFieldEditorAttributes:] matches the field editor's
+  // background to its own background, which can cover our decorations in their
+  // hover state. See https://crbug.com/669870.
+  [fieldEditor setDrawsBackground:NO];
+  return fieldEditor;
+}
+
 - (void)clearTrackingArea {
   for (auto* decoration : mouseTrackingDecorations_)
     decoration->RemoveTrackingArea();
