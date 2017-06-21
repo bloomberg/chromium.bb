@@ -70,6 +70,9 @@ CategoryRankerChoice GetSelectedCategoryRanker() {
                                                   kCategoryRankerParameter);
 
   if (category_ranker_value.empty()) {
+    // TODO(crbug.com/735066): Remove the experiment configurations from
+    // fieldtrial_testing_config.json when enabling ClickBasedRanker by default.
+
     // Default, Enabled or Disabled.
     return CategoryRankerChoice::CONSTANT;
   }
