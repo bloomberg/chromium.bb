@@ -129,6 +129,7 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
       // by the block size.
       return size.width() % 4 == 0 && size.height() % 4 == 0;
     case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:

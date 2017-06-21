@@ -18,6 +18,8 @@ gfx::BufferFormat BufferFormatForInternalFormat(unsigned internalformat) {
   switch (internalformat) {
     case GL_RED_EXT:
       return gfx::BufferFormat::R_8;
+    case GL_R16_EXT:
+      return gfx::BufferFormat::R_16;
     case GL_RG_EXT:
       return gfx::BufferFormat::RG_88;
     case GL_RGB:
@@ -62,6 +64,7 @@ bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::YVU_420:
@@ -96,6 +99,8 @@ bool IsImageFromGpuMemoryBufferFormatSupported(
       return capabilities.texture_format_dxt5;
     case gfx::BufferFormat::ETC1:
       return capabilities.texture_format_etc1;
+    case gfx::BufferFormat::R_16:
+      return capabilities.texture_norm16;
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RG_88:
       return capabilities.texture_rg;
@@ -135,6 +140,7 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
       // by the block size.
       return size.width() % 4 == 0 && size.height() % 4 == 0;
     case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:

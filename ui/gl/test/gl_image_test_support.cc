@@ -60,6 +60,15 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         memset(&data[y * stride], color[0], width);
       }
       return;
+    case gfx::BufferFormat::R_16:
+      DCHECK_EQ(0, plane);
+      for (int y = 0; y < height; ++y) {
+        uint16_t* row = reinterpret_cast<uint16_t*>(data + y * stride);
+        for (int x = 0; x < width; ++x) {
+          row[x] = static_cast<uint16_t>(color[0] << 8);
+        }
+      }
+      return;
     case gfx::BufferFormat::BGR_565:
       DCHECK_EQ(0, plane);
       for (int y = 0; y < height; ++y) {

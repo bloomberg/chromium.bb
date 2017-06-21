@@ -20,6 +20,11 @@
 #include "ui/display/util/edid_parser.h"
 #include "ui/ozone/common/display_snapshot_proxy.h"
 
+#if !defined(DRM_FORMAT_R16)
+// TODO(riju): crbug.com/733703
+#define DRM_FORMAT_R16 fourcc_code('R', '1', '6', ' ')
+#endif
+
 namespace ui {
 
 namespace {
@@ -434,6 +439,8 @@ int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       return DRM_FORMAT_R8;
+    case gfx::BufferFormat::R_16:
+      return DRM_FORMAT_R16;
     case gfx::BufferFormat::RG_88:
       return DRM_FORMAT_GR88;
     case gfx::BufferFormat::RGBA_8888:
