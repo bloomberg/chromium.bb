@@ -796,24 +796,23 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
 
   const unsigned char level = inline_box->BidiLevel();
   if (caret_offset == inline_box->CaretLeftmostOffset()) {
-    InlineBox* prev_box = inline_box->PrevLeafChildIgnoringLineBreak();
+    InlineBox* const prev_box = inline_box->PrevLeafChildIgnoringLineBreak();
     if (!prev_box || prev_box->BidiLevel() < level) {
       // Left edge of a secondary run. Set to the right edge of the entire
       // run.
-      inline_box =
+      InlineBox* const result_box =
           InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
               *inline_box, level);
-      return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
+      return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
     }
 
-    if (prev_box->BidiLevel() > level) {
-      // Right edge of a "tertiary" run. Set to the left edge of that run.
-      inline_box =
-          InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
-              *inline_box, level);
-      return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
-    }
-    return InlineBoxPosition(inline_box, caret_offset);
+    if (prev_box->BidiLevel() <= level)
+      return InlineBoxPosition(inline_box, caret_offset);
+    // Right edge of a "tertiary" run. Set to the left edge of that run.
+    InlineBox* const result_box =
+        InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
+            *inline_box, level);
+    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
   }
 
   if (unicode_bidi == UnicodeBidi::kPlaintext) {
@@ -822,23 +821,24 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
     return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
   }
 
-  InlineBox* next_box = inline_box->NextLeafChildIgnoringLineBreak();
+  InlineBox* const next_box = inline_box->NextLeafChildIgnoringLineBreak();
   if (!next_box || next_box->BidiLevel() < level) {
     // Right edge of a secondary run. Set to the left edge of the entire
     // run.
-    inline_box =
+    InlineBox* const result_box =
         InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
             *inline_box, level);
-    return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
+    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
   }
 
   if (next_box->BidiLevel() <= level)
     return InlineBoxPosition(inline_box, caret_offset);
 
   // Left edge of a "tertiary" run. Set to the right edge of that run.
-  inline_box = InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
-      *inline_box, level);
-  return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
+  InlineBox* const result_box =
+      InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
+          *inline_box, level);
+  return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
 }
 
 // Returns true if |caret_offset| is at edge of |box| based on |affinity|.
