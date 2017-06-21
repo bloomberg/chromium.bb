@@ -15,6 +15,7 @@
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_header_provider.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/content_suggestions/mediator_util.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
@@ -60,6 +61,9 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 // the callback). Those items are up to date with the model.
 @property(nonatomic, strong)
     NSMutableArray<ContentSuggestionsMostVisitedItem*>* freshMostVisitedItems;
+// Section Info for the logo and omnibox section.
+@property(nonatomic, strong)
+    ContentSuggestionsSectionInformation* logoSectionInfo;
 // Section Info for the Most Visited section.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
@@ -83,6 +87,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 
 @synthesize mostVisitedItems = _mostVisitedItems;
 @synthesize freshMostVisitedItems = _freshMostVisitedItems;
+@synthesize logoSectionInfo = _logoSectionInfo;
 @synthesize mostVisitedSectionInfo = _mostVisitedSectionInfo;
 @synthesize recordedPageImpression = _recordedPageImpression;
 @synthesize contentService = _contentService;
@@ -90,6 +95,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 @synthesize sectionInformationByCategory = _sectionInformationByCategory;
 @synthesize attributesProvider = _attributesProvider;
 @synthesize commandHandler = _commandHandler;
+@synthesize headerProvider = _headerProvider;
 
 #pragma mark - Public
 
@@ -110,6 +116,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
            largeIconService:largeIconService];
 
     _mostVisitedSectionInfo = MostVisitedSectionInformation();
+    _logoSectionInfo = LogoSectionInformation();
     _mostVisitedSites = std::move(mostVisitedSites);
     _mostVisitedBridge =
         base::MakeUnique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
@@ -135,6 +142,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   NSMutableArray<ContentSuggestionsSectionInformation*>* sectionsInfo =
       [NSMutableArray array];
 
+  [sectionsInfo addObject:self.logoSectionInfo];
+
   if (self.mostVisitedItems.count > 0) {
     [sectionsInfo addObject:self.mostVisitedSectionInfo];
   }
@@ -159,7 +168,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   NSMutableArray<CSCollectionViewItem*>* convertedSuggestions =
       [NSMutableArray array];
 
-  if (sectionInfo == self.mostVisitedSectionInfo) {
+  if (sectionInfo == self.logoSectionInfo) {
+    // TODO(crbug.com/732416): Add promo.
+  } else if (sectionInfo == self.mostVisitedSectionInfo) {
     [convertedSuggestions addObjectsFromArray:self.mostVisitedItems];
   } else {
     ntp_snippets::Category category =
@@ -245,14 +256,14 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   ContentSuggestionsSectionInformation* sectionInfo =
       item.suggestionIdentifier.sectionInfo;
   GURL url;
-  if (![self isRelatedToContentSuggestionsService:sectionInfo]) {
-    ContentSuggestionsMostVisitedItem* mostVisited =
-        base::mac::ObjCCast<ContentSuggestionsMostVisitedItem>(item);
-    url = mostVisited.URL;
-  } else {
+  if ([self isRelatedToContentSuggestionsService:sectionInfo]) {
     ContentSuggestionsItem* suggestionItem =
         base::mac::ObjCCast<ContentSuggestionsItem>(item);
     url = suggestionItem.URL;
+  } else if (sectionInfo == self.mostVisitedSectionInfo) {
+    ContentSuggestionsMostVisitedItem* mostVisited =
+        base::mac::ObjCCast<ContentSuggestionsMostVisitedItem>(item);
+    url = mostVisited.URL;
   }
   [self.attributesProvider fetchFaviconAttributesForURL:url
                                              completion:completion];
@@ -296,6 +307,10 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
                                           suggestionIdentifier.IDInSection);
 
   self.contentService->DismissSuggestion(suggestion_id);
+}
+
+- (UIView*)headerView {
+  return [self.headerProvider header];
 }
 
 #pragma mark - ContentSuggestionsServiceObserver
@@ -473,7 +488,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 // content suggestions service.
 - (BOOL)isRelatedToContentSuggestionsService:
     (ContentSuggestionsSectionInformation*)sectionInfo {
-  return sectionInfo != self.mostVisitedSectionInfo;
+  return sectionInfo != self.mostVisitedSectionInfo &&
+         sectionInfo != self.logoSectionInfo;
 }
 
 // Replaces the Most Visited items currently displayed by the most recent ones.
