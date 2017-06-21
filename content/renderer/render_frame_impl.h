@@ -419,6 +419,7 @@ class CONTENT_EXPORT RenderFrameImpl
   int ShowContextMenu(ContextMenuClient* client,
                       const ContextMenuParams& params) override;
   void CancelContextMenu(int request_id) override;
+  void BindToFrame(blink::WebLocalFrame* frame) override;
   blink::WebPlugin* CreatePlugin(
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
@@ -813,13 +814,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
-  // Callers *must* call |BindToWebFrame| immediately after creation.
   static RenderFrameImpl* Create(RenderViewImpl* render_view,
                                  int32_t routing_id);
-
-  // This is called right after creation with the WebLocalFrame for this
-  // RenderFrame. It must be called before Initialize.
-  void BindToWebFrame(blink::WebLocalFrame* web_frame);
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderFrameObserver* observer);
@@ -1119,8 +1115,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void SendUpdateFaviconURL(blink::WebIconURL::Type icon_types_mask);
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
-  // constructor until BindToWebFrame is called, and it is null after
-  // frameDetached is called until destruction (which is asynchronous in the
+  // constructor until BindToFrame() is called, and it is null after
+  // FrameDetached() is called until destruction (which is asynchronous in the
   // case of the main frame, but not subframes).
   blink::WebLocalFrame* frame_;
 

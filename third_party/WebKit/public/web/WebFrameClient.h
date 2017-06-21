@@ -122,6 +122,12 @@ class BLINK_EXPORT WebFrameClient {
  public:
   virtual ~WebFrameClient() {}
 
+  // Initialization ------------------------------------------------------
+  // Called exactly once during construction to notify the client about the
+  // created WebLocalFrame. Guaranteed to be invoked before any other
+  // WebFrameClient callbacks.
+  virtual void BindToFrame(WebLocalFrame*) {}
+
   // Factory methods -----------------------------------------------------
 
   // May return null.

@@ -993,7 +993,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       blink::WebTreeScopeType::kDocument, render_frame,
       render_frame->blink_interface_provider_.get(),
       render_frame->blink_interface_registry_.get(), opener);
-  render_frame->BindToWebFrame(web_frame);
   render_view->webview()->SetMainFrame(web_frame);
   render_frame->render_widget_ = RenderWidget::CreateForFrame(
       widget_routing_id, hidden, screen_info, compositor_deps, web_frame);
@@ -1070,7 +1069,6 @@ void RenderFrameImpl::CreateFrame(
         render_frame->blink_interface_registry_.get(), proxy->web_frame(),
         replicated_state.sandbox_flags);
   }
-  render_frame->BindToWebFrame(web_frame);
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->Parent());
 
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
@@ -1278,16 +1276,6 @@ RenderFrameImpl::~RenderFrameImpl() {
   render_view_->UnregisterRenderFrame(this);
   g_routing_id_frame_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
-}
-
-void RenderFrameImpl::BindToWebFrame(blink::WebLocalFrame* web_frame) {
-  DCHECK(!frame_);
-
-  std::pair<FrameMap::iterator, bool> result = g_frame_map.Get().insert(
-      std::make_pair(web_frame, this));
-  CHECK(result.second) << "Inserting a duplicate item.";
-
-  frame_ = web_frame;
 }
 
 void RenderFrameImpl::Initialize() {
@@ -2554,6 +2542,16 @@ void RenderFrameImpl::CancelContextMenu(int request_id) {
   pending_context_menus_.Remove(request_id);
 }
 
+void RenderFrameImpl::BindToFrame(WebLocalFrame* web_frame) {
+  DCHECK(!frame_);
+
+  std::pair<FrameMap::iterator, bool> result =
+      g_frame_map.Get().emplace(web_frame, this);
+  CHECK(result.second) << "Inserting a duplicate item.";
+
+  frame_ = web_frame;
+}
+
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     const WebPluginInfo& info,
     const blink::WebPluginParams& params,
@@ -3076,7 +3074,6 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       scope, child_render_frame,
       child_render_frame->blink_interface_provider_.get(),
       child_render_frame->blink_interface_registry_.get());
-  child_render_frame->BindToWebFrame(web_frame);
 
   child_render_frame->in_frame_tree_ = true;
   child_render_frame->Initialize();
