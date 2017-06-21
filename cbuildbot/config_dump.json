@@ -457,7 +457,6 @@
             "chrome_sdk_build_chrome": false,
             "chromeos_official": true,
             "description": "Factory Builds",
-            "dev_installer_prebuilts": true,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
             "hw_tests_override": [],
             "images": [
@@ -474,7 +473,6 @@
                 "factory"
             ],
             "suite_scheduling": true,
-            "trybot_list": true,
             "upload_hw_test_artifacts": false,
             "useflags": [
                 "-cros-debug",
@@ -1802,7 +1800,6 @@
         "boards": [
             "arkham"
         ],
-        "dev_installer_prebuilts": false,
         "sync_chrome": false
     },
     "arkham-firmware": {
@@ -3352,7 +3349,6 @@
         "boards": [
             "beaglebone"
         ],
-        "dev_installer_prebuilts": false,
         "images": [],
         "rootfs_verification": false,
         "sync_chrome": false
@@ -3521,7 +3517,6 @@
         "boards": [
             "beaglebone_servo"
         ],
-        "dev_installer_prebuilts": false,
         "images": [],
         "rootfs_verification": false,
         "sync_chrome": false
@@ -5971,7 +5966,6 @@
         "boards": [
             "cobblepot"
         ],
-        "dev_installer_prebuilts": false,
         "images": [
             "test"
         ],
@@ -8804,7 +8798,6 @@
         "boards": [
             "gale"
         ],
-        "dev_installer_prebuilts": false,
         "sync_chrome": false
     },
     "gale-firmware": {
@@ -9699,7 +9692,6 @@
         "boards": [
             "gonzo"
         ],
-        "dev_installer_prebuilts": false,
         "images": [
             "test"
         ],
@@ -13493,7 +13485,6 @@
         "boards": [
             "lasilla-ground"
         ],
-        "dev_installer_prebuilts": false,
         "images": [
             "test"
         ],
@@ -13640,7 +13631,6 @@
         "boards": [
             "lasilla-sky"
         ],
-        "dev_installer_prebuilts": false,
         "images": [
             "test"
         ],
@@ -27201,7 +27191,6 @@
         "boards": [
             "whirlwind"
         ],
-        "dev_installer_prebuilts": false,
         "sync_chrome": false
     },
     "whirlwind-firmware": {
@@ -27953,7 +27942,6 @@
         "boards": [
             "wooten"
         ],
-        "dev_installer_prebuilts": false,
         "images": [
             "test"
         ],

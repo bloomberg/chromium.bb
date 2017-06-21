@@ -1504,6 +1504,7 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk=False,
       chrome_sdk_build_chrome=False,
       description='Factory Builds',
+      dev_installer_prebuilts=False,
       factory_toolkit=True,
       hwqual=False,
       images=['test', 'factory_install'],
@@ -1511,6 +1512,7 @@ def GeneralTemplates(site_config, ge_build_config):
       paygen=False,
       signer_tests=False,
       sign_types=['factory'],
+      trybot_list=False,
       upload_hw_test_artifacts=False,
       upload_symbols=False,
   )
