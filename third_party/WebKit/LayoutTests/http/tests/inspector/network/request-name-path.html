@@ -12,10 +12,11 @@ function test()
     {
         var mainTarget = SDK.targetManager.mainTarget();
         var currentTargetURL = mainTarget.inspectedURL();
+        var dispatcher = InspectorTest.networkManager._dispatcher;
         if (targetUrl)
             mainTarget.setInspectedURL(targetUrl);
         InspectorTest.addResult("Dumping request name and path for url: " + url);
-        var request = new SDK.NetworkRequest(InspectorTest.networkManager, 0, url);
+        var request = dispatcher._createNetworkRequest(0, "", "", url);
         InspectorTest.addResult("    name = " + request.name());
         InspectorTest.addResult("    path = " + request.path());
         InspectorTest.addResult("    targetUrl = " + (targetUrl ? targetUrl : currentTargetURL));

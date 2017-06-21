@@ -237,7 +237,7 @@ function test()
   }
 
   function makeRequest(requestData) {
-    var request = new SDK.NetworkRequest(InspectorTest.networkManager, (++requestIds).toString(), requestData.url);
+    var request = new SDK.NetworkRequest((++requestIds).toString(), requestData.url);
     request.setResourceType(requestData.type);
     request.setIssueTime(requestData.issueTime, requestData.wallIssueTime);
     request.timing = requestData.timing;

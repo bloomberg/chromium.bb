@@ -5,7 +5,7 @@
 <script>
 function test()
 {
-    var request = new SDK.NetworkRequest(InspectorTest.mainTarget, 0, "http://unknown", "https://foo.test", 0, 0, null);
+    var request = new SDK.NetworkRequest(0, "http://unknown", "https://foo.test", 0, 0, null);
     InspectorTest.dispatchRequestFinished(request);
 
     InspectorTest.dumpSecurityPanelSidebarOrigins();

@@ -21,7 +21,7 @@ function test()
     var encodedBytesReceived = 0;
     function responseReceived(requestId, frameId, loaderId, time, resourceType, response)
     {
-        var request = InspectorTest.networkLog.requestForId(InspectorTest.networkManager, requestId);
+        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         if (/resource\.php/.exec(request.url())) {
             InspectorTest.addResult("Received response.");
             encodedBytesReceived += response.encodedDataLength;
@@ -30,7 +30,7 @@ function test()
 
     function loadingFinished(requestId, finishTime, encodedDataLength)
     {
-        var request = InspectorTest.networkLog.requestForId(InspectorTest.networkManager, requestId);
+        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         if (/resource\.php/.exec(request.url())) {
             InspectorTest.assertEquals(encodedBytesReceived, encodedDataLength, "Data length mismatch");
             InspectorTest.addResult("SUCCESS");
@@ -40,7 +40,7 @@ function test()
 
     function loadingFailed(requestId, time, localizedDescription, canceled)
     {
-        var request = InspectorTest.networkLog.requestForId(InspectorTest.networkManager, requestId);
+        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         if (/resource\.php/.exec(request.url())) {
             InspectorTest.addResult("Loading failed!");
             InspectorTest.completeTest();
@@ -50,7 +50,7 @@ function test()
     function dataReceived(requestId, time, dataLength, encodedDataLength)
     {
         InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "dataReceived", dataReceived);
-        var request = InspectorTest.networkLog.requestForId(InspectorTest.networkManager, requestId);
+        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         if (/resource\.php/.exec(request.url()))
             encodedBytesReceived += encodedDataLength;
     }

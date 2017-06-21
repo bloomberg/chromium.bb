@@ -6,7 +6,7 @@
 function test() {
     function checkURL(url)
     {
-        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), url, url, "", "", "");
+        var request = new SDK.NetworkRequest(url, url, "", "", "");
         var result = Network.NetworkLogView.HTTPRequestsFilter(request);
         InspectorTest.addResult((result ? "" : "Non-") + "HTTP request URL: " + url);
     }

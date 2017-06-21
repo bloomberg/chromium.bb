@@ -19,7 +19,7 @@ function test()
 
     InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, [], insecureContentStatus, null));
 
-    var request = new SDK.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
+    var request = new SDK.NetworkRequest(0, "http://foo.test", "https://foo.test", 0, 0, null);
     request.mixedContentType = "optionally-blockable";
     InspectorTest.dispatchRequestFinished(request);
 

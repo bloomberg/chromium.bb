@@ -21,7 +21,7 @@ function test()
 
     function loadingFinished(requestId)
     {
-        var request = InspectorTest.networkLog.requestForId(InspectorTest.networkManager, requestId);
+        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         request.requestContent().then(contentReceived.bind(this, request));
     }
     function contentReceived(request, content)

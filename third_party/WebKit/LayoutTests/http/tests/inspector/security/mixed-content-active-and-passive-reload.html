@@ -19,11 +19,11 @@ function test()
 
     InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, [], insecureContentStatus, null));
 
-    var passive = new SDK.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
+    var passive = new SDK.NetworkRequest(0, "http://foo.test", "https://foo.test", 0, 0, null);
     passive.mixedContentType = "optionally-blockable";
     InspectorTest.dispatchRequestFinished(passive);
 
-    var active = new SDK.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
+    var active = new SDK.NetworkRequest(0, "http://foo.test", "https://foo.test", 0, 0, null);
     active.mixedContentType = "blockable";
     InspectorTest.dispatchRequestFinished(active);
 

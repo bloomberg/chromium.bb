@@ -14,7 +14,7 @@ function test() {
         InspectorTest.addResult((toggle ? "Toggled '" : "Clicked '") + buttonName + "' button.");
         target._resourceCategoryFilterUI._toggleTypeFilter(buttonName, toggle);
         var results = [];
-        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), "", "", "", "", "");
+        var request = new SDK.NetworkRequest("", "", "", "", "");
         for (var typeId in types) {
             var type = Common.resourceTypes[typeId];
             results.push(type.name() + ": " + target._resourceCategoryFilterUI.accept(type.category().title));

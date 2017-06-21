@@ -34,7 +34,7 @@ var test = function()
         request._transferSize = 539; // 39 = header size at the end of the day
     }
 
-    var testRequest = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), "testRequest", "http://example.com/inspector-test.js", 1); 
+    var testRequest = new SDK.NetworkRequest("testRequest", "http://example.com/inspector-test.js", 1); 
     setRequestValues(testRequest);
     var headersText = testRequest.requestHeadersText();
     var requestResults = {
