@@ -137,10 +137,10 @@ class TestImeController : ash::mojom::ImeController {
 
   // ash::mojom::ImeController:
   void SetClient(ash::mojom::ImeControllerClientPtr client) override {}
-  void RefreshIme(ash::mojom::ImeInfoPtr current_ime,
+  void RefreshIme(const std::string& current_ime_id,
                   std::vector<ash::mojom::ImeInfoPtr> available_imes,
                   std::vector<ash::mojom::ImeMenuItemPtr> menu_items) override {
-    current_ime_ = std::move(current_ime);
+    current_ime_id_ = current_ime_id;
     available_imes_ = std::move(available_imes);
     menu_items_ = std::move(menu_items);
   }
@@ -152,7 +152,7 @@ class TestImeController : ash::mojom::ImeController {
   }
 
   // The most recent values received via mojo.
-  ash::mojom::ImeInfoPtr current_ime_;
+  std::string current_ime_id_;
   std::vector<ash::mojom::ImeInfoPtr> available_imes_;
   std::vector<ash::mojom::ImeMenuItemPtr> menu_items_;
   bool managed_by_policy_ = false;
@@ -166,8 +166,17 @@ class TestImeController : ash::mojom::ImeController {
 
 class ImeControllerClientTest : public testing::Test {
  public:
-  ImeControllerClientTest() = default;
+  ImeControllerClientTest() {
+    input_method_manager_.delegate_.set_get_localized_string_callback(
+        base::Bind(&GetLocalizedString));
+  }
   ~ImeControllerClientTest() override = default;
+
+ protected:
+  TestInputMethodManager input_method_manager_;
+
+  // Mock of mojo interface in ash.
+  TestImeController ime_controller_;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -176,78 +185,72 @@ class ImeControllerClientTest : public testing::Test {
 };
 
 TEST_F(ImeControllerClientTest, Construction) {
-  TestInputMethodManager input_method_manager;
-  TestImeController ime_controller;
-
   std::unique_ptr<ImeControllerClient> client =
-      base::MakeUnique<ImeControllerClient>(&input_method_manager);
-  client->InitForTesting(ime_controller.CreateInterfacePtr());
-  EXPECT_EQ(1, input_method_manager.add_observer_count_);
-  EXPECT_EQ(1, input_method_manager.add_menu_observer_count_);
+      base::MakeUnique<ImeControllerClient>(&input_method_manager_);
+  client->InitForTesting(ime_controller_.CreateInterfacePtr());
+  EXPECT_EQ(1, input_method_manager_.add_observer_count_);
+  EXPECT_EQ(1, input_method_manager_.add_menu_observer_count_);
 
   client.reset();
-  EXPECT_EQ(1, input_method_manager.remove_observer_count_);
-  EXPECT_EQ(1, input_method_manager.remove_menu_observer_count_);
+  EXPECT_EQ(1, input_method_manager_.remove_observer_count_);
+  EXPECT_EQ(1, input_method_manager_.remove_menu_observer_count_);
 }
 
 TEST_F(ImeControllerClientTest, SetImesManagedByPolicy) {
-  TestInputMethodManager input_method_manager;
-  TestImeController ime_controller;
-
-  ImeControllerClient client(&input_method_manager);
-  client.InitForTesting(ime_controller.CreateInterfacePtr());
+  ImeControllerClient client(&input_method_manager_);
+  client.InitForTesting(ime_controller_.CreateInterfacePtr());
 
   client.SetImesManagedByPolicy(true);
   client.FlushMojoForTesting();
-  EXPECT_TRUE(ime_controller.managed_by_policy_);
+  EXPECT_TRUE(ime_controller_.managed_by_policy_);
 }
 
 TEST_F(ImeControllerClientTest, ShowImeMenuOnShelf) {
-  TestInputMethodManager input_method_manager;
-  TestImeController ime_controller;
-
-  ImeControllerClient client(&input_method_manager);
-  client.InitForTesting(ime_controller.CreateInterfacePtr());
+  ImeControllerClient client(&input_method_manager_);
+  client.InitForTesting(ime_controller_.CreateInterfacePtr());
 
   client.ImeMenuActivationChanged(true);
   client.FlushMojoForTesting();
-  EXPECT_TRUE(ime_controller.show_ime_menu_on_shelf_);
+  EXPECT_TRUE(ime_controller_.show_ime_menu_on_shelf_);
 }
 
 TEST_F(ImeControllerClientTest, InputMethodChanged) {
-  TestInputMethodManager input_method_manager;
-  input_method_manager.delegate_.set_get_localized_string_callback(
-      base::Bind(&GetLocalizedString));
-  TestImeController ime_controller;
-
-  ImeControllerClient client(&input_method_manager);
-  client.InitForTesting(ime_controller.CreateInterfacePtr());
+  ImeControllerClient client(&input_method_manager_);
+  client.InitForTesting(ime_controller_.CreateInterfacePtr());
 
   // Simulate a switch to IME 2.
-  input_method_manager.state_->current_ime_id_ = "id2";
-  client.InputMethodChanged(&input_method_manager, nullptr /* profile */,
+  input_method_manager_.state_->current_ime_id_ = "id2";
+  client.InputMethodChanged(&input_method_manager_, nullptr /* profile */,
                             false /* show_message */);
   client.FlushMojoForTesting();
 
   // IME controller received the change and the list of available IMEs.
-  EXPECT_EQ("id2", ime_controller.current_ime_->id);
-  ASSERT_EQ(2u, ime_controller.available_imes_.size());
-  EXPECT_EQ("id1", ime_controller.available_imes_[0]->id);
+  EXPECT_EQ("id2", ime_controller_.current_ime_id_);
+  ASSERT_EQ(2u, ime_controller_.available_imes_.size());
+  EXPECT_EQ("id1", ime_controller_.available_imes_[0]->id);
   EXPECT_EQ(base::ASCIIToUTF16("name1"),
-            ime_controller.available_imes_[0]->name);
-  EXPECT_EQ("id2", ime_controller.available_imes_[1]->id);
+            ime_controller_.available_imes_[0]->name);
+  EXPECT_EQ("id2", ime_controller_.available_imes_[1]->id);
   EXPECT_EQ(base::ASCIIToUTF16("name2"),
-            ime_controller.available_imes_[1]->name);
+            ime_controller_.available_imes_[1]->name);
+}
+
+TEST_F(ImeControllerClientTest, NoActiveState) {
+  ImeControllerClient client(&input_method_manager_);
+  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+
+  input_method_manager_.state_ = nullptr;
+  client.InputMethodChanged(&input_method_manager_, nullptr /* profile */,
+                            false /* show_message */);
+  client.FlushMojoForTesting();
+  EXPECT_TRUE(ime_controller_.current_ime_id_.empty());
+  EXPECT_TRUE(ime_controller_.available_imes_.empty());
+  EXPECT_TRUE(ime_controller_.menu_items_.empty());
 }
 
 TEST_F(ImeControllerClientTest, MenuItemChanged) {
-  TestInputMethodManager input_method_manager;
-  input_method_manager.delegate_.set_get_localized_string_callback(
-      base::Bind(&GetLocalizedString));
-  TestImeController ime_controller;
-
-  ImeControllerClient client(&input_method_manager);
-  client.InitForTesting(ime_controller.CreateInterfacePtr());
+  ImeControllerClient client(&input_method_manager_);
+  client.InitForTesting(ime_controller_.CreateInterfacePtr());
 
   const bool is_selection_item = true;
   InputMethodMenuItem item1("key1", "label1", is_selection_item,
@@ -261,11 +264,11 @@ TEST_F(ImeControllerClientTest, MenuItemChanged) {
   client.FlushMojoForTesting();
 
   // IME controller received the menu items.
-  ASSERT_EQ(2u, ime_controller.menu_items_.size());
-  EXPECT_EQ("key1", ime_controller.menu_items_[0]->key);
-  EXPECT_TRUE(ime_controller.menu_items_[0]->checked);
-  EXPECT_EQ("key2", ime_controller.menu_items_[1]->key);
-  EXPECT_FALSE(ime_controller.menu_items_[1]->checked);
+  ASSERT_EQ(2u, ime_controller_.menu_items_.size());
+  EXPECT_EQ("key1", ime_controller_.menu_items_[0]->key);
+  EXPECT_TRUE(ime_controller_.menu_items_[0]->checked);
+  EXPECT_EQ("key2", ime_controller_.menu_items_[1]->key);
+  EXPECT_FALSE(ime_controller_.menu_items_[1]->checked);
 }
 
 }  // namespace

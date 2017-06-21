@@ -445,7 +445,8 @@ bool ImeMenuTray::PerformAction(const ui::Event& event) {
 void ImeMenuTray::OnIMERefresh() {
   UpdateTrayLabel();
   if (bubble_ && ime_list_view_) {
-    ime_list_view_->Update(ime_controller_->available_imes(),
+    ime_list_view_->Update(ime_controller_->current_ime().id,
+                           ime_controller_->available_imes(),
                            ime_controller_->current_ime_menu_items(), false,
                            ImeListView::SHOW_SINGLE_IME);
   }

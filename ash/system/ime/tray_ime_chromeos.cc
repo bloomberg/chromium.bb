@@ -86,12 +86,13 @@ class IMEDetailedView : public ImeListView {
     return controlled_setting_icon_;
   }
 
-  void Update(const std::vector<mojom::ImeInfo>& list,
+  void Update(const std::string& current_ime_id,
+              const std::vector<mojom::ImeInfo>& list,
               const std::vector<mojom::ImeMenuItem>& property_list,
               bool show_keyboard_toggle,
               SingleImeBehavior single_ime_behavior) override {
-    ImeListView::Update(list, property_list, show_keyboard_toggle,
-                        single_ime_behavior);
+    ImeListView::Update(current_ime_id, list, property_list,
+                        show_keyboard_toggle, single_ime_behavior);
     CreateTitleRow(IDS_ASH_STATUS_TRAY_IME);
   }
 
@@ -187,7 +188,8 @@ void TrayIME::Update() {
     default_->UpdateLabel(GetDefaultViewLabel(ime_count > 1));
   }
   if (detailed_) {
-    detailed_->Update(ime_controller_->available_imes(),
+    detailed_->Update(ime_controller_->current_ime().id,
+                      ime_controller_->available_imes(),
                       ime_controller_->current_ime_menu_items(),
                       ShouldShowKeyboardToggle(), GetSingleImeBehavior());
   }

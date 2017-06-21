@@ -40,7 +40,8 @@ class ImeListView : public TrayDetailsView {
   void Init(bool show_keyboard_toggle, SingleImeBehavior single_ime_behavior);
 
   // Updates the view.
-  virtual void Update(const std::vector<mojom::ImeInfo>& list,
+  virtual void Update(const std::string& current_ime_id,
+                      const std::vector<mojom::ImeInfo>& list,
                       const std::vector<mojom::ImeMenuItem>& property_items,
                       bool show_keyboard_toggle,
                       SingleImeBehavior single_ime_behavior);
@@ -81,6 +82,7 @@ class ImeListView : public TrayDetailsView {
 
   // Appends the IMEs and properties to the IME menu's scrollable area.
   void AppendImeListAndProperties(
+      const std::string& current_ime_id,
       const std::vector<mojom::ImeInfo>& list,
       const std::vector<mojom::ImeMenuItem>& property_items);
 
