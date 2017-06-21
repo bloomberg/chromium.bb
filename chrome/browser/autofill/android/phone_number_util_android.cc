@@ -21,18 +21,15 @@ using ::base::android::ScopedJavaLocalRef;
 using ::i18n::phonenumbers::PhoneNumber;
 using ::i18n::phonenumbers::PhoneNumberUtil;
 
-// Formats the |phone_number| to the specified |format|. Returns the original
-// number if the operation is not possible.
-std::string FormatPhoneNumber(const std::string& phone_number,
-                              PhoneNumberUtil::PhoneNumberFormat format) {
-  const std::string default_region_code =
-      autofill::AutofillCountry::CountryCodeForLocale(
-          g_browser_process->GetApplicationLocale());
-
+// Formats the |phone_number| to the specified |format| for the given country
+// |country_code|. Returns the original number if the operation is not possible.
+std::string FormatPhoneNumberWithCountryCode(
+    const std::string& phone_number,
+    const std::string& country_code,
+    PhoneNumberUtil::PhoneNumberFormat format) {
   PhoneNumber parsed_number;
   PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
-  if (phone_number_util->Parse(phone_number, default_region_code,
-                               &parsed_number) !=
+  if (phone_number_util->Parse(phone_number, country_code, &parsed_number) !=
       PhoneNumberUtil::NO_PARSING_ERROR) {
     return phone_number;
   }
@@ -42,19 +39,52 @@ std::string FormatPhoneNumber(const std::string& phone_number,
   return formatted_number;
 }
 
+// Formats the |phone_number| to the specified |format|. Use application locale
+// to determine country code. Returns the original number if the operation is
+// not possible.
+std::string FormatPhoneNumber(const std::string& phone_number,
+                              PhoneNumberUtil::PhoneNumberFormat format) {
+  return FormatPhoneNumberWithCountryCode(
+      phone_number,
+      autofill::AutofillCountry::CountryCodeForLocale(
+          g_browser_process->GetApplicationLocale()),
+      format);
+}
+
+// Checks whether the given number |jphone_number| is valid by using
+// i18n::phonenumbers::PhoneNumberUtil::IsValidNumber.
+bool IsValidNumberImpl(const std::string& phone_number,
+                       const std::string& country_code) {
+  PhoneNumber parsed_number;
+  PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
+  if (phone_number_util->Parse(phone_number, country_code, &parsed_number) !=
+      PhoneNumberUtil::NO_PARSING_ERROR) {
+    return false;
+  }
+
+  return phone_number_util->IsValidNumber(parsed_number);
+}
+
 }  // namespace
 
-// Formats the given number |jphone_number| to
+// Formats the given number |jphone_number| for the given country
+// |jcountry_code| to
 // i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL format
 // by using i18n::phonenumbers::PhoneNumberUtil::Format.
 ScopedJavaLocalRef<jstring> FormatForDisplay(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,
-    const JavaParamRef<jstring>& jphone_number) {
+    const JavaParamRef<jstring>& jphone_number,
+    const JavaParamRef<jstring>& jcountry_code) {
   return ConvertUTF8ToJavaString(
       env,
-      FormatPhoneNumber(ConvertJavaStringToUTF8(env, jphone_number),
-                        PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL));
+      jcountry_code.is_null()
+          ? FormatPhoneNumber(ConvertJavaStringToUTF8(env, jphone_number),
+                              PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL)
+          : FormatPhoneNumberWithCountryCode(
+                ConvertJavaStringToUTF8(env, jphone_number),
+                ConvertJavaStringToUTF8(env, jcountry_code),
+                PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL));
 }
 
 // Formats the given number |jphone_number| to
@@ -71,25 +101,19 @@ ScopedJavaLocalRef<jstring> FormatForResponse(
                              PhoneNumberUtil::PhoneNumberFormat::E164));
 }
 
-// Checks whether the given number |jphone_number| is valid by using
-// i18n::phonenumbers::PhoneNumberUtil::IsValidNumber.
+// Checks whether the given number |jphone_number| is valid for a given country
+// |jcountry_code| by using i18n::phonenumbers::PhoneNumberUtil::IsValidNumber.
 jboolean IsValidNumber(JNIEnv* env,
                        const base::android::JavaParamRef<jclass>& jcaller,
-                       const JavaParamRef<jstring>& jphone_number) {
+                       const JavaParamRef<jstring>& jphone_number,
+                       const JavaParamRef<jstring>& jcountry_code) {
   const std::string phone_number = ConvertJavaStringToUTF8(env, jphone_number);
-  const std::string default_region_code =
-      autofill::AutofillCountry::CountryCodeForLocale(
-          g_browser_process->GetApplicationLocale());
+  const std::string country_code =
+      jcountry_code.is_null() ? autofill::AutofillCountry::CountryCodeForLocale(
+                                    g_browser_process->GetApplicationLocale())
+                              : ConvertJavaStringToUTF8(env, jcountry_code);
 
-  PhoneNumber parsed_number;
-  PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
-  if (phone_number_util->Parse(phone_number, default_region_code,
-                               &parsed_number) !=
-      PhoneNumberUtil::NO_PARSING_ERROR) {
-    return false;
-  }
-
-  return phone_number_util->IsValidNumber(parsed_number);
+  return IsValidNumberImpl(phone_number, country_code);
 }
 
 }  // namespace autofill

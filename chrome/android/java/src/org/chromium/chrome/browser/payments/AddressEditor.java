@@ -45,8 +45,8 @@ public class AddressEditor
     private EditorFieldModel mCountryField;
     @Nullable
     private EditorFieldModel mPhoneField;
-    @Nullable
-    private EditorFieldValidator mPhoneValidator;
+    private PhoneNumberUtil.CountryAwareFormatTextWatcher mPhoneFormatter;
+    private CountryAwarePhoneNumberValidator mPhoneValidator;
     @Nullable
     private List<AddressUiComponent> mAddressUiComponents;
     private boolean mAdminAreasLoaded;
@@ -56,13 +56,21 @@ public class AddressEditor
     private EditorModel mEditor;
     private ProgressDialog mProgressDialog;
 
+    /** Builds an address editor. */
+    public AddressEditor() {
+        mPhoneFormatter = new PhoneNumberUtil.CountryAwareFormatTextWatcher();
+        mPhoneValidator = new CountryAwarePhoneNumberValidator();
+    }
+
     /**
      * Adds the given phone number to the autocomplete set, if it's valid.
+     * Note that here we consider all non-null and non-empty numbers as valid
+     * since we are doing strict validation of Autofill data.
      *
      * @param phoneNumber The phone number to possibly add.
      */
     public void addPhoneNumberIfValid(@Nullable CharSequence phoneNumber) {
-        if (getPhoneValidator().isValid(phoneNumber)) mPhoneNumbers.add(phoneNumber);
+        if (TextUtils.isEmpty(phoneNumber)) mPhoneNumbers.add(phoneNumber.toString());
     }
 
     /**
@@ -124,6 +132,8 @@ public class AddressEditor
                 mEditor.removeAllFields();
                 showProgressDialog();
                 mRecentlySelectedCountry = eventData.first;
+                mPhoneFormatter.setCountryCode(mRecentlySelectedCountry);
+                mPhoneValidator.setCountryCode(mRecentlySelectedCountry);
                 mCountryChangeCallback = eventData.second;
                 loadAdminAreasForCountry(mRecentlySelectedCountry);
             }
@@ -160,9 +170,12 @@ public class AddressEditor
 
         // Phone number is present and required for all countries.
         if (mPhoneField == null) {
+            assert mCountryField.getValue() != null;
+            mPhoneValidator.setCountryCode(mCountryField.getValue().toString());
+            mPhoneFormatter.setCountryCode(mCountryField.getValue().toString());
             mPhoneField = EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
                     mContext.getString(R.string.autofill_profile_editor_phone_number),
-                    mPhoneNumbers, getPhoneValidator(), null,
+                    mPhoneNumbers, mPhoneFormatter, mPhoneValidator, null,
                     mContext.getString(R.string.payments_field_required_validation_message),
                     mContext.getString(R.string.payments_phone_invalid_validation_message), null);
         }
@@ -397,20 +410,28 @@ public class AddressEditor
         mEditor.addField(mPhoneField);
     }
 
-    private EditorFieldValidator getPhoneValidator() {
-        if (mPhoneValidator == null) {
-            mPhoneValidator = new EditorFieldValidator() {
-                @Override
-                public boolean isValid(@Nullable CharSequence value) {
-                    return value != null && PhoneNumberUtil.isValidNumber(value.toString());
-                }
+    /** Country based phone number validator. */
+    private static class CountryAwarePhoneNumberValidator implements EditorFieldValidator {
+        @Nullable
+        private String mCountryCode;
 
-                @Override
-                public boolean isLengthMaximum(@Nullable CharSequence value) {
-                    return false;
-                }
-            };
+        /**
+         * Sets the country code used to validate the phone number.
+         *
+         * @param countryCode The given country code.
+         */
+        public void setCountryCode(@Nullable String countryCode) {
+            mCountryCode = countryCode;
         }
-        return mPhoneValidator;
+
+        @Override
+        public boolean isValid(@Nullable CharSequence value) {
+            return value != null && PhoneNumberUtil.isValidNumber(value.toString(), mCountryCode);
+        }
+
+        @Override
+        public boolean isLengthMaximum(@Nullable CharSequence value) {
+            return false;
+        }
     }
 }

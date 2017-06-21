@@ -194,7 +194,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 0 /* Afghanistan */, mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.setTextInEditorAndWait(
                 new String[] {
-                        "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "650-253-0000"},
+                        "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "020-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
