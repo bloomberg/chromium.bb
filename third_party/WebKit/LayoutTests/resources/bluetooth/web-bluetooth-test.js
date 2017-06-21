@@ -267,7 +267,26 @@
   class FakeRemoteGATTCharacteristic {
     constructor(characteristic_id, service_id, peripheral_address, fake_central_ptr) {
       this.ids_ = [characteristic_id, service_id, peripheral_address];
+      this.descriptors_ = [];
       this.fake_central_ptr_ = fake_central_ptr;
+    }
+
+    // Adds a fake GATT Descriptor with |uuid| to be discovered when
+    // discovering the peripheral's GATT Attributes. Returns a
+    // FakeRemoteGATTDescriptor corresponding to this descriptor. |uuid| should
+    // be a BluetoothDescriptorUUID
+    // https://webbluetoothcg.github.io/web-bluetooth/#typedefdef-bluetoothdescriptoruuid
+    async addFakeDescriptor({uuid}) {
+      let {descriptor_id} = await this.fake_central_ptr_.addFakeDescriptor(
+        {uuid: BluetoothUUID.getDescriptor(uuid)}, ...this.ids_);
+
+      if (descriptor_id === null) throw 'addFakeDescriptor failed';
+
+      let fake_descriptor = new FakeRemoteGATTDescriptor(
+        descriptor_id, ...this.ids_, this.fake_central_ptr_);
+      this.descriptors_.push(fake_descriptor);
+
+      return fake_descriptor;
     }
 
     // Sets the next read response for characteristic to |code| and |value|.
@@ -289,6 +308,17 @@
           gatt_code, value, ...this.ids_);
 
       if (!success) throw 'setNextReadCharacteristicResponse failed';
+    }
+  }
+
+  class FakeRemoteGATTDescriptor {
+    constructor(descriptor_id,
+                characteristic_id,
+                service_id,
+                peripheral_address,
+                fake_central_ptr) {
+      this.ids_ = [descriptor_id, characteristic_id, service_id, peripheral_address];
+      this.fake_central_ptr_ = fake_central_ptr;
     }
   }
 

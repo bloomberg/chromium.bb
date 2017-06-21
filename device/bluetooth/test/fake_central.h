@@ -48,6 +48,11 @@ class FakeCentral : NON_EXPORTED_BASE(public mojom::FakeCentral),
                              const std::string& service_id,
                              const std::string& peripheral_address,
                              AddFakeCharacteristicCallback callback) override;
+  void AddFakeDescriptor(const device::BluetoothUUID& characteristic_uuid,
+                         const std::string& characteristic_id,
+                         const std::string& service_id,
+                         const std::string& peripheral_address,
+                         AddFakeDescriptorCallback callback) override;
   void SetNextReadCharacteristicResponse(
       uint16_t gatt_code,
       const base::Optional<std::vector<uint8_t>>& value,
