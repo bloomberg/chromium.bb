@@ -5737,6 +5737,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="37" label="Share link"/>
 </enum>
 
+<enum name="ContextMenuSaveImage">
+  <summary>Context menu type related to the save image option.</summary>
+  <int value="0" label="Loaded"/>
+  <int value="1" label="Image was fatched LoFi"/>
+  <int value="2" label="Not downloadable scheme"/>
+  <int value="3" label="No save image option and param is not image"/>
+  <int value="4" label="No save image option and param is image"/>
+  <int value="5" label="Save image option shown"/>
+</enum>
+
 <enum name="ContextMenuSaveLinkType">
   <summary>
     The content type when user chooses save link context menu option
@@ -24861,6 +24871,13 @@ from previous Chrome versions.
   <int value="8" label="Cancelled by native for other reasons"/>
 </enum>
 
+<enum name="MobileDownloadDuplicateInfobar">
+  <int value="0" label="Infobar shown"/>
+  <int value="1" label="Download canceled"/>
+  <int value="2" label="No download dir"/>
+  <int value="3" label="Create new file"/>
+</enum>
+
 <enum name="MobileDownloadInterceptFailureReason">
   <int value="0" label="No failure"/>
   <int value="1" label="Empty url"/>
@@ -24877,6 +24894,14 @@ from previous Chrome versions.
   <int value="2" label="Resumption button clicked"/>
   <int value="3" label="Resumption failed"/>
   <int value="4" label="Resumption auto started"/>
+</enum>
+
+<enum name="MobileDownloadStoragePermission">
+  <int value="0" label="Storage permission is requested"/>
+  <int value="1" label="Already has storage permission"/>
+  <int value="2" label="Storage permission is granted"/>
+  <int value="3" label="Storage permission is denied"/>
+  <int value="4" label="Storage permission failed due to missing WebContents"/>
 </enum>
 
 <enum name="MobileFreProgress">
