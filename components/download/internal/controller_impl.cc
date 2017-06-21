@@ -786,7 +786,17 @@ void ControllerImpl::ActivateMoreDownloads() {
   if (initializing_internals_)
     return;
 
-  // TODO(xingliu): Check the configuration to throttle downloads.
+  // Check the configuration to throttle number of downloads.
+  std::map<Entry::State, uint32_t> entries_states;
+  for (const auto* const entry : model_->PeekEntries())
+    entries_states[entry->state]++;
+  uint32_t paused_count = entries_states[Entry::State::PAUSED];
+  uint32_t active_count = entries_states[Entry::State::ACTIVE];
+  if (config_->max_concurrent_downloads <= paused_count + active_count ||
+      config_->max_running_downloads <= active_count) {
+    return;
+  }
+
   Entry* next = scheduler_->Next(
       model_->PeekEntries(), device_status_listener_->CurrentDeviceStatus());
 
