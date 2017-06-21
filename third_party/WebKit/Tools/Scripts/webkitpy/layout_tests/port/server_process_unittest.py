@@ -60,6 +60,9 @@ class MockFile(object):
         self._server_process.broken_pipes.append(self)
         raise IOError
 
+    def read(self):
+        return ''
+
     def close(self):
         self.closed = True
 
