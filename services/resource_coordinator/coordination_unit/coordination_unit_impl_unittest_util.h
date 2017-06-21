@@ -6,6 +6,7 @@
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_UNITTEST_UTIL_H_
 
 #include "base/message_loop/message_loop.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,11 +25,15 @@ class CoordinationUnitImplTestBase : public testing::Test {
   service_manager::ServiceContextRefFactory* service_context_ref_factory() {
     return &service_ref_factory_;
   }
+  CoordinationUnitManager& coordination_unit_manager() {
+    return coordination_unit_manager_;
+  }
   CoordinationUnitProviderImpl* provider() { return &provider_; }
 
  private:
   base::MessageLoop message_loop_;
   service_manager::ServiceContextRefFactory service_ref_factory_;
+  CoordinationUnitManager coordination_unit_manager_;
   CoordinationUnitProviderImpl provider_;
 };
 

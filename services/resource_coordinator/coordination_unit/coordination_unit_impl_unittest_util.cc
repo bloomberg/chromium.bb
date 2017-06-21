@@ -20,7 +20,7 @@ void OnLastServiceRefDestroyed() {
 
 CoordinationUnitImplTestBase::CoordinationUnitImplTestBase()
     : service_ref_factory_(base::Bind(&OnLastServiceRefDestroyed)),
-      provider_(&service_ref_factory_) {}
+      provider_(&service_ref_factory_, &coordination_unit_manager_) {}
 
 CoordinationUnitImplTestBase::~CoordinationUnitImplTestBase() = default;
 
