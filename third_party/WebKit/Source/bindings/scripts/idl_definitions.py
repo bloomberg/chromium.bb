@@ -320,11 +320,19 @@ class IdlInterface(object):
         has_indexed_property_getter = False
         has_integer_typed_length = False
 
+        def is_blacklisted_attribute_type(idl_type):
+            return idl_type.is_callback_function or \
+                idl_type.is_dictionary or \
+                idl_type.is_record_type or \
+                idl_type.is_sequence_type
+
         children = node.GetChildren()
         for child in children:
             child_class = child.GetClass()
             if child_class == 'Attribute':
                 attr = IdlAttribute(child)
+                if is_blacklisted_attribute_type(attr.idl_type):
+                    raise ValueError('Type "%s" cannot be used as an attribute.' % attr.idl_type)
                 if attr.idl_type.is_integer_type and attr.name == 'length':
                     has_integer_typed_length = True
                 self.attributes.append(attr)

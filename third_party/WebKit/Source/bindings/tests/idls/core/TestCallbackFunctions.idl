@@ -15,9 +15,6 @@ callback VoidCallbackFunctionEnumArg = void (TestEnum arg);
 callback VoidCallbackFunctionTypedef = void (String arg);
 
 interface TestCallbackFunctions {
-    // Attributes
-    attribute VoidCallbackFunction voidCallbackFunctionAttribute;
-    attribute AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgAttribute;
     // Extended attributes
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyAttribute;
 
