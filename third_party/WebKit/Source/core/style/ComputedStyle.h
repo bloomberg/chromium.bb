@@ -723,53 +723,45 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Outline properties.
 
   bool OutlineVisuallyEqual(const ComputedStyle& other) const {
-    return rare_non_inherited_data_->outline_.VisuallyEqual(
-        other.rare_non_inherited_data_->outline_);
+    if (OutlineStyle() == EBorderStyle::kNone &&
+        other.OutlineStyle() == EBorderStyle::kNone)
+      return true;
+    return OutlineWidthInternal() == other.OutlineWidthInternal() &&
+           OutlineColorIsCurrentColor() == other.OutlineColorIsCurrentColor() &&
+           OutlineColor() == other.OutlineColor() &&
+           OutlineStyle() == other.OutlineStyle() &&
+           OutlineOffsetInternal() == other.OutlineOffsetInternal() &&
+           OutlineStyleIsAuto() == other.OutlineStyleIsAuto();
   }
 
   // outline-color
   void SetOutlineColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(rare_non_inherited_data_, outline_, v);
-  }
-
-  // outline-style
-  EBorderStyle OutlineStyle() const {
-    return rare_non_inherited_data_->outline_.Style();
-  }
-  void SetOutlineStyle(EBorderStyle v) {
-    SET_VAR(rare_non_inherited_data_, outline_.style_,
-            static_cast<unsigned>(v));
-  }
-  static OutlineIsAuto InitialOutlineStyleIsAuto() { return kOutlineIsAutoOff; }
-  OutlineIsAuto OutlineStyleIsAuto() const {
-    return static_cast<OutlineIsAuto>(
-        rare_non_inherited_data_->outline_.IsAuto());
-  }
-  void SetOutlineStyleIsAuto(OutlineIsAuto is_auto) {
-    SET_VAR(rare_non_inherited_data_, outline_.is_auto_, is_auto);
+    if (!compareEqual(OutlineColor(), v)) {
+      SetOutlineColorInternal(v.Resolve(Color()));
+      SetOutlineColorIsCurrentColor(v.IsCurrentColor());
+    }
   }
 
   // outline-width
   static unsigned short InitialOutlineWidth() { return 3; }
   unsigned short OutlineWidth() const {
-    if (rare_non_inherited_data_->outline_.Style() == EBorderStyle::kNone)
+    if (OutlineStyle() == EBorderStyle::kNone)
       return 0;
-    return rare_non_inherited_data_->outline_.Width();
+    // FIXME: Why is this stored as a float but converted to short?
+    return OutlineWidthInternal().ToFloat();
   }
   void SetOutlineWidth(unsigned short v) {
-    SET_BORDER_WIDTH(rare_non_inherited_data_, outline_, v);
+    SetOutlineWidthInternal(LayoutUnit(v));
   }
 
   // outline-offset
   static int InitialOutlineOffset() { return 0; }
   int OutlineOffset() const {
-    if (rare_non_inherited_data_->outline_.Style() == EBorderStyle::kNone)
+    if (OutlineStyle() == EBorderStyle::kNone)
       return 0;
-    return rare_non_inherited_data_->outline_.Offset();
+    return OutlineOffsetInternal();
   }
-  void SetOutlineOffset(int v) {
-    SET_VAR(rare_non_inherited_data_, outline_.offset_, v);
-  }
+  void SetOutlineOffset(int v) { SetOutlineOffsetInternal(v); }
 
   // -webkit-perspective-origin-x
   static Length InitialPerspectiveOriginX() { return Length(50.0, kPercent); }
@@ -1796,23 +1788,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void SetBorderImageSlicesFill(bool);
   const BorderValue BorderLeft() const {
     return BorderValue(BorderLeftStyle(), BorderLeftColor(),
-                       BorderLeftWidthInternal().ToFloat(),
-                       OutlineStyleIsAuto());
+                       BorderLeftWidthInternal().ToFloat());
   }
   const BorderValue BorderRight() const {
     return BorderValue(BorderRightStyle(), BorderRightColor(),
-                       BorderRightWidthInternal().ToFloat(),
-                       OutlineStyleIsAuto());
+                       BorderRightWidthInternal().ToFloat());
   }
   const BorderValue BorderTop() const {
     return BorderValue(BorderTopStyle(), BorderTopColor(),
-                       BorderTopWidthInternal().ToFloat(),
-                       OutlineStyleIsAuto());
+                       BorderTopWidthInternal().ToFloat());
   }
   const BorderValue BorderBottom() const {
     return BorderValue(BorderBottomStyle(), BorderBottomColor(),
-                       BorderBottomWidthInternal().ToFloat(),
-                       OutlineStyleIsAuto());
+                       BorderBottomWidthInternal().ToFloat());
   }
 
   bool BorderSizeEquals(const ComputedStyle& o) const {
@@ -2610,7 +2598,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return rare_non_inherited_data_->multi_col_data_->column_rule_.GetColor();
   }
   StyleColor OutlineColor() const {
-    return rare_non_inherited_data_->outline_.GetColor();
+    return OutlineColorIsCurrentColor() ? StyleColor::CurrentColor()
+                                        : StyleColor(OutlineColorInternal());
   }
   StyleColor TextEmphasisColor() const {
     return TextEmphasisColorIsCurrentColorInternal()

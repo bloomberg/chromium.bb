@@ -50,19 +50,14 @@ class BorderValue {
   BorderValue()
       : color_(0),
         color_is_current_color_(true),
-        style_(static_cast<unsigned>(EBorderStyle::kNone)),
-        is_auto_(kOutlineIsAutoOff) {
+        style_(static_cast<unsigned>(EBorderStyle::kNone)) {
     SetWidth(3);
   }
 
-  BorderValue(EBorderStyle style,
-              const StyleColor& color,
-              float width,
-              OutlineIsAuto is_auto) {
+  BorderValue(EBorderStyle style, const StyleColor& color, float width) {
     SetColor(color);
     SetStyle(style);
     SetWidth(width);
-    SetIsAuto(is_auto);
   }
 
   bool NonZero() const {
@@ -116,9 +111,6 @@ class BorderValue {
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
   void SetStyle(EBorderStyle style) { style_ = static_cast<unsigned>(style); }
 
-  OutlineIsAuto IsAuto() const { return static_cast<OutlineIsAuto>(is_auto_); }
-  void SetIsAuto(OutlineIsAuto is_auto) { is_auto_ = is_auto; }
-
   bool ColorIsCurrentColor() const { return color_is_current_color_; }
   void SetColorIsCurrentColor(bool color_is_current_color) {
     color_is_current_color_ = static_cast<unsigned>(color_is_current_color);
@@ -136,9 +128,6 @@ class BorderValue {
 
   unsigned width_ : 26;  // Fixed point width
   unsigned style_ : 4;   // EBorderStyle
-
-  // This is only used by OutlineValue but moved here to keep the bits packed.
-  unsigned is_auto_ : 1;  // OutlineIsAuto
 };
 
 }  // namespace blink
