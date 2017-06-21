@@ -27,6 +27,7 @@ class GestureRecognizerImplMac : public GestureRecognizer {
 
   Gestures AckTouchEvent(uint32_t unique_event_id,
                          ui::EventResult result,
+                         bool is_source_touch_event_set_non_blocking,
                          GestureConsumer* consumer) override {
     return {};
   }
