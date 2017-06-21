@@ -1417,7 +1417,11 @@
       "models": [
         {
           "board_name": "reef-uni",
-          "name": "snappy"
+          "name": "nasher"
+        },
+        {
+          "board_name": "reef-uni",
+          "name": "sand"
         },
         {
           "board_name": "reef-uni",
@@ -1425,11 +1429,7 @@
         },
         {
           "board_name": "reef-uni",
-          "name": "nasher"
-        },
-        {
-          "board_name": "reef-uni",
-          "name": "sand"
+          "name": "snappy"
         }
       ]
     }
