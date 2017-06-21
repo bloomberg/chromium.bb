@@ -2165,7 +2165,6 @@ void Document::UpdateStyle() {
     if (document_element->ShouldCallRecalcStyle(change)) {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       document_element->RecalcStyle(change);
-      UpdateHasOverflowClipForBody();
     }
     if (document_element->NeedsReattachLayoutTree() ||
         document_element->ChildNeedsReattachLayoutTree()) {
@@ -2204,15 +2203,6 @@ void Document::UpdateStyle() {
                       ("Style.UpdateTime", 0, 10000000, 50));
   update_histogram.Count(update_duration_seconds * 1000 * 1000);
   CSSTiming::From(*this).RecordUpdateDuration(update_duration_seconds);
-}
-
-void Document::UpdateHasOverflowClipForBody() {
-  HTMLBodyElement* body = FirstBodyElement();
-  if (!body)
-    return;
-  LayoutObject* layout_object = body->GetLayoutObject();
-  if (layout_object && layout_object->IsLayoutBlock())
-    ToLayoutBlock(layout_object)->UpdateHasOverflowClip();
 }
 
 void Document::NotifyLayoutTreeOfSubtreeChanges() {
@@ -2995,11 +2985,11 @@ Element* Document::ViewportDefiningElement(
   Element* root_element = documentElement();
   Element* body_element = body();
   if (!root_element)
-    return nullptr;
+    return 0;
   if (!root_style) {
     root_style = root_element->GetComputedStyle();
     if (!root_style)
-      return nullptr;
+      return 0;
   }
   if (body_element && root_style->IsOverflowVisible() &&
       isHTMLHtmlElement(*root_element))

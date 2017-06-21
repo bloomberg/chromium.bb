@@ -272,10 +272,6 @@ void LayoutBlock::StyleDidChange(StyleDifference diff,
 void LayoutBlock::UpdateFromStyle() {
   LayoutBox::UpdateFromStyle();
 
-  UpdateHasOverflowClip();
-}
-
-void LayoutBlock::UpdateHasOverflowClip() {
   bool should_clip_overflow =
       !StyleRef().IsOverflowVisible() && AllowsOverflowClip();
   if (should_clip_overflow != HasOverflowClip()) {
