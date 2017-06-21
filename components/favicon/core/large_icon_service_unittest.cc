@@ -157,8 +157,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
       .WillOnce(PostFetchReply(gfx::Image::CreateFrom1xBitmap(
           CreateTestSkBitmap(64, 64, kTestColor))));
   EXPECT_CALL(mock_favicon_service_,
-              SetLastResortFavicons(GURL(kDummyUrl), kExpectedServerUrl,
-                                    favicon_base::IconType::TOUCH_ICON, _, _))
+              SetOnDemandFavicons(GURL(kDummyUrl), kExpectedServerUrl,
+                                  favicon_base::IconType::TOUCH_ICON, _, _))
       .WillOnce(PostBoolReply(true));
 
   large_icon_service_
@@ -194,8 +194,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithCustomUrl) {
       .WillOnce(PostFetchReply(gfx::Image::CreateFrom1xBitmap(
           CreateTestSkBitmap(64, 64, kTestColor))));
   EXPECT_CALL(mock_favicon_service_,
-              SetLastResortFavicons(GURL(kDummyUrl), kExpectedServerUrl,
-                                    favicon_base::IconType::TOUCH_ICON, _, _))
+              SetOnDemandFavicons(GURL(kDummyUrl), kExpectedServerUrl,
+                                  favicon_base::IconType::TOUCH_ICON, _, _))
       .WillOnce(PostBoolReply(true));
 
   large_icon_service_
@@ -224,8 +224,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
               CreateTestSkBitmap(64, 64, kTestColor)),
           expected_metadata));
   EXPECT_CALL(mock_favicon_service_,
-              SetLastResortFavicons(GURL(kDummyUrl), kExpectedOriginalUrl,
-                                    favicon_base::IconType::TOUCH_ICON, _, _))
+              SetOnDemandFavicons(GURL(kDummyUrl), kExpectedOriginalUrl,
+                                  favicon_base::IconType::TOUCH_ICON, _, _))
       .WillOnce(PostBoolReply(true));
 
   base::MockCallback<base::Callback<void(bool success)>> callback;
@@ -252,7 +252,7 @@ TEST_F(LargeIconServiceTest, ShouldTrimQueryParametersForGoogleServer) {
           CreateTestSkBitmap(64, 64, kTestColor))));
   // Verify that the non-trimmed page URL is used when writing to the database.
   EXPECT_CALL(mock_favicon_service_,
-              SetLastResortFavicons(_, kExpectedServerUrl, _, _, _));
+              SetOnDemandFavicons(_, kExpectedServerUrl, _, _, _));
 
   large_icon_service_
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
@@ -311,7 +311,7 @@ TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
       "&check_seen=true&size=61&min_size=42&max_size=122"
       "&fallback_opts=TYPE,SIZE,URL&url=http://www.example.com/");
 
-  EXPECT_CALL(mock_favicon_service_, SetLastResortFavicons(_, _, _, _, _))
+  EXPECT_CALL(mock_favicon_service_, SetOnDemandFavicons(_, _, _, _, _))
       .Times(0);
 
   base::MockCallback<base::Callback<void(bool success)>> callback;
@@ -346,7 +346,7 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfUnavailable) {
   EXPECT_CALL(mock_favicon_service_, UnableToDownloadFavicon(_)).Times(0);
   EXPECT_CALL(*mock_image_fetcher_, StartOrQueueNetworkRequest(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(mock_favicon_service_, SetLastResortFavicons(_, _, _, _, _))
+  EXPECT_CALL(mock_favicon_service_, SetOnDemandFavicons(_, _, _, _, _))
       .Times(0);
 
   base::MockCallback<base::Callback<void(bool success)>> callback;

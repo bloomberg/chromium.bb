@@ -91,6 +91,7 @@ class FaviconServiceImpl : public FaviconService {
       const favicon_base::FaviconRawBitmapCallback& callback,
       base::CancelableTaskTracker* tracker) override;
   void SetFaviconOutOfDateForPage(const GURL& page_url) override;
+  void TouchOnDemandFavicon(const GURL& icon_url) override;
   void SetImportedFavicons(
       const favicon_base::FaviconUsageDataList& favicon_usage) override;
   void MergeFavicon(const GURL& page_url,
@@ -102,11 +103,11 @@ class FaviconServiceImpl : public FaviconService {
                    const GURL& icon_url,
                    favicon_base::IconType icon_type,
                    const gfx::Image& image) override;
-  void SetLastResortFavicons(const GURL& page_url,
-                             const GURL& icon_url,
-                             favicon_base::IconType icon_type,
-                             const gfx::Image& image,
-                             base::Callback<void(bool)> callback) override;
+  void SetOnDemandFavicons(const GURL& page_url,
+                           const GURL& icon_url,
+                           favicon_base::IconType icon_type,
+                           const gfx::Image& image,
+                           base::Callback<void(bool)> callback) override;
   void UnableToDownloadFavicon(const GURL& icon_url) override;
   bool WasUnableToDownloadFavicon(const GURL& icon_url) const override;
   void ClearUnableToDownloadFavicons() override;
