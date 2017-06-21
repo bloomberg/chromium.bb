@@ -4,8 +4,19 @@
 
 #include "ui/gfx/icc_profile.h"
 
+#include <AvailabilityMacros.h>
+
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+
+#if defined(MAC_OS_X_VERSION_10_13) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_13
+// https://crbug.com/729896, https://openradar.appspot.com/32883726
+#undef CGColorSpaceCopyICCProfile
+extern "C" {
+CFDataRef CGColorSpaceCopyICCProfile(CGColorSpaceRef);
+}  // extern "C"
+#endif  // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_13
 
 namespace gfx {
 
