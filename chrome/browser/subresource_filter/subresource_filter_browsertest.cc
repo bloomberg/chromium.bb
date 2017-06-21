@@ -1129,10 +1129,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockOpenURLFromTab) {
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
                            0);
 
-  // TODO(csharrison): Make this EXPECT_TRUE (e.g. turn the feature on for
-  // spoofed clicked). See crbug.com/733330 for more details.
-  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 
   // Navigate to |b_url|, which should successfully open the popup.
 
@@ -1160,7 +1158,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   // Only necessary so we have a valid ruleset.
   ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
 
-  // Navigate to a_url, should trigger the popup blocker.
+  // Should not trigger the popup blocker because internally opens the tab with
+  // a user gesture.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);

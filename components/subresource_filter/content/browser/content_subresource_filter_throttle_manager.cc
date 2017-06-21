@@ -212,6 +212,8 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
   }
 }
 
+// Blocking popups here should trigger the standard popup blocking UI, so don't
+// force the subresource filter specific UI.
 bool ContentSubresourceFilterThrottleManager::ShouldDisallowNewWindow(
     const content::OpenURLParams* open_url_params) {
   auto it = activated_frame_hosts_.find(web_contents()->GetMainFrame());
@@ -225,17 +227,14 @@ bool ContentSubresourceFilterThrottleManager::ShouldDisallowNewWindow(
     return false;
   }
 
-  // It is very tricky to filter out popups from OpenURLFromTab. For right now,
-  // just allow all of them. |open_url_params| will be nullptr if it is coming
-  // from window.open, which should remain blocked.
-  //
-  // TODO(csharrison): Add additional parameters to OpenURLParams like a trusted
-  // bit to determined if the event that led to this was issued via JS.
-  if (open_url_params)
-    return false;
-
-  // This should trigger the standard popup blocking UI, so don't force the
-  // subresource filter specific UI here.
+  // Block new windows from navigations whose triggering JS Event has an
+  // isTrusted bit set to false. This bit is set to true if the event is
+  // generated via a user action. See docs:
+  // https://developer.mozilla.org/en-US/docs/Web/API/Event/isTrusted
+  if (open_url_params) {
+    return open_url_params->triggering_event_info ==
+           blink::WebTriggeringEventInfo::kFromUntrustedEvent;
+  }
   return true;
 }
 
