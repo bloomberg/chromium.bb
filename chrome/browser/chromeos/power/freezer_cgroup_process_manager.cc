@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -146,8 +147,8 @@ class FreezerCgroupProcessManager::FileWorker {
 };
 
 FreezerCgroupProcessManager::FreezerCgroupProcessManager()
-    : file_thread_(content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE)),
+    : file_thread_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::BACKGROUND, base::MayBlock()})),
       file_worker_(new FileWorker(file_thread_)) {
   file_thread_->PostTask(FROM_HERE,
                          base::Bind(&FileWorker::Start,
