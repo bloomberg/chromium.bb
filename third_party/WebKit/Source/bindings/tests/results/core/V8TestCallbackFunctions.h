@@ -46,10 +46,6 @@ class V8TestCallbackFunctions {
 
   // Callback functions
 
-  CORE_EXPORT static void voidCallbackFunctionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void voidCallbackFunctionAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void customElementsCallbacksReadonlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   CORE_EXPORT static void returnCallbackFunctionMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

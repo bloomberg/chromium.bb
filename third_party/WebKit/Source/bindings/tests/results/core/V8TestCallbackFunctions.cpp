@@ -69,52 +69,6 @@ static_assert(
 
 namespace TestCallbackFunctionsV8Internal {
 
-static void voidCallbackFunctionAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
-
-  V8SetReturnValueFast(info, impl->voidCallbackFunctionAttribute(), impl);
-}
-
-static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Isolate* isolate = info.GetIsolate();
-  ALLOW_UNUSED_LOCAL(isolate);
-
-  v8::Local<v8::Object> holder = info.Holder();
-  ALLOW_UNUSED_LOCAL(holder);
-
-  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
-
-  // Prepare the value to be set.
-  VoidCallbackFunction* cppValue = VoidCallbackFunction::Create(ScriptState::Current(info.GetIsolate()), v8Value);
-
-  impl->setVoidCallbackFunctionAttribute(cppValue);
-}
-
-static void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
-
-  V8SetReturnValueFast(info, impl->anyCallbackFunctionOptionalAnyArgAttribute(), impl);
-}
-
-static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Isolate* isolate = info.GetIsolate();
-  ALLOW_UNUSED_LOCAL(isolate);
-
-  v8::Local<v8::Object> holder = info.Holder();
-  ALLOW_UNUSED_LOCAL(holder);
-
-  TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
-
-  // Prepare the value to be set.
-  AnyCallbackFunctionOptionalAnyArg* cppValue = AnyCallbackFunctionOptionalAnyArg::Create(ScriptState::Current(info.GetIsolate()), v8Value);
-
-  impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
-}
-
 static void customElementsCallbacksReadonlyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -245,26 +199,6 @@ static void customElementCallbacksMethodMethod(const v8::FunctionCallbackInfo<v8
 
 } // namespace TestCallbackFunctionsV8Internal
 
-void V8TestCallbackFunctions::voidCallbackFunctionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeGetter(info);
-}
-
-void V8TestCallbackFunctions::voidCallbackFunctionAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeSetter(v8Value, info);
-}
-
-void V8TestCallbackFunctions::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(info);
-}
-
-void V8TestCallbackFunctions::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8Value, info);
-}
-
 void V8TestCallbackFunctions::customElementsCallbacksReadonlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::customElementsCallbacksReadonlyAttributeAttributeGetter(info);
 }
@@ -302,10 +236,6 @@ void V8TestCallbackFunctions::customElementCallbacksMethodMethodCallback(const v
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestCallbackFunctionsAccessors[] = {
-    { "voidCallbackFunctionAttribute", V8TestCallbackFunctions::voidCallbackFunctionAttributeAttributeGetterCallback, V8TestCallbackFunctions::voidCallbackFunctionAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
-
-    { "anyCallbackFunctionOptionalAnyArgAttribute", V8TestCallbackFunctions::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback, V8TestCallbackFunctions::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
-
     { "customElementsCallbacksReadonlyAttribute", V8TestCallbackFunctions::customElementsCallbacksReadonlyAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
 
