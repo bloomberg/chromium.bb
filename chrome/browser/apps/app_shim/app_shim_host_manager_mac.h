@@ -55,10 +55,8 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   void OnClientConnected(mojo::edk::ScopedPlatformHandle handle) override;
   void OnListenError() override;
 
-  // The |acceptor_| must be created on a thread which allows blocking I/O, so
-  // part of the initialization of this class must be carried out on the file
-  // thread.
-  void InitOnFileThread();
+  // The |acceptor_| must be created on a thread which allows blocking I/O.
+  void InitOnBackgroundThread();
 
   // Called on the IO thread to begin listening for connections from app shims.
   void ListenOnIOThread();
