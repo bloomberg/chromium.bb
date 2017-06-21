@@ -172,7 +172,7 @@ void CSPDirectiveList::ReportViolationWithLocation(
                            RedirectStatus::kNoRedirect, element, source);
 }
 
-void CSPDirectiveList::ReportViolationWithState(
+void CSPDirectiveList::ReportEvalViolation(
     const String& directive_text,
     const ContentSecurityPolicy::DirectiveType& effective_type,
     const String& message,
@@ -395,13 +395,11 @@ bool CSPDirectiveList::CheckEvalAndReportViolation(
         " Note that 'script-src' was not explicitly set, so 'default-src' is "
         "used as a fallback.";
 
-  ReportViolationWithState(
+  ReportEvalViolation(
       directive->GetText(), ContentSecurityPolicy::DirectiveType::kScriptSrc,
       console_message + "\"" + directive->GetText() + "\"." + suffix + "\n",
       KURL(), script_state, exception_status,
-      policy_->ExperimentalFeaturesEnabled() && directive->AllowReportSample()
-          ? content
-          : g_empty_string);
+      directive->AllowReportSample() ? content : g_empty_string);
   if (!IsReportOnly()) {
     policy_->ReportBlockedScriptExecutionToInspector(directive->GetText());
     return false;

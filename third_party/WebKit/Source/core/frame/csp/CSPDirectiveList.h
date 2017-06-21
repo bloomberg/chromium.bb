@@ -233,13 +233,13 @@ class CORE_EXPORT CSPDirectiveList
                                    const WTF::OrdinalNumber& context_line,
                                    Element*,
                                    const String& source) const;
-  void ReportViolationWithState(const String& directive_text,
-                                const ContentSecurityPolicy::DirectiveType&,
-                                const String& message,
-                                const KURL& blocked_url,
-                                ScriptState*,
-                                const ContentSecurityPolicy::ExceptionStatus,
-                                const String& content) const;
+  void ReportEvalViolation(const String& directive_text,
+                           const ContentSecurityPolicy::DirectiveType&,
+                           const String& message,
+                           const KURL& blocked_url,
+                           ScriptState*,
+                           const ContentSecurityPolicy::ExceptionStatus,
+                           const String& content) const;
 
   bool CheckEval(SourceListDirective*) const;
   bool CheckDynamic(SourceListDirective*) const;
