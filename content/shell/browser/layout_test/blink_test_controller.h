@@ -194,6 +194,8 @@ class BlinkTestController : public WebContentsObserver,
 
   static BlinkTestController* instance_;
 
+  Shell* SecondaryWindow();
+  void LoadDevToolsJSTest();
   void DiscardMainWindow();
 
   // Message handlers.
@@ -234,6 +236,7 @@ class BlinkTestController : public WebContentsObserver,
   base::FilePath temp_path_;
 
   Shell* main_window_;
+  Shell* secondary_window_;
   Shell* devtools_window_;
 
   std::unique_ptr<LayoutTestDevToolsBindings> devtools_bindings_;

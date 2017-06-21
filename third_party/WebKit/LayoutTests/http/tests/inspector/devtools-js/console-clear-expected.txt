@@ -1,0 +1,8 @@
+Tests that console is cleared upon requestClearMessages call.
+
+=== Before clear ===
+VM:3 one
+VM:4 two
+VM:5 three
+=== After clear ===
+
