@@ -461,8 +461,8 @@ class Generator(generator.Generator):
         return False
       elif mojom.IsAnyInterfaceKind(kind):
         return False
-      # TODO(tibell): Arrays and maps could be made hashable. We just don't have
-      # a use case yet.
+      # TODO(crbug.com/735301): Arrays and maps could be made hashable. We just
+      # don't have a use case yet.
       elif mojom.IsArrayKind(kind):
         return False
       elif mojom.IsMapKind(kind):
