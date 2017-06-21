@@ -101,9 +101,6 @@ class CreditCard : public AutofillDataModel {
 
   const std::string& network() const { return network_; }
 
-  const std::string& bank_name() const { return bank_name_; }
-  void set_bank_name(const std::string& bank_name) { bank_name_ = bank_name; }
-
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
 
@@ -212,8 +209,6 @@ class CreditCard : public AutofillDataModel {
   base::string16 NetworkForDisplay() const;
   // A label for this card formatted as 'IssuerNetwork - 2345'.
   base::string16 NetworkAndLastFourDigits() const;
-  // A label for this card formatted as 'BankName - 2345'.
-  base::string16 BankNameAndLastFourDigits() const;
   // Localized expiration for this card formatted as 'Exp: 06/17'.
   base::string16 AbbreviatedExpirationDateForDisplay() const;
   // Returns the date when the card was last used in autofill.
@@ -253,9 +248,6 @@ class CreditCard : public AutofillDataModel {
   // The network issuer of the card. This is one of the k...Card constants
   // below.
   std::string network_;
-
-  // The issuer bank name of the card.
-  std::string bank_name_;
 
   // These members are zero if not present.
   int expiration_month_;

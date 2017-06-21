@@ -1998,14 +1998,6 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           type, SanitizeCreditCardFieldValue(field.value));
-  const std::vector<CreditCard*> cards_to_suggest =
-      personal_data_->GetCreditCardsToSuggest();
-  for (const CreditCard* credit_card : cards_to_suggest) {
-    if (!credit_card->bank_name().empty()) {
-      credit_card_form_event_logger_->SetBankNameAvailable();
-      break;
-    }
-  }
   for (size_t i = 0; i < suggestions.size(); i++) {
     suggestions[i].frontend_id =
         MakeFrontendID(suggestions[i].backend_id, std::string());

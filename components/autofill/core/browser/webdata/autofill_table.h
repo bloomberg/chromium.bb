@@ -166,7 +166,6 @@ struct FormFieldData;
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
 //   exp_year           Four-digit year: 2017
-//   bank_name          Issuer bank name of the credit card.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -465,7 +464,6 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion70AddSyncMetadata();
   bool MigrateToVersion71AddHasConvertedAndBillingAddressIdMetadata();
   bool MigrateToVersion72RenameCardTypeToIssuerNetwork();
-  bool MigrateToVersion73AddMaskedCardBankName();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

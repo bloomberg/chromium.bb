@@ -545,18 +545,8 @@ class AutofillMetrics {
     // submitted. If the submission is not interrupted by JavaScript, the "form
     // submitted" event above will also be logged.
     FORM_EVENT_SUGGESTION_SHOWN_WILL_SUBMIT_ONCE,
-    NUM_FORM_EVENTS,
-  };
 
-  // Form Events for autofill with bank name available for display.
-  enum BankNameDisplayedFormEvent {
-    // A dropdown with suggestions was shown and at least one suggestion has a
-    // bank name. Logged at most once per page load.
-    FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE = 0,
-    // A server suggestion was used to fill the form and at least one suggestion
-    // has a bank name. Logged at most once per page load.
-    FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE,
-    BANK_NAME_NUM_FORM_EVENTS,
+    NUM_FORM_EVENTS,
   };
 
   // Events related to the Unmask Credit Card Prompt.
@@ -950,10 +940,8 @@ class AutofillMetrics {
 
     void OnFormSubmitted();
 
-    void SetBankNameAvailable();
    private:
     void Log(FormEvent event) const;
-    void Log(BankNameDisplayedFormEvent event) const;
 
     bool is_for_credit_card_;
     size_t server_record_type_count_;
@@ -965,7 +953,6 @@ class AutofillMetrics {
     bool has_logged_suggestion_filled_;
     bool has_logged_will_submit_;
     bool has_logged_submitted_;
-    bool has_logged_bank_name_available_;
     bool logged_suggestion_filled_was_server_data_;
     bool logged_suggestion_filled_was_masked_server_card_;
 

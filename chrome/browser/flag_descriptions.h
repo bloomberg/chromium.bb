@@ -175,9 +175,6 @@ extern const char kEnableAdjustableLargeCursorDescription[];
 extern const char kEnableAsmWasmName[];
 extern const char kEnableAsmWasmDescription[];
 
-extern const char kEnableAutofillCreditCardBankNameDisplayName[];
-extern const char kEnableAutofillCreditCardBankNameDisplayDescription[];
-
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayName[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 
