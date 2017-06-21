@@ -234,6 +234,15 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // possibly changing focus in distinct but related inner/outer WebContents.
   virtual void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {}
 
+  // Searches the WebContents for a focused frame, potentially in an inner
+  // WebContents. If this WebContents has no focused frame, returns |nullptr|.
+  // If there is no inner WebContents at the focused tree node, returns its
+  // RenderFrameHost. If there is an inner WebContents, search it for focused
+  // frames and inner contents. If an inner WebContents does not have a focused
+  // frame, return its main frame, since the attachment frame in its outer
+  // WebContents is not live.
+  virtual RenderFrameHost* GetFocusedFrameIncludingInnerWebContents();
+
   // Creates a WebUI object for a frame navigating to |url|. If no WebUI
   // applies, returns null.
   virtual std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
