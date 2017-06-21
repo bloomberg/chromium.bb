@@ -55,7 +55,6 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(
     : PrefProxyConfigTrackerImpl(
           profile_prefs ? profile_prefs : local_state_prefs,
           io_task_runner),
-      active_config_state_(ProxyPrefs::CONFIG_UNSET),
       profile_prefs_(profile_prefs),
       local_state_prefs_(local_state_prefs),
       pointer_factory_(this) {
@@ -256,33 +255,25 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
                           network_config, ignore_proxy, &effective_config_state,
                           &effective_config);
 
-  bool config_changed = active_config_state_ != effective_config_state ||
-                        (active_config_state_ != ProxyPrefs::CONFIG_UNSET &&
-                         !active_config_.Equals(effective_config));
-  if (config_changed) {  // Activate and store new effective config.
-    active_config_state_ = effective_config_state;
-    if (active_config_state_ != ProxyPrefs::CONFIG_UNSET)
-      active_config_ = effective_config;
-    // If effective config is from system (i.e. network), it's considered a
-    // special kind of prefs that ranks below policy/extension but above
-    // others, so bump it up to CONFIG_OTHER_PRECEDE to force its precedence
-    // when PrefProxyConfigTrackerImpl pushes it to ChromeProxyConfigService.
-    if (effective_config_state == ProxyPrefs::CONFIG_SYSTEM)
-      effective_config_state = ProxyPrefs::CONFIG_OTHER_PRECEDE;
-    // If config is manual, add rule to bypass local host.
-    if (effective_config.proxy_rules().type !=
-        net::ProxyConfig::ProxyRules::TYPE_NO_RULES) {
-      effective_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
-    }
-    PrefProxyConfigTrackerImpl::OnProxyConfigChanged(effective_config_state,
-                                                     effective_config);
-    if (VLOG_IS_ON(1)) {
-      std::unique_ptr<base::DictionaryValue> config_dict(
-          effective_config.ToValue());
-      VLOG(1) << this << ": Proxy changed: "
-              << ProxyPrefs::ConfigStateToDebugString(active_config_state_)
-              << ", " << *config_dict;
-    }
+  // If effective config is from system (i.e. network), it's considered a
+  // special kind of prefs that ranks below policy/extension but above
+  // others, so bump it up to CONFIG_OTHER_PRECEDE to force its precedence
+  // when PrefProxyConfigTrackerImpl pushes it to ChromeProxyConfigService.
+  if (effective_config_state == ProxyPrefs::CONFIG_SYSTEM)
+    effective_config_state = ProxyPrefs::CONFIG_OTHER_PRECEDE;
+  // If config is manual, add rule to bypass local host.
+  if (effective_config.proxy_rules().type !=
+      net::ProxyConfig::ProxyRules::TYPE_NO_RULES) {
+    effective_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
+  }
+  PrefProxyConfigTrackerImpl::OnProxyConfigChanged(effective_config_state,
+                                                   effective_config);
+  if (VLOG_IS_ON(1)) {
+    std::unique_ptr<base::DictionaryValue> config_dict(
+        effective_config.ToValue());
+    VLOG(1) << this << ": Proxy changed: "
+            << ProxyPrefs::ConfigStateToDebugString(effective_config_state)
+            << ", " << *config_dict;
   }
 }
 
