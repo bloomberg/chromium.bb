@@ -10,10 +10,10 @@ import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
+    "ime_driver_bridge.cc",
+    "ime_driver_bridge.h",
     "ime_registrar_impl.cc",
     "ime_registrar_impl.h",
-    "ime_server_impl.cc",
-    "ime_server_impl.h",
   ]
 
   deps = [

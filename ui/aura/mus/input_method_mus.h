@@ -79,7 +79,7 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   Window* window_;
 
   // May be null in tests.
-  ui::mojom::IMEServerPtr ime_server_;
+  ui::mojom::IMEDriverPtr ime_driver_;
   ui::mojom::InputMethodPtr input_method_ptr_;
   // Typically this is the same as |input_method_ptr_|, but it may be mocked
   // in tests.

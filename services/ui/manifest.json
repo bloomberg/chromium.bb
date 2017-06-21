@@ -13,7 +13,7 @@
           "ui::mojom::Clipboard",
           "ui::mojom::DisplayManager",
           "ui::mojom::Gpu",
-          "ui::mojom::IMEServer",
+          "ui::mojom::IMEDriver",
           "ui::mojom::InputDeviceServer",
           "ui::mojom::WindowTreeFactory"
         ],
@@ -56,7 +56,7 @@
           "ui::mojom::Clipboard",
           "ui::mojom::DisplayManager",
           "ui::mojom::Gpu",
-          "ui::mojom::IMEServer",
+          "ui::mojom::IMEDriver",
           "ui::mojom::InputDeviceServer",
           "ui::mojom::TouchDeviceServer",
           "ui::mojom::UserActivityMonitor",

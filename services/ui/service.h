@@ -17,8 +17,8 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
+#include "services/ui/ime/ime_driver_bridge.h"
 #include "services/ui/ime/ime_registrar_impl.h"
-#include "services/ui/ime/ime_server_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
@@ -118,8 +118,8 @@ class Service : public service_manager::Service,
       const service_manager::BindSourceInfo& source_info,
       mojom::IMERegistrarRequest request);
 
-  void BindIMEServerRequest(const service_manager::BindSourceInfo& source_info,
-                            mojom::IMEServerRequest request);
+  void BindIMEDriverRequest(const service_manager::BindSourceInfo& source_info,
+                            mojom::IMEDriverRequest request);
 
   void BindUserAccessManagerRequest(
       const service_manager::BindSourceInfo& source_info,
@@ -173,7 +173,7 @@ class Service : public service_manager::Service,
   std::unique_ptr<display::ScreenManager> screen_manager_;
 
   IMERegistrarImpl ime_registrar_;
-  IMEServerImpl ime_server_;
+  IMEDriverBridge ime_driver_;
 
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;

@@ -40,7 +40,7 @@ InputMethodMus::~InputMethodMus() {
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
   if (connector)
-    connector->BindInterface(ui::mojom::kServiceName, &ime_server_);
+    connector->BindInterface(ui::mojom::kServiceName, &ime_driver_);
 }
 
 void InputMethodMus::DispatchKeyEvent(
@@ -156,7 +156,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
   // else mus won't process the next event immediately.
   AckPendingCallbacksUnhandled();
 
-  if (ime_server_) {
+  if (ime_driver_) {
     ui::mojom::StartSessionDetailsPtr details =
         ui::mojom::StartSessionDetails::New();
     details->client = text_input_client_->CreateInterfacePtrAndBind();
@@ -167,7 +167,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
     details->text_direction = focused->GetTextDirection();
     details->text_input_flags = focused->GetTextInputFlags();
     details->caret_bounds = focused->GetCaretBounds();
-    ime_server_->StartSession(std::move(details));
+    ime_driver_->StartSession(std::move(details));
   }
 }
 

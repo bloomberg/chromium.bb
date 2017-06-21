@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_IME_IME_SERVER_IMPL_H_
-#define SERVICES_UI_IME_IME_SERVER_IMPL_H_
+#ifndef SERVICES_UI_IME_IME_DRIVER_BRIDGE_H_
+#define SERVICES_UI_IME_IME_DRIVER_BRIDGE_H_
 
 #include <utility>
 
@@ -16,28 +16,27 @@ class Connector;
 
 namespace ui {
 
-class IMEServerImpl : public mojom::IMEServer {
+class IMEDriverBridge : public mojom::IMEDriver {
  public:
-  IMEServerImpl();
-  ~IMEServerImpl() override;
+  IMEDriverBridge();
+  ~IMEDriverBridge() override;
 
   void Init(service_manager::Connector* connector, bool is_test_config);
-  void AddBinding(mojom::IMEServerRequest request);
-  void OnDriverChanged(mojom::IMEDriverPtr driver);
+  void AddBinding(mojom::IMEDriverRequest request);
+  void SetDriver(mojom::IMEDriverPtr driver);
 
  private:
-  // mojom::IMEServer:
+  // mojom::IMEDriver:
   void StartSession(mojom::StartSessionDetailsPtr details) override;
 
-  mojo::BindingSet<mojom::IMEServer> bindings_;
+  mojo::BindingSet<mojom::IMEDriver> bindings_;
   mojom::IMEDriverPtr driver_;
-  int current_id_;
 
   std::queue<mojom::StartSessionDetailsPtr> pending_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(IMEServerImpl);
+  DISALLOW_COPY_AND_ASSIGN(IMEDriverBridge);
 };
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_IME_IME_SERVER_IMPL_H_
+#endif  // SERVICES_UI_IME_IME_DRIVER_BRIDGE_H_
