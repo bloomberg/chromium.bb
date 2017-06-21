@@ -44,8 +44,7 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
       AutocompleteProvider::TYPE_KEYWORD |
 #endif
 #if !defined(OS_IOS)
-      // "Builtin", "Shortcuts" and "Zero Suggest" are not supported on iOS.
-      AutocompleteProvider::TYPE_BUILTIN |
+      // "Shortcuts" and "Zero Suggest" are not supported on iOS.
       AutocompleteProvider::TYPE_SHORTCUTS |
       AutocompleteProvider::TYPE_ZERO_SUGGEST |
 #endif
@@ -53,6 +52,7 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
            ? AutocompleteProvider::TYPE_CLIPBOARD_URL
            : 0) |
       AutocompleteProvider::TYPE_BOOKMARK |
+      AutocompleteProvider::TYPE_BUILTIN |
       AutocompleteProvider::TYPE_HISTORY_QUICK |
       AutocompleteProvider::TYPE_HISTORY_URL |
       AutocompleteProvider::TYPE_SEARCH;
