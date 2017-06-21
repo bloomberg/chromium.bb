@@ -473,16 +473,22 @@ deps = {
 }
 deps_os ={
   'mac': {
+    'src/none_repo': None,
+
     # This entry should not appear in flattened DEPS' |deps|.
-    'src/mac_repo': '/repo_5',
+    'src/os_repo': '/repo_5',
   },
   'unix': {
+    'src/none_repo': None,
+
     # This entry should not appear in flattened DEPS' |deps|.
-    'src/unix_repo': '/repo_5',
+    'src/os_repo': '/repo_5',
   },
   'win': {
+    'src/none_repo': None,
+
     # This entry should not appear in flattened DEPS' |deps|.
-    'src/win_repo': '/repo_5',
+    'src/os_repo': '/repo_5',
   },
 }
 hooks = [
