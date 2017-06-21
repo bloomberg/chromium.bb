@@ -51,8 +51,9 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   friend class GraphicsContext;
 
  public:
-  static PassRefPtr<BitmapImage> Create(ImageObserver* observer = 0) {
-    return AdoptRef(new BitmapImage(observer));
+  static PassRefPtr<BitmapImage> Create(ImageObserver* observer = 0,
+                                        bool is_multipart = false) {
+    return AdoptRef(new BitmapImage(observer, is_multipart));
   }
 
   ~BitmapImage() override;
@@ -109,7 +110,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   };
 
   BitmapImage(const SkBitmap&, ImageObserver* = 0);
-  BitmapImage(ImageObserver* = 0);
+  BitmapImage(ImageObserver* = 0, bool is_multi_part = false);
 
   void Draw(PaintCanvas*,
             const PaintFlags&,

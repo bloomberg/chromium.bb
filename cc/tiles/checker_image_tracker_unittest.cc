@@ -93,7 +93,8 @@ class CheckerImageTrackerTest : public testing::Test,
       ImageType image_type,
       PaintImage::AnimationType animation = PaintImage::AnimationType::STATIC,
       PaintImage::CompletionState completion =
-          PaintImage::CompletionState::DONE) {
+          PaintImage::CompletionState::DONE,
+      bool is_multipart = false) {
     int dimension = 0;
     switch (image_type) {
       case ImageType::CHECKERABLE:
@@ -109,10 +110,10 @@ class CheckerImageTrackerTest : public testing::Test,
 
     sk_sp<SkImage> image =
         CreateDiscardableImage(gfx::Size(dimension, dimension));
-    return DrawImage(
-        PaintImage(PaintImage::GetNextId(), image, animation, completion),
-        SkIRect::MakeWH(dimension, dimension), kNone_SkFilterQuality,
-        SkMatrix::I(), gfx::ColorSpace());
+    return DrawImage(PaintImage(PaintImage::GetNextId(), image, animation,
+                                completion, 1, is_multipart),
+                     SkIRect::MakeWH(dimension, dimension),
+                     kNone_SkFilterQuality, SkMatrix::I(), gfx::ColorSpace());
   }
 
   CheckerImageTracker::ImageDecodeQueue BuildImageDecodeQueue(
@@ -469,6 +470,22 @@ TEST_F(CheckerImageTrackerTest, ChoosesMaxScaleAndQuality) {
             SkSize::Make(1.8f, 1.8f));
   EXPECT_EQ(image_controller_.decoded_images()[0].filter_quality(),
             kHigh_SkFilterQuality);
+}
+
+TEST_F(CheckerImageTrackerTest, DontCheckerMultiPartImages) {
+  SetUpTracker(true);
+
+  DrawImage image = CreateImage(ImageType::CHECKERABLE);
+  EXPECT_FALSE(image.paint_image().is_multipart());
+  DrawImage multi_part_image =
+      CreateImage(ImageType::CHECKERABLE, PaintImage::AnimationType::STATIC,
+                  PaintImage::CompletionState::DONE, true);
+  EXPECT_TRUE(multi_part_image.paint_image().is_multipart());
+
+  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
+      image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
+      multi_part_image, WhichTree::PENDING_TREE));
 }
 
 }  // namespace

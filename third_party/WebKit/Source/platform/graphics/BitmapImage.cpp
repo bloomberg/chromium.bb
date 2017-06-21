@@ -59,8 +59,8 @@ PassRefPtr<BitmapImage> BitmapImage::CreateWithOrientationForTesting(
   return result.Release();
 }
 
-BitmapImage::BitmapImage(ImageObserver* observer)
-    : Image(observer),
+BitmapImage::BitmapImage(ImageObserver* observer, bool is_multipart)
+    : Image(observer, is_multipart),
       current_frame_(0),
       cached_frame_index_(0),
       animation_policy_(kImageAnimationPolicyAllowed),

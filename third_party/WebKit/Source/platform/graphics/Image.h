@@ -200,7 +200,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                                         const FloatSize& image_size);
 
  protected:
-  Image(ImageObserver* = 0);
+  Image(ImageObserver* = 0, bool is_multipart = false);
 
   void DrawTiledBackground(GraphicsContext&,
                            const FloatRect& dst_rect,
@@ -236,6 +236,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // alive, |image_observer_| is cleared by WeakPersistent mechanism.
   WeakPersistent<ImageObserver> image_observer_;
   PaintImage::Id stable_image_id_;
+  const bool is_multipart_;
 };
 
 #define DEFINE_IMAGE_TYPE_CASTS(typeName)                          \

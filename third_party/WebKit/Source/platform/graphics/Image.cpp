@@ -51,10 +51,11 @@
 
 namespace blink {
 
-Image::Image(ImageObserver* observer)
+Image::Image(ImageObserver* observer, bool is_multipart)
     : image_observer_disabled_(false),
       image_observer_(observer),
-      stable_image_id_(PaintImage::GetNextId()) {}
+      stable_image_id_(PaintImage::GetNextId()),
+      is_multipart_(is_multipart) {}
 
 Image::~Image() {}
 
@@ -350,7 +351,7 @@ PaintImage Image::PaintImageForCurrentFrame() {
                               ? PaintImage::CompletionState::DONE
                               : PaintImage::CompletionState::PARTIALLY_DONE;
   return PaintImage(stable_image_id_, ImageForCurrentFrame(), animation_type,
-                    completion_state, FrameCount());
+                    completion_state, FrameCount(), is_multipart_);
 }
 
 bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {

@@ -45,7 +45,8 @@ class CC_PAINT_EXPORT PaintImage {
                       sk_sp<SkImage> sk_image,
                       AnimationType animation_type = AnimationType::STATIC,
                       CompletionState completion_state = CompletionState::DONE,
-                      size_t frame_count = 0);
+                      size_t frame_count = 0,
+                      bool is_multipart = false);
   PaintImage(const PaintImage& other);
   PaintImage(PaintImage&& other);
   ~PaintImage();
@@ -61,6 +62,7 @@ class CC_PAINT_EXPORT PaintImage {
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
   size_t frame_count() const { return frame_count_; }
+  bool is_multipart() const { return is_multipart_; }
 
  private:
   Id id_ = kUnknownStableId;
@@ -71,6 +73,9 @@ class CC_PAINT_EXPORT PaintImage {
   // loaded). 0 indicates either unknown or only a single frame, both of which
   // should be treated similarly.
   size_t frame_count_ = 0;
+
+  // Whether the data fetched for this image is a part of a multpart response.
+  bool is_multipart_ = false;
 };
 
 }  // namespace cc
