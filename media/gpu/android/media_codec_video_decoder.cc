@@ -181,7 +181,7 @@ void MediaCodecVideoDecoder::SetOverlayInfo(const OverlayInfo& overlay_info) {
   overlay_info_ = overlay_info;
   // Only update surface chooser if it's initialized and the overlay changed.
   if (state_ != State::kBeforeSurfaceInit && overlay_changed)
-    surface_chooser_->ReplaceOverlayFactory(CreateOverlayFactoryCb());
+    surface_chooser_->UpdateState(CreateOverlayFactoryCb(), chooser_state_);
 }
 
 void MediaCodecVideoDecoder::InitializeSurfaceChooser() {
@@ -194,7 +194,7 @@ void MediaCodecVideoDecoder::InitializeSurfaceChooser() {
                  weak_factory_.GetWeakPtr()),
       base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
                  weak_factory_.GetWeakPtr(), nullptr),
-      CreateOverlayFactoryCb());
+      CreateOverlayFactoryCb(), chooser_state_);
 }
 
 void MediaCodecVideoDecoder::OnSurfaceChosen(

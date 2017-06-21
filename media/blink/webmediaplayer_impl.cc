@@ -1807,6 +1807,16 @@ void WebMediaPlayerImpl::OnOverlayInfoRequested(
   decoder_requires_restart_for_overlay_ = decoder_requires_restart_for_overlay;
   provide_overlay_info_cb_ = provide_overlay_info_cb;
 
+  // We always force (allow, actually) video overlays in AndroidOverlayMode.
+  // AVDA figures out when to use them.  If the decoder requires restart, then
+  // we still want to restart the decoder on the fullscreen transitions anyway.
+  if (overlay_mode_ == OverlayMode::kUseAndroidOverlay &&
+      !decoder_requires_restart_for_overlay) {
+    force_video_overlays_ = true;
+    if (!overlay_enabled_)
+      EnableOverlay();
+  }
+
   // If we're waiting for the surface to arrive, OnSurfaceCreated() will be
   // called later when it arrives; so do nothing for now.  For AndroidOverlay,
   // if we're waiting for the token then... OnOverlayRoutingToken()...

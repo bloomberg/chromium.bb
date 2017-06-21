@@ -501,7 +501,8 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
   InitializeAVDAWithOverlay();
 
-  EXPECT_CALL(*chooser_, MockReplaceOverlayFactory()).Times(0);
+  EXPECT_CALL(*chooser_, MockUpdateState()).Times(1);
+  EXPECT_CALL(*chooser_, MockReplaceOverlayFactory(_)).Times(0);
   OverlayInfo overlay_info = config_.overlay_info;
   avda()->SetOverlayInfo(overlay_info);
 }
@@ -513,10 +514,21 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
   InitializeAVDAWithOverlay();
 
-  EXPECT_CALL(*chooser_, MockReplaceOverlayFactory()).Times(1);
+  EXPECT_CALL(*chooser_, MockUpdateState()).Times(1);
   OverlayInfo overlay_info = config_.overlay_info;
   overlay_info.surface_id++;
   avda()->SetOverlayInfo(overlay_info);
+}
+
+TEST_F(AndroidVideoDecodeAcceleratorTest, FullscreenSignalIsSentToChooser) {
+  // Send OverlayInfo that has |is_fullscreen| set, and verify that the chooser
+  // is notified about it.
+  SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
+  InitializeAVDAWithOverlay();
+  OverlayInfo overlay_info = config_.overlay_info;
+  overlay_info.is_fullscreen = !config_.overlay_info.is_fullscreen;
+  avda()->SetOverlayInfo(overlay_info);
+  ASSERT_EQ(chooser_->current_state_.is_fullscreen, overlay_info.is_fullscreen);
 }
 
 }  // namespace media
