@@ -51,9 +51,9 @@ grit("extensions_renderer_resources") {
   ]
 
   deps = [
-    "//device/serial:serial_mojo__generator",
-    "//extensions/common:mojo__generator",
-    "//extensions/common/api:mojom__generator",
+    "//device/serial:serial_mojo_js",
+    "//extensions/common:mojo_js",
+    "//extensions/common/api:mojom_js",
   ]
 }
 
