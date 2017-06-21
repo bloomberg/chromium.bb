@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "geolocation.mojom",
+    "geoposition.mojom",
   ]
 
   # TODO(crbug.com/699569): Convert to use the new JS bindings.
