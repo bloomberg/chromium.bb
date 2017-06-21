@@ -32242,6 +32242,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Android: Records the reason that a download is canceled.</summary>
 </histogram>
 
+<histogram name="MobileDownload.ContextMenu.SaveImage"
+    enum="ContextMenuSaveImage">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Records various counts related to the save image context menu
+    option.
+  </summary>
+</histogram>
+
 <histogram name="MobileDownload.DownloadResumption"
     enum="MobileDownloadResumption">
   <owner>qinmin@chromium.org</owner>
@@ -32254,6 +32263,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>qinmin@chromium.org</owner>
   <summary>
     Android: Records the total time for a download by completion status.
+  </summary>
+</histogram>
+
+<histogram name="MobileDownload.DuplicateInfobar"
+    enum="MobileDownloadDuplicateInfobar">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Records various counts related to the duplicate download infobar.
   </summary>
 </histogram>
 
@@ -32298,6 +32315,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     finished, completed or cancelled. For automatic resumptions, it is also
     recorded when user manually resumes the download to clear the auto retry
     count.
+  </summary>
+</histogram>
+
+<histogram name="MobileDownload.StoragePermission"
+    enum="MobileDownloadStoragePermission">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Records various counts when requesting the storage permission.
   </summary>
 </histogram>
 

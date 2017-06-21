@@ -62,6 +62,19 @@ class DownloadController : public DownloadControllerBase {
   };
   static void RecordDownloadCancelReason(DownloadCancelReason reason);
 
+  // UMA histogram enum for download storage permission requests. Keep this
+  // in sync with MobileDownloadStoragePermission in histograms.xml. This should
+  // be append only.
+  enum StoragePermissionType {
+    STORAGE_PERMISSION_REQUESTED = 0,
+    STORAGE_PERMISSION_NO_ACTION_NEEDED,
+    STORAGE_PERMISSION_GRANTED,
+    STORAGE_PERMISSION_DENIED,
+    STORAGE_PERMISSION_NO_WEB_CONTENTS,
+    STORAGE_PERMISSION_MAX
+  };
+  static void RecordStoragePermission(StoragePermissionType type);
+
   // Callback when user permission prompt finishes. Args: whether file access
   // permission is acquired, which permission to update.
   typedef base::Callback<void(bool, const std::string&)>
