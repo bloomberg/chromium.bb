@@ -598,7 +598,7 @@
 ### <a name="gen:"></a>**gn gen**: Generate ninja files.
 
 ```
-  gn gen [<ide options>] <out_dir>
+  gn gen [--check] [<ide options>] <out_dir>
 
   Generates ninja files from the current tree and puts them in the given output
   directory.
@@ -607,6 +607,9 @@
       //out/foo
   Or it can be a directory relative to the current directory such as:
       out/foo
+
+  "gn gen --check" is the same as running "gn check". See "gn help check"
+  for documentation on that mode.
 
   See "gn help switches" for the common command-line switches.
 ```
@@ -645,6 +648,11 @@
   --no-deps
       Don't include targets dependencies to the solution. Changes the way how
       --filters option works. Only directly matching targets are included.
+
+  --winsdk=<sdk_version>
+      Use the specified Windows 10 SDK version to generate project files.
+      As an example, "10.0.15063.0" can be specified to use Creators Update SDK
+      instead of the default one.
 ```
 
 #### **Xcode Flags**
@@ -688,9 +696,10 @@
 #### **Generic JSON Output**
 
 ```
-  Dumps target information to JSON file and optionally invokes python script on
-  generated file. See comments at the beginning of json_project_writer.cc and
-  desc_builder.cc for overview of JSON file format.
+  Dumps target information to a JSON file and optionally invokes a
+  python script on the generated file. See the comments at the beginning
+  of json_project_writer.cc and desc_builder.cc for an overview of the JSON
+  file format.
 
   --json-file-name=<json_file_name>
       Overrides default file name (project.json) of generated JSON file.
@@ -1932,7 +1941,7 @@
   get_label_info(":foo", "name")
   # Returns string "foo".
 
-  get_label_info("//foo/bar:baz", "gen_dir")
+  get_label_info("//foo/bar:baz", "target_gen_dir")
   # Returns string "//out/Debug/gen/foo/bar".
 ```
 ### <a name="get_path_info"></a>**get_path_info**: Extract parts of a file or directory name.
@@ -5357,6 +5366,11 @@
       Label of the root build target. The GN build will start by loading the
       build file containing this target name. This defaults to "//:" which will
       cause the file //BUILD.gn to be loaded.
+
+  script_executable [optional]
+      Path to specific Python executable or potentially a different language
+      interpreter that is used to execute scripts in action targets and
+      exec_script calls.
 
   secondary_source [optional]
       Label of an alternate directory tree to find input files. When searching
