@@ -226,6 +226,8 @@
 #define PCI_CHIP_COFFEELAKE_S_GT2_1     0x3E91
 #define PCI_CHIP_COFFEELAKE_S_GT2_2     0x3E92
 #define PCI_CHIP_COFFEELAKE_S_GT2_3     0x3E96
+#define PCI_CHIP_COFFEELAKE_H_GT2_1     0x3E9B
+#define PCI_CHIP_COFFEELAKE_H_GT2_2     0x3E94
 
 #define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
 				 (devid) == PCI_CHIP_I915_GM || \
@@ -464,7 +466,11 @@
                                  (devid) == PCI_CHIP_COFFEELAKE_S_GT2_2 || \
                                  (devid) == PCI_CHIP_COFFEELAKE_S_GT2_3)
 
-#define IS_COFFEELAKE(devid)   (IS_CFL_S(devid))
+#define IS_CFL_H(devid)         ((devid) == PCI_CHIP_COFFEELAKE_H_GT2_1 || \
+                                 (devid) == PCI_CHIP_COFFEELAKE_H_GT2_2)
+
+#define IS_COFFEELAKE(devid)   (IS_CFL_S(devid) || \
+				IS_CFL_H(devid))
 
 #define IS_GEN9(devid)		(IS_SKYLAKE(devid)  || \
 				 IS_BROXTON(devid)  || \
