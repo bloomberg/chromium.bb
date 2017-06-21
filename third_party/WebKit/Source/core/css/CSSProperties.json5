@@ -307,6 +307,8 @@
     },
     {
       name: "animation-direction",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
       priority: "Animation",
@@ -319,11 +321,15 @@
     },
     {
       name: "animation-fill-mode",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
     {
       name: "animation-iteration-count",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       keywords: ["infinite"],
       priority: "Animation",
@@ -338,6 +344,8 @@
     },
     {
       name: "animation-play-state",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
@@ -358,6 +366,8 @@
     },
     {
       name: "transition-property",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
@@ -482,6 +492,8 @@
     },
     {
       name: "font-weight",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertFontWeight",
       is_descriptor: true,
       font: true,
@@ -653,6 +665,8 @@
     },
     {
       name: "background-color",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -935,6 +949,8 @@
     },
     {
       name: "box-shadow",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertShadowList",
       interpolable: true,
       field_template: "storage_only",
@@ -1725,6 +1741,8 @@
     },
     {
       name: "object-position",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertPosition",
       interpolable: true,
       field_template: "external",
@@ -1955,6 +1973,8 @@
     },
     {
       name: "perspective-origin",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertPosition",
       interpolable: true,
       field_template: "external",
@@ -2555,6 +2575,8 @@
     },
     {
       name: "text-shadow",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertShadowList",
       inherited: true,
       interpolable: true,
@@ -2883,6 +2905,8 @@
     },
     {
       name: "-webkit-box-reflect",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertBoxReflect",
       field_template: "storage_only",
       type_name: "StyleReflection",
