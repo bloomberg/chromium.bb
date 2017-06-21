@@ -658,19 +658,55 @@ void linux_buffer_params_add(wl_client* client,
   }
 }
 
+bool ValidateLinuxBufferParams(wl_resource* resource,
+                               int32_t width,
+                               int32_t height,
+                               gfx::BufferFormat format,
+                               uint32_t flags) {
+  if (width <= 0 || height <= 0) {
+    wl_resource_post_error(resource,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS,
+                           "invalid width or height");
+    return false;
+  }
+
+  if (flags & (ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT |
+               ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_INTERLACED)) {
+    wl_resource_post_error(resource,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
+                           "flags not supported");
+    return false;
+  }
+
+  LinuxBufferParams* linux_buffer_params =
+      GetUserDataAs<LinuxBufferParams>(resource);
+  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+
+  for (uint32_t i = 0; i < num_planes; ++i) {
+    auto plane_it = linux_buffer_params->planes.find(i);
+    if (plane_it == linux_buffer_params->planes.end()) {
+      wl_resource_post_error(resource,
+                             ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
+                             "missing a plane");
+      return false;
+    }
+  }
+
+  if (linux_buffer_params->planes.size() != num_planes) {
+    wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
+                           "plane idx out of bounds");
+    return false;
+  }
+
+  return true;
+}
+
 void linux_buffer_params_create(wl_client* client,
                                 wl_resource* resource,
                                 int32_t width,
                                 int32_t height,
                                 uint32_t format,
                                 uint32_t flags) {
-  if (width <= 0 || height <= 0) {
-    wl_resource_post_error(resource,
-                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS,
-                           "invalid width or height");
-    return;
-  }
-
   const auto* supported_format = std::find_if(
       std::begin(dmabuf_supported_formats), std::end(dmabuf_supported_formats),
       [format](const dmabuf_supported_format& supported_format) {
@@ -683,13 +719,9 @@ void linux_buffer_params_create(wl_client* client,
     return;
   }
 
-  if (flags & (ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT |
-               ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_INTERLACED)) {
-    wl_resource_post_error(resource,
-                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
-                           "flags not supported");
+  if (!ValidateLinuxBufferParams(resource, width, height,
+                                 supported_format->buffer_format, flags))
     return;
-  }
 
   LinuxBufferParams* linux_buffer_params =
       GetUserDataAs<LinuxBufferParams>(resource);
@@ -697,23 +729,11 @@ void linux_buffer_params_create(wl_client* client,
   size_t num_planes =
       gfx::NumberOfPlanesForBufferFormat(supported_format->buffer_format);
 
-  if (linux_buffer_params->planes.size() != num_planes) {
-    wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
-                           "plane idx out of bounds");
-    return;
-  }
-
   std::vector<gfx::NativePixmapPlane> planes;
   std::vector<base::ScopedFD> fds;
 
   for (uint32_t i = 0; i < num_planes; ++i) {
     auto plane_it = linux_buffer_params->planes.find(i);
-    if (plane_it == linux_buffer_params->planes.end()) {
-      wl_resource_post_error(resource,
-                             ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
-                             "missing a plane");
-      return;
-    }
     LinuxBufferParams::Plane& plane = plane_it->second;
     planes.emplace_back(plane.stride, plane.offset, 0, 0);
     fds.push_back(std::move(plane.fd));
@@ -739,10 +759,71 @@ void linux_buffer_params_create(wl_client* client,
   zwp_linux_buffer_params_v1_send_created(resource, buffer_resource);
 }
 
+void linux_buffer_params_create_immed(wl_client* client,
+                                      wl_resource* resource,
+                                      uint32_t buffer_id,
+                                      int32_t width,
+                                      int32_t height,
+                                      uint32_t format,
+                                      uint32_t flags) {
+  const auto* supported_format = std::find_if(
+      std::begin(dmabuf_supported_formats), std::end(dmabuf_supported_formats),
+      [format](const dmabuf_supported_format& supported_format) {
+        return supported_format.dmabuf_format == format;
+      });
+  if (supported_format == std::end(dmabuf_supported_formats)) {
+    wl_resource_post_error(resource,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_FORMAT,
+                           "format not supported");
+    return;
+  }
+
+  if (!ValidateLinuxBufferParams(resource, width, height,
+                                 supported_format->buffer_format, flags))
+    return;
+
+  LinuxBufferParams* linux_buffer_params =
+      GetUserDataAs<LinuxBufferParams>(resource);
+
+  size_t num_planes =
+      gfx::NumberOfPlanesForBufferFormat(supported_format->buffer_format);
+
+  std::vector<gfx::NativePixmapPlane> planes;
+  std::vector<base::ScopedFD> fds;
+
+  for (uint32_t i = 0; i < num_planes; ++i) {
+    auto plane_it = linux_buffer_params->planes.find(i);
+    LinuxBufferParams::Plane& plane = plane_it->second;
+    planes.emplace_back(plane.stride, plane.offset, 0, 0);
+    fds.push_back(std::move(plane.fd));
+  }
+
+  std::unique_ptr<Buffer> buffer =
+      linux_buffer_params->display->CreateLinuxDMABufBuffer(
+          gfx::Size(width, height), supported_format->buffer_format, planes,
+          std::move(fds));
+  if (!buffer) {
+    // On import failure in case of a create_immed request, the protocol
+    // allows us to raise a fatal error from zwp_linux_dmabuf_v1 version 2+.
+    wl_resource_post_error(resource,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER,
+                           "dmabuf import failed");
+    return;
+  }
+
+  wl_resource* buffer_resource =
+      wl_resource_create(client, &wl_buffer_interface, 1, buffer_id);
+
+  buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
+                                          base::Unretained(buffer_resource)));
+
+  SetImplementation(buffer_resource, &buffer_implementation, std::move(buffer));
+}
+
 const struct zwp_linux_buffer_params_v1_interface
-    linux_buffer_params_implementation = {linux_buffer_params_destroy,
-                                          linux_buffer_params_add,
-                                          linux_buffer_params_create};
+    linux_buffer_params_implementation = {
+        linux_buffer_params_destroy, linux_buffer_params_add,
+        linux_buffer_params_create, linux_buffer_params_create_immed};
 
 ////////////////////////////////////////////////////////////////////////////////
 // linux_dmabuf_interface:
@@ -758,7 +839,7 @@ void linux_dmabuf_create_params(wl_client* client,
       base::MakeUnique<LinuxBufferParams>(GetUserDataAs<Display>(resource));
 
   wl_resource* linux_buffer_params_resource =
-      wl_resource_create(client, &zwp_linux_buffer_params_v1_interface, 1, id);
+      wl_resource_create(client, &zwp_linux_buffer_params_v1_interface, 2, id);
 
   SetImplementation(linux_buffer_params_resource,
                     &linux_buffer_params_implementation,
@@ -773,7 +854,7 @@ void bind_linux_dmabuf(wl_client* client,
                        uint32_t version,
                        uint32_t id) {
   wl_resource* resource =
-      wl_resource_create(client, &zwp_linux_dmabuf_v1_interface, 1, id);
+      wl_resource_create(client, &zwp_linux_dmabuf_v1_interface, version, id);
 
   wl_resource_set_implementation(resource, &linux_dmabuf_implementation, data,
                                  nullptr);
@@ -3996,7 +4077,7 @@ Server::Server(Display* display)
 #if defined(USE_OZONE)
   wl_global_create(wl_display_.get(), &wl_drm_interface, drm_version, display_,
                    bind_drm);
-  wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface, 1,
+  wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface, 2,
                    display_, bind_linux_dmabuf);
 #endif
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
