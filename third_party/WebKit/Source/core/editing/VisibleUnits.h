@@ -386,9 +386,10 @@ Position NextRootInlineBoxCandidatePosition(Node*,
                                             const VisiblePosition&,
                                             EditableType);
 
-Position PreviousRootInlineBoxCandidatePosition(Node*,
-                                                const VisiblePosition&,
-                                                EditableType);
+CORE_EXPORT Position
+PreviousRootInlineBoxCandidatePosition(Node*,
+                                       const VisiblePosition&,
+                                       EditableType);
 
 }  // namespace blink
 

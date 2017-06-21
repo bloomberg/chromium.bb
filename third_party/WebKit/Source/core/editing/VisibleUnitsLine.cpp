@@ -261,7 +261,7 @@ LayoutPoint AbsoluteLineDirectionPointToLocalPointInBlock(
 
 bool InSameLine(const Node& node, const VisiblePosition& visible_position) {
   if (!node.GetLayoutObject())
-    return false;
+    return true;
   return InSameLine(CreateVisiblePosition(
                         FirstPositionInOrBeforeNode(const_cast<Node*>(&node))),
                     visible_position);
