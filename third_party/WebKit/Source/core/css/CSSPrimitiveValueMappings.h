@@ -554,39 +554,6 @@ inline BackgroundEdgeOrigin CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EFlexWrap e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EFlexWrap::kNowrap:
-      value_id_ = CSSValueNowrap;
-      break;
-    case EFlexWrap::kWrap:
-      value_id_ = CSSValueWrap;
-      break;
-    case EFlexWrap::kWrapReverse:
-      value_id_ = CSSValueWrapReverse;
-      break;
-  }
-}
-
-template <>
-inline EFlexWrap CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueNowrap:
-      return EFlexWrap::kNowrap;
-    case CSSValueWrap:
-      return EFlexWrap::kWrap;
-    case CSSValueWrapReverse:
-      return EFlexWrap::kWrapReverse;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EFlexWrap::kNowrap;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFloat e)
     : CSSValue(kIdentifierClass) {
   switch (e) {

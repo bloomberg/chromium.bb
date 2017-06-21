@@ -1243,10 +1243,10 @@
     {
       name: "flex-wrap",
       type_name: "EFlexWrap",
-      field_template: "storage_only",
-      default_value: "EFlexWrap::kNowrap",
-      field_size: 2,
+      field_template: "keyword",
+      default_value: "nowrap",
       field_group: "rare-non-inherited->flexible-box",
+      keywords: ["nowrap", "wrap", "wrap-reverse"],
     },
     {
       name: "float",
