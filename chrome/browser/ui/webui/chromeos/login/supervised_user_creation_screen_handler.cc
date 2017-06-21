@@ -234,7 +234,7 @@ void SupervisedUserCreationScreenHandler::Show() {
     auto user_dict = base::MakeUnique<base::DictionaryValue>();
     UserSelectionScreen::FillUserDictionary(
         *it, is_owner, false, /* is_signin_to_add */
-        proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+        proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
         NULL, /* public_session_recommended_locales */
         user_dict.get());
     users_list->Append(std::move(user_dict));

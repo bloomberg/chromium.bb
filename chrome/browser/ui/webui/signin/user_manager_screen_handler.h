@@ -64,11 +64,11 @@ class UserManagerScreenHandler
           icon_options) override;
   void HideUserPodCustomIcon(const AccountId& account_id) override;
   void EnableInput() override;
-  void SetAuthType(
-      const AccountId& account_id,
-      proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
-      const base::string16& auth_value) override;
-  AuthType GetAuthType(const AccountId& account_id) const override;
+  void SetAuthType(const AccountId& account_id,
+                   proximity_auth::mojom::AuthType auth_type,
+                   const base::string16& auth_value) override;
+  proximity_auth::mojom::AuthType GetAuthType(
+      const AccountId& account_id) const override;
   ScreenType GetScreenType() const override;
   void Unlock(const AccountId& account_id) override;
   void AttemptEasySignin(const AccountId& account_id,
@@ -130,8 +130,7 @@ class UserManagerScreenHandler
   // URL hash, used to key post-profile actions if present.
   std::string url_hash_;
 
-  typedef std::map<std::string,
-                   proximity_auth::ScreenlockBridge::LockHandler::AuthType>
+  typedef std::map<std::string, proximity_auth::mojom::AuthType>
       UserAuthTypeMap;
   UserAuthTypeMap user_auth_type_map_;
 

@@ -119,13 +119,14 @@ void LockScreenClient::HideUserPodCustomIcon(const AccountId& account_id) {
 }
 
 void LockScreenClient::SetAuthType(const AccountId& account_id,
-                                   ash::mojom::AuthType auth_type,
+                                   proximity_auth::mojom::AuthType auth_type,
                                    const base::string16& initial_value) {
   lock_screen_->SetAuthType(account_id, auth_type, initial_value);
 }
 
-void LockScreenClient::LoadUsers(std::unique_ptr<base::ListValue> users_list,
-                                 bool show_guest) {
+void LockScreenClient::LoadUsers(
+    std::vector<ash::mojom::LoginUserInfoPtr> users_list,
+    bool show_guest) {
   lock_screen_->LoadUsers(std::move(users_list), show_guest);
 }
 

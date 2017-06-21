@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/interfaces/lock_screen.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -80,9 +81,10 @@ class UserSelectionScreen
 
   void EnableInput() override;
   void SetAuthType(const AccountId& account_id,
-                   AuthType auth_type,
+                   proximity_auth::mojom::AuthType auth_type,
                    const base::string16& auth_value) override;
-  AuthType GetAuthType(const AccountId& account_id) const override;
+  proximity_auth::mojom::AuthType GetAuthType(
+      const AccountId& account_id) const override;
   ScreenType GetScreenType() const override;
 
   void Unlock(const AccountId& account_id) override;
@@ -99,7 +101,7 @@ class UserSelectionScreen
       user_manager::User* user,
       bool is_owner,
       bool is_signin_to_add,
-      AuthType auth_type,
+      proximity_auth::mojom::AuthType auth_type,
       const std::vector<std::string>* public_session_recommended_locales,
       base::DictionaryValue* user_dict);
 
@@ -115,7 +117,18 @@ class UserSelectionScreen
   // Determines if user auth status requires online sign in.
   static bool ShouldForceOnlineSignIn(const user_manager::User* user);
 
-  std::unique_ptr<base::ListValue> PrepareUserList();
+  // Fills |user_info| with information about |user|.
+  // TODO: Public sesssions exist in login screen, but not lock screen.
+  // We will need public session locales in the future when we change login
+  // screen to view-based as well. See crbug.com/732452.
+  static void FillUserMojoStruct(const user_manager::User* user,
+                                 bool is_owner,
+                                 bool is_signin_to_add,
+                                 proximity_auth::mojom::AuthType auth_type,
+                                 ash::mojom::LoginUserInfo* user_info);
+
+  std::unique_ptr<base::ListValue> UpdateAndReturnUserListForWebUI();
+  std::vector<ash::mojom::LoginUserInfoPtr> UpdateAndReturnUserListForMojo();
 
  protected:
   UserBoardView* view_ = nullptr;
@@ -144,8 +157,7 @@ class UserSelectionScreen
 
   // Map of accounnt ids to their current authentication type. If a user is not
   // contained in the map, it is using the default authentication type.
-  std::map<AccountId, proximity_auth::ScreenlockBridge::LockHandler::AuthType>
-      user_auth_type_map_;
+  std::map<AccountId, proximity_auth::mojom::AuthType> user_auth_type_map_;
 
   // Timer for measuring idle state duration before password clear.
   base::OneShotTimer password_clear_timer_;

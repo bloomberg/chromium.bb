@@ -57,6 +57,7 @@ static_library("proximity_auth") {
     "//components/cryptauth/ble",
     "//components/prefs",
     "//components/proximity_auth/logging",
+    "//components/proximity_auth/public/interfaces",
     "//components/signin/core/account_id:account_id",
     "//device/bluetooth",
     "//net",

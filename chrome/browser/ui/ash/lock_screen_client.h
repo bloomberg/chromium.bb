@@ -66,9 +66,10 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
                              ash::mojom::UserPodCustomIconOptionsPtr icon);
   void HideUserPodCustomIcon(const AccountId& account_id);
   void SetAuthType(const AccountId& account_id,
-                   ash::mojom::AuthType auth_type,
+                   proximity_auth::mojom::AuthType auth_type,
                    const base::string16& initial_value);
-  void LoadUsers(std::unique_ptr<base::ListValue> users_list, bool show_guest);
+  void LoadUsers(std::vector<ash::mojom::LoginUserInfoPtr> users_list,
+                 bool show_guest);
   void SetPinEnabledForUser(const AccountId& account_id, bool is_enabled);
 
   void SetDelegate(Delegate* delegate);

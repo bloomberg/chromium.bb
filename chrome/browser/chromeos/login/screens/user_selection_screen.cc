@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -44,6 +46,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
@@ -130,7 +133,7 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
 
 // Returns true if the fingerprint icon should be displayed for the given
 // |user|.
-bool AllowFingerprintForUser(user_manager::User* user) {
+bool AllowFingerprintForUser(const user_manager::User* user) {
   if (!user->is_logged_in())
     return false;
 
@@ -154,6 +157,63 @@ bool IsUserAllowedForARC(const AccountId& account_id) {
   return user_manager::UserManager::IsInitialized() &&
          arc::IsArcAllowedForUser(
              user_manager::UserManager::Get()->FindUser(account_id));
+}
+
+AccountId GetOwnerAccountId() {
+  std::string owner_email;
+  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
+                                           &owner_email);
+  const AccountId owner = user_manager::known_user::GetAccountId(
+      owner_email, std::string() /* id */, AccountType::UNKNOWN);
+  return owner;
+}
+
+bool IsEnterpriseManaged() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->IsEnterpriseManaged();
+}
+
+bool IsSigninToAdd() {
+  return LoginDisplayHost::default_host() &&
+         user_manager::UserManager::Get()->IsUserLoggedIn();
+}
+
+bool CanRemoveUser(bool is_single_user, const user_manager::User* user) {
+  // Single user check here is necessary because owner info might not be
+  // available when running into login screen on first boot.
+  // See http://crosbug.com/12723
+  if (is_single_user && !IsEnterpriseManaged())
+    return false;
+  if (!user->GetAccountId().is_valid())
+    return false;
+  if (user->GetAccountId() == GetOwnerAccountId())
+    return false;
+  if (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT ||
+      user->is_logged_in() || IsSigninToAdd())
+    return false;
+
+  return true;
+}
+
+void GetMultiProfilePolicy(const user_manager::User* user,
+                           bool* out_is_allowed,
+                           ash::mojom::MultiProfileUserBehavior* out_policy) {
+  const std::string& user_id = user->GetAccountId().GetUserEmail();
+  MultiProfileUserController* multi_profile_user_controller =
+      ChromeUserManager::Get()->GetMultiProfileUserController();
+  MultiProfileUserController::UserAllowedInSessionReason is_user_allowed_reason;
+  *out_is_allowed = multi_profile_user_controller->IsUserAllowedInSession(
+      user_id, &is_user_allowed_reason);
+
+  std::string policy;
+  if (is_user_allowed_reason ==
+      MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY) {
+    policy = MultiProfileUserController::kBehaviorOwnerPrimaryOnly;
+  } else {
+    policy = multi_profile_user_controller->GetCachedValue(user_id);
+  }
+  *out_policy = MultiProfileUserController::UserBehaviorStringToEnum(policy);
 }
 
 }  // namespace
@@ -274,7 +334,7 @@ void UserSelectionScreen::FillUserDictionary(
     user_manager::User* user,
     bool is_owner,
     bool is_signin_to_add,
-    AuthType auth_type,
+    proximity_auth::mojom::AuthType auth_type,
     const std::vector<std::string>* public_session_recommended_locales,
     base::DictionaryValue* user_dict) {
   const bool is_public_session =
@@ -290,7 +350,7 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeyLegacySupervisedUser, is_legacy_supervised_user);
   user_dict->SetBoolean(kKeyChildUser, is_child_user);
   user_dict->SetBoolean(kKeyDesktopUser, false);
-  user_dict->SetInteger(kKeyInitialAuthType, auth_type);
+  user_dict->SetInteger(kKeyInitialAuthType, static_cast<int>(auth_type));
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
   user_dict->SetBoolean(kKeyIsActiveDirectory, user->IsActiveDirectoryUser());
@@ -319,31 +379,16 @@ void UserSelectionScreen::FillMultiProfileUserPrefs(
     user_manager::User* user,
     base::DictionaryValue* user_dict,
     bool is_signin_to_add) {
-  const std::string& user_id = user->GetAccountId().GetUserEmail();
-
-  if (is_signin_to_add) {
-    MultiProfileUserController* multi_profile_user_controller =
-        ChromeUserManager::Get()->GetMultiProfileUserController();
-    MultiProfileUserController::UserAllowedInSessionReason isUserAllowedReason;
-    bool isUserAllowed = multi_profile_user_controller->IsUserAllowedInSession(
-        user_id, &isUserAllowedReason);
-    user_dict->SetBoolean(kKeyMultiProfilesAllowed, isUserAllowed);
-
-    std::string behavior;
-    switch (isUserAllowedReason) {
-      case MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY:
-        behavior = MultiProfileUserController::kBehaviorOwnerPrimaryOnly;
-        break;
-      default:
-        behavior = multi_profile_user_controller->GetCachedValue(user_id);
-    }
-    MultiProfileUserController::MultiProfileUserBehavior user_behavior =
-        MultiProfileUserController::UserBehaviorStringToEnum(behavior);
-    user_dict->SetInteger(kKeyMultiProfilesPolicy,
-                          static_cast<int>(user_behavior));
-  } else {
+  if (!is_signin_to_add) {
     user_dict->SetBoolean(kKeyMultiProfilesAllowed, true);
+    return;
   }
+
+  bool is_user_allowed;
+  ash::mojom::MultiProfileUserBehavior policy;
+  GetMultiProfilePolicy(user, &is_user_allowed, &policy);
+  user_dict->SetBoolean(kKeyMultiProfilesAllowed, is_user_allowed);
+  user_dict->SetInteger(kKeyMultiProfilesPolicy, static_cast<int>(policy));
 }
 
 // static
@@ -385,6 +430,39 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
          (has_gaia_account &&
           (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID ||
            token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN));
+}
+
+// static
+void UserSelectionScreen::FillUserMojoStruct(
+    const user_manager::User* user,
+    bool is_owner,
+    bool is_signin_to_add,
+    proximity_auth::mojom::AuthType auth_type,
+    ash::mojom::LoginUserInfo* user_info) {
+  user_info->basic_user_info = ash::mojom::UserInfo::New();
+  user_info->basic_user_info->type = user->GetType();
+  user_info->basic_user_info->account_id = user->GetAccountId();
+  user_info->basic_user_info->display_name =
+      base::UTF16ToUTF8(user->GetDisplayName());
+  user_info->basic_user_info->display_email = user->display_email();
+  user_info->basic_user_info->avatar = user->GetImage();
+  if (user_info->basic_user_info->avatar.isNull()) {
+    user_info->basic_user_info->avatar =
+        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_PROFILE_PICTURE_LOADING);
+  }
+  user_info->auth_type = auth_type;
+  user_info->is_signed_in = user->is_logged_in();
+  user_info->is_device_owner = is_owner;
+  user_info->allow_fingerprint_unlock = AllowFingerprintForUser(user);
+
+  // Fill multi-profile data.
+  if (!is_signin_to_add) {
+    user_info->is_multiprofile_allowed = true;
+  } else {
+    GetMultiProfilePolicy(user, &user_info->is_multiprofile_allowed,
+                          &user_info->multiprofile_policy);
+  }
 }
 
 void UserSelectionScreen::SetHandler(LoginDisplayWebUIHandler* handler) {
@@ -485,7 +563,8 @@ const user_manager::UserList UserSelectionScreen::PrepareUserListForSending(
 }
 
 void UserSelectionScreen::SendUserList() {
-  std::unique_ptr<base::ListValue> users_list = PrepareUserList();
+  std::unique_ptr<base::ListValue> users_list =
+      UpdateAndReturnUserListForWebUI();
   handler_->LoadUsers(users_to_send_, *users_list);
 }
 
@@ -525,27 +604,32 @@ void UserSelectionScreen::OnUserStatusChecked(
   if (status == TokenHandleUtil::INVALID) {
     RecordReauthReason(account_id, ReauthReason::INVALID_TOKEN_HANDLE);
     token_handle_util_->MarkHandleInvalid(account_id);
-    SetAuthType(account_id, ONLINE_SIGN_IN, base::string16());
+    SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
+                base::string16());
   }
 }
 
 // EasyUnlock stuff
 
 void UserSelectionScreen::SetAuthType(const AccountId& account_id,
-                                      AuthType auth_type,
+                                      proximity_auth::mojom::AuthType auth_type,
                                       const base::string16& initial_value) {
-  if (GetAuthType(account_id) == FORCE_OFFLINE_PASSWORD)
+  if (GetAuthType(account_id) ==
+      proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD) {
     return;
-  DCHECK(GetAuthType(account_id) != FORCE_OFFLINE_PASSWORD ||
-         auth_type == FORCE_OFFLINE_PASSWORD);
+  }
+
+  DCHECK(GetAuthType(account_id) !=
+             proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD ||
+         auth_type == proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD);
   user_auth_type_map_[account_id] = auth_type;
   view_->SetAuthType(account_id, auth_type, initial_value);
 }
 
-proximity_auth::ScreenlockBridge::LockHandler::AuthType
-UserSelectionScreen::GetAuthType(const AccountId& account_id) const {
+proximity_auth::mojom::AuthType UserSelectionScreen::GetAuthType(
+    const AccountId& account_id) const {
   if (user_auth_type_map_.find(account_id) == user_auth_type_map_.end())
-    return OFFLINE_PASSWORD;
+    return proximity_auth::mojom::AuthType::OFFLINE_PASSWORD;
   return user_auth_type_map_.find(account_id)->second;
 }
 
@@ -608,7 +692,9 @@ void UserSelectionScreen::Show() {}
 void UserSelectionScreen::Hide() {}
 
 void UserSelectionScreen::HardLockPod(const AccountId& account_id) {
-  view_->SetAuthType(account_id, OFFLINE_PASSWORD, base::string16());
+  view_->SetAuthType(account_id,
+                     proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
+                     base::string16());
   EasyUnlockService* service = GetEasyUnlockServiceForUser(account_id);
   if (!service)
     return;
@@ -629,24 +715,16 @@ void UserSelectionScreen::RecordClickOnLockIcon(const AccountId& account_id) {
   service->RecordClickOnLockIcon();
 }
 
-std::unique_ptr<base::ListValue> UserSelectionScreen::PrepareUserList() {
+std::unique_ptr<base::ListValue>
+UserSelectionScreen::UpdateAndReturnUserListForWebUI() {
   std::unique_ptr<base::ListValue> users_list =
       base::MakeUnique<base::ListValue>();
 
   // TODO(nkostylev): Move to a separate method in UserManager.
   // http://crbug.com/230852
-  bool single_user = users_.size() == 1;
-  bool is_signin_to_add = LoginDisplayHost::default_host() &&
-                          user_manager::UserManager::Get()->IsUserLoggedIn();
-  std::string owner_email;
-  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
-                                           &owner_email);
-  const AccountId owner = user_manager::known_user::GetAccountId(
-      owner_email, std::string() /* id */, AccountType::UNKNOWN);
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool is_enterprise_managed = connector->IsEnterpriseManaged();
+  const bool single_user = users_.size() == 1;
+  const AccountId owner = GetOwnerAccountId();
+  const bool is_signin_to_add = IsSigninToAdd();
 
   users_to_send_ = PrepareUserListForSending(users_, owner, is_signin_to_add);
 
@@ -659,10 +737,12 @@ std::unique_ptr<base::ListValue> UserSelectionScreen::PrepareUserList() {
     bool is_owner = (account_id == owner);
     const bool is_public_account =
         ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-    const AuthType initial_auth_type =
-        is_public_account ? EXPAND_THEN_USER_CLICK
-                          : (ShouldForceOnlineSignIn(*it) ? ONLINE_SIGN_IN
-                                                          : OFFLINE_PASSWORD);
+    const proximity_auth::mojom::AuthType initial_auth_type =
+        is_public_account
+            ? proximity_auth::mojom::AuthType::EXPAND_THEN_USER_CLICK
+            : (ShouldForceOnlineSignIn(*it)
+                   ? proximity_auth::mojom::AuthType::ONLINE_SIGN_IN
+                   : proximity_auth::mojom::AuthType::OFFLINE_PASSWORD);
     user_auth_type_map_[account_id] = initial_auth_type;
 
     auto user_dict = base::MakeUnique<base::DictionaryValue>();
@@ -673,19 +753,47 @@ std::unique_ptr<base::ListValue> UserSelectionScreen::PrepareUserList() {
             : &public_session_recommended_locales_[account_id];
     FillUserDictionary(*it, is_owner, is_signin_to_add, initial_auth_type,
                        public_session_recommended_locales, user_dict.get());
-    bool signed_in = (*it)->is_logged_in();
-
-    // Single user check here is necessary because owner info might not be
-    // available when running into login screen on first boot.
-    // See http://crosbug.com/12723
-    bool can_remove_user =
-        ((!single_user || is_enterprise_managed) && account_id.is_valid() &&
-         !is_owner && !is_public_account && !signed_in && !is_signin_to_add);
-    user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
+    user_dict->SetBoolean(kKeyCanRemove, CanRemoveUser(single_user, *it));
     users_list->Append(std::move(user_dict));
   }
 
   return users_list;
+}
+
+std::vector<ash::mojom::LoginUserInfoPtr>
+UserSelectionScreen::UpdateAndReturnUserListForMojo() {
+  std::vector<ash::mojom::LoginUserInfoPtr> user_info_list;
+
+  const bool single_user = users_.size() == 1;
+  const AccountId owner = GetOwnerAccountId();
+  const bool is_signin_to_add = IsSigninToAdd();
+  users_to_send_ = PrepareUserListForSending(users_, owner, is_signin_to_add);
+
+  user_auth_type_map_.clear();
+
+  for (user_manager::UserList::const_iterator it = users_to_send_.begin();
+       it != users_to_send_.end(); ++it) {
+    const AccountId& account_id = (*it)->GetAccountId();
+    bool is_owner = owner == account_id;
+    const bool is_public_account =
+        ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    const proximity_auth::mojom::AuthType initial_auth_type =
+        is_public_account
+            ? proximity_auth::mojom::AuthType::EXPAND_THEN_USER_CLICK
+            : (ShouldForceOnlineSignIn(*it)
+                   ? proximity_auth::mojom::AuthType::ONLINE_SIGN_IN
+                   : proximity_auth::mojom::AuthType::OFFLINE_PASSWORD);
+    user_auth_type_map_[account_id] = initial_auth_type;
+
+    ash::mojom::LoginUserInfoPtr login_user_info =
+        ash::mojom::LoginUserInfo::New();
+    FillUserMojoStruct(*it, is_owner, is_signin_to_add, initial_auth_type,
+                       login_user_info.get());
+    login_user_info->can_remove = CanRemoveUser(single_user, *it);
+    user_info_list.push_back(std::move(login_user_info));
+  }
+
+  return user_info_list;
 }
 
 EasyUnlockService* UserSelectionScreen::GetEasyUnlockServiceForUser(

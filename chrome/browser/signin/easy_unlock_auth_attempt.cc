@@ -108,11 +108,11 @@ bool EasyUnlockAuthAttempt::Start() {
   if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
     return false;
 
-  proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type =
+  proximity_auth::mojom::AuthType auth_type =
       proximity_auth::ScreenlockBridge::Get()->lock_handler()->GetAuthType(
           account_id_);
 
-  if (auth_type != proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK) {
+  if (auth_type != proximity_auth::mojom::AuthType::USER_CLICK) {
     Cancel(account_id_);
     return false;
   }

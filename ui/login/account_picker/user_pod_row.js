@@ -99,7 +99,7 @@ cr.define('login', function() {
 
   /**
    * Supported authentication types. Keep in sync with the enum in
-   * chrome/browser/signin/screenlock_bridge.h
+   * components/proximity_auth/public/interfaces/auth_type.mojom
    * @enum {number}
    * @const
    */
@@ -151,7 +151,7 @@ cr.define('login', function() {
   ];
 
   // Supported multi-profile user behavior values.
-  // Keep in sync with the enum in multi_profile_user_controller.h
+  // Keep in sync with the enum in login_user_info.mojom
   var MULTI_PROFILE_USER_BEHAVIOR = {
     UNRESTRICTED: 0,
     PRIMARY_ONLY: 1,

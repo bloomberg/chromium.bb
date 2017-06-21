@@ -52,8 +52,9 @@ ViewsScreenLocker::~ViewsScreenLocker() {
 void ViewsScreenLocker::Init() {
   lock_time_ = base::TimeTicks::Now();
   user_selection_screen_->Init(screen_locker_->users());
-  LockScreenClient::Get()->LoadUsers(user_selection_screen_->PrepareUserList(),
-                                     false /* show_guests */);
+  LockScreenClient::Get()->LoadUsers(
+      user_selection_screen_->UpdateAndReturnUserListForMojo(),
+      false /* show_guests */);
   if (!ime_state_.get())
     ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 

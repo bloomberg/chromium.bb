@@ -350,24 +350,25 @@ void UserManagerScreenHandler::EnableInput() {
 
 void UserManagerScreenHandler::SetAuthType(
     const AccountId& account_id,
-    proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
+    proximity_auth::mojom::AuthType auth_type,
     const base::string16& auth_value) {
   if (GetAuthType(account_id) ==
-      proximity_auth::ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD)
+      proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD) {
     return;
+  }
 
   user_auth_type_map_[account_id.GetUserEmail()] = auth_type;
   web_ui()->CallJavascriptFunctionUnsafe(
       "login.AccountPickerScreen.setAuthType",
-      base::Value(account_id.GetUserEmail()), base::Value(auth_type),
-      base::Value(auth_value));
+      base::Value(account_id.GetUserEmail()),
+      base::Value(static_cast<int>(auth_type)), base::Value(auth_value));
 }
 
-proximity_auth::ScreenlockBridge::LockHandler::AuthType
-UserManagerScreenHandler::GetAuthType(const AccountId& account_id) const {
+proximity_auth::mojom::AuthType UserManagerScreenHandler::GetAuthType(
+    const AccountId& account_id) const {
   const auto it = user_auth_type_map_.find(account_id.GetUserEmail());
   if (it == user_auth_type_map_.end())
-    return proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
+    return proximity_auth::mojom::AuthType::OFFLINE_PASSWORD;
   return it->second;
 }
 
@@ -581,10 +582,9 @@ void UserManagerScreenHandler::HandleHardlockUserPod(
   std::string email;
   CHECK(args->GetString(0, &email));
   const AccountId account_id = AccountId::FromUserEmail(email);
-  SetAuthType(
-      account_id,
-      proximity_auth::ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD,
-      base::string16());
+  SetAuthType(account_id,
+              proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD,
+              base::string16());
   HideUserPodCustomIcon(account_id);
 }
 

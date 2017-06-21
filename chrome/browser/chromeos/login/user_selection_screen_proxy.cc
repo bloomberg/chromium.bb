@@ -62,10 +62,9 @@ void UserSelectionScreenProxy::HideUserPodCustomIcon(
 
 void UserSelectionScreenProxy::SetAuthType(
     const AccountId& account_id,
-    proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
+    proximity_auth::mojom::AuthType auth_type,
     const base::string16& initial_value) {
-  LockScreenClient::Get()->SetAuthType(
-      account_id, static_cast<ash::mojom::AuthType>(auth_type), initial_value);
+  LockScreenClient::Get()->SetAuthType(account_id, auth_type, initial_value);
 }
 
 base::WeakPtr<chromeos::UserBoardView> UserSelectionScreenProxy::GetWeakPtr() {

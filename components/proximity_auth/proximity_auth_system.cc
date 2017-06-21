@@ -96,7 +96,7 @@ cryptauth::RemoteDeviceList ProximityAuthSystem::GetRemoteDevicesForUser(
 
 void ProximityAuthSystem::OnAuthAttempted(const AccountId& /* account_id */) {
   // TODO(tengs): There is no reason to pass the |account_id| argument anymore.
-  unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
+  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
 }
 
 void ProximityAuthSystem::OnSuspend() {

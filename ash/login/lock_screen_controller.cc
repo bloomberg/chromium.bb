@@ -48,13 +48,14 @@ void LockScreenController::HideUserPodCustomIcon(const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-void LockScreenController::SetAuthType(const AccountId& account_id,
-                                       mojom::AuthType auth_type,
-                                       const base::string16& initial_value) {
+void LockScreenController::SetAuthType(
+    const AccountId& account_id,
+    proximity_auth::mojom::AuthType auth_type,
+    const base::string16& initial_value) {
   NOTIMPLEMENTED();
 }
 
-void LockScreenController::LoadUsers(std::unique_ptr<base::ListValue> users,
+void LockScreenController::LoadUsers(std::vector<mojom::LoginUserInfoPtr> users,
                                      bool show_guest) {
   NOTIMPLEMENTED();
 }

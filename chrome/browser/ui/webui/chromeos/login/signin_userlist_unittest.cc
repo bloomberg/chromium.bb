@@ -79,8 +79,7 @@ class SigninPrepareUserListTest : public ash::test::AshTestBase,
   FakeChromeUserManager* fake_user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  std::map<std::string, proximity_auth::ScreenlockBridge::LockHandler::AuthType>
-      user_auth_type_map;
+  std::map<std::string, proximity_auth::mojom::AuthType> user_auth_type_map;
   std::unique_ptr<MultiProfileUserController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninPrepareUserListTest);
