@@ -69,6 +69,26 @@ TEST(CSPSourceList, AllowSelf) {
   EXPECT_FALSE(Allow(source_list, GURL("ws://example.com"), &context));
 }
 
+TEST(CSPSourceList, AllowStarAndSelf) {
+  CSPContext context;
+  context.SetSelf(url::Origin(GURL("https://a.com")));
+  CSPSourceList source_list(false,  // allow_self
+                            false,  // allow_star
+                            std::vector<CSPSource>());
+
+  // If the request is allowed by {*} and not by {'self'} then it should be
+  // allowed by the union {*,'self'}.
+  source_list.allow_self = true;
+  source_list.allow_star = false;
+  EXPECT_FALSE(Allow(source_list, GURL("http://b.com"), &context));
+  source_list.allow_self = false;
+  source_list.allow_star = true;
+  EXPECT_TRUE(Allow(source_list, GURL("http://b.com"), &context));
+  source_list.allow_self = true;
+  source_list.allow_star = true;
+  EXPECT_TRUE(Allow(source_list, GURL("http://b.com"), &context));
+}
+
 TEST(CSPSourceList, AllowSelfWithUnspecifiedPort) {
   CSPContext context;
   context.SetSelf(url::Origin(GURL("chrome://print")));
