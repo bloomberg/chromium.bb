@@ -74,7 +74,7 @@ void FullscreenController::DidEnterFullscreen() {
   UpdatePageScaleConstraints(false);
   web_view_base_->SetPageScaleFactor(1.0f);
   if (web_view_base_->MainFrame()->IsWebLocalFrame())
-    web_view_base_->MainFrame()->SetScrollOffset(WebSize());
+    web_view_base_->MainFrame()->ToWebLocalFrame()->SetScrollOffset(WebSize());
   web_view_base_->SetVisualViewportOffset(FloatPoint());
 
   state_ = State::kFullscreen;
@@ -153,7 +153,7 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame) {
     initial_page_scale_factor_ = web_view_base_->PageScaleFactor();
     initial_scroll_offset_ =
         web_view_base_->MainFrame()->IsWebLocalFrame()
-            ? web_view_base_->MainFrame()->GetScrollOffset()
+            ? web_view_base_->MainFrame()->ToWebLocalFrame()->GetScrollOffset()
             : WebSize();
     initial_visual_viewport_offset_ = web_view_base_->VisualViewportOffset();
     initial_background_color_override_enabled_ =
@@ -261,7 +261,7 @@ void FullscreenController::DidUpdateLayout() {
 
   web_view_base_->SetPageScaleFactor(initial_page_scale_factor_);
   if (web_view_base_->MainFrame()->IsWebLocalFrame()) {
-    web_view_base_->MainFrame()->SetScrollOffset(
+    web_view_base_->MainFrame()->ToWebLocalFrame()->SetScrollOffset(
         WebSize(initial_scroll_offset_));
   }
   web_view_base_->SetVisualViewportOffset(initial_visual_viewport_offset_);

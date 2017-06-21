@@ -3036,8 +3036,7 @@ class WebFrameResizeTest : public ParameterizedWebFrameTest {
           (should_scale_relative_to_viewport_width ? 1 / aspect_ratio : 1);
       EXPECT_NEAR(expected_page_scale_factor,
                   web_view_helper.WebView()->PageScaleFactor(), 0.05f);
-      EXPECT_EQ(WebSize(),
-                web_view_helper.WebView()->MainFrame()->GetScrollOffset());
+      EXPECT_EQ(WebSize(), web_view_helper.LocalMainFrame()->GetScrollOffset());
     }
 
     // Resizing just the height should not affect pageScaleFactor or
@@ -3046,22 +3045,22 @@ class WebFrameResizeTest : public ParameterizedWebFrameTest {
       web_view_helper.Resize(
           WebSize(viewport_size.width, viewport_size.height));
       web_view_helper.WebView()->SetPageScaleFactor(initial_page_scale_factor);
-      web_view_helper.WebView()->MainFrame()->SetScrollOffset(scroll_offset);
+      web_view_helper.LocalMainFrame()->SetScrollOffset(scroll_offset);
       web_view_helper.WebView()->UpdateAllLifecyclePhases();
       const WebSize expected_scroll_offset =
-          web_view_helper.WebView()->MainFrame()->GetScrollOffset();
+          web_view_helper.LocalMainFrame()->GetScrollOffset();
       web_view_helper.Resize(
           WebSize(viewport_size.width, viewport_size.height * 0.8f));
       EXPECT_EQ(initial_page_scale_factor,
                 web_view_helper.WebView()->PageScaleFactor());
       EXPECT_EQ(expected_scroll_offset,
-                web_view_helper.WebView()->MainFrame()->GetScrollOffset());
+                web_view_helper.LocalMainFrame()->GetScrollOffset());
       web_view_helper.Resize(
           WebSize(viewport_size.width, viewport_size.height * 0.8f));
       EXPECT_EQ(initial_page_scale_factor,
                 web_view_helper.WebView()->PageScaleFactor());
       EXPECT_EQ(expected_scroll_offset,
-                web_view_helper.WebView()->MainFrame()->GetScrollOffset());
+                web_view_helper.LocalMainFrame()->GetScrollOffset());
     }
   }
 };
@@ -3229,7 +3228,7 @@ void SetScaleAndScrollAndLayout(WebViewBase* web_view,
                                 WebPoint scroll,
                                 float scale) {
   web_view->SetPageScaleFactor(scale);
-  web_view->MainFrame()->SetScrollOffset(WebSize(scroll.x, scroll.y));
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(scroll.x, scroll.y));
   web_view->UpdateAllLifecyclePhases();
 }
 
@@ -4230,7 +4229,7 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + first_url, &client);
   web_view_helper.Resize(WebSize(kPageWidth, kPageHeight));
-  web_view_helper.WebView()->MainFrame()->SetScrollOffset(
+  web_view_helper.LocalMainFrame()->SetScrollOffset(
       WebSize(kPageWidth / 4, kPageHeight / 4));
   web_view_helper.WebView()->SetPageScaleFactor(kPageScaleFactor);
 
@@ -4239,9 +4238,8 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
       ToKURL(base_url_ + first_url), WebFrameLoadType::kReload);
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.WebView()->MainFrame());
-  EXPECT_EQ(0, web_view_helper.WebView()->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0,
-            web_view_helper.WebView()->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().width);
+  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().height);
   EXPECT_EQ(1.0f, web_view_helper.WebView()->PageScaleFactor());
 
   // Reload the page using the cache. State should not be propagated.
@@ -4249,9 +4247,8 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
       ToKURL(base_url_ + second_url), WebFrameLoadType::kReload);
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.WebView()->MainFrame());
-  EXPECT_EQ(0, web_view_helper.WebView()->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0,
-            web_view_helper.WebView()->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().width);
+  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().height);
   EXPECT_EQ(1.0f, web_view_helper.WebView()->PageScaleFactor());
 
   // Reload the page while bypassing the cache. State should not be propagated.
@@ -4259,9 +4256,8 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
       ToKURL(base_url_ + third_url), WebFrameLoadType::kReloadBypassingCache);
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.WebView()->MainFrame());
-  EXPECT_EQ(0, web_view_helper.WebView()->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0,
-            web_view_helper.WebView()->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().width);
+  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().height);
   EXPECT_EQ(1.0f, web_view_helper.WebView()->PageScaleFactor());
 }
 
@@ -6323,7 +6319,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
   web_view_helper.Resize(WebSize(100, 200));
 
   // Scroll main frame to the bottom of the document
-  web_view_impl->MainFrame()->SetScrollOffset(WebSize(0, 400));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 400));
   EXPECT_SIZE_EQ(ScrollOffset(0, 400), frame->View()->GetScrollOffset());
 
   web_view_impl->SetPageScaleFactor(2.0);
@@ -7896,7 +7892,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   web_view->SetPageScaleFactor(2.0f);
   web_view->UpdateAllLifecyclePhases();
 
-  web_view->MainFrame()->SetScrollOffset(WebSize(0, 2000));
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
   EXPECT_SIZE_EQ(ScrollOffset(0, 1900), frame_view->GetScrollOffset());
 
   // Simulate the browser controls showing by 20px, thus shrinking the viewport
@@ -7908,7 +7904,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   // Show more, make sure the scroll actually gets clamped.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 20.0f / browser_controls_height);
-  web_view->MainFrame()->SetScrollOffset(WebSize(0, 2000));
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
   EXPECT_SIZE_EQ(ScrollOffset(0, 1940), frame_view->GetScrollOffset());
 
   // Hide until there's 10px showing.

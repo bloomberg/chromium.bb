@@ -1329,8 +1329,8 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
       web_view_helper_.InitializeAndLoad(base_url_ + "form_with_input.html");
   web_view->Resize(WebSize(800, 600));
   web_view->SetInitialFocus(false);
-  EXPECT_EQ(0, web_view->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().height);
 
   // Set up a composition from existing text that needs to be committed.
   Vector<CompositionUnderline> empty_underlines;
@@ -1342,8 +1342,8 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   Element* element = static_cast<Element*>(
       web_view->MainFrame()->GetDocument().GetElementById("btn"));
   element->scrollIntoView();
-  float offset_height = web_view->MainFrame()->GetScrollOffset().height;
-  EXPECT_EQ(0, web_view->MainFrame()->GetScrollOffset().width);
+  float offset_height = web_view->MainFrameImpl()->GetScrollOffset().height;
+  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_LT(0, offset_height);
 
   WebTextInputInfo info = frame->GetInputMethodController()->TextInputInfo();
@@ -1353,8 +1353,8 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   frame->FrameWidget()
       ->GetActiveWebInputMethodController()
       ->FinishComposingText(WebInputMethodController::kDoNotKeepSelection);
-  EXPECT_EQ(0, web_view->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(offset_height, web_view->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(offset_height, web_view->MainFrameImpl()->GetScrollOffset().height);
 }
 
 TEST_P(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
@@ -1662,15 +1662,15 @@ TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
   web_view_impl->UpdateAllLifecyclePhases();
-  EXPECT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
   // Make the page scale and scroll with the given paremeters.
   web_view_impl->SetPageScaleFactor(2.0f);
-  web_view_impl->MainFrame()->SetScrollOffset(WebSize(94, 111));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(94, 111));
   EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(94, web_view_impl->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(111, web_view_impl->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   LocalFrame* main_frame_local =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame());
   main_frame_local->Loader().SaveScrollState();
@@ -1692,8 +1692,8 @@ TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
   // Confirm that resetting the page state resets the saved scroll position.
   web_view_impl->ResetScrollAndScaleState();
   EXPECT_EQ(1.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   EXPECT_EQ(1.0f, main_frame_local->Loader()
                       .GetDocumentLoader()
                       ->GetHistoryItem()
@@ -1718,7 +1718,7 @@ TEST_P(WebViewTest, BackForwardRestoreScroll) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   // Emulate a user scroll
-  web_view_impl->MainFrame()->SetScrollOffset(WebSize(0, 900));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 900));
   LocalFrame* main_frame_local =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame());
   Persistent<HistoryItem> item1 =
@@ -1762,8 +1762,8 @@ TEST_P(WebViewTest, BackForwardRestoreScroll) {
       FrameLoadRequest(nullptr, item3->GenerateResourceRequest(
                                     WebCachePolicy::kUseProtocolCachePolicy)),
       kFrameLoadTypeBackForward, item3.Get(), kHistorySameDocumentLoad);
-  EXPECT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().width);
-  EXPECT_GT(web_view_impl->MainFrame()->GetScrollOffset().height, 2000);
+  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().height, 2000);
 }
 
 // Tests that we restore scroll and scale *after* the fullscreen styles are
@@ -1776,8 +1776,8 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   // Scroll the page down.
-  web_view_impl->MainFrame()->SetScrollOffset(WebSize(0, 2000));
-  ASSERT_EQ(2000, web_view_impl->MainFrame()->GetScrollOffset().height);
+  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
+  ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
   // Enter fullscreen.
   Document* document =
@@ -1789,7 +1789,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().height);
+  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()
                    ->GetFrameView()
                    ->MaximumScrollOffset()
@@ -1803,7 +1803,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   EXPECT_TRUE(web_view_impl->MainFrameImpl()->GetFrameView()->NeedsLayout());
   web_view_impl->UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(2000, web_view_impl->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 }
 
 // Tests that exiting and immediately reentering fullscreen doesn't cause the
@@ -1816,8 +1816,8 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   // Scroll the page down.
-  web_view_impl->MainFrame()->SetScrollOffset(WebSize(0, 2000));
-  ASSERT_EQ(2000, web_view_impl->MainFrame()->GetScrollOffset().height);
+  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
+  ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
   // Enter fullscreen.
   Document* document =
@@ -1829,7 +1829,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().height);
+  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()
                    ->GetFrameView()
                    ->MaximumScrollOffset()
@@ -1844,7 +1844,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().height);
+  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()
                    ->GetFrameView()
                    ->MaximumScrollOffset()
@@ -1854,7 +1854,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   web_view_impl->DidExitFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(2000, web_view_impl->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 }
 
 TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
@@ -1863,16 +1863,16 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
   web_view_impl->UpdateAllLifecyclePhases();
-  EXPECT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_impl->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
   // Make the page scale and scroll with the given paremeters.
   web_view_impl->SetPageScaleFactor(2.0f);
-  web_view_impl->MainFrame()->SetScrollOffset(WebSize(94, 111));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(94, 111));
   web_view_impl->SetVisualViewportOffset(WebFloatPoint(12, 20));
   EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(94, web_view_impl->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(111, web_view_impl->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   EXPECT_EQ(12, web_view_impl->VisualViewportOffset().x);
   EXPECT_EQ(20, web_view_impl->VisualViewportOffset().y);
 
@@ -1896,8 +1896,8 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(94, web_view_impl->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(111, web_view_impl->MainFrame()->GetScrollOffset().height);
+  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   EXPECT_EQ(12, web_view_impl->VisualViewportOffset().x);
   EXPECT_EQ(20, web_view_impl->VisualViewportOffset().y);
 }
