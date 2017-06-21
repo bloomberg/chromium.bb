@@ -1294,8 +1294,13 @@ WebRect WebViewImpl::WidenRectWithinPageBounds(const WebRect& source,
   if (MainFrame())
     max_size = MainFrame()->ContentsSize();
   IntSize scroll_offset;
-  if (MainFrame())
-    scroll_offset = MainFrame()->GetScrollOffset();
+  if (MainFrame()) {
+    // TODO(lukasza): https://crbug.com/734209: The DCHECK below holds now, but
+    // only because all of the callers don't support OOPIFs and exit early if
+    // the main frame is not local.
+    DCHECK(MainFrame()->IsWebLocalFrame());
+    scroll_offset = MainFrame()->ToWebLocalFrame()->GetScrollOffset();
+  }
   int left_margin = target_margin;
   int right_margin = target_margin;
 
@@ -1515,6 +1520,7 @@ void WebViewImpl::EnableTapHighlights(
 }
 
 void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame) {
+  // TODO(lukasza): https://crbug.com/734209: Add OOPIF support.
   if (!MainFrameImpl())
     return;
 
@@ -1561,6 +1567,7 @@ void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame) {
 }
 
 void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
+  // TODO(lukasza): https://crbug.com/734209: Add OOPIF support.
   if (!MainFrameImpl())
     return;
 
@@ -1587,6 +1594,7 @@ void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
 }
 
 bool WebViewImpl::ZoomToMultipleTargetsRect(const WebRect& rect_in_root_frame) {
+  // TODO(lukasza): https://crbug.com/734209: Add OOPIF support.
   if (!MainFrameImpl())
     return false;
 

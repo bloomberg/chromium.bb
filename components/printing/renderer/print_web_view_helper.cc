@@ -759,8 +759,10 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
   // Backup size and offset if it's a local frame.
   blink::WebView* web_view = frame_.view();
   if (blink::WebFrame* web_frame = web_view->MainFrame()) {
+    // TODO(lukasza, weili): Support restoring scroll offset of a remote main
+    // frame - https://crbug.com/734815.
     if (web_frame->IsWebLocalFrame())
-      prev_scroll_offset_ = web_frame->GetScrollOffset();
+      prev_scroll_offset_ = web_frame->ToWebLocalFrame()->GetScrollOffset();
   }
   prev_view_size_ = web_view->Size();
 
@@ -861,8 +863,10 @@ void PrepareFrameAndViewForPrint::RestoreSize() {
   blink::WebView* web_view = frame_.GetFrame()->View();
   web_view->Resize(prev_view_size_);
   if (blink::WebFrame* web_frame = web_view->MainFrame()) {
+    // TODO(lukasza, weili): Support restoring scroll offset of a remote main
+    // frame - https://crbug.com/734815.
     if (web_frame->IsWebLocalFrame())
-      web_frame->SetScrollOffset(prev_scroll_offset_);
+      web_frame->ToWebLocalFrame()->SetScrollOffset(prev_scroll_offset_);
   }
 }
 

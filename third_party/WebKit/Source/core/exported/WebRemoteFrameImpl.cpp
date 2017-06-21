@@ -90,15 +90,6 @@ void WebRemoteFrameImpl::SetName(const WebString&) {
   NOTREACHED();
 }
 
-WebSize WebRemoteFrameImpl::GetScrollOffset() const {
-  NOTREACHED();
-  return WebSize();
-}
-
-void WebRemoteFrameImpl::SetScrollOffset(const WebSize&) {
-  NOTREACHED();
-}
-
 WebSize WebRemoteFrameImpl::ContentsSize() const {
   NOTREACHED();
   return WebSize();

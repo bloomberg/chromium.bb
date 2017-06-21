@@ -582,21 +582,21 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide)) {
   web_view->SetPageScaleFactor(2.0);
 
   // Fully scroll frameview but visualviewport remains scrollable
-  web_view->MainFrame()->SetScrollOffset(WebSize(0, 10000));
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 10000));
   GetVisualViewport().SetLocation(FloatPoint(0, 0));
   VerticalScroll(-10.f);
   EXPECT_FLOAT_EQ(40, web_view->GetBrowserControls().ContentOffset());
 
   web_view->GetBrowserControls().SetShownRatio(1);
   // Fully scroll visual veiwport but frameview remains scrollable
-  web_view->MainFrame()->SetScrollOffset(WebSize(0, 0));
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 0));
   GetVisualViewport().SetLocation(FloatPoint(0, 10000));
   VerticalScroll(-20.f);
   EXPECT_FLOAT_EQ(30, web_view->GetBrowserControls().ContentOffset());
 
   web_view->GetBrowserControls().SetShownRatio(1);
   // Fully scroll both frameview and visual viewport
-  web_view->MainFrame()->SetScrollOffset(WebSize(0, 10000));
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 10000));
   GetVisualViewport().SetLocation(FloatPoint(0, 10000));
   VerticalScroll(-30.f);
   // Browser controls should not move because neither frameview nor visual

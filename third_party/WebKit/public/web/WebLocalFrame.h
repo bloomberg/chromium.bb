@@ -701,6 +701,10 @@ class WebLocalFrame : public WebFrame {
 
   // Geometry -----------------------------------------------------------------
 
+  // The scroll offset from the top-left corner of the frame in pixels.
+  virtual WebSize GetScrollOffset() const = 0;
+  virtual void SetScrollOffset(const WebSize&) = 0;
+
   // If set to false, do not draw scrollbars on this frame's view.
   virtual void SetCanHaveScrollbars(bool) = 0;
 
