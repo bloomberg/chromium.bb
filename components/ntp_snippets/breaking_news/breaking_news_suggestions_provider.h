@@ -7,6 +7,7 @@
 
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
+#include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace ntp_snippets {
@@ -26,7 +27,8 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
   BreakingNewsSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
       std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler,
-      std::unique_ptr<base::Clock> clock);
+      std::unique_ptr<base::Clock> clock,
+      std::unique_ptr<RemoteSuggestionsDatabase> database);
   ~BreakingNewsSuggestionsProvider() override;
 
   // Starts the underlying GCM handler and registers the callback when GCM
@@ -57,8 +59,20 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
   // the server.
   void OnNewContentSuggestion(std::unique_ptr<base::Value> content);
 
+  // Callbacks for the RemoteSuggestionsDatabase.
+  void OnDatabaseLoaded(
+      std::vector<std::unique_ptr<RemoteSuggestion>> suggestions);
+  void OnDatabaseError();
+
+  void NotifyNewSuggestions(
+      std::vector<std::unique_ptr<RemoteSuggestion>> suggestions);
+
   std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler_;
   std::unique_ptr<base::Clock> clock_;
+
+  // The database for persisting suggestions.
+  std::unique_ptr<RemoteSuggestionsDatabase> database_;
+
   const Category provided_category_;
   CategoryStatus category_status_;
 
