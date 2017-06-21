@@ -31,4 +31,12 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node, bool is_first_line) {
   line_style_ = layout_object->Style();
 }
 
+void NGLineInfo::SetLineLocation(LayoutUnit line_left,
+                                 LayoutUnit available_width,
+                                 LayoutUnit line_top) {
+  line_left_ = line_left;
+  available_width_ = available_width;
+  line_top_ = line_top;
+}
+
 }  // namespace blink

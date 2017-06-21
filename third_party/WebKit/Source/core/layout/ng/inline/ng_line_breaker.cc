@@ -86,7 +86,15 @@ bool NGLineBreaker::NextLine(NGLineInfo* line_info,
   // measuring. Need to decide which one works the best.
   SkipCollapsibleWhitespaces();
 
-  return !line_info->Results().IsEmpty();
+  if (line_info->Results().IsEmpty())
+    return false;
+
+  // TODO(kojii): There are cases where we need to PlaceItems() without creating
+  // line boxes. These cases need to be reviewed.
+  if (should_create_line_box_)
+    ComputeLineLocation(line_info);
+
+  return true;
 }
 
 void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
@@ -104,7 +112,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
   if (container_builder_->BfcOffset())
     UpdateAvailableWidth();
   else
-    available_width_.reset();
+    opportunity_.reset();
 
   while (item_index_ < items.size()) {
     // CloseTag prohibits to break before.
@@ -160,8 +168,17 @@ void NGLineBreaker::UpdateAvailableWidth() {
 
   NGLayoutOpportunityIterator iter(constraint_space_->Exclusions().get(),
                                    constraint_space_->AvailableSize(), offset);
-  NGLayoutOpportunity opportunity = iter.Next();
-  available_width_ = opportunity.InlineSize();
+  opportunity_ = iter.Next();
+}
+
+void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
+  // Both NGLayoutOpportunity and BfcOffset are in visual order that
+  // "inline-start" are actually "line-left".
+  // https://drafts.csswg.org/css-writing-modes-3/#line-left
+  LayoutUnit line_left = opportunity_.value().InlineStartOffset() -
+                         constraint_space_->BfcOffset().inline_offset;
+  line_info->SetLineLocation(line_left, AvailableWidth(),
+                             content_offset_.block_offset);
 }
 
 NGLineBreaker::LineBreakState NGLineBreaker::HandleText(

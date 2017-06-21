@@ -50,8 +50,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
  private:
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
 
-  LayoutUnit LogicalLeftOffset(const NGLayoutOpportunity&) const;
-
   void BidiReorder(NGInlineItemResults*);
 
   bool PlaceItems(NGLineInfo*, RefPtr<NGInlineBreakToken>);
@@ -68,8 +66,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                       LayoutUnit available_width);
 
   LayoutUnit ComputeContentSize(const NGLineInfo&, LayoutUnit line_bottom);
-
-  NGLayoutOpportunity FindLayoutOpportunityForLine();
 
   NGInlineLayoutStateStack box_states_;
   LayoutUnit content_size_;
