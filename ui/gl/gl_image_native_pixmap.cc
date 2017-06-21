@@ -14,6 +14,7 @@
    (static_cast<uint32_t>(c) << 16) | (static_cast<uint32_t>(d) << 24))
 
 #define DRM_FORMAT_R8 FOURCC('R', '8', ' ', ' ')
+#define DRM_FORMAT_R16 FOURCC('R', '1', '6', ' ')
 #define DRM_FORMAT_GR88 FOURCC('G', 'R', '8', '8')
 #define DRM_FORMAT_RGB565 FOURCC('R', 'G', '1', '6')
 #define DRM_FORMAT_ARGB8888 FOURCC('A', 'R', '2', '4')
@@ -42,6 +43,8 @@ bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
       return format == gfx::BufferFormat::BGRA_8888;
     case GL_RED_EXT:
       return format == gfx::BufferFormat::R_8;
+    case GL_R16_EXT:
+      return format == gfx::BufferFormat::R_16;
     case GL_RG_EXT:
       return format == gfx::BufferFormat::RG_88;
     default:
@@ -52,6 +55,7 @@ bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
 bool ValidFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_8888:
@@ -80,6 +84,8 @@ EGLint FourCC(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       return DRM_FORMAT_R8;
+    case gfx::BufferFormat::R_16:
+      return DRM_FORMAT_R16;
     case gfx::BufferFormat::RG_88:
       return DRM_FORMAT_GR88;
     case gfx::BufferFormat::BGR_565:
@@ -250,6 +256,8 @@ unsigned GLImageNativePixmap::GetInternalFormatForTesting(
   switch (format) {
     case gfx::BufferFormat::R_8:
       return GL_RED_EXT;
+    case gfx::BufferFormat::R_16:
+      return GL_R16_EXT;
     case gfx::BufferFormat::RG_88:
       return GL_RG_EXT;
     case gfx::BufferFormat::BGR_565:
