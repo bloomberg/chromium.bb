@@ -260,12 +260,18 @@ bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
   if (!codec_ || in_error_state_)
     return false;
 
-  auto it = buffer_ids_.find(id);
-  if (it == buffer_ids_.end())
+  auto buffer_it = buffer_ids_.find(id);
+  if (buffer_it == buffer_ids_.end())
     return false;
-  int index = it->second;
-  buffer_ids_.erase(it);
+
+  // Discard the buffers preceding the one we're releasing.
+  for (auto it = buffer_ids_.begin(); it < buffer_it; ++it) {
+    int index = it->second;
+    codec_->ReleaseOutputBuffer(index, false);
+  }
+  int index = buffer_it->second;
   codec_->ReleaseOutputBuffer(index, render);
+  buffer_ids_.erase(buffer_ids_.begin(), buffer_it + 1);
   return true;
 }
 
