@@ -64,8 +64,9 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
 #if CONFIG_DAALA_DIST
 int64_t av1_daala_dist(const uint8_t *src, int src_stride, const uint8_t *dst,
-                       int dst_stride, int bsw, int bsh, int qm,
-                       int use_activity_masking, int qindex);
+                       int dst_stride, int bsw, int bsh, int visible_w,
+                       int visible_h, int qm, int use_activity_masking,
+                       int qindex);
 #endif
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX

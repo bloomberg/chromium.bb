@@ -3661,8 +3661,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         int64_t daala_dist;
         const int src_stride = x->plane[0].src.stride;
         daala_dist = av1_daala_dist(x->plane[0].src.buf - 4 * src_stride - 4,
-                                    src_stride, x->decoded_8x8, 8, 8, 8, 1,
-                                    use_activity_masking, x->qindex)
+                                    src_stride, x->decoded_8x8, 8, 8, 8, 8, 8,
+                                    1, use_activity_masking, x->qindex)
                      << 4;
         assert(sum_rdc.dist_y < INT64_MAX);
         sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + daala_dist;
@@ -3837,8 +3837,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         int64_t daala_dist;
         const int src_stride = x->plane[0].src.stride;
         daala_dist = av1_daala_dist(x->plane[0].src.buf - 4 * src_stride,
-                                    src_stride, x->decoded_8x8, 8, 8, 8, 1,
-                                    use_activity_masking, x->qindex)
+                                    src_stride, x->decoded_8x8, 8, 8, 8, 8, 8,
+                                    1, use_activity_masking, x->qindex)
                      << 4;
         sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + daala_dist;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
@@ -4010,7 +4010,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         const int src_stride = x->plane[0].src.stride;
         daala_dist =
             av1_daala_dist(x->plane[0].src.buf - 4, src_stride, x->decoded_8x8,
-                           8, 8, 8, 1, use_activity_masking, x->qindex)
+                           8, 8, 8, 8, 8, 1, use_activity_masking, x->qindex)
             << 4;
         sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + daala_dist;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
