@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
+
 namespace translate {
 
 class TranslateExperiment {
@@ -26,6 +28,8 @@ class TranslateExperiment {
                                      const std::string& language);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TranslateExperimentTest, TestInExperiment);
+
   static bool InExperiment();
 };
 
