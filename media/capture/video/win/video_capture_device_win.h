@@ -89,6 +89,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
                  // User needs to recover by destroying the object.
   };
 
+  void InitializeVideoAndCameraControls();
+
   // Implements SinkFilterObserver.
   void FrameReceived(const uint8_t* buffer,
                      int length,
