@@ -20,7 +20,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/sys_info.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -720,7 +719,6 @@ void PerfProvider::CollectIfNecessary(
   PerfSubcommand subcommand = GetPerfSubcommandType(command);
 
   perf_output_call_.reset(new PerfOutputCall(
-      make_scoped_refptr(content::BrowserThread::GetBlockingPool()),
       collection_params_.collection_duration(), command,
       base::Bind(&PerfProvider::ParseOutputProtoIfValid,
                  weak_factory_.GetWeakPtr(), base::Passed(&incognito_observer),
