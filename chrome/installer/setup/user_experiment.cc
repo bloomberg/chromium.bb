@@ -375,14 +375,16 @@ void RunUserExperiment(const base::CommandLine& command_line,
 
   // Chrome is considered actively used if it has been run within the last 28
   // days or if it was installed within the same time period.
-  int days_ago_last_run = GoogleUpdateSettings::GetLastRunTime();
-  if ((days_ago_last_run >= 0 ? days_ago_last_run
-                              : GetInstallAge(*installer_state)) <= 28) {
+  int inactive_days = GoogleUpdateSettings::GetLastRunTime();
+  if (inactive_days < 0)
+    inactive_days = GetInstallAge(*installer_state);
+  if (inactive_days <= 28) {
     VLOG(1) << "Aborting experiment due to activity.";
     experiment.SetState(ExperimentMetrics::kIsActive);
     storage_lock->StoreExperiment(experiment);
     return;
   }
+  experiment.SetInactiveDays(inactive_days);
 
   // Check for a dormant user: one for which the machine has been off or the
   // user has been signed out for more than 90% of the last 28 days.
