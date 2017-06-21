@@ -147,14 +147,6 @@ void DisplayManagerTestApi::SetTouchSupport(
       ->set_touch_support(touch_support);
 }
 
-ScopedDisable125DSFForUIScaling::ScopedDisable125DSFForUIScaling() {
-  ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(false);
-}
-
-ScopedDisable125DSFForUIScaling::~ScopedDisable125DSFForUIScaling() {
-  ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(true);
-}
-
 ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(
     DisplayManager* display_manager,
     int64_t id) {

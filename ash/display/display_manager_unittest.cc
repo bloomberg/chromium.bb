@@ -1673,8 +1673,6 @@ TEST_F(DisplayManagerTest, Rotate) {
 }
 
 TEST_F(DisplayManagerTest, UIScale) {
-  display::test::ScopedDisable125DSFForUIScaling disable;
-
   UpdateDisplay("1280x800");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::test::DisplayManagerTestApi(display_manager())
@@ -1781,17 +1779,6 @@ TEST_F(DisplayManagerTest, UIScale) {
   display::test::DisplayManagerTestApi(display_manager())
       .SetDisplayUIScale(display_id, 2.0f);
   EXPECT_EQ(2.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
-  display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  EXPECT_EQ(1.0f, display.device_scale_factor());
-  EXPECT_EQ("1280x850", display.bounds().size().ToString());
-
-  // 1.25 ui scaling on 1.25 DSF device should use 1.0 DSF
-  // on screen.
-  UpdateDisplay("1280x850*1.25");
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetDisplayUIScale(display_id, 1.25f);
-  EXPECT_EQ(1.25f, GetDisplayInfoAt(0).configured_ui_scale());
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(1.0f, display.device_scale_factor());
@@ -2794,16 +2781,6 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100Internal) {
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
   EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
-}
-
-TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125Internal) {
-  display::test::ScopedDisable125DSFForUIScaling disable;
-  FontTestHelper helper(1.25f, FontTestHelper::INTERNAL);
-  ASSERT_DOUBLE_EQ(
-      1.25f,
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
-  EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
-  EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200Internal) {

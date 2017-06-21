@@ -37,9 +37,9 @@ struct DeviceScaleFactorDPIThreshold {
   float device_scale_factor;
 };
 
-const DeviceScaleFactorDPIThreshold kThresholdTable[] = {
+const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
     {220.0f, 2.0f},
-    {180.0f, 1.5f},
+    {200.0f, 1.6f},
     {150.0f, 1.25f},
     {0.0f, 1.0f},
 };
@@ -290,9 +290,9 @@ void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
 
 // static
 float DisplayChangeObserver::FindDeviceScaleFactor(float dpi) {
-  for (size_t i = 0; i < arraysize(kThresholdTable); ++i) {
-    if (dpi > kThresholdTable[i].dpi)
-      return kThresholdTable[i].device_scale_factor;
+  for (size_t i = 0; i < arraysize(kThresholdTableForInternal); ++i) {
+    if (dpi > kThresholdTableForInternal[i].dpi)
+      return kThresholdTableForInternal[i].device_scale_factor;
   }
   return 1.0f;
 }

@@ -71,15 +71,6 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTestApi);
 };
 
-class DISPLAY_EXPORT ScopedDisable125DSFForUIScaling {
- public:
-  ScopedDisable125DSFForUIScaling();
-  ~ScopedDisable125DSFForUIScaling();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedDisable125DSFForUIScaling);
-};
-
 class DISPLAY_EXPORT ScopedSetInternalDisplayId {
  public:
   ScopedSetInternalDisplayId(DisplayManager* test_api, int64_t id);
