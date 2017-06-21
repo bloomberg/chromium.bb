@@ -29,6 +29,8 @@
 #include "core/CoreExport.h"
 #include "core/loader/resource/StyleSheetResource.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/TextResourceDecoderOptions.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 
@@ -45,7 +47,7 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
 
   static CSSStyleSheetResource* Fetch(FetchParameters&, ResourceFetcher*);
   static CSSStyleSheetResource* CreateForTest(const KURL&,
-                                              const String& charset);
+                                              const WTF::TextEncoding&);
 
   ~CSSStyleSheetResource() override;
   DECLARE_VIRTUAL_TRACE();
@@ -63,17 +65,19 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
   class CSSStyleSheetResourceFactory : public ResourceFactory {
    public:
     CSSStyleSheetResourceFactory()
-        : ResourceFactory(Resource::kCSSStyleSheet) {}
+        : ResourceFactory(Resource::kCSSStyleSheet,
+                          TextResourceDecoderOptions::kCSSContent) {}
 
-    Resource* Create(const ResourceRequest& request,
-                     const ResourceLoaderOptions& options,
-                     const String& charset) const override {
-      return new CSSStyleSheetResource(request, options, charset);
+    Resource* Create(
+        const ResourceRequest& request,
+        const ResourceLoaderOptions& options,
+        const TextResourceDecoderOptions& decoder_options) const override {
+      return new CSSStyleSheetResource(request, options, decoder_options);
     }
   };
   CSSStyleSheetResource(const ResourceRequest&,
                         const ResourceLoaderOptions&,
-                        const String& charset);
+                        const TextResourceDecoderOptions&);
 
   bool CanUseSheet(MIMETypeCheck) const;
   void CheckNotify() override;

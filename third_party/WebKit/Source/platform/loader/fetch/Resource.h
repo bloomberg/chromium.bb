@@ -39,6 +39,7 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/ResourceStatus.h"
+#include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/HashCountedSet.h"
@@ -502,26 +503,33 @@ class ResourceFactory {
  public:
   virtual Resource* Create(const ResourceRequest&,
                            const ResourceLoaderOptions&,
-                           const String&) const = 0;
+                           const TextResourceDecoderOptions&) const = 0;
+
   Resource::Type GetType() const { return type_; }
+  TextResourceDecoderOptions::ContentType ContentType() const {
+    return content_type_;
+  }
 
  protected:
-  explicit ResourceFactory(Resource::Type type) : type_(type) {}
+  explicit ResourceFactory(Resource::Type type,
+                           TextResourceDecoderOptions::ContentType content_type)
+      : type_(type), content_type_(content_type) {}
 
   Resource::Type type_;
+  TextResourceDecoderOptions::ContentType content_type_;
 };
 
 class NonTextResourceFactory : public ResourceFactory {
  protected:
   explicit NonTextResourceFactory(Resource::Type type)
-      : ResourceFactory(type) {}
+      : ResourceFactory(type, TextResourceDecoderOptions::kPlainTextContent) {}
 
   virtual Resource* Create(const ResourceRequest&,
                            const ResourceLoaderOptions&) const = 0;
 
   Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options,
-                   const String&) const final {
+                   const TextResourceDecoderOptions&) const final {
     return Create(request, options);
   }
 };

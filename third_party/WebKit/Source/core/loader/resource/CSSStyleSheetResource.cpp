@@ -38,6 +38,7 @@
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 
@@ -56,22 +57,23 @@ CSSStyleSheetResource* CSSStyleSheetResource::Fetch(FetchParameters& params,
 
 CSSStyleSheetResource* CSSStyleSheetResource::CreateForTest(
     const KURL& url,
-    const String& charset) {
+    const WTF::TextEncoding& encoding) {
   ResourceRequest request(url);
   request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
   ResourceLoaderOptions options;
-  return new CSSStyleSheetResource(request, options, charset);
+  TextResourceDecoderOptions decoder_options(
+      TextResourceDecoderOptions::kCSSContent, encoding);
+  return new CSSStyleSheetResource(request, options, decoder_options);
 }
 
 CSSStyleSheetResource::CSSStyleSheetResource(
     const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,
-    const String& charset)
+    const TextResourceDecoderOptions& decoder_options)
     : StyleSheetResource(resource_request,
                          kCSSStyleSheet,
                          options,
-                         TextResourceDecoderOptions::kCSSContent,
-                         charset),
+                         decoder_options),
       did_notify_first_data_(false) {}
 
 CSSStyleSheetResource::~CSSStyleSheetResource() {}

@@ -72,12 +72,11 @@ XSLStyleSheetResource* XSLStyleSheetResource::Fetch(FetchParameters& params,
 XSLStyleSheetResource::XSLStyleSheetResource(
     const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,
-    const String& charset)
+    const TextResourceDecoderOptions& decoder_options)
     : StyleSheetResource(resource_request,
                          kXSLStyleSheet,
                          options,
-                         TextResourceDecoderOptions::kXMLContent,
-                         charset) {}
+                         decoder_options) {}
 
 void XSLStyleSheetResource::DidAddClient(ResourceClient* c) {
   DCHECK(StyleSheetResourceClient::IsExpectedType(c));

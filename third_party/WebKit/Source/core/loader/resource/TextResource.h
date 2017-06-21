@@ -13,8 +13,6 @@
 
 namespace blink {
 
-class TextResourceDecoder;
-
 class CORE_EXPORT TextResource : public Resource {
  public:
   // Returns the decoded data in text form. The data has to be available at
@@ -29,8 +27,7 @@ class CORE_EXPORT TextResource : public Resource {
   TextResource(const ResourceRequest&,
                Type,
                const ResourceLoaderOptions&,
-               TextResourceDecoderOptions::ContentType,
-               const String& charset);
+               const TextResourceDecoderOptions&);
   ~TextResource() override;
 
   void SetEncoding(const String&) override;

@@ -50,14 +50,11 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
   return resource;
 }
 
-ScriptResource::ScriptResource(const ResourceRequest& resource_request,
-                               const ResourceLoaderOptions& options,
-                               const String& charset)
-    : TextResource(resource_request,
-                   kScript,
-                   options,
-                   TextResourceDecoderOptions::kPlainTextContent,
-                   charset) {}
+ScriptResource::ScriptResource(
+    const ResourceRequest& resource_request,
+    const ResourceLoaderOptions& options,
+    const TextResourceDecoderOptions& decoder_options)
+    : TextResource(resource_request, kScript, options, decoder_options) {}
 
 ScriptResource::~ScriptResource() {}
 
