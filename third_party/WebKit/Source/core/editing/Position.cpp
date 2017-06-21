@@ -87,10 +87,15 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::EditingPositionOf(
                                     PositionAnchorType::kAfterAnchor);
 }
 
+// TODO(editing-dev): Once we change type of |anchor_node_| to
+// |Member<const Node>|, we should get rid of |const_cast<Node*>()|.
+// See http://crbug.com/735327
 template <typename Strategy>
-PositionTemplate<Strategy>::PositionTemplate(Node* anchor_node,
+PositionTemplate<Strategy>::PositionTemplate(const Node* anchor_node,
                                              PositionAnchorType anchor_type)
-    : anchor_node_(anchor_node), offset_(0), anchor_type_(anchor_type) {
+    : anchor_node_(const_cast<Node*>(anchor_node)),
+      offset_(0),
+      anchor_type_(anchor_type) {
   if (!anchor_node_) {
     anchor_type_ = PositionAnchorType::kOffsetInAnchor;
     return;
@@ -461,9 +466,8 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::InParentAfterNode(
 // static
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::BeforeNode(
-    Node* anchor_node) {
-  DCHECK(anchor_node);
-  return PositionTemplate<Strategy>(anchor_node,
+    const Node& anchor_node) {
+  return PositionTemplate<Strategy>(&anchor_node,
                                     PositionAnchorType::kBeforeAnchor);
 }
 
@@ -511,7 +515,7 @@ PositionTemplate<Strategy>
 PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(Node* node) {
   if (!node)
     return PositionTemplate<Strategy>();
-  return EditingIgnoresContent(*node) ? BeforeNode(node)
+  return EditingIgnoresContent(*node) ? BeforeNode(*node)
                                       : FirstPositionInNode(node);
 }
 
@@ -597,7 +601,7 @@ Position ToPositionInDOMTree(const PositionInFlatTree& position) {
     case PositionAnchorType::kBeforeChildren:
       return Position(anchor_node, PositionAnchorType::kBeforeChildren);
     case PositionAnchorType::kBeforeAnchor:
-      return Position::BeforeNode(anchor_node);
+      return Position::BeforeNode(*anchor_node);
     case PositionAnchorType::kOffsetInAnchor: {
       int offset = position.OffsetInContainerNode();
       if (anchor_node->IsCharacterDataNode())

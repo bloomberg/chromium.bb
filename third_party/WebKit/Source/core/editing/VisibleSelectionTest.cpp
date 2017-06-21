@@ -84,13 +84,13 @@ TEST_F(VisibleSelectionTest, appendTrailingWhitespaceWithAfterAnchor) {
   // compute selection.
   VisibleSelection selection =
       CreateVisibleSelection(SelectionInDOMTree::Builder()
-                                 .Collapse(Position::BeforeNode(input))
+                                 .Collapse(Position::BeforeNode(*input))
                                  .Extend(Position::AfterNode(input))
                                  .SetGranularity(kWordGranularity)
                                  .Build());
   selection.AppendTrailingWhitespace();
 
-  EXPECT_EQ(Position::BeforeNode(input), selection.Start());
+  EXPECT_EQ(Position::BeforeNode(*input), selection.Start());
   EXPECT_EQ(Position::AfterNode(input), selection.End());
 }
 
@@ -257,7 +257,7 @@ TEST_F(VisibleSelectionTest, SelectAllWithInputElement) {
           .Extend(Position::LastPositionInNode(html_element))
           .Build());
   EXPECT_EQ(SelectionInDOMTree::Builder()
-                .Collapse(Position::BeforeNode(input))
+                .Collapse(Position::BeforeNode(*input))
                 .Extend(Position(last_child, 3))
                 .Build(),
             visible_selectin_in_dom_tree.AsSelection());
@@ -269,7 +269,7 @@ TEST_F(VisibleSelectionTest, SelectAllWithInputElement) {
               .Extend(PositionInFlatTree::LastPositionInNode(html_element))
               .Build());
   EXPECT_EQ(SelectionInFlatTree::Builder()
-                .Collapse(PositionInFlatTree::BeforeNode(input))
+                .Collapse(PositionInFlatTree::BeforeNode(*input))
                 .Extend(PositionInFlatTree(last_child, 3))
                 .Build(),
             visible_selectin_in_flat_tree.AsSelection());

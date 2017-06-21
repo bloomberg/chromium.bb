@@ -216,7 +216,7 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
       start_node->IsTextNode()
           ? PositionTemplate<Strategy>(ToText(start_node),
                                        ToInlineTextBox(start_box)->Start())
-          : PositionTemplate<Strategy>::BeforeNode(start_node));
+          : PositionTemplate<Strategy>::BeforeNode(*start_node));
 }
 
 template <typename Strategy>
@@ -301,7 +301,7 @@ Position PreviousRootInlineBoxCandidatePosition(
 
     const Position& candidate =
         isHTMLBRElement(*runner)
-            ? Position::BeforeNode(runner)
+            ? Position::BeforeNode(*runner)
             : Position::EditingPositionOf(runner, CaretMaxOffset(runner));
     if (IsVisuallyEquivalentCandidate(candidate))
       return candidate;
@@ -429,7 +429,7 @@ static VisiblePositionTemplate<Strategy> EndPositionForLine(
 
   if (isHTMLBRElement(*end_node)) {
     return CreateVisiblePosition(
-        PositionTemplate<Strategy>::BeforeNode(end_node),
+        PositionTemplate<Strategy>::BeforeNode(*end_node),
         VP_UPSTREAM_IF_POSSIBLE);
   }
   if (end_box->IsInlineTextBox() && end_node->IsTextNode()) {

@@ -630,7 +630,7 @@ void VisibleSelectionTemplate<
       Element* shadow_ancestor =
           start_root ? start_root->OwnerShadowHost() : nullptr;
       if (p.IsNull() && shadow_ancestor)
-        p = PositionTemplate<Strategy>::BeforeNode(shadow_ancestor);
+        p = PositionTemplate<Strategy>::BeforeNode(*shadow_ancestor);
       while (p.IsNotNull() &&
              !(LowestEditableAncestor(p.ComputeContainerNode()) ==
                    base_editable_ancestor &&
@@ -642,7 +642,7 @@ void VisibleSelectionTemplate<
                       *p.ComputeContainerNode())
                 : NextVisuallyDistinctCandidate(p);
         if (p.IsNull() && shadow_ancestor)
-          p = PositionTemplate<Strategy>::BeforeNode(shadow_ancestor);
+          p = PositionTemplate<Strategy>::BeforeNode(*shadow_ancestor);
       }
       const VisiblePositionTemplate<Strategy> next = CreateVisiblePosition(p);
 

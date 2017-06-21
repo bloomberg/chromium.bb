@@ -249,12 +249,12 @@ TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
   const SelectionInFlatTree& result_in_flat_tree =
       Selection().ComputeVisibleSelectionInFlatTree().AsSelection();
   EXPECT_EQ(SelectionInDOMTree::Builder(result_in_dom_tree)
-                .Collapse(Position::BeforeNode(input))
+                .Collapse(Position::BeforeNode(*input))
                 .Extend(Position(last_child, 3))
                 .Build(),
             result_in_dom_tree);
   EXPECT_EQ(SelectionInFlatTree::Builder(result_in_flat_tree)
-                .Collapse(PositionInFlatTree::BeforeNode(input))
+                .Collapse(PositionInFlatTree::BeforeNode(*input))
                 .Extend(PositionInFlatTree(last_child, 3))
                 .Build(),
             result_in_flat_tree);
@@ -973,7 +973,7 @@ TEST_F(FrameSelectionTest, InconsistentVisibleSelectionNoCrash) {
   // |start| and |end| are valid Positions in DOM tree, but do not participate
   // in flat tree. They should be canonicalized to null VisiblePositions, but
   // are currently not. See crbug.com/729636 for details.
-  const Position& start = Position::BeforeNode(anchor);
+  const Position& start = Position::BeforeNode(*anchor);
   const Position& end = Position::AfterNode(anchor);
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build());

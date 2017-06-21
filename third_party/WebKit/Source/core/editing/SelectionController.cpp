@@ -89,7 +89,7 @@ VisibleSelectionInFlatTree ExpandSelectionToRespectUserSelectAll(
   return CreateVisibleSelection(
       SelectionInFlatTree::Builder(selection.AsSelection())
           .Collapse(MostBackwardCaretPosition(
-              PositionInFlatTree::BeforeNode(root_user_select_all),
+              PositionInFlatTree::BeforeNode(*root_user_select_all),
               kCanCrossEditingBoundary))
           .Extend(MostForwardCaretPosition(
               PositionInFlatTree::AfterNode(root_user_select_all),
@@ -316,7 +316,7 @@ static SelectionInFlatTree ApplySelectAll(
           root_user_select_all_for_target) {
     return SelectionInFlatTree::Builder()
         .SetBaseAndExtent(PositionInFlatTree::BeforeNode(
-                              root_user_select_all_for_mouse_press_node),
+                              *root_user_select_all_for_mouse_press_node),
                           PositionInFlatTree::AfterNode(
                               root_user_select_all_for_mouse_press_node))
         .Build();
@@ -338,7 +338,7 @@ static SelectionInFlatTree ApplySelectAll(
     if (TargetPositionIsBeforeDragStartPosition(
             mouse_press_node, drag_start_point, target, hit_test_point)) {
       builder.Extend(
-          PositionInFlatTree::BeforeNode(root_user_select_all_for_target));
+          PositionInFlatTree::BeforeNode(*root_user_select_all_for_target));
       return builder.Build();
     }
 

@@ -172,8 +172,8 @@ Range* Range::CreateAdjustedToTreeScope(const TreeScope& tree_scope,
     return Create(tree_scope.GetDocument(), position, position);
   Node* const shadow_host = tree_scope.AncestorInThisScope(anchor_node);
   return Range::Create(tree_scope.GetDocument(),
-                       Position::BeforeNode(shadow_host),
-                       Position::BeforeNode(shadow_host));
+                       Position::BeforeNode(*shadow_host),
+                       Position::BeforeNode(*shadow_host));
 }
 
 void Range::Dispose() {

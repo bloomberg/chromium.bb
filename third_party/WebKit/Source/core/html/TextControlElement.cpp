@@ -339,7 +339,7 @@ static Position PositionForIndex(HTMLElement* inner_editor, unsigned index) {
   for (Node& node : NodeTraversal::DescendantsOf(*inner_editor)) {
     if (node.HasTagName(brTag)) {
       if (remaining_characters_to_move_forward == 0)
-        return Position::BeforeNode(&node);
+        return Position::BeforeNode(*&node);
       --remaining_characters_to_move_forward;
       last_br_or_text = &node;
       continue;
@@ -365,7 +365,7 @@ unsigned TextControlElement::IndexForPosition(HTMLElement* inner_editor,
       passed_position.IsNull())
     return 0;
 
-  if (Position::BeforeNode(inner_editor) == passed_position)
+  if (Position::BeforeNode(*inner_editor) == passed_position)
     return 0;
 
   unsigned index = 0;

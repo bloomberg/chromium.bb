@@ -134,7 +134,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
     if (editing_state->IsAborted())
       return;
     SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(break_element))
+                           .Collapse(Position::BeforeNode(*break_element))
                            .SetIsDirectional(EndingSelection().IsDirectional())
                            .Build());
     RebalanceWhitespace();
@@ -152,7 +152,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   // need to break the quote.
   if (is_last_vis_pos_in_node) {
     SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(break_element))
+                           .Collapse(Position::BeforeNode(*break_element))
                            .SetIsDirectional(EndingSelection().IsDirectional())
                            .Build());
     RebalanceWhitespace();
@@ -282,7 +282,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
 
   // Put the selection right before the break.
   SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(Position::BeforeNode(break_element))
+                         .Collapse(Position::BeforeNode(*break_element))
                          .SetIsDirectional(EndingSelection().IsDirectional())
                          .Build());
   RebalanceWhitespace();

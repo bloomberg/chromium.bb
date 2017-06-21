@@ -67,7 +67,7 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
                                          .Build(),
                                      kCharacterGranularity);
   EXPECT_EQ(Position(top, 1), VisibleSelectionInDOMTree().Base());
-  EXPECT_EQ(Position::BeforeNode(host), VisibleSelectionInDOMTree().Extent());
+  EXPECT_EQ(Position::BeforeNode(*host), VisibleSelectionInDOMTree().Extent());
   EXPECT_EQ(Position(top, 1), VisibleSelectionInDOMTree().Start());
   EXPECT_EQ(Position(top, 3), VisibleSelectionInDOMTree().End());
 
@@ -87,7 +87,7 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
           .Build(),
       kCharacterGranularity);
   EXPECT_EQ(Position(bottom, 3), VisibleSelectionInDOMTree().Base());
-  EXPECT_EQ(Position::BeforeNode(bottom->parentNode()),
+  EXPECT_EQ(Position::BeforeNode(*bottom->parentNode()),
             VisibleSelectionInDOMTree().Extent());
   EXPECT_EQ(Position(bottom, 0), VisibleSelectionInDOMTree().Start());
   EXPECT_EQ(Position(bottom, 3), VisibleSelectionInDOMTree().End());

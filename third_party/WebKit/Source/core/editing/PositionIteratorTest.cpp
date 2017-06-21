@@ -25,7 +25,7 @@ TEST_F(PositionIteratorTest, decrementWithInputElement) {
   dom_iterator.Decrement();
   EXPECT_EQ(Position::AfterNode(input), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
-  EXPECT_EQ(Position::BeforeNode(input), dom_iterator.ComputePosition());
+  EXPECT_EQ(Position::BeforeNode(*input), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
   EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
@@ -40,7 +40,7 @@ TEST_F(PositionIteratorTest, decrementWithInputElement) {
   EXPECT_EQ(PositionInFlatTree::AfterNode(input),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
-  EXPECT_EQ(PositionInFlatTree::BeforeNode(input),
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(*input),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
@@ -66,7 +66,7 @@ TEST_F(PositionIteratorTest, decrementWithSelectElement) {
       << "This is redundant result, we should not have. see "
          "http://crbug.com/697283";
   dom_iterator.Decrement();
-  EXPECT_EQ(Position::BeforeNode(select), dom_iterator.ComputePosition());
+  EXPECT_EQ(Position::BeforeNode(*select), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
   EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
@@ -86,7 +86,7 @@ TEST_F(PositionIteratorTest, decrementWithSelectElement) {
       << "This is redundant result, we should not have. see "
          "http://crbug.com/697283";
   flat_iterator.Decrement();
-  EXPECT_EQ(PositionInFlatTree::BeforeNode(select),
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(*select),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
@@ -109,7 +109,7 @@ TEST_F(PositionIteratorTest, decrementWithTextAreaElement) {
   dom_iterator.Decrement();
   EXPECT_EQ(Position::AfterNode(textarea), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
-  EXPECT_EQ(Position::BeforeNode(textarea), dom_iterator.ComputePosition());
+  EXPECT_EQ(Position::BeforeNode(*textarea), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
   EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
   dom_iterator.Decrement();
@@ -124,7 +124,7 @@ TEST_F(PositionIteratorTest, decrementWithTextAreaElement) {
   EXPECT_EQ(PositionInFlatTree::AfterNode(textarea),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
-  EXPECT_EQ(PositionInFlatTree::BeforeNode(textarea),
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(*textarea),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
@@ -144,7 +144,7 @@ TEST_F(PositionIteratorTest, incrementWithInputElement) {
       Position::FirstPositionInNode(GetDocument().body()));
   EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
   dom_iterator.Increment();
-  EXPECT_EQ(Position::BeforeNode(input), dom_iterator.ComputePosition());
+  EXPECT_EQ(Position::BeforeNode(*input), dom_iterator.ComputePosition());
   dom_iterator.Increment();
   EXPECT_EQ(Position::AfterNode(input), dom_iterator.ComputePosition());
   dom_iterator.Increment();
@@ -158,7 +158,7 @@ TEST_F(PositionIteratorTest, incrementWithInputElement) {
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 0),
             flat_iterator.ComputePosition());
   flat_iterator.Increment();
-  EXPECT_EQ(PositionInFlatTree::BeforeNode(input),
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(*input),
             flat_iterator.ComputePosition());
   flat_iterator.Increment();
   EXPECT_EQ(PositionInFlatTree::AfterNode(input),
@@ -180,7 +180,7 @@ TEST_F(PositionIteratorTest, incrementWithSelectElement) {
       Position::FirstPositionInNode(GetDocument().body()));
   EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
   dom_iterator.Increment();
-  EXPECT_EQ(Position::BeforeNode(select), dom_iterator.ComputePosition());
+  EXPECT_EQ(Position::BeforeNode(*select), dom_iterator.ComputePosition());
   dom_iterator.Increment();
   EXPECT_EQ(Position::AfterNode(select), dom_iterator.ComputePosition());
   dom_iterator.Increment();
@@ -198,7 +198,7 @@ TEST_F(PositionIteratorTest, incrementWithSelectElement) {
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 0),
             flat_iterator.ComputePosition());
   flat_iterator.Increment();
-  EXPECT_EQ(PositionInFlatTree::BeforeNode(select),
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(*select),
             flat_iterator.ComputePosition());
   flat_iterator.Increment();
   EXPECT_EQ(PositionInFlatTree::AfterNode(select),
@@ -226,7 +226,7 @@ TEST_F(PositionIteratorTest, incrementWithTextAreaElement) {
       Position::FirstPositionInNode(GetDocument().body()));
   EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
   dom_iterator.Increment();
-  EXPECT_EQ(Position::BeforeNode(textarea), dom_iterator.ComputePosition());
+  EXPECT_EQ(Position::BeforeNode(*textarea), dom_iterator.ComputePosition());
   dom_iterator.Increment();
   EXPECT_EQ(Position::AfterNode(textarea), dom_iterator.ComputePosition());
   dom_iterator.Increment();
@@ -241,7 +241,7 @@ TEST_F(PositionIteratorTest, incrementWithTextAreaElement) {
             flat_iterator.ComputePosition());
   // TODO(yosin): We should not traverse inside TEXTAREA
   flat_iterator.Increment();
-  EXPECT_EQ(PositionInFlatTree::BeforeNode(textarea),
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(*textarea),
             flat_iterator.ComputePosition());
   flat_iterator.Increment();
   EXPECT_EQ(PositionInFlatTree::AfterNode(textarea),
