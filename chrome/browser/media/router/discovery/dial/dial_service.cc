@@ -15,10 +15,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
@@ -37,6 +36,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/task_runner_util.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -150,7 +150,8 @@ net::IPAddressList GetBestBindAddressOnUIThread() {
 }
 
 #else
-NetworkInterfaceList GetNetworkListOnFileThread() {
+// Note: This can be called only on a thread that allows IO.
+NetworkInterfaceList GetNetworkList() {
   NetworkInterfaceList list;
   bool success =
       net::GetNetworkList(&list, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
@@ -450,15 +451,18 @@ void DialServiceImpl::StartDiscovery() {
   }
 
 #if defined(OS_CHROMEOS)
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE, base::Bind(&GetBestBindAddressOnUIThread),
-      base::Bind(&DialServiceImpl::DiscoverOnAddresses,
-                 weak_factory_.GetWeakPtr()));
+  auto task_runner =
+      content::BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(), FROM_HERE,
+      base::BindOnce(&GetBestBindAddressOnUIThread),
+      base::BindOnce(&DialServiceImpl::DiscoverOnAddresses,
+                     weak_factory_.GetWeakPtr()));
 #else
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE, base::Bind(&GetNetworkListOnFileThread),
-      base::Bind(&DialServiceImpl::SendNetworkList,
-                 weak_factory_.GetWeakPtr()));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetNetworkList),
+      base::BindOnce(&DialServiceImpl::SendNetworkList,
+                     weak_factory_.GetWeakPtr()));
 #endif
 }
 
@@ -472,14 +476,13 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   // there may be duplicates in |networks|, so address family + interface index
   // is used to identify unique interfaces.
   // TODO(mfoltz): Support IPV6 multicast.  http://crbug.com/165286
-  for (NetworkInterfaceList::const_iterator iter = networks.begin();
-       iter != networks.end(); ++iter) {
-    net::AddressFamily addr_family = net::GetAddressFamily(iter->address);
-    VLOG(2) << "Found " << iter->name << ", " << iter->address.ToString()
+  for (const auto& network : networks) {
+    net::AddressFamily addr_family = net::GetAddressFamily(network.address);
+    VLOG(2) << "Found " << network.name << ", " << network.address.ToString()
             << ", address family: " << addr_family;
     if (addr_family == net::ADDRESS_FAMILY_IPV4) {
       InterfaceIndexAddressFamily interface_index_addr_family =
-          std::make_pair(iter->interface_index, addr_family);
+          std::make_pair(network.interface_index, addr_family);
       bool inserted =
           interface_index_addr_family_seen.insert(interface_index_addr_family)
               .second;
@@ -487,14 +490,14 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
       // discovery list.
       if (inserted) {
         VLOG(2) << "Encountered "
-                << "interface index: " << iter->interface_index << ", "
+                << "interface index: " << network.interface_index << ", "
                 << "address family: " << addr_family << " for the first time, "
-                << "adding IP address " << iter->address.ToString()
+                << "adding IP address " << network.address.ToString()
                 << " to list.";
-        ip_addresses.push_back(iter->address);
+        ip_addresses.push_back(network.address);
       } else {
         VLOG(2) << "Already encountered "
-                << "interface index: " << iter->interface_index << ", "
+                << "interface index: " << network.interface_index << ", "
                 << "address family: " << addr_family << " before, not adding.";
       }
     }
