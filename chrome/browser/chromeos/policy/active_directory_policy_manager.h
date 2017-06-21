@@ -7,12 +7,11 @@
 
 #include <memory>
 
-#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/policy_scheduler.h"
 #include "components/signin/core/account_id/account_id.h"
 
 namespace policy {
@@ -57,35 +56,20 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   // Publish the policy that's currently cached in the store.
   void PublishPolicy();
 
-  // Callback from authpolicyd.
+  // Calls into authpolicyd to fetch policy. Reports success or failure via
+  // |callback|.
+  void DoRefresh(PolicyScheduler::TaskCallback callback);
+
+  // Called by scheduler with result of policy fetch.
   void OnPolicyRefreshed(bool success);
-
-  // Schedule next policy refresh to run after |delay|.  (Deletes any previously
-  // scheduled refresh tasks.)
-  void ScheduleRefresh(base::TimeDelta delay);
-
-  // Schedule next automatic policy refresh based on initial fetch delay or
-  // refresh interval.  (Deletes any previously scheduled refresh tasks.)
-  void ScheduleAutomaticRefresh();
-
-  // Actually execute the scheduled policy refresh.
-  void RunScheduledRefresh();
 
   const AccountId account_id_;
   std::unique_ptr<CloudPolicyStore> store_;
 
-  // Whether a policy refresh is in progress (and thus any further requests need
-  // to be blocked).
-  bool refresh_in_progress_ = false;
-  // Whether a refresh had been blocked and thus the next refresh needs to be
-  // scheduled at the shorter "retry" interval.
-  bool retry_refresh_ = false;
-  base::TimeTicks last_refresh_;
-  const base::TimeTicks startup_ = base::TimeTicks::Now();
-  std::unique_ptr<base::CancelableClosure> refresh_task_;
+  std::unique_ptr<PolicyScheduler> scheduler_;
 
   // Must be last member.
-  base::WeakPtrFactory<ActiveDirectoryPolicyManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ActiveDirectoryPolicyManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryPolicyManager);
 };
