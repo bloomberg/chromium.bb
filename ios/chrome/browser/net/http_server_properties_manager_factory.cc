@@ -55,11 +55,12 @@ class PrefServiceAdapter
 
 // static
 net::HttpServerPropertiesManager*
-HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service) {
+HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service,
+                                                  net::NetLog* net_log) {
   return new net::HttpServerPropertiesManager(
       new PrefServiceAdapter(pref_service),  // Transfers ownership.
       base::ThreadTaskRunnerHandle::Get(),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO), net_log);
 }
 
 // static

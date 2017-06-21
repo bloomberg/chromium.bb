@@ -65,6 +65,13 @@ const char kExpirationKey[] = "expiration";
 const char kNetworkStatsKey[] = "network_stats";
 const char kSrttKey[] = "srtt";
 
+std::unique_ptr<base::Value> NetLogCallback(
+    const base::DictionaryValue& http_server_properties_dict,
+    NetLogCaptureMode capture_mode) {
+  return base::WrapUnique<base::DictionaryValue>(
+      http_server_properties_dict.DeepCopy());
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,12 +82,16 @@ HttpServerPropertiesManager::PrefDelegate::~PrefDelegate() {}
 HttpServerPropertiesManager::HttpServerPropertiesManager(
     PrefDelegate* pref_delegate,
     scoped_refptr<base::SingleThreadTaskRunner> pref_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+    NetLog* net_log)
     : pref_task_runner_(std::move(pref_task_runner)),
       pref_delegate_(pref_delegate),
       setting_prefs_(false),
       is_initialized_(false),
-      network_task_runner_(std::move(network_task_runner)) {
+      network_task_runner_(std::move(network_task_runner)),
+      net_log_(
+          NetLogWithSource::Make(net_log,
+                                 NetLogSourceType::HTTP_SERVER_PROPERTIES)) {
   DCHECK(pref_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(pref_delegate_);
   pref_weak_ptr_factory_.reset(
@@ -100,6 +111,7 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
 
 void HttpServerPropertiesManager::InitializeOnNetworkSequence() {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
+  net_log_.BeginEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_INITIALIZATION);
 
   network_weak_ptr_factory_.reset(
       new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
@@ -415,6 +427,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefSequence() {
   const base::DictionaryValue& http_server_properties_dict =
       pref_delegate_->GetServerProperties();
 
+  net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_CACHE,
+                    base::Bind(&NetLogCallback, http_server_properties_dict));
   int version = kMissingVersion;
   if (!http_server_properties_dict.GetIntegerWithoutPathExpansion(kVersionKey,
                                                                   &version)) {
@@ -1052,6 +1066,8 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
   pref_delegate_->SetServerProperties(http_server_properties_dict);
   setting_prefs_ = false;
 
+  net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_PREFS,
+                    base::Bind(&NetLogCallback, http_server_properties_dict));
   // Note that |completion| will be fired after we have written everything to
   // the Preferences, but likely before these changes are serialized to disk.
   // This is not a problem though, as JSONPrefStore guarantees that this will
@@ -1153,6 +1169,7 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesChanged() {
 void HttpServerPropertiesManager::SetInitialized() {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
   is_initialized_ = true;
+  net_log_.EndEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_INITIALIZATION);
 }
 
 }  // namespace net
