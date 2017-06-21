@@ -17,23 +17,36 @@
 #include "cc/surfaces/display_scheduler.h"
 #include "components/viz/service/display_compositor/display_output_surface.h"
 #include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/display_compositor/in_process_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 
 #if defined(USE_OZONE)
 #include "components/viz/service/display_compositor/display_output_surface_ozone.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #endif
 
+namespace {
+
+gpu::ImageFactory* GetImageFactory(gpu::GpuChannelManager* channel_manager) {
+  auto* buffer_factory = channel_manager->gpu_memory_buffer_factory();
+  return buffer_factory ? buffer_factory->AsImageFactory() : nullptr;
+}
+
+}  // namespace
+
 namespace viz {
 
 GpuDisplayProvider::GpuDisplayProvider(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-    std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
-    gpu::ImageFactory* image_factory)
+    gpu::GpuChannelManager* gpu_channel_manager)
     : gpu_service_(std::move(gpu_service)),
-      gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
-      image_factory_(image_factory),
+      gpu_memory_buffer_manager_(
+          base::MakeUnique<InProcessGpuMemoryBufferManager>(
+              gpu_channel_manager)),
+      image_factory_(GetImageFactory(gpu_channel_manager)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 GpuDisplayProvider::~GpuDisplayProvider() = default;
