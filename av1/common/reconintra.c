@@ -2912,16 +2912,8 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 
   // predict
   if (mode == DC_PRED) {
-#if CONFIG_CFL
-    // CFL predict its own DC_PRED for Chromatic planes
-    if (plane == AOM_PLANE_Y) {
-#endif
-      dc_pred[n_left_px > 0][n_top_px > 0][tx_size](dst, dst_stride, above_row,
-                                                    left_col);
-#if CONFIG_CFL
-    }
-#endif
-
+    dc_pred[n_left_px > 0][n_top_px > 0][tx_size](dst, dst_stride, above_row,
+                                                  left_col);
   } else {
     pred[mode][tx_size](dst, dst_stride, above_row, left_col);
   }
@@ -3057,7 +3049,7 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
                                    ? get_y_mode(mi, block_raster_idx)
                                    : get_uv_mode(mbmi->uv_mode);
 #if CONFIG_CFL
-  if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_DC_PRED) {
+  if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
     if (plane == AOM_PLANE_U && blk_col == 0 && blk_row == 0) {
       // Avoid computing the CfL parameters twice, if they have already been
       // computed in cfl_rd_pick_alpha.

@@ -1635,8 +1635,10 @@ static void write_intra_mode(FRAME_CONTEXT *frame_ctx, BLOCK_SIZE bsize,
 static void write_intra_uv_mode(FRAME_CONTEXT *frame_ctx,
                                 UV_PREDICTION_MODE uv_mode,
                                 PREDICTION_MODE y_mode, aom_writer *w) {
-  aom_write_symbol(w, av1_intra_mode_ind[get_uv_mode(uv_mode)],
-                   frame_ctx->uv_mode_cdf[y_mode], UV_INTRA_MODES);
+#if !CONFIG_CFL
+  uv_mode = av1_intra_mode_ind[get_uv_mode(uv_mode)];
+#endif
+  aom_write_symbol(w, uv_mode, frame_ctx->uv_mode_cdf[y_mode], UV_INTRA_MODES);
 }
 
 #if CONFIG_CFL
@@ -1812,7 +1814,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_CFL
-      if (mbmi->uv_mode == UV_DC_PRED) {
+      if (mbmi->uv_mode == UV_CFL_PRED) {
         write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
       }
 #endif
@@ -2221,7 +2223,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_CFL
-    if (mbmi->uv_mode == UV_DC_PRED) {
+    if (mbmi->uv_mode == UV_CFL_PRED) {
       write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
     }
 #endif

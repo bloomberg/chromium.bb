@@ -101,7 +101,7 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       mi->cdef_strength += mi->cdef_strength == 3;
 #endif
 #if CONFIG_CFL
-      if (mbmi->uv_mode == UV_DC_PRED) {
+      if (mbmi->uv_mode == UV_CFL_PRED) {
         mi->cfl_alpha_idx = mbmi->cfl_alpha_idx;
         mi->cfl_alpha_sign = (mbmi->cfl_alpha_signs[CFL_PRED_V] << CFL_PRED_V) +
                              mbmi->cfl_alpha_signs[CFL_PRED_U];

@@ -518,6 +518,7 @@ static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
 #endif              // CONFIG_SMOOTH_HV
 #endif              // CONFIG_ALT_INTRA
     TM_PRED,        // UV_TM_PRED
+    DC_PRED,        // CFL_PRED
   };
   return uv2y[mode];
 }

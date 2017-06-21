@@ -73,10 +73,16 @@ static void fill_mode_costs(AV1_COMP *cpi) {
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
     av1_cost_tokens_from_cdf(cpi->mbmode_cost[i], fc->y_mode_cdf[i],
                              av1_intra_mode_inv);
-
+  const int *uv_mode_inv_map =
+#if CONFIG_CFL
+      // CfL codes the uv_mode without reordering it
+      NULL;
+#else
+      av1_intra_mode_inv;
+#endif
   for (i = 0; i < INTRA_MODES; ++i)
     av1_cost_tokens_from_cdf(cpi->intra_uv_mode_cost[i], fc->uv_mode_cdf[i],
-                             av1_intra_mode_inv);
+                             uv_mode_inv_map);
 
   for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; ++i)
     av1_cost_tokens(cpi->switchable_interp_costs[i],

@@ -334,10 +334,7 @@ typedef enum {
 typedef enum { PLANE_TYPE_Y = 0, PLANE_TYPE_UV = 1, PLANE_TYPES } PLANE_TYPE;
 
 #if CONFIG_CFL
-// TODO(ltrudeau) this should change based on QP size
-#define CB_ALPHABET_SIZE 4
-#define CR_ALPHABET_SIZE 4
-#define CFL_ALPHABET_SIZE (CB_ALPHABET_SIZE * CR_ALPHABET_SIZE)
+#define CFL_ALPHABET_SIZE 15
 #define CFL_MAGS_SIZE 7
 
 typedef enum { CFL_PRED_U = 0, CFL_PRED_V = 1, CFL_PRED_PLANES } CFL_PRED_TYPE;
@@ -438,6 +435,7 @@ typedef enum ATTRIBUTE_PACKED {
 #endif               // CONFIG_SMOOTH_HV
 #endif               // CONFIG_ALT_INTRA
   UV_TM_PRED,        // True-motion
+  UV_CFL_PRED,       // Chroma-from-Luma
   UV_INTRA_MODES,
   UV_MODE_INVALID,  // For uv_mode in inter blocks
 } UV_PREDICTION_MODE;

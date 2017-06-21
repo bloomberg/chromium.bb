@@ -69,9 +69,9 @@ static const int cfl_alpha_mags_q3[CFL_MAGS_SIZE] = { 0, 1, -1, 2, -2, 4, -4 };
 
 static const int cfl_alpha_codes[CFL_ALPHABET_SIZE][CFL_PRED_PLANES] = {
   // barrbrain's simple 1D quant ordered by subset 3 likelihood
-  { 0, 0 }, { 1, 1 }, { 3, 0 }, { 3, 3 }, { 1, 0 }, { 3, 1 },
-  { 5, 5 }, { 0, 1 }, { 5, 3 }, { 5, 0 }, { 3, 5 }, { 1, 3 },
-  { 0, 3 }, { 5, 1 }, { 1, 5 }, { 0, 5 }
+  { 1, 1 }, { 3, 0 }, { 3, 3 }, { 1, 0 }, { 3, 1 },
+  { 5, 5 }, { 0, 1 }, { 5, 3 }, { 5, 0 }, { 3, 5 },
+  { 1, 3 }, { 0, 3 }, { 5, 1 }, { 1, 5 }, { 0, 5 }
 };
 
 static INLINE int get_scaled_luma_q0(int alpha_q3, int y_pix, int avg_q3) {

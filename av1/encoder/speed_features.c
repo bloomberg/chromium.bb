@@ -172,20 +172,20 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 #if CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
 #if CONFIG_CFL
-    sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V;
+    sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V_CFL;
 #else
     sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC_H_V;
 #endif  // CONFIG_CFL
 #endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
 #if CONFIG_CFL
-    sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V;
+    sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
 #else
     sf->intra_uv_mode_mask[TX_32X32] = INTRA_DC_H_V;
 #endif
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
 #if CONFIG_CFL
-    sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V;
+    sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
 #else
     sf->intra_uv_mode_mask[TX_16X16] = INTRA_DC_H_V;
 #endif
@@ -240,14 +240,14 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 #if CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
 #if CONFIG_CFL
-    sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC;
+    sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_CFL;
 #else
     sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC;
 #endif  // CONFIG_CFL
 #endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
 #if CONFIG_CFL
-    sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC;
+    sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_CFL;
 #else
     sf->intra_uv_mode_mask[TX_32X32] = INTRA_DC;
 #endif  // CONFIG_CFL
@@ -276,7 +276,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     for (i = 0; i < TX_SIZES; ++i) {
       sf->intra_y_mode_mask[i] = INTRA_DC;
 #if CONFIG_CFL
-      sf->intra_uv_mode_mask[i] = UV_INTRA_DC;
+      sf->intra_uv_mode_mask[i] = UV_INTRA_DC_CFL;
 #else
       sf->intra_uv_mode_mask[i] = INTRA_DC;
 #endif  // CONFIG_CFL

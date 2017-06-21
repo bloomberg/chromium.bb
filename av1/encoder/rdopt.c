@@ -526,7 +526,7 @@ static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
 
 #if CONFIG_CFL
 static const UV_PREDICTION_MODE uv_rd_search_mode_order[UV_INTRA_MODES] = {
-  UV_DC_PRED,       UV_H_PRED,        UV_V_PRED,
+  UV_DC_PRED,       UV_CFL_PRED,      UV_H_PRED,    UV_V_PRED,
 #if CONFIG_ALT_INTRA
   UV_SMOOTH_PRED,
 #endif  // CONFIG_ALT_INTRA
@@ -534,8 +534,8 @@ static const UV_PREDICTION_MODE uv_rd_search_mode_order[UV_INTRA_MODES] = {
 #if CONFIG_ALT_INTRA && CONFIG_SMOOTH_HV
   UV_SMOOTH_V_PRED, UV_SMOOTH_H_PRED,
 #endif  // CONFIG_ALT_INTRA && CONFIG_SMOOTH_HV
-  UV_D135_PRED,     UV_D207_PRED,     UV_D153_PRED,
-  UV_D63_PRED,      UV_D117_PRED,     UV_D45_PRED,
+  UV_D135_PRED,     UV_D207_PRED,     UV_D153_PRED, UV_D63_PRED,
+  UV_D117_PRED,     UV_D45_PRED,
 };
 #else
 #define uv_rd_search_mode_order intra_rd_search_mode_order
@@ -5732,16 +5732,12 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
   int64_t best_cost;
 
   // Compute least squares parameter of the entire block
-  // IMPORTANT: We assume that the first code is 0,0
   int ind = 0;
   signs[CFL_PRED_U] = CFL_SIGN_POS;
   signs[CFL_PRED_V] = CFL_SIGN_POS;
+  best_cost = INT64_MAX;
 
-  dist = sse[CFL_PRED_U][0] + sse[CFL_PRED_V][0];
-  dist *= 16;
-  best_cost = RDCOST(x->rdmult, cfl->costs[0], dist);
-
-  for (int c = 1; c < CFL_ALPHABET_SIZE; c++) {
+  for (int c = 0; c < CFL_ALPHABET_SIZE; c++) {
     const int idx_u = cfl_alpha_codes[c][CFL_PRED_U];
     const int idx_v = cfl_alpha_codes[c][CFL_PRED_V];
     for (CFL_SIGN_TYPE sign_u = idx_u == 0; sign_u < CFL_SIGNS; sign_u++) {
@@ -5798,7 +5794,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     UV_PREDICTION_MODE mode = uv_rd_search_mode_order[mode_idx];
 #if CONFIG_EXT_INTRA
     const int is_directional_mode =
-        av1_is_directional_mode(mode, mbmi->sb_type);
+        av1_is_directional_mode(get_uv_mode(mode), mbmi->sb_type);
 #endif  // CONFIG_EXT_INTRA
     if (!(cpi->sf.intra_uv_mode_mask[txsize_sqr_up_map[max_tx_size]] &
           (1 << mode)))
@@ -5807,7 +5803,8 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     mbmi->uv_mode = mode;
 #if CONFIG_CFL
     int cfl_alpha_rate = 0;
-    if (mode == UV_DC_PRED) {
+    if (mode == UV_CFL_PRED) {
+      assert(!is_directional_mode);
       const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, &xd->plane[1]);
       cfl_alpha_rate = cfl_rd_pick_alpha(x, uv_tx_size);
     }
@@ -5835,7 +5832,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         tokenonly_rd_stats.rate + cpi->intra_uv_mode_cost[mbmi->mode][mode];
 
 #if CONFIG_CFL
-    if (mode == UV_DC_PRED) {
+    if (mode == UV_CFL_PRED) {
       this_rate += cfl_alpha_rate;
     }
 #endif
@@ -9642,14 +9639,14 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     x->cfl_store_y = !x->skip_chroma_rd;
 #else
     x->cfl_store_y = 1;
-#endif
+#endif  // CONFIG_CB4X4
 
     txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
                      mbmi->sb_type, mbmi->tx_size,
                      cpi->sf.use_fast_coef_costing);
 
     x->cfl_store_y = 0;
-#endif
+#endif  // CONFIG_CFL
     max_uv_tx_size = uv_txsize_lookup[bsize][mbmi->tx_size][pd[1].subsampling_x]
                                      [pd[1].subsampling_y];
     init_sbuv_mode(mbmi);
