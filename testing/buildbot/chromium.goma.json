@@ -9,6 +9,11 @@
       "all"
     ]
   },
+  "Chromium Mac Goma GCE Staging": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "Chromium Mac Goma Staging": {
     "additional_compile_targets": [
       "all"
