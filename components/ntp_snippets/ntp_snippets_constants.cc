@@ -9,6 +9,9 @@ namespace ntp_snippets {
 const base::FilePath::CharType kDatabaseFolder[] =
     FILE_PATH_LITERAL("NTPSnippets");
 
+const base::FilePath::CharType kBreakingNewsDatabaseFolder[] =
+    FILE_PATH_LITERAL("NTPBreakingNews");
+
 const char kContentSuggestionsServer[] =
     "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
 const char kContentSuggestionsStagingServer[] =
