@@ -97,11 +97,18 @@ void RecordShouldTriggerHelpUI(const base::Feature& feature,
   name.append(feature.name);
   base::RecordComputedAction(name);
 
-  // Total count histogram, used to compute the percentage of each failure type.
+  // Total count histogram, used to compute the percentage of each failure type,
+  // in addition to a user action for whether the result was to trigger or not.
   if (result.NoErrors()) {
     LogTriggerHelpUIResult(name, TriggerHelpUIResult::SUCCESS);
+    std::string name = "InProductHelp.ShouldTriggerHelpUIResult.Triggered.";
+    name.append(feature.name);
+    base::RecordComputedAction(name);
   } else {
     LogTriggerHelpUIResult(name, TriggerHelpUIResult::FAILURE);
+    std::string name = "InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.";
+    name.append(feature.name);
+    base::RecordComputedAction(name);
   }
 
   // Histogram about the failure reasons.

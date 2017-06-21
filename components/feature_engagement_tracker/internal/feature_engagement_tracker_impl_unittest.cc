@@ -195,6 +195,67 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
     EXPECT_EQ(count, trigger_event.events(0).count());
   }
 
+  void VerifyUserActionsTriggerChecks(
+      const base::UserActionTester& user_action_tester,
+      int expected_foo_count,
+      int expected_bar_count,
+      int expected_qux_count) {
+    EXPECT_EQ(expected_foo_count,
+              user_action_tester.GetActionCount(
+                  "InProductHelp.ShouldTriggerHelpUI.test_foo"));
+    EXPECT_EQ(expected_bar_count,
+              user_action_tester.GetActionCount(
+                  "InProductHelp.ShouldTriggerHelpUI.test_bar"));
+    EXPECT_EQ(expected_qux_count,
+              user_action_tester.GetActionCount(
+                  "InProductHelp.ShouldTriggerHelpUI.test_qux"));
+  }
+
+  void VerifyUserActionsTriggered(
+      const base::UserActionTester& user_action_tester,
+      int expected_foo_count,
+      int expected_bar_count,
+      int expected_qux_count) {
+    EXPECT_EQ(
+        expected_foo_count,
+        user_action_tester.GetActionCount(
+            "InProductHelp.ShouldTriggerHelpUIResult.Triggered.test_foo"));
+    EXPECT_EQ(
+        expected_bar_count,
+        user_action_tester.GetActionCount(
+            "InProductHelp.ShouldTriggerHelpUIResult.Triggered.test_bar"));
+    EXPECT_EQ(
+        expected_qux_count,
+        user_action_tester.GetActionCount(
+            "InProductHelp.ShouldTriggerHelpUIResult.Triggered.test_qux"));
+  }
+
+  void VerifyUserActionsNotTriggered(
+      const base::UserActionTester& user_action_tester,
+      int expected_foo_count,
+      int expected_bar_count,
+      int expected_qux_count) {
+    EXPECT_EQ(
+        expected_foo_count,
+        user_action_tester.GetActionCount(
+            "InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.test_foo"));
+    EXPECT_EQ(
+        expected_bar_count,
+        user_action_tester.GetActionCount(
+            "InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.test_bar"));
+    EXPECT_EQ(
+        expected_qux_count,
+        user_action_tester.GetActionCount(
+            "InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.test_qux"));
+  }
+
+  void VerifyUserActionsDismissed(
+      const base::UserActionTester& user_action_tester,
+      int expected_dismissed_count) {
+    EXPECT_EQ(expected_dismissed_count,
+              user_action_tester.GetActionCount("InProductHelp.Dismissed"));
+  }
+
  protected:
   virtual std::unique_ptr<TestInMemoryStore> CreateStore() {
     // Returns a Store that will successfully initialize.
@@ -399,6 +460,7 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   tracker_->AddOnInitializedCallback(base::Bind(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
+  base::UserActionTester user_action_tester;
 
   // The first time a feature triggers it should be shown.
   EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
@@ -407,6 +469,10 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
   VerifyEventTriggerEvents(kTestFeatureQux, 0);
+  VerifyUserActionsTriggerChecks(user_action_tester, 2, 0, 1);
+  VerifyUserActionsTriggered(user_action_tester, 1, 0, 0);
+  VerifyUserActionsNotTriggered(user_action_tester, 1, 0, 1);
+  VerifyUserActionsDismissed(user_action_tester, 0);
 
   // While in-product help is currently showing, no other features should be
   // shown.
@@ -414,6 +480,10 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   VerifyEventTriggerEvents(kTestFeatureBar, 0);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
   VerifyEventTriggerEvents(kTestFeatureQux, 0);
+  VerifyUserActionsTriggerChecks(user_action_tester, 2, 1, 2);
+  VerifyUserActionsTriggered(user_action_tester, 1, 0, 0);
+  VerifyUserActionsNotTriggered(user_action_tester, 1, 1, 2);
+  VerifyUserActionsDismissed(user_action_tester, 0);
 
   // After dismissing the current in-product help, that feature can not be shown
   // again, but a different feature should.
@@ -424,6 +494,10 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   VerifyEventTriggerEvents(kTestFeatureBar, 1u);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
   VerifyEventTriggerEvents(kTestFeatureQux, 0);
+  VerifyUserActionsTriggerChecks(user_action_tester, 3, 2, 3);
+  VerifyUserActionsTriggered(user_action_tester, 1, 1, 0);
+  VerifyUserActionsNotTriggered(user_action_tester, 2, 1, 3);
+  VerifyUserActionsDismissed(user_action_tester, 1);
 
   // After dismissing the second registered feature, no more in-product help
   // should be shown, since kTestFeatureQux is invalid.
@@ -434,6 +508,10 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   VerifyEventTriggerEvents(kTestFeatureBar, 1u);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
   VerifyEventTriggerEvents(kTestFeatureQux, 0);
+  VerifyUserActionsTriggerChecks(user_action_tester, 4, 3, 4);
+  VerifyUserActionsTriggered(user_action_tester, 1, 1, 0);
+  VerifyUserActionsNotTriggered(user_action_tester, 3, 2, 4);
+  VerifyUserActionsDismissed(user_action_tester, 2);
 }
 
 TEST_F(FeatureEngagementTrackerImplTest, TestNotifyEvent) {
