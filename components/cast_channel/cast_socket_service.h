@@ -36,6 +36,15 @@ class CastSocketService : public RefcountedKeyedService {
   // otherwise.
   CastSocket* GetSocket(int channel_id) const;
 
+  // Returns an observer corresponding to |id|.
+  CastSocket::Observer* GetObserver(const std::string& id);
+
+  // Adds |observer| to |socket_observer_map_| keyed by |id|. Return raw pointer
+  // of the newly added observer.
+  CastSocket::Observer* AddObserver(
+      const std::string& id,
+      std::unique_ptr<CastSocket::Observer> observer);
+
  private:
   ~CastSocketService() override;
 
@@ -47,6 +56,12 @@ class CastSocketService : public RefcountedKeyedService {
 
   // The collection of CastSocket keyed by channel_id.
   std::map<int, std::unique_ptr<CastSocket>> sockets_;
+
+  // Map of CastSocket::Observer keyed by observer id. For extension side
+  // observers, id is extension_id; For browser side observers, id is a hard
+  // coded string.
+  std::map<std::string, std::unique_ptr<CastSocket::Observer>>
+      socket_observer_map_;
 
   THREAD_CHECKER(thread_checker_);
 

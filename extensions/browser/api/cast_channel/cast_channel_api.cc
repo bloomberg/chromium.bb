@@ -294,14 +294,18 @@ void CastChannelOpenFunction::AsyncWorkStart() {
   }
   new_channel_id_ = cast_socket_service_->AddSocket(base::WrapUnique(socket));
 
+  auto* observer = cast_socket_service_->GetObserver(extension_->id());
+  if (!observer) {
+    observer = cast_socket_service_->AddObserver(
+        extension_->id(), base::MakeUnique<CastMessageHandler>(
+                              base::Bind(&CastChannelAPI::SendEvent,
+                                         api_->AsWeakPtr(), extension_->id()),
+                              api_->GetLogger()));
+  }
+
+  socket->AddObserver(observer);
   // Construct read delegates.
-  std::unique_ptr<CastTransport::Delegate> delegate(
-      base::MakeUnique<CastMessageHandler>(
-          base::Bind(&CastChannelAPI::SendEvent, api_->AsWeakPtr(),
-                     extension_->id()),
-          socket, api_->GetLogger()));
-  socket->Connect(std::move(delegate),
-                  base::Bind(&CastChannelOpenFunction::OnOpen, this));
+  socket->Connect(base::Bind(&CastChannelOpenFunction::OnOpen, this));
 }
 
 void CastChannelOpenFunction::OnOpen(ChannelError result) {
@@ -432,10 +436,8 @@ void CastChannelCloseFunction::OnClose(int result) {
 
 CastChannelOpenFunction::CastMessageHandler::CastMessageHandler(
     const EventDispatchCallback& ui_dispatch_cb,
-    CastSocket* socket,
     scoped_refptr<Logger> logger)
-    : ui_dispatch_cb_(ui_dispatch_cb), socket_(socket), logger_(logger) {
-  DCHECK(socket_);
+    : ui_dispatch_cb_(ui_dispatch_cb), logger_(logger) {
   DCHECK(logger_);
 }
 
@@ -443,14 +445,15 @@ CastChannelOpenFunction::CastMessageHandler::~CastMessageHandler() {
 }
 
 void CastChannelOpenFunction::CastMessageHandler::OnError(
+    const cast_channel::CastSocket& socket,
     ChannelError error_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ChannelInfo channel_info;
-  FillChannelInfo(*socket_, &channel_info);
+  FillChannelInfo(socket, &channel_info);
   channel_info.error_state = api::cast_channel::ToChannelError(error_state);
   ErrorInfo error_info;
-  FillErrorInfo(channel_info.error_state, logger_->GetLastError(socket_->id()),
+  FillErrorInfo(channel_info.error_state, logger_->GetLastError(socket.id()),
                 &error_info);
 
   std::unique_ptr<base::ListValue> results =
@@ -463,13 +466,14 @@ void CastChannelOpenFunction::CastMessageHandler::OnError(
 }
 
 void CastChannelOpenFunction::CastMessageHandler::OnMessage(
+    const cast_channel::CastSocket& socket,
     const CastMessage& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   MessageInfo message_info;
   CastMessageToMessageInfo(message, &message_info);
   ChannelInfo channel_info;
-  FillChannelInfo(*socket_, &channel_info);
+  FillChannelInfo(socket, &channel_info);
   VLOG(1) << "Received message " << ParamToString(message_info)
           << " on channel " << ParamToString(channel_info);
 
@@ -481,9 +485,6 @@ void CastChannelOpenFunction::CastMessageHandler::OnMessage(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(ui_dispatch_cb_, base::Passed(std::move(event))));
-}
-
-void CastChannelOpenFunction::CastMessageHandler::Start() {
 }
 
 }  // namespace extensions

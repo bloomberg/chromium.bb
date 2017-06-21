@@ -240,14 +240,13 @@ void CastSocketImpl::SetTransportForTesting(
   transport_ = std::move(transport);
 }
 
-void CastSocketImpl::Connect(std::unique_ptr<CastTransport::Delegate> delegate,
-                             base::Callback<void(ChannelError)> callback) {
+void CastSocketImpl::Connect(base::Callback<void(ChannelError)> callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG_WITH_CONNECTION(1) << "Connect readyState = "
-                          << ::cast_channel::ReadyStateToString(ready_state_);
+                          << ReadyStateToString(ready_state_);
   DCHECK_EQ(ConnectionState::START_CONNECT, connect_state_);
 
-  delegate_ = std::move(delegate);
+  delegate_ = base::MakeUnique<CastSocketMessageDelegate>(this);
 
   if (ready_state_ != ReadyState::NONE) {
     callback.Run(ChannelError::CONNECT_ERROR);
@@ -272,6 +271,12 @@ void CastSocketImpl::Connect(std::unique_ptr<CastTransport::Delegate> delegate,
 
 CastTransport* CastSocketImpl::transport() const {
   return transport_.get();
+}
+
+void CastSocketImpl::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  if (!observers_.HasObserver(observer))
+    observers_.AddObserver(observer);
 }
 
 void CastSocketImpl::OnConnectTimeout() {
@@ -526,7 +531,7 @@ int CastSocketImpl::DoAuthChallengeReplyComplete(int result) {
 
 void CastSocketImpl::DoConnectCallback() {
   VLOG(1) << "DoConnectCallback (error_state = "
-          << ::cast_channel::ChannelErrorToString(error_state_) << ")";
+          << ChannelErrorToString(error_state_) << ")";
   if (connect_callback_.is_null()) {
     DLOG(FATAL) << "Connection callback invoked multiple times.";
     return;
@@ -564,7 +569,7 @@ void CastSocketImpl::CloseInternal() {
   }
 
   VLOG_WITH_CONNECTION(1) << "Close ReadyState = "
-                          << ::cast_channel::ReadyStateToString(ready_state_);
+                          << ReadyStateToString(ready_state_);
   transport_.reset();
   tcp_socket_.reset();
   socket_.reset();
@@ -597,11 +602,34 @@ void CastSocketImpl::SetReadyState(ReadyState ready_state) {
 
 void CastSocketImpl::SetErrorState(ChannelError error_state) {
   VLOG_WITH_CONNECTION(1) << "SetErrorState "
-                          << ::cast_channel::ChannelErrorToString(error_state);
+                          << ChannelErrorToString(error_state);
   DCHECK_EQ(ChannelError::NONE, error_state_);
   error_state_ = error_state;
   delegate_->OnError(error_state_);
 }
+
+CastSocketImpl::CastSocketMessageDelegate::CastSocketMessageDelegate(
+    CastSocketImpl* socket)
+    : socket_(socket) {
+  DCHECK(socket_);
+}
+
+CastSocketImpl::CastSocketMessageDelegate::~CastSocketMessageDelegate() {}
+
+// CastTransport::Delegate implementation.
+void CastSocketImpl::CastSocketMessageDelegate::OnError(
+    ChannelError error_state) {
+  for (auto& observer : socket_->observers_)
+    observer.OnError(*socket_, error_state);
+}
+
+void CastSocketImpl::CastSocketMessageDelegate::OnMessage(
+    const CastMessage& message) {
+  for (auto& observer : socket_->observers_)
+    observer.OnMessage(*socket_, message);
+}
+
+void CastSocketImpl::CastSocketMessageDelegate::Start() {}
 
 }  // namespace cast_channel
 #undef VLOG_WITH_CONNECTION
