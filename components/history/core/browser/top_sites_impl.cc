@@ -769,14 +769,16 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
       for (TempImages::iterator it = temp_images_.begin();
            it != temp_images_.end(); ++it) {
         if (canonical_url == cache_->GetCanonicalURL(it->first)) {
-          // We can't have a non-temp thumbnail yet, so this should always
-          // successfully set the thumbnail.
           bool success = SetPageThumbnailEncoded(
               mv.url, it->second.thumbnail.get(), it->second.thumbnail_score);
-          DCHECK(success);
-          UMA_HISTOGRAM_ENUMERATION("Thumbnails.AddedToTopSites",
-                                    THUMBNAIL_PROMOTED_TEMP_TO_REGULAR,
-                                    THUMBNAIL_EVENT_COUNT);
+          // TODO(treib): We shouldn't have a non-temp thumbnail yet at this
+          // point, so this should always succeed, but it doesn't - see
+          // crbug.com/735395.
+          if (success) {
+            UMA_HISTOGRAM_ENUMERATION("Thumbnails.AddedToTopSites",
+                                      THUMBNAIL_PROMOTED_TEMP_TO_REGULAR,
+                                      THUMBNAIL_EVENT_COUNT);
+          }
           temp_images_.erase(it);
           break;
         }
