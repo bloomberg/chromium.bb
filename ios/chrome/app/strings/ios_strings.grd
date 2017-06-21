@@ -1426,6 +1426,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLBAR_SHOW_TABS" desc="The accessibility label for the toolbar show tabs button [iOS only].">
         Show Tabs
       </message>
+      <message name="IDS_IOS_TOOLBAR_SHOW_TAB_GRID" desc="The accessibility label for the toolbar show tab grid button [iOS only].">
+        Show Tab Grid
+      </message>
       <message name="IDS_IOS_TOOLS_MENU" desc="The accessibility label for the iOS tools menu [iOS only]">
         Tools Menu
       </message>
