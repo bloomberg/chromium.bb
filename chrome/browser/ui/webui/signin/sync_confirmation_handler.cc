@@ -85,11 +85,12 @@ void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
   std::string picture_url_to_load;
-  GURL url;
-  if (picture_url != AccountTrackerService::kNoPictureURLFound &&
-      profiles::GetImageURLWithThumbnailSize(GURL(picture_url),
-                                             kProfileImageSize, &url)) {
-    picture_url_to_load = url.spec();
+  GURL picture_gurl(picture_url);
+  if (picture_gurl.is_valid()) {
+    picture_url_to_load =
+        profiles::GetImageURLWithOptions(picture_gurl, kProfileImageSize,
+                                         false /* no_silhouette */)
+            .spec();
   } else {
     // Use the placeholder avatar icon until the account picture URL is fetched.
     picture_url_to_load = profiles::GetPlaceholderAvatarIconUrl();
