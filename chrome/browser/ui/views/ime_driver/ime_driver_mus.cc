@@ -39,25 +39,18 @@ void IMEDriver::Register() {
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 
-void IMEDriver::StartSession(int32_t session_id,
-                             ui::mojom::StartSessionDetailsPtr details) {
+void IMEDriver::StartSession(ui::mojom::StartSessionDetailsPtr details) {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<RemoteTextInputClient> remote_client =
       base::MakeUnique<RemoteTextInputClient>(
           std::move(details->client), details->text_input_type,
           details->text_input_mode, details->text_direction,
           details->text_input_flags, details->caret_bounds);
-  input_method_bindings_[session_id] =
-      base::MakeUnique<mojo::Binding<ui::mojom::InputMethod>>(
-          new InputMethodBridge(std::move(remote_client)),
-          std::move(details->input_method_request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<InputMethodBridge>(std::move(remote_client)),
+      std::move(details->input_method_request));
 #else
-  input_method_bindings_[session_id] =
-      base::MakeUnique<mojo::Binding<ui::mojom::InputMethod>>(
-          new SimpleInputMethod());
+  mojo::MakeStrongBinding(base::MakeUnique<SimpleInputMethod>(),
+                          std::move(details->input_method_request));
 #endif
-}
-
-void IMEDriver::CancelSession(int32_t session_id) {
-  input_method_bindings_.erase(session_id);
 }

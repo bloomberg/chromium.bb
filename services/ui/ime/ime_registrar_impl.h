@@ -6,14 +6,14 @@
 #define SERVICES_UI_IME_IME_REGISTRAR_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/ime/ime_server_impl.h"
+#include "services/ui/ime/ime_driver_bridge.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 
 namespace ui {
 
 class IMERegistrarImpl : public mojom::IMERegistrar {
  public:
-  explicit IMERegistrarImpl(IMEServerImpl* ime_server);
+  explicit IMERegistrarImpl(IMEDriverBridge* ime_driver_bridge);
   ~IMERegistrarImpl() override;
 
   void AddBinding(mojom::IMERegistrarRequest request);
@@ -23,7 +23,7 @@ class IMERegistrarImpl : public mojom::IMERegistrar {
   void RegisterDriver(mojom::IMEDriverPtr driver) override;
 
   mojo::BindingSet<mojom::IMERegistrar> bindings_;
-  IMEServerImpl* ime_server_;
+  IMEDriverBridge* ime_driver_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(IMERegistrarImpl);
 };

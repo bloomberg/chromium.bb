@@ -25,8 +25,8 @@
 #include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/display/screen_manager.h"
+#include "services/ui/ime/ime_driver_bridge.h"
 #include "services/ui/ime/ime_registrar_impl.h"
-#include "services/ui/ime/ime_server_impl.h"
 #include "services/ui/ws/accessibility_manager.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
@@ -91,9 +91,7 @@ struct Service::UserState {
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
-Service::Service()
-    : test_config_(false),
-      ime_registrar_(&ime_server_) {}
+Service::Service() : test_config_(false), ime_registrar_(&ime_driver_) {}
 
 Service::~Service() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
@@ -223,7 +221,7 @@ void Service::OnStart() {
   window_server_->SetGpuHost(std::move(gpu_host));
   window_server_->SetFrameSinkManager(std::move(frame_sink_manager));
 
-  ime_server_.Init(context()->connector(), test_config_);
+  ime_driver_.Init(context()->connector(), test_config_);
 
   discardable_shared_memory_manager_ =
       base::MakeUnique<discardable_memory::DiscardableSharedMemoryManager>();
@@ -238,8 +236,8 @@ void Service::OnStart() {
       base::Bind(&Service::BindGpuRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::IMERegistrar>(
       base::Bind(&Service::BindIMERegistrarRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::IMEServer>(
-      base::Bind(&Service::BindIMEServerRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::IMEDriver>(
+      base::Bind(&Service::BindIMEDriverRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::UserAccessManager>(base::Bind(
       &Service::BindUserAccessManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::UserActivityMonitor>(base::Bind(
@@ -387,10 +385,10 @@ void Service::BindIMERegistrarRequest(
   ime_registrar_.AddBinding(std::move(request));
 }
 
-void Service::BindIMEServerRequest(
+void Service::BindIMEDriverRequest(
     const service_manager::BindSourceInfo& source_info,
-    mojom::IMEServerRequest request) {
-  ime_server_.AddBinding(std::move(request));
+    mojom::IMEDriverRequest request) {
+  ime_driver_.AddBinding(std::move(request));
 }
 
 void Service::BindUserAccessManagerRequest(

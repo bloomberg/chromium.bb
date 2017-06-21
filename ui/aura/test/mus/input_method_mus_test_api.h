@@ -26,7 +26,7 @@ class InputMethodMusTestApi {
 
   static void Disable(InputMethodMus* input_method) {
     DCHECK(input_method->pending_callbacks_.empty());
-    input_method->ime_server_.reset();
+    input_method->ime_driver_.reset();
   }
 
   static void CallOnDidChangeFocusedClient(InputMethodMus* input_method,
