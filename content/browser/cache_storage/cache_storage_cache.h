@@ -50,21 +50,21 @@ class CacheMetadata;
 // will be called so long as the cache object lives.
 class CONTENT_EXPORT CacheStorageCache {
  public:
-  using ErrorCallback = base::Callback<void(CacheStorageError)>;
+  using ErrorCallback = base::OnceCallback<void(CacheStorageError)>;
   using ResponseCallback =
-      base::Callback<void(CacheStorageError,
-                          std::unique_ptr<ServiceWorkerResponse>,
-                          std::unique_ptr<storage::BlobDataHandle>)>;
+      base::OnceCallback<void(CacheStorageError,
+                              std::unique_ptr<ServiceWorkerResponse>,
+                              std::unique_ptr<storage::BlobDataHandle>)>;
   using Responses = std::vector<ServiceWorkerResponse>;
   using BlobDataHandles = std::vector<std::unique_ptr<storage::BlobDataHandle>>;
   using ResponsesCallback =
-      base::Callback<void(CacheStorageError,
-                          std::unique_ptr<Responses>,
-                          std::unique_ptr<BlobDataHandles>)>;
+      base::OnceCallback<void(CacheStorageError,
+                              std::unique_ptr<Responses>,
+                              std::unique_ptr<BlobDataHandles>)>;
   using Requests = std::vector<ServiceWorkerFetchRequest>;
   using RequestsCallback =
-      base::Callback<void(CacheStorageError, std::unique_ptr<Requests>)>;
-  using SizeCallback = base::Callback<void(int64_t)>;
+      base::OnceCallback<void(CacheStorageError, std::unique_ptr<Requests>)>;
+  using SizeCallback = base::OnceCallback<void(int64_t)>;
 
   enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
 
@@ -88,13 +88,13 @@ class CONTENT_EXPORT CacheStorageCache {
   // Returns ERROR_TYPE_NOT_FOUND if not found.
   void Match(std::unique_ptr<ServiceWorkerFetchRequest> request,
              const CacheStorageCacheQueryParams& match_params,
-             const ResponseCallback& callback);
+             ResponseCallback callback);
 
   // Returns CACHE_STORAGE_OK and matched responses in this cache. If there are
   // no responses, returns CACHE_STORAGE_OK and an empty vector.
   void MatchAll(std::unique_ptr<ServiceWorkerFetchRequest> request,
                 const CacheStorageCacheQueryParams& match_params,
-                const ResponsesCallback& callback);
+                ResponsesCallback callback);
 
   // Writes the side data (ex: V8 code cache) for the specified cache entry.
   // If it doesn't exist, or the |expected_response_time| differs from the
@@ -102,7 +102,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // Note: This "side data" is same meaning as "metadata" in HTTPCache. We use
   // "metadata" in cache_storage.proto for the pair of headers of a request and
   // a response. To avoid the confusion we use "side data" here.
-  void WriteSideData(const CacheStorageCache::ErrorCallback& callback,
+  void WriteSideData(CacheStorageCache::ErrorCallback callback,
                      const GURL& url,
                      base::Time expected_response_time,
                      scoped_refptr<net::IOBuffer> buffer,
@@ -122,34 +122,39 @@ class CONTENT_EXPORT CacheStorageCache {
   // TODO(nhiroki): This function should run all operations atomically.
   // http://crbug.com/486637
   void BatchOperation(const std::vector<CacheStorageBatchOperation>& operations,
-                      const ErrorCallback& callback);
+                      ErrorCallback callback);
   void BatchDidGetUsageAndQuota(
       const std::vector<CacheStorageBatchOperation>& operations,
-      const ErrorCallback& callback,
+      ErrorCallback callback,
       int64_t space_required,
       storage::QuotaStatusCode status_code,
       int64_t usage,
       int64_t quota);
-  void BatchDidOneOperation(const base::Closure& barrier_closure,
-                            ErrorCallback* callback,
+  // Callback passed to operations. If |error| is a real error, invokes
+  // |error_callback|. Always invokes |completion_closure| to signal
+  // completion.
+  void BatchDidOneOperation(base::OnceClosure completion_closure,
+                            ErrorCallback error_callback,
                             CacheStorageError error);
-  void BatchDidAllOperations(std::unique_ptr<ErrorCallback> callback);
+  // Callback invoked once all BatchDidOneOperation() calls have run.
+  // Invokes |error_callback|.
+  void BatchDidAllOperations(ErrorCallback error_callback);
 
   // Returns CACHE_STORAGE_OK and a vector of requests if there are no errors.
   void Keys(std::unique_ptr<ServiceWorkerFetchRequest> request,
             const CacheStorageCacheQueryParams& options,
-            const RequestsCallback& callback);
+            RequestsCallback callback);
 
   // Closes the backend. Future operations that require the backend
   // will exit early. Close should only be called once per CacheStorageCache.
-  void Close(const base::Closure& callback);
+  void Close(base::OnceClosure callback);
 
   // The size of the cache's contents.
-  void Size(const SizeCallback& callback);
+  void Size(SizeCallback callback);
 
   // Gets the cache's size, closes the backend, and then runs |callback| with
   // the cache's size.
-  void GetSizeThenClose(const SizeCallback& callback);
+  void GetSizeThenClose(SizeCallback callback);
 
   // Async operations in progress will cancel and not run their callbacks.
   virtual ~CacheStorageCache();
@@ -182,22 +187,18 @@ class CONTENT_EXPORT CacheStorageCache {
   friend class TestCacheStorageCache;
   friend class CacheStorageCacheTest;
 
-  struct OpenAllEntriesContext;
   struct PutContext;
   struct QueryCacheContext;
   struct QueryCacheResult;
 
   using QueryCacheResults = std::vector<QueryCacheResult>;
   using QueryCacheCallback =
-      base::Callback<void(CacheStorageError,
-                          std::unique_ptr<QueryCacheResults>)>;
+      base::OnceCallback<void(CacheStorageError,
+                              std::unique_ptr<QueryCacheResults>)>;
   using Entries = std::vector<disk_cache::Entry*>;
   using ScopedBackendPtr = std::unique_ptr<disk_cache::Backend>;
   using BlobToDiskCacheIDMap =
       IDMap<std::unique_ptr<CacheStorageBlobToDiskCache>>;
-  using OpenAllEntriesCallback =
-      base::Callback<void(std::unique_ptr<OpenAllEntriesContext>,
-                          CacheStorageError)>;
 
   CacheStorageCache(
       const GURL& origin,
@@ -209,12 +210,6 @@ class CONTENT_EXPORT CacheStorageCache {
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       int64_t cache_size);
 
-  // Returns all entries in this cache.
-  void OpenAllEntries(const OpenAllEntriesCallback& callback);
-  void DidOpenNextEntry(std::unique_ptr<OpenAllEntriesContext> entries_context,
-                        const OpenAllEntriesCallback& callback,
-                        int rv);
-
   // Runs |callback| with matching requests/response data. The data provided
   // in the QueryCacheResults depends on the |query_type|. If |query_type| is
   // CACHE_ENTRIES then only out_entries is valid. If |query_type| is REQUESTS
@@ -224,7 +219,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void QueryCache(std::unique_ptr<ServiceWorkerFetchRequest> request,
                   const CacheStorageCacheQueryParams& options,
                   QueryCacheType query_type,
-                  const QueryCacheCallback& callback);
+                  QueryCacheCallback callback);
   void QueryCacheDidOpenFastPath(
       std::unique_ptr<QueryCacheContext> query_cache_context,
       int rv);
@@ -243,8 +238,8 @@ class CONTENT_EXPORT CacheStorageCache {
   // Match callbacks
   void MatchImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                  const CacheStorageCacheQueryParams& match_params,
-                 const ResponseCallback& callback);
-  void MatchDidMatchAll(const ResponseCallback& callback,
+                 ResponseCallback callback);
+  void MatchDidMatchAll(ResponseCallback callback,
                         CacheStorageError match_all_error,
                         std::unique_ptr<Responses> match_all_responses,
                         std::unique_ptr<BlobDataHandles> match_all_handles);
@@ -252,14 +247,14 @@ class CONTENT_EXPORT CacheStorageCache {
   // MatchAll callbacks
   void MatchAllImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                     const CacheStorageCacheQueryParams& options,
-                    const ResponsesCallback& callback);
+                    ResponsesCallback callback);
   void MatchAllDidQueryCache(
-      const ResponsesCallback& callback,
+      ResponsesCallback callback,
       CacheStorageError error,
       std::unique_ptr<QueryCacheResults> query_cache_results);
 
   // WriteSideData callbacks
-  void WriteSideDataDidGetQuota(const ErrorCallback& callback,
+  void WriteSideDataDidGetQuota(ErrorCallback callback,
                                 const GURL& url,
                                 base::Time expected_response_time,
                                 scoped_refptr<net::IOBuffer> buffer,
@@ -268,12 +263,12 @@ class CONTENT_EXPORT CacheStorageCache {
                                 int64_t usage,
                                 int64_t quota);
 
-  void WriteSideDataImpl(const ErrorCallback& callback,
+  void WriteSideDataImpl(ErrorCallback callback,
                          const GURL& url,
                          base::Time expected_response_time,
                          scoped_refptr<net::IOBuffer> buffer,
                          int buf_len);
-  void WriteSideDataDidGetUsageAndQuota(const ErrorCallback& callback,
+  void WriteSideDataDidGetUsageAndQuota(ErrorCallback callback,
                                         const GURL& url,
                                         base::Time expected_response_time,
                                         scoped_refptr<net::IOBuffer> buffer,
@@ -281,20 +276,20 @@ class CONTENT_EXPORT CacheStorageCache {
                                         storage::QuotaStatusCode status_code,
                                         int64_t usage,
                                         int64_t quota);
-  void WriteSideDataDidOpenEntry(const ErrorCallback& callback,
+  void WriteSideDataDidOpenEntry(ErrorCallback callback,
                                  base::Time expected_response_time,
                                  scoped_refptr<net::IOBuffer> buffer,
                                  int buf_len,
                                  std::unique_ptr<disk_cache::Entry*> entry_ptr,
                                  int rv);
   void WriteSideDataDidReadMetaData(
-      const ErrorCallback& callback,
+      ErrorCallback callback,
       base::Time expected_response_time,
       scoped_refptr<net::IOBuffer> buffer,
       int buf_len,
       disk_cache::ScopedEntryPtr entry,
       std::unique_ptr<proto::CacheMetadata> headers);
-  void WriteSideDataDidWrite(const ErrorCallback& callback,
+  void WriteSideDataDidWrite(ErrorCallback callback,
                              disk_cache::ScopedEntryPtr entry,
                              int expected_bytes,
                              int rv);
@@ -302,8 +297,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // Puts the request and response object in the cache. The response body (if
   // present) is stored in the cache, but not the request body. Returns OK on
   // success.
-  void Put(const CacheStorageBatchOperation& operation,
-           const ErrorCallback& callback);
+  void Put(const CacheStorageBatchOperation& operation, ErrorCallback callback);
   void PutImpl(std::unique_ptr<PutContext> put_context);
   void PutDidDoomEntry(std::unique_ptr<PutContext> put_context, int rv);
   void PutDidGetUsageAndQuota(std::unique_ptr<PutContext> put_context,
@@ -324,49 +318,48 @@ class CONTENT_EXPORT CacheStorageCache {
   // Asynchronously calculates the current cache size, notifies the quota
   // manager of any change from the last report, and sets cache_size_ to the new
   // size.
-  void UpdateCacheSize(const base::Closure& callback);
+  void UpdateCacheSize(base::OnceClosure callback);
   void UpdateCacheSizeGotSize(std::unique_ptr<CacheStorageCacheHandle>,
-                              const base::Closure& callback,
+                              base::OnceClosure callback,
                               int current_cache_size);
 
   // Returns ERROR_NOT_FOUND if not found. Otherwise deletes and returns OK.
   void Delete(const CacheStorageBatchOperation& operation,
-              const ErrorCallback& callback);
+              ErrorCallback callback);
   void DeleteImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                   const CacheStorageCacheQueryParams& match_params,
-                  const ErrorCallback& callback);
+                  ErrorCallback callback);
   void DeleteDidQueryCache(
-      const ErrorCallback& callback,
+      ErrorCallback callback,
       CacheStorageError error,
       std::unique_ptr<QueryCacheResults> query_cache_results);
 
   // Keys callbacks.
   void KeysImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                 const CacheStorageCacheQueryParams& options,
-                const RequestsCallback& callback);
+                RequestsCallback callback);
   void KeysDidQueryCache(
-      const RequestsCallback& callback,
+      RequestsCallback callback,
       CacheStorageError error,
       std::unique_ptr<QueryCacheResults> query_cache_results);
 
-  void CloseImpl(const base::Closure& callback);
+  void CloseImpl(base::OnceClosure callback);
 
-  void SizeImpl(const SizeCallback& callback);
+  void SizeImpl(SizeCallback callback);
 
-  void GetSizeThenCloseDidGetSize(const SizeCallback& callback,
-                                  int64_t cache_size);
+  void GetSizeThenCloseDidGetSize(SizeCallback callback, int64_t cache_size);
 
   // Loads the backend and calls the callback with the result (true for
   // success). The callback will always be called. Virtual for tests.
-  virtual void CreateBackend(const ErrorCallback& callback);
-  void CreateBackendDidCreate(const CacheStorageCache::ErrorCallback& callback,
+  virtual void CreateBackend(ErrorCallback callback);
+  void CreateBackendDidCreate(ErrorCallback callback,
                               std::unique_ptr<ScopedBackendPtr> backend_ptr,
                               int rv);
 
   void InitBackend();
-  void InitDidCreateBackend(const base::Closure& callback,
+  void InitDidCreateBackend(base::OnceClosure callback,
                             CacheStorageError cache_create_error);
-  void InitGotCacheSize(const base::Closure& callback,
+  void InitGotCacheSize(base::OnceClosure callback,
                         CacheStorageError cache_create_error,
                         int cache_size);
 

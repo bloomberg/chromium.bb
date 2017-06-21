@@ -46,12 +46,13 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
  public:
   constexpr static int64_t kSizeUnknown = -1;
 
-  typedef base::Callback<void(bool, CacheStorageError)> BoolAndErrorCallback;
-  typedef base::Callback<void(std::unique_ptr<CacheStorageCacheHandle>,
-                              CacheStorageError)>
-      CacheAndErrorCallback;
-  using IndexCallback = base::Callback<void(const CacheStorageIndex&)>;
-  using SizeCallback = base::Callback<void(int64_t)>;
+  using BoolAndErrorCallback =
+      base::OnceCallback<void(bool, CacheStorageError)>;
+  using CacheAndErrorCallback =
+      base::OnceCallback<void(std::unique_ptr<CacheStorageCacheHandle>,
+                              CacheStorageError)>;
+  using IndexCallback = base::OnceCallback<void(const CacheStorageIndex&)>;
+  using SizeCallback = base::OnceCallback<void(int64_t)>;
 
   static const char kIndexFileName[];
 
@@ -73,12 +74,10 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // of the cache. Once all handles to a cache are deleted the cache is deleted.
   // The cache will also be deleted in the CacheStorage's destructor so be sure
   // to check the handle's value before using it.
-  void OpenCache(const std::string& cache_name,
-                 const CacheAndErrorCallback& callback);
+  void OpenCache(const std::string& cache_name, CacheAndErrorCallback callback);
 
   // Calls the callback with whether or not the cache exists.
-  void HasCache(const std::string& cache_name,
-                const BoolAndErrorCallback& callback);
+  void HasCache(const std::string& cache_name, BoolAndErrorCallback callback);
 
   // Deletes the cache if it exists. If it doesn't exist,
   // CACHE_STORAGE_ERROR_NOT_FOUND is returned. Any existing
@@ -87,16 +86,16 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // isn't actually erased from disk until the last handle is dropped.
   // TODO(jkarlin): Rename to DoomCache.
   void DeleteCache(const std::string& cache_name,
-                   const BoolAndErrorCallback& callback);
+                   BoolAndErrorCallback callback);
 
   // Calls the callback with the cache index.
-  void EnumerateCaches(const IndexCallback& callback);
+  void EnumerateCaches(IndexCallback callback);
 
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
                   std::unique_ptr<ServiceWorkerFetchRequest> request,
                   const CacheStorageCacheQueryParams& match_params,
-                  const CacheStorageCache::ResponseCallback& callback);
+                  CacheStorageCache::ResponseCallback callback);
 
   // Calls match on all of the caches in parallel, calling |callback| with the
   // response from the first cache (in order of cache creation) to have the
@@ -104,15 +103,15 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // CACHE_STORAGE_ERROR_NOT_FOUND.
   void MatchAllCaches(std::unique_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCacheQueryParams& match_params,
-                      const CacheStorageCache::ResponseCallback& callback);
+                      CacheStorageCache::ResponseCallback callback);
 
   // Sums the sizes of each cache and closes them. Runs |callback| with the
   // size.
-  void GetSizeThenCloseAllCaches(const SizeCallback& callback);
+  void GetSizeThenCloseAllCaches(SizeCallback callback);
 
   // The size of all of the origin's contents. This value should be used as an
   // estimate only since the cache may be modified at any time.
-  void Size(const SizeCallback& callback);
+  void Size(SizeCallback callback);
 
   // The functions below are for tests to verify that the operations run
   // serially.
@@ -151,25 +150,25 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // The Open and CreateCache callbacks are below.
   void OpenCacheImpl(const std::string& cache_name,
-                     const CacheAndErrorCallback& callback);
+                     CacheAndErrorCallback callback);
   void CreateCacheDidCreateCache(const std::string& cache_name,
-                                 const CacheAndErrorCallback& callback,
+                                 CacheAndErrorCallback callback,
                                  std::unique_ptr<CacheStorageCache> cache);
   void CreateCacheDidWriteIndex(
-      const CacheAndErrorCallback& callback,
+      CacheAndErrorCallback callback,
       std::unique_ptr<CacheStorageCacheHandle> cache_handle,
       bool success);
 
   // The HasCache callbacks are below.
   void HasCacheImpl(const std::string& cache_name,
-                    const BoolAndErrorCallback& callback);
+                    BoolAndErrorCallback callback);
 
   // The DeleteCache callbacks are below.
   void DeleteCacheImpl(const std::string& cache_name,
-                       const BoolAndErrorCallback& callback);
+                       BoolAndErrorCallback callback);
   void DeleteCacheDidWriteIndex(
       std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      const BoolAndErrorCallback& callback,
+      BoolAndErrorCallback callback,
       bool success);
   void DeleteCacheFinalize(CacheStorageCache* doomed_cache);
   void DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
@@ -177,15 +176,15 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void DeleteCacheDidCleanUp(bool success);
 
   // The EnumerateCache callbacks are below.
-  void EnumerateCachesImpl(const IndexCallback& callback);
+  void EnumerateCachesImpl(IndexCallback callback);
 
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
                       std::unique_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCacheQueryParams& match_params,
-                      const CacheStorageCache::ResponseCallback& callback);
+                      CacheStorageCache::ResponseCallback callback);
   void MatchCacheDidMatch(std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-                          const CacheStorageCache::ResponseCallback& callback,
+                          CacheStorageCache::ResponseCallback callback,
                           CacheStorageError error,
                           std::unique_ptr<ServiceWorkerResponse> response,
                           std::unique_ptr<storage::BlobDataHandle> handle);
@@ -193,35 +192,35 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                           const CacheStorageCacheQueryParams& match_params,
-                          const CacheStorageCache::ResponseCallback& callback);
+                          CacheStorageCache::ResponseCallback callback);
   void MatchAllCachesDidMatch(
       std::unique_ptr<CacheStorageCacheHandle> cache_handle,
       CacheMatchResponse* out_match_response,
-      const base::Closure& barrier_closure,
+      const base::RepeatingClosure& barrier_closure,
       CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> service_worker_response,
       std::unique_ptr<storage::BlobDataHandle> handle);
   void MatchAllCachesDidMatchAll(
       std::unique_ptr<std::vector<CacheMatchResponse>> match_responses,
-      const CacheStorageCache::ResponseCallback& callback);
+      CacheStorageCache::ResponseCallback callback);
 
-  void GetSizeThenCloseAllCachesImpl(const SizeCallback& callback);
+  void GetSizeThenCloseAllCachesImpl(SizeCallback callback);
 
-  void SizeImpl(const SizeCallback& callback);
+  void SizeImpl(SizeCallback callback);
   void SizeRetrievedFromCache(
       std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      const base::Closure& closure,
+      base::OnceClosure closure,
       int64_t* accumulator,
       int64_t size);
 
   void ScheduleWriteIndex();
-  void WriteIndex(const base::Callback<void(bool)>& callback);
-  void WriteIndexImpl(const base::Callback<void(bool)>& callback);
+  void WriteIndex(base::OnceCallback<void(bool)> callback);
+  void WriteIndexImpl(base::OnceCallback<void(bool)> callback);
   bool index_write_pending() const { return !index_write_task_.IsCancelled(); }
   // Start a scheduled index write immediately. Returns true if a write was
   // scheduled, or false if not.
   bool InitiateScheduledIndexWriteForTest(
-      const base::Callback<void(bool)>& callback);
+      base::OnceCallback<void(bool)> callback);
 
   // Whether or not we've loaded the list of cache names into memory.
   bool initialized_;

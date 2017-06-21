@@ -24,12 +24,12 @@ CacheStorageScheduler::CacheStorageScheduler(
 
 CacheStorageScheduler::~CacheStorageScheduler() {}
 
-void CacheStorageScheduler::ScheduleOperation(const base::Closure& closure) {
+void CacheStorageScheduler::ScheduleOperation(base::OnceClosure closure) {
   CACHE_STORAGE_SCHEDULER_UMA(COUNTS_10000, "QueueLength", client_type_,
                               pending_operations_.size());
 
   pending_operations_.push_back(base::MakeUnique<CacheStorageOperation>(
-      closure, client_type_, base::ThreadTaskRunnerHandle::Get()));
+      std::move(closure), client_type_, base::ThreadTaskRunnerHandle::Get()));
   RunOperationIfIdle();
 }
 
@@ -55,8 +55,8 @@ void CacheStorageScheduler::RunOperationIfIdle() {
         base::TimeTicks::Now() - running_operation_->creation_ticks());
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CacheStorageOperation::Run,
-                              running_operation_->AsWeakPtr()));
+        FROM_HERE, base::BindOnce(&CacheStorageOperation::Run,
+                                  running_operation_->AsWeakPtr()));
   }
 }
 

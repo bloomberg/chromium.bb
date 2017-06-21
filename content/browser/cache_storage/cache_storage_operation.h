@@ -21,7 +21,7 @@ namespace content {
 class CONTENT_EXPORT CacheStorageOperation {
  public:
   CacheStorageOperation(
-      const base::Closure& closure,
+      base::OnceClosure closure,
       CacheStorageSchedulerClient client_type,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -39,7 +39,7 @@ class CONTENT_EXPORT CacheStorageOperation {
   void NotifyOperationSlow();
 
   // The operation's closure to run.
-  base::Closure closure_;
+  base::OnceClosure closure_;
 
   // Ticks at time of object creation.
   base::TimeTicks creation_ticks_;
