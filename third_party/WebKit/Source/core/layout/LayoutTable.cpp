@@ -57,6 +57,8 @@ LayoutTable::LayoutTable(Element* element)
       foot_(nullptr),
       first_body_(nullptr),
       collapsed_borders_valid_(false),
+      has_collapsed_borders_(false),
+      needs_adjust_collapsed_border_joints_(false),
       needs_invalidate_collapsed_borders_for_all_cells_(false),
       collapsed_outer_borders_valid_(false),
       has_col_elements_(false),
@@ -771,7 +773,6 @@ void LayoutTable::UpdateLayout() {
 }
 
 void LayoutTable::InvalidateCollapsedBorders() {
-  collapsed_borders_.clear();
   collapsed_borders_valid_ = false;
   needs_invalidate_collapsed_borders_for_all_cells_ = true;
   collapsed_outer_borders_valid_ = false;
@@ -798,31 +799,6 @@ void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
       }
     }
   }
-}
-
-// Collect all the unique border values that we want to paint in a sorted list.
-// During the collection, each cell saves its recalculated borders into the
-// cache of its containing section, and invalidates itself if any border
-// changes. This method doesn't affect layout.
-void LayoutTable::RecalcCollapsedBordersIfNeeded() {
-  if (collapsed_borders_valid_ || !ShouldCollapseBorders())
-    return;
-  collapsed_borders_valid_ = true;
-  collapsed_borders_.clear();
-  for (LayoutObject* section = FirstChild(); section;
-       section = section->NextSibling()) {
-    if (!section->IsTableSection())
-      continue;
-    for (LayoutTableRow* row = ToLayoutTableSection(section)->FirstRow(); row;
-         row = row->NextRow()) {
-      for (LayoutTableCell* cell = row->FirstCell(); cell;
-           cell = cell->NextCell()) {
-        DCHECK_EQ(cell->Table(), this);
-        cell->CollectCollapsedBorderValues(collapsed_borders_);
-      }
-    }
-  }
-  LayoutTableCell::SortCollapsedBorderValues(collapsed_borders_);
 }
 
 void LayoutTable::AddOverflowFromChildren() {
@@ -1483,14 +1459,57 @@ BorderValue LayoutTable::TableEndBorderAdjoiningCell(
 
 void LayoutTable::EnsureIsReadyForPaintInvalidation() {
   LayoutBlock::EnsureIsReadyForPaintInvalidation();
-  RecalcCollapsedBordersIfNeeded();
+
+  if (collapsed_borders_valid_)
+    return;
+
+  collapsed_borders_valid_ = true;
+  has_collapsed_borders_ = false;
+  needs_adjust_collapsed_border_joints_ = false;
+  if (!ShouldCollapseBorders())
+    return;
+
+  CollapsedBorderValue first_border;
+  for (auto* section = TopSection(); section; section = SectionBelow(section)) {
+    for (auto* row = section->FirstRow(); row; row = row->NextRow()) {
+      for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
+        DCHECK_EQ(cell->Table(), this);
+        // The cell will update its collapsed border cache, and invalidate
+        // display item client if needed.
+        cell->EnsureIsReadyForPaintInvalidation();
+
+        // Determine if there are any collapsed borders, and if so set
+        // has_collapsed_borders_.
+        const auto* values = cell->GetCollapsedBorderValues();
+        if (!values)
+          continue;
+        has_collapsed_borders_ = true;
+
+        // Determine if there are any differences other than color in any of the
+        // borders of any cells (even if not adjacent), and if so set
+        // needs_adjust_collapsed_border_joints_.
+        if (needs_adjust_collapsed_border_joints_)
+          continue;
+        for (int i = 0; i < 4; ++i) {
+          const auto& border = values->Borders()[i];
+          if (!first_border.Exists()) {
+            first_border = border;
+          } else if (!first_border.IsSameIgnoringColor(border)) {
+            needs_adjust_collapsed_border_joints_ = true;
+            break;
+          }
+        }
+      }
+    }
+  }
 }
 
 PaintInvalidationReason LayoutTable::DeprecatedInvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
-  if (ShouldCollapseBorders() && !collapsed_borders_.IsEmpty())
+  if (HasCollapsedBorders()) {
     paint_invalidation_state.PaintingLayer()
         .SetNeedsPaintPhaseDescendantBlockBackgrounds();
+  }
 
   return LayoutBlock::DeprecatedInvalidatePaint(paint_invalidation_state);
 }

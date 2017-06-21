@@ -186,7 +186,7 @@ TEST_F(TablePainterTest, CollapsedBorderAndOverflow) {
       RootPaintController().GetDisplayItemList(), 4,
       TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(cell, DisplayItem::kBoxDecorationBackground),
-      TestDisplayItem(cell, DisplayItem::kTableCollapsedBorderLast),
+      TestDisplayItem(cell, DisplayItem::kTableCollapsedBorders),
       TestDisplayItem(cell, DisplayItem::PaintPhaseToDrawingType(
                                 kPaintPhaseSelfOutlineOnly)));
 }

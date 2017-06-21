@@ -376,13 +376,17 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   LayoutTableCell* CellPreceding(const LayoutTableCell&) const;
   LayoutTableCell* CellFollowing(const LayoutTableCell&) const;
 
-  using CollapsedBorderValues = Vector<CollapsedBorderValue>;
-  const CollapsedBorderValues& CollapsedBorders() const {
-    DCHECK(collapsed_borders_valid_);
-    return collapsed_borders_;
-  }
   void InvalidateCollapsedBorders();
   void InvalidateCollapsedBordersForAllCellsIfNeeded();
+
+  bool HasCollapsedBorders() const {
+    DCHECK(collapsed_borders_valid_);
+    return has_collapsed_borders_;
+  }
+  bool NeedsAdjustCollapsedBorderJoints() const {
+    DCHECK(collapsed_borders_valid_);
+    return needs_adjust_collapsed_border_joints_;
+  }
 
   bool HasSections() const { return Header() || Footer() || FirstBody(); }
 
@@ -507,8 +511,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   void DistributeExtraLogicalHeight(int extra_logical_height);
 
-  void RecalcCollapsedBordersIfNeeded();
-
   // TODO(layout-dev): All mutables in this class are lazily updated by
   // recalcSections() which is called by various getter methods (e.g.
   // borderBefore(), borderAfter()).
@@ -553,14 +555,13 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   // the first style is applied in styleDidChange().
   std::unique_ptr<TableLayoutAlgorithm> table_layout_;
 
-  // A sorted list of all unique border values that we want to paint.
-  //
   // Collapsed borders are SUPER EXPENSIVE to compute. The reason is that we
   // need to compare a cells border against all the adjoining cells, rows,
-  // row groups, column, column groups and table. Thus we cache them in this
-  // field.
-  CollapsedBorderValues collapsed_borders_;
+  // row groups, column, column groups and table. Thus we cache the values in
+  // LayoutTableCells and some status here.
   bool collapsed_borders_valid_ : 1;
+  bool has_collapsed_borders_ : 1;
+  bool needs_adjust_collapsed_border_joints_ : 1;
   bool needs_invalidate_collapsed_borders_for_all_cells_ : 1;
   mutable bool collapsed_outer_borders_valid_ : 1;
 

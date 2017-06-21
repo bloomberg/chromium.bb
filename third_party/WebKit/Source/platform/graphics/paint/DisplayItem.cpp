@@ -70,23 +70,6 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     return "Unknown"
 
 static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
-  if (type >= DisplayItem::kTableCollapsedBorderUnalignedBase) {
-    if (type <= DisplayItem::kTableCollapsedBorderBase)
-      return "TableCollapsedBorderAlignment";
-    if (type <= DisplayItem::kTableCollapsedBorderLast) {
-      StringBuilder sb;
-      sb.Append("TableCollapsedBorder");
-      if (type & DisplayItem::kTableCollapsedBorderTop)
-        sb.Append("Top");
-      if (type & DisplayItem::kTableCollapsedBorderRight)
-        sb.Append("Right");
-      if (type & DisplayItem::kTableCollapsedBorderBottom)
-        sb.Append("Bottom");
-      if (type & DisplayItem::kTableCollapsedBorderLeft)
-        sb.Append("Left");
-      return sb.ToString();
-    }
-  }
   switch (type) {
     DEBUG_STRING_CASE(BoxDecorationBackground);
     DEBUG_STRING_CASE(Caret);
@@ -122,6 +105,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ScrollbarTrackBackground);
     DEBUG_STRING_CASE(ScrollbarCompositedScrollbar);
     DEBUG_STRING_CASE(SelectionTint);
+    DEBUG_STRING_CASE(TableCollapsedBorders);
     DEBUG_STRING_CASE(VideoBitmap);
     DEBUG_STRING_CASE(WebPlugin);
     DEBUG_STRING_CASE(WebFont);

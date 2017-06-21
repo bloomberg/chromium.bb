@@ -44,23 +44,15 @@ void TablePainter::PaintObject(const PaintInfo& paint_info,
       }
     }
 
-    if (layout_table_.ShouldCollapseBorders() &&
+    if (layout_table_.HasCollapsedBorders() &&
         ShouldPaintDescendantBlockBackgrounds(paint_phase) &&
         layout_table_.Style()->Visibility() == EVisibility::kVisible) {
-      // Using our cached sorted styles, we then do individual passes,
-      // painting each style of border from lowest precedence to highest
-      // precedence.
-      LayoutTable::CollapsedBorderValues collapsed_borders =
-          layout_table_.CollapsedBorders();
-      size_t count = collapsed_borders.size();
-      for (size_t i = 0; i < count; ++i) {
-        for (LayoutTableSection* section = layout_table_.BottomSection();
-             section; section = layout_table_.SectionAbove(section)) {
-          LayoutPoint child_point =
-              layout_table_.FlipForWritingModeForChild(section, paint_offset);
-          TableSectionPainter(*section).PaintCollapsedBorders(
-              paint_info_for_descendants, child_point, collapsed_borders[i]);
-        }
+      for (LayoutTableSection* section = layout_table_.BottomSection(); section;
+           section = layout_table_.SectionAbove(section)) {
+        LayoutPoint child_point =
+            layout_table_.FlipForWritingModeForChild(section, paint_offset);
+        TableSectionPainter(*section).PaintCollapsedBorders(
+            paint_info_for_descendants, child_point);
       }
     }
   }

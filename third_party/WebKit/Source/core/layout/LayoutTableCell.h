@@ -185,9 +185,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   LayoutUnit BorderBefore() const override;
   LayoutUnit BorderAfter() const override;
 
-  void CollectCollapsedBorderValues(LayoutTable::CollapsedBorderValues&);
-  static void SortCollapsedBorderValues(LayoutTable::CollapsedBorderValues&);
-
   void UpdateLayout() override;
 
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
@@ -293,23 +290,36 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
+  void EnsureIsReadyForPaintInvalidation() override;
 
   // TODO(wkorman): Consider renaming to more clearly differentiate from
   // CollapsedBorderValue.
   class CollapsedBorderValues : public DisplayItemClient {
    public:
-    CollapsedBorderValues(const LayoutTableCell&,
-                          const CollapsedBorderValue& start_border,
-                          const CollapsedBorderValue& end_border,
-                          const CollapsedBorderValue& before_border,
-                          const CollapsedBorderValue& after_border);
+    CollapsedBorderValues(const LayoutTableCell& cell,
+                          const CollapsedBorderValue& start,
+                          const CollapsedBorderValue& end,
+                          const CollapsedBorderValue& before,
+                          const CollapsedBorderValue& after)
+        : cell_(cell) {
+      borders_[0] = start;
+      borders_[1] = end;
+      borders_[2] = before;
+      borders_[3] = after;
+    }
 
-    const CollapsedBorderValue& StartBorder() const { return start_border_; }
-    const CollapsedBorderValue& EndBorder() const { return end_border_; }
-    const CollapsedBorderValue& BeforeBorder() const { return before_border_; }
-    const CollapsedBorderValue& AfterBorder() const { return after_border_; }
+    const CollapsedBorderValue& StartBorder() const { return borders_[0]; }
+    const CollapsedBorderValue& EndBorder() const { return borders_[1]; }
+    const CollapsedBorderValue& BeforeBorder() const { return borders_[2]; }
+    const CollapsedBorderValue& AfterBorder() const { return borders_[3]; }
 
-    void SetCollapsedBorderValues(const CollapsedBorderValues& other);
+    // Returns all borders. The caller should not assume that the returned
+    // borders are in any particular order.
+    const CollapsedBorderValue* Borders() const { return borders_; }
+
+    void SetBorders(const CollapsedBorderValues& other) {
+      std::copy(other.borders_, other.borders_ + 4, borders_);
+    }
 
     // DisplayItemClient methods.
     String DebugName() const;
@@ -319,11 +329,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     void SetLocalVisualRect(const LayoutRect& r) { local_visual_rect_ = r; }
 
    private:
-    const LayoutTableCell& layout_table_cell_;
-    CollapsedBorderValue start_border_;
-    CollapsedBorderValue end_border_;
-    CollapsedBorderValue before_border_;
-    CollapsedBorderValue after_border_;
+    const LayoutTableCell& cell_;
+    CollapsedBorderValue borders_[4];
     LayoutRect local_visual_rect_;
   };
 
@@ -353,7 +360,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return cell1->RowIndex() < cell2->RowIndex();
   }
 
-  // For LayoutTable to compute its collapsed outer borders.
   unsigned CollapsedOuterBorderBefore() const {
     return CollapsedBorderHalfBefore(true);
   }
@@ -365,6 +371,33 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   }
   unsigned CollapsedOuterBorderEnd() const {
     return CollapsedBorderHalfEnd(true);
+  }
+  unsigned CollapsedInnerBorderBefore() const {
+    return CollapsedBorderHalfBefore(false);
+  }
+  unsigned CollapsedInnerBorderAfter() const {
+    return CollapsedBorderHalfAfter(false);
+  }
+  unsigned CollapsedInnerBorderStart() const {
+    return CollapsedBorderHalfStart(false);
+  }
+  unsigned CollapsedInnerBorderEnd() const {
+    return CollapsedBorderHalfEnd(false);
+  }
+
+  bool StartsAtSameColumn(const LayoutTableCell* other) const {
+    return other && AbsoluteColumnIndex() == other->AbsoluteColumnIndex();
+  }
+  bool EndsAtSameColumn(const LayoutTableCell* other) const {
+    return other && AbsoluteColumnIndex() + ColSpan() ==
+                        other->AbsoluteColumnIndex() + other->ColSpan();
+  }
+  bool StartsAtSameRow(const LayoutTableCell* other) const {
+    return other && RowIndex() == other->RowIndex();
+  }
+  bool EndsAtSameRow(const LayoutTableCell* other) const {
+    return other &&
+           RowIndex() + RowSpan() == other->RowIndex() + other->RowSpan();
   }
 
  protected:

@@ -69,6 +69,14 @@
     {
       "object": "LayoutTableCell TD",
       "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
     }
   ]
 }
