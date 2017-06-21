@@ -79,6 +79,9 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
   // encountered an error.
   void OnStreamError(int stream_id);
 
+  // Received when a stream is muted or unmuted.
+  void OnStreamMuted(int stream_id, bool is_muted);
+
   // A map of stream ids to delegates.
   IDMap<media::AudioInputIPCDelegate*> delegates_;
 

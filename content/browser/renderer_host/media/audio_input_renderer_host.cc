@@ -159,6 +159,14 @@ void AudioInputRendererHost::OnLog(media::AudioInputController* controller,
                      base::RetainedRef(controller), message));
 }
 
+void AudioInputRendererHost::OnMuted(media::AudioInputController* controller,
+                                     bool is_muted) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AudioInputRendererHost::DoNotifyMutedState, this,
+                 base::RetainedRef(controller), is_muted));
+}
+
 void AudioInputRendererHost::set_renderer_pid(int32_t renderer_pid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   renderer_pid_ = renderer_pid;
@@ -233,6 +241,19 @@ void AudioInputRendererHost::DoLog(media::AudioInputController* controller,
 
   // Add stream ID and current audio level reported by AIC to native log.
   LogMessage(entry->stream_id, message, false);
+}
+
+void AudioInputRendererHost::DoNotifyMutedState(
+    media::AudioInputController* controller,
+    bool is_muted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  AudioEntry* entry = LookupByController(controller);
+  DCHECK(entry);
+  LogMessage(entry->stream_id,
+             base::StringPrintf("OnMuted: State changed to: %s",
+                                (is_muted ? "muted" : "not muted")),
+             true);
+  Send(new AudioInputMsg_NotifyStreamMuted(entry->stream_id, is_muted));
 }
 
 bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message) {

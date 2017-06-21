@@ -60,6 +60,7 @@ class PepperPlatformAudioInput
                        int length,
                        int total_segments) override;
   void OnError() override;
+  void OnMuted(bool is_muted) override;
   void OnIPCClosed() override;
 
  protected:

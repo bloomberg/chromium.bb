@@ -148,6 +148,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
                media::AudioInputController::ErrorCode error_code) override;
   void OnLog(media::AudioInputController* controller,
              const std::string& message) override {}
+  void OnMuted(media::AudioInputController* controller,
+               bool is_muted) override {}
 
   // AudioInputController::SyncWriter methods.
   void Write(const media::AudioBus* data,

@@ -115,6 +115,7 @@ class CONTENT_EXPORT AudioInputRendererHost
                media::AudioInputController::ErrorCode error_code) override;
   void OnLog(media::AudioInputController* controller,
              const std::string& message) override;
+  void OnMuted(media::AudioInputController* controller, bool is_muted) override;
 
   // Sets the PID renderer. This is used for constructing the debug recording
   // filename.
@@ -176,6 +177,10 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Log audio level of captured audio stream.
   void DoLog(media::AudioInputController* controller,
              const std::string& message);
+
+  // Notify renderer of a change to a stream's muted state.
+  void DoNotifyMutedState(media::AudioInputController* controller,
+                          bool is_muted);
 
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id, ErrorCode error_code);

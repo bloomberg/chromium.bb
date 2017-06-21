@@ -26,6 +26,7 @@ namespace media {
 namespace {
 
 const int kMaxInputChannels = 3;
+constexpr int kCheckMutedStateIntervalSeconds = 1;
 
 #if defined(AUDIO_POWER_MONITORING)
 // Time in seconds between two successive measurements of audio power levels.
@@ -199,6 +200,7 @@ AudioInputController::AudioInputController(
 AudioInputController::~AudioInputController() {
   DCHECK(!audio_callback_);
   DCHECK(!stream_);
+  DCHECK(!check_muted_state_timer_.IsRunning());
 }
 
 // static
@@ -358,6 +360,14 @@ void AudioInputController::DoCreateForStream(
   // Finally, keep the stream pointer around, update the state and notify.
   stream_ = stream_to_control;
   handler_->OnCreated(this);
+
+  // Check the current muted state and start the repeating timer to keep that
+  // updated.
+  CheckMutedState();
+  check_muted_state_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kCheckMutedStateIntervalSeconds),
+      this, &AudioInputController::CheckMutedState);
+  DCHECK(check_muted_state_timer_.IsRunning());
 }
 
 void AudioInputController::DoRecord() {
@@ -387,9 +397,12 @@ void AudioInputController::DoClose() {
   if (!stream_)
     return;
 
+  check_muted_state_timer_.Stop();
+
   std::string log_string;
   static const char kLogStringPrefix[] = "AIC::DoClose:";
 
+  // Allow calling unconditionally and bail if we don't have a stream to close.
   if (audio_callback_) {
     stream_->Stop();
 
@@ -663,6 +676,17 @@ bool AudioInputController::CheckAudioPower(const AudioBus* source,
 #else
   return false;
 #endif
+}
+
+void AudioInputController::CheckMutedState() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(stream_);
+  const bool new_state = stream_->IsMuted();
+  if (new_state != is_muted_) {
+    is_muted_ = new_state;
+    // We don't log OnMuted here, but leave that for AudioInputRendererHost.
+    handler_->OnMuted(this, is_muted_);
+  }
 }
 
 // static

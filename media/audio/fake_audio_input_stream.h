@@ -54,6 +54,10 @@ class MEDIA_EXPORT FakeAudioInputStream
   // input stream.
   static void BeepOnce();
 
+  // Set the muted state for _all_ FakeAudioInputStreams. The value is global,
+  // so it can be set before any FakeAudioInputStreams have been created.
+  static void SetGlobalMutedState(bool is_muted);
+
  private:
   FakeAudioInputStream(AudioManagerBase* manager,
                        const AudioParameters& params);

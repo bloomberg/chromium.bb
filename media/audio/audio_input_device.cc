@@ -225,6 +225,14 @@ void AudioInputDevice::OnError() {
   }
 }
 
+void AudioInputDevice::OnMuted(bool is_muted) {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  // Do nothing if the stream has been closed.
+  if (state_ < CREATING_STREAM)
+    return;
+  callback_->OnCaptureMuted(is_muted);
+}
+
 void AudioInputDevice::OnIPCClosed() {
   DCHECK(task_runner()->BelongsToCurrentThread());
   state_ = IPC_CLOSED;

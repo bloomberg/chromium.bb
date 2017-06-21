@@ -342,6 +342,10 @@ void ProcessedLocalAudioSource::OnCaptureError(const std::string& message) {
   StopSourceOnError(message);
 }
 
+void ProcessedLocalAudioSource::OnCaptureMuted(bool is_muted) {
+  SetMutedState(is_muted);
+}
+
 media::AudioParameters ProcessedLocalAudioSource::GetInputFormat() const {
   return audio_processor_ ? audio_processor_->InputFormat()
                           : media::AudioParameters();
