@@ -31,8 +31,8 @@ static void ApplyClipsBetweenStates(const PropertyTreeState& local_state,
       local_state.Clip()->LocalTransformSpace();
   if (transform_node != ancestor_state.Transform()) {
     const TransformationMatrix& local_to_ancestor_matrix =
-        GeometryMapper::SourceToDestinationProjection(
-            transform_node, ancestor_state.Transform());
+        GeometryMapper::LocalToAncestorMatrix(transform_node,
+                                              ancestor_state.Transform());
     // Clips are only in descendant spaces that are transformed by one
     // or more scrolls.
     DCHECK(local_to_ancestor_matrix.IsIdentityOrTranslation());
@@ -121,8 +121,8 @@ static void RecordPairedBeginDisplayItems(
           const TransformPaintPropertyNode* transform_node =
               paired_state->Effect()->LocalTransformSpace();
           const TransformationMatrix& local_to_ancestor_matrix =
-              GeometryMapper::SourceToDestinationProjection(
-                  transform_node, paired_state->Transform());
+              GeometryMapper::LocalToAncestorMatrix(transform_node,
+                                                    paired_state->Transform());
           // Effects are only in descendant spaces that are transformed by one
           // or more scrolls.
           DCHECK(local_to_ancestor_matrix.IsIdentityOrTranslation());
