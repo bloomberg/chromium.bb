@@ -4,7 +4,6 @@
 
 #include "chrome/browser/conflicts/shell_extension_enumerator_win.h"
 
-#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string16.h"
@@ -41,21 +40,6 @@ void ReadShellExtensions(
   }
 }
 
-// Helper function to get a value at a specific offset in a buffer. Also does
-// bounds checking.
-template <typename T>
-bool GetValueAtOffset(const char* buffer,
-                      uint64_t address,
-                      const size_t buffer_size,
-                      T* result) {
-  // Bounds checking.
-  if (address + sizeof(T) >= buffer_size)
-    return false;
-
-  memcpy(result, &buffer[address], sizeof(T));
-  return true;
-}
-
 }  // namespace
 
 // static
@@ -63,6 +47,7 @@ const wchar_t ShellExtensionEnumerator::kShellExtensionRegistryKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Shell "
     L"Extensions\\Approved";
 
+// static
 const wchar_t ShellExtensionEnumerator::kClassIdRegistryKeyFormat[] =
     L"CLSID\\%ls\\InProcServer32";
 
@@ -97,58 +82,6 @@ void ShellExtensionEnumerator::EnumerateShellExtensionPaths(
                               nb_shell_extensions);
 }
 
-// static
-bool ShellExtensionEnumerator::GetModuleImageSizeAndTimeDateStamp(
-    const base::FilePath& path,
-    uint32_t* size_of_image,
-    uint32_t* time_date_stamp) {
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid())
-    return false;
-
-  // The values fetched here from the NT header live in the first 4k bytes of
-  // the file in a well-formed dll.
-  const size_t kPageSize = 4096;
-
-  char buffer[kPageSize];
-  int bytes_read = file.Read(0, buffer, kPageSize);
-  if (bytes_read == -1)
-    return false;
-
-  // Get NT header offset.
-  uint64_t nt_header_offset = offsetof(IMAGE_DOS_HEADER, e_lfanew);
-
-  LONG e_lfanew = 0;
-  if (!GetValueAtOffset(buffer, nt_header_offset, bytes_read, &e_lfanew))
-    return false;
-
-  // Check magic signature.
-  uint64_t nt_signature_offset =
-      e_lfanew + offsetof(IMAGE_NT_HEADERS, Signature);
-
-  DWORD nt_signature = 0;
-  if (!GetValueAtOffset(buffer, nt_signature_offset, bytes_read, &nt_signature))
-    return false;
-
-  if (nt_signature != IMAGE_NT_SIGNATURE)
-    return false;
-
-  // Get SizeOfImage.
-  uint64_t size_of_image_offset = e_lfanew +
-                                  offsetof(IMAGE_NT_HEADERS, OptionalHeader) +
-                                  offsetof(IMAGE_OPTIONAL_HEADER, SizeOfImage);
-  if (!GetValueAtOffset(buffer, size_of_image_offset, bytes_read,
-                        size_of_image))
-    return false;
-
-  // Get TimeDateStamp.
-  uint64_t time_date_stamp_offset = e_lfanew +
-                                    offsetof(IMAGE_NT_HEADERS, FileHeader) +
-                                    offsetof(IMAGE_FILE_HEADER, TimeDateStamp);
-  return GetValueAtOffset(buffer, time_date_stamp_offset, bytes_read,
-                          time_date_stamp);
-}
-
 void ShellExtensionEnumerator::OnShellExtensionEnumerated(
     const base::FilePath& path,
     uint32_t size_of_image,
@@ -162,7 +95,8 @@ void ShellExtensionEnumerator::EnumerateShellExtensionsImpl(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const OnShellExtensionEnumeratedCallback& callback) {
   ShellExtensionEnumerator::EnumerateShellExtensionPaths(
-      base::Bind(&OnShellExtensionPathEnumerated, task_runner, callback));
+      base::Bind(&ShellExtensionEnumerator::OnShellExtensionPathEnumerated,
+                 task_runner, callback));
 }
 
 // static
@@ -172,8 +106,8 @@ void ShellExtensionEnumerator::OnShellExtensionPathEnumerated(
     const base::FilePath& path) {
   uint32_t size_of_image = 0;
   uint32_t time_date_stamp = 0;
-  if (!ShellExtensionEnumerator::GetModuleImageSizeAndTimeDateStamp(
-          path, &size_of_image, &time_date_stamp)) {
+  if (!GetModuleImageSizeAndTimeDateStamp(path, &size_of_image,
+                                          &time_date_stamp)) {
     return;
   }
 

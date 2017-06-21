@@ -37,13 +37,6 @@ class ShellExtensionEnumerator {
   static void EnumerateShellExtensionPaths(
       const base::Callback<void(const base::FilePath&)>& callback);
 
- protected:
-  // Reads the file on disk to find out the SizeOfImage and TimeDateStamp
-  // properties of the module. Returns false on error.
-  static bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
-                                                 uint32_t* size_of_image,
-                                                 uint32_t* time_date_stamp);
-
  private:
   void OnShellExtensionEnumerated(const base::FilePath& path,
                                   uint32_t size_of_image,
