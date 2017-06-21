@@ -106,14 +106,6 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInBackground) {
       TimeDelta::FromMilliseconds(1));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1000, run_count);
-
-  // The task queue isn't throttled at all until it's been in the background for
-  // a 10 second grace period.
-  clock_->Advance(base::TimeDelta::FromSeconds(10));
-
-  run_count = 0;
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1, run_count);
 }
 
@@ -171,14 +163,6 @@ TEST_F(WebFrameSchedulerImplTest, PageInBackground_ThrottlingDisabled) {
       MakeRepeatingTask(web_frame_scheduler_->TimerTaskRunner(), &run_count),
       TimeDelta::FromMilliseconds(1));
 
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1000, run_count);
-
-  // The task queue isn't throttled at all until it's been in the background for
-  // a 10 second grace period.
-  clock_->Advance(base::TimeDelta::FromSeconds(10));
-
-  run_count = 0;
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1, run_count);
 }

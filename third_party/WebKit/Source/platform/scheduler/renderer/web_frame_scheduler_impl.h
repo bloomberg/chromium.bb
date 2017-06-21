@@ -40,7 +40,7 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
 
   // WebFrameScheduler implementation:
   void SetFrameVisible(bool frame_visible) override;
-  void SetPageThrottled(bool page_throttled) override;
+  void SetPageVisible(bool page_visible) override;
   void SetSuspended(bool frame_suspended) override;
   void SetCrossOrigin(bool cross_origin) override;
   RefPtr<WebTaskRunner> LoadingTaskRunner() override;
@@ -108,7 +108,7 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
   base::trace_event::BlameContext* blame_context_;   // NOT OWNED
   bool frame_visible_;
-  bool page_throttled_;
+  bool page_visible_;
   bool frame_suspended_;
   bool cross_origin_;
   int active_connection_count_;

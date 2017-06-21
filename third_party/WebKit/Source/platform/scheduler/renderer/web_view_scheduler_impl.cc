@@ -32,8 +32,6 @@ constexpr double kDefaultMaxBackgroundThrottlingDelayInSeconds = 0;
 // it is under 3s.
 constexpr base::TimeDelta kMinimalBackgroundThrottlingDurationToReport =
     base::TimeDelta::FromSeconds(3);
-constexpr base::TimeDelta kBackgroundThrottlingGracePeriod =
-    base::TimeDelta::FromSeconds(10);
 
 // Values coming from the field trial config are interpreted as follows:
 //   -1 is "not set". Scheduler should use a reasonable default.
@@ -106,7 +104,6 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       virtual_time_policy_(VirtualTimePolicy::ADVANCE),
       background_parser_count_(0),
       page_visible_(true),
-      should_throttle_frames_(false),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       allow_virtual_time_to_advance_(true),
       virtual_time_paused_(false),
@@ -118,10 +115,6 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       background_time_budget_pool_(nullptr),
       delegate_(delegate) {
   renderer_scheduler->AddWebViewScheduler(this);
-
-  delayed_background_throttling_enabler_.Reset(
-      base::Bind(&WebViewSchedulerImpl::EnableBackgroundThrottling,
-                 base::Unretained(this)));
 }
 
 WebViewSchedulerImpl::~WebViewSchedulerImpl() {
@@ -151,7 +144,7 @@ WebViewSchedulerImpl::CreateWebFrameSchedulerImpl(
   MaybeInitializeBackgroundCPUTimeBudgetPool();
   std::unique_ptr<WebFrameSchedulerImpl> frame_scheduler(
       new WebFrameSchedulerImpl(renderer_scheduler_, this, blame_context));
-  frame_scheduler->SetPageThrottled(should_throttle_frames_);
+  frame_scheduler->SetPageVisible(page_visible_);
   frame_schedulers_.insert(frame_scheduler.get());
   return frame_scheduler;
 }
@@ -424,34 +417,10 @@ void WebViewSchedulerImpl::OnThrottlingReported(
   intervention_reporter_->ReportIntervention(WebString::FromUTF8(message));
 }
 
-void WebViewSchedulerImpl::EnableBackgroundThrottling() {
-  should_throttle_frames_ = true;
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
-    frame_scheduler->SetPageThrottled(true);
-  }
-  UpdateBackgroundBudgetPoolThrottlingState();
-}
-
 void WebViewSchedulerImpl::UpdateBackgroundThrottlingState() {
-  delayed_background_throttling_enabler_.Cancel();
-
-  if (page_visible_) {
-    should_throttle_frames_ = false;
-    for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
-      frame_scheduler->SetPageThrottled(false);
-    }
-    UpdateBackgroundBudgetPoolThrottlingState();
-  } else {
-    if (has_active_connection_) {
-      // If connection is active, update state immediately to stop throttling.
-      UpdateBackgroundBudgetPoolThrottlingState();
-    } else {
-      // TODO(altimin): Consider moving this logic into PumpThrottledTasks.
-      renderer_scheduler_->ControlTaskQueue()->PostDelayedTask(
-          FROM_HERE, delayed_background_throttling_enabler_.GetCallback(),
-          kBackgroundThrottlingGracePeriod);
-    }
-  }
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+    frame_scheduler->SetPageVisible(page_visible_);
+  UpdateBackgroundBudgetPoolThrottlingState();
 }
 
 void WebViewSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
