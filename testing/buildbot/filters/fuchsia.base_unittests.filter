@@ -149,7 +149,6 @@
 -ProcessTest.TerminateCurrentProcessImmediatelyWithNonZeroExitCode
 -ProcessTest.TerminateCurrentProcessImmediatelyWithZeroExitCode
 -ProcessTest.WaitForExitWithTimeout
--ProcessUtilTest.CurrentDirectory
 -ProcessUtilTest.DelayedTermination
 -ProcessUtilTest.FDRemapping
 -ProcessUtilTest.GetAppOutput
