@@ -2960,4 +2960,25 @@ TEST_F(PasswordAutofillAgentTest, AutocompleteWhenPageUrlIsChanged) {
   // The username and password should have been autocompleted.
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
+
+// Regression test for https://crbug.com/728028.
+TEST_F(PasswordAutofillAgentTest, NoForm_MultipleAJAXEventsWithoutSubmission) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  password_autofill_agent_->AJAXSucceeded();
+  base::RunLoop().RunUntilIdle();
+
+  // Repeatedly occurring AJAX events without removing the input elements
+  // shouldn't be treated as a password submission.
+  password_autofill_agent_->AJAXSucceeded();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(fake_driver_.called_password_form_submitted());
+  ASSERT_FALSE(static_cast<bool>(fake_driver_.password_form_submitted()));
+}
+
 }  // namespace autofill
