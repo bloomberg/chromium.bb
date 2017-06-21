@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
@@ -207,12 +208,14 @@ component("core") {
     "//third_party/WebKit/Source/core/xmlhttprequest",
   ]
 
-  if (is_win && is_debug && is_component_build && current_cpu == "x64") {
-    # Incremental linking doesn't work on this target in debug mode for
-    # 64-bit builds - the .ilk file gets too large and the incremental
-    # link silently fails. Therefore 32-bit builds or 64-bit release builds
-    # (component either way) should be used for fastest incremental build
-    # performance. VC++ bug filed for 64-bit debug incremental link failures:
+  if (is_win && is_debug && is_component_build &&
+      (current_cpu == "x64" || is_clang)) {
+    # Incremental linking fails when the .ilk file gets too large.
+    # 64-bit debug builds and Clang builds with full symbols trigger this
+    # problem, so we turn off incremental linking in those configurations.
+    # For fastest builds, use component release builds without debug
+    # information.
+    # VC++ bug filed for 64-bit debug incremental link failures:
     # https://connect.microsoft.com/VisualStudio/feedback/details/2846790
     configs -= [ "//build/config/win:default_incremental_linking" ]
     configs += [ "//build/config/win:no_incremental_linking" ]
