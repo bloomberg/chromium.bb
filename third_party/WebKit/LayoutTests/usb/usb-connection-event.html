@@ -16,18 +16,8 @@ usb_test(() => {
 }, 'Can construct a USBConnectionEvent with a device');
 
 test(t => {
-  try {
-    new USBConnectionEvent('connect', { device: null });
-    assert_unreached('expected TypeError');
-  } catch (err) {
-    assert_true(err instanceof TypeError);
-  }
-
-  try {
-    new USBConnectionEvent('connect', {})
-    assert_unreached('expected TypeError');
-  } catch (err) {
-    assert_true(err instanceof TypeError);
-  }
+  assert_throws(TypeError(), () =>
+      new USBConnectionEvent('connect', { device: null }));
+  assert_throws(TypeError(), () => new USBConnectionEvent('connect', {}));
 }, 'Cannot construct a USBConnectionEvent without a device');
 </script>
