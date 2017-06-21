@@ -745,12 +745,13 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadUpdated) {
 }
 
 TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
-  // TODO(dtrainor): Simulate a TIMEOUT once that is supported.
   // TODO(dtrainor): Simulate a UNKNOWN once that is supported.
 
   Entry entry1 = test::BuildBasicEntry(Entry::State::ACTIVE);
   Entry entry2 = test::BuildBasicEntry(Entry::State::ACTIVE);
   Entry entry3 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  Entry entry4 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  entry4.scheduling_params.cancel_time = base::Time::Now();
 
   DriverEntry dentry1 =
       BuildDriverEntry(entry1, DriverEntry::State::IN_PROGRESS);
@@ -759,10 +760,15 @@ TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
   DriverEntry dentry3 =
       BuildDriverEntry(entry3, DriverEntry::State::IN_PROGRESS);
 
-  std::vector<Entry> entries = {entry1, entry2, entry3};
+  std::vector<Entry> entries = {entry1, entry2, entry3, entry4};
   std::vector<DriverEntry> dentries = {dentry1, dentry3};
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+
+  // Test FailureReason::TIMEDOUT.
+  EXPECT_CALL(*client_,
+              OnDownloadFailed(entry4.guid, Client::FailureReason::TIMEDOUT))
+      .Times(1);
 
   // Set up the Controller.
   driver_->AddTestData(dentries);
@@ -1075,6 +1081,32 @@ TEST_F(DownloadServiceControllerImplTest, NewExternalDownload) {
 
   EXPECT_FALSE(driver_->Find(entry1.guid).value().paused);
   EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
+}
+
+TEST_F(DownloadServiceControllerImplTest, CancelTimeTest) {
+  Entry entry1 = test::BuildBasicEntry();
+  entry1.state = Entry::State::ACTIVE;
+  entry1.create_time = base::Time::Now() - base::TimeDelta::FromSeconds(10);
+  entry1.scheduling_params.cancel_time =
+      base::Time::Now() - base::TimeDelta::FromSeconds(5);
+
+  Entry entry2 = test::BuildBasicEntry();
+  entry2.state = Entry::State::COMPLETE;
+  entry2.create_time = base::Time::Now() - base::TimeDelta::FromSeconds(10);
+  entry2.scheduling_params.cancel_time =
+      base::Time::Now() - base::TimeDelta::FromSeconds(2);
+  std::vector<Entry> entries = {entry1, entry2};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+  task_runner_->RunUntilIdle();
+
+  // At startup, timed out entries should be killed.
+  std::vector<Entry*> updated_entries = model_->PeekEntries();
+  EXPECT_EQ(1u, updated_entries.size());
 }
 
 }  // namespace download

@@ -70,6 +70,7 @@ struct SchedulingParams {
   bool operator==(const SchedulingParams& rhs) const;
 
   // Cancel the download after this time.  Will cancel in-progress downloads.
+  // base::Time::Max() if not specified.
   base::Time cancel_time;
 
   // The suggested priority.  Non-UI priorities may not be honored by the
