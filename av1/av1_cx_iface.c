@@ -1227,45 +1227,43 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 #endif
       if (!frame_size) continue;
 
-      // Pack invisible frames with the next visible frame
-      if (!cpi->common.show_frame) {
-        if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
-        ctx->pending_cx_data_sz += frame_size;
-        ctx->pending_frame_sizes[ctx->pending_frame_count++] = frame_size;
-        cx_data += frame_size;
-        cx_data_sz -= frame_size;
+      if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
 
-        continue;
+      ctx->pending_frame_sizes[ctx->pending_frame_count++] = frame_size;
+      ctx->pending_cx_data_sz += frame_size;
+
+      cx_data += frame_size;
+      cx_data_sz -= frame_size;
+
+      // invisible frames get packed with the next visible frame
+      if (!cpi->common.show_frame) continue;
+
+      // insert superframe index if needed
+      if (ctx->pending_frame_count > 1) {
+        const size_t index_size = write_superframe_index(ctx);
+        cx_data += index_size;
+        cx_data_sz -= index_size;
       }
 
       // Add the frame packet to the list of returned packets.
       aom_codec_cx_pkt_t pkt;
 
       pkt.kind = AOM_CODEC_CX_FRAME_PKT;
+
+      pkt.data.frame.buf = ctx->pending_cx_data;
+      pkt.data.frame.sz = ctx->pending_cx_data_sz;
+      pkt.data.frame.partition_id = -1;
+
       pkt.data.frame.pts = ticks_to_timebase_units(timebase, dst_time_stamp);
+      pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);
       pkt.data.frame.duration = (uint32_t)ticks_to_timebase_units(
           timebase, dst_end_time_stamp - dst_time_stamp);
-      pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);
-
-      if (ctx->pending_cx_data) {
-        ctx->pending_frame_sizes[ctx->pending_frame_count++] = frame_size;
-        ctx->pending_cx_data_sz += frame_size;
-        frame_size += write_superframe_index(ctx);
-        pkt.data.frame.buf = ctx->pending_cx_data;
-        pkt.data.frame.sz = ctx->pending_cx_data_sz;
-        ctx->pending_cx_data = NULL;
-        ctx->pending_cx_data_sz = 0;
-        ctx->pending_frame_count = 0;
-      } else {
-        pkt.data.frame.buf = cx_data;
-        pkt.data.frame.sz = frame_size;
-      }
-      pkt.data.frame.partition_id = -1;
 
       aom_codec_pkt_list_add(&ctx->pkt_list.head, &pkt);
 
-      cx_data += frame_size;
-      cx_data_sz -= frame_size;
+      ctx->pending_cx_data = NULL;
+      ctx->pending_cx_data_sz = 0;
+      ctx->pending_frame_count = 0;
     }
   }
 
