@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/country_combobox_model.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -117,6 +118,15 @@
 
 - (BOOL)shouldHideBackgroundForHeaderItem {
   return NO;
+}
+
+- (void)formatValueForEditorField:(EditorField*)field {
+  if (field.autofillUIType == AutofillUITypeProfileHomePhoneWholeNumber) {
+    field.value =
+        base::SysUTF8ToNSString(payments::data_util::FormatPhoneForDisplay(
+            base::SysNSStringToUTF8(field.value),
+            base::SysNSStringToUTF8(self.selectedCountryCode)));
+  }
 }
 
 - (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
@@ -299,8 +309,12 @@
   EditorField* field = self.fieldsMap[phoneNumberFieldKey];
   if (!field) {
     NSString* value =
-        [self fieldValueFromProfile:self.address
-                          fieldType:autofill::PHONE_HOME_WHOLE_NUMBER];
+        self.address
+            ? base::SysUTF16ToNSString(
+                  payments::data_util::GetFormattedPhoneNumberForDisplay(
+                      *self.address,
+                      GetApplicationContext()->GetApplicationLocale()))
+            : nil;
     field = [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
                      fieldType:EditorFieldTypeTextField

@@ -6,9 +6,11 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -74,6 +76,17 @@
   return NO;
 }
 
+- (void)formatValueForEditorField:(EditorField*)field {
+  if (field.autofillUIType == AutofillUITypeProfileHomePhoneWholeNumber) {
+    const std::string countryCode =
+        autofill::AutofillCountry::CountryCodeForLocale(
+            GetApplicationContext()->GetApplicationLocale());
+    field.value =
+        base::SysUTF8ToNSString(payments::data_util::FormatPhoneForDisplay(
+            base::SysNSStringToUTF8(field.value), countryCode));
+  }
+}
+
 - (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
   return nil;
 }
@@ -99,8 +112,12 @@
 
   if (_paymentRequest->request_payer_phone()) {
     NSString* phone =
-        [self fieldValueFromProfile:self.profile
-                          fieldType:autofill::PHONE_HOME_WHOLE_NUMBER];
+        self.profile
+            ? base::SysUTF16ToNSString(
+                  payments::data_util::GetFormattedPhoneNumberForDisplay(
+                      *self.profile,
+                      GetApplicationContext()->GetApplicationLocale()))
+            : nil;
     EditorField* phoneField = [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
                      fieldType:EditorFieldTypeTextField

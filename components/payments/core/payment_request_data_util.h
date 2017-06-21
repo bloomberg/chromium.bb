@@ -71,6 +71,11 @@ std::string FormatPhoneForDisplay(const std::string& phone_number,
 std::string FormatPhoneForResponse(const std::string& phone_number,
                                    const std::string& country_code);
 
+// Formats |card_number| for display. For example, "4111111111111111" is
+// formatted into "4111 1111 1111 1111". This method does not format masked card
+// numbers, which start with a letter.
+base::string16 FormatCardNumberForDisplay(const base::string16& card_number);
+
 // Returns a country code to be used when validating this profile. If the
 // profile has a valid country code set, it is returned. If not, a country code
 // associated with |app_locale| is used as a fallback.

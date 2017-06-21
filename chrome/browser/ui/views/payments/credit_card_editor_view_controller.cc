@@ -34,6 +34,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
@@ -135,29 +136,6 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ExpirationDateValidationDelegate);
 };
-
-// Formats card number. For example, "4111111111111111" is formatted into
-// "4111 1111 1111 1111".
-base::string16 FormatCardNumber(const base::string16& text) {
-  // Do not format masked card numbers, which start with a letter.
-  base::string16 number = autofill::CreditCard::StripSeparators(text);
-  if (number.empty() || !base::IsAsciiDigit(number[0]))
-    return text;
-
-  std::vector<size_t> positions = {4U, 9U, 14U};
-  if (autofill::CreditCard::GetCardNetwork(number) ==
-      autofill::kAmericanExpressCard) {
-    positions = {4U, 11U};
-  }
-
-  static const base::char16 kSeparator = base::ASCIIToUTF16(" ")[0];
-  for (size_t i : positions) {
-    if (number.size() > i)
-      number.insert(i, 1U, kSeparator);
-  }
-
-  return number;
-}
 
 }  // namespace
 
@@ -368,7 +346,9 @@ base::string16 CreditCardEditorViewController::GetInitialValueForType(
   base::string16 info = credit_card_to_edit_->GetInfo(
       autofill::AutofillType(type), state()->GetApplicationLocale());
 
-  return type == autofill::CREDIT_CARD_NUMBER ? FormatCardNumber(info) : info;
+  return type == autofill::CREDIT_CARD_NUMBER
+             ? data_util::FormatCardNumberForDisplay(info)
+             : info;
 }
 
 bool CreditCardEditorViewController::ValidateModelAndSave() {
@@ -627,7 +607,7 @@ bool CreditCardEditorViewController::CreditCardValidationDelegate::
 base::string16
 CreditCardEditorViewController::CreditCardValidationDelegate::Format(
     const base::string16& text) {
-  return FormatCardNumber(text);
+  return data_util::FormatCardNumberForDisplay(text);
 }
 
 bool CreditCardEditorViewController::CreditCardValidationDelegate::
