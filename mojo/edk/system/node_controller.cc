@@ -998,6 +998,8 @@ void NodeController::OnEventMessage(const ports::NodeName& from_node,
   }
 
   node_->AcceptEvent(std::move(event));
+
+  AttemptShutdownIfRequested();
 }
 
 void NodeController::OnRequestPortMerge(
