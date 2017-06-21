@@ -73,8 +73,8 @@ const char kAboutNullHostname[] = "about:null";
 // Shows the dialog associated with the next context in |contextQueue|.
 - (void)showNextDialog;
 
-// Called when a button in |coordinator| is tapped.
-- (void)buttonWasTappedForCoordinator:(AlertCoordinator*)coordinator;
+// Called when |coordinator| is stopped.
+- (void)dialogCoordinatorWasStopped:(AlertCoordinator*)coordinator;
 
 // Adds buttons to |alertCoordinator|.  A confirmation button with |label| as
 // the text will be added for |confirmAction|, and a cancel button will be added
@@ -153,7 +153,7 @@ const char kAboutNullHostname[] = "about:null";
   ProceduralBlock OKHandler = ^{
     if (completionHandler)
       completionHandler();
-    [weakSelf buttonWasTappedForCoordinator:weakCoordinator];
+    [weakSelf dialogCoordinatorWasStopped:weakCoordinator];
   };
 
   // Add button.
@@ -312,15 +312,24 @@ const char kAboutNullHostname[] = "about:null";
 }
 
 - (void)cancelDialogForWebState:(web::WebState*)webState {
-  DCHECK_NE(webState, self.presentedDialogWebState);
-  AlertCoordinator* dialogToCancel = _dialogCoordinatorsForWebStates[webState];
-  if (dialogToCancel) {
+  BOOL cancelingPresentedDialog = webState == self.presentedDialogWebState;
+  AlertCoordinator* dialogToCancel =
+      cancelingPresentedDialog ? self.presentedDialogCoordinator
+                               : _dialogCoordinatorsForWebStates[webState];
+  DCHECK(!cancelingPresentedDialog || dialogToCancel);
+  [dialogToCancel executeCancelHandler];
+  [dialogToCancel stop];
+
+  if (cancelingPresentedDialog) {
+    DCHECK(_dialogCoordinatorsForWebStates[webState] == nil);
+    // Simulate a button tap to trigger showing the next dialog.
+    [self dialogCoordinatorWasStopped:dialogToCancel];
+  } else if (dialogToCancel) {
+    // Clean up queued state.
     auto it =
         std::find(_queuedWebStates.begin(), _queuedWebStates.end(), webState);
     DCHECK(it != _queuedWebStates.end());
     _queuedWebStates.erase(it);
-    [dialogToCancel executeCancelHandler];
-    [dialogToCancel stop];
     _dialogCoordinatorsForWebStates.erase(webState);
   }
 }
@@ -386,7 +395,7 @@ const char kAboutNullHostname[] = "about:null";
   [self.presentedDialogCoordinator start];
 }
 
-- (void)buttonWasTappedForCoordinator:(AlertCoordinator*)coordinator {
+- (void)dialogCoordinatorWasStopped:(AlertCoordinator*)coordinator {
   if (coordinator != self.presentedDialogCoordinator)
     return;
   self.presentedDialogWebState = nil;
@@ -407,13 +416,13 @@ const char kAboutNullHostname[] = "about:null";
   ProceduralBlock confirmHandler = ^{
     if (confirmAction)
       confirmAction();
-    [weakSelf buttonWasTappedForCoordinator:weakCoordinator];
+    [weakSelf dialogCoordinatorWasStopped:weakCoordinator];
   };
 
   ProceduralBlock cancelHandler = ^{
     if (cancelAction)
       cancelAction();
-    [weakSelf buttonWasTappedForCoordinator:weakCoordinator];
+    [weakSelf dialogCoordinatorWasStopped:weakCoordinator];
   };
 
   // Add buttons.
@@ -485,12 +494,12 @@ const char kAboutNullHostname[] = "about:null";
       if (!strongSelf)
         return;
       DialogBlockingOptionSelected([strongSelf presentedDialogWebState]);
-      [strongSelf buttonWasTappedForCoordinator:weakCoordinator];
+      [strongSelf dialogCoordinatorWasStopped:weakCoordinator];
     };
     ProceduralBlock cancelHandler = ^{
       if (cancelAction)
         cancelAction();
-      [weakSelf buttonWasTappedForCoordinator:weakCoordinator];
+      [weakSelf dialogCoordinatorWasStopped:weakCoordinator];
     };
     NSString* blockingOptionTitle =
         l10n_util::GetNSString(IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT);
