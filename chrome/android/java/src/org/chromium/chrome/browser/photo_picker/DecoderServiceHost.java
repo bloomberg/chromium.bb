@@ -15,6 +15,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.StrictMode;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -188,10 +189,10 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
      * decoding process back to the client, and takes care of house-keeping chores regarding
      * the request queue).
      * @param filePath The path to the image that was just decoded.
-     * @param bitmap The resulting decoded bitmap.
+     * @param bitmap The resulting decoded bitmap, or null if decoding fails.
      * @param decodeTime The length of time it took to decode the bitmap.
      */
-    public void closeRequest(String filePath, Bitmap bitmap, long decodeTime) {
+    public void closeRequest(String filePath, @Nullable Bitmap bitmap, long decodeTime) {
         DecoderServiceParams params = getRequests().get(filePath);
         if (params != null) {
             long endRpcCall = SystemClock.elapsedRealtime();
@@ -200,7 +201,7 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
 
             params.mCallback.imageDecodedCallback(filePath, bitmap);
 
-            if (decodeTime != -1) {
+            if (decodeTime != -1 && bitmap != null) {
                 RecordHistogram.recordTimesHistogram(
                         "Android.PhotoPicker.ImageDecodeTime", decodeTime, TimeUnit.MILLISECONDS);
 
