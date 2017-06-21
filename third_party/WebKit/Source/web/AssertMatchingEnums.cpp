@@ -51,7 +51,6 @@
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
-#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "modules/indexeddb/IDBKey.h"
@@ -61,7 +60,6 @@
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/speech/SpeechRecognitionError.h"
-#include "platform/Cursor.h"
 #include "platform/FileMetadata.h"
 #include "platform/FileSystemType.h"
 #include "platform/fonts/FontDescription.h"
@@ -77,15 +75,12 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringImpl.h"
-#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/platform/WebContentSecurityPolicyStruct.h"
-#include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebFileError.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
-#include "public/platform/WebFontDescription.h"
 #include "public/platform/WebHistoryScrollRestorationType.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebMediaPlayer.h"
@@ -133,127 +128,14 @@
 
 namespace blink {
 
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUncached,
-                   ApplicationCacheHost::kUncached);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle, ApplicationCacheHost::kIdle);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChecking,
-                   ApplicationCacheHost::kChecking);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloading,
-                   ApplicationCacheHost::kDownloading);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReady,
-                   ApplicationCacheHost::kUpdateready);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsolete,
-                   ApplicationCacheHost::kObsolete);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCheckingEvent,
-                   ApplicationCacheHost::kCheckingEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kErrorEvent,
-                   ApplicationCacheHost::kErrorEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kNoUpdateEvent,
-                   ApplicationCacheHost::kNoupdateEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloadingEvent,
-                   ApplicationCacheHost::kDownloadingEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kProgressEvent,
-                   ApplicationCacheHost::kProgressEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReadyEvent,
-                   ApplicationCacheHost::kUpdatereadyEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCachedEvent,
-                   ApplicationCacheHost::kCachedEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsoleteEvent,
-                   ApplicationCacheHost::kObsoleteEvent);
 
 STATIC_ASSERT_ENUM(WebClientRedirectPolicy::kNotClientRedirect,
                    ClientRedirectPolicy::kNotClientRedirect);
 STATIC_ASSERT_ENUM(WebClientRedirectPolicy::kClientRedirect,
                    ClientRedirectPolicy::kClientRedirect);
 
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypePointer, Cursor::kPointer);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCross, Cursor::kCross);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeHand, Cursor::kHand);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeIBeam, Cursor::kIBeam);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWait, Cursor::kWait);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeHelp, Cursor::kHelp);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastResize, Cursor::kEastResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthResize, Cursor::kNorthResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastResize,
-                   Cursor::kNorthEastResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestResize,
-                   Cursor::kNorthWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthResize, Cursor::kSouthResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthEastResize,
-                   Cursor::kSouthEastResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthWestResize,
-                   Cursor::kSouthWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWestResize, Cursor::kWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthSouthResize,
-                   Cursor::kNorthSouthResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastWestResize, Cursor::kEastWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastSouthWestResize,
-                   Cursor::kNorthEastSouthWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestSouthEastResize,
-                   Cursor::kNorthWestSouthEastResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeColumnResize, Cursor::kColumnResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeRowResize, Cursor::kRowResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeMiddlePanning, Cursor::kMiddlePanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastPanning, Cursor::kEastPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthPanning, Cursor::kNorthPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastPanning,
-                   Cursor::kNorthEastPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestPanning,
-                   Cursor::kNorthWestPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthPanning, Cursor::kSouthPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthEastPanning,
-                   Cursor::kSouthEastPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthWestPanning,
-                   Cursor::kSouthWestPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWestPanning, Cursor::kWestPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeMove, Cursor::kMove);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeVerticalText, Cursor::kVerticalText);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCell, Cursor::kCell);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeContextMenu, Cursor::kContextMenu);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeAlias, Cursor::kAlias);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeProgress, Cursor::kProgress);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNoDrop, Cursor::kNoDrop);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCopy, Cursor::kCopy);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNone, Cursor::kNone);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNotAllowed, Cursor::kNotAllowed);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeZoomIn, Cursor::kZoomIn);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeZoomOut, Cursor::kZoomOut);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeGrab, Cursor::kGrab);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeGrabbing, Cursor::kGrabbing);
-STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCustom, Cursor::kCustom);
 
-STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyNone,
-                   FontDescription::kNoFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyStandard,
-                   FontDescription::kStandardFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilySerif,
-                   FontDescription::kSerifFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilySansSerif,
-                   FontDescription::kSansSerifFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyMonospace,
-                   FontDescription::kMonospaceFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyCursive,
-                   FontDescription::kCursiveFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyFantasy,
-                   FontDescription::kFantasyFamily);
 
-STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingAuto, kAutoSmoothing);
-STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingNone, kNoSmoothing);
-STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingGrayscale, kAntialiased);
-STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingSubpixel,
-                   kSubpixelAntialiased);
-
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight100, kFontWeight100);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight200, kFontWeight200);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight300, kFontWeight300);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight400, kFontWeight400);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight500, kFontWeight500);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight600, kFontWeight600);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight700, kFontWeight700);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight800, kFontWeight800);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeight900, kFontWeight900);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeightNormal, kFontWeightNormal);
-STATIC_ASSERT_ENUM(WebFontDescription::kWeightBold, kFontWeightBold);
 
 STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAuto,
                    kScrollbarAuto);

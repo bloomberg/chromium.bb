@@ -31,9 +31,11 @@
 
 #include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/StringHasher.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 #include "platform/wtf/text/StringHash.h"
+#include "public/platform/WebFontDescription.h"
 
 namespace blink {
 
@@ -355,16 +357,45 @@ SkFontStyle FontDescription::SkiaFontStyle() const {
       break;
   }
   return SkFontStyle(NumericFontWeight(Weight()), width, slant);
-  static_assert(
-      static_cast<int>(kFontStretchUltraCondensed) ==
-          static_cast<int>(SkFontStyle::kUltraCondensed_Width),
-      "FontStretchUltraCondensed should map to kUltraCondensed_Width");
-  static_assert(static_cast<int>(kFontStretchNormal) ==
-                    static_cast<int>(SkFontStyle::kNormal_Width),
-                "FontStretchNormal should map to kNormal_Width");
-  static_assert(static_cast<int>(kFontStretchUltraExpanded) ==
-                    static_cast<int>(SkFontStyle::kUltraExpanded_Width),
-                "FontStretchUltraExpanded should map to kUltraExpanded_Width");
 }
+
+STATIC_ASSERT_ENUM(kFontStretchUltraCondensed,
+                   SkFontStyle::kUltraCondensed_Width);
+STATIC_ASSERT_ENUM(kFontStretchNormal, SkFontStyle::kNormal_Width);
+STATIC_ASSERT_ENUM(kFontStretchUltraExpanded,
+                   SkFontStyle::kUltraExpanded_Width);
+
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyNone,
+                   FontDescription::kNoFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyStandard,
+                   FontDescription::kStandardFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilySerif,
+                   FontDescription::kSerifFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilySansSerif,
+                   FontDescription::kSansSerifFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyMonospace,
+                   FontDescription::kMonospaceFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyCursive,
+                   FontDescription::kCursiveFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyFantasy,
+                   FontDescription::kFantasyFamily);
+
+STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingAuto, kAutoSmoothing);
+STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingNone, kNoSmoothing);
+STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingGrayscale, kAntialiased);
+STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingSubpixel,
+                   kSubpixelAntialiased);
+
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight100, kFontWeight100);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight200, kFontWeight200);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight300, kFontWeight300);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight400, kFontWeight400);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight500, kFontWeight500);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight600, kFontWeight600);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight700, kFontWeight700);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight800, kFontWeight800);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight900, kFontWeight900);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeightNormal, kFontWeightNormal);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeightBold, kFontWeightBold);
 
 }  // namespace blink
