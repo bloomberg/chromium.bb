@@ -222,35 +222,33 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded() {
   }
   was_frame_scrollable_ = frame_is_scrollable;
 
-  if (WebLayer* layout_viewport_scroll_layer =
-          frame_view ? toWebLayer(frame_view->LayoutViewportScrollableArea()
-                                      ->LayerForScrolling())
-                     : nullptr) {
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    if (WebLayer* layout_viewport_scroll_layer =
+            frame_view ? toWebLayer(frame_view->LayoutViewportScrollableArea()
+                                        ->LayerForScrolling())
+                       : nullptr) {
       layout_viewport_scroll_layer->SetBounds(frame_view->ContentsSize());
-
-    // If there is a non-root fullscreen element, prevent the viewport from
-    // scrolling.
-    Document* main_frame_document =
-        page_->DeprecatedLocalMainFrame()->GetDocument();
-    Element* fullscreen_element =
-        Fullscreen::FullscreenElementFrom(*main_frame_document);
-    WebLayer* visual_viewport_scroll_layer =
-        toWebLayer(page_->GetVisualViewport().ScrollLayer());
-
-    if (visual_viewport_scroll_layer) {
-      if (fullscreen_element &&
-          fullscreen_element != main_frame_document->documentElement())
-        visual_viewport_scroll_layer->SetUserScrollable(false, false);
-      else
-        visual_viewport_scroll_layer->SetUserScrollable(true, true);
-    }
-
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       layout_viewport_scroll_layer->SetUserScrollable(
           frame_view->UserInputScrollable(kHorizontalScrollbar),
           frame_view->UserInputScrollable(kVerticalScrollbar));
     }
+  }
+
+  // If there is a non-root fullscreen element, prevent the viewport from
+  // scrolling.
+  Document* main_frame_document =
+      page_->DeprecatedLocalMainFrame()->GetDocument();
+  Element* fullscreen_element =
+      Fullscreen::FullscreenElementFrom(*main_frame_document);
+  WebLayer* visual_viewport_scroll_layer =
+      toWebLayer(page_->GetVisualViewport().ScrollLayer());
+
+  if (visual_viewport_scroll_layer) {
+    if (fullscreen_element &&
+        fullscreen_element != main_frame_document->documentElement())
+      visual_viewport_scroll_layer->SetUserScrollable(false, false);
+    else
+      visual_viewport_scroll_layer->SetUserScrollable(true, true);
   }
 
   if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
