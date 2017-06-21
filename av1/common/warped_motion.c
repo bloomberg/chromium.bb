@@ -1762,23 +1762,12 @@ static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
 int find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
                     int mvx, WarpedMotionParams *wm_params, int mi_row,
                     int mi_col) {
-  int result = 1;
-  switch (wm_params->wmtype) {
-    case AFFINE:
-      result = find_affine_int(np, pts1, pts2, bsize, mvy, mvx, wm_params,
-                               mi_row, mi_col);
-      break;
-    default: assert(0 && "Invalid warped motion type!"); return 1;
-  }
+  assert(wm_params->wmtype == AFFINE);
+  const int result = find_affine_int(np, pts1, pts2, bsize, mvy, mvx, wm_params,
+                                     mi_row, mi_col);
   if (result == 0) {
-    if (wm_params->wmtype == ROTZOOM) {
-      wm_params->wmmat[5] = wm_params->wmmat[2];
-      wm_params->wmmat[4] = -wm_params->wmmat[3];
-    }
-    if (wm_params->wmtype == AFFINE || wm_params->wmtype == ROTZOOM) {
-      // check compatibility with the fast warp filter
-      if (!get_shear_params(wm_params)) return 1;
-    }
+    // check compatibility with the fast warp filter
+    if (!get_shear_params(wm_params)) return 1;
   }
 
   return result;
