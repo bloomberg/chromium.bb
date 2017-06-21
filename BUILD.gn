@@ -402,7 +402,7 @@ group("gn_all") {
     ]
   }
 
-  if ((is_win || is_mac || is_linux) &&
+  if ((is_win || is_mac || is_linux || is_chromeos) &&
       (target_cpu == "x86" || target_cpu == "x64")) {
     deps += [ "//third_party/swiftshader" ]
   }

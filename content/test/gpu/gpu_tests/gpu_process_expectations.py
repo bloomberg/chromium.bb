@@ -23,8 +23,8 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     # Currently SwiftShader is integrated only on Windows and Linux. Remove
     # platforms from this suppression as it is integrated on more platforms.
-    self.Skip('GpuProcess_swiftshader_for_webgl',
-              ['mac', 'android', 'chromeos'], bug=630728)
+    self.Skip('GpuProcess_swiftshader_for_webgl', ['mac', 'android'],
+              bug=630728)
 
     # There is no Android multi-gpu configuration and the helper
     # gpu_info_collector.cc::IdentifyActiveGPU is not even called.
