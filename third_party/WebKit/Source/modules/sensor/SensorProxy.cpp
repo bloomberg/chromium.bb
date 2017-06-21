@@ -6,6 +6,7 @@
 
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
+#include "core/page/FocusController.h"
 #include "modules/sensor/SensorProviderProxy.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
@@ -18,6 +19,7 @@ SensorProxy::SensorProxy(SensorType sensor_type,
                          SensorProviderProxy* provider,
                          Page* page)
     : PageVisibilityObserver(page),
+      FocusChangedObserver(page),
       type_(sensor_type),
       mode_(ReportingMode::CONTINUOUS),
       provider_(provider),
@@ -141,14 +143,11 @@ void SensorProxy::SensorReadingChanged() {
 }
 
 void SensorProxy::PageVisibilityChanged() {
-  if (!IsInitialized())
-    return;
+  UpdateSuspendedStatus();
+}
 
-  if (GetPage()->VisibilityState() != kPageVisibilityStateVisible) {
-    Suspend();
-  } else {
-    Resume();
-  }
+void SensorProxy::FocusedFrameChanged() {
+  UpdateSuspendedStatus();
 }
 
 void SensorProxy::HandleSensorError() {
@@ -218,6 +217,8 @@ void SensorProxy::OnSensorCreated(SensorInitParamsPtr params,
 
   state_ = kInitialized;
 
+  UpdateSuspendedStatus();
+
   for (Observer* observer : observers_)
     observer->OnSensorInitialized();
 }
@@ -278,6 +279,23 @@ void SensorProxy::UpdatePollingStatus() {
   } else {
     polling_timer_.Stop();
   }
+}
+
+void SensorProxy::UpdateSuspendedStatus() {
+  if (!IsInitialized())
+    return;
+
+  bool page_visible =
+      GetPage()->VisibilityState() == kPageVisibilityStateVisible;
+
+  LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();
+  bool main_frame_focused =
+      focused_frame && !focused_frame->IsCrossOriginSubframe();
+
+  if (page_visible && main_frame_focused)
+    Resume();
+  else
+    Suspend();
 }
 
 }  // namespace blink
