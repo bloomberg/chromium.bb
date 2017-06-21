@@ -29,6 +29,7 @@ run_jsbundler("switch_access_copied_files") {
     "automation_manager.js",
     "automation_predicate.js",
     "background.js",
+    "commands.js",
     "keyboard_handler.js",
     "options.css",
     "options.html",

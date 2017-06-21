@@ -8,12 +8,11 @@
  */
 function FakeSwitchAccess() {
   this.moveToNextCount = 0;
-  this.switchAccessPrefs = {};
-  this.switchAccessPrefs.getNumberPref = function(key) {
+  this.getNumberPref = function(key) {
     if (key === 'autoScanTime')
       return 1;
   };
-  this.switchAccessPrefs.getBooleanPref = function(key) {
+  this.getBooleanPref = function(key) {
     if (key === 'enableAutoScan')
       return false;
   };

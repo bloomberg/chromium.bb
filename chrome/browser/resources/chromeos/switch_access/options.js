@@ -22,11 +22,11 @@ function SwitchAccessOptions() {
   let background = chrome.extension.getBackgroundPage();
 
   /**
-   * User preferences.
+   * SwitchAccess reference.
    *
-   * @type {SwitchAccessPrefs}
+   * @private {SwitchAccessInterface}
    */
-  this.switchAccessPrefs_ = background.switchAccess.switchAccessPrefs;
+  this.switchAccess_ = background.switchAccess;
 
   this.init_();
   document.addEventListener('change', this.handleInputChange_.bind(this));
@@ -43,9 +43,14 @@ SwitchAccessOptions.prototype = {
    */
   init_: function() {
     $('enableAutoScan').checked =
-        this.switchAccessPrefs_.getBooleanPref('enableAutoScan');
+        this.switchAccess_.getBooleanPref('enableAutoScan');
     $('autoScanTime').value =
-        this.switchAccessPrefs_.getNumberPref('autoScanTime') / 1000;
+        this.switchAccess_.getNumberPref('autoScanTime') / 1000;
+
+    for (let command of this.switchAccess_.getCommands()) {
+      $(command).value =
+          String.fromCharCode(this.switchAccess_.getNumberPref(command));
+    }
   },
 
   /**
@@ -58,20 +63,44 @@ SwitchAccessOptions.prototype = {
     let input = event.target;
     switch (input.id) {
       case 'enableAutoScan':
-        this.switchAccessPrefs_.setPref(input.id, input.checked);
+        this.switchAccess_.setPref(input.id, input.checked);
         break;
       case 'autoScanTime':
-        let oldVal = this.switchAccessPrefs_.getNumberPref(input.id);
+        let oldVal = this.switchAccess_.getNumberPref(input.id);
         let val = Number(input.value) * 1000;
         let min = Number(input.min) * 1000;
-        if (this.isValidInput_(val, oldVal, min)) {
+        if (this.isValidScanTimeInput_(val, oldVal, min)) {
           input.value = Number(input.value);
-          this.switchAccessPrefs_.setPref(input.id, val);
+          this.switchAccess_.setPref(input.id, val);
         } else {
           input.value = oldVal;
         }
         break;
+      default:
+        if (this.switchAccess_.getCommands().includes(input.id)) {
+          let keyCode = input.value.toUpperCase().charCodeAt(0);
+          if (this.isValidKeyCode_(keyCode)) {
+            input.value = input.value.toUpperCase();
+            this.switchAccess_.setPref(input.id, keyCode);
+          } else {
+            let oldKeyCode = this.switchAccess_.getNumberPref(input.id);
+            input.value = String.fromCharCode(oldKeyCode);
+          }
+        }
     }
+  },
+
+  /**
+   * Return true if |keyCode| is a letter or number, and if it is not already
+   * being used.
+   *
+   * @param {number} keyCode
+   * @return {boolean}
+   */
+  isValidKeyCode_: function(keyCode) {
+    return ((keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0)) ||
+            (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0))) &&
+        !this.switchAccess_.keyCodeIsUsed(keyCode);
   },
 
   /**
@@ -83,7 +112,7 @@ SwitchAccessOptions.prototype = {
    * @param {number} min
    * @return {boolean}
    */
-  isValidInput_: function(value, oldValue, min) {
+  isValidScanTimeInput_: function(value, oldValue, min) {
     return (value !== oldValue) && (value >= min);
   },
 
@@ -103,6 +132,9 @@ SwitchAccessOptions.prototype = {
         case 'autoScanTime':
           $(key).value = updatedPrefs[key] / 1000;
           break;
+        default:
+          if (this.switchAccess_.getCommands().includes(key))
+            $(key).value = String.fromCharCode(updatedPrefs[key]);
       }
     }
   }

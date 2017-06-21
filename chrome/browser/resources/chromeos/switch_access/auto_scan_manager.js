@@ -11,6 +11,7 @@
 function AutoScanManager(switchAccess) {
   /**
    * SwitchAccess reference.
+   *
    * @private {SwitchAccessInterface}
    */
   this.switchAccess_ = switchAccess;
@@ -27,9 +28,9 @@ function AutoScanManager(switchAccess) {
    *
    * @private {number}
    */
-  this.scanTime_ = switchAccess.switchAccessPrefs.getNumberPref('autoScanTime');
+  this.scanTime_ = switchAccess.getNumberPref('autoScanTime');
 
-  let enabled = switchAccess.switchAccessPrefs.getBooleanPref('enableAutoScan');
+  let enabled = switchAccess.getBooleanPref('enableAutoScan');
   if (enabled)
     this.start_();
 }
