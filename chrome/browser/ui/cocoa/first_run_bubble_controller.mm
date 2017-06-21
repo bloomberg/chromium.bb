@@ -14,6 +14,24 @@
 #include "components/search_engines/util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+@interface FirstRunKeyResponder : NSResponder
+@end
+
+@implementation FirstRunKeyResponder
+
+- (void)keyDown:(NSEvent*)event {
+  // Pass the key event along to the browser window's first responder (which is
+  // the omnibox).
+  NSWindow* firstRunBubbleWindow = [event window];
+  [[[firstRunBubbleWindow parentWindow] firstResponder] keyDown:event];
+
+  // Remove the first run bubble from the screen and clean up.
+  [firstRunBubbleWindow orderOut:nil];
+  [[firstRunBubbleWindow windowController] close];
+}
+
+@end
+
 @interface FirstRunBubbleController(Private)
 - (id)initRelativeToView:(NSView*)view
                   offset:(NSPoint)offset
@@ -44,6 +62,12 @@
                                     offset:offset])) {
     browser_ = browser;
     profile_ = profile;
+
+    // Add a responder object to catch any key events that are not consumed
+    // by controls in the bubble, so that user typing dismisses the bubble.
+    keyResponder_.reset([[FirstRunKeyResponder alloc] init]);
+    [[self window] setNextResponder:keyResponder_];
+
     [self showWindow:nil];
 
     // On 10.5, the first run bubble sometimes does not disappear when clicking
