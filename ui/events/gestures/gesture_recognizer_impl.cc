@@ -282,6 +282,7 @@ bool GestureRecognizerImpl::ProcessTouchEventPreDispatch(
 GestureRecognizer::Gestures GestureRecognizerImpl::AckTouchEvent(
     uint32_t unique_event_id,
     ui::EventResult result,
+    bool is_source_touch_event_set_non_blocking,
     GestureConsumer* consumer) {
   GestureProviderAura* gesture_provider = nullptr;
 
@@ -295,7 +296,8 @@ GestureRecognizer::Gestures GestureRecognizerImpl::AckTouchEvent(
   } else {
     gesture_provider = GetGestureProviderForConsumer(consumer);
   }
-  gesture_provider->OnTouchEventAck(unique_event_id, result != ER_UNHANDLED);
+  gesture_provider->OnTouchEventAck(unique_event_id, result != ER_UNHANDLED,
+                                    is_source_touch_event_set_non_blocking);
   return gesture_provider->GetAndResetPendingGestures();
 }
 

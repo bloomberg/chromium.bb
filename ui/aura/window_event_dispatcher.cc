@@ -180,12 +180,15 @@ DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
   return DispatchMouseEnterOrExit(window, event, ui::ET_MOUSE_EXITED);
 }
 
-void WindowEventDispatcher::ProcessedTouchEvent(uint32_t unique_event_id,
-                                                Window* window,
-                                                ui::EventResult result) {
+void WindowEventDispatcher::ProcessedTouchEvent(
+    uint32_t unique_event_id,
+    Window* window,
+    ui::EventResult result,
+    bool is_source_touch_event_set_non_blocking) {
   ui::GestureRecognizer::Gestures gestures =
-      ui::GestureRecognizer::Get()->AckTouchEvent(unique_event_id, result,
-                                                  window);
+      ui::GestureRecognizer::Get()->AckTouchEvent(
+          unique_event_id, result, is_source_touch_event_set_non_blocking,
+          window);
   DispatchDetails details = ProcessGestures(window, std::move(gestures));
   if (details.dispatcher_destroyed)
     return;
@@ -555,7 +558,8 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
         Window* window = static_cast<Window*>(target);
         ui::GestureRecognizer::Gestures gestures =
             ui::GestureRecognizer::Get()->AckTouchEvent(
-                touchevent.unique_event_id(), event.result(), window);
+                touchevent.unique_event_id(), event.result(),
+                false /* is_source_touch_event_set_non_blocking */, window);
 
         return ProcessGestures(window, std::move(gestures));
       }
