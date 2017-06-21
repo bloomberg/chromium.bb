@@ -36,6 +36,10 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/font_fallback_win.h"
+#endif
+
 namespace gfx {
 
 namespace {
@@ -1499,14 +1503,13 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
       return;
   }
 
-  std::string preferred_fallback_family;
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
   Font fallback_font(primary_font);
+  std::string fallback_family;
   const base::char16* run_text = &(text[run->range.start()]);
   if (GetFallbackFont(primary_font, run_text, run->range.length(),
                       &fallback_font)) {
-    preferred_fallback_family = fallback_font.GetFontName();
+    fallback_family = fallback_font.GetFontName();
     if (CompareFamily(text, fallback_font, fallback_font.GetFontRenderParams(),
                       run, &best_font, &best_render_params,
                       &best_missing_glyphs))
@@ -1517,10 +1520,8 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   std::vector<Font> fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)
-  // Append fonts in the fallback list of the preferred fallback font.
-  // TODO(tapted): Investigate whether there's a case that benefits from this on
-  // Mac.
-  if (!preferred_fallback_family.empty()) {
+  // Append fonts in the fallback list of the fallback font.
+  if (!fallback_family.empty()) {
     std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
     fallback_font_list.insert(fallback_font_list.end(), fallback_fonts.begin(),
                               fallback_fonts.end());
@@ -1532,7 +1533,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   // could be a raster font like System, which would not give us a reasonable
   // fallback font list.
   if (!base::LowerCaseEqualsASCII(primary_font.GetFontName(), "segoe ui") &&
-      !base::LowerCaseEqualsASCII(preferred_fallback_family, "segoe ui")) {
+      !base::LowerCaseEqualsASCII(fallback_family, "segoe ui")) {
     std::vector<Font> default_fallback_families =
         GetFallbackFonts(Font("Segoe UI", 13));
     fallback_font_list.insert(fallback_font_list.end(),
@@ -1547,10 +1548,14 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   for (const auto& font : fallback_font_list) {
     std::string font_name = font.GetFontName();
 
-    if (font_name == primary_font.GetFontName() ||
-        font_name == preferred_fallback_family || fallback_fonts.count(font)) {
+    if (font_name == primary_font.GetFontName())
       continue;
-    }
+#if defined(OS_WIN)
+    if (font_name == fallback_family)
+      continue;
+#endif
+    if (fallback_fonts.find(font) != fallback_fonts.end())
+      continue;
 
     fallback_fonts.insert(font);
 

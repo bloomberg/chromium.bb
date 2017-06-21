@@ -341,7 +341,7 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
 }
 
 bool GetFallbackFont(const Font& font,
-                     const base::char16* text,
+                     const wchar_t* text,
                      int text_length,
                      Font* result) {
   // Creating a DirectWrite font fallback can be expensive. It's ok in the
