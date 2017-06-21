@@ -131,8 +131,8 @@ public class PickerCategoryView extends RelativeLayout
         super(context);
         mActivity = (ChromeActivity) context;
 
-        mDecoderServiceHost = new DecoderServiceHost(this);
-        mDecoderServiceHost.bind(mActivity);
+        mDecoderServiceHost = new DecoderServiceHost(this, context);
+        mDecoderServiceHost.bind(context);
 
         mSelectionDelegate = new SelectionDelegate<PickerBitmap>();
 
