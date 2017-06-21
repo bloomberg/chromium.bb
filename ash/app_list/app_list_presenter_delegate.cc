@@ -14,7 +14,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
@@ -107,8 +106,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
   view_ = view;
-  aura::Window* root_window =
-      ShellPort::Get()->GetRootWindowForDisplayId(display_id);
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
   aura::Window* container = RootWindowController::ForWindow(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
 
@@ -137,8 +135,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
 
 void AppListPresenterDelegate::OnShown(int64_t display_id) {
   is_visible_ = true;
-  aura::Window* root_window =
-      ShellPort::Get()->GetRootWindowForDisplayId(display_id);
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
   Shell::Get()->OnAppListVisibilityChanged(is_visible_, root_window);
 }
 

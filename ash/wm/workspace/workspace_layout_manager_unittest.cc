@@ -20,7 +20,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
-#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
@@ -576,7 +575,7 @@ TEST_F(WorkspaceLayoutManagerTest,
       CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   gfx::Insets insets(0, 0, 50, 0);
-  ShellPort::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
+  Shell::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
@@ -592,11 +591,10 @@ TEST_F(WorkspaceLayoutManagerTest,
   // The following two SetDisplayWorkAreaInsets calls simulate the case of
   // crbug.com/673803 that work area first becomes fullscreen and then returns
   // to the original state.
-  ShellPort::Get()->SetDisplayWorkAreaInsets(window.get(),
-                                             gfx::Insets(0, 0, 0, 0));
+  Shell::Get()->SetDisplayWorkAreaInsets(window.get(), gfx::Insets(0, 0, 0, 0));
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   EXPECT_TRUE(animator->is_animating());
-  ShellPort::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
+  Shell::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
   animator->StopAnimating();
   EXPECT_FALSE(animator->is_animating());
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
@@ -620,8 +618,8 @@ TEST_F(WorkspaceLayoutManagerTest,
   window2->Show();
 
   gfx::Rect expected_bounds = window2->bounds();
-  ShellPort::Get()->SetDisplayWorkAreaInsets(window.get(),
-                                             gfx::Insets(50, 0, 0, 0));
+  Shell::Get()->SetDisplayWorkAreaInsets(window.get(),
+                                         gfx::Insets(50, 0, 0, 0));
   EXPECT_EQ(expected_bounds.ToString(), window2->bounds().ToString());
 }
 
@@ -1401,14 +1399,14 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
     restore_work_area_insets_ =
         display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
-    ShellPort::Get()->SetDisplayWorkAreaInsets(
+    Shell::Get()->SetDisplayWorkAreaInsets(
         Shell::GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
   }
 
   void HideKeyboard() {
-    ShellPort::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                               restore_work_area_insets_);
+    Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
+                                           restore_work_area_insets_);
     layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
   }
 

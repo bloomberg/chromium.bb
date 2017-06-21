@@ -38,12 +38,6 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::ScreenRotationAnimator,
                                    kScreenRotationAnimatorKey,
                                    nullptr);
 
-aura::Window* GetRootWindow(int64_t display_id) {
-  return ash::Shell::Get()
-      ->window_tree_host_manager()
-      ->GetRootWindowForDisplayId(display_id);
-}
-
 }  // namespace
 
 namespace ash {
@@ -191,7 +185,7 @@ void DisplayConfigurationController::SetPrimaryDisplayIdImpl(
 ScreenRotationAnimator*
 DisplayConfigurationController::GetScreenRotationAnimatorForDisplay(
     int64_t display_id) {
-  aura::Window* root_window = GetRootWindow(display_id);
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
   ScreenRotationAnimator* animator =
       root_window->GetProperty(kScreenRotationAnimatorKey);
   if (!animator) {

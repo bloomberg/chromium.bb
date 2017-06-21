@@ -80,7 +80,7 @@ bool ShellPort::IsSystemModalWindowOpen() {
 
   // Traverse all system modal containers, and find its direct child window
   // with "SystemModal" setting, and visible.
-  for (aura::Window* root : GetAllRootWindows()) {
+  for (aura::Window* root : Shell::GetAllRootWindows()) {
     aura::Window* system_modal =
         root->GetChildById(kShellWindowId_SystemModalContainer);
     if (!system_modal)

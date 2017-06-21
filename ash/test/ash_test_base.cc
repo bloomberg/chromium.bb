@@ -20,7 +20,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_controller_client.h"
@@ -68,9 +67,7 @@ class AshEventGeneratorDelegate
       const gfx::Point& point_in_screen) const override {
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display = screen->GetDisplayNearestPoint(point_in_screen);
-    return ShellPort::Get()
-        ->GetRootWindowForDisplayId(display.id())
-        ->GetHost();
+    return Shell::GetRootWindowForDisplayId(display.id())->GetHost();
   }
 
   aura::client::ScreenPositionClient* GetScreenPositionClient(
@@ -240,12 +237,8 @@ display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  if (!Shell::ShouldEnableSimplifiedDisplayManagement()) {
-    ash_test_helper_->UpdateDisplayForMash(display_specs);
-  } else {
-    display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
-        .UpdateDisplay(display_specs);
-  }
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .UpdateDisplay(display_specs);
   UnblockCompositors();
 }
 
@@ -377,8 +370,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   } else {
     display::Display display =
         display::Screen::GetScreen()->GetDisplayMatching(bounds);
-    aura::Window* root =
-        ShellPort::Get()->GetRootWindowForDisplayId(display.id());
+    aura::Window* root = Shell::GetRootWindowForDisplayId(display.id());
     gfx::Point origin = bounds.origin();
     ::wm::ConvertPointFromScreen(root, &origin);
     window->SetBounds(gfx::Rect(origin, bounds.size()));

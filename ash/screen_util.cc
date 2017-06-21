@@ -6,7 +6,6 @@
 
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -51,9 +50,11 @@ gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParentForLockScreen(
 
 // static
 gfx::Rect ScreenUtil::GetDisplayBoundsWithShelf(aura::Window* window) {
-  if (ShellPort::Get()->IsInUnifiedMode()) {
+  if (Shell::Get()->display_manager()->IsInUnifiedMode()) {
     // In unified desktop mode, there is only one shelf in the first display.
-    gfx::SizeF size(ShellPort::Get()->GetFirstDisplay().size());
+    const display::Display& first_display =
+        Shell::Get()->display_manager()->software_mirroring_display_list()[0];
+    gfx::SizeF size(first_display.size());
     float scale = window->GetRootWindow()->bounds().height() / size.height();
     size.Scale(scale, scale);
     return gfx::Rect(gfx::ToCeiledSize(size));

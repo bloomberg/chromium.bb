@@ -462,8 +462,8 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // window.
   if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
-    ShellPort::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
-                                               gfx::Insets());
+    Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
+                                           gfx::Insets());
   }
 }
 
@@ -655,8 +655,8 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // if keyboard is not shown.
       if (!state_.IsAddingSecondaryUser() || !keyboard_bounds_.IsEmpty())
         insets = target_bounds.work_area_insets;
-      ShellPort::Get()->SetDisplayWorkAreaInsets(
-          shelf_widget_->GetNativeWindow(), insets);
+      Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
+                                             insets);
     }
   }
 

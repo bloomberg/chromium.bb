@@ -39,8 +39,7 @@ class ShellPortMashTestApi;
 // ShellPort implementation for mash/mus. See ash/README.md for more.
 class ShellPortMash : public ShellPort {
  public:
-  ShellPortMash(aura::Window* primary_root_window,
-                WindowManager* window_manager,
+  ShellPortMash(WindowManager* window_manager,
                 views::PointerWatcherEventRouter* pointer_watcher_event_router);
   ~ShellPortMash() override;
 
@@ -59,16 +58,6 @@ class ShellPortMash : public ShellPort {
   // ShellPort:
   void Shutdown() override;
   Config GetAshConfig() const override;
-  aura::Window* GetPrimaryRootWindow() override;
-  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
-  const display::ManagedDisplayInfo& GetDisplayInfo(
-      int64_t display_id) const override;
-  bool IsActiveDisplayId(int64_t display_id) const override;
-  display::Display GetFirstDisplay() const override;
-  bool IsInUnifiedMode() const override;
-  bool IsInUnifiedModeIgnoreMirroring() const override;
-  void SetDisplayWorkAreaInsets(aura::Window* window,
-                                const gfx::Insets& insets) override;
   std::unique_ptr<display::TouchTransformSetter> CreateTouchTransformDelegate()
       override;
   void LockCursor() override;
@@ -77,7 +66,6 @@ class ShellPortMash : public ShellPort {
   void HideCursor() override;
   void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
   bool IsMouseEventsEnabled() override;
-  std::vector<aura::Window*> GetAllRootWindows() override;
   void RecordGestureAction(GestureActionType action) override;
   void RecordUserMetricsAction(UserMetricsAction action) override;
   void RecordTaskSwitchMetric(TaskSwitchSource source) override;
@@ -106,8 +94,7 @@ class ShellPortMash : public ShellPort {
       const AshWindowTreeHostInitParams& init_params) override;
   void OnCreatedRootWindowContainers(
       RootWindowController* root_window_controller) override;
-  void CreatePrimaryHost() override;
-  void InitHosts(const ShellInitParams& init_params) override;
+  void OnHostsInitialized() override;
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override;
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
@@ -137,9 +124,6 @@ class ShellPortMash : public ShellPort {
   };
 
   WindowManager* window_manager_;
-
-  // TODO(sky): remove this once mash supports simple display management.
-  aura::Window* primary_root_window_;
 
   // Only one of |mash_state_| or |mus_state_| is created, depending upon
   // Config.

@@ -55,6 +55,9 @@ specific_include_rules = {
   "root_window_controller\.*": [
     "+ash/host"
   ],
+  "shell.cc": [
+    "+ash/host/ash_window_tree_host_init_params.h"
+  ],
   "touch_transformer_controller\.*": [
     "+ash/host"
   ],

@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/views/view.h"
@@ -137,7 +138,8 @@ void TrayAudio::ChangeInternalSpeakerChannelMode() {
   bool swap = false;
   if (display::Display::HasInternalDisplay()) {
     const display::ManagedDisplayInfo& display_info =
-        ShellPort::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
+        Shell::Get()->display_manager()->GetDisplayInfo(
+            display::Display::InternalDisplayId());
     if (display_info.GetActiveRotation() == display::Display::ROTATE_180)
       swap = true;
   }

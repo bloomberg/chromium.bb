@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_layer.h"
 
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -105,8 +104,7 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(bounds);
   aura::Window* root_window =
-      ash::Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-          display.id());
+      ash::Shell::GetRootWindowForDisplayId(display.id());
   CreateOrUpdateLayer(root_window, "AccessibilityFocusRing", bounds);
 }
 

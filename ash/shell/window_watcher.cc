@@ -13,7 +13,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
-#include "ash/shell_port.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/window.h"
@@ -135,8 +134,7 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
 }
 
 void WindowWatcher::OnDisplayAdded(const display::Display& new_display) {
-  aura::Window* root =
-      ShellPort::Get()->GetRootWindowForDisplayId(new_display.id());
+  aura::Window* root = Shell::GetRootWindowForDisplayId(new_display.id());
   workspace_window_watcher_->RootWindowAdded(root);
 }
 

@@ -5,7 +5,6 @@
 #include "ash/rotator/screen_rotation_animator.h"
 
 #include "ash/ash_switches.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/rotator/screen_rotation_animation.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
@@ -64,11 +63,6 @@ int GetRotationFactor(display::Display::Rotation initial_rotation,
   return (initial_rotation + 3) % 4 == new_rotation
              ? kCounterClockWiseRotationFactor
              : kClockWiseRotationFactor;
-}
-
-aura::Window* GetRootWindow(int64_t display_id) {
-  return Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-      display_id);
 }
 
 aura::Window* GetScreenRotationContainer(aura::Window* root_window) {
@@ -133,7 +127,7 @@ bool IgnoreCopyResult(int64_t request_id, int64_t current_request_id) {
 
 bool RootWindowChangedForDisplayId(aura::Window* root_window,
                                    int64_t display_id) {
-  return root_window != GetRootWindow(display_id);
+  return root_window != Shell::GetRootWindowForDisplayId(display_id);
 }
 
 // Creates a mask layer and returns the |mask_layer_tree_owner|.

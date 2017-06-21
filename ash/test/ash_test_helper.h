@@ -98,9 +98,6 @@ class AshTestHelper {
 
   AshTestEnvironment* ash_test_environment() { return ash_test_environment_; }
 
-  // Version of DisplayManagerTestApi::UpdateDisplay() for mash.
-  void UpdateDisplayForMash(const std::string& display_spec);
-
   display::Display GetSecondaryDisplay();
 
   // Null in classic ash.
@@ -137,13 +134,6 @@ class AshTestHelper {
   RootWindowController* CreateRootWindowController(
       const std::string& display_spec,
       int* next_x);
-
-  // Updates an existing display based on |display_spec|.
-  void UpdateDisplay(RootWindowController* root_window_controller,
-                     const std::string& display_spec,
-                     int* next_x);
-
-  std::vector<RootWindowController*> GetRootsOrderedByDisplayId();
 
   static Config config_;
 
