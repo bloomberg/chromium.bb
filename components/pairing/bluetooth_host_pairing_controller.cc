@@ -4,12 +4,15 @@
 
 #include "components/pairing/bluetooth_host_pairing_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/hash.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "chromeos/system/devicetype.h"
 #include "components/pairing/bluetooth_pairing_constants.h"
@@ -86,14 +89,9 @@ std::vector<BluetoothHostPairingController::InputDeviceInfo> GetDevices() {
 }  // namespace
 
 BluetoothHostPairingController::BluetoothHostPairingController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
-    : current_stage_(STAGE_NONE),
-      connectivity_status_(CONNECTIVITY_UNTESTED),
-      update_status_(UPDATE_STATUS_UNKNOWN),
-      enrollment_status_(ENROLLMENT_STATUS_UNKNOWN),
-      proto_decoder_(new ProtoDecoder(this)),
-      file_task_runner_(file_task_runner),
-      ptr_factory_(this) {}
+    scoped_refptr<base::TaskRunner> input_service_task_runner)
+    : proto_decoder_(base::MakeUnique<ProtoDecoder>(this)),
+      input_service_task_runner_(std::move(input_service_task_runner)) {}
 
 BluetoothHostPairingController::~BluetoothHostPairingController() {
   Reset();
@@ -190,7 +188,7 @@ void BluetoothHostPairingController::Reset() {
 
 void BluetoothHostPairingController::OnGetAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!adapter_.get());
   adapter_ = adapter;
 
@@ -203,7 +201,7 @@ void BluetoothHostPairingController::OnGetAdapter(
 }
 
 void BluetoothHostPairingController::SetPowered() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (adapter_->IsPowered()) {
     was_powered_ = true;
     OnSetPowered();
@@ -218,7 +216,7 @@ void BluetoothHostPairingController::SetPowered() {
 }
 
 void BluetoothHostPairingController::OnSetPowered() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   adapter_->AddPairingDelegate(
       this, device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
 
@@ -235,7 +233,7 @@ void BluetoothHostPairingController::OnSetPowered() {
 
 void BluetoothHostPairingController::OnCreateService(
     scoped_refptr<device::BluetoothSocket> socket) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   service_socket_ = socket;
 
   service_socket_->Accept(
@@ -257,7 +255,7 @@ void BluetoothHostPairingController::OnAccept(
     scoped_refptr<device::BluetoothSocket> socket) {
   controller_device_address_ = device->GetAddress();
 
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   adapter_->SetDiscoverable(
       false,
       base::Bind(&BluetoothHostPairingController::OnSetDiscoverable,
@@ -277,7 +275,7 @@ void BluetoothHostPairingController::OnAccept(
 }
 
 void BluetoothHostPairingController::OnSetDiscoverable(bool change_stage) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (change_stage) {
     DCHECK_EQ(current_stage_, STAGE_NONE);
     ChangeStage(STAGE_WAITING_FOR_CONTROLLER);
@@ -288,7 +286,7 @@ void BluetoothHostPairingController::OnSendComplete(int bytes_sent) {}
 
 void BluetoothHostPairingController::OnReceiveComplete(
     int bytes, scoped_refptr<net::IOBuffer> io_buffer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   proto_decoder_->DecodeIOBuffer(bytes, io_buffer);
 
   if (controller_socket_.get()) {
@@ -372,7 +370,7 @@ void BluetoothHostPairingController::OnForget() {
     }
 
     base::PostTaskAndReplyWithResult(
-        file_task_runner_.get(), FROM_HERE, base::Bind(&GetDevices),
+        input_service_task_runner_.get(), FROM_HERE, base::Bind(&GetDevices),
         base::Bind(&BluetoothHostPairingController::PowerOffAdapterIfApplicable,
                    ptr_factory_.GetWeakPtr()));
   }
@@ -409,7 +407,7 @@ void BluetoothHostPairingController::OnConfigureHostMessage(
 
 void BluetoothHostPairingController::OnPairDevicesMessage(
     const pairing_api::PairDevices& message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   enrollment_domain_ = message.parameters().enrolling_domain();
   ChangeStage(STAGE_ENROLLING);
   for (Observer& observer : observers_)
@@ -418,7 +416,7 @@ void BluetoothHostPairingController::OnPairDevicesMessage(
 
 void BluetoothHostPairingController::OnCompleteSetupMessage(
     const pairing_api::CompleteSetup& message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (current_stage_ != STAGE_ENROLLMENT_SUCCESS) {
     ChangeStage(STAGE_ENROLLMENT_ERROR);
   } else {
@@ -435,14 +433,14 @@ void BluetoothHostPairingController::OnErrorMessage(
 
 void BluetoothHostPairingController::OnRebootMessage(
     const pairing_api::Reboot& message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (Observer& observer : observers_)
     observer.RebootHostRequested();
 }
 
 void BluetoothHostPairingController::OnAddNetworkMessage(
     const pairing_api::AddNetwork& message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (Observer& observer : observers_)
     observer.AddNetworkRequested(message.parameters().onc_spec());
 }
@@ -518,7 +516,7 @@ void BluetoothHostPairingController::OnUpdateStatusChanged(
 void BluetoothHostPairingController::OnEnrollmentStatusChanged(
     EnrollmentStatus enrollment_status) {
   DCHECK_EQ(current_stage_, STAGE_ENROLLING);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   enrollment_status_ = enrollment_status;
   if (enrollment_status == ENROLLMENT_STATUS_SUCCESS) {

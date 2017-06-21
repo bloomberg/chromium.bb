@@ -22,7 +22,7 @@
 #include "device/hid/input_service_linux.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class TaskRunner;
 }
 
 namespace device {
@@ -62,7 +62,7 @@ class BluetoothHostPairingController
   };
 
   explicit BluetoothHostPairingController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
+      scoped_refptr<base::TaskRunner> input_service_task_runner);
   ~BluetoothHostPairingController() override;
 
   // These functions should be only used in tests.
@@ -141,12 +141,12 @@ class BluetoothHostPairingController
                       uint32_t passkey) override;
   void AuthorizePairing(device::BluetoothDevice* device) override;
 
-  Stage current_stage_;
+  Stage current_stage_ = STAGE_NONE;
   std::string confirmation_code_;
   std::string enrollment_domain_;
-  Connectivity connectivity_status_;
-  UpdateStatus update_status_;
-  EnrollmentStatus enrollment_status_;
+  Connectivity connectivity_status_ = CONNECTIVITY_UNTESTED;
+  UpdateStatus update_status_ = UPDATE_STATUS_UNKNOWN;
+  EnrollmentStatus enrollment_status_ = ENROLLMENT_STATUS_UNKNOWN;
   std::string permanent_id_;
   std::string controller_device_address_;
   bool was_powered_ = false;
@@ -168,10 +168,10 @@ class BluetoothHostPairingController
   std::unique_ptr<ProtoDecoder> proto_decoder_;
   TestDelegate* delegate_ = nullptr;
 
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  base::ThreadChecker thread_checker_;
+  scoped_refptr<base::TaskRunner> input_service_task_runner_;
+  THREAD_CHECKER(thread_checker_);
   base::ObserverList<Observer> observers_;
-  base::WeakPtrFactory<BluetoothHostPairingController> ptr_factory_;
+  base::WeakPtrFactory<BluetoothHostPairingController> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothHostPairingController);
 };
