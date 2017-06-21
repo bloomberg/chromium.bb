@@ -18,16 +18,32 @@ namespace media {
 class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
     : public AndroidVideoSurfaceChooser {
  public:
-  AndroidVideoSurfaceChooserImpl();
+  // |allow_dynamic| should be true if and only if we are allowed to change the
+  // surface selection after the initial callback.
+  AndroidVideoSurfaceChooserImpl(bool allow_dynamic);
   ~AndroidVideoSurfaceChooserImpl() override;
 
   // AndroidVideoSurfaceChooser
   void Initialize(UseOverlayCB use_overlay_cb,
                   UseSurfaceTextureCB use_surface_texture_cb,
-                  AndroidOverlayFactoryCB initial_factory) override;
-  void ReplaceOverlayFactory(AndroidOverlayFactoryCB factory) override;
+                  AndroidOverlayFactoryCB initial_factory,
+                  const State& initial_state) override;
+  void UpdateState(base::Optional<AndroidOverlayFactoryCB> new_factory,
+                   const State& new_state) override;
 
  private:
+  // Choose whether we should be using a SurfaceTexture or overlay, and issue
+  // the right callbacks if we're changing between them.  This should only be
+  // called if |allow_dynamic_|.
+  void Choose();
+
+  // Start switching to SurfaceTexture or overlay, as needed.  These will call
+  // the client callbacks if we're changing state, though those callbacks might
+  // happen after this returns.
+  void SwitchToSurfaceTexture();
+  // If |overlay_| has an in-flight request, then this will do nothing.
+  void SwitchToOverlay();
+
   // AndroidOverlay callbacks.
   void OnOverlayReady(AndroidOverlay*);
   void OnOverlayFailed(AndroidOverlay*);
@@ -41,11 +57,22 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   // sent it to the client already once it became ready to use.
   std::unique_ptr<AndroidOverlay> overlay_;
 
-  // If true, we owe the client notification about whether to use an overlay
-  // or a surface texture.
-  bool client_notification_pending_ = false;
-
   AndroidOverlayFactoryCB overlay_factory_;
+
+  // Do we allow dynamic surface switches.  Usually this means "Are we running
+  // on M or later?".
+  bool allow_dynamic_;
+
+  enum OverlayState {
+    kUnknown,
+    kUsingSurfaceTexture,
+    kUsingOverlay,
+  };
+
+  // What was the last signal that the client received?
+  OverlayState client_overlay_state_ = kUnknown;
+
+  State current_state_;
 
   base::WeakPtrFactory<AndroidVideoSurfaceChooserImpl> weak_factory_;
 

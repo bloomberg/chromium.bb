@@ -248,7 +248,7 @@ TEST_F(MediaCodecVideoDecoderTest, SetOverlayInfoIsValidBeforeInitialize) {
 TEST_F(MediaCodecVideoDecoderTest, SetOverlayInfoReplacesTheOverlayFactory) {
   InitializeWithOverlay();
 
-  EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory()).Times(2);
+  EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(2);
   OverlayInfo info;
   info.surface_id = 123;
   mcvd_->SetOverlayInfo(info);
@@ -260,7 +260,7 @@ TEST_F(MediaCodecVideoDecoderTest, DuplicateSetOverlayInfosAreIgnored) {
   InitializeWithOverlay();
 
   // The second SetOverlayInfo() should be ignored.
-  EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory()).Times(1);
+  EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(1);
   OverlayInfo info;
   info.surface_id = 123;
   mcvd_->SetOverlayInfo(info);
