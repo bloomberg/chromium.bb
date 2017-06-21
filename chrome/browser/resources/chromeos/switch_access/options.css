@@ -6,3 +6,26 @@
   clear: left;
   float: left;
 }
+
+.container::after {
+  clear: both;
+  content: '';
+  display: block;
+}
+
+#keyboardMappingDiv * {
+  float: left;
+}
+
+#keyboardMappingDiv label {
+  clear: left;
+}
+
+#keyboardMappingDiv span {
+  white-space: pre-wrap;
+}
+
+#debugKeyMappingDiv {
+  clear: left;
+  display: none;
+}
