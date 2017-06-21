@@ -26839,9 +26839,12 @@ from previous Chrome versions.
 
 <enum name="OffscreenCanvasCommitType">
   <int value="0" label="GPUCanvasGPUCompositing"/>
-  <int value="1" label="GPUCanvasSoftwareCompositing"/>
-  <int value="2" label="SoftwareCanvasGPUCompositing"/>
+  <int value="1" label="GPUCanvasSoftwareCompositing (obsolete)"/>
+  <int value="2" label="SoftwareCanvasGPUCompositing (obsolete)"/>
   <int value="3" label="SoftwareCanvasSoftwareCompositing"/>
+  <int value="4" label="GPUCanvasGPUMemoryBuffer"/>
+  <int value="5" label="SoftwareCanvasGPUMemoryBuffer"/>
+  <int value="6" label="GPUCanvasSoftwareCompositing"/>
 </enum>
 
 <enum name="OmniboxAggressiveHistoryURLProviderFieldTrialBeacon">

@@ -7,6 +7,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
@@ -18,11 +19,14 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/transform.h"
 
 namespace blink {
@@ -46,6 +50,8 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
       needs_begin_frame_(false),
       next_resource_id_(1u),
       binding_(this),
+      buffer_usage_(gfx::BufferUsage::SCANOUT_CPU_READ_WRITE),
+      buffer_format_(gfx::BufferFormat::RGBA_8888),
       placeholder_canvas_id_(canvas_id) {
   if (frame_sink_id_.is_valid()) {
     // Only frameless canvas pass an invalid frame sink id; we don't create
@@ -75,7 +81,7 @@ OffscreenCanvasFrameDispatcherImpl::createOrRecycleFrameResource() {
   return std::unique_ptr<FrameResource>(new FrameResource());
 }
 
-void OffscreenCanvasFrameDispatcherImpl::SetTransferableResourceToSharedBitmap(
+bool OffscreenCanvasFrameDispatcherImpl::SetTransferableResourceToSharedBitmap(
     cc::TransferableResource& resource,
     RefPtr<StaticBitmapImage> image) {
   std::unique_ptr<FrameResource> frame_resource =
@@ -83,8 +89,10 @@ void OffscreenCanvasFrameDispatcherImpl::SetTransferableResourceToSharedBitmap(
   if (!frame_resource->shared_bitmap_) {
     frame_resource->shared_bitmap_ =
         Platform::Current()->AllocateSharedBitmap(IntSize(width_, height_));
-    if (!frame_resource->shared_bitmap_)
-      return;
+    if (!frame_resource->shared_bitmap_) {
+      LOG(ERROR) << "Failed to create a shared memory bitmap";
+      return false;
+    }
   }
   unsigned char* pixels = frame_resource->shared_bitmap_->pixels();
   DCHECK(pixels);
@@ -101,55 +109,108 @@ void OffscreenCanvasFrameDispatcherImpl::SetTransferableResourceToSharedBitmap(
   resource.is_software = true;
 
   resources_.insert(next_resource_id_, std::move(frame_resource));
+  return true;
 }
 
-void OffscreenCanvasFrameDispatcherImpl::
-    SetTransferableResourceToSharedGPUContext(
-        cc::TransferableResource& resource,
-        RefPtr<StaticBitmapImage> image) {
-  // TODO(crbug.com/652707): When committing the first frame, there is no
-  // instance of SharedGpuContext yet, calling SharedGpuContext::gl() will
-  // trigger a creation of an instace, which requires to create a
-  // WebGraphicsContext3DProvider. This process is quite expensive, because
-  // WebGraphicsContext3DProvider can only be constructed on the main thread,
-  // and bind to the worker thread if commit() is called on worker. In the
-  // subsequent frame, we should already have a SharedGpuContext, then getting
-  // the gl interface should not be expensive.
+bool OffscreenCanvasFrameDispatcherImpl::
+    SetTransferableResourceToGpuMemoryBuffer(cc::TransferableResource& resource,
+                                             RefPtr<StaticBitmapImage> image,
+                                             const SkIRect& damage_rect,
+                                             bool image_uses_gpu) {
   gpu::gles2::GLES2Interface* gl = SharedGpuContext::Gl();
 
   std::unique_ptr<FrameResource> frame_resource =
       createOrRecycleFrameResource();
 
-  SkImageInfo info = SkImageInfo::Make(
-      width_, height_, kN32_SkColorType,
-      image->IsPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-  RefPtr<ArrayBuffer> dst_buffer =
-      ArrayBuffer::CreateOrNull(width_ * height_, info.bytesPerPixel());
-  // If it fails to create a buffer for copying the pixel data, then exit early.
-  if (!dst_buffer)
-    return;
-  unsigned byte_length = dst_buffer->ByteLength();
-  RefPtr<Uint8Array> dst_pixels =
-      Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
-  image->ImageForCurrentFrame()->readPixels(info, dst_pixels->Data(),
-                                            info.minRowBytes(), 0, 0);
+  SkIRect update_rect;
+  gfx::Size size(image->width(), image->height());
+  gfx::BufferUsage buffer_usage =
+      image_uses_gpu ? gfx::BufferUsage::SCANOUT
+                     : gfx::BufferUsage::SCANOUT_CPU_READ_WRITE;
+  gfx::BufferFormat buffer_format =
+      image->CurrentFrameKnownToBeOpaque()
+          ? (SK_B32_SHIFT ? gfx::BufferFormat::RGBX_8888
+                          : gfx::BufferFormat::BGRX_8888)
+          : (SK_B32_SHIFT ? gfx::BufferFormat::RGBA_8888
+                          : gfx::BufferFormat::BGRA_8888);
+
+  if (!gpu_memory_buffer_ || gpu_memory_buffer_->GetSize() != size ||
+      buffer_usage != buffer_usage_ || buffer_format != buffer_format_) {
+    gpu_memory_buffer_ =
+        Platform::Current()->GetGpuMemoryBufferManager()->CreateGpuMemoryBuffer(
+            size, buffer_format, buffer_usage, gpu::kNullSurfaceHandle);
+
+    if (!gpu_memory_buffer_) {
+      LOG(ERROR)
+          << "Failed to create GpuMemoryBuffer, maybe config is not supported";
+      return false;
+    }
+    buffer_usage_ = buffer_usage;
+    buffer_format_ = buffer_format;
+    update_rect = SkIRect::MakeWH(image->width(), image->height());
+  } else {
+    update_rect = damage_rect;
+  }
+
+  // Software path
+  // TODO(crbug.com/646022): Differentiate low latency vs. regular.  This
+  // implementation is the low latency one because it may draw into the
+  // GpuMemoryBuffer of the previous frame, which may result in tearing.
+  if (!image_uses_gpu) {
+    // Map buffer for writing.
+    if (!gpu_memory_buffer_->Map()) {
+      LOG(ERROR) << "Failed to map GPU memory buffer";
+      return false;
+    }
+
+    int dst_stride = gpu_memory_buffer_->stride(0);
+    uint8_t* gpu_memory_buffer_data =
+        static_cast<uint8_t*>(gpu_memory_buffer_->memory(0));
+    uint8_t* dst_data = gpu_memory_buffer_data + update_rect.y() * dst_stride +
+                        4 * update_rect.x();
+    SkImageInfo dst_info =
+        SkImageInfo::MakeN32Premul(update_rect.width(), update_rect.height());
+    image->ImageForCurrentFrame()->readPixels(dst_info, dst_data, dst_stride,
+                                              update_rect.x(), update_rect.y());
+    // Unmap to flush writes to buffer.
+    gpu_memory_buffer_->Unmap();
+  }
+
+  const GLenum format = SK_B32_SHIFT ? GL_RGBA : GL_BGRA_EXT;
 
   if (frame_resource->texture_id_ == 0u) {
     gl->GenTextures(1, &frame_resource->texture_id_);
+    gl->ActiveTexture(GL_TEXTURE0);
     gl->BindTexture(GL_TEXTURE_2D, frame_resource->texture_id_);
-    GLenum format =
-        (kN32_SkColorType == kRGBA_8888_SkColorType) ? GL_RGBA : GL_BGRA_EXT;
-    gl->TexImage2D(GL_TEXTURE_2D, 0, format, width_, height_, 0, format,
-                   GL_UNSIGNED_BYTE, 0);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width_, height_, format,
-                      GL_UNSIGNED_BYTE, dst_pixels->Data());
-
     gl->GenMailboxCHROMIUM(frame_resource->mailbox_.name);
     gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, frame_resource->mailbox_.name);
+  } else {
+    gl->ActiveTexture(GL_TEXTURE0);
+    gl->BindTexture(GL_TEXTURE_2D, frame_resource->texture_id_);
+  }
+
+  if (frame_resource->image_id_) {
+    gl->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, frame_resource->image_id_);
+  } else {
+    frame_resource->image_id_ =
+        gl->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
+                                image->width(), image->height(), format);
+    if (!frame_resource->image_id_) {
+      LOG(ERROR) << "Failed to create image";
+      return false;
+    }
+  }
+  gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, frame_resource->image_id_);
+
+  // GPU path
+  if (image_uses_gpu) {
+    NOTREACHED();  // not yet implemented
+    // TODO(junov): copy update_rect from canvas backing texture to
+    // GpuMemoryBuffer texture.
   }
 
   const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
@@ -159,13 +220,17 @@ void OffscreenCanvasFrameDispatcherImpl::
 
   resource.mailbox_holder =
       gpu::MailboxHolder(frame_resource->mailbox_, sync_token, GL_TEXTURE_2D);
-  resource.read_lock_fences_enabled = false;
+  resource.is_overlay_candidate = true;
+  resource.read_lock_fences_enabled = true;
   resource.is_software = false;
 
+  SharedGpuContext::Gr()->resetContext(kTextureBinding_GrGLBackendState);
+
   resources_.insert(next_resource_id_, std::move(frame_resource));
+  return true;
 }
 
-void OffscreenCanvasFrameDispatcherImpl::
+bool OffscreenCanvasFrameDispatcherImpl::
     SetTransferableResourceToStaticBitmapImage(
         cc::TransferableResource& resource,
         RefPtr<StaticBitmapImage> image) {
@@ -182,6 +247,7 @@ void OffscreenCanvasFrameDispatcherImpl::
       createOrRecycleFrameResource();
   frame_resource->image_ = std::move(image);
   resources_.insert(next_resource_id_, std::move(frame_resource));
+  return true;
 }
 
 namespace {
@@ -223,9 +289,8 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
     RefPtr<StaticBitmapImage> image,
     double commit_start_time,
     const SkIRect& damage_rect,
-    bool is_web_gl_software_rendering /* This flag is true when WebGL's commit
-                                         is called on SwiftShader. */
-    ) {
+    bool is_web_gl_software_rendering,
+    GpuMemoryBufferMode mode) {
   if (!image || !VerifyImageSize(image->Size()))
     return;
   if (!frame_sink_id_.is_valid()) {
@@ -264,43 +329,49 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   // This indicates the filtering on the resource inherently, not the desired
   // filtering effect on the quad.
   resource.filter = GL_NEAREST;
-  // TODO(crbug.com/646022): making this overlay-able.
-  resource.is_overlay_candidate = false;
+  resource.is_overlay_candidate = false;  // may be set to true later
 
   bool yflipped = false;
+  bool is_resource_valid = false;
   OffscreenCanvasCommitType commit_type;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, commit_type_histogram,
-      ("OffscreenCanvas.CommitType", kOffscreenCanvasCommitTypeCount));
-  if (image->IsTextureBacked()) {
-    if (Platform::Current()->IsGPUCompositingEnabled() &&
-        !is_web_gl_software_rendering) {
-      // Case 1: both canvas and compositor are gpu accelerated.
-      commit_type = kCommitGPUCanvasGPUCompositing;
-      SetTransferableResourceToStaticBitmapImage(resource, image);
-      yflipped = true;
-    } else {
-      // Case 2: canvas is accelerated but --disable-gpu-compositing is
-      // specified, or WebGL's commit is called with SwiftShader. The latter
-      // case is indicated by
-      // WebGraphicsContext3DProvider::isSoftwareRendering.
-      commit_type = kCommitGPUCanvasSoftwareCompositing;
-      SetTransferableResourceToSharedBitmap(resource, image);
-    }
+
+  bool image_uses_gpu =
+      image->IsTextureBacked() && !is_web_gl_software_rendering;
+
+  if (mode == kUseGpuMemoryBuffer) {
+    DCHECK(Platform::Current()->IsGPUCompositingEnabled());
+    is_resource_valid = SetTransferableResourceToGpuMemoryBuffer(
+        resource, image, damage_rect, image_uses_gpu);
+    commit_type = image_uses_gpu ? kCommitGPUCanvasGPUMemoryBuffer
+                                 : kCommitSoftwareCanvasGPUMemoryBuffer;
   } else {
-    if (Platform::Current()->IsGPUCompositingEnabled() &&
-        !is_web_gl_software_rendering) {
-      // Case 3: canvas is not gpu-accelerated, but compositor is
-      commit_type = kCommitSoftwareCanvasGPUCompositing;
-      SetTransferableResourceToSharedGPUContext(resource, image);
+    if (image_uses_gpu && Platform::Current()->IsGPUCompositingEnabled()) {
+      commit_type = kCommitGPUCanvasGPUCompositing;
+      yflipped = true;
+      is_resource_valid =
+          SetTransferableResourceToStaticBitmapImage(resource, image);
     } else {
-      // Case 4: both canvas and compositor are not gpu accelerated.
-      commit_type = kCommitSoftwareCanvasSoftwareCompositing;
-      SetTransferableResourceToSharedBitmap(resource, image);
+      // When GPU compositing is enabled, this path could work, but it is
+      // better to use GpuMemoryBuffers to pass non-gpu frames.
+      DCHECK(!Platform::Current()->IsGPUCompositingEnabled());
+      commit_type = image_uses_gpu ? kCommitGPUCanvasSoftwareCompositing
+                                   : kCommitSoftwareCanvasSoftwareCompositing;
+      is_resource_valid =
+          SetTransferableResourceToSharedBitmap(resource, image);
     }
   }
 
+  if (!is_resource_valid) {
+    LOG(ERROR) << "OffscreenCanvas frame update failed because the necessary "
+                  "resources could not be created";
+    return;
+  }
+
   PostImageToPlaceholder(std::move(image));
+
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, commit_type_histogram,
+      ("OffscreenCanvas.CommitType", kOffscreenCanvasCommitTypeCount));
   commit_type_histogram.Count(commit_type);
 
   next_resource_id_++;
@@ -353,44 +424,24 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
                                                              1000000.0);
       }
       break;
-    case kCommitGPUCanvasSoftwareCompositing:
+    case kCommitSoftwareCanvasGPUMemoryBuffer:
       if (IsMainThread()) {
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram,
-            commit_gpu_canvas_software_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasSoftwareCompositingMain", 0,
-             10000000, 50));
-        commit_gpu_canvas_software_compositing_main_timer.Count(elapsed_time *
-                                                                1000000.0);
+            commit_software_canvas_gpu_memory_buffer_main_timer,
+            ("Blink.Canvas.OffscreenCommit.SoftwareCanvasGPUMemoryBufferMain",
+             0, 10000000, 50));
+        commit_software_canvas_gpu_memory_buffer_main_timer.Count(elapsed_time *
+                                                                  1000000.0);
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
-            commit_gpu_canvas_software_compositing_worker_timer,
+            commit_software_canvas_gpu_memory_buffer_worker_timer,
             ("Blink.Canvas.OffscreenCommit."
-             "GPUCanvasSoftwareCompositingWorker",
+             "SoftwareCanvasGPUMemoryBufferWorker",
              0, 10000000, 50));
-        commit_gpu_canvas_software_compositing_worker_timer.Count(elapsed_time *
-                                                                  1000000.0);
-      }
-      break;
-    case kCommitSoftwareCanvasGPUCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_gpu_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit.SoftwareCanvasGPUCompositingMain", 0,
-             10000000, 50));
-        commit_software_canvas_gpu_compositing_main_timer.Count(elapsed_time *
-                                                                1000000.0);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_gpu_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "SoftwareCanvasGPUCompositingWorker",
-             0, 10000000, 50));
-        commit_software_canvas_gpu_compositing_worker_timer.Count(elapsed_time *
-                                                                  1000000.0);
+        commit_software_canvas_gpu_memory_buffer_worker_timer.Count(
+            elapsed_time * 1000000.0);
       }
       break;
     case kCommitSoftwareCanvasSoftwareCompositing:
@@ -414,7 +465,47 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
             elapsed_time * 1000000.0);
       }
       break;
-    case kOffscreenCanvasCommitTypeCount:
+    case kCommitGPUCanvasSoftwareCompositing:
+      if (IsMainThread()) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram,
+                            commit_gpu_canvas_software_compositing_main_timer,
+                            ("Blink.Canvas.OffscreenCommit."
+                             "GpuCanvasSoftwareCompositingMain",
+                             0, 10000000, 50));
+        commit_gpu_canvas_software_compositing_main_timer.Count(elapsed_time *
+                                                                1000000.0);
+      } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(
+            CustomCountHistogram,
+            commit_gpu_canvas_software_compositing_worker_timer,
+            ("Blink.Canvas.OffscreenCommit."
+             "GPUCanvasSoftwareCompositingWorker",
+             0, 10000000, 50));
+        commit_gpu_canvas_software_compositing_worker_timer.Count(elapsed_time *
+                                                                  1000000.0);
+      }
+      break;
+    case kCommitGPUCanvasGPUMemoryBuffer:
+      if (IsMainThread()) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram,
+                            commit_gpu_canvas_gpu_memory_buffer_main_timer,
+                            ("Blink.Canvas.OffscreenCommit."
+                             "GPUCanvasGPUMemoryBufferMain",
+                             0, 10000000, 50));
+        commit_gpu_canvas_gpu_memory_buffer_main_timer.Count(elapsed_time *
+                                                             1000000.0);
+      } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(
+            CustomCountHistogram,
+            commit_gpu_canvas_gpu_memory_buffer_worker_timer,
+            ("Blink.Canvas.OffscreenCommit."
+             "GPUCanvasGPUMemoryBufferWorker",
+             0, 10000000, 50));
+        commit_gpu_canvas_gpu_memory_buffer_worker_timer.Count(elapsed_time *
+                                                               1000000.0);
+      }
+      break;
+    default:
       NOTREACHED();
   }
 

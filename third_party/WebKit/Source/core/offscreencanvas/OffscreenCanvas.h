@@ -163,6 +163,7 @@ class CORE_EXPORT OffscreenCanvas final
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();
   static CanvasRenderingContextFactory* GetRenderingContextFactory(int);
+  bool ShouldUseGpuMemoryBuffer() const;
 
   Member<CanvasRenderingContext> context_;
   WeakMember<ExecutionContext> execution_context_;
