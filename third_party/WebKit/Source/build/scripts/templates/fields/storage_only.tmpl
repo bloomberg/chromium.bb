@@ -2,6 +2,7 @@
 {% from 'fields/field.tmpl' import getter_expression, setter_expression %}
 
 {% macro decl_public_methods(field) -%}
+{{base.decl_initial_method(field)}}
 // Getters and setters not generated
 {%- endmacro %}
 
