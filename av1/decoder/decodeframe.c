@@ -2792,9 +2792,16 @@ static void decode_restoration_mode(AV1_COMMON *cm,
     if (rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX) {
       rsi->restoration_tilesize >>= aom_rb_read_bit(rb);
     }
-    cm->rst_info[1].restoration_tilesize = cm->rst_info[0].restoration_tilesize;
-    cm->rst_info[2].restoration_tilesize = cm->rst_info[0].restoration_tilesize;
   }
+  int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
+  if (s && (cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+            cm->rst_info[2].frame_restoration_type != RESTORE_NONE)) {
+    cm->rst_info[1].restoration_tilesize =
+        cm->rst_info[0].restoration_tilesize >> (aom_rb_read_bit(rb) * s);
+  } else {
+    cm->rst_info[1].restoration_tilesize = cm->rst_info[0].restoration_tilesize;
+  }
+  cm->rst_info[2].restoration_tilesize = cm->rst_info[1].restoration_tilesize;
 }
 
 static void read_wiener_filter(WienerInfo *wiener_info,

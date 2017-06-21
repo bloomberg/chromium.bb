@@ -3540,6 +3540,23 @@ static void encode_restoration_mode(AV1_COMMON *cm,
           wb, rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 1));
     }
   }
+  int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
+  if (s && (cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+            cm->rst_info[2].frame_restoration_type != RESTORE_NONE)) {
+    aom_wb_write_bit(wb, cm->rst_info[1].restoration_tilesize !=
+                             cm->rst_info[0].restoration_tilesize);
+    assert(cm->rst_info[1].restoration_tilesize ==
+               cm->rst_info[0].restoration_tilesize ||
+           cm->rst_info[1].restoration_tilesize ==
+               (cm->rst_info[0].restoration_tilesize >> s));
+    assert(cm->rst_info[2].restoration_tilesize ==
+           cm->rst_info[1].restoration_tilesize);
+  } else if (!s) {
+    assert(cm->rst_info[1].restoration_tilesize ==
+           cm->rst_info[0].restoration_tilesize);
+    assert(cm->rst_info[2].restoration_tilesize ==
+           cm->rst_info[1].restoration_tilesize);
+  }
 }
 
 static void write_wiener_filter(WienerInfo *wiener_info,

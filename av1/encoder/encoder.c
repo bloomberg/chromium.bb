@@ -3644,13 +3644,22 @@ static void init_motion_estimation(AV1_COMP *cpi) {
 }
 
 #if CONFIG_LOOP_RESTORATION
-static void set_restoration_tilesize(int width, int height,
+#define COUPLED_CHROMA_FROM_LUMA_RESTORATION 0
+static void set_restoration_tilesize(int width, int height, int sx, int sy,
                                      RestorationInfo *rst) {
   (void)width;
   (void)height;
+  (void)sx;
+  (void)sy;
+#if COUPLED_CHROMA_FROM_LUMA_RESTORATION
+  int s = AOMMIN(sx, sy);
+#else
+  int s = 0;
+#endif  // !COUPLED_CHROMA_FROM_LUMA_RESTORATION
+
   rst[0].restoration_tilesize = (RESTORATION_TILESIZE_MAX >> 1);
-  rst[1].restoration_tilesize = rst[0].restoration_tilesize;
-  rst[2].restoration_tilesize = rst[0].restoration_tilesize;
+  rst[1].restoration_tilesize = rst[0].restoration_tilesize >> s;
+  rst[2].restoration_tilesize = rst[1].restoration_tilesize;
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
@@ -3691,7 +3700,7 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
 #else
       cm->width, cm->height,
 #endif  // CONFIG_FRAME_SUPERRES
-      cm->rst_info);
+      cm->subsampling_x, cm->subsampling_y, cm->rst_info);
   for (int i = 0; i < MAX_MB_PLANE; ++i)
     cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
   av1_alloc_restoration_buffers(cm);
