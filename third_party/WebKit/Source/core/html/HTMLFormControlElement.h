@@ -143,7 +143,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   void ParseAttribute(const AttributeModificationParams&) override;
   virtual void RequiredAttributeChanged();
   virtual void DisabledAttributeChanged();
-  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(AttachContext&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
   void WillChangeForm() override;

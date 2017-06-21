@@ -133,7 +133,7 @@ class CORE_EXPORT HTMLPlugInElement
   bool CanStartSelection() const override;
   bool WillRespondToMouseClickEvents() final;
   void DefaultEventHandler(Event*) final;
-  void AttachLayoutTree(const AttachContext& = AttachContext()) final;
+  void AttachLayoutTree(AttachContext&) final;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
   void FinishParsingChildren() final;
 

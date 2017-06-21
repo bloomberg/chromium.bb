@@ -101,15 +101,21 @@ void InsertionPoint::SetDistributedNodes(DistributedNodes& distributed_nodes) {
   distributed_nodes_.ShrinkToFit();
 }
 
-void InsertionPoint::AttachLayoutTree(const AttachContext& context) {
+void InsertionPoint::AttachLayoutTree(AttachContext& context) {
   // We need to attach the distribution here so that they're inserted in the
   // right order otherwise the n^2 protection inside LayoutTreeBuilder will
   // cause them to be inserted in the wrong place later. This also lets
   // distributed nodes benefit from the n^2 protection.
+  AttachContext children_context(context);
+  children_context.resolved_style = nullptr;
+
   for (size_t i = 0; i < distributed_nodes_.size(); ++i) {
-    if (distributed_nodes_.at(i)->NeedsAttach())
-      distributed_nodes_.at(i)->AttachLayoutTree(context);
+    Node* child = distributed_nodes_.at(i);
+    if (child->NeedsAttach())
+      child->AttachLayoutTree(children_context);
   }
+  if (children_context.previous_in_flow)
+    context.previous_in_flow = children_context.previous_in_flow;
 
   HTMLElement::AttachLayoutTree(context);
 }

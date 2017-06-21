@@ -62,7 +62,7 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(AttachContext&) override;
 
   void DidElementStateChange();
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;

@@ -38,7 +38,7 @@ class CORE_EXPORT PseudoElement : public Element {
   static PseudoElement* Create(Element* parent, PseudoId);
 
   PassRefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
-  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(AttachContext&) override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) override;
 
   bool CanStartSelection() const override { return false; }

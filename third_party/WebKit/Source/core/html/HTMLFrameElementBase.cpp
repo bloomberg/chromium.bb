@@ -207,7 +207,7 @@ void HTMLFrameElementBase::DidNotifySubtreeInsertionsToDocument() {
     SetNameAndOpenURL();
 }
 
-void HTMLFrameElementBase::AttachLayoutTree(const AttachContext& context) {
+void HTMLFrameElementBase::AttachLayoutTree(AttachContext& context) {
   HTMLFrameOwnerElement::AttachLayoutTree(context);
 
   if (GetLayoutEmbeddedContent() && ContentFrame())

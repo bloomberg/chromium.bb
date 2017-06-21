@@ -159,7 +159,7 @@ bool SVGImageElement::HaveLoadedRequiredResources() {
   return !GetImageLoader().HasPendingActivity();
 }
 
-void SVGImageElement::AttachLayoutTree(const AttachContext& context) {
+void SVGImageElement::AttachLayoutTree(AttachContext& context) {
   SVGGraphicsElement::AttachLayoutTree(context);
 
   if (LayoutSVGImage* image_obj = ToLayoutSVGImage(GetLayoutObject())) {

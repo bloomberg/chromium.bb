@@ -716,7 +716,7 @@ void HTMLMediaElement::RemovedFrom(ContainerNode* insertion_point) {
   }
 }
 
-void HTMLMediaElement::AttachLayoutTree(const AttachContext& context) {
+void HTMLMediaElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 
   if (GetLayoutObject())

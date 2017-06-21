@@ -1785,7 +1785,7 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
     GetDocument().GetFrame()->GetEventHandler().ElementRemoved(this);
 }
 
-void Element::AttachLayoutTree(const AttachContext& context) {
+void Element::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc());
 
   // We've already been through detach when doing an attach, but we might
@@ -3456,7 +3456,9 @@ void Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
   if (pseudo_id == kPseudoIdBackdrop)
     GetDocument().AddToTopLayer(element, this);
   element->InsertedInto(this);
-  element->AttachLayoutTree();
+
+  AttachContext context;
+  element->AttachLayoutTree(context);
 
   probe::pseudoElementCreated(element);
 

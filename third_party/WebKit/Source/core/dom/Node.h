@@ -625,8 +625,14 @@ class CORE_EXPORT Node : public EventTarget {
   struct AttachContext {
     STACK_ALLOCATED();
     ComputedStyle* resolved_style = nullptr;
+    // Keep track of previously attached in-flow box during attachment so that
+    // we don't need to backtrack past display:none/contents and out of flow
+    // objects when we need to do whitespace re-attachment.
+    LayoutObject* previous_in_flow = nullptr;
     bool performing_reattach = false;
     bool clear_invalidation = false;
+    // True if the previous_in_flow member is up-to-date, even if it is nullptr.
+    bool use_previous_in_flow = false;
 
     AttachContext() {}
   };
@@ -635,14 +641,18 @@ class CORE_EXPORT Node : public EventTarget {
   // applied to the node and creates an appropriate LayoutObject which will be
   // inserted into the tree (except when the style has display: none). This
   // makes the node visible in the LocalFrameView.
-  virtual void AttachLayoutTree(const AttachContext& = AttachContext());
+  virtual void AttachLayoutTree(AttachContext&);
 
   // Detaches the node from the layout tree, making it invisible in the rendered
   // view. This method will remove the node's layout object from the layout tree
   // and delete it.
   virtual void DetachLayoutTree(const AttachContext& = AttachContext());
 
-  void ReattachLayoutTree(const AttachContext& = AttachContext());
+  void ReattachLayoutTree() {
+    AttachContext context;
+    ReattachLayoutTree(context);
+  }
+  void ReattachLayoutTree(AttachContext&);
   void LazyReattachIfAttached();
 
   // Returns true if recalcStyle should be called on the object, if there is

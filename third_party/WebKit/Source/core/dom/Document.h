@@ -547,9 +547,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void Initialize();
   virtual void Shutdown();
 
-  void AttachLayoutTree(const AttachContext& = AttachContext()) override {
-    NOTREACHED();
-  }
+  void AttachLayoutTree(AttachContext&) override { NOTREACHED(); }
   void DetachLayoutTree(const AttachContext& = AttachContext()) override {
     NOTREACHED();
   }

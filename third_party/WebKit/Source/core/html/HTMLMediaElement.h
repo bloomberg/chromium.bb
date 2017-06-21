@@ -340,7 +340,7 @@ class CORE_EXPORT HTMLMediaElement
   void ParseAttribute(const AttributeModificationParams&) override;
   void FinishParsingChildren() final;
   bool IsURLAttribute(const Attribute&) const override;
-  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(AttachContext&) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
