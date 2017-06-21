@@ -29,14 +29,16 @@ void HashPasswordManagerTest::SetUp() {
 
 TEST_F(HashPasswordManagerTest, Saving) {
   ASSERT_FALSE(prefs_.HasPrefPath(prefs::kSyncPasswordHash));
-  HashPasswordManager hash_password_manager(&prefs_);
+  HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(&prefs_);
   hash_password_manager.SavePasswordHash(base::ASCIIToUTF16("sync_password"));
   EXPECT_TRUE(prefs_.HasPrefPath(prefs::kSyncPasswordHash));
 }
 
 TEST_F(HashPasswordManagerTest, Clearing) {
   ASSERT_FALSE(prefs_.HasPrefPath(prefs::kSyncPasswordHash));
-  HashPasswordManager hash_password_manager(&prefs_);
+  HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(&prefs_);
   hash_password_manager.SavePasswordHash(base::ASCIIToUTF16("sync_password"));
   hash_password_manager.ClearSavedPasswordHash();
   EXPECT_FALSE(prefs_.HasPrefPath(prefs::kSyncPasswordHash));
@@ -44,7 +46,8 @@ TEST_F(HashPasswordManagerTest, Clearing) {
 
 TEST_F(HashPasswordManagerTest, Retrieving) {
   ASSERT_FALSE(prefs_.HasPrefPath(prefs::kSyncPasswordHash));
-  HashPasswordManager hash_password_manager(&prefs_);
+  HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(&prefs_);
   hash_password_manager.SavePasswordHash(base::ASCIIToUTF16("sync_password"));
   // TODO(crbug.com/657041) Fix this text when hash calculation is implemented.
   EXPECT_FALSE(hash_password_manager.RetrievePasswordHash());

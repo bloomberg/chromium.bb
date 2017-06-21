@@ -11,8 +11,6 @@
 
 namespace password_manager {
 
-HashPasswordManager::HashPasswordManager(PrefService* prefs) : prefs_(prefs) {}
-
 void HashPasswordManager::SavePasswordHash(const base::string16& password) {
   if (prefs_) {
     // TODO(crbug.com/657041) Implement creating a salt, hash calculation,
