@@ -78,6 +78,8 @@ void CommonNameMismatchHandler::CheckSuggestedUrl(
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  // Don't follow redirects to prevent leaking URL data to HTTP sites.
+  url_fetcher_->SetStopOnRedirect(true);
   url_fetcher_->Start();
 }
 
@@ -117,13 +119,14 @@ void CommonNameMismatchHandler::OnURLFetchComplete(
   // Save a copy of |suggested_url| so it can be used after |url_fetcher_|
   // is destroyed.
   const GURL suggested_url = url_fetcher_->GetOriginalURL();
-  const GURL& landing_url = url_fetcher_->GetURL();
+  const GURL landing_url = url_fetcher_->GetURL();
 
   // Make sure the |landing_url| is a HTTPS page and returns a proper response
   // code.
   if (url_fetcher_.get()->GetResponseCode() == 200 &&
       landing_url.SchemeIsCryptographic() &&
       landing_url.host() != request_url_.host()) {
+    DCHECK_EQ(landing_url.host(), suggested_url.host());
     result = SUGGESTED_URL_AVAILABLE;
   }
   url_fetcher_.reset();
