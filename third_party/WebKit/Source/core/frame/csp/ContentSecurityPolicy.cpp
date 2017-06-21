@@ -338,10 +338,12 @@ void ContentSecurityPolicy::AddPolicyFromHeaderValue(
     Member<CSPDirectiveList> policy =
         CSPDirectiveList::Create(this, begin, position, type, source);
 
-    if (!policy->AllowEval(
-            0, SecurityViolationReportingPolicy::kSuppressReporting) &&
-        disable_eval_error_message_.IsNull())
+    if (!policy->AllowEval(0,
+                           SecurityViolationReportingPolicy::kSuppressReporting,
+                           kWillNotThrowException, g_empty_string) &&
+        disable_eval_error_message_.IsNull()) {
       disable_eval_error_message_ = policy->EvalDisabledErrorMessage();
+    }
 
     policies_.push_back(policy.Release());
 
@@ -418,18 +420,20 @@ std::unique_ptr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::Headers()
   return headers;
 }
 
-template <bool (CSPDirectiveList::*allowed)(
-    ScriptState* script_state,
-    SecurityViolationReportingPolicy,
-    ContentSecurityPolicy::ExceptionStatus) const>
+template <
+    bool (CSPDirectiveList::*allowed)(ScriptState* script_state,
+                                      SecurityViolationReportingPolicy,
+                                      ContentSecurityPolicy::ExceptionStatus,
+                                      const String& script_content) const>
 bool IsAllowedByAll(const CSPDirectiveListVector& policies,
                     ScriptState* script_state,
                     SecurityViolationReportingPolicy reporting_policy,
-                    ContentSecurityPolicy::ExceptionStatus exception_status) {
+                    ContentSecurityPolicy::ExceptionStatus exception_status,
+                    const String& script_content) {
   bool is_allowed = true;
   for (const auto& policy : policies) {
     is_allowed &= (policy.Get()->*allowed)(script_state, reporting_policy,
-                                           exception_status);
+                                           exception_status, script_content);
   }
   return is_allowed;
 }
@@ -690,16 +694,20 @@ bool ContentSecurityPolicy::AllowInlineStyle(
 bool ContentSecurityPolicy::AllowEval(
     ScriptState* script_state,
     SecurityViolationReportingPolicy reporting_policy,
-    ContentSecurityPolicy::ExceptionStatus exception_status) const {
+    ContentSecurityPolicy::ExceptionStatus exception_status,
+    const String& script_content) const {
   return IsAllowedByAll<&CSPDirectiveList::AllowEval>(
-      policies_, script_state, reporting_policy, exception_status);
+      policies_, script_state, reporting_policy, exception_status,
+      script_content);
 }
 
 String ContentSecurityPolicy::EvalDisabledErrorMessage() const {
   for (const auto& policy : policies_) {
-    if (!policy->AllowEval(
-            0, SecurityViolationReportingPolicy::kSuppressReporting))
+    if (!policy->AllowEval(0,
+                           SecurityViolationReportingPolicy::kSuppressReporting,
+                           kWillNotThrowException, g_empty_string)) {
       return policy->EvalDisabledErrorMessage();
+    }
   }
   return String();
 }
@@ -1155,8 +1163,10 @@ static void GatherSecurityPolicyViolationEventData(
     init.setColumnNumber(0);
   }
 
-  if (!script_source.IsEmpty())
-    init.setSample(script_source.StripWhiteSpace().Left(40));
+  if (!script_source.IsEmpty()) {
+    init.setSample(script_source.StripWhiteSpace().Left(
+        ContentSecurityPolicy::kMaxSampleLength));
+  }
 }
 
 void ContentSecurityPolicy::ReportViolation(
