@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ptr_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
@@ -34,10 +36,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-
-#if defined(OS_CHROMEOS)
-#include "content/public/browser/browser_thread.h"
-#endif  // OS_CHROMEOS
 
 namespace extensions {
 
@@ -780,8 +778,10 @@ void SocketGetInfoFunction::Work() {
 }
 
 bool SocketGetNetworkListFunction::RunAsync() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&SocketGetNetworkListFunction::GetNetworkListOnFileThread,
                  this));
   return true;
