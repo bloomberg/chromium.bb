@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -3635,8 +3636,8 @@ TEST_F(PersonalDataManagerTest,
   base::RunLoop().Run();
 
   std::vector<Suggestion> suggestions =
-      personal_data_->GetCreditCardSuggestions(AutofillType(CREDIT_CARD_NUMBER),
-                                               base::ASCIIToUTF16("12345678"));
+      personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NUMBER), base::ASCIIToUTF16("12345678"));
 
   // There should be no suggestions.
   ASSERT_EQ(0U, suggestions.size());
@@ -3921,6 +3922,74 @@ TEST_F(PersonalDataManagerTest,
       AutofillType(CREDIT_CARD_NAME_FULL),
       /* field_contents= */ base::string16());
   ASSERT_EQ(3U, suggestions.size());
+}
+
+// Tests that server cards will shown bank name when bank name available and
+// feature flag on.
+TEST_F(PersonalDataManagerTest,
+       GetCreditCardSuggestions_ShowBankNameOfServerCards) {
+  // Turn on feature flag.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(kAutofillCreditCardBankNameDisplay);
+
+  EnableWalletCardImport();
+
+  // Add a local card.
+  CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2999",
+                          "1");
+  credit_card0.set_use_count(3);
+  credit_card0.set_use_date(AutofillClock::Now() -
+                            base::TimeDelta::FromDays(1));
+  personal_data_->AddCreditCard(credit_card0);
+
+  std::vector<CreditCard> server_cards;
+
+  // Add a server card without bank name.
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
+                          "2999", "1");
+  server_cards.back().set_use_count(2);
+  server_cards.back().set_use_date(AutofillClock::Now() -
+                                   base::TimeDelta::FromDays(1));
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+
+  // Add a server card with bank name.
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b460"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2111", "12",
+                          "2999", "1");
+  server_cards.back().set_use_count(1);
+  server_cards.back().set_use_date(AutofillClock::Now() -
+                                   base::TimeDelta::FromDays(1));
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+  server_cards.back().set_bank_name("Chase");
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  std::vector<Suggestion> suggestions =
+      personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NUMBER),
+          /* field_contents= */ base::string16());
+  ASSERT_EQ(3U, suggestions.size());
+
+  // Local cards will show network.
+  EXPECT_EQ(
+      base::UTF8ToUTF16(std::string("Amex") + kUTF8MidlineEllipsis + "8555"),
+      suggestions[0].value);
+  // Server card without bank name will show network.
+  EXPECT_EQ(
+      base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "2110"),
+      suggestions[1].value);
+  // Server card with bank name will show bank name.
+  EXPECT_EQ(
+      base::UTF8ToUTF16(std::string("Chase") + kUTF8MidlineEllipsis + "2111"),
+      suggestions[2].value);
 }
 
 // Tests that only the full server card is kept when deduping with a local

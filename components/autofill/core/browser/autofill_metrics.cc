@@ -985,6 +985,7 @@ AutofillMetrics::FormEventLogger::FormEventLogger(
       has_logged_suggestion_filled_(false),
       has_logged_will_submit_(false),
       has_logged_submitted_(false),
+      has_logged_bank_name_available_(false),
       logged_suggestion_filled_was_server_data_(false),
       logged_suggestion_filled_was_masked_server_card_(false),
       form_interactions_ukm_logger_(form_interactions_ukm_logger) {}
@@ -1026,6 +1027,10 @@ void AutofillMetrics::FormEventLogger::OnDidShowSuggestions(
   if (!has_logged_suggestions_shown_) {
     has_logged_suggestions_shown_ = true;
     Log(AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE);
+    if (has_logged_bank_name_available_) {
+      Log(AutofillMetrics::
+              FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE);
+    }
   }
 
   if (is_for_credit_card_) {
@@ -1074,6 +1079,10 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
               FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE);
     } else if (credit_card.record_type() == CreditCard::FULL_SERVER_CARD) {
       Log(AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE);
+      if (has_logged_bank_name_available_) {
+        Log(AutofillMetrics::
+            FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE);
+      }
     } else {
       Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE);
     }
@@ -1161,6 +1170,10 @@ void AutofillMetrics::FormEventLogger::OnFormSubmitted() {
   }
 }
 
+void AutofillMetrics::FormEventLogger::SetBankNameAvailable() {
+  has_logged_bank_name_available_ = true;
+}
+
 void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
   DCHECK_LT(event, NUM_FORM_EVENTS);
   std::string name("Autofill.FormEvents.");
@@ -1190,6 +1203,13 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
   else
     name += ".WithBothServerAndLocalData";
   LogUMAHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+}
+
+void AutofillMetrics::FormEventLogger::Log(
+    BankNameDisplayedFormEvent event) const {
+  DCHECK_LT(event, BANK_NAME_NUM_FORM_EVENTS);
+  std::string name("Autofill.FormEvents.CreditCard.BankNameDisplayed");
+  LogUMAHistogramEnumeration(name, event, BANK_NAME_NUM_FORM_EVENTS);
 }
 
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(

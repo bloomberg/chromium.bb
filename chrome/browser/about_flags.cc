@@ -2746,6 +2746,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamRequestCvcIfMissing)},
+    {"enable-autofill-credit-card-bank-name-display",
+     flag_descriptions::kEnableAutofillCreditCardBankNameDisplayName,
+     flag_descriptions::kEnableAutofillCreditCardBankNameDisplayDescription,
+     kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardBankNameDisplay)},
+
 #if defined(OS_WIN)
     {"windows10-custom-titlebar",
      flag_descriptions::kWindows10CustomTitlebarName,
