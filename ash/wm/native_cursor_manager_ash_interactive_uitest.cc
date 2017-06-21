@@ -1,7 +1,8 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "ash/wm/ash_native_cursor_manager.h"
+
+#include "ash/wm/native_cursor_manager_ash.h"
 
 #include "ash/shell.h"
 #include "ash/test/ash_interactive_ui_test_base.h"
@@ -21,7 +22,7 @@
 
 namespace ash {
 
-using AshNativeCursorManagerTest = test::AshInteractiveUITestBase;
+using NativeCursorManagerAshTest = test::AshInteractiveUITestBase;
 
 namespace {
 
@@ -55,7 +56,7 @@ void MoveMouseSync(aura::Window* window, int x, int y) {
 #define MAYBE_CursorChangeOnEnterNotify DISABLED_CursorChangeOnEnterNotify
 #endif
 
-TEST_F(AshNativeCursorManagerTest, MAYBE_CursorChangeOnEnterNotify) {
+TEST_F(NativeCursorManagerAshTest, MAYBE_CursorChangeOnEnterNotify) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   test::CursorManagerTestApi test_api(cursor_manager);
 

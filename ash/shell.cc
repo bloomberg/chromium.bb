@@ -91,7 +91,6 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/ash_focus_rules.h"
-#include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/immersive_context_ash.h"
@@ -100,6 +99,8 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/native_cursor_manager_ash_classic.h"
+#include "ash/wm/native_cursor_manager_ash_mus.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/power_button_controller.h"
@@ -453,8 +454,8 @@ void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
 }
 
 void Shell::SetCursorCompositingEnabled(bool enabled) {
-  if (GetAshConfig() == Config::CLASSIC) {
-    // TODO: needs to work in mus. http://crbug.com/705592.
+  if (GetAshConfig() != Config::MASH) {
+    // TODO: needs to work in mash. http://crbug.com/705592.
     window_tree_host_manager_->cursor_window_controller()
         ->SetCursorCompositingEnabled(enabled);
     native_cursor_manager_->SetNativeCursorEnabled(!enabled);
@@ -878,10 +879,13 @@ void Shell::Init(const ShellInitParams& init_params) {
   window_positioner_ = base::MakeUnique<WindowPositioner>();
 
   if (config == Config::CLASSIC) {
-    // TODO: needs to work in mus. http://crbug.com/705592.
-    native_cursor_manager_ = new AshNativeCursorManager;
-    cursor_manager_.reset(
-        new CursorManager(base::WrapUnique(native_cursor_manager_)));
+    native_cursor_manager_ = new NativeCursorManagerAshClassic;
+    cursor_manager_ = base::MakeUnique<CursorManager>(
+        base::WrapUnique(native_cursor_manager_));
+  } else if (config == Config::MUS) {
+    native_cursor_manager_ = new NativeCursorManagerAshMus;
+    cursor_manager_ = base::MakeUnique<CursorManager>(
+        base::WrapUnique(native_cursor_manager_));
   }
 
   shell_delegate_->PreInit();

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/ash_native_cursor_manager.h"
+#include "ash/wm/native_cursor_manager_ash_classic.h"
 
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -52,19 +52,27 @@ void NotifyMouseEventsEnableStateChange(bool enabled) {
 
 }  // namespace
 
-AshNativeCursorManager::AshNativeCursorManager()
+NativeCursorManagerAshClassic::NativeCursorManagerAshClassic()
     : native_cursor_enabled_(true), image_cursors_(new ui::ImageCursors) {}
 
-AshNativeCursorManager::~AshNativeCursorManager() {}
+NativeCursorManagerAshClassic::~NativeCursorManagerAshClassic() {}
 
-void AshNativeCursorManager::SetNativeCursorEnabled(bool enabled) {
+void NativeCursorManagerAshClassic::SetNativeCursorEnabled(bool enabled) {
   native_cursor_enabled_ = enabled;
 
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   SetCursor(cursor_manager->GetCursor(), cursor_manager);
 }
 
-void AshNativeCursorManager::SetDisplay(
+float NativeCursorManagerAshClassic::GetScale() const {
+  return image_cursors_->GetScale();
+}
+
+display::Display::Rotation NativeCursorManagerAshClassic::GetRotation() const {
+  return image_cursors_->GetRotation();
+}
+
+void NativeCursorManagerAshClassic::SetDisplay(
     const display::Display& display,
     ::wm::NativeCursorManagerDelegate* delegate) {
   DCHECK(display.is_valid());
@@ -87,7 +95,7 @@ void AshNativeCursorManager::SetDisplay(
       ->SetDisplay(display);
 }
 
-void AshNativeCursorManager::SetCursor(
+void NativeCursorManagerAshClassic::SetCursor(
     gfx::NativeCursor cursor,
     ::wm::NativeCursorManagerDelegate* delegate) {
   if (native_cursor_enabled_) {
@@ -111,7 +119,7 @@ void AshNativeCursorManager::SetCursor(
     SetCursorOnAllRootWindows(cursor);
 }
 
-void AshNativeCursorManager::SetCursorSet(
+void NativeCursorManagerAshClassic::SetCursorSet(
     ui::CursorSetType cursor_set,
     ::wm::NativeCursorManagerDelegate* delegate) {
   image_cursors_->SetCursorSet(cursor_set);
@@ -127,7 +135,7 @@ void AshNativeCursorManager::SetCursorSet(
       ->SetCursorSet(cursor_set);
 }
 
-void AshNativeCursorManager::SetVisibility(
+void NativeCursorManagerAshClassic::SetVisibility(
     bool visible,
     ::wm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitVisibility(visible);
@@ -143,7 +151,7 @@ void AshNativeCursorManager::SetVisibility(
   NotifyCursorVisibilityChange(visible);
 }
 
-void AshNativeCursorManager::SetMouseEventsEnabled(
+void NativeCursorManagerAshClassic::SetMouseEventsEnabled(
     bool enabled,
     ::wm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitMouseEventsEnabled(enabled);

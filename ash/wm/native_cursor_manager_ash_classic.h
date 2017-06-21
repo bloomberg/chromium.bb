@@ -1,20 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_ASH_NATIVE_CURSOR_MANAGER_H_
-#define ASH_WM_ASH_NATIVE_CURSOR_MANAGER_H_
+#ifndef ASH_WM_NATIVE_CURSOR_MANAGER_ASH_CLASSIC_H_
+#define ASH_WM_NATIVE_CURSOR_MANAGER_ASH_CLASSIC_H_
 
-#include <memory>
-
-#include "ash/ash_export.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "base/strings/string16.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/native_widget_types.h"
-#include "ui/wm/core/native_cursor_manager.h"
-#include "ui/wm/core/native_cursor_manager_delegate.h"
+#include "ash/wm/native_cursor_manager_ash.h"
 
 namespace ui {
 class ImageCursors;
@@ -30,19 +21,18 @@ class CursorManagerTestApi;
 // visibility. It communicates back with the CursorManager through the
 // NativeCursorManagerDelegate interface, which receives messages about what
 // changes were acted on.
-class ASH_EXPORT AshNativeCursorManager : public ::wm::NativeCursorManager {
+class ASH_EXPORT NativeCursorManagerAshClassic : public NativeCursorManagerAsh {
  public:
-  AshNativeCursorManager();
-  ~AshNativeCursorManager() override;
-
-  // Toggle native cursor enabled/disabled.
-  // The native cursor is enabled by default. When disabled, we hide the native
-  // cursor regardless of visibility state, and let CursorWindowManager draw
-  // the cursor.
-  void SetNativeCursorEnabled(bool enabled);
+  NativeCursorManagerAshClassic();
+  ~NativeCursorManagerAshClassic() override;
 
  private:
   friend class test::CursorManagerTestApi;
+
+  // Overridden from NativeCursorManagerAsh:
+  void SetNativeCursorEnabled(bool enabled) override;
+  float GetScale() const override;
+  display::Display::Rotation GetRotation() const override;
 
   // Overridden from ::wm::NativeCursorManager:
   void SetDisplay(const display::Display& display,
@@ -64,9 +54,9 @@ class ASH_EXPORT AshNativeCursorManager : public ::wm::NativeCursorManager {
 
   std::unique_ptr<ui::ImageCursors> image_cursors_;
 
-  DISALLOW_COPY_AND_ASSIGN(AshNativeCursorManager);
+  DISALLOW_COPY_AND_ASSIGN(NativeCursorManagerAshClassic);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_ASH_NATIVE_CURSOR_MANAGER_H_
+#endif  // ASH_WM_NATIVE_CURSOR_MANAGER_ASH_CLASSIC_H_

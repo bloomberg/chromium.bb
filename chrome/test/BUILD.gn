@@ -821,7 +821,7 @@ if (!is_android) {
         "../browser/ui/views/ash/tab_scrubber_browsertest.cc",
         "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
         "//ash/drag_drop/drag_drop_interactive_uitest.cc",
-        "//ash/wm/ash_native_cursor_manager_interactive_uitest.cc",
+        "//ash/wm/native_cursor_manager_ash_interactive_uitest.cc",
       ]
       sources -= [
         # Use only the _chromeos version on Ash / Chrome OS.
