@@ -832,7 +832,8 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
             static_cast<DBCookiePriority>(smt.ColumnInt(13)))));  // priority
     DLOG_IF(WARNING, cc->CreationDate() > Time::Now())
         << L"CreationDate too recent";
-    cookies->push_back(std::move(cc));
+    if (cc->IsCanonical())
+      cookies->push_back(std::move(cc));
     ++num_cookies_read_;
   }
 }
