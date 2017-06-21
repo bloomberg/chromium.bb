@@ -46,9 +46,11 @@ config("config") {
     "-isystem" + rebase_path("../libc++abi/trunk/include", root_build_dir),
     "-std=c++11",
   ]
-  if (is_linux && target_cpu == "arm") {
-    cflags_c = [ "-isystem" + rebase_path("../libunwind/trunk/include", root_build_dir) ]
-    cflags_cc += [ "-isystem" + rebase_path("../libunwind/trunk/include", root_build_dir) ]
+  if (is_linux && current_cpu == "arm") {
+    cflags_c = [ "-isystem" +
+                 rebase_path("../libunwind/trunk/include", root_build_dir) ]
+    cflags_cc += [ "-isystem" +
+                   rebase_path("../libunwind/trunk/include", root_build_dir) ]
   }
 }
 
