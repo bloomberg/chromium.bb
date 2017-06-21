@@ -1011,16 +1011,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       SetScrollSnapMarginBottom(v);
   }
 
-  // scroll-snap-align
-  static ScrollSnapAlign InitialScrollSnapAlign() { return ScrollSnapAlign(); }
-  ScrollSnapAlign GetScrollSnapAlign() const {
-    return rare_non_inherited_data_->scroll_snap_data_->scroll_snap_align_;
-  }
-  void SetScrollSnapAlign(const ScrollSnapAlign& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
-                   scroll_snap_align_, b);
-  }
-
   // shape-image-threshold (aka -webkit-shape-image-threshold)
   static float InitialShapeImageThreshold() { return 0; }
   float ShapeImageThreshold() const {

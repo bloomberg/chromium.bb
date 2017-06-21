@@ -2081,7 +2081,7 @@
       converter: "ConvertSnapAlign",
       getter: "GetScrollSnapAlign",
       runtime_flag: "CSSScrollSnapPoints",
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "ScrollSnapAlign",
       field_group: "rare-non-inherited->scroll-snap",
       default_value: "ScrollSnapAlign()",
