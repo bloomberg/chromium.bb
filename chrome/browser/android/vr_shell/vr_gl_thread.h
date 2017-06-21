@@ -77,7 +77,9 @@ class VrGLThread : public base::Thread,
   void SetSecurityInfo(security_state::SecurityLevel level,
                        bool malware) override;
   void SetURL(const GURL& gurl) override;
-  void SetWebVrMode(bool enabled, bool auto_presented) override;
+  void SetWebVrMode(bool enabled,
+                    bool auto_presented,
+                    bool show_toast) override;
   void SetWebVrSecureOrigin(bool secure) override;
   void SetVideoCapturingIndicator(bool enabled) override;
   void SetScreenCapturingIndicator(bool enabled) override;
