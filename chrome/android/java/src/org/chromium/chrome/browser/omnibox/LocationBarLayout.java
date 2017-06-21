@@ -394,7 +394,7 @@ public class LocationBarLayout extends FrameLayout
                 // user tapped the URL bar to dismiss the suggestions, then pressed enter. This can
                 // also happen if the user presses enter before any suggestions have been received
                 // from the autocomplete controller.
-                suggestionMatch = mAutocomplete.classify(urlText);
+                suggestionMatch = mAutocomplete.classify(urlText, mUrlFocusedFromFakebox);
                 suggestionMatchPosition = 0;
                 // Classify matches don't propagate to java, so skip the OOB check.
                 skipOutOfBoundsCheck = true;
@@ -1170,7 +1170,8 @@ public class LocationBarLayout extends FrameLayout
                     Profile profile = getToolbarDataProvider().getProfile();
                     String url = getCurrentTab() != null ? getCurrentTab().getUrl()
                                                          : UrlConstants.NTP_URL;
-                    mAutocomplete.start(profile, url, textWithoutAutocomplete, preventAutocomplete);
+                    mAutocomplete.start(profile, url, textWithoutAutocomplete, preventAutocomplete,
+                            mUrlFocusedFromFakebox);
                 }
             };
             if (mNativeInitialized) {
@@ -1889,10 +1890,10 @@ public class LocationBarLayout extends FrameLayout
         stopAutocomplete(false);
         if (getCurrentTab() != null) {
             mAutocomplete.start(
-                    getCurrentTab().getProfile(), getCurrentTab().getUrl(), query, false);
+                    getCurrentTab().getProfile(), getCurrentTab().getUrl(), query, false, false);
         } else if (mBottomSheet != null) {
             mAutocomplete.start(
-                    mToolbarDataProvider.getProfile(), UrlConstants.NTP_URL, query, false);
+                    mToolbarDataProvider.getProfile(), UrlConstants.NTP_URL, query, false, false);
         }
         post(new Runnable() {
             @Override
