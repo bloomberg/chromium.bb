@@ -118,23 +118,22 @@ void HTMLPlugInElement::SetFocused(bool focused, WebFocusType focus_type) {
 }
 
 bool HTMLPlugInElement::RequestObjectInternal(
-    const String& url,
-    const String& mime_type,
     const Vector<String>& param_names,
     const Vector<String>& param_values) {
-  if (url.IsEmpty() && mime_type.IsEmpty())
+  if (url_.IsEmpty() && service_type_.IsEmpty())
     return false;
 
-  if (ProtocolIsJavaScript(url))
+  if (ProtocolIsJavaScript(url_))
     return false;
 
-  KURL completed_url = url.IsEmpty() ? KURL() : GetDocument().CompleteURL(url);
-  if (!AllowedToLoadObject(completed_url, mime_type))
+  KURL completed_url =
+      url_.IsEmpty() ? KURL() : GetDocument().CompleteURL(url_);
+  if (!AllowedToLoadObject(completed_url, service_type_))
     return false;
 
-  bool use_fallback;
-  if (!ShouldUsePlugin(completed_url, mime_type, HasFallbackContent(),
-                       use_fallback)) {
+  ObjectContentType object_type = GetObjectContentType();
+  if (object_type == ObjectContentType::kFrame ||
+      object_type == ObjectContentType::kImage) {
     // If the plugin element already contains a subframe,
     // loadOrRedirectSubframe will re-use it. Otherwise, it will create a
     // new frame and set it as the LayoutEmbeddedContent's EmbeddedContentView,
@@ -142,7 +141,11 @@ bool HTMLPlugInElement::RequestObjectInternal(
     return LoadOrRedirectSubframe(completed_url, GetNameAttribute(), true);
   }
 
-  return LoadPlugin(completed_url, mime_type, param_names, param_values,
+  // If an object's content can't be handled and it has no fallback, let
+  // it be handled as a plugin to show the broken plugin icon.
+  bool use_fallback =
+      object_type == ObjectContentType::kNone && HasFallbackContent();
+  return LoadPlugin(completed_url, service_type_, param_names, param_values,
                     use_fallback, true);
 }
 
@@ -194,7 +197,7 @@ void HTMLPlugInElement::AttachLayoutTree(const AttachContext& context) {
     image_loader_->UpdateFromElement();
   } else if (NeedsPluginUpdate() && !GetLayoutEmbeddedItem().IsNull() &&
              !GetLayoutEmbeddedItem().ShowsUnavailablePluginIndicator() &&
-             !WouldLoadAsNetscapePlugin(url_, service_type_) &&
+             GetObjectContentType() != ObjectContentType::kPlugin &&
              !is_delaying_load_event_) {
     is_delaying_load_event_ = true;
     GetDocument().IncrementLoadEventDelayCount();
@@ -485,17 +488,46 @@ bool HTMLPlugInElement::LayoutObjectIsFocusable() const {
   return plugin_is_available_;
 }
 
+HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType() {
+  String mime_type = service_type_;
+  KURL url = GetDocument().CompleteURL(url_);
+  if (mime_type.IsEmpty()) {
+    // Try to guess the MIME type based off the extension.
+    String filename = url.LastPathComponent();
+    int extension_pos = filename.ReverseFind('.');
+    if (extension_pos >= 0) {
+      String extension = filename.Substring(extension_pos + 1);
+      mime_type = MIMETypeRegistry::GetWellKnownMIMETypeForExtension(extension);
+    }
+
+    if (mime_type.IsEmpty())
+      return ObjectContentType::kFrame;
+  }
+
+  // If Chrome is started with the --disable-plugins switch, pluginData is 0.
+  PluginData* plugin_data = GetDocument().GetFrame()->GetPluginData();
+  bool plugin_supports_mime_type =
+      plugin_data && plugin_data->SupportsMimeType(mime_type);
+
+  if (MIMETypeRegistry::IsSupportedImageMIMEType(mime_type)) {
+    return should_prefer_plug_ins_for_images_ && plugin_supports_mime_type
+               ? ObjectContentType::kPlugin
+               : ObjectContentType::kImage;
+  }
+
+  if (plugin_supports_mime_type)
+    return ObjectContentType::kPlugin;
+  if (MIMETypeRegistry::IsSupportedNonImageMIMEType(mime_type))
+    return ObjectContentType::kFrame;
+  return ObjectContentType::kNone;
+}
+
 bool HTMLPlugInElement::IsImageType() {
   if (service_type_.IsEmpty() && ProtocolIs(url_, "data"))
     service_type_ = MimeTypeFromDataURL(url_);
 
-  if (LocalFrame* frame = GetDocument().GetFrame()) {
-    KURL completed_url = GetDocument().CompleteURL(url_);
-    return frame->Loader().Client()->GetObjectContentType(
-               completed_url, service_type_, ShouldPreferPlugInsForImages()) ==
-           kObjectContentImage;
-  }
-
+  if (GetDocument().GetFrame())
+    return GetObjectContentType() == ObjectContentType::kImage;
   return Image::SupportsType(service_type_);
 }
 
@@ -516,25 +548,9 @@ bool HTMLPlugInElement::AllowedToLoadFrameURL(const String& url) {
                ContentFrame()->GetSecurityContext()->GetSecurityOrigin()));
 }
 
-// We don't use m_url, or m_serviceType as they may not be the final values
-// that <object> uses depending on <param> values.
-bool HTMLPlugInElement::WouldLoadAsNetscapePlugin(const String& url,
-                                                  const String& service_type) {
-  DCHECK(GetDocument().GetFrame());
-  KURL completed_url;
-  if (!url.IsEmpty())
-    completed_url = GetDocument().CompleteURL(url);
-  return GetDocument().GetFrame()->Loader().Client()->GetObjectContentType(
-             completed_url, service_type, ShouldPreferPlugInsForImages()) ==
-         kObjectContentNetscapePlugin;
-}
-
-bool HTMLPlugInElement::RequestObject(const String& url,
-                                      const String& mime_type,
-                                      const Vector<String>& param_names,
+bool HTMLPlugInElement::RequestObject(const Vector<String>& param_names,
                                       const Vector<String>& param_values) {
-  bool result =
-      RequestObjectInternal(url, mime_type, param_names, param_values);
+  bool result = RequestObjectInternal(param_names, param_values);
 
   DEFINE_STATIC_LOCAL(
       EnumerationHistogram, result_histogram,
@@ -607,20 +623,6 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
       scrolling_coordinator->NotifyGeometryChanged();
   }
   return true;
-}
-
-bool HTMLPlugInElement::ShouldUsePlugin(const KURL& url,
-                                        const String& mime_type,
-                                        bool has_fallback,
-                                        bool& use_fallback) {
-  ObjectContentType object_type =
-      GetDocument().GetFrame()->Loader().Client()->GetObjectContentType(
-          url, mime_type, ShouldPreferPlugInsForImages());
-  // If an object's content can't be handled and it has no fallback, let
-  // it be handled as a plugin to show the broken plugin icon.
-  use_fallback = object_type == kObjectContentNone && has_fallback;
-  return object_type == kObjectContentNone ||
-         object_type == kObjectContentNetscapePlugin;
 }
 
 void HTMLPlugInElement::DispatchErrorEvent() {

@@ -109,19 +109,10 @@ class CORE_EXPORT HTMLPlugInElement
   virtual LayoutEmbeddedContent* LayoutEmbeddedContentForJSBindings() const;
 
   bool IsImageType();
-  bool ShouldPreferPlugInsForImages() const {
-    return should_prefer_plug_ins_for_images_;
-  }
   LayoutEmbeddedItem GetLayoutEmbeddedItem() const;
   bool AllowedToLoadFrameURL(const String& url);
-  bool RequestObject(const String& url,
-                     const String& mime_type,
-                     const Vector<String>& param_names,
+  bool RequestObject(const Vector<String>& param_names,
                      const Vector<String>& param_values);
-  bool ShouldUsePlugin(const KURL&,
-                       const String& mime_type,
-                       bool has_fallback,
-                       bool& use_fallback);
 
   void DispatchErrorEvent();
   bool IsErrorplaceholder();
@@ -176,13 +167,18 @@ class CORE_EXPORT HTMLPlugInElement
   bool AllowedToLoadPlugin(const KURL&, const String& mime_type);
   // Perform checks based on the URL and MIME-type of the object to load.
   bool AllowedToLoadObject(const KURL&, const String& mime_type);
-  bool WouldLoadAsNetscapePlugin(const String& url, const String& service_type);
+
+  enum class ObjectContentType {
+    kNone,
+    kImage,
+    kFrame,
+    kPlugin,
+  };
+  ObjectContentType GetObjectContentType();
 
   void SetPersistedPlugin(PluginView*);
 
-  bool RequestObjectInternal(const String& url,
-                             const String& mime_type,
-                             const Vector<String>& param_names,
+  bool RequestObjectInternal(const Vector<String>& param_names,
                              const Vector<String>& param_values);
 
   v8::Global<v8::Object> plugin_wrapper_;
