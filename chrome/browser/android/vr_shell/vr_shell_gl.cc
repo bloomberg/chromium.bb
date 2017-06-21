@@ -369,8 +369,14 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
 
 void VrShellGl::SubmitFrame(int16_t frame_index,
                             const gpu::MailboxHolder& mailbox) {
-  DCHECK(submit_client_.get());
   TRACE_EVENT0("gpu", "VrShellGl::SubmitWebVRFrame");
+
+  // submit_client_ could be null when we exit presentation, if there were
+  // pending SubmitFrame messages queued.  VRDisplayClient::OnExitPresent
+  // will clean up state in blink, so it doesn't wait for
+  // OnSubmitFrameTransferred or OnSubmitFrameRendered.
+  if (!submit_client_.get())
+    return;
 
   webvr_time_js_submit_[frame_index % kPoseRingBufferSize] =
       base::TimeTicks::Now();
