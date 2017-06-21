@@ -93,8 +93,6 @@ source_set("metrics_internal") {
     "size_class_recorder.h",
     "size_class_recorder.mm",
     "size_class_recorder_private.h",
-    "tab_usage_recorder.h",
-    "tab_usage_recorder.mm",
     "tab_usage_recorder_delegate.h",
   ]
   deps = [
@@ -111,9 +109,32 @@ source_set("metrics_internal") {
   ]
   public_deps = [
     ":metrics_internal_arc",
+    ":metrics_internal_noarc",
   ]
-  allow_circular_includes_from = [ ":metrics_internal_arc" ]
+  allow_circular_includes_from = [
+    ":metrics_internal_arc",
+    ":metrics_internal_noarc",
+  ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("metrics_internal_noarc") {
+  # TODO(crbug.com/731724) This target shouldn't be compiled with ARC until
+  # after it's converted to use WebStates instead of Tabs.
+  cflags_objc = [ "-fno-objc-arc" ]
+
+  sources = [
+    "tab_usage_recorder.h",
+    "tab_usage_recorder.mm",
+  ]
+
+  deps = [
+    ":metrics",
+    "//base",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/tabs",
+    "//ios/web",
+  ]
 }
 
 source_set("metrics_internal_arc") {
@@ -122,6 +143,7 @@ source_set("metrics_internal_arc") {
     "tab_usage_recorder_web_state_list_observer.mm",
   ]
   deps = [
+    ":metrics_internal_noarc",
     "//base",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/web_state_list",

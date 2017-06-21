@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CardStackPinchGestureRecognizer ()
 
 // Returns the number of non-ended, non-cancelled touches in |event|.
