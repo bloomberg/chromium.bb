@@ -153,7 +153,7 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
 
   // Copy all navigation state from the old WebContents to the new one.
   new_web_contents->GetController().CopyStateFrom(
-      old_web_contents->GetController());
+      old_web_contents->GetController(), /* needs_reload */ true);
 
   // StartNavigationToDistillerViewer must come before swapping the tab contents
   // to avoid triggering a reload of the page.  This reloadmakes it very

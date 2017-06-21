@@ -85,7 +85,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool IsInitialBlankNavigation() const override;
   void Reload(ReloadType reload_type, bool check_for_repost) override;
   void NotifyEntryChanged(const NavigationEntry* entry) override;
-  void CopyStateFrom(const NavigationController& source) override;
+  void CopyStateFrom(const NavigationController& source,
+                     bool needs_reload) override;
   void CopyStateFromAndPrune(NavigationController* source,
                              bool replace_entry) override;
   bool CanPruneAllButLastCommitted() override;

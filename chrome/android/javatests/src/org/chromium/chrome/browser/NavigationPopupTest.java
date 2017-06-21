@@ -214,8 +214,7 @@ public class NavigationPopupTest {
         }
 
         @Override
-        public void copyStateFrom(NavigationController source) {
-        }
+        public void copyStateFrom(NavigationController source, boolean needsReload) {}
 
         @Override
         public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry) {
