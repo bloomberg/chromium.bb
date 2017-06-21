@@ -52,8 +52,11 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     for (auto& box : stack_) {
       box.fragment_start = 0;
       box.metrics = NGLineHeightMetrics();
-      // Existing box states are wrapped boxes, and hence no left edges.
-      box.border_edges.line_left = false;
+      if (box.needs_box_fragment) {
+        box.line_left_position = LayoutUnit();
+        // Existing box states are wrapped boxes, and hence no left edges.
+        box.border_edges.line_left = false;
+      }
       DCHECK(box.pending_descendants.IsEmpty());
     }
   }
@@ -72,12 +75,20 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
 
 NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
     const NGInlineItem& item,
-    NGLineBoxFragmentBuilder* line_box) {
+    const NGInlineItemResult& item_result,
+    NGLineBoxFragmentBuilder* line_box,
+    LayoutUnit position) {
   stack_.resize(stack_.size() + 1);
   NGInlineBoxState* box = &stack_.back();
   box->fragment_start = line_box->Children().size();
   box->item = &item;
   box->style = item.Style();
+
+  // Compute box properties regardless of needs_box_fragment since close tag may
+  // also set needs_box_fragment.
+  box->line_left_position = position + item_result.margins.inline_start;
+  box->borders_paddings_block_start = item_result.borders_paddings_block_start;
+  box->borders_paddings_block_end = item_result.borders_paddings_block_end;
   return box;
 }
 
@@ -126,20 +137,17 @@ void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
   }
 }
 
-void NGInlineBoxState::SetNeedsBoxFragment(
-    const NGInlineItem& item,
-    const NGInlineItemResult& item_result,
-    LayoutUnit position) {
-  needs_box_fragment = true;
-  line_left_position = position + item_result.margins.inline_start;
-  borders_paddings_block_start = item_result.borders_paddings_block_start;
-  borders_paddings_block_end = item_result.borders_paddings_block_end;
-  // We have left edge on open tag, and if the box is not a continuation.
-  // TODO(kojii): Needs review when we change SplitInlines().
-  bool has_line_left_edge = item.Style()->IsLeftToRightDirection()
-                                ? item.HasStartEdge()
-                                : item.HasEndEdge();
-  border_edges = {true, false, true, has_line_left_edge};
+void NGInlineBoxState::SetNeedsBoxFragment(bool when_empty) {
+  needs_box_fragment_when_empty = when_empty;
+  if (!needs_box_fragment) {
+    needs_box_fragment = true;
+    // We have left edge on open tag, and if the box is not a continuation.
+    // TODO(kojii): Needs review when we change SplitInlines().
+    bool has_line_left_edge = item->Style()->IsLeftToRightDirection()
+                                  ? item->HasStartEdge()
+                                  : item->HasEndEdge();
+    border_edges = {true, false, true, has_line_left_edge};
+  }
 }
 
 void NGInlineBoxState::SetLineRightForBoxFragment(
@@ -164,8 +172,10 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     NGInlineBoxState* box,
     NGLineBoxFragmentBuilder* line_box,
     FontBaseline baseline_type) {
+  DCHECK(box->needs_box_fragment);
   LayoutUnit inline_size = box->line_right_position - box->line_left_position;
-  if (box->fragment_start == line_box->Children().size() && inline_size <= 0) {
+  if (box->fragment_start == line_box->Children().size() &&
+      !box->needs_box_fragment_when_empty) {
     // Don't create a box if the inline box is "empty".
     // Inline boxes with inline margins/borders/paddings are not "empty",
     // but background doesn't make difference in this context.
