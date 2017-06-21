@@ -64,8 +64,7 @@ class InstanceHolder {
       uint32_t min_version,
       const char method_name_for_logging[]) {
     if (!instance_) {
-      VLOG(1) << "Instance for " << T::Name_ << "::" << method_name_for_logging
-              << " not available.";
+      VLOG(1) << "Instance " << T::Name_ << " not available.";
       return nullptr;
     }
     if (version_ < min_version) {
