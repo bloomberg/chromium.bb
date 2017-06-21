@@ -52,6 +52,19 @@ CastSocket* CastSocketService::GetSocket(int channel_id) const {
   return socket_it == sockets_.end() ? nullptr : socket_it->second.get();
 }
 
+CastSocket::Observer* CastSocketService::GetObserver(const std::string& id) {
+  auto it = socket_observer_map_.find(id);
+  return it == socket_observer_map_.end() ? nullptr : it->second.get();
+}
+
+CastSocket::Observer* CastSocketService::AddObserver(
+    const std::string& id,
+    std::unique_ptr<CastSocket::Observer> observer) {
+  CastSocket::Observer* observer_ptr = observer.get();
+  socket_observer_map_.insert(std::make_pair(id, std::move(observer)));
+  return observer_ptr;
+}
+
 void CastSocketService::ShutdownOnUIThread() {}
 
 }  // namespace cast_channel

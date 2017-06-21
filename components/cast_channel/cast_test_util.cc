@@ -26,6 +26,9 @@ void MockCastTransport::SetReadDelegate(
 MockCastTransportDelegate::MockCastTransportDelegate() {}
 MockCastTransportDelegate::~MockCastTransportDelegate() {}
 
+MockCastSocketObserver::MockCastSocketObserver() {}
+MockCastSocketObserver::~MockCastSocketObserver() {}
+
 MockCastSocket::MockCastSocket() : mock_transport_(new MockCastTransport()) {}
 MockCastSocket::~MockCastSocket() {}
 

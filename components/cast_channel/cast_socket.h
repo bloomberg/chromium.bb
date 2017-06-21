@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/cast_channel/cast_auth_util.h"
@@ -55,6 +56,19 @@ enum CastDeviceCapability {
 // Public interface of the CastSocket class.
 class CastSocket {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Invoked when an error occurs on |socket|.
+    virtual void OnError(const CastSocket& socket,
+                         ChannelError error_state) = 0;
+
+    // Invoked when |socket| receives a message.
+    virtual void OnMessage(const CastSocket& socket,
+                           const CastMessage& message) = 0;
+  };
+
   virtual ~CastSocket() {}
 
   // Used by BrowserContextKeyedAPIFactory.
@@ -68,10 +82,7 @@ class CastSocket {
   // If the CastSocket is destroyed while the connection is pending, |callback|
   // will be invoked with CHANNEL_ERROR_UNKNOWN. In this case, invoking
   // |callback| must not result in any re-entrancy behavior.
-  // |delegate| receives message receipt and error events.
-  // Ownership of |delegate| is transferred to this CastSocket.
-  virtual void Connect(std::unique_ptr<CastTransport::Delegate> delegate,
-                       base::Callback<void(ChannelError)> callback) = 0;
+  virtual void Connect(base::Callback<void(ChannelError)> callback) = 0;
 
   // Closes the channel if not already closed. On completion, the channel will
   // be in READY_STATE_CLOSED.
@@ -112,6 +123,9 @@ class CastSocket {
   // Returns a pointer to the socket's message transport layer. Can be used to
   // send and receive CastMessages over the socket.
   virtual CastTransport* transport() const = 0;
+
+  // Registers |observer| with the socket to receive messages and error events.
+  virtual void AddObserver(Observer* observer) = 0;
 };
 
 // This class implements a channel between Chrome and a Cast device using a TCP
@@ -153,8 +167,7 @@ class CastSocketImpl : public CastSocket {
   ~CastSocketImpl() override;
 
   // CastSocket interface.
-  void Connect(std::unique_ptr<CastTransport::Delegate> delegate,
-               base::Callback<void(ChannelError)> callback) override;
+  void Connect(base::Callback<void(ChannelError)> callback) override;
   CastTransport* transport() const override;
   void Close(const net::CompletionCallback& callback) override;
   const net::IPEndPoint& ip_endpoint() const override;
@@ -164,6 +177,7 @@ class CastSocketImpl : public CastSocket {
   ChannelError error_state() const override;
   bool keep_alive() const override;
   bool audio_only() const override;
+  void AddObserver(Observer* observer) override;
 
  protected:
   // CastTransport::Delegate methods for receiving handshake messages.
@@ -189,6 +203,22 @@ class CastSocketImpl : public CastSocket {
     LastError last_error_;
   };
 
+  // CastTransport::Delegate methods to receive normal messages and errors.
+  class CastSocketMessageDelegate : public CastTransport::Delegate {
+   public:
+    CastSocketMessageDelegate(CastSocketImpl* socket);
+    ~CastSocketMessageDelegate() override;
+
+    // CastTransport::Delegate implementation.
+    void OnError(ChannelError error_state) override;
+    void OnMessage(const CastMessage& message) override;
+    void Start() override;
+
+   private:
+    CastSocketImpl* const socket_;
+    DISALLOW_COPY_AND_ASSIGN(CastSocketMessageDelegate);
+  };
+
   // Replaces the internally-constructed transport object with one provided
   // by the caller (e.g. a mock).
   void SetTransportForTesting(std::unique_ptr<CastTransport> transport);
@@ -204,7 +234,9 @@ class CastSocketImpl : public CastSocket {
                            TestConnectChallengeReplyReceiveError);
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest,
                            TestConnectChallengeVerificationFails);
+  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestObservers);
   friend class AuthTransportDelegate;
+  friend class CastSocketMessageDelegate;
   friend class CastSocketTest;
   friend class TestCastSocket;
 
@@ -376,6 +408,9 @@ class CastSocketImpl : public CastSocket {
   // Raw pointer to the auth handshake delegate. Used to get detailed error
   // information.
   AuthTransportDelegate* auth_delegate_;
+
+  // List of socket observers.
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSocketImpl);
 };

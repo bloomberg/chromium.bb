@@ -54,25 +54,22 @@ class MockCastTransportDelegate : public CastTransport::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockCastTransportDelegate);
 };
 
+class MockCastSocketObserver : public CastSocket::Observer {
+ public:
+  MockCastSocketObserver();
+  ~MockCastSocketObserver() override;
+
+  MOCK_METHOD2(OnError, void(const CastSocket& socket, ChannelError error));
+  MOCK_METHOD2(OnMessage,
+               void(const CastSocket& socket, const CastMessage& message));
+};
+
 class MockCastSocket : public CastSocket {
  public:
   MockCastSocket();
   ~MockCastSocket() override;
 
-  // Mockable version of Connect. Accepts a bare pointer to a mock object.
-  // (GMock won't compile with scoped_ptr method parameters.)
-  MOCK_METHOD2(ConnectRawPtr,
-               void(CastTransport::Delegate* delegate,
-                    base::Callback<void(ChannelError)> callback));
-
-  // Proxy for ConnectRawPtr. Unpacks scoped_ptr into a GMock-friendly bare
-  // ptr.
-  void Connect(std::unique_ptr<CastTransport::Delegate> delegate,
-               base::Callback<void(ChannelError)> callback) override {
-    delegate_ = std::move(delegate);
-    ConnectRawPtr(delegate_.get(), callback);
-  }
-
+  MOCK_METHOD1(Connect, void(base::Callback<void(ChannelError)> callback));
   MOCK_METHOD1(Close, void(const net::CompletionCallback& callback));
   MOCK_CONST_METHOD0(ip_endpoint, const net::IPEndPoint&());
   MOCK_CONST_METHOD0(id, int());
@@ -82,6 +79,7 @@ class MockCastSocket : public CastSocket {
   MOCK_CONST_METHOD0(keep_alive, bool(void));
   MOCK_CONST_METHOD0(audio_only, bool(void));
   MOCK_METHOD1(SetErrorState, void(ChannelError error_state));
+  MOCK_METHOD1(AddObserver, void(Observer* observer));
 
   CastTransport* transport() const override { return mock_transport_.get(); }
 
@@ -89,7 +87,7 @@ class MockCastSocket : public CastSocket {
 
  private:
   std::unique_ptr<MockCastTransport> mock_transport_;
-  std::unique_ptr<CastTransport::Delegate> delegate_;
+  std::unique_ptr<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCastSocket);
 };

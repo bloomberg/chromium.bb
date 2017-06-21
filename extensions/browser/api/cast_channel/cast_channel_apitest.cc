@@ -110,8 +110,9 @@ class CastChannelAPITest : public ExtensionApiTest {
         .WillRepeatedly(Return(ChannelError::NONE));
     {
       InSequence sequence;
-      EXPECT_CALL(*mock_cast_socket_, ConnectRawPtr(_, _))
-          .WillOnce(InvokeCompletionCallback<1>(ChannelError::NONE));
+
+      EXPECT_CALL(*mock_cast_socket_, Connect(_))
+          .WillOnce(InvokeCompletionCallback<0>(ChannelError::NONE));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(ReadyState::OPEN));
       EXPECT_CALL(*mock_cast_socket_->mock_transport(),
@@ -133,9 +134,10 @@ class CastChannelAPITest : public ExtensionApiTest {
     EXPECT_CALL(*mock_cast_socket_, keep_alive()).WillRepeatedly(Return(true));
     {
       InSequence sequence;
-      EXPECT_CALL(*mock_cast_socket_, ConnectRawPtr(_, _))
-          .WillOnce(DoAll(SaveArg<0>(&message_delegate_),
-                          InvokeCompletionCallback<1>(ChannelError::NONE)));
+      EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
+          .WillOnce(SaveArg<0>(&message_observer_));
+      EXPECT_CALL(*mock_cast_socket_, Connect(_))
+          .WillOnce(InvokeCompletionCallback<0>(ChannelError::NONE));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(ReadyState::OPEN))
           .RetiresOnSaturation();
@@ -153,7 +155,7 @@ class CastChannelAPITest : public ExtensionApiTest {
     api->GetLogger()->LogSocketEventWithRv(
         mock_cast_socket_->id(), ::cast_channel::ChannelEvent::SOCKET_WRITE,
         net::ERR_FAILED);
-    message_delegate_->OnError(ChannelError::CONNECT_ERROR);
+    message_observer_->OnError(*mock_cast_socket_, ChannelError::CONNECT_ERROR);
   }
 
  protected:
@@ -169,25 +171,20 @@ class CastChannelAPITest : public ExtensionApiTest {
                        const std::string& message) {
     CastMessage cast_message;
     FillCastMessage(message, &cast_message);
-    message_delegate_->OnMessage(cast_message);
-  }
-
-  // Starts the read delegate on the IO thread.
-  void StartDelegate() {
-    CHECK(message_delegate_);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CastTransport::Delegate::Start,
-                   base::Unretained(message_delegate_)));
+    message_observer_->OnMessage(*cast_socket, cast_message);
   }
 
   // Fires a timer on the IO thread.
   void FireTimeout() {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CastTransport::Delegate::OnError,
-                   base::Unretained(message_delegate_),
-                   cast_channel::ChannelError::PING_TIMEOUT));
+        base::Bind(&CastChannelAPITest::DoFireTimeout, base::Unretained(this),
+                   mock_cast_socket_));
+  }
+
+  void DoFireTimeout(MockCastSocket* cast_socket) {
+    message_observer_->OnError(*cast_socket,
+                               cast_channel::ChannelError::PING_TIMEOUT);
   }
 
   extensions::CastChannelOpenFunction* CreateOpenFunction(
@@ -209,12 +206,12 @@ class CastChannelAPITest : public ExtensionApiTest {
   MockCastSocket* mock_cast_socket_;
   net::IPEndPoint ip_endpoint_;
   LastError last_error_;
-  CastTransport::Delegate* message_delegate_;
+  CastSocket::Observer* message_observer_;
   net::TestNetLog capturing_net_log_;
   int channel_id_;
 };
 
-ACTION_P2(InvokeDelegateOnError, api_test, api) {
+ACTION_P2(InvokeObserverOnError, api_test, api) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CastChannelAPITest::DoCallOnError, base::Unretained(api_test),
@@ -254,7 +251,6 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestPingTimeout) {
   EXPECT_TRUE(
       RunExtensionSubtest("cast_channel/api", "test_open_timeout.html"));
   EXPECT_TRUE(channel_opened.WaitUntilSatisfied());
-  StartDelegate();
   FireTimeout();
   EXPECT_TRUE(timeout.WaitUntilSatisfied());
 }
@@ -277,7 +273,6 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestPingTimeoutSslVerified) {
   EXPECT_TRUE(RunExtensionSubtest("cast_channel/api",
                                   "test_open_timeout_verified.html"));
   EXPECT_TRUE(channel_opened.WaitUntilSatisfied());
-  StartDelegate();
   FireTimeout();
   EXPECT_TRUE(timeout.WaitUntilSatisfied());
 }
@@ -298,9 +293,10 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
 
   {
     InSequence sequence;
-    EXPECT_CALL(*mock_cast_socket_, ConnectRawPtr(NotNull(), _))
-        .WillOnce(DoAll(SaveArg<0>(&message_delegate_),
-                        InvokeCompletionCallback<1>(ChannelError::NONE)));
+    EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
+        .WillOnce(SaveArg<0>(&message_observer_));
+    EXPECT_CALL(*mock_cast_socket_, Connect(_))
+        .WillOnce(InvokeCompletionCallback<0>(ChannelError::NONE));
     EXPECT_CALL(*mock_cast_socket_, ready_state())
         .Times(3)
         .WillRepeatedly(Return(ReadyState::OPEN));
@@ -330,10 +326,11 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
   SetUpMockCastSocket();
 
-  EXPECT_CALL(*mock_cast_socket_, ConnectRawPtr(NotNull(), _))
-      .WillOnce(DoAll(
-          SaveArg<0>(&message_delegate_), InvokeDelegateOnError(this, GetApi()),
-          InvokeCompletionCallback<1>(ChannelError::CONNECT_ERROR)));
+  EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
+      .WillOnce(DoAll(SaveArg<0>(&message_observer_),
+                      InvokeObserverOnError(this, GetApi())));
+  EXPECT_CALL(*mock_cast_socket_, Connect(_))
+      .WillOnce(InvokeCompletionCallback<0>(ChannelError::CONNECT_ERROR));
   EXPECT_CALL(*mock_cast_socket_, error_state())
       .WillRepeatedly(Return(ChannelError::CONNECT_ERROR));
   EXPECT_CALL(*mock_cast_socket_, ready_state())
