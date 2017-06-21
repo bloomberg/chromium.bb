@@ -34,6 +34,7 @@ group("features") {
     "//ios/showcase/tab",
     "//ios/showcase/tab_grid",
     "//ios/showcase/toolbar",
+    "//ios/showcase/tools_menu",
     "//ios/showcase/uikit_table_view_cell",
     "//ios/showcase/widget",
   ]

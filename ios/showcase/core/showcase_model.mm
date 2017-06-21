@@ -23,7 +23,7 @@
     },
     @{
       showcase::kClassForDisplayKey : @"MenuViewController",
-      showcase::kClassForInstantiationKey : @"MenuViewController",
+      showcase::kClassForInstantiationKey : @"SCToolsCoordinator",
       showcase::kUseCaseKey : @"Tools menu",
     },
     @{
