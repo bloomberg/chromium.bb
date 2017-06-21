@@ -184,10 +184,10 @@ PlainTextRange PlainTextRange::Create(const ContainerNode& scope,
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       scope.GetDocument().Lifecycle());
 
-  size_t start = TextIterator::RangeLength(
-      Position(&const_cast<ContainerNode&>(scope), 0), range.StartPosition());
-  size_t end = TextIterator::RangeLength(
-      Position(&const_cast<ContainerNode&>(scope), 0), range.EndPosition());
+  size_t start =
+      TextIterator::RangeLength(Position(scope, 0), range.StartPosition());
+  size_t end =
+      TextIterator::RangeLength(Position(scope, 0), range.EndPosition());
 
   return PlainTextRange(start, end);
 }
