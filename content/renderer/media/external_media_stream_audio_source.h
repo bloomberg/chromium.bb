@@ -40,6 +40,7 @@ class CONTENT_EXPORT ExternalMediaStreamAudioSource final
                double volume,
                bool key_pressed) final;
   void OnCaptureError(const std::string& message) final;
+  void OnCaptureMuted(bool is_muted) final;
 
   // The external source provided to the constructor.
   scoped_refptr<media::AudioCapturerSource> source_;

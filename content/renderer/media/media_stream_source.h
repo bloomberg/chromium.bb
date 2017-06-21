@@ -45,6 +45,9 @@ class CONTENT_EXPORT MediaStreamSource
   // WebMediaStreamSource::readyState to ended.
   void StopSource();
 
+  // Sets the source's state to muted or to live.
+  void SetSourceMuted(bool is_muted);
+
   // Sets device information about a source that has been created by a
   // JavaScript call to GetUserMedia. F.E a camera or microphone.
   void SetDeviceInfo(const StreamDeviceInfo& device_info);

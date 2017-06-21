@@ -132,6 +132,9 @@ class CONTENT_EXPORT MediaStreamAudioSource
   // thread to stop the source soon.
   void StopSourceOnError(const std::string& why);
 
+  // Sets muted state and notifies it to all registered tracks.
+  void SetMutedState(bool state);
+
  private:
   // MediaStreamSource override.
   void DoStopSource() final;

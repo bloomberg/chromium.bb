@@ -54,6 +54,7 @@ class MockCaptureCallback : public AudioCapturerSource::CaptureCallback {
                     bool key_pressed));
 
   MOCK_METHOD1(OnCaptureError, void(const std::string& message));
+  MOCK_METHOD1(OnCaptureMuted, void(bool is_muted));
 };
 
 // Used to terminate a loop from a different thread than the loop belongs to.

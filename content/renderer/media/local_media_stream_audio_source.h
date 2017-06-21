@@ -40,6 +40,7 @@ class CONTENT_EXPORT LocalMediaStreamAudioSource
                double volume,
                bool key_pressed) final;
   void OnCaptureError(const std::string& message) final;
+  void OnCaptureMuted(bool is_muted) final;
 
   // The RenderFrame that will consume the audio data. Used when creating
   // AudioInputDevices via the AudioDeviceFactory.

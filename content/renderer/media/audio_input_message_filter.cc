@@ -87,6 +87,7 @@ bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamCreated,
                         OnStreamCreated)
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamError, OnStreamError)
+    IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamMuted, OnStreamMuted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -154,6 +155,17 @@ void AudioInputMessageFilter::OnStreamError(int stream_id) {
     return;
   }
   delegate->OnError();
+}
+
+void AudioInputMessageFilter::OnStreamMuted(int stream_id, bool is_muted) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  media::AudioInputIPCDelegate* delegate = delegates_.Lookup(stream_id);
+  if (!delegate) {
+    DLOG(WARNING) << "Got audio stream muted event for a non-existent or "
+                     "removed audio renderer.";
+    return;
+  }
+  delegate->OnMuted(is_muted);
 }
 
 AudioInputMessageFilter::AudioInputIPCImpl::AudioInputIPCImpl(

@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_thread_impl.h"
+#include "media/audio/fake_audio_input_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +32,10 @@ static const int kSampleRate = AudioParameters::kAudioCDSampleRate;
 static const int kBitsPerSample = 16;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static const int kSamplesPerPacket = kSampleRate / 10;
+
+// AudioInputController will poll once every second, so wait at most a bit
+// more than that for the callbacks.
+static const int kOnMuteWaitTimeoutMs = 1500;
 
 ACTION_P(QuitRunLoop, run_loop) {
   run_loop->QuitWhenIdle();
@@ -62,6 +67,7 @@ class MockAudioInputControllerEventHandler
   MOCK_METHOD2(OnLog,
                void(AudioInputController* controller,
                     const std::string& message));
+  MOCK_METHOD2(OnMuted, void(AudioInputController* controller, bool is_muted));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputControllerEventHandler);
@@ -221,6 +227,86 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
 
   controller->Close(base::MessageLoop::QuitWhenIdleClosure());
   base::RunLoop().Run();
+}
+
+namespace {
+void RunLoopWithTimeout(base::RunLoop* run_loop, base::TimeDelta timeout) {
+  base::OneShotTimer timeout_timer;
+  timeout_timer.Start(FROM_HERE, timeout, run_loop->QuitClosure());
+  run_loop->Run();
+}
+}
+
+// Test that AudioInputController sends OnMute callbacks properly.
+TEST_F(AudioInputControllerTest, TestOnmutedCallbackInitiallyUnmuted) {
+  const auto timeout = base::TimeDelta::FromMilliseconds(kOnMuteWaitTimeoutMs);
+  MockAudioInputControllerEventHandler event_handler;
+  MockSyncWriter sync_writer;
+  scoped_refptr<AudioInputController> controller;
+  WaitableEvent callback_event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                               WaitableEvent::InitialState::NOT_SIGNALED);
+
+  AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
+                         kSampleRate, kBitsPerSample, kSamplesPerPacket);
+
+  base::RunLoop unmute_run_loop;
+  base::RunLoop mute_run_loop;
+  base::RunLoop setup_run_loop;
+  EXPECT_CALL(event_handler, OnCreated(_)).Times(Exactly(1));
+  EXPECT_CALL(event_handler, OnLog(_, _)).Times(Exactly(3));
+  EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
+  EXPECT_CALL(event_handler, OnMuted(_, true))
+      .WillOnce(InvokeWithoutArgs([&] { mute_run_loop.Quit(); }));
+  EXPECT_CALL(event_handler, OnMuted(_, false))
+      .WillOnce(InvokeWithoutArgs([&] { unmute_run_loop.Quit(); }));
+
+  FakeAudioInputStream::SetGlobalMutedState(false);
+  controller = AudioInputController::Create(
+      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
+      AudioDeviceDescription::kDefaultDeviceId, false);
+  ASSERT_TRUE(controller.get());
+  setup_run_loop.RunUntilIdle();
+
+  FakeAudioInputStream::SetGlobalMutedState(true);
+  RunLoopWithTimeout(&mute_run_loop, timeout);
+  FakeAudioInputStream::SetGlobalMutedState(false);
+  RunLoopWithTimeout(&unmute_run_loop, timeout);
+
+  CloseAudioController(controller.get());
+}
+
+TEST_F(AudioInputControllerTest, TestOnmutedCallbackInitiallyMuted) {
+  const auto timeout = base::TimeDelta::FromMilliseconds(kOnMuteWaitTimeoutMs);
+  MockAudioInputControllerEventHandler event_handler;
+  MockSyncWriter sync_writer;
+  scoped_refptr<AudioInputController> controller;
+  WaitableEvent callback_event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                               WaitableEvent::InitialState::NOT_SIGNALED);
+
+  AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
+                         kSampleRate, kBitsPerSample, kSamplesPerPacket);
+
+  base::RunLoop unmute_run_loop;
+  base::RunLoop setup_run_loop;
+  EXPECT_CALL(event_handler, OnCreated(_)).Times(Exactly(1));
+  EXPECT_CALL(event_handler, OnLog(_, _)).Times(Exactly(3));
+  EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
+  EXPECT_CALL(event_handler, OnMuted(_, true))
+      .WillOnce(InvokeWithoutArgs([&] { setup_run_loop.QuitWhenIdle(); }));
+  EXPECT_CALL(event_handler, OnMuted(_, false))
+      .WillOnce(InvokeWithoutArgs([&] { unmute_run_loop.Quit(); }));
+
+  FakeAudioInputStream::SetGlobalMutedState(true);
+  controller = AudioInputController::Create(
+      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
+      AudioDeviceDescription::kDefaultDeviceId, false);
+  ASSERT_TRUE(controller.get());
+  RunLoopWithTimeout(&setup_run_loop, timeout);
+
+  FakeAudioInputStream::SetGlobalMutedState(false);
+  RunLoopWithTimeout(&unmute_run_loop, timeout);
+
+  CloseAudioController(controller.get());
 }
 
 }  // namespace media

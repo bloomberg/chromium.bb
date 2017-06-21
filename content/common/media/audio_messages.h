@@ -71,6 +71,12 @@ IPC_MESSAGE_CONTROL1(AudioMsg_NotifyStreamError, int /* stream id */)
 // Notification message sent from browser to renderer for state update.
 IPC_MESSAGE_CONTROL1(AudioInputMsg_NotifyStreamError, int /* stream id */)
 
+// Notification message sent from browser to renderer when stream mutes or
+// unmutes.
+IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamMuted,
+                     int /* stream id */,
+                     bool /* is muted? */)
+
 // Messages sent from the renderer to the browser.
 
 // Message sent to the browser to request the use of an audio output

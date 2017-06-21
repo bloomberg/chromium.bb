@@ -35,6 +35,9 @@ class MEDIA_EXPORT AudioInputIPCDelegate {
   // Called when state of an audio stream has changed.
   virtual void OnError() = 0;
 
+  // Called when an audio stream is muted or unmuted.
+  virtual void OnMuted(bool is_muted) = 0;
+
   // Called when the AudioInputIPC object is going away and/or when the
   // IPC channel has been closed and no more IPC requests can be made.
   // Implementations should delete their owned AudioInputIPC instance

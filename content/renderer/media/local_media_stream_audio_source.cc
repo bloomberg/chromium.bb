@@ -110,4 +110,8 @@ void LocalMediaStreamAudioSource::OnCaptureError(const std::string& why) {
   StopSourceOnError(why);
 }
 
+void LocalMediaStreamAudioSource::OnCaptureMuted(bool is_muted) {
+  SetMutedState(is_muted);
+}
+
 }  // namespace content

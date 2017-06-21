@@ -13,7 +13,9 @@
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/timer/timer.h"
 #include "media/audio/audio_debug_file_writer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
@@ -107,6 +109,11 @@ class MEDIA_EXPORT AudioInputController
                          ErrorCode error_code) = 0;
     virtual void OnLog(AudioInputController* controller,
                        const std::string& message) = 0;
+    // Initially, an AudioInputController is considered not muted. If the
+    // underlying stream is actually muted, an OnMuted callback will follow
+    // shortly after OnCreated. It is also called whenever the muted state of
+    // the underlying stream changes.
+    virtual void OnMuted(AudioInputController* controller, bool is_muted) = 0;
 
    protected:
     virtual ~EventHandler() {}
@@ -323,6 +330,8 @@ class MEDIA_EXPORT AudioInputController
                        float* average_power_dbfs,
                        int* mic_volume_percent);
 
+  void CheckMutedState();
+
   static StreamType ParamsToStreamType(const AudioParameters& params);
 
   // Gives access to the task runner of the creating thread.
@@ -366,6 +375,9 @@ class MEDIA_EXPORT AudioInputController
 
   // Time when the stream started recording.
   base::TimeTicks stream_create_time_;
+
+  bool is_muted_ = false;
+  base::RepeatingTimer check_muted_state_timer_;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   // Used for audio debug recordings. Accessed on audio thread.
