@@ -148,7 +148,6 @@ class WebFrameWidgetImpl final
   // Event related methods:
   void MouseContextMenu(const WebMouseEvent&);
 
-  WebLayerTreeView* LayerTreeView() const { return layer_tree_view_; }
   GraphicsLayer* RootGraphicsLayer() const override {
     return root_graphics_layer_;
   };
