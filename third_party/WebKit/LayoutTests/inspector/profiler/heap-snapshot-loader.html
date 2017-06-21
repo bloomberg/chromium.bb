@@ -49,7 +49,7 @@ function test()
                 function saveMock(url, data)
                 {
                     savedSnapshotData = data;
-                    Workspace.fileManager._savedURL({data: url});
+                    setTimeout(() => Workspace.fileManager._savedURL(true, {data: url}), 0);
                 }
                 InspectorTest.override(InspectorFrontendHost, "save", saveMock);
 
