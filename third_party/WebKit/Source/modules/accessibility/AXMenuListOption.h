@@ -55,7 +55,7 @@ class AXMenuListOption final : public AXMockObject {
   LocalFrameView* DocumentFrameView() const override;
   AccessibilityRole RoleValue() const override;
   bool CanHaveChildren() const override { return false; }
-  AXObjectImpl* ComputeParent() const override;
+  AXObject* ComputeParent() const override;
 
   Element* ActionElement() const override;
   bool IsEnabled() const override;
@@ -66,7 +66,7 @@ class AXMenuListOption final : public AXMockObject {
   bool CanSetSelectedAttribute() const override;
   bool CanSetFocusAttribute() const override;
 
-  void GetRelativeBounds(AXObjectImpl** out_container,
+  void GetRelativeBounds(AXObject** out_container,
                          FloatRect& out_bounds_in_container,
                          SkMatrix44& out_container_transform) const override;
   String TextAlternative(bool recursive,

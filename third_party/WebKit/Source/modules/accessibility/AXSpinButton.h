@@ -73,7 +73,7 @@ class AXSpinButtonPart final : public AXMockObject {
   bool Press() override;
   AccessibilityRole RoleValue() const override { return kButtonRole; }
   bool IsSpinButtonPart() const override { return true; }
-  void GetRelativeBounds(AXObjectImpl** out_container,
+  void GetRelativeBounds(AXObject** out_container,
                          FloatRect& out_bounds_in_container,
                          SkMatrix44& out_container_transform) const override;
 };

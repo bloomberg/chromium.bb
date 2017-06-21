@@ -30,7 +30,7 @@
 #define AXNodeObject_h
 
 #include "modules/ModulesExport.h"
-#include "modules/accessibility/AXObjectImpl.h"
+#include "modules/accessibility/AXObject.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
@@ -40,7 +40,7 @@ class Element;
 class HTMLLabelElement;
 class Node;
 
-class MODULES_EXPORT AXNodeObject : public AXObjectImpl {
+class MODULES_EXPORT AXNodeObject : public AXObject {
   WTF_MAKE_NONCOPYABLE(AXNodeObject);
 
  protected:
@@ -60,35 +60,35 @@ class MODULES_EXPORT AXNodeObject : public AXObjectImpl {
 #endif
 
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
-  const AXObjectImpl* InheritsPresentationalRoleFrom() const override;
+  const AXObject* InheritsPresentationalRoleFrom() const override;
   virtual AccessibilityRole DetermineAccessibilityRole();
   virtual AccessibilityRole NativeAccessibilityRoleIgnoringAria() const;
   String AccessibilityDescriptionForElements(
       HeapVector<Member<Element>>& elements) const;
   void AlterSliderValue(bool increase);
-  AXObjectImpl* ActiveDescendant() override;
+  AXObject* ActiveDescendant() override;
   String AriaAccessibilityDescription() const;
   String AriaAutoComplete() const;
   AccessibilityRole DetermineAriaRoleAttribute() const;
   void AccessibilityChildrenFromAttribute(QualifiedName attr,
-                                          AXObjectImpl::AXObjectVector&) const;
+                                          AXObject::AXObjectVector&) const;
 
   bool HasContentEditableAttributeSet() const;
   bool IsTextControl() const override;
   // This returns true if it's focusable but it's not content editable and it's
   // not a control or ARIA control.
   bool IsGenericFocusableElement() const;
-  AXObjectImpl* MenuButtonForMenu() const;
+  AXObject* MenuButtonForMenu() const;
   Element* MenuItemElementForMenu() const;
   Element* MouseButtonListener() const;
   AccessibilityRole RemapAriaRoleDueToParent(AccessibilityRole) const;
   bool IsNativeCheckboxOrRadio() const;
   void SetNode(Node*);
-  AXObjectImpl* CorrespondingControlForLabelElement() const;
+  AXObject* CorrespondingControlForLabelElement() const;
   HTMLLabelElement* LabelElementContainer() const;
 
   //
-  // Overridden from AXObjectImpl.
+  // Overridden from AXObject.
   //
 
   void Init() override;
@@ -146,7 +146,7 @@ class MODULES_EXPORT AXNodeObject : public AXObjectImpl {
   unsigned HierarchicalLevel() const final;
   void Markers(Vector<DocumentMarker::MarkerType>&,
                Vector<AXRange>&) const override;
-  AXObjectImpl* InPageLinkTarget() const override;
+  AXObject* InPageLinkTarget() const override;
   AccessibilityOrientation Orientation() const override;
   AXObjectVector RadioButtonsInGroup() const override;
   static HeapVector<Member<HTMLInputElement>> FindAllRadioButtonsWithSameName(
@@ -185,21 +185,21 @@ class MODULES_EXPORT AXNodeObject : public AXObjectImpl {
   bool NameFromLabelElement() const override;
 
   // Location
-  void GetRelativeBounds(AXObjectImpl** out_container,
+  void GetRelativeBounds(AXObject** out_container,
                          FloatRect& out_bounds_in_container,
                          SkMatrix44& out_container_transform) const override;
 
   // High-level accessibility tree access.
-  AXObjectImpl* ComputeParent() const override;
-  AXObjectImpl* ComputeParentIfExists() const override;
+  AXObject* ComputeParent() const override;
+  AXObject* ComputeParentIfExists() const override;
 
   // Low-level accessibility tree exploration.
-  AXObjectImpl* RawFirstChild() const override;
-  AXObjectImpl* RawNextSibling() const override;
+  AXObject* RawFirstChild() const override;
+  AXObject* RawNextSibling() const override;
   void AddChildren() override;
   bool CanHaveChildren() const override;
-  void AddChild(AXObjectImpl*);
-  void InsertChild(AXObjectImpl*, unsigned index);
+  void AddChild(AXObject*);
+  void InsertChild(AXObject*, unsigned index);
 
   // DOM and Render tree access.
   Element* ActionElement() const override;
@@ -225,7 +225,7 @@ class MODULES_EXPORT AXNodeObject : public AXObjectImpl {
 
   // Aria-owns.
   void ComputeAriaOwnsChildren(
-      HeapVector<Member<AXObjectImpl>>& owned_children) const;
+      HeapVector<Member<AXObject>>& owned_children) const;
 
  private:
   Member<Node> node_;

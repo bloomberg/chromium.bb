@@ -32,7 +32,7 @@
 #include <memory>
 #include "core/dom/AXObjectCacheBase.h"
 #include "modules/ModulesExport.h"
-#include "modules/accessibility/AXObjectImpl.h"
+#include "modules/accessibility/AXObject.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
@@ -55,7 +55,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   DECLARE_VIRTUAL_TRACE();
 
   Document& GetDocument() { return *document_; }
-  AXObjectImpl* FocusedObject();
+  AXObject* FocusedObject();
 
   void Dispose() override;
 
@@ -77,9 +77,9 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   void TextChanged(LayoutObject*) override;
-  void TextChanged(AXObjectImpl*);
+  void TextChanged(AXObject*);
   // Called when a node has just been attached, so we can make sure we have the
-  // right subclass of AXObjectImpl.
+  // right subclass of AXObject.
   void UpdateCacheAfterNodeIsAttached(Node*) override;
 
   void HandleAttributeChanged(const QualifiedName& attr_name,
@@ -118,27 +118,27 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   void OnTouchAccessibilityHover(const IntPoint&) override;
 
   // Returns the root object for the entire document.
-  AXObjectImpl* RootObject();
+  AXObject* RootObject();
 
-  AXObjectImpl* ObjectFromAXID(AXID id) const { return objects_.at(id); }
-  AXObjectImpl* Root();
+  AXObject* ObjectFromAXID(AXID id) const { return objects_.at(id); }
+  AXObject* Root();
 
   // used for objects without backing elements
-  AXObjectImpl* GetOrCreate(AccessibilityRole);
-  AXObjectImpl* GetOrCreate(LayoutObject*) override;
-  AXObjectImpl* GetOrCreate(Node*);
-  AXObjectImpl* GetOrCreate(AbstractInlineTextBox*);
+  AXObject* GetOrCreate(AccessibilityRole);
+  AXObject* GetOrCreate(LayoutObject*) override;
+  AXObject* GetOrCreate(Node*);
+  AXObject* GetOrCreate(AbstractInlineTextBox*);
 
-  // will only return the AXObjectImpl if it already exists
-  AXObjectImpl* Get(const Node*) override;
-  AXObjectImpl* Get(LayoutObject*);
-  AXObjectImpl* Get(AbstractInlineTextBox*);
+  // will only return the AXObject if it already exists
+  AXObject* Get(const Node*) override;
+  AXObject* Get(LayoutObject*);
+  AXObject* Get(AbstractInlineTextBox*);
 
-  AXObjectImpl* FirstAccessibleObjectFromNode(const Node*);
+  AXObject* FirstAccessibleObjectFromNode(const Node*);
 
   void Remove(AXID);
 
-  void ChildrenChanged(AXObjectImpl*);
+  void ChildrenChanged(AXObject*);
 
   void HandleActiveDescendantChanged(Node*);
   void HandleAriaRoleChanged(Node*);
@@ -148,7 +148,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   bool AccessibilityEnabled();
   bool InlineTextBoxAccessibilityEnabled();
 
-  void RemoveAXID(AXObjectImpl*);
+  void RemoveAXID(AXObject*);
 
   AXID GenerateAXID() const;
 
@@ -158,7 +158,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
 
   void PostNotification(LayoutObject*, AXNotification);
   void PostNotification(Node*, AXNotification);
-  void PostNotification(AXObjectImpl*, AXNotification);
+  void PostNotification(AXObject*, AXNotification);
 
   //
   // Aria-owns support.
@@ -166,10 +166,10 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
 
   // Returns true if the given object's position in the tree was due to
   // aria-owns.
-  bool IsAriaOwned(const AXObjectImpl*) const;
+  bool IsAriaOwned(const AXObject*) const;
 
   // Returns the parent of the given object due to aria-owns.
-  AXObjectImpl* GetAriaOwnedParent(const AXObjectImpl*) const;
+  AXObject* GetAriaOwnedParent(const AXObject*) const;
 
   // Given an object that has an aria-owns attributes, and a vector of ids from
   // the value of that attribute, updates the internal state to reflect the new
@@ -180,9 +180,9 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   // If one or more ids aren't found, they're added to a lookup table so that if
   // an element with that id appears later, it can be added when you call
   // updateTreeIfElementIdIsAriaOwned.
-  void UpdateAriaOwns(const AXObjectImpl* owner,
+  void UpdateAriaOwns(const AXObject* owner,
                       const Vector<String>& id_vector,
-                      HeapVector<Member<AXObjectImpl>>& owned_children);
+                      HeapVector<Member<AXObject>>& owned_children);
 
   // Given an element in the DOM tree that was either just added or whose id
   // just changed, check to see if another object wants to be its parent due to
@@ -191,16 +191,16 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   void UpdateTreeIfElementIdIsAriaOwned(Element*);
 
  protected:
-  void PostPlatformNotification(AXObjectImpl*, AXNotification);
+  void PostPlatformNotification(AXObject*, AXNotification);
   void LabelChanged(Element*);
 
-  AXObjectImpl* CreateFromRenderer(LayoutObject*);
-  AXObjectImpl* CreateFromNode(Node*);
-  AXObjectImpl* CreateFromInlineTextBox(AbstractInlineTextBox*);
+  AXObject* CreateFromRenderer(LayoutObject*);
+  AXObject* CreateFromNode(Node*);
+  AXObject* CreateFromInlineTextBox(AbstractInlineTextBox*);
 
  private:
   Member<Document> document_;
-  HeapHashMap<AXID, Member<AXObjectImpl>> objects_;
+  HeapHashMap<AXID, Member<AXObject>> objects_;
   // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
   // do not use HeapHashMap for those mappings.
   HashMap<LayoutObject*, AXID> layout_object_mapping_;
@@ -245,17 +245,17 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   HashMap<String, std::unique_ptr<HashSet<AXID>>> id_to_aria_owners_mapping_;
 
   TaskRunnerTimer<AXObjectCacheImpl> notification_post_timer_;
-  HeapVector<std::pair<Member<AXObjectImpl>, AXNotification>>
+  HeapVector<std::pair<Member<AXObject>, AXNotification>>
       notifications_to_post_;
   void NotificationPostTimerFired(TimerBase*);
 
-  AXObjectImpl* FocusedImageMapUIElement(HTMLAreaElement*);
+  AXObject* FocusedImageMapUIElement(HTMLAreaElement*);
 
-  AXID GetOrCreateAXID(AXObjectImpl*);
+  AXID GetOrCreateAXID(AXObject*);
 
   void TextChanged(Node*);
   bool NodeIsTextControl(const Node*);
-  AXObjectImpl* NearestExistingAncestor(Node*);
+  AXObject* NearestExistingAncestor(Node*);
 
   Settings* GetSettings();
 };
