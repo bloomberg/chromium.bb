@@ -112,25 +112,11 @@ void BufferRelease(void* data, wl_buffer* /* buffer */) {
 }
 
 #if defined(OZONE_PLATFORM_GBM)
-void LinuxBufferParamsCreated(void* data,
-                              zwp_linux_buffer_params_v1* params,
-                              wl_buffer* new_buffer) {
-  ClientBase::Buffer* buffer = static_cast<ClientBase::Buffer*>(data);
-  buffer->buffer.reset(new_buffer);
-}
-
-void LinuxBufferParamsFailed(void* data, zwp_linux_buffer_params_v1* params) {
-  LOG(ERROR) << "Linux buffer params failed";
-}
-
 const GrGLInterface* GrGLCreateNativeInterface() {
   return GrGLAssembleInterface(nullptr, [](void* ctx, const char name[]) {
     return eglGetProcAddress(name);
   });
 }
-
-zwp_linux_buffer_params_v1_listener g_params_listener = {
-    LinuxBufferParamsCreated, LinuxBufferParamsFailed};
 #endif
 
 wl_registry_listener g_registry_listener = {RegistryHandler, RegistryRemover};
@@ -313,10 +299,11 @@ bool ClientBase::Init(const InitParams& params) {
     buffers_.push_back(std::move(buffer));
   }
 
-  wl_display_roundtrip(display_.get());
   for (size_t i = 0; i < buffers_.size(); ++i) {
+    // If the buffer handle doesn't exist, we would either be killed by the
+    // server or die here.
     if (!buffers_[i]->buffer) {
-      LOG(ERROR) << "LinuxBufferParamsCreated was not called on the buffer.";
+      LOG(ERROR) << "buffer handle uninitialized.";
       return false;
     }
 
@@ -388,8 +375,6 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
 
     buffer->params.reset(
         zwp_linux_dmabuf_v1_create_params(globals_.linux_dmabuf.get()));
-    zwp_linux_buffer_params_v1_add_listener(buffer->params.get(),
-                                            &g_params_listener, buffer.get());
     for (size_t i = 0; i < gbm_bo_get_num_planes(buffer->bo.get()); ++i) {
       base::ScopedFD fd(gbm_bo_get_plane_fd(buffer->bo.get(), i));
       uint32_t stride = gbm_bo_get_plane_stride(buffer->bo.get(), i);
@@ -397,8 +382,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
       zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), i, offset,
                                      stride, 0, 0);
     }
-    zwp_linux_buffer_params_v1_create(buffer->params.get(), width_, height_,
-                                      drm_format, 0);
+    buffer->buffer.reset(zwp_linux_buffer_params_v1_create_immed(
+        buffer->params.get(), width_, height_, drm_format, 0));
 
     if (gbm_bo_get_num_planes(buffer->bo.get()) != 1)
       return buffer;
