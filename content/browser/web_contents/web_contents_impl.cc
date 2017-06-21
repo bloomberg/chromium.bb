@@ -1574,6 +1574,12 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
     SetFocusedFrame(frame_tree_.root(), nullptr);
   }
 
+  // Set up the the guest's AX tree to point back at the embedder's AX tree.
+  auto* parent_frame = outer_contents_frame->GetParent();
+  GetMainFrame()->set_browser_plugin_embedder_ax_tree_id(
+      parent_frame->GetAXTreeID());
+  GetMainFrame()->UpdateAXTreeData();
+
   // At this point, we should destroy the TextInputManager which will notify all
   // the RWHV in this WebContents. The RWHV in this WebContents should use the
   // TextInputManager owned by the outer WebContents.
@@ -4597,6 +4603,26 @@ WebContentsImpl* WebContentsImpl::GetOutermostWebContents() {
   return root;
 }
 
+void WebContentsImpl::FocusOuterAttachmentFrameChain() {
+  WebContentsImpl* outer_contents = GetOuterWebContents();
+  if (!outer_contents)
+    return;
+
+  FrameTreeNode* outer_node =
+      FrameTreeNode::GloballyFindByID(GetOuterDelegateFrameTreeNodeId());
+  outer_contents->frame_tree_.SetFocusedFrame(outer_node, nullptr);
+
+  // For a browser initiated focus change, let embedding renderer know of the
+  // change. Otherwise, if the currently focused element is just across a
+  // process boundary in focus order, it will not be possible to move across
+  // that boundary. This is because the target element will already be focused
+  // (that renderer was not notified) and drop the event.
+  if (GetRenderManager()->GetProxyToOuterDelegate())
+    GetRenderManager()->GetProxyToOuterDelegate()->SetFocusedFrame();
+
+  outer_contents->FocusOuterAttachmentFrameChain();
+}
+
 void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   // Don't send notifications if we are just creating a swapped-out RVH for
   // the opener chain.  These won't be used for view-source or WebUI, so it's
@@ -5007,8 +5033,7 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
   // Make sure the outer web contents knows our frame is focused. Otherwise, the
   // outer renderer could have the element before or after the frame element
   // focused which would return early without actually advancing focus.
-  if (GetRenderManager()->GetProxyToOuterDelegate())
-    GetRenderManager()->GetProxyToOuterDelegate()->SetFocusedFrame();
+  FocusOuterAttachmentFrameChain();
 
   if (ShowingInterstitialPage()) {
     static_cast<RenderFrameHostImpl*>(interstitial_page_->GetMainFrame())
@@ -5022,7 +5047,37 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
 void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
                                       SiteInstance* source) {
   SetAsFocusedWebContentsIfNecessary();
+
   frame_tree_.SetFocusedFrame(node, source);
+
+  WebContentsImpl* inner_contents = node_.GetInnerWebContentsInFrame(node);
+
+  WebContentsImpl* contents_to_focus = inner_contents ? inner_contents : this;
+  contents_to_focus->SetAsFocusedWebContentsIfNecessary();
+}
+
+RenderFrameHost* WebContentsImpl::GetFocusedFrameIncludingInnerWebContents() {
+  WebContentsImpl* contents = this;
+  FrameTreeNode* focused_node = contents->frame_tree_.GetFocusedFrame();
+
+  // If there is no focused frame in the outer WebContents, we need to return
+  // null.
+  if (!focused_node)
+    return nullptr;
+
+  // If the focused frame is embedding an inner WebContents, we must descend
+  // into that contents. If the current WebContents does not have a focused
+  // frame, return the main frame of this contents instead of the focused empty
+  // frame embedding this contents.
+  while (true) {
+    contents = contents->node_.GetInnerWebContentsInFrame(focused_node);
+    if (!contents)
+      return focused_node->current_frame_host();
+
+    focused_node = contents->frame_tree_.GetFocusedFrame();
+    if (!focused_node)
+      return contents->GetMainFrame();
+  }
 }
 
 void WebContentsImpl::OnFocusedElementChangedInFrame(

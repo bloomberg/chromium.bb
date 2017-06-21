@@ -3749,13 +3749,6 @@ ui::AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(
   if (!rfh)
     return ui::AXTreeIDRegistry::kNoAXTreeID;
 
-  // As a sanity check, make sure we're within the same frame tree and
-  // crash the renderer if not.
-  if (rfh->frame_tree_node()->frame_tree() != frame_tree_node()->frame_tree()) {
-    AccessibilityFatalError();
-    return ui::AXTreeIDRegistry::kNoAXTreeID;
-  }
-
   return rfh->GetAXTreeID();
 }
 
@@ -3823,14 +3816,10 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
     return;
 
   // For the root frame tree node, also store the AXTreeID of the focused frame.
-  // TODO(avallee): https://crbug.com/610795: No focus ax events.
-  // This is probably where we need to fix the bug to enable the test.
-  FrameTreeNode* focused_frame_tree_node = frame_tree_->GetFocusedFrame();
-  if (!focused_frame_tree_node)
+  auto* focused_frame = static_cast<RenderFrameHostImpl*>(
+      delegate_->GetFocusedFrameIncludingInnerWebContents());
+  if (!focused_frame)
     return;
-  RenderFrameHostImpl* focused_frame =
-      focused_frame_tree_node->current_frame_host();
-  DCHECK(focused_frame);
   dst->focused_tree_id = focused_frame->GetAXTreeID();
 }
 
