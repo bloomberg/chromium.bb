@@ -13,7 +13,40 @@
 
 namespace mojo {
 
-// MediaStatus
+template <>
+struct EnumTraits<media_router::mojom::MediaStatus::PlayState,
+                  media_router::MediaStatus::PlayState> {
+  static media_router::mojom::MediaStatus::PlayState ToMojom(
+      media_router::MediaStatus::PlayState play_state) {
+    switch (play_state) {
+      case media_router::MediaStatus::PlayState::PLAYING:
+        return media_router::mojom::MediaStatus::PlayState::PLAYING;
+      case media_router::MediaStatus::PlayState::PAUSED:
+        return media_router::mojom::MediaStatus::PlayState::PAUSED;
+      case media_router::MediaStatus::PlayState::BUFFERING:
+        return media_router::mojom::MediaStatus::PlayState::BUFFERING;
+    }
+    NOTREACHED() << "Unknown play state " << static_cast<int>(play_state);
+    return media_router::mojom::MediaStatus::PlayState::PLAYING;
+  }
+
+  static bool FromMojom(media_router::mojom::MediaStatus::PlayState input,
+                        media_router::MediaStatus::PlayState* output) {
+    switch (input) {
+      case media_router::mojom::MediaStatus::PlayState::PLAYING:
+        *output = media_router::MediaStatus::PlayState::PLAYING;
+        return true;
+      case media_router::mojom::MediaStatus::PlayState::PAUSED:
+        *output = media_router::MediaStatus::PlayState::PAUSED;
+        return true;
+      case media_router::mojom::MediaStatus::PlayState::BUFFERING:
+        *output = media_router::MediaStatus::PlayState::BUFFERING;
+        return true;
+    }
+    NOTREACHED() << "Unknown play state " << static_cast<int>(input);
+    return false;
+  }
+};
 
 template <>
 struct StructTraits<media_router::mojom::MediaStatusDataView,
@@ -46,8 +79,9 @@ struct StructTraits<media_router::mojom::MediaStatusDataView,
     return status.can_seek;
   }
 
-  static bool is_paused(const media_router::MediaStatus& status) {
-    return status.is_paused;
+  static media_router::MediaStatus::PlayState play_state(
+      const media_router::MediaStatus& status) {
+    return status.play_state;
   }
 
   static bool is_muted(const media_router::MediaStatus& status) {

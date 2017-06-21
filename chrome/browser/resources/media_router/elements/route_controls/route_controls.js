@@ -84,8 +84,17 @@ Polymer({
     routeStatus: {
       type: Object,
       observer: 'onRouteStatusChange_',
-      value: new media_router.RouteStatus(
-          '', '', false, false, false, false, false, false, 0, 0, 0),
+      value: new media_router.RouteStatus(),
+    },
+
+    /**
+     * The ID of the timer currently set to increment the current time of the
+     * media, or 0 if the current time is not being incremented.
+     * @private {number}
+     */
+    timeIncrementsTimeoutId_: {
+      type: Number,
+      value: 0,
     },
   },
 
@@ -103,12 +112,23 @@ Polymer({
   },
 
   /**
+   * Current time can be incremented if the media is playing, and either the
+   * duration is 0 or current time is less than the duration.
+   * @return {boolean}
+   * @private
+   */
+  canIncrementCurrentTime_: function() {
+    return this.routeStatus.playState === media_router.PlayState.PLAYING &&
+        (this.routeStatus.duration === 0 ||
+         this.routeStatus.currentTime < this.routeStatus.duration);
+  },
+
+  /**
    * Converts a number representing an interval of seconds to a string with
    * HH:MM:SS format.
    * @param {number} timeInSec Must be non-negative. Intervals longer than 100
    *     hours get truncated silently.
    * @return {string}
-   *
    * @private
    */
   getFormattedTime_: function(timeInSec) {
@@ -126,7 +146,6 @@ Polymer({
    * @param {!media_router.RouteStatus} routeStatus
    * @return {string} The value for the icon attribute of the mute/unmute
    *     button.
-   *
    * @private
    */
   getMuteUnmuteIcon_: function(routeStatus) {
@@ -136,7 +155,6 @@ Polymer({
   /**
    * @param {!media_router.RouteStatus} routeStatus
    * @return {string} Localized title for the mute/unmute button.
-   *
    * @private
    */
   getMuteUnmuteTitle_: function(routeStatus) {
@@ -147,28 +165,48 @@ Polymer({
   /**
    * @param {!media_router.RouteStatus} routeStatus
    * @return {string}The value for the icon attribute of the play/pause button.
-   *
    * @private
    */
   getPlayPauseIcon_: function(routeStatus) {
-    return routeStatus.isPaused ? 'av:play-arrow' : 'av:pause';
+    return routeStatus.playState === media_router.PlayState.PAUSED ?
+        'av:play-arrow' :
+        'av:pause';
   },
 
   /**
    * @param {!media_router.RouteStatus} routeStatus
    * @return {string} Localized title for the play/pause button.
-   *
    * @private
    */
   getPlayPauseTitle_: function(routeStatus) {
-    return routeStatus.isPaused ? this.i18n('playTitle') :
-                                  this.i18n('pauseTitle');
+    return routeStatus.playState === media_router.PlayState.PAUSED ?
+        this.i18n('playTitle') :
+        this.i18n('pauseTitle');
+  },
+
+  /**
+   * Checks whether the media is still playing, and if so, sends a media status
+   * update incrementing the current time and schedules another call for a
+   * second later.
+   * @private
+   */
+  maybeIncrementCurrentTime_: function() {
+    if (this.canIncrementCurrentTime_()) {
+      this.routeStatus.currentTime++;
+      this.displayedCurrentTime_ = this.routeStatus.currentTime;
+      if (this.routeStatus.duration === 0 ||
+          this.routeStatus.currentTime < this.routeStatus.duration) {
+        this.timeIncrementsTimeoutId_ =
+            setTimeout(() => this.maybeIncrementCurrentTime_(), 1000);
+      }
+    } else {
+      this.timeIncrementsTimeoutId_ = 0;
+    }
   },
 
   /**
    * Called when the user toggles the mute status of the media. Sends a mute or
    * unmute command to the browser.
-   *
    * @private
    */
   onMuteUnmute_: function() {
@@ -178,11 +216,10 @@ Polymer({
   /**
    * Called when the user toggles between playing and pausing the media. Sends a
    * play or pause command to the browser.
-   *
    * @private
    */
   onPlayPause_: function() {
-    if (this.routeStatus.isPaused) {
+    if (this.routeStatus.playState === media_router.PlayState.PAUSED) {
       media_router.browserApi.playCurrentMedia();
     } else {
       media_router.browserApi.pauseCurrentMedia();
@@ -193,7 +230,6 @@ Polymer({
    * Updates seek and volume bars if the user is not currently dragging on
    * them.
    * @param {!media_router.RouteStatus} newRouteStatus
-   *
    * @private
    */
   onRouteStatusChange_: function(newRouteStatus) {
@@ -211,15 +247,26 @@ Polymer({
       media_router.browserApi.reportWebUIRouteControllerLoaded(
           this.initialLoadTime_ - this.routeDetailsOpenTime);
     }
+    if (this.canIncrementCurrentTime_()) {
+      if (!this.timeIncrementsTimeoutId_) {
+        this.timeIncrementsTimeoutId_ =
+            setTimeout(() => this.maybeIncrementCurrentTime_(), 1000);
+      }
+    } else {
+      this.stopIncrementingCurrentTime_();
+    }
   },
 
   /**
    * Called when the route is updated. Updates the description shown if it has
    * not been provided by status updates.
-   * @param {!media_router.Route} route
+   * @param {?media_router.Route} route
    */
   onRouteUpdated: function(route) {
-    if (this.routeStatus.description === '') {
+    if (!route) {
+      this.stopIncrementingCurrentTime_();
+    }
+    if (route && this.routeStatus.description === '') {
       this.displayedDescription_ =
           loadTimeData.getStringF('castingActivityStatus', route.description);
     }
@@ -228,10 +275,10 @@ Polymer({
   /**
    * Called when the user clicks on or stops dragging the seek bar.
    * @param {!Event} e
-   *
    * @private
    */
   onSeekComplete_: function(e) {
+    this.stopIncrementingCurrentTime_();
     this.isSeeking_ = false;
     this.displayedCurrentTime_ = e.target.value;
     media_router.browserApi.seekCurrentMedia(this.displayedCurrentTime_);
@@ -240,7 +287,6 @@ Polymer({
   /**
    * Called when the user starts dragging the seek bar.
    * @param {!Event} e
-   *
    * @private
    */
   onSeekStart_: function(e) {
@@ -252,7 +298,6 @@ Polymer({
   /**
    * Called when the user clicks on or stops dragging the volume bar.
    * @param {!Event} e
-   *
    * @private
    */
   onVolumeChangeComplete_: function(e) {
@@ -264,7 +309,6 @@ Polymer({
   /**
    * Called when the user starts dragging the volume bar.
    * @param {!Event} e
-   *
    * @private
    */
   onVolumeChangeStart_: function(e) {
@@ -281,4 +325,16 @@ Polymer({
         '', '', false, false, false, false, false, false, 0, 0, 0);
     media_router.ui.setRouteControls(null);
   },
+
+  /**
+   * If it is currently incrementing the current time shown, then stops doing
+   * so.
+   * @private
+   */
+  stopIncrementingCurrentTime_: function() {
+    if (this.timeIncrementsTimeoutId_) {
+      clearTimeout(this.timeIncrementsTimeoutId_);
+      this.timeIncrementsTimeoutId_ = 0;
+    }
+  }
 });

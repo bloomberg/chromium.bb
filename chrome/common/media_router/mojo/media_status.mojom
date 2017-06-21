@@ -10,6 +10,12 @@ import "mojo/common/time.mojom";
 // free of details specific to Media Router, so that it can be moved to the
 // media namespace and be reused for other features in the future.
 struct MediaStatus {
+  enum PlayState {
+    PLAYING,
+    PAUSED,
+    BUFFERING
+  };
+
   // The main title of the media. For example, in a MediaStatus representing
   // a YouTube Cast session, this could be the title of the video.
   string title;
@@ -34,7 +40,8 @@ struct MediaStatus {
   // through its MediaController.
   bool can_seek;
 
-  bool is_paused;
+  // Whether the media is playing, paused, or buffering.
+  PlayState play_state;
 
   bool is_muted;
 

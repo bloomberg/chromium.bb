@@ -14,6 +14,8 @@ namespace media_router {
 // Represents the current state of a media content.
 struct MediaStatus {
  public:
+  enum class PlayState { PLAYING, PAUSED, BUFFERING };
+
   MediaStatus();
   MediaStatus(const MediaStatus& other);
   ~MediaStatus();
@@ -41,7 +43,7 @@ struct MediaStatus {
   // If this is true, the media's current playback position can be changed.
   bool can_seek = false;
 
-  bool is_paused = false;
+  PlayState play_state = PlayState::PLAYING;
 
   bool is_muted = false;
 

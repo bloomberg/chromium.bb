@@ -346,7 +346,7 @@ void MediaRouterWebUIMessageHandler::UpdateMediaRouteStatus(
   status_value.SetBoolean("canMute", status.can_mute);
   status_value.SetBoolean("canSetVolume", status.can_set_volume);
   status_value.SetBoolean("canSeek", status.can_seek);
-  status_value.SetBoolean("isPaused", status.is_paused);
+  status_value.SetInteger("playState", static_cast<int>(status.play_state));
   status_value.SetBoolean("isMuted", status.is_muted);
   status_value.SetInteger("duration", status.duration.InSeconds());
   status_value.SetInteger("currentTime", status.current_time.InSeconds());

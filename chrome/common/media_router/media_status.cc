@@ -18,7 +18,7 @@ bool MediaStatus::operator==(const MediaStatus& other) const {
   return title == other.title && description == other.description &&
          can_play_pause == other.can_play_pause && can_mute == other.can_mute &&
          can_set_volume == other.can_set_volume && can_seek == other.can_seek &&
-         is_paused == other.is_paused && is_muted == other.is_muted &&
+         play_state == other.play_state && is_muted == other.is_muted &&
          volume == other.volume && duration == other.duration &&
          current_time == other.current_time;
 }
