@@ -32,6 +32,9 @@ AudioPostProcessorShlib_Create(const std::string& config, int channels);
 namespace chromecast {
 namespace media {
 
+// The maximum amount of data that will ever be processed in one call.
+const int kMaxAudioWriteTimeMilliseconds = 20;
+
 // Interface for AudioPostProcessors used for applying DSP in StreamMixerAlsa.
 class AudioPostProcessor {
  public:

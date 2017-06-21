@@ -27,6 +27,7 @@
 #include "chromecast/media/cma/backend/alsa/filter_group.h"
 #include "chromecast/media/cma/backend/alsa/post_processing_pipeline_parser.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"
+#include "chromecast/public/media/audio_post_processor_shlib.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
@@ -82,7 +83,6 @@ const bool kPcmRecoverIsSilent = false;
 const int kPreventUnderrunChunkSize = 512;
 const int kDefaultCheckCloseTimeoutMs = 2000;
 
-const int kMaxWriteSizeMs = 20;
 // The minimum amount of data that we allow in the ALSA buffer before starting
 // to skip inputs with no available data.
 const int kMinBufferedDataMs = 8;
@@ -852,7 +852,8 @@ bool StreamMixerAlsa::TryWriteFrames() {
 
   const int min_frames_in_buffer =
       output_samples_per_second_ * kMinBufferedDataMs / 1000;
-  int chunk_size = output_samples_per_second_ * kMaxWriteSizeMs / 1000;
+  int chunk_size =
+      output_samples_per_second_ * kMaxAudioWriteTimeMilliseconds / 1000;
   bool is_silence = true;
   for (auto&& filter_group : filter_groups_) {
     filter_group->ClearActiveInputs();
