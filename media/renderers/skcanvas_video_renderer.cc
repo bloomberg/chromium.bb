@@ -99,6 +99,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
                         (ya_tex_size.height() + 1) / 2);
 
   GrGLTextureInfo source_textures[] = {{0, 0}, {0, 0}, {0, 0}};
+  GLint min_mag_filter[][2] = {{0, 0}, {0, 0}, {0, 0}};
   for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
        ++i) {
     // Get the texture from the mailbox and wrap it in a GrTexture.
@@ -111,6 +112,11 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
         mailbox_holder.texture_target, mailbox_holder.mailbox.name);
     source_textures[i].fTarget = mailbox_holder.texture_target;
 
+    gl->BindTexture(mailbox_holder.texture_target, source_textures[i].fID);
+    gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MIN_FILTER,
+                          &min_mag_filter[i][0]);
+    gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MAG_FILTER,
+                          &min_mag_filter[i][1]);
     // TODO(dcastagna): avoid this copy once Skia supports native textures
     // with a GL_TEXTURE_RECTANGLE_ARB texture target.
     // crbug.com/505026
@@ -158,6 +164,12 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
   }
   for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
        ++i) {
+    gl->BindTexture(source_textures[i].fTarget, source_textures[i].fID);
+    gl->TexParameteri(source_textures[i].fTarget, GL_TEXTURE_MIN_FILTER,
+                      min_mag_filter[i][0]);
+    gl->TexParameteri(source_textures[i].fTarget, GL_TEXTURE_MAG_FILTER,
+                      min_mag_filter[i][1]);
+
     gl->DeleteTextures(1, &source_textures[i].fID);
   }
   return img;
