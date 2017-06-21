@@ -1532,7 +1532,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
   return buffer;
 }
 
-pp::Buffer_Dev PDFiumEngine::GetFlattenedPrintData(const FPDF_DOCUMENT& doc) {
+pp::Buffer_Dev PDFiumEngine::GetFlattenedPrintData(FPDF_DOCUMENT doc) {
   pp::Buffer_Dev buffer;
   ScopedSubstFont scoped_subst_font(this);
   int page_count = FPDF_GetPageCount(doc);
@@ -1608,7 +1608,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
 }
 
 void PDFiumEngine::FitContentsToPrintableAreaIfRequired(
-    const FPDF_DOCUMENT& doc,
+    FPDF_DOCUMENT doc,
     const PP_PrintSettings_Dev& print_settings) {
   // Check to see if we need to fit pdf contents to printer paper size.
   if (print_settings.print_scaling_option !=

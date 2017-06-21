@@ -22,7 +22,7 @@ class PDFiumFuzzerHelper {
   PDFiumFuzzerHelper();
 
  private:
-  bool RenderPage(const FPDF_DOCUMENT& doc,
-                  const FPDF_FORMHANDLE& form,
+  bool RenderPage(FPDF_DOCUMENT doc,
+                  FPDF_FORMHANDLE form,
                   const int page_index);
 };

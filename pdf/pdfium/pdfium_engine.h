@@ -312,9 +312,9 @@ class PDFiumEngine : public PDFEngine,
                                  uint32_t page_range_count,
                                  const PP_PrintSettings_Dev& print_settings);
 
-  pp::Buffer_Dev GetFlattenedPrintData(const FPDF_DOCUMENT& doc);
+  pp::Buffer_Dev GetFlattenedPrintData(FPDF_DOCUMENT doc);
   void FitContentsToPrintableAreaIfRequired(
-      const FPDF_DOCUMENT& doc,
+      FPDF_DOCUMENT doc,
       const PP_PrintSettings_Dev& print_settings);
   void SaveSelectedFormForPrint();
 
