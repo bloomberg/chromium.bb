@@ -63,16 +63,17 @@ class SuperframeTest
     if (pkt->kind != AOM_CODEC_CX_FRAME_PKT) return pkt;
 
     const uint8_t *buffer = reinterpret_cast<uint8_t *>(pkt->data.frame.buf);
-    const uint8_t marker = buffer[pkt->data.frame.sz - 1];
+    const uint8_t marker = buffer[0];
     const int frames = (marker & 0x7) + 1;
     const int mag = ((marker >> 3) & 3) + 1;
     const unsigned int index_sz = 2 + mag * (frames - 1);
     if ((marker & 0xe0) == 0xc0 && pkt->data.frame.sz >= index_sz &&
-        buffer[pkt->data.frame.sz - index_sz] == marker) {
+        buffer[index_sz - 1] == marker) {
       // frame is a superframe. strip off the index.
-      if (modified_buf_) delete[] modified_buf_;
+      delete[] modified_buf_;
       modified_buf_ = new uint8_t[pkt->data.frame.sz - index_sz];
-      memcpy(modified_buf_, pkt->data.frame.buf, pkt->data.frame.sz - index_sz);
+      memcpy(modified_buf_, (uint8_t *)pkt->data.frame.buf + index_sz,
+             pkt->data.frame.sz - index_sz);
       modified_pkt_ = *pkt;
       modified_pkt_.data.frame.buf = modified_buf_;
       modified_pkt_.data.frame.sz -= index_sz;

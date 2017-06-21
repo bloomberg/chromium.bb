@@ -182,6 +182,7 @@ static INLINE uint8_t read_marker(aom_decrypt_cb decrypt_cb,
 // "read_marker".
 aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
                                            uint32_t sizes[8], int *count,
+                                           int *index_size,
                                            aom_decrypt_cb decrypt_cb,
                                            void *decrypt_state);
 

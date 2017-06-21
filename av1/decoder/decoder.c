@@ -520,6 +520,7 @@ int av1_get_frame_to_show(AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame) {
 
 aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
                                            uint32_t sizes[8], int *count,
+                                           int *index_size,
                                            aom_decrypt_cb decrypt_cb,
                                            void *decrypt_state) {
   // A chunk ending with a byte matching 0xc0 is an invalid chunk unless
@@ -532,13 +533,14 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
   size_t frame_sz_sum = 0;
 
   assert(data_sz);
-  marker = read_marker(decrypt_cb, decrypt_state, data + data_sz - 1);
+  marker = read_marker(decrypt_cb, decrypt_state, data);
   *count = 0;
 
   if ((marker & 0xe0) == 0xc0) {
     const uint32_t frames = (marker & 0x7) + 1;
     const uint32_t mag = ((marker >> 3) & 0x3) + 1;
     const size_t index_sz = 2 + mag * (frames - 1);
+    *index_size = (int)index_sz;
 
     // This chunk is marked as having a superframe index but doesn't have
     // enough data for it, thus it's an invalid superframe index.
@@ -546,7 +548,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
 
     {
       const uint8_t marker2 =
-          read_marker(decrypt_cb, decrypt_state, data + data_sz - index_sz);
+          read_marker(decrypt_cb, decrypt_state, data + index_sz - 1);
 
       // This chunk is marked as having a superframe index but doesn't have
       // the matching marker byte at the front of the index therefore it's an
@@ -557,7 +559,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
     {
       // Found a valid superframe index.
       uint32_t i, j;
-      const uint8_t *x = &data[data_sz - index_sz + 1];
+      const uint8_t *x = &data[1];
 
       // Frames has a maximum of 8 and mag has a maximum of 4.
       uint8_t clear_buffer[28];

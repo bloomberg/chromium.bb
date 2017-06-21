@@ -625,9 +625,13 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     if (res != AOM_CODEC_OK) return res;
   }
 
+  int index_size = 0;
   res = av1_parse_superframe_index(data, data_sz, frame_sizes, &frame_count,
-                                   ctx->decrypt_cb, ctx->decrypt_state);
+                                   &index_size, ctx->decrypt_cb,
+                                   ctx->decrypt_state);
   if (res != AOM_CODEC_OK) return res;
+
+  data_start += index_size;
 
   if (ctx->frame_parallel_decode) {
     // Decode in frame parallel mode. When decoding in this mode, the frame

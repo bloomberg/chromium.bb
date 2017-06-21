@@ -1069,7 +1069,11 @@ static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
 
   const size_t index_sz = x - buffer;
   assert(ctx->pending_cx_data_sz + index_sz < ctx->cx_data_sz);
-  memcpy(ctx->pending_cx_data + ctx->pending_cx_data_sz, buffer, index_sz);
+
+  // move the frame to make room for the index
+  memmove(ctx->pending_cx_data + index_sz, ctx->pending_cx_data,
+          ctx->pending_cx_data_sz);
+  memcpy(ctx->pending_cx_data, buffer, index_sz);
   ctx->pending_cx_data_sz += index_sz;
 
   return (int)index_sz;
