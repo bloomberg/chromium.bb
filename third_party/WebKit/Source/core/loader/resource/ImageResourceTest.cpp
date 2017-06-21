@@ -244,6 +244,7 @@ void TestThatReloadIsStartedThenServeReload(const KURL& test_url,
   EXPECT_EQ(kImageWidth, content->GetImage()->width());
   EXPECT_EQ(kImageHeight, content->GetImage()->height());
   EXPECT_TRUE(content->GetImage()->IsBitmapImage());
+  EXPECT_FALSE(content->GetImage()->PaintImageForCurrentFrame().is_multipart());
 }
 
 AtomicString BuildContentRange(size_t range_length, size_t total_length) {
@@ -417,10 +418,48 @@ TEST(ImageResourceTest, MultipartImage) {
   EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
   EXPECT_EQ(kJpegImageHeight,
             image_resource->GetContent()->GetImage()->height());
+  EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsSVGImage());
+  EXPECT_TRUE(image_resource->GetContent()
+                  ->GetImage()
+                  ->PaintImageForCurrentFrame()
+                  .is_multipart());
+
   EXPECT_EQ(1, observer->ImageChangedCount());
   EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
   EXPECT_EQ(1, observer2->ImageChangedCount());
   EXPECT_TRUE(observer2->ImageNotifyFinishedCalled());
+}
+
+TEST(ImageResourceTest, BitmapMultipartImage) {
+  ResourceFetcher* fetcher = CreateFetcher();
+  KURL test_url(kParsedURLString, kTestURL);
+  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
+  ImageResource* image_resource =
+      ImageResource::Create(ResourceRequest(test_url));
+  image_resource->SetIdentifier(CreateUniqueIdentifier());
+  fetcher->StartLoad(image_resource);
+
+  ResourceResponse multipart_response(KURL(), "multipart/x-mixed-replace", 0,
+                                      g_null_atom);
+  multipart_response.SetMultipartBoundary("boundary", strlen("boundary"));
+  image_resource->Loader()->DidReceiveResponse(
+      WrappedResourceResponse(multipart_response), nullptr);
+  EXPECT_FALSE(image_resource->GetContent()->HasImage());
+
+  const char kBoundary[] = "--boundary\n";
+  const char kContentType[] = "Content-Type: image/jpeg\n\n";
+  image_resource->AppendData(kBoundary, strlen(kBoundary));
+  image_resource->AppendData(kContentType, strlen(kContentType));
+  image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
+                             sizeof(kJpegImage));
+  image_resource->AppendData(kBoundary, strlen(kBoundary));
+  image_resource->Loader()->DidFinishLoading(0.0, 0, 0, 0);
+  EXPECT_TRUE(image_resource->GetContent()->HasImage());
+  EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
+  EXPECT_TRUE(image_resource->GetContent()
+                  ->GetImage()
+                  ->PaintImageForCurrentFrame()
+                  .is_multipart());
 }
 
 TEST(ImageResourceTest, CancelOnRemoveObserver) {

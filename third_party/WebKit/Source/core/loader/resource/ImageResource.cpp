@@ -347,6 +347,7 @@ void ImageResource::DecodeError(bool all_data_received) {
   if (!ErrorOccurred())
     SetStatus(ResourceStatus::kDecodeError);
 
+  bool is_multipart = !!multipart_parser_;
   // Finishes loading if needed, and notifies observers.
   if (!all_data_received && Loader()) {
     // Observers are notified via ImageResource::finish().
@@ -355,7 +356,8 @@ void ImageResource::DecodeError(bool all_data_received) {
   } else {
     auto result = GetContent()->UpdateImage(
         nullptr, GetStatus(),
-        ImageResourceContent::kClearImageAndNotifyObservers, all_data_received);
+        ImageResourceContent::kClearImageAndNotifyObservers, all_data_received,
+        is_multipart);
     DCHECK_EQ(result, ImageResourceContent::UpdateImageResult::kNoDecodeError);
   }
 
@@ -615,9 +617,10 @@ void ImageResource::UpdateImage(
     PassRefPtr<SharedBuffer> shared_buffer,
     ImageResourceContent::UpdateImageOption update_image_option,
     bool all_data_received) {
-  auto result =
-      GetContent()->UpdateImage(std::move(shared_buffer), GetStatus(),
-                                update_image_option, all_data_received);
+  bool is_multipart = !!multipart_parser_;
+  auto result = GetContent()->UpdateImage(std::move(shared_buffer), GetStatus(),
+                                          update_image_option,
+                                          all_data_received, is_multipart);
   if (result == ImageResourceContent::UpdateImageResult::kShouldDecodeError) {
     // In case of decode error, we call imageNotifyFinished() iff we don't
     // initiate reloading:

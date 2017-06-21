@@ -26,12 +26,14 @@ std::string ToString(PaintImage::Id paint_image_id,
                      bool complete,
                      bool static_image,
                      bool fits_size_constraints,
+                     bool is_multipart,
                      size_t size) {
   std::ostringstream str;
   str << "paint_image_id[" << paint_image_id << "] sk_image_id[" << sk_image_id
       << "] complete[" << complete << "] static[" << static_image
       << "], fits_size_constraints[" << fits_size_constraints << "], size["
-      << size << "]";
+      << size << "]"
+      << " is_multipart[" << is_multipart << "]";
   return str.str();
 }
 
@@ -180,17 +182,30 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
         size >= kMinImageSizeToCheckerBytes &&
         size <= image_controller_->image_cache_max_limit_bytes();
 
-    // Only checker images that are static and completely loaded and fit within
-    // the size constraints.
-    bool can_checker_image = complete && static_image && fits_size_constraints;
+    // The following conditions must be true for an image to be checkerable:
+    //
+    // 1) Complete: The data for the image should have been completely loaded.
+    //
+    // 2) Static: Animated images/video frames can not be checkered.
+    //
+    // 3) Size constraints: Small images for which the decode is expected to
+    // be fast and large images which would breach the image cache budget and
+    // go through the at-raster decode path are not checkered.
+    //
+    // 4) Multipart images: Multipart images can be used to display mjpg video
+    // frames, checkering which would cause each video frame to flash and
+    // therefore should not be checkered.
+    bool can_checker_image = complete && static_image &&
+                             fits_size_constraints && !image.is_multipart();
     if (can_checker_image)
       it->second.policy = DecodePolicy::ASYNC;
 
-    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "CheckerImageTracker::CheckerImagingDecision",
-                 "can_checker_image", can_checker_image, "image_params",
-                 ToString(image_id, image.sk_image()->uniqueID(), complete,
-                          static_image, fits_size_constraints, size));
+    TRACE_EVENT2(
+        TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+        "CheckerImageTracker::CheckerImagingDecision", "can_checker_image",
+        can_checker_image, "image_params",
+        ToString(image_id, image.sk_image()->uniqueID(), complete, static_image,
+                 fits_size_constraints, image.is_multipart(), size));
   }
 
   // Update the decode state from the latest image we have seen. Note that it
