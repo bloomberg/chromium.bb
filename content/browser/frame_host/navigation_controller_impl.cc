@@ -1568,8 +1568,8 @@ bool NavigationControllerImpl::IsURLInPageNavigation(
   return is_same_origin && renderer_says_in_page;
 }
 
-void NavigationControllerImpl::CopyStateFrom(
-    const NavigationController& temp) {
+void NavigationControllerImpl::CopyStateFrom(const NavigationController& temp,
+                                             bool needs_reload) {
   const NavigationControllerImpl& source =
       static_cast<const NavigationControllerImpl&>(temp);
   // Verify that we look new.
@@ -1578,7 +1578,7 @@ void NavigationControllerImpl::CopyStateFrom(
   if (source.GetEntryCount() == 0)
     return;  // Nothing new to do.
 
-  needs_reload_ = true;
+  needs_reload_ = needs_reload;
   InsertEntriesFrom(source, source.GetEntryCount());
 
   for (SessionStorageNamespaceMap::const_iterator it =

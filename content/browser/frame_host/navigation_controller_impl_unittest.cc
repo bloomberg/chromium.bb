@@ -4133,7 +4133,7 @@ TEST_F(NavigationControllerTest, CopyStateFrom) {
   std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
-  other_controller.CopyStateFrom(controller);
+  other_controller.CopyStateFrom(controller, true);
 
   // other_controller should now contain 2 urls.
   ASSERT_EQ(2, other_controller.GetEntryCount());

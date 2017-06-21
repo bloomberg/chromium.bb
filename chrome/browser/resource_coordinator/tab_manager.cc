@@ -717,7 +717,8 @@ WebContents* TabManager::DiscardWebContentsAt(int index, TabStripModel* model) {
       WebContents::Create(WebContents::CreateParams(model->profile()));
   // Copy over the state from the navigation controller to preserve the
   // back/forward history and to continue to display the correct title/favicon.
-  null_contents->GetController().CopyStateFrom(old_contents->GetController());
+  null_contents->GetController().CopyStateFrom(old_contents->GetController(),
+                                               /* needs_reload */ true);
 
   // Make sure to persist the last active time property.
   null_contents->SetLastActiveTime(old_contents->GetLastActiveTime());
