@@ -130,23 +130,21 @@ class TouchHudTestBase : public test::AshTestBase {
   }
 
   aura::Window* GetInternalRootWindow() {
-    return GetWindowTreeHostManager()->GetRootWindowForDisplayId(
-        internal_display_id_);
+    return Shell::GetRootWindowForDisplayId(internal_display_id_);
   }
 
   aura::Window* GetExternalRootWindow() {
-    return GetWindowTreeHostManager()->GetRootWindowForDisplayId(
-        external_display_id_);
+    return Shell::GetRootWindowForDisplayId(external_display_id_);
   }
 
   aura::Window* GetPrimaryRootWindow() {
     const display::Display& display = GetPrimaryDisplay();
-    return GetWindowTreeHostManager()->GetRootWindowForDisplayId(display.id());
+    return Shell::GetRootWindowForDisplayId(display.id());
   }
 
   aura::Window* GetSecondaryRootWindow() {
     const display::Display& display = display_manager()->GetSecondaryDisplay();
-    return GetWindowTreeHostManager()->GetRootWindowForDisplayId(display.id());
+    return Shell::GetRootWindowForDisplayId(display.id());
   }
 
   RootWindowController* GetInternalRootController() {

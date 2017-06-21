@@ -139,9 +139,7 @@ void WindowManagerApplication::OnStart() {
   std::unique_ptr<aura::WindowTreeClient> window_tree_client =
       base::MakeUnique<aura::WindowTreeClient>(
           context()->connector(), window_manager_.get(), window_manager_.get());
-  const bool automatically_create_display_roots =
-      !Shell::ShouldEnableSimplifiedDisplayManagement(
-          window_manager_->config());
+  const bool automatically_create_display_roots = false;
   window_tree_client->ConnectAsWindowManager(
       automatically_create_display_roots);
 

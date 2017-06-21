@@ -33,16 +33,6 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
   // ShellPort:
   void Shutdown() override;
   Config GetAshConfig() const override;
-  aura::Window* GetPrimaryRootWindow() override;
-  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
-  const display::ManagedDisplayInfo& GetDisplayInfo(
-      int64_t display_id) const override;
-  bool IsActiveDisplayId(int64_t display_id) const override;
-  display::Display GetFirstDisplay() const override;
-  bool IsInUnifiedMode() const override;
-  bool IsInUnifiedModeIgnoreMirroring() const override;
-  void SetDisplayWorkAreaInsets(aura::Window* window,
-                                const gfx::Insets& insets) override;
   std::unique_ptr<display::TouchTransformSetter> CreateTouchTransformDelegate()
       override;
   void LockCursor() override;
@@ -51,7 +41,6 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
   void HideCursor() override;
   void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
   bool IsMouseEventsEnabled() override;
-  std::vector<aura::Window*> GetAllRootWindows() override;
   void RecordGestureAction(GestureActionType action) override;
   void RecordUserMetricsAction(UserMetricsAction action) override;
   void RecordTaskSwitchMetric(TaskSwitchSource source) override;
@@ -80,8 +69,7 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
       const AshWindowTreeHostInitParams& init_params) override;
   void OnCreatedRootWindowContainers(
       RootWindowController* root_window_controller) override;
-  void CreatePrimaryHost() override;
-  void InitHosts(const ShellInitParams& init_params) override;
+  void OnHostsInitialized() override;
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override;
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;

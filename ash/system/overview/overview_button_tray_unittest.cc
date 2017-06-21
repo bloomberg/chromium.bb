@@ -270,11 +270,6 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
 // Test that when a hide animation is aborted via deletion, the
 // OverviewButton is still hidden.
 TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletesOnDelete) {
-  // TODO(wutao): disabled as GetRootWindowForDisplayId does not work in mash,
-  // http://crbug.com/706589.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
 
@@ -284,9 +279,8 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletesOnDelete) {
           ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   GetTray()->SetVisible(false);
 
-  aura::Window* root_window =
-      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   // Colone and delete the old layer tree.
   std::unique_ptr<ui::LayerTreeOwner> old_layer_tree_owner =
       ::wm::RecreateLayers(root_window);

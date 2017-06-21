@@ -218,6 +218,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   static RootWindowController* GetRootWindowControllerWithDisplayId(
       int64_t display_id);
 
+  // Returns the root Window for the given display id. If there is no display
+  // for |display_id| null is returned.
+  static aura::Window* GetRootWindowForDisplayId(int64_t display_id);
+
   // Returns all root window controllers.
   // TODO(oshima): move this to |RootWindowController|
   static RootWindowControllerList GetAllRootWindowControllers();
@@ -262,13 +266,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Registers all ash related prefs to the given |registry|.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Returns true if simplified display management should be enabled.
-  // TODO(sky): remove this; temporary until http://crbug.com/718860 is done.
-  static bool ShouldEnableSimplifiedDisplayManagement();
-  // Use this variant if you have a Config and the Shell may not have been
-  // initialized yet.
-  static bool ShouldEnableSimplifiedDisplayManagement(ash::Config config);
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.

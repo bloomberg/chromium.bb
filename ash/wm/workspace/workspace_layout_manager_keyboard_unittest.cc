@@ -14,7 +14,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/window_state.h"
@@ -61,14 +60,14 @@ class WorkspaceLayoutManagerKeyboardTest2 : public test::AshTestBase {
     layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
     restore_work_area_insets_ =
         display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
-    ShellPort::Get()->SetDisplayWorkAreaInsets(
+    Shell::Get()->SetDisplayWorkAreaInsets(
         Shell::GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
   }
 
   void HideKeyboard() {
-    ShellPort::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                               restore_work_area_insets_);
+    Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
+                                           restore_work_area_insets_);
     layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
   }
 

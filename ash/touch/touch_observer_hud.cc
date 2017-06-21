@@ -128,9 +128,7 @@ void TouchObserverHUD::OnDisplayConfigurationChanged() {
   if (root_window_)
     return;
 
-  root_window_ =
-      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-          display_id_);
+  root_window_ = Shell::GetRootWindowForDisplayId(display_id_);
 
   views::Widget::ReparentNativeView(
       widget_->GetNativeView(),

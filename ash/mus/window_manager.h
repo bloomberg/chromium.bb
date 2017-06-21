@@ -45,9 +45,6 @@ class WMState;
 
 namespace ash {
 
-class RootWindowController;
-class ScreenMus;
-
 enum class Config;
 
 namespace test {
@@ -59,8 +56,7 @@ namespace mus {
 class AcceleratorHandler;
 
 // WindowManager serves as the WindowManagerDelegate and
-// WindowTreeClientDelegate for mash. WindowManager creates (and owns)
-// a RootWindowController per Display. WindowManager takes ownership of
+// WindowTreeClientDelegate for mash. WindowManager takes ownership of
 // the WindowTreeClient.
 class WindowManager : public aura::WindowManagerDelegate,
                       public aura::WindowTreeClientDelegate {
@@ -82,12 +78,7 @@ class WindowManager : public aura::WindowManagerDelegate,
   // Blocks waiting for the initial set of displays.
   bool WaitForInitialDisplays();
 
-  // Called during shutdown to delete all the RootWindowControllers.
-  void DeleteAllRootWindowControllers();
-
   Config config() const { return config_; }
-
-  ScreenMus* screen() { return screen_.get(); }
 
   aura::WindowTreeClient* window_tree_client() {
     return window_tree_client_.get();
@@ -103,8 +94,6 @@ class WindowManager : public aura::WindowManagerDelegate,
     return property_converter_.get();
   }
 
-  std::set<RootWindowController*> GetRootWindowControllers();
-
   // Returns the next accelerator namespace id by value in |id|. Returns true
   // if there is another slot available, false if all slots are taken up.
   bool GetNextAcceleratorNamespaceId(uint16_t* id);
@@ -116,32 +105,14 @@ class WindowManager : public aura::WindowManagerDelegate,
   // service_manager::Connector was available, for example in some tests.
   display::mojom::DisplayController* GetDisplayController();
 
-  // Called during creation of the shell to create a RootWindowController.
-  // See comment in CreateRootWindowController() for details.
-  void CreatePrimaryRootWindowController(
-      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
-
  private:
   friend class test::AshTestHelper;
 
-  using RootWindowControllers = std::set<std::unique_ptr<RootWindowController>>;
-
-  // Called once the first Display has been obtained.
-  void CreateShell(
-      std::unique_ptr<aura::WindowTreeHostMus> primary_window_tree_host);
-
-  void CreateAndRegisterRootWindowController(
-      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
-      const display::Display& display,
-      ash::RootWindowController::RootWindowType root_window_type);
+  // Creates the Shell. This is done after the connection to mus is established.
+  void CreateShell();
 
   // Sets the frame decoration values on the server.
   void InstallFrameDecorationValues();
-
-  // Deletes the specified RootWindowController. Called when a display is
-  // removed. |in_shutdown| is true if called from Shutdown().
-  void DestroyRootWindowController(RootWindowController* root_window_controller,
-                                   bool in_shutdown);
 
   void Shutdown();
 
@@ -215,10 +186,6 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   std::unique_ptr<views::PointerWatcherEventRouter>
       pointer_watcher_event_router_;
-
-  RootWindowControllers root_window_controllers_;
-
-  std::unique_ptr<ScreenMus> screen_;
 
   bool created_shell_ = false;
 

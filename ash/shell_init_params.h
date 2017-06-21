@@ -7,10 +7,6 @@
 
 #include "ash/ash_export.h"
 
-namespace aura {
-class WindowTreeHostMus;
-}
-
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -24,11 +20,6 @@ class ShellPort;
 struct ASH_EXPORT ShellInitParams {
   // Shell takes ownership of |shell_port|, if null ShellPortClassic is created.
   ShellPort* shell_port = nullptr;
-  // Shell takes ownership of |primary_window_tree_host|. This is only used
-  // by mash.
-  // TODO(sky): once simplified display management is enabled for mash this
-  // should no longer be necessary. http://crbug.com/708287.
-  aura::WindowTreeHostMus* primary_window_tree_host = nullptr;
   ShellDelegate* delegate = nullptr;
   ui::ContextFactory* context_factory = nullptr;
   ui::ContextFactoryPrivate* context_factory_private = nullptr;

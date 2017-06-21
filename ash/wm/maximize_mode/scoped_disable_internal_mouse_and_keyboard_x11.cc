@@ -11,7 +11,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/cursor_client.h"
@@ -20,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
@@ -53,9 +53,7 @@ void SetMouseLocationInScreen(const gfx::Point& screen_location) {
           screen_location);
   if (!display.is_valid())
     return;
-  aura::Window* root_window =
-      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-          display.id());
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
   gfx::Point host_location(screen_location);
   aura::client::ScreenPositionClient* client =
       aura::client::GetScreenPositionClient(root_window);

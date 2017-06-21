@@ -1770,7 +1770,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
 // Checks the rip an item off from left aligned shelf in secondary monitor.
 TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
-  ASSERT_EQ(2U, ShellPort::Get()->GetAllRootWindows().size());
+  ASSERT_EQ(2U, Shell::GetAllRootWindows().size());
 
   Shelf* secondary_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
 

@@ -52,11 +52,6 @@ OverviewButtonTray* GetTray() {
       ->overview_button_tray();
 }
 
-aura::Window* GetRootWindow(int64_t display_id) {
-  return Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-      display_id);
-}
-
 class AnimationObserver : public ScreenRotationAnimatorObserver {
  public:
   AnimationObserver() {}
@@ -173,8 +168,8 @@ void ScreenRotationAnimatorSlowAnimationTest::SetUp() {
   AshTestBase::SetUp();
 
   display_ = display::Screen::GetScreen()->GetPrimaryDisplay();
-  animator_ =
-      base::MakeUnique<ScreenRotationAnimator>(GetRootWindow(display_.id()));
+  animator_ = base::MakeUnique<ScreenRotationAnimator>(
+      Shell::GetRootWindowForDisplayId(display_.id()));
   test_api_ =
       base::MakeUnique<test::ScreenRotationAnimatorTestApi>(animator_.get());
   test_api()->DisableAnimationTimers();
@@ -240,7 +235,7 @@ void ScreenRotationAnimatorSmoothAnimationTest::SetUp() {
 
   display_ = display::Screen::GetScreen()->GetPrimaryDisplay();
   run_loop_ = base::MakeUnique<base::RunLoop>();
-  SetScreenRotationAnimator(GetRootWindow(display_.id()),
+  SetScreenRotationAnimator(Shell::GetRootWindowForDisplayId(display_.id()),
                             run_loop_->QuitWhenIdleClosure(),
                             run_loop_->QuitWhenIdleClosure());
   non_zero_duration_mode_ =
@@ -388,7 +383,8 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
 
   const int64_t display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      GetRootWindow(display_id), run_loop_->QuitWhenIdleClosure(),
+      Shell::GetRootWindowForDisplayId(display_id),
+      run_loop_->QuitWhenIdleClosure(),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)));
@@ -414,7 +410,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   const int64_t secondary_display_id = display_manager()->GetDisplayAt(1).id();
 
   SetScreenRotationAnimator(
-      GetRootWindow(secondary_display_id),
+      Shell::GetRootWindowForDisplayId(secondary_display_id),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"),
@@ -439,7 +435,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   const int64_t primary_display_id = display_manager()->GetDisplayAt(1).id();
   const int64_t secondary_display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      GetRootWindow(primary_display_id),
+      Shell::GetRootWindowForDisplayId(primary_display_id),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"),
@@ -467,7 +463,8 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   const int64_t primary_display_id = display_manager()->GetDisplayAt(0).id();
   const int64_t secondary_display_id = display_manager()->GetDisplayAt(1).id();
   SetScreenRotationAnimator(
-      GetRootWindow(secondary_display_id), run_loop_->QuitWhenIdleClosure(),
+      Shell::GetRootWindowForDisplayId(secondary_display_id),
+      run_loop_->QuitWhenIdleClosure(),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"));
@@ -496,7 +493,8 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   const int64_t primary_display_id = display_manager()->GetDisplayAt(1).id();
   const int64_t secondary_display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      GetRootWindow(primary_display_id), run_loop_->QuitWhenIdleClosure(),
+      Shell::GetRootWindowForDisplayId(primary_display_id),
+      run_loop_->QuitWhenIdleClosure(),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"));
@@ -520,7 +518,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
       display_manager()->GetDisplayAt(1).id());
   const int64_t secondary_display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      GetRootWindow(secondary_display_id),
+      Shell::GetRootWindowForDisplayId(secondary_display_id),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"),
@@ -557,7 +555,8 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   int64_t display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      GetRootWindow(display_id), run_loop_->QuitWhenIdleClosure(),
+      Shell::GetRootWindowForDisplayId(display_id),
+      run_loop_->QuitWhenIdleClosure(),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)));
@@ -580,7 +579,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
     return;
 
   const int64_t display_id = display_manager()->GetDisplayAt(0).id();
-  aura::Window* root_window = GetRootWindow(display_id);
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
   SetScreenRotationAnimator(
       root_window, run_loop_->QuitWhenIdleClosure(),
       base::Bind(

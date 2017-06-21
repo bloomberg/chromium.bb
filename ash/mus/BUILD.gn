@@ -48,8 +48,6 @@ source_set("lib") {
     "non_client_frame_controller.h",
     "property_util.cc",
     "property_util.h",
-    "screen_mus.cc",
-    "screen_mus.h",
     "shell_delegate_mus.cc",
     "shell_delegate_mus.h",
     "system_tray_delegate_mus.cc",

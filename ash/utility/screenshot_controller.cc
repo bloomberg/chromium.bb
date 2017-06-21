@@ -55,9 +55,7 @@ class ScreenshotWindowTargeter : public aura::WindowTargeter {
     display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestPoint(location);
 
-    aura::Window* root_window =
-        Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-            display.id());
+    aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
 
     position_client->ConvertPointFromScreen(root_window, &location);
 

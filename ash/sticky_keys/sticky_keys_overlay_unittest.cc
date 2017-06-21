@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/display/display_layout.h"
@@ -67,13 +66,13 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   // The overlay should belong to the secondary root window.
   StickyKeysOverlay overlay;
   views::Widget* overlay_widget = overlay.GetWidgetForTesting();
-  EXPECT_EQ(ShellPort::Get()->GetRootWindowForDisplayId(secondary_display_id),
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(secondary_display_id),
             overlay_widget->GetNativeWindow()->GetRootWindow());
 
   // Removing the second display should move the overlay to the primary root
   // window.
   UpdateDisplay("1280x1024");
-  EXPECT_EQ(ShellPort::Get()->GetRootWindowForDisplayId(primary_display_id),
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(primary_display_id),
             overlay_widget->GetNativeWindow()->GetRootWindow());
 
   overlay.SetModifierKeyState(ui::EF_SHIFT_DOWN, STICKY_KEY_STATE_ENABLED);

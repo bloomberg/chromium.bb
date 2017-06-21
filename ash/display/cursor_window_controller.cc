@@ -156,9 +156,7 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
   }
 
   display_ = display;
-  aura::Window* root_window =
-      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-          display.id());
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
   if (!root_window)
     return;
 

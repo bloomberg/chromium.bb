@@ -13,7 +13,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -25,6 +24,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "components/wallpaper/wallpaper_color_calculator.h"
 #include "components/wallpaper/wallpaper_resizer.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_analysis.h"
@@ -221,19 +221,15 @@ gfx::Size WallpaperController::GetMaxDisplaySizeInNative() {
   if (!display::Screen::GetScreen())
     return gfx::Size();
 
-  // Note that |shell_port| is null when this is called from Chrome running in
-  // Mash.
-  ShellPort* shell_port = ShellPort::Get();
-
   gfx::Size max;
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     // Use the native size, not ManagedDisplayInfo::size_in_pixel or
     // Display::size.
     // TODO(msw): Avoid using Display::size here; see http://crbug.com/613657.
     gfx::Size size = display.size();
-    if (shell_port) {
+    if (Shell::HasInstance()) {
       display::ManagedDisplayInfo info =
-          shell_port->GetDisplayInfo(display.id());
+          Shell::Get()->display_manager()->GetDisplayInfo(display.id());
       // TODO(mash): Mash returns a fake ManagedDisplayInfo. crbug.com/622480
       if (info.id() == display.id())
         size = info.bounds_in_native().size();
@@ -418,8 +414,7 @@ bool WallpaperController::MoveToUnlockedContainer() {
 void WallpaperController::GetInternalDisplayCompositorLock() {
   if (display::Display::HasInternalDisplay()) {
     aura::Window* root_window =
-        Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-            display::Display::InternalDisplayId());
+        Shell::GetRootWindowForDisplayId(display::Display::InternalDisplayId());
     if (root_window) {
       compositor_lock_ =
           root_window->layer()->GetCompositor()->GetCompositorLock(

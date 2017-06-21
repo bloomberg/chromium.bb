@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_view.h"
 
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -470,9 +469,7 @@ TouchCalibratorView::TouchCalibratorView(const display::Display& target_display,
       throbber_circle_(nullptr),
       hint_box_view_(nullptr),
       touch_point_view_(nullptr) {
-  aura::Window* root =
-      ash::Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-          display_.id());
+  aura::Window* root = ash::Shell::GetRootWindowForDisplayId(display_.id());
   widget_.reset(new views::Widget);
   widget_->Init(GetWidgetParams(root));
   widget_->SetContentsView(this);

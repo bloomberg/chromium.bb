@@ -84,9 +84,7 @@ OverscanCalibrator::OverscanCalibrator(const display::Display& target_display,
   display::ManagedDisplayInfo info =
       ash::Shell::Get()->display_manager()->GetDisplayInfo(display_.id());
 
-  aura::Window* root =
-      ash::Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
-          display_.id());
+  aura::Window* root = ash::Shell::GetRootWindowForDisplayId(display_.id());
   ui::Layer* parent_layer =
       ash::Shell::GetContainer(root, ash::kShellWindowId_OverlayContainer)
           ->layer();
