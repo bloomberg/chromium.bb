@@ -196,8 +196,9 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
       SecurityViolationReportingPolicy reporting_policy) {
     KURL input_url(kParsedURLString, "http://example.com/");
     ResourceRequest resource_request(input_url);
-    ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
-                                  kClientDidNotRequestCredentials);
+    resource_request.SetFetchCredentialsMode(
+        WebURLRequest::kFetchCredentialsModeOmit);
+    ResourceLoaderOptions options;
     return fetch_context->CanRequest(
         Resource::kImage, resource_request, input_url, options,
         reporting_policy, FetchParameters::kUseDefaultOriginRestrictionForType);
@@ -496,8 +497,9 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestChecksReportOnlyCSP) {
   KURL url(KURL(), "http://baz.test");
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
-  ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
-                                kClientDidNotRequestCredentials);
+  resource_request.SetFetchCredentialsMode(
+      WebURLRequest::kFetchCredentialsModeOmit);
+  ResourceLoaderOptions options;
   fetch_context->PopulateResourceRequest(
       url, Resource::kScript, ClientHintsPreferences(),
       FetchParameters::ResourceWidth(), options,
@@ -893,6 +895,8 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        DispatchDidLoadResourceFromMemoryCache) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  resource_request.SetFetchCredentialsMode(
+      WebURLRequest::kFetchCredentialsModeOmit);
   Resource* resource = MockResource::Create(resource_request);
   EXPECT_CALL(*client,
               DispatchDidLoadResourceFromMemoryCache(
@@ -913,6 +917,8 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        MemoryCacheCertificateError) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  resource_request.SetFetchCredentialsMode(
+      WebURLRequest::kFetchCredentialsModeOmit);
   ResourceResponse response;
   response.SetURL(url);
   response.SetHasMajorCertificateErrors(true);
@@ -1047,6 +1053,7 @@ TEST_F(FrameFetchContextTest,
 
 TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
   ResourceRequest request(KURL(KURL(), "https://www.example.com/"));
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
   Resource* resource = MockResource::Create(request);
   ResourceResponse response;
 
@@ -1119,6 +1126,7 @@ TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
 
 TEST_F(FrameFetchContextTest, DidLoadResourceWhenDetached) {
   ResourceRequest request(KURL(KURL(), "https://www.example.com/"));
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
   Resource* resource = MockResource::Create(request);
 
   dummy_page_holder = nullptr;
@@ -1229,6 +1237,8 @@ TEST_F(FrameFetchContextTest, GetSecurityOriginWhenDetached) {
 TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   KURL url(KURL(), "https://www.example.com/");
   ResourceRequest request(url);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+
   ClientHintsPreferences client_hints_preferences;
   client_hints_preferences.SetShouldSendDeviceRAM(true);
   client_hints_preferences.SetShouldSendDPR(true);
@@ -1236,8 +1246,7 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   client_hints_preferences.SetShouldSendViewportWidth(true);
 
   FetchParameters::ResourceWidth resource_width;
-  ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
-                                kClientDidNotRequestCredentials);
+  ResourceLoaderOptions options;
 
   document->GetClientHintsPreferences().SetShouldSendDeviceRAM(true);
   document->GetClientHintsPreferences().SetShouldSendDPR(true);

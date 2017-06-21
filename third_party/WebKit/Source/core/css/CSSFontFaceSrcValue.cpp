@@ -40,6 +40,7 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/text/StringBuilder.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -82,8 +83,7 @@ FontResource* CSSFontFaceSrcValue::Fetch(Document* document) const {
     ResourceRequest resource_request(absolute_resource_);
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
-    ResourceLoaderOptions options(kAllowStoredCredentials,
-                                  kClientRequestedCredentials);
+    ResourceLoaderOptions options;
     options.initiator_info.name = FetchInitiatorTypeNames::css;
     FetchParameters params(resource_request, options);
     if (RuntimeEnabledFeatures::WebFontsCacheAwareTimeoutAdaptationEnabled())

@@ -103,8 +103,7 @@ void FileReaderLoader::Start(ExecutionContext* execution_context,
   options.content_security_policy_enforcement =
       kDoNotEnforceContentSecurityPolicy;
 
-  ResourceLoaderOptions resource_loader_options(
-      kAllowStoredCredentials, kClientDidNotRequestCredentials);
+  ResourceLoaderOptions resource_loader_options;
   // Use special initiator to hide the request from the inspector.
   resource_loader_options.initiator_info.name =
       FetchInitiatorTypeNames::internal;

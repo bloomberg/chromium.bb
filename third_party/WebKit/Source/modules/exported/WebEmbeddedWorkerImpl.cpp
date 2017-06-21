@@ -336,6 +336,7 @@ void WebEmbeddedWorkerImpl::DidFinishDocumentLoad() {
   main_script_loader_->LoadAsynchronously(
       *main_frame_->GetFrame()->GetDocument(), worker_start_data_.script_url,
       WebURLRequest::kFetchRequestModeSameOrigin,
+      WebURLRequest::kFetchCredentialsModeSameOrigin,
       worker_start_data_.address_space, nullptr,
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));

@@ -29,7 +29,11 @@ void ManifestFetcher::Start(blink::WebFrame* frame,
   callback_ = callback;
 
   blink::WebAssociatedURLLoaderOptions options;
-  options.allow_credentials = use_credentials;
+  // See https://w3c.github.io/manifest/. Use "include" when use_credentials is
+  // true, and "omit" otherwise.
+  options.fetch_credentials_mode =
+      use_credentials ? blink::WebURLRequest::kFetchCredentialsModeInclude
+                      : blink::WebURLRequest::kFetchCredentialsModeOmit;
   options.fetch_request_mode = blink::WebURLRequest::kFetchRequestModeCORS;
   fetcher_->SetLoaderOptions(options);
 

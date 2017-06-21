@@ -114,7 +114,8 @@ void ResourceMultiBufferDataProvider::Start() {
   } else {
     WebAssociatedURLLoaderOptions options;
     if (url_data_->cors_mode() == UrlData::CORS_UNSPECIFIED) {
-      options.allow_credentials = true;
+      options.fetch_credentials_mode =
+          WebURLRequest::kFetchCredentialsModeInclude;
       options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
     } else {
       options.expose_all_response_headers = true;
@@ -122,8 +123,13 @@ void ResourceMultiBufferDataProvider::Start() {
       options.preflight_policy =
           WebAssociatedURLLoaderOptions::kPreventPreflight;
       options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
-      if (url_data_->cors_mode() == UrlData::CORS_USE_CREDENTIALS)
-        options.allow_credentials = true;
+      if (url_data_->cors_mode() == UrlData::CORS_USE_CREDENTIALS) {
+        options.fetch_credentials_mode =
+            WebURLRequest::kFetchCredentialsModeInclude;
+      } else {
+        options.fetch_credentials_mode =
+            WebURLRequest::kFetchCredentialsModeSameOrigin;
+      }
     }
     loader.reset(url_data_->frame()->CreateAssociatedURLLoader(options));
   }

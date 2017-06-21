@@ -34,6 +34,7 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/TextEncoding.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 class SecurityOrigin;
@@ -90,6 +91,7 @@ class PLATFORM_EXPORT FetchParameters {
   String Charset() const { return String(charset_.GetName()); }
   void SetCharset(const WTF::TextEncoding& charset) { charset_ = charset; }
 
+  ResourceLoaderOptions& MutableOptions() { return options_; }
   const ResourceLoaderOptions& Options() const { return options_; }
 
   DeferOption Defer() const { return defer_; }
@@ -122,7 +124,13 @@ class PLATFORM_EXPORT FetchParameters {
       ContentSecurityPolicyDisposition content_security_policy_option) {
     options_.content_security_policy_option = content_security_policy_option;
   }
+  // Configures the request to use the "cors" mode and the credentials mode
+  // specified by the crossOrigin attribute.
   void SetCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
+  // Configures the request to use the "cors" mode and the specified
+  // credentials mode.
+  void SetCrossOriginAccessControl(SecurityOrigin*,
+                                   WebURLRequest::FetchCredentialsMode);
   OriginRestriction GetOriginRestriction() const { return origin_restriction_; }
   void SetOriginRestriction(OriginRestriction restriction) {
     origin_restriction_ = restriction;

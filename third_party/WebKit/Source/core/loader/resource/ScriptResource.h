@@ -61,8 +61,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   // Public for testing
   static ScriptResource* Create(const KURL& url, const String& charset) {
     ResourceRequest request(url);
-    ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
-                                  kClientDidNotRequestCredentials);
+    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+    ResourceLoaderOptions options;
     return new ScriptResource(request, options, charset);
   }
 

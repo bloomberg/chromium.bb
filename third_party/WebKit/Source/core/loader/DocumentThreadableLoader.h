@@ -118,7 +118,11 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
   // Methods containing code to handle resource fetch results which are common
   // to both sync and async mode.
+  //
+  // The FetchCredentialsMode argument must be the request's credentials mode.
+  // It's used for CORS check.
   void HandleResponse(unsigned long identifier,
+                      WebURLRequest::FetchCredentialsMode,
                       const ResourceResponse&,
                       std::unique_ptr<WebDataConsumerHandle>);
   void HandleReceivedData(const char* data, size_t data_length);
@@ -128,7 +132,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // Calls the appropriate loading method according to policy and data about
   // origin. Only for handling the initial load (including fallback after
   // consulting ServiceWorker).
-  void DispatchInitialRequest(const ResourceRequest&);
+  void DispatchInitialRequest(ResourceRequest&);
   void MakeCrossOriginAccessRequest(const ResourceRequest&);
   // Loads m_fallbackRequestForServiceWorker.
   void LoadFallbackRequestForServiceWorker();
@@ -149,12 +153,15 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void LoadRequestSync(const ResourceRequest&, ResourceLoaderOptions);
 
   void PrepareCrossOriginRequest(ResourceRequest&);
-  void LoadRequest(const ResourceRequest&, ResourceLoaderOptions);
+  // This method modifies the ResourceRequest by calling
+  // SetAllowStoredCredentials() on it based on same-origin-ness and the
+  // credentials mode.
+  //
+  // This method configures the ResourceLoaderOptions so that the underlying
+  // ResourceFetcher doesn't perform some part of the CORS logic since this
+  // class performs it by itself.
+  void LoadRequest(ResourceRequest&, ResourceLoaderOptions);
   bool IsAllowedRedirect(const KURL&) const;
-  // Returns DoNotAllowStoredCredentials if m_forceDoNotAllowStoredCredentials
-  // is set. Otherwise, just returns allowCredentials value of
-  // m_resourceLoaderOptions.
-  StoredCredentials EffectiveAllowCredentials() const;
 
   // TODO(hiroshige): After crbug.com/633696 is fixed,
   // - Remove RawResourceClientStateChecker logic,
@@ -196,12 +203,10 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // up-to-date values from them and this variable, and use it.
   const ResourceLoaderOptions resource_loader_options_;
 
-  bool force_do_not_allow_stored_credentials_;
+  // Corresponds to the CORS flag in the Fetch spec.
+  bool cors_flag_;
+  bool suborigin_force_credentials_;
   RefPtr<SecurityOrigin> security_origin_;
-
-  // True while the initial URL and all the URLs of the redirects this object
-  // has followed, if any, are same-origin to getSecurityOrigin().
-  bool same_origin_request_;
 
   // Set to true when the response data is given to a data consumer handle.
   bool is_using_data_consumer_handle_;

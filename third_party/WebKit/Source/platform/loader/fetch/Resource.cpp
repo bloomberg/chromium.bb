@@ -425,13 +425,10 @@ AtomicString Resource::HttpContentType() const {
 
 bool Resource::PassesAccessControlCheck(
     const SecurityOrigin* security_origin) const {
-  StoredCredentials stored_credentials =
-      LastResourceRequest().AllowStoredCredentials()
-          ? kAllowStoredCredentials
-          : kDoNotAllowStoredCredentials;
   CrossOriginAccessControl::AccessStatus status =
-      CrossOriginAccessControl::CheckAccess(GetResponse(), stored_credentials,
-                                            security_origin);
+      CrossOriginAccessControl::CheckAccess(
+          GetResponse(), LastResourceRequest().GetFetchCredentialsMode(),
+          security_origin);
 
   return status == CrossOriginAccessControl::kAccessAllowed;
 }

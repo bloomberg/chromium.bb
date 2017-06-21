@@ -358,7 +358,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   // Send credentials. This will cause the CORS checks to fail, because
   // credentials can't be sent to a server which returns the header
   // "access-control-allow-origin" with "*" as its value.
-  options.allow_credentials = true;
+  options.fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
   options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
