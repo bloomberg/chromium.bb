@@ -99,7 +99,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhonePortrait) {
   // Test.
   EXPECT_EQ(120, heightLogo);
   EXPECT_EQ(60, heightNoLogo);
-  EXPECT_EQ(66, topMargin);
+  EXPECT_EQ(56, topMargin);
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhoneLandscape) {
@@ -148,7 +148,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPhonePortrait) {
   CGFloat topMargin = searchFieldTopMargin();
 
   // Test.
-  EXPECT_EQ(32, topMargin);
+  EXPECT_EQ(16, topMargin);
   EXPECT_EQ(width - 2 * margin, resultWidth);
 }
 
@@ -182,8 +182,8 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
   SetAsIPhone();
 
   // Action, tests.
-  EXPECT_EQ(284, heightForLogoHeader(YES, YES));
-  EXPECT_EQ(284, heightForLogoHeader(YES, NO));
+  EXPECT_EQ(258, heightForLogoHeader(YES, YES));
+  EXPECT_EQ(258, heightForLogoHeader(YES, NO));
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPhone6) {
