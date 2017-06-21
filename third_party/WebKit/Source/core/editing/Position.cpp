@@ -112,9 +112,13 @@ PositionTemplate<Strategy>::PositionTemplate(Node* anchor_node,
   DCHECK_NE(anchor_type_, PositionAnchorType::kOffsetInAnchor);
 }
 
+// TODO(editing-dev): Once we change type of |anchor_node_| to
+// |Member<const Node>|, we should get rid of |const_cast<Node*>()|.
+// See http://crbug.com/735327
 template <typename Strategy>
-PositionTemplate<Strategy>::PositionTemplate(Node* anchor_node, int offset)
-    : anchor_node_(anchor_node),
+PositionTemplate<Strategy>::PositionTemplate(const Node* anchor_node,
+                                             int offset)
+    : anchor_node_(const_cast<Node*>(anchor_node)),
       offset_(offset),
       anchor_type_(PositionAnchorType::kOffsetInAnchor) {
   if (anchor_node_)
@@ -125,6 +129,11 @@ PositionTemplate<Strategy>::PositionTemplate(Node* anchor_node, int offset)
   DCHECK(CanBeAnchorNode<Strategy>(anchor_node_.Get())) << anchor_node_;
 #endif
 }
+
+template <typename Strategy>
+PositionTemplate<Strategy>::PositionTemplate(const Node& anchor_node,
+                                             int offset)
+    : PositionTemplate(&anchor_node, offset) {}
 
 template <typename Strategy>
 PositionTemplate<Strategy>::PositionTemplate(const PositionTemplate& other)

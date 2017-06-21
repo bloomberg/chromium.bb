@@ -58,8 +58,8 @@ DEFINE_TRACE(TextMatchMarkerListImpl) {
 }
 
 static void UpdateMarkerLayoutRect(const Node& node, TextMatchMarker& marker) {
-  const Position start_position(&const_cast<Node&>(node), marker.StartOffset());
-  const Position end_position(&const_cast<Node&>(node), marker.EndOffset());
+  const Position start_position(node, marker.StartOffset());
+  const Position end_position(node, marker.EndOffset());
   EphemeralRange range(start_position, end_position);
   marker.SetLayoutRect(LayoutRect(ComputeTextRect(range)));
 }

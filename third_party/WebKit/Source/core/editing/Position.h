@@ -70,8 +70,12 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   PositionTemplate(Node* anchor_node, PositionAnchorType);
 
   // For creating offset positions:
-  // FIXME: This constructor should eventually go away. See bug 63040.
-  PositionTemplate(Node* anchor_node, int offset);
+  PositionTemplate(const Node& anchor_node, int offset);
+  // TODO(editing-dev): We should not pass |nullptr| as |anchor_node| for
+  // |Position| constructor.
+  // TODO(editing-dev): This constructor should eventually go away. See bug
+  // http://wkb.ug/63040.
+  PositionTemplate(const Node* anchor_node, int offset);
 
   PositionTemplate(const PositionTemplate&);
 
@@ -209,6 +213,8 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
     return IsAfterAnchor() || IsAfterChildren();
   }
 
+  // TODO(editing-dev): Since we should consider |Position| is constant in
+  // tree, we should use |Member<const Node>|. see http://crbug.com/735327
   Member<Node> anchor_node_;
   // m_offset can be the offset inside m_anchorNode, or if
   // editingIgnoresContent(m_anchorNode) returns true, then other places in
