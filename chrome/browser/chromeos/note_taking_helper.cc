@@ -155,6 +155,45 @@ NoteTakingAppInfos NoteTakingHelper::GetAvailableApps(Profile* profile) {
   return infos;
 }
 
+std::unique_ptr<NoteTakingAppInfo> NoteTakingHelper::GetPreferredChromeAppInfo(
+    Profile* profile) {
+  const std::string preferred_app_id =
+      profile->GetPrefs()->GetString(prefs::kNoteTakingAppId);
+  if (LooksLikeAndroidPackageName(preferred_app_id))
+    return nullptr;
+
+  const extensions::Extension* preferred_app =
+      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+          preferred_app_id, extensions::ExtensionRegistry::ENABLED);
+  if (!preferred_app)
+    return nullptr;
+
+  if (!IsWhitelistedChromeApp(preferred_app) &&
+      !extensions::ActionHandlersInfo::HasActionHandler(
+          preferred_app, app_runtime::ACTION_TYPE_NEW_NOTE)) {
+    return nullptr;
+  }
+
+  NoteTakingLockScreenSupport lock_screen_support =
+      NoteTakingLockScreenSupport::kNotSupported;
+  if (IsLockScreenEnabled(preferred_app)) {
+    if (profile->GetPrefs()->GetBoolean(
+            prefs::kNoteTakingAppEnabledOnLockScreen)) {
+      lock_screen_support = NoteTakingLockScreenSupport::kSelected;
+    } else {
+      lock_screen_support = NoteTakingLockScreenSupport::kSupported;
+    }
+  }
+
+  std::unique_ptr<NoteTakingAppInfo> info =
+      base::MakeUnique<NoteTakingAppInfo>();
+  info->name = preferred_app->name();
+  info->app_id = preferred_app->id();
+  info->preferred = true;
+  info->lock_screen_support = lock_screen_support;
+  return info;
+}
+
 void NoteTakingHelper::SetPreferredApp(Profile* profile,
                                        const std::string& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

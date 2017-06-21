@@ -9,8 +9,17 @@
 
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+class Profile;
+
+namespace session_manager {
+class SessionManager;
+}
 
 namespace lock_screen_apps {
 
@@ -19,7 +28,8 @@ class StateObserver;
 // Manages state of lock screen action handler apps, and notifies
 // interested parties as the state changes.
 // Currently assumes single supported action - NEW_NOTE.
-class StateController : public ash::mojom::TrayActionClient {
+class StateController : public ash::mojom::TrayActionClient,
+                        public session_manager::SessionManagerObserver {
  public:
   // Returns whether the StateController is enabled - it is currently guarded by
   // a feature flag. If not enabled, |StateController| instance is not allowed
@@ -40,10 +50,14 @@ class StateController : public ash::mojom::TrayActionClient {
   // Has to be called before |Initialize|.
   void SetTrayActionPtrForTesting(ash::mojom::TrayActionPtr tray_action_ptr);
   void FlushTrayActionForTesting();
+  // Sets test AppManager implementation. Should be called before
+  // |SetPrimaryProfile|
+  void SetAppManagerForTesting(std::unique_ptr<AppManager> app_manager);
 
   // Initializes mojo bindings for the StateController - it creates binding to
   // ash's tray action interface and sets this object as the interface's client.
   void Initialize();
+  void SetPrimaryProfile(Profile* profile);
 
   void AddObserver(StateObserver* observer);
   void RemoveObserver(StateObserver* observer);
@@ -53,6 +67,9 @@ class StateController : public ash::mojom::TrayActionClient {
 
   // ash::mojom::TrayActionClient:
   void RequestNewLockScreenNote() override;
+
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override;
 
   // If there are any active lock screen action handlers, moved their windows
   // to background, to ensure lock screen UI is visible.
@@ -67,6 +84,9 @@ class StateController : public ash::mojom::TrayActionClient {
   void SetLockScreenNoteStateForTesting(ash::mojom::TrayActionState state);
 
  private:
+  // Called when app manager reports that note taking availability has changed.
+  void OnNoteTakingAvailabilityChanged();
+
   // Requests lock screen note action state change to |state|.
   // Returns whether the action state has changed.
   bool UpdateLockScreenNoteState(ash::mojom::TrayActionState state);
@@ -82,6 +102,12 @@ class StateController : public ash::mojom::TrayActionClient {
 
   mojo::Binding<ash::mojom::TrayActionClient> binding_;
   ash::mojom::TrayActionPtr tray_action_ptr_;
+
+  std::unique_ptr<AppManager> app_manager_;
+
+  ScopedObserver<session_manager::SessionManager,
+                 session_manager::SessionManagerObserver>
+      session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(StateController);
 };

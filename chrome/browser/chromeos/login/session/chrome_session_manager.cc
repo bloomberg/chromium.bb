@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -107,6 +108,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     user_session_mgr->InitializeCerts(user_profile);
     user_session_mgr->InitializeCRLSetFetcher(user);
     user_session_mgr->InitializeCertificateTransparencyComponents(user);
+    if (lock_screen_apps::StateController::IsEnabled())
+      lock_screen_apps::StateController::Get()->SetPrimaryProfile(user_profile);
 
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
 

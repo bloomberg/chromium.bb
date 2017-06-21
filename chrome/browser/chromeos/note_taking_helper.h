@@ -158,6 +158,11 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // Returns a list of available note-taking apps.
   std::vector<NoteTakingAppInfo> GetAvailableApps(Profile* profile);
 
+  // Returns the preferred app info, if the preferred app exists and is a Chrome
+  // app.
+  std::unique_ptr<NoteTakingAppInfo> GetPreferredChromeAppInfo(
+      Profile* profile);
+
   // Sets the preferred note-taking app. |app_id| is a value from a
   // NoteTakingAppInfo object.
   void SetPreferredApp(Profile* profile, const std::string& app_id);
