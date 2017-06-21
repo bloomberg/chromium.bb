@@ -40,16 +40,6 @@ class OmniboxTextFieldIOSTest : public PlatformTest {
 
   void TearDown() override { [textfield_ removeFromSuperview]; }
 
-  BOOL IsCopyUrlInMenu() {
-    UIMenuController* menuController = [UIMenuController sharedMenuController];
-    NSString* const kTitle = l10n_util::GetNSString(IDS_IOS_COPY_URL);
-    for (UIMenuItem* item in menuController.menuItems) {
-      if ([item.title isEqual:kTitle])
-        return YES;
-    }
-    return NO;
-  };
-
   void ExpectRectEqual(CGRect expectedRect, CGRect actualRect) {
     EXPECT_EQ(expectedRect.origin.x, actualRect.origin.x);
     EXPECT_EQ(expectedRect.origin.y, actualRect.origin.y);
@@ -121,36 +111,6 @@ class OmniboxTextFieldIOSTest : public PlatformTest {
 
   OmniboxTextFieldIOS* textfield_;
 };
-
-TEST_F(OmniboxTextFieldIOSTest, BecomeFirstResponderAddsCopyURLMenuItem) {
-  // The 'Copy URL' menu item should not be present before this test runs.
-  EXPECT_FALSE(IsCopyUrlInMenu());
-
-  // Call |becomeFirstResponder| and verify the Copy URL menu item was added.
-  UIMenuController* menuController = [UIMenuController sharedMenuController];
-  NSUInteger expectedItems = [menuController.menuItems count] + 1;
-  [textfield_ becomeFirstResponder];
-  EXPECT_EQ(expectedItems, [menuController.menuItems count]);
-  EXPECT_TRUE(IsCopyUrlInMenu());
-
-  // Call |becomeFirstResponder| again and verify the Copy URL menu item is not
-  // added again.
-  [textfield_ becomeFirstResponder];
-  EXPECT_EQ(expectedItems, [menuController.menuItems count]);
-  EXPECT_TRUE(IsCopyUrlInMenu());
-}
-
-TEST_F(OmniboxTextFieldIOSTest, ResignFirstResponderRemovesCopyURLMenuItem) {
-  // Call |becomeFirstResponder| to add the 'Copy URL' menu item so this test
-  // can remove it.
-  [textfield_ becomeFirstResponder];
-
-  UIMenuController* menuController = [UIMenuController sharedMenuController];
-  NSUInteger expectedItems = [menuController.menuItems count] - 1;
-  [textfield_ resignFirstResponder];
-  EXPECT_EQ(expectedItems, [menuController.menuItems count]);
-  EXPECT_FALSE(IsCopyUrlInMenu());
-}
 
 TEST_F(OmniboxTextFieldIOSTest, enterPreEditState_preEditTextAlignment_short) {
   [textfield_ setText:@"s"];

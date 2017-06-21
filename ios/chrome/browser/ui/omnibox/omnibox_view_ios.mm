@@ -148,14 +148,6 @@ UIColor* IncognitoSecureTextColor() {
   return editView_->OnCopy();
 }
 
-- (BOOL)onCopyURL {
-  return editView_->OnCopyURL();
-}
-
-- (BOOL)canCopyURL {
-  return editView_->CanCopyURL();
-}
-
 - (void)willPaste {
   editView_->WillPaste();
 }
@@ -590,12 +582,8 @@ bool OmniboxViewIOS::OnCopy() {
 
   GURL url;
   bool write_url = false;
-  // Don't adjust the text (e.g. add http://) if the omnibox is currently
-  // showing non-URL text (e.g. search terms instead of the URL).
-  if (!CanCopyURL()) {
-    model()->AdjustTextForCopy(start_location, is_select_all, &text, &url,
-                               &write_url);
-  }
+  model()->AdjustTextForCopy(start_location, is_select_all, &text, &url,
+                             &write_url);
 
   // Create the pasteboard item manually because the pasteboard expects a single
   // item with multiple representations.  This is expressed as a single
@@ -609,23 +597,6 @@ bool OmniboxViewIOS::OnCopy() {
 
   board.items = [NSArray arrayWithObject:item];
   return true;
-}
-
-bool OmniboxViewIOS::OnCopyURL() {
-  // Create the pasteboard item manually because the pasteboard expects a single
-  // item with multiple representations.  This is expressed as a single
-  // NSDictionary with multiple keys, one for each representation.
-  GURL url = controller_->GetToolbarModel()->GetURL();
-  NSDictionary* item = @{
-    (NSString*)kUTTypePlainText : base::SysUTF8ToNSString(url.spec()),
-    (NSString*)kUTTypeURL : net::NSURLWithGURL(url)
-  };
-  [UIPasteboard generalPasteboard].items = [NSArray arrayWithObject:item];
-  return true;
-}
-
-bool OmniboxViewIOS::CanCopyURL() {
-  return false;
 }
 
 void OmniboxViewIOS::WillPaste() {

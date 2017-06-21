@@ -99,10 +99,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   UIFont* _font;
   UIColor* _displayedTextColor;
   UIColor* _displayedTintColor;
-
-  // The 'Copy URL' menu item is sometimes shown in the edit menu, so keep it
-  // around to make adding/removing easier.
-  UIMenuItem* _copyUrlMenuItem;
 }
 
 @synthesize leftViewImageId = _leftViewImageId;
@@ -931,51 +927,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return NSMakeRange(start, length);
 }
 
-- (BOOL)becomeFirstResponder {
-  if (![super becomeFirstResponder])
-    return NO;
-
-  if (!_copyUrlMenuItem) {
-    NSString* const kTitle = l10n_util::GetNSString(IDS_IOS_COPY_URL);
-    _copyUrlMenuItem =
-        [[UIMenuItem alloc] initWithTitle:kTitle action:@selector(copyUrl:)];
-  }
-
-  // Add the "Copy URL" menu item to the |sharedMenuController| if necessary.
-  UIMenuController* menuController = [UIMenuController sharedMenuController];
-  if (menuController.menuItems) {
-    if (![menuController.menuItems containsObject:_copyUrlMenuItem]) {
-      menuController.menuItems =
-          [menuController.menuItems arrayByAddingObject:_copyUrlMenuItem];
-    }
-  } else {
-    menuController.menuItems = [NSArray arrayWithObject:_copyUrlMenuItem];
-  }
-  return YES;
-}
-
-- (BOOL)resignFirstResponder {
-  if (![super resignFirstResponder])
-    return NO;
-
-  // Remove the "Copy URL" menu item from the |sharedMenuController|.
-  UIMenuController* menuController = [UIMenuController sharedMenuController];
-  NSMutableArray* menuItems =
-      [NSMutableArray arrayWithArray:menuController.menuItems];
-  [menuItems removeObject:_copyUrlMenuItem];
-  menuController.menuItems = menuItems;
-  return YES;
-}
-
-- (void)copyUrl:(id)sender {
-  [[self delegate] onCopyURL];
-}
-
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  if (action == @selector(copyUrl:)) {
-    return [[self delegate] canCopyURL];
-  }
-
   // Disable the "Define" menu item.  iOS7 implements this with a private
   // selector.  Avoid using private APIs by instead doing a string comparison.
   if ([NSStringFromSelector(action) hasSuffix:@"define:"]) {
