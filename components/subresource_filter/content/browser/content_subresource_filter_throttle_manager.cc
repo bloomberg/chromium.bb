@@ -21,6 +21,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
@@ -211,17 +212,31 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
   }
 }
 
-bool ContentSubresourceFilterThrottleManager::ShouldDisallowNewWindow() {
+bool ContentSubresourceFilterThrottleManager::ShouldDisallowNewWindow(
+    const content::OpenURLParams* open_url_params) {
   auto it = activated_frame_hosts_.find(web_contents()->GetMainFrame());
   if (it == activated_frame_hosts_.end())
     return false;
   const ActivationState state = it->second->activation_state();
+  if (state.activation_level != ActivationLevel::ENABLED ||
+      state.filtering_disabled_for_document ||
+      state.generic_blocking_rules_disabled ||
+      !delegate_->AllowStrongPopupBlocking()) {
+    return false;
+  }
+
+  // It is very tricky to filter out popups from OpenURLFromTab. For right now,
+  // just allow all of them. |open_url_params| will be nullptr if it is coming
+  // from window.open, which should remain blocked.
+  //
+  // TODO(csharrison): Add additional parameters to OpenURLParams like a trusted
+  // bit to determined if the event that led to this was issued via JS.
+  if (open_url_params)
+    return false;
+
   // This should trigger the standard popup blocking UI, so don't force the
   // subresource filter specific UI here.
-  return state.activation_level == ActivationLevel::ENABLED &&
-         !state.filtering_disabled_for_document &&
-         !state.generic_blocking_rules_disabled &&
-         delegate_->AllowStrongPopupBlocking();
+  return true;
 }
 
 std::unique_ptr<SubframeNavigationFilteringThrottle>

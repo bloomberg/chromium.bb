@@ -1463,8 +1463,8 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
        params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
       popup_blocker_helper &&
-      PopupBlockerTabHelper::ConsiderForPopupBlocking(source,
-                                                      params.user_gesture)) {
+      PopupBlockerTabHelper::ConsiderForPopupBlocking(
+          source, params.user_gesture, &params)) {
     if (popup_blocker_helper->MaybeBlockPopup(nav_params,
                                               blink::mojom::WindowFeatures())) {
       return nullptr;
