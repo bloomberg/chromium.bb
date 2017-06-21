@@ -38,9 +38,10 @@ class TestActivityLogger : public V8DOMActivityLogger {
                  int argc,
                  const v8::Local<v8::Value>* argv) override {
     String activity_string = api_name;
-    for (int i = 0; i < argc; i++)
+    for (int i = 0; i < argc; i++) {
       activity_string = activity_string + " | " +
                         ToCoreStringWithUndefinedOrNullCheck(argv[i]);
+    }
     logged_activities_.push_back(activity_string);
   }
 
