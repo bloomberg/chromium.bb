@@ -497,23 +497,11 @@ void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
     if (it == resources_.end())
       continue;
 
-    if (it->value->image_) {
-      if (it->value->image_->HasMailbox()) {
-        it->value->image_->UpdateSyncToken(resource.sync_token);
-      } else if (SharedGpuContext::IsValid() && resource.sync_token.HasData()) {
-        // Although image has MailboxTextureHolder at the time when it is
-        // inserted to m_cachedImages, the
-        // OffscreenCanvasPlaceHolder::placeholderFrame() exposes this image
-        // to everyone accessing the placeholder canvas as an image source,
-        // some of which may want to consume the image as a SkImage, thereby
-        // converting the MailTextureHolder to a SkiaTextureHolder. In this
-        // case, we need to wait for the new sync token passed by
-        // CompositorFrameSink.
-        SharedGpuContext::Gl()->WaitSyncTokenCHROMIUM(
-            resource.sync_token.GetConstData());
-      }
-      ReclaimResourceInternal(it);
+    if (SharedGpuContext::IsValid() && resource.sync_token.HasData()) {
+      SharedGpuContext::Gl()->WaitSyncTokenCHROMIUM(
+          resource.sync_token.GetConstData());
     }
+    ReclaimResourceInternal(it);
   }
 }
 
