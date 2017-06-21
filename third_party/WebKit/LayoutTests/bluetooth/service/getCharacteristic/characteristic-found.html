@@ -2,24 +2,22 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}],
-      optionalServices: ['generic_access']}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+  return getHealthThermometerDevice()
+    .then(({device}) => device.gatt.getPrimaryService('health_thermometer'))
     .then(service => {
       return Promise.all([
-          service.getCharacteristic(device_name.alias),
-          service.getCharacteristic(device_name.name),
-          service.getCharacteristic(device_name.uuid)])
+        service.getCharacteristic(measurement_interval.alias),
+        service.getCharacteristic(measurement_interval.name),
+        service.getCharacteristic(measurement_interval.uuid)])
         .then(characteristics => {
           characteristics.forEach(characteristic => {
             assert_equals(
-              characteristic.uuid, device_name.uuid,
+              characteristic.uuid, measurement_interval.uuid,
               'Characteristic UUID should be the same as requested UUID.');
             assert_equals(
               characteristic.service, service,

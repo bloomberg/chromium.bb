@@ -2,15 +2,13 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('MissingCharacteristicHeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
-    .then(service => assert_promise_rejects_with_message(
+  return getEmptyHealthThermometerService()
+    .then(({service}) => assert_promise_rejects_with_message(
       service.getCharacteristics(),
       new DOMException('No Characteristics found in service.',
                        'NotFoundError')))

@@ -8,7 +8,7 @@
 'use strict';
 promise_test(() => {
   return getHIDDevice({
-      filters: [{services: ['battery_service']}],
+      filters: [{services: ['device_information']}],
       optionalServices: [
         'generic_access',
         'human_interface_device'
@@ -20,7 +20,7 @@ promise_test(() => {
 
       assert_equals(uuid_set.size, 2);
       assert_true(uuid_set.has(BluetoothUUID.getService('generic_access')));
-      assert_true(uuid_set.has(BluetoothUUID.getService('battery_service')));
+      assert_true(uuid_set.has(BluetoothUUID.getService('device_information')));
       assert_false(
         uuid_set.has(BluetoothUUID.getService('human_interface_device')));
     });

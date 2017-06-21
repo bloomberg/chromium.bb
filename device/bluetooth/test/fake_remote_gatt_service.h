@@ -4,11 +4,15 @@
 #ifndef DEVICE_BLUETOOTH_TEST_FAKE_REMOTE_GATT_SERVICE_H_
 #define DEVICE_BLUETOOTH_TEST_FAKE_REMOTE_GATT_SERVICE_H_
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
+#include "device/bluetooth/test/fake_remote_gatt_characteristic.h"
 
 namespace device {
 class BluetoothDevice;
@@ -27,6 +31,12 @@ class FakeRemoteGattService : public device::BluetoothRemoteGattService {
                         bool is_primary,
                         device::BluetoothDevice* device);
   ~FakeRemoteGattService() override;
+
+  // Adds a fake characteristic with |characteristic_uuid| and |properties|
+  // to this service. Returns the characteristic's Id.
+  std::string AddFakeCharacteristic(
+      const device::BluetoothUUID& characteristic_uuid,
+      mojom::CharacteristicPropertiesPtr properties);
 
   // device::BluetoothGattService overrides:
   std::string GetIdentifier() const override;
@@ -47,6 +57,12 @@ class FakeRemoteGattService : public device::BluetoothRemoteGattService {
   const device::BluetoothUUID service_uuid_;
   const bool is_primary_;
   device::BluetoothDevice* device_;
+
+  size_t last_characteristic_id_;
+
+  using FakeCharacteristicMap =
+      std::map<std::string, std::unique_ptr<FakeRemoteGattCharacteristic>>;
+  FakeCharacteristicMap fake_characteristics_;
 };
 
 }  // namespace bluetooth

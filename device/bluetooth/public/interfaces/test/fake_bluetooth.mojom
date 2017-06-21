@@ -34,6 +34,18 @@ interface FakeBluetooth {
 const uint16 kHCISuccess = 0x0000;
 const uint16 kHCIConnectionTimeout = 0x0008;
 
+// Defined in BT 4.2 Vol 3 Part G 3.3.1. Characteristic Properties
+struct CharacteristicProperties {
+  bool broadcast;
+  bool read;
+  bool write_without_response;
+  bool write;
+  bool notify;
+  bool indicate;
+  bool authenticated_signed_writes;
+  bool extended_properties;
+};
+
 // FakeCentral allows clients to simulate events that a device in the
 // Central/Observer role would receive as well as monitor the operations
 // performed by the device in the Central/Observer role.
@@ -95,4 +107,16 @@ interface FakeCentral {
   // add the fake service.
   AddFakeService(string peripheral_address, UUID service_uuid)
       => (string? service_id);
+
+  // Adds a fake GATT Characteristic with |characteristic_uuid| and |properties|
+  // to the fake service with |service_id|. The characteristic will be found
+  // when discovering the peripheral's GATT Attributes. Runs its callback with
+  // the fake characteristic's Id. Runs its callback with nullopt if it failed
+  // to add the fake characteristic.
+  AddFakeCharacteristic(
+        UUID characteristic_uuid,
+        CharacteristicProperties properties,
+        string service_id,
+        string peripheral_address) => (string? characteristic_id);
+
 };

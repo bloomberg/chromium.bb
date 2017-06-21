@@ -8,7 +8,7 @@
 'use strict';
 promise_test(() => {
   return getHIDDevice({
-      filters: [{services: ['battery_service']}],
+      filters: [{services: ['device_information']}],
       optionalServices: ['human_interface_device']})
     .then(({device}) => assert_promise_rejects_with_message(
       device.gatt.getPrimaryServices('human_interface_device'),
