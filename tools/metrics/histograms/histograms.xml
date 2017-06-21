@@ -4118,25 +4118,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
-<histogram name="Autofill.FormEvents.CreditCard.BankNameDisplayed"
-    enum="BankNameDisplayedFormEvent">
-  <owner>szhangcs@google.com</owner>
-  <summary>
-    Autofill form events for credit card forms. These are recorded when the user
-    interacts with a form requesting a credit card, a dropdown of suggestions
-    is shown and at least one of the suggestions has a bank name. Form events
-    are logged at most once per page load.
-  </summary>
-  <details>
-    These metrics are used to measure the impact of the bank name experiment. 
-    They are used to calculate the CTR of the autofill UI with bank names
-    available. Not all credit cards will have bank names even if we launch the
-    experiment. With these metrics we can run the experiment on 2 groups. For
-    one group, we will show bank names if available. For the other, we won't
-    shown.
-  </details>
-</histogram>
-
 <histogram name="Autofill.FormEvents.CreditCard.OnNonsecurePage"
     enum="AutofillFormEvent">
   <owner>estark@chromium.org</owner>

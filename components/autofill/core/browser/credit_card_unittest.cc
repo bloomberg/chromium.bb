@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -154,37 +153,6 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
   base::string16 obfuscated5 = credit_card5.NetworkAndLastFourDigits();
   EXPECT_EQ(UTF8ToUTF16(std::string("Card") + kUTF8MidlineEllipsis + "5100"),
             obfuscated5);
-}
-
-// Tests credit card bank name and last four digits string generation.
-TEST(CreditCardTest, BankNameAndLastFourDigitsStrings) {
-  // Case 1: Have everything and show bank name.
-  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
-  test::SetCreditCardInfo(&credit_card1, "John Dillinger",
-                          "5105 1051 0510 5100", "01", "2010", "1");
-  credit_card1.set_bank_name("Chase");
-  base::string16 obfuscated1 = credit_card1.BankNameAndLastFourDigits();
-  EXPECT_FALSE(credit_card1.bank_name().empty());
-  EXPECT_EQ(UTF8ToUTF16(std::string("Chase") + kUTF8MidlineEllipsis + "5100"),
-            obfuscated1);
-
-  // Case 2: Have no bank name and not show bank name.
-  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
-  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
-                          "5105 1051 0510 5100", "01", "2010", "1");
-  base::string16 obfuscated2 = credit_card2.BankNameAndLastFourDigits();
-  EXPECT_TRUE(credit_card2.bank_name().empty());
-  EXPECT_EQ(UTF8ToUTF16(std::string(kUTF8MidlineEllipsis) + "5100"),
-            obfuscated2);
-
-  // Case 3: Have bank name but no last four digits, only show bank name.
-  CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
-  test::SetCreditCardInfo(&credit_card3, "John Dillinger",
-                          "", "01", "2010", "1");
-  credit_card3.set_bank_name("Chase");
-  base::string16 obfuscated3 = credit_card3.BankNameAndLastFourDigits();
-  EXPECT_FALSE(credit_card3.bank_name().empty());
-  EXPECT_EQ(UTF8ToUTF16(std::string("Chase")), obfuscated3);
 }
 
 TEST(CreditCardTest, AssignmentOperator) {

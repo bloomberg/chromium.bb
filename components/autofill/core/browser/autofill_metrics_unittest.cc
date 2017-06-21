@@ -187,20 +187,6 @@ class TestPersonalDataManager : public PersonalDataManager {
     Refresh();
   }
 
-  // Removes all existing credit cards and creates 1 server card with a bank
-  // name.
-  void RecreateServerCreditCardsWithBankName() {
-    server_credit_cards_.clear();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>(
-        CreditCard::FULL_SERVER_CARD, "server_id");
-    test::SetCreditCardInfo(credit_card.get(), "name", "4111111111111111",
-                            "12", "24", "1");
-    credit_card->set_guid("10000000-0000-0000-0000-000000000003");
-    credit_card->set_bank_name("Chase");
-    server_credit_cards_.push_back(std::move(credit_card));
-    Refresh();
-  }
-
   bool IsAutofillEnabled() const override { return autofill_enabled_; }
 
   void CreateAmbiguousProfiles() {
@@ -2547,11 +2533,6 @@ TEST_F(AutofillMetricsTest, CreditCardShownFormEvents) {
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
-    // Check that the bank name histogram was not recorded. ExpectBucketCount()
-    // can't be used here because it expects the histogram to exist.
-    EXPECT_EQ(0, histogram_tester.GetTotalCountsForPrefix(
-                     "Autofill.FormEvents.CreditCard")
-                     ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
   }
 
   // Reset the autofill manager state.
@@ -2569,11 +2550,6 @@ TEST_F(AutofillMetricsTest, CreditCardShownFormEvents) {
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
-    // Check that the bank name histogram was not recorded. ExpectBucketCount()
-    // can't be used here because it expects the histogram to exist.
-    EXPECT_EQ(0, histogram_tester.GetTotalCountsForPrefix(
-                     "Autofill.FormEvents.CreditCard")
-                     ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
   }
 
   // Reset the autofill manager state.
@@ -2591,59 +2567,6 @@ TEST_F(AutofillMetricsTest, CreditCardShownFormEvents) {
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 0);
-    // Check that the bank name histogram was not recorded. ExpectBucketCount()
-    // can't be used here because it expects the histogram to exist.
-    EXPECT_EQ(0, histogram_tester.GetTotalCountsForPrefix(
-                     "Autofill.FormEvents.CreditCard")
-                     ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
-  }
-
-  // Recreate server cards with bank names.
-  personal_data_->RecreateServerCreditCardsWithBankName();
-
-  // Reset the autofill manager state.
-  autofill_manager_->Reset();
-  autofill_manager_->AddSeenForm(form, field_types, field_types);
-
-  {
-    // Simulating new popup being shown.
-    base::HistogramTester histogram_tester;
-    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
-    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard",
-        AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN, 1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard",
-        AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard.BankNameDisplayed",
-        AutofillMetrics::
-            FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE,
-        1);
-  }
-
-  // Reset the autofill manager state.
-  autofill_manager_->Reset();
-  autofill_manager_->AddSeenForm(form, field_types, field_types);
-
-  {
-    // Simulating two popups in the same page load.
-    base::HistogramTester histogram_tester;
-    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
-    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
-    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard",
-        AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN, 2);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard",
-        AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard.BankNameDisplayed",
-        AutofillMetrics::
-            FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE,
-        1);
   }
 }
 
@@ -2812,11 +2735,6 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, 1);
-    // Check that the bank name histogram was not recorded. ExpectBucketCount()
-    // can't be used here because it expects the histogram to exist.
-    EXPECT_EQ(0, histogram_tester.GetTotalCountsForPrefix(
-                     "Autofill.FormEvents.CreditCard")
-                     ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
   }
 
   // Reset the autofill manager state.
@@ -2839,52 +2757,6 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, 1);
-  }
-
-  // Recreate server cards with bank names.
-  personal_data_->RecreateServerCreditCardsWithBankName();
-
-  // Reset the autofill manager state.
-  autofill_manager_->Reset();
-  autofill_manager_->AddSeenForm(form, field_types, field_types);
-
-  {
-    // Simulating filling a full card server suggestion.
-    base::HistogramTester histogram_tester;
-    std::string guid(
-        "10000000-0000-0000-0000-000000000003");  // full server card
-    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
-    autofill_manager_->FillOrPreviewForm(
-        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, field,
-        autofill_manager_->MakeFrontendID(guid, std::string()));
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard.BankNameDisplayed",
-        AutofillMetrics::
-            FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE,
-        1);
-  }
-
-  // Reset the autofill manager state.
-  autofill_manager_->Reset();
-  autofill_manager_->AddSeenForm(form, field_types, field_types);
-
-  {
-    // Simulating filling multiple times.
-    base::HistogramTester histogram_tester;
-    std::string guid(
-        "10000000-0000-0000-0000-000000000003");  // full server card
-    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
-    autofill_manager_->FillOrPreviewForm(
-        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, field,
-        autofill_manager_->MakeFrontendID(guid, std::string()));
-    autofill_manager_->FillOrPreviewForm(
-        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, field,
-        autofill_manager_->MakeFrontendID(guid, std::string()));
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard.BankNameDisplayed",
-        AutofillMetrics::
-            FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE,
-        1);
   }
 }
 
@@ -3579,11 +3451,6 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
-    // Check that the bank name histogram was not recorded. ExpectBucketCount()
-    // can't be used here because it expects the histogram to exist.
-    EXPECT_EQ(0, histogram_tester.GetTotalCountsForPrefix(
-                     "Autofill.FormEvents.CreditCard")
-                     ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
   }
 
   // Reset the autofill manager state.
@@ -3601,11 +3468,6 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
-    // Check that the bank name histogram was not recorded. ExpectBucketCount()
-    // can't be used here because it expects the histogram to exist.
-    EXPECT_EQ(0, histogram_tester.GetTotalCountsForPrefix(
-                     "Autofill.FormEvents.CreditCard")
-                     ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
   }
 
   // Reset the autofill manager state.
@@ -3623,11 +3485,6 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 0);
-    // Check that the bank name histogram was not recorded. ExpectBucketCount()
-    // can't be used here because it expects the histogram to exist.
-    EXPECT_EQ(0, histogram_tester.GetTotalCountsForPrefix(
-                     "Autofill.FormEvents.CreditCard")
-                     ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
   }
 }
 
