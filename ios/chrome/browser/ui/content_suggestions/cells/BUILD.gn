@@ -29,6 +29,8 @@ source_set("cells_ui") {
     "content_suggestions_cell.mm",
     "content_suggestions_footer_item.h",
     "content_suggestions_footer_item.mm",
+    "content_suggestions_header_item.h",
+    "content_suggestions_header_item.mm",
     "content_suggestions_most_visited_cell.h",
     "content_suggestions_most_visited_cell.mm",
     "content_suggestions_text_item.h",
@@ -52,6 +54,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_suggestions_footer_item_unittest.mm",
+    "content_suggestions_header_item_unittest.mm",
     "content_suggestions_item_unittest.mm",
     "content_suggestions_most_visited_item_unittest.mm",
   ]

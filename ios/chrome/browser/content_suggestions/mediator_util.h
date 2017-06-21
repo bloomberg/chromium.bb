@@ -54,6 +54,10 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
     ContentSuggestionsCategoryWrapper* category,
     const std::string& id_in_category);
 
+// Creates and returns a SectionInfo for the section containing the logo and
+// omnibox.
+ContentSuggestionsSectionInformation* LogoSectionInformation();
+
 // Creates and returns a SectionInfo for the Most Visited section.
 ContentSuggestionsSectionInformation* MostVisitedSectionInformation();
 

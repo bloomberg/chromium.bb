@@ -67,6 +67,9 @@ fetchFaviconImageForItem:(nonnull CollectionViewItem<SuggestedContent>*)item
 - (void)dismissSuggestion:
     (nonnull ContentSuggestionIdentifier*)suggestionIdentifier;
 
+// Returns the header view containing the logo and omnibox to be displayed.
+- (nullable UIView*)headerView;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SOURCE_H_

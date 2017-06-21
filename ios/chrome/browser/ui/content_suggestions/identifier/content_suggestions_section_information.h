@@ -18,7 +18,8 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionLayout) {
 // This enum is used for identifying the section. All section should have a
 // different ID.
 typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
-  ContentSuggestionsSectionMostVisited = 0,
+  ContentSuggestionsSectionLogo = 0,
+  ContentSuggestionsSectionMostVisited,
   ContentSuggestionsSectionArticles,
   ContentSuggestionsSectionReadingList,
 
