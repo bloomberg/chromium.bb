@@ -12,55 +12,32 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromecast/media/cma/backend/alsa/post_processors/governor.h"
+#include "chromecast/media/cma/backend/alsa/post_processors/post_processor_unittest.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
 namespace media {
+namespace post_processor_test {
 
 namespace {
 
 const char* kConfigTemplate =
     R"config({"onset_volume": %f, "clamp_multiplier": %f})config";
 
-const int kNumChannels = 2;
 const float kDefaultClamp = 0.6f;
 const int kNumFrames = 100;
-const float kFrequency = 1.0f / kNumFrames;
-const int kBytesPerSample = sizeof(int32_t);
+const int kFrequency = 2000;
 const int kSampleRate = 44100;
 
 std::string MakeConfigString(float onset_volume, float clamp_multiplier) {
   return base::StringPrintf(kConfigTemplate, onset_volume, clamp_multiplier);
 }
 
-// Frequency is in frames (frequency = frequency_in_hz / sample rate)
-std::unique_ptr<::media::AudioBus> GetSineData(size_t frames, float frequency) {
-  auto data = ::media::AudioBus::Create(kNumChannels, frames);
-  std::vector<int32_t> sine(frames * 2);
-  for (size_t i = 0; i < frames; ++i) {
-    sine[i * 2] = sin(static_cast<float>(i) * frequency * 2 * M_PI) *
-                  std::numeric_limits<int32_t>::max();
-    sine[i * 2 + 1] = cos(static_cast<float>(i) * frequency * 2 * M_PI) *
-                      std::numeric_limits<int32_t>::max();
-  }
-  data->FromInterleaved(sine.data(), frames, kBytesPerSample);
-  return data;
-}
-
 void ScaleData(float* data, int frames, float scale) {
   for (int f = 0; f < frames; ++f) {
     data[f] *= scale;
-  }
-}
-
-void CompareData(const std::vector<float>& expected,
-                 const std::vector<float>& actual,
-                 int frames) {
-  ASSERT_EQ(expected.size(), actual.size());
-  for (int f = 0; f < frames; ++f) {
-    EXPECT_FLOAT_EQ(expected[f], actual[f]) << "f: " << f;
   }
 }
 
@@ -78,22 +55,16 @@ class GovernorTest : public ::testing::TestWithParam<float> {
     governor_->SetSlewTimeMsForTest(0);
     governor_->SetSampleRate(kSampleRate);
 
-    auto data_bus = GetSineData(kNumFrames, kFrequency);
-    auto expected_bus = GetSineData(kNumFrames, kFrequency);
-    data_.resize(kNumFrames * kNumChannels);
-    expected_.resize(kNumFrames * kNumChannels);
-    data_bus->ToInterleaved<::media::FloatSampleTypeTraits<float>>(
-        kNumFrames, data_.data());
-    expected_bus->ToInterleaved<::media::FloatSampleTypeTraits<float>>(
-        kNumFrames, expected_.data());
-  }
-
-  void CompareBuffers() {
-    CompareData(expected_, data_, kNumFrames * kNumChannels);
+    data_ = GetSineData(kNumFrames, kFrequency, kSampleRate);
+    expected_ = GetSineData(kNumFrames, kFrequency, kSampleRate);
   }
 
   void ProcessFrames(float volume) {
     EXPECT_EQ(governor_->ProcessFrames(data_.data(), kNumFrames, volume), 0);
+  }
+
+  void CompareBuffers() {
+    CheckArraysEqual(expected_.data(), data_.data(), expected_.size());
   }
 
   float clamp_;
@@ -139,5 +110,28 @@ INSTANTIATE_TEST_CASE_P(GovernorClampVolumeTest,
                         GovernorTest,
                         ::testing::Values(0.0f, 0.1f, 0.5f, 0.9f, 1.0f, 1.1f));
 
+// Default tests from post_processor_test
+TEST_P(PostProcessorTest, TestDelay) {
+  std::string config = MakeConfigString(1.0, 1.0);
+  auto pp =
+      base::WrapUnique(AudioPostProcessorShlib_Create(config, kNumChannels));
+  TestDelay(pp.get(), sample_rate_);
+}
+
+TEST_P(PostProcessorTest, TestRinging) {
+  std::string config = MakeConfigString(1.0, 1.0);
+  auto pp =
+      base::WrapUnique(AudioPostProcessorShlib_Create(config, kNumChannels));
+  TestRingingTime(pp.get(), sample_rate_);
+}
+
+TEST_P(PostProcessorTest, TestPassthrough) {
+  std::string config = MakeConfigString(1.0, 1.0);
+  auto pp =
+      base::WrapUnique(AudioPostProcessorShlib_Create(config, kNumChannels));
+  TestPassthrough(pp.get(), sample_rate_);
+}
+
+}  // namespace post_processor_test
 }  // namespace media
 }  // namespace chromecast

@@ -160,6 +160,7 @@ test("libcast_governor_unittests") {
   ]
   deps = [
     ":governor",
+    ":post_processor_test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//media",
@@ -179,4 +180,17 @@ source_set("governor") {
     "//chromecast/public/media",
   ]
   public_configs = [ "//chromecast/public:public_config" ]
+}
+
+source_set("post_processor_test_support") {
+  testonly = true
+  sources = [
+    "post_processors/post_processor_unittest.cc",
+    "post_processors/post_processor_unittest.h",
+  ]
+  deps = [
+    "//base",
+    "//chromecast/public/media",
+    "//testing/gtest",
+  ]
 }
