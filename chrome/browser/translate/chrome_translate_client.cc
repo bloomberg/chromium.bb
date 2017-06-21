@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
@@ -31,6 +32,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
 #include "components/translate/core/browser/language_model.h"
@@ -53,6 +55,7 @@
 #include "url/gurl.h"
 
 namespace {
+using base::FeatureList;
 using metrics::TranslateEventProto;
 
 TranslateEventProto::EventType BubbleResultToTranslateEvent(
@@ -79,6 +82,8 @@ TranslateEventProto::EventType BubbleResultToTranslateEvent(
 void LogLanguageDetectionEvent(
     const content::WebContents* const web_contents,
     const translate::LanguageDetectionDetails& details) {
+  if (!FeatureList::IsEnabled(switches::kSyncUserLanguageDetectionEvents))
+    return;
   auto* const profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -104,6 +109,8 @@ void LogLanguageDetectionEvent(
 
 void LogTranslateEvent(const content::WebContents* const web_contents,
                        const metrics::TranslateEventProto& translate_event) {
+  if (!FeatureList::IsEnabled(switches::kSyncUserTranslationEvents))
+    return;
   DCHECK(web_contents);
   auto* const profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

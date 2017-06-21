@@ -9,9 +9,11 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/user_events/fake_user_event_service.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "content/public/browser/web_contents.h"
@@ -31,6 +33,9 @@ class ChromeTranslateClientTest : public ChromeRenderViewHostTestHarness {
         browser_sync::UserEventServiceFactory::GetInstance()
             ->SetTestingFactoryAndUse(browser_context(),
                                       &BuildFakeUserEventService));
+    scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndEnableFeature(
+        switches::kSyncUserLanguageDetectionEvents);
   }
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
@@ -41,6 +46,7 @@ class ChromeTranslateClientTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   syncer::FakeUserEventService* fake_user_event_service_;
 };
 
