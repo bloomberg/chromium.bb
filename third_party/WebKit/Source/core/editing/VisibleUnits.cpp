@@ -749,48 +749,52 @@ static bool IsStartOfDifferentDirection(const InlineBox* inline_box) {
   return prev_box->BidiLevel() > inline_box->BidiLevel();
 }
 
+static InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
+    InlineBox* inline_box,
+    int caret_offset) {
+  if (caret_offset == inline_box->CaretRightmostOffset()) {
+    InlineBox* const next_box = inline_box->NextLeafChild();
+    if (!next_box || next_box->BidiLevel() >= inline_box->BidiLevel())
+      return InlineBoxPosition(inline_box, caret_offset);
+
+    const unsigned level = next_box->BidiLevel();
+    InlineBox* const prev_box =
+        InlineBoxTraversal::FindLeftBidiRun(*inline_box, level);
+
+    // For example, abc FED 123 ^ CBA
+    if (prev_box && prev_box->BidiLevel() == level)
+      return InlineBoxPosition(inline_box, caret_offset);
+
+    // For example, abc 123 ^ CBA
+    inline_box = InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
+        *inline_box, level);
+    return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
+  }
+
+  if (IsStartOfDifferentDirection(inline_box))
+    return InlineBoxPosition(inline_box, caret_offset);
+
+  const unsigned level = inline_box->PrevLeafChild()->BidiLevel();
+  InlineBox* const next_box =
+      InlineBoxTraversal::FindRightBidiRun(*inline_box, level);
+
+  if (next_box && next_box->BidiLevel() == level)
+    return InlineBoxPosition(inline_box, caret_offset);
+
+  inline_box =
+      InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(*inline_box, level);
+  return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
+}
+
 static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
     InlineBox* inline_box,
     int caret_offset,
     UnicodeBidi unicode_bidi,
     TextDirection primary_direction) {
-  unsigned char level = inline_box->BidiLevel();
+  if (inline_box->Direction() == primary_direction)
+    return AdjustInlineBoxPositionForPrimaryDirection(inline_box, caret_offset);
 
-  if (inline_box->Direction() == primary_direction) {
-    if (caret_offset == inline_box->CaretRightmostOffset()) {
-      InlineBox* next_box = inline_box->NextLeafChild();
-      if (!next_box || next_box->BidiLevel() >= level)
-        return InlineBoxPosition(inline_box, caret_offset);
-
-      level = next_box->BidiLevel();
-      InlineBox* const prev_box =
-          InlineBoxTraversal::FindLeftBidiRun(*inline_box, level);
-
-      // For example, abc FED 123 ^ CBA
-      if (prev_box && prev_box->BidiLevel() == level)
-        return InlineBoxPosition(inline_box, caret_offset);
-
-      // For example, abc 123 ^ CBA
-      inline_box = InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
-          *inline_box, level);
-      return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
-    }
-
-    if (IsStartOfDifferentDirection(inline_box))
-      return InlineBoxPosition(inline_box, caret_offset);
-
-    level = inline_box->PrevLeafChild()->BidiLevel();
-    InlineBox* const next_box =
-        InlineBoxTraversal::FindRightBidiRun(*inline_box, level);
-
-    if (next_box && next_box->BidiLevel() == level)
-      return InlineBoxPosition(inline_box, caret_offset);
-
-    inline_box =
-        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(*inline_box, level);
-    return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
-  }
-
+  const unsigned char level = inline_box->BidiLevel();
   if (caret_offset == inline_box->CaretLeftmostOffset()) {
     InlineBox* prev_box = inline_box->PrevLeafChildIgnoringLineBreak();
     if (!prev_box || prev_box->BidiLevel() < level) {
