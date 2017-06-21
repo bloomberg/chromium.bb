@@ -2,20 +2,19 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
-    .then(service => service.getCharacteristic('body_sensor_location'))
-    .then(characteristic => {
-      return assert_promise_resolves_after_event(characteristic,
-                                                 'readValue',
-                                                 'characteristicvaluechanged',
-                                                 3 /* attach 3 listeners */);
+  return getMeasurementIntervalCharacteristic()
+    .then(({characteristic, fake_characteristic}) => {
+      return fake_characteristic.setNextReadResponse(GATT_SUCCESS, [0,1,2])
+        .then(() => assert_promise_resolves_after_event(
+          characteristic,
+          'readValue',
+          'characteristicvaluechanged',
+          3 /* attach 3 listeners */));
     }).then(results => {
       let read_value = results[0].buffer;
       let event_values = results.slice(1).map(v => v.buffer);
