@@ -66,6 +66,30 @@ class TestGitMetricsWithTempdir(cros_test_lib.TempDirTestCase):
     ])
 
 
+class TestGitRepoWithTempdir(cros_test_lib.TempDirTestCase):
+  """Tests for _GitRepo using a Git fixture."""
+
+  def setUp(self):
+    self.git_dir = os.path.join(self.tempdir, '.git')
+    with osutils.ChdirContext(self.tempdir):
+      self.git_repo = git_metrics._GitRepo(self.git_dir)
+      self.git_repo._check_output(['init'])
+      with open('foo', 'w') as f:
+        f.write('a\nb\nc\n')
+      self.git_repo._check_output(['add', 'foo'])
+      self.git_repo._check_output(['commit', '-m', 'hi'])
+
+  def test_get_unstaged_changes(self):
+    """Test get_unstaged_changes."""
+    with open(os.path.join(self.tempdir, 'spam'), 'w') as f:
+      f.write('a\n')
+    os.remove(os.path.join(self.tempdir, 'foo'))
+    repo = git_metrics._GitRepo(self.git_dir)
+    added, removed = repo.get_unstaged_changes()
+    self.assertEqual(added, 0)  # Does not count untracked files
+    self.assertEqual(removed, 3)
+
+
 class TestMetricCollector(cros_test_lib.TestCase):
   """Tests for _GitMetricCollector."""
 
