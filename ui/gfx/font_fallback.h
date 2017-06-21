@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -16,6 +18,18 @@ class Font;
 
 // Given a font, returns the fonts that are suitable for fallback.
 GFX_EXPORT std::vector<Font> GetFallbackFonts(const Font& font);
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+
+// Finds a fallback font to render the specified |text| with respect to an
+// initial |font|. Returns the resulting font via out param |result|. Returns
+// |true| if a fallback font was found.
+bool GFX_EXPORT GetFallbackFont(const Font& font,
+                                const base::char16* text,
+                                int text_length,
+                                Font* result);
+
+#endif
 
 }  // namespace gfx
 
