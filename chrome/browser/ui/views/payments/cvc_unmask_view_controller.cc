@@ -31,6 +31,8 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -172,7 +174,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   layout->AddView(instructions.release());
 
   // Space between the instructions and the CVC field.
-  layout->AddPaddingRow(0, 22);
+  layout->AddPaddingRow(0, 16);
 
   views::ColumnSet* cvc_field_columns = layout->AddColumnSet(1);
   constexpr int kPadding = 16;
@@ -237,9 +239,30 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   layout->AddView(cvc_field.release());
 
   // Space between the CVC field and the error field.
-  layout->AddPaddingRow(0, 22);
+  layout->AddPaddingRow(0, 16);
 
-  layout->StartRow(0, 0);
+  views::ColumnSet* error_columns = layout->AddColumnSet(2);
+  // A column for the error icon
+  error_columns->AddColumn(views::GridLayout::Alignment::LEADING,
+                           views::GridLayout::Alignment::LEADING, 0,
+                           views::GridLayout::SizeType::USE_PREF, 0, 0);
+  error_columns->AddPaddingColumn(0, kPadding);
+  // A column for the error label
+  error_columns->AddColumn(views::GridLayout::Alignment::LEADING,
+                           views::GridLayout::Alignment::LEADING, 1,
+                           views::GridLayout::SizeType::USE_PREF, 0, 0);
+
+  layout->StartRow(0, 2);
+  std::unique_ptr<views::ImageView> error_icon =
+      base::MakeUnique<views::ImageView>();
+  error_icon->set_id(static_cast<int>(DialogViewID::CVC_ERROR_ICON));
+  error_icon->SetImage(
+      gfx::CreateVectorIcon(ui::kWarningIcon, 16,
+                            error_icon->GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_AlertSeverityHigh)));
+  error_icon->SetVisible(false);
+  layout->AddView(error_icon.release());
+
   std::unique_ptr<views::Label> error_label = base::MakeUnique<views::Label>();
   error_label->set_id(static_cast<int>(DialogViewID::CVC_ERROR_LABEL));
   error_label->SetMultiLine(true);
@@ -305,6 +328,9 @@ void CvcUnmaskViewController::DisplayError(base::string16 error) {
       dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_ERROR_LABEL)));
   error_label->SetText(error);
   error_label->SetVisible(true);
+  dialog()
+      ->GetViewByID(static_cast<int>(DialogViewID::CVC_ERROR_ICON))
+      ->SetVisible(true);
   RelayoutPane();
 }
 
