@@ -106,10 +106,6 @@ def main():
   opts = parser.parse_args()
   opts.Freeze()
 
-  # This returns a 0 value the first time it's called.  Call it now and
-  # discard the return value.
-  psutil.cpu_times_percent()
-
   # Wait a random amount of time before starting the loop in case sysmon
   # is started at exactly the same time on all machines.
   time.sleep(random.uniform(0, opts.interval))
