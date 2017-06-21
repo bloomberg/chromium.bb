@@ -49,7 +49,6 @@ class DirectoryDataTypeController : public DataTypeController {
 
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
-  void RecordMemoryUsageHistogram() override;
 
   // Returns a ListValue representing all nodes for a specified type by querying
   // the directory.

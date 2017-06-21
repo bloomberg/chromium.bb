@@ -75695,14 +75695,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Sync.ModelTypeMemoryKB" units="KB">
-  <owner>pavely@chromium.org</owner>
-  <summary>
-    Estimated memory usage by sync datatype in kilobytes. Recorded after sync
-    configuration.
-  </summary>
-</histogram>
-
 <histogram name="Sync.ModelTypeStoreInitResult"
     enum="SyncModelTypeStoreInitResult">
   <owner>pavely@chromium.org</owner>
@@ -95759,7 +95751,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="USER_EVENT" label="USER_EVENT"/>
   <suffix name="WIFI_CREDENTIAL" label="WIFI_CREDENTIAL"/>
   <affected-histogram name="Sync.ModelTypeCount"/>
-  <affected-histogram name="Sync.ModelTypeMemoryKB"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyzygyStartupTime" separator="_">

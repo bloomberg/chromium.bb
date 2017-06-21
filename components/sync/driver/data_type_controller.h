@@ -162,9 +162,6 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // Used to display entity counts in chrome://sync-internals.
   virtual void GetStatusCounters(const StatusCountersCallback& callback) = 0;
 
-  // Estimates memory usage of type and records it into histogram.
-  virtual void RecordMemoryUsageHistogram() = 0;
-
  protected:
   explicit DataTypeController(ModelType type);
 

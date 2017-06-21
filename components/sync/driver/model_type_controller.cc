@@ -236,11 +236,6 @@ void ModelTypeController::GetStatusCounters(
                  base::Bind(&ModelTypeDebugInfo::GetStatusCounters, callback));
 }
 
-void ModelTypeController::RecordMemoryUsageHistogram() {
-  PostBridgeTask(FROM_HERE,
-                 base::Bind(&ModelTypeDebugInfo::RecordMemoryUsageHistogram));
-}
-
 void ModelTypeController::ReportModelError(const ModelError& error) {
   DCHECK(CalledOnValidThread());
   LoadModelsDone(UNRECOVERABLE_ERROR,

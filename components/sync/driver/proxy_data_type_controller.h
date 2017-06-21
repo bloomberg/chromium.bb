@@ -35,7 +35,6 @@ class ProxyDataTypeController : public DataTypeController {
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
-  void RecordMemoryUsageHistogram() override;
 
  private:
   State state_;

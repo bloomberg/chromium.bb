@@ -35,10 +35,6 @@ class ModelTypeDebugInfo {
           callback,
       ModelTypeSyncBridge* bridge);
 
-  // Queries |bridge| for estimate of memory usage and records it in a
-  // histogram.
-  static void RecordMemoryUsageHistogram(ModelTypeSyncBridge* bridge);
-
  private:
   ModelTypeDebugInfo();
 

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/model_impl/processor_entity_tracker.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 
@@ -58,15 +57,6 @@ void ModelTypeDebugInfo::GetStatusCounters(
     }
     callback.Run(processor->type_, counters);
   }
-}
-
-// static
-void ModelTypeDebugInfo::RecordMemoryUsageHistogram(
-    ModelTypeSyncBridge* bridge) {
-  SharedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
-  size_t memory_usage = processor->EstimateMemoryUsage();
-  SyncRecordMemoryKbHistogram(kModelTypeMemoryHistogramPrefix, processor->type_,
-                              memory_usage);
 }
 
 ModelTypeDebugInfo::ModelTypeDebugInfo() {}
