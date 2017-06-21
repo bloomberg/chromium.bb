@@ -92505,6 +92505,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseDuration"/>
   <affected-histogram
+      name="PageLoad.Clients.MultiTabLoading.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram
+      name="PageLoad.Clients.MultiTabLoading.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
       name="PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart"/>
@@ -92886,6 +92890,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="PageLoad.Experimental.Bytes.Cache"/>
   <affected-histogram name="PageLoad.Experimental.Bytes.Network"/>
   <affected-histogram name="PageLoad.Experimental.Bytes.Total"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsMultiTabLoading" separator="."
+    ordering="prefix">
+  <suffix name="Clients.MultiTabLoading"
+      label="PageLoadMetrics for page loads that started while there are
+             other loading tabs."/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.ForegroundToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.ForegroundToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsNoServiceWorkerSpecialApps"
