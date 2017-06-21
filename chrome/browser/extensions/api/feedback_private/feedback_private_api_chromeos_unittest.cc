@@ -51,11 +51,13 @@ class TestSingleLogSource : public SingleLogSource {
   ~TestSingleLogSource() override = default;
 
   // Fetch() will return a single different string each time, in the following
-  // sequence: "a", "bb", "ccc", until a string of 26 z's. Will never return an
-  // empty result.
+  // sequence: "a", " bb", "  ccc", until 25 spaces followed by 26 z's. Will
+  // never return an empty result.
   void Fetch(const system_logs::SysLogsSourceCallback& callback) override {
     int count_modulus = call_count_ % kNumCharsToIterate;
-    std::string result(count_modulus + 1, kInitialChar + count_modulus);
+    std::string result =
+        std::string(count_modulus, ' ') +
+        std::string(count_modulus + 1, kInitialChar + count_modulus);
     ASSERT_GT(result.size(), 0U);
     ++call_count_;
 
@@ -244,19 +246,19 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceIncremental) {
   EXPECT_TRUE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
   EXPECT_EQ(*params.reader_id, result_reader_id);
-  EXPECT_EQ("bb", result_string);
+  EXPECT_EQ(" bb", result_string);
 
   EXPECT_TRUE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
   EXPECT_EQ(*params.reader_id, result_reader_id);
-  EXPECT_EQ("ccc", result_string);
+  EXPECT_EQ("  ccc", result_string);
 
   // End the incremental read.
   params.incremental = false;
   EXPECT_TRUE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
   EXPECT_EQ(0, result_reader_id);
-  EXPECT_EQ("dddd", result_string);
+  EXPECT_EQ("   dddd", result_string);
 
   // The log source will no longer be valid if we try to read it.
   params.incremental = true;
