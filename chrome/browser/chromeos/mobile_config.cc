@@ -15,12 +15,11 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -59,6 +58,24 @@ const char kGlobalCarrierConfigPath[] =
 // Location of the local carrier config.
 const char kLocalCarrierConfigPath[] =
     "/opt/oem/etc/carrier_config.json";
+
+// Executes on background thread and reads config files to string.
+chromeos::MobileConfig::Config ReadConfigInBackground(
+    const base::FilePath& global_config_file,
+    const base::FilePath& local_config_file) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  chromeos::MobileConfig::Config config;
+  if (!base::ReadFileToString(global_config_file, &config.global_config)) {
+    VLOG(1) << "Failed to load global mobile config from: "
+            << global_config_file.value();
+  }
+  if (!base::ReadFileToString(local_config_file, &config.local_config)) {
+    VLOG(1) << "Failed to load local mobile config from: "
+            << local_config_file.value();
+  }
+  return config;
+}
 
 }  // anonymous namespace
 
@@ -316,28 +333,29 @@ MobileConfig::~MobileConfig() {
 }
 
 void MobileConfig::LoadConfig() {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MobileConfig::ReadConfigInBackground,
-                 base::Unretained(this),  // this class is a singleton.
-                 base::FilePath(kGlobalCarrierConfigPath),
-                 base::FilePath(kLocalCarrierConfigPath)));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      base::BindOnce(&ReadConfigInBackground,
+                     base::FilePath(kGlobalCarrierConfigPath),
+                     base::FilePath(kLocalCarrierConfigPath)),
+      base::BindOnce(&MobileConfig::ProcessConfig,
+                     base::Unretained(this)));  // singleton.
 }
 
-void MobileConfig::ProcessConfig(const std::string& global_config,
-                                 const std::string& local_config) {
+void MobileConfig::ProcessConfig(const Config& config) {
   // Global config is mandatory, local config is optional.
   bool global_initialized = false;
   bool local_initialized = true;
   std::unique_ptr<base::DictionaryValue> global_config_root;
 
-  if (!global_config.empty()) {
-    global_initialized = LoadManifestFromString(global_config);
+  if (!config.global_config.empty()) {
+    global_initialized = LoadManifestFromString(config.global_config);
     // Backup global config root as it might be
     // owerwritten while loading local config.
     global_config_root = std::move(root_);
   }
-  if (!local_config.empty())
-    local_initialized = LoadManifestFromString(local_config);
+  if (!config.local_config.empty())
+    local_initialized = LoadManifestFromString(config.local_config);
 
   // Treat any parser errors as fatal.
   if (!global_initialized || !local_initialized) {
@@ -347,27 +365,6 @@ void MobileConfig::ProcessConfig(const std::string& global_config,
     local_config_root_ = std::move(root_);
     root_ = std::move(global_config_root);
   }
-}
-
-void MobileConfig::ReadConfigInBackground(
-    const base::FilePath& global_config_file,
-    const base::FilePath& local_config_file) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  std::string global_config;
-  std::string local_config;
-  if (!base::ReadFileToString(global_config_file, &global_config)) {
-    VLOG(1) << "Failed to load global mobile config from: "
-            << global_config_file.value();
-  }
-  if (!base::ReadFileToString(local_config_file, &local_config)) {
-    VLOG(1) << "Failed to load local mobile config from: "
-            << local_config_file.value();
-  }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&MobileConfig::ProcessConfig,
-                                     base::Unretained(this),  // singleton.
-                                     global_config,
-                                     local_config));
 }
 
 }  // namespace chromeos
