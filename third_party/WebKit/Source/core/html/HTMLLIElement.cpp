@@ -90,7 +90,7 @@ void HTMLLIElement::ParseAttribute(const AttributeModificationParams& params) {
   }
 }
 
-void HTMLLIElement::AttachLayoutTree(const AttachContext& context) {
+void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 
   if (GetLayoutObject() && GetLayoutObject()->IsListItem()) {

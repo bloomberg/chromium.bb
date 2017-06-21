@@ -40,7 +40,7 @@ namespace blink {
 
 class CSSSelector;
 
-class SelectorFilter {
+class CORE_EXPORT SelectorFilter {
   WTF_MAKE_NONCOPYABLE(SelectorFilter);
   DISALLOW_NEW();
 

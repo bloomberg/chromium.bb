@@ -351,7 +351,7 @@ LayoutText* Text::CreateTextLayoutObject(const ComputedStyle& style) {
   return new LayoutText(this, DataImpl());
 }
 
-void Text::AttachLayoutTree(const AttachContext& context) {
+void Text::AttachLayoutTree(AttachContext& context) {
   ContainerNode* style_parent = LayoutTreeBuilderTraversal::Parent(*this);
   LayoutObject* parent_layout_object =
       LayoutTreeBuilderTraversal::ParentLayoutObject(*this);

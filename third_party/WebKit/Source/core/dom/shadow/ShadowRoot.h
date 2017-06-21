@@ -92,7 +92,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
            GetType() == ShadowRootType::kClosed;
   }
 
-  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;

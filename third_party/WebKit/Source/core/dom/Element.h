@@ -432,7 +432,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   virtual void CopyNonAttributePropertiesFromElement(const Element&) {}
 
-  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);

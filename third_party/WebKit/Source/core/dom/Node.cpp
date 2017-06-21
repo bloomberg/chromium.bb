@@ -1007,27 +1007,31 @@ Node* Node::CommonAncestor(const Node& other,
   return nullptr;
 }
 
-void Node::ReattachLayoutTree(const AttachContext& context) {
-  AttachContext reattach_context(context);
-  reattach_context.performing_reattach = true;
+void Node::ReattachLayoutTree(AttachContext& context) {
+  context.performing_reattach = true;
 
   // We only need to detach if the node has already been through
   // attachLayoutTree().
   if (GetStyleChangeType() < kNeedsReattachStyleChange)
-    DetachLayoutTree(reattach_context);
-  AttachLayoutTree(reattach_context);
+    DetachLayoutTree(context);
+  AttachLayoutTree(context);
 }
 
-void Node::AttachLayoutTree(const AttachContext&) {
+void Node::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc() || IsDocumentNode());
   DCHECK(!GetDocument().Lifecycle().InDetach());
   DCHECK(NeedsAttach());
-  DCHECK(!GetLayoutObject() ||
-         (GetLayoutObject()->Style() &&
-          (GetLayoutObject()->Parent() || GetLayoutObject()->IsLayoutView())));
+
+  LayoutObject* layout_object = GetLayoutObject();
+  DCHECK(!layout_object ||
+         (layout_object->Style() &&
+          (layout_object->Parent() || layout_object->IsLayoutView())));
 
   ClearNeedsStyleRecalc();
   ClearNeedsReattachLayoutTree();
+
+  if (layout_object && !layout_object->IsFloatingOrOutOfFlowPositioned())
+    context.previous_in_flow = layout_object;
 
   if (AXObjectCache* cache = GetDocument().AxObjectCache())
     cache->UpdateCacheAfterNodeIsAttached(this);

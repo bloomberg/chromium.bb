@@ -132,7 +132,7 @@ LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutVideo(this);
 }
 
-void HTMLVideoElement::AttachLayoutTree(const AttachContext& context) {
+void HTMLVideoElement::AttachLayoutTree(AttachContext& context) {
   HTMLMediaElement::AttachLayoutTree(context);
 
   UpdateDisplayState();

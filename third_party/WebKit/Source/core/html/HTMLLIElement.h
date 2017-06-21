@@ -42,7 +42,7 @@ class HTMLLIElement final : public HTMLElement {
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(AttachContext&) override;
 
   void ParseValue(const AtomicString&);
 };

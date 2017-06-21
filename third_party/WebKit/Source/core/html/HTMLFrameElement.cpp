@@ -52,7 +52,7 @@ bool HTMLFrameElement::NoResize() const {
   return hasAttribute(noresizeAttr);
 }
 
-void HTMLFrameElement::AttachLayoutTree(const AttachContext& context) {
+void HTMLFrameElement::AttachLayoutTree(AttachContext& context) {
   HTMLFrameElementBase::AttachLayoutTree(context);
 
   if (HTMLFrameSetElement* frame_set_element =

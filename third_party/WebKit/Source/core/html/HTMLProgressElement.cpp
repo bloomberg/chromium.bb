@@ -81,7 +81,7 @@ void HTMLProgressElement::ParseAttribute(
   }
 }
 
-void HTMLProgressElement::AttachLayoutTree(const AttachContext& context) {
+void HTMLProgressElement::AttachLayoutTree(AttachContext& context) {
   LabelableElement::AttachLayoutTree(context);
   if (LayoutProgressItem layout_item = LayoutProgressItem(GetLayoutProgress()))
     layout_item.UpdateFromElement();

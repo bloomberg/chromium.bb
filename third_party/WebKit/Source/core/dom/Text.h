@@ -61,7 +61,7 @@ class CORE_EXPORT Text : public CharacterData {
   void UpdateTextLayoutObject(unsigned offset_of_replaced_data,
                               unsigned length_of_replaced_data);
 
-  void AttachLayoutTree(const AttachContext& = AttachContext()) final;
+  void AttachLayoutTree(AttachContext&) final;
   void ReattachLayoutTreeIfNeeded();
 
   bool CanContainRangeEndPoint() const final { return true; }

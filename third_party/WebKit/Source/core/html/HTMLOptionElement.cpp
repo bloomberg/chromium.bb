@@ -87,7 +87,7 @@ HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
   return element;
 }
 
-void HTMLOptionElement::AttachLayoutTree(const AttachContext& context) {
+void HTMLOptionElement::AttachLayoutTree(AttachContext& context) {
   AttachContext option_context(context);
   RefPtr<ComputedStyle> resolved_style;
   if (!context.resolved_style && ParentComputedStyle()) {

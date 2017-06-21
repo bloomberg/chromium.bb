@@ -839,7 +839,7 @@ LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style) {
   return input_type_view_->CreateLayoutObject(style);
 }
 
-void HTMLInputElement::AttachLayoutTree(const AttachContext& context) {
+void HTMLInputElement::AttachLayoutTree(AttachContext& context) {
   TextControlElement::AttachLayoutTree(context);
   if (GetLayoutObject()) {
     input_type_->OnAttachWithLayoutObject();
