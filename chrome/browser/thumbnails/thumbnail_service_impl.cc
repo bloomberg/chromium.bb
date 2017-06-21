@@ -21,9 +21,12 @@ using content::BrowserThread;
 
 namespace {
 
-// The thumbnail size in DIP.
-const int kThumbnailWidth = 212;
-const int kThumbnailHeight = 142;
+// The desired thumbnail size in DIP. Note that ThumbnailAlgorithm
+// implementations aren't actually required to respect this size - in
+// particular, SimpleThumbnailCrop takes thumbnails of twice that size on 1x
+// devices.
+const int kThumbnailWidth = 154;
+const int kThumbnailHeight = 96;
 
 // True if thumbnail retargeting feature is enabled (Finch/flags).
 bool IsThumbnailRetargetingEnabled() {
