@@ -81,9 +81,17 @@ Revert Example
 ^^^^^^^^^^^^^^
 demo:2[]
 
+If your cherrypick onto a release branch gets reverted, do not create a new
+cherrypick from master onto that release branch. Instead, use the "Reland"
+button on the original cherrypick CL.
+
 Manual Merge Example
 ^^^^^^^^^^^^^^^^^^^^
 demo:3[]
+
+If `git cl upload` errors out, the branch you're uploading to probably has a CL
+with the same Change-Id. Instead of cherry-picking manually, use the Reland
+button in the Gerrit UI to create a new CL, and patch that CL into your client.
 
 SEE ALSO
 --------
