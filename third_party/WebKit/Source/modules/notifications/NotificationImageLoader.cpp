@@ -111,12 +111,13 @@ void NotificationImageLoader::Start(
 
   // TODO(mvanouwerkerk): Add an entry for notifications to
   // FetchInitiatorTypeNames and use it.
-  ResourceLoaderOptions resource_loader_options(
-      kAllowStoredCredentials, kClientDidNotRequestCredentials);
+  ResourceLoaderOptions resource_loader_options;
   if (execution_context->IsWorkerGlobalScope())
     resource_loader_options.request_initiator_context = kWorkerContext;
 
   ResourceRequest resource_request(url);
+  resource_request.SetFetchCredentialsMode(
+      WebURLRequest::kFetchCredentialsModeInclude);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetPriority(kResourceLoadPriorityMedium);
   resource_request.SetRequestorOrigin(execution_context->GetSecurityOrigin());

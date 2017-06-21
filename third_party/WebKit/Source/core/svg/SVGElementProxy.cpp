@@ -136,8 +136,7 @@ void SVGElementProxy::RemoveClient(SVGResourceClient* client) {
 void SVGElementProxy::Resolve(Document& document) {
   if (is_local_ || id_.IsEmpty() || url_.IsEmpty())
     return;
-  ResourceLoaderOptions options(kAllowStoredCredentials,
-                                kClientRequestedCredentials);
+  ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::css;
   FetchParameters params(ResourceRequest(url_), options);
   document_ = DocumentResource::FetchSVGDocument(params, document.Fetcher());

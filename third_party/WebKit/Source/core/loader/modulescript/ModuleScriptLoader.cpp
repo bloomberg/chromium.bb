@@ -91,8 +91,7 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // -> FetchResourceType is specified by ScriptResource::fetch
 
   // parser metadata is parser state,
-  ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
-                                kClientDidNotRequestCredentials);
+  ResourceLoaderOptions options;
   options.parser_disposition = module_request.ParserState();
   // As initiator for module script fetch is not specified in HTML spec,
   // we specity "" as initiator per:
@@ -116,15 +115,8 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // https://fetch.spec.whatwg.org/#concept-request-origin
   // ... mode is "cors", ...
   // ... credentials mode is credentials mode, ...
-  // TODO(tyoshino): FetchCredentialsMode should be used to communicate CORS
-  // mode.
-  CrossOriginAttributeValue cross_origin =
-      module_request.CredentialsMode() ==
-              WebURLRequest::kFetchCredentialsModeInclude
-          ? kCrossOriginAttributeUseCredentials
-          : kCrossOriginAttributeAnonymous;
   fetch_params.SetCrossOriginAccessControl(modulator_->GetSecurityOrigin(),
-                                           cross_origin);
+                                           module_request.CredentialsMode());
 
   // Module scripts are always async.
   fetch_params.SetDefer(FetchParameters::kLazyLoad);

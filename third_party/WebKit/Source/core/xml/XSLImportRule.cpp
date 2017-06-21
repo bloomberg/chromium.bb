@@ -88,8 +88,7 @@ void XSLImportRule::LoadSheet() {
       return;
   }
 
-  ResourceLoaderOptions fetch_options(kAllowStoredCredentials,
-                                      kClientRequestedCredentials);
+  ResourceLoaderOptions fetch_options;
   fetch_options.initiator_info.name = FetchInitiatorTypeNames::xml;
   FetchParameters params(ResourceRequest(owner_document->CompleteURL(abs_href)),
                          fetch_options);

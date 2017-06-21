@@ -52,8 +52,7 @@ Resource* PreloadRequest::Start(Document* document) {
   if (resource_type_ == Resource::kScript)
     MaybeDisallowFetchForDocWrittenScript(resource_request, defer_, *document);
 
-  ResourceLoaderOptions options(kAllowStoredCredentials,
-                                kClientRequestedCredentials);
+  ResourceLoaderOptions options;
   options.initiator_info = initiator_info;
   FetchParameters params(resource_request, options);
 

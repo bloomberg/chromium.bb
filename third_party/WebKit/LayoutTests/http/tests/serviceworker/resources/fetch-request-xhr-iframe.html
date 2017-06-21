@@ -190,7 +190,7 @@ function mode_credentials_test() {
   return xhr_send(host_info['HTTP_ORIGIN'], 'GET', '', false)
     .then(function(response){
         assert_equals(response.mode, 'cors');
-        assert_equals(response.credentials, 'include');
+        assert_equals(response.credentials, 'same-origin');
         return xhr_send(host_info['HTTP_ORIGIN'], 'GET', '', true);
       })
     .then(function(response){

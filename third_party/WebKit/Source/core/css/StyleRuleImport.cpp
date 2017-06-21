@@ -131,8 +131,7 @@ void StyleRuleImport::RequestStyleSheet() {
     root_sheet = sheet;
   }
 
-  ResourceLoaderOptions options(kAllowStoredCredentials,
-                                kClientRequestedCredentials);
+  ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::css;
   FetchParameters params(ResourceRequest(abs_url), options);
   params.SetCharset(parent_style_sheet_->Charset());

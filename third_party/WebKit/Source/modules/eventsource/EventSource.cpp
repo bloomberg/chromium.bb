@@ -133,6 +133,9 @@ void EventSource::Connect() {
   request.SetHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
   request.SetRequestContext(WebURLRequest::kRequestContextEventSource);
+  request.SetFetchCredentialsMode(
+      with_credentials_ ? WebURLRequest::kFetchCredentialsModeInclude
+                        : WebURLRequest::kFetchCredentialsModeSameOrigin);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
   if (parser_ && !parser_->LastEventId().IsEmpty()) {
@@ -157,15 +160,7 @@ void EventSource::Connect() {
           ? kDoNotEnforceContentSecurityPolicy
           : kEnforceContentSecurityPolicy;
 
-  StoredCredentials allow_credentials =
-      (origin->CanRequestNoSuborigin(current_url_) || with_credentials_)
-          ? kAllowStoredCredentials
-          : kDoNotAllowStoredCredentials;
-  CredentialRequest credentials_requested =
-      with_credentials_ ? kClientRequestedCredentials
-                        : kClientDidNotRequestCredentials;
-  ResourceLoaderOptions resource_loader_options(allow_credentials,
-                                                credentials_requested);
+  ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   resource_loader_options.security_origin = origin;
 

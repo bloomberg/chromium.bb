@@ -66,7 +66,8 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
   } else {
     WebAssociatedURLLoaderOptions options;
     if (cors_mode_ == blink::WebMediaPlayer::kCORSModeUnspecified) {
-      options.allow_credentials = true;
+      request.SetFetchCredentialsMode(
+          WebURLRequest::kFetchCredentialsModeInclude);
       options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
       allow_stored_credentials_ = true;
     } else {
@@ -76,8 +77,12 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
           WebAssociatedURLLoaderOptions::kPreventPreflight;
       options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
       if (cors_mode_ == blink::WebMediaPlayer::kCORSModeUseCredentials) {
-        options.allow_credentials = true;
+        request.SetFetchCredentialsMode(
+            WebURLRequest::kFetchCredentialsModeInclude);
         allow_stored_credentials_ = true;
+      } else {
+        request.SetFetchCredentialsMode(
+            WebURLRequest::kFetchCredentialsModeSameOrigin);
       }
     }
     loader.reset(frame->CreateAssociatedURLLoader(options));

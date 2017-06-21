@@ -970,15 +970,7 @@ void XMLHttpRequest::CreateRequest(PassRefPtr<EncodedFormData> http_body,
 
   same_origin_request_ = GetSecurityOrigin()->CanRequestNoSuborigin(url_);
 
-  // Per https://w3c.github.io/webappsec-suborigins/#security-model-opt-outs,
-  // credentials are forced when credentials mode is "same-origin", the
-  // 'unsafe-credentials' option is set, and the request's physical origin is
-  // the same as the URL's.
-  bool include_credentials =
-      GetSecurityOrigin()->HasSuboriginAndShouldAllowCredentialsFor(url_) ||
-      with_credentials_;
-
-  if (!same_origin_request_ && include_credentials) {
+  if (!same_origin_request_ && with_credentials_) {
     UseCounter::Count(&execution_context,
                       WebFeature::kXMLHttpRequestCrossOriginWithCredentials);
   }
@@ -1025,15 +1017,7 @@ void XMLHttpRequest::CreateRequest(PassRefPtr<EncodedFormData> http_body,
           : kEnforceContentSecurityPolicy;
   options.timeout_milliseconds = timeout_milliseconds_;
 
-  StoredCredentials allow_credentials =
-      (same_origin_request_ || include_credentials)
-          ? kAllowStoredCredentials
-          : kDoNotAllowStoredCredentials;
-  CredentialRequest credentials_requested =
-      with_credentials_ ? kClientRequestedCredentials
-                        : kClientDidNotRequestCredentials;
-  ResourceLoaderOptions resource_loader_options(allow_credentials,
-                                                credentials_requested);
+  ResourceLoaderOptions resource_loader_options;
   resource_loader_options.security_origin = GetSecurityOrigin();
   resource_loader_options.initiator_info.name =
       FetchInitiatorTypeNames::xmlhttprequest;

@@ -326,8 +326,7 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
         referrer_policy, url, GetDocument().OutgoingReferrer()));
   }
 
-  ResourceLoaderOptions options(kAllowStoredCredentials,
-                                kClientRequestedCredentials);
+  ResourceLoaderOptions options;
   options.initiator_info.name = owner_->localName();
   FetchParameters params(resource_request, options);
   params.SetCharset(charset);

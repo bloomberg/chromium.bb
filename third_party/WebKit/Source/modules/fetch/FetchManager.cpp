@@ -768,32 +768,7 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
   // mode is |include|, or |HTTPRequest|'s credentials mode is |same-origin|
   // and the |CORS flag| is unset, and unset otherwise."
 
-  // TODO(tyoshino): It's wrong to use |cors_flag| here, now. The credentials
-  // mode must work even with the no-cors. See the following issues:
-  // - https://github.com/whatwg/fetch/issues/130
-  // - https://github.com/whatwg/fetch/issues/169
-  //
-  // https://w3c.github.io/webappsec-suborigins/#security-model-opt-outs:
-  // "request's credentials mode is "same-origin" and request's environment
-  // settings object has the suborigin unsafe credentials flag set and the
-  // request’s current url is same-physical-origin with request origin."
-  StoredCredentials allow_credentials = kDoNotAllowStoredCredentials;
-  if ((request_->Credentials() ==
-           WebURLRequest::kFetchCredentialsModeSameOrigin &&
-       (!cors_flag ||
-        request_->Origin()->HasSuboriginAndShouldAllowCredentialsFor(
-            request_->Url()))) ||
-      request_->Credentials() == WebURLRequest::kFetchCredentialsModeInclude ||
-      request_->Credentials() == WebURLRequest::kFetchCredentialsModePassword) {
-    allow_credentials = kAllowStoredCredentials;
-  }
-  CredentialRequest credentials_requested = kClientDidNotRequestCredentials;
-  if (request_->Credentials() == WebURLRequest::kFetchCredentialsModeInclude ||
-      request_->Credentials() == WebURLRequest::kFetchCredentialsModePassword) {
-    credentials_requested = kClientRequestedCredentials;
-  }
-  ResourceLoaderOptions resource_loader_options(allow_credentials,
-                                                credentials_requested);
+  ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   resource_loader_options.security_origin = request_->Origin().Get();
 
@@ -845,12 +820,12 @@ void FetchManager::Loader::PerformDataFetch() {
   request.SetRequestContext(request_->Context());
   request.SetUseStreamOnResponse(true);
   request.SetHTTPMethod(request_->Method());
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
   request.SetFetchRedirectMode(WebURLRequest::kFetchRedirectModeError);
   // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace',
   // as 'data:' can never be external.
 
-  ResourceLoaderOptions resource_loader_options(
-      kDoNotAllowStoredCredentials, kClientDidNotRequestCredentials);
+  ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   resource_loader_options.security_origin = request_->Origin().Get();
 

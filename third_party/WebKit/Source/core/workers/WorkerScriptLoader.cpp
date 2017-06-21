@@ -66,22 +66,22 @@ WorkerScriptLoader::~WorkerScriptLoader() {
 void WorkerScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
-    WebURLRequest::FetchRequestMode fetch_request_mode,
     WebAddressSpace creation_address_space) {
   url_ = url;
   execution_context_ = &execution_context;
 
   ResourceRequest request(CreateResourceRequest(creation_address_space));
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeInclude);
+
   SECURITY_DCHECK(execution_context.IsWorkerGlobalScope());
 
   ThreadableLoaderOptions options;
-  options.fetch_request_mode = fetch_request_mode;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
   // FIXME: Should we add EnforceScriptSrcDirective here?
   options.content_security_policy_enforcement =
       kDoNotEnforceContentSecurityPolicy;
 
-  ResourceLoaderOptions resource_loader_options(
-      kAllowStoredCredentials, kClientDidNotRequestCredentials);
+  ResourceLoaderOptions resource_loader_options;
 
   WorkerThreadableLoader::LoadResourceSynchronously(
       ToWorkerGlobalScope(execution_context), request, *this, options,
@@ -92,6 +92,7 @@ void WorkerScriptLoader::LoadAsynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
     WebURLRequest::FetchRequestMode fetch_request_mode,
+    WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
     WebAddressSpace creation_address_space,
     std::unique_ptr<WTF::Closure> response_callback,
     std::unique_ptr<WTF::Closure> finished_callback) {
@@ -102,11 +103,12 @@ void WorkerScriptLoader::LoadAsynchronously(
   execution_context_ = &execution_context;
 
   ResourceRequest request(CreateResourceRequest(creation_address_space));
+  request.SetFetchCredentialsMode(fetch_credentials_mode);
+
   ThreadableLoaderOptions options;
   options.fetch_request_mode = fetch_request_mode;
 
-  ResourceLoaderOptions resource_loader_options(
-      kAllowStoredCredentials, kClientDidNotRequestCredentials);
+  ResourceLoaderOptions resource_loader_options;
 
   // During create, callbacks may happen which could remove the last reference
   // to this object, while some of the callchain assumes that the client and

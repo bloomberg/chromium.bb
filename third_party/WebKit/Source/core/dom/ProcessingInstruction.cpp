@@ -150,8 +150,7 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
   String url = GetDocument().CompleteURL(href).GetString();
 
   StyleSheetResource* resource = nullptr;
-  ResourceLoaderOptions options(kAllowStoredCredentials,
-                                kClientRequestedCredentials);
+  ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::processinginstruction;
   FetchParameters params(ResourceRequest(GetDocument().CompleteURL(href)),
                          options);

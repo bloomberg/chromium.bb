@@ -9555,6 +9555,7 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
   KURL resource_url(kParsedURLString, "chrome://test.pdf");
   ResourceRequest request(resource_url);
   request.SetRequestContext(WebURLRequest::kRequestContextObject);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
   RegisterMockedChromeURLLoad("test.pdf");
 
   LocalFrame* frame(
@@ -9565,8 +9566,7 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
 
   // First try to load the request with regular access. Should fail.
   options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
-  ResourceLoaderOptions resource_loader_options(
-      kDoNotAllowStoredCredentials, kClientDidNotRequestCredentials);
+  ResourceLoaderOptions resource_loader_options;
   DocumentThreadableLoader::LoadResourceSynchronously(
       *frame->GetDocument(), request, client, options, resource_loader_options);
   EXPECT_TRUE(client.Failed());

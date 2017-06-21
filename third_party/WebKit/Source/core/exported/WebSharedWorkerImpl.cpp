@@ -193,13 +193,17 @@ void WebSharedWorkerImpl::DidFinishDocumentLoad() {
   loading_document_ = main_frame_->GetFrame()->GetDocument();
 
   WebURLRequest::FetchRequestMode fetch_request_mode =
-      (static_cast<KURL>(url_)).ProtocolIsData()
-          ? WebURLRequest::kFetchRequestModeNoCORS
-          : WebURLRequest::kFetchRequestModeSameOrigin;
+      WebURLRequest::kFetchRequestModeSameOrigin;
+  WebURLRequest::FetchCredentialsMode fetch_credentials_mode =
+      WebURLRequest::kFetchCredentialsModeSameOrigin;
+  if ((static_cast<KURL>(url_)).ProtocolIsData()) {
+    fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
+    fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
+  }
 
   main_script_loader_->LoadAsynchronously(
       *loading_document_.Get(), url_, fetch_request_mode,
-      creation_address_space_,
+      fetch_credentials_mode, creation_address_space_,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
            WTF::Unretained(this)),
       Bind(&WebSharedWorkerImpl::OnScriptLoaderFinished,

@@ -387,7 +387,7 @@ class ChromeServiceWorkerManifestFetchTest
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest, SameOrigin) {
   // <link rel="manifest" href="manifest.json">
-  EXPECT_EQ(RequestString(GetURL("/manifest.json"), "cors", "same-origin"),
+  EXPECT_EQ(RequestString(GetURL("/manifest.json"), "cors", "omit"),
             ExecuteManifestFetchTest("manifest.json", ""));
 }
 
@@ -401,8 +401,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest,
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest, OtherOrigin) {
   // <link rel="manifest" href="https://www.example.com/manifest.json">
   EXPECT_EQ(
-      RequestString("https://www.example.com/manifest.json", "cors",
-                    "same-origin"),
+      RequestString("https://www.example.com/manifest.json", "cors", "omit"),
       ExecuteManifestFetchTest("https://www.example.com/manifest.json", ""));
 }
 
@@ -434,9 +433,9 @@ class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
   std::string GetRequestStringForPNACL(const std::string& fragment) const {
     return RequestString(test_page_url_ + fragment, "navigate", "include") +
            RequestString(GetURL("/pnacl_url_loader.nmf"), "same-origin",
-                         "include") +
+                         "same-origin") +
            RequestString(GetURL("/pnacl_url_loader_newlib_pnacl.pexe"),
-                         "same-origin", "include");
+                         "same-origin", "same-origin");
   }
 
   std::string ExecutePNACLUrlLoaderTest(const std::string& mode) {
@@ -471,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, SameOriginCORS) {
   //   request.SetURL("/echo");
   //   request.SetAllowCrossOriginRequests(true);
   EXPECT_EQ(GetRequestStringForPNACL("#SameCORS") +
-                RequestString(GetURL("/echo"), "cors", "same-origin"),
+                RequestString(GetURL("/echo"), "cors", "omit"),
             ExecutePNACLUrlLoaderTest("SameCORS"));
 }
 
@@ -512,10 +511,9 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, OtherOriginCORS) {
   //   request.SetMethod("GET");
   //   request.SetURL("https://www.example.com/echo");
   //   request.SetAllowCrossOriginRequests(true);
-  EXPECT_EQ(
-      GetRequestStringForPNACL("#OtherCORS") +
-          RequestString("https://www.example.com/echo", "cors", "same-origin"),
-      ExecutePNACLUrlLoaderTest("OtherCORS"));
+  EXPECT_EQ(GetRequestStringForPNACL("#OtherCORS") +
+                RequestString("https://www.example.com/echo", "cors", "omit"),
+            ExecutePNACLUrlLoaderTest("OtherCORS"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,

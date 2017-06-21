@@ -327,10 +327,12 @@ blink::WebAssociatedURLLoader* CreateAssociatedURLLoader(
   // Options settings here follow the original behavior in the trusted
   // plugin and PepperURLLoaderHost.
   if (document.GetSecurityOrigin().CanRequest(gurl)) {
-    options.allow_credentials = true;
+    options.fetch_credentials_mode =
+        blink::WebURLRequest::kFetchCredentialsModeSameOrigin;
   } else {
     options.fetch_request_mode = blink::WebURLRequest::kFetchRequestModeCORS;
   }
+
   return document.GetFrame()->CreateAssociatedURLLoader(options);
 }
 

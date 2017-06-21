@@ -35,7 +35,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   fetcher_.reset(AssociatedResourceFetcher::Create(image_url));
 
   WebAssociatedURLLoaderOptions options;
-  options.allow_credentials = true;
+  options.fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
   options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
   fetcher_->SetLoaderOptions(options);
 

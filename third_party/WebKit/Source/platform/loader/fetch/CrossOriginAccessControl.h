@@ -94,7 +94,7 @@ class PLATFORM_EXPORT CrossOriginAccessControl {
   // access is allowed. Use |accessControlErrorString()| to construct a
   // user-friendly error message for any of the other (error) conditions.
   static AccessStatus CheckAccess(const ResourceResponse&,
-                                  StoredCredentials,
+                                  WebURLRequest::FetchCredentialsMode,
                                   const SecurityOrigin*);
 
   // Perform the required CORS checks on the response to a preflight request.
@@ -121,7 +121,7 @@ class PLATFORM_EXPORT CrossOriginAccessControl {
   static bool HandleRedirect(RefPtr<SecurityOrigin>,
                              ResourceRequest&,
                              const ResourceResponse&,
-                             StoredCredentials,
+                             WebURLRequest::FetchCredentialsMode,
                              ResourceLoaderOptions&,
                              String&);
 
