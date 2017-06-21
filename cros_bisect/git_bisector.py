@@ -30,7 +30,8 @@ class GitBisector(common.OptionsChecker):
   Finally, it outputs git bisect result.
   """
 
-  REQUIRED_ARGS = ('good', 'bad', 'remote', 'eval_repeat')
+  REQUIRED_ARGS = ('good', 'bad', 'remote', 'eval_repeat', 'auto_threshold',
+                   'board')
 
   def __init__(self, options, builder, evaluator):
     """Constructor.
@@ -42,6 +43,8 @@ class GitBisector(common.OptionsChecker):
         * bad: Last known bad commit.
         * remote: DUT (refer lib.commandline.Device).
         * eval_repeat: Run test for N times. None means 1.
+        * auto_threshold: True to set threshold automatically without prompt.
+        * board: board name of the DUT.
       builder: Builder to build/deploy image. Should contain repo_dir.
       evaluator: Evaluator to get score
     """
@@ -53,10 +56,15 @@ class GitBisector(common.OptionsChecker):
     self.builder = builder
     self.evaluator = evaluator
     self.repo_dir = self.builder.repo_dir
+    self.auto_threshold = options.auto_threshold
+    self.board = options.board
 
-    # Initialized in SanityCheck().
-    self.good_score = None
-    self.bad_score = None
+    # Initialized in ObtainBisectBoundaryScore().
+    self.good_commit_info = None
+    self.bad_commit_info = None
+
+    # Record bisect log (list of CommitInfo).
+    self.bisect_log = []
 
     # If the distance between current commit's score and given good commit is
     # shorter than threshold, treat the commit as good one. Its default value
@@ -65,6 +73,10 @@ class GitBisector(common.OptionsChecker):
     # sides' score.
     self.threshold = evaluator.THRESHOLD
 
+    # Set auto_threshold to True if the threshold is preset.
+    if self.threshold is not None:
+      self.auto_threshold = True
+
     # Init with empty CommitInfo. Will update in UpdateCurrentCommit().
     self.current_commit = common.CommitInfo()
 
@@ -72,6 +84,22 @@ class GitBisector(common.OptionsChecker):
     """Sets up environment to bisect."""
     logging.info('Set up builder environment.')
     self.builder.SetUp()
+
+  @staticmethod
+  def CheckCommitFormat(commit):
+    """Checks if commit is the acceptable format.
+
+    For git_bisector, commit should be SHA1. Child class may override it.
+
+    Args:
+      commit: commit string.
+
+    Returns:
+      Normalized commit. None if the format is unacceptable.
+    """
+    if git.IsSHA1(commit, full=False):
+      return commit
+    return None
 
   def Git(self, command):
     """Wrapper of git.RunGit.
@@ -121,13 +149,12 @@ class GitBisector(common.OptionsChecker):
     return None
 
   def SanityCheck(self):
-    """Evaluates last known good and bad commit again.
+    """Checks if both last-known-good and bad commits exists.
 
-    To make sure that good commit has better evaluation score on the DUT, it
-    builds, deploys and evaluates both good and bad images on the DUT.
+    Also, last-known-good commit should be earlier than bad one.
 
     Returns:
-      (good_commit_info, bad_commit_info)
+      True if both last-known-good and bad commits exist.
     """
     logging.info('Perform sanity check on good commit %s and bad commit %s',
                  self.good_commit, self.bad_commit)
@@ -145,15 +172,15 @@ class GitBisector(common.OptionsChecker):
           'No need to update repo.', self.good_commit, self.bad_commit)
 
     good_commit_timestamp = self.GetCommitTimestamp(self.good_commit)
-    if good_commit_timestamp is None:
+    if not good_commit_timestamp:
       logging.error('Sanity check failed: good commit %s does not exist.',
                     self.good_commit)
-      return None, None
+      return False
     bad_commit_timestamp = self.GetCommitTimestamp(self.bad_commit)
-    if bad_commit_timestamp is None:
+    if not bad_commit_timestamp:
       logging.error('Sanity check failed: bad commit %s does not exist.',
                     self.bad_commit)
-      return None, None
+      return False
 
     # TODO(deanliao): Consider the case that we want to find a commit that
     #     fixed a problem.
@@ -163,45 +190,84 @@ class GitBisector(common.OptionsChecker):
           'earlier than bad commit (%s): %s',
           self.good_commit, good_commit_timestamp,
           self.bad_commit, bad_commit_timestamp)
-      return None, None
+      return False
+    return True
 
-    logging.notice('Obtaining score of good commit %s', self.good_commit)
-    self.Git(['checkout', self.good_commit])
-    self.good_score = self.BuildDeployEval()
-    good_commit_info = self.current_commit
-    good_commit_info.label = 'last-known-good  '
+  def ObtainBisectBoundaryScoreImpl(self, good_side):
+    """The worker of obtaining score of either last-known-good or bad commit.
 
-    logging.notice('Obtaining score of bad commit %s', self.bad_commit)
+    It is used to be overridden by derived class without re-implement
+    ObtainBisectBoundaryScore().
 
-    self.Git(['checkout', self.bad_commit])
-    self.bad_score = self.BuildDeployEval()
-    bad_commit_info = self.current_commit
-    bad_commit_info.label = 'last-known-bad   '
+    Args:
+      good_side: True if it evaluates score for last-known-good. False for
+          last-known-bad commit.
 
-    if self.good_score == self.bad_score:
+    Returns:
+      Evaluated score.
+    """
+    commit = self.good_commit if good_side else self.bad_commit
+    commit_label = 'good' if good_side else 'bad'
+    logging.notice('Obtaining score of %s commit: %s', commit_label, commit)
+    self.Git(['checkout', commit])
+    return self.BuildDeployEval()
+
+  def ObtainBisectBoundaryScore(self):
+    """Evaluates last known good and bad commit.
+
+    In order to give user a reference when setting threshold, evaluates
+    designated benchmark on both last-known-good and last-known-bad commits.
+    It builds, deploys and evaluates both good and bad images on the DUT.
+    """
+    good_score = self.ObtainBisectBoundaryScoreImpl(True)
+    self.good_commit_info = self.current_commit
+    self.good_commit_info.label = 'last-known-good  '
+    if good_score is None:
+      logging.error('Unable to obtain last-known-good score.')
+      return False
+
+    bad_score = self.ObtainBisectBoundaryScoreImpl(False)
+    self.bad_commit_info = self.current_commit
+    self.bad_commit_info.label = 'last-known-bad   '
+    if bad_score is None:
+      logging.error('Unable to obtain last-known-bad score.')
+      return False
+
+    if good_score == bad_score:
       logging.error(
           'Last-known-good %s should be different from last-known-bad %s',
-          self.good_score, self.bad_score)
-      return None, None
-    return (good_commit_info, bad_commit_info)
+          good_score, bad_score)
+      return False
+
+    return True
 
   def GetThresholdFromUser(self):
     """Gets threshold that decides good/bad commit.
 
     It gives user the measured last known good and bad score's statistics to
     help user determine a reasonable threshold.
+
+    If self.auto_threshold is set, instead of prompting user to pick threshold,
+    it uses half of distance between good and bad commit score as threshold.
     """
     # If threshold is assigned, skip it.
     if self.threshold is not None:
       return True
 
+    good_score = self.good_commit_info.score
+    bad_score = self.bad_commit_info.score
     logging.notice('Good commit score mean: %.3f  STD: %.3f\n'
                    'Bad commit score mean: %.3f  STD: %.3f',
-                   self.good_score.mean, self.good_score.std,
-                   self.bad_score.mean, self.bad_score.std)
+                   good_score.mean, good_score.std,
+                   bad_score.mean, bad_score.std)
+    if self.auto_threshold:
+      splitter = (good_score.mean + bad_score.mean) / 2.0
+      self.threshold = abs(good_score.mean - splitter)
+      logging.notice('Automatically pick threshold: %.3f', self.threshold)
+      return True
 
-    ref_score_min = min(self.good_score.mean, self.bad_score.mean)
-    ref_score_max = max(self.good_score.mean, self.bad_score.mean)
+    ref_score_min = min(good_score.mean, bad_score.mean)
+    ref_score_max = max(good_score.mean, bad_score.mean)
     success = False
     retry = 3
     for _ in range(retry):
@@ -214,7 +280,7 @@ class GitBisector(common.OptionsChecker):
         continue
 
       if ref_score_min <= splitter <= ref_score_max:
-        self.threshold = abs(self.good_score.mean - splitter)
+        self.threshold = abs(good_score.mean - splitter)
         success = True
         break
       else:
@@ -225,11 +291,26 @@ class GitBisector(common.OptionsChecker):
 
     return success
 
-  def BuildDeployEval(self, raise_on_error=True):
+  def BuildDeploy(self):
+    """Builds with current commit and deploys to DUT.
+
+    It is the default behavior of BuildDeployEval().
+    """
+    # TODO(deanliao): Handle build/deploy fail case.
+    build_label = self.current_commit.sha1
+    build_to_deploy = self.builder.Build(build_label)
+    self.builder.Deploy(self.remote, build_to_deploy, build_label)
+
+  def BuildDeployEval(self, raise_on_error=True, eval_label=None,
+                      customize_build_deploy=None):
     """Builds the image, deploys to DUT and evaluates performance.
 
     Args:
       raise_on_error: If set, raises Exception if score is unable to get.
+      build_deploy: If set, builds current commit and deploys it to DUT.
+      eval_label: Label for the evaluation. Default: current commit SHA1.
+      customize_build_deploy: Method object if specified, call it instead of
+          default self.BuildDeploy().
 
     Returns:
       Evaluation result.
@@ -238,21 +319,27 @@ class GitBisector(common.OptionsChecker):
       Exception if raise_on_error and score is unable to get.
     """
     self.UpdateCurrentCommit()
-    last_score = self.evaluator.CheckLastEvaluate(self.current_commit.sha1,
-                                                  self.eval_repeat)
-    if len(last_score) > 0:
-      self.current_commit.score = last_score
-      return last_score
+    if not eval_label:
+      eval_label = self.current_commit.sha1
 
-    # TODO(deanliao): handle build/deploy fail case.
-    build_to_deploy = self.builder.Build(self.current_commit.sha1)
-    self.builder.Deploy(self.remote, build_to_deploy, self.current_commit.sha1)
-    score = self.evaluator.Evaluate(self.remote, self.current_commit.sha1,
-                                    self.eval_repeat)
-    self.current_commit.score = score
-    if not score and raise_on_error:
-      raise Exception('Unable to obtain evaluation score')
-    return score
+    score = self.evaluator.CheckLastEvaluate(eval_label, self.eval_repeat)
+    if len(score) > 0:
+      logging.info('Found last evaluated result for %s: %s', eval_label,
+                   score)
+      self.current_commit.score = score
+    else:
+      if customize_build_deploy:
+        customize_build_deploy()
+      else:
+        self.BuildDeploy()
+
+      self.current_commit.score = self.evaluator.Evaluate(
+          self.remote, eval_label, self.eval_repeat)
+      if not self.current_commit.score and raise_on_error:
+        raise Exception('Unable to obtain evaluation score')
+
+    self.bisect_log.append(self.current_commit)
+    return self.current_commit.score
 
   def LabelBuild(self, score):
     """Determines if a build is good.
@@ -269,15 +356,17 @@ class GitBisector(common.OptionsChecker):
       logging.error('No score. Marked as bad.')
       return label
 
-    ref_score_min = min(self.good_score.mean, self.bad_score.mean)
-    ref_score_max = max(self.good_score.mean, self.bad_score.mean)
+    good_score = self.good_commit_info.score
+    bad_score = self.bad_commit_info.score
+    ref_score_min = min(good_score.mean, bad_score.mean)
+    ref_score_max = max(good_score.mean, bad_score.mean)
     if ref_score_min < score.mean < ref_score_max:
       # Within (good_score, bad_score)
-      if abs(self.good_score.mean - score.mean) <= self.threshold:
+      if abs(good_score.mean - score.mean) <= self.threshold:
         label = 'good'
     else:
-      dist_good = abs(self.good_score.mean - score.mean)
-      dist_bad = abs(self.bad_score.mean - score.mean)
+      dist_good = abs(good_score.mean - score.mean)
+      dist_bad = abs(bad_score.mean - score.mean)
       if dist_good < dist_bad:
         label = 'good'
     logging.info('Score %.3f marked as %s', score.mean, label)
@@ -316,27 +405,42 @@ class GitBisector(common.OptionsChecker):
         done = True
     return result, done
 
+  @staticmethod
+  def CommitInfoToStr(info):
+    """Converts CommitInfo to string.
+
+    Args:
+      info: A CommitInfo object.
+
+    Returns:
+      Stringfied CommitInfo.
+    """
+    timestamp = datetime.datetime.fromtimestamp(info.timestamp).isoformat(' ')
+    score = 'Score(mean: %.3f std: %.3f)' % (info.score.mean, info.score.std)
+    return ' '.join([info.label, timestamp, score, info.sha1, info.title])
+
+  def PrepareBisect(self):
+    """Performs sanity checks and obtains bisect boundary score before bisect.
+
+    Returns:
+      False if there's something wrong.
+    """
+    return (self.SanityCheck() and
+            self.ObtainBisectBoundaryScore() and
+            self.GetThresholdFromUser())
+
   def Run(self):
     """Bisects culprit commit.
 
     Returns:
       Culprit commit's SHA1. None if culprit not found.
     """
-    def CommitInfoToStr(info):
-      timestamp = datetime.datetime.fromtimestamp(info.timestamp).isoformat(' ')
-      score = 'Score(mean: %.3f std: %.3f)' % (info.score.mean, info.score.std)
-      return ' '.join([info.label, timestamp, score, info.sha1, info.title])
+    if not self.PrepareBisect():
+      return None
 
-    (good_commit_info, bad_commit_info) = self.SanityCheck()
-    if good_commit_info is None or bad_commit_info is None:
-      # logging.error was already called in SanityCheck.
-      return None
-    if not self.GetThresholdFromUser():
-      return None
     self.GitBisect(['reset'])
     bisect_done = False
     culprit_commit = None
-    bisect_log = [good_commit_info, bad_commit_info]
     nth_bisect = 0
     try:
       with cros_build_lib.TimedSection() as timer:
@@ -349,7 +453,6 @@ class GitBisector(common.OptionsChecker):
           nth_bisect += 1
           self.current_commit.label = '%2d-th-bisect-%-4s' % (nth_bisect,
                                                               bisect_op)
-          bisect_log.append(self.current_commit)
           logging.notice('Mark %s as %s. Score: %s', self.current_commit.sha1,
                          bisect_op, metric_score)
           bisect_result, bisect_done = self.GitBisect([bisect_op])
@@ -361,10 +464,11 @@ class GitBisector(common.OptionsChecker):
       self.GitBisect(['log'])
       self.GitBisect(['reset'])
 
-    bisect_log.sort(key=lambda x: x.timestamp)
+    # Emit bisect report.
+    self.bisect_log.sort(key=lambda x: x.timestamp)
     logging.notice(
         'Bisect log (sort by time):\n' +
-        '\n'.join(map(CommitInfoToStr, bisect_log)))
+        '\n'.join(map(self.CommitInfoToStr, self.bisect_log)))
 
     if culprit_commit:
       logging.notice('\n'.join(['Culprit commit:'] + culprit_commit))

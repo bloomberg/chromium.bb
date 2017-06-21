@@ -10,11 +10,11 @@ import os
 
 from chromite.cros_bisect import autotest_evaluator
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
-from chromite.lib import path_util
 from chromite.lib import remote_access_unittest
 
 
@@ -51,6 +51,9 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
 }"""
   BUILD_LABEL = 'base'
 
+  def setUp(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+
   def GetDefaultEvaluator(self):
     """Gets AutototestEvaluator instance with default options.
 
@@ -60,7 +63,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr(
         base_dir=self.tempdir, board=self.BOARD, test_name=self.TEST_NAME,
         metric=self.METRIC, metric_take_average=False, reuse_eval=True,
-        chromium_dir=None)
+        chromium_dir=None, cros_dir=None)
     return autotest_evaluator.AutotestEvaluator(options)
 
   def PrepareWebglAquariumReports(self, scores):
@@ -106,7 +109,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr(
         base_dir=base_dir, board=self.BOARD, test_name=self.TEST_NAME,
         metric=self.METRIC, metric_take_average=False, reuse_eval=False,
-        chromium_dir='/tmp/chromium')
+        chromium_dir='/tmp/chromium', cros_dir=None)
     evaluator = autotest_evaluator.AutotestEvaluator(options)
     self.assertFalse(evaluator.metric_take_average)
     self.assertFalse(evaluator.reuse_eval)
@@ -159,45 +162,66 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
 
     self.assertFalse(evaluator.RunTestFromDut(self.DUT, self.REPORT_FILE))
 
+  def GetTestResultPath(self, evaluator):
+    """Returns base path storing test result.
+
+    Args:
+      evaluator: Evaluator object.
+
+    Returns:
+      Path where the evaulator stores test results.
+    """
+    return evaluator.ResolvePathFromChroot(os.path.join(
+        '/tmp', 'test_that_latest', 'results-1-%s' % evaluator.test_name))
+
   def testLookupReportFile(self):
     """Tests LookupReportFile().
 
     Tests that it invokes expected command and performs path normalization.
     """
     evaluator = self.GetDefaultEvaluator()
-    command_mock = self.StartPatcher(
-        cros_build_lib_unittest.RunCommandMock())
-    results_base_path = os.path.join(
-        self.tempdir, 'test_that_latest/results-1-telemetry_Benchmarks.octane')
+    command_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    results_base_path = self.GetTestResultPath(evaluator)
     find_command_result = (
-        './telemetry_Benchmarks.octane/results/results-chart.json\n')
+        './%s/results/results-chart.json\n' % self.TEST_NAME)
     command_mock.AddCmdResult(
         ['find', '.', '-name', 'results-chart.json'],
         kwargs={'cwd': results_base_path, 'capture_output': True},
         output=find_command_result)
-    self.PatchObject(path_util, 'FromChrootPath',
-                     return_value=results_base_path)
 
     self.assertEqual(
-        os.path.join(results_base_path,
-                     'telemetry_Benchmarks.octane/results/results-chart.json'),
+        os.path.join(results_base_path, self.TEST_NAME, 'results',
+                     'results-chart.json'),
         evaluator.LookupReportFile())
 
   def testLookupReportFileMissing(self):
     """Tests LookupReportFile() when the report does not exist."""
     evaluator = self.GetDefaultEvaluator()
-    command_mock = self.StartPatcher(
-        cros_build_lib_unittest.RunCommandMock())
-    results_base_path = os.path.join(
-        self.tempdir, 'test_that_latest/results-1-telemetry_Benchmarks.octane')
+    command_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    results_base_path = self.GetTestResultPath(evaluator)
     command_mock.AddCmdResult(
         ['find', '.', '-name', 'results-chart.json'],
         kwargs={'cwd': results_base_path, 'capture_output': True},
         output='')
-    self.PatchObject(path_util, 'FromChrootPath',
-                     return_value=results_base_path)
 
     self.assertIsNone(evaluator.LookupReportFile())
+
+  def WriteTestResult(self, evaluator, score=0):
+    """Writes a test result to evaluator's default location.
+
+    Args:
+      evaluator: Evaluator object.
+      score: score of the result.
+
+    Returns:
+      (path to test result file, result file's content)
+    """
+    result_dir = self.GetTestResultPath(evaluator)
+    osutils.SafeMakedirs(result_dir)
+    result_path = os.path.join(result_dir, evaluator.RESULT_FILENAME)
+    result_content = self.AQUARIUM_REPORT_TEMPLATE % score
+    osutils.WriteFile(result_path, result_content)
+    return (result_path, result_content)
 
   def testRunTestFromHost(self):
     """Tests TestFromHost().
@@ -206,18 +230,15 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     designated path.
     """
     evaluator = self.GetDefaultEvaluator()
-    command_mock = self.StartPatcher(
-        cros_build_lib_unittest.RunCommandMock())
+    command_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.SkipMaySetupBoard(evaluator)
     command_mock.AddCmdResult(
         ['test_that', '-b', self.BOARD, '--fast', '--args', 'local=True',
          '192.168.1.1', self.TEST_NAME], returncode=0)
-    report_source_file = os.path.join(self.tempdir, 'results-chart.json')
-    report_content = 'foobar'
-    osutils.WriteFile(report_source_file, report_content)
+    report_path, report_content = self.WriteTestResult(evaluator)
     command_mock.AddCmdResult(
         ['find', '.', '-name', 'results-chart.json'],
-        output=report_source_file)
-    self.PatchObject(path_util, 'FromChrootPath', return_value=self.tempdir)
+        output=report_path)
 
     # Make sure report file is copied to designated path.
     target_report_file = os.path.join(self.tempdir, 'stored-results-chart.json')
@@ -230,8 +251,8 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     """Tests TestFromHost() when autotest failed to run."""
     evaluator = self.GetDefaultEvaluator()
 
-    command_mock = self.StartPatcher(
-        cros_build_lib_unittest.RunCommandMock())
+    command_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.SkipMaySetupBoard(evaluator)
     command_mock.AddCmdResult(
         ['test_that', '-b', self.BOARD, '--fast', '--args', 'local=True',
          '192.168.1.1', self.TEST_NAME], returncode=1)
@@ -241,14 +262,13 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
   def testRunTestFromHostReportFileMissing(self):
     """Tests TestFromHost() when test report file does not exist."""
     evaluator = self.GetDefaultEvaluator()
-    command_mock = self.StartPatcher(
-        cros_build_lib_unittest.RunCommandMock())
+    command_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.SkipMaySetupBoard(evaluator)
     command_mock.AddCmdResult(
         ['test_that', '-b', self.BOARD, '--fast', '--args', 'local=True',
          '192.168.1.1', self.TEST_NAME], returncode=0)
     command_mock.AddCmdResult(
         ['find', '.', '-name', 'results-chart.json'], output='')
-    self.PatchObject(path_util, 'FromChrootPath', return_value=self.tempdir)
 
     self.assertFalse(evaluator.RunTestFromHost(self.DUT, self.REPORT_FILE))
 
@@ -266,7 +286,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr(
         base_dir=self.tempdir, board=self.BOARD, test_name=self.TEST_NAME,
         metric=self.METRIC, metric_take_average=True, reuse_eval=True,
-        chromium_dir=None)
+        chromium_dir=None, cros_dir=None)
     evaluator = autotest_evaluator.AutotestEvaluator(options)
 
     scores = [55, 57, 58]
@@ -325,16 +345,26 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(2.0, eval_score.variance)
     self.assertAlmostEqual(1.414, eval_score.std, delta=0.01)
 
+  def SkipMaySetupBoard(self, evaluator):
+    """Let evaluator.MaySetupBoard() returns True without action.
+
+    It touches /build/{board} directory inside chroot so that MaySetupBoard()
+    thinks the board is already set up.
+    """
+    osutils.SafeMakedirs(os.path.join(evaluator.cros_dir, 'chroot', 'build',
+                                      evaluator.board))
+
   def testEvaluateFromHost(self):
     """Tests Evaluate() which runs test from host."""
     evaluator = self.GetDefaultEvaluator()
 
     # Mock RunTestFromDut fail.
-    command_mock = self.StartPatcher(
-        cros_build_lib_unittest.RunCommandMock())
+    command_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     command_mock.AddCmdResult(
         partial_mock.InOrder([evaluator.AUTOTEST_CLIENT, self.TEST_TARGET]),
         returncode=1)
+
+    self.SkipMaySetupBoard(evaluator)
 
     # Mock RunTestFromHost success.
     command_mock.AddCmdResult(
@@ -343,13 +373,10 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
 
     # Mock 'find' and returns a result file for verify.
     score = 59.9
-    report_file_in_chroot = os.path.join(self.tempdir, 'results-chart.json')
-    osutils.WriteFile(report_file_in_chroot,
-                      self.AQUARIUM_REPORT_TEMPLATE % score)
+    report_file_in_chroot, _ = self.WriteTestResult(evaluator, score)
     command_mock.AddCmdResult(
         ['find', '.', '-name', 'results-chart.json'],
         output=report_file_in_chroot)
-    self.PatchObject(path_util, 'FromChrootPath', return_value=self.tempdir)
 
     eval_score = evaluator.Evaluate(self.DUT, self.BUILD_LABEL)
     self.assertEqual(1, len(eval_score.values))
@@ -395,7 +422,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr(
         base_dir=self.tempdir, board=self.BOARD, test_name=self.TEST_NAME,
         metric=self.METRIC, metric_take_average=False, reuse_eval=False,
-        chromium_dir=None)
+        chromium_dir=None, cros_dir=None)
     evaluator = autotest_evaluator.AutotestEvaluator(options)
 
     scores = [56, 58]
@@ -403,3 +430,69 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
 
     eval_score = evaluator.CheckLastEvaluate(self.BUILD_LABEL, repeat=2)
     self.assertEqual(0, len(eval_score))
+
+  def CreateCommandMockForRepo(self, cwd):
+    """Creates a command mock and add commands "repo init" "repo sync".
+
+    Args:
+      cwd: Directory for running "repo init".
+
+    Returns:
+      command_mock object.
+    """
+    command_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    command_mock.AddCmdResult(
+        ['repo', 'init', '-u',
+         'https://chromium.googlesource.com/chromiumos/manifest.git',
+         '--repo-url',
+         'https://chromium.googlesource.com/external/repo.git'],
+        kwargs={'cwd': cwd})
+    command_mock.AddCmdResult(['repo', 'sync', '-j8'],
+                              kwargs={'cwd': cwd})
+    return command_mock
+
+  def testSetupCrosRepo(self):
+    """Tests SetupCrosRepo() by verifying commands it emits."""
+    evaluator = self.GetDefaultEvaluator()
+    unused_command_mock = self.CreateCommandMockForRepo(evaluator.cros_dir)
+    evaluator.SetupCrosRepo()
+
+  def testMaySetupBoardAlreadyDone(self):
+    """Tests MaySetupBoard() that board is already set."""
+    evaluator = self.GetDefaultEvaluator()
+
+    # mkdir board path inside chroot.
+    self.SkipMaySetupBoard(evaluator)
+    self.assertTrue(evaluator.MaySetupBoard())
+
+  def testMaySetupBoard(self):
+    """Tests MaySetupBoard()."""
+    evaluator = self.GetDefaultEvaluator()
+    command_mock = self.CreateCommandMockForRepo(evaluator.cros_dir)
+    kwargs_run_chroot = {
+        'enter_chroot': True,
+        'chroot_args': ['--chrome_root', evaluator.chromium_dir, '--no-ns-pid'],
+        'cwd': evaluator.cros_dir}
+    command_mock.AddCmdResult(
+        ['./setup_board', '--board', self.BOARD], kwargs=kwargs_run_chroot)
+    command_mock.AddCmdResult(
+        ['./build_packages', '--board', self.BOARD], kwargs=kwargs_run_chroot)
+
+    self.assertTrue(evaluator.MaySetupBoard())
+
+  def testMaySetupBoardBuildPackageFailed(self):
+    """Tests MaySetupBoard()."""
+    evaluator = self.GetDefaultEvaluator()
+    command_mock = self.CreateCommandMockForRepo(evaluator.cros_dir)
+    kwargs_run_chroot = {
+        'enter_chroot': True,
+        'chroot_args': ['--chrome_root', evaluator.chromium_dir, '--no-ns-pid'],
+        'cwd': evaluator.cros_dir}
+    command_mock.AddCmdResult(
+        ['./setup_board', '--board', self.BOARD], kwargs=kwargs_run_chroot)
+
+    command_mock.AddCmdResult(
+        ['./build_packages', '--board', self.BOARD], kwargs=kwargs_run_chroot,
+        returncode=1)
+
+    self.assertFalse(evaluator.MaySetupBoard())

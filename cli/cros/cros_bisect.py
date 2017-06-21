@@ -6,14 +6,40 @@
 
 from __future__ import print_function
 
+import argparse
+
 from chromite.cros_bisect import autotest_evaluator
-from chromite.cros_bisect import git_bisector
+from chromite.cros_bisect import chrome_on_cros_bisector
 from chromite.cros_bisect import manual_evaluator
 from chromite.cros_bisect import simple_chrome_builder
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
+
+
+def GoodBadCommitType(value):
+  """Checks if the input is legal last known good/bad string.
+
+  Currently, the legal formats are:
+  1. SHA1 (for Chromium commit)
+  2. CrOS version, e.g. R60-9531.0.0 or 60.9531.0.0
+
+  Args:
+    value: string to represent last known good/bad commit/version.
+
+  Returns:
+    Normalized commit/version value.
+
+  Raises:
+    argparse.ArgumentTypeError if input is illegal.
+  """
+  normalized_value = (
+      chrome_on_cros_bisector.ChromeOnCrosBisector.CheckCommitFormat(value))
+  if not normalized_value:
+    raise argparse.ArgumentTypeError(
+        '%s is neither commit SHA1 or CrOS version.' % value)
+  return normalized_value
 
 
 @command.CommandDecorator('bisect')
@@ -39,12 +65,14 @@ that is close to the failure point, in particular from the corresponding branch.
     super(BisectCommand, cls).AddParser(parser)
     parser.add_argument(
         '-G', '--good', metavar='good_commit', required=True,
-        help='A good revision to start bisection. Should be earlier than the '
-             'bad revision.')
+        type=GoodBadCommitType,
+        help='A good revision (commit SHA) or CrOS image (e.g. R60-9531.0.0) '
+             'to start bisection. Should be earlier than the bad revision.')
     parser.add_argument(
-        '-B', '--bad', metavar='bad_commit', default='HEAD',
-        help='A bad revision to start bisection. Should be later than the good '
-             'revision. Default HEAD (ToT).')
+        '-B', '--bad', metavar='bad_commit', required=True,
+        type=GoodBadCommitType,
+        help='A bad revision (commit SHA) or CrOS image (e.g. R60-9532.0.0) '
+             'to start bisection. Should be later than the good revision.')
     parser.add_argument(
         '-r', '--remote', metavar='IP address / hostname', required=True,
         type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH),
@@ -71,6 +99,10 @@ that is close to the failure point, in particular from the corresponding branch.
         help='If specified, use it as chromium repository. Otherwise, use '
              '"[base-dir]/chromium".')
     parser.add_argument(
+        '--cros-dir', type='path',
+        help='If specified, use it to enter CrOS chroot environment. '
+             'Otherwise, use "[base-dir]/cros".')
+    parser.add_argument(
         '--build-dir', type='path',
         help='If specified, use it to store build results. Otherwise, use '
              '"[base-dir]/build".')
@@ -90,6 +122,10 @@ that is close to the failure point, in particular from the corresponding branch.
         '--no-archive-build', dest='archive_build', default=True,
         action='store_false',
         help='If set, do not archive the build.')
+    parser.add_argument(
+        '--auto-threshold', action='store_true',
+        help='If set, set threshold in the middle between good and bad '
+             'score instead of prompting user to set it.')
     parser.add_argument(
         '--test-name', help='Test name to run against')
     parser.add_argument(
@@ -131,6 +167,7 @@ that is close to the failure point, in particular from the corresponding branch.
     # its SanityCheckOptions() in testAddParser in cros_bisect_unittest.
     builder = self.BUILDER[self.options.repo](self.options)
     evaluator = self.EVALUATOR[self.options.evaluator](self.options)
-    bisector = git_bisector.GitBisector(self.options, builder, evaluator)
+    bisector = chrome_on_cros_bisector.ChromeOnCrosBisector(
+        self.options, builder, evaluator)
     bisector.SetUp()
     bisector.Run()

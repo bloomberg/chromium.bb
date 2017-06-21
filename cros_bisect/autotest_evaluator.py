@@ -33,7 +33,10 @@ class AutotestEvaluator(evaluator.Evaluator):
   AUTOTEST_BASE = '/usr/local/autotest'
   AUTOTEST_CLIENT = os.path.join(AUTOTEST_BASE, 'bin/autotest_client')
   REQUIRED_ARGS = evaluator.Evaluator.REQUIRED_ARGS + (
-      'board', 'test_name', 'metric', 'metric_take_average')
+      'board', 'chromium_dir', 'cros_dir', 'test_name', 'metric',
+      'metric_take_average')
+  CROS_DIR = 'cros'
+  RESULT_FILENAME = 'results-chart.json'
 
   def __init__(self, options):
     """Constructor.
@@ -44,6 +47,8 @@ class AutotestEvaluator(evaluator.Evaluator):
         * board: CrOS board name (used for running host side autotest).
         * chromium_dir: Optional. If specified, use the chromium repo the path
           points to. Otherwise, use base_dir/chromium/src.
+        * cros_dir: Optional. If specified, use it to enter CrOS chroot to
+          run autotest "test_that" command. Otherwise, use base_dir/cros.
         * test_name: Autotest name to run.
         * metric: Metric to look up.
         * metric_take_average: If set, take average value of the metric.
@@ -54,11 +59,16 @@ class AutotestEvaluator(evaluator.Evaluator):
     self.metric = options.metric
     self.metric_take_average = options.metric_take_average
     # Used for entering chroot. Some autotest depends on CHROME_ROOT being set.
-    if 'chromium_dir' in options and options.chromium_dir:
+    if options.chromium_dir:
       self.chromium_dir = options.chromium_dir
     else:
       self.chromium_dir = os.path.join(self.base_dir,
                                        simple_chrome_builder.CHROMIUM_DIR)
+
+    if options.cros_dir:
+      self.cros_dir = options.cros_dir
+    else:
+      self.cros_dir = os.path.join(self.base_dir, self.CROS_DIR)
 
   def RunTestFromDut(self, remote, report_file):
     """Runs autotest from DUT.
@@ -76,8 +86,8 @@ class AutotestEvaluator(evaluator.Evaluator):
     # TODO(deanliao): Deal with the case that test control file is not the
     #     same as below.
     test_target = '%s/tests/%s/control' % (self.AUTOTEST_BASE, self.test_name)
-    remote_report_file = '%s/results/default/%s/results/results-chart.json' % (
-        self.AUTOTEST_BASE, self.test_name)
+    remote_report_file = '%s/results/default/%s/results/%s' % (
+        self.AUTOTEST_BASE, self.test_name, self.RESULT_FILENAME)
 
     with osutils.TempDir() as temp_dir:
       command = [self.AUTOTEST_CLIENT, test_target]
@@ -107,28 +117,105 @@ class AutotestEvaluator(evaluator.Evaluator):
     Returns:
       Path to report file. None if not found.
     """
-    RESULT_FILENAME = 'results-chart.json'
-
     # Default result dir: /tmp/test_that_latest
-    results_dir = path_util.FromChrootPath(
+    results_dir = self.ResolvePathFromChroot(
         '/tmp/test_that_latest/results-1-%s' % self.test_name)
     # Invoking "find" command is faster than using os.walkdir().
     try:
       command_result = cros_build_lib.RunCommand(
-          ['find', '.', '-name', RESULT_FILENAME],
+          ['find', '.', '-name', self.RESULT_FILENAME],
           cwd=results_dir, capture_output=True)
     except cros_build_lib.RunCommandError as e:
-      logging.error('Failed to look up %s under %s: %s', RESULT_FILENAME,
+      logging.error('Failed to look up %s under %s: %s', self.RESULT_FILENAME,
                     results_dir, e)
       return None
     if not command_result.output:
-      logging.error('Failed to look up %s under %s', RESULT_FILENAME,
+      logging.error('Failed to look up %s under %s', self.RESULT_FILENAME,
                     results_dir)
       return None
     report_file_under_results_dir = (
         command_result.output.splitlines()[0].strip())
     return os.path.normpath(
         os.path.join(results_dir, report_file_under_results_dir))
+
+  def SetupCrosRepo(self):
+    """Gets the ChromeOS source code.
+
+    It is used to enter cros_sdk to run autotest by executing "test_that"
+    command.
+    """
+    osutils.SafeMakedirs(self.cros_dir)
+    cros_build_lib.RunCommand(
+        ['repo', 'init', '-u',
+         'https://chromium.googlesource.com/chromiumos/manifest.git',
+         '--repo-url',
+         'https://chromium.googlesource.com/external/repo.git'],
+        cwd=self.cros_dir)
+    cros_build_lib.RunCommand(['repo', 'sync', '-j8'],
+                              cwd=self.cros_dir)
+
+  def MaySetupBoard(self):
+    """Checks if /build/${board} exists. Sets it up if not.
+
+    Returns:
+      False if setup_board or build_package failed. True otherwise.
+    """
+    if not os.path.isdir(self.cros_dir):
+      logging.notice('ChromeOS source: %s does not exist, set it up',
+                     self.cros_dir)
+      self.SetupCrosRepo()
+
+    board_path = self.ResolvePathFromChroot('/build/%s' % self.board)
+    if os.path.isdir(board_path):
+      return True
+
+    try:
+      self.RunCommandInsideCrosSdk(['./setup_board', '--board', self.board])
+    except cros_build_lib.RunCommandError as e:
+      logging.error('Failed to setup_board for %s: %s', self.board, e)
+      return False
+
+    try:
+      self.RunCommandInsideCrosSdk(['./build_packages', '--board', self.board])
+    except cros_build_lib.RunCommandError as e:
+      logging.error('Failed to build_package for %s: %s', self.board, e)
+      return False
+    return True
+
+  def ResolvePathFromChroot(self, path_inside_chroot):
+    """Resolves path from chroot.
+
+    Args:
+      path_inside_chroot: path inside chroot.
+
+    Returns:
+      Path outside chroot which points to the given path inside chroot.
+    """
+    return path_util.ChrootPathResolver(source_path=self.cros_dir).FromChroot(
+        path_inside_chroot)
+
+  def RunCommandInsideCrosSdk(self, command):
+    """Runs command inside cros_sdk.
+
+    The cros_sdk it used is under self.cros_dir. And its chrome_root is set to
+    self.chrome_root.
+
+    Args:
+      command: command as a list of arguments.
+
+    Returns:
+      A CommandResult object.
+
+    Raises:
+      RunCommandError:  Raises exception on error with optional error_message.
+    """
+    # --chrome_root is needed for autotests running Telemetry.
+    # --no-ns-pid is used to prevent the program receiving SIGTTIN (e.g. go to
+    # background and stopped) when asking user input.
+    chroot_args = ['--chrome_root', self.chromium_dir,
+                   '--no-ns-pid']
+    return cros_build_lib.RunCommand(command, enter_chroot=True,
+                                     chroot_args=chroot_args, cwd=self.cros_dir)
 
   def RunTestFromHost(self, remote, report_file_to_store):
     """Runs autotest from host.
@@ -142,22 +229,18 @@ class AutotestEvaluator(evaluator.Evaluator):
     Returns:
       True if autotest ran successfully.
     """
+    if not self.MaySetupBoard():
+      return False
+
     run_autotest = ['test_that',
                     '-b', self.board,
                     '--fast',
                     '--args', 'local=True',
                     remote.raw,
                     self.test_name]
-    # --chrome_root is needed for autotests running Telemetry.
-    # --no-ns-pid is used to prevent the program receiving SIGTTIN (e.g. go to
-    # background and stopped) when asking user input.
-    chroot_args = ['--chrome_root', self.chromium_dir,
-                   '--no-ns-pid']
 
-    # TODO(deanliao): Can specify different cros repo.
     try:
-      cros_build_lib.RunCommand(run_autotest, enter_chroot=True,
-                                chroot_args=chroot_args)
+      self.RunCommandInsideCrosSdk(run_autotest)
     except cros_build_lib.RunCommandError as e:
       logging.error('Failed to run autotest: %s', e)
       return False

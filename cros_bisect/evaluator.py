@@ -48,6 +48,7 @@ class Evaluator(common.OptionsChecker):
     self.reuse_eval = options.reuse_eval
     osutils.SafeMakedirs(self.report_base_dir)
 
+  # pylint: disable=unused-argument
   def Evaluate(self, remote, build_label, repeat):
     """Evaluates performance.
 
@@ -59,6 +60,7 @@ class Evaluator(common.OptionsChecker):
     Returns:
       Score object. Empty Score object if it fails to evaluate.
     """
+    raise NotImplementedError()
 
   def CheckLastEvaluate(self, build_label, repeat=1):
     """Checks if previous evaluate report is available.
@@ -72,3 +74,4 @@ class Evaluator(common.OptionsChecker):
       is found, extracts and returns score from the result. Otherwise, returns
       Score().
     """
+    raise NotImplementedError()

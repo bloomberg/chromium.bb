@@ -114,9 +114,11 @@ ChromeOS (board specified.) Also, it can deploy the result to ChromeOS DUT
     git.RunGit(self.repo_dir, ['pull', 'origin', 'master'])
     self.GclientSync(reset=True, nohooks=True)
 
-  def SyncToHead(self):
+  def SyncToHead(self, fetch_tags=False):
     """Syncs the repo to origin/master."""
     git.CleanAndCheckoutUpstream(self.repo_dir)
+    if fetch_tags:
+      git.RunGit(self.repo_dir, ['fetch', '--tags'])
 
   def GclientSync(self, reset=False, nohooks=False):
     """Runs gclient sync.

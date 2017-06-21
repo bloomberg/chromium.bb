@@ -72,5 +72,9 @@ Builder base class.
       commit_label: Commit label used for logging.
     """
 
-  def SyncToHead(self):
-    """Syncs the repo to origin/master."""
+  def SyncToHead(self, fetch_tags=False):
+    """Syncs the repo to origin/master.
+
+    Args:
+      fetch_tags: if set, also fetch tags.
+    """
