@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/heap/Handle.h"
@@ -45,9 +46,12 @@ class CORE_EXPORT NGLineBreaker {
  private:
   void BreakLine(NGLineInfo*);
 
-  bool HasAvailableWidth() const { return available_width_.has_value(); }
-  LayoutUnit AvailableWidth() const { return available_width_.value(); }
+  bool HasAvailableWidth() const { return opportunity_.has_value(); }
+  LayoutUnit AvailableWidth() const {
+    return opportunity_.value().InlineSize();
+  }
   void UpdateAvailableWidth();
+  void ComputeLineLocation(NGLineInfo*) const;
 
   enum class LineBreakState {
     // The current position is not breakable.
@@ -92,7 +96,7 @@ class CORE_EXPORT NGLineBreaker {
   unsigned item_index_;
   unsigned offset_;
   LayoutUnit position_;
-  WTF::Optional<LayoutUnit> available_width_;
+  WTF::Optional<NGLayoutOpportunity> opportunity_;
   NGLogicalOffset content_offset_;
   LazyLineBreakIterator break_iterator_;
   HarfBuzzShaper shaper_;

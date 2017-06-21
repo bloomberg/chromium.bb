@@ -98,9 +98,19 @@ class CORE_EXPORT NGLineInfo {
   NGInlineItemResults& Results() { return results_; }
   const NGInlineItemResults& Results() const { return results_; }
 
+  LayoutUnit LineLeft() const { return line_left_; }
+  LayoutUnit AvailableWidth() const { return available_width_; }
+  LayoutUnit LineTop() const { return line_top_; }
+  void SetLineLocation(LayoutUnit line_left,
+                       LayoutUnit available_width,
+                       LayoutUnit line_top);
+
  private:
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
+  LayoutUnit line_left_;
+  LayoutUnit available_width_;
+  LayoutUnit line_top_;
   bool is_first_line_ = false;
   bool is_last_line_ = false;
 };

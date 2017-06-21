@@ -65,16 +65,6 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
                         ComputePadding(ConstraintSpace(), Style());
 }
 
-// The offset of 'line-left' side.
-// https://drafts.csswg.org/css-writing-modes/#line-left
-LayoutUnit NGInlineLayoutAlgorithm::LogicalLeftOffset(
-    const NGLayoutOpportunity& opportunity) const {
-  // TODO(kojii): We need to convert 'line start' to 'line left'. They're
-  // different in RTL. Maybe there are more where start and left are misused.
-  return opportunity.InlineStartOffset() -
-         ConstraintSpace().BfcOffset().inline_offset;
-}
-
 bool NGInlineLayoutAlgorithm::CreateLine(
     NGLineInfo* line_info,
     RefPtr<NGInlineBreakToken> break_token) {
@@ -227,11 +217,15 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
     return true;  // The line was empty.
   }
 
+  // NGLineBreaker should have determined we need a line box, and that has
+  // resolved the BFC offset.
+  DCHECK(container_builder_.BfcOffset().has_value());
+
   box_states_.OnEndPlaceItems(&line_box, baseline_type_, position);
 
   // The baselines are always placed at pixel boundaries. Not doing so results
   // in incorrect layout of text decorations, most notably underlines.
-  LayoutUnit baseline = content_size_ + line_box.Metrics().ascent;
+  LayoutUnit baseline = line_info->LineTop() + line_box.Metrics().ascent;
   baseline = LayoutUnit(baseline.Round());
 
   // Check if the line fits into the constraint space in block direction.
@@ -253,13 +247,12 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // the line box to the line top.
   line_box.MoveChildrenInBlockDirection(baseline);
 
-  NGLayoutOpportunity line_opp = FindLayoutOpportunityForLine();
-
   LayoutUnit inline_size = position;
-  NGLogicalOffset offset(LogicalLeftOffset(line_opp),
+  NGLogicalOffset offset(line_info->LineLeft(),
                          baseline - box_states_.LineBoxState().metrics.ascent);
   ApplyTextAlign(line_style.GetTextAlign(line_info->IsLastLine()),
-                 &offset.inline_offset, inline_size, line_opp.InlineSize());
+                 &offset.inline_offset, inline_size,
+                 line_info->AvailableWidth());
 
   line_box.SetInlineSize(inline_size);
   container_builder_.AddChild(line_box.ToLineBoxFragment(), offset);
@@ -401,25 +394,6 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
   }
 
   return content_size;
-}
-
-NGLayoutOpportunity NGInlineLayoutAlgorithm::FindLayoutOpportunityForLine() {
-  // TODO(ikilpatrick): Using the constraint space BFC offset here seems wrong.
-  // Logically we shouldn't hit this codepath when placing the items as we
-  // shouldn't have anything to place.
-  //
-  // Consider reworking PlaceItems to make sure this doesn't occur.
-  NGLogicalOffset iter_offset = ConstraintSpace().BfcOffset();
-  if (container_builder_.BfcOffset()) {
-    iter_offset = ContainerBfcOffset();
-    iter_offset += {border_and_padding_.inline_start, LayoutUnit()};
-  }
-  iter_offset.block_offset += content_size_;
-
-  return NGLayoutOpportunityIterator(ConstraintSpace().Exclusions().get(),
-                                     ConstraintSpace().AvailableSize(),
-                                     iter_offset)
-      .Next();
 }
 
 RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
