@@ -34,6 +34,7 @@ namespace blink {
 
 FetchParameters::FetchParameters(const ResourceRequest& resource_request)
     : resource_request_(resource_request),
+      decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       preload_discovery_time_(0.0),
       defer_(kNoDefer),
@@ -43,6 +44,7 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request)
 FetchParameters::FetchParameters(const ResourceRequest& resource_request,
                                  const ResourceLoaderOptions& options)
     : resource_request_(resource_request),
+      decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       options_(options),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       preload_discovery_time_(0.0),

@@ -18,6 +18,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -34,8 +35,9 @@ class ScriptStreamingTest : public ::testing::Test {
                                  ->Scheduler()
                                  ->LoadingTaskRunner()),
         settings_(Settings::Create()) {
-    resource_ = ScriptResource::Create(
-        KURL(kParsedURLString, "http://www.streaming-test.com/"), "UTF-8");
+    resource_ = ScriptResource::CreateForTest(
+        KURL(kParsedURLString, "http://www.streaming-test.com/"),
+        UTF8Encoding());
     resource_->SetStatus(ResourceStatus::kPending);
 
     MockScriptElementBase* element = MockScriptElementBase::Create();
