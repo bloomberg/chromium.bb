@@ -421,12 +421,11 @@ class CalculateSuspects(object):
       strict: If False, treat NoneType message as a match.
 
     Returns:
-      When strict is True, returns True if all objects in |messages| are
-      non-None and are in the |exception_category|, else False. When strict is
-      False, returns True if all the objects in |messages| are in the
-      |exception_category|, else False.
+      When |messages| is empty, return False; When |strict| is True and
+      |messages| contains None objects, return False; When not all message in
+      |messages| matches |exception_category|, return False; Else, return True.
     """
-    return ((not strict or all(messages)) and
+    return (messages and (not strict or all(messages)) and
             all(x.MatchesExceptionCategory(exception_category)
                 for x in messages if x))
 
@@ -443,11 +442,14 @@ class CalculateSuspects(object):
       strict: If False, treat NoneType message as a match.
 
     Returns:
-      When strict is True, returns True if all objects in |messages| are
-      non-None and are in the |exception_category|, else False. When strict is
-      False, returns True if all the objects in |messages| are in the
-      |exception_categories|, else False.
+      When |messages| is empty, return False; When |strict| is True and
+      |messages| contains None objects, return False; When not all message in
+      |messages| matches one category on |exception_categories|, return False;
+      Else, return True.
     """
+    if not messages:
+      return False
+
     if strict and not all(messages):
       return False
 
