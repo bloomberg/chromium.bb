@@ -1789,7 +1789,7 @@ public class Tab
             assert mSadTabView == null;
 
             mSadTabView = SadTabViewFactory.createSadTabView(mThemedApplicationContext,
-                    suggestionAction, buttonAction, showSendFeedbackView);
+                    suggestionAction, buttonAction, showSendFeedbackView, mIncognito);
             mSadTabSuccessiveRefreshCounter++;
             // Show the sad tab inside ContentView.
             getContentViewCore().getContainerView().addView(
