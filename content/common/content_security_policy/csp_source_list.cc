@@ -27,10 +27,7 @@ CSPSourceList::CSPSourceList()
 CSPSourceList::CSPSourceList(bool allow_self,
                              bool allow_star,
                              std::vector<CSPSource> sources)
-    : allow_self(allow_self), allow_star(allow_star), sources(sources) {
-  // When the '*' source is used, it must be the only one.
-  DCHECK(!allow_star || (!allow_self && sources.empty()));
-}
+    : allow_self(allow_self), allow_star(allow_star), sources(sources) {}
 
 CSPSourceList::CSPSourceList(const CSPSourceList&) = default;
 CSPSourceList::~CSPSourceList() = default;
