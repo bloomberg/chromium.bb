@@ -12,9 +12,8 @@ interface ImeController {
   SetClient(ImeControllerClient client);
 
   // Updates the cached IME information and refreshes the IME menus.
-  // |current_ime| has an empty ID when there is no active IME yet.
-  // TODO(jamescook): Convert |current_ime| to an ID instead of an IMEInfo.
-  RefreshIme(ImeInfo current_ime,
+  // |current_ime_id| is empty when there is no active IME yet.
+  RefreshIme(string current_ime_id,
              array<ImeInfo> available_imes,
              array<ImeMenuItem> menu_items);
 

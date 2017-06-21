@@ -52,7 +52,7 @@ TEST_F(ImeControllerTest, RefreshIme) {
   std::vector<mojom::ImeMenuItemPtr> menu_items;
   menu_items.push_back(item1.Clone());
 
-  controller->RefreshIme(std::move(ime1), std::move(available_imes),
+  controller->RefreshIme("ime1", std::move(available_imes),
                          std::move(menu_items));
 
   // Cached data was updated.
@@ -65,6 +65,27 @@ TEST_F(ImeControllerTest, RefreshIme) {
 
   // Observer was notified.
   EXPECT_EQ(1, observer.refresh_count_);
+}
+
+TEST_F(ImeControllerTest, NoCurrentIme) {
+  ImeController* controller = Shell::Get()->ime_controller();
+
+  // Set up a single IME.
+  mojom::ImeInfoPtr ime1 = mojom::ImeInfo::New();
+  ime1->id = "ime1";
+  std::vector<mojom::ImeInfoPtr> available_imes1;
+  available_imes1.push_back(ime1.Clone());
+  controller->RefreshIme("ime1", std::move(available_imes1),
+                         std::vector<mojom::ImeMenuItemPtr>());
+  EXPECT_EQ("ime1", controller->current_ime().id);
+
+  // When there is no current IME the cached current IME is empty.
+  std::vector<mojom::ImeInfoPtr> available_imes2;
+  available_imes2.push_back(ime1.Clone());
+  const std::string empty_ime_id;
+  controller->RefreshIme(empty_ime_id, std::move(available_imes2),
+                         std::vector<mojom::ImeMenuItemPtr>());
+  EXPECT_TRUE(controller->current_ime().id.empty());
 }
 
 TEST_F(ImeControllerTest, SetImesManagedByPolicy) {

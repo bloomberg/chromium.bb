@@ -51,7 +51,7 @@ class ASH_EXPORT ImeController
 
   // mojom::ImeController:
   void SetClient(mojom::ImeControllerClientPtr client) override;
-  void RefreshIme(mojom::ImeInfoPtr current_ime,
+  void RefreshIme(const std::string& current_ime_id,
                   std::vector<mojom::ImeInfoPtr> available_imes,
                   std::vector<mojom::ImeMenuItemPtr> menu_items) override;
   void SetImesManagedByPolicy(bool managed) override;
@@ -64,6 +64,7 @@ class ASH_EXPORT ImeController
   // Client interface back to IME code in chrome.
   mojom::ImeControllerClientPtr client_;
 
+  // Copy of the current IME so we can return it by reference.
   mojom::ImeInfo current_ime_;
 
   // "Available" IMEs are both installed and enabled by the user in settings.

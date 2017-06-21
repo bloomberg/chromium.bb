@@ -83,16 +83,16 @@ class TestImeController : ash::mojom::ImeController {
 
   // ash::mojom::ImeController:
   void SetClient(ash::mojom::ImeControllerClientPtr client) override {}
-  void RefreshIme(ash::mojom::ImeInfoPtr current_ime,
+  void RefreshIme(const std::string& current_ime_id,
                   std::vector<ash::mojom::ImeInfoPtr> available_imes,
                   std::vector<ash::mojom::ImeMenuItemPtr> menu_items) override {
-    current_ime_ = std::move(current_ime);
+    current_ime_id_ = current_ime_id;
     available_imes_ = std::move(available_imes);
   }
   void SetImesManagedByPolicy(bool managed) override {}
   void ShowImeMenuOnShelf(bool show) override {}
 
-  ash::mojom::ImeInfoPtr current_ime_;
+  std::string current_ime_id_;
   std::vector<ash::mojom::ImeInfoPtr> available_imes_;
 
  private:
@@ -1614,12 +1614,12 @@ TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
 
   // Ash received the IMEs.
   ASSERT_EQ(3u, ime_controller.available_imes_.size());
-  EXPECT_EQ(ImeIdFromEngineId(ids[0]), ime_controller.current_ime_->id);
+  EXPECT_EQ(ImeIdFromEngineId(ids[0]), ime_controller.current_ime_id_);
 
   // Switch to Mozc.
   manager_->GetActiveIMEState()->SwitchToNextInputMethod();
   ime_controller_client.FlushMojoForTesting();
-  EXPECT_EQ(ImeIdFromEngineId(ids[1]), ime_controller.current_ime_->id);
+  EXPECT_EQ(ImeIdFromEngineId(ids[1]), ime_controller.current_ime_id_);
 
   // Lock the screen.
   scoped_refptr<input_method::InputMethodManager::State> saved_ime_state =
@@ -1630,19 +1630,19 @@ TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
   ime_controller_client.FlushMojoForTesting();
   EXPECT_EQ(2u, ime_controller.available_imes_.size());  // Qwerty+Dvorak.
   EXPECT_EQ(ImeIdFromEngineId("xkb:us:dvorak:eng"),
-            ime_controller.current_ime_->id);
+            ime_controller.current_ime_id_);
 
   manager_->GetActiveIMEState()->SwitchToNextInputMethod();
   ime_controller_client.FlushMojoForTesting();
   EXPECT_EQ(ImeIdFromEngineId("xkb:us::eng"),  // The hardware keyboard layout.
-            ime_controller.current_ime_->id);
+            ime_controller.current_ime_id_);
 
   // Unlock screen. The original state, pinyin-dv, is restored.
   manager_->SetState(saved_ime_state);
   manager_->SetUISessionState(InputMethodManager::STATE_BROWSER_SCREEN);
   ime_controller_client.FlushMojoForTesting();
   ASSERT_EQ(3u, ime_controller.available_imes_.size());  // Dvorak and 2 IMEs.
-  EXPECT_EQ(ImeIdFromEngineId(ids[1]), ime_controller.current_ime_->id);
+  EXPECT_EQ(ImeIdFromEngineId(ids[1]), ime_controller.current_ime_id_);
 }
 
 }  // namespace input_method

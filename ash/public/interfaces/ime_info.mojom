@@ -8,10 +8,6 @@ import "mojo/common/string16.mojom";
 
 // Metadata about an installed input method.
 struct ImeInfo {
-  // True if the IME is the current IME.
-  // TODO(jamescook): Remove this and use ImeController::current_ime().
-  bool selected;
-
   // True if the IME is a third-party extension.
   bool third_party;
 

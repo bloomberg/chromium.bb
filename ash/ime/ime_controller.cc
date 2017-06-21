@@ -46,15 +46,27 @@ void ImeController::SwitchImeWithAccelerator(
 }
 
 // mojom::ImeController:
-void ImeController::RefreshIme(mojom::ImeInfoPtr current_ime,
+void ImeController::RefreshIme(const std::string& current_ime_id,
                                std::vector<mojom::ImeInfoPtr> available_imes,
                                std::vector<mojom::ImeMenuItemPtr> menu_items) {
-  current_ime_ = *current_ime;
+  if (current_ime_id.empty())
+    current_ime_ = mojom::ImeInfo();
 
   available_imes_.clear();
   available_imes_.reserve(available_imes.size());
-  for (const auto& ime : available_imes)
+  for (const auto& ime : available_imes) {
+    if (ime->id.empty()) {
+      DLOG(ERROR) << "Received IME with invalid ID.";
+      continue;
+    }
     available_imes_.push_back(*ime);
+    if (ime->id == current_ime_id)
+      current_ime_ = *ime;
+  }
+
+  // Either there is no current IME or we found a valid one in the list of
+  // available IMEs.
+  DCHECK(current_ime_id.empty() || !current_ime_.id.empty());
 
   current_ime_menu_items_.clear();
   current_ime_menu_items_.reserve(menu_items.size());
