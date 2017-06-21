@@ -51,10 +51,9 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
       const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
           icon_options) override;
   void HideUserPodCustomIcon(const AccountId& account_id) override;
-  void SetAuthType(
-      const AccountId& account_id,
-      proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
-      const base::string16& initial_value) override;
+  void SetAuthType(const AccountId& account_id,
+                   proximity_auth::mojom::AuthType auth_type,
+                   const base::string16& initial_value) override;
   void Bind(UserSelectionScreen* screen) override;
   void Unbind() override;
   base::WeakPtr<UserBoardView> GetWeakPtr() override;

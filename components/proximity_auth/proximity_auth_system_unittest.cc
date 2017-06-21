@@ -64,7 +64,7 @@ class MockUnlockManager : public UnlockManager {
   MOCK_METHOD0(IsUnlockAllowed, bool());
   MOCK_METHOD1(SetRemoteDeviceLifeCycle, void(RemoteDeviceLifeCycle*));
   MOCK_METHOD0(OnLifeCycleStateChanged, void());
-  MOCK_METHOD1(OnAuthAttempted, void(ScreenlockBridge::LockHandler::AuthType));
+  MOCK_METHOD1(OnAuthAttempted, void(mojom::AuthType));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockUnlockManager);

@@ -52,7 +52,7 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   explicit TestLockHandler(const AccountId& account_id)
       : account_id_(account_id),
         show_icon_count_(0u),
-        auth_type_(OFFLINE_PASSWORD) {}
+        auth_type_(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD) {}
   ~TestLockHandler() override {}
 
   // proximity_auth::ScreenlockBridge::LockHandler implementation:
@@ -84,7 +84,7 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   }
 
   void SetAuthType(const AccountId& account_id,
-                   AuthType auth_type,
+                   proximity_auth::mojom::AuthType auth_type,
                    const base::string16& auth_value) override {
     ASSERT_TRUE(account_id_ == account_id)
         << "account_id_=" << account_id_.Serialize()
@@ -97,7 +97,8 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
     auth_value_ = auth_value;
   }
 
-  AuthType GetAuthType(const AccountId& account_id) const override {
+  proximity_auth::mojom::AuthType GetAuthType(
+      const AccountId& account_id) const override {
     EXPECT_TRUE(account_id_ == account_id)
         << "account_id_=" << account_id_.Serialize()
         << " != account_id=" << account_id.Serialize();
@@ -207,7 +208,7 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   size_t show_icon_count_;
 
   // Auth type and value set using |SetAuthType|.
-  AuthType auth_type_;
+  proximity_auth::mojom::AuthType auth_type_;
   base::string16 auth_value_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLockHandler);
@@ -254,7 +255,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, AuthenticatedTrialRun) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
 
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
@@ -272,7 +273,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, AuthenticatedNotInitialRun) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
 
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
@@ -295,7 +296,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, BluetoothConnecting) {
   EXPECT_TRUE(state_handler_->IsActive());
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
 
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
@@ -312,14 +313,14 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockedState) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
 
   state_handler_->SetHardlockState(
       EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
 
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
@@ -339,14 +340,14 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockedStateNoPairing) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
 
   state_handler_->SetHardlockState(
       EasyUnlockScreenlockStateHandler::NO_PAIRING);
 
   EXPECT_FALSE(lock_handler_->HasCustomIcon());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
 }
 
@@ -365,7 +366,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithLockedIcon) {
     EXPECT_TRUE(state_handler_->IsActive());
 
     EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-    EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+    EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
               lock_handler_->GetAuthType(account_id_));
 
     ASSERT_TRUE(lock_handler_->HasCustomIcon());
@@ -383,7 +384,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, SettingTrialRunUpdatesUI) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
 
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
@@ -392,7 +393,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, SettingTrialRunUpdatesUI) {
   state_handler_->SetTrialRun();
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
 
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
@@ -404,7 +405,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest,
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
 
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
@@ -412,7 +413,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest,
   state_handler_.reset();
 
   EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
 
   ASSERT_FALSE(lock_handler_->HasCustomIcon());
@@ -422,7 +423,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StatePreservedWhenScreenUnlocks) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
 
@@ -432,7 +433,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StatePreservedWhenScreenUnlocks) {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(lock_handler_.get());
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
 }
@@ -441,7 +442,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StateChangeWhileScreenUnlocked) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
 
@@ -454,7 +455,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StateChangeWhileScreenUnlocked) {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(lock_handler_.get());
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
   EXPECT_EQ(kSpinnerIconId, lock_handler_->GetCustomIconId());
@@ -595,14 +596,14 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StateChangesIgnoredIfHardlocked) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
 
   state_handler_->SetHardlockState(
       EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
   EXPECT_EQ(kHardlockedIconId, lock_handler_->GetCustomIconId());
@@ -614,7 +615,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StateChangesIgnoredIfHardlocked) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
   EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
 }
 
@@ -646,14 +647,14 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest,
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
   EXPECT_TRUE(lock_handler_->HasCustomIcon());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
   EXPECT_EQ(kLockedIconId, lock_handler_->GetCustomIconId());
 
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
   EXPECT_TRUE(lock_handler_->HasCustomIcon());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::USER_CLICK,
             lock_handler_->GetAuthType(account_id_));
   EXPECT_TRUE(lock_handler_->CustomIconHardlocksOnClick());
 }
@@ -670,7 +671,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockStatePersistsOverUnlocks) {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(lock_handler_.get());
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
   EXPECT_EQ(kHardlockedIconId, lock_handler_->GetCustomIconId());
@@ -678,15 +679,14 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockStatePersistsOverUnlocks) {
   state_handler_->ChangeState(ScreenlockState::AUTHENTICATED);
   EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
   EXPECT_TRUE(lock_handler_->HasCustomIcon());
-  EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+  EXPECT_EQ(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
             lock_handler_->GetAuthType(account_id_));
 }
 
 TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
-  lock_handler_->SetAuthType(
-      account_id_,
-      proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN,
-      base::string16());
+  lock_handler_->SetAuthType(account_id_,
+                             proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
+                             base::string16());
 
   std::vector<ScreenlockState> states;
   states.push_back(ScreenlockState::NO_BLUETOOTH);
@@ -703,7 +703,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
 
   for (size_t i = 0; i < states.size(); ++i) {
     state_handler_->ChangeState(states[i]);
-    EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN,
+    EXPECT_EQ(proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
               lock_handler_->GetAuthType(account_id_));
     EXPECT_FALSE(lock_handler_->HasCustomIcon());
   }
@@ -718,7 +718,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
 
   for (size_t i = 0; i < hardlock_states.size(); ++i) {
     state_handler_->SetHardlockState(hardlock_states[i]);
-    EXPECT_EQ(proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN,
+    EXPECT_EQ(proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
               lock_handler_->GetAuthType(account_id_));
     EXPECT_FALSE(lock_handler_->HasCustomIcon());
   }

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/macros.h"
 
 class PrefChangeRegistrar;
@@ -55,15 +56,6 @@ class MultiProfileUserController {
     NOT_ALLOWED_POLICY_FORBIDS
   };
 
-  // Supported user behavior values. Keep in sync with the enum in
-  // md_user_pod_row.js and user_pod_row.js
-  enum class MultiProfileUserBehavior {
-    kUnrestriced,
-    kPrimaryOnly,
-    kNotAllowed,
-    kOwnerPrimaryOnly
-  };
-
   MultiProfileUserController(MultiProfileUserControllerDelegate* delegate,
                              PrefService* local_state);
   ~MultiProfileUserController();
@@ -80,7 +72,7 @@ class MultiProfileUserController {
   static UserAllowedInSessionReason GetPrimaryUserPolicy();
 
   // Returns the user behavior in MultiProfileUserBehavior enum.
-  static MultiProfileUserBehavior UserBehaviorStringToEnum(
+  static ash::mojom::MultiProfileUserBehavior UserBehaviorStringToEnum(
       const std::string& behavior);
 
   // Returns true if user allowed to be in the current session. If |reason| not

@@ -188,7 +188,7 @@ bool EasyUnlockAppManagerImpl::SendAuthAttemptEvent() {
       extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
           extension_service->profile());
   return screenlock_router->OnAuthAttempted(
-      proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK, std::string());
+      proximity_auth::mojom::AuthType::USER_CLICK, std::string());
 }
 
 }  // namespace

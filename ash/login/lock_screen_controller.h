@@ -40,9 +40,9 @@ class ASH_EXPORT LockScreenController
                              mojom::UserPodCustomIconOptionsPtr icon) override;
   void HideUserPodCustomIcon(const AccountId& account_id) override;
   void SetAuthType(const AccountId& account_id,
-                   mojom::AuthType auth_type,
+                   proximity_auth::mojom::AuthType auth_type,
                    const base::string16& initial_value) override;
-  void LoadUsers(std::unique_ptr<base::ListValue> users,
+  void LoadUsers(std::vector<mojom::LoginUserInfoPtr> users,
                  bool show_guest) override;
   void SetPinEnabledForUser(const AccountId& account_id,
                             bool is_enabled) override;

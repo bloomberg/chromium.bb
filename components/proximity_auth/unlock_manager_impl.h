@@ -50,8 +50,7 @@ class UnlockManagerImpl : public UnlockManager,
   bool IsUnlockAllowed() override;
   void SetRemoteDeviceLifeCycle(RemoteDeviceLifeCycle* life_cycle) override;
   void OnLifeCycleStateChanged() override;
-  void OnAuthAttempted(
-      ScreenlockBridge::LockHandler::AuthType auth_type) override;
+  void OnAuthAttempted(mojom::AuthType auth_type) override;
 
  protected:
   // Creates a ProximityMonitor instance for the given |connection|.

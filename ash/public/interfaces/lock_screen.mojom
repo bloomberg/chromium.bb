@@ -4,30 +4,10 @@
 
 module ash.mojom;
 
+import "ash/public/interfaces/login_user_info.mojom";
+import "components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
 import "mojo/common/string16.mojom";
-import "mojo/common/values.mojom";
-
-// Supported authentication types. Keep in sync with enum in
-// screenlock_bridge.h
-enum AuthType {
-  OFFLINE_PASSWORD,
-  ONLINE_SIGN_IN,
-  NUMERIC_PIN,
-  USER_CLICK,
-  EXPAND_THEN_USER_CLICK,
-  FORCE_OFFLINE_PASSWORD,
-};
-
-// Information about the custom icon in the user pod.
-struct UserPodCustomIconOptions {
-  string id;
-  mojo.common.mojom.String16 tooltip;
-  bool autoshow_tooltip;
-  mojo.common.mojom.String16 aria_label;
-  bool hardlock_on_click;
-  bool is_trial_run;
-};
 
 // Allows clients (e.g. Chrome browser) to control the ash lock screen.
 interface LockScreen {
@@ -68,16 +48,13 @@ interface LockScreen {
   // |auth_type|:     Authentication type.
   // |initial_value|: A message shown in the password field of the user pod.
   SetAuthType(signin.mojom.AccountId account_id,
-              AuthType auth_type,
+              proximity_auth.mojom.AuthType auth_type,
               mojo.common.mojom.String16 initial_value);
 
   // Requests to load users in the lock screen.
-  // TODO: create a mojo struct for |users|, this contains user information
-  // for login/lock screen, some of which might not be needed for the new
-  // view-based UI. See crbug.com/729687.
   // |users|:      A list of users who can unlock the device.
   // |show_guest|: Whether to show guest session button.
-  LoadUsers(mojo.common.mojom.ListValue users, bool show_guest);
+  LoadUsers(array<LoginUserInfo> users, bool show_guest);
 
   // Notification if pin is enabled or disabled for the given user.
   // |account_id|:   The account id of the user in the user pod.

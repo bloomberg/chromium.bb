@@ -128,17 +128,17 @@ MultiProfileUserController::GetPrimaryUserPolicy() {
 }
 
 // static
-MultiProfileUserController::MultiProfileUserBehavior
+ash::mojom::MultiProfileUserBehavior
 MultiProfileUserController::UserBehaviorStringToEnum(
     const std::string& behavior) {
   if (behavior == kBehaviorPrimaryOnly)
-    return MultiProfileUserBehavior::kPrimaryOnly;
+    return ash::mojom::MultiProfileUserBehavior::PRIMARY_ONLY;
   if (behavior == kBehaviorNotAllowed)
-    return MultiProfileUserBehavior::kNotAllowed;
+    return ash::mojom::MultiProfileUserBehavior::NOT_ALLOWED;
   if (behavior == kBehaviorOwnerPrimaryOnly)
-    return MultiProfileUserBehavior::kOwnerPrimaryOnly;
+    return ash::mojom::MultiProfileUserBehavior::OWNER_PRIMARY_ONLY;
 
-  return MultiProfileUserBehavior::kUnrestriced;
+  return ash::mojom::MultiProfileUserBehavior::UNRESTRICTED;
 }
 
 bool MultiProfileUserController::IsUserAllowedInSession(

@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "components/proximity_auth/public/interfaces/auth_type.mojom.h"
 #include "components/signin/core/account_id/account_id.h"
 
 namespace proximity_auth {
@@ -99,17 +100,6 @@ class ScreenlockBridge {
 
   class LockHandler {
    public:
-    // Supported authentication types. Keep in sync with the enum in
-    // user_pod_row.js.
-    enum AuthType {
-      OFFLINE_PASSWORD = 0,
-      ONLINE_SIGN_IN = 1,
-      NUMERIC_PIN = 2,
-      USER_CLICK = 3,
-      EXPAND_THEN_USER_CLICK = 4,
-      FORCE_OFFLINE_PASSWORD = 5
-    };
-
     enum ScreenType { SIGNIN_SCREEN = 0, LOCK_SCREEN = 1, OTHER_SCREEN = 2 };
 
     // Displays |message| in a banner on the lock screen.
@@ -128,11 +118,12 @@ class ScreenlockBridge {
 
     // Set the authentication type to be used on the lock screen.
     virtual void SetAuthType(const AccountId& account_id,
-                             AuthType auth_type,
+                             proximity_auth::mojom::AuthType auth_type,
                              const base::string16& auth_value) = 0;
 
     // Returns the authentication type used for a user.
-    virtual AuthType GetAuthType(const AccountId& account_id) const = 0;
+    virtual proximity_auth::mojom::AuthType GetAuthType(
+        const AccountId& account_id) const = 0;
 
     // Returns the type of the screen -- a signin or a lock screen.
     virtual ScreenType GetScreenType() const = 0;

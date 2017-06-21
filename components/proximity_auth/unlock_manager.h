@@ -31,8 +31,7 @@ class UnlockManager {
   // Called when the user pod is clicked for an authentication attempt of type
   // |auth_type|.
   // Exposed for testing.
-  virtual void OnAuthAttempted(
-      ScreenlockBridge::LockHandler::AuthType auth_type) = 0;
+  virtual void OnAuthAttempted(mojom::AuthType auth_type) = 0;
 };
 
 }  // namespace proximity_auth

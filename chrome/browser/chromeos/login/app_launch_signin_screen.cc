@@ -217,10 +217,10 @@ void AppLaunchSigninScreen::HandleGetUsers() {
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end();
        ++it) {
-    proximity_auth::ScreenlockBridge::LockHandler::AuthType initial_auth_type =
+    proximity_auth::mojom::AuthType initial_auth_type =
         UserSelectionScreen::ShouldForceOnlineSignIn(*it)
-            ? proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
-            : proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
+            ? proximity_auth::mojom::AuthType::ONLINE_SIGN_IN
+            : proximity_auth::mojom::AuthType::OFFLINE_PASSWORD;
     auto user_dict = base::MakeUnique<base::DictionaryValue>();
     UserSelectionScreen::FillUserDictionary(
         *it, true,               /* is_owner */

@@ -283,14 +283,13 @@ void UnlockManagerImpl::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-void UnlockManagerImpl::OnAuthAttempted(
-    ScreenlockBridge::LockHandler::AuthType auth_type) {
+void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
   if (is_attempting_auth_) {
     PA_LOG(INFO) << "Already attempting auth.";
     return;
   }
 
-  if (auth_type != ScreenlockBridge::LockHandler::USER_CLICK)
+  if (auth_type != mojom::AuthType::USER_CLICK)
     return;
 
   is_attempting_auth_ = true;

@@ -60,9 +60,8 @@ class ScreenlockPrivateEventRouter
   explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
   ~ScreenlockPrivateEventRouter() override;
 
-  bool OnAuthAttempted(
-      proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
-      const std::string& value);
+  bool OnAuthAttempted(proximity_auth::mojom::AuthType auth_type,
+                       const std::string& value);
 
   // BrowserContextKeyedAPI
   static BrowserContextKeyedAPIFactory<ScreenlockPrivateEventRouter>*
