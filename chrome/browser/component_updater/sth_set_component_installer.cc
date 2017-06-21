@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/net/sth_distributor_provider.h"
@@ -77,12 +77,11 @@ void STHSetComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  const base::Closure load_sths_closure = base::Bind(
-      &STHSetComponentInstallerTraits::LoadSTHsFromDisk,
-      weak_ptr_factory_.GetWeakPtr(), GetInstalledPath(install_dir), version);
-
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetBlockingPool(), load_sths_closure);
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      base::BindOnce(&STHSetComponentInstallerTraits::LoadSTHsFromDisk,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     GetInstalledPath(install_dir), version));
 }
 
 // Called during startup and installation before ComponentReady().
@@ -179,10 +178,11 @@ void STHSetComponentInstallerTraits::OnJsonParseSuccess(
 
   // The log id is not a part of the response, fill in manually.
   signed_tree_head.log_id = log_id;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&net::ct::STHObserver::NewSTHObserved,
-                 base::Unretained(sth_observer_), signed_tree_head));
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&net::ct::STHObserver::NewSTHObserved,
+                         base::Unretained(sth_observer_), signed_tree_head));
 }
 
 void STHSetComponentInstallerTraits::OnJsonParseError(

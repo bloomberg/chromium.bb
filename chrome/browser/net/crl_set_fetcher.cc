@@ -10,6 +10,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,11 +46,9 @@ void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus,
   SetCRLSetFilePath(path);
   cus_ = cus;
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::BindOnce(&CRLSetFetcher::DoInitialLoadFromDisk, this))) {
-    NOTREACHED();
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      base::BindOnce(&CRLSetFetcher::DoInitialLoadFromDisk, this));
 }
 
 void CRLSetFetcher::DeleteFromDisk(const base::FilePath& path) {
@@ -57,16 +57,14 @@ void CRLSetFetcher::DeleteFromDisk(const base::FilePath& path) {
   if (path.empty())
     return;
   SetCRLSetFilePath(path);
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::BindOnce(&CRLSetFetcher::DoDeleteFromDisk, this))) {
-    NOTREACHED();
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      base::BindOnce(&CRLSetFetcher::DoDeleteFromDisk, this));
 }
 
 void CRLSetFetcher::DoInitialLoadFromDisk() {
   TRACE_EVENT0("net", "CRLSetFetcher::DoInitialLoadFromDisk");
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   LoadFromDisk(GetCRLSetFilePath(), &crl_set_);
 
@@ -76,9 +74,10 @@ void CRLSetFetcher::DoInitialLoadFromDisk() {
 
   // Get updates, advertising the sequence number of the CRL set that we just
   // loaded, if any.
-  if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                               base::BindOnce(&CRLSetFetcher::RegisterComponent,
-                                              this, sequence_of_loaded_crl))) {
+  if (!BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)
+           ->PostTask(FROM_HERE,
+                      base::BindOnce(&CRLSetFetcher::RegisterComponent, this,
+                                     sequence_of_loaded_crl))) {
     NOTREACHED();
   }
 }
@@ -87,7 +86,7 @@ void CRLSetFetcher::LoadFromDisk(base::FilePath path,
                                  scoped_refptr<net::CRLSet>* out_crl_set) {
   TRACE_EVENT0("net", "CRLSetFetcher::LoadFromDisk");
 
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   std::string crl_set_bytes;
   {
@@ -103,9 +102,10 @@ void CRLSetFetcher::LoadFromDisk(base::FilePath path,
 
   VLOG(1) << "Loaded " << crl_set_bytes.size() << " bytes of CRL set from disk";
 
-  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                               base::BindOnce(&CRLSetFetcher::SetCRLSetIfNewer,
-                                              this, *out_crl_set))) {
+  if (!BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+           ->PostTask(FROM_HERE,
+                      base::BindOnce(&CRLSetFetcher::SetCRLSetIfNewer, this,
+                                     *out_crl_set))) {
     NOTREACHED();
   }
 }
@@ -155,7 +155,7 @@ void CRLSetFetcher::RegisterComponent(uint32_t sequence_of_loaded_crl) {
 }
 
 void CRLSetFetcher::DoDeleteFromDisk() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   DeleteFile(GetCRLSetFilePath(), false /* not recursive */);
 }
@@ -233,9 +233,10 @@ bool CRLSetFetcher::DoInstall(const base::DictionaryValue& manifest,
     crl_set_ = new_crl_set;
   }
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&CRLSetFetcher::SetCRLSetIfNewer, this, crl_set_))) {
+  if (!BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+           ->PostTask(FROM_HERE,
+                      base::BindOnce(&CRLSetFetcher::SetCRLSetIfNewer, this,
+                                     crl_set_))) {
     NOTREACHED();
   }
 

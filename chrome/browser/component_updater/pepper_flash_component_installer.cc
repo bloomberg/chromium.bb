@@ -24,7 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
@@ -286,9 +286,9 @@ FlashComponentInstallerTraits::OnCustomInstall(
   }
 
 #if defined(OS_CHROMEOS)
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ImageLoaderRegistration, version, install_dir));
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+      ->PostTask(FROM_HERE, base::BindOnce(&ImageLoaderRegistration, version,
+                                           install_dir));
 #elif defined(OS_LINUX)
   const base::FilePath flash_path =
       install_dir.Append(chrome::kPepperFlashPluginFilename);
@@ -312,8 +312,9 @@ void FlashComponentInstallerTraits::ComponentReady(
   // Flash version, so we do not do this.
   RegisterPepperFlashWithChrome(path.Append(chrome::kPepperFlashPluginFilename),
                                 version);
-  BrowserThread::GetBlockingPool()->PostTask(
-      FROM_HERE, base::Bind(&UpdatePathService, path));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::TaskPriority::BACKGROUND, base::MayBlock()},
+                           base::BindOnce(&UpdatePathService, path));
 #endif  // !defined(OS_LINUX)
 }
 
