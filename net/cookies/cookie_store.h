@@ -127,6 +127,18 @@ class NET_EXPORT CookieStore {
       CookiePriority priority,
       const SetCookiesCallback& callback) = 0;
 
+  // TODO(rdsmith): Remove SetCookieWithDetailsAsync in favor of this.
+  // Set the cookie on the cookie store.  |cookie.IsCanonical()| must
+  // be true.  |secure_source| indicates if the source of the setting
+  // may be considered secure (if from a URL, the scheme is
+  // cryptographic), and |modify_http_only| indicates if the source of
+  // the setting may modify http_only cookies.  The current time will
+  // be used in place of a null creation time.
+  virtual void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
+                                       bool secure_source,
+                                       bool modify_http_only,
+                                       const SetCookiesCallback& callback) = 0;
+
   // TODO(???): what if the total size of all the cookies >4k, can we have a
   // header that big or do we need multiple Cookie: headers?
   // Note: Some sites, such as Facebook, occasionally use Cookie headers >4k.

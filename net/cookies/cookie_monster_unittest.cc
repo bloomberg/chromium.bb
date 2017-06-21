@@ -148,6 +148,20 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.result();
   }
 
+  bool SetCanonicalCookie(std::unique_ptr<CookieMonster> cm,
+                          std::unique_ptr<CanonicalCookie> cookie,
+                          bool secure_source,
+                          bool modify_http_only) {
+    DCHECK(cm);
+    ResultSavingCookieCallback<bool> callback;
+    cm->SetCanonicalCookieAsync(
+        std::move(cookie), secure_source, modify_http_only,
+        base::Bind(&ResultSavingCookieCallback<bool>::Run,
+                   base::Unretained(&callback)));
+    callback.WaitUntilDone();
+    return callback.result();
+  }
+
   int DeleteAllCreatedBetween(CookieMonster* cm,
                               const base::Time& delete_begin,
                               const base::Time& delete_end) {
@@ -2303,7 +2317,7 @@ TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
   // When passed to the CookieMonster, it takes ownership of the pointed to
   // cookies.
   cookies.push_back(
-      CanonicalCookie::Create(kUrl, "a=b", base::Time(), CookieOptions()));
+      CanonicalCookie::Create(kUrl, "a=b", base::Time::Now(), CookieOptions()));
   ASSERT_TRUE(cookies[0]);
   store->commands()[0].loaded_callback.Run(std::move(cookies));
 

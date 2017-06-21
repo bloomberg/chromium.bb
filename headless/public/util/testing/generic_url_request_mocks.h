@@ -74,6 +74,11 @@ class HEADLESS_EXPORT MockCookieStore : public net::CookieStore {
                                  net::CookiePriority priority,
                                  const SetCookiesCallback& callback) override;
 
+  void SetCanonicalCookieAsync(std::unique_ptr<net::CanonicalCookie> cookie,
+                               bool secure_source,
+                               bool modify_http_only,
+                               const SetCookiesCallback& callback) override;
+
   void GetCookiesWithOptionsAsync(const GURL& url,
                                   const net::CookieOptions& options,
                                   const GetCookiesCallback& callback) override;

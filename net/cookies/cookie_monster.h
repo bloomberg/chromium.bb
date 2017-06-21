@@ -176,6 +176,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  CookieSameSite same_site,
                                  CookiePriority priority,
                                  const SetCookiesCallback& callback) override;
+  void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
+                               bool secure_source,
+                               bool modify_http_only,
+                               const SetCookiesCallback& callback) override;
   void GetCookiesWithOptionsAsync(const GURL& url,
                                   const CookieOptions& options,
                                   const GetCookiesCallback& callback) override;
@@ -247,6 +251,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   class SetAllCookiesTask;
   class SetCookieWithDetailsTask;
   class SetCookieWithOptionsTask;
+  class SetCanonicalCookieTask;
   class DeleteSessionCookiesTask;
 
   // Testing support.
@@ -427,6 +432,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             CookieSameSite same_site,
                             CookiePriority priority);
 
+  // Sets a canonical cookie, deletes equivalents and performs garbage
+  // collection.  |source_secure| indicates if the cookie is being set
+  // from a secure source (e.g. a cryptographic scheme).
+  // |modify_http_only| indicates if this setting operation is allowed
+  // to affect http_only cookies.
+  bool SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cookie,
+                          bool secure_source,
+                          bool can_modify_httponly);
+
   CookieList GetAllCookies();
 
   CookieList GetCookieListWithOptions(const GURL& url,
@@ -544,15 +558,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                            const std::string& cookie_line,
                                            const base::Time& creation_time,
                                            const CookieOptions& options);
-
-  // Sets a canonical cookie, deletes equivalents and performs garbage
-  // collection.  |source_secure| indicates if the cookie is being set
-  // from a secure source (e.g. a cryptographic scheme).
-  // |modify_http_only| indicates if this setting operation is allowed
-  // to affect http_only cookies.
-  bool SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cookie,
-                          bool secure_source,
-                          bool can_modify_httponly);
 
   // Sets all cookies from |list| after deleting any equivalent cookie.
   // For data gathering purposes, this routine is treated as if it is

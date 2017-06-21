@@ -84,6 +84,14 @@ void MockCookieStore::SetCookieWithDetailsAsync(
   CHECK(false);
 }
 
+void MockCookieStore::SetCanonicalCookieAsync(
+    std::unique_ptr<net::CanonicalCookie> cookie,
+    bool secure_source,
+    bool can_modify_httponly,
+    const SetCookiesCallback& callback) {
+  CHECK(false);
+}
+
 void MockCookieStore::GetCookiesWithOptionsAsync(
     const GURL& url,
     const net::CookieOptions& options,

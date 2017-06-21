@@ -188,7 +188,7 @@ TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
   std::unique_ptr<net::CanonicalCookie> canonical_cookie(
       net::CanonicalCookie::Create(GURL("http://test.com"),
                                    "=011Q255bNX_1!yd\203e+;path=/path\203",
-                                   base::Time(), net::CookieOptions()));
+                                   base::Time::Now(), net::CookieOptions()));
   ASSERT_NE(nullptr, canonical_cookie.get());
   Cookie cookie =
       cookies_helpers::CreateCookie(*canonical_cookie, "some cookie store");

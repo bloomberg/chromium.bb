@@ -25,6 +25,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "ios/net/cookies/cookie_creation_time_manager.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
 #include "ios/net/cookies/system_cookie_util.h"
@@ -404,8 +405,6 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
   cookie_path = std::string(canon_path.data() + canon_path_component.begin,
                             canon_path_component.len);
 
-  // First create a CanonicalCookie, to normalize the arguments,
-  // particularly domain and path, and perform validation.
   std::unique_ptr<net::CanonicalCookie> canonical_cookie =
       base::MakeUnique<net::CanonicalCookie>(
           name, value, cookie_domain, cookie_path, creation_time,
@@ -426,6 +425,40 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
 
   if (!callback.is_null())
     callback.Run(success);
+}
+
+void CookieStoreIOS::SetCanonicalCookieAsync(
+    std::unique_ptr<net::CanonicalCookie> cookie,
+    bool secure_source,
+    bool modify_http_only,
+    const SetCookiesCallback& callback) {
+  DCHECK(cookie->IsCanonical());
+  // The exclude_httponly() option would only be used by a javascript
+  // engine.
+  DCHECK(modify_http_only);
+
+  if (cookie->IsSecure() && !secure_source) {
+    if (!callback.is_null())
+      callback.Run(false);
+    return;
+  }
+
+  NSHTTPCookie* ns_cookie = SystemCookieFromCanonicalCookie(*cookie.get());
+
+  if (ns_cookie != nil) {
+    [system_store_ setCookie:ns_cookie];
+    creation_time_manager_->SetCreationTime(
+        ns_cookie,
+        creation_time_manager_->MakeUniqueCreationTime(
+            cookie->CreationDate().is_null() ? base::Time::Now()
+                                             : cookie->CreationDate()));
+    if (!callback.is_null())
+      callback.Run(true);
+    return;
+  }
+
+  if (!callback.is_null())
+    callback.Run(false);
 }
 
 void CookieStoreIOS::GetCookiesWithOptionsAsync(
