@@ -94,6 +94,9 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
     // Remember the time stamp for usage stats.
     start_time_ = base::TimeTicks::Now();
     // This is full resource list fetch.
+    //
+    // NOTE: Because we already know the largest change ID, here we can use
+    // files.list instead of changes.list for speed. crbug.com/287602
     scheduler_->GetAllFileList(
         base::Bind(&FullFeedFetcher::OnFileListFetched,
                    weak_ptr_factory_.GetWeakPtr(), callback));
