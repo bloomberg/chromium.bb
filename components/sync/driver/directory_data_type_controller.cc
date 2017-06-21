@@ -9,7 +9,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
@@ -82,14 +81,6 @@ void DirectoryDataTypeController::GetStatusCounters(
       num_entries_by_type[type()] - num_to_delete_entries_by_type[type()];
 
   callback.Run(type(), counters);
-}
-
-void DirectoryDataTypeController::RecordMemoryUsageHistogram() {
-  syncer::syncable::Directory* directory =
-      sync_client_->GetSyncService()->GetUserShare()->directory.get();
-  size_t memory_usage = directory->EstimateMemoryUsageByType(type());
-  SyncRecordMemoryKbHistogram(kModelTypeMemoryHistogramPrefix, type(),
-                              memory_usage);
 }
 
 // static
