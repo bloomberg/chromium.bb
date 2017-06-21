@@ -7,26 +7,15 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace base {
-class TaskRunner;
-}
-
-namespace content {
-class WebContents;
-}
-
 namespace favicon_base {
 struct FaviconRawBitmapResult;
-}
-
-namespace IPC {
-class Message;
 }
 
 class GURL;
@@ -122,8 +111,6 @@ class AddToHomescreenDataFetcher
 
   // Notifies the observer that the shortcut data is all available.
   void NotifyObserver(const SkBitmap& icon);
-
-  scoped_refptr<base::TaskRunner> background_task_runner_;
 
   Observer* weak_observer_;
 
