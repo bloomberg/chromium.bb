@@ -35,10 +35,11 @@ public class SadTabViewFactory {
      * @param buttonAction {@link Runnable} to be executed when the button is pressed.
      *                     (e.g., refreshing the page or sending feedback)
      * @param showSendFeedbackView Whether to show the "send feedback" version of the Sad Tab view.
+     * @param isIncognito Whether the Sad Tab view is being showin in an incognito tab.
      * @return A "Sad Tab" view instance which is used in place of a crashed renderer.
      */
     public static View createSadTabView(Context context, final Runnable suggestionAction,
-            final Runnable buttonAction, final boolean showSendFeedbackView) {
+            final Runnable buttonAction, final boolean showSendFeedbackView, boolean isIncognito) {
         // Inflate Sad tab and initialize.
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
@@ -49,7 +50,7 @@ public class SadTabViewFactory {
                 showSendFeedbackView ? R.string.sad_tab_reload_title : R.string.sad_tab_title;
         titleText.setText(titleTextId);
 
-        if (showSendFeedbackView) intializeSuggestionsViews(context, sadTabView);
+        if (showSendFeedbackView) intializeSuggestionsViews(context, sadTabView, isIncognito);
 
         TextView messageText = (TextView) sadTabView.findViewById(R.id.sad_tab_message);
         messageText.setText(getHelpMessage(context, suggestionAction, showSendFeedbackView));
@@ -105,8 +106,10 @@ public class SadTabViewFactory {
      * Initializes the TextViews that display tips for handling repeated crashes.
      * @param context Context of the resulting Sad Tab view.
      * @param sadTabView The parent Sad Tab view that contains the TextViews.
+     * @param isIncognito Whether the Sad Tab view is being showing in an incognito tab.
      */
-    private static void intializeSuggestionsViews(Context context, View sadTabView) {
+    private static void intializeSuggestionsViews(
+            Context context, View sadTabView, boolean isIncognito) {
         TextView suggestionsTitle =
                 (TextView) sadTabView.findViewById(R.id.sad_tab_suggestions_title);
         suggestionsTitle.setVisibility(View.VISIBLE);
@@ -114,19 +117,19 @@ public class SadTabViewFactory {
 
         TextView suggestions = (TextView) sadTabView.findViewById(R.id.sad_tab_suggestions);
         suggestions.setVisibility(View.VISIBLE);
-        suggestions.setText(
-                new SpannableStringBuilder()
-                        .append(generateBulletedString(
-                                context, R.string.sad_tab_reload_close_notabs))
-                        .append("\n")
-                        .append(generateBulletedString(context, R.string.sad_tab_reload_incognito))
-                        .append("\n")
-                        .append(generateBulletedString(
-                                context, R.string.sad_tab_reload_restart_browser))
-                        .append("\n")
-                        .append(generateBulletedString(
-                                context, R.string.sad_tab_reload_restart_device))
-                        .append("\n"));
+
+        SpannableStringBuilder spannableString = new SpannableStringBuilder();
+        if (!isIncognito) {
+            spannableString
+                    .append(generateBulletedString(context, R.string.sad_tab_reload_incognito))
+                    .append("\n");
+        }
+        spannableString
+                .append(generateBulletedString(context, R.string.sad_tab_reload_restart_browser))
+                .append("\n")
+                .append(generateBulletedString(context, R.string.sad_tab_reload_restart_device))
+                .append("\n");
+        suggestions.setText(spannableString);
     }
 
     /**
