@@ -42,6 +42,10 @@ enum {
   // This limit is used by ParamTraits<VideoCaptureParams>.
   kMaxFramesPerSecond = 1000,
 
+  // The minimum elapsed amount of time (in seconds) for a playback to be
+  // considered as having active engagement.
+  kMinimumElapsedWatchTimeSecs = 7,
+
   // Maximum lengths for various EME API parameters. These are checks to
   // prevent unnecessarily large parameters from being passed around, and the
   // lengths are somewhat arbitrary as the EME spec doesn't specify any limits.

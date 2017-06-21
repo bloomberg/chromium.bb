@@ -149,6 +149,13 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // for display at least once.
   void disable_frame_dropping() { frame_dropping_disabled_ = true; }
 
+  enum : int {
+    // The number of frames to store for moving average calculations.  Value
+    // picked after experimenting with playback of various local media and
+    // YouTube clips.
+    kMovingAverageSamples = 32
+  };
+
  private:
   friend class VideoRendererAlgorithmTest;
 

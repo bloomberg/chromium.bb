@@ -5,6 +5,7 @@
 #include "media/blink/watch_time_reporter.h"
 
 #include "base/power_monitor/power_monitor.h"
+#include "media/base/limits.h"
 #include "media/base/watch_time_keys.h"
 
 namespace media {
@@ -12,7 +13,7 @@ namespace media {
 // The minimum amount of media playback which can elapse before we'll report
 // watch time metrics for a playback.
 constexpr base::TimeDelta kMinimumElapsedWatchTime =
-    base::TimeDelta::FromSeconds(7);
+    base::TimeDelta::FromSeconds(limits::kMinimumElapsedWatchTimeSecs);
 
 // The minimum width and height of videos to report watch time metrics for.
 constexpr gfx::Size kMinimumVideoSize = gfx::Size(200, 200);
