@@ -157,6 +157,11 @@ void TextResourceDecoder::SetEncoding(const WTF::TextEncoding& encoding,
   if (!encoding.IsValid())
     return;
 
+  // Always use UTF-8 for |kAlwaysUseUTF8ForText|.
+  if (options_.GetEncodingDetectionOption() ==
+      TextResourceDecoderOptions::kAlwaysUseUTF8ForText)
+    return;
+
   // When encoding comes from meta tag (i.e. it cannot be XML files sent via
   // XHR), treat x-user-defined as windows-1252 (bug 18270)
   if (source == kEncodingFromMetaTag &&
