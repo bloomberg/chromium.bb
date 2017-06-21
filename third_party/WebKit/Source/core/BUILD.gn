@@ -1150,6 +1150,7 @@ source_set("unit_tests") {
     "animation/AnimationClockTest.cpp",
     "animation/AnimationEffectReadOnlyTest.cpp",
     "animation/AnimationInputHelpersTest.cpp",
+    "animation/AnimationSimTest.cpp",
     "animation/AnimationTest.cpp",
     "animation/AnimationTestHelper.cpp",
     "animation/AnimationTestHelper.h",
