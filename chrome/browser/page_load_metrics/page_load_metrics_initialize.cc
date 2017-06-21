@@ -28,6 +28,7 @@
 #include "chrome/browser/page_load_metrics/observers/loading_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/lofi_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/media_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/prerender_page_load_metrics_observer.h"
@@ -92,6 +93,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(
         base::MakeUnique<DocumentWritePageLoadMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<MediaPageLoadMetricsObserver>());
+    tracker->AddObserver(
+        base::MakeUnique<MultiTabLoadingPageLoadMetricsObserver>());
     tracker->AddObserver(
         base::MakeUnique<previews::PreviewsPageLoadMetricsObserver>());
     tracker->AddObserver(
