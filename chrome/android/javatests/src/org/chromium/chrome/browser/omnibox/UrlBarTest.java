@@ -276,7 +276,7 @@ public class UrlBarTest {
         final StubAutocompleteController controller = new StubAutocompleteController() {
             @Override
             public void start(Profile profile, String url, String text, int cursorPosition,
-                    boolean preventInlineAutocomplete) {
+                    boolean preventInlineAutocomplete, boolean focusedFromFakebox) {
                 if (autocompleteHelper.getCallCount() != 0) return;
 
                 requestedAutocompleteText.set(text);
@@ -380,7 +380,7 @@ public class UrlBarTest {
         final StubAutocompleteController controller = new StubAutocompleteController() {
             @Override
             public void start(Profile profile, String url, String text, int cursorPosition,
-                    boolean preventInlineAutocomplete) {
+                    boolean preventInlineAutocomplete, boolean focusedFromFakebox) {
                 if (!TextUtils.equals(textToBeEntered, text)) return;
                 if (autocompleteHelper.getCallCount() != 0) return;
 
@@ -431,7 +431,7 @@ public class UrlBarTest {
         final StubAutocompleteController controller = new StubAutocompleteController() {
             @Override
             public void start(Profile profile, String url, String text, int cursorPosition,
-                    boolean preventInlineAutocomplete) {
+                    boolean preventInlineAutocomplete, boolean focusedFromFakebox) {
                 if (!TextUtils.equals("test", text)) return;
                 if (autocompleteHelper.getCallCount() != 0) return;
 
@@ -511,7 +511,7 @@ public class UrlBarTest {
         final StubAutocompleteController controller = new StubAutocompleteController() {
             @Override
             public void start(Profile profile, String url, String text, int cursorPosition,
-                    boolean preventInlineAutocomplete) {
+                    boolean preventInlineAutocomplete, boolean focusedFromFakebox) {
                 requestedAutocompleteText.set(text);
             }
         };

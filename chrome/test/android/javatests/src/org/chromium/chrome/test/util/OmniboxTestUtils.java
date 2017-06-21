@@ -143,9 +143,8 @@ public class OmniboxTestUtils {
         }
 
         @Override
-        public void start(
-                Profile profile, String url ,
-                final String text, boolean preventInlineAutocomplete) {
+        public void start(Profile profile, String url, final String text,
+                boolean preventInlineAutocomplete, boolean focusedFromFakebox) {
             mStartAutocompleteCalled = true;
             mSuggestionsDispatcher = new Runnable() {
                 @Override
@@ -210,14 +209,12 @@ public class OmniboxTestUtils {
 
         @Override
         public void start(Profile profile, String url, String text, int cursorPosition,
-                boolean preventInlineAutocomplete) {
-        }
+                boolean preventInlineAutocomplete, boolean focusedFromFakebox) {}
 
         @Override
-        public final void start(
-                Profile profile, String url,
-                final String text, boolean preventInlineAutocomplete) {
-            start(profile, url, text, -1, preventInlineAutocomplete);
+        public final void start(Profile profile, String url, final String text,
+                boolean preventInlineAutocomplete, boolean focusedFromFakebox) {
+            start(profile, url, text, -1, preventInlineAutocomplete, focusedFromFakebox);
         }
 
         @Override

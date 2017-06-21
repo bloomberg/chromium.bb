@@ -41,11 +41,13 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
              bool prevent_inline_autocomplete,
              bool prefer_keyword,
              bool allow_exact_keyword_match,
-             bool best_match_only);
+             bool want_asynchronous_matches,
+             bool focused_from_fakebox);
   base::android::ScopedJavaLocalRef<jobject> Classify(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_text);
+      const base::android::JavaParamRef<jstring>& j_text,
+      bool focused_from_fakebox);
   void OnOmniboxFocused(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -129,7 +131,8 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       JNIEnv* env,
       const base::android::JavaRef<jobject>& obj,
       const base::android::JavaRef<jstring>& j_text,
-      bool prevent_inline_autocomplete);
+      bool prevent_inline_autocomplete,
+      bool focused_from_fakebox);
 
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
 

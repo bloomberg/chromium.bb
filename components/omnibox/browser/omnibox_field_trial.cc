@@ -58,6 +58,18 @@ const base::Feature kEnableClipboardProvider {
 #endif
 };
 
+// Feature to enable demotion of URLs when the fakebox is selected.  Only used
+// on Android tablets unless kAndroidFakeboxDemotionOnPhones is also enabled.
+const base::Feature kAndroidFakeboxDemotion{"OmniboxAndroidFakeboxDemotion",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to enable demotion of URLs when the fakebox is selected on a device
+// with a phone form factor.  Android phones have only one box on the NTP, so
+// the user doesn't have a choice between boxes.  This makes the case for
+// demoting URLs less clear, hence the separate feature flag.
+const base::Feature kAndroidFakeboxDemotionOnPhones{
+    "OmniboxAndroidFakeboxDemotionOnPhones", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to enable the search provider to send a request to the suggest
 // server on focus.  This allows the suggest server to warm up, by, for
 // example, loading per-user models into memory.  Having a per-user model
