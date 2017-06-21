@@ -27,8 +27,6 @@
   self.viewController = [SettingsNavigationController
       newSettingsMainControllerWithMainBrowserState:self.browser
                                                         ->browser_state()
-                                currentBrowserState:self.browser
-                                                        ->browser_state()
                                            delegate:self];
   [super start];
 }

@@ -91,8 +91,6 @@ TEST_F(SettingsNavigationControllerTest, PopController) {
         [SettingsNavigationController
             newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
                                                               .get()
-                                      currentBrowserState:chrome_browser_state_
-                                                              .get()
                                                  delegate:nil];
     UIViewController* viewController =
         [[UIViewController alloc] initWithNibName:nil bundle:nil];
@@ -114,8 +112,6 @@ TEST_F(SettingsNavigationControllerTest, DontPopRootController) {
         [SettingsNavigationController
             newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
                                                               .get()
-                                      currentBrowserState:chrome_browser_state_
-                                                              .get()
                                                  delegate:nil];
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
 
@@ -132,8 +128,6 @@ TEST_F(SettingsNavigationControllerTest,
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
             newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                              .get()
-                                      currentBrowserState:chrome_browser_state_
                                                               .get()
                                                  delegate:mockDelegate_];
     UIViewController* viewController =
@@ -156,8 +150,6 @@ TEST_F(SettingsNavigationControllerTest,
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
             newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                              .get()
-                                      currentBrowserState:chrome_browser_state_
                                                               .get()
                                                  delegate:mockDelegate_];
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);

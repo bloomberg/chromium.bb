@@ -14,7 +14,6 @@
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/prefs/pref_observer_bridge.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -58,8 +57,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ContentSettingBackedBoolean* _disablePopupsSetting;
 
   // This object contains the list of available Mail client apps that can
-  // handle mailto: URLs. The value can be nil if mailto: URL rewriting is
-  // not available because of experimental settings.
+  // handle mailto: URLs.
   MailtoURLRewriter* _mailtoURLRewriter;
 
   // Updatable Items
@@ -104,10 +102,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                               inverted:YES];
     [_disablePopupsSetting setObserver:self];
 
-    if (!experimental_flags::IsNativeAppLauncherEnabled()) {
-      _mailtoURLRewriter = [[MailtoURLRewriter alloc] initWithStandardHandlers];
-      [_mailtoURLRewriter setObserver:self];
-    }
+    _mailtoURLRewriter = [[MailtoURLRewriter alloc] initWithStandardHandlers];
+    [_mailtoURLRewriter setObserver:self];
 
     [self loadModel];
   }
@@ -132,10 +128,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierSettings];
   [model addItem:[self translateItem]
       toSectionWithIdentifier:SectionIdentifierSettings];
-  if (!experimental_flags::IsNativeAppLauncherEnabled()) {
-    [model addItem:[self composeEmailItem]
-        toSectionWithIdentifier:SectionIdentifierSettings];
-  }
+  [model addItem:[self composeEmailItem]
+      toSectionWithIdentifier:SectionIdentifierSettings];
 }
 
 - (CollectionViewItem*)blockPopupsItem {

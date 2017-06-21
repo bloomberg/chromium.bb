@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/chrome_url_util.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -32,11 +31,8 @@
 #import "ios/chrome/browser/ui/open_in_controller_testing.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
 #include "ios/chrome/test/block_cleanup_test.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#import "ios/public/provider/chrome/browser/native_app_launcher/fake_native_app_metadata.h"
-#import "ios/public/provider/chrome/browser/native_app_launcher/fake_native_app_whitelist_manager.h"
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -141,24 +137,6 @@ class HistoryQueryResultsObserver
 };
 
 HistoryQueryResultsObserver::~HistoryQueryResultsObserver() {}
-
-class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
- public:
-  FakeChromeBrowserProvider(id<NativeAppMetadata> metadata) {
-    FakeNativeAppWhitelistManager* fakeManager =
-        [[FakeNativeAppWhitelistManager alloc] init];
-    fakeManager.metadata = metadata;
-    manager_.reset(fakeManager);
-  }
-  ~FakeChromeBrowserProvider() override {}
-
-  id<NativeAppWhitelistManager> GetNativeAppWhitelistManager() const override {
-    return manager_;
-  }
-
- private:
-  base::scoped_nsprotocol<id<NativeAppWhitelistManager>> manager_;
-};
 
 // TODO(crbug.com/620465): can a TestWebState be used instead of a WebStateImpl
 // for those tests? This will require changing Tab to use a WebState instead of
@@ -420,174 +398,6 @@ TEST_F(TabTest, GetSuggestedFilenameFromDefaultName) {
   web_state_impl_->OnHttpResponseHeadersReceived(headers.get(), url);
   BrowseTo(url, url, [NSString string]);
   EXPECT_NSEQ(@"Document.pdf", [[tab_ openInController] suggestedFilename]);
-}
-
-// A separate test fixture is used to test opening external URLs using Google
-// App Launcher. In any of the tests for this feature, scenarios have to be
-// tested with the regular ChromeBrowserState AND the incognito
-// ChromeBrowserState.
-// In Incognito, -urlTriggersNativeAppLaunch:sourceURL should always return NO.
-class TabOpenAppTest : public TabTest {
- protected:
-  // Tests that calling |urlTriggersNativeAppLaunch:sourceURL:linkClicked| calls
-  // |openURL:| the expected number of times. |return_value| is the value to be
-  // returned from |openURL:|. |expected_result| is the value that is checked
-  // for from |urlTriggersNativeAppLaunch:sourceURL:linkClicked|.
-  void TestOpenNativeAppURL(const GURL& url,
-                            BOOL return_value,
-                            NSUInteger expected_tab_call_count,
-                            BOOL expected_result) {
-    ExpectWithMockedExternalAppLauncherOpenURL(
-        return_value, expected_tab_call_count, ^{
-          EXPECT_EQ(expected_result,
-                    [tab_ urlTriggersNativeAppLaunch:url
-                                           sourceURL:GURL("http://google.com")
-                                         linkClicked:YES]);
-        });
-  }
-
-  // Stubs out |openURL:| and checks how many times it was called.
-  void ExpectWithMockedExternalAppLauncherOpenURL(
-      BOOL return_value,
-      NSUInteger expected_tab_call_count,
-      ProceduralBlock expectation_block) {
-    __block NSUInteger counter = 0;
-    [mock_external_app_launcher_
-                  onSelector:@selector(openURL:linkClicked:)
-        callBlockExpectation:(id) ^ (const GURL& url, BOOL linkClicked) {
-          ++counter;
-          return return_value;
-        }];
-    expectation_block();
-    EXPECT_EQ(expected_tab_call_count, counter);
-    [mock_external_app_launcher_
-        removeBlockExpectationOnSelector:@selector(openURL:linkClicked:)];
-  }
-};
-
-// A version of TabOpenAppTests customized to use the off-the-record browser
-// state (instead of the non-incognito one).
-class TabOpenAppOffTheRecordTest : public TabOpenAppTest {
- private:
-  bool UseOffTheRecordBrowserState() const override { return true; }
-};
-
-// Tests the opening of matching native apps.
-TEST_F(TabOpenAppTest, testDummyURL) {
-  // TODO(crbug/711511): Remove this test when Native App Launcher has been
-  // fully deprecated.
-  if (!experimental_flags::IsNativeAppLauncherEnabled())
-    return;
-  EXPECT_FALSE([tab_ browserState]->IsOffTheRecord());
-
-  GURL no_native_app_url("dummy string");
-  TestOpenNativeAppURL(no_native_app_url, NO, 0, NO);
-}
-
-TEST_F(TabOpenAppTest, testURL) {
-  // TODO(crbug/711511): Remove this test when Native App Launcher has been
-  // fully deprecated.
-  if (!experimental_flags::IsNativeAppLauncherEnabled())
-    return;
-
-  EXPECT_FALSE([tab_ browserState]->IsOffTheRecord());
-
-  GURL testURL("http://www.youtube.com/");
-  // Fake metadata object to enable and disable autoopenlinks for testURL.
-  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
-  IOSChromeScopedTestingChromeBrowserProvider provider(
-      base::MakeUnique<FakeChromeBrowserProvider>(metadata));
-  // Turn auto open on.
-  int expectedCallCount = 1;
-  [metadata setShouldAutoOpenLinks:YES];
-  TestOpenNativeAppURL(testURL, YES, expectedCallCount, YES);
-  TestOpenNativeAppURL(testURL, NO, expectedCallCount, NO);
-
-  // Turn auto open off.
-  expectedCallCount = 0;
-  [metadata setShouldAutoOpenLinks:NO];
-  TestOpenNativeAppURL(testURL, NO, expectedCallCount, NO);
-}
-
-// TODO(crbug.com/330189): This test fails if Google Maps is installed (usually
-// on device).
-TEST_F(TabOpenAppTest, DISABLED_testResetShouldAutoOpenOnFailure) {
-  // TODO(crbug/711511): Remove this test when Native App Launcher has been
-  // fully deprecated.
-  if (!experimental_flags::IsNativeAppLauncherEnabled())
-    return;
-
-  EXPECT_FALSE([tab_ browserState]->IsOffTheRecord());
-
-  // With a regular profile.
-  GURL testURL("http://maps.google.com/");
-  // Fake metadata object
-  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
-
-  // Turn auto open on.
-  [metadata setShouldAutoOpenLinks:YES];
-  int expectedCallCount = 2;
-  TestOpenNativeAppURL(testURL, NO, expectedCallCount, NO);
-  EXPECT_FALSE([metadata shouldAutoOpenLinks]);
-}
-
-// Tests the opening of matching native apps with off-the-record browser state.
-TEST_F(TabOpenAppOffTheRecordTest, testDummyURL) {
-  // TODO(crbug/711511): Remove this test when Native App Launcher has been
-  // fully deprecated.
-  if (!experimental_flags::IsNativeAppLauncherEnabled())
-    return;
-
-  EXPECT_TRUE([tab_ browserState]->IsOffTheRecord());
-
-  GURL no_native_app_url("dummy string");
-  TestOpenNativeAppURL(no_native_app_url, NO, 0, NO);
-}
-
-TEST_F(TabOpenAppOffTheRecordTest, testURL) {
-  // TODO(crbug/711511): Remove this test when Native App Launcher has been
-  // fully deprecated.
-  if (!experimental_flags::IsNativeAppLauncherEnabled())
-    return;
-
-  EXPECT_TRUE([tab_ browserState]->IsOffTheRecord());
-
-  // With a regular chrome browser state.
-  GURL testURL("http://www.youtube.com/");
-  // Mock metadata object to enable and disable autoopenlinks for testURL.
-  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
-  IOSChromeScopedTestingChromeBrowserProvider provider(
-      base::MakeUnique<FakeChromeBrowserProvider>(metadata));
-
-  // Turn auto open on.
-  [metadata setShouldAutoOpenLinks:YES];
-  TestOpenNativeAppURL(testURL, NO, 0, NO);
-
-  // Turn auto open off.
-  [metadata setShouldAutoOpenLinks:NO];
-  TestOpenNativeAppURL(testURL, NO, 0, NO);
-}
-
-// TODO(crbug.com/330189): This test fails if Google Maps is installed (usually
-// on device).
-TEST_F(TabOpenAppOffTheRecordTest, DISABLED_testResetShouldAutoOpenOnFailure) {
-  // TODO(crbug/711511): Remove this test when Native App Launcher has been
-  // fully deprecated.
-  if (!experimental_flags::IsNativeAppLauncherEnabled())
-    return;
-
-  EXPECT_TRUE([tab_ browserState]->IsOffTheRecord());
-
-  // With a regular profile.
-  GURL testURL("http://maps.google.com/");
-  // Fake metadata object.
-  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
-
-  // Turn auto open on.
-  [metadata setShouldAutoOpenLinks:YES];
-  int expectedCallCount = 2;
-  TestOpenNativeAppURL(testURL, NO, expectedCallCount, NO);
-  EXPECT_FALSE([metadata shouldAutoOpenLinks]);
 }
 
 }  // namespace
