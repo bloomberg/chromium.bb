@@ -2040,8 +2040,10 @@ void WindowTreeClient::OnWindowTreeHostCreated(
     WindowTreeHostMus* window_tree_host) {
   // All WindowTreeHosts are destroyed before this, so we don't need to unset
   // the DragDropClient.
-  client::SetDragDropClient(window_tree_host->window(),
-                            drag_drop_controller_.get());
+  if (install_drag_drop_client_) {
+    client::SetDragDropClient(window_tree_host->window(),
+                              drag_drop_controller_.get());
+  }
 }
 
 void WindowTreeClient::OnTransientChildWindowAdded(Window* parent,

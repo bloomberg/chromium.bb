@@ -119,6 +119,8 @@ class AURA_EXPORT WindowTreeClient
   // See mojom for details on |automatically_create_display_roots|.
   void ConnectAsWindowManager(bool automatically_create_display_roots = true);
 
+  void DisableDragDropClient() { install_drag_drop_client_ = false; }
+
   service_manager::Connector* connector() { return connector_; }
   ui::Gpu* gpu() { return gpu_.get(); }
   CaptureSynchronizer* capture_synchronizer() {
@@ -651,6 +653,10 @@ class AURA_EXPORT WindowTreeClient
   gfx::Insets normal_client_area_insets_;
 
   bool in_shutdown_ = false;
+
+  // Temporary while we have mushrome, once we switch to mash this can be
+  // removed.
+  bool install_drag_drop_client_ = true;
 
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 
