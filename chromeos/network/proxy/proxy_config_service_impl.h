@@ -84,13 +84,6 @@ class CHROMEOS_EXPORT ProxyConfigServiceImpl
   // hence, picked up by observers.
   void DetermineEffectiveConfigFromDefaultNetwork();
 
-  // State of |active_config_|.  |active_config_| is only valid if
-  // |active_config_state_| is not ProxyPrefs::CONFIG_UNSET.
-  ProxyPrefs::ConfigState active_config_state_;
-
-  // Active proxy configuration, which could be from prefs or network.
-  net::ProxyConfig active_config_;
-
   // Track changes in profile preferences: UseSharedProxies and
   // OpenNetworkConfiguration.
   PrefChangeRegistrar profile_pref_registrar_;

@@ -695,6 +695,7 @@ test("chromeos_unittests") {
     "network/onc/onc_utils_unittest.cc",
     "network/onc/onc_validator_unittest.cc",
     "network/prohibited_technologies_handler_unittest.cc",
+    "network/proxy/proxy_config_service_impl_unittest.cc",
     "network/shill_property_handler_unittest.cc",
     "printing/ppd_cache_unittest.cc",
     "printing/ppd_provider_unittest.cc",
