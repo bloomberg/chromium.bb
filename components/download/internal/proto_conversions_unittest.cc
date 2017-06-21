@@ -125,7 +125,8 @@ TEST_F(ProtoConversionsTest, EntryConversion) {
       SchedulingParams::NetworkRequirements::OPTIMISTIC,
       SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE,
       SchedulingParams::Priority::HIGH, GURL(TEST_URL), "GET",
-      Entry::State::ACTIVE);
+      Entry::State::ACTIVE, base::FilePath(FILE_PATH_LITERAL("/test/xyz")),
+      base::Time::Now(), base::Time::Now());
   actual = EntryFromProto(EntryToProto(expected));
   EXPECT_TRUE(test::CompareEntry(&expected, &actual));
 }
@@ -141,7 +142,8 @@ TEST_F(ProtoConversionsTest, EntryVectorConversion) {
       SchedulingParams::NetworkRequirements::OPTIMISTIC,
       SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE,
       SchedulingParams::Priority::HIGH, GURL(TEST_URL), "GET",
-      Entry::State::ACTIVE));
+      Entry::State::ACTIVE, base::FilePath(FILE_PATH_LITERAL("/test/xyz")),
+      base::Time::Now(), base::Time::Now()));
 
   auto actual = EntryVectorFromProto(
       EntryVectorToProto(base::MakeUnique<std::vector<Entry>>(expected)));

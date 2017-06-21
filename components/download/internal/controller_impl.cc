@@ -15,6 +15,7 @@
 #include "components/download/internal/config.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/entry_utils.h"
+#include "components/download/internal/file_monitor.h"
 #include "components/download/internal/model.h"
 #include "components/download/internal/scheduler/scheduler.h"
 #include "components/download/internal/stats.h"
@@ -65,14 +66,18 @@ ControllerImpl::ControllerImpl(
     std::unique_ptr<Model> model,
     std::unique_ptr<DeviceStatusListener> device_status_listener,
     std::unique_ptr<Scheduler> scheduler,
-    std::unique_ptr<TaskScheduler> task_scheduler)
+    std::unique_ptr<TaskScheduler> task_scheduler,
+    std::unique_ptr<FileMonitor> file_monitor,
+    const base::FilePath& download_file_dir)
     : config_(config),
+      download_file_dir_(download_file_dir),
       clients_(std::move(clients)),
       driver_(std::move(driver)),
       model_(std::move(model)),
       device_status_listener_(std::move(device_status_listener)),
       scheduler_(std::move(scheduler)),
       task_scheduler_(std::move(task_scheduler)),
+      file_monitor_(std::move(file_monitor)),
       initializing_internals_(false),
       weak_ptr_factory_(this) {}
 
@@ -123,7 +128,9 @@ void ControllerImpl::StartDownload(const DownloadParams& params) {
   }
 
   start_callbacks_[params.guid] = params.callback;
-  model_->Add(Entry(params));
+  Entry entry(params);
+  entry.target_file_path = download_file_dir_.AppendASCII(params.guid);
+  model_->Add(entry);
 }
 
 void ControllerImpl::PauseDownload(const std::string& guid) {
@@ -235,7 +242,16 @@ void ControllerImpl::ProcessScheduledTasks() {
 
   while (!task_finished_callbacks_.empty()) {
     auto it = task_finished_callbacks_.begin();
-    // TODO(shaktisahu): Execute the scheduled task.
+    if (it->first == DownloadTaskType::DOWNLOAD_TASK) {
+      ActivateMoreDownloads();
+    } else if (it->first == DownloadTaskType::CLEANUP_TASK) {
+      auto timed_out_entries =
+          file_monitor_->CleanupFilesForCompletedEntries(model_->PeekEntries());
+      for (auto* entry : timed_out_entries) {
+        DCHECK_EQ(Entry::State::COMPLETE, entry->state);
+        model_->Remove(entry->guid);
+      }
+    }
 
     HandleTaskFinished(it->first, false,
                        stats::ScheduledTaskStatus::COMPLETED_NORMALLY);
@@ -405,6 +421,7 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   device_status_listener_->Start(this);
   PollActiveDriverDownloads();
   CancelOrphanedRequests();
+  CleanupUnknownFiles();
   ResolveInitialRequestStates();
   NotifyClientsOfStartup();
 
@@ -430,16 +447,33 @@ void ControllerImpl::CancelOrphanedRequests() {
   auto entries = model_->PeekEntries();
 
   std::vector<std::string> guids_to_remove;
+  std::vector<base::FilePath> files_to_remove;
   for (auto* entry : entries) {
-    if (!clients_->GetClient(entry->client))
+    if (!clients_->GetClient(entry->client)) {
       guids_to_remove.push_back(entry->guid);
+      files_to_remove.push_back(entry->target_file_path);
+    }
   }
 
   for (const auto& guid : guids_to_remove) {
-    // TODO(xingliu): Use file monitor to delete the files.
     driver_->Remove(guid);
     model_->Remove(guid);
   }
+
+  file_monitor_->DeleteFiles(files_to_remove,
+                             stats::FileCleanupReason::ORPHANED);
+}
+
+void ControllerImpl::CleanupUnknownFiles() {
+  auto entries = model_->PeekEntries();
+  std::vector<DriverEntry> driver_entries;
+  for (auto* entry : entries) {
+    base::Optional<DriverEntry> driver_entry = driver_->Find(entry->guid);
+    if (driver_entry.has_value())
+      driver_entries.push_back(driver_entry.value());
+  }
+
+  file_monitor_->DeleteUnknownFiles(entries, driver_entries);
 }
 
 void ControllerImpl::ResolveInitialRequestStates() {
@@ -656,12 +690,15 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     DCHECK(driver_entry.has_value());
     // TODO(dtrainor): Move the FilePath generation to the controller and store
     // it in Entry.  Then pass it into the DownloadDriver.
+    entry->target_file_path = driver_entry->temporary_physical_file_path;
+    entry->completion_time = driver_entry->completion_time;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ControllerImpl::SendOnDownloadSucceeded,
                    weak_ptr_factory_.GetWeakPtr(), entry->client, guid,
                    base::FilePath(), driver_entry->bytes_downloaded));
     TransitTo(entry, Entry::State::COMPLETE, model_.get());
+    ScheduleCleanupTask();
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ControllerImpl::SendOnDownloadFailed,
@@ -671,6 +708,29 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
   }
 
   ActivateMoreDownloads();
+}
+
+void ControllerImpl::ScheduleCleanupTask() {
+  base::Time earliest_completion_time = base::Time::Max();
+  for (const Entry* entry : model_->PeekEntries()) {
+    if (entry->completion_time == base::Time() ||
+        entry->state != Entry::State::COMPLETE)
+      continue;
+    if (entry->completion_time < earliest_completion_time) {
+      earliest_completion_time = entry->completion_time;
+    }
+  }
+
+  if (earliest_completion_time == base::Time::Max())
+    return;
+
+  base::TimeDelta start_time = earliest_completion_time +
+                               config_->file_keep_alive_time -
+                               base::Time::Now();
+  base::TimeDelta end_time = start_time + config_->file_cleanup_window;
+
+  task_scheduler_->ScheduleTask(DownloadTaskType::CLEANUP_TASK, false, false,
+                                start_time.InSeconds(), end_time.InSeconds());
 }
 
 void ControllerImpl::ActivateMoreDownloads() {

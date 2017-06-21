@@ -27,6 +27,9 @@ constexpr char kMaxRetryCountConfig[] = "max_retry_count";
 // Configuration name for file keep alive time.
 constexpr char kFileKeepAliveTimeMinutesConfig[] = "file_keep_alive_time";
 
+// Configuration name for file keep alive time.
+constexpr char kFileCleanupWindowMinutesConfig[] = "file_cleanup_window";
+
 // Configuration name for window start time.
 constexpr char kWindowStartTimeConfig[] = "window_start_time_seconds";
 
@@ -61,6 +64,10 @@ struct Configuration {
   // The time that the download service will keep the files around before
   // deleting them if the client hasn't handle the files.
   base::TimeDelta file_keep_alive_time;
+
+  // The length of the flexible time window during which the scheduler must
+  // schedule a file cleanup task.
+  base::TimeDelta file_cleanup_window;
 
   // The start window time in seconds for OS to schedule background task.
   // The OS will trigger the background task in this window.

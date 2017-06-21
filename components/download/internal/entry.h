@@ -43,6 +43,8 @@ struct Entry {
   explicit Entry(const DownloadParams& params);
   ~Entry();
 
+  bool operator==(const Entry& other) const;
+
   // The feature that is requesting this download.
   DownloadClient client = DownloadClient::INVALID;
 
@@ -62,6 +64,13 @@ struct Entry {
   // The state of the download to help the scheduler and loggers make the right
   // decisions about the download object.
   State state = State::NEW;
+
+  // Target file path for this download.
+  base::FilePath target_file_path;
+
+  // Time the download was marked as complete, base::Time() if the download is
+  // not yet complete.
+  base::Time completion_time;
 };
 
 }  // namespace download

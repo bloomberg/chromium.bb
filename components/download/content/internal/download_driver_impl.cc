@@ -49,6 +49,8 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
   entry.paused = item->IsPaused();
   entry.bytes_downloaded = item->GetReceivedBytes();
   entry.expected_total_size = item->GetTotalBytes();
+  entry.temporary_physical_file_path = item->GetFullPath();
+  entry.completion_time = item->GetEndTime();
   entry.response_headers = item->GetResponseHeaders();
   entry.url_chain = item->GetUrlChain();
   return entry;
