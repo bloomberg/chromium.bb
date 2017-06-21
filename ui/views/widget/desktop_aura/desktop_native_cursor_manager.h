@@ -28,7 +28,7 @@ class NativeCursorManagerDelegate;
 namespace views {
 
 // A NativeCursorManager that performs the desktop-specific setting of cursor
-// state. Similar to AshNativeCursorManager, it also communicates these changes
+// state. Similar to NativeCursorManagerAsh, it also communicates these changes
 // to all root windows.
 class VIEWS_EXPORT DesktopNativeCursorManager
     : public wm::NativeCursorManager {

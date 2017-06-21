@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/ash_native_cursor_manager.h"
+#include "ash/wm/native_cursor_manager_ash.h"
 
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
@@ -53,9 +53,9 @@ class MouseEventLocationDelegate : public aura::test::TestWindowDelegate {
 
 }  // namespace
 
-typedef test::AshTestBase AshNativeCursorManagerTest;
+using NativeCursorManagerAshTest = test::AshTestBase;
 
-TEST_F(AshNativeCursorManagerTest, LockCursor) {
+TEST_F(NativeCursorManagerAshTest, LockCursor) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
@@ -98,7 +98,7 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 
-TEST_F(AshNativeCursorManagerTest, SetCursor) {
+TEST_F(NativeCursorManagerAshTest, SetCursor) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   cursor_manager->SetCursor(ui::CursorType::kCopy);
@@ -110,7 +110,7 @@ TEST_F(AshNativeCursorManagerTest, SetCursor) {
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 
-TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
+TEST_F(NativeCursorManagerAshTest, SetCursorSet) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
@@ -126,7 +126,7 @@ TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
 }
 
-TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
+TEST_F(NativeCursorManagerAshTest, SetDeviceScaleFactorAndRotation) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   UpdateDisplay("800x100*2");
@@ -138,7 +138,7 @@ TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
   EXPECT_EQ(display::Display::ROTATE_270, test_api.GetCurrentCursorRotation());
 }
 
-TEST_F(AshNativeCursorManagerTest, FractionalScale) {
+TEST_F(NativeCursorManagerAshTest, FractionalScale) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   // Cursor should use the resource scale factor.
@@ -146,7 +146,7 @@ TEST_F(AshNativeCursorManagerTest, FractionalScale) {
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 }
 
-TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
+TEST_F(NativeCursorManagerAshTest, UIScaleShouldNotChangeCursor) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::Display::SetInternalDisplayId(display_id);
 
@@ -180,7 +180,7 @@ TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
 #if defined(USE_X11)
 // This test is in ash_unittests because ui_base_unittests does not include
 // 2x assets. crbug.com/372541.
-TEST_F(AshNativeCursorManagerTest, CursorLoaderX11Test) {
+TEST_F(NativeCursorManagerAshTest, CursorLoaderX11Test) {
   const ui::CursorType kCursorId = ui::CursorType::kPointer;
   ui::CursorLoaderX11 loader;
   loader.set_scale(1.0f);

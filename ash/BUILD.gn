@@ -622,8 +622,6 @@ component("ash") {
     "wm/always_on_top_controller.h",
     "wm/ash_focus_rules.cc",
     "wm/ash_focus_rules.h",
-    "wm/ash_native_cursor_manager.cc",
-    "wm/ash_native_cursor_manager.h",
     "wm/boot_splash_screen_chromeos.cc",
     "wm/boot_splash_screen_chromeos.h",
     "wm/container_finder.cc",
@@ -682,6 +680,11 @@ component("ash") {
     "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h",
     "wm/mru_window_tracker.cc",
     "wm/mru_window_tracker.h",
+    "wm/native_cursor_manager_ash.h",
+    "wm/native_cursor_manager_ash_classic.cc",
+    "wm/native_cursor_manager_ash_classic.h",
+    "wm/native_cursor_manager_ash_mus.cc",
+    "wm/native_cursor_manager_ash_mus.h",
     "wm/overlay_event_filter.cc",
     "wm/overlay_event_filter.h",
     "wm/overview/cleanup_animation_observer.cc",
@@ -1401,7 +1404,7 @@ test("ash_unittests") {
     "wm/always_on_top_controller_unittest.cc",
 
     # TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-    "wm/ash_native_cursor_manager_unittest.cc",
+    "wm/native_cursor_manager_ash_unittest.cc",
 
     # TODO: mash doesn't support DragWindowResizer. http://crbug.com/633782.
     "wm/drag_window_resizer_unittest.cc",

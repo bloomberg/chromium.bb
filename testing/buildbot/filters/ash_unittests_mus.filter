@@ -1,59 +1,14 @@
 # TODO: fix these. They fail because wm::CursorManager isn't created.
 # http://crbug.com/734806.
 # The following fail as they use wm::CursorManager:
--AshNativeCursorManagerTest.FractionalScale
--AshNativeCursorManagerTest.LockCursor
--AshNativeCursorManagerTest.SetCursor
--AshNativeCursorManagerTest.SetCursorSet
--AshNativeCursorManagerTest.SetDeviceScaleFactorAndRotation
--AshNativeCursorManagerTest.UIScaleShouldNotChangeCursor
--CursorWindowControllerTest.VisibilityTest
--DragDropControllerTest.CaptureLostCancelsDragDrop
--DragDropControllerTest.DragCancelAcrossDisplays
--DragDropControllerTest.DragCancelOnDisplayDisconnect
--DragDropControllerTest.DragDropInMultipleViewsMultipleWidgetsTest
--DragDropControllerTest.DragDropInMultipleViewsSingleWidgetTest
--DragDropControllerTest.DragDropInSingleViewTest
--DragDropControllerTest.DragDropWithZeroDragUpdates
--DragDropControllerTest.PressingEscapeCancelsDragDrop
--DragDropControllerTest.SyntheticEventsDuringDragDrop
--DragDropControllerTest.TouchDragDropCancelsOnLongTap
--DragDropControllerTest.TouchDragDropCompletesOnFling
--DragDropControllerTest.TouchDragDropInMultipleWindows
--DragDropControllerTest.TouchDragDropLongTapGestureIsForwarded
--DragDropControllerTest.ViewRemovedWhileInDragDropTest
--DragDropControllerTest.WindowDestroyedDuringDragDrop
--DragWindowResizerTest.CursorDeviceScaleFactor
+-NativeCursorManagerAshTest.LockCursor
+-NativeCursorManagerAshTest.SetCursorSet
 -ExtendedDesktopTest.TestCursor
 -LockStateControllerTest.LegacyLockAndShutDown
 -LockStateControllerTest.RequestShutdownFromLockScreen
 -LockStateControllerTest.RequestShutdownFromLoginScreen
--LockStateControllerTest.ShutdownWithoutButton
--MouseCursorEventFilterTest.CursorDeviceScaleFactor
--PartialScreenshotControllerTest.LargeCursor
--PartialScreenshotControllerTest.VisibilityTest
--ResizeShadowAndCursorTest.MaximizeRestore
--ResizeShadowAndCursorTest.MouseDrag
--ResizeShadowAndCursorTest.MouseHover
--TooltipControllerTest.HideTooltipWhenCursorHidden
 -WindowManagerTest.TestCursorClientObserver
--WindowManagerTest.UpdateCursorVisibility
--WindowManagerTest.UpdateCursorVisibilityAccelerator
--WindowManagerTest.UpdateCursorVisibilityOnKeyEvent
 -WindowSelectorTest.Basic
--WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected
--WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_SwapPrimary
--WorkspaceWindowResizerTest.MouseMoveWithTouchDrag
-
-# TODO: fix these. They fail because CursorWindowController isn't created.
-# http://crbug.com/734807.
--CursorWindowControllerTest.DSF
--CursorWindowControllerTest.MoveToDifferentDisplay
--DisplayManagerTest.SoftwareMirroringWithCompositingCursor
--MirrorWindowControllerTest.MirrorCursorBasic
--MirrorWindowControllerTest.MirrorCursorLocations
--MirrorWindowControllerTest.MirrorCursorMoveOnEnter
--MirrorWindowControllerTest.MirrorCursorRotate
 
 # TODO: fix these. They fail because ShellPortMash::IsMouseEventsEnabled() isn't
 # implemented. http://crbug.com/734808.
@@ -61,8 +16,6 @@
 
 # TODO: fix these. They fail because AshNativeCursorManager isn't created
 # http://crbug.com/734809.
--MagnificationControllerTest.PanWindowToLeft
--MagnificationControllerTest.PanWindowToRight
 -WindowManagerTest.MouseEventCursors
 
 # TODO: fix these. They all timeout. http://crbug.com/734811.

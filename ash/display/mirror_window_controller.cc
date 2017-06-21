@@ -272,18 +272,31 @@ void MirrorWindowController::UpdateWindow() {
   if (mirroring_host_info_map_.empty())
     return;
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::Screen* screen = display::Screen::GetScreen();
+
   std::vector<display::ManagedDisplayInfo> display_info_list;
-  for (auto& pair : mirroring_host_info_map_)
-    display_info_list.push_back(display_manager->GetDisplayInfo(pair.first));
+  // Prune the window on the removed displays.
+  for (auto& pair : mirroring_host_info_map_) {
+    MirroringHostInfo* info = pair.second;
+    if (screen
+            ->GetDisplayNearestWindow(
+                info->ash_host->AsWindowTreeHost()->window())
+            .is_valid()) {
+      display_info_list.push_back(display_manager->GetDisplayInfo(pair.first));
+    }
+  }
   UpdateWindow(display_info_list);
 }
 
 void MirrorWindowController::CloseIfNotNecessary() {
   display::DisplayManager::MultiDisplayMode new_mode =
       GetCurrentMultiDisplayMode();
-  if (multi_display_mode_ != new_mode)
+  if (multi_display_mode_ != new_mode) {
     Close(true);
-  multi_display_mode_ = new_mode;
+    multi_display_mode_ = new_mode;
+  } else {
+    UpdateWindow();
+  }
 }
 
 void MirrorWindowController::Close(bool delay_host_deletion) {

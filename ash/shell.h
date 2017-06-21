@@ -90,7 +90,7 @@ class AcceleratorController;
 class AccessibilityDelegate;
 class AshDisplayController;
 class AppListDelegateImpl;
-class AshNativeCursorManager;
+class NativeCursorManagerAsh;
 class AshTouchTransformController;
 class AutoclickController;
 class BluetoothNotificationController;
@@ -803,7 +803,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.
-  AshNativeCursorManager* native_cursor_manager_;
+  NativeCursorManagerAsh* native_cursor_manager_;
 
   // Cursor may be hidden on certain key events in Chrome OS, whereas we never
   // hide the cursor on Windows.
