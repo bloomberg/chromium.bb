@@ -288,9 +288,6 @@ deps = {
   'src/third_party/boringssl/src':
     Var('boringssl_git') + '/boringssl.git' + '@' +  Var('boringssl_revision'),
 
-  'src/third_party/py_trace_event/src':
-    Var('chromium_git') + '/external/py_trace_event.git' + '@' + 'dd463ea9e2c430de2b9e53dea57a77b4c3ac9b30',
-
   'src/third_party/dom_distiller_js/dist':
     Var('chromium_git') + '/external/github.com/chromium/dom-distiller-dist.git' + '@' + '232c293a4d3ebcbc4320f642af017ee054b3be93',
 
