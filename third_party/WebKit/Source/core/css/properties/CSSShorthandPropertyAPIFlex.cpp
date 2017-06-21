@@ -76,16 +76,18 @@ bool CSSShorthandPropertyAPIFlex::parseShorthand(
       CSSPropertyFlexGrow, CSSPropertyFlex,
       *CSSPrimitiveValue::Create(clampTo<float>(flex_grow),
                                  CSSPrimitiveValue::UnitType::kNumber),
-      important, false /* implicit */, properties);
+      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      properties);
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyFlexShrink, CSSPropertyFlex,
       *CSSPrimitiveValue::Create(clampTo<float>(flex_shrink),
                                  CSSPrimitiveValue::UnitType::kNumber),
-      important, false /* implicit */, properties);
+      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      properties);
 
-  CSSPropertyParserHelpers::AddProperty(CSSPropertyFlexBasis, CSSPropertyFlex,
-                                        *flex_basis, important,
-                                        false /* implicit */, properties);
+  CSSPropertyParserHelpers::AddProperty(
+      CSSPropertyFlexBasis, CSSPropertyFlex, *flex_basis, important,
+      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
 
   return true;
 }

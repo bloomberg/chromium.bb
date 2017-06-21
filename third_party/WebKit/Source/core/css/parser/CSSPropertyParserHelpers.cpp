@@ -1461,9 +1461,11 @@ void AddProperty(CSSPropertyID resolved_property,
                  CSSPropertyID current_shorthand,
                  const CSSValue& value,
                  bool important,
-                 bool implicit,
+                 IsImplicitProperty implicit,
                  HeapVector<CSSProperty, 256>& properties) {
   DCHECK(!isPropertyAlias(resolved_property));
+  DCHECK(implicit == IsImplicitProperty::kNotImplicit ||
+         implicit == IsImplicitProperty::kImplicit);
 
   int shorthand_index = 0;
   bool set_from_shorthand = false;
@@ -1480,7 +1482,7 @@ void AddProperty(CSSPropertyID resolved_property,
 
   properties.push_back(CSSProperty(resolved_property, value, important,
                                    set_from_shorthand, shorthand_index,
-                                   implicit));
+                                   implicit == IsImplicitProperty::kImplicit));
 }
 
 }  // namespace CSSPropertyParserHelpers

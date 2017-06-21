@@ -37,6 +37,8 @@ class CSSPropertyFontUtils {
 
   static CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&);
   static CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&);
+
+  static CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange&);
 };
 
 }  // namespace blink

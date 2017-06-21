@@ -10,7 +10,6 @@
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
-#include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridAutoRepeatValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
@@ -35,8 +34,6 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
-#include "core/css/parser/FontVariantLigaturesParser.h"
-#include "core/css/parser/FontVariantNumericParser.h"
 #include "core/css/properties/CSSPropertyAPIOffsetAnchor.h"
 #include "core/css/properties/CSSPropertyAPIOffsetPosition.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
@@ -71,12 +68,17 @@ CSSPropertyParser::CSSPropertyParser(
   range_.ConsumeWhitespace();
 }
 
+// AddProperty takes implicit as an enum, below we're using a bool because
+// AddParsedProperty will be removed after we finish implemenation of property
+// APIs.
 void CSSPropertyParser::AddParsedProperty(CSSPropertyID resolved_property,
                                           CSSPropertyID current_shorthand,
                                           const CSSValue& value,
                                           bool important,
                                           bool implicit) {
-  AddProperty(resolved_property, current_shorthand, value, important, implicit,
+  AddProperty(resolved_property, current_shorthand, value, important,
+              implicit ? IsImplicitProperty::kImplicit
+                       : IsImplicitProperty::kNotImplicit,
               *parsed_properties_);
 }
 
@@ -282,10 +284,6 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
   return true;
 }
 
-static CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange& range) {
-  return ConsumeIdent<CSSValueNormal, CSSValueSmallCaps>(range);
-}
-
 static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
   CSSValueList* values = CSSValueList::CreateCommaSeparated();
   do {
@@ -298,7 +296,8 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
         return nullptr;
       return ConsumeIdent(range);
     }
-    CSSIdentifierValue* font_variant = ConsumeFontVariantCSS21(range);
+    CSSIdentifierValue* font_variant =
+        CSSPropertyFontUtils::ConsumeFontVariantCSS21(range);
     if (font_variant)
       values->Append(*font_variant);
   } while (ConsumeCommaIncludingWhitespace(range));
@@ -1740,211 +1739,6 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
   return true;
 }
 
-bool CSSPropertyParser::ConsumeSystemFont(bool important) {
-  CSSValueID system_font_id = range_.ConsumeIncludingWhitespace().Id();
-  DCHECK_GE(system_font_id, CSSValueCaption);
-  DCHECK_LE(system_font_id, CSSValueStatusBar);
-  if (!range_.AtEnd())
-    return false;
-
-  FontStyle font_style = kFontStyleNormal;
-  FontWeight font_weight = kFontWeightNormal;
-  float font_size = 0;
-  AtomicString font_family;
-  LayoutTheme::GetTheme().SystemFont(system_font_id, font_style, font_weight,
-                                     font_size, font_family);
-
-  AddParsedProperty(CSSPropertyFontStyle, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(font_style == kFontStyleItalic
-                                                    ? CSSValueItalic
-                                                    : CSSValueNormal),
-                    important);
-  AddParsedProperty(CSSPropertyFontWeight, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(font_weight), important);
-  AddParsedProperty(CSSPropertyFontSize, CSSPropertyFont,
-                    *CSSPrimitiveValue::Create(
-                        font_size, CSSPrimitiveValue::UnitType::kPixels),
-                    important);
-  CSSValueList* font_family_list = CSSValueList::CreateCommaSeparated();
-  font_family_list->Append(*CSSFontFamilyValue::Create(font_family));
-  AddParsedProperty(CSSPropertyFontFamily, CSSPropertyFont, *font_family_list,
-                    important);
-
-  AddParsedProperty(CSSPropertyFontStretch, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddParsedProperty(CSSPropertyFontVariantCaps, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddParsedProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddParsedProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddParsedProperty(CSSPropertyLineHeight, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(CSSValueNormal), important);
-  return true;
-}
-
-bool CSSPropertyParser::ConsumeFont(bool important) {
-  // Let's check if there is an inherit or initial somewhere in the shorthand.
-  CSSParserTokenRange range = range_;
-  while (!range.AtEnd()) {
-    CSSValueID id = range.ConsumeIncludingWhitespace().Id();
-    if (id == CSSValueInherit || id == CSSValueInitial)
-      return false;
-  }
-  // Optional font-style, font-variant, font-stretch and font-weight.
-  CSSIdentifierValue* font_style = nullptr;
-  CSSIdentifierValue* font_variant_caps = nullptr;
-  CSSIdentifierValue* font_weight = nullptr;
-  CSSIdentifierValue* font_stretch = nullptr;
-  while (!range_.AtEnd()) {
-    CSSValueID id = range_.Peek().Id();
-    if (!font_style && CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-                           CSSPropertyFontStyle, id, context_->Mode())) {
-      font_style = ConsumeIdent(range_);
-      continue;
-    }
-    if (!font_variant_caps &&
-        (id == CSSValueNormal || id == CSSValueSmallCaps)) {
-      // Font variant in the shorthand is particular, it only accepts normal or
-      // small-caps.
-      // See https://drafts.csswg.org/css-fonts/#propdef-font
-      font_variant_caps = ConsumeFontVariantCSS21(range_);
-      if (font_variant_caps)
-        continue;
-    }
-    if (!font_weight) {
-      font_weight = CSSPropertyFontUtils::ConsumeFontWeight(range_);
-      if (font_weight)
-        continue;
-    }
-    if (!font_stretch && CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-                             CSSPropertyFontStretch, id, context_->Mode()))
-      font_stretch = ConsumeIdent(range_);
-    else
-      break;
-  }
-
-  if (range_.AtEnd())
-    return false;
-
-  AddParsedProperty(
-      CSSPropertyFontStyle, CSSPropertyFont,
-      font_style ? *font_style : *CSSIdentifierValue::Create(CSSValueNormal),
-      important);
-  AddParsedProperty(CSSPropertyFontVariantCaps, CSSPropertyFont,
-                    font_variant_caps
-                        ? *font_variant_caps
-                        : *CSSIdentifierValue::Create(CSSValueNormal),
-                    important);
-  AddParsedProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddParsedProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont,
-                    *CSSIdentifierValue::Create(CSSValueNormal), important);
-
-  AddParsedProperty(
-      CSSPropertyFontWeight, CSSPropertyFont,
-      font_weight ? *font_weight : *CSSIdentifierValue::Create(CSSValueNormal),
-      important);
-  AddParsedProperty(CSSPropertyFontStretch, CSSPropertyFont,
-                    font_stretch ? *font_stretch
-                                 : *CSSIdentifierValue::Create(CSSValueNormal),
-                    important);
-
-  // Now a font size _must_ come.
-  CSSValue* font_size =
-      CSSPropertyFontUtils::ConsumeFontSize(range_, context_->Mode());
-  if (!font_size || range_.AtEnd())
-    return false;
-
-  AddParsedProperty(CSSPropertyFontSize, CSSPropertyFont, *font_size,
-                    important);
-
-  if (ConsumeSlashIncludingWhitespace(range_)) {
-    CSSValue* line_height =
-        CSSPropertyFontUtils::ConsumeLineHeight(range_, context_->Mode());
-    if (!line_height)
-      return false;
-    AddParsedProperty(CSSPropertyLineHeight, CSSPropertyFont, *line_height,
-                      important);
-  } else {
-    AddParsedProperty(CSSPropertyLineHeight, CSSPropertyFont,
-                      *CSSIdentifierValue::Create(CSSValueNormal), important);
-  }
-
-  // Font family must come now.
-  CSSValue* parsed_family_value =
-      CSSPropertyFontUtils::ConsumeFontFamily(range_);
-  if (!parsed_family_value)
-    return false;
-
-  AddParsedProperty(CSSPropertyFontFamily, CSSPropertyFont,
-                    *parsed_family_value, important);
-
-  // FIXME: http://www.w3.org/TR/2011/WD-css3-fonts-20110324/#font-prop requires
-  // that "font-stretch", "font-size-adjust", and "font-kerning" be reset to
-  // their initial values but we don't seem to support them at the moment. They
-  // should also be added here once implemented.
-  return range_.AtEnd();
-}
-
-bool CSSPropertyParser::ConsumeFontVariantShorthand(bool important) {
-  if (IdentMatches<CSSValueNormal, CSSValueNone>(range_.Peek().Id())) {
-    AddParsedProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
-                      *ConsumeIdent(range_), important);
-    AddParsedProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
-                      *CSSIdentifierValue::Create(CSSValueNormal), important);
-    return range_.AtEnd();
-  }
-
-  CSSIdentifierValue* caps_value = nullptr;
-  FontVariantLigaturesParser ligatures_parser;
-  FontVariantNumericParser numeric_parser;
-  do {
-    FontVariantLigaturesParser::ParseResult ligatures_parse_result =
-        ligatures_parser.ConsumeLigature(range_);
-    FontVariantNumericParser::ParseResult numeric_parse_result =
-        numeric_parser.ConsumeNumeric(range_);
-    if (ligatures_parse_result ==
-            FontVariantLigaturesParser::ParseResult::kConsumedValue ||
-        numeric_parse_result ==
-            FontVariantNumericParser::ParseResult::kConsumedValue)
-      continue;
-
-    if (ligatures_parse_result ==
-            FontVariantLigaturesParser::ParseResult::kDisallowedValue ||
-        numeric_parse_result ==
-            FontVariantNumericParser::ParseResult::kDisallowedValue)
-      return false;
-
-    CSSValueID id = range_.Peek().Id();
-    switch (id) {
-      case CSSValueSmallCaps:
-      case CSSValueAllSmallCaps:
-      case CSSValuePetiteCaps:
-      case CSSValueAllPetiteCaps:
-      case CSSValueUnicase:
-      case CSSValueTitlingCaps:
-        // Only one caps value permitted in font-variant grammar.
-        if (caps_value)
-          return false;
-        caps_value = ConsumeIdent(range_);
-        break;
-      default:
-        return false;
-    }
-  } while (!range_.AtEnd());
-
-  AddParsedProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
-                    *ligatures_parser.FinalizeValue(), important);
-  AddParsedProperty(CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
-                    *numeric_parser.FinalizeValue(), important);
-  AddParsedProperty(
-      CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
-      caps_value ? *caps_value : *CSSIdentifierValue::Create(CSSValueNormal),
-      important);
-  return true;
-}
-
 bool CSSPropertyParser::ConsumeBorderSpacing(bool important) {
   CSSValue* horizontal_spacing = ConsumeLength(
       range_, context_->Mode(), kValueRangeNonNegative, UnitlessQuirk::kAllow);
@@ -2980,43 +2774,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   }
 
   switch (property) {
-    case CSSPropertyOverflow: {
-      CSSValueID id = range_.ConsumeIncludingWhitespace().Id();
-      if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-              CSSPropertyOverflowY, id, context_->Mode()))
-        return false;
-      if (!range_.AtEnd())
-        return false;
-      CSSValue* overflow_y_value = CSSIdentifierValue::Create(id);
-
-      CSSValue* overflow_x_value = nullptr;
-
-      // FIXME: -webkit-paged-x or -webkit-paged-y only apply to overflow-y.
-      // If
-      // this value has been set using the shorthand, then for now overflow-x
-      // will default to auto, but once we implement pagination controls, it
-      // should default to hidden. If the overflow-y value is anything but
-      // paged-x or paged-y, then overflow-x and overflow-y should have the
-      // same
-      // value.
-      if (id == CSSValueWebkitPagedX || id == CSSValueWebkitPagedY)
-        overflow_x_value = CSSIdentifierValue::Create(CSSValueAuto);
-      else
-        overflow_x_value = overflow_y_value;
-      AddParsedProperty(CSSPropertyOverflowX, CSSPropertyOverflow,
-                        *overflow_x_value, important);
-      AddParsedProperty(CSSPropertyOverflowY, CSSPropertyOverflow,
-                        *overflow_y_value, important);
-      return true;
-    }
-    case CSSPropertyFont: {
-      const CSSParserToken& token = range_.Peek();
-      if (token.Id() >= CSSValueCaption && token.Id() <= CSSValueStatusBar)
-        return ConsumeSystemFont(important);
-      return ConsumeFont(important);
-    }
-    case CSSPropertyFontVariant:
-      return ConsumeFontVariantShorthand(important);
     case CSSPropertyBorderSpacing:
       return ConsumeBorderSpacing(important);
     case CSSPropertyColumns:

@@ -108,10 +108,6 @@ class CSSPropertyParser {
   bool ConsumePlaceItemsShorthand(bool important);
   bool ConsumePlaceSelfShorthand(bool important);
 
-  bool ConsumeFont(bool important);
-  bool ConsumeFontVariantShorthand(bool important);
-  bool ConsumeSystemFont(bool important);
-
   bool ConsumeBorderSpacing(bool important);
 
   // CSS3 Parsing Routines (for properties specific to CSS3)
