@@ -1013,7 +1013,8 @@ static void pick_quickcompress_mode(aom_codec_alg_priv_t *ctx,
 }
 
 // Turn on to test if supplemental superframe data breaks decoding
-// #define TEST_SUPPLEMENTAL_SUPERFRAME_DATA
+#define TEST_SUPPLEMENTAL_SUPERFRAME_DATA 0
+
 static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
   uint8_t marker = 0xc0;
   size_t max_frame_sz = 0;
@@ -1042,19 +1043,18 @@ static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
   uint8_t buffer[256];
   uint8_t *x = buffer;
 
-#ifdef TEST_SUPPLEMENTAL_SUPERFRAME_DATA
-  uint8_t marker_test = 0xc0;
-  int mag_test = 2;     // 1 - 4
-  int frames_test = 4;  // 1 - 8
-  int index_sz_test = 2 + mag_test * frames_test;
-  marker_test |= frames_test - 1;
-  marker_test |= (mag_test - 1) << 3;
-  *x++ = marker_test;
-  for (int i = 0; i < mag_test * frames_test; ++i)
-    *x++ = 0;  // fill up with arbitrary data
-  *x++ = marker_test;
-  printf("Added supplemental superframe data\n");
-#endif
+  if (TEST_SUPPLEMENTAL_SUPERFRAME_DATA) {
+    uint8_t marker_test = 0xc0;
+    int mag_test = 2;     // 1 - 4
+    int frames_test = 4;  // 1 - 8
+    marker_test |= frames_test - 1;
+    marker_test |= (mag_test - 1) << 3;
+    *x++ = marker_test;
+    for (int i = 0; i < mag_test * frames_test; ++i)
+      *x++ = 0;  // fill up with arbitrary data
+    *x++ = marker_test;
+    printf("Added supplemental superframe data\n");
+  }
 
   *x++ = marker;
   for (int i = 0; i < ctx->pending_frame_count - 1; i++) {
