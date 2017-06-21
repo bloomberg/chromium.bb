@@ -967,7 +967,7 @@ Status ExecuteAddCookie(Session* session,
     return status;
   std::string domain;
   cookie->GetString("domain", &domain);
-  std::string path;
+  std::string path("/");
   cookie->GetString("path", &path);
   bool secure = false;
   cookie->GetBoolean("secure", &secure);
