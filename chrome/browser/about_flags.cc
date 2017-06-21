@@ -2726,9 +2726,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-    {ui::devtools::kEnableUiDevTools, flag_descriptions::kUiDevToolsName,
+    {ui_devtools::kEnableUiDevTools, flag_descriptions::kUiDevToolsName,
      flag_descriptions::kUiDevToolsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ui::devtools::kEnableUiDevTools)},
+     SINGLE_VALUE_TYPE(ui_devtools::kEnableUiDevTools)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-autofill-credit-card-last-used-date-display",
@@ -3146,7 +3146,7 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   }
 
   // enable-ui-devtools is only available on for non Stable channels.
-  if (!strcmp(ui::devtools::kEnableUiDevTools, entry.internal_name) &&
+  if (!strcmp(ui_devtools::kEnableUiDevTools, entry.internal_name) &&
       channel == version_info::Channel::STABLE) {
     return true;
   }

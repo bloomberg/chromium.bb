@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DEVTOOLS_WIDGET_ELEMENT_H_
-#define ASH_DEVTOOLS_WIDGET_ELEMENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_WIDGET_ELEMENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_WIDGET_ELEMENT_H_
 
-#include "ash/ash_export.h"
-#include "ash/devtools/ui_element.h"
 #include "base/macros.h"
+#include "components/ui_devtools/views/ui_element.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 
 class UIElementDelegate;
 
-class ASH_EXPORT WidgetElement : public views::WidgetRemovalsObserver,
-                                 public views::WidgetObserver,
-                                 public UIElement {
+class WidgetElement : public views::WidgetRemovalsObserver,
+                      public views::WidgetObserver,
+                      public UIElement {
  public:
   WidgetElement(views::Widget* widget,
                 UIElementDelegate* ui_element_delegate,
@@ -51,7 +49,6 @@ class ASH_EXPORT WidgetElement : public views::WidgetRemovalsObserver,
   DISALLOW_COPY_AND_ASSIGN(WidgetElement);
 };
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools
 
-#endif  // ASH_DEVTOOLS_WIDGET_ELEMENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_WIDGET_ELEMENT_H_

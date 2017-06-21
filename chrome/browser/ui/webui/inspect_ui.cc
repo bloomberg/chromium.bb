@@ -68,7 +68,7 @@ const char kIsAdditionalField[] = "isAdditional";
 
 void GetUiDevToolsTargets(base::ListValue& targets) {
   for (const auto& client_pair :
-       ui::devtools::UiDevToolsServer::GetClientNamesAndUrls()) {
+       ui_devtools::UiDevToolsServer::GetClientNamesAndUrls()) {
     auto target_data = base::MakeUnique<base::DictionaryValue>();
     target_data->SetString(kNameField, client_pair.first);
     target_data->SetString(kUrlField, client_pair.second);

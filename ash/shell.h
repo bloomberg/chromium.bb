@@ -60,9 +60,10 @@ class Insets;
 namespace ui {
 class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
-namespace devtools {
-class UiDevToolsServer;
 }
+
+namespace ui_devtools {
+class UiDevToolsServer;
 }
 
 namespace views {
@@ -718,7 +719,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
   std::unique_ptr<app_list::AppList> app_list_;
   std::unique_ptr<::PrefService> pref_service_;
-  std::unique_ptr<ui::devtools::UiDevToolsServer> devtools_server_;
+  std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;

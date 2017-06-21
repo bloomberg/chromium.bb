@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DEVTOOLS_VIEW_ELEMENT_H_
-#define ASH_DEVTOOLS_VIEW_ELEMENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_VIEW_ELEMENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_VIEW_ELEMENT_H_
 
-#include "ash/ash_export.h"
-#include "ash/devtools/ui_element.h"
 #include "base/macros.h"
+#include "components/ui_devtools/views/ui_element.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 
 class UIElementDelegate;
 
-class ASH_EXPORT ViewElement : public views::ViewObserver, public UIElement {
+class ViewElement : public views::ViewObserver, public UIElement {
  public:
   ViewElement(views::View* view,
               UIElementDelegate* ui_element_delegate,
@@ -46,7 +44,6 @@ class ASH_EXPORT ViewElement : public views::ViewObserver, public UIElement {
   DISALLOW_COPY_AND_ASSIGN(ViewElement);
 };
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools
 
-#endif  // ASH_DEVTOOLS_VIEW_ELEMENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_VIEW_ELEMENT_H_

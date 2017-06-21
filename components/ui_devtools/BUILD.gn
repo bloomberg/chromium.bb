@@ -52,7 +52,7 @@ inspector_protocol_generate("protocol_generated_sources") {
   outputs = _protocol_generated
 }
 
-source_set("ui_devtools") {
+component("ui_devtools") {
   sources = rebase_path(_protocol_generated, ".", target_gen_dir)
   sources += [
     "devtools_base_agent.h",

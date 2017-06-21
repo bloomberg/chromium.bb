@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/devtools/ash_devtools_css_agent.h"
+#include "components/ui_devtools/views/ui_devtools_css_agent.h"
 
-#include "ash/devtools/ui_element.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/ui_devtools/views/ui_element.h"
 #include "ui/aura/window.h"
 
-namespace ash {
-namespace devtools {
+namespace ui_devtools {
 namespace {
 
-using namespace ui::devtools::protocol;
+using namespace ui_devtools::protocol;
 
 const char kHeight[] = "height";
 const char kWidth[] = "width";
@@ -66,8 +65,8 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(int node_id,
       .build();
 }
 
-ui::devtools::protocol::Response NodeNotFoundError(int node_id) {
-  return ui::devtools::protocol::Response::Error(
+ui_devtools::protocol::Response NodeNotFoundError(int node_id) {
+  return ui_devtools::protocol::Response::Error(
       "Node with id=" + std::to_string(node_id) + " not found");
 }
 
@@ -100,57 +99,57 @@ Response ParseProperties(const std::string& style_text,
 
 }  // namespace
 
-AshDevToolsCSSAgent::AshDevToolsCSSAgent(AshDevToolsDOMAgent* dom_agent)
+UIDevToolsCSSAgent::UIDevToolsCSSAgent(UIDevToolsDOMAgent* dom_agent)
     : dom_agent_(dom_agent) {
   DCHECK(dom_agent_);
 }
 
-AshDevToolsCSSAgent::~AshDevToolsCSSAgent() {
+UIDevToolsCSSAgent::~UIDevToolsCSSAgent() {
   disable();
 }
 
-ui::devtools::protocol::Response AshDevToolsCSSAgent::enable() {
+ui_devtools::protocol::Response UIDevToolsCSSAgent::enable() {
   dom_agent_->AddObserver(this);
-  return ui::devtools::protocol::Response::OK();
+  return ui_devtools::protocol::Response::OK();
 }
 
-ui::devtools::protocol::Response AshDevToolsCSSAgent::disable() {
+ui_devtools::protocol::Response UIDevToolsCSSAgent::disable() {
   dom_agent_->RemoveObserver(this);
-  return ui::devtools::protocol::Response::OK();
+  return ui_devtools::protocol::Response::OK();
 }
 
-ui::devtools::protocol::Response AshDevToolsCSSAgent::getMatchedStylesForNode(
+ui_devtools::protocol::Response UIDevToolsCSSAgent::getMatchedStylesForNode(
     int node_id,
-    ui::devtools::protocol::Maybe<ui::devtools::protocol::CSS::CSSStyle>*
+    ui_devtools::protocol::Maybe<ui_devtools::protocol::CSS::CSSStyle>*
         inline_style) {
   *inline_style = GetStylesForNode(node_id);
   if (!inline_style)
     return NodeNotFoundError(node_id);
-  return ui::devtools::protocol::Response::OK();
+  return ui_devtools::protocol::Response::OK();
 }
 
-ui::devtools::protocol::Response AshDevToolsCSSAgent::setStyleTexts(
-    std::unique_ptr<ui::devtools::protocol::Array<
-        ui::devtools::protocol::CSS::StyleDeclarationEdit>> edits,
+ui_devtools::protocol::Response UIDevToolsCSSAgent::setStyleTexts(
+    std::unique_ptr<ui_devtools::protocol::Array<
+        ui_devtools::protocol::CSS::StyleDeclarationEdit>> edits,
     std::unique_ptr<
-        ui::devtools::protocol::Array<ui::devtools::protocol::CSS::CSSStyle>>*
+        ui_devtools::protocol::Array<ui_devtools::protocol::CSS::CSSStyle>>*
         result) {
   std::unique_ptr<
-      ui::devtools::protocol::Array<ui::devtools::protocol::CSS::CSSStyle>>
-      updated_styles = ui::devtools::protocol::Array<
-          ui::devtools::protocol::CSS::CSSStyle>::create();
+      ui_devtools::protocol::Array<ui_devtools::protocol::CSS::CSSStyle>>
+      updated_styles = ui_devtools::protocol::Array<
+          ui_devtools::protocol::CSS::CSSStyle>::create();
   for (size_t i = 0; i < edits->length(); i++) {
     auto* edit = edits->get(i);
     int node_id;
     if (!base::StringToInt(edit->getStyleSheetId(), &node_id))
-      return ui::devtools::protocol::Response::Error("Invalid node id");
+      return ui_devtools::protocol::Response::Error("Invalid node id");
 
     gfx::Rect updated_bounds;
     bool visible = false;
     if (!GetPropertiesForNodeId(node_id, &updated_bounds, &visible))
       return NodeNotFoundError(node_id);
 
-    ui::devtools::protocol::Response response(
+    ui_devtools::protocol::Response response(
         ParseProperties(edit->getText(), &updated_bounds, &visible));
     if (!response.isSuccess())
       return response;
@@ -161,15 +160,15 @@ ui::devtools::protocol::Response AshDevToolsCSSAgent::setStyleTexts(
       return NodeNotFoundError(node_id);
   }
   *result = std::move(updated_styles);
-  return ui::devtools::protocol::Response::OK();
+  return ui_devtools::protocol::Response::OK();
 }
 
-void AshDevToolsCSSAgent::OnNodeBoundsChanged(int node_id) {
+void UIDevToolsCSSAgent::OnNodeBoundsChanged(int node_id) {
   InvalidateStyleSheet(node_id);
 }
 
-std::unique_ptr<ui::devtools::protocol::CSS::CSSStyle>
-AshDevToolsCSSAgent::GetStylesForNode(int node_id) {
+std::unique_ptr<ui_devtools::protocol::CSS::CSSStyle>
+UIDevToolsCSSAgent::GetStylesForNode(int node_id) {
   gfx::Rect bounds;
   bool visible = false;
   return GetPropertiesForNodeId(node_id, &bounds, &visible)
@@ -177,14 +176,14 @@ AshDevToolsCSSAgent::GetStylesForNode(int node_id) {
              : nullptr;
 }
 
-void AshDevToolsCSSAgent::InvalidateStyleSheet(int node_id) {
+void UIDevToolsCSSAgent::InvalidateStyleSheet(int node_id) {
   // The stylesheetId for each node is equivalent to its node_id (as a string).
   frontend()->styleSheetChanged(base::IntToString(node_id));
 }
 
-bool AshDevToolsCSSAgent::GetPropertiesForNodeId(int node_id,
-                                                 gfx::Rect* bounds,
-                                                 bool* visible) {
+bool UIDevToolsCSSAgent::GetPropertiesForNodeId(int node_id,
+                                                gfx::Rect* bounds,
+                                                bool* visible) {
   UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
   if (ui_element) {
     ui_element->GetBounds(bounds);
@@ -194,9 +193,9 @@ bool AshDevToolsCSSAgent::GetPropertiesForNodeId(int node_id,
   return false;
 }
 
-bool AshDevToolsCSSAgent::SetPropertiesForNodeId(int node_id,
-                                                 const gfx::Rect& bounds,
-                                                 bool visible) {
+bool UIDevToolsCSSAgent::SetPropertiesForNodeId(int node_id,
+                                                const gfx::Rect& bounds,
+                                                bool visible) {
   UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
   if (ui_element) {
     ui_element->SetBounds(bounds);
@@ -206,5 +205,4 @@ bool AshDevToolsCSSAgent::SetPropertiesForNodeId(int node_id,
   return false;
 }
 
-}  // namespace devtools
-}  // namespace ash
+}  // namespace ui_devtools

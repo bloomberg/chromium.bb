@@ -20,8 +20,6 @@
 #include "ash/aura/shell_port_classic.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/devtools/ash_devtools_css_agent.h"
-#include "ash/devtools/ash_devtools_dom_agent.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager_chromeos.h"
@@ -133,6 +131,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/ui_devtools/devtools_server.h"
+#include "components/ui_devtools/views/ui_devtools_css_agent.h"
+#include "components/ui_devtools/views/ui_devtools_dom_agent.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -856,12 +856,12 @@ void Shell::Init(const ShellInitParams& init_params) {
   wallpaper_controller_ = base::MakeUnique<WallpaperController>();
 
   // Start devtools server
-  devtools_server_ = ui::devtools::UiDevToolsServer::Create(nullptr);
+  devtools_server_ = ui_devtools::UiDevToolsServer::Create(nullptr);
   if (devtools_server_) {
-    auto dom_backend = base::MakeUnique<devtools::AshDevToolsDOMAgent>();
+    auto dom_backend = base::MakeUnique<ui_devtools::UIDevToolsDOMAgent>();
     auto css_backend =
-        base::MakeUnique<devtools::AshDevToolsCSSAgent>(dom_backend.get());
-    auto devtools_client = base::MakeUnique<ui::devtools::UiDevToolsClient>(
+        base::MakeUnique<ui_devtools::UIDevToolsCSSAgent>(dom_backend.get());
+    auto devtools_client = base::MakeUnique<ui_devtools::UiDevToolsClient>(
         "Ash", devtools_server_.get());
     devtools_client->AddAgent(std::move(dom_backend));
     devtools_client->AddAgent(std::move(css_backend));
