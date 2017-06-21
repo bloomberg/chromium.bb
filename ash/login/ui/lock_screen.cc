@@ -6,35 +6,56 @@
 
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_window.h"
+#include "ash/public/interfaces/session_controller.mojom.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
-
 namespace {
-// Reference to global lock screen instance. There can only ever be one lock
-// screen display at the same time.
-LockWindow* g_window = nullptr;
+
+// Global lock screen instance. There can only ever be on lock screen at a
+// time.
+LockScreen* instance_ = nullptr;
+
 }  // namespace
 
-bool ShowLockScreen() {
-  CHECK(!g_window);
-  g_window = new LockWindow();
-  g_window->SetBounds(
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+LockScreen::LockScreen() = default;
 
-  auto* contents = new LockContentsView();
-  g_window->SetContentsView(contents);
-  g_window->Show();
+LockScreen::~LockScreen() = default;
 
-  return true;
+// static
+LockScreen* LockScreen::Get() {
+  CHECK(instance_);
+  return instance_;
 }
 
-void DestroyLockScreen() {
-  CHECK(g_window);
-  g_window->Close();
-  g_window = nullptr;
+// static
+void LockScreen::Show() {
+  CHECK(!instance_);
+  instance_ = new LockScreen();
+
+  auto* contents = new LockContentsView();
+  auto* window = instance_->window_ = new LockWindow();
+  window->SetBounds(display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+  window->SetContentsView(contents);
+  window->Show();
+
+  // TODO(jdufault): Use correct blur amount.
+  window->GetLayer()->SetBackgroundBlur(20);
+}
+
+void LockScreen::Destroy() {
+  CHECK_EQ(instance_, this);
+  window_->Close();
+  delete instance_;
+  instance_ = nullptr;
+}
+
+void LockScreen::SetPinEnabledForUser(const AccountId& account_id,
+                                      bool is_enabled) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace ash
