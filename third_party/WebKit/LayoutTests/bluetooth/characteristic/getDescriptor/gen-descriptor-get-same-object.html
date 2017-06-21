@@ -8,15 +8,12 @@
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['health_thermometer']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
-    .then(service => service.getCharacteristic('measurement_interval'))
-    .then(characteristic => Promise.all([
+  return getMeasurementIntervalCharacteristic()
+    .then(({characteristic}) => Promise.all([
       characteristic.getDescriptor(user_description.alias),
-      characteristic.getDescriptor(user_description.alias)]))
+      characteristic.getDescriptor(user_description.name),
+      characteristic.getDescriptor(user_description.uuid)
+    ]))
     .then(descriptors_arrays => {
 
       assert_true(descriptors_arrays.length > 0)

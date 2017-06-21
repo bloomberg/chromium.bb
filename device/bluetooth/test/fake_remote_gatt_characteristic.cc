@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
 
@@ -42,6 +43,23 @@ FakeRemoteGattCharacteristic::FakeRemoteGattCharacteristic(
 }
 
 FakeRemoteGattCharacteristic::~FakeRemoteGattCharacteristic() {}
+
+std::string FakeRemoteGattCharacteristic::AddFakeDescriptor(
+    const device::BluetoothUUID& descriptor_uuid) {
+  FakeDescriptorMap::iterator it;
+  bool inserted;
+
+  // Attribute instance Ids need to be unique.
+  std::string new_descriptor_id = base::StringPrintf(
+      "%s_%zu", GetIdentifier().c_str(), ++last_descriptor_id_);
+
+  std::tie(it, inserted) = fake_descriptors_.emplace(
+      new_descriptor_id, base::MakeUnique<FakeRemoteGattDescriptor>(
+                             new_descriptor_id, descriptor_uuid, this));
+
+  DCHECK(inserted);
+  return it->second->GetIdentifier();
+}
 
 void FakeRemoteGattCharacteristic::SetNextReadResponse(
     uint16_t gatt_code,
@@ -81,15 +99,20 @@ device::BluetoothRemoteGattService* FakeRemoteGattCharacteristic::GetService()
 
 std::vector<device::BluetoothRemoteGattDescriptor*>
 FakeRemoteGattCharacteristic::GetDescriptors() const {
-  NOTREACHED();
-  return std::vector<device::BluetoothRemoteGattDescriptor*>();
+  std::vector<device::BluetoothRemoteGattDescriptor*> descriptors;
+  for (const auto& it : fake_descriptors_)
+    descriptors.push_back(it.second.get());
+  return descriptors;
 }
 
 device::BluetoothRemoteGattDescriptor*
 FakeRemoteGattCharacteristic::GetDescriptor(
     const std::string& identifier) const {
-  NOTREACHED();
-  return nullptr;
+  const auto& it = fake_descriptors_.find(identifier);
+  if (it == fake_descriptors_.end())
+    return nullptr;
+
+  return it->second.get();
 }
 
 void FakeRemoteGattCharacteristic::ReadRemoteCharacteristic(

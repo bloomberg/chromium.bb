@@ -51,6 +51,8 @@ source_set("fake_bluetooth") {
     "test/fake_peripheral.h",
     "test/fake_remote_gatt_characteristic.cc",
     "test/fake_remote_gatt_characteristic.h",
+    "test/fake_remote_gatt_descriptor.cc",
+    "test/fake_remote_gatt_descriptor.h",
     "test/fake_remote_gatt_service.cc",
     "test/fake_remote_gatt_service.h",
   ]

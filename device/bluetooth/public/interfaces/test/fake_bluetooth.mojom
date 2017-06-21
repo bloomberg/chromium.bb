@@ -105,23 +105,33 @@ interface FakeCentral {
   // have completed or if there was an error during any of them.
   SetNextGATTDiscoveryResponse(string address, uint16 code) => (bool success);
 
-  // Adds a fake GATT Service with |service_uuid| to be found when
-  // discovering the peripheral's GATT Attributes. Runs its callback with
-  // the fake service's Id. Runs its callback with nullopt if it failed to
-  // add the fake service.
+  // Adds a fake GATT Service with |service_uuid| to |peripheral_address|
+  // peripheral. The service will be found found when discovering the
+  // peripheral's GATT Attributes. Runs its callback with the fake service's Id.
+  // Runs its callback with nullopt if it failed to add the fake service.
   AddFakeService(string peripheral_address, UUID service_uuid)
       => (string? service_id);
 
   // Adds a fake GATT Characteristic with |characteristic_uuid| and |properties|
-  // to the fake service with |service_id|. The characteristic will be found
-  // when discovering the peripheral's GATT Attributes. Runs its callback with
-  // the fake characteristic's Id. Runs its callback with nullopt if it failed
-  // to add the fake characteristic.
+  // to the fake service with |service_id| in |peripheral_address| peripheral.
+  // The characteristic will be found when discovering the peripheral's GATT
+  // Attributes. Runs its callback with the fake characteristic's Id. Runs its
+  // callback with nullopt if it failed to add the fake characteristic.
   AddFakeCharacteristic(
         UUID characteristic_uuid,
         CharacteristicProperties properties,
         string service_id,
         string peripheral_address) => (string? characteristic_id);
+
+  // Adds a fake GATT Descriptor with |descriptor_uuid| to the fake service with
+  // |service_id| in |peripheral_address| peripheral. The descriptor will be
+  // found when discovering the peripheral's GATT Attributes. Runs its callback
+  // with the fake descriptor's Id. Runs its callback with nullopt if it failed
+  // to add the fake descriptor.
+  AddFakeDescriptor(UUID descriptor_uuid,
+                    string characteristic_id,
+                    string service_id,
+                    string peripheral_address) => (string? descriptor_id);
 
   // Sets the next read response for characteristic with |characteristics_id|
   // in |service_id| and in |peripheral_address| to |code| and |value|.
