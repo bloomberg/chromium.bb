@@ -314,13 +314,12 @@ void LocalFrame::Detach(FrameDetachType type) {
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   // It seems to crash because Frame is detached before LocalFrameView.
   // Verify here that any LocalFrameView has been detached by now.
-  CHECK(!view_->IsAttached());
-  if (HTMLFrameOwnerElement* owner = DeprecatedLocalOwner()) {
-    if (EmbeddedContentView* owner_view = owner->OwnedEmbeddedContentView()) {
-      CHECK(!owner_view->IsAttached());
-      CHECK_EQ(owner_view, view_);
-    }
+  if (view_->IsAttached()) {
+    CHECK(DeprecatedLocalOwner());
+    CHECK(DeprecatedLocalOwner()->OwnedEmbeddedContentView());
+    CHECK_EQ(view_, DeprecatedLocalOwner()->OwnedEmbeddedContentView());
   }
+  CHECK(!view_->IsAttached());
 
   SetView(nullptr);
 
