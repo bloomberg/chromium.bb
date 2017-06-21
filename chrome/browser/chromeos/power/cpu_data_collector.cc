@@ -392,7 +392,10 @@ bool CpuDataCollector::ReadCpuFreqAllTimeInState(
     const std::string state_name = base::IntToString(freq_in_khz / 1000);
     size_t index = EnsureInVector(state_name, cpu_freq_state_names);
     for (int cpu = 0; cpu < cpu_count; ++cpu) {
-      if (!(*freq_samples)[cpu].cpu_online) {
+      // array.size() is previously checked to be equal to cpu_count+1. cpu
+      // ranges from [0,cpu_count), so cpu+1 never exceeds cpu_count and is
+      // safe.
+      if (!(*freq_samples)[cpu].cpu_online || array[cpu + 1] == "N/A") {
         continue;
       }
       if (index >= (*freq_samples)[cpu].time_in_state.size())

@@ -44,6 +44,14 @@ constexpr char kAllTimeInStateContent[] =
     "60000\t\t90000\t\t91000\t\t\n"
     "100000\t\t50000\t\t51000\t\t\n";
 
+// The string content of the fake cpu frequency file for all cpus except one
+// that reports "N/A" as the cpu/freq combinations that are invalid.
+constexpr char kAllTimeInStateContentNA[] =
+    "freq\t\tcpu0\t\tcpu1\t\tcpu2\t\t\n"
+    "20000\t\t30000000\t\t31000000\t\tN/A\t\t\n"
+    "60000\t\t90000\t\t91000\t\tN/A\t\t\n"
+    "100000\t\t50000\t\t51000\t\tN/A\t\t\n";
+
 }  // namespace
 
 class CpuDataCollectorTest : public testing::Test {
@@ -67,19 +75,6 @@ class CpuDataCollectorTest : public testing::Test {
         temp_dir_.GetPath().AppendASCII(kTimeInStateSuffixPathCpu1);
     all_time_in_state_path_ =
         temp_dir_.GetPath().AppendASCII(kAllTimeInStateSuffixPath);
-
-    ASSERT_TRUE(base::CreateTemporaryFile(&time_in_state_path_cpu0_));
-    ASSERT_TRUE(base::CreateTemporaryFile(&time_in_state_path_cpu1_));
-    ASSERT_TRUE(base::CreateTemporaryFile(&all_time_in_state_path_));
-    ASSERT_TRUE(base::WriteFile(
-                    time_in_state_path_cpu0_, kTimeInStateContentCpu0,
-                    static_cast<int>(strlen(kTimeInStateContentCpu0))) != -1);
-    ASSERT_TRUE(base::WriteFile(
-                    time_in_state_path_cpu1_, kTimeInStateContentCpu1,
-                    static_cast<int>(strlen(kTimeInStateContentCpu1))) != -1);
-    ASSERT_TRUE(base::WriteFile(
-                    all_time_in_state_path_, kAllTimeInStateContent,
-                    static_cast<int>(strlen(kAllTimeInStateContent))) != -1);
   }
 
  protected:
@@ -103,6 +98,15 @@ class CpuDataCollectorTest : public testing::Test {
 };
 
 TEST_F(CpuDataCollectorTest, ReadCpuFreqTimeInState) {
+  ASSERT_TRUE(base::CreateTemporaryFile(&time_in_state_path_cpu0_));
+  ASSERT_TRUE(base::CreateTemporaryFile(&time_in_state_path_cpu1_));
+  ASSERT_TRUE(
+      base::WriteFile(time_in_state_path_cpu0_, kTimeInStateContentCpu0,
+                      static_cast<int>(strlen(kTimeInStateContentCpu0))) != -1);
+  ASSERT_TRUE(
+      base::WriteFile(time_in_state_path_cpu1_, kTimeInStateContentCpu1,
+                      static_cast<int>(strlen(kTimeInStateContentCpu1))) != -1);
+
   std::vector<std::string> cpu_freq_state_names;
   CpuDataCollector::StateOccupancySample freq_sample_cpu0;
   CpuDataCollector::StateOccupancySample freq_sample_cpu1;
@@ -120,6 +124,11 @@ TEST_F(CpuDataCollectorTest, ReadCpuFreqTimeInState) {
 }
 
 TEST_F(CpuDataCollectorTest, ReadCpuFreqAllTimeInState) {
+  ASSERT_TRUE(base::CreateTemporaryFile(&all_time_in_state_path_));
+  ASSERT_TRUE(
+      base::WriteFile(all_time_in_state_path_, kAllTimeInStateContent,
+                      static_cast<int>(strlen(kAllTimeInStateContent))) != -1);
+
   std::vector<std::string> cpu_freq_state_names;
   std::vector<CpuDataCollector::StateOccupancySample> freq_samples;
   CpuDataCollector::StateOccupancySample freq_sample_cpu0;
@@ -135,6 +144,33 @@ TEST_F(CpuDataCollectorTest, ReadCpuFreqAllTimeInState) {
   EXPECT_EQ(kExpectedCpuFreqStateNames, cpu_freq_state_names);
   EXPECT_EQ(kExpectedTimeInStateCpu0, freq_samples[0].time_in_state);
   EXPECT_EQ(kExpectedTimeInStateCpu1, freq_samples[1].time_in_state);
+}
+
+TEST_F(CpuDataCollectorTest, ReadCpuFreqAllTimeInStateNA) {
+  ASSERT_TRUE(base::CreateTemporaryFile(&all_time_in_state_path_));
+  ASSERT_TRUE(base::WriteFile(
+                  all_time_in_state_path_, kAllTimeInStateContentNA,
+                  static_cast<int>(strlen(kAllTimeInStateContentNA))) != -1);
+
+  std::vector<std::string> cpu_freq_state_names;
+  std::vector<CpuDataCollector::StateOccupancySample> freq_samples;
+  CpuDataCollector::StateOccupancySample freq_sample_cpu0;
+  CpuDataCollector::StateOccupancySample freq_sample_cpu1;
+  CpuDataCollector::StateOccupancySample freq_sample_cpu2;
+  // |ReadCpuFreqAllTimeInState| only completes sample for cpu that is online.
+  freq_sample_cpu0.cpu_online = true;
+  freq_sample_cpu1.cpu_online = true;
+  freq_sample_cpu2.cpu_online = true;
+  freq_samples.push_back(freq_sample_cpu0);
+  freq_samples.push_back(freq_sample_cpu1);
+  freq_samples.push_back(freq_sample_cpu2);
+
+  CpuDataCollector::ReadCpuFreqAllTimeInState(
+      3, all_time_in_state_path_, &cpu_freq_state_names, &freq_samples);
+  EXPECT_EQ(kExpectedCpuFreqStateNames, cpu_freq_state_names);
+  EXPECT_EQ(kExpectedTimeInStateCpu0, freq_samples[0].time_in_state);
+  EXPECT_EQ(kExpectedTimeInStateCpu1, freq_samples[1].time_in_state);
+  EXPECT_TRUE(freq_samples[2].time_in_state.empty());
 }
 
 }  // namespace chromeos
