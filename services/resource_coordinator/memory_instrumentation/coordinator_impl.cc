@@ -68,22 +68,13 @@ CoordinatorImpl* CoordinatorImpl::GetInstance() {
   return g_coordinator_impl;
 }
 
-CoordinatorImpl::CoordinatorImpl(bool initialize_memory_dump_manager,
-                                 service_manager::Connector* connector)
-    : failed_memory_dump_count_(0),
-      initialize_memory_dump_manager_(initialize_memory_dump_manager) {
-  if (initialize_memory_dump_manager) {
-    // TODO(primiano): the current state where the coordinator also creates a
-    // client (ClientProcessImpl) is contra-intuitive. BrowserMainLoop
-    // should be doing this.
-    ClientProcessImpl::CreateInstance(
-        ClientProcessImpl::Config(this, mojom::ProcessType::BROWSER));
-    base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
-        mojom::kServiceTracingProcessId);
-  }
+CoordinatorImpl::CoordinatorImpl(service_manager::Connector* connector)
+    : failed_memory_dump_count_(0) {
   process_map_ = base::MakeUnique<ProcessMap>(connector);
   DCHECK(!g_coordinator_impl);
   g_coordinator_impl = this;
+  base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
+      mojom::kServiceTracingProcessId);
 }
 
 CoordinatorImpl::~CoordinatorImpl() {

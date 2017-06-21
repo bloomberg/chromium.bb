@@ -20,7 +20,7 @@ namespace memory_instrumentation {
 
 class FakeCoordinatorImpl : public CoordinatorImpl {
  public:
-  FakeCoordinatorImpl() : CoordinatorImpl(false, nullptr) {}
+  FakeCoordinatorImpl() : CoordinatorImpl(nullptr) {}
   ~FakeCoordinatorImpl() override {}
   service_manager::Identity GetClientIdentityForCurrentRequest()
       const override {
