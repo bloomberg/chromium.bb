@@ -4,6 +4,7 @@
 
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -219,13 +220,13 @@ SubresourceFilterSafeBrowsingActivationThrottle::ComputeActivation(
   bool has_activated_config =
       highest_priority_activated_config !=
       config_list->configs_by_decreasing_priority().end();
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
-               "ContentSubresourceFilterDriverFactory::"
-               "ComputeActivationForMainFrameNavigation",
-               "highest_priority_activated_config",
-               has_activated_config
-                   ? highest_priority_activated_config->ToTracedValue()
-                   : base::MakeUnique<base::trace_event::TracedValue>());
+  TRACE_EVENT1(
+      TRACE_DISABLED_BY_DEFAULT("loading"),
+      "SubresourceFilterSafeBrowsingActivationThrottle::ComputeActivation",
+      "highest_priority_activated_config",
+      has_activated_config
+          ? highest_priority_activated_config->ToTracedValue()
+          : base::MakeUnique<base::trace_event::TracedValue>());
 
   if (!has_activated_config)
     return ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
@@ -249,6 +250,17 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
         bool scheme_is_http_or_https,
         const Configuration::ActivationConditions& conditions,
         ActivationList matched_list) const {
+  // Avoid copies when tracing disabled.
+  auto list_to_string = [](ActivationList activation_list) {
+    std::ostringstream matched_list_stream;
+    matched_list_stream << activation_list;
+    return matched_list_stream.str();
+  };
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SubresourceFilterSafeBrowsingActivationThrottle::"
+               "DoesMainFrameURLSatisfyActivationConditions",
+               "matched_list", list_to_string(matched_list), "conditions",
+               conditions.ToTracedValue());
   switch (conditions.activation_scope) {
     case ActivationScope::ALL_SITES:
       return true;

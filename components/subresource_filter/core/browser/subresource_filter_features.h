@@ -61,6 +61,8 @@ struct Configuration {
     // there are multiple configurations whose activation conditions are
     // otherwise satisfied. A greater value indicates higher priority.
     int priority = 0;
+
+    std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
   };
 
   // The details of how subresource filtering should operate for a given main
