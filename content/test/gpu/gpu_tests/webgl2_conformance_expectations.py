@@ -71,6 +71,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/' +
         'draw-with-integer-texture-base-level.html',
         ['win', 'nvidia', 'd3d11'], bug=679639)
+    self.Flaky('deqp/functional/gles3/textureshadow/*.html',
+        ['win', 'nvidia', 'd3d11'], bug=735464)
 
     # Win10 / NVIDIA Quadro P400 / D3D11 flaky failures
     self.Fail('deqp/functional/gles3/transformfeedback/' +
