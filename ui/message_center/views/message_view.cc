@@ -16,6 +16,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -114,6 +115,10 @@ void MessageView::SetIsNested() {
 
 void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->AddStringAttribute(
+      ui::AX_ATTR_ROLE_DESCRIPTION,
+      l10n_util::GetStringUTF8(
+          IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
   node_data->SetName(accessible_name_);
 }
 
