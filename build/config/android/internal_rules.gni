@@ -835,6 +835,7 @@ if (enable_java_templates) {
           "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
           "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_dirs)",
           "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_zips)",
+          "--srcjars=@FileArg($_rebased_build_config:gradle:bundled_srcjars)",
           "--can-fail-build",
         ]
       }
