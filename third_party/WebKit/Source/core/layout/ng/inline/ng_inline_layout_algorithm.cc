@@ -248,7 +248,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   LayoutUnit inline_size = position;
   NGLogicalOffset offset(LogicalLeftOffset(line_opp),
                          baseline - box_states_.LineBoxState().metrics.ascent);
-  ApplyTextAlign(line_style, line_style.GetTextAlign(line_info->IsLastLine()),
+  ApplyTextAlign(line_style.GetTextAlign(line_info->IsLastLine()),
                  &offset.inline_offset, inline_size, line_opp.InlineSize());
 
   line_box.SetInlineSize(inline_size);
@@ -311,25 +311,55 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   return box_states_.OnCloseTag(item, line_box, box, baseline_type_);
 }
 
-void NGInlineLayoutAlgorithm::ApplyTextAlign(const ComputedStyle& line_style,
-                                             ETextAlign text_align,
+void NGInlineLayoutAlgorithm::ApplyTextAlign(ETextAlign text_align,
                                              LayoutUnit* line_left,
                                              LayoutUnit inline_size,
                                              LayoutUnit available_width) {
-  switch (text_align) {
-    case ETextAlign::kRight:
-    case ETextAlign::kWebkitRight:
-      // Wide lines spill out of the block based off direction.
-      // So even if text-align is right, if direction is LTR, wide lines should
-      // overflow out of the right side of the block.
-      // TODO(kojii): Investigate how to handle trailing spaces.
-      if (inline_size < available_width || !line_style.IsLeftToRightDirection())
-        *line_left += available_width - inline_size;
-      break;
-    default:
-      // TODO(layout-dev): Implement.
-      // Refer to LayoutBlockFlow::UpdateLogicalWidthForAlignment().
-      break;
+  bool is_base_ltr = IsLtr(Node().BaseDirection());
+  // TODO(kojii): Investigate handling trailing spaces for 'white-space:
+  // pre|pre-wrap'. Refer to LayoutBlockFlow::UpdateLogicalWidthForAlignment().
+  while (true) {
+    switch (text_align) {
+      case ETextAlign::kLeft:
+      case ETextAlign::kWebkitLeft:
+        // The direction of the block should determine what happens with wide
+        // lines. In particular with RTL blocks, wide lines should still spill
+        // out to the left.
+        if (!is_base_ltr && inline_size > available_width)
+          *line_left -= inline_size - available_width;
+        return;
+      case ETextAlign::kRight:
+      case ETextAlign::kWebkitRight:
+        // Wide lines spill out of the block based off direction.
+        // So even if text-align is right, if direction is LTR, wide lines
+        // should overflow out of the right side of the block.
+        if (inline_size < available_width || !is_base_ltr)
+          *line_left += available_width - inline_size;
+        return;
+      case ETextAlign::kCenter:
+      case ETextAlign::kWebkitCenter:
+        if (is_base_ltr) {
+          *line_left +=
+              std::max((available_width - inline_size) / 2, LayoutUnit());
+        } else if (inline_size <= available_width) {
+          *line_left += (available_width - inline_size) / 2;
+        } else {
+          // In RTL, wide lines should spill out to the left, same as kRight.
+          *line_left += available_width - inline_size;
+        }
+        return;
+      case ETextAlign::kStart:
+        text_align = is_base_ltr ? ETextAlign::kLeft : ETextAlign::kRight;
+        continue;
+      case ETextAlign::kEnd:
+        text_align = is_base_ltr ? ETextAlign::kRight : ETextAlign::kLeft;
+        continue;
+      case ETextAlign::kJustify:
+        // TODO(kojii): Implement.
+        return;
+    }
+    NOTREACHED();
+    return;
   }
 }
 

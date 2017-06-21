@@ -62,8 +62,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                       NGLineBoxFragmentBuilder*,
                                       NGTextFragmentBuilder*);
 
-  void ApplyTextAlign(const ComputedStyle&,
-                      ETextAlign,
+  void ApplyTextAlign(ETextAlign,
                       LayoutUnit* line_left,
                       LayoutUnit inline_size,
                       LayoutUnit available_width);

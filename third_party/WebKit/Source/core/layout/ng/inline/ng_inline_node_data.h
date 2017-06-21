@@ -16,6 +16,13 @@ class LayoutBox;
 // Data which is required for inline nodes.
 struct CORE_EXPORT NGInlineNodeData {
  private:
+  TextDirection BaseDirection() const {
+    return static_cast<TextDirection>(base_direction_);
+  }
+  void SetBaseDirection(TextDirection direction) {
+    base_direction_ = static_cast<unsigned>(direction);
+  }
+
   friend class NGInlineNode;
   friend class NGInlineNodeForTest;
 
@@ -31,9 +38,8 @@ struct CORE_EXPORT NGInlineNodeData {
   // start_inline_ must always be reset within the constructor of NGInlineNode.
   LayoutObject* start_inline_;
 
-  // TODO(kojii): This should move to somewhere else when we move PrepareLayout
-  // to the correct place.
-  bool is_bidi_enabled_ = false;
+  unsigned is_bidi_enabled_ : 1;
+  unsigned base_direction_ : 1;  // TextDirection
 };
 
 }  // namespace blink
