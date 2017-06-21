@@ -160,14 +160,13 @@ ProfileDownloader::PictureStatus ProfileDownloader::GetProfilePictureStatus()
 }
 
 std::string ProfileDownloader::GetProfilePictureURL() const {
-  GURL url;
-  if (profiles::GetImageURLWithThumbnailSize(
-          GURL(account_info_.picture_url),
-          delegate_->GetDesiredImageSideLength(),
-          &url)) {
-    return url.spec();
-  }
-  return account_info_.picture_url;
+  GURL url(account_info_.picture_url);
+  if (!url.is_valid())
+    return std::string();
+  return profiles::GetImageURLWithOptions(
+             GURL(account_info_.picture_url),
+             delegate_->GetDesiredImageSideLength(), false /* no_silhouette */)
+      .spec();
 }
 
 void ProfileDownloader::StartFetchingImage() {

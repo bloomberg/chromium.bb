@@ -115,15 +115,18 @@ bool IsDefaultAvatarIconIndex(size_t index);
 // is, returns true and its index through |icon_index|. If not, returns false.
 bool IsDefaultAvatarIconUrl(const std::string& icon_url, size_t *icon_index);
 
-// Given an image URL this function builds a new URL set to |thumbnail_size|.
-// For example, if |thumbnail_size| was set to 256 and |old_url| was either:
+// Given an image URL this function builds a new URL, appending passed
+// |image_size| and |no_silhouette| parameters. |old_url| must be valid.
+// For example, if |image_size| was set to 256, |no_silhouette| was set to
+// true and |old_url| was either:
 //   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg
 //   or
-//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s64-c/photo.jpg
-// then return value in |new_url| would be:
-//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s256-c/photo.jpg
-bool GetImageURLWithThumbnailSize(
-    const GURL& old_url, int thumbnail_size, GURL* new_url);
+//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s64-c-ns/photo.jpg
+// then return value would be:
+//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s256-c-ns/photo.jpg
+GURL GetImageURLWithOptions(const GURL& old_url,
+                            int image_size,
+                            bool no_silhouette);
 
 // Returns a list of dictionaries containing the default profile avatar icons as
 // well as avatar labels used for accessibility purposes. The list is ordered
