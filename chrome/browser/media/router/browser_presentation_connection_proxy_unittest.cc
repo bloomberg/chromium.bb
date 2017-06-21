@@ -7,35 +7,34 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/media/router/test_helper.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/route_message.h"
 #include "content/public/common/presentation_connection_message.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
+using ::testing::Invoke;
 
 namespace media_router {
 
-constexpr char kMediaRouteId[] = "MockRouteId";
+using OnMessageCallback = BrowserPresentationConnectionProxy::OnMessageCallback;
 
-class MockPresentationConnectionProxy
-    : public NON_EXPORTED_BASE(blink::mojom::PresentationConnection) {
- public:
-  // PresentationConnectionMessage is move-only.
-  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
-  // move-only type support.
-  void OnMessage(content::PresentationConnectionMessage message,
-                 OnMessageCallback cb) {
-    OnMessageInternal(message, cb);
-  }
-  MOCK_METHOD2(OnMessageInternal,
-               void(const content::PresentationConnectionMessage&,
-                    OnMessageCallback&));
-  MOCK_METHOD1(DidChangeState,
-               void(content::PresentationConnectionState state));
-  MOCK_METHOD0(OnClose, void());
-};
+namespace {
+
+void ExpectMessageAndRunCallback(
+    const content::PresentationConnectionMessage& expected_message,
+    const content::PresentationConnectionMessage& message,
+    OnMessageCallback& callback) {
+  EXPECT_EQ(expected_message, message);
+  std::move(callback).Run(true);
+}
+
+}  // namespace
+
+constexpr char kMediaRouteId[] = "MockRouteId";
 
 class BrowserPresentationConnectionProxyTest : public ::testing::Test {
  public:
@@ -45,9 +44,10 @@ class BrowserPresentationConnectionProxyTest : public ::testing::Test {
     mock_controller_connection_proxy_ =
         base::MakeUnique<MockPresentationConnectionProxy>();
     blink::mojom::PresentationConnectionPtr controller_connection_ptr;
-    mojo::Binding<blink::mojom::PresentationConnection> binding(
+    binding_.reset(new mojo::Binding<blink::mojom::PresentationConnection>(
         mock_controller_connection_proxy_.get(),
-        mojo::MakeRequest(&controller_connection_ptr));
+        mojo::MakeRequest(&controller_connection_ptr)));
+    EXPECT_CALL(mock_router_, RegisterRouteMessageObserver(_));
     EXPECT_CALL(
         *mock_controller_connection_proxy_,
         DidChangeState(content::PRESENTATION_CONNECTION_STATE_CONNECTED));
@@ -64,8 +64,14 @@ class BrowserPresentationConnectionProxyTest : public ::testing::Test {
   }
 
   void TearDown() override {
+    EXPECT_CALL(mock_router_, UnregisterRouteMessageObserver(_));
     browser_connection_proxy_.reset();
+    binding_.reset();
     mock_controller_connection_proxy_.reset();
+  }
+
+  MockPresentationConnectionProxy* controller_connection_proxy() {
+    return mock_controller_connection_proxy_.get();
   }
 
   BrowserPresentationConnectionProxy* browser_connection_proxy() {
@@ -77,6 +83,7 @@ class BrowserPresentationConnectionProxyTest : public ::testing::Test {
  private:
   std::unique_ptr<MockPresentationConnectionProxy>
       mock_controller_connection_proxy_;
+  std::unique_ptr<mojo::Binding<blink::mojom::PresentationConnection>> binding_;
   std::unique_ptr<BrowserPresentationConnectionProxy> browser_connection_proxy_;
   MockMediaRouter mock_router_;
   content::TestBrowserThreadBundle thread_bundle_;
@@ -103,7 +110,7 @@ TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageBinaryMessage) {
 
   base::MockCallback<base::Callback<void(bool)>> mock_on_message_callback;
   EXPECT_CALL(*mock_router(), SendRouteBinaryMessageInternal(_, _, _))
-      .WillOnce(::testing::Invoke(
+      .WillOnce(Invoke(
           [&expected_data](
               const MediaRoute::Id& route_id, std::vector<uint8_t>* data,
               const BrowserPresentationConnectionProxy::OnMessageCallback&
@@ -111,6 +118,35 @@ TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageBinaryMessage) {
 
   browser_connection_proxy()->OnMessage(std::move(connection_message),
                                         mock_on_message_callback.Get());
+}
+
+TEST_F(BrowserPresentationConnectionProxyTest, OnMessagesReceived) {
+  RouteMessage message_1;
+  message_1.type = RouteMessage::Type::TEXT;
+  message_1.text = std::string("foo");
+  RouteMessage message_2;
+  message_2.type = RouteMessage::Type::BINARY;
+  message_2.binary = std::vector<uint8_t>({1, 2, 3});
+  std::vector<RouteMessage> messages = {message_1, message_2};
+
+  content::PresentationConnectionMessage expected_message1("foo");
+  content::PresentationConnectionMessage expected_message2(
+      std::vector<uint8_t>({1, 2, 3}));
+  EXPECT_CALL(*controller_connection_proxy(), OnMessageInternal(_, _))
+      .WillOnce(
+          Invoke([&expected_message1](
+                     const content::PresentationConnectionMessage& message,
+                     OnMessageCallback& callback) {
+            ExpectMessageAndRunCallback(expected_message1, message, callback);
+          }))
+      .WillOnce(
+          Invoke([&expected_message2](
+                     const content::PresentationConnectionMessage& message,
+                     OnMessageCallback& callback) {
+            ExpectMessageAndRunCallback(expected_message2, message, callback);
+          }));
+  browser_connection_proxy()->OnMessagesReceived(messages);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media_router

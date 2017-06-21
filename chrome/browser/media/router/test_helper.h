@@ -78,6 +78,26 @@ class MockMediaRoutesObserver : public MediaRoutesObserver {
       const std::vector<MediaRoute::Id>& joinable_route_ids));
 };
 
+class MockPresentationConnectionProxy
+    : public NON_EXPORTED_BASE(blink::mojom::PresentationConnection) {
+ public:
+  // PresentationConnectionMessage is move-only.
+  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
+  // move-only type support.
+  MockPresentationConnectionProxy();
+  ~MockPresentationConnectionProxy() override;
+  void OnMessage(content::PresentationConnectionMessage message,
+                 OnMessageCallback cb) {
+    OnMessageInternal(message, cb);
+  }
+  MOCK_METHOD2(OnMessageInternal,
+               void(const content::PresentationConnectionMessage&,
+                    OnMessageCallback&));
+  MOCK_METHOD1(DidChangeState,
+               void(content::PresentationConnectionState state));
+  MOCK_METHOD0(OnClose, void());
+};
+
 }  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_TEST_HELPER_H_

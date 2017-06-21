@@ -106,8 +106,6 @@ class MockPresentationService : public PresentationService {
   MOCK_METHOD2(Terminate,
                void(const GURL& presentation_url,
                     const std::string& presentation_id));
-  MOCK_METHOD1(ListenForConnectionMessages,
-               void(const PresentationInfo& presentation_info));
 };
 
 class TestPresentationConnectionProxy : public PresentationConnectionProxy {
@@ -339,7 +337,6 @@ TEST_F(PresentationDispatcherTest, TestStartPresentation) {
   EXPECT_FALSE(connection.proxy());
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(presentation_service_, ListenForConnectionMessages(_));
     EXPECT_CALL(presentation_service_, SetPresentationConnection(_, _));
     EXPECT_CALL(presentation_service_, StartPresentationInternal(gurls_, _))
         .WillOnce(Invoke(
@@ -411,7 +408,6 @@ TEST_F(PresentationDispatcherTest, TestReconnectPresentation) {
   EXPECT_FALSE(connection.proxy());
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(presentation_service_, ListenForConnectionMessages(_));
     EXPECT_CALL(presentation_service_, SetPresentationConnection(_, _));
     EXPECT_CALL(presentation_service_,
                 ReconnectPresentationInternal(gurls_, _, _))

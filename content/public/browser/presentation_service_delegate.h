@@ -180,17 +180,6 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
                          int render_frame_id,
                          const std::string& presentation_id) = 0;
 
-  // Listens for messages from a presentation.
-  // |render_process_id|, |render_frame_id|: ID for originating frame.
-  // |presentation_info|: URL and ID of presentation to listen for messages.
-  // |message_cb|: Invoked with a non-empty list of messages whenever there are
-  // messages.
-  virtual void ListenForConnectionMessages(
-      int render_process_id,
-      int render_frame_id,
-      const content::PresentationInfo& presentation_info,
-      const PresentationConnectionMessageCallback& message_cb) = 0;
-
   // Sends a message (string or binary data) to a presentation.
   // |render_process_id|, |render_frame_id|: ID of originating frame.
   // |presentation_info|: The presentation to send the message to.

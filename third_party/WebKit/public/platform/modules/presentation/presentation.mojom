@@ -98,9 +98,14 @@ interface PresentationService {
   ReconnectPresentation(array<url.mojom.Url> presentation_urls, string? presentation_id)
       => (PresentationInfo? presentation_info, PresentationError? error);
 
-  // Called in StartPresentation's callback function for offscreen presentation only.
-  // It passes in controlling frame's PresentationConnection and
-  // PresentationConnectionRequest to PresentationService.
+  // Notifies the service that a PresentationConnection has been started.
+  // |controller_connection_ptr| is a handle to a PresentationConnection in
+  // the page that started the presentation (aka the "controller"). This can be
+  // used by PresentationService to send messages to the controller
+  // PresentationConnection, for example.
+  // The PresentationService should bind |receiver_connection_request| to a
+  // PresentationConnection implementation in order to receive messages and
+  // commands issued by the controller PresentationConnection.
   SetPresentationConnection(
       PresentationInfo presentation_info,
       PresentationConnection controller_connection_ptr,
@@ -112,13 +117,6 @@ interface PresentationService {
 
   // Called when terminate() is called by the frame.
   Terminate(url.mojom.Url presentation_url, string presentation_id);
-
-  // Starts listening for messages on the presentation identified by |presentation_info|.
-  // Messages will be received in
-  // PresentationServiceClient::OnConnectionMessagesReceived.
-  // This is called after a connection has been established to the presentation
-  // from the frame.
-  ListenForConnectionMessages(PresentationInfo presentation_info);
 };
 
 interface PresentationServiceClient {
@@ -155,8 +153,4 @@ interface PresentationServiceClient {
   OnConnectionClosed(PresentationInfo presentation_info,
                      PresentationConnectionCloseReason reason,
                      string message);
-
-  // See PresentationService::ListenForConnectionMessages.
-  OnConnectionMessagesReceived(PresentationInfo presentation_info,
-                               array<PresentationConnectionMessage> messages);
 };

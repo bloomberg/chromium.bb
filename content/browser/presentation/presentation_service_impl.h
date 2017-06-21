@@ -80,8 +80,6 @@ class CONTENT_EXPORT PresentationServiceImpl
                        const std::string& presentation_id) override;
   void Terminate(const GURL& presentation_url,
                  const std::string& presentation_id) override;
-  void ListenForConnectionMessages(
-      const PresentationInfo& presentation_info) override;
   void SetPresentationConnection(
       const PresentationInfo& presentation_info,
       blink::mojom::PresentationConnectionPtr controller_connection_ptr,

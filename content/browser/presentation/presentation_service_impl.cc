@@ -356,18 +356,6 @@ PresentationServiceImpl::GetPresentationServiceDelegate() {
              : static_cast<PresentationServiceDelegate*>(controller_delegate_);
 }
 
-void PresentationServiceImpl::ListenForConnectionMessages(
-    const PresentationInfo& presentation_info) {
-  DVLOG(2) << "ListenForConnectionMessages";
-  if (!controller_delegate_)
-    return;
-
-  controller_delegate_->ListenForConnectionMessages(
-      render_process_id_, render_frame_id_, presentation_info,
-      base::Bind(&PresentationServiceImpl::OnConnectionMessages,
-                 weak_factory_.GetWeakPtr(), presentation_info));
-}
-
 void PresentationServiceImpl::SetPresentationConnection(
     const PresentationInfo& presentation_info,
     blink::mojom::PresentationConnectionPtr controller_connection_ptr,
@@ -381,16 +369,6 @@ void PresentationServiceImpl::SetPresentationConnection(
       render_process_id_, render_frame_id_, presentation_info,
       std::move(controller_connection_ptr),
       std::move(receiver_connection_request));
-}
-
-void PresentationServiceImpl::OnConnectionMessages(
-    const PresentationInfo& presentation_info,
-    std::vector<PresentationConnectionMessage> messages) {
-  DCHECK(client_);
-
-  DVLOG(2) << "OnConnectionMessages [id]: "
-           << presentation_info.presentation_id;
-  client_->OnConnectionMessagesReceived(presentation_info, std::move(messages));
 }
 
 void PresentationServiceImpl::OnReceiverConnectionAvailable(
