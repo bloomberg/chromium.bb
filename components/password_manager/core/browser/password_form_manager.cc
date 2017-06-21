@@ -217,6 +217,7 @@ PasswordFormManager::PasswordFormManager(
       is_new_login_(true),
       has_autofilled_(false),
       has_generated_password_(false),
+      generated_password_changed_(false),
       is_manual_generation_(false),
       generation_popup_was_shown_(false),
       form_classifier_outcome_(kNoOutcome),
@@ -439,6 +440,25 @@ void PasswordFormManager::Update(
   form_saver_->Update(pending_credentials_, best_matches_,
                       &more_credentials_to_update,
                       old_primary_key ? &old_primary_key.value() : nullptr);
+}
+
+void PasswordFormManager::PresaveGeneratedPassword(
+    const autofill::PasswordForm& form) {
+  form_saver()->PresaveGeneratedPassword(form);
+  metrics_recorder_.SetHasGeneratedPassword(true);
+  if (has_generated_password_) {
+    generated_password_changed_ = true;
+  } else {
+    SetHasGeneratedPassword(true);
+    generated_password_changed_ = false;
+  }
+}
+
+void PasswordFormManager::PasswordNoLongerGenerated() {
+  DCHECK(has_generated_password_);
+  form_saver()->RemovePresavedPassword();
+  SetHasGeneratedPassword(false);
+  generated_password_changed_ = false;
 }
 
 void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
@@ -859,6 +879,7 @@ void PasswordFormManager::AddGeneratedVote(
     autofill::AutofillField* field = form_structure->field(i);
     if (field->name == generation_element_) {
       field->set_generation_type(type);
+      field->set_generated_password_changed(generated_password_changed_);
       break;
     }
   }
@@ -1194,10 +1215,10 @@ void PasswordFormManager::OnNeverClicked() {
 }
 
 void PasswordFormManager::OnNoInteraction(bool is_update) {
-  if (is_update)
+  if (is_update) {
     UploadPasswordVote(observed_form_, autofill::PROBABLY_NEW_PASSWORD,
                        std::string());
-  else {
+  } else {
     UploadPasswordVote(pending_credentials_, autofill::UNKNOWN_TYPE,
                        std::string());
   }

@@ -90,6 +90,9 @@ class MockFormSaver : public StubFormSaver {
                void(const autofill::PasswordForm& pending,
                     std::map<base::string16, const PasswordForm*>* best_matches,
                     const autofill::PasswordForm** preferred_match));
+  MOCK_METHOD1(PresaveGeneratedPassword,
+               void(const autofill::PasswordForm& generated));
+  MOCK_METHOD0(RemovePresavedPassword, void());
 
   // Convenience downcasting method.
   static MockFormSaver& Get(PasswordFormManager* form_manager) {
@@ -153,9 +156,10 @@ MATCHER_P3(CheckUploadedAutofillTypesAndSignature,
   return true;
 }
 
-MATCHER_P2(CheckUploadedGenerationTypesAndSignature,
+MATCHER_P3(CheckUploadedGenerationTypesAndSignature,
            form_signature,
            expected_generation_types,
+           generated_password_changed,
            "Unexpected generation types or form signature") {
   if (form_signature != arg.FormSignatureAsStr()) {
     // Unexpected form's signature.
@@ -183,6 +187,12 @@ MATCHER_P2(CheckUploadedGenerationTypesAndSignature,
                       << expected_generation_types.find(field->name)->second
                       << ", but found " << field->generation_type();
         return false;
+      }
+
+      if (field->generation_type() !=
+          autofill::AutofillUploadContents::Field::IGNORED_GENERATION_POPUP) {
+        EXPECT_EQ(generated_password_changed,
+                  field->generated_password_changed());
       }
     }
   }
@@ -605,11 +615,13 @@ class PasswordFormManagerTest : public testing::Test {
   void GeneratedVoteUploadTest(bool is_manual_generation,
                                bool is_change_password_form,
                                bool has_generated_password,
+                               bool generated_password_changed,
                                SavePromptInteraction interaction) {
     SCOPED_TRACE(testing::Message()
                  << "is_manual_generation=" << is_manual_generation
                  << " is_change_password_form=" << is_change_password_form
                  << " has_generated_password=" << has_generated_password
+                 << " generated_password_changed=" << generated_password_changed
                  << " interaction=" << interaction);
     PasswordForm form(*observed_form());
     form.form_data = saved_match()->form_data;
@@ -656,6 +668,8 @@ class PasswordFormManagerTest : public testing::Test {
     form_manager.set_generation_element(generation_element);
     form_manager.set_generation_popup_was_shown(true);
     form_manager.SetHasGeneratedPassword(has_generated_password);
+    if (has_generated_password)
+      form_manager.set_generated_password_changed(generated_password_changed);
 
     // Figure out expected generation event type.
     autofill::AutofillUploadContents::Field::PasswordGenerationType
@@ -673,7 +687,8 @@ class PasswordFormManagerTest : public testing::Test {
         *client()->mock_driver()->mock_autofill_download_manager(),
         StartUploadRequest(
             CheckUploadedGenerationTypesAndSignature(
-                form_structure.FormSignatureAsStr(), expected_generation_types),
+                form_structure.FormSignatureAsStr(), expected_generation_types,
+                generated_password_changed),
             false, expected_available_field_types, std::string(), true));
 
     form_manager.ProvisionallySave(
@@ -2529,7 +2544,6 @@ TEST_F(PasswordFormManagerTest, TestNotUpdateWhenOnlyPSLMatched) {
 TEST_F(PasswordFormManagerTest,
        TestSavingOnChangePasswordFormGenerationNoStoredForms) {
   fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
-  form_manager()->SetHasGeneratedPassword(true);
 
   // User submits change password form and there is no stored credentials.
   PasswordForm credentials = *observed_form();
@@ -2538,6 +2552,7 @@ TEST_F(PasswordFormManagerTest,
   credentials.new_password_element = ASCIIToUTF16("NewPasswd");
   credentials.new_password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
+  form_manager()->PresaveGeneratedPassword(credentials);
   form_manager()->ProvisionallySave(
       credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
@@ -2564,7 +2579,6 @@ TEST_F(PasswordFormManagerTest,
 
 TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
   fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
-  form_manager()->SetHasGeneratedPassword(true);
 
   // User submits credentials for the change password form, and old password is
   // coincide with password from an existing credentials, so stored credentials
@@ -2575,6 +2589,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
   credentials.new_password_element = ASCIIToUTF16("NewPasswd");
   credentials.new_password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
+  form_manager()->PresaveGeneratedPassword(credentials);
   form_manager()->ProvisionallySave(
       credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
@@ -2600,7 +2615,6 @@ TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
 TEST_F(PasswordFormManagerTest,
        TestSavingOnChangePasswordFormGenerationNoMatchedForms) {
   fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
-  form_manager()->SetHasGeneratedPassword(true);
 
   // User submits credentials for the change password form, and old password is
   // not coincide with password from existing credentials, so new credentials
@@ -2612,6 +2626,7 @@ TEST_F(PasswordFormManagerTest,
   credentials.new_password_element = ASCIIToUTF16("NewPasswd");
   credentials.new_password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
+  form_manager()->PresaveGeneratedPassword(credentials);
   form_manager()->ProvisionallySave(
       credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
@@ -2710,13 +2725,40 @@ TEST_F(PasswordFormManagerTest, GeneratedVoteUpload) {
   for (bool is_manual_generation : kFalseTrue) {
     for (bool is_change_password_form : kFalseTrue) {
       for (bool has_generated_password : kFalseTrue) {
-        for (SavePromptInteraction interaction : kSavePromptInterations) {
-          GeneratedVoteUploadTest(is_manual_generation, is_change_password_form,
-                                  has_generated_password, interaction);
+        for (bool generated_password_changed : kFalseTrue) {
+          for (SavePromptInteraction interaction : kSavePromptInterations) {
+            GeneratedVoteUploadTest(is_manual_generation,
+                                    is_change_password_form,
+                                    has_generated_password,
+                                    generated_password_changed, interaction);
+          }
         }
       }
     }
   }
+}
+
+TEST_F(PasswordFormManagerTest, PresaveGeneratedPasswordAndRemoveIt) {
+  PasswordForm credentials = *observed_form();
+
+  // Simulate the user accepted a generated password.
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              PresaveGeneratedPassword(credentials));
+  form_manager()->PresaveGeneratedPassword(credentials);
+  EXPECT_TRUE(form_manager()->has_generated_password());
+  EXPECT_FALSE(form_manager()->generated_password_changed());
+
+  // Simulate the user changed the presaved password.
+  credentials.password_value = ASCIIToUTF16("changed_password");
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              PresaveGeneratedPassword(credentials));
+  form_manager()->PresaveGeneratedPassword(credentials);
+  EXPECT_TRUE(form_manager()->has_generated_password());
+  EXPECT_TRUE(form_manager()->generated_password_changed());
+
+  // Simulate the user removed the presaved password.
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), RemovePresavedPassword());
+  form_manager()->PasswordNoLongerGenerated();
 }
 
 TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {

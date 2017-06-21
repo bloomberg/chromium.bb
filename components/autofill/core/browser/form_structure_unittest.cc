@@ -2363,6 +2363,7 @@ TEST_F(FormStructureTest,
       form_structure->field(i)->set_generation_type(
           AutofillUploadContents::Field::
               MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
+      form_structure->field(i)->set_generated_password_changed(true);
       form_structure->field(i)->set_form_classifier_outcome(
           AutofillUploadContents::Field::GENERATION_ELEMENT);
     } else {
@@ -2436,6 +2437,7 @@ TEST_F(FormStructureTest,
           MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
   upload_password_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
                                              FieldPropertiesFlags::USER_TYPED);
+  upload_password_field->set_generated_password_changed(true);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));

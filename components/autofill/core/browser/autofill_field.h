@@ -96,6 +96,13 @@ class AutofillField : public FormFieldData {
     return generation_type_;
   }
 
+  void set_generated_password_changed(bool generated_password_changed) {
+    generated_password_changed_ = generated_password_changed;
+  }
+  bool generated_password_changed() const {
+    return generated_password_changed_;
+  }
+
   void set_form_classifier_outcome(
       AutofillUploadContents::Field::FormClassifierOutcome outcome) {
     form_classifier_outcome_ = outcome;
@@ -175,6 +182,9 @@ class AutofillField : public FormFieldData {
 
   // The type of password generation event, if it happened.
   AutofillUploadContents::Field::PasswordGenerationType generation_type_;
+
+  // Whether the generated password was changed by user.
+  bool generated_password_changed_;
 
   // The outcome of HTML parsing based form classifier.
   AutofillUploadContents::Field::FormClassifierOutcome form_classifier_outcome_;

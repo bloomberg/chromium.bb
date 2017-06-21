@@ -1098,8 +1098,11 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
 
       AutofillUploadContents::Field* added_field = upload->add_field();
       added_field->set_autofill_type(field_type);
-      if (field->generation_type())
+      if (field->generation_type()) {
         added_field->set_generation_type(field->generation_type());
+        added_field->set_generated_password_changed(
+            field->generated_password_changed());
+      }
 
       if (field->form_classifier_outcome()) {
         added_field->set_form_classifier_outcome(

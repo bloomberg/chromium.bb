@@ -76,7 +76,6 @@ class PasswordGenerationPopupControllerImpl
       const gfx::RectF& bounds,
       const PasswordForm& form,
       int max_length,
-      password_manager::PasswordManager* password_manager,
       password_manager::PasswordManagerDriver* driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
@@ -127,7 +126,6 @@ class PasswordGenerationPopupControllerImpl
   void CalculateBounds();
 
   PasswordForm form_;
-  password_manager::PasswordManager* password_manager_;
   password_manager::PasswordManagerDriver* driver_;
 
   // May be NULL.
