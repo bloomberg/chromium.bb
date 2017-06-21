@@ -412,7 +412,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateMediaRouteStatus) {
   status.description = "test description";
   status.can_play_pause = true;
   status.can_set_volume = true;
-  status.is_paused = true;
+  status.play_state = MediaStatus::PlayState::BUFFERING;
   status.duration = base::TimeDelta::FromSeconds(90);
   status.current_time = base::TimeDelta::FromSeconds(80);
   status.volume = 0.9;
@@ -429,7 +429,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateMediaRouteStatus) {
   EXPECT_EQ(status.can_set_volume,
             GetBooleanFromDict(status_value, "canSetVolume"));
   EXPECT_EQ(status.can_seek, GetBooleanFromDict(status_value, "canSeek"));
-  EXPECT_EQ(status.is_paused, GetBooleanFromDict(status_value, "isPaused"));
+  EXPECT_EQ(static_cast<int>(status.play_state),
+            GetIntegerFromDict(status_value, "playState"));
   EXPECT_EQ(status.is_muted, GetBooleanFromDict(status_value, "isMuted"));
   EXPECT_EQ(status.duration.InSeconds(),
             GetIntegerFromDict(status_value, "duration"));
