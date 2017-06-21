@@ -4032,7 +4032,7 @@ long SegmentInfo::Parse() {
   }
 
   const double rollover_check = m_duration * m_timecodeScale;
-  if (rollover_check > LLONG_MAX)
+  if (rollover_check > static_cast<double>(LLONG_MAX))
     return E_FILE_FORMAT_INVALID;
 
   if (pos != stop)
