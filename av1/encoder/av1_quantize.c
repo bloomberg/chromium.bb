@@ -973,7 +973,7 @@ static INLINE void highbd_quantize_dc(
     const int coeff_sign = (coeff >> 31);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
     const int64_t tmp = abs_coeff + round_ptr[0];
-    const uint32_t abs_qcoeff = (uint32_t)((tmp * quant) >> (16 - log_scale));
+    const int abs_qcoeff = (int)((tmp * quant) >> (16 - log_scale));
     qcoeff_ptr[0] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
     dqcoeff_ptr[0] = qcoeff_ptr[0] * dequant_ptr / (1 << log_scale);
     if (abs_qcoeff) eob = 0;
@@ -1564,13 +1564,12 @@ void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       const int64_t tmp = abs_coeff + (round_ptr[rc != 0] >> log_scale);
 #if CONFIG_AOM_QM
-      const uint32_t abs_qcoeff =
-          (uint32_t)((tmp * quant_ptr[rc != 0] * wt) >> (shift + AOM_QM_BITS));
+      const int abs_qcoeff =
+          (int)((tmp * quant_ptr[rc != 0] * wt) >> (shift + AOM_QM_BITS));
       qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
       dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant / scale;
 #else
-      const uint32_t abs_qcoeff =
-          (uint32_t)((tmp * quant_ptr[rc != 0]) >> shift);
+      const int abs_qcoeff = (int)((tmp * quant_ptr[rc != 0]) >> shift);
       qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
       dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant_ptr[rc != 0] / scale;
 #endif
