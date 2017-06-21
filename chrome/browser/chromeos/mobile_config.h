@@ -18,7 +18,6 @@
 
 namespace base {
 class DictionaryValue;
-class FilePath;
 }
 
 namespace chromeos {
@@ -134,6 +133,12 @@ class MobileConfig : public CustomizationDocument  {
     DISALLOW_COPY_AND_ASSIGN(LocaleConfig);
   };
 
+  // A struct to hold global and local config content read from config files.
+  struct Config {
+    std::string global_config;
+    std::string local_config;
+  };
+
   // External carrier ID (ex. "Verizon (us)") mapping to internal carrier ID.
   using CarrierIdMap = std::map<std::string, std::string>;
 
@@ -174,12 +179,7 @@ class MobileConfig : public CustomizationDocument  {
   void LoadConfig();
 
   // Processes global/local config.
-  void ProcessConfig(const std::string& global_config,
-                     const std::string& local_config);
-
-  // Executes on FILE thread and reads config files to string.
-  void ReadConfigInBackground(const base::FilePath& global_config_file,
-                              const base::FilePath& local_config_file);
+  void ProcessConfig(const Config& config);
 
   // Maps external carrier ID to internal carrier ID.
   CarrierIdMap carrier_id_map_;
