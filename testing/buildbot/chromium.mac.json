@@ -1,4 +1,14 @@
 {
+  "Mac Builder": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "Mac Builder (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "Mac GYP": {
     "additional_compile_targets": [
       "base_unittests",
