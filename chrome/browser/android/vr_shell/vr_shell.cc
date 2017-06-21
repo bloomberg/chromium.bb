@@ -337,14 +337,15 @@ void VrShell::SetSurface(JNIEnv* env,
 void VrShell::SetWebVrMode(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            bool enabled,
-                           bool auto_presented) {
+                           bool auto_presented,
+                           bool show_toast) {
   webvr_mode_ = enabled;
   if (metrics_helper_)
     metrics_helper_->SetWebVREnabled(enabled);
   WaitForGlThread();
   PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::SetWebVrMode,
                                        gl_thread_->GetVrShellGl(), enabled));
-  ui_->SetWebVrMode(enabled, auto_presented);
+  ui_->SetWebVrMode(enabled, auto_presented, show_toast);
 }
 
 void VrShell::OnFullscreenChanged(bool enabled) {
