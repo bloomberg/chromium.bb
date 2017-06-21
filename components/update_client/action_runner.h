@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_ACTION_RUNNER_H_
 #define COMPONENTS_UPDATE_CLIENT_ACTION_RUNNER_H_
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -31,7 +33,8 @@ class ActionRunner {
       base::Callback<void(bool succeeded, int error_code, int extra_code1)>;
 
   ActionRunner(const Component& component,
-               const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+               const std::vector<uint8_t>& key_hash);
   ~ActionRunner();
 
   void Run(const Callback& run_complete);
@@ -48,6 +51,10 @@ class ActionRunner {
 
   const Component& component_;
   const scoped_refptr<base::SequencedTaskRunner>& task_runner_;
+
+  // Contains the key hash of the CRX this object is allowed to run. This value
+  // is using during the unpacking of the CRX to verify its integrity.
+  const std::vector<uint8_t> key_hash_;
 
   // Used to post callbacks to the main thread.
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

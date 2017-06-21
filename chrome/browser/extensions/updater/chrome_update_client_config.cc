@@ -118,6 +118,10 @@ bool ChromeUpdateClientConfig::IsPerUserInstall() const {
   return component_updater::IsPerUserInstall();
 }
 
+std::vector<uint8_t> ChromeUpdateClientConfig::GetRunActionKeyHash() const {
+  return impl_.GetRunActionKeyHash();
+}
+
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}
 
 }  // namespace extensions

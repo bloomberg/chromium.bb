@@ -18,30 +18,15 @@
 #include "components/update_client/component.h"
 #include "components/update_client/update_client.h"
 
-namespace {
-
-// The SHA256 of the SubjectPublicKeyInfo used to sign the recovery payload.
-// TODO(sorin): inject this value using the Configurator.
-// The CRX id is: gjpmebpgbhcamgdgjcmnjfhggjpgcimm
-constexpr uint8_t kPublicKeySHA256[] = {
-    0x69, 0xfc, 0x41, 0xf6, 0x17, 0x20, 0xc6, 0x36, 0x92, 0xcd, 0x95,
-    0x76, 0x69, 0xf6, 0x28, 0xcc, 0xbe, 0x98, 0x4b, 0x93, 0x17, 0xd6,
-    0x9c, 0xb3, 0x64, 0x0c, 0x0d, 0x25, 0x61, 0xc5, 0x80, 0x1d};
-
-std::vector<uint8_t> GetHash() {
-  return std::vector<uint8_t>{std::begin(kPublicKeySHA256),
-                              std::end(kPublicKeySHA256)};
-}
-
-}  // namespace
-
 namespace update_client {
 
 ActionRunner::ActionRunner(
     const Component& component,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const std::vector<uint8_t>& key_hash)
     : component_(component),
       task_runner_(task_runner),
+      key_hash_(key_hash),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 ActionRunner::~ActionRunner() {
@@ -66,7 +51,7 @@ void ActionRunner::Unpack() {
   installer->GetInstalledFile(component_.action_run(), &file_path);
 
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
-      GetHash(), file_path, installer, nullptr, task_runner_);
+      key_hash_, file_path, installer, nullptr, task_runner_);
 
   unpacker->Unpack(
       base::Bind(&ActionRunner::UnpackComplete, base::Unretained(this)));
