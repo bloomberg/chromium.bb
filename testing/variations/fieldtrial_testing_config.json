@@ -1595,11 +1595,13 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled-ClickBasedRanker",
+                    "name": "Enabled-ClickBasedRanker-InitialOrderGeneral",
                     "params": {
+                        "category_order": "general",
                         "category_ranker": "click_based"
                     },
                     "enable_features": [
+                        "ContentSuggestionsCategoryOrder",
                         "ContentSuggestionsCategoryRanker"
                     ]
                 }
