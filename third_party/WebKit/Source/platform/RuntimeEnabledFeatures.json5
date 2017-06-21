@@ -478,7 +478,7 @@
     {
       name: "GeometryInterfaces",
       implied_by: ["CompositorWorker"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "GetUserMedia",

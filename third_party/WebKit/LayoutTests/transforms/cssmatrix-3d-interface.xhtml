@@ -277,9 +277,45 @@ shouldBe('parseFloat(m.m43)', '30');
 shouldBe('parseFloat(m.m44)', '1');
 
 debug("");
-debug("Test throwing exception from inverse");
+debug("Test not invertible 3d matrix");
 m = new WebKitCSSMatrix("matrix3d(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)"); // not invertible
-shouldThrow('m.inverse()');
+m2 = m.inverse();
+
+shouldBeNaN('m2.m11');
+shouldBeNaN('m2.m12');
+shouldBeNaN('m2.m13');
+shouldBeNaN('m2.m14');
+shouldBeNaN('m2.m21');
+shouldBeNaN('m2.m22');
+shouldBeNaN('m2.m23');
+shouldBeNaN('m2.m24');
+shouldBeNaN('m2.m31');
+shouldBeNaN('m2.m32');
+shouldBeNaN('m2.m33');
+shouldBeNaN('m2.m34');
+shouldBeNaN('m2.m41');
+shouldBeNaN('m2.m42');
+shouldBeNaN('m2.m43');
+shouldBeNaN('m2.m44');
+
+debug("");
+debug("Test immutability of inverse");
+shouldBe('m.m11', '0');
+shouldBe('m.m12', '0');
+shouldBe('m.m13', '0');
+shouldBe('m.m14', '0');
+shouldBe('m.m21', '0');
+shouldBe('m.m22', '0');
+shouldBe('m.m23', '0');
+shouldBe('m.m24', '0');
+shouldBe('m.m31', '0');
+shouldBe('m.m32', '0');
+shouldBe('m.m33', '0');
+shouldBe('m.m34', '0');
+shouldBe('m.m41', '0');
+shouldBe('m.m42', '0');
+shouldBe('m.m43', '0');
+shouldBe('m.m44', '0');
 
 debug("");
 debug("Test translate");

@@ -94,8 +94,6 @@ blink_core_sources("css") {
     "CSSKeyframesRule.h",
     "CSSMarkup.cpp",
     "CSSMarkup.h",
-    "CSSMatrix.cpp",
-    "CSSMatrix.h",
     "CSSMediaRule.cpp",
     "CSSMediaRule.h",
     "CSSNamespaceRule.cpp",

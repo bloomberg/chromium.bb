@@ -727,10 +727,172 @@ interface DOMImplementation
     method createDocumentType
     method createHTMLDocument
     method hasFeature
+interface DOMMatrix : DOMMatrixReadOnly
+    attribute @@toStringTag
+    getter a
+    getter b
+    getter c
+    getter d
+    getter e
+    getter f
+    getter m11
+    getter m12
+    getter m13
+    getter m14
+    getter m21
+    getter m22
+    getter m23
+    getter m24
+    getter m31
+    getter m32
+    getter m33
+    getter m34
+    getter m41
+    getter m42
+    getter m43
+    getter m44
+    method constructor
+    method invertSelf
+    method multiplySelf
+    method preMultiplySelf
+    method rotateAxisAngleSelf
+    method rotateFromVectorSelf
+    method rotateSelf
+    method scale3dSelf
+    method scaleSelf
+    method setMatrixValue
+    method skewXSelf
+    method skewYSelf
+    method translateSelf
+    setter a
+    setter b
+    setter c
+    setter d
+    setter e
+    setter f
+    setter m11
+    setter m12
+    setter m13
+    setter m14
+    setter m21
+    setter m22
+    setter m23
+    setter m24
+    setter m31
+    setter m32
+    setter m33
+    setter m34
+    setter m41
+    setter m42
+    setter m43
+    setter m44
+interface DOMMatrixReadOnly
+    static method fromFloat32Array
+    static method fromFloat64Array
+    static method fromMatrix
+    attribute @@toStringTag
+    getter a
+    getter b
+    getter c
+    getter d
+    getter e
+    getter f
+    getter is2D
+    getter isIdentity
+    getter m11
+    getter m12
+    getter m13
+    getter m14
+    getter m21
+    getter m22
+    getter m23
+    getter m24
+    getter m31
+    getter m32
+    getter m33
+    getter m34
+    getter m41
+    getter m42
+    getter m43
+    getter m44
+    method constructor
+    method flipX
+    method flipY
+    method inverse
+    method multiply
+    method rotate
+    method rotateAxisAngle
+    method rotateFromVector
+    method scale
+    method scale3d
+    method skewX
+    method skewY
+    method toFloat32Array
+    method toFloat64Array
+    method toJSON
+    method toString
+    method transformPoint
+    method translate
 interface DOMParser
     attribute @@toStringTag
     method constructor
     method parseFromString
+interface DOMPoint : DOMPointReadOnly
+    attribute @@toStringTag
+    getter w
+    getter x
+    getter y
+    getter z
+    method constructor
+    setter w
+    setter x
+    setter y
+    setter z
+interface DOMPointReadOnly
+    static method fromPoint
+    attribute @@toStringTag
+    getter w
+    getter x
+    getter y
+    getter z
+    method constructor
+    method matrixTransform
+    method toJSON
+interface DOMQuad
+    static method fromQuad
+    static method fromRect
+    attribute @@toStringTag
+    getter p1
+    getter p2
+    getter p3
+    getter p4
+    method constructor
+    method getBounds
+    method toJSON
+interface DOMRect : DOMRectReadOnly
+    attribute @@toStringTag
+    getter height
+    getter width
+    getter x
+    getter y
+    method constructor
+    setter height
+    setter width
+    setter x
+    setter y
+interface DOMRectReadOnly
+    static method fromRect
+    attribute @@toStringTag
+    getter bottom
+    getter height
+    getter left
+    getter right
+    getter top
+    getter width
+    getter x
+    getter y
+    method constructor
+    method toJSON
 interface DOMStringList
     attribute @@toStringTag
     getter length
@@ -7373,7 +7535,7 @@ interface WebKitAnimationEvent : Event
     getter animationName
     getter elapsedTime
     method constructor
-interface WebKitCSSMatrix
+interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a
     getter b
@@ -7398,16 +7560,18 @@ interface WebKitCSSMatrix
     getter m43
     getter m44
     method constructor
-    method inverse
-    method multiply
-    method rotate
-    method rotateAxisAngle
-    method scale
+    method invertSelf
+    method multiplySelf
+    method preMultiplySelf
+    method rotateAxisAngleSelf
+    method rotateFromVectorSelf
+    method rotateSelf
+    method scale3dSelf
+    method scaleSelf
     method setMatrixValue
-    method skewX
-    method skewY
-    method toString
-    method translate
+    method skewXSelf
+    method skewYSelf
+    method translateSelf
     setter a
     setter b
     setter c
