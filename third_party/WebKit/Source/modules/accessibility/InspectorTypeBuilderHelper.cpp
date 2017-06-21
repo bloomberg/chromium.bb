@@ -5,8 +5,8 @@
 #include "modules/accessibility/InspectorTypeBuilderHelper.h"
 
 #include "core/dom/DOMNodeIds.h"
+#include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXObjectImpl.h"
 
 namespace blink {
 
@@ -99,9 +99,8 @@ std::unique_ptr<AXValue> CreateBooleanValue(bool value, const String& type) {
       .build();
 }
 
-std::unique_ptr<AXRelatedNode> RelatedNodeForAXObjectImpl(
-    const AXObjectImpl& ax_object,
-    String* name = nullptr) {
+std::unique_ptr<AXRelatedNode> RelatedNodeForAXObject(const AXObject& ax_object,
+                                                      String* name = nullptr) {
   Node* node = ax_object.GetNode();
   if (!node)
     return nullptr;
@@ -123,13 +122,12 @@ std::unique_ptr<AXRelatedNode> RelatedNodeForAXObjectImpl(
   return related_node;
 }
 
-std::unique_ptr<AXValue> CreateRelatedNodeListValue(
-    const AXObjectImpl& ax_object,
-    String* name,
-    const String& value_type) {
+std::unique_ptr<AXValue> CreateRelatedNodeListValue(const AXObject& ax_object,
+                                                    String* name,
+                                                    const String& value_type) {
   std::unique_ptr<protocol::Array<AXRelatedNode>> related_nodes =
       protocol::Array<AXRelatedNode>::create();
-  related_nodes->addItem(RelatedNodeForAXObjectImpl(ax_object, name));
+  related_nodes->addItem(RelatedNodeForAXObject(ax_object, name));
   return AXValue::create()
       .setType(value_type)
       .setRelatedNodes(std::move(related_nodes))
@@ -143,8 +141,8 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
       protocol::Array<AXRelatedNode>::create();
   for (unsigned i = 0; i < related_objects.size(); i++) {
     std::unique_ptr<AXRelatedNode> frontend_related_node =
-        RelatedNodeForAXObjectImpl(*(related_objects[i]->object),
-                                   &(related_objects[i]->text));
+        RelatedNodeForAXObject(*(related_objects[i]->object),
+                               &(related_objects[i]->text));
     if (frontend_related_node)
       frontend_related_nodes->addItem(std::move(frontend_related_node));
   }
@@ -155,13 +153,13 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
 }
 
 std::unique_ptr<AXValue> CreateRelatedNodeListValue(
-    AXObjectImpl::AXObjectVector& ax_objects,
+    AXObject::AXObjectVector& ax_objects,
     const String& value_type) {
   std::unique_ptr<protocol::Array<AXRelatedNode>> related_nodes =
       protocol::Array<AXRelatedNode>::create();
   for (unsigned i = 0; i < ax_objects.size(); i++) {
     std::unique_ptr<AXRelatedNode> related_node =
-        RelatedNodeForAXObjectImpl(*(ax_objects[i].Get()));
+        RelatedNodeForAXObject(*(ax_objects[i].Get()));
     if (related_node)
       related_nodes->addItem(std::move(related_node));
   }

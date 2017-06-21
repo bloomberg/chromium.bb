@@ -65,7 +65,7 @@ AXMenuListOption* AXMenuListPopup::MenuListOptionAXObject(
   if (!isHTMLOptionElement(*element))
     return 0;
 
-  AXObjectImpl* object = AxObjectCache().GetOrCreate(element);
+  AXObject* object = AxObjectCache().GetOrCreate(element);
   if (!object || !object->IsMenuListOption())
     return 0;
 
@@ -137,13 +137,13 @@ void AXMenuListPopup::DidUpdateActiveOption(int option_index,
   AXObjectCacheImpl& cache = AxObjectCache();
   if (old_index != option_index && old_index >= 0 &&
       old_index < static_cast<int>(children_.size())) {
-    AXObjectImpl* previous_child = children_[old_index].Get();
+    AXObject* previous_child = children_[old_index].Get();
     cache.PostNotification(previous_child,
                            AXObjectCacheImpl::kAXMenuListItemUnselected);
   }
 
   if (option_index >= 0 && option_index < static_cast<int>(children_.size())) {
-    AXObjectImpl* child = children_[option_index].Get();
+    AXObject* child = children_[option_index].Get();
     cache.PostNotification(this, AXObjectCacheImpl::kAXActiveDescendantChanged);
     cache.PostNotification(child, AXObjectCacheImpl::kAXMenuListItemSelected);
   }
@@ -172,7 +172,7 @@ void AXMenuListPopup::DidShow() {
                            AXObjectCacheImpl::kAXFocusedUIElementChanged);
 }
 
-AXObjectImpl* AXMenuListPopup::ActiveDescendant() {
+AXObject* AXMenuListPopup::ActiveDescendant() {
   if (active_index_ < 0 || active_index_ >= static_cast<int>(Children().size()))
     return nullptr;
 

@@ -57,8 +57,6 @@
 
 namespace blink {
 
-class AXObjectImpl;
-
 TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
     : range_(range), ordinal_(ordinal) {}
 

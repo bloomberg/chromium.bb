@@ -7,8 +7,8 @@
 
 #include "core/inspector/protocol/Accessibility.h"
 #include "modules/ModulesExport.h"
+#include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXObjectImpl.h"
 
 namespace blink {
 
@@ -31,13 +31,13 @@ std::unique_ptr<AXValue> CreateBooleanValue(
     bool value,
     const String& value_type = AXValueTypeEnum::Boolean);
 std::unique_ptr<AXValue> CreateRelatedNodeListValue(
-    const AXObjectImpl&,
+    const AXObject&,
     String* name = nullptr,
     const String& value_type = AXValueTypeEnum::Idref);
 std::unique_ptr<AXValue> CreateRelatedNodeListValue(AXRelatedObjectVector&,
                                                     const String& value_type);
 std::unique_ptr<AXValue> CreateRelatedNodeListValue(
-    AXObjectImpl::AXObjectVector& ax_objects,
+    AXObject::AXObjectVector& ax_objects,
     const String& value_type = AXValueTypeEnum::IdrefList);
 
 std::unique_ptr<AXValueSource> CreateValueSource(NameSource&);

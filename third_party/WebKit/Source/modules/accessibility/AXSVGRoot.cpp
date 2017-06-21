@@ -43,7 +43,7 @@ AXSVGRoot* AXSVGRoot::Create(LayoutObject* layout_object,
   return new AXSVGRoot(layout_object, ax_object_cache);
 }
 
-void AXSVGRoot::SetParent(AXObjectImpl* parent) {
+void AXSVGRoot::SetParent(AXObject* parent) {
   // Only update the parent to another objcet if it wasn't already set to
   // something. Multiple elements in an HTML document can reference
   // the same remote SVG document, and in that case the parent should just
@@ -52,7 +52,7 @@ void AXSVGRoot::SetParent(AXObjectImpl* parent) {
     parent_ = parent;
 }
 
-AXObjectImpl* AXSVGRoot::ComputeParent() const {
+AXObject* AXSVGRoot::ComputeParent() const {
   DCHECK(!IsDetached());
   // If a parent was set because this is a remote SVG resource, use that
   // but otherwise, we should rely on the standard layout tree for the parent.

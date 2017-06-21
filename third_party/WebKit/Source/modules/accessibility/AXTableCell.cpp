@@ -78,7 +78,7 @@ bool AXTableCell::ComputeAccessibilityIsIgnored(
   return false;
 }
 
-AXObjectImpl* AXTableCell::ParentTable() const {
+AXObject* AXTableCell::ParentTable() const {
   if (!layout_object_ || !layout_object_->IsTableCell())
     return 0;
 
@@ -96,7 +96,7 @@ AXObjectImpl* AXTableCell::ParentTable() const {
 }
 
 bool AXTableCell::IsTableCell() const {
-  AXObjectImpl* parent = ParentObjectUnignored();
+  AXObject* parent = ParentObjectUnignored();
   if (!parent || !parent->IsTableRow())
     return false;
 
@@ -110,7 +110,7 @@ unsigned AXTableCell::AriaColumnIndex() const {
     return col_index;
   }
 
-  AXObjectImpl* parent = ParentObjectUnignored();
+  AXObject* parent = ParentObjectUnignored();
   if (!parent || !parent->IsTableRow())
     return 0;
 
@@ -124,7 +124,7 @@ unsigned AXTableCell::AriaRowIndex() const {
     return row_index;
   }
 
-  AXObjectImpl* parent = ParentObjectUnignored();
+  AXObject* parent = ParentObjectUnignored();
   if (!parent || !parent->IsTableRow())
     return 0;
 

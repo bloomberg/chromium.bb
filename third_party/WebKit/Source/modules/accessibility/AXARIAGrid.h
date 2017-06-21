@@ -59,8 +59,8 @@ class AXARIAGrid final : public AXTable {
   bool SupportsSelectedRows() override { return true; }
   bool IsTableExposableThroughAccessibility() const override { return true; }
 
-  bool AddTableRowChild(AXObjectImpl*,
-                        HeapHashSet<Member<AXObjectImpl>>& appended_rows,
+  bool AddTableRowChild(AXObject*,
+                        HeapHashSet<Member<AXObject>>& appended_rows,
                         unsigned& column_count);
 };
 
