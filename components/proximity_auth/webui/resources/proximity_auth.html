@@ -26,18 +26,9 @@
         <div class='control-title'>CRYPTAUTH</div>
         <table>
           <tr>
-            <td>PUBLIC KEY</td>
+            <td>PUBLIC KEY (functionality coming soon)</td>
             <td colspan="2" id='public-key'>----</td>
           </tr>
-          <tr>
-            <td>GCM REGISTRATION</td>
-            <td colspan="2" id='gcm-registration'>----</td>
-          </tr>
-          <tr>
-            <td>CURRENT EID</td>
-            <td colspan="2" id='current-eid'>----</td>
-          </tr>
-
           <tr><td id='enrollment-title' state='synced'>ENROLLMENT</td></tr>
           <tr class='subrow'>
               <td>Last Success</td>
@@ -97,18 +88,32 @@
   <!-- Template for a remote device entry. -->
   <template id='remote-device-template'>
     <div class='remote-device'>
-      <div class='device-connection-status' state='disconnected'>●</div>
-      <div class='device-info flex'>
-        <div class='device-name'>Huawei Nexus 6P</div>
-        <div class='device-info-subtitle'>0x32BD..EF</div>
+      <div class='status-name-container'>
+        <div class='device-connection-status' state='disconnected'>●</div>
+        <div class='device-name'>Google Pixel</div>
       </div>
-      <div class='device-info'>
-        <div class='device-attributes'>[KEY, TETHER]</div>
-        <div class='device-eid'>EID:AABB</div>
+      <table>
+        <tr>
+          <td>Device ID</td>
+          <td class='device-id'></td>
+        </tr>
+        <tr>
+          <td>Is Unlock Key</td>
+          <td class='is-unlock-key'></td>
+        </tr>
+        <tr>
+          <td>Supports Mobile Hotspot</td>
+          <td class='supports-mobile-hotspot'></td>
+        </tr>
+        <tr class='bluetooth-address-row' hidden>
+          <td>Bluetooth Address</td>
+          <td class='bluetooth-address'></td>
+        </tr>
+      </table>
+      <div class='button-container'>
+        <button class='device-scan hidden'>EasyUnlock Scan</button>
+        <button class='device-toggle-key hidden'>EasyUnlock Toggle Key</button>
       </div>
-      <button class='device-scan hidden'>Scan</button>
-      <button class='device-advertise hidden'>Advertise</button>
-      <button class='device-toggle-key hidden'>Toggle Key</button>
     </div>
   </template>
 
