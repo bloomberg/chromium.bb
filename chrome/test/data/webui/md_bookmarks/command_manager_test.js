@@ -50,8 +50,6 @@ suite('<bookmarks-command-manager>', function() {
     replaceBody(commandManager);
     document.body.appendChild(
         document.createElement('bookmarks-toast-manager'));
-
-    Polymer.dom.flush();
   });
 
   test('can only copy single URL items', function() {
@@ -65,6 +63,8 @@ suite('<bookmarks-command-manager>', function() {
     store.notifyObservers();
 
     commandManager.openCommandMenuAtPosition(0, 0);
+    Polymer.dom.flush();
+
     var commandHidden = {};
     commandManager.root.querySelectorAll('.dropdown-item').forEach(element => {
       commandHidden[element.getAttribute('command')] = element.hidden;
@@ -188,6 +188,8 @@ suite('<bookmarks-command-manager>', function() {
     store.data.selection.items = items;
 
     commandManager.openCommandMenuAtPosition(0, 0);
+    Polymer.dom.flush();
+
     var commandItem = {};
     commandManager.root.querySelectorAll('.dropdown-item').forEach(element => {
       commandItem[element.getAttribute('command')] = element;

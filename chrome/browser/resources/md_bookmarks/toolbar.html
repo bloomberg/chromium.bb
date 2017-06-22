@@ -46,42 +46,46 @@
         --selection-overlay-max-width: var(--card-max-width);
       }
     </style>
-    <dialog is="cr-action-menu" id="dropdown">
-      <button class="dropdown-item" on-tap="onSortTap_"
-          disabled="[[!canChangeList_]]">
-        $i18n{menuSort}
-      </button>
-      <hr>
-      <button id="addBookmarkButton" class="dropdown-item"
-          on-tap="onAddBookmarkTap_" disabled="[[!canChangeList_]]">
-        $i18n{menuAddBookmark}
-      </button>
-      <button class="dropdown-item" on-tap="onAddFolderTap_"
-          disabled="[[!canChangeList_]]">
-        $i18n{menuAddFolder}
-      </button>
-      <hr>
-      <button id="importBookmarkButton" class="dropdown-item"
-          on-tap="onImportTap_" disabled="[[!globalCanEdit_]]">
-        $i18n{menuImport}
-      </button>
-      <button class="dropdown-item" on-tap="onExportTap_">
-        $i18n{menuExport}
-      </button>
-    </dialog>
     <cr-toolbar page-name="$i18n{title}"
         clear-label="$i18n{clearSearch}"
         search-prompt="$i18n{searchPrompt}"
         hidden$="[[showSelectionOverlay]]"
         narrow="{{narrow_}}"
         on-search-changed="onSearchChanged_">
-      <button is="paper-icon-button-light" class="more-actions more-vert-button"
+      <button is="paper-icon-button-light"
+          id="menuButton"
+          class="more-actions more-vert-button"
           on-tap="onMenuButtonOpenTap_">
         <div></div>
         <div></div>
         <div></div>
       </button>
     </cr-toolbar>
+    <template is="cr-lazy-render" id="dropdown">
+      <dialog is="cr-action-menu">
+        <button class="dropdown-item" on-tap="onSortTap_"
+            disabled="[[!canChangeList_]]">
+          $i18n{menuSort}
+        </button>
+        <hr>
+        <button id="addBookmarkButton" class="dropdown-item"
+            on-tap="onAddBookmarkTap_" disabled="[[!canChangeList_]]">
+          $i18n{menuAddBookmark}
+        </button>
+        <button class="dropdown-item" on-tap="onAddFolderTap_"
+            disabled="[[!canChangeList_]]">
+          $i18n{menuAddFolder}
+        </button>
+        <hr>
+        <button id="importBookmarkButton" class="dropdown-item"
+            on-tap="onImportTap_" disabled="[[!globalCanEdit_]]">
+          $i18n{menuImport}
+        </button>
+        <button class="dropdown-item" on-tap="onExportTap_">
+          $i18n{menuExport}
+        </button>
+      </dialog>
+    </template>
     <template is="cr-lazy-render" id="addDialog">
       <bookmarks-edit-dialog></bookmarks-edit-dialog>
     </template>

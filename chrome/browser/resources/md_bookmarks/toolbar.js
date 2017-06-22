@@ -78,7 +78,7 @@ Polymer({
    * @private
    */
   onMenuButtonOpenTap_: function(e) {
-    var menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown);
+    var menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
     menu.showAt(/** @type {!Element} */ (e.target));
   },
 
@@ -134,7 +134,7 @@ Polymer({
 
   /** @private */
   closeDropdownMenu_: function() {
-    var menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown);
+    var menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
     menu.close();
   },
 

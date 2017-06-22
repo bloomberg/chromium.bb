@@ -88,21 +88,24 @@ suite('<bookmarks-toolbar>', function() {
   });
 
   test('overflow menu options are disabled when appropriate', function() {
+    MockInteractions.tap(toolbar.$.menuButton);
+    Polymer.dom.flush();
+
     store.data.selectedFolder = '1';
     store.notifyObservers();
 
-    assertFalse(toolbar.$.addBookmarkButton.disabled);
+    assertFalse(toolbar.$$('#addBookmarkButton').disabled);
 
     store.data.selectedFolder = '4';
     store.notifyObservers();
 
-    assertTrue(toolbar.$.addBookmarkButton.disabled);
-    assertFalse(toolbar.$.importBookmarkButton.disabled);
+    assertTrue(toolbar.$$('#addBookmarkButton').disabled);
+    assertFalse(toolbar.$$('#importBookmarkButton').disabled);
 
     store.data.prefs.canEdit = false;
     store.notifyObservers();
 
-    assertTrue(toolbar.$.addBookmarkButton.disabled);
-    assertTrue(toolbar.$.importBookmarkButton.disabled);
+    assertTrue(toolbar.$$('#addBookmarkButton').disabled);
+    assertTrue(toolbar.$$('#importBookmarkButton').disabled);
   });
 });

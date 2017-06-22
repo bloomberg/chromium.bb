@@ -106,8 +106,11 @@ cr.define('bookmarks', function() {
      */
     openCommandMenuAtPosition: function(x, y, items) {
       this.menuIds_ = items || this.getState().selection.items;
-      /** @type {!CrActionMenuElement} */ (this.$.dropdown)
-          .showAtPosition({top: y, left: x});
+      var dropdown =
+          /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
+      // Ensure that the menu is fully rendered before trying to position it.
+      Polymer.dom.flush();
+      dropdown.showAtPosition({top: y, left: x});
     },
 
     /**
@@ -117,12 +120,16 @@ cr.define('bookmarks', function() {
      */
     openCommandMenuAtElement: function(target) {
       this.menuIds_ = this.getState().selection.items;
-      /** @type {!CrActionMenuElement} */ (this.$.dropdown).showAt(target);
+      var dropdown =
+          /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
+      // Ensure that the menu is fully rendered before trying to position it.
+      Polymer.dom.flush();
+      dropdown.showAt(target);
     },
 
     closeCommandMenu: function() {
       this.menuIds_ = new Set();
-      /** @type {!CrActionMenuElement} */ (this.$.dropdown).close();
+      /** @type {!CrActionMenuElement} */ (this.$.dropdown.get()).close();
     },
 
     ////////////////////////////////////////////////////////////////////////////
@@ -457,7 +464,7 @@ cr.define('bookmarks', function() {
      * @private
      */
     onMenuMousedown_: function(e) {
-      if (e.path[0] != this.$.dropdown)
+      if (e.path[0] != this.$.dropdown.getIfExists())
         return;
 
       this.closeCommandMenu();
