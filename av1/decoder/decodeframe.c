@@ -272,8 +272,12 @@ static REFERENCE_MODE read_frame_reference_mode(
 }
 
 static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
+#if CONFIG_NEW_MULTISYMBOL && !CONFIG_EXT_COMP_REFS
+  (void)r;
+#else
   FRAME_CONTEXT *const fc = cm->fc;
-  int i, j;
+  int i;
+#endif
 
 #if !CONFIG_NEW_MULTISYMBOL
   if (cm->reference_mode == REFERENCE_MODE_SELECT)
@@ -282,6 +286,7 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
 
   if (cm->reference_mode != COMPOUND_REFERENCE) {
     for (i = 0; i < REF_CONTEXTS; ++i) {
+      int j;
       for (j = 0; j < (SINGLE_REFS - 1); ++j) {
         av1_diff_update_prob(r, &fc->single_ref_prob[i][j], ACCT_STR);
       }
@@ -294,12 +299,16 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
     for (i = 0; i < COMP_REF_TYPE_CONTEXTS; ++i)
       av1_diff_update_prob(r, &fc->comp_ref_type_prob[i], ACCT_STR);
 
-    for (i = 0; i < UNI_COMP_REF_CONTEXTS; ++i)
+    for (i = 0; i < UNI_COMP_REF_CONTEXTS; ++i) {
+      int j;
       for (j = 0; j < (UNIDIR_COMP_REFS - 1); ++j)
         av1_diff_update_prob(r, &fc->uni_comp_ref_prob[i][j], ACCT_STR);
+    }
 #endif  // CONFIG_EXT_COMP_REFS
 
+#if !CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < REF_CONTEXTS; ++i) {
+      int j;
 #if CONFIG_EXT_REFS
       for (j = 0; j < (FWD_REFS - 1); ++j)
         av1_diff_update_prob(r, &fc->comp_ref_prob[i][j], ACCT_STR);
@@ -310,6 +319,7 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
         av1_diff_update_prob(r, &fc->comp_ref_prob[i][j], ACCT_STR);
 #endif  // CONFIG_EXT_REFS
     }
+#endif  // CONFIG_NEW_MULTISYMBOL
   }
 }
 

@@ -234,6 +234,14 @@ typedef struct frame_contexts {
 #else
   aom_prob comp_ref_prob[REF_CONTEXTS][COMP_REFS - 1];
 #endif  // CONFIG_EXT_REFS
+#if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EXT_REFS
+  aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
+  aom_cdf_prob comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
+#else
+  aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][COMP_REFS - 1][CDF_SIZE(2)];
+#endif  // CONFIG_EXT_REFS
+#endif
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   aom_prob comp_inter_mode_prob[COMP_INTER_MODE_CONTEXTS];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
