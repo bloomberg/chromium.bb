@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EDITOR_FIELD_H_
 #define IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EDITOR_FIELD_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 
@@ -37,6 +37,13 @@ typedef NS_ENUM(NSInteger, EditorFieldType) {
 @property(nonatomic, getter=isRequired) BOOL required;
 // Whether the field is enabled.
 @property(nonatomic, getter=isEnabled) BOOL enabled;
+// Controls the display of the return key when the keyboard is displaying.
+@property(nonatomic, assign) UIReturnKeyType returnKeyType;
+// Keyboard type to be displayed when the text field becomes first responder.
+@property(nonatomic, assign) UIKeyboardType keyboardType;
+// Controls autocapitalization behavior of the text field.
+@property(nonatomic, assign)
+    UITextAutocapitalizationType autoCapitalizationType;
 // The associated CollectionViewItem instance. May be nil.
 @property(nonatomic, strong) CollectionViewItem* item;
 // The section identifier for the associated AutofillEditItem.

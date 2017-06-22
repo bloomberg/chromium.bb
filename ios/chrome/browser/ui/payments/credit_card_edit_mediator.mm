@@ -257,6 +257,7 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
                          label:l10n_util::GetNSString(IDS_PAYMENTS_CARD_NUMBER)
                          value:creditCardNumber
                       required:YES];
+    creditCardNumberField.keyboardType = UIKeyboardTypeNumberPad;
     [self.fieldsMap setObject:creditCardNumberField forKey:fieldKey];
   }
   [fields addObject:creditCardNumberField];

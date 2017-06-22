@@ -17,6 +17,9 @@
 @synthesize displayValue = _displayValue;
 @synthesize required = _required;
 @synthesize enabled = _enabled;
+@synthesize returnKeyType = _returnKeyType;
+@synthesize keyboardType = _keyboardType;
+@synthesize autoCapitalizationType = _autoCapitalizationType;
 @synthesize item = _item;
 @synthesize sectionIdentifier = _sectionIdentifier;
 
@@ -33,6 +36,9 @@
     _value = value;
     _required = required;
     _enabled = YES;
+    _returnKeyType = UIReturnKeyNext;
+    _keyboardType = UIKeyboardTypeDefault;
+    _autoCapitalizationType = UITextAutocapitalizationTypeWords;
   }
   return self;
 }

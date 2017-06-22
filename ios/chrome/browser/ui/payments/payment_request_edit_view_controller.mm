@@ -250,6 +250,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
         item.textFieldValue = field.value;
         item.required = field.isRequired;
         item.autofillUIType = field.autofillUIType;
+        item.returnKeyType = field.returnKeyType;
+        item.keyboardType = field.keyboardType;
+        item.autoCapitalizationType = field.autoCapitalizationType;
         item.identifyingIcon = [_dataSource iconIdentifyingEditorField:field];
         [model addItem:item toSectionWithIdentifier:sectionIdentifier];
         field.item = item;
