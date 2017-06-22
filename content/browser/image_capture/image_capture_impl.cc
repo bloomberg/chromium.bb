@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/video_capture_device.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -130,6 +131,9 @@ ImageCaptureImpl::~ImageCaptureImpl() {}
 void ImageCaptureImpl::Create(
     const service_manager::BindSourceInfo& source_info,
     media::mojom::ImageCaptureRequest request) {
+  if (!base::FeatureList::IsEnabled(features::kImageCaptureAPI))
+    return;
+
   mojo::MakeStrongBinding(base::MakeUnique<ImageCaptureImpl>(),
                           std::move(request));
 }

@@ -22496,6 +22496,7 @@ from previous Chrome versions.
   <int value="-378180863" label="disable-panels"/>
   <int value="-378033324" label="disable-win32k-renderer-lockdown"/>
   <int value="-374657496" label="OmniboxEnableClipboardProvider:enabled"/>
+  <int value="-365920680" label="ImageCaptureAPI:disabled"/>
   <int value="-364325011" label="enable-files-quick-view"/>
   <int value="-364267715" label="disable-native-cups"/>
   <int value="-362022976" label="disable-quirks-client"/>
@@ -22861,6 +22862,7 @@ from previous Chrome versions.
   <int value="982032277" label="NTPOfflineBadge:disabled"/>
   <int value="982511393" label="NTPArticleSuggestions:disabled"/>
   <int value="983311394" label="tab-management-experiment-type"/>
+  <int value="988981463" label="ImageCaptureAPI:enabled"/>
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
   <int value="1003002105" label="MaterialDesignBookmarks:disabled"/>

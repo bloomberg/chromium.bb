@@ -182,7 +182,7 @@ const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 // Disables the bundled PPAPI version of Flash.
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 
-// Disable hardware encoding support for Cast Streaming.
+// Disables hardware encoding support for Cast Streaming.
 const char kDisableCastStreamingHWEncoding[] =
     "disable-cast-streaming-hw-encoding";
 

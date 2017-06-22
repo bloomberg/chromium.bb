@@ -2520,6 +2520,12 @@ const char kEnableWebUsbName[] = "WebUSB";
 
 const char kEnableWebUsbDescription[] = "Enable WebUSB support.";
 
+const char kEnableImageCaptureAPIName[] = "Image Capture API";
+
+const char kEnableImageCaptureAPIDescription[] =
+    "Enables the Web Platform Image Capture API: takePhoto(), "
+    "getPhotoCapabilities(), etc.";
+
 const char kEnableGenericSensorName[] = "Generic Sensor";
 
 const char kEnableGenericSensorDescription[] =
