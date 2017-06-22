@@ -38,6 +38,7 @@ source_set("crash") {
     "//components/crash/core/common",
     "//components/metrics",
     "//components/prefs",
+    "//gpu/config:crash_keys",
   ]
 
   if (chromecast_branding == "public") {

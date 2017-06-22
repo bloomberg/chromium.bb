@@ -730,6 +730,7 @@ source_set("common") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service",
+    "//gpu/config:crash_keys",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/skia_bindings",
     "//media",

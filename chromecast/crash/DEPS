@@ -1,4 +1,5 @@
 include_rules = [
   "+breakpad",
   "+components/crash/core/common",
+  "+gpu/config/gpu_crash_keys.h",
 ]

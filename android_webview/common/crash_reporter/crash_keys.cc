@@ -7,6 +7,7 @@
 #include "base/debug/crash_logging.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_keys.h"
+#include "gpu/config/gpu_crash_keys.h"
 
 using namespace crash_keys;
 
@@ -25,12 +26,6 @@ const char kAppPackageVersionCode[] = "app-package-version-code";
 
 const char kAndroidSdkInt[] = "android-sdk-int";
 
-const char kGPUDriverVersion[] = "gpu-driver";
-const char kGPUPixelShaderVersion[] = "gpu-psver";
-const char kGPUVertexShaderVersion[] = "gpu-vsver";
-const char kGPUVendor[] = "gpu-gl-vendor";
-const char kGPURenderer[] = "gpu-gl-renderer";
-
 const char kInputEventFilterSendFailure[] = "input-event-filter-send-failure";
 
 const char kViewCount[] = "view-count";
@@ -48,14 +43,20 @@ size_t RegisterWebViewCrashKeys() {
       {kVariations, kHugeSize},
       {kShutdownType, kSmallSize},
       {kBrowserUnpinTrace, kMediumSize},
-      {kGPUDriverVersion, kSmallSize},
-      {kGPUPixelShaderVersion, kSmallSize},
-      {kGPUVertexShaderVersion, kSmallSize},
-      {kGPUVendor, kSmallSize},
-      {kGPURenderer, kSmallSize},
       {kAppPackageName, kSmallSize},
       {kAppPackageVersionCode, kSmallSize},
       {kAndroidSdkInt, kSmallSize},
+
+      // gpu
+      {gpu::crash_keys::kGPUDriverVersion, kSmallSize},
+      {gpu::crash_keys::kGPUPixelShaderVersion, kSmallSize},
+      {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
+      {gpu::crash_keys::kGPUVendor, kSmallSize},
+      {gpu::crash_keys::kGPURenderer, kSmallSize},
+      // Temporary for https://crbug.com/729483.
+      // TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
+      {gpu::crash_keys::kGpuChannelFilterTrace, kMediumSize},
+      {gpu::crash_keys::kMediaGpuChannelFilterTrace, kMediumSize},
 
       // content/:
       {"bad_message_reason", kSmallSize},
@@ -143,14 +144,16 @@ size_t RegisterWebViewCrashKeys() {
 // clang-format off
 const char* const kWebViewCrashKeyWhiteList[] = {
     "AW_WHITELISTED_DEBUG_KEY",
-    kGPUDriverVersion,
-    kGPUPixelShaderVersion,
-    kGPUVertexShaderVersion,
-    kGPUVendor,
-    kGPURenderer,
     kAppPackageName,
     kAppPackageVersionCode,
     kAndroidSdkInt,
+
+    // gpu
+    gpu::crash_keys::kGPUDriverVersion,
+    gpu::crash_keys::kGPUPixelShaderVersion,
+    gpu::crash_keys::kGPUVertexShaderVersion,
+    gpu::crash_keys::kGPUVendor,
+    gpu::crash_keys::kGPURenderer,
 
     // content/:
     "bad_message_reason",
