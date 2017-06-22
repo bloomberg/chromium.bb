@@ -950,7 +950,7 @@ void WallpaperManager::OnWindowDestroying(aura::Window* window) {
 void WallpaperManager::OnColorCalculationComplete() {
   size_t num_of_calculation = color_calculator_->prominent_colors().size();
   DCHECK_EQ(1u, num_of_calculation);
-  SkColor color = color_calculator_->prominent_colors()[num_of_calculation];
+  SkColor color = color_calculator_->prominent_colors()[num_of_calculation - 1];
   color_calculator_->RemoveObserver(this);
   color_calculator_.reset();
   if (prominent_color_ == color)
