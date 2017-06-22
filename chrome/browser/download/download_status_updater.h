@@ -9,13 +9,13 @@
 #include <set>
 
 #include "base/macros.h"
-#include "chrome/browser/download/all_download_item_notifier.h"
+#include "content/public/browser/all_download_item_notifier.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
 // Keeps track of download progress for the entire browser.
 class DownloadStatusUpdater
-  : public AllDownloadItemNotifier::Observer {
+    : public content::AllDownloadItemNotifier::Observer {
  public:
   DownloadStatusUpdater();
   ~DownloadStatusUpdater() override;
@@ -47,7 +47,7 @@ class DownloadStatusUpdater
   virtual void UpdateAppIconDownloadProgress(content::DownloadItem* download);
 
  private:
-  std::vector<std::unique_ptr<AllDownloadItemNotifier>> notifiers_;
+  std::vector<std::unique_ptr<content::AllDownloadItemNotifier>> notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadStatusUpdater);
 };

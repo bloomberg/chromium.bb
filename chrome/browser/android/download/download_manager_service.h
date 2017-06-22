@@ -15,8 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller.h"
-#include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/download/download_history.h"
+#include "content/public/browser/all_download_item_notifier.h"
 #include "content/public/browser/download_manager.h"
 
 using base::android::JavaParamRef;
@@ -27,8 +27,9 @@ class DownloadItem;
 
 // Native side of DownloadManagerService.java. The native object is owned by its
 // Java object.
-class DownloadManagerService : public AllDownloadItemNotifier::Observer,
-                               public DownloadHistory::Observer {
+class DownloadManagerService
+    : public content::AllDownloadItemNotifier::Observer,
+      public DownloadHistory::Observer {
  public:
   // JNI registration.
   static bool RegisterDownloadManagerService(JNIEnv* env);
@@ -175,8 +176,8 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
 
   ResumeCallback resume_callback_for_testing_;
 
-  std::unique_ptr<AllDownloadItemNotifier> original_notifier_;
-  std::unique_ptr<AllDownloadItemNotifier> off_the_record_notifier_;
+  std::unique_ptr<content::AllDownloadItemNotifier> original_notifier_;
+  std::unique_ptr<content::AllDownloadItemNotifier> off_the_record_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerService);
 };
