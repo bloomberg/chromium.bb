@@ -92653,6 +92653,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="PageLoadMetricsCacheInfo" separator=".">
   <suffix name="NoStore" label="Main resource had cache-control: no-store"/>
   <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart.LoadType.ForwardBackNavigation"/>
+  <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation"/>
@@ -93132,6 +93136,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="LoadType.NewNavigation"
       label="Restricted to new navigations (link clicks, URLs typed into the
              URL box, etc)."/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart"/>
   <affected-histogram
       name="PageLoad.Clients.SubresourceFilter.ActivationDecision"/>
   <affected-histogram name="PageLoad.Experimental.Bytes.Cache"/>

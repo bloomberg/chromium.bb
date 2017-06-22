@@ -6,18 +6,31 @@
 
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 namespace internal {
 
 const char kHistogramServiceWorkerParseStart[] =
     "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart";
+const char kHistogramServiceWorkerParseStartForwardBack[] =
+    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart."
+    "LoadType.ForwardBackNavigation";
+const char kHistogramServiceWorkerParseStartForwardBackNoStore[] =
+    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart."
+    "LoadType.ForwardBackNavigation.NoStore";
 const char kBackgroundHistogramServiceWorkerParseStart[] =
     "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart."
     "Background";
 const char kHistogramServiceWorkerFirstContentfulPaint[] =
     "PageLoad.Clients.ServiceWorker.PaintTiming."
     "NavigationToFirstContentfulPaint";
+const char kHistogramServiceWorkerFirstContentfulPaintForwardBack[] =
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation";
+const char kHistogramServiceWorkerFirstContentfulPaintForwardBackNoStore[] =
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation.NoStore";
 const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[] =
     "PageLoad.Clients.ServiceWorker.PaintTiming."
     "NavigationToFirstContentfulPaint.Background";
@@ -108,9 +121,27 @@ bool IsInboxSite(const GURL& url) {
   return url.host_piece() == "inbox.google.com";
 }
 
+bool IsForwardBackLoad(ui::PageTransition transition) {
+  return transition & ui::PAGE_TRANSITION_FORWARD_BACK;
+}
+
 }  // namespace
 
 ServiceWorkerPageLoadMetricsObserver::ServiceWorkerPageLoadMetricsObserver() {}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+ServiceWorkerPageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
+  transition_ = navigation_handle->GetPageTransition();
+  const net::HttpResponseHeaders* headers =
+      navigation_handle->GetResponseHeaders();
+  if (headers) {
+    was_no_store_main_resource_ =
+        headers->HasHeaderValue("cache-control", "no-store");
+  }
+  return CONTINUE_OBSERVING;
+}
 
 void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
@@ -144,6 +175,18 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
       timing.paint_timing->first_contentful_paint.value() -
           timing.parse_timing->parse_start.value());
+
+  if (IsForwardBackLoad(transition_)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerFirstContentfulPaintForwardBack,
+        timing.paint_timing->first_contentful_paint.value());
+    if (was_no_store_main_resource_) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::
+              kHistogramServiceWorkerFirstContentfulPaintForwardBackNoStore,
+          timing.paint_timing->first_contentful_paint.value());
+    }
+  }
 
   if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(
@@ -273,6 +316,16 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
           timing.parse_timing->parse_start, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStart,
                         timing.parse_timing->parse_start.value());
+    if (IsForwardBackLoad(transition_)) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramServiceWorkerParseStartForwardBack,
+          timing.parse_timing->parse_start.value());
+      if (was_no_store_main_resource_) {
+        PAGE_LOAD_HISTOGRAM(
+            internal::kHistogramServiceWorkerParseStartForwardBackNoStore,
+            timing.parse_timing->parse_start.value());
+      }
+    }
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramServiceWorkerParseStart,
                         timing.parse_timing->parse_start.value());
