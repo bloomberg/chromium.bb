@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class NGConstraintSpace;
+
 class NGInlineNode;
 
 // The result of measuring NGInlineItem.
@@ -83,11 +85,17 @@ class CORE_EXPORT NGLineInfo {
     DCHECK(line_style_);
     return *line_style_;
   }
-  void SetLineStyle(const NGInlineNode&, bool is_first_line);
+  void SetLineStyle(const NGInlineNode&,
+                    const NGConstraintSpace&,
+                    bool is_first_line,
+                    bool is_after_forced_break);
 
   // Use ::first-line style if true.
   // https://drafts.csswg.org/css-pseudo/#selectordef-first-line
-  bool IsFirstLine() const { return is_first_line_; }
+  // This is false for the "first formatted line" if '::first-line' rule is not
+  // used in the document.
+  // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
+  bool UseFirstLineStyle() const { return use_first_line_style_; }
 
   // The last line of a block, or the line ends with a forced line break.
   // https://drafts.csswg.org/css-text-3/#propdef-text-align-last
@@ -97,6 +105,8 @@ class CORE_EXPORT NGLineInfo {
   // NGInlineItemResults for this line.
   NGInlineItemResults& Results() { return results_; }
   const NGInlineItemResults& Results() const { return results_; }
+
+  LayoutUnit TextIndent() const { return text_indent_; }
 
   LayoutUnit LineLeft() const { return line_left_; }
   LayoutUnit AvailableWidth() const { return available_width_; }
@@ -108,10 +118,13 @@ class CORE_EXPORT NGLineInfo {
  private:
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
+
   LayoutUnit line_left_;
   LayoutUnit available_width_;
   LayoutUnit line_top_;
-  bool is_first_line_ = false;
+  LayoutUnit text_indent_;
+
+  bool use_first_line_style_ = false;
   bool is_last_line_ = false;
 };
 

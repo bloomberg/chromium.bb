@@ -89,6 +89,8 @@ class CORE_EXPORT NGLineBreaker {
   void MoveToNextOf(const NGInlineItemResult&);
   void SkipCollapsibleWhitespaces();
 
+  bool IsFirstFormattedLine() const;
+
   NGInlineNode node_;
   NGConstraintSpace* constraint_space_;
   NGFragmentBuilder* container_builder_;
@@ -102,8 +104,9 @@ class CORE_EXPORT NGLineBreaker {
   HarfBuzzShaper shaper_;
   ShapeResultSpacing<String> spacing_;
 
-  unsigned auto_wrap_ : 1;
-  unsigned should_create_line_box_ : 1;
+  bool auto_wrap_;
+  bool should_create_line_box_;
+  bool is_after_forced_break_;
 };
 
 }  // namespace blink
