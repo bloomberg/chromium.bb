@@ -12,6 +12,12 @@
   width: 562px;
 }
 
+#gaia-signin.v2 {
+  height: unset;
+  padding: unset;
+  width: unset;
+}
+
 .signin-link {
   color: rgb(37, 79, 155);
   cursor: pointer;
@@ -41,6 +47,12 @@
 #signin-frame.show {
   opacity: 1;
   transition: opacity 500ms ease-out;
+}
+
+#signin-frame-container-v2 #signin-frame {
+  height: 560px;
+  position: static;
+  width: 768px;
 }
 
 #gaia-signin .step-contents {
@@ -107,3 +119,11 @@
   color: rgba(0, 0, 0, .54);
 }
 
+#gaia-signin.v2 #gaia-navigation,
+#gaia-signin.v2 #gaia-step-contents {
+  display: none;
+}
+
+#gaia-signin:not(.v2) #signin-frame-dialog {
+  display: none;
+}

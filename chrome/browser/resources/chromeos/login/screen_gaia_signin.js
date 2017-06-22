@@ -179,6 +179,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     navigation_: undefined,
 
+
+    /**
+     * This is a copy of authenticator object attribute.
+     * UI is tied to API version, so we adjust authernticator container
+     * to match the API version.
+     * Note that this cannot be changed after authenticator is created.
+     */
+    chromeOSApiVersion_: undefined,
+
     /** @override */
     decorate: function() {
       this.navigation_ = $('gaia-navigation');
@@ -243,10 +252,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.gaiaAuthHost_.addEventListener(
           'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
 
-      this.navigation_.addEventListener('back', function() {
-        this.navigation_.backVisible = false;
-        this.getSigninFrame_().back();
-      }.bind(this));
+      this.navigation_.addEventListener(
+          'back', this.onBackButtonClicked_.bind(this, null));
+
+      $('signin-back-button')
+          .addEventListener(
+              'click', this.onBackButtonClicked_.bind(this, true));
 
       this.navigation_.addEventListener('close', function() {
         this.cancel();
@@ -277,6 +288,19 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             this.screenMode = ScreenMode.DEFAULT;
             this.loadGaiaAuthHost_(false /* doSamlRedirect */);
           }.bind(this));
+    },
+
+    /**
+     * Handles clicks on "Back" button.
+     * @param {boolean} isDialogButton If event comes from gaia-dialog.
+     */
+    onBackButtonClicked_: function(isDialogButton) {
+      if (isDialogButton && !this.navigation_.backVisible) {
+        this.cancel();
+      } else {
+        this.navigation_.backVisible = false;
+        this.getSigninFrame_().back();
+      }
     },
 
     /**
@@ -317,33 +341,37 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     set screenMode(value) {
       this.screenMode_ = value;
+      this.updateSigninFrameContainers_();
       switch (this.screenMode_) {
         case ScreenMode.DEFAULT:
+          $('signin-frame-dialog').hidden = false;
           $('signin-frame').hidden = false;
           $('offline-gaia').hidden = true;
           $('saml-interstitial').hidden = true;
           $('offline-ad-auth').hidden = true;
           break;
         case ScreenMode.OFFLINE:
+          $('signin-frame-dialog').hidden = true;
           $('signin-frame').hidden = true;
           $('offline-gaia').hidden = false;
           $('saml-interstitial').hidden = true;
           $('offline-ad-auth').hidden = true;
           break;
         case ScreenMode.AD_AUTH:
+          $('signin-frame-dialog').hidden = true;
           $('signin-frame').hidden = true;
           $('offline-gaia').hidden = true;
           $('saml-interstitial').hidden = true;
           $('offline-ad-auth').hidden = false;
           break;
         case ScreenMode.SAML_INTERSTITIAL:
+          $('signin-frame-dialog').hidden = true;
           $('signin-frame').hidden = true;
           $('offline-gaia').hidden = true;
           $('saml-interstitial').hidden = false;
           $('offline-ad-auth').hidden = true;
           break;
       }
-
       chrome.send('updateOfflineLogin', [this.isOffline()]);
       this.updateControlsState();
     },
@@ -600,6 +628,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('saml-notice-container').hidden = true;
       this.samlPasswordConfirmAttempt_ = 0;
 
+      this.chromeOSApiVersion_ = data.chromeOSApiVersion;
+      if (this.chromeOSApiVersion_ == 2)
+        $('signin-frame-container-v2').appendChild($('signin-frame'));
+
+      this.updateSigninFrameContainers_();
+
       // Screen size could have been changed because of 'full-width' classes.
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
@@ -639,6 +673,22 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       }
       this.updateControlsState();
       chrome.send('authExtensionLoaded');
+    },
+
+    /**
+     * Displays correct screen container for given mode and APi version.
+     */
+    updateSigninFrameContainers_: function() {
+      let old_state = this.classList.contains('v2');
+      this.classList.toggle('v2', false);
+      if (this.screenMode_ == ScreenMode.DEFAULT &&
+          this.chromeOSApiVersion_ == 2) {
+        this.classList.toggle('v2', true);
+      }
+      // Switching between signin-frame-dialog and gaia-step-contents
+      // updates screen size.
+      if (old_state != this.classList.contains('v2'))
+        Oobe.getInstance().updateScreenSize(this);
     },
 
     /**
