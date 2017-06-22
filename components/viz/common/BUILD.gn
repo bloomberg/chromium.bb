@@ -20,3 +20,17 @@ source_set("common") {
     "//ui/gfx",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "server_gpu_memory_buffer_manager_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//base/test:test_support",
+    "//services/ui/gpu/interfaces",
+    "//testing/gtest",
+  ]
+}
