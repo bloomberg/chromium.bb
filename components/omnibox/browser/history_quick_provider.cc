@@ -200,14 +200,10 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       autocomplete_input_.text(), FixupUserInput(autocomplete_input_).second,
       false, base::UTF8ToUTF16(info.url().spec()));
 
-  // Format the URL autocomplete presentation.
-  const url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitAll &
-      ~(!history_match.match_in_scheme ? 0 : url_formatter::kFormatUrlOmitHTTP);
   base::OffsetAdjuster::Adjustments adjustments;
-  match.contents = url_formatter::FormatUrlWithAdjustments(
-      info.url(), format_types, net::UnescapeRule::SPACES, nullptr,
-      nullptr, &adjustments);
+  match.contents =
+      AutocompleteMatch::FormatUrlForSuggestionDisplayWithAdjustments(
+          info.url(), !history_match.match_in_scheme, &adjustments);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           info.url(), match.contents, client()->GetSchemeClassifier());
