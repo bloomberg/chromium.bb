@@ -1755,8 +1755,20 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     FRAME_CONTEXT *const ec_ctx = cm->fc;
 #endif  // CONFIG_EC_ADAPT
 
+#if CONFIG_DEBUG
+// av1_predict_intra_block_facade does not pass plane_bsize, we need to validate
+// that we will get the same value of plane_bsize on the other side.
+#if CONFIG_CHROMA_SUB8X8
+    const BLOCK_SIZE plane_bsize_val = AOMMAX(
+        BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[plane]));
+#else
+    const BLOCK_SIZE plane_bsize_val =
+        get_plane_block_size(mbmi->sb_type, &xd->plane[plane]);
+#endif  // CONFIG_CHROMA_SUB8X8
+    assert(plane_bsize == plane_bsize_val);
+#endif  // CONFIG_DEBUG
     av1_predict_intra_block_encoder_facade(x, ec_ctx, plane, block, blk_col,
-                                           blk_row, tx_size, plane_bsize);
+                                           blk_row, tx_size);
 #else
     av1_predict_intra_block_facade(xd, plane, block, blk_col, blk_row, tx_size);
 #endif
@@ -2631,9 +2643,6 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   for (row = 0; row < max_blocks_high; row += stepr) {
     for (col = 0; col < max_blocks_wide; col += stepc) {
 #if CONFIG_CFL
-      const struct macroblockd_plane *const pd = &xd->plane[0];
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-
 #if CONFIG_EC_ADAPT
       FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
 #else
@@ -2641,7 +2650,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
 #endif  // CONFIG_EC_ADAPT
 
       av1_predict_intra_block_encoder_facade(x, ec_ctx, 0, block, col, row,
-                                             tx_size, plane_bsize);
+                                             tx_size);
 #else
       av1_predict_intra_block_facade(xd, 0, block, col, row, tx_size);
 #endif

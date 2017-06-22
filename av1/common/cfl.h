@@ -26,13 +26,25 @@ typedef struct macroblockd MACROBLOCKD;
 
 typedef struct {
   // Pixel buffer containing the luma pixels used as prediction for chroma
+  // TODO(ltrudeau) Convert to uint16 for HBD support
   uint8_t y_pix[MAX_SB_SQUARE];
+
+  // Pixel buffer containing the downsampled luma pixels used as prediction for
+  // chroma
+  // TODO(ltrudeau) Convert to uint16 for HBD support
+  uint8_t y_down_pix[MAX_SB_SQUARE];
 
   // Height and width of the luma prediction block currently in the pixel buffer
   int y_height, y_width;
 
+  // Height and width of the chroma prediction block currently associated with
+  // this context
+  int uv_height, uv_width;
+
   // Average of the luma reconstructed values over the entire prediction unit
-  double y_avg;
+  double y_average;
+
+  int are_parameters_computed;
 
   // Chroma subsampling
   int subsampling_x, subsampling_y;
@@ -57,30 +69,12 @@ static const int cfl_alpha_codes[CFL_ALPHABET_SIZE][CFL_PRED_PLANES] = {
 
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
 
-void cfl_dc_pred(MACROBLOCKD *xd, int width, int height);
-
-double cfl_compute_average(uint8_t *y_pix, int y_stride, int height, int width);
-
-static INLINE double cfl_idx_to_alpha(int alpha_idx, CFL_SIGN_TYPE alpha_sign,
-                                      CFL_PRED_TYPE pred_type) {
-  const int mag_idx = cfl_alpha_codes[alpha_idx][pred_type];
-  const double abs_alpha = cfl_alpha_mags[mag_idx];
-  if (alpha_sign == CFL_SIGN_POS) {
-    return abs_alpha;
-  } else {
-    assert(abs_alpha != 0.0);
-    assert(cfl_alpha_mags[mag_idx + 1] == -abs_alpha);
-    return -abs_alpha;
-  }
-}
-
-void cfl_predict_block(const CFL_CTX *cfl, uint8_t *dst, int dst_stride,
-                       int row, int col, TX_SIZE tx_size, double dc_pred,
-                       double alpha);
+void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
+                       int row, int col, TX_SIZE tx_size, int plane);
 
 void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
                int col, TX_SIZE tx_size);
 
-void cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
-              int col, int width, int height);
+void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size);
+
 #endif  // AV1_COMMON_CFL_H_
