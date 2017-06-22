@@ -11,7 +11,7 @@
 #include "components/prefs/pref_registry_simple.h"
 
 namespace ntp_snippets {
-class BreakingNewsGCMAppHandler;
+class BreakingNewsListener;
 }
 
 namespace base {
@@ -20,20 +20,19 @@ class Clock;
 
 namespace ntp_snippets {
 
-// Receives breaking news suggestions via GCM push messages, stores them and
-// provides them as content suggestions.
-class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
+// Receives breaking news suggestions asynchronously via BreakingNewsListener,
+// stores them and provides them as content suggestions.
+// This class is final because it does things in its constructor which make it
+// unsafe to derive from it.
+class BreakingNewsSuggestionsProvider final
+    : public ContentSuggestionsProvider {
  public:
   BreakingNewsSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
-      std::unique_ptr<BreakingNewsGCMAppHandler> gcm_app_handler,
+      std::unique_ptr<BreakingNewsListener> breaking_news_listener_,
       std::unique_ptr<base::Clock> clock,
       std::unique_ptr<RemoteSuggestionsDatabase> database);
   ~BreakingNewsSuggestionsProvider() override;
-
-  // Starts the underlying GCM handler and registers the callback when GCM
-  // receives a message.
-  void Start();
 
  private:
   // ContentSuggestionsProvider implementation.
@@ -55,8 +54,8 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
       const DismissedSuggestionsCallback& callback) override;
   void ClearDismissedSuggestionsForDebugging(Category category) override;
 
-  // Callback called from the GCM handler when new content has been pushed from
-  // the server.
+  // Callback called from the breaking news listener when new content has been
+  // pushed from the server.
   void OnNewContentSuggestion(std::unique_ptr<base::Value> content);
 
   // Callbacks for the RemoteSuggestionsDatabase.
@@ -67,7 +66,7 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
   void NotifyNewSuggestions(
       std::vector<std::unique_ptr<RemoteSuggestion>> suggestions);
 
-  std::unique_ptr<BreakingNewsGCMAppHandler> gcm_app_handler_;
+  std::unique_ptr<BreakingNewsListener> breaking_news_listener_;
   std::unique_ptr<base::Clock> clock_;
 
   // The database for persisting suggestions.

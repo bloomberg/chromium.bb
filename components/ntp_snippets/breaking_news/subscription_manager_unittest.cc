@@ -71,7 +71,7 @@ TEST_F(SubscriptionManagerTest, SubscribeSuccessfully) {
   RespondWithData("");
   EXPECT_TRUE(manager.IsSubscribed());
   EXPECT_EQ(GetPrefService()->GetString(
-                ntp_snippets::prefs::kContentSuggestionsSubscriptionDataToken),
+                ntp_snippets::prefs::kBreakingNewsSubscriptionDataToken),
             token);
 }
 
@@ -83,33 +83,33 @@ TEST_F(SubscriptionManagerTest, SubscribeWithErrors) {
   RespondWithError(net::ERR_TIMED_OUT);
   EXPECT_FALSE(manager.IsSubscribed());
   EXPECT_FALSE(GetPrefService()->HasPrefPath(
-      ntp_snippets::prefs::kContentSuggestionsSubscriptionDataToken));
+      ntp_snippets::prefs::kBreakingNewsSubscriptionDataToken));
 }
 
 TEST_F(SubscriptionManagerTest, UnsubscribeSuccessfully) {
   std::string token = "1234567890";
   GetPrefService()->SetString(
-      ntp_snippets::prefs::kContentSuggestionsSubscriptionDataToken, token);
+      ntp_snippets::prefs::kBreakingNewsSubscriptionDataToken, token);
   SubscriptionManager manager(GetRequestContext(), GetPrefService(), GURL(url),
                               GURL(url));
   manager.Unsubscribe(token);
   RespondWithData("");
   EXPECT_FALSE(manager.IsSubscribed());
   EXPECT_FALSE(GetPrefService()->HasPrefPath(
-      ntp_snippets::prefs::kContentSuggestionsSubscriptionDataToken));
+      ntp_snippets::prefs::kBreakingNewsSubscriptionDataToken));
 }
 
 TEST_F(SubscriptionManagerTest, UnsubscribeWithErrors) {
   std::string token = "1234567890";
   GetPrefService()->SetString(
-      ntp_snippets::prefs::kContentSuggestionsSubscriptionDataToken, token);
+      ntp_snippets::prefs::kBreakingNewsSubscriptionDataToken, token);
   SubscriptionManager manager(GetRequestContext(), GetPrefService(), GURL(url),
                               GURL(url));
   manager.Unsubscribe(token);
   RespondWithError(net::ERR_TIMED_OUT);
   EXPECT_TRUE(manager.IsSubscribed());
   EXPECT_EQ(GetPrefService()->GetString(
-                ntp_snippets::prefs::kContentSuggestionsSubscriptionDataToken),
+                ntp_snippets::prefs::kBreakingNewsSubscriptionDataToken),
             token);
 }
 

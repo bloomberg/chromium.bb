@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/time/clock.h"
-#include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
@@ -17,11 +17,11 @@ namespace ntp_snippets {
 
 BreakingNewsSuggestionsProvider::BreakingNewsSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
-    std::unique_ptr<BreakingNewsGCMAppHandler> gcm_app_handler,
+    std::unique_ptr<BreakingNewsListener> breaking_news_listener,
     std::unique_ptr<base::Clock> clock,
     std::unique_ptr<RemoteSuggestionsDatabase> database)
     : ContentSuggestionsProvider(observer),
-      gcm_app_handler_(std::move(gcm_app_handler)),
+      breaking_news_listener_(std::move(breaking_news_listener)),
       clock_(std::move(clock)),
       database_(std::move(database)),
       provided_category_(
@@ -33,17 +33,14 @@ BreakingNewsSuggestionsProvider::BreakingNewsSuggestionsProvider(
   database_->LoadSnippets(
       base::Bind(&BreakingNewsSuggestionsProvider::OnDatabaseLoaded,
                  base::Unretained(this)));
+  // Unretained because |this| owns |breaking_news_listener_|.
+  breaking_news_listener_->StartListening(
+      base::Bind(&BreakingNewsSuggestionsProvider::OnNewContentSuggestion,
+                 base::Unretained(this)));
 }
 
 BreakingNewsSuggestionsProvider::~BreakingNewsSuggestionsProvider() {
-  gcm_app_handler_->StopListening();
-}
-
-void BreakingNewsSuggestionsProvider::Start() {
-  // Unretained because |this| owns |gcm_app_handler_|.
-  gcm_app_handler_->StartListening(
-      base::Bind(&BreakingNewsSuggestionsProvider::OnNewContentSuggestion,
-                 base::Unretained(this)));
+  breaking_news_listener_->StopListening();
 }
 
 void BreakingNewsSuggestionsProvider::OnNewContentSuggestion(
