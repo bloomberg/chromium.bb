@@ -45,17 +45,17 @@
       </message>
       <if expr="is_macosx">
         <message name="IDS_SAD_TAB_RELOAD_INCOGNITO" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to open the web page in Chrome's Incognito mode." formatter_data="android_java">
-          Open page in Incognito mode (⇧⌘N)
+          Open page in a new Incognito window (⇧⌘N)
         </message>
       </if>
       <if expr="is_win or is_linux or chromeos">
         <message name="IDS_SAD_TAB_RELOAD_INCOGNITO" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to open the web page in Chrome's Incognito mode." formatter_data="android_java">
-          Open page in Incognito mode (Ctrl-Shift-N)
+          Open page in a new Incognito window (Ctrl-Shift-N)
         </message>
       </if>
       <if expr="is_android or is_ios">
         <message name="IDS_SAD_TAB_RELOAD_INCOGNITO" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to open the web page in Chrome's Incognito mode." formatter_data="android_java">
-          Open page in Incognito mode
+          Open page in a new Incognito tab
         </message>
       </if>
       <if expr="is_macosx or chromeos">
