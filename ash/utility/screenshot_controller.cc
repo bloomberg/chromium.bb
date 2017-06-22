@@ -38,47 +38,40 @@ void EnableMouseWarp(bool enable) {
   Shell::Get()->mouse_cursor_filter()->set_mouse_warp_enabled(enable);
 }
 
-class ScreenshotWindowTargeter : public aura::WindowTargeter {
- public:
-  ScreenshotWindowTargeter() = default;
-  ~ScreenshotWindowTargeter() override = default;
+// Returns the target for the specified event ignorning any capture windows.
+aura::Window* FindWindowForEvent(const ui::LocatedEvent& event) {
+  aura::Window* target = static_cast<aura::Window*>(event.target());
+  aura::Window* target_root = target->GetRootWindow();
 
-  aura::Window* FindWindowForEvent(ui::LocatedEvent* event) {
-    aura::Window* target = static_cast<aura::Window*>(event->target());
-    aura::Window* target_root = target->GetRootWindow();
+  aura::client::ScreenPositionClient* position_client =
+      aura::client::GetScreenPositionClient(target_root);
+  gfx::Point location = event.location();
+  position_client->ConvertPointToScreen(target, &location);
 
-    aura::client::ScreenPositionClient* position_client =
-        aura::client::GetScreenPositionClient(target_root);
-    gfx::Point location = event->location();
-    position_client->ConvertPointToScreen(target, &location);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(location);
 
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestPoint(location);
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
 
-    aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
+  position_client->ConvertPointFromScreen(root_window, &location);
 
-    position_client->ConvertPointFromScreen(root_window, &location);
+  std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
+  ui::LocatedEvent* cloned_located_event = cloned_event->AsLocatedEvent();
+  cloned_located_event->set_location(location);
 
-    gfx::Point target_location = event->location();
-    event->set_location(location);
+  // Ignore capture window when finding the target for located event.
+  aura::client::CaptureClient* original_capture_client =
+      aura::client::GetCaptureClient(root_window);
+  aura::client::SetCaptureClient(root_window, nullptr);
 
-    // Ignore capture window when finding the target for located event.
-    aura::client::CaptureClient* original_capture_client =
-        aura::client::GetCaptureClient(root_window);
-    aura::client::SetCaptureClient(root_window, nullptr);
+  aura::Window* selected =
+      static_cast<aura::Window*>(aura::WindowTargeter().FindTargetForEvent(
+          root_window, cloned_located_event));
 
-    aura::Window* selected =
-        static_cast<aura::Window*>(FindTargetForEvent(root_window, event));
-
-    // Restore State.
-    aura::client::SetCaptureClient(root_window, original_capture_client);
-    event->set_location(target_location);
-    return selected;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenshotWindowTargeter);
-};
+  // Restore State.
+  aura::client::SetCaptureClient(root_window, original_capture_client);
+  return selected;
+}
 
 }  // namespace
 
@@ -425,8 +418,8 @@ void ScreenshotController::Update(const ui::LocatedEvent& event) {
                 ::abs(start_position_.y() - event.root_location().y())));
 }
 
-void ScreenshotController::UpdateSelectedWindow(ui::LocatedEvent* event) {
-  aura::Window* selected = ScreenshotWindowTargeter().FindWindowForEvent(event);
+void ScreenshotController::UpdateSelectedWindow(const ui::LocatedEvent& event) {
+  aura::Window* selected = FindWindowForEvent(event);
 
   // Find a window that is backed with a widget.
   while (selected && (selected->type() == aura::client::WINDOW_TYPE_CONTROL ||
@@ -495,7 +488,7 @@ void ScreenshotController::OnMouseEvent(ui::MouseEvent* event) {
       switch (event->type()) {
         case ui::ET_MOUSE_MOVED:
         case ui::ET_MOUSE_DRAGGED:
-          UpdateSelectedWindow(event);
+          UpdateSelectedWindow(*event);
           break;
         case ui::ET_MOUSE_RELEASED:
           CompleteWindowScreenshot();
@@ -536,7 +529,7 @@ void ScreenshotController::OnTouchEvent(ui::TouchEvent* event) {
       switch (event->type()) {
         case ui::ET_TOUCH_PRESSED:
         case ui::ET_TOUCH_MOVED:
-          UpdateSelectedWindow(event);
+          UpdateSelectedWindow(*event);
           break;
         case ui::ET_TOUCH_RELEASED:
           CompleteWindowScreenshot();
