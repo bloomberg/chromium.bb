@@ -24,8 +24,8 @@
     : NSObject<PaymentRequestEditViewControllerDataSource,
                PaymentRequestEditViewControllerValidator>
 
-// The reference to the province field.
-@property(nonatomic, strong) EditorField* province;
+// The reference to the city/province field.
+@property(nonatomic, strong) EditorField* cityProvince;
 
 // The consumer for this object.
 @property(nonatomic, weak) id<PaymentRequestEditConsumer> consumer;
@@ -35,7 +35,7 @@
 @implementation SCPaymentsEditorMediator
 
 @synthesize state = _state;
-@synthesize province = _province;
+@synthesize cityProvince = _cityProvince;
 @synthesize consumer = _consumer;
 
 - (void)setConsumer:(id<PaymentRequestEditConsumer>)consumer {
@@ -43,11 +43,14 @@
   [self.consumer setEditorFields:[self editorFields]];
 }
 
-- (void)loadProvinces {
-  NSArray<NSString*>* options = @[ @"Ontario", @"Quebec" ];
-  self.province.value = options[1];
-  self.province.enabled = YES;
-  [self.consumer setOptions:@[ options ] forEditorField:self.province];
+- (void)loadCitiesAndProvinces {
+  NSArray<NSString*>* cities = @[ @"Ottawa", @"Montreal" ];
+  NSArray<NSString*>* provinces = @[ @"Quebec", @"Ontario" ];
+  self.cityProvince.value =
+      [NSString stringWithFormat:@"%@ / %@", cities[1], provinces[0]];
+  self.cityProvince.enabled = YES;
+  [self.consumer setOptions:@[ cities, provinces ]
+             forEditorField:self.cityProvince];
 }
 
 #pragma mark - Helper methods
@@ -66,13 +69,13 @@
                        value:@"CAN"
                     required:YES];
   [country setDisplayValue:@"Canada"];
-  self.province = [[EditorField alloc]
+  self.cityProvince = [[EditorField alloc]
       initWithAutofillUIType:AutofillUITypeProfileHomeAddressState
                    fieldType:EditorFieldTypeTextField
-                       label:@"Province"
+                       label:@"City/Province"
                        value:@"Loading..."
                     required:YES];
-  self.province.enabled = NO;
+  self.cityProvince.enabled = NO;
   EditorField* address = [[EditorField alloc]
       initWithAutofillUIType:AutofillUITypeProfileHomeAddressStreet
                    fieldType:EditorFieldTypeTextField
@@ -92,7 +95,7 @@
                        value:@"YES"
                     required:NO];
 
-  return @[ name, country, self.province, address, postalCode, save ];
+  return @[ name, country, self.cityProvince, address, postalCode, save ];
 }
 
 #pragma mark - PaymentRequestEditViewControllerDataSource
@@ -160,8 +163,8 @@
   [self.paymentRequestEditViewController setValidatorDelegate:self.mediator];
   [self.paymentRequestEditViewController loadModel];
 
-  // Set the options for the province field after the model is loaded.
-  [self.mediator loadProvinces];
+  // Set the options for the city/province field after the model is loaded.
+  [self.mediator loadCitiesAndProvinces];
 
   [self.baseViewController
       pushViewController:self.paymentRequestEditViewController
