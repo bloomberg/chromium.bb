@@ -116,20 +116,3 @@ TEST_F(ProfileDownloaderTest, AccountInfoNotReady) {
   SimulateUserInfoSuccess();
   ASSERT_EQ(kTestPictureURL, profile_downloader_->GetProfilePictureURL());
 }
-
-TEST_F(ProfileDownloaderTest, DefaultURL) {
-  // Empty URL should be default photo
-  EXPECT_TRUE(ProfileDownloader::IsDefaultProfileImageURL(std::string()));
-  // Picasa default photo
-  EXPECT_TRUE(ProfileDownloader::IsDefaultProfileImageURL(
-      "https://example.com/-4/AAAAAAAAAAA/AAAAAAAAAAE/G/s64-c/photo.jpg"));
-  // Not default G+ photo
-  EXPECT_FALSE(ProfileDownloader::IsDefaultProfileImageURL(
-      "https://example.com/-4/AAAAAAAAAAI/AAAAAAAAAAA/G/photo.jpg"));
-  // Not default with 6 components
-  EXPECT_FALSE(ProfileDownloader::IsDefaultProfileImageURL(
-      "https://example.com/-4/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg"));
-  // Not default with 7 components
-  EXPECT_FALSE(ProfileDownloader::IsDefaultProfileImageURL(
-      "https://example.com/-4/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s32-c/photo.jpg"));
-}
