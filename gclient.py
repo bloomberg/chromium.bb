@@ -139,7 +139,8 @@ def ToGNString(value, allow_dicts = True):
 class Hook(object):
   """Descriptor of command ran before/after sync or on demand."""
 
-  def __init__(self, action, pattern=None, name=None, cwd=None):
+  def __init__(self, action, pattern=None, name=None, cwd=None, condition=None,
+               variables=None):
     """Constructor.
 
     Arguments:
@@ -147,16 +148,26 @@ class Hook(object):
       pattern (basestring regex): noop with git; deprecated
       name (basestring): optional name; no effect on operation
       cwd (basestring): working directory to use
+      condition (basestring): condition when to run the hook
+      variables (dict): variables for evaluating the condition
     """
     self._action = gclient_utils.freeze(action)
     self._pattern = pattern
     self._name = name
     self._cwd = cwd
+    self._condition = condition
+    self._variables = variables
 
   @staticmethod
-  def from_dict(d):
+  def from_dict(d, variables=None):
     """Creates a Hook instance from a dict like in the DEPS file."""
-    return Hook(d['action'], d.get('pattern'), d.get('name'), d.get('cwd'))
+    return Hook(
+        d['action'],
+        d.get('pattern'),
+        d.get('name'),
+        d.get('cwd'),
+        d.get('condition'),
+        variables=variables)
 
   @property
   def action(self):
@@ -178,7 +189,11 @@ class Hook(object):
     return bool([f for f in file_list if pattern.search(f)])
 
   def run(self, root):
-    """Executes the hook's command."""
+    """Executes the hook's command (provided the condition is met)."""
+    if (self._condition and
+        not gclient_eval.EvaluateCondition(self._condition, self._variables)):
+      return
+
     cmd = list(self._action)
     if cmd[0] == 'python':
       # If the hook specified "python" as the first item, the action is a
@@ -782,8 +797,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         hooks_to_run.append(hook)
 
     if self.recursion_limit:
-      self._pre_deps_hooks = [Hook.from_dict(hook) for hook in
-                              local_scope.get('pre_deps_hooks', [])]
+      self._pre_deps_hooks = [
+          Hook.from_dict(hook, variables=self._vars) for hook in
+          local_scope.get('pre_deps_hooks', [])]
 
     self.add_dependencies_and_close(
         deps_to_add, hooks_to_run, orig_deps_to_add=orig_deps_to_add)
@@ -803,7 +819,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.add_dependency(dep)
     for dep in (orig_deps_to_add or deps_to_add):
       self.add_orig_dependency(dep)
-    self._mark_as_parsed([Hook.from_dict(h) for h in hooks])
+    self._mark_as_parsed(
+        [Hook.from_dict(h, variables=self._vars) for h in hooks])
 
   def findDepsFromNotAllowedHosts(self):
     """Returns a list of depenecies from not allowed hosts.
@@ -993,7 +1010,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._pre_deps_hooks_ran = True
     for hook in self.pre_deps_hooks:
       hook.run(self.root.root_dir)
-
 
   def subtree(self, include_all):
     """Breadth first recursion excluding root node."""

@@ -461,6 +461,15 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
+  def testRunHooksCondition(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_7', '--name', 'src'])
+    self.gclient(['sync', '--deps', 'mac'])
+    tree = self.mangle_git_tree(('repo_7@1', 'src'))
+    tree['src/should_run'] = 'should_run'
+    self.assertTree(tree)
+
   def testPreDepsHooks(self):
     if not self.enabled:
       return

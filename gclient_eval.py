@@ -23,6 +23,10 @@ _GCLIENT_HOOKS_SCHEMA = [{
 
     # Working directory where to execute the hook.
     schema.Optional('cwd'): basestring,
+
+    # Optional condition string. The hook will only be run
+    # if the condition evaluates to True.
+    schema.Optional('condition'): basestring,
 }]
 
 _GCLIENT_SCHEMA = schema.Schema({
