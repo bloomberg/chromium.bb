@@ -49,18 +49,6 @@ void SearchResult::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
     observer.OnBadgeIconChanged();
 }
 
-void SearchResult::SetRating(float rating) {
-  rating_ = rating;
-  for (auto& observer : observers_)
-    observer.OnRatingChanged();
-}
-
-void SearchResult::SetFormattedPrice(const base::string16& formatted_price) {
-  formatted_price_ = formatted_price;
-  for (auto& observer : observers_)
-    observer.OnFormattedPriceChanged();
-}
-
 void SearchResult::SetIsMouseInView(bool mouse_is_inside) {
   mouse_is_in_view_ = mouse_is_inside;
   for (auto& observer : observers_)
