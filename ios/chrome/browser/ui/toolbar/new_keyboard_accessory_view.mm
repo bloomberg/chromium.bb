@@ -43,8 +43,6 @@
 
 - (instancetype)initWithButtons:(NSArray<NSString*>*)buttonTitles
                        delegate:(id<KeyboardAccessoryViewDelegate>)delegate {
-  DCHECK(!IsIPadIdiom());
-
   const CGFloat kViewHeight = 44.0;
   CGFloat width = [[UIScreen mainScreen] bounds].size.width;
   // TODO(734512): Have the creator of the view define the size.
@@ -54,12 +52,12 @@
   if (self) {
     _buttonTitles = buttonTitles;
     _delegate = delegate;
-
+    [self addSubviews];
   }
   return self;
 }
 
-- (void)willMoveToSuperview:(UIView*)newSuperview {
+- (void)addSubviews {
   if (!self.subviews.count)
     return;
 
