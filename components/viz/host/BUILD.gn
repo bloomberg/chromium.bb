@@ -18,3 +18,22 @@ component("host") {
     "//cc/surfaces",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "frame_sink_manager_host_unittests.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//cc/ipc:interfaces",
+    "//cc/surfaces",
+    "//components/viz/host",
+    "//mojo/public/cpp/bindings",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
