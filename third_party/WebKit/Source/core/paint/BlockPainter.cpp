@@ -167,6 +167,9 @@ void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
 DISABLE_CFI_PERF
 void BlockPainter::PaintObject(const PaintInfo& paint_info,
                                const LayoutPoint& paint_offset) {
+  if (layout_block_.IsTruncated())
+    return;
+
   const PaintPhase paint_phase = paint_info.phase;
 
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
