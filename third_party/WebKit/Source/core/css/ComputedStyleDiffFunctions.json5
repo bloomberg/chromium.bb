@@ -74,7 +74,8 @@
                 "flex-shrink", "flex-grow", "flex-direction", "flex-wrap", "-webkit-box-align", 
                 "-webkit-box-pack", "-webkit-box-lines", "-webkit-box-orient",
                 "grid-row-start", "grid-row-end", "grid-column-start", "grid-column-end",
-                "column-gap", "column-width", "ColumnRule", "VisitedLinkColumnRuleColor", 
+                "column-gap", "column-width", "column-rule-style",
+                "column-rule-width", "column-rule-color", "ColumnRuleColorIsCurrentColor", "VisitedLinkColumnRuleColor",
                 "column-count", "ColumnAutoCount", "ColumnAutoWidth", "column-fill", "ColumnNormalGap", "column-span",],
         methods_to_diff: [
           {

@@ -1709,7 +1709,10 @@ void ComputedStyle::RestoreParentTextDecorations(
 void ComputedStyle::ClearMultiCol() {
   SetColumnGapInternal(InitialColumnGap());
   SetColumnWidthInternal(InitialColumnWidth());
-  SetColumnRuleInternal(InitialColumnRule());
+  SetColumnRuleStyle(InitialColumnRuleStyle());
+  SetColumnRuleWidthInternal(LayoutUnit(InitialColumnRuleWidth()));
+  SetColumnRuleColorInternal(InitialColumnRuleColor());
+  SetColumnRuleColorIsCurrentColor(InitialColumnRuleColorIsCurrentColor());
   SetVisitedLinkColumnRuleColorInternal(InitialVisitedLinkColumnRuleColor());
   SetColumnCountInternal(InitialColumnCount());
   SetColumnAutoCountInternal(InitialColumnAutoCount());
