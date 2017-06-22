@@ -13,6 +13,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
@@ -278,7 +279,15 @@ void PermissionPromptImpl::Show() {
   bubble_delegate_->set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
-  views::BubbleDialogDelegateView::CreateBubble(bubble_delegate_)->Show();
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(bubble_delegate_);
+  // If a browser window (or popup) other than the bubble parent has focus,
+  // don't take focus.
+  if (browser_->window()->IsActive())
+    widget->Show();
+  else
+    widget->ShowInactive();
+
   bubble_delegate_->SizeToContents();
 
   bubble_delegate_->UpdateAnchor(GetAnchorView(),
