@@ -13,12 +13,15 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/host/ppapi_host.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace content {
 
@@ -66,7 +69,7 @@ class PepperExternalFileRefBackend : public PepperFileRefBackend {
   base::FilePath path_;
   int render_process_id_;
 
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::WeakPtrFactory<PepperExternalFileRefBackend> weak_factory_;
 

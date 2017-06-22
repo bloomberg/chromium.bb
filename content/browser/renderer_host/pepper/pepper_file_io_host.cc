@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
@@ -90,17 +90,16 @@ void DidCloseFile(const base::Closure& on_close_callback) {
 }
 
 void DidOpenFile(base::WeakPtr<PepperFileIOHost> file_host,
+                 scoped_refptr<base::SequencedTaskRunner> task_runner,
                  storage::FileSystemOperation::OpenFileCallback callback,
                  base::File file,
                  const base::Closure& on_close_callback) {
   if (file_host) {
     callback.Run(std::move(file), on_close_callback);
   } else {
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&FileCloser, base::Passed(&file)),
-        base::Bind(&DidCloseFile, on_close_callback));
+    task_runner->PostTaskAndReply(FROM_HERE,
+                                  base::Bind(&FileCloser, base::Passed(&file)),
+                                  base::Bind(&DidCloseFile, on_close_callback));
   }
 }
 
@@ -111,7 +110,10 @@ PepperFileIOHost::PepperFileIOHost(BrowserPpapiHostImpl* host,
                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       browser_ppapi_host_(host),
-      file_(BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      file_(task_runner_.get()),
       open_flags_(0),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       max_written_offset_(0),
@@ -255,12 +257,9 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
   DCHECK(file_system_host_->GetFileSystemOperationRunner());
 
   file_system_host_->GetFileSystemOperationRunner()->OpenFile(
-      file_system_url_,
-      platform_file_flags,
-      base::Bind(&DidOpenFile,
-                 AsWeakPtr(),
-                 base::Bind(&PepperFileIOHost::DidOpenInternalFile,
-                            AsWeakPtr(),
+      file_system_url_, platform_file_flags,
+      base::Bind(&DidOpenFile, AsWeakPtr(), task_runner_,
+                 base::Bind(&PepperFileIOHost::DidOpenInternalFile, AsWeakPtr(),
                             reply_context)));
 }
 
@@ -459,8 +458,7 @@ void PepperFileIOHost::OnLocalFileOpened(
   }
 
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
-      FROM_HERE,
+      task_runner_.get(), FROM_HERE,
       base::Bind(&QuarantineFile, path,
                  browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()),
                  GURL(), std::string()),
