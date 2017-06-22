@@ -47,6 +47,7 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/notification_service.h"
@@ -1235,6 +1236,10 @@ ContentSettingSubresourceFilterBubbleModel::
   SetMessage();
   SetManageText();
   set_done_button_text(l10n_util::GetStringUTF16(IDS_OK));
+  // TODO(csharrison): The learn more link UI layout is non ideal. Make it align
+  // with the future Harmony UI version with a link icon in the bottom left of
+  // the bubble.
+  set_learn_more_link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   ChromeSubresourceFilterClient::LogAction(kActionDetailsShown);
 }
 
@@ -1265,6 +1270,12 @@ void ContentSettingSubresourceFilterBubbleModel::OnManageCheckboxChecked(
   set_done_button_text(
       l10n_util::GetStringUTF16(is_checked ? IDS_APP_MENU_RELOAD : IDS_OK));
   is_checked_ = is_checked;
+}
+
+void ContentSettingSubresourceFilterBubbleModel::OnLearnMoreLinkClicked() {
+  DCHECK(delegate());
+  ChromeSubresourceFilterClient::LogAction(kActionClickedLearnMore);
+  delegate()->ShowLearnMorePage(CONTENT_SETTINGS_TYPE_ADS);
 }
 
 void ContentSettingSubresourceFilterBubbleModel::OnDoneClicked() {

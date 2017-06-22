@@ -28,6 +28,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -942,6 +943,8 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
             l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_EXPLANATION));
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
   EXPECT_EQ(0, bubble_content.radio_group.default_item);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_LEARN_MORE),
+            bubble_content.learn_more_link);
   EXPECT_TRUE(bubble_content.custom_link.empty());
   EXPECT_FALSE(bubble_content.custom_link_enabled);
   EXPECT_EQ(bubble_content.manage_text,

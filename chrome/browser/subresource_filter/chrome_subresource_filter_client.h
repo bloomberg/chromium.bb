@@ -38,7 +38,6 @@ enum SubresourceFilterAction {
   // expanded infobar.
   kActionDetailsShown,
 
-  // TODO(csharrison): Log this once the link is in place.
   kActionClickedLearnMore,
 
   // Content settings:
