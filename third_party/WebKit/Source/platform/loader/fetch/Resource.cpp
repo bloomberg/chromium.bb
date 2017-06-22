@@ -663,12 +663,7 @@ static bool TypeNeedsSynchronousCacheHit(Resource::Type type) {
 
 void Resource::WillAddClientOrObserver(PreloadReferencePolicy policy) {
   if (policy == kMarkAsReferenced && preload_result_ == kPreloadNotReferenced) {
-    if (IsLoaded())
-      preload_result_ = kPreloadReferencedWhileComplete;
-    else if (IsLoading())
-      preload_result_ = kPreloadReferencedWhileLoading;
-    else
-      preload_result_ = kPreloadReferenced;
+    preload_result_ = kPreloadReferenced;
 
     if (preload_discovery_time_) {
       int time_since_discovery = static_cast<int>(

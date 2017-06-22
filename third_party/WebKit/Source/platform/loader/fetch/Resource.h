@@ -166,8 +166,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   enum PreloadResult : uint8_t {
     kPreloadNotReferenced,
     kPreloadReferenced,
-    kPreloadReferencedWhileLoading,
-    kPreloadReferencedWhileComplete
   };
   PreloadResult GetPreloadResult() const { return preload_result_; }
 
