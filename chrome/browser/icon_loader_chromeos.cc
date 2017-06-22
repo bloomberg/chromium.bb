@@ -191,10 +191,11 @@ IconLoader::IconGroup IconLoader::GroupForFilepath(
 }
 
 // static
-content::BrowserThread::ID IconLoader::ReadIconThreadID() {
+scoped_refptr<base::TaskRunner> IconLoader::GetReadIconTaskRunner() {
   // ReadIcon touches non thread safe ResourceBundle images, so it must be on
   // the UI thread.
-  return content::BrowserThread::UI;
+  return content::BrowserThread::GetTaskRunnerForThread(
+      content::BrowserThread::UI);
 }
 
 void IconLoader::ReadIcon() {
