@@ -1,17 +1,4 @@
-Lunch Options
 
-Thai
-Subway
-Jimmy Johns
-Radio Maria
-Rainbow Gardens
-Drink Options
-
-Water
-Tea
-Coffee
-Cola
-Ginger Ale
 {
   "nodeId": "<string>",
   "ignored": false,

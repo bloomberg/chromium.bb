@@ -1,6 +1,4 @@
-Hidden by modal dialog
-(Dialog itself is not hidden)
-Non-hidden element inside dialog
+
 {
   "nodeId": "<string>",
   "ignored": true,

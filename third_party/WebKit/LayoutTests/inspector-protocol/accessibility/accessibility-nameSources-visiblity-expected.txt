@@ -1,3 +1,4 @@
+
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -313,7 +314,7 @@
         "type": "relatedElement",
         "value": {
           "type": "computedString",
-          "value": "\n        1 \n        \n          2 \n          \n          \n          \n          \n        \n        7 \n      "
+          "value": "\n          1 \n          \n            2 \n            \n            \n            \n            \n          \n          7 \n        "
         },
         "attribute": "aria-labelledby",
         "attributeValue": {
@@ -322,7 +323,7 @@
           "relatedNodes": [
             {
               "idref": "label4",
-              "text": "\n        1 \n        \n          2 \n          \n          \n          \n          \n        \n        7 \n      ",
+              "text": "\n          1 \n          \n            2 \n            \n            \n            \n            \n          \n          7 \n        ",
               "nodeResult": "div#label4"
             }
           ]
@@ -391,7 +392,7 @@
         "relatedNodes": [
           {
             "idref": "label4",
-            "text": "\n        1 \n        \n          2 \n          \n          \n          \n          \n        \n        7 \n      ",
+            "text": "\n          1 \n          \n            2 \n            \n            \n            \n            \n          \n          7 \n        ",
             "nodeResult": "div#label4"
           }
         ]
