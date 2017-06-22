@@ -880,6 +880,8 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html
 
 crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.html [ Failure Pass ]
 
+crbug.com/734762 [ Linux ] inspector-protocol/stylesheet-tracking-restart.js [ Failure Pass ]
+
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
