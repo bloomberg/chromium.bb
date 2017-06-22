@@ -37,14 +37,6 @@ class UpdateScreenUnitTest : public testing::Test {
       : fake_controller_(""),
         local_state_(TestingBrowserProcess::GetGlobal()) {}
 
-  // Fast-forwards time by the specified amount.
-  void FastForwardTime(base::TimeDelta time) {
-    base::Time last = StartupUtils::GetTimeOfLastUpdateCheckWithoutUpdate();
-    ASSERT_FALSE(last.is_null());
-    base::Time modified_last = last - time;
-    StartupUtils::SaveTimeOfLastUpdateCheckWithoutUpdate(modified_last);
-  }
-
   // Simulates an update being available (or not).
   // The parameter "update_screen" points to the currently active UpdateScreen.
   // The parameter "available" indicates whether an update is available.
@@ -75,7 +67,7 @@ class UpdateScreenUnitTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
 
-    // Initialize objects needed by UpdateScreen
+    // Initialize objects needed by UpdateScreen.
     fake_update_engine_client_ = new FakeUpdateEngineClient();
     DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
@@ -93,17 +85,11 @@ class UpdateScreenUnitTest : public testing::Test {
     EXPECT_CALL(mock_base_screen_delegate_, GetErrorScreen())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_error_screen_.get()));
-
-    // Later verifies that UpdateScreen successfully exits both times.
-    EXPECT_CALL(mock_base_screen_delegate_,
-                OnExit(_, ScreenExitCode::UPDATE_NOUPDATE, _))
-        .Times(2);
   }
 
   void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetShuttingDown(true);
-    first_update_screen_.reset();
-    second_update_screen_.reset();
+    update_screen_.reset();
     mock_error_screen_.reset();
     network_portal_detector::Shutdown();
     NetworkHandler::Shutdown();
@@ -111,13 +97,8 @@ class UpdateScreenUnitTest : public testing::Test {
   }
 
  protected:
-  // A pointer to the UpdateScreen that shows up during the first OOBE.
-  std::unique_ptr<UpdateScreen> first_update_screen_;
-
-  // A pointer to the UpdateScreen which shows up during the second OOBE.
-  // This test verifies proper behavior if the device is restarted before
-  // OOBE is complete, which is why there is a second OOBE.
-  std::unique_ptr<UpdateScreen> second_update_screen_;
+  // A pointer to the UpdateScreen used in this test.
+  std::unique_ptr<UpdateScreen> update_screen_;
 
   // Accessory objects needed by UpdateScreen.
   MockBaseScreenDelegate mock_base_screen_delegate_;
@@ -137,167 +118,64 @@ class UpdateScreenUnitTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenUnitTest);
 };
 
-// Test Scenario Description:
-// In this description, "will" refers to an external event, and "should" refers
-// to the expected behavior of the DUT in response to external events.
-//
-// The DUT boots up and starts OOBE. Since it is a Hands-Off device, it
-// proceeds through OOBE automatically. When it hits the UpdateScreen,
-// it checks for updates. It will find that there is indeed an update
-// available, will then install it. After installing the update, it should
-// continue with Hands-Off OOBE. Then, before OOBE is complete, something
-// (could be user, environment, anything) will cause the DUT to reboot.
-// Since OOBE is not complete, the DUT goes through OOBE again.
-// When the DUT hits the UpdateScreen during this second OOBE run-through,
-// it should check for updates again.
-TEST_F(UpdateScreenUnitTest, ChecksForUpdateBothTimesIfFirstIsInstalled) {
-  // DUT reaches UpdateScreen for the first time.
-  first_update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                              &mock_view_, &fake_controller_));
-  first_update_screen_->StartNetworkCheck();
+TEST_F(UpdateScreenUnitTest, HandlesNoUpdate) {
+  // Set expectation that UpdateScreen will exit successfully
+  // with code UPDATE_NOUPDATE.
+  EXPECT_CALL(mock_base_screen_delegate_,
+              OnExit(_, ScreenExitCode::UPDATE_NOUPDATE, _))
+      .Times(1);
+
+  // DUT reaches UpdateScreen.
+  update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
+                                        &mock_view_, &fake_controller_));
+  update_screen_->StartNetworkCheck();
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
 
-  // An update is available.
-  SimulateUpdateAvailable(first_update_screen_, true /* available */,
-                          false /* critical */);
-
-  // DUT reboots...
-  // After rebooting, the DUT reaches UpdateScreen for the second time.
-  second_update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                               &mock_view_, &fake_controller_));
-  second_update_screen_->StartNetworkCheck();
-
-  // Verify that the DUT checks for updates again.
-  EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 2);
-
-  // No updates available this time.
-  SimulateUpdateAvailable(second_update_screen_, false /* available */,
-                          false /* critical */);
-}
-
-// Test Scenario Description:
-// In this description, "will" refers to an external event, and "should" refers
-// to the expected behavior of the DUT in response to external events.
-//
-// The DUT boots up and starts OOBE. Since it is a Hands-Off device, it
-// proceeds through OOBE automatically. When it hits the UpdateScreen,
-// it checks for updates. It will find that there are no updates
-// available, and it should leave the UpdateScreen without installing any
-// updates. It continues with OOBE. Then, before OOBE is complete, something
-// (could be user, environment, anything) will cause the DUT to reboot.
-// Since OOBE is not complete, the DUT goes through OOBE again.
-// When the DUT hits the UpdateScreen during this second OOBE run-through,
-// more than one hour will have passed since the previous update check.
-// Therefore, the DUT should check for updates again.
-TEST_F(UpdateScreenUnitTest, ChecksForUpdateBothTimesIfEnoughTimePasses) {
-  // DUT reaches UpdateScreen for the first time.
-  first_update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                              &mock_view_, &fake_controller_));
-  first_update_screen_->StartNetworkCheck();
-
-  // Verify that the DUT checks for updates.
-  EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
-
   // No updates are available.
-  SimulateUpdateAvailable(first_update_screen_, false /* available */,
-                          false /* critical */);
-
-  // Fast-forward time by one hour.
-  FastForwardTime(base::TimeDelta::FromHours(1));
-
-  // DUT reboots...
-  // After rebooting, the DUT reaches UpdateScreen for the second time.
-  second_update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                               &mock_view_, &fake_controller_));
-  second_update_screen_->StartNetworkCheck();
-
-  // Verify that the DUT checks for updates again.
-  EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 2);
-
-  // No updates available this time either.
-  SimulateUpdateAvailable(second_update_screen_, false /* available */,
+  SimulateUpdateAvailable(update_screen_, false /* available */,
                           false /* critical */);
 }
 
-// Test Scenario Description:
-// In this description, "will" refers to an external event, and "should" refers
-// to the expected behavior of the DUT in response to external events.
-//
-// The DUT boots up and starts OOBE. Since it is a Hands-Off device, it
-// proceeds through OOBE automatically. When it hits the UpdateScreen,
-// it checks for updates. It will find that there are no updates
-// available, and it should leave the UpdateScreen without installing any
-// updates. It continues with OOBE. Then, before OOBE is complete, something
-// (could be user, environment, anything) will cause the DUT to reboot.
-// Since OOBE is not complete, the DUT goes through OOBE again.
-// When the DUT hits the UpdateScreen during this second OOBE run-through,
-// less than one hour will have passed since the previous update check.
-// Therefore, the DUT should not check for updates again.
-TEST_F(UpdateScreenUnitTest, ChecksForUpdateOnceButNotAgainIfTooSoon) {
-  // DUT reaches UpdateScreen for the first time.
-  first_update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                              &mock_view_, &fake_controller_));
-  first_update_screen_->StartNetworkCheck();
+TEST_F(UpdateScreenUnitTest, HandlesNonCriticalUpdate) {
+  // Set expectation that UpdateScreen will exit successfully
+  // with code UPDATE_NOUPDATE. No, this is not a typo.
+  // UPDATE_NOUPDATE means that either there was no update
+  // or there was a non-critical update.
+  EXPECT_CALL(mock_base_screen_delegate_,
+              OnExit(_, ScreenExitCode::UPDATE_NOUPDATE, _))
+      .Times(1);
 
-  // Verify that the DUT checks for updates.
+  // DUT reaches UpdateScreen.
+  update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
+                                        &mock_view_, &fake_controller_));
+  update_screen_->StartNetworkCheck();
+
+  // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
 
-  // No update available.
-  SimulateUpdateAvailable(first_update_screen_, false /* available */,
-                          false /* critical */);
-
-  // DUT reboots...
-  // After rebooting, the DUT reaches UpdateScreen for the second time.
-  second_update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                               &mock_view_, &fake_controller_));
-  second_update_screen_->StartNetworkCheck();
-
-  // Verify that the DUT did not check for updates again.
-  EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
-
-  // No update available this time either.
-  SimulateUpdateAvailable(second_update_screen_, false /* available */,
+  // A non-critical update is available.
+  SimulateUpdateAvailable(update_screen_, true /* available */,
                           false /* critical */);
 }
 
-// Test Scenario Description:
-// In this description, "will" refers to an external event, and "should" refers
-// to the expected behavior of the DUT in response to external events.
-//
-// The DUT boots up and starts OOBE. Since it is a Hands-Off device, it
-// proceeds through OOBE automatically. When it hits the UpdateScreen,
-// it checks for updates. It will find that a critical update is available.
-// The DUT installs the update, and because the update is critical, it reboots.
-// Since OOBE is not complete, the DUT goes through OOBE again after reboot.
-// When the DUT hits the UpdateScreen during this second OOBE run-through,
-// it should check for updates again.
-TEST_F(UpdateScreenUnitTest, ChecksForUpdateBothTimesIfCriticalUpdate) {
-  // DUT reaches UpdateScreen for the first time.
-  first_update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                              &mock_view_, &fake_controller_));
-  first_update_screen_->StartNetworkCheck();
+TEST_F(UpdateScreenUnitTest, HandlesCriticalUpdate) {
+  // Set expectation that UpdateScreen does not exit.
+  // This is the case because a critical update mandates reboot.
+  EXPECT_CALL(mock_base_screen_delegate_, OnExit(_, _, _)).Times(0);
 
-  // Verify that the DUT checks for updates.
+  // DUT reaches UpdateScreen.
+  update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
+                                        &mock_view_, &fake_controller_));
+  update_screen_->StartNetworkCheck();
+
+  // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
 
   // An update is available, and it's critical!
-  SimulateUpdateAvailable(first_update_screen_, true /* available */,
+  SimulateUpdateAvailable(update_screen_, true /* available */,
                           true /* critical */);
-
-  // DUT reboots...
-  // After rebooting, the DUT reaches UpdateScreen for the second time.
-  second_update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                               &mock_view_, &fake_controller_));
-  second_update_screen_->StartNetworkCheck();
-
-  // Verify that the DUT checks for updates again.
-  EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 2);
-
-  // No update available this time.
-  SimulateUpdateAvailable(second_update_screen_, false /* available */,
-                          false /* critical */);
 }
 
 }  // namespace chromeos
