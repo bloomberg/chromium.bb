@@ -65608,6 +65608,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Scheduling.PendingTreeRasterDuration" units="microseconds">
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    Time between starting raster work on the pending tree and when it is ready
+    to activate. Unlike PendingTreeDuration which - includes the time to commit
+    to this tree, the raster duration and the time for which the pending
+    tree waits before it can be activated - this only measures the time taken to
+    rasterize tiles required for activation.
+
+    The interval is recorded each time we are notifed that a pending tree is
+    ready for activation.
+  </summary>
+</histogram>
+
 <histogram name="Scheduling.PrepareTilesDuration" units="microseconds">
   <obsolete>
     Replaced by PrepareTIlesDuration2, due to inefficient bucketing scheme.
@@ -87635,6 +87649,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Browser"/>
   <suffix name="Renderer"/>
   <affected-histogram name="Scheduling.PendingTreeDuration"/>
+  <affected-histogram name="Scheduling.PendingTreeRasterDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CompositorTimingHistoryProcessObsolete" separator="."

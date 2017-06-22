@@ -2339,6 +2339,7 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   EXPECT_TRUE(pending_layer()->tilings()->FindTilingWithScaleKey(1.f));
   EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
 
+  host_impl()->NotifyReadyToActivate();
   ActivateTree();
   EXPECT_TRUE(active_layer()->tilings()->FindTilingWithScaleKey(1.f));
 
@@ -2355,6 +2356,7 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   EXPECT_EQ(2u, active_layer()->release_tile_resources_count());
   EXPECT_EQ(2u, pending_layer()->release_resources_count());
   EXPECT_EQ(2u, active_layer()->release_resources_count());
+  host_impl()->NotifyReadyToActivate();
 
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->SetContentIsSuitableForGpuRasterization(false);
@@ -4738,6 +4740,7 @@ TEST_F(TileSizeTest, TileSizes) {
   host_impl()->CommitComplete();
   EXPECT_EQ(host_impl()->gpu_rasterization_status(),
             GpuRasterizationStatus::OFF_VIEWPORT);
+  host_impl()->NotifyReadyToActivate();
 
   // Default tile-size for large layers.
   result = layer->CalculateTileSize(gfx::Size(10000, 10000));
@@ -4761,6 +4764,7 @@ TEST_F(TileSizeTest, TileSizes) {
   EXPECT_EQ(host_impl()->gpu_rasterization_status(),
             GpuRasterizationStatus::ON);
   host_impl()->SetViewportSize(gfx::Size(2000, 2000));
+  host_impl()->NotifyReadyToActivate();
 
   layer->set_gpu_raster_max_texture_size(host_impl()->device_viewport_size());
   result = layer->CalculateTileSize(gfx::Size(10000, 10000));

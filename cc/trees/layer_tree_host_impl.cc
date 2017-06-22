@@ -161,6 +161,8 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
 
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
                                   "Scheduling.%s.PendingTreeDuration");
+DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeRasterDurationHistogramTimer,
+                                  "Scheduling.%s.PendingTreeRasterDuration");
 
 LayerTreeHostImpl::FrameData::FrameData()
     : render_surface_list(nullptr),
@@ -387,6 +389,10 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
     // Scheduler to wait for ReadyToDraw signal to avoid Checkerboard.
     if (CommitToActiveTree())
       NotifyReadyToDraw();
+  } else if (!CommitToActiveTree()) {
+    DCHECK(!pending_tree_raster_duration_timer_);
+    pending_tree_raster_duration_timer_ =
+        base::MakeUnique<PendingTreeRasterDurationHistogramTimer>();
   }
 }
 
@@ -1376,6 +1382,7 @@ void LayerTreeHostImpl::RequestImplSideInvalidation() {
 }
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
+  pending_tree_raster_duration_timer_.reset();
   client_->NotifyReadyToActivate();
 }
 
