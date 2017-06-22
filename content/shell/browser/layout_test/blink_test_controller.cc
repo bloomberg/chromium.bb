@@ -736,8 +736,10 @@ void BlinkTestController::OnTestFinished() {
 }
 
 void BlinkTestController::OnAllServiceWorkersCleared() {
-  Send(new ShellViewMsg_Reset(
-      main_window_->web_contents()->GetRenderViewHost()->GetRoutingID()));
+  if (main_window_) {
+    Send(new ShellViewMsg_Reset(
+        main_window_->web_contents()->GetRenderViewHost()->GetRoutingID()));
+  }
 }
 
 void BlinkTestController::OnImageDump(const std::string& actual_pixel_hash,
