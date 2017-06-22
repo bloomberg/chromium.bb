@@ -3,15 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""" Parser for PPAPI IDL """
+""" Parser for Web IDL """
 
 #
 # IDL Parser
 #
 # The parser is uses the PLY yacc library to build a set of parsing rules based
-# on WebIDL.
+# on Web IDL.
 #
-# WebIDL, and WebIDL grammar can be found at:
+# Web IDL, and Web IDL grammar can be found at:
 #   http://heycam.github.io/webidl/
 # PLY can be found at:
 #   http://www.dabeaz.com/ply/
