@@ -127,7 +127,7 @@ for (let params of testParams) {
     var transformValue = new CSSTransformValue([input]);
     var result = transformValue.toMatrix();
     assert_equals(result.is2D, input.is2D(), 'is2D');
-    assert_matrix_approx_equals(result, params.asMatrix);
+    assert_matrix_approx_equals(result, params.asMatrix, EPSILON);
   }, "toMatrix works for " + params.cssText);
 }
 
