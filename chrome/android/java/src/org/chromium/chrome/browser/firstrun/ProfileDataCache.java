@@ -142,7 +142,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
     @Override
     public void onProfileDownloaded(String accountId, String fullName, String givenName,
             Bitmap bitmap) {
-        Drawable drawable = getCroppedAvatar(bitmap);
+        Drawable drawable = bitmap != null ? getCroppedAvatar(bitmap) : mPlaceholderImage;
         mCacheEntries.put(accountId, new CacheEntry(drawable, fullName, givenName));
         for (Observer observer : mObservers) {
             observer.onProfileDataUpdated(accountId);

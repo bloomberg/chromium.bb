@@ -109,9 +109,6 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   // Implementation of AccountTrackerService::Observer.
   void OnAccountUpdated(const AccountInfo& info) override;
 
-  // Returns true if the image url is url of the default profile picture.
-  static bool IsDefaultProfileImageURL(const std::string& url);
-
   // Issues the first request to get user profile image.
   void StartFetchingImage();
 

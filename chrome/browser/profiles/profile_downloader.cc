@@ -34,6 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -48,49 +49,7 @@ namespace {
 const char kAuthorizationHeader[] =
     "Authorization: Bearer %s";
 
-// Separator of URL path components.
-const char kURLPathSeparator = '/';
-
-// Photo ID of the Picasa Web Albums profile picture (base64 of 0).
-const char kPicasaPhotoId[] = "AAAAAAAAAAA";
-
-// Photo version of the default PWA profile picture (base64 of 1).
-const char kDefaultPicasaPhotoVersion[] = "AAAAAAAAAAE";
-
-// The minimum number of path components in profile picture URL.
-const size_t kProfileImageURLPathComponentsCount = 6;
-
-// Index of path component with photo ID.
-const int kPhotoIdPathComponentIndex = 2;
-
-// Index of path component with photo version.
-const int kPhotoVersionPathComponentIndex = 3;
-
 }  // namespace
-
-// static
-bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) {
-  if (url.empty())
-    return true;
-
-  GURL image_url_object(url);
-  DCHECK(image_url_object.is_valid());
-  VLOG(1) << "URL to check for default image: " << image_url_object.spec();
-  std::vector<std::string> path_components = base::SplitString(
-      image_url_object.path(), std::string(1, kURLPathSeparator),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  if (path_components.size() < kProfileImageURLPathComponentsCount)
-    return false;
-
-  const std::string& photo_id = path_components[kPhotoIdPathComponentIndex];
-  const std::string& photo_version =
-      path_components[kPhotoVersionPathComponentIndex];
-
-  // Check that the ID and version match the default Picasa profile photo.
-  return photo_id == kPicasaPhotoId &&
-         photo_version == kDefaultPicasaPhotoVersion;
-}
 
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
     : OAuth2TokenService::Consumer("profile_downloader"),
@@ -165,7 +124,7 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
     return std::string();
   return profiles::GetImageURLWithOptions(
              GURL(account_info_.picture_url),
-             delegate_->GetDesiredImageSideLength(), false /* no_silhouette */)
+             delegate_->GetDesiredImageSideLength(), true /* no_silhouette */)
       .spec();
 }
 
@@ -214,19 +173,14 @@ ProfileDownloader::~ProfileDownloader() {
 
 void ProfileDownloader::FetchImageData() {
   DCHECK(account_info_.IsValid());
-  std::string image_url_with_size = GetProfilePictureURL();
 
   if (!delegate_->NeedsProfilePicture()) {
     VLOG(1) << "Skipping profile picture download";
     delegate_->OnProfileDownloadSuccess(this);
     return;
   }
-  if (IsDefaultProfileImageURL(image_url_with_size)) {
-    VLOG(1) << "User has default profile picture";
-    picture_status_ = PICTURE_DEFAULT;
-    delegate_->OnProfileDownloadSuccess(this);
-    return;
-  }
+
+  std::string image_url_with_size = GetProfilePictureURL();
   if (!image_url_with_size.empty() &&
       image_url_with_size == delegate_->GetCachedPictureURL()) {
     VLOG(1) << "Picture URL matches cached picture URL";
@@ -280,25 +234,28 @@ void ProfileDownloader::FetchImageData() {
 
 void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::string data;
-  source->GetResponseAsString(&data);
-  bool network_error =
-      source->GetStatus().status() != net::URLRequestStatus::SUCCESS;
-  if (network_error || source->GetResponseCode() != 200) {
+  if (source->GetResponseCode() == net::HTTP_OK) {
+    std::string data;
+    source->GetResponseAsString(&data);
+    DVLOG(1) << "Decoding the image...";
+    ImageDecoder::Start(this, data);
+  } else if (source->GetResponseCode() == net::HTTP_NOT_FOUND) {
+    VLOG(1) << "Got 404, using default picture...";
+    picture_status_ = PICTURE_DEFAULT;
+    delegate_->OnProfileDownloadSuccess(this);
+  } else {
     LOG(WARNING) << "Fetching profile data failed";
     DVLOG(1) << "  Status: " << source->GetStatus().status();
     DVLOG(1) << "  Error: " << source->GetStatus().error();
     DVLOG(1) << "  Response code: " << source->GetResponseCode();
     DVLOG(1) << "  Url: " << source->GetURL().spec();
-    profile_image_fetcher_.reset();
+    bool network_error =
+        source->GetStatus().status() != net::URLRequestStatus::SUCCESS;
     delegate_->OnProfileDownloadFailure(this, network_error ?
         ProfileDownloaderDelegate::NETWORK_ERROR :
         ProfileDownloaderDelegate::SERVICE_ERROR);
-  } else {
-    profile_image_fetcher_.reset();
-    VLOG(1) << "Decoding the image...";
-    ImageDecoder::Start(this, data);
   }
+  profile_image_fetcher_.reset();
 }
 
 void ProfileDownloader::OnImageDecoded(const SkBitmap& decoded_image) {
