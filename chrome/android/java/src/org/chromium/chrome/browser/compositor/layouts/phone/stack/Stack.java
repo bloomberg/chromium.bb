@@ -398,12 +398,10 @@ public class Stack {
      * @param id The id of the new tab to animate.
      */
     public void tabCreated(long time, int id) {
-        if (!FeatureUtilities.isChromeHomeEnabled()) {
-            if (!createTabHelper(id)) return;
-            mIsDying = false;
+        if (!createTabHelper(id)) return;
 
-            finishAnimation(time);
-        }
+        mIsDying = false;
+        finishAnimation(time);
         startAnimation(time, OverviewAnimationType.NEW_TAB_OPENED,
                 TabModelUtils.getTabIndexById(mTabModel, id), TabModel.INVALID_TAB_INDEX, false);
     }

@@ -196,12 +196,6 @@ class StackAnimationLandscape extends StackAnimation {
     }
 
     @Override
-    protected ChromeAnimation<?> createNewTabOpenedAnimatorSet(
-            StackTab[] tabs, int focusIndex, float discardRange) {
-        return null;
-    }
-
-    @Override
     protected boolean isDefaultDiscardDirectionPositive() {
         return true;
     }
