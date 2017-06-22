@@ -123,14 +123,21 @@ enum class SaturationRange {
   MUTED,
 };
 
-// Returns a single RGB color that represents the bitmap. If a value is
-// succesfully calculated, the return value is fully opaque. For failure, the
-// return value is transparent. This currently calculates one color at a time.
-// We could save computation by calculating multiple colors at once, but there's
-// currently no need to calculate multiple colors.
-GFX_EXPORT SkColor CalculateProminentColorOfBitmap(const SkBitmap& bitmap,
-                                                   LumaRange luma,
-                                                   SaturationRange saturation);
+struct ColorProfile {
+  ColorProfile() = default;
+  ColorProfile(LumaRange l, SaturationRange s) : luma(l), saturation(s) {}
+
+  LumaRange luma = LumaRange::DARK;
+  SaturationRange saturation = SaturationRange::MUTED;
+};
+
+// Returns a vector of RGB colors that represents the bitmap based on the
+// |color_profiles| provided. For each value, if a value is succesfully
+// calculated, the calculated value is fully opaque. For failure, the calculated
+// value is transparent.
+GFX_EXPORT std::vector<SkColor> CalculateProminentColorsOfBitmap(
+    const SkBitmap& bitmap,
+    const std::vector<ColorProfile>& color_profiles);
 
 // Compute color covariance matrix for the input bitmap.
 GFX_EXPORT gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap);

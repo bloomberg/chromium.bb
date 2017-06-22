@@ -7,14 +7,49 @@
 #include <algorithm>
 
 #include "ash/animation/animation_change_type.h"
+#include "ash/ash_switches.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "base/command_line.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 
+using ColorProfile = color_utils::ColorProfile;
+using LumaRange = color_utils::LumaRange;
+using SaturationRange = color_utils::SaturationRange;
+
 namespace ash {
+
+namespace {
+
+// Returns color profile used for shelf based on the kAshShelfColorScheme
+// command line arg.
+ColorProfile GetShelfColorProfile() {
+  const std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAshShelfColorScheme);
+
+  ColorProfile color_profile(LumaRange::DARK, SaturationRange::MUTED);
+
+  if (switch_value.find("light") != std::string::npos)
+    color_profile.luma = LumaRange::LIGHT;
+  else if (switch_value.find("normal") != std::string::npos)
+    color_profile.luma = LumaRange::NORMAL;
+  else if (switch_value.find("dark") != std::string::npos)
+    color_profile.luma = LumaRange::DARK;
+
+  if (switch_value.find("vibrant") != std::string::npos)
+    color_profile.saturation = SaturationRange::VIBRANT;
+  else if (switch_value.find("muted") != std::string::npos)
+    color_profile.saturation = SaturationRange::MUTED;
+
+  return color_profile;
+}
+
+}  // namespace
 
 ShelfBackgroundAnimator::AnimationValues::AnimationValues() {}
 
@@ -213,9 +248,10 @@ void ShelfBackgroundAnimator::GetTargetValues(
       break;
   }
 
-  SkColor target_color = wallpaper_controller_
-                             ? wallpaper_controller_->prominent_color()
-                             : kShelfDefaultBaseColor;
+  SkColor target_color =
+      wallpaper_controller_
+          ? wallpaper_controller_->GetProminentColor(GetShelfColorProfile())
+          : kShelfDefaultBaseColor;
   if (target_color == WallpaperController::kInvalidColor) {
     target_color = kShelfDefaultBaseColor;
   } else {

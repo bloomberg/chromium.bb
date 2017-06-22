@@ -12,6 +12,12 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "components/wallpaper/wallpaper_color_calculator_observer.h"
+#include "components/wallpaper/wallpaper_color_extraction_result.h"
+#include "ui/gfx/color_analysis.h"
+#include "ui/gfx/image/image_skia.h"
+
+using LumaRange = color_utils::LumaRange;
+using SaturationRange = color_utils::SaturationRange;
 
 namespace wallpaper {
 
@@ -23,24 +29,61 @@ namespace {
 // thread would actually take longer.
 const int kMaxPixelsForSynchronousCalculation = 100;
 
-// Wrapper for color_utils::CalculateProminentColorOfBitmap() that records
+// Wrapper for color_utils::CalculateProminentColorsOfBitmap() that records
 // wallpaper specific metrics.
 //
 // NOTE: |image| is intentionally a copy to ensure it exists for the duration of
 // the calculation.
-SkColor CalculateWallpaperColor(const gfx::ImageSkia image,
-                                color_utils::LumaRange luma,
-                                color_utils::SaturationRange saturation) {
+std::vector<SkColor> CalculateWallpaperColor(
+    const gfx::ImageSkia image,
+    const std::vector<color_utils::ColorProfile> color_profiles) {
   base::TimeTicks start_time = base::TimeTicks::Now();
-  const SkColor prominent_color = color_utils::CalculateProminentColorOfBitmap(
-      *image.bitmap(), luma, saturation);
+  const std::vector<SkColor> prominent_colors =
+      color_utils::CalculateProminentColorsOfBitmap(*image.bitmap(),
+                                                    color_profiles);
 
   UMA_HISTOGRAM_TIMES("Ash.Wallpaper.ColorExtraction.Durations",
                       base::TimeTicks::Now() - start_time);
-  UMA_HISTOGRAM_BOOLEAN("Ash.Wallpaper.ColorExtractionResult",
-                        prominent_color != SK_ColorTRANSPARENT);
+  WallpaperColorExtractionResult result = NUM_COLOR_EXTRACTION_RESULTS;
+  for (size_t i = 0; i < color_profiles.size(); ++i) {
+    bool is_result_transparent = prominent_colors[i] == SK_ColorTRANSPARENT;
+    if (color_profiles[i].saturation == SaturationRange::VIBRANT) {
+      switch (color_profiles[i].luma) {
+        case LumaRange::DARK:
+          result = is_result_transparent ? RESULT_DARK_VIBRANT_TRANSPARENT
+                                         : RESULT_DARK_VIBRANT_OPAQUE;
+          break;
+        case LumaRange::NORMAL:
+          result = is_result_transparent ? RESULT_NORMAL_VIBRANT_TRANSPARENT
+                                         : RESULT_NORMAL_VIBRANT_OPAQUE;
+          break;
+        case LumaRange::LIGHT:
+          result = is_result_transparent ? RESULT_LIGHT_VIBRANT_TRANSPARENT
+                                         : RESULT_LIGHT_VIBRANT_OPAQUE;
+          break;
+      }
+    } else {
+      switch (color_profiles[i].luma) {
+        case LumaRange::DARK:
+          result = is_result_transparent ? RESULT_DARK_MUTED_TRANSPARENT
+                                         : RESULT_DARK_MUTED_OPAQUE;
+          break;
+        case LumaRange::NORMAL:
+          result = is_result_transparent ? RESULT_NORMAL_MUTED_TRANSPARENT
+                                         : RESULT_NORMAL_MUTED_OPAQUE;
+          break;
+        case LumaRange::LIGHT:
+          result = is_result_transparent ? RESULT_LIGHT_MUTED_TRANSPARENT
+                                         : RESULT_LIGHT_MUTED_OPAQUE;
+          break;
+      }
+    }
+  }
+  DCHECK_NE(NUM_COLOR_EXTRACTION_RESULTS, result);
+  UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.ColorExtractionResult2", result,
+                            NUM_COLOR_EXTRACTION_RESULTS);
 
-  return prominent_color;
+  return prominent_colors;
 }
 
 bool ShouldCalculateSync(const gfx::ImageSkia& image) {
@@ -51,16 +94,17 @@ bool ShouldCalculateSync(const gfx::ImageSkia& image) {
 
 WallpaperColorCalculator::WallpaperColorCalculator(
     const gfx::ImageSkia& image,
-    color_utils::LumaRange luma,
-    color_utils::SaturationRange saturation,
+    const std::vector<color_utils::ColorProfile>& color_profiles,
     scoped_refptr<base::TaskRunner> task_runner)
     : image_(image),
-      luma_(luma),
-      saturation_(saturation),
+      color_profiles_(color_profiles),
       task_runner_(std::move(task_runner)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  prominent_colors_ =
+      std::vector<SkColor>(color_profiles_.size(), SK_ColorTRANSPARENT);
+}
 
-WallpaperColorCalculator::~WallpaperColorCalculator() {}
+WallpaperColorCalculator::~WallpaperColorCalculator() = default;
 
 void WallpaperColorCalculator::AddObserver(
     WallpaperColorCalculatorObserver* observer) {
@@ -74,25 +118,26 @@ void WallpaperColorCalculator::RemoveObserver(
 
 bool WallpaperColorCalculator::StartCalculation() {
   if (ShouldCalculateSync(image_)) {
-    const SkColor prominent_color =
-        CalculateWallpaperColor(image_, luma_, saturation_);
-    NotifyCalculationComplete(prominent_color);
+    const std::vector<SkColor> prominent_colors =
+        CalculateWallpaperColor(image_, color_profiles_);
+    NotifyCalculationComplete(prominent_colors);
     return true;
   }
 
   image_.MakeThreadSafe();
   if (base::PostTaskAndReplyWithResult(
           task_runner_.get(), FROM_HERE,
-          base::Bind(&CalculateWallpaperColor, image_, luma_, saturation_),
+          base::Bind(&CalculateWallpaperColor, image_, color_profiles_),
           base::Bind(&WallpaperColorCalculator::OnAsyncCalculationComplete,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()))) {
     return true;
   }
 
   LOG(WARNING) << "PostSequencedWorkerTask failed. "
-               << "Wallpaper promiment color may not be calculated.";
+               << "Wallpaper prominent colors may not be calculated.";
 
-  prominent_color_ = SK_ColorTRANSPARENT;
+  prominent_colors_ =
+      std::vector<SkColor>(color_profiles_.size(), SK_ColorTRANSPARENT);
   return false;
 }
 
@@ -103,15 +148,15 @@ void WallpaperColorCalculator::SetTaskRunnerForTest(
 
 void WallpaperColorCalculator::OnAsyncCalculationComplete(
     base::TimeTicks async_start_time,
-    SkColor prominent_color) {
+    const std::vector<SkColor>& prominent_colors) {
   UMA_HISTOGRAM_TIMES("Ash.Wallpaper.ColorExtraction.UserDelay",
                       base::TimeTicks::Now() - async_start_time);
-  NotifyCalculationComplete(prominent_color);
+  NotifyCalculationComplete(prominent_colors);
 }
 
 void WallpaperColorCalculator::NotifyCalculationComplete(
-    SkColor prominent_color) {
-  prominent_color_ = prominent_color;
+    const std::vector<SkColor>& prominent_colors) {
+  prominent_colors_ = prominent_colors;
   for (auto& observer : observers_)
     observer.OnColorCalculationComplete();
 

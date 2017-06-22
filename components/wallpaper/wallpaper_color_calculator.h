@@ -12,11 +12,14 @@
 #include "base/time/time.h"
 #include "components/wallpaper/wallpaper_export.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
 class TaskRunner;
+}
+
+namespace color_utils {
+struct ColorProfile;
 }
 
 namespace wallpaper {
@@ -25,12 +28,12 @@ class WallpaperColorCalculatorObserver;
 // Calculates colors based on a wallpaper image.
 class WALLPAPER_EXPORT WallpaperColorCalculator {
  public:
-  // |image|, |luma| and |saturation| are the input parameters to the color
-  // calculation that is executed on the |task_runner|.
-  WallpaperColorCalculator(const gfx::ImageSkia& image,
-                           color_utils::LumaRange luma,
-                           color_utils::SaturationRange saturation,
-                           scoped_refptr<base::TaskRunner> task_runner);
+  // |image|, |color_profiles| are the input parameters to the color calculation
+  // that is executed on the |task_runner|.
+  WallpaperColorCalculator(
+      const gfx::ImageSkia& image,
+      const std::vector<color_utils::ColorProfile>& color_profiles,
+      scoped_refptr<base::TaskRunner> task_runner);
   ~WallpaperColorCalculator();
 
   void AddObserver(WallpaperColorCalculatorObserver* observer);
@@ -42,10 +45,11 @@ class WALLPAPER_EXPORT WallpaperColorCalculator {
   // Callers should be aware that this will make |image_| read-only.
   bool StartCalculation() WARN_UNUSED_RESULT;
 
-  SkColor prominent_color() const { return prominent_color_; }
+  std::vector<SkColor> prominent_colors() const { return prominent_colors_; }
 
-  void set_prominent_color_for_test(SkColor prominent_color) {
-    prominent_color_ = prominent_color;
+  void set_prominent_colors_for_test(
+      const std::vector<SkColor>& prominent_colors) {
+    prominent_colors_ = prominent_colors;
   }
 
   // Explicitly sets the |task_runner_| for testing.
@@ -55,23 +59,20 @@ class WALLPAPER_EXPORT WallpaperColorCalculator {
   // Handles asynchronous calculation results. |async_start_time| is used to
   // record duration metrics.
   void OnAsyncCalculationComplete(base::TimeTicks async_start_time,
-                                  SkColor prominent_color);
+                                  const std::vector<SkColor>& prominent_colors);
 
   // Notifies observers that a color calulation has completed. Called on the
   // same thread that constructed |this|.
-  void NotifyCalculationComplete(SkColor prominent_color);
+  void NotifyCalculationComplete(const std::vector<SkColor>& prominent_colors);
 
   // The result of the color calculation.
-  SkColor prominent_color_ = SK_ColorTRANSPARENT;
+  std::vector<SkColor> prominent_colors_;
 
   // The image to calculate colors from.
   gfx::ImageSkia image_;
 
-  // Input for the color calculation.
-  color_utils::LumaRange luma_;
-
-  // Input for the color calculation.
-  color_utils::SaturationRange saturation_;
+  // The color profiles used to calculate colors.
+  std::vector<color_utils::ColorProfile> color_profiles_;
 
   // The task runner to run the calculation on.
   scoped_refptr<base::TaskRunner> task_runner_;

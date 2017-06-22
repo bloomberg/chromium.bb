@@ -20,11 +20,13 @@
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/compositor/compositor_lock.h"
-#include "ui/gfx/color_analysis.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace base {
 class SequencedTaskRunner;
+}
+
+namespace color_utils {
+struct ColorProfile;
 }
 
 namespace wallpaper {
@@ -39,7 +41,7 @@ class WallpaperControllerObserver;
 // Controls the desktop background wallpaper:
 //   - Sets a wallpaper image and layout;
 //   - Handles display change (add/remove display, configuration change etc);
-//   - Calculates prominent color for shelf;
+//   - Calculates prominent colors.
 //   - Move wallpaper to locked container(s) when session state is not ACTIVE to
 //     hide the user desktop and move it to unlocked container when session
 //     state is ACTIVE;
@@ -54,9 +56,9 @@ class ASH_EXPORT WallpaperController
  public:
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
-  // The value assigned to |prominent_color_| if extraction fails or the feature
-  // is disabled (e.g. command line, lock/login screens).
-  static constexpr SkColor kInvalidColor = SK_ColorTRANSPARENT;
+  // The value assigned if extraction fails or the feature is disabled (e.g.
+  // command line, lock/login screens).
+  static const SkColor kInvalidColor;
 
   WallpaperController();
   ~WallpaperController() override;
@@ -68,7 +70,8 @@ class ASH_EXPORT WallpaperController
   void AddObserver(WallpaperControllerObserver* observer);
   void RemoveObserver(WallpaperControllerObserver* observer);
 
-  SkColor prominent_color() const { return prominent_color_; }
+  // Returns the prominent color based on |color_profile|.
+  SkColor GetProminentColor(color_utils::ColorProfile color_profile) const;
 
   // Provides current image on the wallpaper, or empty gfx::ImageSkia if there
   // is no image, e.g. wallpaper is none.
@@ -152,10 +155,10 @@ class ASH_EXPORT WallpaperController
   // wallpaper cahce or not.
   void UpdateWallpaper(bool clear_cache);
 
-  // Sets |prominent_color_| and notifies the observers if there is a change.
-  void SetProminentColor(SkColor color);
+  // Sets |prominent_colors_| and notifies the observers if there is a change.
+  void SetProminentColors(const std::vector<SkColor>& prominent_colors);
 
-  // Calculates a prominent color based on the wallpaper image and notifies
+  // Calculates prominent colors based on the wallpaper image and notifies
   // |observers_| of the value, either synchronously or asynchronously. In some
   // cases the wallpaper image will not actually be processed (e.g. user isn't
   // logged in, feature isn't enabled).
@@ -197,9 +200,12 @@ class ASH_EXPORT WallpaperController
   // Asynchronous task to extract colors from the wallpaper.
   std::unique_ptr<wallpaper::WallpaperColorCalculator> color_calculator_;
 
-  // The prominent color extracted from the current wallpaper.
+  // The prominent colors extracted from the current wallpaper.
   // kInvalidColor is used by default or if extracting colors fails.
-  SkColor prominent_color_;
+  std::vector<SkColor> prominent_colors_;
+
+  // Caches the color profiles that need to do wallpaper color extracting.
+  const std::vector<color_utils::ColorProfile> color_profiles_;
 
   gfx::Size current_max_display_size_;
 

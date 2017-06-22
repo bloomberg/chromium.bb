@@ -14,7 +14,9 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/wallpaper/wallpaper_color_calculator_observer.h"
+#include "components/wallpaper/wallpaper_color_extraction_result.h"
 #include "skia/ext/platform_canvas.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -23,6 +25,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
+
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 
 namespace wallpaper {
 namespace {
@@ -59,9 +64,8 @@ class TestWallpaperColorCalculatorObserver
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperColorCalculatorObserver);
 };
 
-// Returns an image that will yield a color when processing it with
-// color_utils::CalculateProminentColorOfBitmap() using the LumaRange::NORMAL
-// and SaturationRange::VIBRANT values.
+// Returns an image that will yield a color using the LumaRange::NORMAL and
+// SaturationRange::VIBRANT values.
 gfx::ImageSkia CreateColorProducingImage(const gfx::Size& size) {
   gfx::Canvas canvas(size, 1.0f, true);
   canvas.DrawColor(kGray);
@@ -69,8 +73,8 @@ gfx::ImageSkia CreateColorProducingImage(const gfx::Size& size) {
   return gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap());
 }
 
-// Returns an image that will not yield a color when processing it with
-// color_utils::CalculateProminentColorOfBitmap().
+// Returns an image that will not yield a color using the LumaRange::NORMAL and
+// SaturationRange::VIBRANT values.
 gfx::ImageSkia CreateNonColorProducingImage(const gfx::Size& size) {
   gfx::Canvas canvas(size, 1.0f, true);
   canvas.DrawColor(kGray);
@@ -129,45 +133,50 @@ void WallPaperColorCalculatorTest::InstallTaskRunner(
 
 void WallPaperColorCalculatorTest::CreateCalculator(
     const gfx::ImageSkia& image) {
+  std::vector<color_utils::ColorProfile> color_profiles;
+  color_profiles.emplace_back(color_utils::LumaRange::NORMAL,
+                              color_utils::SaturationRange::VIBRANT);
   calculator_ = base::MakeUnique<WallpaperColorCalculator>(
-      image, color_utils::LumaRange::NORMAL,
-      color_utils::SaturationRange::VIBRANT, task_runner_);
+      image, color_profiles, task_runner_);
   calculator_->AddObserver(&observer_);
 }
 
 // Used to group the asynchronous calculation tests.
-typedef WallPaperColorCalculatorTest WallPaperColorCalculatorAsyncTest;
+using WallPaperColorCalculatorAsyncTest = WallPaperColorCalculatorTest;
 
 TEST_F(WallPaperColorCalculatorAsyncTest, MetricsForSuccessfulExtraction) {
-  histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtractionResult", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.Durations", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.UserDelay", 0);
+  EXPECT_THAT(histograms_.GetAllSamples("Ash.Wallpaper.ColorExtractionResult2"),
+              IsEmpty());
 
   EXPECT_TRUE(calculator_->StartCalculation());
   task_runner_->RunUntilIdle();
 
-  histograms_.ExpectUniqueSample("Ash.Wallpaper.ColorExtractionResult", true,
-                                 1);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.Durations", 1);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.UserDelay", 1);
+  EXPECT_THAT(histograms_.GetAllSamples("Ash.Wallpaper.ColorExtractionResult2"),
+              ElementsAre(base::Bucket(RESULT_NORMAL_VIBRANT_OPAQUE, 1)));
 }
 
 TEST_F(WallPaperColorCalculatorAsyncTest, MetricsWhenPostingTaskFails) {
   scoped_refptr<base::NullTaskRunner> task_runner = new base::NullTaskRunner();
   InstallTaskRunner(task_runner);
 
-  histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtractionResult", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.Durations", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.UserDelay", 0);
+  EXPECT_THAT(histograms_.GetAllSamples("Ash.Wallpaper.ColorExtractionResult2"),
+              IsEmpty());
 
   EXPECT_FALSE(calculator_->StartCalculation());
   task_runner_->RunUntilIdle();
 
-  histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtractionResult", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.Durations", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.UserDelay", 0);
+  EXPECT_THAT(histograms_.GetAllSamples("Ash.Wallpaper.ColorExtractionResult2"),
+              IsEmpty());
 
-  EXPECT_EQ(kDefaultColor, calculator_->prominent_color());
+  EXPECT_EQ(kDefaultColor, calculator_->prominent_colors()[0]);
 }
 
 TEST_F(WallPaperColorCalculatorAsyncTest,
@@ -182,13 +191,14 @@ TEST_F(WallPaperColorCalculatorAsyncTest,
 }
 
 TEST_F(WallPaperColorCalculatorAsyncTest, ColorUpdatedOnSuccessfulCalculation) {
-  calculator_->set_prominent_color_for_test(kDefaultColor);
+  std::vector<SkColor> colors = {kDefaultColor};
+  calculator_->set_prominent_colors_for_test(colors);
 
   EXPECT_TRUE(calculator_->StartCalculation());
-  EXPECT_EQ(kDefaultColor, calculator_->prominent_color());
+  EXPECT_EQ(kDefaultColor, calculator_->prominent_colors()[0]);
 
   task_runner_->RunUntilIdle();
-  EXPECT_NE(kDefaultColor, calculator_->prominent_color());
+  EXPECT_NE(kDefaultColor, calculator_->prominent_colors()[0]);
 }
 
 TEST_F(WallPaperColorCalculatorAsyncTest,
@@ -204,37 +214,39 @@ TEST_F(WallPaperColorCalculatorAsyncTest,
 }
 
 // Used to group the synchronous calculation tests.
-typedef WallPaperColorCalculatorTest WallPaperColorCalculatorSyncTest;
+using WallPaperColorCalculatorSyncTest = WallPaperColorCalculatorTest;
 
 TEST_F(WallPaperColorCalculatorSyncTest, MetricsForSuccessfulExtraction) {
   CreateCalculator(CreateColorProducingImage(kSyncImageSize));
   calculator_->SetTaskRunnerForTest(nullptr);
 
-  histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtractionResult", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.Durations", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.UserDelay", 0);
+  EXPECT_THAT(histograms_.GetAllSamples("Ash.Wallpaper.ColorExtractionResult2"),
+              IsEmpty());
 
   EXPECT_TRUE(calculator_->StartCalculation());
 
-  histograms_.ExpectUniqueSample("Ash.Wallpaper.ColorExtractionResult", true,
-                                 1);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.Durations", 1);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.UserDelay", 0);
+  EXPECT_THAT(histograms_.GetAllSamples("Ash.Wallpaper.ColorExtractionResult2"),
+              ElementsAre(base::Bucket(RESULT_NORMAL_VIBRANT_OPAQUE, 1)));
 }
 
 TEST_F(WallPaperColorCalculatorSyncTest, MetricsForFailedExctraction) {
   CreateCalculator(CreateNonColorProducingImage(kSyncImageSize));
 
-  histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtractionResult", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.Durations", 0);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.UserDelay", 0);
+  EXPECT_THAT(histograms_.GetAllSamples("Ash.Wallpaper.ColorExtractionResult2"),
+              IsEmpty());
 
   EXPECT_TRUE(calculator_->StartCalculation());
 
-  histograms_.ExpectUniqueSample("Ash.Wallpaper.ColorExtractionResult", false,
-                                 1);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.Durations", 1);
   histograms_.ExpectTotalCount("Ash.Wallpaper.ColorExtraction.UserDelay", 0);
+  EXPECT_THAT(histograms_.GetAllSamples("Ash.Wallpaper.ColorExtractionResult2"),
+              ElementsAre(base::Bucket(RESULT_NORMAL_VIBRANT_TRANSPARENT, 1)));
 }
 
 }  // namespace wallpaper

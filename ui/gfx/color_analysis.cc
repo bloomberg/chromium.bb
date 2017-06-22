@@ -349,6 +349,14 @@ bool IsInterestingColor(SkColor color) {
   return !(hsl.h >= 0.028f && hsl.h <= 0.10f && hsl.s <= 0.82f);
 }
 
+// Used to group lower_bound, upper_bound, goal HSL color together for prominent
+// color calculation.
+struct ColorBracket {
+  HSL lower_bound = {-1};
+  HSL upper_bound = {-1};
+  HSL goal = {-1};
+};
+
 // This algorithm is a port of Android's Palette API. Compare to package
 // android.support.v7.graphics and see that code for additional high-level
 // explanation of this algorithm. There are some minor differences:
@@ -356,10 +364,9 @@ bool IsInterestingColor(SkColor color) {
 //   different color profiles.
 //   * This code doesn't try to heuristically derive missing colors from
 //   existing colors.
-SkColor CalculateProminentColor(const SkBitmap& bitmap,
-                                const HSL& lower_bound,
-                                const HSL& upper_bound,
-                                const HSL& goal) {
+std::vector<SkColor> CalculateProminentColors(
+    const SkBitmap& bitmap,
+    const std::vector<ColorBracket>& color_brackets) {
   DCHECK(!bitmap.empty());
   DCHECK(!bitmap.isNull());
 
@@ -394,8 +401,9 @@ SkColor CalculateProminentColor(const SkBitmap& bitmap,
       interesting_colors.push_back(color);
   }
 
+  std::vector<SkColor> best_colors(color_brackets.size(), SK_ColorTRANSPARENT);
   if (interesting_colors.empty())
-    return SK_ColorTRANSPARENT;
+    return best_colors;
 
   // Group the colors into "boxes" and repeatedly split the most voluminous box.
   // We stop the process when a box can no longer be split (there's only one
@@ -430,29 +438,32 @@ SkColor CalculateProminentColor(const SkBitmap& bitmap,
     max_weight = std::max(max_weight, box_colors.back().weight);
   }
 
-  // Given these box average colors, find the best one for the desired color
+  // Given these box average colors, find the best one for each desired color
   // profile. "Best" in this case means the color which fits in the provided
   // bounds and comes closest to |goal|. It's possible that no color will fit in
   // the provided bounds, in which case we'll return an empty color.
-  double best_suitability = 0;
-  SkColor best_color = SK_ColorTRANSPARENT;
-  for (const auto& box_color : box_colors) {
-    HSL hsl;
-    SkColorToHSL(box_color.color, &hsl);
-    if (!IsWithinHSLRange(hsl, lower_bound, upper_bound))
-      continue;
+  for (size_t i = 0; i < color_brackets.size(); ++i) {
+    double best_suitability = 0;
+    for (const auto& box_color : box_colors) {
+      HSL hsl;
+      SkColorToHSL(box_color.color, &hsl);
+      if (!IsWithinHSLRange(hsl, color_brackets[i].lower_bound,
+                            color_brackets[i].upper_bound)) {
+        continue;
+      }
 
-    double suitability =
-        (1 - std::abs(hsl.s - goal.s)) * 3 +
-        (1 - std::abs(hsl.l - goal.l)) * 6.5 +
-        (box_color.weight / static_cast<float>(max_weight)) * 0.5;
-    if (suitability > best_suitability) {
-      best_suitability = suitability;
-      best_color = box_color.color;
+      double suitability =
+          (1 - std::abs(hsl.s - color_brackets[i].goal.s)) * 3 +
+          (1 - std::abs(hsl.l - color_brackets[i].goal.l)) * 6.5 +
+          (box_color.weight / static_cast<float>(max_weight)) * 0.5;
+      if (suitability > best_suitability) {
+        best_suitability = suitability;
+        best_colors[i] = box_color.color;
+      }
     }
   }
 
-  return best_color;
+  return best_colors;
 }
 
 } // namespace
@@ -723,55 +734,52 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
       bitmap, kDefaultLowerHSLBound, kDefaultUpperHSLBound, &sampler);
 }
 
-SkColor CalculateProminentColorOfBitmap(const SkBitmap& bitmap,
-                                        LumaRange luma,
-                                        SaturationRange saturation) {
+std::vector<SkColor> CalculateProminentColorsOfBitmap(
+    const SkBitmap& bitmap,
+    const std::vector<ColorProfile>& color_profiles) {
+  if (color_profiles.empty())
+    return std::vector<SkColor>();
+
+  size_t size = color_profiles.size();
   if (bitmap.empty() || bitmap.isNull())
-    return SK_ColorTRANSPARENT;
+    return std::vector<SkColor>(size, SK_ColorTRANSPARENT);
 
   // The hue is not relevant to our bounds or goal colors.
-  HSL lower_bound = {
-      -1,
-  };
-  HSL upper_bound = {
-      -1,
-  };
-  HSL goal = {
-      -1,
-  };
+  std::vector<ColorBracket> color_brackets(size);
+  for (size_t i = 0; i < size; ++i) {
+    switch (color_profiles[i].luma) {
+      case LumaRange::LIGHT:
+        color_brackets[i].lower_bound.l = 0.55f;
+        color_brackets[i].upper_bound.l = 1;
+        color_brackets[i].goal.l = 0.74f;
+        break;
+      case LumaRange::NORMAL:
+        color_brackets[i].lower_bound.l = 0.3f;
+        color_brackets[i].upper_bound.l = 0.7f;
+        color_brackets[i].goal.l = 0.5f;
+        break;
+      case LumaRange::DARK:
+        color_brackets[i].lower_bound.l = 0;
+        color_brackets[i].upper_bound.l = 0.45f;
+        color_brackets[i].goal.l = 0.26f;
+        break;
+    }
 
-  switch (luma) {
-    case LumaRange::LIGHT:
-      lower_bound.l = 0.55f;
-      upper_bound.l = 1;
-      goal.l = 0.74f;
-      break;
-    case LumaRange::NORMAL:
-      lower_bound.l = 0.3f;
-      upper_bound.l = 0.7f;
-      goal.l = 0.5f;
-      break;
-    case LumaRange::DARK:
-      lower_bound.l = 0;
-      upper_bound.l = 0.45f;
-      goal.l = 0.26f;
-      break;
+    switch (color_profiles[i].saturation) {
+      case SaturationRange::VIBRANT:
+        color_brackets[i].lower_bound.s = 0.35f;
+        color_brackets[i].upper_bound.s = 1;
+        color_brackets[i].goal.s = 1;
+        break;
+      case SaturationRange::MUTED:
+        color_brackets[i].lower_bound.s = 0;
+        color_brackets[i].upper_bound.s = 0.4f;
+        color_brackets[i].goal.s = 0.3f;
+        break;
+    }
   }
 
-  switch (saturation) {
-    case SaturationRange::VIBRANT:
-      lower_bound.s = 0.35f;
-      upper_bound.s = 1;
-      goal.s = 1;
-      break;
-    case SaturationRange::MUTED:
-      lower_bound.s = 0;
-      upper_bound.s = 0.4f;
-      goal.s = 0.3f;
-      break;
-  }
-
-  return CalculateProminentColor(bitmap, lower_bound, upper_bound, goal);
+  return CalculateProminentColors(bitmap, color_brackets);
 }
 
 gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {

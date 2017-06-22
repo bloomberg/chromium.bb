@@ -63,6 +63,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/gfx/color_analysis.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -444,9 +445,12 @@ void WallpaperManager::CalculateProminentColor(const gfx::ImageSkia& image) {
     color_calculator_.reset();
   }
 
+  // TODO(warx): this color fetching should go through ash::WallpaperController.
+  std::vector<color_utils::ColorProfile> color_profiles;
+  color_profiles.emplace_back(color_utils::LumaRange::DARK,
+                              color_utils::SaturationRange::MUTED);
   color_calculator_ = base::MakeUnique<wallpaper::WallpaperColorCalculator>(
-      image, color_utils::LumaRange::DARK, color_utils::SaturationRange::MUTED,
-      task_runner_);
+      image, color_profiles, task_runner_);
   color_calculator_->AddObserver(this);
   if (!color_calculator_->StartCalculation()) {
     color_calculator_->RemoveObserver(this);
@@ -944,7 +948,9 @@ void WallpaperManager::OnWindowDestroying(aura::Window* window) {
 }
 
 void WallpaperManager::OnColorCalculationComplete() {
-  SkColor color = color_calculator_->prominent_color();
+  size_t num_of_calculation = color_calculator_->prominent_colors().size();
+  DCHECK_EQ(1u, num_of_calculation);
+  SkColor color = color_calculator_->prominent_colors()[num_of_calculation];
   color_calculator_->RemoveObserver(this);
   color_calculator_.reset();
   if (prominent_color_ == color)
