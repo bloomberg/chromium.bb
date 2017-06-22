@@ -58,10 +58,9 @@ api::cookies::CookieStore CreateCookieStore(
 // Retrieves all cookies from the given cookie store corresponding to the given
 // URL. If the URL is empty, all cookies in the cookie store are retrieved.
 // This can only be called on the IO thread.
-void GetCookieListFromStore(
-    net::CookieStore* cookie_store,
-    const GURL& url,
-    const net::CookieMonster::GetCookieListCallback& callback);
+void GetCookieListFromStore(net::CookieStore* cookie_store,
+                            const GURL& url,
+                            net::CookieMonster::GetCookieListCallback callback);
 
 // Constructs a URL from a cookie's information for use in checking
 // a cookie against the extension's host permissions. The Secure

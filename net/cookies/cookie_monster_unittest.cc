@@ -59,9 +59,10 @@ class NewMockPersistentCookieStore
   MOCK_METHOD1(AddCookie, void(const CanonicalCookie& cc));
   MOCK_METHOD1(UpdateCookieAccessTime, void(const CanonicalCookie& cc));
   MOCK_METHOD1(DeleteCookie, void(const CanonicalCookie& cc));
-  virtual void Flush(const base::Closure& callback) {
+  virtual void Flush(base::OnceClosure callback) {
     if (!callback.is_null())
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    std::move(callback));
   }
   MOCK_METHOD0(SetForceKeepSessionState, void());
 
@@ -2455,10 +2456,10 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
   void DeleteCookie(const CanonicalCookie&) override {}
   void SetForceKeepSessionState() override {}
 
-  void Flush(const base::Closure& callback) override {
+  void Flush(base::OnceClosure callback) override {
     ++flush_count_;
     if (!callback.is_null())
-      callback.Run();
+      std::move(callback).Run();
   }
 
   int flush_count() { return flush_count_; }

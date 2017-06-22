@@ -58,7 +58,7 @@ class HEADLESS_EXPORT MockCookieStore : public net::CookieStore {
   void SetCookieWithOptionsAsync(const GURL& url,
                                  const std::string& cookie_line,
                                  const net::CookieOptions& options,
-                                 const SetCookiesCallback& callback) override;
+                                 SetCookiesCallback callback) override;
 
   void SetCookieWithDetailsAsync(const GURL& url,
                                  const std::string& name,
@@ -72,44 +72,43 @@ class HEADLESS_EXPORT MockCookieStore : public net::CookieStore {
                                  bool http_only,
                                  net::CookieSameSite same_site,
                                  net::CookiePriority priority,
-                                 const SetCookiesCallback& callback) override;
+                                 SetCookiesCallback callback) override;
 
   void SetCanonicalCookieAsync(std::unique_ptr<net::CanonicalCookie> cookie,
                                bool secure_source,
                                bool modify_http_only,
-                               const SetCookiesCallback& callback) override;
+                               SetCookiesCallback callback) override;
 
   void GetCookiesWithOptionsAsync(const GURL& url,
                                   const net::CookieOptions& options,
-                                  const GetCookiesCallback& callback) override;
+                                  GetCookiesCallback callback) override;
 
-  void GetCookieListWithOptionsAsync(
-      const GURL& url,
-      const net::CookieOptions& options,
-      const GetCookieListCallback& callback) override;
+  void GetCookieListWithOptionsAsync(const GURL& url,
+                                     const net::CookieOptions& options,
+                                     GetCookieListCallback callback) override;
 
-  void GetAllCookiesAsync(const GetCookieListCallback& callback) override;
+  void GetAllCookiesAsync(GetCookieListCallback callback) override;
 
   void DeleteCookieAsync(const GURL& url,
                          const std::string& cookie_name,
-                         const base::Closure& callback) override;
+                         base::OnceClosure callback) override;
 
   void DeleteCanonicalCookieAsync(const net::CanonicalCookie& cookie,
-                                  const DeleteCallback& callback) override;
+                                  DeleteCallback callback) override;
 
   void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
                                     const base::Time& delete_end,
-                                    const DeleteCallback& callback) override;
+                                    DeleteCallback callback) override;
 
   void DeleteAllCreatedBetweenWithPredicateAsync(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       const CookiePredicate& predicate,
-      const DeleteCallback& callback) override;
+      DeleteCallback callback) override;
 
-  void DeleteSessionCookiesAsync(const DeleteCallback&) override;
+  void DeleteSessionCookiesAsync(DeleteCallback) override;
 
-  void FlushStore(const base::Closure& callback) override;
+  void FlushStore(base::OnceClosure callback) override;
 
   void SetForceKeepSessionState() override;
 
@@ -125,7 +124,7 @@ class HEADLESS_EXPORT MockCookieStore : public net::CookieStore {
  private:
   void SendCookies(const GURL& url,
                    const net::CookieOptions& options,
-                   const GetCookieListCallback& callback);
+                   GetCookieListCallback callback);
 
   net::CookieList cookies_;
 

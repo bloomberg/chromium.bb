@@ -49,7 +49,7 @@ class CONTENT_EXPORT QuotaPolicyCookieStore
   void UpdateCookieAccessTime(const net::CanonicalCookie& cc) override;
   void DeleteCookie(const net::CanonicalCookie& cc) override;
   void SetForceKeepSessionState() override;
-  void Flush(const base::Closure& callback) override;
+  void Flush(base::OnceClosure callback) override;
 
  private:
   typedef std::map<net::SQLitePersistentCookieStore::CookieOrigin, size_t>

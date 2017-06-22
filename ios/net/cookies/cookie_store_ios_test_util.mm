@@ -84,7 +84,7 @@ void TestPersistentCookieStore::DeleteCookie(const net::CanonicalCookie& cc) {}
 
 void TestPersistentCookieStore::SetForceKeepSessionState() {}
 
-void TestPersistentCookieStore::Flush(const base::Closure& callback) {
+void TestPersistentCookieStore::Flush(base::OnceClosure callback) {
   flushed_ = true;
 }
 
