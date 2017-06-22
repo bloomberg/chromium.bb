@@ -4482,6 +4482,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     didCommitNavigation:(WKNavigation*)navigation {
   [self displayWebView];
 
+  bool navigationFinished = [_navigationStates stateForNavigation:navigation] ==
+                            web::WKNavigationState::FINISHED;
+
   // Record the navigation state.
   [_navigationStates setState:web::WKNavigationState::COMMITTED
                 forNavigation:navigation];
@@ -4573,10 +4576,21 @@ registerLoadRequestForURL:(const GURL&)requestURL
     UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
                           static_cast<bool>(cert));
   }
+
+  if (navigationFinished) {
+    // webView:didFinishNavigation: was called before
+    // webView:didCommitNavigation:, so remove the navigation now and signal
+    // that navigation was finished.
+    [_navigationStates removeNavigation:navigation];
+    [self didFinishNavigation:navigation];
+  }
 }
 
 - (void)webView:(WKWebView*)webView
     didFinishNavigation:(WKNavigation*)navigation {
+  bool navigationCommitted =
+      [_navigationStates stateForNavigation:navigation] ==
+      web::WKNavigationState::COMMITTED;
   [_navigationStates setState:web::WKNavigationState::FINISHED
                 forNavigation:navigation];
 
@@ -4587,7 +4601,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // appropriate time rather than invoking here.
   web::ExecuteJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
   [self didFinishNavigation:navigation];
-  [_navigationStates removeNavigation:navigation];
+
+  // Remove navigation only if it has been committed. Otherwise it will be
+  // removed in webView:didCommitNavigation: callback.
+  if (navigationCommitted) {
+    [_navigationStates removeNavigation:navigation];
+  }
 }
 
 - (void)webView:(WKWebView*)webView

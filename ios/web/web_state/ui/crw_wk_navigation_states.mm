@@ -122,12 +122,22 @@
         [[CRWWKNavigationsStateRecord alloc] initWithState:state
                                                      index:++_lastStateIndex];
   } else {
-    DCHECK(
-        record.state < state ||
-        (record.state == state && state == web::WKNavigationState::REDIRECTED));
+    DCHECK(record.state < state ||
+           // Redirect can be called multiple times.
+           (record.state == state &&
+            state == web::WKNavigationState::REDIRECTED) ||
+           // didFinishNavigation can be called before didCommitNvigation.
+           (record.state == web::WKNavigationState::FINISHED &&
+            state == web::WKNavigationState::COMMITTED));
     record.state = state;
   }
   [_records setObject:record forKey:key];
+}
+
+- (web::WKNavigationState)stateForNavigation:(WKNavigation*)navigation {
+  id key = [self keyForNavigation:navigation];
+  CRWWKNavigationsStateRecord* record = [_records objectForKey:key];
+  return record ? record.state : web::WKNavigationState::NONE;
 }
 
 - (void)removeNavigation:(WKNavigation*)navigation {

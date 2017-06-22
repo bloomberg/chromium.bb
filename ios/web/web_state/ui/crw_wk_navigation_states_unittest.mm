@@ -43,30 +43,41 @@ class CRWWKNavigationStatesTest : public PlatformTest {
 TEST_F(CRWWKNavigationStatesTest, RemovingNavigation) {
   // navigation_1 is the only navigation and it is the latest.
   [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
+  ASSERT_EQ(WKNavigationState::REQUESTED,
+            [states_ stateForNavigation:navigation1_]);
   ASSERT_EQ(navigation1_, [states_ lastAddedNavigation]);
   [states_ removeNavigation:navigation1_];
-  ASSERT_FALSE([states_ lastAddedNavigation]);
+  EXPECT_FALSE([states_ lastAddedNavigation]);
+  EXPECT_EQ(WKNavigationState::NONE, [states_ stateForNavigation:navigation1_]);
 }
 
 // Tests |lastAddedNavigation| method.
 TEST_F(CRWWKNavigationStatesTest, LastAddedNavigation) {
   // navigation_1 is the only navigation and it is the latest.
   [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
+  EXPECT_EQ(WKNavigationState::REQUESTED,
+            [states_ stateForNavigation:navigation1_]);
   EXPECT_EQ(navigation1_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
 
   // navigation_2 is added later and hence the latest.
   [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation2_];
+  EXPECT_EQ(WKNavigationState::REQUESTED,
+            [states_ stateForNavigation:navigation2_]);
   EXPECT_EQ(navigation2_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
 
   // Updating state for existing navigation does not make it the latest.
   [states_ setState:WKNavigationState::STARTED forNavigation:navigation1_];
+  EXPECT_EQ(WKNavigationState::STARTED,
+            [states_ stateForNavigation:navigation1_]);
   EXPECT_EQ(navigation2_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
 
   // navigation_2 is still the latest.
   [states_ setState:WKNavigationState::STARTED forNavigation:navigation2_];
+  EXPECT_EQ(WKNavigationState::STARTED,
+            [states_ stateForNavigation:navigation2_]);
   EXPECT_EQ(navigation2_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::STARTED, [states_ lastAddedNavigationState]);
 
@@ -122,11 +133,14 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
 TEST_F(CRWWKNavigationStatesTest, NullNavigation) {
   // navigation_1 is the only navigation and it is the latest.
   [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
+  EXPECT_EQ(WKNavigationState::REQUESTED,
+            [states_ stateForNavigation:navigation1_]);
   ASSERT_EQ(navigation1_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
 
   // null navigation is added later and hence the latest.
   [states_ setState:WKNavigationState::STARTED forNavigation:nil];
+  EXPECT_EQ(WKNavigationState::STARTED, [states_ stateForNavigation:nil]);
   EXPECT_FALSE([states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::STARTED, [states_ lastAddedNavigationState]);
 
@@ -142,17 +156,23 @@ TEST_F(CRWWKNavigationStatesTest, PendingNavigations) {
 
   // Add pending navigation_1.
   [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
+  ASSERT_EQ(WKNavigationState::REQUESTED,
+            [states_ stateForNavigation:navigation1_]);
   ASSERT_EQ(1U, [states_ pendingNavigations].count);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation1_]);
 
   // Add pending navigation_2.
   [states_ setState:WKNavigationState::STARTED forNavigation:navigation2_];
+  ASSERT_EQ(WKNavigationState::STARTED,
+            [states_ stateForNavigation:navigation2_]);
   ASSERT_EQ(2U, [states_ pendingNavigations].count);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation1_]);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
 
   // Add pending navigation_3.
   [states_ setState:WKNavigationState::STARTED forNavigation:navigation3_];
+  ASSERT_EQ(WKNavigationState::STARTED,
+            [states_ stateForNavigation:navigation3_]);
   ASSERT_EQ(3U, [states_ pendingNavigations].count);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation1_]);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
@@ -160,6 +180,7 @@ TEST_F(CRWWKNavigationStatesTest, PendingNavigations) {
 
   // Add pending null navigation.
   [states_ setState:WKNavigationState::STARTED forNavigation:nil];
+  ASSERT_EQ(WKNavigationState::STARTED, [states_ stateForNavigation:nil]);
   ASSERT_EQ(4U, [states_ pendingNavigations].count);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation1_]);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
@@ -168,6 +189,8 @@ TEST_F(CRWWKNavigationStatesTest, PendingNavigations) {
 
   // Provisionally fail null navigation.
   [states_ setState:WKNavigationState::PROVISIONALY_FAILED forNavigation:nil];
+  ASSERT_EQ(WKNavigationState::PROVISIONALY_FAILED,
+            [states_ stateForNavigation:nil]);
   ASSERT_EQ(3U, [states_ pendingNavigations].count);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
@@ -175,12 +198,16 @@ TEST_F(CRWWKNavigationStatesTest, PendingNavigations) {
 
   // Commit navigation_1.
   [states_ setState:WKNavigationState::COMMITTED forNavigation:navigation1_];
+  ASSERT_EQ(WKNavigationState::COMMITTED,
+            [states_ stateForNavigation:navigation1_]);
   ASSERT_EQ(2U, [states_ pendingNavigations].count);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
 
   // Finish navigation_1.
   [states_ setState:WKNavigationState::FINISHED forNavigation:navigation1_];
+  ASSERT_EQ(WKNavigationState::FINISHED,
+            [states_ stateForNavigation:navigation1_]);
   ASSERT_EQ(2U, [states_ pendingNavigations].count);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
@@ -192,6 +219,8 @@ TEST_F(CRWWKNavigationStatesTest, PendingNavigations) {
 
   // Fail navigation_3.
   [states_ setState:WKNavigationState::FAILED forNavigation:navigation3_];
+  ASSERT_EQ(WKNavigationState::FAILED,
+            [states_ stateForNavigation:navigation3_]);
   ASSERT_EQ(0U, [states_ pendingNavigations].count);
 }
 

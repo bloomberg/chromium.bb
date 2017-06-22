@@ -56,6 +56,9 @@ enum class WKNavigationState : int {
 - (void)setState:(web::WKNavigationState)state
     forNavigation:(WKNavigation*)navigation;
 
+// Returns state for a given |navigation| or NONE if navigation does not exist.
+- (web::WKNavigationState)stateForNavigation:(WKNavigation*)navigation;
+
 // Removes given |navigation|. Fails if |navigation| does not exist.
 // |navigation| can be null.
 - (void)removeNavigation:(WKNavigation*)navigation;
