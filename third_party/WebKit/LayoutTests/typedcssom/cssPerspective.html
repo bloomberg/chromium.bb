@@ -11,18 +11,27 @@ test(() => {
   assert_throws(new TypeError(), () => { new CSSPerspective(angleValue) });
 }, "Constructor should throw an error for invalid CSSUnitValues");
 
-test(function() {
-  var simpleLength = new CSSUnitValue(10, 'percent');
-  assert_throws(new TypeError(), function() { new CSSPerspective(simpleLength) });
-}, "Constructor should throw an error for CSSUnitValues with a percentage type");
+test(() => {
+  let perspective = new CSSPerspective(new CSSUnitValue(1, 'px'));
+  assert_equals(perspective.length.value, 1);
+  assert_equals(perspective.length.unit, 'px');
 
-test(function() {
-  var perspectiveTransformSimple = new CSSPerspective(
-      new CSSUnitValue(10, 'px'));
-  assert_equals(perspectiveTransformSimple.toString(), 'perspective(10px)');
-}, "toString should return perspective(<CSSUnitValue.cssString()>)");
+  perspective.length = new CSSUnitValue(2, 'in');
+  assert_equals(perspective.length.value, 2);
+  assert_equals(perspective.length.unit, 'in');
+}, "Setting length with valid values.");
+
+test(() => {
+  let perspective = new CSSPerspective(new CSSUnitValue(1, 'px'));
+  let percentUnit = new CSSUnitValue(2, 'percent');
+  assert_throws(new TypeError(), () => { perspective.length = percentUnit; })
+}, "Setting length with invalid values.");
+
+test(() => {
+  let perspective = new CSSPerspective(new CSSUnitValue(10, 'px'));
+
+  assert_equals(perspective.toString(), 'perspective(10px)');
+}, "toString should return perspective(<CSSNumericValue.cssString()>)");
 
 </script>
 
-<body>
-</body>

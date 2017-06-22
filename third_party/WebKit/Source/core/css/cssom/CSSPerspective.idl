@@ -11,5 +11,5 @@
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
 ] interface CSSPerspective : CSSTransformComponent {
-    readonly attribute CSSNumericValue length;
+    [RaisesException=Setter] attribute CSSNumericValue length;
 };

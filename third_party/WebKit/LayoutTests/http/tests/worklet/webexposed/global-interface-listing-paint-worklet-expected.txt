@@ -24,6 +24,7 @@ CONSOLE MESSAGE: line 147:     method to
 CONSOLE MESSAGE: line 147: interface CSSPerspective : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter length
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter length
 CONSOLE MESSAGE: line 147: interface CSSPositionValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter x
 CONSOLE MESSAGE: line 147:     getter y

@@ -683,6 +683,7 @@ interface CSSPerspective : CSSTransformComponent
     attribute @@toStringTag
     getter length
     method constructor
+    setter length
 interface CSSPositionValue : CSSStyleValue
     attribute @@toStringTag
     getter x
