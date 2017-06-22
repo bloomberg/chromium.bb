@@ -216,6 +216,10 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
       std::move(info->client_request),
       ChildThreadImpl::current()->thread_safe_sender());
 
+  if (info->script_loader_factory_ptr_info.is_valid())
+    script_loader_factory_.Bind(
+        std::move(info->script_loader_factory_ptr_info));
+
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           ChildThreadImpl::current()->thread_safe_sender(),

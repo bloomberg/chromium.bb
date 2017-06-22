@@ -20,6 +20,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 
 class GURL;
 
@@ -54,6 +55,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       int render_process_id,
       ResourceContext* resource_context);
 
+  // |blob_storage_context| and |loader_factory_getter| are used only
+  // if IsServicificationEnabled is true.
   void Init(ServiceWorkerContextWrapper* context_wrapper);
 
   // BrowserMessageFilter implementation

@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "net/base/url_util.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
@@ -148,7 +149,9 @@ ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
 void ServiceWorkerContextWrapper::Init(
     const base::FilePath& user_data_directory,
     storage::QuotaManagerProxy* quota_manager_proxy,
-    storage::SpecialStoragePolicy* special_storage_policy) {
+    storage::SpecialStoragePolicy* special_storage_policy,
+    ChromeBlobStorageContext* blob_context,
+    URLLoaderFactoryGetter* loader_factory_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   is_incognito_ = user_data_directory.empty();
@@ -158,7 +161,8 @@ void ServiceWorkerContextWrapper::Init(
   scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE);
   InitInternal(user_data_directory, std::move(database_task_manager),
-               disk_cache_thread, quota_manager_proxy, special_storage_policy);
+               disk_cache_thread, quota_manager_proxy, special_storage_policy,
+               blob_context, loader_factory_getter);
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
@@ -789,14 +793,18 @@ void ServiceWorkerContextWrapper::InitInternal(
     std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
-    storage::SpecialStoragePolicy* special_storage_policy) {
+    storage::SpecialStoragePolicy* special_storage_policy,
+    ChromeBlobStorageContext* blob_context,
+    URLLoaderFactoryGetter* loader_factory_getter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ServiceWorkerContextWrapper::InitInternal, this,
                    user_data_directory, base::Passed(&database_task_manager),
                    disk_cache_thread, base::RetainedRef(quota_manager_proxy),
-                   base::RetainedRef(special_storage_policy)));
+                   base::RetainedRef(special_storage_policy),
+                   base::RetainedRef(blob_context),
+                   base::RetainedRef(loader_factory_getter)));
     return;
   }
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
@@ -807,10 +815,15 @@ void ServiceWorkerContextWrapper::InitInternal(
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
   }
+
+  base::WeakPtr<storage::BlobStorageContext> blob_storage_context =
+      blob_context && blob_context->context()
+          ? blob_context->context()->AsWeakPtr()
+          : nullptr;
   context_core_.reset(new ServiceWorkerContextCore(
       user_data_directory, std::move(database_task_manager), disk_cache_thread,
-      quota_manager_proxy, special_storage_policy, core_observer_list_.get(),
-      this));
+      quota_manager_proxy, special_storage_policy, blob_storage_context,
+      loader_factory_getter, core_observer_list_.get(), this));
 }
 
 void ServiceWorkerContextWrapper::ShutdownOnIO() {

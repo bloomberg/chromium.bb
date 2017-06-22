@@ -30,6 +30,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 
 namespace storage {
 class BlobStorageContext;

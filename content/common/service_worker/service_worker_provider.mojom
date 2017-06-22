@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/service_worker/service_worker_provider_interfaces.mojom";
 import "content/common/service_worker/service_worker_types.mojom";
+import "content/common/url_loader_factory.mojom";
 
 // A container object carried from the browser to the renderer process.
 // This contains the params for the constructor of ServiceWorkerNetworkProvider
@@ -19,6 +20,7 @@ struct ServiceWorkerProviderInfoForStartWorker {
 
   associated ServiceWorkerProviderHost host_ptr_info;
   associated ServiceWorkerProvider& client_request;
+  associated URLLoaderFactory? script_loader_factory_ptr_info;
 };
 
 // A container object carried from the renderer to the browser process.

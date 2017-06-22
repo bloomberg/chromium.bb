@@ -100,6 +100,8 @@ class WebServiceWorkerNetworkProviderImpl
     // Service workers are only available in secure contexts, so all requests
     // are initiated in a secure context.
     extra_data->set_initiated_in_secure_context(true);
+    extra_data->set_url_loader_factory_override(
+        provider_->script_loader_factory());
     request.SetExtraData(extra_data.release());
   }
 

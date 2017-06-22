@@ -182,9 +182,7 @@ void ServiceWorkerURLLoaderJob::SaveResponseHeaders(
 void ServiceWorkerURLLoaderJob::CommitResponseHeaders() {
   DCHECK_EQ(Status::kStarted, status_);
   status_ = Status::kSentHeader;
-  url_loader_client_->OnReceiveResponse(
-      response_head_, base::nullopt /* TODO(scottmg): ssl info */,
-      mojom::DownloadedTempFilePtr());
+  url_loader_client_->OnReceiveResponse(response_head_, ssl_info_, nullptr);
 }
 
 void ServiceWorkerURLLoaderJob::CommitCompleted(int error_code) {
@@ -246,6 +244,15 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
     DeliverErrorResponse();
     return;
   }
+
+  // Creates a new HttpResponseInfo using the the ServiceWorker script's
+  // HttpResponseInfo to show HTTPS padlock.
+  // TODO(horo): When we support mixed-content (HTTP) no-cors requests from a
+  // ServiceWorker, we have to check the security level of the responses.
+  const net::HttpResponseInfo* main_script_http_info =
+      version->GetMainScriptHttpResponseInfo();
+  DCHECK(main_script_http_info);
+  ssl_info_ = main_script_http_info->ssl_info;
 
   std::move(loader_callback_)
       .Run(base::Bind(&ServiceWorkerURLLoaderJob::StartResponse,
