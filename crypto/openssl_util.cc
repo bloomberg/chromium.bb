@@ -9,10 +9,13 @@
 
 #include <string>
 
+#include "base/feature_list.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace crypto {
 
@@ -32,11 +35,30 @@ int OpenSSLErrorCallback(const char* str, size_t len, void* context) {
   return 1;
 }
 
+// TODO(davidben): Remove this after Chrome 61 is released to
+// stable. https://crbug.com/735616.
+const base::Feature kBuggyRSAParser{
+    "BuggyRSAParser", base::FEATURE_DISABLED_BY_DEFAULT,
+};
+
+class BuggyRSAParser {
+ public:
+  BuggyRSAParser() {
+    EVP_set_buggy_rsa_parser(base::FeatureList::IsEnabled(kBuggyRSAParser));
+  }
+};
+
+base::LazyInstance<BuggyRSAParser>::Leaky g_buggy_rsa_parser =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 void EnsureOpenSSLInit() {
   // CRYPTO_library_init may be safely called concurrently.
   CRYPTO_library_init();
+
+  // Configure the RSA parser.
+  g_buggy_rsa_parser.Get();
 }
 
 void ClearOpenSSLERRStack(const tracked_objects::Location& location) {
