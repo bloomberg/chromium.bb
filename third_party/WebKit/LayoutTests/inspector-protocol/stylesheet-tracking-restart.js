@@ -18,7 +18,7 @@
   await runTest(session);
   testRunner.log('Closing inspector.');
   testRunner.log('\nRemoving style sheet.\n');
-  session.evaluate('setTimeout(() => document.head.removeChild(styleElement1), 0)');
+  session.evaluate('setTimeout(() => { document.head.removeChild(styleElement1); document.body.offsetWidth; }, 0)');
   await session.disconnect();
   testRunner.log('Reopening inspector.');
   session = await page.createSession();

@@ -1,12 +1,4 @@
-Non-hidden div for comparison
-non-hidden treeitem
-hidden non-treeitem
- Buttons are leaf nodes
-Descendant of aria-hidden node
-List item also presentational
-Div in list isn't presentational
-Content within label refers to label container       inert button
-button in inert subtree
+
 
 WebArea
   tree
@@ -189,7 +181,6 @@ WebArea
   checkbox "Content within label refers to label container"
   GenericContainer
   combobox
-  GenericContainer
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -377,7 +368,6 @@ WebArea
   GenericContainer
   *combobox
     MenuListPopup
-  GenericContainer
 {
   "nodeId": "<string>",
   "ignored": false,

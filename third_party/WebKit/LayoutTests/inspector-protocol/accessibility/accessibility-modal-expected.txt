@@ -1,4 +1,4 @@
-Open Dialog
+
 {
   "nodeId": "<string>",
   "ignored": false,
