@@ -23,7 +23,6 @@ interface GpuService {
   // If no channel can be identified, do nothing.
   CloseChannel(int32 client_id);
 
-  [Sync]
   CreateGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,
                         gfx.mojom.Size size,
                         gfx.mojom.BufferFormat format,
