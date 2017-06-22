@@ -179,63 +179,54 @@
       <arg name="height" type="int" summary="height of anchor rectangle"/>
     </request>
 
-    <enum name="anchor" bitfield="true">
-      <entry name="none" value="0"
-	     summary="the center of the anchor rectangle"/>
-      <entry name="top" value="1"
-	     summary="the top edge of the anchor rectangle"/>
-      <entry name="bottom" value="2"
-	     summary="the bottom edge of the anchor rectangle"/>
-      <entry name="left" value="4"
-	     summary="the left edge of the anchor rectangle"/>
-      <entry name="right" value="8"
-	     summary="the right edge of the anchor rectangle"/>
+    <enum name="anchor">
+      <entry name="none" value="0"/>
+      <entry name="top" value="1"/>
+      <entry name="bottom" value="2"/>
+      <entry name="left" value="3"/>
+      <entry name="right" value="4"/>
+      <entry name="top_left" value="5"/>
+      <entry name="bottom_left" value="6"/>
+      <entry name="top_right" value="7"/>
+      <entry name="bottom_right" value="8"/>
     </enum>
 
     <request name="set_anchor">
-      <description summary="set anchor rectangle anchor edges">
-	Defines a set of edges for the anchor rectangle. These are used to
-	derive an anchor point that the child surface will be positioned
-	relative to. If two orthogonal edges are specified (e.g. 'top' and
-	'left'), then the anchor point will be the intersection of the edges
-	(e.g. the top left position of the rectangle); otherwise, the derived
-	anchor point will be centered on the specified edge, or in the center of
-	the anchor rectangle if no edge is specified.
-
-	If two parallel anchor edges are specified (e.g. 'left' and 'right'),
-	the invalid_input error is raised.
+      <description summary="set anchor rectangle anchor">
+	Defines the anchor point for the anchor rectangle. The specified anchor
+	is used derive an anchor point that the child surface will be
+	positioned relative to. If a corner anchor is set (e.g. 'top_left' or
+	'bottom_right'), the anchor point will be at the specified corner;
+	otherwise, the derived anchor point will be centered on the specified
+	edge, or in the center of the anchor rectangle if no edge is specified.
       </description>
       <arg name="anchor" type="uint" enum="anchor"
-	   summary="bit mask of anchor edges"/>
+	   summary="anchor"/>
     </request>
 
-    <enum name="gravity" bitfield="true">
-      <entry name="none" value="0"
-	     summary="center over the anchor edge"/>
-      <entry name="top" value="1"
-	     summary="position above the anchor edge"/>
-      <entry name="bottom" value="2"
-	     summary="position below the anchor edge"/>
-      <entry name="left" value="4"
-	     summary="position to the left of the anchor edge"/>
-      <entry name="right" value="8"
-	     summary="position to the right of the anchor edge"/>
+    <enum name="gravity">
+      <entry name="none" value="0"/>
+      <entry name="top" value="1"/>
+      <entry name="bottom" value="2"/>
+      <entry name="left" value="3"/>
+      <entry name="right" value="4"/>
+      <entry name="top_left" value="5"/>
+      <entry name="bottom_left" value="6"/>
+      <entry name="top_right" value="7"/>
+      <entry name="bottom_right" value="8"/>
     </enum>
 
     <request name="set_gravity">
       <description summary="set child surface gravity">
 	Defines in what direction a surface should be positioned, relative to
-	the anchor point of the parent surface. If two orthogonal gravities are
-	specified (e.g. 'bottom' and 'right'), then the child surface will be
-	placed in the specified direction; otherwise, the child surface will be
-	centered over the anchor point on any axis that had no gravity
-	specified.
-
-	If two parallel gravities are specified (e.g. 'left' and 'right'), the
-	invalid_input error is raised.
+	the anchor point of the parent surface. If a corner gravity is
+	specified (e.g. 'bottom_right' or 'top_left'), then the child surface
+	will be placed towards the specified gravity; otherwise, the child
+	surface will be centered over the anchor point on any axis that had no
+	gravity specified.
       </description>
       <arg name="gravity" type="uint" enum="gravity"
-	   summary="bit mask of gravity directions"/>
+	   summary="gravity direction"/>
     </request>
 
     <enum name="constraint_adjustment" bitfield="true">
