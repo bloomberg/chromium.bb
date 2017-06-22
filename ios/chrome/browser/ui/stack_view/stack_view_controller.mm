@@ -2076,7 +2076,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
     if (_activeCardSet.tabModel.isOffTheRecord) {
       UMA_HISTOGRAM_TIMES(
-          "Toolbar.TabSwitcher.NewIncognitoTabPresentationDurationn",
+          "Toolbar.TabSwitcher.NewIncognitoTabPresentationDuration",
           base::TimeDelta::FromSecondsD(duration));
     } else {
       UMA_HISTOGRAM_TIMES("Toolbar.TabSwitcher.NewTabPresentationDuration",

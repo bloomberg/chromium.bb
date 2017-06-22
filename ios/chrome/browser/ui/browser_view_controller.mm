@@ -1638,6 +1638,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
           if (self.foregroundTabWasAddedCompletionBlock) {
             self.foregroundTabWasAddedCompletionBlock();
+            self.foregroundTabWasAddedCompletionBlock = nil;
           }
         });
   } else {
@@ -1676,10 +1677,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
             [topTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
           startVoiceSearchIfNecessaryBlock();
         });
+    // Reset the foreground tab completion block so that it can never be
+    // called more than once regardless of foreground/background tab
+    // appearances.
+    self.foregroundTabWasAddedCompletionBlock = nil;
   }
-  // Reset the foreground tab completion block so that it can never be
-  // called more than once regardless of foreground/background tab appearances.
-  self.foregroundTabWasAddedCompletionBlock = nil;
 }
 
 #pragma mark - UI Configuration and Layout
