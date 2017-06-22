@@ -537,49 +537,6 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
   if (ComputedStyleBase::DiffNeedsFullLayoutAndPaintInvalidation(*this, other))
     return true;
 
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->grid_data_.Get() !=
-            other.rare_non_inherited_data_->grid_data_.Get() &&
-        *rare_non_inherited_data_->grid_data_.Get() !=
-            *other.rare_non_inherited_data_->grid_data_.Get())
-      return true;
-
-    if (rare_non_inherited_data_->grid_item_data_.Get() !=
-            other.rare_non_inherited_data_->grid_item_data_.Get() &&
-        *rare_non_inherited_data_->grid_item_data_.Get() !=
-            *other.rare_non_inherited_data_->grid_item_data_.Get())
-      return true;
-
-    if (rare_non_inherited_data_->deprecated_flexible_box_data_.Get() !=
-            other.rare_non_inherited_data_->deprecated_flexible_box_data_
-                .Get() &&
-        *rare_non_inherited_data_->deprecated_flexible_box_data_.Get() !=
-            *other.rare_non_inherited_data_->deprecated_flexible_box_data_
-                 .Get())
-      return true;
-
-    if (rare_non_inherited_data_->flexible_box_data_.Get() !=
-            other.rare_non_inherited_data_->flexible_box_data_.Get() &&
-        *rare_non_inherited_data_->flexible_box_data_.Get() !=
-            *other.rare_non_inherited_data_->flexible_box_data_.Get())
-      return true;
-
-    if (rare_non_inherited_data_->multi_col_data_.Get() !=
-            other.rare_non_inherited_data_->multi_col_data_.Get() &&
-        *rare_non_inherited_data_->multi_col_data_.Get() !=
-            *other.rare_non_inherited_data_->multi_col_data_.Get())
-      return true;
-
-    // If the counter directives change, trigger a relayout to re-calculate
-    // counter values and rebuild the counter node tree.
-    const CounterDirectiveMap* map_a =
-        rare_non_inherited_data_->counter_directives_.get();
-    const CounterDirectiveMap* map_b =
-        other.rare_non_inherited_data_->counter_directives_.get();
-    if (!(map_a == map_b || (map_a && map_b && *map_a == *map_b)))
-      return true;
-  }
-
   if (IsDisplayTableType(Display())) {
     if (ComputedStyleBase::
             DiffNeedsFullLayoutAndPaintInvalidationDisplayTableType(*this,
@@ -642,8 +599,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
        BackgroundColorInternal() != other.BackgroundColorInternal()))
     return true;
 
-  if (rare_non_inherited_data_->paint_images_) {
-    for (const auto& image : *rare_non_inherited_data_->paint_images_) {
+  if (PaintImagesInternal()) {
+    for (const auto& image : *PaintImagesInternal()) {
       if (DiffNeedsPaintInvalidationObjectForPaintImage(image, other))
         return true;
     }
@@ -700,18 +657,8 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   if (ComputedStyleBase::UpdatePropertySpecificDifferencesZIndex(*this, other))
     diff.SetZIndexChanged();
 
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    // It's possible for the old and new style transform data to be equivalent
-    // while hasTransform() differs, as it checks a number of conditions aside
-    // from just the matrix, including but not limited to animation state.
-    if (HasTransform() != other.HasTransform() ||
-        !TransformDataEquivalent(other) ||
-        rare_non_inherited_data_->perspective_ !=
-            other.rare_non_inherited_data_->perspective_ ||
-        rare_non_inherited_data_->perspective_origin_ !=
-            other.rare_non_inherited_data_->perspective_origin_)
-      diff.SetTransformChanged();
-  }
+  if (UpdatePropertySpecificDifferencesTransform(*this, other))
+    diff.SetTransformChanged();
 
   if (ComputedStyleBase::UpdatePropertySpecificDifferencesOpacity(*this, other))
     diff.SetOpacityChanged();
@@ -742,11 +689,10 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
 }
 
 void ComputedStyle::AddPaintImage(StyleImage* image) {
-  if (!rare_non_inherited_data_.Access()->paint_images_) {
-    rare_non_inherited_data_.Access()->paint_images_ =
-        WTF::MakeUnique<PaintImages>();
+  if (!MutablePaintImagesInternal()) {
+    SetPaintImagesInternal(WTF::MakeUnique<PaintImages>());
   }
-  rare_non_inherited_data_.Access()->paint_images_->push_back(image);
+  MutablePaintImagesInternal()->push_back(image);
 }
 
 void ComputedStyle::AddCursor(StyleImage* image,
@@ -840,20 +786,17 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
 }
 
 void ComputedStyle::AddCallbackSelector(const String& selector) {
-  if (!rare_non_inherited_data_->callback_selectors_.Contains(selector))
-    rare_non_inherited_data_.Access()->callback_selectors_.push_back(selector);
+  if (!CallbackSelectorsInternal().Contains(selector))
+    MutableCallbackSelectorsInternal().push_back(selector);
 }
 
 void ComputedStyle::SetContent(ContentData* content_data) {
-  SET_VAR(rare_non_inherited_data_, content_, content_data);
+  SetContentInternal(content_data);
 }
 
 bool ComputedStyle::HasWillChangeCompositingHint() const {
-  for (size_t i = 0; i < rare_non_inherited_data_->will_change_data_
-                             ->will_change_properties_.size();
-       ++i) {
-    switch (rare_non_inherited_data_->will_change_data_
-                ->will_change_properties_[i]) {
+  for (size_t i = 0; i < WillChangeProperties().size(); ++i) {
+    switch (WillChangeProperties()[i]) {
       case CSSPropertyOpacity:
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
@@ -870,8 +813,7 @@ bool ComputedStyle::HasWillChangeCompositingHint() const {
 }
 
 bool ComputedStyle::HasWillChangeTransformHint() const {
-  for (const auto& property :
-       rare_non_inherited_data_->will_change_data_->will_change_properties_) {
+  for (const auto& property : WillChangeProperties()) {
     switch (property) {
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
@@ -980,8 +922,7 @@ void ComputedStyle::ApplyTransform(
 }
 
 bool ComputedStyle::HasFilters() const {
-  return rare_non_inherited_data_->filter_.Get() &&
-         !rare_non_inherited_data_->filter_->operations_.IsEmpty();
+  return FilterInternal().Get() && !FilterInternal()->operations_.IsEmpty();
 }
 
 void ComputedStyle::ApplyMotionPathTransform(
@@ -1060,7 +1001,7 @@ bool ComputedStyle::TextShadowDataEquivalent(const ComputedStyle& other) const {
 }
 
 void ComputedStyle::SetBoxShadow(RefPtr<ShadowList> s) {
-  rare_non_inherited_data_.Access()->box_shadow_ = std::move(s);
+  SetBoxShadowInternal(std::move(s));
 }
 
 static FloatRoundedRect::Radii CalcRadiiFor(const LengthSize& top_left,
@@ -1179,12 +1120,12 @@ bool ComputedStyle::HasEntirelyFixedBackground() const {
 }
 
 const CounterDirectiveMap* ComputedStyle::GetCounterDirectives() const {
-  return rare_non_inherited_data_->counter_directives_.get();
+  return CounterDirectivesInternal().get();
 }
 
 CounterDirectiveMap& ComputedStyle::AccessCounterDirectives() {
   std::unique_ptr<CounterDirectiveMap>& map =
-      rare_non_inherited_data_.Access()->counter_directives_;
+      MutableCounterDirectivesInternal();
   if (!map)
     map = WTF::WrapUnique(new CounterDirectiveMap);
   return *map;
@@ -1365,16 +1306,15 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
 }
 
 CSSAnimationData& ComputedStyle::AccessAnimations() {
-  if (!rare_non_inherited_data_.Access()->animations_)
-    rare_non_inherited_data_.Access()->animations_ = CSSAnimationData::Create();
-  return *rare_non_inherited_data_->animations_;
+  if (!AnimationsInternal())
+    SetAnimationsInternal(CSSAnimationData::Create());
+  return *AnimationsInternal();
 }
 
 CSSTransitionData& ComputedStyle::AccessTransitions() {
-  if (!rare_non_inherited_data_.Access()->transitions_)
-    rare_non_inherited_data_.Access()->transitions_ =
-        CSSTransitionData::Create();
-  return *rare_non_inherited_data_->transitions_;
+  if (!TransitionsInternal())
+    SetTransitionsInternal(CSSTransitionData::Create());
+  return *TransitionsInternal();
 }
 
 const Font& ComputedStyle::GetFont() const {
@@ -1451,7 +1391,7 @@ StyleInheritedVariables* ComputedStyle::InheritedVariables() const {
 }
 
 StyleNonInheritedVariables* ComputedStyle::NonInheritedVariables() const {
-  return rare_non_inherited_data_->non_inherited_variables_.get();
+  return NonInheritedVariablesInternal().get();
 }
 
 StyleInheritedVariables& ComputedStyle::MutableInheritedVariables() {
@@ -1466,7 +1406,7 @@ StyleInheritedVariables& ComputedStyle::MutableInheritedVariables() {
 
 StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
   std::unique_ptr<StyleNonInheritedVariables>& variables =
-      rare_non_inherited_data_.Access()->non_inherited_variables_;
+      MutableNonInheritedVariablesInternal();
   if (!variables)
     variables = StyleNonInheritedVariables::Create();
   return *variables;
@@ -1767,8 +1707,16 @@ void ComputedStyle::RestoreParentTextDecorations(
 }
 
 void ComputedStyle::ClearMultiCol() {
-  rare_non_inherited_data_.Access()->multi_col_data_ = nullptr;
-  rare_non_inherited_data_.Access()->multi_col_data_.Init();
+  SetColumnGapInternal(InitialColumnGap());
+  SetColumnWidthInternal(InitialColumnWidth());
+  SetColumnRuleInternal(InitialColumnRule());
+  SetVisitedLinkColumnRuleColorInternal(InitialVisitedLinkColumnRuleColor());
+  SetColumnCountInternal(InitialColumnCount());
+  SetColumnAutoCountInternal(InitialColumnAutoCount());
+  SetColumnAutoWidthInternal(InitialColumnAutoWidth());
+  ResetColumnFill();
+  SetColumnNormalGapInternal(InitialColumnNormalGap());
+  ResetColumnSpan();
 }
 
 StyleColor ComputedStyle::DecorationColorIncludingFallback(
@@ -2053,8 +2001,7 @@ void ComputedStyle::SetMarginEnd(const Length& margin) {
 }
 
 void ComputedStyle::SetOffsetPath(RefPtr<BasicShape> path) {
-  rare_non_inherited_data_.Access()->transform_data_.Access()->offset_path_ =
-      std::move(path);
+  SetOffsetPathInternal(std::move(path));
 }
 
 int ComputedStyle::OutlineOutsetExtent() const {

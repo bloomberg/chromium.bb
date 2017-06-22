@@ -60,7 +60,22 @@
                 "list-style-image", "line-height-step", 
                 "-webkit-text-stroke-width", "line-height", "font", 
                 "-webkit-border-horizontal-spacing", 
-                "-webkit-border-vertical-spacing", "TextAutosizingMultiplier"],
+                "-webkit-border-vertical-spacing", "TextAutosizingMultiplier", 
+                "NamedGridColumnLines", "NamedGridRowLines", "OrderedNamedGridColumnLines", 
+                "OrderedNamedGridRowLines", "AutoRepeatNamedGridColumnLines", 
+                "AutoRepeatNamedGridRowLines", "AutoRepeatOrderedNamedGridColumnLines", 
+                "AutoRepeatOrderedNamedGridRowLines", "NamedGridArea", "grid-auto-rows", 
+                "grid-template-rows", "grid-template-columns", "grid-auto-columns", "grid-row-gap",
+                "grid-column-gap", "NamedGridAreaRowCount", "NamedGridAreaColumnCount", 
+                "GridAutoRepeatColumns", "GridAutoRepeatRows", "GridAutoRepeatColumnsInsertionPoint", 
+                "GridAutoRepeatRowsInsertionPoint", "grid-auto-flow", "GridAutoRepeatColumnsType", 
+                "GridAutoRepeatRowsType", "-webkit-box-flex", 
+                "-webkit-box-ordinal-group", "-webkit-box-flex-group", "flex-basis", 
+                "flex-shrink", "flex-grow", "flex-direction", "flex-wrap", "-webkit-box-align", 
+                "-webkit-box-pack", "-webkit-box-lines", "-webkit-box-orient",
+                "grid-row-start", "grid-row-end", "grid-column-start", "grid-column-end",
+                "column-gap", "column-width", "ColumnRule", "VisitedLinkColumnRuleColor", 
+                "column-count", "ColumnAutoCount", "ColumnAutoWidth", "column-fill", "ColumnNormalGap", "column-span",],
         methods_to_diff: [
           {
             method: "BorderLeftWidth()",
@@ -155,6 +170,10 @@
           {
             predicate: "a.OpacityChangedStackingContext(b)",
             field_dependencies: ["IsStackingContext", "opacity"]
+          },
+          {
+            predicate: "a.CounterDirectivesEqual(b)",
+            field_dependencies: ["CounterDirectives"]
           },
         ]
     },
@@ -299,6 +318,24 @@
           {
             method: "IsStackingContext()",
             field_dependencies: ["IsStackingContext"]
+          },
+        ]
+    },
+    {
+        name: "UpdatePropertySpecificDifferencesTransform",
+        fields_to_diff: ["TransformOperations", "translate", "rotate",
+                    "scale", "offset-path", "offset-rotate", "transform-origin",
+                     "offset-position", "offset-anchor", "offset-distance", 
+                     "perspective", "perspective-origin"],
+        methods_to_diff: [
+          {
+            // It's possible for the old and new style transform data to be equivalent
+            // while hasTransform() differs, as it checks a number of conditions aside
+            // from just the matrix, including but not limited to animation state.
+            method: "HasTransform()",
+            field_dependencies: ["TransformOperations", "offset-position", 
+                    "HasCurrentTransformAnimation", "translate", "rotate", 
+                    "scale"]
           },
         ]
     },
