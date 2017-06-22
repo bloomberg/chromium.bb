@@ -25,7 +25,9 @@ class UiInterface {
 
   virtual ~UiInterface() {}
 
-  virtual void SetWebVrMode(bool enabled, bool auto_presented) = 0;
+  virtual void SetWebVrMode(bool enabled,
+                            bool auto_presented,
+                            bool show_toast) = 0;
   virtual void SetURL(const GURL& url) = 0;
   virtual void SetFullscreen(bool enabled) = 0;
   virtual void SetSecurityInfo(security_state::SecurityLevel level,
