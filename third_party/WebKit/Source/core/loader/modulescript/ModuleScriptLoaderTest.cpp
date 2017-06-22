@@ -79,9 +79,12 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   }
 
   void SetModuleRequests(const Vector<String>& requests) {
-    requests_ = requests;
+    requests_.clear();
+    for (const String& request : requests) {
+      requests_.emplace_back(request, TextPosition::MinimumPosition());
+    }
   }
-  Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override {
+  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
     return requests_;
   }
 
@@ -90,7 +93,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
  private:
   RefPtr<ScriptState> script_state_;
   RefPtr<SecurityOrigin> security_origin_;
-  Vector<String> requests_;
+  Vector<ModuleRequest> requests_;
 };
 
 DEFINE_TRACE(ModuleScriptLoaderTestModulator) {

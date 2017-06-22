@@ -154,10 +154,19 @@ ScriptValue ModulatorImpl::GetError(const ModuleScript* module_script) {
                                               script_state_->GetIsolate()));
 }
 
-Vector<String> ModulatorImpl::ModuleRequestsFromScriptModule(
+Vector<Modulator::ModuleRequest> ModulatorImpl::ModuleRequestsFromScriptModule(
     ScriptModule script_module) {
   ScriptState::Scope scope(script_state_.Get());
-  return script_module.ModuleRequests(script_state_.Get());
+  Vector<String> specifiers = script_module.ModuleRequests(script_state_.Get());
+  Vector<TextPosition> positions =
+      script_module.ModuleRequestPositions(script_state_.Get());
+  DCHECK_EQ(specifiers.size(), positions.size());
+  Vector<ModuleRequest> requests;
+  requests.ReserveInitialCapacity(specifiers.size());
+  for (size_t i = 0; i < specifiers.size(); ++i) {
+    requests.emplace_back(specifiers[i], positions[i]);
+  }
+  return requests;
 }
 
 inline ExecutionContext* ModulatorImpl::GetExecutionContext() const {

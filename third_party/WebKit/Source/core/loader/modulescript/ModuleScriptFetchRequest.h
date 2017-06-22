@@ -39,7 +39,8 @@ class ModuleScriptFetchRequest final {
                                  nonce,
                                  parser_state,
                                  credentials_mode,
-                                 Referrer::NoReferrer()) {}
+                                 Referrer::NoReferrer(),
+                                 TextPosition::MinimumPosition()) {}
   ~ModuleScriptFetchRequest() = default;
 
   const KURL& Url() const { return url_; }
@@ -49,6 +50,7 @@ class ModuleScriptFetchRequest final {
     return credentials_mode_;
   }
   const AtomicString& GetReferrer() const { return referrer_; }
+  const TextPosition& GetReferrerPosition() const { return referrer_position_; }
 
  private:
   // Referrer is set only for internal module script fetch algorithms triggered
@@ -58,18 +60,21 @@ class ModuleScriptFetchRequest final {
                            const String& nonce,
                            ParserDisposition parser_state,
                            WebURLRequest::FetchCredentialsMode credentials_mode,
-                           const String& referrer)
+                           const String& referrer,
+                           const TextPosition& referrer_position)
       : url_(url),
         nonce_(nonce),
         parser_state_(parser_state),
         credentials_mode_(credentials_mode),
-        referrer_(referrer) {}
+        referrer_(referrer),
+        referrer_position_(referrer_position) {}
 
   const KURL url_;
   const String nonce_;
   const ParserDisposition parser_state_;
   const WebURLRequest::FetchCredentialsMode credentials_mode_;
   const AtomicString referrer_;
+  const TextPosition referrer_position_;
 };
 
 }  // namespace blink

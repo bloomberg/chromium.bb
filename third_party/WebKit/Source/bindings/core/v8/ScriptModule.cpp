@@ -133,6 +133,24 @@ Vector<String> ScriptModule::ModuleRequests(ScriptState* script_state) {
   return ret;
 }
 
+Vector<TextPosition> ScriptModule::ModuleRequestPositions(
+    ScriptState* script_state) {
+  if (IsNull())
+    return Vector<TextPosition>();
+  v8::Local<v8::Module> module = module_->NewLocal(script_state->GetIsolate());
+
+  Vector<TextPosition> ret;
+
+  int length = module->GetModuleRequestsLength();
+  ret.ReserveInitialCapacity(length);
+  for (int i = 0; i < length; ++i) {
+    v8::Location v8_loc = module->GetModuleRequestLocation(i);
+    ret.emplace_back(OrdinalNumber::FromZeroBasedInt(v8_loc.GetLineNumber()),
+                     OrdinalNumber::FromZeroBasedInt(v8_loc.GetColumnNumber()));
+  }
+  return ret;
+}
+
 v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> specifier,

@@ -63,14 +63,19 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   // Resolve last |Modulator::FetchSingle()| call.
   ModuleScript* ResolveSingleModuleScriptFetch(
       const KURL& url,
-      const Vector<String>& dependency_module_requests,
+      const Vector<String>& dependency_module_specifiers,
       ModuleInstantiationState state) {
     ScriptState::Scope scope(script_state_.Get());
 
     StringBuilder source_text;
-    for (const auto& request : dependency_module_requests) {
+    Vector<ModuleRequest> dependency_module_requests;
+    dependency_module_requests.ReserveInitialCapacity(
+        dependency_module_specifiers.size());
+    for (const auto& specifier : dependency_module_specifiers) {
+      dependency_module_requests.emplace_back(specifier,
+                                              TextPosition::MinimumPosition());
       source_text.Append("import '");
-      source_text.Append(request);
+      source_text.Append(specifier);
       source_text.Append("';\n");
     }
     source_text.Append("export default 'grapes';");
@@ -200,14 +205,14 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
                                                 script_state_->GetIsolate()));
   }
 
-  Vector<String> ModuleRequestsFromScriptModule(
+  Vector<ModuleRequest> ModuleRequestsFromScriptModule(
       ScriptModule script_module) override {
     if (script_module.IsNull())
-      return Vector<String>();
+      return Vector<ModuleRequest>();
 
     const auto& it = dependency_module_requests_map_.find(script_module);
     if (it == dependency_module_requests_map_.end())
-      return Vector<String>();
+      return Vector<ModuleRequest>();
 
     return it->value;
   }
@@ -215,7 +220,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   RefPtr<ScriptState> script_state_;
   KURL pending_request_url_;
   Member<SingleModuleClient> pending_client_;
-  HashMap<ScriptModule, Vector<String>> dependency_module_requests_map_;
+  HashMap<ScriptModule, Vector<ModuleRequest>> dependency_module_requests_map_;
   HeapHashMap<KURL, Member<ModuleScript>> module_map_;
   HeapHashMap<KURL, Member<ModuleTreeClient>> pending_tree_client_map_;
   HashMap<KURL, AncestorList> pending_tree_ancestor_list_;

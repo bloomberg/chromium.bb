@@ -17,12 +17,15 @@ var test = function()
 
     function step2()
     {
-        InspectorTest.addConsoleSniffer(step3);
+        InspectorTest.addConsoleSniffer(step3, true);
         InspectorTest.evaluateInPage("loadData()");
     }
 
+    var awaitedMessages = 2;
     function step3()
     {
+        --awaitedMessages;
+        if (awaitedMessages > 0) return;
         function dumpInitiator(url)
         {
             var matching_requests = InspectorTest.findRequestsByURLPattern(new RegExp(url.replace(".", "\\.")));
@@ -52,6 +55,8 @@ var test = function()
         dumpInitiator("size=400");
         dumpInitiator("style.css");
         dumpInitiator("empty.html");
+        dumpInitiator("module1.js");
+        dumpInitiator("module2.js");
         InspectorTest.completeTest();
     }
 }

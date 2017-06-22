@@ -81,12 +81,14 @@ ModuleScript* ModuleScript::Create(
     // [spec text]
     // TODO(kouhei): Cache the url here instead of issuing
     // ResolveModuleSpecifier later again in ModuleTreeLinker.
-    if (modulator->ResolveModuleSpecifier(requested, base_url).IsValid())
+    if (modulator->ResolveModuleSpecifier(requested.specifier, base_url)
+            .IsValid())
       continue;
 
     // Step 7.2.1. "Let error be a new TypeError exception." [spec text]
     v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
-        isolate, "Failed to resolve module specifier '" + requested + "'");
+        isolate,
+        "Failed to resolve module specifier '" + requested.specifier + "'");
 
     // Step 7.2.2. "Set the parse error of script to error." [spec text]
     script->SetErrorAndClearRecord(ScriptValue(script_state, error));

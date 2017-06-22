@@ -46,6 +46,7 @@ struct FetchInitiatorInfo {
   TextPosition position;
   double start_time;
   bool is_link_preload;
+  String imported_module_referrer;
 };
 
 // Encode AtomicString as String to cross threads.
@@ -55,7 +56,8 @@ struct CrossThreadFetchInitiatorInfoData {
       : name(info.name.GetString().IsolatedCopy()),
         position(info.position),
         start_time(info.start_time),
-        is_link_preload(info.is_link_preload) {}
+        is_link_preload(info.is_link_preload),
+        imported_module_referrer(info.imported_module_referrer) {}
 
   operator FetchInitiatorInfo() const {
     FetchInitiatorInfo info;
@@ -63,6 +65,7 @@ struct CrossThreadFetchInitiatorInfoData {
     info.position = position;
     info.start_time = start_time;
     info.is_link_preload = is_link_preload;
+    info.imported_module_referrer = imported_module_referrer;
     return info;
   }
 
@@ -70,6 +73,7 @@ struct CrossThreadFetchInitiatorInfoData {
   TextPosition position;
   double start_time;
   bool is_link_preload;
+  String imported_module_referrer;
 };
 
 }  // namespace blink
