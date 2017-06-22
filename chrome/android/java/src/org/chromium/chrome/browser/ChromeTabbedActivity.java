@@ -697,10 +697,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
             } else {
                 mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder);
-                if (getBottomSheet() != null) {
-                    ((LayoutManagerChromePhone) mLayoutManager)
-                            .setForegroundTabAnimationDisabled(true);
-                }
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
             mLayoutManager.addOverviewModeObserver(this);

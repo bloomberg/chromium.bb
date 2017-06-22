@@ -125,16 +125,6 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
     }
 
     @Override
-    public void onLoadUrl(String url) {
-        if (!mIsShowingNewTabUi) return;
-
-        mLayoutManager.hideOverview(true);
-
-        // BottomSheet closes itself when URLs are loaded; wait to finish hiding the new tab UI
-        // until the bottom sheet is closed.
-    }
-
-    @Override
     public void onSheetReleased() {
         if (!mIsShowingNewTabUi) return;
 
