@@ -15,6 +15,12 @@
 #include "content/public/browser/trace_uploader.h"
 #include "content/public/browser/web_ui_controller.h"
 
+namespace base {
+namespace trace_event {
+class TraceConfig;
+}  // namespace trace_event
+}  // namespace base
+
 namespace content {
 
 class TracingDelegate;
@@ -24,6 +30,11 @@ class CONTENT_EXPORT TracingUI : public WebUIController {
  public:
   explicit TracingUI(WebUI* web_ui);
   ~TracingUI() override;
+
+  // Public for testing.
+  static bool GetTracingOptions(const std::string& data64,
+                                base::trace_event::TraceConfig* trace_config);
+
   void OnTraceUploadProgress(int64_t current, int64_t total);
   void OnTraceUploadComplete(bool success, const std::string& feedback);
 
