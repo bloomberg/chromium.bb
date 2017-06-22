@@ -106,6 +106,25 @@ void WebFrameSchedulerImpl::RemoveTimerQueueFromBackgroundCPUTimeBudgetPool() {
                                 timer_task_queue_.get());
 }
 
+void WebFrameSchedulerImpl::AddThrottlingObserver(ObserverType type,
+                                                  Observer* observer) {
+  DCHECK_EQ(ObserverType::kLoader, type);
+  DCHECK(observer);
+  observer->OnThrottlingStateChanged(page_visible_
+                                         ? ThrottlingState::kNotThrottled
+                                         : ThrottlingState::kThrottled);
+  loader_observers_.insert(observer);
+}
+
+void WebFrameSchedulerImpl::RemoveThrottlingObserver(ObserverType type,
+                                                     Observer* observer) {
+  DCHECK_EQ(ObserverType::kLoader, type);
+  DCHECK(observer);
+  const auto found = loader_observers_.find(observer);
+  DCHECK(loader_observers_.end() != found);
+  loader_observers_.erase(found);
+}
+
 void WebFrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
   DCHECK(parent_web_view_scheduler_);
   if (frame_visible_ == frame_visible)
@@ -301,6 +320,12 @@ void WebFrameSchedulerImpl::SetPageVisible(bool page_visible) {
   bool was_throttled = ShouldThrottleTimers();
   page_visible_ = page_visible;
   UpdateTimerThrottling(was_throttled);
+
+  for (auto observer : loader_observers_) {
+    observer->OnThrottlingStateChanged(page_visible_
+                                           ? ThrottlingState::kNotThrottled
+                                           : ThrottlingState::kThrottled);
+  }
 }
 
 void WebFrameSchedulerImpl::SetSuspended(bool frame_suspended) {

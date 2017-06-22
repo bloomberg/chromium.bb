@@ -18,6 +18,15 @@ class WebFrameScheduler {
  public:
   virtual ~WebFrameScheduler() {}
 
+  // Observer type that regulates conditions to invoke callbacks.
+  enum class ObserverType { kLoader };
+
+  // Represents throttling state.
+  enum class ThrottlingState {
+    kThrottled,
+    kNotThrottled,
+  };
+
   class ActiveConnectionHandle {
    public:
     ActiveConnectionHandle() {}
@@ -26,6 +35,21 @@ class WebFrameScheduler {
    private:
     DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandle);
   };
+
+  // Observer interface to receive scheduling policy change events.
+  class Observer {
+   public:
+    // Notified when throttling state is changed.
+    virtual void OnThrottlingStateChanged(ThrottlingState) = 0;
+  };
+
+  // Adds an Observer instance to be notified on scheduling policy changed.
+  // When an Observer is added, the initial state will be notified synchronously
+  // through the Observer interface.
+  virtual void AddThrottlingObserver(ObserverType, Observer*) = 0;
+
+  // Removes an Observer instance.
+  virtual void RemoveThrottlingObserver(ObserverType, Observer*) = 0;
 
   // The scheduler may throttle tasks associated with offscreen frames.
   virtual void SetFrameVisible(bool) {}
