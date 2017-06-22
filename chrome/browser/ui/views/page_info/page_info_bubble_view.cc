@@ -270,8 +270,9 @@ void BubbleHeaderView::SetDetails(const base::string16& details_text) {
 
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
+  }
   link_style.disable_line_wrapping = false;
 
   security_details_label_->AddStyleRange(details_range, link_style);
@@ -296,8 +297,9 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
 
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
+  }
   link_style.disable_line_wrapping = false;
 
   reset_cert_decisions_label_->AddStyleRange(link_range, link_style);
@@ -397,19 +399,23 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::ShowBubble(
     // Use the concrete type so that |SetAnchorRect| can be called as a friend.
     InternalPageInfoBubbleView* bubble =
         new InternalPageInfoBubbleView(anchor_view, parent_window, url);
-    if (!anchor_view)
+    if (!anchor_view) {
       bubble->SetAnchorRect(anchor_rect);
-    if (widget_observer)
+    }
+    if (widget_observer) {
       bubble->GetWidget()->AddObserver(widget_observer);
+    }
     bubble->GetWidget()->Show();
     return bubble;
   }
   PageInfoBubbleView* bubble = new PageInfoBubbleView(
       anchor_view, parent_window, profile, web_contents, url, security_info);
-  if (!anchor_view)
+  if (!anchor_view) {
     bubble->SetAnchorRect(anchor_rect);
-  if (widget_observer)
+  }
+  if (widget_observer) {
     bubble->GetWidget()->AddObserver(widget_observer);
+  }
   bubble->GetWidget()->Show();
   return bubble;
 }
@@ -500,8 +506,9 @@ PageInfoBubbleView::PageInfoBubbleView(
 
 void PageInfoBubbleView::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host == web_contents()->GetMainFrame())
+  if (render_frame_host == web_contents()->GetMainFrame()) {
     GetWidget()->Close();
+  }
 }
 
 void PageInfoBubbleView::WebContentsDestroyed() {
@@ -570,21 +577,26 @@ void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
 }
 
 gfx::Size PageInfoBubbleView::CalculatePreferredSize() const {
-  if (header_ == nullptr && site_settings_view_ == nullptr)
+  if (header_ == nullptr && site_settings_view_ == nullptr) {
     return views::View::CalculatePreferredSize();
+  }
 
   int height = 0;
-  if (header_)
+  if (header_) {
     height += header_->GetPreferredSize().height() + kHeaderMarginBottom;
-  if (separator_)
+  }
+  if (separator_) {
     height += separator_->GetPreferredSize().height();
+  }
 
-  if (site_settings_view_)
+  if (site_settings_view_) {
     height += site_settings_view_->GetPreferredSize().height();
+  }
 
   int width = kMinBubbleWidth;
-  if (site_settings_view_)
+  if (site_settings_view_) {
     width = std::max(width, site_settings_view_->GetPreferredSize().width());
+  }
   width = std::min(width, kMaxBubbleWidth);
   return gfx::Size(width, height);
 }
@@ -594,8 +606,9 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   // cookies.
   DCHECK_EQ(cookie_info_list.size(), 2u);
   int total_allowed = 0;
-  for (const auto& i : cookie_info_list)
+  for (const auto& i : cookie_info_list) {
     total_allowed += i.allowed;
+  }
   base::string16 label_text = l10n_util::GetPluralStringFUTF16(
       IDS_PAGE_INFO_NUM_COOKIES, total_allowed);
 
@@ -612,8 +625,9 @@ void PageInfoBubbleView::SetPermissionInfo(
   // will have already updated its state, so it's already reflected in the UI.
   // In addition, if a permission is set to the default setting, PageInfo
   // removes it from |permission_info_list|, but the button should remain.
-  if (permissions_view_)
+  if (permissions_view_) {
     return;
+  }
 
   permissions_view_ = new views::View();
   views::GridLayout* layout = new views::GridLayout(permissions_view_);
@@ -687,8 +701,9 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   if (identity_info.certificate) {
     certificate_ = identity_info.certificate;
 
-    if (identity_info.show_ssl_decision_revoke_button)
+    if (identity_info.show_ssl_decision_revoke_button) {
       header_->AddResetDecisionsLabel();
+    }
 
     if (PageInfoUI::ShouldShowCertificateLink()) {
       // The text of link to the Certificate Viewer varies depending on the
@@ -756,8 +771,9 @@ views::View* PageInfoBubbleView::CreateSiteSettingsView(int side_margin) {
 
 void PageInfoBubbleView::HandleLinkClickedAsync(views::Link* source) {
   // All switch cases require accessing web_contents(), so we check it here.
-  if (web_contents() == nullptr || web_contents()->IsBeingDestroyed())
+  if (web_contents() == nullptr || web_contents()->IsBeingDestroyed()) {
     return;
+  }
   switch (source->id()) {
     case VIEW_ID_PAGE_INFO_LINK_SITE_SETTINGS:
       presenter_->OpenSiteSettingsView();

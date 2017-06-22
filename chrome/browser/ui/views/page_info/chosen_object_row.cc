@@ -75,6 +75,7 @@ void ChosenObjectRow::ButtonPressed(views::Button* sender,
   DCHECK(delete_button_->visible());
   delete_button_->SetVisible(false);
 
-  for (ChosenObjectRowObserver& observer : observer_list_)
+  for (ChosenObjectRowObserver& observer : observer_list_) {
     observer.OnChosenObjectDeleted(*info_);
+  }
 }
