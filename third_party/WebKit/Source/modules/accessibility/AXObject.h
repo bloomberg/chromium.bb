@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2008, 2009, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nuanti Ltd.
@@ -60,6 +59,7 @@ enum class AOMStringProperty;
 enum class AOMUIntProperty;
 enum class AOMIntProperty;
 enum class AOMFloatProperty;
+enum class AOMRelationProperty;
 
 typedef unsigned AXID;
 
@@ -353,6 +353,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Wrappers that retrieve either an Accessibility Object Model property,
   // or the equivalent ARIA attribute, in that order.
   const AtomicString& GetAOMPropertyOrARIAAttribute(AOMStringProperty) const;
+  Element* GetAOMPropertyOrARIAAttribute(AOMRelationProperty) const;
   bool HasAOMPropertyOrARIAAttribute(AOMBooleanProperty, bool& result) const;
   bool AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty) const;
   bool AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty) const;

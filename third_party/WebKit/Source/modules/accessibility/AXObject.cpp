@@ -381,6 +381,17 @@ const AtomicString& AXObject::GetAOMPropertyOrARIAAttribute(
   return g_null_atom;
 }
 
+Element* AXObject::GetAOMPropertyOrARIAAttribute(
+    AOMRelationProperty property) const {
+  Element* element = this->GetElement();
+  if (!element)
+    return nullptr;
+
+  AccessibleNode* target =
+      AccessibleNode::GetPropertyOrARIAAttribute(element, property);
+  return target ? target->element() : nullptr;
+}
+
 bool AXObject::HasAOMPropertyOrARIAAttribute(AOMBooleanProperty property,
                                              bool& result) const {
   Element* element = this->GetElement();
@@ -829,7 +840,8 @@ bool AXObject::CanReceiveAccessibilityFocus() const {
     return false;
 
   // Focusable, and not forwarding the focus somewhere else
-  if (elem->IsFocusable() && !elem->FastHasAttribute(aria_activedescendantAttr))
+  if (elem->IsFocusable() &&
+      !GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kActiveDescendant))
     return true;
 
   // aria-activedescendant focus
@@ -847,7 +859,8 @@ bool AXObject::ComputeAncestorExposesActiveDescendant() const {
     return false;
 
   if (parent->SupportsActiveDescendant() &&
-      parent->HasAttribute(aria_activedescendantAttr)) {
+      parent->GetAOMPropertyOrARIAAttribute(
+          AOMRelationProperty::kActiveDescendant)) {
     return true;
   }
 

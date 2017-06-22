@@ -232,6 +232,116 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
   EXPECT_EQ(7U, ax_cell2->AriaRowIndex());
 }
 
+class SparseAttributeAdapter : public AXSparseAttributeClient {
+ public:
+  SparseAttributeAdapter() {}
+
+  std::map<AXBoolAttribute, bool> bool_attributes;
+  std::map<AXStringAttribute, String> string_attributes;
+  std::map<AXObjectAttribute, Persistent<AXObject>> object_attributes;
+  std::map<AXObjectVectorAttribute, HeapVector<Member<AXObject>>>
+      object_vector_attributes;
+
+ private:
+  void AddBoolAttribute(AXBoolAttribute attribute, bool value) override {
+    ASSERT_TRUE(bool_attributes.find(attribute) == bool_attributes.end());
+    bool_attributes[attribute] = value;
+  }
+
+  void AddStringAttribute(AXStringAttribute attribute,
+                          const String& value) override {
+    ASSERT_TRUE(string_attributes.find(attribute) == string_attributes.end());
+    string_attributes[attribute] = value;
+  }
+
+  void AddObjectAttribute(AXObjectAttribute attribute,
+                          AXObject& value) override {
+    ASSERT_TRUE(object_attributes.find(attribute) == object_attributes.end());
+    object_attributes[attribute] = value;
+  }
+
+  void AddObjectVectorAttribute(AXObjectVectorAttribute attribute,
+                                HeapVector<Member<AXObject>>& value) override {
+    ASSERT_TRUE(object_vector_attributes.find(attribute) ==
+                object_vector_attributes.end());
+    object_vector_attributes[attribute] = value;
+  }
+};
+
+TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<input id=target"
+      " aria-keyshortcuts=Ctrl+K"
+      " aria-roledescription=Widget"
+      " aria-activedescendant=active"
+      " aria-details=details"
+      " aria-errormessage=error>"
+      "<div id=active role=option></div>"
+      "<div id=active2 role=gridcell></div>"
+      "<div id=details role=contentinfo></div>"
+      "<div id=details2 role=form></div>"
+      "<div id=error role=article>Error</div>"
+      "<div id=error2 role=banner>Error 2</div>");
+
+  auto* target = GetDocument().getElementById("target");
+  auto* cache = AXObjectCache();
+  ASSERT_NE(nullptr, cache);
+  auto* ax_target = cache->GetOrCreate(target);
+  SparseAttributeAdapter sparse_attributes;
+  ax_target->GetSparseAXAttributes(sparse_attributes);
+
+  ASSERT_EQ("Ctrl+K",
+            sparse_attributes
+                .string_attributes[AXStringAttribute::kAriaKeyShortcuts]);
+  ASSERT_EQ("Widget",
+            sparse_attributes
+                .string_attributes[AXStringAttribute::kAriaRoleDescription]);
+  ASSERT_EQ(kListBoxOptionRole,
+            sparse_attributes
+                .object_attributes[AXObjectAttribute::kAriaActiveDescendant]
+                ->RoleValue());
+  ASSERT_EQ(
+      kContentInfoRole,
+      sparse_attributes.object_attributes[AXObjectAttribute::kAriaDetails]
+          ->RoleValue());
+  ASSERT_EQ(
+      kArticleRole,
+      sparse_attributes.object_attributes[AXObjectAttribute::kAriaErrorMessage]
+          ->RoleValue());
+
+  target->accessibleNode()->setKeyShortcuts("Ctrl+L");
+  target->accessibleNode()->setRoleDescription("Object");
+  target->accessibleNode()->setActiveDescendant(
+      GetDocument().getElementById("active2")->accessibleNode());
+  target->accessibleNode()->setDetails(
+      GetDocument().getElementById("details2")->accessibleNode());
+  target->accessibleNode()->setErrorMessage(
+      GetDocument().getElementById("error2")->accessibleNode());
+
+  SparseAttributeAdapter sparse_attributes2;
+  ax_target->GetSparseAXAttributes(sparse_attributes2);
+
+  ASSERT_EQ("Ctrl+L",
+            sparse_attributes2
+                .string_attributes[AXStringAttribute::kAriaKeyShortcuts]);
+  ASSERT_EQ("Object",
+            sparse_attributes2
+                .string_attributes[AXStringAttribute::kAriaRoleDescription]);
+  ASSERT_EQ(kCellRole,
+            sparse_attributes2
+                .object_attributes[AXObjectAttribute::kAriaActiveDescendant]
+                ->RoleValue());
+  ASSERT_EQ(kFormRole, sparse_attributes2
+                           .object_attributes[AXObjectAttribute::kAriaDetails]
+                           ->RoleValue());
+  ASSERT_EQ(kBannerRole,
+            sparse_attributes2
+                .object_attributes[AXObjectAttribute::kAriaErrorMessage]
+                ->RoleValue());
+}
+
 }  // namespace
 
 }  // namespace blink
