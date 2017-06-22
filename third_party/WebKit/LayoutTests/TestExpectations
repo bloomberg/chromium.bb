@@ -1229,7 +1229,7 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-crbug.com/474987 [ Win Mac ] css3/flexbox/auto-margins.html [ Failure ]
+crbug.com/474987 [ Win Mac ] external/wpt/css/css-flexbox-1/auto-margins-001.html [ Failure ]
 
 crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass ]

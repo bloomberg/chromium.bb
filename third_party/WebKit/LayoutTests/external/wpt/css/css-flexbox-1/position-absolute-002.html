@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html>
-<link href="resources/flexbox.css" rel="stylesheet">
+<title>CSS Test: Absolutely positioned children of flexboxes</title>
+<link href="support/flexbox.css" rel="stylesheet">
+<link rel="author" title="Google Inc." href="http://www.google.com/">
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#abspos-items">
+<meta name="flags" content="dom">
+<meta name="assert" content="Checks that we correctly position abspos children
+with different alignments and dynamic changes">
 <style>
 body {
     margin: 0;
@@ -59,9 +65,9 @@ body {
 }
 </style>
 
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support/check-layout-th.js"></script>
 
 <body onload="checkLayout('.flexbox')">
 <div id=log></div>

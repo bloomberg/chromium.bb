@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-
+<title>CSS Test: Absolutely positioned children of flexboxes</title>
+<link rel="author" title="Google Inc." href="http://www.google.com/">
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#abspos-items">
+<meta name="flags" content="dom">
+<meta name="assert" content="Checks that we correctly handle border and
+padding in combination with abspos items">
 <style>
 .rect {
   position: absolute;
@@ -16,11 +21,11 @@
 }
 </style>
 
-<link rel="stylesheet" href="resources/flexbox.css">
+<link rel="stylesheet" href="support/flexbox.css">
 
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support/check-layout-th.js"></script>
 
 <body onload="checkLayout('.rect')">
 <div id=log></div>
