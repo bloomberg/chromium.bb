@@ -51,8 +51,8 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
   // must synchronously run on the glib message loop. This will be passed to
   // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
   if (proxy_server_.IsEmpty()) {
-    proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
-        io_task_runner_, file_task_runner_);
+    proxy_config_service_ =
+        net::ProxyService::CreateSystemProxyConfigService(io_task_runner_);
   }
 }
 

@@ -52,12 +52,8 @@ ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
   // configuration in case nothing is configured through prefs (Note: prefs
   // include command line and configuration policy).
 
-  // TODO(port): the IO and FILE message loops are only used by Linux.  Can
-  // that code be moved to chrome/browser instead of being in net, so that it
-  // can use BrowserThread instead of raw MessageLoop pointers? See bug 25354.
   base_service = net::ProxyService::CreateSystemProxyConfigService(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #endif  // !defined(OS_CHROMEOS)
 
   return tracker->CreateTrackingProxyConfigService(std::move(base_service));

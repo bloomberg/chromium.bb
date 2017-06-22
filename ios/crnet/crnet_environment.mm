@@ -300,7 +300,7 @@ void CrNetEnvironment::Install() {
   // delegates will receive callbacks.
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
-      network_io_thread_->task_runner(), nullptr);
+      network_io_thread_->task_runner());
 
   main_context_getter_ = new CrNetURLRequestContextGetter(
       main_context_.get(), network_io_thread_->task_runner());
