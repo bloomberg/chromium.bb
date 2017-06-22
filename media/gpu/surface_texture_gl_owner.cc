@@ -70,6 +70,12 @@ SurfaceTextureGLOwnerImpl::~SurfaceTextureGLOwnerImpl() {
   // Make sure that the SurfaceTexture isn't using the GL objects.
   surface_texture_ = nullptr;
 
+  if (gl::GLSurface::GetCurrent() == nullptr) {
+    // This happens during GpuCommandBufferStub teardown.  Just leave -- the gpu
+    // process is going away.  crbug.com/718117 .
+    return;
+  }
+
   ui::ScopedMakeCurrent scoped_make_current(context_.get(), surface_.get());
   if (scoped_make_current.Succeeded()) {
     glDeleteTextures(1, &texture_id_);
