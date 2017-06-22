@@ -502,4 +502,14 @@ TEST_F(DeferredLoadingTest, VisibleCrossOriginNestedInBelowFoldSameOrigin) {
   ExpectTotalCount(5);
 }
 
+TEST_F(DeferredLoadingTest, EmbedSVG) {
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  SimRequest frame_resource("https://example.com/embed.svg", "image/svg+xml");
+  main_resource->Complete("<iframe id='embed' src='embed.svg'></iframe>");
+  CompositeFrame();
+  Element* embed_element = GetDocument().getElementById("embed");
+  embed_element->SetInlineStyleProperty(CSSPropertyDisplay, "none");
+  frame_resource.Complete("<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>");
+}
+
 }  // namespace blink
