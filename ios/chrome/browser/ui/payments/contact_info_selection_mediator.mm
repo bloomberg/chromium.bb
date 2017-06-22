@@ -85,13 +85,21 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
       _paymentRequest->contact_profiles();
 
   _items = [NSMutableArray arrayWithCapacity:contactProfiles.size()];
+  DCHECK(self.paymentRequest->request_payer_name() ||
+         self.paymentRequest->request_payer_email() ||
+         self.paymentRequest->request_payer_phone());
   for (size_t index = 0; index < contactProfiles.size(); ++index) {
     autofill::AutofillProfile* contactProfile = contactProfiles[index];
     DCHECK(contactProfile);
     AutofillProfileItem* item = [[AutofillProfileItem alloc] init];
-    item.name = GetNameLabelFromAutofillProfile(*contactProfile);
-    item.email = GetEmailLabelFromAutofillProfile(*contactProfile);
-    item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*contactProfile);
+    if (self.paymentRequest->request_payer_name())
+      item.name = GetNameLabelFromAutofillProfile(*contactProfile);
+    if (self.paymentRequest->request_payer_email())
+      item.email = GetEmailLabelFromAutofillProfile(*contactProfile);
+    if (self.paymentRequest->request_payer_phone()) {
+      item.phoneNumber =
+          GetPhoneNumberLabelFromAutofillProfile(*contactProfile);
+    }
     if (_paymentRequest->selected_contact_profile() == contactProfile)
       _selectedItemIndex = index;
 
