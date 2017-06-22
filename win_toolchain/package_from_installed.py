@@ -135,6 +135,11 @@ def BuildFileList(override_dir):
       raise Exception('%s not a directory.' % combined)
     for root, _, files in os.walk(combined):
       for f in files:
+        # vctip.exe doesn't shutdown, leaving locks on directories. It's
+        # optional so let's avoid this problem by not packaging it.
+        # https://crbug.com/735226
+        if f.lower() =='vctip.exe':
+          continue
         final_from = os.path.normpath(os.path.join(root, f))
         if isinstance(path, tuple):
           assert final_from.startswith(combined)
