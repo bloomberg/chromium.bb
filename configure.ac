@@ -10,7 +10,8 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 
 # Checks for programs.
-AC_PROG_CC
+# Try to compile using C99
+AC_PROG_CC_C99
 
 # gnulib for the library
 gl_EARLY
