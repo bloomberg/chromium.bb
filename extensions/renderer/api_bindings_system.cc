@@ -15,7 +15,7 @@ APIBindingsSystem::APIBindingsSystem(
     const binding::RunJSFunction& call_js,
     const binding::RunJSFunctionSync& call_js_sync,
     const GetAPISchemaMethod& get_api_schema,
-    const APIBinding::AvailabilityCallback& is_available,
+    const BindingAccessChecker::AvailabilityCallback& is_available,
     const APIRequestHandler::SendRequestMethod& send_request,
     const APIEventHandler::EventListenersChangedMethod& event_listeners_changed,
     APILastError last_error)
@@ -23,10 +23,10 @@ APIBindingsSystem::APIBindingsSystem(
                                      base::Unretained(this))),
       request_handler_(send_request, call_js, std::move(last_error)),
       event_handler_(call_js, call_js_sync, event_listeners_changed),
+      access_checker_(is_available),
       call_js_(call_js),
       call_js_sync_(call_js_sync),
-      get_api_schema_(get_api_schema),
-      is_available_(is_available) {}
+      get_api_schema_(get_api_schema) {}
 
 APIBindingsSystem::~APIBindingsSystem() {}
 
@@ -72,8 +72,8 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
       api_name, function_definitions, type_definitions, event_definitions,
       property_definitions,
       base::Bind(&APIBindingsSystem::CreateCustomType, base::Unretained(this)),
-      is_available_, std::move(hooks), &type_reference_map_, &request_handler_,
-      &event_handler_);
+      std::move(hooks), &type_reference_map_, &request_handler_,
+      &event_handler_, &access_checker_);
 }
 
 void APIBindingsSystem::InitializeType(const std::string& type_name) {

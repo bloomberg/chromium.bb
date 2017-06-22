@@ -17,6 +17,7 @@
 #include "extensions/renderer/api_last_error.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_type_reference_map.h"
+#include "extensions/renderer/binding_access_checker.h"
 
 namespace base {
 class DictionaryValue;
@@ -41,14 +42,15 @@ class APIBindingsSystem {
       APIEventHandler* event_handler,
       APITypeReferenceMap* type_refs)>;
 
-  APIBindingsSystem(const binding::RunJSFunction& call_js,
-                    const binding::RunJSFunctionSync& call_js_sync,
-                    const GetAPISchemaMethod& get_api_schema,
-                    const APIBinding::AvailabilityCallback& is_available,
-                    const APIRequestHandler::SendRequestMethod& send_request,
-                    const APIEventHandler::EventListenersChangedMethod&
-                        event_listeners_changed,
-                    APILastError last_error);
+  APIBindingsSystem(
+      const binding::RunJSFunction& call_js,
+      const binding::RunJSFunctionSync& call_js_sync,
+      const GetAPISchemaMethod& get_api_schema,
+      const BindingAccessChecker::AvailabilityCallback& is_available,
+      const APIRequestHandler::SendRequestMethod& send_request,
+      const APIEventHandler::EventListenersChangedMethod&
+          event_listeners_changed,
+      APILastError last_error);
   ~APIBindingsSystem();
 
   // Returns a new v8::Object representing the api specified by |api_name|.
@@ -116,6 +118,9 @@ class APIBindingsSystem {
   // The event handler associated with the system.
   APIEventHandler event_handler_;
 
+  // The access checker associated with the system.
+  BindingAccessChecker access_checker_;
+
   // A map from api_name -> APIBinding for constructed APIs. APIBindings are
   // created lazily.
   std::map<std::string, std::unique_ptr<APIBinding>> api_bindings_;
@@ -134,8 +139,6 @@ class APIBindingsSystem {
   // The method to retrieve the DictionaryValue describing a given extension
   // API. Curried in for testing purposes so we can use fake APIs.
   GetAPISchemaMethod get_api_schema_;
-
-  APIBinding::AvailabilityCallback is_available_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingsSystem);
 };

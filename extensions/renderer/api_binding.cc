@@ -20,6 +20,7 @@
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_signature.h"
 #include "extensions/renderer/api_type_reference_map.h"
+#include "extensions/renderer/binding_access_checker.h"
 #include "extensions/renderer/declarative_event.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/arguments.h"
@@ -179,19 +180,19 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* event_definitions,
                        const base::DictionaryValue* property_definitions,
                        const CreateCustomType& create_custom_type,
-                       const AvailabilityCallback& is_available,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
                        APITypeReferenceMap* type_refs,
                        APIRequestHandler* request_handler,
-                       APIEventHandler* event_handler)
+                       APIEventHandler* event_handler,
+                       BindingAccessChecker* access_checker)
     : api_name_(api_name),
       property_definitions_(property_definitions),
       create_custom_type_(create_custom_type),
-      is_available_(is_available),
       binding_hooks_(std::move(binding_hooks)),
       type_refs_(type_refs),
       request_handler_(request_handler),
       event_handler_(event_handler),
+      access_checker_(access_checker),
       weak_factory_(this) {
   // TODO(devlin): It might make sense to instantiate the object_template_
   // directly here, which would avoid the need to hold on to
@@ -345,7 +346,7 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
   // conditionally exposed. Or, we could have multiple templates for different
   // configurations, assuming there are a small number of possibilities.
   for (const auto& key_value : methods_) {
-    if (!is_available_.Run(context, key_value.second->full_name)) {
+    if (!access_checker_->HasAccess(context, key_value.second->full_name)) {
       v8::Maybe<bool> success = object->Delete(
           context, gin::StringToSymbol(isolate, key_value.first));
       CHECK(success.IsJust());
@@ -353,7 +354,7 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     }
   }
   for (const auto& event : events_) {
-    if (!is_available_.Run(context, event->full_name)) {
+    if (!access_checker_->HasAccess(context, event->full_name)) {
       v8::Maybe<bool> success = object->Delete(
           context, gin::StringToSymbol(isolate, event->exposed_name));
       CHECK(success.IsJust());
@@ -542,12 +543,9 @@ void APIBinding::HandleCall(const std::string& name,
   // GetCurrentContext() should always be correct.
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-  if (!is_available_.Run(context, name)) {
+  if (!access_checker_->HasAccessOrThrowError(context, name)) {
     // TODO(devlin): Do we need handle this for events as well? I'm not sure the
     // currrent system does (though perhaps it should). Investigate.
-    isolate->ThrowException(v8::Exception::Error(gin::StringToV8(
-        isolate, base::StringPrintf("'%s' is not available in this context.",
-                                    name.c_str()))));
     return;
   }
 
