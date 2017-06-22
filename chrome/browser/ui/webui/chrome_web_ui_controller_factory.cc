@@ -75,6 +75,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
@@ -162,7 +163,6 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/md_user_manager_ui.h"
-#include "chrome/browser/ui/webui/signin/signin_dice_internals_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
@@ -189,6 +189,10 @@
 
 #if BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/ui/webui/app_list/start_page_ui.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/ui/webui/signin/signin_dice_internals_ui.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -397,12 +401,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       extensions::ExtensionSystem::Get(profile)->extension_service()) {
     return &NewWebUI<AppLauncherPageUI>;
   }
-  // Desktop Identity Consistency is only available on Windows, Linux and macOS.
-  if (url.host() == chrome::kChromeUISigninDiceInternalsHost &&
-      !profile->IsOffTheRecord() &&
-      switches::IsAccountConsistencyDiceEnabled()) {
-    return &NewWebUI<SigninDiceInternalsUI>;
-  }
 #endif  // defined(OS_CHROMEOS)
 
   // Bookmarks are part of NTP on Android.
@@ -566,6 +564,13 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if BUILDFLAG(ENABLE_APP_LIST)
   if (url.host_piece() == chrome::kChromeUIAppListStartPageHost)
     return &NewWebUI<app_list::StartPageUI>;
+#endif
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  if (url.host() == chrome::kChromeUISigninDiceInternalsHost &&
+      !profile->IsOffTheRecord() &&
+      switches::IsAccountConsistencyDiceEnabled()) {
+    return &NewWebUI<SigninDiceInternalsUI>;
+  }
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (url.host_piece() == chrome::kChromeUIExtensionsFrameHost)

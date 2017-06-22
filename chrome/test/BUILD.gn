@@ -3722,6 +3722,7 @@ test("unit_tests") {
     sources -=
         [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
     deps += [
+      "//components/signin/core/common:signin_features",
       "//ipc",
       "//third_party/libaddressinput",
     ]

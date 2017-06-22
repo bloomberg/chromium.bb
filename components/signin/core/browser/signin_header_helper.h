@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "build/build_config.h"
+#include "components/signin/core/common/signin_features.h"
 #include "url/gurl.h"
 
 namespace content_settings {
@@ -155,7 +155,7 @@ void AppendOrRemoveAccountConsistentyRequestHeader(
 // header.
 ManageAccountsParams BuildManageAccountsParams(const std::string& header_value);
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Returns the parameters contained in the X-Chrome-ID-Consistency-Response
 // response header.
 // Returns DiceAction::NONE in case of error (such as missing or malformed

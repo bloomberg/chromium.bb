@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
+import("//components/signin/features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
@@ -551,6 +552,8 @@ split_static_library("ui") {
     "//components/sessions",
     "//components/signin/core/account_id",
     "//components/signin/core/browser",
+    "//components/signin/core/common",
+    "//components/signin/core/common:signin_features",
     "//components/spellcheck/browser",
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser:lib",
@@ -2065,10 +2068,6 @@ split_static_library("ui") {
       "webui/signin/md_user_manager_ui.h",
       "webui/signin/signin_create_profile_handler.cc",
       "webui/signin/signin_create_profile_handler.h",
-      "webui/signin/signin_dice_internals_handler.cc",
-      "webui/signin/signin_dice_internals_handler.h",
-      "webui/signin/signin_dice_internals_ui.cc",
-      "webui/signin/signin_dice_internals_ui.h",
       "webui/signin/signin_email_confirmation_dialog.cc",
       "webui/signin/signin_email_confirmation_dialog.h",
       "webui/signin/signin_email_confirmation_ui.cc",
@@ -2092,6 +2091,14 @@ split_static_library("ui") {
       "webui/welcome_ui.cc",
       "webui/welcome_ui.h",
     ]
+    if (enable_dice_support) {
+      sources += [
+        "webui/signin/signin_dice_internals_handler.cc",
+        "webui/signin/signin_dice_internals_handler.h",
+        "webui/signin/signin_dice_internals_ui.cc",
+        "webui/signin/signin_dice_internals_ui.h",
+      ]
+    }
     if (is_mac && !mac_views_browser) {
       sources -= [
         # This is not explicitly excluded in GYP, but I think the static

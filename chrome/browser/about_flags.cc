@@ -66,6 +66,7 @@
 #include "components/proximity_auth/switches.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
+#include "components/signin/core/common/signin_features.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
@@ -305,15 +306,17 @@ const FeatureEntry::Choice kDefaultTileHeightChoices[] = {
     {flag_descriptions::kDefaultTileHeightVenti, switches::kDefaultTileHeight,
      "1024"}};
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ENABLE_MIRROR)
 const FeatureEntry::Choice kAccountConsistencyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kAccountConsistencyChoiceMirror,
      switches::kAccountConsistency, switches ::kAccountConsistencyMirror},
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {flag_descriptions::kAccountConsistencyChoiceDice,
      switches::kAccountConsistency, switches::kAccountConsistencyDice},
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 };
-#endif
+#endif  // !BUILDFLAG(ENABLE_MIRROR)
 
 const FeatureEntry::Choice kSimpleCacheBackendChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1671,10 +1674,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebglDraftExtensionsName,
      flag_descriptions::kWebglDraftExtensionsDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)},
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ENABLE_MIRROR)
     {"account-consistency", flag_descriptions::kAccountConsistencyName,
-     flag_descriptions::kAccountConsistencyDescription,
-     kOsWin | kOsLinux | kOsMac, MULTI_VALUE_TYPE(kAccountConsistencyChoices)},
+     flag_descriptions::kAccountConsistencyDescription, kOsAll,
+     MULTI_VALUE_TYPE(kAccountConsistencyChoices)},
 #endif
 #if BUILDFLAG(ENABLE_APP_LIST)
     {"reset-app-list-install-state",

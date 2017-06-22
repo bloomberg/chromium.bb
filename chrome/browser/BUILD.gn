@@ -10,6 +10,7 @@ import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//components/offline_pages/features/features.gni")
 import("//components/os_crypt/features.gni")
+import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//device/vr/features/features.gni")
 import("//extensions/features/features.gni")
@@ -1238,8 +1239,6 @@ split_static_library("browser") {
     "signin/chrome_signin_client_factory.h",
     "signin/chrome_signin_helper.cc",
     "signin/chrome_signin_helper.h",
-    "signin/dice_response_handler.cc",
-    "signin/dice_response_handler.h",
     "signin/gaia_cookie_manager_service_factory.cc",
     "signin/gaia_cookie_manager_service_factory.h",
     "signin/investigator_dependency_provider.cc",
@@ -1575,6 +1574,8 @@ split_static_library("browser") {
     "//components/security_state/core",
     "//components/sessions",
     "//components/signin/core/browser",
+    "//components/signin/core/common",
+    "//components/signin/core/common:signin_features",
     "//components/spellcheck:build_features",
     "//components/ssl_config",
     "//components/ssl_errors",
@@ -2003,6 +2004,12 @@ split_static_library("browser") {
     if (!use_aura || is_win || is_chromeos) {
       sources -= [ "background/background_mode_manager_aura.cc" ]
     }
+  }
+  if (enable_dice_support) {
+    sources += [
+      "signin/dice_response_handler.cc",
+      "signin/dice_response_handler.h",
+    ]
   }
   if (enable_spellcheck) {
     sources += [

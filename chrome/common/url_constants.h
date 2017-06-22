@@ -14,6 +14,7 @@
 
 #include "build/build_config.h"
 #include "chrome/common/features.h"
+#include "components/signin/core/common/signin_features.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
@@ -257,8 +258,11 @@ extern const char kChromeUIWorkersHost[];
 extern const char kChromeUIPrintHost[];
 #endif  // ENABLE_PRINT_PREVIEW
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 extern const char kChromeUISigninDiceInternalsHost[];
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 extern const char kChromeUIDiscardsHost[];
 #endif
 
