@@ -44,6 +44,17 @@
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 
+using storage::mojom::blink::BlobPtr;
+using storage::mojom::blink::BlobRegistryPtr;
+using storage::mojom::blink::BytesProviderPtr;
+using storage::mojom::blink::DataElement;
+using storage::mojom::blink::DataElementBlob;
+using storage::mojom::blink::DataElementPtr;
+using storage::mojom::blink::DataElementBytes;
+using storage::mojom::blink::DataElementBytesPtr;
+using storage::mojom::blink::DataElementFile;
+using storage::mojom::blink::DataElementFilesystemURL;
+
 namespace blink {
 
 namespace {
@@ -249,7 +260,7 @@ BlobDataHandle::BlobDataHandle()
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
-    storage::mojom::blink::BlobRegistryPtr registry;
+    BlobRegistryPtr registry;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         MakeRequest(&registry));
     registry->Register(MakeRequest(&blob_), uuid_, "", "", {});
@@ -267,12 +278,90 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
-    storage::mojom::blink::BlobRegistryPtr registry;
+    BlobRegistryPtr registry;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         MakeRequest(&registry));
-    // TODO(mek): Pass elements from |data| to Register.
+
+    size_t current_memory_population = 0;
+    Vector<DataElementPtr> elements;
+    const DataElementPtr null_element = nullptr;
+
+    // TODO(mek): When the mojo code path is the default BlobData should
+    // directly create mojom::DataElements rather than BlobDataItems,
+    // eliminating the need for this loop.
+    for (const auto& item : data->Items()) {
+      // Skip zero-byte elements, as they don't matter for the contents of
+      // the blob.
+      if (item.length == 0)
+        continue;
+      switch (item.type) {
+        case BlobDataItem::kData: {
+          // kData elements don't set item.length, so separately check for zero
+          // byte kData elements.
+          if (item.data->length() == 0)
+            continue;
+          // Since blobs are often constructed with arrays with single bytes,
+          // consolidate all adjacent memory blob items into one. This should
+          // massively reduce the overhead of describing all these byte
+          // elements.
+          const DataElementPtr& last_element =
+              elements.IsEmpty() ? null_element : elements.back();
+          bool should_embed_bytes =
+              current_memory_population + item.data->length() <=
+              DataElementBytes::kMaximumEmbeddedDataSize;
+          bool last_element_is_bytes = last_element && last_element->is_bytes();
+          if (last_element_is_bytes) {
+            // Append bytes to previous element.
+            const auto& bytes_element = last_element->get_bytes();
+            bytes_element->length += item.data->length();
+            if (should_embed_bytes && bytes_element->embedded_data) {
+              bytes_element->embedded_data->Append(item.data->data(),
+                                                   item.data->length());
+              current_memory_population += item.data->length();
+            } else if (bytes_element->embedded_data) {
+              current_memory_population -= bytes_element->embedded_data->size();
+              bytes_element->embedded_data = WTF::nullopt;
+            }
+            // TODO(mek): Append data to previous element's BytesProvider.
+          } else {
+            BytesProviderPtr bytes_provider;
+            // TODO(mek): Bind bytes provider to something.
+            MakeRequest(&bytes_provider);
+            DataElementBytesPtr bytes_element = DataElementBytes::New(
+                item.data->length(), WTF::nullopt, std::move(bytes_provider));
+            if (should_embed_bytes) {
+              bytes_element->embedded_data = Vector<uint8_t>();
+              bytes_element->embedded_data->Append(item.data->data(),
+                                                   item.data->length());
+              current_memory_population += item.data->length();
+            }
+            elements.push_back(DataElement::NewBytes(std::move(bytes_element)));
+          }
+          break;
+        }
+        case BlobDataItem::kFile:
+          elements.push_back(DataElement::NewFile(DataElementFile::New(
+              item.path.IsNull() ? "" : item.path, item.offset, item.length,
+              WTF::Time::FromDoubleT(item.expected_modification_time))));
+          break;
+        case BlobDataItem::kFileSystemURL:
+          elements.push_back(
+              DataElement::NewFileFilesystem(DataElementFilesystemURL::New(
+                  item.file_system_url, item.offset, item.length,
+                  WTF::Time::FromDoubleT(item.expected_modification_time))));
+          break;
+        case BlobDataItem::kBlob: {
+          BlobPtr blob_clone;
+          item.blob_data_handle->blob_->Clone(MakeRequest(&blob_clone));
+          elements.push_back(DataElement::NewBlob(DataElementBlob::New(
+              std::move(blob_clone), item.offset, item.length)));
+          break;
+        }
+      }
+    }
+
     registry->Register(MakeRequest(&blob_), uuid_, type_.IsNull() ? "" : type_,
-                       "", {});
+                       "", std::move(elements));
   } else {
     BlobRegistry::RegisterBlobData(uuid_, std::move(data));
   }

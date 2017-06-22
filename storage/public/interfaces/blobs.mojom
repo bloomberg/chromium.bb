@@ -51,6 +51,11 @@ union DataElement {
 // optionally also directly contain the data, in which case the blob registry
 // can decide to either use the embedded data or later request the data again.
 struct DataElementBytes {
+  // Maximum size of all DataElementBytes that have embedded data included in
+  // any particular call to register a new blob.
+  // Equivalent in meaning to storage::kDefaultIPCMemorySize.
+  const uint64 kMaximumEmbeddedDataSize = 256000;
+
   // Size of the data.
   uint64 length;
   // Optionally embedded data. If present, the size of this array should be
