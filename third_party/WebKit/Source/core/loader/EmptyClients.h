@@ -52,6 +52,7 @@
 #include "platform/wtf/Forward.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFocusType.h"
+#include "public/platform/WebMenuSourceType.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebSpellCheckPanelHostClient.h"
 #include "public/platform/WebURLLoader.h"
@@ -442,7 +443,7 @@ class EmptyContextMenuClient final : public ContextMenuClient {
  public:
   EmptyContextMenuClient() : ContextMenuClient() {}
   ~EmptyContextMenuClient() override {}
-  bool ShowContextMenu(const ContextMenu*, bool) override { return false; }
+  bool ShowContextMenu(const ContextMenu*, WebMenuSourceType) override;
   void ClearContextMenu() override {}
 };
 

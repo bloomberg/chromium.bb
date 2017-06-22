@@ -49,7 +49,7 @@
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebInputEventResult.h"
-#include "public/web/WebMenuSourceType.h"
+#include "public/platform/WebMenuSourceType.h"
 
 namespace blink {
 

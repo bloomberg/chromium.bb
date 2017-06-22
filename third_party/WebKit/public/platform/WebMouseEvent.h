@@ -6,6 +6,7 @@
 #define WebMouseEvent_h
 
 #include "WebInputEvent.h"
+#include "public/platform/WebMenuSourceType.h"
 
 namespace blink {
 
@@ -24,6 +25,9 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   static constexpr PointerId kMousePointerId = std::numeric_limits<int>::max();
 
   int click_count;
+
+  // Only used for contextmenu events.
+  WebMenuSourceType menu_source_type;
 
   WebMouseEvent(Type type_param,
                 int x_param,
@@ -53,6 +57,7 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                 int click_count_param,
                 int modifiers_param,
                 double time_stamp_seconds_param,
+                WebMenuSourceType menu_source_type_param = kMenuSourceNone,
                 PointerId id_param = kMousePointerId)
       : WebInputEvent(sizeof(WebMouseEvent),
                       type_param,
@@ -64,7 +69,8 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
             button_param,
             WebFloatPoint(floor(position.x), floor(position.y)),
             WebFloatPoint(floor(global_position.x), floor(global_position.y))),
-        click_count(click_count_param) {
+        click_count(click_count_param),
+        menu_source_type(menu_source_type_param) {
     DCHECK_GE(type_param, kMouseTypeFirst);
     DCHECK_LE(type_param, kMouseTypeLast);
   }
@@ -123,6 +129,9 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
         WebPointerProperties(id_param) {}
 
   void FlattenTransformSelf();
+
+ private:
+  void SetMenuSourceType(WebInputEvent::Type);
 };
 
 #pragma pack(pop)

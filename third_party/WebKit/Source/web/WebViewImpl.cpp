@@ -148,6 +148,7 @@
 #include "public/platform/WebImage.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebLayerTreeView.h"
+#include "public/platform/WebMenuSourceType.h"
 #include "public/platform/WebTextInputInfo.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebVector.h"
@@ -162,7 +163,6 @@
 #include "public/web/WebInputElement.h"
 #include "public/web/WebMeaningfulLayout.h"
 #include "public/web/WebMediaPlayerAction.h"
-#include "public/web/WebMenuSourceType.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginAction.h"
@@ -521,6 +521,7 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
 
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(MainFrameImpl()->GetFrameView(), event);
+  transformed_event.menu_source_type = kMenuSourceMouse;
   IntPoint position_in_root_frame =
       FlooredIntPoint(transformed_event.PositionInRootFrame());
 
@@ -1643,7 +1644,7 @@ WebInputEventResult WebViewImpl::SendContextMenuEvent(
       focused_element->scrollIntoViewIfNeeded();
     return ToLocalFrame(focused_frame)
         ->GetEventHandler()
-        .ShowNonLocatedContextMenu(nullptr);
+        .ShowNonLocatedContextMenu(nullptr, kMenuSourceKeyboard);
   }
 }
 #else

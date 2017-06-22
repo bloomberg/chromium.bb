@@ -28,6 +28,7 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
+#include "public/platform/WebMenuSourceType.h"
 #include "public/platform/WebMouseEvent.h"
 
 namespace blink {
@@ -174,6 +175,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   bool HasPosition() const { return position_type_ == PositionType::kPosition; }
 
+  WebMenuSourceType GetMenuSourceType() const { return menu_source_type_; }
+
   // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative
   // coords, usable with LayoutObject::absoluteToLocal) relative to view(), i.e.
   // the local frame.
@@ -260,6 +263,10 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   Member<EventTarget> related_target_;
   SyntheticEventType synthetic_event_type_;
   String region_;
+
+  // Only used for contextmenu events.
+  WebMenuSourceType menu_source_type_;
+
   std::unique_ptr<WebMouseEvent> native_event_;
 };
 

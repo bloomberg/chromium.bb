@@ -198,7 +198,6 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
       handling_input_event_(false),
       handling_event_overscroll_(nullptr),
       handling_event_type_(WebInputEvent::kUndefined),
-      context_menu_source_type_(ui::MENU_SOURCE_MOUSE),
       suppress_next_char_events_(false) {
   DCHECK(delegate);
   DCHECK(widget);
@@ -264,12 +263,10 @@ void RenderWidgetInputHandler::HandleInputEvent(
     TRACE_EVENT2("renderer", "HandleMouseMove", "x",
                  mouse_event.PositionInWidget().x, "y",
                  mouse_event.PositionInWidget().y);
-    context_menu_source_type_ = ui::MENU_SOURCE_MOUSE;
     prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
   }
 
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
-    context_menu_source_type_ = ui::MENU_SOURCE_KEYBOARD;
 #if defined(OS_ANDROID)
     // The DPAD_CENTER key on Android has a dual semantic: (1) in the general
     // case it should behave like a select key (i.e. causing a click if a button
@@ -293,13 +290,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (WebInputEvent::IsGestureEventType(input_event.GetType())) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
-    if (input_event.GetType() == WebInputEvent::kGestureLongPress) {
-      context_menu_source_type_ = ui::MENU_SOURCE_LONG_PRESS;
-    } else if (input_event.GetType() == WebInputEvent::kGestureLongTap) {
-      context_menu_source_type_ = ui::MENU_SOURCE_LONG_TAP;
-    } else {
-      context_menu_source_type_ = ui::MENU_SOURCE_TOUCH;
-    }
     prevent_default =
         prevent_default || delegate_->WillHandleGestureEvent(gesture_event);
   }

@@ -2315,9 +2315,12 @@ void Node::DefaultEventHandler(Event* event) {
     if (DispatchDOMActivateEvent(detail, *event) !=
         DispatchEventResult::kNotCanceled)
       event->SetDefaultHandled();
-  } else if (event_type == EventTypeNames::contextmenu) {
-    if (Page* page = GetDocument().GetPage())
-      page->GetContextMenuController().HandleContextMenuEvent(event);
+  } else if (event_type == EventTypeNames::contextmenu &&
+             event->IsMouseEvent()) {
+    if (Page* page = GetDocument().GetPage()) {
+      page->GetContextMenuController().HandleContextMenuEvent(
+          ToMouseEvent(event));
+    }
   } else if (event_type == EventTypeNames::textInput) {
     if (event->HasInterface(EventNames::TextEvent)) {
       if (LocalFrame* frame = GetDocument().GetFrame())

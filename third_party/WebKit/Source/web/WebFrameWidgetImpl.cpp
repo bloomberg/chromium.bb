@@ -853,6 +853,7 @@ void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
 
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(local_root_->GetFrameView(), event);
+  transformed_event.menu_source_type = kMenuSourceMouse;
   IntPoint position_in_root_frame =
       FlooredIntPoint(transformed_event.PositionInRootFrame());
 

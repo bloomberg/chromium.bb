@@ -4191,8 +4191,6 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
   GetRenderWidget()->ConvertViewportToWindow(&position_in_window);
   params.x = position_in_window.x;
   params.y = position_in_window.y;
-  params.source_type =
-      GetRenderWidget()->input_handler().context_menu_source_type();
   GetRenderWidget()->OnShowHostContextMenu(&params);
   if (GetRenderWidget()->has_host_context_menu_location()) {
     params.x = GetRenderWidget()->host_context_menu_location().x();

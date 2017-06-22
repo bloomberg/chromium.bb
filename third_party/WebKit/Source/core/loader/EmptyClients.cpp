@@ -218,4 +218,9 @@ EmptyLocalFrameClient::CreateApplicationCacheHost(
 
 EmptyRemoteFrameClient::EmptyRemoteFrameClient() = default;
 
+bool EmptyContextMenuClient::ShowContextMenu(const ContextMenu*,
+                                             WebMenuSourceType source_type) {
+  return false;
+}
+
 }  // namespace blink

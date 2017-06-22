@@ -69,6 +69,7 @@
 #include "platform/text/TextBreakIterator.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebMenuSourceType.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -255,7 +256,7 @@ static HTMLFormElement* CurrentForm(const FrameSelection& current_selection) {
 }
 
 bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
-                                        bool from_touch) {
+                                        WebMenuSourceType source_type) {
   // Displaying the context menu in this function is a big hack as we don't
   // have context, i.e. whether this is being invoked via a script or in
   // response to user input (Mouse event WM_RBUTTONDOWN,
@@ -499,6 +500,11 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
 
   data.selection_rect = WebRect(left, top, right - left, bottom - top);
 
+  data.source_type = source_type;
+
+  const bool from_touch = source_type == kMenuSourceTouch ||
+                          source_type == kMenuSourceLongPress ||
+                          source_type == kMenuSourceLongTap;
   if (from_touch && !ShouldShowContextMenuFromTouch(data))
     return false;
 
