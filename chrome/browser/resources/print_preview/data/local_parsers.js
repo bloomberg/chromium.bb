@@ -69,7 +69,8 @@ cr.define('print_preview', function() {
   /**
    * Parses an extension destination from an extension supplied printer
    * description.
-   * @param {!Object} destinationInfo Object describing an extension printer.
+   * @param {!print_preview.ProvisionalDestinationInfo} destinationInfo Object
+   *     describing an extension printer.
    * @return {!print_preview.Destination} Parsed destination.
    */
   ExtensionDestinationParser.parse = function(destinationInfo) {

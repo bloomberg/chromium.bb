@@ -476,9 +476,9 @@ class PrintPreviewHandler::AccessTokenService
         handler_(handler) {
   }
 
-  void RequestToken(const std::string& type) {
+  void RequestToken(const std::string& type, const std::string& callback_id) {
     if (requests_.find(type) != requests_.end())
-      return;  // Already in progress.
+      return;  // Should never happen, see cloud_print_interface.js
 
     OAuth2TokenService* service = NULL;
     std::string account_id;
@@ -507,29 +507,32 @@ class PrintPreviewHandler::AccessTokenService
       std::unique_ptr<OAuth2TokenService::Request> request(
           service->StartRequest(account_id, oauth_scopes, this));
       requests_[type] = std::move(request);
+      callbacks_[type] = callback_id;
     } else {
-      handler_->SendAccessToken(type, std::string());  // Unknown type.
+      // Unknown type.
+      handler_->SendAccessToken(callback_id, std::string());
     }
   }
 
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                          const std::string& access_token,
                          const base::Time& expiration_time) override {
-    OnServiceResponce(request, access_token);
+    OnServiceResponse(request, access_token);
   }
 
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override {
-    OnServiceResponce(request, std::string());
+    OnServiceResponse(request, std::string());
   }
 
  private:
-  void OnServiceResponce(const OAuth2TokenService::Request* request,
+  void OnServiceResponse(const OAuth2TokenService::Request* request,
                          const std::string& access_token) {
     for (Requests::iterator i = requests_.begin(); i != requests_.end(); ++i) {
       if (i->second.get() == request) {
-        handler_->SendAccessToken(i->first, access_token);
+        handler_->SendAccessToken(callbacks_[i->first], access_token);
         requests_.erase(i);
+        callbacks_.erase(i->first);
         return;
       }
     }
@@ -539,6 +542,8 @@ class PrintPreviewHandler::AccessTokenService
   using Requests =
       std::map<std::string, std::unique_ptr<OAuth2TokenService::Request>>;
   Requests requests_;
+  using Callbacks = std::map<std::string, std::string>;
+  Callbacks callbacks_;
   PrintPreviewHandler* handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenService);
@@ -745,14 +750,17 @@ void PrintPreviewHandler::HandleGetExtensionPrinters(
 
 void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
     const base::ListValue* args) {
+  std::string callback_id;
   std::string printer_id;
-  bool ok = args->GetString(0, &printer_id);
+  bool ok = args->GetString(0, &callback_id) &&
+            args->GetString(1, &printer_id) && !callback_id.empty();
   DCHECK(ok);
 
+  AllowJavascript();
   EnsureExtensionPrinterHandlerSet();
   extension_printer_handler_->StartGrantPrinterAccess(
       printer_id, base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
-                             weak_factory_.GetWeakPtr(), printer_id));
+                             weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
@@ -1154,12 +1162,17 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
 }
 
 void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
+  std::string callback_id;
   std::string type;
-  if (!args->GetString(0, &type))
-    return;
+
+  bool ok = args->GetString(0, &callback_id) && args->GetString(1, &type) &&
+            !callback_id.empty();
+  DCHECK(ok);
+
+  AllowJavascript();
   if (!token_service_)
     token_service_ = base::MakeUnique<AccessTokenService>(this);
-  token_service_->RequestToken(type);
+  token_service_->RequestToken(type, callback_id);
 }
 
 void PrintPreviewHandler::HandleManageCloudPrint(
@@ -1318,11 +1331,11 @@ void PrintPreviewHandler::ClosePreviewDialog() {
   print_preview_ui()->OnClosePrintPreviewDialog();
 }
 
-void PrintPreviewHandler::SendAccessToken(const std::string& type,
+void PrintPreviewHandler::SendAccessToken(const std::string& callback_id,
                                           const std::string& access_token) {
   VLOG(1) << "Get getAccessToken finished";
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "onDidGetAccessToken", base::Value(type), base::Value(access_token));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(access_token));
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
@@ -1783,16 +1796,13 @@ void PrintPreviewHandler::OnGotPrintersForExtension(
 }
 
 void PrintPreviewHandler::OnGotExtensionPrinterInfo(
-    const std::string& printer_id,
+    const std::string& callback_id,
     const base::DictionaryValue& printer_info) {
   if (printer_info.empty()) {
-    web_ui()->CallJavascriptFunctionUnsafe("failedToResolveProvisionalPrinter",
-                                           base::Value(printer_id));
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
-
-  web_ui()->CallJavascriptFunctionUnsafe("onProvisionalPrinterResolved",
-                                         base::Value(printer_id), printer_info);
+  ResolveJavascriptCallback(base::Value(callback_id), printer_info);
 }
 
 void PrintPreviewHandler::OnGotExtensionPrinterCapabilities(
