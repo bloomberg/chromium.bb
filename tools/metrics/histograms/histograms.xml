@@ -41094,6 +41094,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SSLRecordSizeRead" units="bytes">
+  <owner>davidben@chromium.org</owner>
+  <owner>svaldez@chromium.org</owner>
+  <summary>
+    The number of bytes, excluding the record header, of each TLS record read.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLServerKeyExchangeHash" enum="SSLHashAlgorithm">
   <obsolete>
     Replaced by Net.SSLSignatureAlgorithm.
