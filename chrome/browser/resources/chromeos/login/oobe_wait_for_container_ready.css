@@ -2,12 +2,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.header {
-  margin-top: 15px;
+.title {
+  font-size: 18px;
+  padding: 32px 0 0 0;
 }
 
-.subtitle {
-  line-height: 20px;
+#subtitle {
+  font-size: 12px;
+  padding: 4px 0 0 0;
+}
+
+iron-icon {
+  height: 24px;
+  width: 24px;
 }
 
 paper-progress {
@@ -15,6 +22,6 @@ paper-progress {
   --paper-progress-container-color: #e6e6e6;
   --paper-progress-secondary-color: rgb(66, 133, 244);
   display: block;
-  padding: 48px 0 0 0;
+  padding: 40px 0 0 0;
   width: 100%;
 }

@@ -46,6 +46,11 @@ Polymer({
       value: false,
       reflectToAttribute: true,
     },
+
+    android: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   focus: function() {

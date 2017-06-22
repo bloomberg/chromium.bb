@@ -2,22 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-oobe-text-button {
-  -webkit-margin-end: 16px;
-  color: #5a5a5a;
-}
-
 #value-prop-view {
   display: block;
-  height: 496px;
+  height: 372px;
   margin: auto;
   padding: 0;
 }
 
-#cancelButton {
-  -webkit-margin-end: 4px;
+#noThanksButton {
+  color: rgb(66, 133, 244);
 }
 
-.subtitle {
-  line-height: 20px;
+#continueButton {
+  -webkit-margin-end: 18px;
 }

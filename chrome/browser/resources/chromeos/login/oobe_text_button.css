@@ -16,6 +16,14 @@ paper-button[focused] {
   border-color: var(--oobe-text-button-focused-border-color);
 }
 
+paper-button[android] {
+  height: 27px;
+}
+
+paper-button[android]:not([border]):not([inverse]) {
+  height: 13px;
+}
+
 #container {
   border-radius: 2px;
   padding: 0 16px;
@@ -37,8 +45,17 @@ paper-button[focused] {
   border-width: 1px;
 }
 
+#textButton[android] #container {
+  padding: 0 18px;
+}
+
 ::content * {
   font: var(--oobe-roboto-medium), sans-serif;
   font-size: 12px;
   text-transform: none;
+}
+
+#textButton[android] #container ::content * {
+  font-size: 10px;
+  text-transform: uppercase;
 }
