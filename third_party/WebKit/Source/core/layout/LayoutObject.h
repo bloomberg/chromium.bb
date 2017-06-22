@@ -608,6 +608,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetLayoutNGInline(layout_ng_inline);
   }
 
+  bool IsTruncated() const { return bitfields_.IsTruncated(); }
+  void SetIsTruncated(bool is_truncated) {
+    bitfields_.SetIsTruncated(is_truncated);
+  }
+
   bool EverHadLayout() const { return bitfields_.EverHadLayout(); }
 
   bool ChildrenInline() const { return bitfields_.ChildrenInline(); }
@@ -2305,6 +2310,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           outline_may_be_affected_by_descendants_(false),
           previous_outline_may_be_affected_by_descendants_(false),
           layout_ng_inline_(false),
+          is_truncated_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
@@ -2506,9 +2512,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     ADD_BOOLEAN_BITFIELD(layout_ng_inline_, LayoutNGInline);
 
+    ADD_BOOLEAN_BITFIELD(is_truncated_, IsTruncated);
+
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned unused_bits_ : 3;
+    unsigned unused_bits_ : 2;
 
    private:
     // This is the cached 'position' value of this object

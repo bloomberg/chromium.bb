@@ -305,6 +305,10 @@ class LineLayoutItem {
     ObjectPaintInvalidator(*layout_object_).SlowSetPaintingLayerNeedsRepaint();
   }
 
+  void SetIsTruncated(bool set_truncation) {
+    layout_object_->SetIsTruncated(set_truncation);
+  }
+
   struct LineLayoutItemHash {
     STATIC_ONLY(LineLayoutItemHash);
     static unsigned GetHash(const LineLayoutItem& key) {

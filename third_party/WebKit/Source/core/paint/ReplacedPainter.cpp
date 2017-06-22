@@ -148,6 +148,9 @@ bool ReplacedPainter::ShouldPaint(
       !ShouldPaintSelfBlockBackground(paint_info.phase))
     return false;
 
+  if (layout_replaced_.IsTruncated())
+    return false;
+
   // If we're invisible or haven't received a layout yet, just bail.
   // But if it's an SVG root, there can be children, so we'll check visibility
   // later.
