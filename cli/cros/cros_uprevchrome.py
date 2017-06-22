@@ -74,6 +74,20 @@ class UprevChromeCommand(command.CliCommand):
   https://chrome-internal-review.googlesource.com/
 
   Note:
+  A master Chrome PFQ build id argument is required. It must satisfy the
+  following requirements:
+    * If you are a gardener trying to uprev Chrome please verify if the Chrome
+      version you are trying to uprev to is stable and not crashy. Please
+      communicate with the corresponding Chrome TPM to find out if that Chrome
+      has any known issues or is particularly crashy. If yes, please work with
+      them to find a stable Chrome that can be used to uprev.
+    * The current  Chrome PFQ run is a failed run;
+    * No successful Chrome PFQ runs after this Chrome PFQ run;
+    * Master build of this PFQ run must have passed BinhostTest stage;
+    * All important slave builds of this PFQ run must have passed
+      UploadPrebuiltsTest stage.
+    * A bug id is required to track each manual uprev, describing the known
+      source of flake that is responsible for this run's failure.
   The public CL and private CL depend on each other,
   please submit them together.
   Please do not revert the generated CLs after they're merged.
