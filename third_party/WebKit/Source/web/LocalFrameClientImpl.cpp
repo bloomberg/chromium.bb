@@ -988,9 +988,9 @@ void LocalFrameClientImpl::SuddenTerminationDisablerChanged(
 }
 
 BlameContext* LocalFrameClientImpl::GetFrameBlameContext() {
-  if (!web_frame_->Client())
-    return nullptr;
-  return web_frame_->Client()->GetFrameBlameContext();
+  if (WebFrameClient* client = web_frame_->Client())
+    return client->GetFrameBlameContext();
+  return nullptr;
 }
 
 LinkResource* LocalFrameClientImpl::CreateServiceWorkerLinkResource(

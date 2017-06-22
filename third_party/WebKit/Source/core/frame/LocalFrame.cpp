@@ -1009,14 +1009,34 @@ FrameNavigationDisabler::~FrameNavigationDisabler() {
   frame_->EnableNavigation();
 }
 
-ScopedFrameBlamer::ScopedFrameBlamer(LocalFrame* frame) : frame_(frame) {
-  if (frame_ && frame_->Client() && frame_->Client()->GetFrameBlameContext())
-    frame_->Client()->GetFrameBlameContext()->Enter();
+namespace {
+
+bool IsScopedFrameBlamerEnabled() {
+  // Must match the category used in content::FrameBlameContext.
+  static const auto* enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("blink");
+  return *enabled;
 }
 
-ScopedFrameBlamer::~ScopedFrameBlamer() {
-  if (frame_ && frame_->Client() && frame_->Client()->GetFrameBlameContext())
-    frame_->Client()->GetFrameBlameContext()->Leave();
+}  // namespace
+
+ScopedFrameBlamer::ScopedFrameBlamer(LocalFrame* frame)
+    : frame_(IsScopedFrameBlamerEnabled() ? frame : nullptr) {
+  if (LIKELY(!frame_))
+    return;
+  LocalFrameClient* client = frame_->Client();
+  if (!client)
+    return;
+  if (BlameContext* context = client->GetFrameBlameContext())
+    context->Enter();
+}
+
+void ScopedFrameBlamer::LeaveContext() {
+  LocalFrameClient* client = frame_->Client();
+  if (!client)
+    return;
+  if (BlameContext* context = client->GetFrameBlameContext())
+    context->Leave();
 }
 
 void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
