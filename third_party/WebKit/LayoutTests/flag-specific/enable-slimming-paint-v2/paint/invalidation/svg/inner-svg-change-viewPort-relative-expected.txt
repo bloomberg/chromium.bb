@@ -14,7 +14,7 @@
         {
           "object": "InlineTextBox 'right-aligned text'",
           "rect": [93, 85, 107, 19],
-          "reason": "full"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",

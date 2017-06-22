@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [162, 8, 158, 22],
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'PASSED'",
           "rect": [168, 11, 53, 16],
           "reason": "appeared"

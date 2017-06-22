@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [8, 50, 320, 120],
-          "reason": "full"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
