@@ -53,6 +53,10 @@ http://www.chromium.org/developers/design-documents/idl-compiler#TOC-Front-end
 #
 # Disable attribute validation, as lint can't import parent class to check
 # pylint: disable=E1101
+#
+# Disable check for invalid name as patterns use p_ prefix and they take |p|
+# argument
+# pylint: disable=C0103
 
 import os.path
 import sys
@@ -203,33 +207,6 @@ class BlinkIDLParser(IDLParser):
     # Numbers are as per Candidate Recommendation 19 April 2012:
     # http://www.w3.org/TR/2012/CR-WebIDL-20120419/
 
-    # [b27] Add strings, more 'Literal' productions
-    # 'Literal's needed because integers and strings are both internally strings
-    def p_ConstValue(self, p):
-        """ConstValue : BooleanLiteral
-                      | FloatLiteral
-                      | IntegerLiteral
-                      | StringLiteral
-                      | null"""
-        # Standard is (no 'string', fewer 'Literal's):
-        # ConstValue : BooleanLiteral
-        #            | FloatLiteral
-        #            | integer
-        #            | NULL
-        p[0] = p[1]
-
-    # [b27.1]
-    def p_IntegerLiteral(self, p):
-        """IntegerLiteral : integer"""
-        p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'integer'),
-                              self.BuildAttribute('NAME', p[1]))
-
-    # [b27.2]
-    def p_StringLiteral(self, p):
-        """StringLiteral : string"""
-        p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'DOMString'),
-                              self.BuildAttribute('NAME', p[1]))
-
     # [b47]
     def p_ExceptionMember(self, p):
         """ExceptionMember : Const
@@ -325,6 +302,11 @@ class BlinkIDLParser(IDLParser):
             p[0] = ListFromConcat(unwrap_string(p[1]), p[3])
         else:
             p[0] = ListFromConcat(unwrap_string(p[1]))
+
+    def p_StringLiteral(self, p):
+        """StringLiteral : string"""
+        p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'DOMString'),
+                              self.BuildAttribute('NAME', p[1]))
 
     def __init__(self,
                  # common parameters
