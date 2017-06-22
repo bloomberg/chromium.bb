@@ -5,6 +5,7 @@
 #include "chromecast/crash/cast_crash_keys.h"
 
 #include "components/crash/core/common/crash_keys.h"
+#include "gpu/config/gpu_crash_keys.h"
 
 namespace chromecast {
 namespace crash_keys {
@@ -31,9 +32,15 @@ size_t RegisterCastCrashKeys() {
       {"num-extensions", ::crash_keys::kSmallSize},
       {"shutdown-type", ::crash_keys::kSmallSize},
       {"browser-unpin-trace", ::crash_keys::kMediumSize},
-      {"gpu-driver", ::crash_keys::kSmallSize},
-      {"gpu-psver", ::crash_keys::kSmallSize},
-      {"gpu-vsver", ::crash_keys::kSmallSize},
+
+      // gpu
+      {gpu::crash_keys::kGPUDriverVersion, ::crash_keys::kSmallSize},
+      {gpu::crash_keys::kGPUPixelShaderVersion, ::crash_keys::kSmallSize},
+      {gpu::crash_keys::kGPUVertexShaderVersion, ::crash_keys::kSmallSize},
+      // Temporary for https://crbug.com/729483.
+      // TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
+      {gpu::crash_keys::kGpuChannelFilterTrace, ::crash_keys::kMediumSize},
+      {gpu::crash_keys::kMediaGpuChannelFilterTrace, ::crash_keys::kMediumSize},
 
       // content/:
       {"bad_message_reason", ::crash_keys::kSmallSize},

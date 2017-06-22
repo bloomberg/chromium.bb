@@ -21,13 +21,6 @@ extern const char* const kWebViewCrashKeyWhiteList[];
 
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
-// GPU information.
-extern const char kGPUDriverVersion[];
-extern const char kGPUPixelShaderVersion[];
-extern const char kGPUVertexShaderVersion[];
-extern const char kGPUVendor[];
-extern const char kGPURenderer[];
-
 // Application information.
 extern const char kAppPackageName[];
 extern const char kAppPackageVersionCode[];

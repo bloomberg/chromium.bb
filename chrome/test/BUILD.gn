@@ -217,6 +217,7 @@ static_library("test_support") {
     public_deps += [
       "//chrome/install_static/test:test_support",
       "//components/crash/content/app",
+      "//gpu/config:crash_keys",
       "//third_party/wtl",
     ]
   }
