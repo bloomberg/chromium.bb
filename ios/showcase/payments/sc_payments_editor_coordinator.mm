@@ -47,7 +47,7 @@
   NSArray<NSString*>* options = @[ @"Ontario", @"Quebec" ];
   self.province.value = options[1];
   self.province.enabled = YES;
-  [self.consumer setOptions:options forEditorField:self.province];
+  [self.consumer setOptions:@[ options ] forEditorField:self.province];
 }
 
 #pragma mark - Helper methods

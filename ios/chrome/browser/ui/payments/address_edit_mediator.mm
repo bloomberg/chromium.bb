@@ -161,7 +161,7 @@
   // Notify the view controller asynchronously to allow for the view to update.
   __weak AddressEditMediator* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{
-    [weakSelf.consumer setOptions:[regions allKeys]
+    [weakSelf.consumer setOptions:@[ [regions allKeys] ]
                    forEditorField:weakSelf.regionField];
   });
 }
