@@ -104,7 +104,7 @@
       'CFI Linux CF': 'cfi_full_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'cfi_full_clang_tot_release_static',
       'CFI Linux': 'cfi_release_static',
-      'CFI Linux Full': 'cfi_thin_lto_full_release_static_use_lld',
+      'CFI Linux Full': 'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'CFI ThinLTO Linux ToT': 'cfi_thin_lto_clang_tot_full_symbols_release_static_use_lld',
       'Chromium Linux Goma Canary': 'release_bot',
       'Chromium Linux Goma Canary': 'release_bot',
@@ -529,7 +529,7 @@
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
       'linux_chromium_browser_side_navigation_rel': 'release_trybot',
-      'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
+      'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'linux_chromium_chromeos_asan_rel_ng': 'asan_lsan_chromeos_release_trybot',
       'linux_chromium_chromeos_compile_dbg_ng': 'chromeos_with_codecs_debug_trybot',
       'linux_chromium_chromeos_compile_rel_ng': 'chromeos_with_codecs_release_trybot',
@@ -991,8 +991,8 @@
       'cfi_full', 'clang_tot', 'release', 'static',
     ],
 
-    'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on': [
-      'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on',
+    'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma': [
+      'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
     ],
 
     'cfi_release_static': [
@@ -1001,10 +1001,6 @@
 
     'cfi_thin_lto_clang_tot_full_symbols_release_static_use_lld': [
       'cfi', 'thin_lto', 'clang_tot', 'full_symbols', 'release', 'static', 'use_lld',
-    ],
-
-    'cfi_thin_lto_full_release_static_use_lld': [
-      'cfi', 'thin_lto', 'release', 'static', 'use_lld',
     ],
 
     'chrome_with_codecs_blink_logging_release_trybot': [
