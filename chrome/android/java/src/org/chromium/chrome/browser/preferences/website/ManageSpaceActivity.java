@@ -326,7 +326,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
                     siteStorageLeft += site.getTotalUsage();
                 }
             }
-            if (sites.size() == 0) {
+            if (mNumSitesClearing == 0) {
                 onStoredDataCleared();
             }
             onSiteStorageSizeCalculated(siteStorageLeft, 0);

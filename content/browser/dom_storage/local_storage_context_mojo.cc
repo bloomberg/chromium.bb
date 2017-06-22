@@ -678,8 +678,16 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
     GetStorageUsageCallback callback) {
   if (!database_) {
     // If for whatever reason no leveldb database is available, no storage is
-    // used, so return an empty array.
-    std::move(callback).Run(std::vector<LocalStorageUsageInfo>());
+    // used, so return an array only containing the current leveldb wrappers.
+    std::vector<LocalStorageUsageInfo> result;
+    base::Time now = base::Time::Now();
+    for (const auto& it : level_db_wrappers_) {
+      LocalStorageUsageInfo info;
+      info.origin = it.first.GetURL();
+      info.last_modified = now;
+      result.push_back(std::move(info));
+    }
+    std::move(callback).Run(std::move(result));
     return;
   }
 
@@ -694,11 +702,13 @@ void LocalStorageContextMojo::OnGotMetaData(
     leveldb::mojom::DatabaseError status,
     std::vector<leveldb::mojom::KeyValuePtr> data) {
   std::vector<LocalStorageUsageInfo> result;
+  std::set<url::Origin> origins;
   for (const auto& row : data) {
     DCHECK_GT(row->key.size(), arraysize(kMetaPrefix));
     LocalStorageUsageInfo info;
     info.origin = GURL(leveldb::Uint8VectorToStdString(row->key).substr(
         arraysize(kMetaPrefix)));
+    origins.insert(url::Origin(info.origin));
     if (!info.origin.is_valid()) {
       // TODO(mek): Deal with database corruption.
       continue;
@@ -711,6 +721,17 @@ void LocalStorageContextMojo::OnGotMetaData(
     }
     info.data_size = data.size_bytes();
     info.last_modified = base::Time::FromInternalValue(data.last_modified());
+    result.push_back(std::move(info));
+  }
+  // Add any origins for which LevelDBWrappers exist, but which haven't
+  // committed any data to disk yet.
+  base::Time now = base::Time::Now();
+  for (const auto& it : level_db_wrappers_) {
+    if (origins.find(it.first) != origins.end())
+      continue;
+    LocalStorageUsageInfo info;
+    info.origin = it.first.GetURL();
+    info.last_modified = now;
     result.push_back(std::move(info));
   }
   std::move(callback).Run(std::move(result));

@@ -319,9 +319,18 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
   wrapper->Put(key2, value, "source", base::Bind(&NoOpSuccess));
   wrapper.reset();
 
-  // GetStorageUsage only include committed data, so nothing at this point.
+  // GetStorageUsage only includes committed data, but still returns all origins
+  // that used localstorage with zero size.
   std::vector<LocalStorageUsageInfo> info = GetStorageUsageSync();
-  EXPECT_EQ(0u, info.size());
+  ASSERT_EQ(2u, info.size());
+  if (url::Origin(info[0].origin) == origin2)
+    std::swap(info[0], info[1]);
+  EXPECT_EQ(origin1, url::Origin(info[0].origin));
+  EXPECT_EQ(origin2, url::Origin(info[1].origin));
+  EXPECT_LE(before_write, info[0].last_modified);
+  EXPECT_LE(before_write, info[1].last_modified);
+  EXPECT_EQ(0u, info[0].data_size);
+  EXPECT_EQ(0u, info[1].data_size);
 
   // Make sure all data gets committed to disk.
   base::RunLoop().RunUntilIdle();
@@ -332,7 +341,6 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
   ASSERT_EQ(2u, info.size());
   if (url::Origin(info[0].origin) == origin2)
     std::swap(info[0], info[1]);
-
   EXPECT_EQ(origin1, url::Origin(info[0].origin));
   EXPECT_EQ(origin2, url::Origin(info[1].origin));
   EXPECT_LE(before_write, info[0].last_modified);
