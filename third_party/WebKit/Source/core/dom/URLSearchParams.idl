@@ -5,7 +5,7 @@
 // https://url.spec.whatwg.org/#interface-urlsearchparams
 
 [
-    Constructor(optional (sequence<sequence<USVString>> or USVString or URLSearchParams) init = ""),
+    Constructor(optional (sequence<sequence<USVString>> or record<USVString, USVString> or USVString) init = ""),
     Exposed=(Window,Worker),
     RaisesException=Constructor
 ] interface URLSearchParams {

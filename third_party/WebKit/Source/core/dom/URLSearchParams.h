@@ -8,7 +8,7 @@
 #include <base/gtest_prod_util.h>
 #include <utility>
 #include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/USVStringSequenceSequenceOrUSVStringOrURLSearchParams.h"
+#include "bindings/core/v8/USVStringSequenceSequenceOrUSVStringUSVStringRecordOrUSVString.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
@@ -20,7 +20,7 @@ namespace blink {
 class ExceptionState;
 class DOMURL;
 
-typedef USVStringSequenceSequenceOrUSVStringOrURLSearchParams
+typedef USVStringSequenceSequenceOrUSVStringUSVStringRecordOrUSVString
     URLSearchParamsInit;
 
 class CORE_EXPORT URLSearchParams final
@@ -31,6 +31,8 @@ class CORE_EXPORT URLSearchParams final
 
  public:
   static URLSearchParams* Create(const URLSearchParamsInit&, ExceptionState&);
+  static URLSearchParams* Create(const Vector<std::pair<String, String>>&,
+                                 ExceptionState&);
   static URLSearchParams* Create(const Vector<Vector<String>>&,
                                  ExceptionState&);
 
@@ -65,7 +67,6 @@ class CORE_EXPORT URLSearchParams final
   FRIEND_TEST_ALL_PREFIXES(URLSearchParamsTest, EncodedFormData);
 
   explicit URLSearchParams(const String&, DOMURL* = nullptr);
-  explicit URLSearchParams(URLSearchParams*);
 
   void RunUpdateSteps();
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
