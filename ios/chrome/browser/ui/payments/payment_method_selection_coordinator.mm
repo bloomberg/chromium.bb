@@ -125,7 +125,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   [self.creditCardEditCoordinator stop];
   self.creditCardEditCoordinator = nil;
 
-  if (self.mediator.state != PaymentRequestSelectorStateEdit) {
+  if (![self.viewController isEditing]) {
     // Inform |self.delegate| that this card has been selected.
     [self.delegate paymentMethodSelectionCoordinator:self
                               didSelectPaymentMethod:creditCard];
