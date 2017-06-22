@@ -1232,8 +1232,11 @@ bool TabsUpdateFunction::RunAsync() {
 
   if (params->update_properties.opener_tab_id.get()) {
     int opener_id = *params->update_properties.opener_tab_id;
-
     WebContents* opener_contents = NULL;
+    if (opener_id == tab_id) {
+      error_ = "Cannot set a tab's opener to itself.";
+      return false;
+    }
     if (!ExtensionTabUtil::GetTabById(opener_id, browser_context(),
                                       include_incognito(), nullptr, nullptr,
                                       &opener_contents, nullptr))
