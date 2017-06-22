@@ -1872,6 +1872,7 @@ test("blink_platform_unittests") {
     "graphics/GraphicsContextTest.cpp",
     "graphics/PaintInvalidationReasonTest.cpp",
     "graphics/RecordingImageBufferSurfaceTest.cpp",
+    "graphics/compositing/ContentLayerClientImplTest.cpp",
     "graphics/compositing/PaintArtifactCompositorTest.cpp",
     "graphics/filters/ImageFilterBuilderTest.cpp",
     "graphics/gpu/DrawingBufferTest.cpp",

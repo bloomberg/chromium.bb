@@ -80,8 +80,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
     return extra_data_for_testing_.get();
   }
 
-  void ResetTrackedRasterInvalidations();
-  bool HasTrackedRasterInvalidations() const;
+  void SetTracksRasterInvalidations(bool);
 
   std::unique_ptr<JSONObject> LayersAsJSON(LayerTreeFlags) const;
 
@@ -106,6 +105,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
     // applied by the compositor, and more properties will be applied internally
     // to the chunks as Skia commands.
     void Upcast(const PropertyTreeState&);
+
     FloatRect bounds;
     Vector<const PaintChunk*> paint_chunks;
     bool known_to_be_opaque;
@@ -145,12 +145,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   static bool CanDecompositeEffect(const EffectPaintPropertyNode*,
                                    const PendingLayer&);
 
-  static IntRect MapRasterInvalidationRectFromChunkToLayer(
-      const FloatRect&,
-      const PaintChunk&,
-      const PendingLayer&,
-      const gfx::Vector2dF& layer_offset);
-
   // Builds a leaf layer that represents a single paint chunk.
   // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the
   // bounding box of a paint chunk does not necessarily start at (0, 0) (and
@@ -168,8 +162,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   // Finds a client among the current vector of clients that matches the paint
   // chunk's id, or otherwise allocates a new one.
   std::unique_ptr<ContentLayerClientImpl> ClientForPaintChunk(
-      const PaintChunk&,
-      const PaintArtifact&);
+      const PaintChunk&);
+
+  bool tracks_raster_invalidations_;
 
   scoped_refptr<cc::Layer> root_layer_;
   std::unique_ptr<WebLayer> web_layer_;
@@ -177,49 +172,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
 
   bool extra_data_for_testing_enabled_ = false;
   std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;
+
   friend class StubChromeClientForSPv2;
-
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           ForeignLayerPassesThrough);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           MergeSimpleChunks);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           Merge2DTransform);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           Merge2DTransformDirectAncestor);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           MergeTransformOrigin);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           MergeClip);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           MergeOpacity);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           MergeNested);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           ClipPushedUp);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           EffectPushedUp);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           EffectAndClipPushedUp);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           ClipAndEffectNoTransform);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           TwoClips);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           TwoEffects);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           TwoTransformsClipBetween);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           OverlapTransform);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           MightOverlap);
-
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           PendingLayer);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           PendingLayerWithGeometry);
-  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           PendingLayerKnownOpaque_DISABLED);
+  friend class PaintArtifactCompositorTestWithPropertyTrees;
 };
 
 }  // namespace blink

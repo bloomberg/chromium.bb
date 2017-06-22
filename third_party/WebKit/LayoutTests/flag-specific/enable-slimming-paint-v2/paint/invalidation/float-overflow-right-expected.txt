@@ -476,94 +476,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='outer'",
-          "rect": [0, 72, 62, 22],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='outer'",
-          "rect": [0, 66, 62, 22],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [6, 78, 50, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [6, 72, 50, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [6, 39, 50, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [6, 33, 50, 10],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [24, 78, 40, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [24, 72, 40, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [24, 39, 40, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [24, 33, 40, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [24, 0, 40, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [24, -6, 40, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [48, 80, 16, 17],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [48, 74, 16, 17],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [48, 41, 16, 17],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [48, 35, 16, 17],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [48, 2, 16, 17],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [48, -4, 16, 17],
-          "reason": "geometry"
+          "rect": [0, 0, 64, 97],
+          "reason": "full layer"
         }
       ]
     }

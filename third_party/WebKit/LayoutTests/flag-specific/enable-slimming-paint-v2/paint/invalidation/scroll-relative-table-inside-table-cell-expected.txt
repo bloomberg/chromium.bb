@@ -22,6 +22,11 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
+          "rect": [1114, 1314, 435, 450],
+          "reason": "disappeared"
+        },
+        {
           "object": "HorizontalScrollbar",
           "rect": [1114, 1764, 435, 15],
           "reason": "scroll control"

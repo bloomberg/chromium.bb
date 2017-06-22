@@ -11,7 +11,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/compositing/ContentLayerClientImpl.h"
-#include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 #include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -29,22 +28,6 @@
 
 namespace blink {
 
-template <typename T>
-static std::unique_ptr<JSONArray> PointAsJSONArray(const T& point) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
-  array->PushDouble(point.X());
-  array->PushDouble(point.Y());
-  return array;
-}
-
-template <typename T>
-static std::unique_ptr<JSONArray> SizeAsJSONArray(const T& size) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
-  array->PushDouble(size.Width());
-  array->PushDouble(size.Height());
-  return array;
-}
-
 // cc property trees make use of a sequence number to identify when tree
 // topology changes. For now we naively increment the sequence number each time
 // we update the property trees. We should explore optimizing our management of
@@ -52,7 +35,8 @@ static std::unique_ptr<JSONArray> SizeAsJSONArray(const T& size) {
 // http://crbug.com/692842#c4.
 static int g_s_property_tree_sequence_number = 1;
 
-PaintArtifactCompositor::PaintArtifactCompositor() {
+PaintArtifactCompositor::PaintArtifactCompositor()
+    : tracks_raster_invalidations_(false) {
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   root_layer_ = cc::Layer::Create();
@@ -62,9 +46,9 @@ PaintArtifactCompositor::PaintArtifactCompositor() {
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {}
 
-void PaintArtifactCompositor::ResetTrackedRasterInvalidations() {
+void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
   for (auto& client : content_layer_clients_)
-    client->ResetTrackedRasterInvalidations();
+    client->SetTracksRasterInvalidations(should_track);
 }
 
 std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
@@ -101,9 +85,7 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
 }
 
 std::unique_ptr<ContentLayerClientImpl>
-PaintArtifactCompositor::ClientForPaintChunk(
-    const PaintChunk& paint_chunk,
-    const PaintArtifact& paint_artifact) {
+PaintArtifactCompositor::ClientForPaintChunk(const PaintChunk& paint_chunk) {
   // TODO(chrishtr): for now, just using a linear walk. In the future we can
   // optimize this by using the same techniques used in PaintController for
   // display lists.
@@ -112,26 +94,9 @@ PaintArtifactCompositor::ClientForPaintChunk(
       return std::move(client);
   }
 
-  return WTF::WrapUnique(new ContentLayerClientImpl(paint_chunk));
-}
-
-IntRect PaintArtifactCompositor::MapRasterInvalidationRectFromChunkToLayer(
-    const FloatRect& r,
-    const PaintChunk& paint_chunk,
-    const PendingLayer& pending_layer,
-    const gfx::Vector2dF& layer_offset) {
-  FloatClipRect rect(
-      r == FloatRect(LayoutRect::InfiniteIntRect()) ? paint_chunk.bounds : r);
-  GeometryMapper::LocalToAncestorVisualRect(
-      paint_chunk.properties.property_tree_state,
-      pending_layer.property_tree_state, rect);
-  if (rect.Rect().IsEmpty())
-    return IntRect();
-  // Now rect is in the space of the containing transform node of pending_layer,
-  // so need to subtract off the layer offset.
-  rect.Rect().Move(-layer_offset.x(), -layer_offset.y());
-  rect.Rect().Inflate(paint_chunk.outset_for_raster_effects);
-  return EnclosingIntRect(rect.Rect());
+  auto client = WTF::MakeUnique<ContentLayerClientImpl>();
+  client->SetTracksRasterInvalidations(tracks_raster_invalidations_);
+  return client;
 }
 
 scoped_refptr<cc::Layer>
@@ -154,68 +119,16 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 
   // The common case: create or reuse a PictureLayer for painted content.
   std::unique_ptr<ContentLayerClientImpl> content_layer_client =
-      ClientForPaintChunk(first_paint_chunk, paint_artifact);
+      ClientForPaintChunk(first_paint_chunk);
 
   gfx::Rect cc_combined_bounds(EnclosingIntRect(pending_layer.bounds));
-
   layer_offset = cc_combined_bounds.OffsetFromOrigin();
-  scoped_refptr<cc::PictureLayer> cc_picture_layer =
-      content_layer_client->CcPictureLayer();
-  cc_picture_layer->SetBounds(cc_combined_bounds.size());
-  cc_picture_layer->SetIsDrawable(true);
-  cc_picture_layer->SetContentsOpaque(pending_layer.known_to_be_opaque);
-  content_layer_client->ClearPaintChunkDebugData();
 
-  for (const auto& paint_chunk : pending_layer.paint_chunks) {
-    if (store_debug_info) {
-      content_layer_client->AddPaintChunkDebugData(
-          paint_artifact.GetDisplayItemList().SubsequenceAsJSON(
-              paint_chunk->begin_index, paint_chunk->end_index,
-              DisplayItemList::kSkipNonDrawings |
-                  DisplayItemList::kShownOnlyDisplayItemTypes));
-    }
-
-    DCHECK(paint_chunk->raster_invalidation_tracking.IsEmpty() ||
-           paint_chunk->raster_invalidation_rects.size() ==
-               paint_chunk->raster_invalidation_tracking.size());
-
-    for (size_t i = 0; i < paint_chunk->raster_invalidation_rects.size(); ++i) {
-      auto rect = MapRasterInvalidationRectFromChunkToLayer(
-          paint_chunk->raster_invalidation_rects[i], *paint_chunk,
-          pending_layer, layer_offset);
-      if (rect.IsEmpty())
-        continue;
-      content_layer_client->SetNeedsDisplayRect(rect);
-
-      if (paint_chunk->raster_invalidation_tracking.IsEmpty())
-        continue;
-      auto& cc_tracking =
-          content_layer_client->EnsureRasterInvalidationTracking();
-      auto info = paint_chunk->raster_invalidation_tracking[i];
-      info.rect = rect;
-      cc_tracking.invalidations.push_back(info);
-      cc_tracking.invalidation_region_since_last_paint.Unite(rect);
-    }
-  }
-
-  Optional<RasterUnderInvalidationCheckingParams> params;
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-    params.emplace(
-        content_layer_client->EnsureRasterInvalidationTracking(),
-        IntRect(0, 0, cc_combined_bounds.width(), cc_combined_bounds.height()),
-        content_layer_client->DebugName());
-  }
-
-  auto display_list = PaintChunksToCcLayer::Convert(
-      pending_layer.paint_chunks, pending_layer.property_tree_state,
-      layer_offset, paint_artifact.GetDisplayItemList(),
-      params ? &*params : nullptr);
-  content_layer_client->SetDisplayList(std::move(display_list));
-  content_layer_client->SetPaintableRegion(
-      gfx::Rect(cc_combined_bounds.size()));
-
+  auto cc_layer = content_layer_client->UpdateCcPictureLayer(
+      paint_artifact, cc_combined_bounds, pending_layer.paint_chunks,
+      pending_layer.property_tree_state, store_debug_info);
   new_content_layer_clients.push_back(std::move(content_layer_client));
-  return cc_picture_layer;
+  return cc_layer;
 }
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(
@@ -543,8 +456,7 @@ void PaintArtifactCompositor::Update(
   CollectPendingLayers(paint_artifact, pending_layers);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
-  new_content_layer_clients.ReserveCapacity(
-      paint_artifact.PaintChunks().size());
+  new_content_layer_clients.ReserveCapacity(pending_layers.size());
   for (const PendingLayer& pending_layer : pending_layers) {
     gfx::Vector2dF layer_offset;
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
@@ -587,6 +499,7 @@ void PaintArtifactCompositor::Update(
     layer->SetEffectTreeIndex(effect_id);
     property_tree_manager.UpdateLayerScrollMapping(layer.get(), transform);
 
+    layer->SetContentsOpaque(pending_layer.known_to_be_opaque);
     layer->SetShouldCheckBackfaceVisibility(pending_layer.backface_hidden);
 
     if (extra_data_for_testing_enabled_)

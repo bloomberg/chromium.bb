@@ -34,26 +34,6 @@
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
           "reason": "disappeared"
         },
         {
@@ -75,46 +55,6 @@
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
           "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGPath path id='hp'",
-          "rect": [0, 0, 100, 100],
-          "reason": "SVG resource change"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
