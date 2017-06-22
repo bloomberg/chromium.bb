@@ -407,15 +407,24 @@ class FrameNavigationDisabler {
 // In Trace Viewer, we can find the cost of slice |foo| attributed to |frame|.
 // Design doc:
 // https://docs.google.com/document/d/15BB-suCb9j-nFt55yCFJBJCGzLg2qUm3WaSOPb8APtI/edit?usp=sharing
+//
+// This class is used in performance-sensitive code (like V8 entry), so care
+// should be taken to ensure that it has an efficient fast path (for the common
+// case where we are not tracking this).
 class ScopedFrameBlamer {
   WTF_MAKE_NONCOPYABLE(ScopedFrameBlamer);
   STACK_ALLOCATED();
 
  public:
   explicit ScopedFrameBlamer(LocalFrame*);
-  ~ScopedFrameBlamer();
+  ~ScopedFrameBlamer() {
+    if (UNLIKELY(frame_))
+      LeaveContext();
+  }
 
  private:
+  void LeaveContext();
+
   Member<LocalFrame> frame_;
 };
 
