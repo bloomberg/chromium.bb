@@ -262,7 +262,7 @@ ArcBluetoothBridge::ArcBluetoothBridge(ArcBridgeService* bridge_service)
 }
 
 ArcBluetoothBridge::~ArcBluetoothBridge() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   arc_bridge_service()->bluetooth()->RemoveObserver(this);
 
@@ -272,7 +272,7 @@ ArcBluetoothBridge::~ArcBluetoothBridge() {
 
 void ArcBluetoothBridge::OnAdapterInitialized(
     scoped_refptr<BluetoothAdapter> adapter) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // We can downcast here because we are always running on Chrome OS, and
   // so our adapter uses BlueZ.
@@ -552,7 +552,7 @@ void ArcBluetoothBridge::OnGattAttributeReadRequest(
     int offset,
     const ValueCallback& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->bluetooth(), RequestGattRead);
   if (!bluetooth_instance || !IsGattOffsetValid(offset)) {
@@ -576,7 +576,7 @@ void ArcBluetoothBridge::OnGattAttributeWriteRequest(
     int offset,
     const base::Closure& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->bluetooth(), RequestGattWrite);
   if (!bluetooth_instance || !IsGattOffsetValid(offset)) {
@@ -683,7 +683,7 @@ void ArcBluetoothBridge::GetAdapterProperty(mojom::BluetoothPropertyType type) {
 void ArcBluetoothBridge::OnSetDiscoverable(bool discoverable,
                                            bool success,
                                            uint32_t timeout) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (success && discoverable && timeout > 0) {
     discoverable_off_timer_.Start(
@@ -700,8 +700,8 @@ void ArcBluetoothBridge::OnSetDiscoverable(bool discoverable,
 // Set discoverable state to on / off.
 // In case of turning on, start timer to turn it back off in |timeout| seconds.
 void ArcBluetoothBridge::SetDiscoverable(bool discoverable, uint32_t timeout) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(bluetooth_adapter_);
-  DCHECK(CalledOnValidThread());
   DCHECK(!discoverable || timeout == 0);
 
   bool currently_discoverable = bluetooth_adapter_->IsDiscoverable();
@@ -835,8 +835,8 @@ void ArcBluetoothBridge::GetRemoteServices(
 }
 
 void ArcBluetoothBridge::StartDiscovery() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(bluetooth_adapter_);
-  DCHECK(CalledOnValidThread());
 
   if (discovery_session_) {
     LOG(ERROR) << "Discovery session already running; Reset timeout.";
@@ -887,7 +887,7 @@ void ArcBluetoothBridge::OnPoweredError(
 
 void ArcBluetoothBridge::OnDiscoveryStarted(
     std::unique_ptr<BluetoothDiscoverySession> session) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->bluetooth(), OnDiscoveryStateChanged);
@@ -1037,7 +1037,7 @@ void ArcBluetoothBridge::OnGattConnectStateChanged(
 void ArcBluetoothBridge::OnGattConnected(
     mojom::BluetoothAddressPtr addr,
     std::unique_ptr<BluetoothGattConnection> connection) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   gatt_connections_[addr->To<std::string>()] = std::move(connection);
   OnGattConnectStateChanged(std::move(addr), true);
 }
@@ -1050,7 +1050,7 @@ void ArcBluetoothBridge::OnGattConnectError(
 
 void ArcBluetoothBridge::OnGattDisconnected(
     mojom::BluetoothAddressPtr addr) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = gatt_connections_.find(addr->To<std::string>());
   if (it == gatt_connections_.end()) {
     LOG(WARNING) << "OnGattDisconnected called, "
@@ -1147,7 +1147,7 @@ void ArcBluetoothBridge::SearchService(mojom::BluetoothAddressPtr remote_addr) {
 void ArcBluetoothBridge::OnStartLEListenDone(
     const StartLEListenCallback& callback,
     scoped_refptr<BluetoothAdvertisement> advertisement) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisment_ = advertisement;
   callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
@@ -1155,13 +1155,13 @@ void ArcBluetoothBridge::OnStartLEListenDone(
 void ArcBluetoothBridge::OnStartLEListenError(
     const StartLEListenCallback& callback,
     BluetoothAdvertisement::ErrorCode error_code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisment_ = nullptr;
   callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
 }
 
 void ArcBluetoothBridge::StartLEListen(const StartLEListenCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::unique_ptr<BluetoothAdvertisement::Data> adv_data =
       base::MakeUnique<BluetoothAdvertisement::Data>(
           BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST);
@@ -1174,7 +1174,7 @@ void ArcBluetoothBridge::StartLEListen(const StartLEListenCallback& callback) {
 
 void ArcBluetoothBridge::OnStopLEListenDone(
     const StopLEListenCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisment_ = nullptr;
   callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
@@ -1182,7 +1182,7 @@ void ArcBluetoothBridge::OnStopLEListenDone(
 void ArcBluetoothBridge::OnStopLEListenError(
     const StopLEListenCallback& callback,
     BluetoothAdvertisement::ErrorCode error_code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisment_ = nullptr;
   callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
 }
@@ -1370,7 +1370,7 @@ void ArcBluetoothBridge::OnGattNotifyStartDone(
     const RegisterForGattNotificationCallback& callback,
     const std::string char_string_id,
     std::unique_ptr<BluetoothGattNotifySession> notify_session) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   notification_session_[char_string_id] = std::move(notify_session);
   callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
@@ -1400,7 +1400,7 @@ void ArcBluetoothBridge::DeregisterForGattNotification(
     mojom::BluetoothGattServiceIDPtr service_id,
     mojom::BluetoothGattIDPtr char_id,
     const DeregisterForGattNotificationCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   BluetoothRemoteGattCharacteristic* characteristic = FindGattCharacteristic(
       std::move(remote_addr), std::move(service_id), std::move(char_id));
@@ -1465,7 +1465,7 @@ int32_t ArcBluetoothBridge::GetNextGattServerAttributeHandle() {
 template <class LocalGattAttribute>
 int32_t ArcBluetoothBridge::CreateGattAttributeHandle(
     LocalGattAttribute* attribute) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!attribute)
     return kInvalidGattAttributeHandle;
   int32_t handle = GetNextGattServerAttributeHandle();
@@ -1498,7 +1498,7 @@ void ArcBluetoothBridge::AddCharacteristic(
     int32_t properties,
     int32_t permissions,
     const AddCharacteristicCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gatt_identifier_.find(service_handle) != gatt_identifier_.end());
   if (!IsGattServerAttributeHandleAvailable(1)) {
     callback.Run(kInvalidGattAttributeHandle);
@@ -1518,7 +1518,7 @@ void ArcBluetoothBridge::AddDescriptor(int32_t service_handle,
                                        const BluetoothUUID& uuid,
                                        int32_t permissions,
                                        const AddDescriptorCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsGattServerAttributeHandleAvailable(1)) {
     callback.Run(kInvalidGattAttributeHandle);
     return;
@@ -1558,7 +1558,7 @@ void ArcBluetoothBridge::AddDescriptor(int32_t service_handle,
 
 void ArcBluetoothBridge::StartService(int32_t service_handle,
                                       const StartServiceCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gatt_identifier_.find(service_handle) != gatt_identifier_.end());
   BluetoothLocalGattService* service =
       bluetooth_adapter_->GetGattService(gatt_identifier_[service_handle]);
@@ -1569,7 +1569,7 @@ void ArcBluetoothBridge::StartService(int32_t service_handle,
 
 void ArcBluetoothBridge::StopService(int32_t service_handle,
                                      const StopServiceCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gatt_identifier_.find(service_handle) != gatt_identifier_.end());
   BluetoothLocalGattService* service =
       bluetooth_adapter_->GetGattService(gatt_identifier_[service_handle]);
@@ -1580,7 +1580,7 @@ void ArcBluetoothBridge::StopService(int32_t service_handle,
 
 void ArcBluetoothBridge::DeleteService(int32_t service_handle,
                                        const DeleteServiceCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gatt_identifier_.find(service_handle) != gatt_identifier_.end());
   BluetoothLocalGattService* service =
       bluetooth_adapter_->GetGattService(gatt_identifier_[service_handle]);
@@ -1663,7 +1663,8 @@ bool ArcBluetoothBridge::GetAdvertisementHandle(int32_t* adv_handle) {
 
 void ArcBluetoothBridge::ReserveAdvertisementHandle(
     const ReserveAdvertisementHandleCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // Find an empty advertisement slot.
   int32_t adv_handle;
   if (!GetAdvertisementHandle(&adv_handle)) {
@@ -1685,7 +1686,7 @@ void ArcBluetoothBridge::BroadcastAdvertisement(
     int32_t adv_handle,
     std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement,
     const BroadcastAdvertisementCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (advertisements_.find(adv_handle) == advertisements_.end()) {
     callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
     return;
@@ -1708,7 +1709,7 @@ void ArcBluetoothBridge::BroadcastAdvertisement(
 void ArcBluetoothBridge::ReleaseAdvertisementHandle(
     int32_t adv_handle,
     const ReleaseAdvertisementHandleCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (advertisements_.find(adv_handle) == advertisements_.end()) {
     callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
     return;
@@ -1731,7 +1732,7 @@ void ArcBluetoothBridge::OnReadyToRegisterAdvertisement(
     const BroadcastAdvertisementCallback& callback,
     int32_t adv_handle,
     std::unique_ptr<device::BluetoothAdvertisement::Data> data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bluetooth_adapter_->RegisterAdvertisement(
       std::move(data),
       base::Bind(&ArcBluetoothBridge::OnRegisterAdvertisementDone,
@@ -1744,7 +1745,7 @@ void ArcBluetoothBridge::OnRegisterAdvertisementDone(
     const BroadcastAdvertisementCallback& callback,
     int32_t adv_handle,
     scoped_refptr<BluetoothAdvertisement> advertisement) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisements_[adv_handle] = std::move(advertisement);
   callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
@@ -1753,7 +1754,7 @@ void ArcBluetoothBridge::OnRegisterAdvertisementError(
     const BroadcastAdvertisementCallback& callback,
     int32_t adv_handle,
     BluetoothAdvertisement::ErrorCode error_code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   LOG(WARNING) << "Failed to register advertisement for handle " << adv_handle
                << ", error code = " << error_code;
   advertisements_[adv_handle] = nullptr;
@@ -1763,7 +1764,7 @@ void ArcBluetoothBridge::OnRegisterAdvertisementError(
 void ArcBluetoothBridge::OnUnregisterAdvertisementDone(
     const ReleaseAdvertisementHandleCallback& callback,
     int32_t adv_handle) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisements_.erase(adv_handle);
   callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
@@ -1772,7 +1773,7 @@ void ArcBluetoothBridge::OnUnregisterAdvertisementError(
     const ReleaseAdvertisementHandleCallback& callback,
     int32_t adv_handle,
     BluetoothAdvertisement::ErrorCode error_code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   LOG(WARNING) << "Failed to unregister advertisement for handle " << adv_handle
                << ", error code = " << error_code;
   advertisements_.erase(adv_handle);
@@ -2166,10 +2167,6 @@ void ArcBluetoothBridge::OnGetServiceRecordsError(
   sdp_bluetooth_instance->OnGetSdpRecords(
       status, std::move(remote_addr), target_uuid,
       std::vector<mojom::BluetoothSdpRecordPtr>());
-}
-
-bool ArcBluetoothBridge::CalledOnValidThread() {
-  return thread_checker_.CalledOnValidThread();
 }
 
 }  // namespace arc

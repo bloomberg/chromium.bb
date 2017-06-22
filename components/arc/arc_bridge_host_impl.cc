@@ -232,7 +232,7 @@ void ArcBridgeHostImpl::OnWallpaperInstanceReady(
 }
 
 void ArcBridgeHostImpl::OnClosed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "Mojo connection lost";
 
   // Close all mojo channels.
@@ -245,7 +245,7 @@ void ArcBridgeHostImpl::OnClosed() {
 template <typename T>
 void ArcBridgeHostImpl::OnInstanceReady(InstanceHolder<T>* holder,
                                         mojo::InterfacePtr<T> ptr) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(binding_.is_bound());
   DCHECK(ptr.is_bound());
 
@@ -267,7 +267,7 @@ void ArcBridgeHostImpl::OnInstanceReady(InstanceHolder<T>* holder,
 }
 
 void ArcBridgeHostImpl::OnChannelClosed(MojoChannel* channel) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   mojo_channels_.erase(
       std::find_if(mojo_channels_.begin(), mojo_channels_.end(),
                    [channel](std::unique_ptr<MojoChannel>& ptr) {

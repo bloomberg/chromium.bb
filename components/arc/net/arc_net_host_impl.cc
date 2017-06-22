@@ -295,7 +295,7 @@ ArcNetHostImpl::ArcNetHostImpl(ArcBridgeService* bridge_service)
 }
 
 ArcNetHostImpl::~ArcNetHostImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_bridge_service()->net()->RemoveObserver(this);
   if (observing_network_state_) {
     GetStateHandler()->RemoveObserver(this, FROM_HERE);
@@ -303,7 +303,7 @@ ArcNetHostImpl::~ArcNetHostImpl() {
 }
 
 void ArcNetHostImpl::OnInstanceReady() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   mojom::NetHostPtr host;
   binding_.Bind(MakeRequest(&host));
@@ -330,7 +330,7 @@ void ArcNetHostImpl::GetNetworksDeprecated(
     bool configured_only,
     bool visible_only,
     const GetNetworksDeprecatedCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (configured_only && visible_only) {
     VLOG(1) << "Illegal arguments - both configured and visible networks "
                "requested.";
@@ -348,7 +348,7 @@ void ArcNetHostImpl::GetNetworksDeprecated(
 
 void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
                                  const GetNetworksCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   mojom::NetworkDataPtr data = mojom::NetworkData::New();
   bool configured_only = true;
@@ -565,7 +565,7 @@ void ArcNetHostImpl::GetWifiEnabledState(
 void ArcNetHostImpl::SetWifiEnabledState(
     bool is_enabled,
     const SetWifiEnabledStateCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   chromeos::NetworkStateHandler::TechnologyState state =
       GetStateHandler()->GetTechnologyState(
           chromeos::NetworkTypePattern::WiFi());

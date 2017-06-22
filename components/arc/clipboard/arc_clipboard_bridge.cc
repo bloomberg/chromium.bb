@@ -20,7 +20,7 @@ ArcClipboardBridge::ArcClipboardBridge(ArcBridgeService* bridge_service)
 }
 
 ArcClipboardBridge::~ArcClipboardBridge() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_bridge_service()->clipboard()->RemoveObserver(this);
 }
 
@@ -34,13 +34,13 @@ void ArcClipboardBridge::OnInstanceReady() {
 }
 
 void ArcClipboardBridge::SetTextContent(const std::string& text) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
   writer.WriteText(base::UTF8ToUTF16(text));
 }
 
 void ArcClipboardBridge::GetTextContent() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   base::string16 text;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
@@ -51,11 +51,6 @@ void ArcClipboardBridge::GetTextContent() {
   if (!clipboard_instance)
     return;
   clipboard_instance->OnGetTextContent(base::UTF16ToUTF8(text));
-}
-
-bool ArcClipboardBridge::CalledOnValidThread() {
-  // Make sure access to the Chrome clipboard is happening in the UI thread.
-  return thread_checker_.CalledOnValidThread();
 }
 
 }  // namespace arc
