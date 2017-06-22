@@ -504,10 +504,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
     @Override
     public void onTabModelSwitched(boolean toIncognitoTabModel) {
-        // There is no need to respond to the tab model switch if the stack for the newly selected
-        // tab model is already showing.
-        if ((toIncognitoTabModel ? 1 : 0) == getTabStackIndex()) return;
-
         flingStacks(toIncognitoTabModel);
         mFlingFromModelChange = true;
     }
