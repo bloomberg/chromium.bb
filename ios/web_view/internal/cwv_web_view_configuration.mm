@@ -8,12 +8,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "ios/web/public/app/web_main.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
-#import "ios/web_view/internal/web_view_browser_state.h"
-#import "ios/web_view/internal/web_view_web_client.h"
-#import "ios/web_view/internal/web_view_web_main_delegate.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
+#include "ios/web_view/internal/web_view_global_state_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -49,18 +47,7 @@
     return;
   }
 
-  static std::unique_ptr<ios_web_view::WebViewWebClient> webClient;
-  static std::unique_ptr<ios_web_view::WebViewWebMainDelegate> webMainDelegate;
-  static std::unique_ptr<web::WebMain> webMain;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    webClient = base::MakeUnique<ios_web_view::WebViewWebClient>();
-    web::SetWebClient(webClient.get());
-
-    webMainDelegate = base::MakeUnique<ios_web_view::WebViewWebMainDelegate>();
-    web::WebMainParams params(webMainDelegate.get());
-    webMain = base::MakeUnique<web::WebMain>(params);
-  });
+  ios_web_view::InitializeGlobalState();
 }
 
 - (instancetype)initWithBrowserState:
