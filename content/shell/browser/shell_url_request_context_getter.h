@@ -34,8 +34,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       bool ignore_certificate_errors,
       const base::FilePath& base_path,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      // TODO(eroman): Remove the file_task_runner parameter (unused).
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors,
       net::NetLog* net_log);
@@ -60,7 +58,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   bool ignore_certificate_errors_;
   base::FilePath base_path_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   net::NetLog* net_log_;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;

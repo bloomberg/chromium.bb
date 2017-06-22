@@ -19,14 +19,12 @@ LayoutTestURLRequestContextGetter::LayoutTestURLRequestContextGetter(
     bool ignore_certificate_errors,
     const base::FilePath& base_path,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors,
     net::NetLog* net_log)
     : ShellURLRequestContextGetter(ignore_certificate_errors,
                                    base_path,
                                    std::move(io_task_runner),
-                                   std::move(file_task_runner),
                                    protocol_handlers,
                                    std::move(request_interceptors),
                                    net_log) {

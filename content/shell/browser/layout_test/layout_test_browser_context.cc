@@ -97,7 +97,6 @@ LayoutTestBrowserContext::CreateURLRequestContextGetter(
   return new LayoutTestURLRequestContextGetter(
       ignore_certificate_errors(), GetPath(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
       protocol_handlers, std::move(request_interceptors), net_log());
 }
 
