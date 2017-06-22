@@ -211,10 +211,19 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     DISALLOW_COPY_AND_ASSIGN(MediaRoutesQuery);
   };
 
+  enum class FirewallCheck {
+    // Skips the firewall check for the benefit of unit tests so they do not
+    // have to depend on the system's firewall configuration.
+    SKIP_FOR_TESTING,
+    // Perform the firewall check (default).
+    RUN,
+  };
+
   // Standard constructor, used by
   // MediaRouterMojoImplFactory::GetApiForBrowserContext.
   MediaRouterMojoImpl(extensions::EventPageTracker* event_page_tracker,
-                      content::BrowserContext* context);
+                      content::BrowserContext* context,
+                      FirewallCheck check_firewall = FirewallCheck::RUN);
 
   // Binds |this| to a Mojo interface request, so that clients can acquire a
   // handle to a MediaRouterMojoImpl instance via the Mojo service connector.
