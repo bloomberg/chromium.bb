@@ -5,16 +5,30 @@
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+ACTION_P(RunClosure, closure) {
+  closure.Run();
+}
+
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::NotNull;
+using ::testing::NiceMock;
+
+using RequestGlobalMemoryDumpCallback =
+    memory_instrumentation::CoordinatorImpl::RequestGlobalMemoryDumpCallback;
+using memory_instrumentation::mojom::GlobalMemoryDumpPtr;
+using memory_instrumentation::mojom::GlobalMemoryDump;
+using base::trace_event::MemoryDumpRequestArgs;
 
 namespace memory_instrumentation {
 
@@ -32,44 +46,19 @@ class CoordinatorImplTest : public testing::Test {
  public:
   CoordinatorImplTest() {}
   void SetUp() override {
-    dump_response_args_ = {0U, false};
     coordinator_.reset(new FakeCoordinatorImpl);
   }
 
   void TearDown() override { coordinator_.reset(); }
 
   void RegisterClientProcess(mojom::ClientProcessPtr client_process) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CoordinatorImpl::RegisterClientProcess,
-                              base::Unretained(coordinator_.get()),
-                              base::Passed(&client_process)));
+    coordinator_->RegisterClientProcess(std::move(client_process));
   }
 
-  void RequestGlobalMemoryDump(base::trace_event::MemoryDumpRequestArgs args,
-                               base::Closure closure) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&CoordinatorImpl::RequestGlobalMemoryDump,
-                   base::Unretained(coordinator_.get()), args,
-                   base::Bind(&CoordinatorImplTest::OnGlobalMemoryDumpResponse,
-                              base::Unretained(this), closure)));
+  void RequestGlobalMemoryDump(MemoryDumpRequestArgs args,
+                               RequestGlobalMemoryDumpCallback callback) {
+    coordinator_->RequestGlobalMemoryDump(args, callback);
   }
-
-  void OnGlobalMemoryDumpResponse(base::Closure closure,
-                                  uint64_t dump_guid,
-                                  bool success,
-                                  mojom::GlobalMemoryDumpPtr) {
-    dump_response_args_ = {dump_guid, success};
-    closure.Run();
-  }
-
- protected:
-  struct DumpResponseArgs {
-    uint64_t dump_guid;
-    bool success;
-  };
-
-  DumpResponseArgs dump_response_args_;
 
  private:
   std::unique_ptr<CoordinatorImpl> coordinator_;
@@ -78,55 +67,79 @@ class CoordinatorImplTest : public testing::Test {
 
 class MockClientProcess : public mojom::ClientProcess {
  public:
-  MockClientProcess(CoordinatorImplTest* test_coordinator, int expected_calls)
-      : binding_(this), expected_calls_(expected_calls) {
+  MockClientProcess(CoordinatorImplTest* test_coordinator) : binding_(this) {
     // Register to the coordinator.
     mojom::ClientProcessPtr client_process;
     binding_.Bind(mojo::MakeRequest(&client_process));
     test_coordinator->RegisterClientProcess(std::move(client_process));
+
+    ON_CALL(*this, RequestProcessMemoryDump(_, _))
+        .WillByDefault(
+            Invoke([](const MemoryDumpRequestArgs& args,
+                      const RequestProcessMemoryDumpCallback& callback) {
+              callback.Run(args.dump_guid, true, nullptr);
+
+            }));
   }
 
-  ~MockClientProcess() override { EXPECT_EQ(0, expected_calls_); }
+  ~MockClientProcess() override {}
 
-  void RequestProcessMemoryDump(
-      const base::trace_event::MemoryDumpRequestArgs& args,
-      const RequestProcessMemoryDumpCallback& callback) override {
-    expected_calls_--;
-    callback.Run(args.dump_guid, true, mojom::RawProcessMemoryDumpPtr());
-  }
+  MOCK_METHOD2(RequestProcessMemoryDump,
+               void(const MemoryDumpRequestArgs& args,
+                    const RequestProcessMemoryDumpCallback& callback));
 
  private:
   mojo::Binding<mojom::ClientProcess> binding_;
-  int expected_calls_;
+};
+
+class MockGlobalMemoryDumpCallback {
+ public:
+  MockGlobalMemoryDumpCallback() = default;
+  MOCK_METHOD3(OnCall, void(uint64_t, bool, GlobalMemoryDump*));
+
+  void Run(uint64_t dump_guid, bool success, GlobalMemoryDumpPtr ptr) {
+    OnCall(dump_guid, success, ptr.get());
+  }
+
+  RequestGlobalMemoryDumpCallback Get() {
+    return base::Bind(&MockGlobalMemoryDumpCallback::Run,
+                      base::Unretained(this));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockGlobalMemoryDumpCallback);
 };
 
 // Tests that the global dump is acked even in absence of clients.
 TEST_F(CoordinatorImplTest, NoClients) {
-  base::RunLoop run_loop;
   base::trace_event::MemoryDumpRequestArgs args = {
       1234, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
-  RequestGlobalMemoryDump(args, run_loop.QuitClosure());
-  run_loop.Run();
-  EXPECT_EQ(1234U, dump_response_args_.dump_guid);
-  EXPECT_TRUE(dump_response_args_.success);
+
+  MockGlobalMemoryDumpCallback callback;
+  EXPECT_CALL(callback, OnCall(1234U, true, NotNull()));
+  RequestGlobalMemoryDump(args, callback.Get());
 }
 
 // Nominal behavior: several clients contributing to the global dump.
 TEST_F(CoordinatorImplTest, SeveralClients) {
   base::RunLoop run_loop;
 
-  MockClientProcess client_process_1(this, 1);
-  MockClientProcess client_process_2(this, 1);
+  MockClientProcess client_process_1(this);
+  MockClientProcess client_process_2(this);
+
+  EXPECT_CALL(client_process_1, RequestProcessMemoryDump(_, _)).Times(1);
+  EXPECT_CALL(client_process_2, RequestProcessMemoryDump(_, _)).Times(1);
+
   base::trace_event::MemoryDumpRequestArgs args = {
       2345, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
-  RequestGlobalMemoryDump(args, run_loop.QuitClosure());
 
+  MockGlobalMemoryDumpCallback callback;
+  EXPECT_CALL(callback, OnCall(2345U, true, NotNull()))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
-
-  EXPECT_EQ(2345U, dump_response_args_.dump_guid);
-  EXPECT_TRUE(dump_response_args_.success);
 }
 
 // Tests that a global dump is completed even if a client disconnects (e.g. due
@@ -134,24 +147,43 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
 TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
   base::RunLoop run_loop;
 
-  MockClientProcess client_process_1(this, 1);
-  auto client_process_2 = base::MakeUnique<MockClientProcess>(this, 0);
   base::trace_event::MemoryDumpRequestArgs args = {
       3456, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
-  RequestGlobalMemoryDump(args, run_loop.QuitClosure());
+
+  auto client_process_1 = base::MakeUnique<NiceMock<MockClientProcess>>(this);
+  auto client_process_2 = base::MakeUnique<NiceMock<MockClientProcess>>(this);
 
   // One of the client processes dies after a global dump is requested and
   // before it receives the corresponding process dump request. The coordinator
   // should detect that one of its clients is disconnected and claim the global
   // dump attempt has failed.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind([](std::unique_ptr<MockClientProcess>) {},
-                            base::Passed(&client_process_2)));
 
+  // Whichever client is called first destroys the other client.
+  ON_CALL(*client_process_1, RequestProcessMemoryDump(_, _))
+      .WillByDefault(
+          Invoke([&client_process_2](
+                     const MemoryDumpRequestArgs& args,
+                     const MockClientProcess::RequestProcessMemoryDumpCallback&
+                         callback) {
+            client_process_2.reset();
+            callback.Run(args.dump_guid, true, nullptr);
+          }));
+  ON_CALL(*client_process_2, RequestProcessMemoryDump(_, _))
+      .WillByDefault(
+          Invoke([&client_process_1](
+                     const MemoryDumpRequestArgs& args,
+                     const MockClientProcess::RequestProcessMemoryDumpCallback&
+                         callback) {
+            client_process_1.reset();
+            callback.Run(args.dump_guid, true, nullptr);
+          }));
+
+  MockGlobalMemoryDumpCallback callback;
+  EXPECT_CALL(callback, OnCall(3456U, false, NotNull()))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
-
-  EXPECT_EQ(3456U, dump_response_args_.dump_guid);
-  EXPECT_FALSE(dump_response_args_.success);
 }
+
 }  // namespace memory_instrumentation
