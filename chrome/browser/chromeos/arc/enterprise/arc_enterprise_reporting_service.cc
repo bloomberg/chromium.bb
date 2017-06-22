@@ -21,12 +21,12 @@ ArcEnterpriseReportingService::ArcEnterpriseReportingService(
 }
 
 ArcEnterpriseReportingService::~ArcEnterpriseReportingService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_bridge_service()->enterprise_reporting()->RemoveObserver(this);
 }
 
 void ArcEnterpriseReportingService::OnInstanceReady() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->enterprise_reporting(), Init);
   DCHECK(instance);
@@ -37,7 +37,7 @@ void ArcEnterpriseReportingService::OnInstanceReady() {
 
 void ArcEnterpriseReportingService::ReportManagementState(
     mojom::ManagementState state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "ReportManagementState state=" << state;
 
   if (state == mojom::ManagementState::MANAGED_DO_LOST) {
