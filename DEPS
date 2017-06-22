@@ -785,19 +785,6 @@ hooks = [
                 '-d', 'src/tools/luci-go/linux64',
     ],
   },
-  # Pull eu-strip binaries using checked-in hashes.
-  {
-    'name': 'eu-strip',
-    'pattern': '.',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--platform=linux*',
-                '--no_auth',
-                '--bucket', 'chromium-eu-strip',
-                '-s', 'src/build/linux/bin/eu-strip.sha1',
-    ],
-  },
   {
     'name': 'drmemory',
     'pattern': '.',
