@@ -61,7 +61,7 @@ TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot) {
       Position(one->firstChild(), 0),
       FirstEditableVisiblePositionAfterPositionInRoot(Position(three, 0), *host)
           .DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree::AfterNode(host),
+  EXPECT_EQ(PositionInFlatTree::AfterNode(*host),
             FirstEditablePositionAfterPositionInRoot(
                 PositionInFlatTree(three, 0), *host));
   EXPECT_EQ(PositionInFlatTree::LastPositionInNode(host),

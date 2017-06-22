@@ -189,7 +189,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   bool AtEndOfTree() const;
 
   static PositionTemplate<Strategy> BeforeNode(const Node& anchor_node);
-  static PositionTemplate<Strategy> AfterNode(Node* anchor_node);
+  static PositionTemplate<Strategy> AfterNode(const Node& anchor_node);
   static PositionTemplate<Strategy> InParentBeforeNode(const Node& anchor_node);
   static PositionTemplate<Strategy> InParentAfterNode(const Node& anchor_node);
   static int LastOffsetInNode(Node* anchor_node);

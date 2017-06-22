@@ -104,7 +104,7 @@ template <typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::AfterNode(
     Node* node) {
   return Create(PositionWithAffinityTemplate<Strategy>(
-      PositionTemplate<Strategy>::AfterNode(node)));
+      PositionTemplate<Strategy>::AfterNode(*node)));
 }
 
 template <typename Strategy>

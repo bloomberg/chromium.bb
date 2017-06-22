@@ -184,7 +184,7 @@ static void AdjustPositionForUserSelectAll(VisiblePosition& pos,
           pos.DeepEquivalent().AnchorNode()))
     pos = CreateVisiblePosition(
         is_forward ? MostForwardCaretPosition(
-                         Position::AfterNode(root_user_select_all),
+                         Position::AfterNode(*root_user_select_all),
                          kCanCrossEditingBoundary)
                    : MostBackwardCaretPosition(
                          Position::BeforeNode(*root_user_select_all),

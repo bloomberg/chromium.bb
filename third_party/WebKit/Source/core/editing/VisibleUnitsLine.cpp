@@ -441,7 +441,7 @@ static VisiblePositionTemplate<Strategy> EndPositionForLine(
         PositionTemplate<Strategy>(ToText(end_node), end_offset),
         VP_UPSTREAM_IF_POSSIBLE);
   }
-  return CreateVisiblePosition(PositionTemplate<Strategy>::AfterNode(end_node),
+  return CreateVisiblePosition(PositionTemplate<Strategy>::AfterNode(*end_node),
                                VP_UPSTREAM_IF_POSSIBLE);
 }
 

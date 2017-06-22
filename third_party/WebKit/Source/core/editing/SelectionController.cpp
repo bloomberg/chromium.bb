@@ -92,7 +92,7 @@ VisibleSelectionInFlatTree ExpandSelectionToRespectUserSelectAll(
               PositionInFlatTree::BeforeNode(*root_user_select_all),
               kCanCrossEditingBoundary))
           .Extend(MostForwardCaretPosition(
-              PositionInFlatTree::AfterNode(root_user_select_all),
+              PositionInFlatTree::AfterNode(*root_user_select_all),
               kCanCrossEditingBoundary))
           .Build());
 }
@@ -318,7 +318,7 @@ static SelectionInFlatTree ApplySelectAll(
         .SetBaseAndExtent(PositionInFlatTree::BeforeNode(
                               *root_user_select_all_for_mouse_press_node),
                           PositionInFlatTree::AfterNode(
-                              root_user_select_all_for_mouse_press_node))
+                              *root_user_select_all_for_mouse_press_node))
         .Build();
   }
 
@@ -329,7 +329,7 @@ static SelectionInFlatTree ApplySelectAll(
       TargetPositionIsBeforeDragStartPosition(
           mouse_press_node, drag_start_point, target, hit_test_point)) {
     builder.Collapse(PositionInFlatTree::AfterNode(
-        root_user_select_all_for_mouse_press_node));
+        *root_user_select_all_for_mouse_press_node));
   } else {
     builder.Collapse(base_position);
   }
@@ -343,7 +343,7 @@ static SelectionInFlatTree ApplySelectAll(
     }
 
     builder.Extend(
-        PositionInFlatTree::AfterNode(root_user_select_all_for_target));
+        PositionInFlatTree::AfterNode(*root_user_select_all_for_target));
     return builder.Build();
   }
 

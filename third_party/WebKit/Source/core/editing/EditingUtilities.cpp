@@ -331,7 +331,7 @@ bool IsNodeFullyContained(const EphemeralRange& range, Node& node) {
     return false;
 
   return range.StartPosition() <= Position::BeforeNode(node) &&
-         Position::AfterNode(&node) <= range.EndPosition();
+         Position::AfterNode(node) <= range.EndPosition();
 }
 
 // TODO(editing-dev): We should implement real version which refers
@@ -667,7 +667,7 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
     if (!shadow_ancestor)
       return PositionTemplate<Strategy>();
 
-    editable_position = PositionTemplate<Strategy>::AfterNode(shadow_ancestor);
+    editable_position = PositionTemplate<Strategy>::AfterNode(*shadow_ancestor);
   }
 
   Node* non_editable_node = nullptr;

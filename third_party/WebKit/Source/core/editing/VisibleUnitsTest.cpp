@@ -1241,9 +1241,9 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor) {
   Element* host = GetDocument().getElementById("host");
 
   EXPECT_EQ(Position::LastPositionInNode(host),
-            MostForwardCaretPosition(Position::AfterNode(host)));
+            MostForwardCaretPosition(Position::AfterNode(*host)));
   EXPECT_EQ(PositionInFlatTree::LastPositionInNode(host),
-            MostForwardCaretPosition(PositionInFlatTree::AfterNode(host)));
+            MostForwardCaretPosition(PositionInFlatTree::AfterNode(*host)));
 }
 
 TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetter) {
@@ -1275,7 +1275,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetter) {
                 Position::LastPositionInNode(sample->parentNode())));
   EXPECT_EQ(
       Position(sample, 6),
-      MostBackwardCaretPosition(Position::AfterNode(sample->parentNode())));
+      MostBackwardCaretPosition(Position::AfterNode(*sample->parentNode())));
   EXPECT_EQ(Position::LastPositionInNode(GetDocument().body()),
             MostBackwardCaretPosition(
                 Position::LastPositionInNode(GetDocument().body())));
@@ -1307,7 +1307,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetterSplit) {
   EXPECT_EQ(Position(remaining, 2),
             MostBackwardCaretPosition(Position::LastPositionInNode(sample)));
   EXPECT_EQ(Position(remaining, 2),
-            MostBackwardCaretPosition(Position::AfterNode(sample)));
+            MostBackwardCaretPosition(Position::AfterNode(*sample)));
 }
 
 TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor) {
@@ -1323,9 +1323,9 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor) {
   Element* three = shadow_root->getElementById("three");
 
   EXPECT_EQ(Position(one->firstChild(), 1),
-            MostBackwardCaretPosition(Position::AfterNode(host)));
+            MostBackwardCaretPosition(Position::AfterNode(*host)));
   EXPECT_EQ(PositionInFlatTree(three->firstChild(), 3),
-            MostBackwardCaretPosition(PositionInFlatTree::AfterNode(host)));
+            MostBackwardCaretPosition(PositionInFlatTree::AfterNode(*host)));
 }
 
 TEST_F(VisibleUnitsTest, mostForwardCaretPositionFirstLetter) {
@@ -1521,9 +1521,9 @@ TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor) {
 
   EXPECT_FALSE(RendersInDifferentPosition(Position(), Position()));
   EXPECT_FALSE(
-      RendersInDifferentPosition(Position(), Position::AfterNode(sample)))
+      RendersInDifferentPosition(Position(), Position::AfterNode(*sample)))
       << "if one of position is null, the reuslt is false.";
-  EXPECT_FALSE(RendersInDifferentPosition(Position::AfterNode(sample),
+  EXPECT_FALSE(RendersInDifferentPosition(Position::AfterNode(*sample),
                                           Position(sample, 1)));
   EXPECT_FALSE(RendersInDifferentPosition(Position::LastPositionInNode(sample),
                                           Position(sample, 1)));
@@ -1566,7 +1566,7 @@ TEST_F(VisibleUnitsTest, renderedOffset) {
   Element* sample2 = GetDocument().getElementById("sample2");
 
   EXPECT_FALSE(
-      RendersInDifferentPosition(Position::AfterNode(sample1->firstChild()),
+      RendersInDifferentPosition(Position::AfterNode(*sample1->firstChild()),
                                  Position(sample2->firstChild(), 0)));
   EXPECT_FALSE(RendersInDifferentPosition(
       Position::LastPositionInNode(sample1->firstChild()),

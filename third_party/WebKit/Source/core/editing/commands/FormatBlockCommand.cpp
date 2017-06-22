@@ -115,7 +115,7 @@ void FormatBlockCommand::FormatRange(const Position& start,
 
   Position last_paragraph_in_block_node =
       block_element->lastChild()
-          ? Position::AfterNode(block_element->lastChild())
+          ? Position::AfterNode(*block_element->lastChild())
           : Position();
   bool was_end_of_paragraph =
       IsEndOfParagraph(CreateVisiblePosition(last_paragraph_in_block_node));

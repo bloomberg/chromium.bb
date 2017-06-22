@@ -129,7 +129,7 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
   if (isHTMLHRElement(*start.AnchorNode()))
     start = Position::BeforeNode(*start.AnchorNode());
   else if (isHTMLHRElement(*end.AnchorNode()))
-    end = Position::AfterNode(end.AnchorNode());
+    end = Position::AfterNode(*end.AnchorNode());
 
   // FIXME: This is only used so that moveParagraphs can avoid the bugs in
   // special element expansion.

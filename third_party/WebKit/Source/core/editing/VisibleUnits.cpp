@@ -323,7 +323,7 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
   ForwardsTextBuffer suffix_string;
   if (RequiresContextForWordBoundary(CharacterBefore(c))) {
     TextIteratorAlgorithm<Strategy> forwards_iterator(
-        end, PositionTemplate<Strategy>::AfterNode(boundary));
+        end, PositionTemplate<Strategy>::AfterNode(*boundary));
     while (!forwards_iterator.AtEnd()) {
       forwards_iterator.CopyTextTo(&suffix_string);
       int context_end_index = EndOfFirstWordBoundaryContext(
@@ -1386,7 +1386,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
     if (EditingIgnoresContent(*current_node) ||
         IsDisplayInsideTable(current_node)) {
       if (current_pos.AtEndOfNode())
-        return PositionTemplate<Strategy>::AfterNode(current_node);
+        return PositionTemplate<Strategy>::AfterNode(*current_node);
       continue;
     }
 
