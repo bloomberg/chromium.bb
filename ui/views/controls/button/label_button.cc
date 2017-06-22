@@ -25,6 +25,7 @@
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/button/label_button_label.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
@@ -41,7 +42,7 @@ LabelButton::LabelButton(ButtonListener* listener,
                          int button_context)
     : CustomButton(listener),
       image_(new ImageView()),
-      label_(new Label(text, button_context, style::STYLE_PRIMARY)),
+      label_(new LabelButtonLabel(text, button_context)),
       ink_drop_container_(new InkDropContainerView()),
       cached_normal_font_list_(
           style::GetFont(button_context, style::STYLE_PRIMARY)),
@@ -99,7 +100,7 @@ void LabelButton::SetText(const base::string16& text) {
 void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   button_state_colors_[for_state] = color;
   if (for_state == STATE_DISABLED)
-    label_->SetDisabledColorForLabelButton(color);
+    label_->SetDisabledColor(color);
   else if (for_state == state())
     label_->SetEnabledColor(color);
   explicitly_set_colors_[for_state] = true;
@@ -323,6 +324,10 @@ void LabelButton::SetBorder(std::unique_ptr<Border> border) {
   border_is_themed_border_ = false;
   View::SetBorder(std::move(border));
   ResetCachedPreferredSize();
+}
+
+Label* LabelButton::label() const {
+  return label_;
 }
 
 gfx::Rect LabelButton::GetChildAreaBounds() {

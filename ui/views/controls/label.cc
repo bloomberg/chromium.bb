@@ -109,16 +109,6 @@ void Label::SetEnabledColor(SkColor color) {
   RecalculateColors();
 }
 
-// TODO(tapted): Move this into a subclass used only by LabelButton.
-void Label::SetDisabledColorForLabelButton(SkColor color) {
-  if (disabled_color_set_ && requested_disabled_color_ == color)
-    return;
-  is_first_paint_text_ = true;
-  requested_disabled_color_ = color;
-  disabled_color_set_ = true;
-  RecalculateColors();
-}
-
 void Label::SetBackgroundColor(SkColor color) {
   if (background_color_set_ && background_color_ == color)
     return;
@@ -432,11 +422,6 @@ bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
   }
 
   return false;
-}
-
-void Label::OnEnabledChanged() {
-  ApplyTextColors();
-  View::OnEnabledChanged();
 }
 
 std::unique_ptr<gfx::RenderText> Label::CreateRenderText(
@@ -830,7 +815,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
 
   elide_behavior_ = gfx::ELIDE_TAIL;
   stored_selection_range_ = gfx::Range::InvalidRange();
-  enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;
+  enabled_color_set_ = background_color_set_ = false;
   selection_text_color_set_ = selection_background_color_set_ = false;
   subpixel_rendering_enabled_ = true;
   auto_color_readability_ = true;
@@ -976,10 +961,6 @@ void Label::RecalculateColors() {
       color_utils::GetReadableColor(requested_enabled_color_,
                                     background_color_) :
       requested_enabled_color_;
-  actual_disabled_color_ = auto_color_readability_ ?
-      color_utils::GetReadableColor(requested_disabled_color_,
-                                    background_color_) :
-      requested_disabled_color_;
   actual_selection_text_color_ =
       auto_color_readability_
           ? color_utils::GetReadableColor(requested_selection_text_color_,
@@ -991,12 +972,11 @@ void Label::RecalculateColors() {
 }
 
 void Label::ApplyTextColors() const {
-  SkColor color = enabled() ? actual_enabled_color_ : actual_disabled_color_;
   bool subpixel_rendering_suppressed =
       SkColorGetA(background_color_) != SK_AlphaOPAQUE ||
       !subpixel_rendering_enabled_;
   for (size_t i = 0; i < lines_.size(); ++i) {
-    lines_[i]->SetColor(color);
+    lines_[i]->SetColor(actual_enabled_color_);
     lines_[i]->set_selection_color(actual_selection_text_color_);
     lines_[i]->set_selection_background_focused_color(
         selection_background_color_);
@@ -1008,10 +988,6 @@ void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
   if (!enabled_color_set_) {
     requested_enabled_color_ =
         style::GetColor(text_context_, style::STYLE_PRIMARY, theme);
-  }
-  if (!disabled_color_set_) {
-    requested_disabled_color_ =
-        style::GetColor(text_context_, style::STYLE_DISABLED, theme);
   }
   if (!background_color_set_) {
     background_color_ =
