@@ -133,7 +133,7 @@ typedef uint64_t MojoDeadline;
 #ifdef __cplusplus
 const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 #else
-#define MOJO_DEADLINE_INDEFINITE ((MojoDeadline) - 1)
+#define MOJO_DEADLINE_INDEFINITE ((MojoDeadline)-1)
 #endif
 
 // |MojoHandleSignals|: Used to specify signals that can be watched for on a
@@ -149,6 +149,10 @@ const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 //       AND there is some nonzero quantity of new data available on the pipe
 //       since the last |MojoReadData()| or |MojoBeginReadData()| call on the
 //       handle.
+//   |MOJO_HANDLE_SIGNAL_PEER_REMOTE| - The peer handle exists in a remote
+//       execution context (e.g. in another process.) Note that this signal is
+//       maintained with best effort but may at any time be slightly out of sync
+//       with the actual location of the peer handle.
 
 typedef uint32_t MojoHandleSignals;
 
@@ -158,12 +162,14 @@ const MojoHandleSignals MOJO_HANDLE_SIGNAL_READABLE = 1 << 0;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE = 1 << 1;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_CLOSED = 1 << 2;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE = 1 << 3;
+const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_REMOTE = 1 << 4;
 #else
 #define MOJO_HANDLE_SIGNAL_NONE ((MojoHandleSignals)0)
 #define MOJO_HANDLE_SIGNAL_READABLE ((MojoHandleSignals)1 << 0)
 #define MOJO_HANDLE_SIGNAL_WRITABLE ((MojoHandleSignals)1 << 1)
 #define MOJO_HANDLE_SIGNAL_PEER_CLOSED ((MojoHandleSignals)1 << 2)
 #define MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE ((MojoHandleSignals)1 << 3);
+#define MOJO_HANDLE_SIGNAL_PEER_REMOTE ((MojoHandleSignals)1 << 4);
 #endif
 
 // |MojoHandleSignalsState|: Returned by watch notification callbacks and

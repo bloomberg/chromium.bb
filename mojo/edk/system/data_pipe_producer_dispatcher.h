@@ -64,13 +64,13 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   void CompleteTransitAndClose() override;
   void CancelTransit() override;
 
-  static scoped_refptr<DataPipeProducerDispatcher>
-  Deserialize(const void* data,
-              size_t num_bytes,
-              const ports::PortName* ports,
-              size_t num_ports,
-              PlatformHandle* handles,
-              size_t num_handles);
+  static scoped_refptr<DataPipeProducerDispatcher> Deserialize(
+      const void* data,
+      size_t num_bytes,
+      const ports::PortName* ports,
+      size_t num_ports,
+      PlatformHandle* handles,
+      size_t num_handles);
 
  private:
   class PortObserverThunk;
@@ -113,6 +113,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   bool in_transit_ = false;
   bool is_closed_ = false;
   bool peer_closed_ = false;
+  bool peer_remote_ = false;
   bool transferred_ = false;
   bool in_two_phase_write_ = false;
 

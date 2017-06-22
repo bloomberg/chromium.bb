@@ -22,9 +22,9 @@ namespace {
 const MojoHandleSignals kSignalReadableWritable =
     MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE;
 
-const MojoHandleSignals kSignalAll = MOJO_HANDLE_SIGNAL_READABLE |
-                                     MOJO_HANDLE_SIGNAL_WRITABLE |
-                                     MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+const MojoHandleSignals kSignalAll =
+    MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
+    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE;
 
 TEST(CoreCppTest, GetTimeTicksNow) {
   const MojoTimeTicks start = GetTimeTicksNow();
@@ -133,22 +133,15 @@ TEST(CoreCppTest, Basic) {
   {
     MessagePipeHandle h_invalid;
     EXPECT_FALSE(h_invalid.is_valid());
-    EXPECT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        WriteMessageRaw(
-            h_invalid, nullptr, 0, nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              WriteMessageRaw(h_invalid, nullptr, 0, nullptr, 0,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
     char buffer[10] = {0};
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              WriteMessageRaw(h_invalid,
-                              buffer,
-                              sizeof(buffer),
-                              nullptr,
-                              0,
+              WriteMessageRaw(h_invalid, buffer, sizeof(buffer), nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              ReadMessageRaw(h_invalid,
-                             nullptr,
-                             nullptr,
+              ReadMessageRaw(h_invalid, nullptr, nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
 
     // Basic tests of waiting and closing.
@@ -307,19 +300,11 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     const char kWorld[] = "world!";
     const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h2.get(),
-                              kWorld,
-                              kWorldSize,
-                              nullptr,
-                              0,
+              WriteMessageRaw(h2.get(), kWorld, kWorldSize, nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     // And also a message to |h3|.
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h3.get(),
-                              kWorld,
-                              kWorldSize,
-                              nullptr,
-                              0,
+              WriteMessageRaw(h3.get(), kWorld, kWorldSize, nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Send |h3| over |h1| to |h0|.
@@ -330,11 +315,7 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     EXPECT_NE(kInvalidHandleValue, h3_value);
     EXPECT_FALSE(h3.get().is_valid());
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h1.get(),
-                              kHello,
-                              kHelloSize,
-                              &h3_value,
-                              1,
+              WriteMessageRaw(h1.get(), kHello, kHelloSize, &h3_value, 1,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     // |h3_value| should actually be invalid now.
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(h3_value));
@@ -361,19 +342,11 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     const char kWorld[] = "world!";
     const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h2.get(),
-                              kWorld,
-                              kWorldSize,
-                              nullptr,
-                              0,
+              WriteMessageRaw(h2.get(), kWorld, kWorldSize, nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     // And also a message to |h3|.
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h3.get(),
-                              kWorld,
-                              kWorldSize,
-                              nullptr,
-                              0,
+              WriteMessageRaw(h3.get(), kWorld, kWorldSize, nullptr, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Send |h3| over |h1| to |h0|.
@@ -384,11 +357,7 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     EXPECT_NE(kInvalidHandleValue, h3_value);
     EXPECT_FALSE(h3.get().is_valid());
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h1.get(),
-                              kHello,
-                              kHelloSize,
-                              &h3_value,
-                              1,
+              WriteMessageRaw(h1.get(), kHello, kHelloSize, &h3_value, 1,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     // |h3_value| should actually be invalid now.
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(h3_value));

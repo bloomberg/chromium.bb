@@ -21,21 +21,25 @@ TEST_F(HandleSignalsStateTest, SanityCheck) {
   EXPECT_FALSE(empty_signals.readable());
   EXPECT_FALSE(empty_signals.writable());
   EXPECT_FALSE(empty_signals.peer_closed());
+  EXPECT_FALSE(empty_signals.peer_remote());
   EXPECT_TRUE(empty_signals.never_readable());
   EXPECT_TRUE(empty_signals.never_writable());
   EXPECT_TRUE(empty_signals.never_peer_closed());
+  EXPECT_TRUE(empty_signals.never_peer_remote());
 
   HandleSignalsState all_signals(
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-          MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+          MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-          MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+          MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE);
   EXPECT_TRUE(all_signals.readable());
   EXPECT_TRUE(all_signals.writable());
   EXPECT_TRUE(all_signals.peer_closed());
+  EXPECT_TRUE(all_signals.peer_remote());
   EXPECT_FALSE(all_signals.never_readable());
   EXPECT_FALSE(all_signals.never_writable());
   EXPECT_FALSE(all_signals.never_peer_closed());
+  EXPECT_FALSE(all_signals.never_peer_remote());
 }
 
 }  // namespace

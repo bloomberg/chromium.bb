@@ -99,7 +99,7 @@ gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
 
     result = MojoCreateMessagePipe(&options, &handle0, &handle1);
   } else {
-      return dictionary;
+    return dictionary;
   }
 
   CHECK_EQ(MOJO_RESULT_OK, result);
@@ -110,11 +110,10 @@ gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
   return dictionary;
 }
 
-MojoResult WriteMessage(
-    mojo::Handle handle,
-    const gin::ArrayBufferView& buffer,
-    const std::vector<gin::Handle<HandleWrapper> >& handles,
-    MojoWriteMessageFlags flags) {
+MojoResult WriteMessage(mojo::Handle handle,
+                        const gin::ArrayBufferView& buffer,
+                        const std::vector<gin::Handle<HandleWrapper>>& handles,
+                        MojoWriteMessageFlags flags) {
   std::vector<MojoHandle> raw_handles(handles.size());
   for (size_t i = 0; i < handles.size(); ++i)
     raw_handles[i] = handles[i]->get().value();
@@ -246,8 +245,8 @@ gin::Dictionary ReadData(const gin::Arguments& args,
                          mojo::Handle handle,
                          MojoReadDataFlags flags) {
   uint32_t num_bytes = 0;
-  MojoResult result = MojoReadData(
-      handle.value(), NULL, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
+  MojoResult result =
+      MojoReadData(handle.value(), NULL, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
   if (result != MOJO_RESULT_OK) {
     gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
     dictionary.Set("result", result);
@@ -370,7 +369,7 @@ MojoResult UnmapBuffer(const gin::Arguments& args,
   return MojoUnmapBuffer(buffer->GetContents().Data());
 }
 
-gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
+gin::WrapperInfo g_wrapper_info = {gin::kEmbedderNativeGin};
 
 }  // namespace
 
@@ -378,8 +377,8 @@ const char Core::kModuleName[] = "mojo/public/js/core";
 
 v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
-  v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(
-      &g_wrapper_info);
+  v8::Local<v8::ObjectTemplate> templ =
+      data->GetObjectTemplate(&g_wrapper_info);
 
   if (templ.IsEmpty()) {
     templ =
@@ -428,6 +427,8 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
             .SetValue("HANDLE_SIGNAL_WRITABLE", MOJO_HANDLE_SIGNAL_WRITABLE)
             .SetValue("HANDLE_SIGNAL_PEER_CLOSED",
                       MOJO_HANDLE_SIGNAL_PEER_CLOSED)
+            .SetValue("HANDLE_SIGNAL_PEER_REMOTE",
+                      MOJO_HANDLE_SIGNAL_PEER_REMOTE)
 
             .SetValue("CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE",
                       MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE)
