@@ -12,8 +12,6 @@
 // Accessory View above the keyboard.
 // Shows keys that are shortcuts to commonly used characters or strings,
 // and buttons to start Voice Search or a Camera Search.
-// Must only be used on iPhones as iPads have a different pattern regarding
-// keyboard shortcuts.
 @interface NewKeyboardAccessoryView
     : UIInputView<KeyboardAccessoryViewProtocol, UIInputViewAudioFeedback>
 
