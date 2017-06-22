@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Constructor should throw an error for CSSCalcValues with a percentage type CSSCalcValue is not defined
-PASS Constructor should throw an error for CSSUnitValues with a percentage type 
-FAIL toString should return a string of form perspective(<CSSLengthValue.cssString()>) CSSCalcValue is not defined
-Harness: the test ran to completion.
-

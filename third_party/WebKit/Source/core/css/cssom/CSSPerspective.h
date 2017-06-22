@@ -23,7 +23,7 @@ class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
 
  public:
   // Constructor defined in the IDL.
-  static CSSPerspective* Create(const CSSNumericValue*, ExceptionState&);
+  static CSSPerspective* Create(CSSNumericValue*, ExceptionState&);
 
   // Blink-internal ways of creating CSSPerspectives.
   static CSSPerspective* FromCSSValue(const CSSFunctionValue&);
