@@ -172,6 +172,8 @@ class LocalStorageContextMojoTest : public testing::Test {
     return mock_data_;
   }
 
+  void clear_mock_data() { mock_data_.clear(); }
+
   void set_mock_data(const std::string& key, const std::string& value) {
     mock_data_[StdStringToUint8Vector(key)] = StdStringToUint8Vector(value);
   }
@@ -237,6 +239,94 @@ TEST_F(LocalStorageContextMojoTest, OriginsAreIndependent) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(5u, mock_data().size());
+}
+
+TEST_F(LocalStorageContextMojoTest, WrapperOutlivesMojoConnection) {
+  auto key = StdStringToUint8Vector("key");
+  auto value = StdStringToUint8Vector("value");
+
+  // Write some data to the DB.
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                              MakeRequest(&wrapper));
+  wrapper->Put(key, value, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Clear all the data from the backing database.
+  EXPECT_FALSE(mock_data().empty());
+  clear_mock_data();
+
+  // Data should still be readable, because despite closing the wrapper
+  // connection above, the actual wrapper instance should have been kept alive.
+  {
+    base::RunLoop run_loop;
+    bool success = false;
+    std::vector<uint8_t> result;
+    context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                                MakeRequest(&wrapper));
+    wrapper->Get(key, base::Bind(&GetCallback, run_loop.QuitClosure(), &success,
+                                 &result));
+    run_loop.Run();
+    EXPECT_TRUE(success);
+    EXPECT_EQ(value, result);
+    wrapper.reset();
+  }
+
+  // Now purge memory.
+  context()->PurgeMemory();
+
+  // And make sure caches were actually cleared.
+  {
+    base::RunLoop run_loop;
+    bool success = false;
+    std::vector<uint8_t> result;
+    context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                                MakeRequest(&wrapper));
+    wrapper->Get(key, base::Bind(&GetCallback, run_loop.QuitClosure(), &success,
+                                 &result));
+    run_loop.Run();
+    EXPECT_FALSE(success);
+    wrapper.reset();
+  }
+}
+
+TEST_F(LocalStorageContextMojoTest, OpeningWrappersPurgesInactiveWrappers) {
+  auto key = StdStringToUint8Vector("key");
+  auto value = StdStringToUint8Vector("value");
+
+  // Write some data to the DB.
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                              MakeRequest(&wrapper));
+  wrapper->Put(key, value, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Clear all the data from the backing database.
+  EXPECT_FALSE(mock_data().empty());
+  clear_mock_data();
+
+  // Now open many new wrappers (for different origins) to trigger clean up.
+  for (int i = 1; i <= 100; ++i) {
+    context()->OpenLocalStorage(
+        url::Origin::UnsafelyCreateOriginWithoutNormalization(
+            "http", "example.com", i, ""),
+        MakeRequest(&wrapper));
+    wrapper.reset();
+  }
+
+  // And make sure caches were actually cleared.
+  base::RunLoop run_loop;
+  bool success = true;
+  std::vector<uint8_t> result;
+  context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                              MakeRequest(&wrapper));
+  wrapper->Get(
+      key, base::Bind(&GetCallback, run_loop.QuitClosure(), &success, &result));
+  run_loop.Run();
+  EXPECT_FALSE(success);
+  wrapper.reset();
 }
 
 TEST_F(LocalStorageContextMojoTest, ValidVersion) {
