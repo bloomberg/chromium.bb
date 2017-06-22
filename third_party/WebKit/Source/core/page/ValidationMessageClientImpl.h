@@ -63,8 +63,6 @@ class CORE_EXPORT ValidationMessageClientImpl final
                              TextDirection sub_message_dir) override;
   void HideValidationMessage(const Element& anchor) override;
   bool IsValidationMessageVisible(const Element& anchor) override;
-  void WillUnloadDocument(const Document&) override;
-  void DocumentDetached(const Document&) override;
   void WillBeDestroyed() override;
 
   // PopupOpeningObserver function
