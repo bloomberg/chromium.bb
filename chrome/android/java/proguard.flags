@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Fragments are loaded using reflection via Fragment.instantiate(Context,String)
-# This can be improved upon - see crbug.com/622023.
--keep public class com.google.android.apps.chrome** extends android.app.Fragment
--keep public class org.chromium** extends android.app.Fragment
+# Fragments loaded by name via Fragment.instantiate(Context,String)
+# Not all fragments in this package are PreferenceFragments. E.g. HomepageEditor
+# is a normal Fragment.
+-keep public class org.chromium.chrome.browser.preferences.** extends android.app.Fragment
 
 # These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
 # referenced, and we look up these services by appending a number onto the name
@@ -19,14 +19,6 @@
 -keep class android.support.v7.widget.SearchView {
   public <init>(...);
 }
-
-# The Google Play services library depends on the legacy Apache HTTP library,
-# and just adding it as proguard time dependency causes the following warnings:
-# `library class org.apache.http.params.HttpConnectionParams depends on program
-# class org.apache.http.params.HttpParams`. The library has its own
-# implementation of org.apache.http.params.HttpParams so it can safely be
-# ignored.
--dontwarn org.apache.http.params.HttpParams
 
 # This class member is referenced in BottomSheetBottomNav as a temporary
 # measure until the support library contains a solution for disabling shifting
