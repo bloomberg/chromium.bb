@@ -38,11 +38,11 @@ class ArcBootPhaseMonitorBridge
   void OnBootCompleted() override;
 
  private:
+  THREAD_CHECKER(thread_checker_);
+
   const AccountId account_id_;
   mojo::Binding<mojom::BootPhaseMonitorHost> binding_;
   std::unique_ptr<ArcInstanceThrottle> throttle_;
-
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBootPhaseMonitorBridge);
 };
