@@ -48,7 +48,7 @@
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/AutoReset.h"
-#include "public/web/WebMenuSourceType.h"
+#include "public/platform/WebMenuSourceType.h"
 
 namespace blink {
 SelectionController* SelectionController::Create(LocalFrame& frame) {
@@ -1101,7 +1101,7 @@ void SelectionController::SendContextMenuEvent(
   AutoReset<bool> mouse_down_may_start_select_change(
       &mouse_down_may_start_select_, true);
 
-  if (!mev.Event().FromTouch() &&
+  if (mev.Event().menu_source_type != kMenuSourceTouchHandle &&
       HitTestResultIsMisspelled(mev.GetHitTestResult()))
     return SelectClosestMisspellingFromMouseEvent(mev);
 

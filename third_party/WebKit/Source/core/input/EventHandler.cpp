@@ -1842,24 +1842,12 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
       frame_->GetSettings()->GetShowContextMenuOnMouseUp())
     event_type = WebInputEvent::kMouseUp;
 
-  WebInputEvent::Modifiers modifiers;
-  switch (source_type) {
-    case kMenuSourceTouch:
-    case kMenuSourceLongPress:
-    case kMenuSourceTouchHandle:
-      modifiers = WebInputEvent::kIsCompatibilityEventForTouch;
-      break;
-    default:
-      modifiers = WebInputEvent::kNoModifiers;
-      break;
-  }
-
   WebMouseEvent mouse_event(
       event_type,
       WebFloatPoint(location_in_root_frame.X(), location_in_root_frame.Y()),
       WebFloatPoint(global_position.X(), global_position.Y()),
-      WebPointerProperties::Button::kNoButton, /* clickCount */ 0, modifiers,
-      TimeTicks::Now().InSeconds());
+      WebPointerProperties::Button::kNoButton, /* clickCount */ 0,
+      WebInputEvent::kNoModifiers, TimeTicks::Now().InSeconds(), source_type);
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport
   // coordinates instead of root frame coordinates.

@@ -26,6 +26,7 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
   SetPositionInScreen(gesture_event.global_x, gesture_event.global_y);
   SetFrameScale(gesture_event.FrameScale());
   SetFrameTranslate(gesture_event.FrameTranslate());
+  SetMenuSourceType(gesture_event.GetType());
 }
 
 WebFloatPoint WebMouseEvent::MovementInRootFrame() const {
@@ -53,6 +54,24 @@ void WebMouseEvent::FlattenTransformSelf() {
   frame_translate_.x = 0;
   frame_translate_.y = 0;
   frame_scale_ = 1;
+}
+
+void WebMouseEvent::SetMenuSourceType(WebInputEvent::Type type) {
+  switch (type) {
+    case kGestureTapDown:
+    case kGestureTap:
+    case kGestureDoubleTap:
+      menu_source_type = kMenuSourceTouch;
+      break;
+    case kGestureLongPress:
+      menu_source_type = kMenuSourceLongPress;
+      break;
+    case kGestureLongTap:
+      menu_source_type = kMenuSourceLongTap;
+      break;
+    default:
+      menu_source_type = kMenuSourceNone;
+  }
 }
 
 }  // namespace blink

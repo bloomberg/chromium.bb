@@ -36,12 +36,12 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebFloatSize.h"
 #include "public/platform/WebInputEventResult.h"
+#include "public/platform/WebMenuSourceType.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebTextInputInfo.h"
 #include "public/web/WebCompositionUnderline.h"
-#include "public/web/WebMenuSourceType.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebTextDirection.h"
 

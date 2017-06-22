@@ -60,13 +60,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
     return handling_event_type_;
   }
 
-  ui::MenuSourceType context_menu_source_type() const {
-    return context_menu_source_type_;
-  }
-  void set_context_menu_source_type(ui::MenuSourceType source_type) {
-    context_menu_source_type_ = source_type;
-  }
-
  private:
   RenderWidgetInputHandlerDelegate* const delegate_;
 
@@ -83,8 +76,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
 
   // Type of the input event we are currently handling.
   blink::WebInputEvent::Type handling_event_type_;
-
-  ui::MenuSourceType context_menu_source_type_;
 
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;

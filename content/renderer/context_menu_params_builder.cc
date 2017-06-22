@@ -61,6 +61,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   }
 
   params.link_text = data.link_text.Utf16();
+  params.source_type = static_cast<ui::MenuSourceType>(data.source_type);
 
   return params;
 }
