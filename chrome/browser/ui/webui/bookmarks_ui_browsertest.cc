@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -30,7 +31,8 @@ class BookmarksTest : public InProcessBrowserTest {
 
   void OpenBookmarksManager() {
     content::TestNavigationObserver navigation_observer(
-        browser()->tab_strip_model()->GetActiveWebContents(), 2);
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        MdBookmarksUI::IsEnabled() ? 1 : 2);
     navigation_observer.StartWatchingNewWebContents();
 
     // Bring up the bookmarks manager tab.
@@ -41,6 +43,14 @@ class BookmarksTest : public InProcessBrowserTest {
   void AssertIsBookmarksPage(content::WebContents* tab) {
     GURL url;
     std::string out;
+
+    if (MdBookmarksUI::IsEnabled()) {
+      ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+          tab, "domAutomationController.send(location.href)", &out));
+      ASSERT_EQ("chrome://bookmarks/?id=1", out);
+      return;
+    }
+
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         tab,
         "domAutomationController.send(location.protocol)",
@@ -53,11 +63,6 @@ class BookmarksTest : public InProcessBrowserTest {
     ASSERT_EQ("/main.html", out);
   }
 };
-
-IN_PROC_BROWSER_TEST_F(BookmarksTest, ShouldRedirectToExtension) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIBookmarksURL));
-  AssertIsBookmarksPage(browser()->tab_strip_model()->GetActiveWebContents());
-}
 
 IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandOpensBookmarksTab) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -92,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest,
   AssertIsBookmarksPage(browser()->tab_strip_model()->GetActiveWebContents());
 
   // Switch to first tab and run command again.
- browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   chrome::ShowBookmarkManager(browser());
 
   // Ensure the bookmarks ui tab is active.

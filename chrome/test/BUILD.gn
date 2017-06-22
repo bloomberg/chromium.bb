@@ -1973,6 +1973,7 @@ test("browser_tests") {
         "../browser/extensions/subscribe_page_action_browsertest.cc",
         "../browser/extensions/updater/extension_cache_fake.cc",
         "../browser/extensions/updater/extension_cache_fake.h",
+        "../browser/extensions/view_extension_source_browsertest.cc",
         "../browser/extensions/wake_event_page_apitest.cc",
         "../browser/extensions/web_contents_browsertest.cc",
         "../browser/extensions/webstore_inline_installer_browsertest.cc",

@@ -180,7 +180,7 @@ const base::Feature kMacRTL{"MacRTL", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the Material Design version of chrome://bookmarks.
 const base::Feature kMaterialDesignBookmarks{"MaterialDesignBookmarks",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Enabled or disabled the Material Design version of chrome://extensions.
