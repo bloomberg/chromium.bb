@@ -1391,6 +1391,14 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_rotation(display_info.GetActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
+
+  if (internal_display_has_accelerometer_ && Display::IsInternalDisplayId(id)) {
+    new_display.set_accelerometer_support(
+        Display::ACCELEROMETER_SUPPORT_AVAILABLE);
+  } else {
+    new_display.set_accelerometer_support(
+        Display::ACCELEROMETER_SUPPORT_UNAVAILABLE);
+  }
   return new_display;
 }
 

@@ -2908,6 +2908,42 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   EXPECT_EQ(id2, stored.placement_list[0].display_id);
 }
 
+TEST_F(DisplayManagerTest, AccelerometerSupport) {
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  display::Screen* screen = display::Screen::GetScreen();
+  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE,
+            screen->GetPrimaryDisplay().accelerometer_support());
+
+  display_manager()->set_internal_display_has_accelerometer(true);
+  display_manager()->UpdateDisplays();
+  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_AVAILABLE,
+            screen->GetPrimaryDisplay().accelerometer_support());
+
+  UpdateDisplay("1000x1000,800x800");
+  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_AVAILABLE,
+            screen->GetPrimaryDisplay().accelerometer_support());
+  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE,
+            display_manager()->GetSecondaryDisplay().accelerometer_support());
+
+  // Secondary is now primary and should not have accelerometer support.
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(
+      CreateDisplayInfo(display_manager()->GetSecondaryDisplay().id(),
+                        gfx::Rect(1, 1, 100, 100)));
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE,
+            screen->GetPrimaryDisplay().accelerometer_support());
+
+  // Re-enable internal display.
+  display_info_list.clear();
+  display_info_list.push_back(CreateDisplayInfo(
+      display::Display::InternalDisplayId(), gfx::Rect(1, 1, 100, 100)));
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_AVAILABLE,
+            screen->GetPrimaryDisplay().accelerometer_support());
+}
+
 namespace {
 
 class DisplayManagerOrientationTest : public DisplayManagerTest {
