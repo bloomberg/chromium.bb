@@ -384,8 +384,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("getUserMediaAndRenderInSeveralVideoTags();");
 }
 
+// TODO(crbug.com/571389): Flaky on TSAN bots.
+#if defined(OS_LINUX)
+#define MAYBE_GetUserMediaWithMandatorySourceID \
+  DISABLED_GetUserMediaWithMandatorySourceID
+#else
+#define MAYBE_GetUserMediaWithMandatorySourceID \
+  GetUserMediaWithMandatorySourceID
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       GetUserMediaWithMandatorySourceID) {
+                       MAYBE_GetUserMediaWithMandatorySourceID) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::vector<std::string> audio_ids;
@@ -408,6 +416,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
     }
   }
 }
+#undef MAYBE_GetUserMediaWithMandatorySourceID
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetUserMediaWithInvalidMandatorySourceID) {
@@ -1069,8 +1078,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaOldConstraintsBrowserTest,
   ExecuteJavascriptAndWaitForOk("getUserMediaAndRenderInSeveralVideoTags();");
 }
 
+// TODO(crbug.com/571389): Flaky on TSAN bots.
+#if defined(OS_LINUX)
+#define MAYBE_GetUserMediaWithMandatorySourceID \
+  DISABLED_GetUserMediaWithMandatorySourceID
+#else
+#define MAYBE_GetUserMediaWithMandatorySourceID \
+  GetUserMediaWithMandatorySourceID
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaOldConstraintsBrowserTest,
-                       GetUserMediaWithMandatorySourceID) {
+                       MAYBE_GetUserMediaWithMandatorySourceID) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::vector<std::string> audio_ids;
@@ -1091,6 +1108,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaOldConstraintsBrowserTest,
     }
   }
 }
+#undef MAYBE_GetUserMediaWithMandatorySourceID
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaOldConstraintsBrowserTest,
                        GetUserMediaWithInvalidMandatorySourceID) {
