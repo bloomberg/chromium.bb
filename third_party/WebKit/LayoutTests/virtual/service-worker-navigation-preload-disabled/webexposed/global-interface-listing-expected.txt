@@ -16,6 +16,7 @@ interface Accelerometer : Sensor
     method constructor
 interface AccessibleNode
     attribute @@toStringTag
+    getter activeDescendant
     getter atomic
     getter autocomplete
     getter busy
@@ -24,7 +25,9 @@ interface AccessibleNode
     getter colIndex
     getter colSpan
     getter current
+    getter details
     getter disabled
+    getter errorMessage
     getter expanded
     getter hidden
     getter invalid
@@ -55,6 +58,7 @@ interface AccessibleNode
     getter valueNow
     getter valueText
     method constructor
+    setter activeDescendant
     setter atomic
     setter autocomplete
     setter busy
@@ -63,7 +67,9 @@ interface AccessibleNode
     setter colIndex
     setter colSpan
     setter current
+    setter details
     setter disabled
+    setter errorMessage
     setter expanded
     setter hidden
     setter invalid

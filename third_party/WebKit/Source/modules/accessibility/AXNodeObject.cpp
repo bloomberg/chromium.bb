@@ -213,6 +213,66 @@ static AXSparseAttributeSetterMap& GetSparseAttributeSetterMap() {
   return ax_sparse_attribute_setter_map;
 }
 
+class AXSparseAttributeAOMPropertyClient : public AOMPropertyClient {
+ public:
+  AXSparseAttributeAOMPropertyClient(
+      AXObjectCacheImpl& ax_object_cache,
+      AXSparseAttributeClient& sparse_attribute_client)
+      : ax_object_cache_(ax_object_cache),
+        sparse_attribute_client_(sparse_attribute_client) {}
+
+  void AddStringProperty(AOMStringProperty property,
+                         const String& value) override {
+    AXStringAttribute attribute;
+    switch (property) {
+      case AOMStringProperty::kKeyShortcuts:
+        attribute = AXStringAttribute::kAriaKeyShortcuts;
+        break;
+      case AOMStringProperty::kRoleDescription:
+        attribute = AXStringAttribute::kAriaRoleDescription;
+        break;
+      default:
+        return;
+    }
+    sparse_attribute_client_.AddStringAttribute(attribute, value);
+  }
+
+  void AddBooleanProperty(AOMBooleanProperty property, bool value) override {}
+
+  void AddIntProperty(AOMIntProperty property, int32_t value) override {}
+
+  void AddUIntProperty(AOMUIntProperty property, uint32_t value) override {}
+
+  void AddFloatProperty(AOMFloatProperty property, float value) override {}
+
+  void AddRelationProperty(AOMRelationProperty property,
+                           const AccessibleNode& value) override {
+    AXObjectAttribute attribute;
+    switch (property) {
+      case AOMRelationProperty::kActiveDescendant:
+        attribute = AXObjectAttribute::kAriaActiveDescendant;
+        break;
+      case AOMRelationProperty::kDetails:
+        attribute = AXObjectAttribute::kAriaDetails;
+        break;
+      case AOMRelationProperty::kErrorMessage:
+        attribute = AXObjectAttribute::kAriaErrorMessage;
+        break;
+      default:
+        return;
+    }
+
+    Element* target_element = value.element();
+    AXObject* target_obj = ax_object_cache_->GetOrCreate(target_element);
+    if (target_element)
+      sparse_attribute_client_.AddObjectAttribute(attribute, *target_obj);
+  }
+
+ private:
+  Persistent<AXObjectCacheImpl> ax_object_cache_;
+  AXSparseAttributeClient& sparse_attribute_client_;
+};
+
 AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache),
       aria_role_(kUnknownRole),
@@ -243,17 +303,12 @@ void AXNodeObject::AlterSliderValue(bool increase) {
 }
 
 AXObject* AXNodeObject::ActiveDescendant() {
-  if (!node_ || !node_->IsElementNode())
+  Element* element = GetElement();
+  if (!element)
     return nullptr;
 
-  const AtomicString& active_descendant_attr =
-      GetAttribute(aria_activedescendantAttr);
-  if (active_descendant_attr.IsNull() || active_descendant_attr.IsEmpty())
-    return nullptr;
-
-  Element* element = ToElement(GetNode());
   Element* descendant =
-      element->GetTreeScope().getElementById(active_descendant_attr);
+      GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kActiveDescendant);
   if (!descendant)
     return nullptr;
 
@@ -915,35 +970,27 @@ void AXNodeObject::Detach() {
 
 void AXNodeObject::GetSparseAXAttributes(
     AXSparseAttributeClient& sparse_attribute_client) const {
-  Node* node = this->GetNode();
-  if (!node || !node->IsElementNode())
+  Element* element = GetElement();
+  if (!element)
     return;
+
+  AXSparseAttributeAOMPropertyClient property_client(*ax_object_cache_,
+                                                     sparse_attribute_client);
+  HashSet<QualifiedName> shadowed_aria_attributes;
+  AccessibleNode::GetAllAOMProperties(element, &property_client,
+                                      shadowed_aria_attributes);
 
   AXSparseAttributeSetterMap& ax_sparse_attribute_setter_map =
       GetSparseAttributeSetterMap();
-  AttributeCollection attributes = ToElement(node)->AttributesWithoutUpdate();
+  AttributeCollection attributes = element->AttributesWithoutUpdate();
   for (const Attribute& attr : attributes) {
+    if (shadowed_aria_attributes.Contains(attr.GetName()))
+      continue;
+
     SparseAttributeSetter* setter =
         ax_sparse_attribute_setter_map.at(attr.GetName());
     if (setter)
       setter->Run(*this, sparse_attribute_client, attr.Value());
-  }
-
-  // TODO(dmazzoni): Efficiently iterate over AccessibleNode properties that are
-  // set and merge the two loops somehow.
-  if (ToElement(node)->ExistingAccessibleNode()) {
-    AtomicString key_shortcuts =
-        GetAOMPropertyOrARIAAttribute(AOMStringProperty::kKeyShortcuts);
-    if (!key_shortcuts.IsNull()) {
-      ax_sparse_attribute_setter_map.at(aria_keyshortcutsAttr)
-          ->Run(*this, sparse_attribute_client, key_shortcuts);
-    }
-    AtomicString role_description =
-        GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRoleDescription);
-    if (!role_description.IsNull()) {
-      ax_sparse_attribute_setter_map.at(aria_roledescriptionAttr)
-          ->Run(*this, sparse_attribute_client, role_description);
-    }
   }
 }
 

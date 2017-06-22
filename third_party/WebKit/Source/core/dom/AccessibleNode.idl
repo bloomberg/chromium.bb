@@ -8,6 +8,7 @@
 [
     RuntimeEnabled=AccessibilityObjectModel
 ] interface AccessibleNode {
+    attribute AccessibleNode? activeDescendant;
     attribute boolean? atomic;
     attribute DOMString? autocomplete;
     attribute boolean? busy;
@@ -16,7 +17,9 @@
     attribute unsigned long? colIndex;
     attribute unsigned long? colSpan;
     attribute DOMString? current;
+    attribute AccessibleNode? details;
     attribute boolean? disabled;
+    attribute AccessibleNode? errorMessage;
     attribute boolean? expanded;
     attribute boolean? hidden;
     attribute DOMString? invalid;

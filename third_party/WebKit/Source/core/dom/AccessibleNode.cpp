@@ -13,6 +13,167 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+
+QualifiedName GetCorrespondingARIAAttribute(AOMStringProperty property) {
+  switch (property) {
+    case AOMStringProperty::kAutocomplete:
+      return aria_autocompleteAttr;
+    case AOMStringProperty::kChecked:
+      return aria_checkedAttr;
+    case AOMStringProperty::kCurrent:
+      return aria_currentAttr;
+    case AOMStringProperty::kInvalid:
+      return aria_invalidAttr;
+    case AOMStringProperty::kKeyShortcuts:
+      return aria_keyshortcutsAttr;
+    case AOMStringProperty::kLabel:
+      return aria_labelAttr;
+    case AOMStringProperty::kLive:
+      return aria_liveAttr;
+    case AOMStringProperty::kOrientation:
+      return aria_orientationAttr;
+    case AOMStringProperty::kPlaceholder:
+      return aria_placeholderAttr;
+    case AOMStringProperty::kPressed:
+      return aria_pressedAttr;
+    case AOMStringProperty::kRelevant:
+      return aria_relevantAttr;
+    case AOMStringProperty::kRole:
+      return roleAttr;
+    case AOMStringProperty::kRoleDescription:
+      return aria_roledescriptionAttr;
+    case AOMStringProperty::kSort:
+      return aria_sortAttr;
+    case AOMStringProperty::kValueText:
+      return aria_valuetextAttr;
+  }
+
+  NOTREACHED();
+  return g_null_name;
+}
+
+QualifiedName GetCorrespondingARIAAttribute(AOMRelationProperty property) {
+  switch (property) {
+    case AOMRelationProperty::kActiveDescendant:
+      return aria_activedescendantAttr;
+      break;
+    case AOMRelationProperty::kDetails:
+      return aria_detailsAttr;
+      break;
+    case AOMRelationProperty::kErrorMessage:
+      return aria_errormessageAttr;
+      break;
+  }
+
+  NOTREACHED();
+  return g_null_name;
+}
+
+QualifiedName GetCorrespondingARIAAttribute(AOMBooleanProperty property) {
+  switch (property) {
+    case AOMBooleanProperty::kAtomic:
+      return aria_atomicAttr;
+      break;
+    case AOMBooleanProperty::kBusy:
+      return aria_busyAttr;
+      break;
+    case AOMBooleanProperty::kDisabled:
+      return aria_disabledAttr;
+      break;
+    case AOMBooleanProperty::kExpanded:
+      return aria_expandedAttr;
+      break;
+    case AOMBooleanProperty::kHidden:
+      return aria_hiddenAttr;
+      break;
+    case AOMBooleanProperty::kModal:
+      return aria_modalAttr;
+      break;
+    case AOMBooleanProperty::kMultiline:
+      return aria_multilineAttr;
+      break;
+    case AOMBooleanProperty::kMultiselectable:
+      return aria_multiselectableAttr;
+      break;
+    case AOMBooleanProperty::kReadOnly:
+      return aria_readonlyAttr;
+      break;
+    case AOMBooleanProperty::kRequired:
+      return aria_requiredAttr;
+      break;
+    case AOMBooleanProperty::kSelected:
+      return aria_selectedAttr;
+      break;
+  }
+
+  NOTREACHED();
+  return g_null_name;
+}
+
+QualifiedName GetCorrespondingARIAAttribute(AOMFloatProperty property) {
+  AtomicString attr_value;
+  switch (property) {
+    case AOMFloatProperty::kValueMax:
+      return aria_valuemaxAttr;
+      break;
+    case AOMFloatProperty::kValueMin:
+      return aria_valueminAttr;
+      break;
+    case AOMFloatProperty::kValueNow:
+      return aria_valuenowAttr;
+      break;
+  }
+
+  NOTREACHED();
+  return g_null_name;
+}
+
+QualifiedName GetCorrespondingARIAAttribute(AOMUIntProperty property) {
+  switch (property) {
+    case AOMUIntProperty::kColIndex:
+      return aria_colindexAttr;
+      break;
+    case AOMUIntProperty::kColSpan:
+      return aria_colspanAttr;
+      break;
+    case AOMUIntProperty::kLevel:
+      return aria_levelAttr;
+      break;
+    case AOMUIntProperty::kPosInSet:
+      return aria_posinsetAttr;
+      break;
+    case AOMUIntProperty::kRowIndex:
+      return aria_rowindexAttr;
+      break;
+    case AOMUIntProperty::kRowSpan:
+      return aria_rowspanAttr;
+      break;
+  }
+
+  NOTREACHED();
+  return g_null_name;
+}
+
+QualifiedName GetCorrespondingARIAAttribute(AOMIntProperty property) {
+  switch (property) {
+    case AOMIntProperty::kColCount:
+      return aria_colcountAttr;
+      break;
+    case AOMIntProperty::kRowCount:
+      return aria_rowcountAttr;
+      break;
+    case AOMIntProperty::kSetSize:
+      return aria_setsizeAttr;
+      break;
+  }
+
+  NOTREACHED();
+  return g_null_name;
+}
+
+}  // namespace
+
 AccessibleNode::AccessibleNode(Element* element) : element_(element) {
   DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
 }
@@ -33,6 +194,22 @@ const AtomicString& AccessibleNode::GetProperty(Element* element,
   }
 
   return g_null_atom;
+}
+
+// static
+AccessibleNode* AccessibleNode::GetProperty(Element* element,
+                                            AOMRelationProperty property) {
+  if (!element)
+    return nullptr;
+
+  if (AccessibleNode* accessible_node = element->ExistingAccessibleNode()) {
+    for (const auto& item : accessible_node->relation_properties_) {
+      if (item.first == property && item.second)
+        return item.second;
+    }
+  }
+
+  return nullptr;
 }
 
 template <typename P, typename T>
@@ -122,41 +299,28 @@ const AtomicString& AccessibleNode::GetPropertyOrARIAAttribute(
     return result;
 
   // Fall back on the equivalent ARIA attribute.
-  switch (property) {
-    case AOMStringProperty::kAutocomplete:
-      return element->FastGetAttribute(aria_autocompleteAttr);
-    case AOMStringProperty::kChecked:
-      return element->FastGetAttribute(aria_checkedAttr);
-    case AOMStringProperty::kCurrent:
-      return element->FastGetAttribute(aria_currentAttr);
-    case AOMStringProperty::kInvalid:
-      return element->FastGetAttribute(aria_invalidAttr);
-    case AOMStringProperty::kKeyShortcuts:
-      return element->FastGetAttribute(aria_keyshortcutsAttr);
-    case AOMStringProperty::kLabel:
-      return element->FastGetAttribute(aria_labelAttr);
-    case AOMStringProperty::kLive:
-      return element->FastGetAttribute(aria_liveAttr);
-    case AOMStringProperty::kOrientation:
-      return element->FastGetAttribute(aria_orientationAttr);
-    case AOMStringProperty::kPlaceholder:
-      return element->FastGetAttribute(aria_placeholderAttr);
-    case AOMStringProperty::kPressed:
-      return element->FastGetAttribute(aria_pressedAttr);
-    case AOMStringProperty::kRelevant:
-      return element->FastGetAttribute(aria_relevantAttr);
-    case AOMStringProperty::kRole:
-      return element->FastGetAttribute(roleAttr);
-    case AOMStringProperty::kRoleDescription:
-      return element->FastGetAttribute(aria_roledescriptionAttr);
-    case AOMStringProperty::kSort:
-      return element->FastGetAttribute(aria_sortAttr);
-    case AOMStringProperty::kValueText:
-      return element->FastGetAttribute(aria_valuetextAttr);
-  }
+  QualifiedName attribute = GetCorrespondingARIAAttribute(property);
+  return element->FastGetAttribute(attribute);
+}
 
-  NOTREACHED();
-  return g_null_atom;
+// static
+AccessibleNode* AccessibleNode::GetPropertyOrARIAAttribute(
+    Element* element,
+    AOMRelationProperty property) {
+  if (!element)
+    return nullptr;
+
+  if (AccessibleNode* result = GetProperty(element, property))
+    return result;
+
+  // Fall back on the equivalent ARIA attribute.
+  QualifiedName attribute = GetCorrespondingARIAAttribute(property);
+  AtomicString value = element->FastGetAttribute(attribute);
+  Element* target = element->GetTreeScope().getElementById(value);
+  if (!target)
+    return nullptr;
+
+  return target->accessibleNode();
 }
 
 // static
@@ -172,43 +336,8 @@ bool AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
     return result;
 
   // Fall back on the equivalent ARIA attribute.
-  AtomicString attr_value;
-  switch (property) {
-    case AOMBooleanProperty::kAtomic:
-      attr_value = element->FastGetAttribute(aria_atomicAttr);
-      break;
-    case AOMBooleanProperty::kBusy:
-      attr_value = element->FastGetAttribute(aria_busyAttr);
-      break;
-    case AOMBooleanProperty::kDisabled:
-      attr_value = element->FastGetAttribute(aria_disabledAttr);
-      break;
-    case AOMBooleanProperty::kExpanded:
-      attr_value = element->FastGetAttribute(aria_expandedAttr);
-      break;
-    case AOMBooleanProperty::kHidden:
-      attr_value = element->FastGetAttribute(aria_hiddenAttr);
-      break;
-    case AOMBooleanProperty::kModal:
-      attr_value = element->FastGetAttribute(aria_modalAttr);
-      break;
-    case AOMBooleanProperty::kMultiline:
-      attr_value = element->FastGetAttribute(aria_multilineAttr);
-      break;
-    case AOMBooleanProperty::kMultiselectable:
-      attr_value = element->FastGetAttribute(aria_multiselectableAttr);
-      break;
-    case AOMBooleanProperty::kReadOnly:
-      attr_value = element->FastGetAttribute(aria_readonlyAttr);
-      break;
-    case AOMBooleanProperty::kRequired:
-      attr_value = element->FastGetAttribute(aria_requiredAttr);
-      break;
-    case AOMBooleanProperty::kSelected:
-      attr_value = element->FastGetAttribute(aria_selectedAttr);
-      break;
-  }
-
+  QualifiedName attribute = GetCorrespondingARIAAttribute(property);
+  AtomicString attr_value = element->FastGetAttribute(attribute);
   is_null = attr_value.IsNull();
   return EqualIgnoringASCIICase(attr_value, "true");
 }
@@ -226,19 +355,8 @@ float AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
     return result;
 
   // Fall back on the equivalent ARIA attribute.
-  AtomicString attr_value;
-  switch (property) {
-    case AOMFloatProperty::kValueMax:
-      attr_value = element->FastGetAttribute(aria_valuemaxAttr);
-      break;
-    case AOMFloatProperty::kValueMin:
-      attr_value = element->FastGetAttribute(aria_valueminAttr);
-      break;
-    case AOMFloatProperty::kValueNow:
-      attr_value = element->FastGetAttribute(aria_valuenowAttr);
-      break;
-  }
-
+  QualifiedName attribute = GetCorrespondingARIAAttribute(property);
+  AtomicString attr_value = element->FastGetAttribute(attribute);
   is_null = attr_value.IsNull();
   return attr_value.ToFloat();
 }
@@ -256,28 +374,8 @@ uint32_t AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
     return result;
 
   // Fall back on the equivalent ARIA attribute.
-  AtomicString attr_value;
-  switch (property) {
-    case AOMUIntProperty::kColIndex:
-      attr_value = element->FastGetAttribute(aria_colindexAttr);
-      break;
-    case AOMUIntProperty::kColSpan:
-      attr_value = element->FastGetAttribute(aria_colspanAttr);
-      break;
-    case AOMUIntProperty::kLevel:
-      attr_value = element->FastGetAttribute(aria_levelAttr);
-      break;
-    case AOMUIntProperty::kPosInSet:
-      attr_value = element->FastGetAttribute(aria_posinsetAttr);
-      break;
-    case AOMUIntProperty::kRowIndex:
-      attr_value = element->FastGetAttribute(aria_rowindexAttr);
-      break;
-    case AOMUIntProperty::kRowSpan:
-      attr_value = element->FastGetAttribute(aria_rowspanAttr);
-      break;
-  }
-
+  QualifiedName attribute = GetCorrespondingARIAAttribute(property);
+  AtomicString attr_value = element->FastGetAttribute(attribute);
   is_null = attr_value.IsNull();
   return attr_value.GetString().ToUInt();
 }
@@ -295,21 +393,55 @@ int32_t AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
     return result;
 
   // Fall back on the equivalent ARIA attribute.
-  AtomicString attr_value;
-  switch (property) {
-    case AOMIntProperty::kColCount:
-      attr_value = element->FastGetAttribute(aria_colcountAttr);
-      break;
-    case AOMIntProperty::kRowCount:
-      attr_value = element->FastGetAttribute(aria_rowcountAttr);
-      break;
-    case AOMIntProperty::kSetSize:
-      attr_value = element->FastGetAttribute(aria_setsizeAttr);
-      break;
-  }
-
+  QualifiedName attribute = GetCorrespondingARIAAttribute(property);
+  AtomicString attr_value = element->FastGetAttribute(attribute);
   is_null = attr_value.IsNull();
   return attr_value.ToInt();
+}
+
+// static
+void AccessibleNode::GetAllAOMProperties(
+    Element* element,
+    AOMPropertyClient* client,
+    HashSet<QualifiedName>& shadowed_aria_attributes) {
+  AccessibleNode* accessible_node = element->ExistingAccessibleNode();
+  if (!accessible_node)
+    return;
+
+  for (auto& item : accessible_node->string_properties_) {
+    client->AddStringProperty(item.first, item.second);
+    shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
+  }
+  for (auto& item : accessible_node->boolean_properties_) {
+    client->AddBooleanProperty(item.first, item.second);
+    shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
+  }
+  for (auto& item : accessible_node->float_properties_) {
+    client->AddFloatProperty(item.first, item.second);
+    shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
+  }
+  for (auto& item : accessible_node->int_properties_) {
+    client->AddIntProperty(item.first, item.second);
+    shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
+  }
+  for (auto& item : accessible_node->uint_properties_) {
+    client->AddUIntProperty(item.first, item.second);
+    shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
+  }
+  for (auto& item : accessible_node->relation_properties_) {
+    client->AddRelationProperty(item.first, *item.second);
+    shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
+  }
+}
+
+AccessibleNode* AccessibleNode::activeDescendant() const {
+  return GetProperty(element_, AOMRelationProperty::kActiveDescendant);
+}
+
+void AccessibleNode::setActiveDescendant(AccessibleNode* active_descendant) {
+  SetRelationProperty(AOMRelationProperty::kActiveDescendant,
+                      active_descendant);
+  NotifyAttributeChanged(aria_activedescendantAttr);
 }
 
 bool AccessibleNode::atomic(bool& is_null) const {
@@ -386,6 +518,15 @@ void AccessibleNode::setCurrent(const AtomicString& current) {
     cache->HandleAttributeChanged(aria_currentAttr, element_);
 }
 
+AccessibleNode* AccessibleNode::details() const {
+  return GetProperty(element_, AOMRelationProperty::kDetails);
+}
+
+void AccessibleNode::setDetails(AccessibleNode* details) {
+  SetRelationProperty(AOMRelationProperty::kDetails, details);
+  NotifyAttributeChanged(aria_detailsAttr);
+}
+
 bool AccessibleNode::disabled(bool& is_null) const {
   return GetProperty(element_, AOMBooleanProperty::kDisabled, is_null);
 }
@@ -393,6 +534,15 @@ bool AccessibleNode::disabled(bool& is_null) const {
 void AccessibleNode::setDisabled(bool disabled, bool is_null) {
   SetBooleanProperty(AOMBooleanProperty::kDisabled, disabled, is_null);
   NotifyAttributeChanged(aria_disabledAttr);
+}
+
+AccessibleNode* AccessibleNode::errorMessage() const {
+  return GetProperty(element_, AOMRelationProperty::kErrorMessage);
+}
+
+void AccessibleNode::setErrorMessage(AccessibleNode* error_message) {
+  SetRelationProperty(AOMRelationProperty::kErrorMessage, error_message);
+  NotifyAttributeChanged(aria_errormessageAttr);
 }
 
 bool AccessibleNode::expanded(bool& is_null) const {
@@ -669,6 +819,18 @@ void AccessibleNode::SetStringProperty(AOMStringProperty property,
   string_properties_.push_back(std::make_pair(property, value));
 }
 
+void AccessibleNode::SetRelationProperty(AOMRelationProperty property,
+                                         AccessibleNode* value) {
+  for (auto& item : relation_properties_) {
+    if (item.first == property) {
+      item.second = value;
+      return;
+    }
+  }
+
+  relation_properties_.push_back(std::make_pair(property, value));
+}
+
 template <typename P, typename T>
 static void SetProperty(P property,
                         T value,
@@ -726,6 +888,7 @@ AXObjectCache* AccessibleNode::GetAXObjectCache() {
 
 DEFINE_TRACE(AccessibleNode) {
   visitor->Trace(element_);
+  visitor->Trace(relation_properties_);
 }
 
 }  // namespace blink

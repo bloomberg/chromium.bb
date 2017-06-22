@@ -646,8 +646,13 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetMethod("allAttributes", &WebAXObjectProxy::AllAttributes)
       .SetMethod("attributesOfChildren",
                  &WebAXObjectProxy::AttributesOfChildren)
+      .SetMethod("ariaActiveDescendantElement",
+                 &WebAXObjectProxy::AriaActiveDescendantElement)
       .SetMethod("ariaControlsElementAtIndex",
                  &WebAXObjectProxy::AriaControlsElementAtIndex)
+      .SetMethod("ariaDetailsElement", &WebAXObjectProxy::AriaDetailsElement)
+      .SetMethod("ariaErrorMessageElement",
+                 &WebAXObjectProxy::AriaErrorMessageElement)
       .SetMethod("ariaFlowToElementAtIndex",
                  &WebAXObjectProxy::AriaFlowToElementAtIndex)
       .SetMethod("ariaOwnsElementAtIndex",
@@ -1263,6 +1268,16 @@ bool WebAXObjectProxy::IsClickable() {
   return accessibility_object_.IsClickable();
 }
 
+v8::Local<v8::Object> WebAXObjectProxy::AriaActiveDescendantElement() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  blink::WebAXObject element =
+      attribute_adapter.object_attributes
+          [blink::WebAXObjectAttribute::kAriaActiveDescendant];
+  return factory_->GetOrCreate(element);
+}
+
 v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
     unsigned index) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
@@ -1276,6 +1291,26 @@ v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
     return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(elements[index]);
+}
+
+v8::Local<v8::Object> WebAXObjectProxy::AriaDetailsElement() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  blink::WebAXObject element =
+      attribute_adapter
+          .object_attributes[blink::WebAXObjectAttribute::kAriaDetails];
+  return factory_->GetOrCreate(element);
+}
+
+v8::Local<v8::Object> WebAXObjectProxy::AriaErrorMessageElement() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  blink::WebAXObject element =
+      attribute_adapter
+          .object_attributes[blink::WebAXObjectAttribute::kAriaErrorMessage];
+  return factory_->GetOrCreate(element);
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaFlowToElementAtIndex(
