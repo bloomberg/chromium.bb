@@ -107,8 +107,10 @@ class PrintPreviewHandler
   void SetPdfSavedClosureForTesting(const base::Closure& closure);
 
  protected:
-  // If |prompt_user| is true, displays a modal dialog, prompting the user to
-  // select a file. Otherwise, just accept |default_path| and uniquify it.
+  // If |prompt_user| is true, starts a task to create the default Save As PDF
+  // directory if needed. OnDirectoryCreated() will be called when it
+  // finishes to open the modal dialog and prompt the user. Otherwise, just
+  // accept |default_path| and uniquify it.
   // Protected so unit tests can access.
   virtual void SelectFile(const base::FilePath& default_path, bool prompt_user);
 
@@ -264,6 +266,10 @@ class PrintPreviewHandler
 
   // Clears initiator details for the print preview dialog.
   void ClearInitiatorDetails();
+
+  // Called when the directory to save to has been created. Opens a modal
+  // dialog to prompt the user to select the file for Save As PDF.
+  void OnDirectoryCreated(const base::FilePath& path);
 
   // Posts a task to save |data| to pdf at |print_to_pdf_path_|.
   void PostPrintToPdfTask();
