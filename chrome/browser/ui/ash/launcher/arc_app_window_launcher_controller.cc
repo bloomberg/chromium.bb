@@ -69,8 +69,9 @@ using ash::ScreenOrientationController;
 // even when its AppWindow is not present.
 class ArcAppWindowLauncherController::AppWindowInfo {
  public:
-  explicit AppWindowInfo(const arc::ArcAppShelfId& app_shelf_id)
-      : app_shelf_id_(app_shelf_id) {}
+  explicit AppWindowInfo(const arc::ArcAppShelfId& app_shelf_id,
+                         const std::string& launch_intent)
+      : app_shelf_id_(app_shelf_id), launch_intent_(launch_intent) {}
   ~AppWindowInfo() = default;
 
   void SetDescription(const std::string& title,
@@ -119,12 +120,15 @@ class ArcAppWindowLauncherController::AppWindowInfo {
 
   ArcAppWindow* app_window() { return app_window_.get(); }
 
+  const std::string& launch_intent() { return launch_intent_; }
+
   const std::string& title() const { return title_; }
 
   const std::vector<uint8_t>& icon_data_png() const { return icon_data_png_; }
 
  private:
   const arc::ArcAppShelfId app_shelf_id_;
+  const std::string launch_intent_;
   bool has_requested_orientation_lock_ = false;
 
   // If true, the orientation should be locked to the specific
@@ -357,7 +361,7 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   const arc::ArcAppShelfId arc_app_shelf_id =
       arc::ArcAppShelfId::FromIntentAndAppId(intent, arc_app_id);
   task_id_to_app_window_info_[task_id] =
-      base::MakeUnique<AppWindowInfo>(arc_app_shelf_id);
+      base::MakeUnique<AppWindowInfo>(arc_app_shelf_id, intent);
   // Don't create shelf icon for non-primary user.
   if (observed_profile_ != owner()->profile())
     return;
@@ -595,9 +599,13 @@ void ArcAppWindowLauncherController::RegisterApp(
 
   if (!opt_in_management_check_start_time_.is_null() &&
       app_window_info->app_shelf_id().app_id() == arc::kPlayStoreAppId) {
-    arc::UpdatePlayStoreShowTime(
-        base::Time::Now() - opt_in_management_check_start_time_,
-        arc::policy_util::IsAccountManaged(owner()->profile()));
+    arc::Intent intent;
+    if (arc::ParseIntent(app_window_info->launch_intent(), &intent) &&
+        intent.HasExtraParam(arc::kInitialStartParam)) {
+      arc::UpdatePlayStoreShowTime(
+          base::Time::Now() - opt_in_management_check_start_time_,
+          arc::policy_util::IsAccountManaged(owner()->profile()));
+    }
     opt_in_management_check_start_time_ = base::Time();
   }
 }

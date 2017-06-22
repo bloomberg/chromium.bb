@@ -7,14 +7,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/crx_file/id_util.h"
 
 namespace arc {
 
 namespace {
 
-// String representation of Intent starts with this prefix.
-constexpr char kIntent[] = "#Intent";
 // Prefix in intent that specifies ARC shelf group. S. means string type.
 constexpr char kShelfGroupIntentPrefix[] = "S.org.chromium.arc.shelf_group_id=";
 // Prefix to specify ARC shelf group.
@@ -50,15 +49,14 @@ ArcAppShelfId ArcAppShelfId::FromIntentAndAppId(const std::string& intent,
   if (intent.empty())
     return ArcAppShelfId(std::string(), app_id);
 
-  const std::string prefix(kShelfGroupIntentPrefix);
-  const std::vector<std::string> parts = base::SplitString(
-      intent, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (parts.empty() || parts[0] != kIntent)
+  Intent parsed_intent;
+  if (!ParseIntent(intent, &parsed_intent))
     return ArcAppShelfId(std::string(), app_id);
 
-  for (const auto& part : parts) {
-    if (base::StartsWith(part, prefix, base::CompareCase::SENSITIVE))
-      return ArcAppShelfId(part.substr(prefix.length()), app_id);
+  const std::string prefix(kShelfGroupIntentPrefix);
+  for (const auto& param : parsed_intent.extra_params()) {
+    if (base::StartsWith(param, prefix, base::CompareCase::SENSITIVE))
+      return ArcAppShelfId(param.substr(prefix.length()), app_id);
   }
 
   return ArcAppShelfId(std::string(), app_id);
