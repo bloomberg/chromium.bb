@@ -36,6 +36,13 @@ struct OfflinePageItem {
                   const base::FilePath& file_path,
                   int64_t file_size,
                   const base::Time& creation_time);
+  OfflinePageItem(const GURL& url,
+                  int64_t offline_id,
+                  const ClientId& client_id,
+                  const base::FilePath& file_path,
+                  int64_t file_size,
+                  const base::Time& creation_time,
+                  const std::string& origin_package);
   OfflinePageItem(const OfflinePageItem& other);
   ~OfflinePageItem();
 
@@ -69,6 +76,9 @@ struct OfflinePageItem {
   // The original URL of the page if not empty. Otherwise, this is set to empty
   // and |url| should be accessed instead.
   GURL original_url;
+  // The app, if any, that the item was saved on behalf of.
+  // Empty string implies Chrome.
+  std::string request_origin;
 };
 
 }  // namespace offline_pages
