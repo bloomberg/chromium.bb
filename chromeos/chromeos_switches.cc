@@ -494,6 +494,9 @@ const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 
+// Forces use of Chrome OS Gaia API v1.
+const char kCrosGaiaApiV1[] = "cros-gaia-api-v1";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
