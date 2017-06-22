@@ -332,7 +332,8 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
       WebFloatPoint(last_known_mouse_global_position_.X(),
                     last_known_mouse_global_position_.Y()),
       WebPointerProperties::Button::kNoButton, 0,
-      KeyboardEventManager::GetCurrentModifierState(),
+      KeyboardEventManager::GetCurrentModifierState() |
+          WebInputEvent::Modifiers::kRelativeMotionEvent,
       TimeTicks::Now().InSeconds());
   // TODO(dtapuska): Update m_lastKnowMousePosition to be viewport coordinates.
   fake_mouse_move_event.SetFrameScale(1);

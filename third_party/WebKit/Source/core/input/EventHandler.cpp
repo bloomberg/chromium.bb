@@ -785,6 +785,18 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   mouse_event_manager_->CancelFakeMouseMoveEvent();
   mouse_event_manager_->HandleSvgPanIfNeeded(false);
 
+  // Mouse states need to be reset when mouse move with no button down.
+  // This is for popup/context_menu opened at mouse_down event and
+  // mouse_release is not handled in page.
+  // crbug/527582
+  if (mouse_event.button == WebPointerProperties::Button::kNoButton &&
+      !(mouse_event.GetModifiers() &
+        WebInputEvent::Modifiers::kRelativeMotionEvent)) {
+    mouse_event_manager_->HandleMouseReleaseEventUpdateStates();
+    if (event_handler_will_reset_capturing_mouse_events_node_)
+      capturing_mouse_events_node_ = nullptr;
+  }
+
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     if (Page* page = frame_->GetPage()) {
       if (mouse_event.GetType() == WebInputEvent::kMouseLeave &&
@@ -819,8 +831,9 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   } else if (only_update_scrollbars) {
     // Mouse events should be treated as "read-only" if we're updating only
     // scrollbars. This means that :hover and :active freeze in the state they
-    // were in, rather than updating for nodes the mouse moves while the window
-    // is not key (which will be the case if onlyUpdateScrollbars is true).
+    // were in, rather than updating for nodes the mouse moves while the
+    // window is not key (which will be the case if onlyUpdateScrollbars is
+    // true).
     hit_type |= HitTestRequest::kReadOnly;
   }
 
@@ -832,10 +845,10 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(
       mouse_event, HitTestResult(request, LayoutPoint()));
 
-  // We don't want to do a hit-test in forceLeave scenarios because there might
-  // actually be some other frame above this one at the specified co-ordinate.
-  // So we must force the hit-test to fail, while still clearing hover/active
-  // state.
+  // We don't want to do a hit-test in forceLeave scenarios because there
+  // might actually be some other frame above this one at the specified
+  // co-ordinate. So we must force the hit-test to fail, while still clearing
+  // hover/active state.
   if (force_leave) {
     frame_->GetDocument()->UpdateHoverActiveState(request, nullptr);
   } else {
@@ -861,18 +874,20 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   }
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
-  LocalFrame* new_subframe = capturing_mouse_events_node_.Get()
-                                 ? EventHandlingUtil::SubframeForTargetNode(
-                                       capturing_mouse_events_node_.Get())
-                                 : EventHandlingUtil::SubframeForHitTestResult(mev);
+  LocalFrame* new_subframe =
+      capturing_mouse_events_node_.Get()
+          ? EventHandlingUtil::SubframeForTargetNode(
+                capturing_mouse_events_node_.Get())
+          : EventHandlingUtil::SubframeForHitTestResult(mev);
 
-  // We want mouseouts to happen first, from the inside out.  First send a move
-  // event to the last subframe so that it will fire mouseouts.
+  // We want mouseouts to happen first, from the inside out.  First send a
+  // move event to the last subframe so that it will fire mouseouts.
   if (last_mouse_move_event_subframe_ &&
       last_mouse_move_event_subframe_->Tree().IsDescendantOf(frame_) &&
-      last_mouse_move_event_subframe_ != new_subframe)
+      last_mouse_move_event_subframe_ != new_subframe) {
     last_mouse_move_event_subframe_->GetEventHandler().HandleMouseLeaveEvent(
         mev.Event());
+  }
 
   if (new_subframe) {
     // Update over/out state before passing the event to the subframe.

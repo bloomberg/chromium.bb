@@ -33,11 +33,6 @@ function runTest()
     verify('rgb(255, 0, 0)');
     eventSender.mouseUp();
 
-    // Due to how mouse press / hover state is updated, the first mouse move is expected to generate incorrect hover state.
-    eventSender.mouseMoveTo(x, y);
-    verify('rgb(255, 0, 0)');
-
-    eventSender.mouseMoveTo(x, y + 200);
     eventSender.mouseMoveTo(x, y);
     verify('rgb(0, 128, 0)');
 }
