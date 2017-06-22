@@ -266,6 +266,9 @@ extern const char kEnableWasmDescription[];
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
 
+extern const char kEnableImageCaptureAPIName[];
+extern const char kEnableImageCaptureAPIDescription[];
+
 extern const char kEnableZeroSuggestRedirectToChromeName[];
 extern const char kEnableZeroSuggestRedirectToChromeDescription[];
 

@@ -346,6 +346,10 @@ const base::Feature kWebRtcUseEchoCanceller3{"WebRtcUseEchoCanceller3",
 // https://wicg.github.io/webusb
 const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables/disables the Image Capture API.
+const base::Feature kImageCaptureAPI{"ImageCaptureAPI",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables WebVR experimental rendering optimizations.
 const base::Feature kWebVRExperimentalRendering{
     "WebVRExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};

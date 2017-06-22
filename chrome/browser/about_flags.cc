@@ -2210,6 +2210,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webusb", flag_descriptions::kEnableWebUsbName,
      flag_descriptions::kEnableWebUsbDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebUsb)},
+    {"enable-image-capture-api", flag_descriptions::kEnableImageCaptureAPIName,
+     flag_descriptions::kEnableImageCaptureAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kImageCaptureAPI)},
 #if defined(OS_ANDROID)
     {"force-show-update-menu-item", flag_descriptions::kUpdateMenuItemName,
      flag_descriptions::kUpdateMenuItemDescription, kOsAndroid,
