@@ -55,58 +55,12 @@ void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
   callback.Run(res);
 }
 
-bool GetTracingOptions(const std::string& data64,
-                       base::trace_event::TraceConfig* trace_config) {
-  std::string data;
-  if (!base::Base64Decode(data64, &data)) {
-    LOG(ERROR) << "Options were not base64 encoded.";
-    return false;
-  }
-
-  std::unique_ptr<base::Value> optionsRaw = base::JSONReader::Read(data);
-  if (!optionsRaw) {
-    LOG(ERROR) << "Options were not valid JSON";
-    return false;
-  }
-  base::DictionaryValue* options;
-  if (!optionsRaw->GetAsDictionary(&options)) {
-    LOG(ERROR) << "Options must be dict";
-    return false;
-  }
-
-  if (!trace_config) {
-    LOG(ERROR) << "trace_config can't be passed as NULL";
-    return false;
-  }
-
-  bool options_ok = true;
-  std::string category_filter_string;
-  options_ok &= options->GetString("categoryFilter", &category_filter_string);
-
-  std::string record_mode;
-  options_ok &= options->GetString("tracingRecordMode", &record_mode);
-
-  *trace_config = base::trace_event::TraceConfig(category_filter_string,
-                                                 record_mode);
-
-  bool enable_systrace;
-  options_ok &= options->GetBoolean("useSystemTracing", &enable_systrace);
-  if (enable_systrace)
-    trace_config->EnableSystrace();
-
-  if (!options_ok) {
-    LOG(ERROR) << "Malformed options";
-    return false;
-  }
-  return true;
-}
-
 void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback);
 
 bool BeginRecording(const std::string& data64,
                     const WebUIDataSource::GotDataCallback& callback) {
   base::trace_event::TraceConfig trace_config("", "");
-  if (!GetTracingOptions(data64, &trace_config))
+  if (!TracingUI::GetTracingOptions(data64, &trace_config))
     return false;
 
   return TracingController::GetInstance()->StartTracing(
@@ -297,6 +251,60 @@ void TracingUI::DoUploadInternal(const std::string& file_contents,
   trace_uploader_->DoUpload(file_contents, upload_mode, nullptr,
                             progress_callback, done_callback);
   // TODO(mmandlis): Add support for stopping the upload in progress.
+}
+
+// static
+bool TracingUI::GetTracingOptions(
+    const std::string& data64,
+    base::trace_event::TraceConfig* trace_config) {
+  std::string data;
+  if (!base::Base64Decode(data64, &data)) {
+    LOG(ERROR) << "Options were not base64 encoded.";
+    return false;
+  }
+
+  std::unique_ptr<base::Value> optionsRaw = base::JSONReader::Read(data);
+  if (!optionsRaw) {
+    LOG(ERROR) << "Options were not valid JSON";
+    return false;
+  }
+  base::DictionaryValue* options;
+  if (!optionsRaw->GetAsDictionary(&options)) {
+    LOG(ERROR) << "Options must be dict";
+    return false;
+  }
+
+  if (!trace_config) {
+    LOG(ERROR) << "trace_config can't be passed as NULL";
+    return false;
+  }
+
+  // New style options dictionary.
+  if (options->HasKey("included_categories")) {
+    *trace_config = base::trace_event::TraceConfig(*options);
+    return true;
+  }
+
+  bool options_ok = true;
+  std::string category_filter_string;
+  options_ok &= options->GetString("categoryFilter", &category_filter_string);
+
+  std::string record_mode;
+  options_ok &= options->GetString("tracingRecordMode", &record_mode);
+
+  *trace_config =
+      base::trace_event::TraceConfig(category_filter_string, record_mode);
+
+  bool enable_systrace;
+  options_ok &= options->GetBoolean("useSystemTracing", &enable_systrace);
+  if (enable_systrace)
+    trace_config->EnableSystrace();
+
+  if (!options_ok) {
+    LOG(ERROR) << "Malformed options";
+    return false;
+  }
+  return true;
 }
 
 void TracingUI::OnTraceUploadProgress(int64_t current, int64_t total) {
