@@ -58,7 +58,7 @@ static CGFloat kHostInset = 5.f;
       [HostCollectionViewController alloc] initWithCollectionViewLayout:layout];
   self = [super initWithContentViewController:collectionVC];
   if (self) {
-    _remotingService = [RemotingService SharedInstance];
+    _remotingService = RemotingService.instance;
 
     _collectionViewController = collectionVC;
     _collectionViewController.flexHeaderContainerViewController = self;

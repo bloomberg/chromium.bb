@@ -5,11 +5,19 @@
 #ifndef REMOTING_IOS_FACADE_REMOTING_AUTHENTICATION_H_
 #define REMOTING_IOS_FACADE_REMOTING_AUTHENTICATION_H_
 
-#import "remoting/client/chromoting_client_runtime.h"
 #import "remoting/ios/domain/user_info.h"
 
 #include "base/memory/weak_ptr.h"
-#include "remoting/base/oauth_token_getter.h"
+
+typedef NS_ENUM(NSInteger, RemotingAuthenticationStatus) {
+  RemotingAuthenticationStatusSuccess,
+  RemotingAuthenticationStatusNetworkError,
+  RemotingAuthenticationStatusAuthError
+};
+
+typedef void (^AccessTokenCallback)(RemotingAuthenticationStatus status,
+                                    NSString* userEmail,
+                                    NSString* accessToken);
 
 // |RemotingAuthenticationDelegate|s are interested in authentication related
 // notifications.
@@ -20,28 +28,23 @@
 
 @end
 
-// This is the class that will manage the details around authentication
+// This is the interface that will manage the details around authentication
 // management and currently active user. It will make sure the user object is
 // saved to the keychain correctly and loaded on startup. It also is the entry
 // point for gaining access to an auth token for authrized calls.
-@interface RemotingAuthentication : NSObject
+@protocol RemotingAuthentication<NSObject>
 
-// Provide an |authorizationCode| to authenticate a user as the first time user
-// of the application or OAuth Flow.
-- (void)authenticateWithAuthorizationCode:(NSString*)authorizationCode;
-
-// Fetches an OAuth Access Token and passes it back to the callback if
-// the user is authenticated. Otherwise does nothing.
+// Fetches an Access Token and passes it back to the callback if the user is
+// authenticated. Otherwise does nothing.
 // TODO(nicholss): We might want to throw an error or add error message to
 // the callback sig to be able to react to the un-authed case.
-- (void)callbackWithAccessToken:
-    (const remoting::OAuthTokenGetter::TokenCallback&)onAccessToken;
+- (void)callbackWithAccessToken:(AccessTokenCallback)onAccessToken;
 
 // Forget the current user.
 - (void)logout;
 
 // Returns the currently logged in user or nil.
-@property(strong, nonatomic) UserInfo* user;
+@property(strong, nonatomic, readonly) UserInfo* user;
 
 // Delegate recieves updates on user changes.
 @property(weak, nonatomic) id<RemotingAuthenticationDelegate> delegate;

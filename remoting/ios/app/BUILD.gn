@@ -28,7 +28,6 @@ source_set("common_source_set") {
     "host_collection_view_controller.mm",
     "host_view_controller.h",
     "host_view_controller.mm",
-    "main.mm",
     "pin_entry_view.h",
     "pin_entry_view.mm",
     "remoting_theme.h",
@@ -62,6 +61,7 @@ source_set("common_source_set") {
 source_set("main") {
   sources = [
     "app_view_controller_chromium.mm",
+    "main.mm",
     "remoting_menu_view_controller.h",
     "remoting_menu_view_controller.mm",
   ]
