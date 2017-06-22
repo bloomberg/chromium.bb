@@ -40,7 +40,8 @@ class APIBindingsSystem {
       const base::ListValue* property_values,
       APIRequestHandler* request_handler,
       APIEventHandler* event_handler,
-      APITypeReferenceMap* type_refs)>;
+      APITypeReferenceMap* type_refs,
+      const BindingAccessChecker* access_checker)>;
 
   APIBindingsSystem(
       const binding::RunJSFunction& call_js,

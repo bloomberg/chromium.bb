@@ -11,6 +11,7 @@
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_signature.h"
 #include "extensions/renderer/api_type_reference_map.h"
+#include "extensions/renderer/binding_access_checker.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/arguments.h"
@@ -40,26 +41,29 @@ v8::Local<v8::Object> ContentSetting::Create(
     const base::ListValue* property_values,
     APIRequestHandler* request_handler,
     APIEventHandler* event_handler,
-    APITypeReferenceMap* type_refs) {
+    APITypeReferenceMap* type_refs,
+    const BindingAccessChecker* access_checker) {
   std::string pref_name;
   CHECK(property_values->GetString(0u, &pref_name));
   const base::DictionaryValue* value_spec = nullptr;
   CHECK(property_values->GetDictionary(1u, &value_spec));
 
   gin::Handle<ContentSetting> handle = gin::CreateHandle(
-      isolate, new ContentSetting(run_js, request_handler, type_refs, pref_name,
-                                  *value_spec));
+      isolate, new ContentSetting(run_js, request_handler, type_refs,
+                                  access_checker, pref_name, *value_spec));
   return handle.ToV8().As<v8::Object>();
 }
 
 ContentSetting::ContentSetting(const binding::RunJSFunction& run_js,
                                APIRequestHandler* request_handler,
                                const APITypeReferenceMap* type_refs,
+                               const BindingAccessChecker* access_checker,
                                const std::string& pref_name,
                                const base::DictionaryValue& set_value_spec)
     : run_js_(run_js),
       request_handler_(request_handler),
       type_refs_(type_refs),
+      access_checker_(access_checker),
       pref_name_(pref_name),
       argument_spec_(ArgumentType::OBJECT) {
   // The set() call takes an object { setting: { type: <t> }, ... }, where <t>
@@ -129,6 +133,10 @@ void ContentSetting::HandleFunction(const std::string& method_name,
   std::vector<v8::Local<v8::Value>> argument_list = arguments->GetAll();
 
   std::string full_name = "contentSettings.ContentSetting." + method_name;
+
+  if (!access_checker_->HasAccessOrThrowError(context, full_name))
+    return;
+
   std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;
   std::string error;

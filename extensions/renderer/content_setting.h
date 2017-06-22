@@ -25,6 +25,7 @@ class Arguments;
 namespace extensions {
 class APIEventHandler;
 class APIRequestHandler;
+class BindingAccessChecker;
 
 // The custom implementation of the contentSettings.ContentSetting type exposed
 // to APIs.
@@ -33,13 +34,15 @@ class ContentSetting final : public gin::Wrappable<ContentSetting> {
   ~ContentSetting() override;
 
   // Creates a ContentSetting object for the given property.
-  static v8::Local<v8::Object> Create(const binding::RunJSFunction& run_js,
-                                      v8::Isolate* isolate,
-                                      const std::string& property_name,
-                                      const base::ListValue* property_values,
-                                      APIRequestHandler* request_handler,
-                                      APIEventHandler* event_handler,
-                                      APITypeReferenceMap* type_refs);
+  static v8::Local<v8::Object> Create(
+      const binding::RunJSFunction& run_js,
+      v8::Isolate* isolate,
+      const std::string& property_name,
+      const base::ListValue* property_values,
+      APIRequestHandler* request_handler,
+      APIEventHandler* event_handler,
+      APITypeReferenceMap* type_refs,
+      const BindingAccessChecker* access_checker);
 
   static gin::WrapperInfo kWrapperInfo;
 
@@ -50,6 +53,7 @@ class ContentSetting final : public gin::Wrappable<ContentSetting> {
   ContentSetting(const binding::RunJSFunction& run_js,
                  APIRequestHandler* request_handler,
                  const APITypeReferenceMap* type_refs,
+                 const BindingAccessChecker* access_checker,
                  const std::string& pref_name,
                  const base::DictionaryValue& argument_spec);
 
@@ -68,6 +72,8 @@ class ContentSetting final : public gin::Wrappable<ContentSetting> {
   APIRequestHandler* request_handler_;
 
   const APITypeReferenceMap* type_refs_;
+
+  const BindingAccessChecker* const access_checker_;
 
   // The name of the preference this ContentSetting is managing.
   std::string pref_name_;
