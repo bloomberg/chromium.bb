@@ -30,8 +30,21 @@ async function test() {
     });
     // Quota will vary between setups, rather strip it altogether
     var clean = view._quotaRow.innerHTML.replace(/\&nbsp;/g, ' ');
-    var quotaStripped = clean.replace(/(.*) \d+ .?B([^\d]*)/, '$1 -$2');
+    var quotaStripped = clean.replace(/(.*) \d+ .?B([^\d]*)/, '$1 --$2');
     InspectorTest.addResult(quotaStripped);
+
+    InspectorTest.addResult('Usage breakdown:');
+    for (var i = 0; i < view._pieChartLegend.children.length; i++) {
+      var typeUsage = ': ';
+      var children = view._pieChartLegend.children[i].children;
+      for (var j = 0; j < children.length; j++) {
+        if (children[j].classList.contains('usage-breakdown-legend-title'))
+          typeUsage = children[j].textContent + typeUsage;
+        if (children[j].classList.contains('usage-breakdown-legend-value'))
+          typeUsage = typeUsage + children[j].textContent;
+      }
+      InspectorTest.addResult(typeUsage);
+    }
   }
   UI.viewManager.showView('resources');
 

@@ -5,8 +5,11 @@ Tests quota reporting.
 
 Tree element found: true
 Clear storage view is visible: true
-0 B storage quota used out of -
+0 B used out of -- storage quota
+Usage breakdown:
 
 Running: Now with data
-9.5 MB storage quota used out of -
+9.5 MB used out of -- storage quota
+Usage breakdown:
+IndexedDB: 9.5 MB
 
