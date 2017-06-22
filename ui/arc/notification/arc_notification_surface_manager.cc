@@ -4,70 +4,27 @@
 
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 
-#include <algorithm>
-
-#include "components/exo/notification_surface.h"
+#include "base/logging.h"
 
 namespace arc {
 
-namespace {
-
-ArcNotificationSurfaceManager* instance = nullptr;
-
-}  // namespace
+// static
+ArcNotificationSurfaceManager* ArcNotificationSurfaceManager::instance_ =
+    nullptr;
 
 ArcNotificationSurfaceManager::ArcNotificationSurfaceManager() {
-  DCHECK(!instance);
-  instance = this;
+  DCHECK(!instance_);
+  instance_ = this;
 }
 
 ArcNotificationSurfaceManager::~ArcNotificationSurfaceManager() {
-  DCHECK_EQ(this, instance);
-  instance = nullptr;
+  DCHECK_EQ(this, instance_);
+  instance_ = nullptr;
 }
 
 // static
 ArcNotificationSurfaceManager* ArcNotificationSurfaceManager::Get() {
-  return instance;
-}
-
-exo::NotificationSurface* ArcNotificationSurfaceManager::GetSurface(
-    const std::string& notification_key) const {
-  auto it = notification_surface_map_.find(notification_key);
-  return it == notification_surface_map_.end() ? nullptr : it->second;
-}
-
-void ArcNotificationSurfaceManager::AddSurface(
-    exo::NotificationSurface* surface) {
-  if (notification_surface_map_.find(surface->notification_key()) !=
-      notification_surface_map_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  notification_surface_map_[surface->notification_key()] = surface;
-
-  for (auto& observer : observers_)
-    observer.OnNotificationSurfaceAdded(surface);
-}
-
-void ArcNotificationSurfaceManager::RemoveSurface(
-    exo::NotificationSurface* surface) {
-  auto it = notification_surface_map_.find(surface->notification_key());
-  if (it == notification_surface_map_.end())
-    return;
-
-  notification_surface_map_.erase(it);
-  for (auto& observer : observers_)
-    observer.OnNotificationSurfaceRemoved(surface);
-}
-
-void ArcNotificationSurfaceManager::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ArcNotificationSurfaceManager::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+  return instance_;
 }
 
 }  // namespace arc

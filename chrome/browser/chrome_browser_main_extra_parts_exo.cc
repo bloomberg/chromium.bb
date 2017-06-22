@@ -20,7 +20,7 @@
 #include "components/exo/wm_helper_ash.h"
 #include "components/exo/wm_helper_mus.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/arc/notification/arc_notification_surface_manager.h"
+#include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 
 #if defined(USE_GLIB)
 namespace {
@@ -123,7 +123,7 @@ void ChromeBrowserMainExtraPartsExo::PreProfileInit() {
     return;
 
   arc_notification_surface_manager_ =
-      base::MakeUnique<arc::ArcNotificationSurfaceManager>();
+      base::MakeUnique<arc::ArcNotificationSurfaceManagerImpl>();
   if (ash_util::IsRunningInMash())
     wm_helper_ = base::MakeUnique<exo::WMHelperMus>();
   else

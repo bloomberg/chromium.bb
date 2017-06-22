@@ -18,10 +18,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/native/native_view_host.h"
 
-namespace exo {
-class NotificationSurface;
-}
-
 namespace gfx {
 class LinearAnimation;
 }
@@ -37,6 +33,8 @@ class Widget;
 
 namespace arc {
 
+class ArcNotificationSurface;
+
 // ArcNotificationContentView is a view to host NotificationSurface and show the
 // content in itself. This is implemented as a child of ArcNotificationView.
 class ArcNotificationContentView
@@ -47,13 +45,20 @@ class ArcNotificationContentView
       public ArcNotificationSurfaceManager::Observer,
       public gfx::AnimationDelegate {
  public:
+  static const char kViewClassName[];
+
   explicit ArcNotificationContentView(ArcNotificationItem* item);
   ~ArcNotificationContentView() override;
+
+  // views::View overrides:
+  const char* GetClassName() const override;
 
   std::unique_ptr<ArcNotificationContentViewDelegate>
   CreateContentViewDelegate();
 
  private:
+  friend class ArcNotificationContentViewTest;
+
   class ContentViewDelegate;
   class EventForwarder;
   class SettingsButton;
@@ -77,7 +82,7 @@ class ArcNotificationContentView
   void CreateCloseButton();
   void CreateSettingsButton();
   void MaybeCreateFloatingControlButtons();
-  void SetSurface(exo::NotificationSurface* surface);
+  void SetSurface(ArcNotificationSurface* surface);
   void UpdatePreferredSize();
   void UpdateControlButtonsVisibility();
   void UpdatePinnedState();
@@ -115,8 +120,8 @@ class ArcNotificationContentView
   void OnItemUpdated() override;
 
   // ArcNotificationSurfaceManager::Observer:
-  void OnNotificationSurfaceAdded(exo::NotificationSurface* surface) override;
-  void OnNotificationSurfaceRemoved(exo::NotificationSurface* surface) override;
+  void OnNotificationSurfaceAdded(ArcNotificationSurface* surface) override;
+  void OnNotificationSurfaceRemoved(ArcNotificationSurface* surface) override;
 
   // AnimationDelegate
   void AnimationEnded(const gfx::Animation* animation) override;
@@ -125,7 +130,7 @@ class ArcNotificationContentView
   // If |item_| is null, we may be about to be destroyed. In this case,
   // we have to be careful about what we do.
   ArcNotificationItem* item_ = nullptr;
-  exo::NotificationSurface* surface_ = nullptr;
+  ArcNotificationSurface* surface_ = nullptr;
 
   const std::string notification_key_;
 
