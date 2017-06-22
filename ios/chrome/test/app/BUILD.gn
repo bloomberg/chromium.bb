@@ -68,7 +68,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/main",
-    "//ios/chrome/browser/ui/ntp:ntp_internal",
+    "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/stack_view",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/tabs",
