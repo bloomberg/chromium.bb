@@ -469,7 +469,7 @@ module business.mojom;
 
 enum Department {
   kEngineering,
-  kMarketng,
+  kMarketing,
   kSales,
 };
 ```
@@ -1311,6 +1311,7 @@ class StructTraits
 Generated `ReadFoo` methods always convert `multi_word_field_name` fields to
 `ReadMultiWordFieldName` methods.
 
+<a name="Blink-Type-Mapping"></a>
 ### Variants
 
 By now you may have noticed that additional C++ sources are generated when a
@@ -1360,8 +1361,8 @@ out/gen/sample/db.mojom-shared-internal.h
 ```
 
 Including either variant's header (`db.mojom.h` or `db.mojom-blink.h`)
-implicitly includes the shared header, but you have on some occasions wish to
-include *only* the shared header in some instances.
+implicitly includes the shared header, but may wish to include *only* the shared
+header in some instances.
 
 Finally, note that for `mojom` GN targets, there is implicitly a corresponding
 `mojom_{variant}` target defined for any supported bindings configuration. So
