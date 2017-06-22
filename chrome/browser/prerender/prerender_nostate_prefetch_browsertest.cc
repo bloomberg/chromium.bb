@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -593,11 +594,10 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, HistoryUntouchedByPrefetch) {
   // Check that the URL that was explicitly navigated to is already in history.
   ui_test_utils::HistoryEnumerator enumerator(profile);
   std::vector<GURL>& urls = enumerator.urls();
-  EXPECT_TRUE(std::find(urls.begin(), urls.end(), navigated_url) != urls.end());
+  EXPECT_TRUE(base::ContainsValue(urls, navigated_url));
 
   // Check that the URL that was prefetched is not in history.
-  EXPECT_TRUE(std::find(urls.begin(), urls.end(), prefetched_url) ==
-              urls.end());
+  EXPECT_FALSE(base::ContainsValue(urls, prefetched_url));
 
   // The loader URL is the remaining entry.
   EXPECT_EQ(2U, urls.size());

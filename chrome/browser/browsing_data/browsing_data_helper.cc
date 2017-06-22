@@ -4,9 +4,9 @@
 
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
-#include <algorithm>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
@@ -15,7 +15,7 @@
 // Static
 bool BrowsingDataHelper::IsWebScheme(const std::string& scheme) {
   const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
-  return std::find(schemes.begin(), schemes.end(), scheme) != schemes.end();
+  return base::ContainsValue(schemes, scheme);
 }
 
 // Static

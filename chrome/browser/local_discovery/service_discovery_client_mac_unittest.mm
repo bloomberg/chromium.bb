@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
@@ -155,10 +156,8 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
   const std::vector<std::string>& metadata =
       last_service_description_.metadata;
   EXPECT_EQ(2u, metadata.size());
-  EXPECT_NE(metadata.end(),
-            std::find(metadata.begin(), metadata.end(), "ab"));
-  EXPECT_NE(metadata.end(),
-            std::find(metadata.begin(), metadata.end(), "d=e"));
+  EXPECT_TRUE(base::ContainsValue(metadata, "ab"));
+  EXPECT_TRUE(base::ContainsValue(metadata, "d=e"));
 
   EXPECT_EQ(ip_address, last_service_description_.ip_address);
   EXPECT_EQ(kPort, last_service_description_.address.port());
@@ -212,10 +211,8 @@ TEST_F(ServiceDiscoveryClientMacTest, ResolveInvalidUnicodeRecord) {
   const std::vector<std::string>& metadata =
       last_service_description_.metadata;
   EXPECT_EQ(2u, metadata.size());
-  EXPECT_NE(metadata.end(),
-            std::find(metadata.begin(), metadata.end(), "a=b"));
-  EXPECT_NE(metadata.end(),
-            std::find(metadata.begin(), metadata.end(), "cd=e9"));
+  EXPECT_TRUE(base::ContainsValue(metadata, "a=b"));
+  EXPECT_TRUE(base::ContainsValue(metadata, "cd=e9"));
 
   EXPECT_EQ(ip_address, last_service_description_.ip_address);
   EXPECT_EQ(kPort, last_service_description_.address.port());
