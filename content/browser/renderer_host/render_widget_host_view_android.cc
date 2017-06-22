@@ -103,6 +103,9 @@ namespace content {
 namespace {
 
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
+static const base::TimeDelta kClickCountInterval =
+    base::TimeDelta::FromSecondsD(0.5);
+static const float kClickCountRadiusSquaredDIP = 25;
 
 class PendingReadbackLock;
 
@@ -1803,12 +1806,23 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
   blink::WebInputEvent::Type webMouseEventType =
       ui::ToWebMouseEventType(motion_event.GetAction());
 
+  if (webMouseEventType == blink::WebInputEvent::kMouseDown)
+    UpdateLeftClickCount(action_button, motion_event.GetX(0),
+                         motion_event.GetY(0));
+
+  int click_count = 0;
+
+  if (webMouseEventType == blink::WebInputEvent::kMouseDown ||
+      webMouseEventType == blink::WebInputEvent::kMouseUp)
+    click_count = (action_button == ui::MotionEventAndroid::BUTTON_PRIMARY)
+                      ? left_click_count_
+                      : 1;
+
   blink::WebMouseEvent mouse_event = WebMouseEventBuilder::Build(
       webMouseEventType,
       ui::EventTimeStampToSeconds(motion_event.GetEventTime()),
       motion_event.GetX(0), motion_event.GetY(0), motion_event.GetFlags(),
-      motion_event.GetButtonState() ? 1 : 0 /* click count */,
-      motion_event.GetPointerId(0), motion_event.GetPressure(0),
+      click_count, motion_event.GetPointerId(0), motion_event.GetPressure(0),
       motion_event.GetOrientation(0), motion_event.GetTiltX(0),
       motion_event.GetTiltY(0), action_button, motion_event.GetToolType(0));
 
@@ -1822,6 +1836,30 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
   } else {
     host_->ForwardMouseEvent(mouse_event);
   }
+}
+
+void RenderWidgetHostViewAndroid::UpdateLeftClickCount(int action_button,
+                                                       float mousedown_x,
+                                                       float mousedown_y) {
+  if (action_button != ui::MotionEventAndroid::BUTTON_PRIMARY) {
+    // Reset state if middle or right button was pressed.
+    left_click_count_ = 0;
+    prev_mousedown_timestamp_ = base::TimeTicks();
+    return;
+  }
+
+  const base::TimeTicks current_time = base::TimeTicks::Now();
+  const base::TimeDelta time_delay = current_time - prev_mousedown_timestamp_;
+  const gfx::Point mousedown_point(mousedown_x, mousedown_y);
+  const float distance_squared =
+      (mousedown_point - prev_mousedown_point_).LengthSquared();
+  if (left_click_count_ > 2 || time_delay > kClickCountInterval ||
+      distance_squared > kClickCountRadiusSquaredDIP) {
+    left_click_count_ = 0;
+  }
+  left_click_count_++;
+  prev_mousedown_timestamp_ = current_time;
+  prev_mousedown_point_ = mousedown_point;
 }
 
 void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
