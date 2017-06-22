@@ -39,6 +39,7 @@ import traceback
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_event
+from chromite.lib import portage_util
 from chromite.lib import process_util
 from chromite.lib import proctitle
 
@@ -929,8 +930,12 @@ def EmergeProcess(output, target, *args, **kwargs):
   Returns:
     The exit code returned by the subprocess.
   """
+
+  cpv = portage_util.SplitCPV(target)
   event = cros_event.newEvent(task_name="EmergePackage",
-                              name=target)
+                              name=cpv.package,
+                              category=cpv.category,
+                              version=cpv.version)
   pid = os.fork()
   if pid == 0:
     try:
