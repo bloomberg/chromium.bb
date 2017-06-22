@@ -746,18 +746,6 @@
       ]
     },
     {
-      "name": "nasher",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "newbie",
       "configs": [
         {
@@ -1417,19 +1405,19 @@
       "models": [
         {
           "board_name": "reef-uni",
-          "name": "pyro"
-        },
-        {
-          "board_name": "reef-uni",
-          "name": "nasher"
-        },
-        {
-          "board_name": "reef-uni",
           "name": "snappy"
         },
         {
           "board_name": "reef-uni",
+          "name": "pyro"
+        },
+        {
+          "board_name": "reef-uni",
           "name": "sand"
+        },
+        {
+          "board_name": "reef-uni",
+          "name": "nasher"
         }
       ]
     }

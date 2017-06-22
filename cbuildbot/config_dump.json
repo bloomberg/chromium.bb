@@ -14854,7 +14854,6 @@
             "lumpy-release",
             "mccloud-release",
             "monroe-release",
-            "nasher-release",
             "newbie-release",
             "ninja-release",
             "novato-release",
@@ -15502,7 +15501,6 @@
     },
     "nasher-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "nasher"
         ],
