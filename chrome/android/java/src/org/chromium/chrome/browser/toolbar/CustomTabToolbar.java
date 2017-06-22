@@ -696,7 +696,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     // Toolbar and LocationBar calls that are not relevant here.
 
     @Override
-    public void onTextChangedForAutocomplete(boolean canInlineAutocomplete) {}
+    public void onTextChangedForAutocomplete() {}
 
     @Override
     public void backKeyPressed() {

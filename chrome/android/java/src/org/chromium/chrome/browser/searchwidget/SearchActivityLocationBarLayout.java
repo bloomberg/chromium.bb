@@ -71,7 +71,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     void onDeferredStartup(boolean isVoiceSearchIntent) {
         SearchWidgetProvider.updateCachedVoiceSearchAvailability(isVoiceSearchEnabled());
         if (isVoiceSearchIntent && mUrlBar.isFocused()) onUrlFocusChange(true);
-        if (!TextUtils.isEmpty(mUrlBar.getText())) onTextChangedForAutocomplete(false);
+        if (!TextUtils.isEmpty(mUrlBar.getText())) onTextChangedForAutocomplete();
     }
 
     /** Begins a new query. */

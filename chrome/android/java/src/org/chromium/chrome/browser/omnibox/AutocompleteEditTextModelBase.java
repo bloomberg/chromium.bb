@@ -48,10 +48,9 @@ public interface AutocompleteEditTextModelBase {
 
         /**
          * This is called when autocomplete text state changes.
-         * @param textDeleted True if text is just deleted.
          * @param updateDisplay True if string is changed.
          */
-        void onAutocompleteTextStateChanged(boolean textDeleted, boolean updateDisplay);
+        void onAutocompleteTextStateChanged(boolean updateDisplay);
     }
 
     /**

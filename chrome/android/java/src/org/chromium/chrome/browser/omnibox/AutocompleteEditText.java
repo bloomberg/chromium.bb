@@ -260,7 +260,7 @@ public class AutocompleteEditText
     }
 
     @Override
-    public void onAutocompleteTextStateChanged(boolean textDeleted, boolean updateDisplay) {
+    public void onAutocompleteTextStateChanged(boolean updateDisplay) {
         assert false; // make sure that this method is properly overridden.
     }
 

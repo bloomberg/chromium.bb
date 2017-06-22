@@ -1126,7 +1126,7 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void onTextChangedForAutocomplete(final boolean textDeleted) {
+    public void onTextChangedForAutocomplete() {
         cancelPendingAutocompleteStart();
 
         updateButtonVisibility();
@@ -1152,8 +1152,7 @@ public class LocationBarLayout extends FrameLayout
                 @Override
                 public void run() {
                     String textWithoutAutocomplete = mUrlBar.getTextWithoutAutocomplete();
-
-                    boolean preventAutocomplete = textDeleted || !mUrlBar.shouldAutocomplete();
+                    boolean preventAutocomplete = !mUrlBar.shouldAutocomplete();
                     mRequestSuggestions = null;
 
                     if (getCurrentTab() == null
@@ -1174,11 +1173,6 @@ public class LocationBarLayout extends FrameLayout
                 mDeferredNativeRunnables.add(mRequestSuggestions);
             }
         }
-
-        // Occasionally, was seeing the selection in the URL not being cleared during
-        // very rapid editing.  This is here to hopefully force a selection reset during
-        // deletes.
-        if (textDeleted) mUrlBar.setSelection(mUrlBar.getSelectionStart());
     }
 
     @Override
@@ -2373,7 +2367,7 @@ public class LocationBarLayout extends FrameLayout
         if (!hasWindowFocus && !mSuggestionModalShown) {
             hideSuggestions();
         } else if (hasWindowFocus && mUrlHasFocus && mNativeInitialized) {
-            onTextChangedForAutocomplete(false);
+            onTextChangedForAutocomplete();
         }
     }
 
