@@ -209,15 +209,17 @@ PermissionCombobox::~PermissionCombobox() {}
 
 void PermissionCombobox::UpdateSelectedIndex(bool use_default) {
   int index = model_->GetCheckedIndex();
-  if (use_default && index == -1)
+  if (use_default && index == -1) {
     index = 0;
+  }
   SetSelectedIndex(index);
 }
 
 void PermissionCombobox::OnPaintBorder(gfx::Canvas* canvas) {
   // No border except a focus indicator for MD mode.
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial() && !HasFocus())
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial() && !HasFocus()) {
     return;
+  }
   Combobox::OnPaintBorder(canvas);
 }
 
@@ -262,10 +264,11 @@ PermissionSelectorRow::PermissionSelectorRow(
   bool use_real_combobox =
       ui::MaterialDesignController::IsSecondaryUiMaterial();
 #endif
-  if (use_real_combobox)
+  if (use_real_combobox) {
     InitializeComboboxView(layout, permission);
-  else
+  } else {
     InitializeMenuButtonView(layout, permission);
+  }
 
   // Show the permission decision reason, if it was not the user.
   base::string16 reason =
@@ -300,8 +303,9 @@ PermissionSelectorRow::~PermissionSelectorRow() {
   //
   // Technically, the MenuButton has the same problem, but MenuButton doesn't
   // use its model in its destructor.
-  if (combobox_)
+  if (combobox_) {
     combobox_->parent()->RemoveChildView(combobox_);
+  }
 }
 
 void PermissionSelectorRow::InitializeMenuButtonView(
@@ -356,8 +360,9 @@ void PermissionSelectorRow::PermissionChanged(
     combobox_->UpdateSelectedIndex(use_default);
   }
 
-  for (PermissionSelectorRowObserver& observer : observer_list_)
+  for (PermissionSelectorRowObserver& observer : observer_list_) {
     observer.OnPermissionChanged(permission);
+  }
 }
 
 views::View* PermissionSelectorRow::button() {
