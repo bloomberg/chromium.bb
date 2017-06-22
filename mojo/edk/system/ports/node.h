@@ -39,6 +39,7 @@ struct PortStatus {
   bool has_messages;
   bool receiving_messages;
   bool peer_closed;
+  bool peer_remote;
 };
 
 class MessageFilter;
@@ -88,8 +89,7 @@ class Node {
 
   // User data associated with the port.
   int SetUserData(const PortRef& port_ref, scoped_refptr<UserData> user_data);
-  int GetUserData(const PortRef& port_ref,
-                  scoped_refptr<UserData>* user_data);
+  int GetUserData(const PortRef& port_ref, scoped_refptr<UserData>* user_data);
 
   // Prevents further messages from being sent from this port or delivered to
   // this port. The port is removed, and the port's peer is notified of the

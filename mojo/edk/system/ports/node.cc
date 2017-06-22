@@ -265,6 +265,7 @@ int Node::GetStatus(const PortRef& port_ref, PortStatus* port_status) {
   port_status->has_messages = port->message_queue.HasNextMessage();
   port_status->receiving_messages = CanAcceptMoreMessages(port);
   port_status->peer_closed = port->peer_closed;
+  port_status->peer_remote = port->peer_node_name != name_;
   return OK;
 }
 
@@ -364,6 +365,16 @@ int Node::MergePorts(const PortRef& port_ref,
     ConvertToProxy(locker.port(), destination_node_name, &new_port_name,
                    &new_port_descriptor);
   }
+
+  if (new_port_descriptor.peer_node_name == name_ &&
+      destination_node_name != name_) {
+    // Ensure that the locally retained peer of the new proxy gets a status
+    // update so it notices that its peer is now remote.
+    PortRef local_peer;
+    if (GetPort(new_port_descriptor.peer_port_name, &local_peer) == OK)
+      delegate_->PortStatusChanged(local_peer);
+  }
+
   delegate_->ForwardEvent(
       destination_node_name,
       base::MakeUnique<MergePortEvent>(destination_port_name, new_port_name,
@@ -382,8 +393,8 @@ int Node::LostConnectionToNode(const NodeName& node_name) {
   // We can no longer send events to the given node. We also can't expect any
   // PortAccepted events.
 
-  DVLOG(1) << "Observing lost connection from node " << name_
-           << " to node " << node_name;
+  DVLOG(1) << "Observing lost connection from node " << name_ << " to node "
+           << node_name;
 
   DestroyAllPortsWithPeer(node_name, kInvalidPortName);
   return OK;
@@ -527,6 +538,7 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
            << event->proxy_target_port_name() << "@"
            << event->proxy_target_node_name();
 
+  bool update_status = false;
   ScopedEvent event_to_forward;
   NodeName event_target_node;
   {
@@ -541,6 +553,7 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
         event_target_node = event->proxy_node_name();
         event_to_forward = base::MakeUnique<ObserveProxyAckEvent>(
             event->proxy_port_name(), port->next_sequence_num_to_send - 1);
+        update_status = true;
       } else {
         // As a proxy ourselves, we don't know how to honor the ObserveProxy
         // event or to populate the last_sequence_num field of ObserveProxyAck.
@@ -571,6 +584,9 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
 
   if (event_to_forward)
     delegate_->ForwardEvent(event_target_node, std::move(event_to_forward));
+
+  if (update_status)
+    delegate_->PortStatusChanged(port_ref);
 
   return OK;
 }
@@ -943,8 +959,9 @@ int Node::AcceptPort(const PortName& port_name,
       port_descriptor.last_sequence_num_to_receive;
   port->peer_closed = port_descriptor.peer_closed;
 
-  DVLOG(2) << "Accepting port " << port_name << " [peer_closed="
-           << port->peer_closed << "; last_sequence_num_to_receive="
+  DVLOG(2) << "Accepting port " << port_name
+           << " [peer_closed=" << port->peer_closed
+           << "; last_sequence_num_to_receive="
            << port->last_sequence_num_to_receive << "]";
 
   // A newly accepted port is not signalable until the message referencing the
@@ -967,6 +984,7 @@ int Node::PrepareToForwardUserMessage(const PortRef& forwarding_port_ref,
                                       bool ignore_closed_peer,
                                       UserMessageEvent* message,
                                       NodeName* forward_to_node) {
+  bool target_is_remote = false;
   for (;;) {
     NodeName target_node_name;
     {
@@ -1008,6 +1026,7 @@ int Node::PrepareToForwardUserMessage(const PortRef& forwarding_port_ref,
 
       target_node_name = forwarding_port->peer_node_name;
     }
+    target_is_remote = target_node_name != name_;
 
     if (forwarding_port->state != expected_port_state)
       return ERROR_PORT_STATE_UNEXPECTED;
@@ -1049,7 +1068,7 @@ int Node::PrepareToForwardUserMessage(const PortRef& forwarding_port_ref,
         }
       }
 
-      if (target_node_name != name_) {
+      if (target_is_remote) {
         // We only bother to proxy and rewrite ports in the event if it's
         // going to be routed to an external node. This substantially reduces
         // the amount of port churn in the system, as many port-carrying
@@ -1073,8 +1092,24 @@ int Node::PrepareToForwardUserMessage(const PortRef& forwarding_port_ref,
 
     *forward_to_node = target_node_name;
     message->set_port_name(forwarding_port->peer_port_name);
-    return OK;
+    break;
   }
+
+  if (target_is_remote) {
+    for (size_t i = 0; i < message->num_ports(); ++i) {
+      // For any ports that were converted to proxies above, make sure their
+      // prior local peer (if applicable) receives a status update so it can be
+      // made aware of its peer's location.
+      const Event::PortDescriptor& descriptor = message->port_descriptors()[i];
+      if (descriptor.peer_node_name == name_) {
+        PortRef local_peer;
+        if (GetPort(descriptor.peer_port_name, &local_peer) == OK)
+          delegate_->PortStatusChanged(local_peer);
+      }
+    }
+  }
+
+  return OK;
 }
 
 int Node::BeginProxying(const PortRef& port_ref) {
@@ -1218,8 +1253,8 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
         auto* port = locker.port();
 
         if (port->peer_node_name == node_name &&
-              (port_name == kInvalidPortName ||
-                    port->peer_port_name == port_name)) {
+            (port_name == kInvalidPortName ||
+             port->peer_port_name == port_name)) {
           if (!port->peer_closed) {
             // Treat this as immediate peer closure. It's an exceptional
             // condition akin to a broken pipe, so we don't care about losing

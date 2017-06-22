@@ -55,6 +55,10 @@ struct MOJO_CPP_SYSTEM_EXPORT HandleSignalsState final
   // handle.
   bool peer_closed() const { return satisfies(MOJO_HANDLE_SIGNAL_PEER_CLOSED); }
 
+  // The handle's peer exists in a remote execution context (e.g. in another
+  // process.)
+  bool peer_remote() const { return satisfies(MOJO_HANDLE_SIGNAL_PEER_REMOTE); }
+
   // The handle will never be |readable()| again.
   bool never_readable() const {
     return !can_satisfy(MOJO_HANDLE_SIGNAL_READABLE);
@@ -70,6 +74,12 @@ struct MOJO_CPP_SYSTEM_EXPORT HandleSignalsState final
   // for other types of handles (they have no peer.)
   bool never_peer_closed() const {
     return !can_satisfy(MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+  }
+
+  // THe handle will never indicate |peer_remote()| again. True iff the peer is
+  // known to be closed.
+  bool never_peer_remote() const {
+    return !can_satisfy(MOJO_HANDLE_SIGNAL_PEER_REMOTE);
   }
 
   // (Copy and assignment allowed.)

@@ -35,13 +35,13 @@ TEST_F(SignalsTest, QueryMessagePipeSignals) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
             state.satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
             state.satisfiable_signals);
 
   WriteMessage(a, "ok");
@@ -51,7 +51,7 @@ TEST_F(SignalsTest, QueryMessagePipeSignals) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
             state.satisfiable_signals);
 
   EXPECT_EQ("ok", ReadMessage(b));
@@ -59,7 +59,7 @@ TEST_F(SignalsTest, QueryMessagePipeSignals) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
             state.satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
@@ -70,6 +70,133 @@ TEST_F(SignalsTest, QueryMessagePipeSignals) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
 }
+
+TEST_F(SignalsTest, LocalPeers) {
+  MojoHandleSignalsState state = {0, 0};
+  MojoHandle a, b, c, d;
+  CreateMessagePipe(&a, &b);
+  CreateMessagePipe(&c, &d);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(c, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(d, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  // Verify that sending a local pipe over a local pipe doesn't change the
+  // perceived locality of the peer.
+  const char kMessage[] = "ayyy";
+  WriteMessageWithHandles(a, kMessage, &c, 1);
+  EXPECT_EQ(kMessage, ReadMessageWithHandles(b, &c, 1));
+
+  WriteMessage(c, kMessage);
+  EXPECT_EQ(kMessage, ReadMessage(d));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(c, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(d, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  // Sanity check: a closed peer can never signal remoteness.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(c));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(d, &state));
+  EXPECT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
+}
+
+#if !defined(OS_IOS)
+
+TEST_F(SignalsTest, RemotePeers) {
+  MojoHandleSignalsState state = {0, 0};
+  MojoHandle a, b;
+  CreateMessagePipe(&a, &b);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  RunTestClient("RemotePeersClient", [&](MojoHandle h) {
+    // The bootstrap pipe should eventually signal remoteness.
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WaitForSignals(h, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+
+    // And so should |a| after we send its peer.
+    WriteMessageWithHandles(h, ":)", &b, 1);
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WaitForSignals(a, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
+    EXPECT_TRUE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+    // And so should |c| after we fuse |d| to |a|.
+    MojoHandle c, d;
+    CreateMessagePipe(&c, &d);
+    EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(d, a));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WaitForSignals(c, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(c, &state));
+    EXPECT_TRUE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+    // We fused c-d to a-b, so we'll just sort of "rename" |c| back to |a| so
+    // the system resembles the state it was in before we did that.
+    a = c;
+
+    WriteMessage(h, "OK!");
+
+    // Read |b| back before joining the client.
+    EXPECT_EQ("O_O", ReadMessageWithHandles(h, &b, 1));
+  });
+
+  // We have no way to wait for signals to go low, but because the above code
+  // blocks until the child process cleanly terminated, it is effectively
+  // guaranteed in practice that |a| and |b| must both see their peers as local
+  // again by this point.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
+  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(RemotePeersClient, SignalsTest, h) {
+  // The bootstrap pipe should eventually signal remoteness.
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(h, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+
+  MojoHandle b;
+  EXPECT_EQ(":)", ReadMessageWithHandles(h, &b, 1));
+
+  // And so should |b|.
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+
+  // Wait for the test to signal that it's ready to read |b| back.
+  EXPECT_EQ("OK!", ReadMessage(h));
+
+  // Now send |b| back home.
+  WriteMessageWithHandles(h, "O_O", &b, 1);
+}
+
+#endif  // !defined(OS_IOS)
 
 }  // namespace
 }  // namespace edk

@@ -192,8 +192,8 @@ class TestNode : public NodeDelegate {
     {
       base::AutoLock lock(lock_);
       if (drop_messages_) {
-        DVLOG(1) << "Dropping ForwardMessage from node "
-                 << node_name_ << " to " << node_name;
+        DVLOG(1) << "Dropping ForwardMessage from node " << node_name_ << " to "
+                 << node_name;
 
         base::AutoUnlock unlock(lock_);
         ClosePortsInEvent(event.get());
@@ -741,17 +741,13 @@ TEST_F(PortsTest, GetMessage3) {
   PortRef a0, a1;
   EXPECT_EQ(OK, node.node().CreatePortPair(&a0, &a1));
 
-  const char* kStrings[] = {
-    "1",
-    "2",
-    "3"
-  };
+  const char* kStrings[] = {"1", "2", "3"};
 
-  for (size_t i = 0; i < sizeof(kStrings)/sizeof(kStrings[0]); ++i)
+  for (size_t i = 0; i < sizeof(kStrings) / sizeof(kStrings[0]); ++i)
     EXPECT_EQ(OK, node.SendStringMessage(a1, kStrings[i]));
 
   ScopedMessage message;
-  for (size_t i = 0; i < sizeof(kStrings)/sizeof(kStrings[0]); ++i) {
+  for (size_t i = 0; i < sizeof(kStrings) / sizeof(kStrings[0]); ++i) {
     EXPECT_EQ(OK, node.node().GetMessage(a0, &message, nullptr));
     ASSERT_TRUE(message);
     EXPECT_TRUE(MessageEquals(message, kStrings[i]));
@@ -1442,6 +1438,165 @@ TEST_F(PortsTest, MergePortsFailsGracefully) {
   WaitForIdle();
 
   // Expect everything to have gone away.
+  EXPECT_TRUE(node0.node().CanShutdownCleanly());
+  EXPECT_TRUE(node1.node().CanShutdownCleanly());
+}
+
+TEST_F(PortsTest, RemotePeerStatus) {
+  TestNode node0(0);
+  AddNode(&node0);
+
+  TestNode node1(1);
+  AddNode(&node1);
+
+  // Create a local port pair. Neither port should appear to have a remote peer.
+  PortRef a, b;
+  PortStatus status;
+  node0.node().CreatePortPair(&a, &b);
+  ASSERT_EQ(OK, node0.node().GetStatus(a, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node0.node().GetStatus(b, &status));
+  EXPECT_FALSE(status.peer_remote);
+
+  // Create a port pair spanning the two nodes. Both spanning ports should
+  // immediately appear to have a remote peer.
+  PortRef x0, x1;
+  CreatePortPair(&node0, &x0, &node1, &x1);
+
+  ASSERT_EQ(OK, node0.node().GetStatus(x0, &status));
+  EXPECT_TRUE(status.peer_remote);
+  ASSERT_EQ(OK, node1.node().GetStatus(x1, &status));
+  EXPECT_TRUE(status.peer_remote);
+
+  PortRef x2, x3;
+  CreatePortPair(&node0, &x2, &node1, &x3);
+
+  // Transfer |b| to |node1| and |x1| to |node0|. i.e., make the local peers
+  // remote and the remote peers local.
+  EXPECT_EQ(OK, node0.SendStringMessageWithPort(x2, "foo", b));
+  EXPECT_EQ(OK, node1.SendStringMessageWithPort(x3, "bar", x1));
+  WaitForIdle();
+
+  ScopedMessage message;
+  ASSERT_TRUE(node0.ReadMessage(x2, &message));
+  ASSERT_EQ(1u, message->num_ports());
+  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0], &x1));
+
+  ASSERT_TRUE(node1.ReadMessage(x3, &message));
+  ASSERT_EQ(1u, message->num_ports());
+  ASSERT_EQ(OK, node1.node().GetPort(message->ports()[0], &b));
+
+  // Now x0-x1 should be local to node0 and a-b should span the nodes.
+  ASSERT_EQ(OK, node0.node().GetStatus(x0, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node0.node().GetStatus(x1, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node0.node().GetStatus(a, &status));
+  EXPECT_TRUE(status.peer_remote);
+  ASSERT_EQ(OK, node1.node().GetStatus(b, &status));
+  EXPECT_TRUE(status.peer_remote);
+
+  // And swap them back one more time.
+  EXPECT_EQ(OK, node0.SendStringMessageWithPort(x2, "foo", x1));
+  EXPECT_EQ(OK, node1.SendStringMessageWithPort(x3, "bar", b));
+  WaitForIdle();
+
+  ASSERT_TRUE(node0.ReadMessage(x2, &message));
+  ASSERT_EQ(1u, message->num_ports());
+  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0], &b));
+
+  ASSERT_TRUE(node1.ReadMessage(x3, &message));
+  ASSERT_EQ(1u, message->num_ports());
+  ASSERT_EQ(OK, node1.node().GetPort(message->ports()[0], &x1));
+
+  ASSERT_EQ(OK, node0.node().GetStatus(x0, &status));
+  EXPECT_TRUE(status.peer_remote);
+  ASSERT_EQ(OK, node1.node().GetStatus(x1, &status));
+  EXPECT_TRUE(status.peer_remote);
+  ASSERT_EQ(OK, node0.node().GetStatus(a, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node0.node().GetStatus(b, &status));
+  EXPECT_FALSE(status.peer_remote);
+
+  EXPECT_EQ(OK, node0.node().ClosePort(x0));
+  EXPECT_EQ(OK, node1.node().ClosePort(x1));
+  EXPECT_EQ(OK, node0.node().ClosePort(x2));
+  EXPECT_EQ(OK, node1.node().ClosePort(x3));
+  EXPECT_EQ(OK, node0.node().ClosePort(a));
+  EXPECT_EQ(OK, node0.node().ClosePort(b));
+
+  EXPECT_TRUE(node0.node().CanShutdownCleanly());
+  EXPECT_TRUE(node1.node().CanShutdownCleanly());
+}
+
+TEST_F(PortsTest, RemotePeerStatusAfterLocalPortMerge) {
+  TestNode node0(0);
+  AddNode(&node0);
+
+  TestNode node1(1);
+  AddNode(&node1);
+
+  // Set up a-b on node0 and c-d spanning node0-node1.
+  PortRef a, b, c, d;
+  node0.node().CreatePortPair(&a, &b);
+  CreatePortPair(&node0, &c, &node1, &d);
+
+  PortStatus status;
+  ASSERT_EQ(OK, node0.node().GetStatus(a, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node0.node().GetStatus(b, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node0.node().GetStatus(c, &status));
+  EXPECT_TRUE(status.peer_remote);
+  ASSERT_EQ(OK, node1.node().GetStatus(d, &status));
+  EXPECT_TRUE(status.peer_remote);
+
+  EXPECT_EQ(OK, node0.node().MergeLocalPorts(b, c));
+  WaitForIdle();
+
+  ASSERT_EQ(OK, node0.node().GetStatus(a, &status));
+  EXPECT_TRUE(status.peer_remote);
+  ASSERT_EQ(OK, node1.node().GetStatus(d, &status));
+  EXPECT_TRUE(status.peer_remote);
+
+  EXPECT_EQ(OK, node0.node().ClosePort(a));
+  EXPECT_EQ(OK, node1.node().ClosePort(d));
+  EXPECT_TRUE(node0.node().CanShutdownCleanly());
+  EXPECT_TRUE(node1.node().CanShutdownCleanly());
+}
+
+TEST_F(PortsTest, RemotePeerStatusAfterRemotePortMerge) {
+  TestNode node0(0);
+  AddNode(&node0);
+
+  TestNode node1(1);
+  AddNode(&node1);
+
+  // Set up a-b on node0 and c-d on node1.
+  PortRef a, b, c, d;
+  node0.node().CreatePortPair(&a, &b);
+  node1.node().CreatePortPair(&c, &d);
+
+  PortStatus status;
+  ASSERT_EQ(OK, node0.node().GetStatus(a, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node0.node().GetStatus(b, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node1.node().GetStatus(c, &status));
+  EXPECT_FALSE(status.peer_remote);
+  ASSERT_EQ(OK, node1.node().GetStatus(d, &status));
+  EXPECT_FALSE(status.peer_remote);
+
+  EXPECT_EQ(OK, node0.node().MergePorts(b, node1.name(), c.name()));
+  WaitForIdle();
+
+  ASSERT_EQ(OK, node0.node().GetStatus(a, &status));
+  EXPECT_TRUE(status.peer_remote);
+  ASSERT_EQ(OK, node1.node().GetStatus(d, &status));
+  EXPECT_TRUE(status.peer_remote);
+
+  EXPECT_EQ(OK, node0.node().ClosePort(a));
+  EXPECT_EQ(OK, node1.node().ClosePort(d));
   EXPECT_TRUE(node0.node().CanShutdownCleanly());
   EXPECT_TRUE(node1.node().CanShutdownCleanly());
 }

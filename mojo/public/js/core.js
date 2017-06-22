@@ -50,6 +50,7 @@ var HANDLE_SIGNAL_NONE;
 var HANDLE_SIGNAL_READABLE;
 var HANDLE_SIGNAL_WRITABLE;
 var HANDLE_SIGNAL_PEER_CLOSED;
+var HANDLE_SIGNAL_PEER_REMOTE;
 
 /**
  * MojoCreateDataMessageOptions: Used to specify creation parameters for a data

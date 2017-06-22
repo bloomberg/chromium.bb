@@ -64,13 +64,13 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   void CompleteTransitAndClose() override;
   void CancelTransit() override;
 
-  static scoped_refptr<DataPipeConsumerDispatcher>
-  Deserialize(const void* data,
-              size_t num_bytes,
-              const ports::PortName* ports,
-              size_t num_ports,
-              PlatformHandle* handles,
-              size_t num_handles);
+  static scoped_refptr<DataPipeConsumerDispatcher> Deserialize(
+      const void* data,
+      size_t num_bytes,
+      const ports::PortName* ports,
+      size_t num_ports,
+      PlatformHandle* handles,
+      size_t num_handles);
 
  private:
   class PortObserverThunk;
@@ -111,6 +111,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   bool in_transit_ = false;
   bool is_closed_ = false;
   bool peer_closed_ = false;
+  bool peer_remote_ = false;
   bool transferred_ = false;
 
   uint32_t read_offset_ = 0;
