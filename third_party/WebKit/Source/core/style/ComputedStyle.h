@@ -483,8 +483,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return BorderRightWidth() && (BorderRightStyle() != EBorderStyle::kNone);
   }
 
-  static EBorderStyle InitialColumnRuleStyle() { return EBorderStyle::kNone; }
-
   // Border color properties.
   // border-left-color
   void SetBorderLeftColor(const StyleColor& color) {
@@ -582,32 +580,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // column-rule-color (aka -webkit-column-rule-color)
   void SetColumnRuleColor(const StyleColor& c) {
-    SET_BORDERVALUE_COLOR(rare_non_inherited_data_.Access()->multi_col_data_,
-                          column_rule_, c);
-  }
-
-  // column-rule-style (aka -webkit-column-rule-style)
-  EBorderStyle ColumnRuleStyle() const {
-    return rare_non_inherited_data_->multi_col_data_->column_rule_.Style();
-  }
-  void SetColumnRuleStyle(EBorderStyle b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
-                   column_rule_.style_, static_cast<unsigned>(b));
+    if (!compareEqual(ColumnRuleColor(), c)) {
+      SetColumnRuleColorInternal(c.Resolve(Color()));
+      SetColumnRuleColorIsCurrentColor(c.IsCurrentColor());
+    }
   }
 
   // column-rule-width (aka -webkit-column-rule-width)
   static unsigned short InitialColumnRuleWidth() { return 3; }
   unsigned short ColumnRuleWidth() const {
-    const BorderValue& rule =
-        rare_non_inherited_data_->multi_col_data_->column_rule_;
-    if (rule.Style() == EBorderStyle::kNone ||
-        rule.Style() == EBorderStyle::kHidden)
+    if (ColumnRuleStyle() == EBorderStyle::kNone ||
+        ColumnRuleStyle() == EBorderStyle::kHidden)
       return 0;
-    return rule.Width();
+    return ColumnRuleWidthInternal().ToFloat();
   }
   void SetColumnRuleWidth(unsigned short w) {
-    SET_NESTED_BORDER_WIDTH(rare_non_inherited_data_, multi_col_data_,
-                            column_rule_, w);
+    SetColumnRuleWidthInternal(LayoutUnit(w));
   }
 
   // column-width (aka -webkit-column-width)
@@ -1423,8 +1411,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return !HasAutoColumnCount() || !HasAutoColumnWidth();
   }
   bool ColumnRuleIsTransparent() const {
-    return rare_non_inherited_data_->multi_col_data_->column_rule_
-        .IsTransparent();
+    return !ColumnRuleColorIsCurrentColor() &&
+           !ColumnRuleColorInternal().Alpha();
   }
   bool ColumnRuleEquivalent(const ComputedStyle* other_style) const;
   void InheritColumnPropertiesFrom(const ComputedStyle& parent) {
@@ -2595,7 +2583,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   Color GetColor() const;
   StyleColor ColumnRuleColor() const {
-    return rare_non_inherited_data_->multi_col_data_->column_rule_.GetColor();
+    return ColumnRuleColorIsCurrentColor()
+               ? StyleColor::CurrentColor()
+               : StyleColor(ColumnRuleColorInternal());
   }
   StyleColor OutlineColor() const {
     return OutlineColorIsCurrentColor() ? StyleColor::CurrentColor()
@@ -2669,8 +2659,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
             !OutlineWidth());
   }
   StyleColor VisitedLinkColumnRuleColor() const {
-    return rare_non_inherited_data_->multi_col_data_
-        ->visited_link_column_rule_color_;
+    return VisitedLinkColumnRuleColorInternal();
   }
   StyleColor VisitedLinkTextDecorationColor() const {
     return rare_non_inherited_data_->visited_link_text_decoration_color_;
