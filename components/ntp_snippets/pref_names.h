@@ -90,23 +90,22 @@ extern const char kClickBasedCategoryRankerOrderWithClicks[];
 // The pref name for the time when last click decay has happened.
 extern const char kClickBasedCategoryRankerLastDecayTime[];
 
-// kContentSuggestionsSubscriptionData* hold the data used when subscribing for
-// content suggestions via GCM push updates. They are stored in pref such that
-// in case of change (e.g. the token renders invalid), re-subscription is
-// required.
+// The folllowing prefs hold the data used when subscribing for content
+// suggestions via GCM push updates. They are stored in pref such that in case
+// of change (e.g. the token renders invalid), re-subscription is required.
 ///////////////////////////////////////////////////////////////////////////////
 // The pref name for the subscription token used when subscription for
 // breaking news push updates.
-extern const char kContentSuggestionsSubscriptionDataToken[];
-//////////////////////// End of kContentSuggestionsSubscriptionData *
+extern const char kBreakingNewsSubscriptionDataToken[];
+//////////////////////// End of breaking news subscription-related prefs.
 
 // The pref name for the subscription token received from the gcm server. As
 // recommended by the GCM team, it is cached in pref for faster bookkeeping to
 // see if subscription exists. This is pref holds the valid token even if
 // different from the one used for subscription. When they are different, Chrome
 // unsubscribes the old token from the content suggestions server, subscribe
-// with the new one and update kContentSuggestionsSubscriptionDataToken.
-extern const char kContentSuggestionsGCMSubscriptionTokenCache[];
+// with the new one and update kBreakingNewsSubscriptionDataToken.
+extern const char kBreakingNewsGCMSubscriptionTokenCache[];
 
 }  // namespace prefs
 }  // namespace ntp_snippets
