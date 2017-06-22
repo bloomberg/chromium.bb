@@ -6,7 +6,8 @@ This document is a subset of the [Mojo documentation](/mojo).
 ## Overview
 
 Mojom is the IDL for Mojo bindings interfaces. Given a `.mojom` file, the
-[bindings generator](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings)
+[bindings
+generator](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings/)
 outputs bindings for all supported languages: **C++**, **JavaScript**, and
 **Java**.
 
