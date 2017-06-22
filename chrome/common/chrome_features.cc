@@ -337,12 +337,12 @@ const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
 // Experiment to use grouped permission infobars which could show and handle
 // multiple permission requests.
 const base::Feature kUseGroupedPermissionInfobars{
-    "UseGroupedPermissionInfobars", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseGroupedPermissionInfobars", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature to use the PermissionManager to show prompts for WebRTC permission
 // requests.
 const base::Feature kUsePermissionManagerForMediaRequests{
-    "UsePermissionManagerForMediaRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UsePermissionManagerForMediaRequests", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables or disables the opt-in IME menu in the language settings page.
