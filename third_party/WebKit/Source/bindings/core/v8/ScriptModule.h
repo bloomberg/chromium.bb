@@ -52,6 +52,7 @@ class CORE_EXPORT ScriptModule final {
                               const TextPosition& start_position);
 
   Vector<String> ModuleRequests(ScriptState*);
+  Vector<TextPosition> ModuleRequestPositions(ScriptState*);
 
   bool IsHashTableDeletedValue() const {
     return module_.IsHashTableDeletedValue();

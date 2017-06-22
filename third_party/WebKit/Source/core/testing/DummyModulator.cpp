@@ -120,9 +120,10 @@ ScriptValue DummyModulator::GetError(const ModuleScript*) {
   return ScriptValue();
 }
 
-Vector<String> DummyModulator::ModuleRequestsFromScriptModule(ScriptModule) {
+Vector<Modulator::ModuleRequest> DummyModulator::ModuleRequestsFromScriptModule(
+    ScriptModule) {
   NOTREACHED();
-  return Vector<String>();
+  return Vector<ModuleRequest>();
 }
 
 void DummyModulator::ExecuteModule(const ModuleScript*) {

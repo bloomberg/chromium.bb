@@ -67,7 +67,7 @@ class ModulatorImpl final : public Modulator {
                              ExceptionState&) override;
   ScriptValue InstantiateModule(ScriptModule) override;
   ScriptValue GetError(const ModuleScript*) override;
-  Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override;
+  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
   void ExecuteModule(const ModuleScript*) override;
 
   ModulatorImpl(RefPtr<ScriptState>, ResourceFetcher*);

@@ -125,7 +125,14 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual ScriptValue GetError(const ModuleScript*) = 0;
 
-  virtual Vector<String> ModuleRequestsFromScriptModule(ScriptModule) = 0;
+  struct ModuleRequest {
+    String specifier;
+    TextPosition position;
+    ModuleRequest(const String& specifier, const TextPosition& position)
+        : specifier(specifier), position(position) {}
+  };
+  virtual Vector<ModuleRequest> ModuleRequestsFromScriptModule(
+      ScriptModule) = 0;
 
   virtual void ExecuteModule(const ModuleScript*) = 0;
 

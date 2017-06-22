@@ -1,4 +1,5 @@
 CONSOLE MESSAGE: line 14: Done.
+CONSOLE MESSAGE: line 20: Done.
 Tests resources initiator for images initiated by IMG tag, static CSS, CSS class added from JavaScript and XHR.
 
 Bug 65105  
@@ -12,4 +13,8 @@ http://127.0.0.1:8000/inspector/network/resources/style.css: parser
     http://127.0.0.1:8000/inspector/network/resources/network-initiator-frame.html 7
 http://127.0.0.1:8000/inspector/network/resources/empty.html: parser
     http://127.0.0.1:8000/inspector/network/resources/network-initiator-frame.html 16
+http://127.0.0.1:8000/inspector/network/resources/module1.js: script
+    http://127.0.0.1:8000/inspector/network/resources/network-initiator-frame.html 18
+http://127.0.0.1:8000/inspector/network/resources/module2.js: script
+    http://127.0.0.1:8000/inspector/network/resources/module1.js 2
 

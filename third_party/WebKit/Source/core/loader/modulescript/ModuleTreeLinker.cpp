@@ -265,14 +265,15 @@ void ModuleTreeLinker::FetchDescendants() {
 
   // Step 6. Let urls be a new empty list.
   Vector<KURL> urls;
+  Vector<TextPosition> positions;
 
   // Step 7. For each string requested of record.[[RequestedModules]],
-  Vector<String> module_requests =
+  Vector<Modulator::ModuleRequest> module_requests =
       modulator_->ModuleRequestsFromScriptModule(record);
   for (const auto& module_request : module_requests) {
     // Step 7.1. Let url be the result of resolving a module specifier given
     // module script and requested.
-    KURL url = Modulator::ResolveModuleSpecifier(module_request,
+    KURL url = Modulator::ResolveModuleSpecifier(module_request.specifier,
                                                  module_script_->BaseURL());
 
     // Step 7.2. If url is failure: ...
@@ -281,8 +282,8 @@ void ModuleTreeLinker::FetchDescendants() {
       ScriptState::Scope scope(modulator_->GetScriptState());
       v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
       v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
-          isolate,
-          "Failed to resolve module specifier \'" + module_request + "'");
+          isolate, "Failed to resolve module specifier \'" +
+                       module_request.specifier + "'");
 
       // Step 7.2.2. Error module script with error.
       module_script_->SetErrorAndClearRecord(
@@ -300,8 +301,10 @@ void ModuleTreeLinker::FetchDescendants() {
     // urls.
     CHECK(url.IsValid()) << "Modulator::resolveModuleSpecifier() impl must "
                             "return either a valid url or null.";
-    if (!ancestor_list_with_url_.Contains(url))
+    if (!ancestor_list_with_url_.Contains(url)) {
       urls.push_back(url);
+      positions.push_back(module_request.position);
+    }
   }
 
   // Step 8. Let descendants result be null.
@@ -334,15 +337,15 @@ void ModuleTreeLinker::FetchDescendants() {
   // should be performed in parallel to each other. [spec text]
   CHECK_EQ(num_incomplete_descendants_, 0u);
   num_incomplete_descendants_ = urls.size();
-  for (const KURL& url : urls) {
+  for (size_t i = 0; i < urls.size(); ++i) {
     DependencyModuleClient* dependency_client =
         DependencyModuleClient::Create(this);
     dependency_clients_.insert(dependency_client);
 
-    ModuleScriptFetchRequest request(url, module_script_->Nonce(),
-                                     module_script_->ParserState(),
-                                     module_script_->CredentialsMode(),
-                                     module_script_->BaseURL().GetString());
+    ModuleScriptFetchRequest request(
+        urls[i], module_script_->Nonce(), module_script_->ParserState(),
+        module_script_->CredentialsMode(),
+        module_script_->BaseURL().GetString(), positions[i]);
     modulator_->FetchTreeInternal(request, ancestor_list_with_url_,
                                   ModuleGraphLevel::kDependentModuleFetch,
                                   dependency_client);
@@ -523,15 +526,15 @@ ModuleTreeLinker::UninstantiatedInclusiveDescendants() {
 
     // Step 5.3.2. Let child specifiers be the value of current's module
     // record's [[RequestedModules]] internal slot.
-    Vector<String> child_specifiers =
+    Vector<Modulator::ModuleRequest> child_requests =
         modulator_->ModuleRequestsFromScriptModule(current->Record());
     // Step 5.3.3. Let child URLs be the list obtained by calling resolve a
     // module specifier once for each item of child specifiers, given current
     // and that item. Omit any failures.
     Vector<KURL> child_urls;
-    for (const auto& child_specifier : child_specifiers) {
-      KURL child_url = modulator_->ResolveModuleSpecifier(child_specifier,
-                                                          current->BaseURL());
+    for (const auto& child_request : child_requests) {
+      KURL child_url = modulator_->ResolveModuleSpecifier(
+          child_request.specifier, current->BaseURL());
       if (child_url.IsValid())
         child_urls.push_back(child_url);
     }

@@ -71,7 +71,7 @@ class OrdinalNumber final {
 // used mostly
 // for saving script source position.
 class TextPosition final {
-  DISALLOW_NEW();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
   TextPosition(OrdinalNumber line, OrdinalNumber column)
