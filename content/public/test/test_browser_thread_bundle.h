@@ -87,12 +87,18 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 
 namespace base {
 class MessageLoop;
 namespace test {
 class ScopedAsyncTaskScheduler;
 }  // namespace test
+#if defined(OS_WIN)
+namespace win {
+class ScopedCOMInitializer;
+}  // namespace win
+#endif
 }  // namespace base
 
 namespace content {
@@ -138,6 +144,10 @@ class TestBrowserThreadBundle {
 
   int options_;
   bool threads_created_;
+
+#if defined(OS_WIN)
+  std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserThreadBundle);
 };

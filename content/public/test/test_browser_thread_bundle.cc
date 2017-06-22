@@ -15,6 +15,10 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
+
 namespace content {
 
 TestBrowserThreadBundle::TestBrowserThreadBundle()
@@ -78,6 +82,10 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   // for DestructionObservers hooked to |message_loop_| to be able to invoke
   // BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
   message_loop_.reset();
+
+#if defined(OS_WIN)
+  com_initializer_.reset();
+#endif
 }
 
 void TestBrowserThreadBundle::Init() {
@@ -89,6 +97,14 @@ void TestBrowserThreadBundle::Init() {
   CHECK(!(options_ & IO_MAINLOOP) || !(options_ & REAL_IO_THREAD));
   // There must be a thread to start to use DONT_CREATE_THREADS
   CHECK((options_ & ~IO_MAINLOOP) != DONT_CREATE_THREADS);
+
+#if defined(OS_WIN)
+  // Similar to Chrome's UI thread, we need to initialize COM separately for
+  // this thread as we don't call Start() for the UI TestBrowserThread; it's
+  // already started!
+  com_initializer_ = base::MakeUnique<base::win::ScopedCOMInitializer>();
+  CHECK(com_initializer_->succeeded());
+#endif
 
   // Create the main MessageLoop, if it doesn't already exist, and set the
   // current thread as the UI thread. In production, this work is done in

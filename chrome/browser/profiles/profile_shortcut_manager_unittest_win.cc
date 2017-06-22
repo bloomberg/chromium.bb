@@ -15,7 +15,6 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -44,10 +43,6 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    scoped_com_ = base::MakeUnique<base::win::ScopedCOMInitializer>(
-        base::win::ScopedCOMInitializer::kMTA);
-    ASSERT_TRUE(scoped_com_->succeeded());
-
     TestingBrowserProcess* browser_process =
         TestingBrowserProcess::GetGlobal();
     profile_manager_.reset(new TestingProfileManager(browser_process));
@@ -83,7 +78,6 @@ class ProfileShortcutManagerTest : public testing::Test {
           profiles::internal::GetProfileIconPath(profile_path);
       ASSERT_TRUE(base::PathExists(icon_path));
     }
-    scoped_com_.reset();
   }
 
   base::FilePath CreateProfileDirectory(const base::string16& profile_name) {
@@ -273,7 +267,6 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<base::win::ScopedCOMInitializer> scoped_com_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<ProfileShortcutManager> profile_shortcut_manager_;
   ProfileAttributesStorage* profile_attributes_storage_;
