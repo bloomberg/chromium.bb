@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -15,9 +16,11 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -483,6 +486,69 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     stripped_destination_url = stripped_destination_url.ReplaceComponents(
         replacements);
   return stripped_destination_url;
+}
+
+// static
+base::string16 AutocompleteMatch::FormatUrlForSuggestionDisplay(
+    const GURL& url,
+    bool trim_scheme,
+    size_t* offset_for_adjustment) {
+  std::vector<size_t> offsets;
+  if (offset_for_adjustment)
+    offsets.push_back(*offset_for_adjustment);
+  base::string16 result =
+      FormatUrlForSuggestionDisplayWithOffsets(url, trim_scheme, &offsets);
+  if (offset_for_adjustment)
+    *offset_for_adjustment = offsets[0];
+  return result;
+}
+
+// static
+base::string16 AutocompleteMatch::FormatUrlForSuggestionDisplayWithOffsets(
+    const GURL& url,
+    bool trim_scheme,
+    std::vector<size_t>* offsets_for_adjustment) {
+  base::OffsetAdjuster::Adjustments adjustments;
+  const base::string16& format_url_return_value =
+      FormatUrlForSuggestionDisplayWithAdjustments(url, trim_scheme,
+                                                   &adjustments);
+  base::OffsetAdjuster::AdjustOffsets(adjustments, offsets_for_adjustment);
+  if (offsets_for_adjustment) {
+    std::for_each(
+        offsets_for_adjustment->begin(), offsets_for_adjustment->end(),
+        base::LimitOffset<std::string>(format_url_return_value.length()));
+  }
+  return format_url_return_value;
+}
+
+// static
+base::string16 AutocompleteMatch::FormatUrlForSuggestionDisplayWithAdjustments(
+    const GURL& url,
+    bool trim_scheme,
+    base::OffsetAdjuster::Adjustments* adjustments) {
+  const url_formatter::FormatUrlTypes format_types =
+      url_formatter::kFormatUrlOmitAll &
+      ~(trim_scheme ? 0 : url_formatter::kFormatUrlOmitHTTP);
+  base::string16 result = url_formatter::FormatUrlWithAdjustments(
+      url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr,
+      adjustments);
+
+  // Also trim HTTPS if experiment is enabled. Note this intentionally has
+  // no effect on view-source URLs.
+  if (trim_scheme && base::FeatureList::IsEnabled(
+                         omnibox::kUIExperimentHideSuggestionUrlScheme)) {
+    // TODO(tommycli): If this becomes enabled by default, investigate
+    // folding this logic into url_formatter::FormatUrlWithAdjustments.
+    if (url.SchemeIs(url::kHttpsScheme)) {
+      const size_t kHTTPSSize =
+          strlen(url::kHttpsScheme) + strlen(url::kStandardSchemeSeparator);
+      result = result.substr(kHTTPSSize);
+      adjustments->insert(adjustments->begin(),
+                          base::OffsetAdjuster::Adjustment(0, kHTTPSSize, 0));
+    }
+  }
+
+  return result;
 }
 
 void AutocompleteMatch::ComputeStrippedDestinationURL(
