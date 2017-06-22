@@ -25,7 +25,7 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
     private final String mOKButtonText;
     private final String mReloadButtonText;
     private final String mToggleText;
-    private boolean mShowExplanation;
+    private boolean mIsShowingExplanation;
     private boolean mReloadIsToggled;
     private ButtonCompat mButton;
 
@@ -49,8 +49,10 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
     @Override
     public void createContent(InfoBarLayout layout) {
         super.createContent(layout);
-        if (mShowExplanation) {
+        if (mIsShowingExplanation) {
             layout.setMessage(mFollowUpMessage);
+            String learnMore = layout.getContext().getString(R.string.learn_more);
+            layout.appendMessageLinkText(learnMore);
             setButtons(layout, mOKButtonText, null);
             InfoBarControlLayout controlLayout = layout.addControlLayout();
 
@@ -75,8 +77,13 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
 
     @Override
     public void onLinkClicked() {
-        mShowExplanation = true;
-        replaceView(createView());
+        // If we aren't already showing the explanation, clicking the link should expand to show the
+        // explanation. If we *are* already showing the explanation, clicking the link (which should
+        // change to Learn more) should take us to the help page.
+        if (!mIsShowingExplanation) {
+            mIsShowingExplanation = true;
+            replaceView(createView());
+        }
         super.onLinkClicked();
     }
 

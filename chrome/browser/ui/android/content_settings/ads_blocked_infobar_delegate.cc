@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -73,7 +74,24 @@ bool AdsBlockedInfobarDelegate::Cancel() {
   return true;
 }
 
+GURL AdsBlockedInfobarDelegate::GetLinkURL() const {
+  DCHECK(infobar_expanded_);
+  return GURL(subresource_filter::kLearnMoreLink);
+}
+
 bool AdsBlockedInfobarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  ChromeSubresourceFilterClient::LogAction(kActionDetailsShown);
+  if (infobar_expanded_) {
+    DCHECK_EQ(disposition, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+    infobar()->owner()->OpenURL(GetLinkURL(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB);
+    ChromeSubresourceFilterClient::LogAction(kActionClickedLearnMore);
+  } else {
+    ChromeSubresourceFilterClient::LogAction(kActionDetailsShown);
+    infobar_expanded_ = true;
+  }
+  // Returning false keeps the infobar up, which is the behavior we want in all
+  // cases. If the user is navigating via a new foreground tab we do not want
+  // the infobar going away on the tab (and therefore invoking our smart-hiding
+  // logic).
   return false;
 }
