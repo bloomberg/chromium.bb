@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 373
+#   For your editing convenience: highest ID currently used: 374
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -9695,6 +9695,47 @@
       If you disable this setting or do not set a value, Print Preview will use the most recently used printer as the default destination choice.
 
       If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.''',
+    },
+    {
+      'name': 'DeviceEcryptfsMigrationStrategy',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'Unset',
+          'value': 0,
+          'caption': '''Policy unset, disallow data migration and ARC''',
+        },
+        {
+          'name': 'DisallowArc',
+          'value': 1,
+          'caption': '''Disallow data migration and ARC''',
+        },
+        {
+          'name': 'AllowMigration',
+          'value': 2,
+          'caption': '''Allow data migration''',
+        },
+      ],
+      'supported_on': ['chrome_os:60-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 1,
+      'id': 374,
+      'caption': '''Migration strategy for ecryptfs''',
+      'tags': [],
+      'desc': '''Specifies how a device should behave that shipped with ecryptfs and needs to transition to ext4 encryption.
+
+      If you set this policy to 'DisallowArc', Android apps will be disabled for all users on the device (including those that have ext4 encryption already) and no migration from ecryptfs to ext4 encryption will be offered to any users.
+
+      If you set this policy to 'AllowMigration', users with ecryptfs home directories will be offered to migrate these to ext4 encryption as necessary (currently when Android N becomes available on the device).
+
+      If this policy is left not set, the device will behave as if 'DisallowArc' was chosen.''',
     },
   ],
   'messages': {

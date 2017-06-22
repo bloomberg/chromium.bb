@@ -417,6 +417,12 @@ const char kMemoryPressureThresholds[] = "memory-pressure-thresholds";
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 
+// If present, the device needs to check the policy to see if the migration to
+// ext4 for ARC is allowed. It should be present only on devices that have been
+// initially issued with ecrypfs encryption and have ARC (N+) available. For the
+// devices in other categories this flag must be missing.
+const char kNeedArcMigrationPolicyCheck[] = "need-arc-migration-policy-check";
+
 // Enables Settings based network config in MD Settings.
 const char kNetworkSettingsConfig[] = "network-settings-config";
 

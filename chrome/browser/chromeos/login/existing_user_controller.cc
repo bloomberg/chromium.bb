@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
@@ -187,6 +188,11 @@ bool ShouldForceDircrypto(const AccountId& account_id) {
   // If the device is not officially supported to run ARC, we don't need to
   // force Ext4 dircrypto.
   if (!arc::IsArcAvailable())
+    return false;
+
+  // If the device requires ecryptfs to ext4 migration policy check, and the
+  // policy doesn't allow the migration, then return.
+  if (!arc::IsArcMigrationAllowed())
     return false;
 
   // In some login flows (e.g. when siging in supervised user), ARC can not

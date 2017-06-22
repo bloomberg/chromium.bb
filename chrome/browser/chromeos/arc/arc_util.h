@@ -116,6 +116,18 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
     const base::FilePath& profile_path,
     const base::Closure& callback);
 
+// Returns if the migration from ecryptfs to ext4 is allowed. It is true if the
+// flag --need-arc-migration-policy-check is not set or if the device is
+// consumer owned or if the device policy is present and has the value
+// |kAllowMigration|. The response is cached the first time the function is
+// used, and a policy update won't change the return value after that until the
+// next Chrome restart.
+bool IsArcMigrationAllowed();
+
+// For testing IsArcMigrationAllowed, the global flags have to be reset before
+// every test.
+void ResetArcMigrationAllowedForTesting();
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_UTIL_H_
