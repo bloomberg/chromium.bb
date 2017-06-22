@@ -24,7 +24,7 @@
             "type": "array",
             "items": { "$ref": "DesktopCaptureSourceType" },
             "name": "sources",
-            "description": "Set of sources that should be shown to the user."
+            "description": "Set of sources that should be shown to the user. The sources order in the set decides the tab order in the picker."
           },
           {
             "$ref": "tabs.Tab",

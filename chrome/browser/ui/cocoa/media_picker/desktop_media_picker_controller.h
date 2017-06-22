@@ -47,9 +47,7 @@
   // Provides source information (including thumbnails) to fill up the array of
   // |screenItems_|, |windowItems_| and |tabItems_|, and to render in
   // |screenBrowser_|, |windowBrowser_| and |tabBrowser_|.
-  std::unique_ptr<DesktopMediaList> screenList_;
-  std::unique_ptr<DesktopMediaList> windowList_;
-  std::unique_ptr<DesktopMediaList> tabList_;
+  std::vector<std::unique_ptr<DesktopMediaList>> sourceLists_;
 
   // To be called with the user selection.
   DesktopMediaPicker::DoneCallback doneCallback_;
@@ -75,14 +73,13 @@
 // appears as the initiator of the request.
 // |targetName| will be used to format the dialog's label and appear as the
 // consumer of the requested stream.
-- (id)initWithScreenList:(std::unique_ptr<DesktopMediaList>)screenList
-              windowList:(std::unique_ptr<DesktopMediaList>)windowList
-                 tabList:(std::unique_ptr<DesktopMediaList>)tabList
-                  parent:(NSWindow*)parent
-                callback:(const DesktopMediaPicker::DoneCallback&)callback
-                 appName:(const base::string16&)appName
-              targetName:(const base::string16&)targetName
-            requestAudio:(bool)requestAudio;
+- (id)initWithSourceLists:
+          (std::vector<std::unique_ptr<DesktopMediaList>>)sourceLists
+                   parent:(NSWindow*)parent
+                 callback:(const DesktopMediaPicker::DoneCallback&)callback
+                  appName:(const base::string16&)appName
+               targetName:(const base::string16&)targetName
+             requestAudio:(bool)requestAudio;
 
 @end
 

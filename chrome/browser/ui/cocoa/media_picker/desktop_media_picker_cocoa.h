@@ -24,9 +24,7 @@ class DesktopMediaPickerCocoa : public DesktopMediaPicker {
             gfx::NativeWindow parent,
             const base::string16& app_name,
             const base::string16& target_name,
-            std::unique_ptr<DesktopMediaList> screen_list,
-            std::unique_ptr<DesktopMediaList> window_list,
-            std::unique_ptr<DesktopMediaList> tab_list,
+            std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
             bool request_audio,
             const DoneCallback& done_callback) override;
 

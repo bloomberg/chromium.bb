@@ -44,23 +44,19 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   void SetUp() override {
     test_helper_.test_views_delegate()->set_layout_provider(
         ChromeLayoutProvider::CreateLayoutProvider());
-    media_lists_[DesktopMediaID::TYPE_SCREEN] = new FakeDesktopMediaList();
-    media_lists_[DesktopMediaID::TYPE_WINDOW] = new FakeDesktopMediaList();
-    media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS] =
-        new FakeDesktopMediaList();
-    std::unique_ptr<FakeDesktopMediaList> screen_list(
-        media_lists_[DesktopMediaID::TYPE_SCREEN]);
-    std::unique_ptr<FakeDesktopMediaList> window_list(
-        media_lists_[DesktopMediaID::TYPE_WINDOW]);
-    std::unique_ptr<FakeDesktopMediaList> tab_list(
-        media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]);
+
+    std::vector<std::unique_ptr<DesktopMediaList>> source_lists;
+    for (auto type : kSourceTypes) {
+      media_lists_[type] = new FakeDesktopMediaList(type);
+      source_lists.push_back(
+          std::unique_ptr<FakeDesktopMediaList>(media_lists_[type]));
+    }
 
     base::string16 app_name = base::ASCIIToUTF16("foo");
 
     picker_views_.reset(new DesktopMediaPickerViews());
     picker_views_->Show(nullptr, test_helper_.GetContext(), nullptr, app_name,
-                        app_name, std::move(screen_list),
-                        std::move(window_list), std::move(tab_list), true,
+                        app_name, std::move(source_lists), true,
                         base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
                                    base::Unretained(this)));
   }
