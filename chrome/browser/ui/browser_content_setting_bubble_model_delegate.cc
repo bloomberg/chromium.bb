@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 
 // The URL for when the user clicks "learn more" on the mixed scripting page
 // icon bubble.
@@ -56,9 +57,18 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
 
 void BrowserContentSettingBubbleModelDelegate::ShowLearnMorePage(
     ContentSettingsType type) {
-  if (type != CONTENT_SETTINGS_TYPE_PLUGINS)
-    return;
-  chrome::AddSelectedTabWithURL(browser_,
-                                GURL(chrome::kBlockedPluginLearnMoreURL),
+  GURL learn_more_url;
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      learn_more_url = GURL(chrome::kBlockedPluginLearnMoreURL);
+      break;
+    case CONTENT_SETTINGS_TYPE_ADS:
+      learn_more_url = GURL(subresource_filter::kLearnMoreLink);
+      break;
+    default:
+      return;
+  }
+  DCHECK(!learn_more_url.is_empty());
+  chrome::AddSelectedTabWithURL(browser_, learn_more_url,
                                 ui::PAGE_TRANSITION_LINK);
 }
