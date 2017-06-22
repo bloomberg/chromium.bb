@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class DOMMatrix;
 class ExceptionState;
 
 // Represents a skew value in a CSSTransformValue used for properties like
@@ -29,19 +30,14 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   static CSSSkew* FromCSSValue(const CSSFunctionValue&);
 
   // Getters and setters for the ax and ay attributes defined in the IDL.
-  CSSNumericValue* ax() const { return ax_.Get(); }
-  CSSNumericValue* ay() const { return ay_.Get(); }
+  CSSNumericValue* ax() { return ax_.Get(); }
+  CSSNumericValue* ay() { return ay_.Get(); }
   void setAx(CSSNumericValue*, ExceptionState&);
   void setAy(CSSNumericValue*, ExceptionState&);
 
   // Internal methods - from CSSTransformComponent.
+  DOMMatrix* AsMatrix() const override;
   TransformComponentType GetType() const override { return kSkewType; }
-  DOMMatrix* AsMatrix() const override {
-    return nullptr;
-    // TODO(meade): Reimplement this once the number/unit types
-    // are re-implemented.
-    // return CSSMatrixComponent::Skew(ax_->degrees(), ay_->degrees());
-  }
   CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

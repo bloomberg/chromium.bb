@@ -4,14 +4,14 @@ PASS Setting transform to none
 PASS Setting transform to initial 
 PASS Setting transform to inherit 
 PASS Setting transform to unset 
-FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS Setting transform to CSSTransformValue with value skew(30deg, 0deg) 
+PASS Setting transform to CSSTransformValue with value skew(10rad, 0deg) 
+PASS Setting transform to CSSTransformValue with value skew(2grad, 0deg) 
+PASS Setting transform to CSSTransformValue with value skew(0.2turn, 0deg) 
+PASS Setting transform to CSSTransformValue with value skew(0deg, 30deg) 
+PASS Setting transform to CSSTransformValue with value skew(0deg, 10rad) 
+PASS Setting transform to CSSTransformValue with value skew(0deg, 2grad) 
+PASS Setting transform to CSSTransformValue with value skew(0deg, 0.2turn) 
 FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
@@ -33,6 +33,14 @@ PASS Getting transform when it is set to none
 PASS Getting transform when it is set to initial 
 PASS Getting transform when it is set to inherit 
 PASS Getting transform when it is set to unset 
+PASS Getting transform with a CSSTransformValue whose value is skew(30deg, 0deg) 
+PASS Getting transform with a CSSTransformValue whose value is skew(10rad, 0deg) 
+PASS Getting transform with a CSSTransformValue whose value is skew(2grad, 0deg) 
+PASS Getting transform with a CSSTransformValue whose value is skew(0.2turn, 0deg) 
+PASS Getting transform with a CSSTransformValue whose value is skew(0deg, 30deg) 
+PASS Getting transform with a CSSTransformValue whose value is skew(0deg, 10rad) 
+PASS Getting transform with a CSSTransformValue whose value is skew(0deg, 2grad) 
+PASS Getting transform with a CSSTransformValue whose value is skew(0deg, 0.2turn) 
 FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
 FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
 FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
@@ -41,26 +49,18 @@ FAIL Getting transform with a CSSTransformValue whose value is  Cannot read prop
 FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
 FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
 FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform with a CSSTransformValue whose value is  Cannot read property 'constructor' of null
-FAIL Getting transform when it is set to "skew(45deg)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skew(1rad)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skew(6.2grad)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skew(0.31turn)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skewX(45deg)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skewX(1rad)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skewX(6.2grad)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skewX(0.31turn)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skewY(45deg)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skewY(1rad)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skewY(6.2grad)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
-FAIL Getting transform when it is set to "skewY(0.31turn)" via a string assert_equals: typeof result expected "CSSTransformValue" but got "CSSStyleValue"
+PASS Getting transform when it is set to "skew(45deg)" via a string 
+PASS Getting transform when it is set to "skew(1rad)" via a string 
+PASS Getting transform when it is set to "skew(6.2grad)" via a string 
+PASS Getting transform when it is set to "skew(0.31turn)" via a string 
+PASS Getting transform when it is set to "skewX(45deg)" via a string 
+PASS Getting transform when it is set to "skewX(1rad)" via a string 
+PASS Getting transform when it is set to "skewX(6.2grad)" via a string 
+PASS Getting transform when it is set to "skewX(0.31turn)" via a string 
+PASS Getting transform when it is set to "skewY(45deg)" via a string 
+PASS Getting transform when it is set to "skewY(1rad)" via a string 
+PASS Getting transform when it is set to "skewY(6.2grad)" via a string 
+PASS Getting transform when it is set to "skewY(0.31turn)" via a string 
 PASS Getting transform when it is set to "rotateX(45deg)" via a string 
 PASS Getting transform when it is set to "rotateX(1rad)" via a string 
 PASS Getting transform when it is set to "rotateX(6.2grad)" via a string 
@@ -73,9 +73,9 @@ PASS Getting transform when it is set to "rotateZ(45deg)" via a string
 PASS Getting transform when it is set to "rotateZ(1rad)" via a string 
 PASS Getting transform when it is set to "rotateZ(6.2grad)" via a string 
 PASS Getting transform when it is set to "rotateZ(0.31turn)" via a string 
-FAIL getAll for single-valued transform assert_equals: Expected getAll to retrieve an array containing a single CSSStyleValue expected 1 but got 0
-FAIL Delete transform removes the value from the styleMap assert_not_equals: got disallowed value null
-FAIL transform shows up in getProperties Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS getAll for single-valued transform 
+PASS Delete transform removes the value from the styleMap 
+PASS transform shows up in getProperties 
 PASS Setting transform to a sequence throws 
 PASS Appending to transform throws 
 PASS Unhandled case doesn't crash. 

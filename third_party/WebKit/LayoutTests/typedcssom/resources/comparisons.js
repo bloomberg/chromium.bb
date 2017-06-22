@@ -1,6 +1,6 @@
 function assert_array_approx_equals(actual, expected, epsilon) {
   for (var i = 0; i < actual.length; i++) {
-    assert_approx_equals(actual[i], expected[i], 1e-6);
+    assert_approx_equals(actual[i], expected[i], epsilon);
   }
 }
 
