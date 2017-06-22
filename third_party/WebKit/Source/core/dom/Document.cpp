@@ -5731,6 +5731,9 @@ void Document::SetFeaturePolicy(const String& feature_policy_header) {
   if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
     return;
 
+  if (!feature_policy_header.IsEmpty())
+    UseCounter::Count(*this, WebFeature::kFeaturePolicyHeader);
+
   WebFeaturePolicy* parent_feature_policy = nullptr;
   WebParsedFeaturePolicy container_policy;
   Vector<String> messages;
