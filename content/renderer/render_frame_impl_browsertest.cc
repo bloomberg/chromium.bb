@@ -25,12 +25,14 @@
 #include "content/test/fake_compositor_dependencies.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
+#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/native_theme/native_theme_features.h"
 
 using blink::WebString;
 using blink::WebURLRequest;
@@ -51,6 +53,8 @@ class RenderFrameImplTest : public RenderViewTest {
   ~RenderFrameImplTest() override {}
 
   void SetUp() override {
+    blink::WebRuntimeFeatures::EnableOverlayScrollbars(
+        ui::IsOverlayScrollbarEnabled());
     RenderViewTest::SetUp();
     EXPECT_TRUE(GetMainRenderFrame()->is_main_frame_);
 
@@ -153,6 +157,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   resize_params.screen_info = ScreenInfo();
   resize_params.new_size = size;
   resize_params.physical_backing_size = size;
+  resize_params.visible_viewport_size = size;
   resize_params.top_controls_height = 0.f;
   resize_params.browser_controls_shrink_blink_size = false;
   resize_params.is_fullscreen_granted = false;
@@ -161,6 +166,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   frame_widget()->OnMessageReceived(resize_message);
 
   EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+  EXPECT_EQ(view_->GetWebView()->Size(), blink::WebSize(size));
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.

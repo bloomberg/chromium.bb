@@ -318,12 +318,13 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   // Make sure that we are enabled before loading HTML.
   std::string html =
       std::string(kAccountCreationFormHTML) + events_registration_script;
-  LoadHTMLWithUserGesture(html.c_str());
-  SetNotBlacklistedMessage(password_generation_, html.c_str());
-  SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->GetDocument(), 0, 1);
-
+  // Begin with no gesture and therefore no focused element.
+  LoadHTML(html.c_str());
   WebDocument document = GetMainFrame()->GetDocument();
+  ASSERT_TRUE(document.FocusedElement().IsNull());
+  SetNotBlacklistedMessage(password_generation_, html.c_str());
+  SetAccountCreationFormsDetectedMessage(password_generation_, document, 0, 1);
+
   WebElement element =
       document.GetElementById(WebString::FromUTF8("first_password"));
   ASSERT_FALSE(element.IsNull());
