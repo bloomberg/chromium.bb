@@ -2,7 +2,7 @@
 Recording started
 Tracing complete
 Frames in TracingStartedInPage
-url: inspector-protocol/timeline/page-frames.html name:  parent: undefined nodeId: undefined
+url: inspector-protocol/resources/inspector-protocol-page.html name:  parent: undefined nodeId: undefined
 url: data:text/html,<script>window.foo = 42</script> name: frame0 parent: string nodeId: number
 Frames in CommitLoad events
 url: about:blank name: Frame No. 1 parent: string nodeId: number

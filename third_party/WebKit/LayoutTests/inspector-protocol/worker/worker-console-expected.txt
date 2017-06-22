@@ -1,11 +1,4 @@
-CONSOLE MESSAGE: line 6: message0
-CONSOLE MESSAGE: line 6: message1
-CONSOLE MESSAGE: line 6: message2
-CONSOLE ERROR: line 4: Uncaught (in promise) throw1
-CONSOLE MESSAGE: line 6: message3
-CONSOLE MESSAGE: line 6: message4
-CONSOLE MESSAGE: line 6: message5
-CONSOLE MESSAGE: line 6: message6
+
 Starting worker
 Logging in worker: message0
 Got log message from page: message0
