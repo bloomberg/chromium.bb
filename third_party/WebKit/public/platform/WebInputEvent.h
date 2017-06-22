@@ -180,6 +180,14 @@ class WebInputEvent {
     kTouchScrollStarted,
     kTouchTypeLast = kTouchScrollStarted,
 
+    // WebPointerEvent: work in progress
+    kPointerDown,
+    kPointerTypeFirst = kPointerDown,
+    kPointerUp,
+    kPointerMove,
+    kPointerCancel,
+    kPointerTypeLast = kPointerCancel,
+
     kTypeLast = kTouchTypeLast
   };
 
@@ -303,6 +311,11 @@ class WebInputEvent {
     return kGestureTypeFirst <= type && type <= kGestureTypeLast;
   }
 
+  // Returns true if the WebInputEvent |type| is a pointer event.
+  static bool IsPointerEventType(WebInputEvent::Type type) {
+    return kPointerTypeFirst <= type && type <= kPointerTypeLast;
+  }
+
   bool IsSameEventClass(const WebInputEvent& other) const {
     if (IsMouseEventType(type_))
       return IsMouseEventType(other.type_);
@@ -312,6 +325,8 @@ class WebInputEvent {
       return IsTouchEventType(other.type_);
     if (IsKeyboardEventType(type_))
       return IsKeyboardEventType(other.type_);
+    if (IsPointerEventType(type_))
+      return IsPointerEventType(other.type_);
     return type_ == other.type_;
   }
 
@@ -359,11 +374,14 @@ class WebInputEvent {
       CASE_TYPE(TouchEnd);
       CASE_TYPE(TouchCancel);
       CASE_TYPE(TouchScrollStarted);
-      default:
-        NOTREACHED();
-        return "";
+      CASE_TYPE(PointerDown);
+      CASE_TYPE(PointerUp);
+      CASE_TYPE(PointerMove);
+      CASE_TYPE(PointerCancel);
     }
 #undef CASE_TYPE
+    NOTREACHED();
+    return "";
   }
 
   float FrameScale() const { return frame_scale_; }

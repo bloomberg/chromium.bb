@@ -271,6 +271,7 @@ source_set("blink_headers") {
     "platform/WebPlatformEventType.h",
     "platform/WebPluginListBuilder.h",
     "platform/WebPoint.h",
+    "platform/WebPointerEvent.h",
     "platform/WebPointerProperties.h",
     "platform/WebPrerender.h",
     "platform/WebPrerenderingSupport.h",
