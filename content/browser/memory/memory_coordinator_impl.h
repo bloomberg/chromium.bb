@@ -111,11 +111,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Tries to purge memory from the provided child process.
   bool TryToPurgeMemoryFromChild(int render_process_id);
 
-  // Records memory pressure notifications. Called by MemoryPressureMonitor.
-  // TODO(bashi): Remove this when MemoryPressureMonitor is retired.
-  void RecordMemoryPressure(
-      base::MemoryPressureMonitor::MemoryPressureLevel level);
-
   // base::MemoryCoordinator implementations:
   MemoryState GetCurrentMemoryState() const override;
 

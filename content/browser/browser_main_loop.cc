@@ -819,9 +819,6 @@ int BrowserMainLoop::PreCreateThreads() {
 
   InitializeMemoryManagementComponent();
 
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
-    MemoryCoordinatorImpl::GetInstance()->Start();
-
 #if defined(OS_MACOSX)
   if (base::CommandLine::InitializedForCurrentProcess() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1613,16 +1610,8 @@ void BrowserMainLoop::InitializeMemoryManagementComponent() {
       CreateWinMemoryPressureMonitor(parsed_command_line_);
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    // Disable MemoryPressureListener when memory coordinator is enabled.
-    base::MemoryPressureListener::SetNotificationsSuppressed(true);
-    auto* coordinator = MemoryCoordinatorImpl::GetInstance();
-    if (memory_pressure_monitor_) {
-      memory_pressure_monitor_->SetDispatchCallback(
-          base::Bind(&MemoryCoordinatorImpl::RecordMemoryPressure,
-                     base::Unretained(coordinator)));
-    }
-  }
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
+    MemoryCoordinatorImpl::GetInstance()->Start();
 
   auto* swap_metrics_observer = SwapMetricsObserver::GetInstance();
   if (swap_metrics_observer)
