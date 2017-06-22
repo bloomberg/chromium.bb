@@ -802,7 +802,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
   if (layer_config_changed || mask_layer_changed)
     UpdatePaintingPhases();
 
-  UpdateElementIdAndCompositorMutableProperties();
+  UpdateElementId();
 
   graphics_layer_->SetHasWillChangeTransformHint(
       style.HasWillChangeTransformHint());
@@ -1120,7 +1120,7 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateContentsRect();
   UpdateBackgroundColor();
   UpdateDrawsContent();
-  UpdateElementIdAndCompositorMutableProperties();
+  UpdateElementId();
   UpdateBackgroundPaintsOntoScrollingContentsLayer();
   UpdateContentsOpaque();
   UpdateRasterizationPolicy();
@@ -2198,81 +2198,18 @@ struct AnimatingData {
   const ComputedStyle* animating_style = nullptr;
 };
 
-void GetAnimatingData(PaintLayer& paint_layer, AnimatingData& data) {
-  if (!RuntimeEnabledFeatures::CompositorWorkerEnabled())
-    return;
-
-  data.owning_node = paint_layer.GetLayoutObject().GetNode();
-
-  if (!data.owning_node)
-    return;
-
-  Document& document = data.owning_node->GetDocument();
-  Element* scrolling_element = document.ScrollingElementNoLayout();
-  if (data.owning_node->IsElementNode() &&
-      (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
-       data.owning_node != scrolling_element)) {
-    data.animating_element = ToElement(data.owning_node);
-    data.animating_style = paint_layer.GetLayoutObject().Style();
-  } else if (data.owning_node->IsDocumentNode() &&
-             RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    data.owning_node = data.animating_element = scrolling_element;
-    if (scrolling_element && scrolling_element->GetLayoutObject())
-      data.animating_style = scrolling_element->GetLayoutObject()->Style();
-  }
-}
-
-// Some background on when you receive an element id or mutable properties.
-//
-// element id:
-//   If you have a compositor proxy, an animation, or you're a scroller (and
-//   might impl animate).
-//
-// mutable properties:
-//   Only if you have a compositor proxy.
+// You receive an element id if you have an animation, or you're a scroller (and
+// might impl animate).
 //
 // The element id for the scroll layers is assigned when they're constructed,
-// since this is unconditional. However, the element id for the primary layer as
-// well as the mutable properties for all layers may change according to the
-// rules above so we update those values here.
-void CompositedLayerMapping::UpdateElementIdAndCompositorMutableProperties() {
-  uint32_t primary_mutable_properties = CompositorMutableProperty::kNone;
-  uint32_t scroll_mutable_properties = CompositorMutableProperty::kNone;
-
-  AnimatingData data;
-  GetAnimatingData(owning_layer_, data);
-
-  CompositorElementId element_id;
-  if (data.animating_style && data.animating_style->HasCompositorProxy()) {
-    // Compositor proxy element ids cannot be based on PaintLayers, since
-    // those are not kept alive by script across frames.
-    element_id = CompositorElementIdFromDOMNodeId(
-        DOMNodeIds::IdForNode(data.owning_node),
-        CompositorElementIdNamespace::kPrimaryCompositorProxy);
-
-    uint32_t compositor_mutable_properties =
-        data.animating_element->CompositorMutableProperties();
-    primary_mutable_properties = (CompositorMutableProperty::kOpacity |
-                                  CompositorMutableProperty::kTransform) &
-                                 compositor_mutable_properties;
-    scroll_mutable_properties = (CompositorMutableProperty::kScrollLeft |
-                                 CompositorMutableProperty::kScrollTop) &
-                                compositor_mutable_properties;
-  } else {
-    element_id = CompositorElementIdFromLayoutObjectId(
-        owning_layer_.GetLayoutObject().UniqueId(),
-        CompositorElementIdNamespace::kPrimary);
-  }
+// since this is unconditional. However, the element id for the primary layer
+// may change according to the rules above so we update those values here.
+void CompositedLayerMapping::UpdateElementId() {
+  CompositorElementId element_id = CompositorElementIdFromLayoutObjectId(
+      owning_layer_.GetLayoutObject().UniqueId(),
+      CompositorElementIdNamespace::kPrimary);
 
   graphics_layer_->SetElementId(element_id);
-  graphics_layer_->SetCompositorMutableProperties(primary_mutable_properties);
-
-  // We always set the elementId for m_scrollingContentsLayer since it can be
-  // animated for smooth scrolling, so we don't need to set it conditionally
-  // here.
-  if (scrolling_contents_layer_.get())
-    scrolling_contents_layer_->SetCompositorMutableProperties(
-        scroll_mutable_properties);
 }
 
 bool CompositedLayerMapping::UpdateForegroundLayer(
@@ -2387,20 +2324,9 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
           CreateGraphicsLayer(kCompositingReasonLayerForScrollingContents);
       scrolling_contents_layer_->SetShouldHitTest(true);
 
-      AnimatingData data;
-      GetAnimatingData(owning_layer_, data);
-
-      CompositorElementId element_id;
-      if (data.animating_style && data.animating_style->HasCompositorProxy()) {
-        element_id = CompositorElementIdFromDOMNodeId(
-            DOMNodeIds::IdForNode(data.owning_node),
-            CompositorElementIdNamespace::kScrollCompositorProxy);
-      } else {
-        element_id = CompositorElementIdFromLayoutObjectId(
-            owning_layer_.GetLayoutObject().UniqueId(),
-            CompositorElementIdNamespace::kScroll);
-      }
-
+      CompositorElementId element_id = CompositorElementIdFromLayoutObjectId(
+          owning_layer_.GetLayoutObject().UniqueId(),
+          CompositorElementIdNamespace::kScroll);
       scrolling_contents_layer_->SetElementId(element_id);
 
       scrolling_layer_->AddChild(scrolling_contents_layer_.get());

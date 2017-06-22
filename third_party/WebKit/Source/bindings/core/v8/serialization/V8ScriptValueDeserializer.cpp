@@ -5,7 +5,6 @@
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
 
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "core/dom/CompositorProxy.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
@@ -25,7 +24,6 @@
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/DateMath.h"
 #include "public/platform/WebBlobInfo.h"
@@ -201,18 +199,6 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       const WebBlobInfo& info = (*blob_info_array_)[index];
       return Blob::Create(
           GetOrCreateBlobDataHandle(info.Uuid(), info.GetType(), info.size()));
-    }
-    case kCompositorProxyTag: {
-      uint64_t element;
-      uint32_t properties;
-      const uint32_t kValidPropertiesMask = static_cast<uint32_t>(
-          (1u << CompositorMutableProperty::kNumProperties) - 1);
-      if (!RuntimeEnabledFeatures::CompositorWorkerEnabled() ||
-          !ReadUint64(&element) || !ReadUint32(&properties) || element == 0 ||
-          !properties || (properties & ~kValidPropertiesMask))
-        return nullptr;
-      return CompositorProxy::Create(
-          ExecutionContext::From(script_state_.Get()), element, properties);
     }
     case kFileTag:
       return ReadFile();

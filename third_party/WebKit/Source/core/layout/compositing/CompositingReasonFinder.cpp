@@ -98,9 +98,6 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   if (style.HasPerspective())
     reasons |= kCompositingReasonPerspectiveWith3DDescendants;
 
-  if (style.HasCompositorProxy())
-    reasons |= kCompositingReasonCompositorProxy;
-
   // If the implementation of createsGroup changes, we need to be aware of that
   // in this part of code.
   DCHECK((layout_object.IsTransparent() || layout_object.HasMask() ||

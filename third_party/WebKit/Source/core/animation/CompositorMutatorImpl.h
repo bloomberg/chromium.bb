@@ -33,8 +33,7 @@ class CORE_EXPORT CompositorMutatorImpl final : public CompositorMutator {
   static CompositorMutatorImpl* Create();
 
   // CompositorMutator implementation.
-  bool Mutate(double monotonic_time_now,
-              CompositorMutableStateProvider*) override;
+  bool Mutate(double monotonic_time_now) override;
 
   void RegisterCompositorAnimator(CompositorAnimator*);
   void UnregisterCompositorAnimator(CompositorAnimator*);

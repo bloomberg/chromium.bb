@@ -759,15 +759,6 @@ class CORE_EXPORT Element : public ContainerNode {
   void setTabIndex(int);
   int tabIndex() const override;
 
-  // A compositor proxy is a very limited wrapper around an element. It
-  // exposes only those properties that are requested at the time the proxy is
-  // created. In order to know which properties are actually proxied, we
-  // maintain a count of the number of compositor proxies associated with each
-  // property.
-  bool HasCompositorProxy() const;
-  void IncrementCompositorProxiedProperties(uint32_t mutable_properties);
-  void DecrementCompositorProxiedProperties(uint32_t mutable_properties);
-  uint32_t CompositorMutableProperties() const;
   void UpdateFromCompositorMutation(const CompositorMutation&);
 
   // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if

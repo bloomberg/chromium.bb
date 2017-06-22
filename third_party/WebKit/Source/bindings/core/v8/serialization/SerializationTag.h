@@ -85,8 +85,6 @@ enum SerializationTag {
   //                     namedCurve:uint32_t
   kRTCCertificateTag = 'k',  // length:uint32_t, pemPrivateKey:WebCoreString,
                              // pemCertificate:WebCoreString
-  kCompositorProxyTag =
-      'C',  // elementId:uint64_t, bitfields:uint32_t -> CompositorProxy (ref)
   kVersionTag = 0xFF  // version:uint32_t -> Uses this as the file version.
 };
 

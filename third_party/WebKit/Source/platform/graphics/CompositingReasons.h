@@ -101,8 +101,6 @@ const uint64_t kCompositingReasonLayerForDecoration = UINT64_C(1) << 50;
 // we can update their transforms quickly.
 const uint64_t kCompositingReasonInlineTransform = UINT64_C(1) << 51;
 
-const uint64_t kCompositingReasonCompositorProxy = UINT64_C(1) << 52;
-
 // Various combinations of compositing reasons are defined here also, for more
 // intutive and faster bitwise logic.
 const uint64_t kCompositingReasonComboAllDirectReasons =
@@ -115,14 +113,13 @@ const uint64_t kCompositingReasonComboAllDirectReasons =
     kCompositingReasonOverflowScrollingParent |
     kCompositingReasonOutOfFlowClipping | kCompositingReasonVideoOverlay |
     kCompositingReasonWillChangeCompositingHint |
-    kCompositingReasonCompositorProxy | kCompositingReasonBackdropFilter |
-    kCompositingReasonRootScroller;
+    kCompositingReasonBackdropFilter | kCompositingReasonRootScroller;
 
 const uint64_t kCompositingReasonComboAllDirectStyleDeterminedReasons =
     kCompositingReason3DTransform | kCompositingReasonBackfaceVisibilityHidden |
     kCompositingReasonActiveAnimation | kCompositingReasonTransitionProperty |
     kCompositingReasonWillChangeCompositingHint |
-    kCompositingReasonCompositorProxy | kCompositingReasonBackdropFilter;
+    kCompositingReasonBackdropFilter;
 
 const uint64_t kCompositingReasonComboCompositedDescendants =
     kCompositingReasonTransformWithCompositedDescendants |

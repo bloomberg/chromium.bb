@@ -27,7 +27,6 @@
 #include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/Attr.h"
-#include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementIntersectionObserverData.h"
@@ -44,7 +43,6 @@
 
 namespace blink {
 
-class CompositorProxiedPropertySet;
 class ResizeObservation;
 class ResizeObserver;
 
@@ -132,12 +130,6 @@ class ElementRareData : public NodeRareData {
   bool HasPseudoElements() const;
   void ClearPseudoElements();
 
-  void IncrementCompositorProxiedProperties(uint32_t properties);
-  void DecrementCompositorProxiedProperties(uint32_t properties);
-  CompositorProxiedPropertySet* ProxiedPropertyCounts() const {
-    return proxied_properties_.get();
-  }
-
   void V0SetCustomElementDefinition(V0CustomElementDefinition* definition) {
     v0_custom_element_definition_ = definition;
   }
@@ -195,9 +187,6 @@ class ElementRareData : public NodeRareData {
   DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
  private:
-  CompositorProxiedPropertySet& EnsureCompositorProxiedPropertySet();
-  void ClearCompositorProxiedPropertySet() { proxied_properties_ = nullptr; }
-
   LayoutSize minimum_size_for_resizing_;
   ScrollOffset saved_layer_scroll_offset_;
   AtomicString nonce_;
@@ -209,7 +198,6 @@ class ElementRareData : public NodeRareData {
   Member<AttrNodeList> attr_node_list_;
   Member<InlineCSSStyleDeclaration> cssom_wrapper_;
   Member<InlineStylePropertyMap> cssom_map_wrapper_;
-  std::unique_ptr<CompositorProxiedPropertySet> proxied_properties_;
 
   Member<ElementAnimations> element_animations_;
   Member<ElementIntersectionObserverData> intersection_observer_data_;
@@ -266,25 +254,6 @@ inline PseudoElement* ElementRareData::GetPseudoElement(
   if (!pseudo_element_data_)
     return nullptr;
   return pseudo_element_data_->GetPseudoElement(pseudo_id);
-}
-
-inline void ElementRareData::IncrementCompositorProxiedProperties(
-    uint32_t properties) {
-  EnsureCompositorProxiedPropertySet().Increment(properties);
-}
-
-inline void ElementRareData::DecrementCompositorProxiedProperties(
-    uint32_t properties) {
-  proxied_properties_->Decrement(properties);
-  if (proxied_properties_->IsEmpty())
-    ClearCompositorProxiedPropertySet();
-}
-
-inline CompositorProxiedPropertySet&
-ElementRareData::EnsureCompositorProxiedPropertySet() {
-  if (!proxied_properties_)
-    proxied_properties_ = CompositorProxiedPropertySet::Create();
-  return *proxied_properties_;
 }
 
 }  // namespace blink

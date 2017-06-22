@@ -6,7 +6,6 @@
 #define AnimationWorkletProxyClient_h
 
 #include "core/CoreExport.h"
-#include "core/dom/CompositorProxyClient.h"
 #include "core/workers/WorkerClients.h"
 #include "platform/wtf/Noncopyable.h"
 
@@ -26,8 +25,6 @@ class CORE_EXPORT AnimationWorkletProxyClient
 
   virtual void SetGlobalScope(WorkletGlobalScope*) = 0;
   virtual void Dispose() = 0;
-
-  virtual CompositorProxyClient* GetCompositorProxyClient() = 0;
 };
 
 CORE_EXPORT void ProvideAnimationWorkletProxyClientTo(

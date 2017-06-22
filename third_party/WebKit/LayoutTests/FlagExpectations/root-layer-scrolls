@@ -265,7 +265,6 @@ Bug(none) fast/css/sticky/sticky-both-sides-top-left-constrained.html [ Failure 
 Bug(none) fast/css/sticky/sticky-overflowing.html [ Failure ]
 Bug(none) fast/css/sticky/sticky-style-change.html [ Failure ]
 Bug(none) fast/css/zoom-body-scroll.html [ Failure ]
-Bug(none) fast/dom/CompositorProxy/proxy-forces-layer.html [ Timeout ]
 Bug(none) fast/dom/elementFromPoint-relative-to-viewport.html [ Failure ]
 Bug(none) fast/dom/elementsFromPoint/elementsFromPoint-iframes.html [ Failure ]
 Bug(none) fast/dom/elementsFromPoint/elementsFromPoint-invalid-cases.html [ Failure ]

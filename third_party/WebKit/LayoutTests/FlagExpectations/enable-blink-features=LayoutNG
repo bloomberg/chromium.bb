@@ -24263,7 +24263,6 @@ crbug.com/591099 virtual/threaded/compositing/webgl/webgl-nonpremultiplied-blend
 crbug.com/591099 virtual/threaded/compositing/webgl/webgl-reflection.html [ Failure ]
 crbug.com/591099 virtual/threaded/compositing/webgl/webgl-repaint.html [ Failure ]
 crbug.com/591099 virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Failure Pass ]
-crbug.com/591099 virtual/threaded/fast/compositorworker/basic-plumbing-worker-to-main.html [ Failure Pass ]
 crbug.com/591099 virtual/threaded/fast/compositorworker/request-animation-frame.html [ Failure ]
 crbug.com/591099 virtual/threaded/fast/scroll-behavior/bordered-container-child-scroll.html [ Failure ]
 crbug.com/591099 virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Failure ]

@@ -6,7 +6,6 @@
 #define CompositorWorkerProxyClientImpl_h
 
 #include "core/animation/CompositorAnimator.h"
-#include "core/animation/CompositorProxyClientImpl.h"
 #include "core/dom/CompositorWorkerProxyClient.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -14,7 +13,6 @@
 
 namespace blink {
 
-class CompositorMutableStateProvider;
 class CompositorMutatorImpl;
 class CompositorWorkerGlobalScope;
 class WorkerGlobalScope;
@@ -38,16 +36,12 @@ class MODULES_EXPORT CompositorWorkerProxyClientImpl final
   DECLARE_TRACE();
 
   // CompositorAnimator:
-  bool Mutate(double monotonic_time_now,
-              CompositorMutableStateProvider*) override;
+  bool Mutate(double monotonic_time_now) override;
 
   // CompositorWorkerProxyClient:
   void Dispose() override;
   void SetGlobalScope(WorkerGlobalScope*) override;
   void RequestAnimationFrame() override;
-  CompositorProxyClient* GetCompositorProxyClient() override {
-    return compositor_proxy_client_.Get();
-  };
 
  private:
   bool ExecuteAnimationFrameCallbacks(double monotonic_time_now);
@@ -56,8 +50,6 @@ class MODULES_EXPORT CompositorWorkerProxyClientImpl final
 
   CrossThreadPersistent<CompositorWorkerGlobalScope> global_scope_;
   bool requested_animation_frame_callbacks_;
-
-  CrossThreadPersistent<CompositorProxyClientImpl> compositor_proxy_client_;
 };
 
 }  // namespace blink

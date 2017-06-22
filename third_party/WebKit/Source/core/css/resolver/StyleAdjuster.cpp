@@ -408,9 +408,6 @@ void StyleAdjuster::AdjustComputedStyle(
     AdjustStyleForFirstLetter(style);
   }
 
-  if (element && element->HasCompositorProxy())
-    style.SetHasCompositorProxy(true);
-
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&
       !LayoutParentStyleForcesZIndexToCreateStackingContext(

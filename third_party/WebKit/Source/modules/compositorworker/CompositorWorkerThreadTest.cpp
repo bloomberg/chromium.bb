@@ -72,9 +72,6 @@ class TestCompositorWorkerProxyClient
   void Dispose() override {}
   void SetGlobalScope(WorkerGlobalScope*) override {}
   void RequestAnimationFrame() override {}
-  CompositorProxyClient* GetCompositorProxyClient() override {
-    return nullptr;
-  };
 };
 
 class CompositorWorkerTestPlatform : public TestingPlatformSupport {

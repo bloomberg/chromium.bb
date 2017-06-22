@@ -1,23 +1,4 @@
 <!DOCTYPE html>
-
-<style>
-#box {
-  width: 100px;
-  height: 100px;
-  overflow: scroll;
-}
-
-#scrolled {
-  background: white;
-  width: 300px;
-  height: 300px;
-}
-</style>
-
-<div id="box">
-  <div id="scrolled"></div>
-</div>
-
 <script src="../../../../resources/testharness.js"></script>
 <script src="../../../../resources/testharnessreport.js"></script>
 <script>
@@ -30,40 +11,9 @@ var worker;
 test.step(function(){
   worker = new CompositorWorker('resources/basic-plumbing-main-to-worker.js');
   worker.onmessage = test.step_func(function(e){
-    assert_equals(e.data.opacity, 1);
-    assert_equals(e.data.scrollLeft, 0);
-    assert_equals(e.data.scrollTop, 0);
-    assert_equals(JSON.stringify(e.data.transform), '{"0":1,"1":0,"2":0,"3":0,"4":0,"5":1,"6":0,"7":0,"8":0,"9":0,"10":1,"11":0,"12":0,"13":0,"14":0,"15":1}');
-
-    updateElementAndVerify();
-  });
-
-  var keys = ['opacity', 'transform', 'scrollTop', 'scrollLeft'];
-  worker.postMessage({'proxy': new CompositorProxy(document.getElementById('box'), keys)});
-});
-
-function updateElementAndVerify(e) {
-  var element = document.getElementById('box');
-  element.scrollLeft = 10;
-  element.scrollTop = 20;
-  element.style.transform = 'translate3d(30px, 0, 0)';
-  element.style.opacity = 0.5;
-
-  worker.onmessage = test.step_func(function(e){
-    assert_equals(e.data.opacity, 0.5);
-    assert_equals(e.data.scrollLeft, 10);
-    assert_equals(e.data.scrollTop, 20);
-    assert_equals(JSON.stringify(e.data.transform), '{"0":1,"1":0,"2":0,"3":0,"4":0,"5":1,"6":0,"7":0,"8":0,"9":0,"10":1,"11":0,"12":30,"13":0,"14":0,"15":1}');
-
+    assert_equals(e.data.value, 42);
     test.done();
   });
-
-  // Delay posting to the compositor until we have had two frames to ensure our change
-  // is activated on the compositor.
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function() {
-      worker.postMessage({});
-    });
-  });
-}
+  worker.postMessage({value: 42});
+});
 </script>

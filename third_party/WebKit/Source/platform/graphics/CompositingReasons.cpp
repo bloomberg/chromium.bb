@@ -40,8 +40,6 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
      "Has a will-change compositing hint"},
     {kCompositingReasonBackdropFilter, "backdropFilter",
      "Has a backdrop filter"},
-    {kCompositingReasonCompositorProxy, "compositorProxy",
-     "Has a CompositorProxy object"},
     {kCompositingReasonAssumedOverlap, "assumedOverlap",
      "Might overlap other composited content"},
     {kCompositingReasonOverlap, "overlap", "Overlaps other composited content"},

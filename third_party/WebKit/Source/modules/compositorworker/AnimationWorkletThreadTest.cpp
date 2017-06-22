@@ -56,7 +56,6 @@ class TestAnimationWorkletProxyClient
   TestAnimationWorkletProxyClient() {}
   void SetGlobalScope(WorkletGlobalScope*) override {}
   void Dispose() override {}
-  CompositorProxyClient* GetCompositorProxyClient() override { return nullptr; }
 };
 
 }  // namespace

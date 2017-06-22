@@ -91,7 +91,6 @@ core_idl_files = get_path_info([
                                  "dom/ClientRect.idl",
                                  "dom/ClientRectList.idl",
                                  "dom/Comment.idl",
-                                 "dom/CompositorProxy.idl",
                                  "dom/DOMException.idl",
                                  "dom/DOMImplementation.idl",
                                  "geometry/DOMMatrix.idl",

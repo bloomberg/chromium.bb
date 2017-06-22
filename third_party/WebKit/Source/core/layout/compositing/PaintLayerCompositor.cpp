@@ -455,23 +455,6 @@ void PaintLayerCompositor::UpdateIfNeeded(
     }
   }
 
-  if (RuntimeEnabledFeatures::CompositorWorkerEnabled() && scroll_layer_) {
-    // If rootLayerScrolls is enabled, these properties are applied in
-    // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties.
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      if (Element* scrolling_element =
-              layout_view_.GetDocument().ScrollingElementNoLayout()) {
-        uint32_t mutable_properties = CompositorMutableProperty::kNone;
-        if (scrolling_element->HasCompositorProxy()) {
-          mutable_properties = (CompositorMutableProperty::kScrollLeft |
-                                CompositorMutableProperty::kScrollTop) &
-                               scrolling_element->CompositorMutableProperties();
-        }
-        scroll_layer_->SetCompositorMutableProperties(mutable_properties);
-      }
-    }
-  }
-
   GraphicsLayerUpdater updater;
   updater.Update(*update_root, layers_needing_paint_invalidation);
 

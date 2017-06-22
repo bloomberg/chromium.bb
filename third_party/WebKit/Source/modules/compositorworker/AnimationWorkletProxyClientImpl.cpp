@@ -5,8 +5,6 @@
 #include "modules/compositorworker/AnimationWorkletProxyClientImpl.h"
 
 #include "core/animation/CompositorMutatorImpl.h"
-#include "core/dom/CompositorProxy.h"
-#include "platform/graphics/CompositorMutableStateProvider.h"
 
 namespace blink {
 
@@ -38,9 +36,7 @@ void AnimationWorkletProxyClientImpl::Dispose() {
   global_scope_ = nullptr;
 }
 
-bool AnimationWorkletProxyClientImpl::Mutate(
-    double monotonic_time_now,
-    CompositorMutableStateProvider* provider) {
+bool AnimationWorkletProxyClientImpl::Mutate(double monotonic_time_now) {
   DCHECK(global_scope_->IsContextThread());
 
   if (global_scope_)

@@ -8,20 +8,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface ByteLengthQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size
-[Worker] interface CompositorProxy
-[Worker]     attribute @@toStringTag
-[Worker]     getter initialized
-[Worker]     getter opacity
-[Worker]     getter scrollLeft
-[Worker]     getter scrollTop
-[Worker]     getter transform
-[Worker]     method constructor
-[Worker]     method disconnect
-[Worker]     method supports
-[Worker]     setter opacity
-[Worker]     setter scrollLeft
-[Worker]     setter scrollTop
-[Worker]     setter transform
 [Worker] interface CompositorWorkerGlobalScope : WorkerGlobalScope
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

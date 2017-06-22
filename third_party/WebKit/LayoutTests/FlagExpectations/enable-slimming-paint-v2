@@ -554,7 +554,6 @@ Bug(none) fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ Failur
 Bug(none) fast/css/vertical-text-overflow-ellipsis-text-align-right.html [ Failure ]
 Bug(none) fast/dom/34176.html [ Failure ]
 Bug(none) fast/dom/52776.html [ Failure ]
-Bug(none) fast/dom/CompositorProxy/proxy-forces-layer.html [ Failure Timeout Pass ]
 Bug(none) fast/dom/focus-contenteditable.html [ Failure ]
 Bug(none) fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Failure Crash ]
 Bug(none) fast/dynamic/anchor-lock.html [ Failure ]
@@ -1796,11 +1795,8 @@ Bug(none) virtual/threaded/transitions/transition-end-event-rendering.html [ Fai
 Bug(none) virtual/threaded/animations/svg-attribute-composition/svg-startOffset-composition.html [ Failure ]
 
 # Compositor Worker logic has not yet been fully ported to SPv2.
-crbug.com/686897 virtual/threaded/fast/compositorworker/compositor-attribute-change-worker.html [ Timeout ]
-crbug.com/686897 virtual/threaded/fast/compositorworker/compositor-proxy-disconnect-worker.html [ Timeout ]
 crbug.com/686897 virtual/threaded/fast/compositorworker/visual-update.html [ Timeout ]
 crbug.com/686897 virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Crash Failure Timeout ]
-crbug.com/686897 virtual/threaded/fast/compositorworker/basic-plumbing-worker-to-main.html [ Crash Failure Timeout ]
 
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
 Bug(none) virtual/threaded/inspector/ [ Skip ]

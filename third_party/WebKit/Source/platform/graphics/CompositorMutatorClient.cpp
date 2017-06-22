@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "platform/graphics/CompositorMutableStateProvider.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
 #include "platform/graphics/CompositorMutator.h"
@@ -35,13 +34,12 @@ CompositorMutatorClient::~CompositorMutatorClient() {
 
 bool CompositorMutatorClient::Mutate(base::TimeTicks monotonic_time,
                                      cc::LayerTreeImpl* tree_impl) {
+  // TODO(majidvp): At the moment we do not ever use the |tree_impl| or produce
+  // any mutations. However we expect to use the tree and produce mutations for
+  // AnimationWorklets. Remove these if that plan changes.
   TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::Mutate");
   double monotonic_time_now = (monotonic_time - base::TimeTicks()).InSecondsF();
-  if (!mutations_)
-    mutations_ = WTF::WrapUnique(new CompositorMutations);
-  CompositorMutableStateProvider compositor_state(tree_impl, mutations_.get());
-  bool should_reinvoke =
-      mutator_->Mutate(monotonic_time_now, &compositor_state);
+  bool should_reinvoke = mutator_->Mutate(monotonic_time_now);
   return should_reinvoke;
 }
 

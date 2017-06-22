@@ -6,9 +6,9 @@
 
 #include "core/animation/CompositorAnimator.h"
 #include "core/animation/CustomCompositorAnimationManager.h"
-#include "core/dom/CompositorProxy.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "platform/heap/Handle.h"
@@ -58,16 +58,11 @@ CompositorMutatorImpl* CompositorMutatorImpl::Create() {
   return new CompositorMutatorImpl();
 }
 
-bool CompositorMutatorImpl::Mutate(
-    double monotonic_time_now,
-    CompositorMutableStateProvider* state_provider) {
+bool CompositorMutatorImpl::Mutate(double monotonic_time_now) {
   TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::mutate");
   bool need_to_reinvoke = false;
-  // TODO(vollick): we should avoid executing the animation frame
-  // callbacks if none of the proxies in the global scope are affected by
-  // m_mutations.
   for (CompositorAnimator* animator : animators_) {
-    if (animator->Mutate(monotonic_time_now, state_provider))
+    if (animator->Mutate(monotonic_time_now))
       need_to_reinvoke = true;
   }
 

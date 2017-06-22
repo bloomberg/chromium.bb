@@ -108,149 +108,12 @@ class CompositorWorkerTest
   FrameTestHelpers::UseMockScrollbarSettings mock_scrollbar_settings_;
 };
 
-static CompositedLayerMapping* MappingFromElement(Element* element) {
-  if (!element)
-    return nullptr;
-  LayoutObject* layout_object = element->GetLayoutObject();
-  if (!layout_object || !layout_object->IsBoxModelObject())
-    return nullptr;
-  PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
-  if (!layer)
-    return nullptr;
-  if (!layer->HasCompositedLayerMapping())
-    return nullptr;
-  return layer->GetCompositedLayerMapping();
-}
-
-static WebLayer* WebLayerFromGraphicsLayer(GraphicsLayer* graphics_layer) {
-  if (!graphics_layer)
-    return nullptr;
-  return graphics_layer->PlatformLayer();
-}
-
-static WebLayer* ScrollingWebLayerFromElement(Element* element) {
-  CompositedLayerMapping* composited_layer_mapping =
-      MappingFromElement(element);
-  if (!composited_layer_mapping)
-    return nullptr;
-  return WebLayerFromGraphicsLayer(
-      composited_layer_mapping->ScrollingContentsLayer());
-}
-
-static WebLayer* WebLayerFromElement(Element* element) {
-  CompositedLayerMapping* composited_layer_mapping =
-      MappingFromElement(element);
-  if (!composited_layer_mapping)
-    return nullptr;
-  return WebLayerFromGraphicsLayer(
-      composited_layer_mapping->MainGraphicsLayer());
-}
-
 INSTANTIATE_TEST_CASE_P(All, CompositorWorkerTest, ::testing::Bool());
 
-TEST_P(CompositorWorkerTest, plumbingElementIdAndMutableProperties) {
-  RegisterMockedHttpURLLoad("compositor-proxy-basic.html");
-  NavigateTo(base_url_ + "compositor-proxy-basic.html");
-
-  ForceFullCompositingUpdate();
-
-  Document* document = GetFrame()->GetDocument();
-
-  Element* tall_element = document->getElementById("tall");
-  WebLayer* tall_layer = WebLayerFromElement(tall_element);
-  EXPECT_TRUE(!tall_layer);
-
-  Element* proxied_element = document->getElementById("proxied-transform");
-  WebLayer* proxied_layer = WebLayerFromElement(proxied_element);
-  EXPECT_TRUE(proxied_layer->CompositorMutableProperties() &
-              CompositorMutableProperty::kTransform);
-  EXPECT_FALSE(proxied_layer->CompositorMutableProperties() &
-               (CompositorMutableProperty::kScrollLeft |
-                CompositorMutableProperty::kScrollTop |
-                CompositorMutableProperty::kOpacity));
-  EXPECT_TRUE(proxied_layer->GetElementId());
-
-  Element* scroll_element = document->getElementById("proxied-scroller");
-  WebLayer* scroll_layer = ScrollingWebLayerFromElement(scroll_element);
-  EXPECT_TRUE(scroll_layer->CompositorMutableProperties() &
-              (CompositorMutableProperty::kScrollLeft |
-               CompositorMutableProperty::kScrollTop));
-  EXPECT_FALSE(scroll_layer->CompositorMutableProperties() &
-               (CompositorMutableProperty::kTransform |
-                CompositorMutableProperty::kOpacity));
-  EXPECT_TRUE(scroll_layer->GetElementId());
-
-  WebLayer* root_scroll_layer = GetRootScrollLayer();
-  EXPECT_TRUE(root_scroll_layer->CompositorMutableProperties() &
-              (CompositorMutableProperty::kScrollLeft |
-               CompositorMutableProperty::kScrollTop));
-  EXPECT_FALSE(root_scroll_layer->CompositorMutableProperties() &
-               (CompositorMutableProperty::kTransform |
-                CompositorMutableProperty::kOpacity));
-
-  EXPECT_TRUE(root_scroll_layer->GetElementId());
-}
-
-TEST_P(CompositorWorkerTest, noProxies) {
-  // This case is identical to compositor-proxy-basic, but no proxies have
-  // actually been created.
-  RegisterMockedHttpURLLoad("compositor-proxy-plumbing-no-proxies.html");
-  NavigateTo(base_url_ + "compositor-proxy-plumbing-no-proxies.html");
-
-  ForceFullCompositingUpdate();
-
-  Document* document = GetFrame()->GetDocument();
-
-  Element* tall_element = document->getElementById("tall");
-  WebLayer* tall_layer = WebLayerFromElement(tall_element);
-  EXPECT_TRUE(!tall_layer);
-
-  Element* proxied_element = document->getElementById("proxied");
-  WebLayer* proxied_layer = WebLayerFromElement(proxied_element);
-  EXPECT_TRUE(!proxied_layer);
-
-  // Note: we presume the existance of mutable properties implies that the the
-  // element has a corresponding compositor proxy. Element ids (which are also
-  // used by animations) do not have this implication, so we do not check for
-  // them here.
-  Element* scroll_element = document->getElementById("proxied-scroller");
-  WebLayer* scroll_layer = ScrollingWebLayerFromElement(scroll_element);
-  EXPECT_FALSE(!!scroll_layer->CompositorMutableProperties());
-
-  WebLayer* root_scroll_layer = GetRootScrollLayer();
-  EXPECT_FALSE(!!root_scroll_layer->CompositorMutableProperties());
-}
-
-TEST_P(CompositorWorkerTest, disconnectedProxies) {
-  // This case is identical to compositor-proxy-basic, but the proxies are
-  // disconnected (the result should be the same as
-  // compositor-proxy-plumbing-no-proxies).
-  RegisterMockedHttpURLLoad("compositor-proxy-basic-disconnected.html");
-  NavigateTo(base_url_ + "compositor-proxy-basic-disconnected.html");
-
-  ForceFullCompositingUpdate();
-
-  Document* document = GetFrame()->GetDocument();
-
-  Element* tall_element = document->getElementById("tall");
-  WebLayer* tall_layer = WebLayerFromElement(tall_element);
-  EXPECT_TRUE(!tall_layer);
-
-  Element* proxied_element = document->getElementById("proxied");
-  WebLayer* proxied_layer = WebLayerFromElement(proxied_element);
-  EXPECT_TRUE(!proxied_layer);
-
-  Element* scroll_element = document->getElementById("proxied-scroller");
-  WebLayer* scroll_layer = ScrollingWebLayerFromElement(scroll_element);
-  EXPECT_FALSE(!!scroll_layer->CompositorMutableProperties());
-
-  WebLayer* root_scroll_layer = GetRootScrollLayer();
-  EXPECT_FALSE(!!root_scroll_layer->CompositorMutableProperties());
-}
 
 TEST_P(CompositorWorkerTest, applyingMutationsMultipleElements) {
-  RegisterMockedHttpURLLoad("compositor-proxy-basic.html");
-  NavigateTo(base_url_ + "compositor-proxy-basic.html");
+  RegisterMockedHttpURLLoad("compositor-worker-basic.html");
+  NavigateTo(base_url_ + "compositor-worker-basic.html");
 
   Document* document = GetFrame()->GetDocument();
 
@@ -258,14 +121,6 @@ TEST_P(CompositorWorkerTest, applyingMutationsMultipleElements) {
     ForceFullCompositingUpdate();
 
     Element* proxied_element = document->getElementById("proxied-transform");
-    WebLayer* proxied_layer = WebLayerFromElement(proxied_element);
-    EXPECT_TRUE(proxied_layer->CompositorMutableProperties() &
-                CompositorMutableProperty::kTransform);
-    EXPECT_FALSE(proxied_layer->CompositorMutableProperties() &
-                 (CompositorMutableProperty::kScrollLeft |
-                  CompositorMutableProperty::kScrollTop |
-                  CompositorMutableProperty::kOpacity));
-    EXPECT_TRUE(proxied_layer->GetElementId());
 
     TransformationMatrix transform_matrix(11, 12, 13, 14, 21, 22, 23, 24, 31,
                                           32, 33, 34, 41, 42, 43, 44);
@@ -286,15 +141,6 @@ TEST_P(CompositorWorkerTest, applyingMutationsMultipleElements) {
   }
   {
     Element* proxied_element = document->getElementById("proxied-opacity");
-    WebLayer* proxied_layer = WebLayerFromElement(proxied_element);
-    EXPECT_TRUE(proxied_layer->CompositorMutableProperties() &
-                CompositorMutableProperty::kOpacity);
-    EXPECT_FALSE(proxied_layer->CompositorMutableProperties() &
-                 (CompositorMutableProperty::kScrollLeft |
-                  CompositorMutableProperty::kScrollTop |
-                  CompositorMutableProperty::kTransform));
-    EXPECT_TRUE(proxied_layer->GetElementId());
-
     CompositorMutation mutation;
     mutation.SetOpacity(0.5);
 
@@ -310,8 +156,8 @@ TEST_P(CompositorWorkerTest, applyingMutationsMultipleElements) {
 }
 
 TEST_P(CompositorWorkerTest, applyingMutationsMultipleProperties) {
-  RegisterMockedHttpURLLoad("compositor-proxy-basic.html");
-  NavigateTo(base_url_ + "compositor-proxy-basic.html");
+  RegisterMockedHttpURLLoad("compositor-worker-basic.html");
+  NavigateTo(base_url_ + "compositor-worker-basic.html");
 
   Document* document = GetFrame()->GetDocument();
 
@@ -319,15 +165,6 @@ TEST_P(CompositorWorkerTest, applyingMutationsMultipleProperties) {
 
   Element* proxied_element =
       document->getElementById("proxied-transform-and-opacity");
-  WebLayer* proxied_layer = WebLayerFromElement(proxied_element);
-  EXPECT_TRUE(proxied_layer->CompositorMutableProperties() &
-              CompositorMutableProperty::kTransform);
-  EXPECT_TRUE(proxied_layer->CompositorMutableProperties() &
-              CompositorMutableProperty::kOpacity);
-  EXPECT_FALSE(proxied_layer->CompositorMutableProperties() &
-               (CompositorMutableProperty::kScrollLeft |
-                CompositorMutableProperty::kScrollTop));
-  EXPECT_TRUE(proxied_layer->GetElementId());
 
   TransformationMatrix transform_matrix(11, 12, 13, 14, 21, 22, 23, 24, 31, 32,
                                         33, 34, 41, 42, 43, 44);

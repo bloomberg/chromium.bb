@@ -1124,45 +1124,12 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
                             kProgrammaticScroll, scroll_behavior);
 }
 
-bool Element::HasCompositorProxy() const {
-  return HasRareData() && GetElementRareData()->ProxiedPropertyCounts();
-}
-
-void Element::IncrementCompositorProxiedProperties(
-    uint32_t mutable_properties) {
-  ElementRareData& rare_data = EnsureElementRareData();
-  if (!rare_data.ProxiedPropertyCounts())
-    SetNeedsStyleRecalc(kLocalStyleChange,
-                        StyleChangeReasonForTracing::Create(
-                            StyleChangeReason::kCompositorProxy));
-  rare_data.IncrementCompositorProxiedProperties(mutable_properties);
-}
-
-void Element::DecrementCompositorProxiedProperties(
-    uint32_t mutable_properties) {
-  ElementRareData& rare_data = *GetElementRareData();
-  rare_data.DecrementCompositorProxiedProperties(mutable_properties);
-  if (!rare_data.ProxiedPropertyCounts())
-    SetNeedsStyleRecalc(kLocalStyleChange,
-                        StyleChangeReasonForTracing::Create(
-                            StyleChangeReason::kCompositorProxy));
-}
-
 void Element::UpdateFromCompositorMutation(const CompositorMutation& mutation) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "Element::updateFromCompositorMutation");
   if (mutation.IsOpacityMutated() || mutation.IsTransformMutated())
     EnsureElementAnimations().GetCustomCompositorAnimations().ApplyUpdate(
         *this, mutation);
-}
-
-uint32_t Element::CompositorMutableProperties() const {
-  if (!HasRareData())
-    return CompositorMutableProperty::kNone;
-  if (CompositorProxiedPropertySet* set =
-          GetElementRareData()->ProxiedPropertyCounts())
-    return set->ProxiedProperties();
-  return CompositorMutableProperty::kNone;
 }
 
 bool Element::HasNonEmptyLayoutSize() const {

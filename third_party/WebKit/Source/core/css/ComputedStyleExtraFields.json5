@@ -807,13 +807,6 @@
       field_group: "rare-non-inherited",
       default_value: "false",
     },
-    {
-      name: "HasCompositorProxy",
-      field_template: "primitive",
-      type_name: "bool",
-      field_group: "rare-non-inherited",
-      default_value: "false",
-    },
     // Style adjustment for appearance is disabled when certain properties are set.
     {
       name: "HasAuthorBackground",

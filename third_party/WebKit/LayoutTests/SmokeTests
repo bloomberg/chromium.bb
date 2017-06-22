@@ -438,7 +438,6 @@ fast/doctypes/005-case-preserving.html
 fast/doctypes/doctype-after-comment.html
 fast/dom/Comment/remove.html
 fast/dom/compatMode-Strict.html
-fast/dom/CompositorProxy/proxy-forces-layer.html
 fast/dom/CSSStyleDeclaration/css-computed-style-item.html
 fast/dom/CSSStyleDeclaration/css-style-item.html
 fast/dom/DocumentFragment/parent-node-interface.html
