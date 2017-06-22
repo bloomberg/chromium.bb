@@ -432,18 +432,9 @@ void VisibleSelectionTemplate<Strategy>::Validate(TextGranularity granularity) {
       start_, PositionWithAffinityTemplate<Strategy>(end, affinity_),
       granularity);
   end_ = new_end.IsNotNull() ? new_end : end;
-  // TODO(editing-dev): Once we fix http://crbug.com/734481, we should use
-  // |DCHECK_LE()|.
-  CHECK_LE(start_, end_);
 
   AdjustSelectionToAvoidCrossingShadowBoundaries();
-  // TODO(editing-dev): Once we fix http://crbug.com/734481, we should use
-  // |DCHECK_LE()|.
-  CHECK_LE(start_, end_);
   AdjustSelectionToAvoidCrossingEditingBoundaries();
-  // TODO(editing-dev): Once we fix http://crbug.com/734481, we should use
-  // |DCHECK_LE()|.
-  CHECK_LE(start_, end_);
   UpdateSelectionType();
 
   if (GetSelectionType() == kRangeSelection) {
@@ -458,9 +449,6 @@ void VisibleSelectionTemplate<Strategy>::Validate(TextGranularity granularity) {
     // |deepEquivalent()|s above)?
     start_ = MostForwardCaretPosition(start_);
     end_ = MostBackwardCaretPosition(end_);
-    // TODO(editing-dev): Once we fix http://crbug.com/734481, we should use
-    // |DCHECK_LE()|.
-    CHECK_LE(start_, end_);
   }
   if (!has_trailing_whitespace_)
     return;
