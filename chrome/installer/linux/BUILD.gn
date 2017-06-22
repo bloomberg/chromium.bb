@@ -85,11 +85,7 @@ copy("common_packaging_files") {
     ]
   }
 
-  if (current_cpu == "x86") {
-    sources += [ "//build/linux/bin/eu-strip" ]
-  } else if (current_cpu == "x64") {
-    sources += [ "/usr/bin/eu-strip" ]
-  }
+  sources += [ "//third_party/eu-strip/bin/eu-strip" ]
 
   outputs = [
     "$root_out_dir/installer/common/{{source_file_part}}",
