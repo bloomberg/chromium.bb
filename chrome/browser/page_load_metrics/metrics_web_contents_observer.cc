@@ -600,26 +600,31 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     return;
   }
 
-  // While timings arriving for the wrong frame are expected, we do not expect
-  // any of the errors below. Thus, we track occurrences of all errors below,
-  // rather than returning early after encountering an error.
+  const bool is_main_frame = (render_frame_host->GetParent() == nullptr);
+  if (is_main_frame) {
+    // While timings arriving for the wrong frame are expected, we do not expect
+    // any of the errors below for main frames. Thus, we track occurrences of
+    // all errors below, rather than returning early after encountering an
+    // error.
+    bool error = false;
+    if (!committed_load_) {
+      RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
+      error = true;
+    }
 
-  bool error = false;
-  if (!committed_load_) {
-    RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
-    error = true;
+    if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+      RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
+      error = true;
+    }
+
+    if (error)
+      return;
   }
 
-  if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
-    RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
-    error = true;
+  if (committed_load_) {
+    committed_load_->metrics_update_dispatcher()->UpdateMetrics(
+        render_frame_host, timing, metadata);
   }
-
-  if (error)
-    return;
-
-  committed_load_->metrics_update_dispatcher()->UpdateMetrics(render_frame_host,
-                                                              timing, metadata);
 }
 
 void MetricsWebContentsObserver::OnUpdateTimingOverIPC(
