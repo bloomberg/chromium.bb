@@ -71,6 +71,8 @@ class EmptyPopupMenu : public PopupMenu {
 class EmptyFrameScheduler : public WebFrameScheduler {
  public:
   EmptyFrameScheduler() { DCHECK(IsMainThread()); }
+  void AddThrottlingObserver(ObserverType, Observer*) override {}
+  void RemoveThrottlingObserver(ObserverType, Observer*) override {}
   void SetFrameVisible(bool) override {}
   RefPtr<WebTaskRunner> LoadingTaskRunner() override;
   RefPtr<WebTaskRunner> TimerTaskRunner() override;
