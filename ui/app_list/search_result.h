@@ -113,12 +113,6 @@ class APP_LIST_EXPORT SearchResult {
   const Tags& details_tags() const { return details_tags_; }
   void set_details_tags(const Tags& tags) { details_tags_ = tags; }
 
-  float rating() const { return rating_; }
-  void SetRating(float rating);
-
-  const base::string16& formatted_price() const { return formatted_price_; }
-  void SetFormattedPrice(const base::string16& formatted_price);
-
   views::View* view() const { return view_; }
   void set_view(views::View* view) { view_ = view; }
 
@@ -203,12 +197,6 @@ class APP_LIST_EXPORT SearchResult {
 
   base::string16 details_;
   Tags details_tags_;
-
-  // Amount of the app's stars in play store. Not exist if set to negative.
-  float rating_ = -1.0f;
-
-  // Formatted price label of the app in play store. Not exist if set to empty.
-  base::string16 formatted_price_;
 
   // Unowned pointer to a view containing a rendered result, or nullptr if there
   // is no such view for the result.

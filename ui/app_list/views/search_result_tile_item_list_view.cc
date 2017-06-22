@@ -8,7 +8,6 @@
 
 #include "base/i18n/rtl.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
@@ -21,15 +20,10 @@
 namespace {
 
 // Layout constants.
-constexpr size_t kNumSearchResultTiles = 8;
-constexpr int kHorizontalBorderSpacing = 1;
-constexpr int kBetweenTileSpacing = 2;
-constexpr int kTopBottomPadding = 8;
-
-// Layout constants used when fullscreen app list feature is enabled.
-constexpr int kItemListVerticalSpacing = 16;
-constexpr int kItemListHorizontalSpacing = 12;
-constexpr int kBetweenItemSpacing = 8;
+const size_t kNumSearchResultTiles = 8;
+const int kHorizontalBorderSpacing = 1;
+const int kBetweenTileSpacing = 2;
+const int kTopBottomPadding = 8;
 
 }  // namespace
 
@@ -38,27 +32,17 @@ namespace app_list {
 SearchResultTileItemListView::SearchResultTileItemListView(
     views::Textfield* search_box,
     AppListViewDelegate* view_delegate)
-    : search_box_(search_box),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
-  if (is_fullscreen_app_list_enabled_) {
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal,
-        gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
-        kBetweenItemSpacing));
-  } else {
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, gfx::Insets(0, kHorizontalBorderSpacing),
-        kBetweenTileSpacing));
-  }
+    : search_box_(search_box) {
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, gfx::Insets(0, kHorizontalBorderSpacing),
+      kBetweenTileSpacing));
 
   for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
     SearchResultTileItemView* tile_item =
         new SearchResultTileItemView(this, view_delegate);
     tile_item->SetParentBackgroundColor(kCardBackgroundColor);
-    if (!is_fullscreen_app_list_enabled_) {
-      tile_item->SetBorder(
-          views::CreateEmptyBorder(kTopBottomPadding, 0, kTopBottomPadding, 0));
-    }
+    tile_item->SetBorder(
+        views::CreateEmptyBorder(kTopBottomPadding, 0, kTopBottomPadding, 0));
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);
   }

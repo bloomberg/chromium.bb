@@ -12,7 +12,6 @@
 
 namespace views {
 class MenuRunner;
-class Label;
 }
 
 namespace app_list {
@@ -41,8 +40,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   // Overridden from SearchResultObserver:
   void OnIconChanged() override;
   void OnBadgeIconChanged() override;
-  void OnRatingChanged() override;
-  void OnFormattedPriceChanged() override;
   void OnResultDestroying() override;
 
   // views::ContextMenuController overrides:
@@ -51,13 +48,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
                               ui::MenuSourceType source_type) override;
 
  private:
-  // Shows rating in proper format if |rating| is not negative. Otherwise, hides
-  // the rating label.
-  void SetRating(float rating);
-
-  // Shows price if |price| is not empty. Otherwise, hides the price label.
-  void SetPrice(const base::string16& price);
-
   // Overridden from views::View:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
@@ -65,10 +55,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   SearchResultContainerView* result_container_;  // Parent view
 
   // Owned by the model provided by the AppListViewDelegate.
-  SearchResult* item_ = nullptr;
-
-  views::Label* rating_ = nullptr;  // Owned by views hierarchy.
-  views::Label* price_ = nullptr;   // Owned by views hierarchy.
+  SearchResult* item_;
 
   AppListViewDelegate* view_delegate_;
 

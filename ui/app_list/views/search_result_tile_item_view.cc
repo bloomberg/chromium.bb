@@ -4,7 +4,6 @@
 
 #include "ui/app_list/views/search_result_tile_item_view.h"
 
-#include "base/i18n/number_formatting.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -24,16 +23,10 @@ constexpr int kRecommendationIconTopPadding = 24;
 constexpr int kRecommendationTitleSpacing = 10;
 constexpr int kRecommendationTileMaxWidth = 80;
 
-constexpr int kSearchTileWidth = 80;
-constexpr int kSearchTileHeight = 92;
 constexpr int kSearchTileTopPadding = 4;
 constexpr int kSearchTitleSpacing = 6;
 
 constexpr SkColor kRecommendationTileColor = SK_ColorWHITE;
-
-constexpr SkColor kSearchTitleColor = SkColorSetA(SK_ColorBLACK, 223);
-constexpr SkColor kSearchAppRatingColor = SkColorSetA(SK_ColorBLACK, 143);
-constexpr SkColor kSearchAppPriceColor = SkColorSetRGB(0x0F, 0x9D, 0x58);
 
 }  // namespace
 
@@ -41,31 +34,12 @@ SearchResultTileItemView::SearchResultTileItemView(
     SearchResultContainerView* result_container,
     AppListViewDelegate* view_delegate)
     : result_container_(result_container),
+      item_(nullptr),
       view_delegate_(view_delegate),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
   SetVisible(false);
-
-  if (is_fullscreen_app_list_enabled_) {
-    const gfx::FontList& base_font =
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::BaseFont);
-
-    rating_ = new views::Label;
-    rating_->SetEnabledColor(kSearchAppRatingColor);
-    rating_->SetFontList(base_font);
-    rating_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    rating_->SetVisible(false);
-    AddChildView(rating_);
-
-    price_ = new views::Label;
-    price_->SetEnabledColor(kSearchAppPriceColor);
-    price_->SetFontList(base_font);
-    price_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    price_->SetVisible(false);
-    AddChildView(price_);
-  }
 
   set_context_menu_controller(this);
 }
@@ -94,22 +68,14 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   item_->AddObserver(this);
 
   SetTitle(item_->title());
-  SetRating(item_->rating());
-  SetPrice(item_->formatted_price());
 
-  if (is_fullscreen_app_list_enabled_) {
-    const gfx::FontList& base_font =
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::BaseFont);
-
-    // Customize title UI
-    if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
-      title()->SetFontList(base_font.DeriveWithSizeDelta(1));
-      title()->SetEnabledColor(kRecommendationTileColor);
-    } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
-      title()->SetFontList(base_font.DeriveWithSizeDelta(1));
-      title()->SetEnabledColor(kSearchTitleColor);
-    }
+  // Customize title UI
+  gfx::FontList base_font = ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::BaseFont);
+  if (is_fullscreen_app_list_enabled_ &&
+      item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
+    title()->SetFontList(base_font.DeriveWithSizeDelta(1));
+    title()->SetEnabledColor(kRecommendationTileColor);
   }
 
   // Only refresh the icon if it's different from the old one. This prevents
@@ -117,32 +83,6 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   if (!old_item || !item->icon().BackedBySameObjectAs(old_item->icon())) {
     OnIconChanged();
   }
-}
-
-void SearchResultTileItemView::SetRating(float rating) {
-  if (!rating_)
-    return;
-
-  if (rating < 0) {
-    rating_->SetVisible(false);
-    return;
-  }
-
-  rating_->SetText(base::FormatDouble(rating, 1));
-  rating_->SetVisible(true);
-}
-
-void SearchResultTileItemView::SetPrice(const base::string16& price) {
-  if (!price_)
-    return;
-
-  if (price.empty()) {
-    price_->SetVisible(false);
-    return;
-  }
-
-  price_->SetText(price);
-  price_->SetVisible(true);
 }
 
 void SearchResultTileItemView::ButtonPressed(views::Button* sender,
@@ -165,14 +105,6 @@ void SearchResultTileItemView::OnIconChanged() {
 
 void SearchResultTileItemView::OnBadgeIconChanged() {
   SetBadgeIcon(item_->badge_icon());
-}
-
-void SearchResultTileItemView::OnRatingChanged() {
-  SetRating(item_->rating());
-}
-
-void SearchResultTileItemView::OnFormattedPriceChanged() {
-  SetPrice(item_->formatted_price());
 }
 
 void SearchResultTileItemView::OnResultDestroying() {
@@ -241,31 +173,15 @@ void SearchResultTileItemView::Layout() {
     rect.Inset(0, kGridIconDimension + kSearchTitleSpacing, 0, 0);
     rect.set_height(title()->GetPreferredSize().height());
     title()->SetBoundsRect(rect);
-
-    if (rating_) {
-      gfx::Rect rating_rect(rect);
-      rating_rect.Inset(0, title()->GetPreferredSize().height(), 0, 0);
-      rating_rect.set_height(rating_->GetPreferredSize().height());
-      rating_->SetBoundsRect(rating_rect);
-    }
-
-    if (price_) {
-      gfx::Rect price_rect(rect);
-      price_rect.Inset(0, title()->GetPreferredSize().height(), 0, 0);
-      price_rect.set_height(price_->GetPreferredSize().height());
-      price_->SetBoundsRect(price_rect);
-    }
   } else {
     TileItemView::Layout();
   }
 }
 
 gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
-  if (is_fullscreen_app_list_enabled_ && item_) {
-    if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION)
-      return gfx::Size(kRecommendationTileWidth, kRecommendationTileHeight);
-    if (item_->display_type() == SearchResult::DISPLAY_TILE)
-      return gfx::Size(kSearchTileWidth, kSearchTileHeight);
+  if (is_fullscreen_app_list_enabled_ && item_ &&
+      item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
+    return gfx::Size(kRecommendationTileWidth, kRecommendationTileHeight);
   }
 
   return TileItemView::CalculatePreferredSize();
