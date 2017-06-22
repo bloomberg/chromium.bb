@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "ppapi/c/pp_errors.h"
@@ -26,9 +27,10 @@ PepperExternalFileRefBackend::PepperExternalFileRefBackend(
     : host_(host),
       path_(path),
       render_process_id_(render_process_id),
-      weak_factory_(this) {
-  task_runner_ = BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
-}
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      weak_factory_(this) {}
 
 PepperExternalFileRefBackend::~PepperExternalFileRefBackend() {}
 

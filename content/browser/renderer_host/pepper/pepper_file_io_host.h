@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/file_proxy.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/public/common/quarantine.h"
@@ -25,6 +26,10 @@
 #include "ppapi/shared_impl/file_io_state_manager.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "url/gurl.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace ppapi {
 struct FileGrowth;
@@ -127,6 +132,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   int render_process_id_;
   base::ProcessId resolved_render_process_id_;
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::FileProxy file_;
   int32_t open_flags_;
 
