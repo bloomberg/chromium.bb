@@ -121,19 +121,3 @@ if (is_android) {
     ]
   }
 }
-
-static_library("testing") {
-  testonly = true
-  sources = [
-    "fake_platform_sensor.cc",
-    "fake_platform_sensor.h",
-    "fake_platform_sensor_provider.cc",
-    "fake_platform_sensor_provider.h",
-  ]
-
-  public_deps = [
-    ":generic_sensor",
-    "//base",
-    "//testing/gmock",
-  ]
-}

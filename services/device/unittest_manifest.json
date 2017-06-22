@@ -11,6 +11,7 @@
       "requires": {
         "device": [
           "device:battery_monitor",
+          "device:generic_sensor",
           "device:power_monitor",
           "device:vibration",
           "device:wake_lock"
