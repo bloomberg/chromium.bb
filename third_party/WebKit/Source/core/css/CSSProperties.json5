@@ -3651,6 +3651,8 @@
     {
       name: "border-spacing",
       longhands: "-webkit-border-horizontal-spacing;-webkit-border-vertical-spacing",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "border-style",
@@ -3749,6 +3751,8 @@
     {
       name: "offset",
       longhands: "offset-position;offset-path;offset-distance;offset-rotate;offset-anchor",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "outline",
@@ -3845,6 +3849,8 @@
     {
       name: "columns",
       longhands: "column-width;column-count",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-margin-collapse",

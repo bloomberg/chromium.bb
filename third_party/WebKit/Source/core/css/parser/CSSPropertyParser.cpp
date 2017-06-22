@@ -34,19 +34,16 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
-#include "core/css/properties/CSSPropertyAPIOffsetAnchor.h"
-#include "core/css/properties/CSSPropertyAPIOffsetPosition.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyAnimationIterationCountUtils.h"
 #include "core/css/properties/CSSPropertyAnimationNameUtils.h"
 #include "core/css/properties/CSSPropertyBorderImageUtils.h"
 #include "core/css/properties/CSSPropertyBoxShadowUtils.h"
-#include "core/css/properties/CSSPropertyColumnUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 #include "core/css/properties/CSSPropertyMarginUtils.h"
-#include "core/css/properties/CSSPropertyOffsetPathUtils.h"
+#include "core/css/properties/CSSPropertyOffsetRotateUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
 #include "core/css/properties/CSSPropertyTransitionPropertyUtils.h"
 #include "core/css/properties/CSSPropertyWebkitBorderWidthUtils.h"
@@ -589,100 +586,6 @@ static CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
   if (!list->length())
     return nullptr;
   return list;
-}
-
-static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
-                                     const CSSParserContext& context) {
-  CSSValue* angle = ConsumeAngle(range, context, Optional<WebFeature>());
-  CSSValue* keyword = ConsumeIdent<CSSValueAuto, CSSValueReverse>(range);
-  if (!angle && !keyword)
-    return nullptr;
-
-  if (!angle) {
-    angle = ConsumeAngle(range, context, Optional<WebFeature>());
-  }
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (keyword)
-    list->Append(*keyword);
-  if (angle)
-    list->Append(*angle);
-  return list;
-}
-
-bool CSSPropertyParser::ConsumeOffsetShorthand(bool important) {
-  DCHECK(context_);
-  const CSSValue* offset_position =
-      CSSPropertyAPIOffsetPosition::parseSingleValue(range_, *context_,
-                                                     CSSParserLocalContext());
-  const CSSValue* offset_path =
-      CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, *context_);
-  const CSSValue* offset_distance = nullptr;
-  const CSSValue* offset_rotate = nullptr;
-  if (offset_path) {
-    offset_distance =
-        ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
-    offset_rotate = ConsumeOffsetRotate(range_, *context_);
-    if (offset_rotate && !offset_distance) {
-      offset_distance =
-          ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
-    }
-  }
-  const CSSValue* offset_anchor = nullptr;
-  if (ConsumeSlashIncludingWhitespace(range_)) {
-    offset_anchor = CSSPropertyAPIOffsetAnchor::parseSingleValue(
-        range_, *context_, CSSParserLocalContext());
-    if (!offset_anchor)
-      return false;
-  }
-  if ((!offset_position && !offset_path) || !range_.AtEnd())
-    return false;
-
-  if ((offset_position || offset_anchor) &&
-      !RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled())
-    return false;
-
-  if (offset_position) {
-    AddParsedProperty(CSSPropertyOffsetPosition, CSSPropertyOffset,
-                      *offset_position, important);
-  } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
-    AddParsedProperty(CSSPropertyOffsetPosition, CSSPropertyOffset,
-                      *CSSInitialValue::Create(), important);
-  }
-
-  if (offset_path) {
-    AddParsedProperty(CSSPropertyOffsetPath, CSSPropertyOffset, *offset_path,
-                      important);
-  } else {
-    AddParsedProperty(CSSPropertyOffsetPath, CSSPropertyOffset,
-                      *CSSInitialValue::Create(), important);
-  }
-
-  if (offset_distance) {
-    AddParsedProperty(CSSPropertyOffsetDistance, CSSPropertyOffset,
-                      *offset_distance, important);
-  } else {
-    AddParsedProperty(CSSPropertyOffsetDistance, CSSPropertyOffset,
-                      *CSSInitialValue::Create(), important);
-  }
-
-  if (offset_rotate) {
-    AddParsedProperty(CSSPropertyOffsetRotate, CSSPropertyOffset,
-                      *offset_rotate, important);
-  } else {
-    AddParsedProperty(CSSPropertyOffsetRotate, CSSPropertyOffset,
-                      *CSSInitialValue::Create(), important);
-  }
-
-  if (offset_anchor) {
-    AddParsedProperty(CSSPropertyOffsetAnchor, CSSPropertyOffset,
-                      *offset_anchor, important);
-  } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
-    AddParsedProperty(CSSPropertyOffsetAnchor, CSSPropertyOffset,
-                      *CSSInitialValue::Create(), important);
-  }
-
-  return true;
 }
 
 static CSSValue* ConsumeNoneOrURI(CSSParserTokenRange& range,
@@ -1443,7 +1346,8 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyOffsetDistance:
       return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
     case CSSPropertyOffsetRotate:
-      return ConsumeOffsetRotate(range_, *context_);
+      return CSSPropertyOffsetRotateUtils::ConsumeOffsetRotate(range_,
+                                                               *context_);
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitPerspectiveOriginX:
       return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueLeft,
@@ -1667,26 +1571,6 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
   return true;
 }
 
-bool CSSPropertyParser::ConsumeBorderSpacing(bool important) {
-  CSSValue* horizontal_spacing = ConsumeLength(
-      range_, context_->Mode(), kValueRangeNonNegative, UnitlessQuirk::kAllow);
-  if (!horizontal_spacing)
-    return false;
-  CSSValue* vertical_spacing = horizontal_spacing;
-  if (!range_.AtEnd()) {
-    vertical_spacing =
-        ConsumeLength(range_, context_->Mode(), kValueRangeNonNegative,
-                      UnitlessQuirk::kAllow);
-  }
-  if (!vertical_spacing || !range_.AtEnd())
-    return false;
-  AddParsedProperty(CSSPropertyWebkitBorderHorizontalSpacing,
-                    CSSPropertyBorderSpacing, *horizontal_spacing, important);
-  AddParsedProperty(CSSPropertyWebkitBorderVerticalSpacing,
-                    CSSPropertyBorderSpacing, *vertical_spacing, important);
-  return true;
-}
-
 static CSSValue* ConsumeSingleViewportDescriptor(
     CSSParserTokenRange& range,
     CSSPropertyID prop_id,
@@ -1788,27 +1672,6 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
   }
 }
 
-bool CSSPropertyParser::ConsumeColumns(bool important) {
-  CSSValue* column_width = nullptr;
-  CSSValue* column_count = nullptr;
-  if (!CSSPropertyColumnUtils::ConsumeColumnWidthOrCount(range_, column_width,
-                                                         column_count))
-    return false;
-  CSSPropertyColumnUtils::ConsumeColumnWidthOrCount(range_, column_width,
-                                                    column_count);
-  if (!range_.AtEnd())
-    return false;
-  if (!column_width)
-    column_width = CSSIdentifierValue::Create(CSSValueAuto);
-  if (!column_count)
-    column_count = CSSIdentifierValue::Create(CSSValueAuto);
-  AddParsedProperty(CSSPropertyColumnWidth, CSSPropertyInvalid, *column_width,
-                    important);
-  AddParsedProperty(CSSPropertyColumnCount, CSSPropertyInvalid, *column_count,
-                    important);
-  return true;
-}
-
 bool CSSPropertyParser::ConsumeShorthandGreedily(
     const StylePropertyShorthand& shorthand,
     bool important) {
@@ -1839,73 +1702,6 @@ bool CSSPropertyParser::ConsumeShorthandGreedily(
                         *CSSInitialValue::Create(), important);
     }
   }
-  return true;
-}
-
-bool CSSPropertyParser::ConsumeFlex(bool important) {
-  static const double kUnsetValue = -1;
-  double flex_grow = kUnsetValue;
-  double flex_shrink = kUnsetValue;
-  CSSValue* flex_basis = nullptr;
-
-  if (range_.Peek().Id() == CSSValueNone) {
-    flex_grow = 0;
-    flex_shrink = 0;
-    flex_basis = CSSIdentifierValue::Create(CSSValueAuto);
-    range_.ConsumeIncludingWhitespace();
-  } else {
-    unsigned index = 0;
-    while (!range_.AtEnd() && index++ < 3) {
-      double num;
-      if (ConsumeNumberRaw(range_, num)) {
-        if (num < 0)
-          return false;
-        if (flex_grow == kUnsetValue)
-          flex_grow = num;
-        else if (flex_shrink == kUnsetValue)
-          flex_shrink = num;
-        else if (!num)  // flex only allows a basis of 0 (sans units) if
-                        // flex-grow and flex-shrink values have already been
-                        // set.
-          flex_basis = CSSPrimitiveValue::Create(
-              0, CSSPrimitiveValue::UnitType::kPixels);
-        else
-          return false;
-      } else if (!flex_basis) {
-        if (range_.Peek().Id() == CSSValueAuto)
-          flex_basis = ConsumeIdent(range_);
-        if (!flex_basis)
-          flex_basis = ConsumeLengthOrPercent(range_, context_->Mode(),
-                                              kValueRangeNonNegative);
-        if (index == 2 && !range_.AtEnd())
-          return false;
-      }
-    }
-    if (index == 0)
-      return false;
-    if (flex_grow == kUnsetValue)
-      flex_grow = 1;
-    if (flex_shrink == kUnsetValue)
-      flex_shrink = 1;
-    if (!flex_basis)
-      flex_basis = CSSPrimitiveValue::Create(
-          0, CSSPrimitiveValue::UnitType::kPercentage);
-  }
-
-  if (!range_.AtEnd())
-    return false;
-  AddParsedProperty(
-      CSSPropertyFlexGrow, CSSPropertyFlex,
-      *CSSPrimitiveValue::Create(clampTo<float>(flex_grow),
-                                 CSSPrimitiveValue::UnitType::kNumber),
-      important);
-  AddParsedProperty(
-      CSSPropertyFlexShrink, CSSPropertyFlex,
-      *CSSPrimitiveValue::Create(clampTo<float>(flex_shrink),
-                                 CSSPrimitiveValue::UnitType::kNumber),
-      important);
-  AddParsedProperty(CSSPropertyFlexBasis, CSSPropertyFlex, *flex_basis,
-                    important);
   return true;
 }
 
@@ -2702,10 +2498,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   }
 
   switch (property) {
-    case CSSPropertyBorderSpacing:
-      return ConsumeBorderSpacing(important);
-    case CSSPropertyColumns:
-      return ConsumeColumns(important);
     case CSSPropertyAnimation:
       return ConsumeAnimationShorthand(
           animationShorthandForParsing(),
@@ -2720,8 +2512,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return Consume4Values(marginShorthand(), important);
     case CSSPropertyPadding:
       return Consume4Values(paddingShorthand(), important);
-    case CSSPropertyOffset:
-      return ConsumeOffsetShorthand(important);
     case CSSPropertyWebkitTextEmphasis:
       return ConsumeShorthandGreedily(webkitTextEmphasisShorthand(), important);
     case CSSPropertyOutline:
