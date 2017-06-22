@@ -22,6 +22,7 @@ import time
 import unicodedata
 
 from utils import fs
+from utils import subprocess42
 from utils import tools
 
 
@@ -876,7 +877,12 @@ def set_read_only(path, read_only):
   """
   mode = fs.lstat(path).st_mode
   # TODO(maruel): Stop removing GO bits.
-  mode = (mode & 0500) if read_only else (mode | 0200)
+  if read_only:
+    mode &= stat.S_IRUSR|stat.S_IXUSR # 0500
+  else:
+    mode |= stat.S_IRUSR|stat.S_IWUSR # 0600
+    if sys.platform != 'win32' and stat.S_ISDIR(mode):
+      mode |= stat.S_IXUSR # 0100
   if hasattr(os, 'lchmod'):
     fs.lchmod(path, mode)  # pylint: disable=E1101
   else:
@@ -1097,8 +1103,23 @@ def make_tree_deleteable(root):
   """
   logging.debug('make_tree_deleteable(%s)', root)
   err = None
+  sudo_failed = False
+
+  def try_sudo(p):
+    if sys.platform == 'linux2' and not sudo_failed:
+      # Try passwordless sudo, just in case. In practice, it is preferable
+      # to use linux capabilities.
+      with open(os.devnull, 'rb') as f:
+        if not subprocess42.call(
+            ['sudo', '-n', 'chmod', 'a+rwX', p], stdin=f):
+          return False
+      logging.debug('sudo chmod %s failed', p)
+    return True
+
   if sys.platform != 'win32':
     e = set_read_only_swallow(root, False)
+    if e:
+      sudo_failed = try_sudo(root)
     if not err:
       err = e
   for dirpath, dirnames, filenames in fs.walk(root, topdown=True):
@@ -1109,7 +1130,10 @@ def make_tree_deleteable(root):
           err = e
     else:
       for dirname in dirnames:
-        e = set_read_only_swallow(os.path.join(dirpath, dirname), False)
+        p = os.path.join(dirpath, dirname)
+        e = set_read_only_swallow(p, False)
+        if e:
+          sudo_failed = try_sudo(p)
         if not err:
           err = e
   if err:
@@ -1128,8 +1152,8 @@ def rmtree(root):
     processes) had to be used.
   """
   logging.info('rmtree(%s)', root)
-  assert sys.getdefaultencoding() == 'utf-8', sys.getdefaultencoding()
-  # Do not assert here yet because this would break too much code.
+  assert isinstance(root, unicode) or sys.getdefaultencoding() == 'utf-8', (
+      repr(root), sys.getdefaultencoding())
   root = unicode(root)
   try:
     make_tree_deleteable(root)
