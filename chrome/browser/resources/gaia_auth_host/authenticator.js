@@ -31,6 +31,7 @@ cr.define('cr.login', function() {
   var GAPS_COOKIE = 'GAPS';
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
+  var EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2 = 'embedded/setup/v2/chromeos';
   var SAML_REDIRECTION_PATH = 'samlredirect';
   var BLANK_PAGE_URL = 'about:blank';
 
@@ -76,15 +77,16 @@ cr.define('cr.login', function() {
                      // not called before dispatching |authCopleted|.
                      // Default is |true|.
     'flow',          // One of 'default', 'enterprise', or 'theftprotection'.
-    'enterpriseDomain',  // Domain in which hosting device is (or should be)
-                         // enrolled.
-    'emailDomain',       // Value used to prefill domain for email.
-    'chromeType',        // Type of Chrome OS device, e.g. "chromebox".
-    'clientVersion',     // Version of the Chrome build.
-    'platformVersion',   // Version of the OS build.
-    'releaseChannel',    // Installation channel.
-    'endpointGen',       // Current endpoint generation.
-    'gapsCookie',        // GAPS cookie
+    'enterpriseDomain',    // Domain in which hosting device is (or should be)
+                           // enrolled.
+    'emailDomain',         // Value used to prefill domain for email.
+    'chromeType',          // Type of Chrome OS device, e.g. "chromebox".
+    'clientVersion',       // Version of the Chrome build.
+    'platformVersion',     // Version of the OS build.
+    'releaseChannel',      // Installation channel.
+    'endpointGen',         // Current endpoint generation.
+    'gapsCookie',          // GAPS cookie
+    'chromeOSApiVersion',  // GAIA Chrome OS API version
 
     // The email fields allow for the following possibilities:
     //
@@ -231,6 +233,7 @@ cr.define('cr.login', function() {
     this.gapsCookieSent_ = false;
     this.newGapsCookie_ = null;
     this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
+    this.chromeOSApiVersion_ = data.chromeOSApiVersion;
 
     this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
     this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -247,7 +250,7 @@ cr.define('cr.login', function() {
 
       if (!this.onBeforeSetHeadersSet_) {
         this.onBeforeSetHeadersSet_ = true;
-        var filterPrefix = this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
+        var filterPrefix = this.constructChromeOSAPIUrl_();
         // This depends on gaiaUrl parameter, that is why it is here.
         this.webview_.request.onBeforeSendHeaders.addListener(
             this.onBeforeSendHeaders_.bind(this),
@@ -258,6 +261,13 @@ cr.define('cr.login', function() {
 
     this.webview_.src = this.reloadUrl_;
     this.isLoaded_ = true;
+  };
+
+  Authenticator.prototype.constructChromeOSAPIUrl_ = function() {
+    if (this.chromeOSApiVersion_ && this.chromeOSApiVersion_ == 2)
+      return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2;
+
+    return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
   };
 
   /**
@@ -283,12 +293,13 @@ cr.define('cr.login', function() {
       return url;
     }
 
-    var path = data.gaiaPath;
-    if (!path && this.isNewGaiaFlow)
-      path = EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
-    if (!path)
-      path = IDP_PATH;
-    var url = this.idpOrigin_ + path;
+    var url;
+    if (data.gaiaPath)
+      url = this.idpOrigin_ + data.gaiaPath;
+    else if (this.isNewGaiaFlow)
+      url = this.constructChromeOSAPIUrl_();
+    else
+      url = this.idpOrigin_ + IDP_PATH;
 
     if (this.isNewGaiaFlow) {
       if (data.chromeType)

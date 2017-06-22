@@ -348,6 +348,10 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     params.SetString("gaiaUrl", eafe_url);
     params.SetString("gaiaPath", eafe_path);
   }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCrosGaiaApiV1)) {
+    params.SetString("chromeOSApiVersion", "1");
+  }
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("loadAuthExtension", params);
