@@ -70,6 +70,48 @@ INSTANTIATE_TEST_CASE_P(
         FieldIsTokenBoundarySubstringCase{"ab", "", false, true},
         FieldIsTokenBoundarySubstringCase{"ab", "", true, true}));
 
+struct AtSignPrefixCase {
+  const char* const field_suggestion;
+  const char* const field_contents;
+  const bool expected_result;
+};
+
+class PrefixEndingOnTokenBoundaryTest
+    : public testing::TestWithParam<AtSignPrefixCase> {};
+
+TEST_P(PrefixEndingOnTokenBoundaryTest, IsPrefixOfEmailEndingWithAtSign) {
+  auto test_case = GetParam();
+  SCOPED_TRACE(testing::Message()
+               << "suggestion = " << test_case.field_suggestion
+               << ", contents = " << test_case.field_contents);
+
+  EXPECT_EQ(test_case.expected_result,
+            IsPrefixOfEmailEndingWithAtSign(
+                base::ASCIIToUTF16(test_case.field_suggestion),
+                base::ASCIIToUTF16(test_case.field_contents)));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillUtilTest,
+    PrefixEndingOnTokenBoundaryTest,
+    testing::Values(AtSignPrefixCase{"ab@cd.b", "a", false},
+                    AtSignPrefixCase{"ab@cd.b", "b", false},
+                    AtSignPrefixCase{"ab@cd.b", "Ab", false},
+                    AtSignPrefixCase{"ab@cd.b", "cd", false},
+                    AtSignPrefixCase{"ab@cd.b", "d", false},
+                    AtSignPrefixCase{"ab@cd.b", "b@", false},
+                    AtSignPrefixCase{"ab@cd.b", "cd.b", false},
+                    AtSignPrefixCase{"ab@cd.b", "b@cd", false},
+                    AtSignPrefixCase{"ab@cd.b", "ab@c", false},
+                    AtSignPrefixCase{"ba.a.ab", "a.a", false},
+                    AtSignPrefixCase{"", "ab", false},
+                    AtSignPrefixCase{"ab@c", "ab@", false},
+                    AtSignPrefixCase{"ab@cd@g", "ab", true},
+                    AtSignPrefixCase{"ab@cd@g", "ab@cd", true},
+                    AtSignPrefixCase{"abc", "abc", false},
+                    AtSignPrefixCase{"ab", "", false},
+                    AtSignPrefixCase{"ab@cd.b", "ab", true}));
+
 // Tests for GetTextSelectionStart().
 struct GetTextSelectionStartCase {
   const char* const field_suggestion;

@@ -115,6 +115,12 @@ bool FieldIsSuggestionSubstringStartingOnTokenBoundary(
              base::string16::npos;
 }
 
+bool IsPrefixOfEmailEndingWithAtSign(const base::string16& full_string,
+                                     const base::string16& prefix) {
+  return base::StartsWith(full_string, prefix + base::UTF8ToUTF16("@"),
+                          base::CompareCase::SENSITIVE);
+}
+
 size_t GetTextSelectionStart(const base::string16& suggestion,
                              const base::string16& field_contents,
                              bool case_sensitive) {

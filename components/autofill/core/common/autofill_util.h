@@ -56,6 +56,12 @@ bool FieldIsSuggestionSubstringStartingOnTokenBoundary(
     const base::string16& field_contents,
     bool case_sensitive);
 
+// Currently, a token for the purposes of this method is defined as {'@'}.
+// Returns true if the |full_string| has a |prefix| as a prefix and the prefix
+// ends on a token.
+bool IsPrefixOfEmailEndingWithAtSign(const base::string16& full_string,
+                                     const base::string16& prefix);
+
 // Finds the first occurrence of a searched substring |field_contents| within
 // the string |suggestion| starting at token boundaries and returns the index to
 // the end of the located substring, or base::string16::npos if the substring is
