@@ -1729,7 +1729,7 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   std::string output = WebFrameContentDumper::DumpWebViewAsText(
                            view()->GetWebView(), kMaxOutputCharacters)
                            .Utf8();
-  EXPECT_EQ(output, "hello  \n\nworld");
+  EXPECT_EQ(output, "hello \n\nworld");
 }
 
 // This test ensures that a RenderFrame object is created for the top level
