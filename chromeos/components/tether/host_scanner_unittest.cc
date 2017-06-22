@@ -10,7 +10,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
@@ -44,7 +43,7 @@ class TestObserver : public HostScanner::Observer {
 
 class FakeHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
  public:
-  FakeHostScanDevicePrioritizer() : HostScanDevicePrioritizer(nullptr) {}
+  FakeHostScanDevicePrioritizer() : HostScanDevicePrioritizer() {}
   ~FakeHostScanDevicePrioritizer() override {}
 
   // Simply leave |remote_devices| as-is.

@@ -10,7 +10,7 @@
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/host_scan_cache.h"
-#include "chromeos/components/tether/host_scan_device_prioritizer.h"
+#include "chromeos/components/tether/host_scan_device_prioritizer_impl.h"
 #include "chromeos/components/tether/host_scan_scheduler.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/keep_alive_scheduler.h"
@@ -130,6 +130,7 @@ Initializer::Initializer(
 
 Initializer::~Initializer() {
   token_service_->RemoveObserver(this);
+  network_state_handler_->set_tether_sort_delegate(nullptr);
 }
 
 void Initializer::FetchBluetoothAdapter() {
@@ -183,8 +184,14 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
       cryptauth::BluetoothThrottlerImpl::GetInstance());
   tether_host_response_recorder_ =
       base::MakeUnique<TetherHostResponseRecorder>(pref_service_);
-  host_scan_device_prioritizer_ = base::MakeUnique<HostScanDevicePrioritizer>(
-      tether_host_response_recorder_.get());
+  device_id_tether_network_guid_map_ =
+      base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
+  host_scan_device_prioritizer_ =
+      base::MakeUnique<HostScanDevicePrioritizerImpl>(
+          tether_host_response_recorder_.get(),
+          device_id_tether_network_guid_map_.get());
+  network_state_handler_->set_tether_sort_delegate(
+      host_scan_device_prioritizer_.get());
   wifi_hotspot_connector_ = base::MakeUnique<WifiHotspotConnector>(
       network_state_handler_, network_connect_);
   active_host_ =
@@ -192,8 +199,6 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   active_host_network_state_updater_ =
       base::MakeUnique<ActiveHostNetworkStateUpdater>(active_host_.get(),
                                                       network_state_handler_);
-  device_id_tether_network_guid_map_ =
-      base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
   host_scan_cache_ = base::MakeUnique<HostScanCache>(
       network_state_handler_, active_host_.get(),
       tether_host_response_recorder_.get(),

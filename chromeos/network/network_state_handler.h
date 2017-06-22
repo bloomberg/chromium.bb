@@ -69,6 +69,14 @@ class CHROMEOS_EXPORT NetworkStateHandler
   typedef std::vector<const NetworkState*> NetworkStateList;
   typedef std::vector<const DeviceState*> DeviceStateList;
 
+  class TetherSortDelegate {
+   public:
+    // Sorts |tether_networks| according to the Tether component rules.
+    // |tether_networks| contains only networks of type Tether.
+    virtual void SortTetherNetworkList(
+        ManagedStateList* tether_networks) const = 0;
+  };
+
   enum TechnologyState {
     TECHNOLOGY_UNAVAILABLE,
     TECHNOLOGY_AVAILABLE,
@@ -190,7 +198,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void GetNetworkListByType(const NetworkTypePattern& type,
                             bool configured_only,
                             bool visible_only,
-                            int limit,
+                            size_t limit,
                             NetworkStateList* list);
 
   // Finds and returns the NetworkState associated with |service_path| or NULL
@@ -266,6 +274,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Set the connection_state of the Tether NetworkState corresponding to the
   // provided |guid| to "Connected". This will be reflected in the UI.
   void SetTetherNetworkStateConnected(const std::string& guid);
+
+  void set_tether_sort_delegate(
+      const TetherSortDelegate* tether_sort_delegate) {
+    tether_sort_delegate_ = tether_sort_delegate;
+  }
 
   // Sets |list| to contain the list of devices.  The returned list contains
   // a copy of DeviceState pointers which should not be stored or used beyond
@@ -469,13 +482,16 @@ class CHROMEOS_EXPORT NetworkStateHandler
   std::vector<std::string> GetTechnologiesForType(
       const NetworkTypePattern& type) const;
 
-  // Sets |list| to contain the list of Tether networks. If |limit| > 0, that
-  // will determine the number of results; pass 0 for no limit. The returned
-  // list contains a copy of NetworkState pointers which should not be stored or
-  // used beyond the scope of the calling function (i.e. they may later become
-  // invalid, but only on the UI thread).
-  // NOTE: See AddTetherNetworkState for more information about Tether networks.
-  void GetTetherNetworkList(int limit, NetworkStateList* list);
+  // Adds Tether networks to |list|, limiting the maximum size of |list| to be
+  // |limit|. If |get_active| is true, only active (i.e., connecting/connected)
+  // networks will be added; otherwise, only inactive networks will be added.
+  // The returned list contains a copy of NetworkState pointers which
+  // should not be stored or used beyond the scope of the calling
+  // function (i.e., they may later become invalid, but only on the UI thread).
+  // See AddTetherNetworkState() for more information about Tether networks.
+  void AppendTetherNetworksToList(bool get_active,
+                                  size_t limit,
+                                  NetworkStateList* list);
 
   // Set the connection_state of a Tether NetworkState corresponding to the
   // provided |guid|.
@@ -522,6 +538,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // the Tether component.
   TechnologyState tether_technology_state_ =
       TechnologyState::TECHNOLOGY_UNAVAILABLE;
+
+  // Not owned by this instance.
+  const TetherSortDelegate* tether_sort_delegate_ = nullptr;
 
   // Ensure that Shutdown() gets called exactly once.
   bool did_shutdown_ = false;

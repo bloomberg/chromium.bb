@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
+#include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/message_wrapper.h"
-#include "chromeos/components/tether/mock_host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/components/tether/proto_test_util.h"
@@ -30,14 +30,15 @@ namespace {
 
 const char kDefaultCarrier[] = "Google Fi";
 
-class TestHostScanDevicePrioritizer : public MockHostScanDevicePrioritizer {
+class TestHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
  public:
-  TestHostScanDevicePrioritizer() : MockHostScanDevicePrioritizer() {}
+  TestHostScanDevicePrioritizer() : HostScanDevicePrioritizer() {}
   ~TestHostScanDevicePrioritizer() override {}
 
-  // Simply reverses the device order.
+  // HostScanDevicePrioritizer:
   void SortByHostScanOrder(
       std::vector<cryptauth::RemoteDevice>* remote_devices) const override {
+    // Simply reverses the device order.
     for (size_t i = 0; i < remote_devices->size() / 2; ++i) {
       std::iter_swap(remote_devices->begin() + i,
                      remote_devices->end() - i - 1);
@@ -108,7 +109,7 @@ class HostScannerOperationTest : public testing::Test {
   void SetUp() override {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
     test_host_scan_device_prioritizer_ =
-        base::MakeUnique<StrictMock<TestHostScanDevicePrioritizer>>();
+        base::MakeUnique<TestHostScanDevicePrioritizer>();
     mock_tether_host_response_recorder_ =
         base::MakeUnique<StrictMock<MockTetherHostResponseRecorder>>();
     test_observer_ = base::WrapUnique(new TestObserver());
@@ -203,7 +204,7 @@ class HostScannerOperationTest : public testing::Test {
   const std::vector<cryptauth::RemoteDevice> test_devices_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
-  std::unique_ptr<StrictMock<TestHostScanDevicePrioritizer>>
+  std::unique_ptr<TestHostScanDevicePrioritizer>
       test_host_scan_device_prioritizer_;
   std::unique_ptr<StrictMock<MockTetherHostResponseRecorder>>
       mock_tether_host_response_recorder_;

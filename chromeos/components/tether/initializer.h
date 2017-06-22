@@ -41,7 +41,7 @@ class DeviceIdTetherNetworkGuidMap;
 class HostScanCache;
 class HostScanner;
 class HostScanScheduler;
-class HostScanDevicePrioritizer;
+class HostScanDevicePrioritizerImpl;
 class KeepAliveScheduler;
 class LocalDeviceDataProvider;
 class NetworkConfigurationRemover;
@@ -118,7 +118,7 @@ class Initializer : public OAuth2TokenService::Observer {
       remote_beacon_seed_fetcher_;
   std::unique_ptr<BleConnectionManager> ble_connection_manager_;
   std::unique_ptr<TetherHostResponseRecorder> tether_host_response_recorder_;
-  std::unique_ptr<HostScanDevicePrioritizer> host_scan_device_prioritizer_;
+  std::unique_ptr<HostScanDevicePrioritizerImpl> host_scan_device_prioritizer_;
   std::unique_ptr<WifiHotspotConnector> wifi_hotspot_connector_;
   std::unique_ptr<ActiveHost> active_host_;
   std::unique_ptr<ActiveHostNetworkStateUpdater>
