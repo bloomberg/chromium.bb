@@ -88,6 +88,11 @@ namespace ntp_snippets {
 
 namespace {
 
+ACTION_P(MoveFirstArgumentPointeeTo, ptr) {
+  // 0-based indexation.
+  *ptr = std::move(*arg0);
+}
+
 ACTION_P(MoveSecondArgumentPointeeTo, ptr) {
   // 0-based indexation.
   *ptr = std::move(*arg1);
@@ -116,6 +121,11 @@ const char kSuggestionUrl2[] = "http://foo.com/bar";
 const char kTestJsonDefaultCategoryTitle[] = "Some title";
 
 const int kUnknownRemoteCategoryId = 1234;
+
+const int kMaxAdditionalPrefetchedSuggestions = 5;
+
+const base::TimeDelta kMaxAgeForAdditionalPrefetchedSuggestion =
+    base::TimeDelta::FromHours(36);
 
 base::Time GetDefaultCreationTime() {
   base::Time out_time;
@@ -219,7 +229,8 @@ std::string GetSuggestionWithUrlAndTimesAndSource(
     const base::Time& creation_time,
     const base::Time& expiry_time,
     const std::string& publisher,
-    const std::string& amp_url) {
+    const std::string& amp_url,
+    double score) {
   const std::string ids_string = base::JoinString(ids, "\",\n      \"");
   return base::StringPrintf(
       "{\n"
@@ -233,19 +244,29 @@ std::string GetSuggestionWithUrlAndTimesAndSource(
       "      \"expirationTime\": \"%s\",\n"
       "      \"attribution\": \"%s\",\n"
       "      \"imageUrl\": \"%s\",\n"
-      "      \"ampUrl\": \"%s\"\n"
+      "      \"ampUrl\": \"%s\",\n"
+      "      \"score\": %f\n"
       "    }",
       ids_string.c_str(), kSuggestionTitle, kSuggestionText, url.c_str(),
       FormatTime(creation_time).c_str(), FormatTime(expiry_time).c_str(),
-      publisher.c_str(), kSuggestionSalientImage, amp_url.c_str());
+      publisher.c_str(), kSuggestionSalientImage, amp_url.c_str(), score);
 }
 
 std::string GetSuggestionWithSources(const std::string& source_url,
                                      const std::string& publisher,
                                      const std::string& amp_url) {
   return GetSuggestionWithUrlAndTimesAndSource(
-      {kSuggestionUrl}, source_url, GetDefaultCreationTime(),
-      GetDefaultExpirationTime(), publisher, amp_url);
+      {source_url}, source_url, GetDefaultCreationTime(),
+      GetDefaultExpirationTime(), publisher, amp_url, /*score=*/1);
+}
+
+std::string GetSuggestionWithSourcesAndScore(const std::string& source_url,
+                                             const std::string& publisher,
+                                             const std::string& amp_url,
+                                             double score) {
+  return GetSuggestionWithUrlAndTimesAndSource(
+      {source_url}, source_url, GetDefaultCreationTime(),
+      GetDefaultExpirationTime(), publisher, amp_url, score);
 }
 
 std::string GetSuggestionWithUrlAndTimes(
@@ -254,7 +275,7 @@ std::string GetSuggestionWithUrlAndTimes(
     const base::Time& expiry_time) {
   return GetSuggestionWithUrlAndTimesAndSource(
       {url}, url, content_creation_time, expiry_time, kSuggestionPublisherName,
-      kSuggestionAmpUrl);
+      kSuggestionAmpUrl, /*score=*/1);
 }
 
 std::string GetSuggestionWithTimes(const base::Time& content_creation_time,
@@ -428,6 +449,22 @@ class MockRemoteSuggestionsFetcher : public RemoteSuggestionsFetcher {
   MOCK_CONST_METHOD0(GetFetchUrlForDebugging, const GURL&());
 };
 
+class MockPrefetchedPagesTracker : public PrefetchedPagesTracker {
+ public:
+  MOCK_CONST_METHOD0(IsInitialized, bool());
+
+  // GMock does not support movable-only types (e.g. OnceCallback), therefore,
+  // the call is redirected to a mock method with a pointer to the callback.
+  void AddInitializationCompletedCallback(
+      base::OnceCallback<void()> callback) override {
+    AddInitializationCompletedCallback(&callback);
+  }
+  MOCK_METHOD1(AddInitializationCompletedCallback,
+               void(base::OnceCallback<void()>* callback));
+
+  MOCK_CONST_METHOD1(PrefetchedOfflinePageExists, bool(const GURL& url));
+};
+
 }  // namespace
 
 class RemoteSuggestionsProviderImplTest : public ::testing::Test {
@@ -466,7 +503,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   std::unique_ptr<RemoteSuggestionsProviderImpl> MakeSuggestionsProvider(
       bool set_empty_response = true) {
     auto provider = MakeSuggestionsProviderWithoutInitialization(
-        /*use_mock_suggestions_fetcher=*/false);
+        /*use_mock_suggestions_fetcher=*/false,
+        /*use_mock_prefetched_pages_tracker=*/false);
     WaitForSuggestionsProviderInitialization(provider.get(),
                                              set_empty_response);
     return provider;
@@ -475,7 +513,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   // TODO(vitaliii): Rewrite tests and always use mock suggestions fetcher.
   std::unique_ptr<RemoteSuggestionsProviderImpl>
   MakeSuggestionsProviderWithoutInitialization(
-      bool use_mock_suggestions_fetcher) {
+      bool use_mock_suggestions_fetcher,
+      bool use_mock_prefetched_pages_tracker) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
@@ -496,6 +535,13 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     }
     suggestions_fetcher_ = suggestions_fetcher.get();
 
+    std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker;
+    if (use_mock_prefetched_pages_tracker) {
+      prefetched_pages_tracker =
+          base::MakeUnique<StrictMock<MockPrefetchedPagesTracker>>();
+    }
+    prefetched_pages_tracker_ = prefetched_pages_tracker.get();
+
     auto image_fetcher = base::MakeUnique<NiceMock<MockImageFetcher>>();
 
     image_fetcher_ = image_fetcher.get();
@@ -512,15 +558,16 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         scheduler_.get(), std::move(suggestions_fetcher),
         std::move(image_fetcher), std::move(database),
         base::MakeUnique<RemoteSuggestionsStatusService>(
-            utils_.fake_signin_manager(), utils_.pref_service(),
-            std::string()));
+            utils_.fake_signin_manager(), utils_.pref_service(), std::string()),
+        std::move(prefetched_pages_tracker));
   }
 
   std::unique_ptr<RemoteSuggestionsProviderImpl>
   MakeSuggestionsProviderWithoutInitializationWithStrictScheduler() {
     scheduler_ = base::MakeUnique<StrictMock<MockScheduler>>();
     return MakeSuggestionsProviderWithoutInitialization(
-        /*use_mock_suggestions_fetcher=*/false);
+        /*use_mock_suggestions_fetcher=*/false,
+        /*use_mock_prefetched_pages_tracker=*/false);
   }
 
   void WaitForSuggestionsProviderInitialization(
@@ -578,6 +625,9 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   FakeContentSuggestionsProviderObserver& observer() { return *observer_; }
   RemoteSuggestionsFetcher* suggestions_fetcher() {
     return suggestions_fetcher_;
+  }
+  PrefetchedPagesTracker* prefetched_pages_tracker() {
+    return prefetched_pages_tracker_;
   }
   // TODO(tschumann): Make this a strict-mock. We want to avoid unneccesary
   // network requests.
@@ -643,6 +693,19 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         {kArticleSuggestionsFeature.name});
   }
 
+  void EnableKeepingPrefetchedContentSuggestions() {
+    // params_manager supports only one
+    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
+    // previous settings first and then set everything we need.
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        kKeepPrefetchedContentSuggestions.name,
+        {{"content_suggestions_backend",
+          kTestContentSuggestionsServerEndpoint}},
+        {kArticleSuggestionsFeature.name,
+         kKeepPrefetchedContentSuggestions.name});
+  }
+
  private:
   variations::testing::VariationParamsManager params_manager_;
   test::RemoteSuggestionsTestUtils utils_;
@@ -655,6 +718,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   UserClassifier user_classifier_;
   std::unique_ptr<FakeContentSuggestionsProviderObserver> observer_;
   RemoteSuggestionsFetcher* suggestions_fetcher_;
+  PrefetchedPagesTracker* prefetched_pages_tracker_;
   NiceMock<MockImageFetcher>* image_fetcher_;
   FakeImageDecoder image_decoder_;
   std::unique_ptr<MockScheduler> scheduler_;
@@ -1113,7 +1177,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldNotChangeSuggestionsInOtherSurfacesWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/true);
+      /*use_mock_suggestions_fetcher=*/true,
+      /*use_mock_prefetched_pages_tracker=*/false);
   WaitForSuggestionsProviderInitialization(provider.get(),
                                            /*set_empty_response=*/true);
 
@@ -1186,7 +1251,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldNotAffectFetchMoreInOtherSurfacesWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/true);
+      /*use_mock_suggestions_fetcher=*/true,
+      /*use_mock_prefetched_pages_tracker=*/false);
   WaitForSuggestionsProviderInitialization(provider.get(),
                                            /*set_empty_response=*/true);
   auto* mock_fetcher = static_cast<StrictMock<MockRemoteSuggestionsFetcher>*>(
@@ -1309,7 +1375,8 @@ void SuggestionsLoaded(
 
 TEST_F(RemoteSuggestionsProviderImplTest, ReturnFetchRequestEmptyBeforeInit) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/false);
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/false);
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
   EXPECT_CALL(loaded, Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
                            IsEmpty()));
@@ -1443,7 +1510,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
   EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
       .WillOnce(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  gfx::Image image = FetchImage(provider.get(), MakeArticleID(kSuggestionUrl));
+  gfx::Image image =
+      FetchImage(provider.get(), MakeArticleID("http://site.com"));
   EXPECT_FALSE(image.IsEmpty());
   EXPECT_EQ(1, image.Width());
 
@@ -1453,7 +1521,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
               SizeIs(1));
 
   // Dismiss the suggestion.
-  provider->DismissSuggestion(MakeArticleID(kSuggestionUrl));
+  provider->DismissSuggestion(MakeArticleID("http://site.com"));
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
 
@@ -1461,7 +1529,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
   // might still reference it). This should come from the database -- no network
   // fetch necessary.
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  image = FetchImage(provider.get(), MakeArticleID(kSuggestionUrl));
+  image = FetchImage(provider.get(), MakeArticleID("http://site.com"));
   EXPECT_FALSE(image.IsEmpty());
   EXPECT_EQ(1, image.Width());
 
@@ -1589,7 +1657,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, TestSingleSource) {
               SizeIs(1));
   const RemoteSuggestion& suggestion =
       *provider->GetSuggestionsForTesting(articles_category()).front();
-  EXPECT_EQ(suggestion.id(), kSuggestionUrl);
+  EXPECT_EQ(suggestion.id(), "http://source1.com");
   EXPECT_EQ(suggestion.url(), GURL("http://source1.com"));
   EXPECT_EQ(suggestion.publisher_name(), std::string("Source 1"));
   EXPECT_EQ(suggestion.amp_url(), GURL("http://source1.amp.com"));
@@ -1691,7 +1759,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, DismissShouldRespectAllKnownUrls) {
   LoadFromJSONString(provider.get(),
                      GetTestJson({GetSuggestionWithUrlAndTimesAndSource(
                          source_urls, source_urls[0], creation, expiry,
-                         publishers[0], amp_urls[0])}));
+                         publishers[0], amp_urls[0], /*score=*/1)}));
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
   // Dismiss the suggestion via the mashable source corpus ID.
@@ -1703,7 +1771,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, DismissShouldRespectAllKnownUrls) {
   LoadFromJSONString(provider.get(),
                      GetTestJson({GetSuggestionWithUrlAndTimesAndSource(
                          source_urls, source_urls[1], creation, expiry,
-                         publishers[1], amp_urls[1])}));
+                         publishers[1], amp_urls[1], /*score=*/1)}));
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
 }
@@ -1870,7 +1938,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   // is triggered since the suggestions DB is empty. Therefore the provider must
   // not be initialized until the test clock is set.
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/false);
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/false);
 
   auto simple_test_clock = base::MakeUnique<base::SimpleTestClock>();
   base::SimpleTestClock* simple_test_clock_ptr = simple_test_clock.get();
@@ -1980,7 +2049,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, CallsSchedulerWhenSignedOut) {
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldExcludeKnownSuggestionsWithoutTruncatingWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/true);
+      /*use_mock_suggestions_fetcher=*/true,
+      /*use_mock_prefetched_pages_tracker=*/false);
   WaitForSuggestionsProviderInitialization(provider.get(),
                                            /*set_empty_response=*/true);
   auto* mock_fetcher = static_cast<StrictMock<MockRemoteSuggestionsFetcher>*>(
@@ -2005,7 +2075,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldExcludeDismissedSuggestionsWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/true);
+      /*use_mock_suggestions_fetcher=*/true,
+      /*use_mock_prefetched_pages_tracker=*/false);
   WaitForSuggestionsProviderInitialization(provider.get(),
                                            /*set_empty_response=*/true);
 
@@ -2052,7 +2123,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldTruncateExcludedDismissedSuggestionsWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/true);
+      /*use_mock_suggestions_fetcher=*/true,
+      /*use_mock_prefetched_pages_tracker=*/false);
   WaitForSuggestionsProviderInitialization(provider.get(),
                                            /*set_empty_response=*/true);
 
@@ -2105,7 +2177,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldPreferLatestExcludedDismissedSuggestionsWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/true);
+      /*use_mock_suggestions_fetcher=*/true,
+      /*use_mock_prefetched_pages_tracker=*/false);
   WaitForSuggestionsProviderInitialization(provider.get(),
                                            /*set_empty_response=*/true);
 
@@ -2164,7 +2237,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldExcludeDismissedSuggestionsFromAllCategoriesWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/true);
+      /*use_mock_suggestions_fetcher=*/true,
+      /*use_mock_prefetched_pages_tracker=*/false);
   WaitForSuggestionsProviderInitialization(provider.get(),
                                            /*set_empty_response=*/true);
 
@@ -2233,7 +2307,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldPreferTargetCategoryExcludedDismissedSuggestionsWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_suggestions_fetcher=*/true);
+      /*use_mock_suggestions_fetcher=*/true,
+      /*use_mock_prefetched_pages_tracker=*/false);
   WaitForSuggestionsProviderInitialization(provider.get(),
                                            /*set_empty_response=*/true);
 
@@ -2294,6 +2369,324 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       articles_category(), std::set<std::string>(),
       base::Bind([](Status status_code,
                     std::vector<ContentSuggestion> suggestions) {}));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldFetchNormallyWithoutPrefetchedPagesTracker) {
+  EnableKeepingPrefetchedContentSuggestions();
+  auto provider = MakeSuggestionsProvider();
+  LoadFromJSONString(provider.get(), GetTestJson({GetSuggestion()}));
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldKeepPrefetchedSuggestionsAfterFetchWhenEnabled) {
+  EnableKeepingPrefetchedContentSuggestions();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/true);
+  auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
+      prefetched_pages_tracker());
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/false);
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  LoadFromJSONString(
+      provider.get(),
+      GetTestJson({GetSuggestionWithSources("http://prefeched.com", "publisher",
+                                            "http://amp.prefetched.com")}));
+
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_tracker,
+              PrefetchedOfflinePageExists(GURL("http://amp.prefetched.com")))
+      .WillOnce(Return(true));
+  LoadFromJSONString(
+      provider.get(),
+      GetTestJson({GetSuggestionWithSources("http://other.com", "publisher",
+                                            "http://amp.other.com")}));
+
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              UnorderedElementsAre(
+                  Property(&ContentSuggestion::id,
+                           Property(&ContentSuggestion::ID::id_within_category,
+                                    "http://prefeched.com")),
+                  Property(&ContentSuggestion::id,
+                           Property(&ContentSuggestion::ID::id_within_category,
+                                    "http://other.com"))));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldIgnoreNotPrefetchedSuggestionsAfterFetchWhenEnabled) {
+  EnableKeepingPrefetchedContentSuggestions();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/true);
+  auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
+      prefetched_pages_tracker());
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/false);
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  LoadFromJSONString(provider.get(),
+                     GetTestJson({GetSuggestionWithSources(
+                         "http://not_prefeched.com", "publisher",
+                         "http://amp.not_prefetched.com")}));
+
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_tracker, PrefetchedOfflinePageExists(
+                                 GURL("http://amp.not_prefetched.com")))
+      .WillOnce(Return(false));
+  LoadFromJSONString(
+      provider.get(),
+      GetTestJson({GetSuggestionWithSources("http://other.com", "publisher",
+                                            "http://amp.other.com")}));
+
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              UnorderedElementsAre(
+                  Property(&ContentSuggestion::id,
+                           Property(&ContentSuggestion::ID::id_within_category,
+                                    "http://other.com"))));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldLimitKeptPrefetchedSuggestionsAfterFetchWhenEnabled) {
+  EnableKeepingPrefetchedContentSuggestions();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/true);
+  auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
+      prefetched_pages_tracker());
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/false);
+
+  const int prefetched_suggestions_count =
+      2 * kMaxAdditionalPrefetchedSuggestions + 1;
+  std::vector<std::string> prefetched_suggestions;
+  for (int i = 0; i < prefetched_suggestions_count; ++i) {
+    prefetched_suggestions.push_back(GetSuggestionWithSources(
+        base::StringPrintf("http://prefetched.com/%d", i), "publisher",
+        base::StringPrintf("http://amp.prefetched.com/%d", i)));
+  }
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  LoadFromJSONString(provider.get(), GetTestJson(prefetched_suggestions));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(prefetched_suggestions_count));
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  for (int i = 0; i < prefetched_suggestions_count; ++i) {
+    EXPECT_CALL(*mock_tracker,
+                PrefetchedOfflinePageExists(GURL(
+                    base::StringPrintf("http://amp.prefetched.com/%d", i))))
+        .WillOnce(Return(true));
+  }
+  LoadFromJSONString(provider.get(),
+                     GetTestJson({GetSuggestionWithSources(
+                         "http://not_prefeched.com", "publisher",
+                         "http://amp.not_prefetched.com")}));
+
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(kMaxAdditionalPrefetchedSuggestions + 1));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldMixInPrefetchedSuggestionsByScoreAfterFetchWhenEnabled) {
+  EnableKeepingPrefetchedContentSuggestions();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/true);
+  auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
+      prefetched_pages_tracker());
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/false);
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  LoadFromJSONString(
+      provider.get(),
+      GetTestJson({GetSuggestionWithSourcesAndScore(
+                       "http://prefeched.com/1", "publisher",
+                       "http://amp.prefetched.com/1", /*score=*/1),
+                   GetSuggestionWithSourcesAndScore(
+                       "http://prefeched.com/3", "publisher",
+                       "http://amp.prefetched.com/3", /*score=*/3)}));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(2));
+
+  EXPECT_CALL(*mock_tracker,
+              PrefetchedOfflinePageExists(GURL("http://amp.prefetched.com/1")))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_tracker,
+              PrefetchedOfflinePageExists(GURL("http://amp.prefetched.com/3")))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  LoadFromJSONString(provider.get(),
+                     GetTestJson({GetSuggestionWithSourcesAndScore(
+                                      "http://new.com/2", "publisher",
+                                      "http://amp.new.com/2", /*score=*/2),
+                                  GetSuggestionWithSourcesAndScore(
+                                      "http://new.com/4", "publisher",
+                                      "http://amp.new.com/4", /*score=*/4)}));
+
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          Property(&ContentSuggestion::id, MakeArticleID("http://new.com/4")),
+          Property(&ContentSuggestion::id,
+                   Property(&ContentSuggestion::ID::id_within_category,
+                            "http://prefeched.com/3")),
+          Property(&ContentSuggestion::id,
+                   Property(&ContentSuggestion::ID::id_within_category,
+                            "http://new.com/2")),
+          Property(&ContentSuggestion::id,
+                   Property(&ContentSuggestion::ID::id_within_category,
+                            "http://prefeched.com/1"))));
+}
+
+TEST_F(
+    RemoteSuggestionsProviderImplTest,
+    ShouldKeepMostRecentlyFetchedPrefetchedSuggestionsFirstAfterFetchWhenEnabled) {
+  EnableKeepingPrefetchedContentSuggestions();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/true);
+  auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
+      prefetched_pages_tracker());
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/false);
+
+  const int prefetched_suggestions_count =
+      2 * kMaxAdditionalPrefetchedSuggestions + 1;
+
+  for (int i = 0; i < prefetched_suggestions_count; ++i) {
+    EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+    if (i != 0) {
+      EXPECT_CALL(*mock_tracker,
+                  PrefetchedOfflinePageExists(GURL(base::StringPrintf(
+                      "http://amp.prefetched.com/%d", i - 1))))
+          .WillRepeatedly(Return(true));
+    }
+    LoadFromJSONString(
+        provider.get(),
+        GetTestJson({GetSuggestionWithSources(
+            base::StringPrintf("http://prefetched.com/%d", i), "publisher",
+            base::StringPrintf("http://amp.prefetched.com/%d", i))}));
+  }
+
+  const std::vector<ContentSuggestion>& actual_suggestions =
+      observer().SuggestionsForCategory(articles_category());
+
+  ASSERT_THAT(actual_suggestions,
+              SizeIs(kMaxAdditionalPrefetchedSuggestions + 1));
+
+  int matched = 0;
+  for (int i = prefetched_suggestions_count - 1; i >= 0; --i) {
+    EXPECT_THAT(actual_suggestions,
+                Contains(Property(&ContentSuggestion::id,
+                                  MakeArticleID(base::StringPrintf(
+                                      "http://prefetched.com/%d", i)))));
+    ++matched;
+    if (matched == kMaxAdditionalPrefetchedSuggestions + 1) {
+      break;
+    }
+  }
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldNotKeepStalePrefetchedSuggestionsAfterFetchWhenEnabled) {
+  EnableKeepingPrefetchedContentSuggestions();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/true);
+  auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
+      prefetched_pages_tracker());
+
+  auto* fetcher =
+      static_cast<RemoteSuggestionsFetcherImpl*>(suggestions_fetcher());
+  auto wrapped_fetcher_clock = base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock* fetcher_clock = wrapped_fetcher_clock.get();
+  fetcher->SetClockForTesting(std::move(wrapped_fetcher_clock));
+
+  auto wrapped_provider_clock = base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock* provider_clock = wrapped_provider_clock.get();
+  provider->SetClockForTesting(std::move(wrapped_provider_clock));
+
+  provider_clock->SetNow(GetDefaultCreationTime() +
+                         base::TimeDelta::FromHours(10));
+  fetcher_clock->SetNow(provider_clock->Now());
+
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/false);
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  LoadFromJSONString(
+      provider.get(),
+      GetTestJson({GetSuggestionWithSources("http://prefeched.com", "publisher",
+                                            "http://amp.prefetched.com")}));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+
+  provider_clock->Advance(kMaxAgeForAdditionalPrefetchedSuggestion -
+                          base::TimeDelta::FromSeconds(1));
+  fetcher_clock->SetNow(provider_clock->Now());
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_tracker,
+              PrefetchedOfflinePageExists(GURL("http://amp.prefetched.com")))
+      .WillOnce(Return(true));
+  LoadFromJSONString(
+      provider.get(),
+      GetTestJson({GetSuggestionWithSources("http://other.com", "publisher",
+                                            "http://amp.other.com")}));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(2));
+
+  provider_clock->Advance(base::TimeDelta::FromSeconds(2));
+  fetcher_clock->SetNow(provider_clock->Now());
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_tracker,
+              PrefetchedOfflinePageExists(GURL("http://amp.prefetched.com")))
+      .WillOnce(Return(true));
+  LoadFromJSONString(
+      provider.get(),
+      GetTestJson({GetSuggestionWithSources("http://other.com", "publisher",
+                                            "http://amp.other.com")}));
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(Property(&ContentSuggestion::id,
+                                   MakeArticleID("http://other.com"))));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldWaitForPrefetchedPagesTrackerInitialization) {
+  EnableKeepingPrefetchedContentSuggestions();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/false,
+      /*use_mock_prefetched_pages_tracker=*/true);
+  auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
+      prefetched_pages_tracker());
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/false);
+
+  base::OnceCallback<void()> initialization_completed_callback;
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_tracker, AddInitializationCompletedCallback(_))
+      .WillOnce(MoveFirstArgumentPointeeTo(&initialization_completed_callback));
+  LoadFromJSONString(
+      provider.get(),
+      GetTestJson({GetSuggestionWithSources("http://prefeched.com", "publisher",
+                                            "http://amp.prefetched.com")}));
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(0));
+
+  EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
+  std::move(initialization_completed_callback).Run();
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
 }
 
 }  // namespace ntp_snippets

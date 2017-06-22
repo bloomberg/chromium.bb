@@ -63,6 +63,14 @@ const char kCategoryContentAllowFetchingMore[] = "allow_fetching_more";
 const char kOrderNewRemoteCategoriesBasedOnArticlesCategory[] =
     "order_new_remote_categories_based_on_articles_category";
 
+// Not more than this number of prefetched suggestions will be kept longer.
+const int kMaxAdditionalPrefetchedSuggestions = 5;
+
+// Only prefetched suggestions published not later than this are considered to
+// be kept longer.
+const base::TimeDelta kMaxAgeForAdditionalPrefetchedSuggestion =
+    base::TimeDelta::FromHours(36);
+
 bool IsOrderingNewRemoteCategoriesBasedOnArticlesCategoryEnabled() {
   return variations::GetVariationParamByFeatureAsBool(
       ntp_snippets::kArticleSuggestionsFeature,
@@ -96,6 +104,10 @@ void AddFetchedCategoriesToRankerBasedOnArticlesCategory(
                                            articles_category);
   }
   NOTREACHED() << "Articles category was not found.";
+}
+
+bool IsKeepingPrefetchedSuggestionsEnabled() {
+  return base::FeatureList::IsEnabled(kKeepPrefetchedContentSuggestions);
 }
 
 template <typename SuggestionPtrContainer>
@@ -342,7 +354,8 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
     std::unique_ptr<RemoteSuggestionsDatabase> database,
-    std::unique_ptr<RemoteSuggestionsStatusService> status_service)
+    std::unique_ptr<RemoteSuggestionsStatusService> status_service,
+    std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker)
     : RemoteSuggestionsProvider(observer),
       state_(State::NOT_INITED),
       pref_service_(pref_service),
@@ -358,7 +371,8 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       fetch_when_ready_(false),
       fetch_when_ready_interactive_(false),
       clear_history_dependent_state_when_initialized_(false),
-      clock_(base::MakeUnique<base::DefaultClock>()) {
+      clock_(base::MakeUnique<base::DefaultClock>()),
+      prefetched_pages_tracker_(std::move(prefetched_pages_tracker)) {
   RestoreCategoriesFromPrefs();
   // The articles category always exists. Add it if we didn't get it from prefs.
   // TODO(treib): Rethink this.
@@ -752,6 +766,16 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     return;
   }
 
+  if (IsKeepingPrefetchedSuggestionsEnabled() && prefetched_pages_tracker_ &&
+      !prefetched_pages_tracker_->IsInitialized()) {
+    // Wait until the tracker is initialized.
+    prefetched_pages_tracker_->AddInitializationCompletedCallback(
+        base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
+                       base::Unretained(this), callback, interactive_request,
+                       status, std::move(fetched_categories)));
+    return;
+  }
+
   // Record the fetch time of a successfull background fetch.
   if (!interactive_request && status.IsSuccess()) {
     pref_service_->SetInt64(prefs::kLastSuccessfulBackgroundFetchTime,
@@ -792,7 +816,8 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
       content->included_in_last_server_response = true;
       SanitizeReceivedSuggestions(content->dismissed,
                                   &fetched_category.suggestions);
-      IntegrateSuggestions(content, std::move(fetched_category.suggestions));
+      IntegrateSuggestions(fetched_category.category, content,
+                           std::move(fetched_category.suggestions));
     }
 
     // Add new remote categories to the ranker.
@@ -868,6 +893,7 @@ void RemoteSuggestionsProviderImpl::SanitizeReceivedSuggestions(
 }
 
 void RemoteSuggestionsProviderImpl::IntegrateSuggestions(
+    Category category,
     CategoryContent* content,
     RemoteSuggestion::PtrVector new_suggestions) {
   DCHECK(ready());
@@ -888,6 +914,51 @@ void RemoteSuggestionsProviderImpl::IntegrateSuggestions(
   // IDs though).
   EraseByPrimaryID(&content->suggestions,
                    *GetSuggestionIDVector(new_suggestions));
+
+  // If enabled, keep some older prefetched article suggestions, otherwise the
+  // user has little time to see them.
+  if (IsKeepingPrefetchedSuggestionsEnabled() &&
+      category == articles_category_ && prefetched_pages_tracker_) {
+    DCHECK(prefetched_pages_tracker_->IsInitialized());
+
+    // Select suggestions to keep.
+    std::sort(content->suggestions.begin(), content->suggestions.end(),
+              [](const std::unique_ptr<RemoteSuggestion>& first,
+                 const std::unique_ptr<RemoteSuggestion>& second) {
+                return first->fetch_date() > second->fetch_date();
+              });
+    std::vector<std::unique_ptr<RemoteSuggestion>>
+        additional_prefetched_suggestions, other_suggestions;
+    for (auto& remote_suggestion : content->suggestions) {
+      const GURL& url = remote_suggestion->amp_url().is_empty()
+                            ? remote_suggestion->url()
+                            : remote_suggestion->amp_url();
+      if (prefetched_pages_tracker_->PrefetchedOfflinePageExists(url) &&
+          clock_->Now() - remote_suggestion->fetch_date() <
+              kMaxAgeForAdditionalPrefetchedSuggestion &&
+          additional_prefetched_suggestions.size() <
+              kMaxAdditionalPrefetchedSuggestions) {
+        additional_prefetched_suggestions.push_back(
+            std::move(remote_suggestion));
+      } else {
+        other_suggestions.push_back(std::move(remote_suggestion));
+      }
+    }
+
+    // Mix them into the new set according to their score.
+    for (auto& remote_suggestion : additional_prefetched_suggestions) {
+      new_suggestions.push_back(std::move(remote_suggestion));
+    }
+    std::sort(new_suggestions.begin(), new_suggestions.end(),
+              [](const std::unique_ptr<RemoteSuggestion>& first,
+                 const std::unique_ptr<RemoteSuggestion>& second) {
+                return first->score() > second->score();
+              });
+
+    // Treat remaining suggestions as usual.
+    content->suggestions = std::move(other_suggestions);
+  }
+
   // Do not delete the thumbnail images as they are still handy on open NTPs.
   database_->DeleteSnippets(GetSuggestionIDVector(content->suggestions));
   // Note, that ArchiveSuggestions will clear |content->suggestions|.

@@ -67,7 +67,7 @@ void PrefetchedPagesTrackerImpl::AddInitializationCompletedCallback(
 }
 
 bool PrefetchedPagesTrackerImpl::PrefetchedOfflinePageExists(
-    const GURL url) const {
+    const GURL& url) const {
   DCHECK(initialized_);
   return prefetched_urls_.count(url) == 1;
 }

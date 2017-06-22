@@ -27,7 +27,7 @@ class PrefetchedPagesTracker {
   virtual void AddInitializationCompletedCallback(
       base::OnceCallback<void()> callback) = 0;
 
-  virtual bool PrefetchedOfflinePageExists(const GURL url) const = 0;
+  virtual bool PrefetchedOfflinePageExists(const GURL& url) const = 0;
 };
 
 }  // namespace ntp_snippets

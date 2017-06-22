@@ -34,7 +34,7 @@ class PrefetchedPagesTrackerImpl
   bool IsInitialized() const override;
   void AddInitializationCompletedCallback(
       base::OnceCallback<void()> callback) override;
-  bool PrefetchedOfflinePageExists(const GURL url) const override;
+  bool PrefetchedOfflinePageExists(const GURL& url) const override;
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(offline_pages::OfflinePageModel* model) override;
