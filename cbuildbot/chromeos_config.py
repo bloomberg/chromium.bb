@@ -2456,7 +2456,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     (None,             None,             None),            # auron (BDW)
     ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (RK3288)
     (None,             None,             'cyan'),          # strago (BSW)
-    ('cave',           None,             'caroline'),      # glados (SKL)
+    ('cave',           'sentry',         'caroline'),      # glados (SKL)
     ('elm',            None,             'hana'),          # oak (MTK8173)
     (None,             None,             'kevin'),         # gru (RK3399)
     (None,             None,             None),            # reef (APL)
