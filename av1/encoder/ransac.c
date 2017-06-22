@@ -139,6 +139,7 @@ static void normalize_homography(double *pts, int n, double *T) {
   double msqe = 0;
   double scale;
   int i;
+  if (n <= 0) return;
   for (i = 0; i < n; ++i, p += 2) {
     mean[0] += p[0];
     mean[1] += p[1];
