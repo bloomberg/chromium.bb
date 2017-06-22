@@ -46,7 +46,7 @@ public class AutocompleteEditTextTest {
 
     // This is needed to limit the target of inOrder#verify.
     private static class AutocompleteEmbedder {
-        public void onAutocompleteTextStateChanged(boolean textDeleted, boolean updateDisplay) {
+        public void onAutocompleteTextStateChanged(boolean updateDisplay) {
             if (DEBUG) Log.i(TAG, "onAutocompleteTextStateChanged");
         }
     }
@@ -61,10 +61,10 @@ public class AutocompleteEditTextTest {
         }
 
         @Override
-        public void onAutocompleteTextStateChanged(boolean textDeleted, boolean updateDisplay) {
+        public void onAutocompleteTextStateChanged(boolean updateDisplay) {
             // This function is called in super(), so mEmbedder may be null.
             if (mEmbedder != null) {
-                mEmbedder.onAutocompleteTextStateChanged(textDeleted, updateDisplay);
+                mEmbedder.onAutocompleteTextStateChanged(updateDisplay);
             }
         }
 
@@ -84,7 +84,7 @@ public class AutocompleteEditTextTest {
         mAutocomplete = spy(new TestAutocompleteEditText(mEmbedder, mContext, null));
         assertNotNull(mAutocomplete);
         // Note: this cannot catch the first {@link
-        // AutocompleteEditText#onAutocompleteTextStateChanged(boolean, boolean)}, which is caused
+        // AutocompleteEditText#onAutocompleteTextStateChanged(boolean)}, which is caused
         // by View constructor's call to setText().
         mInOrder = inOrder(mEmbedder);
         mAutocomplete.onCreateInputConnection(new EditorInfo());
@@ -107,10 +107,10 @@ public class AutocompleteEditTextTest {
         mAutocomplete.setIgnoreTextChangesForAutocomplete(false);
         // User types "h".
         assertTrue(mInputConnection.commitText("h", 1));
-        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(false, true);
+        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(true);
         // User types "hello".
         assertTrue(mInputConnection.commitText("ello", 1));
-        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(false, true);
+        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(true);
         mInOrder.verifyNoMoreInteractions();
         // The controller kicks in.
         mAutocomplete.setAutocompleteText("hello", " world");
@@ -120,7 +120,7 @@ public class AutocompleteEditTextTest {
         assertTexts("hello ", "world");
         mInOrder.verifyNoMoreInteractions();
         assertTrue(mInputConnection.endBatchEdit());
-        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(false, true);
+        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(true);
         mAutocomplete.setAutocompleteText("hello ", "world");
         assertTexts("hello ", "world");
         mInOrder.verifyNoMoreInteractions();
