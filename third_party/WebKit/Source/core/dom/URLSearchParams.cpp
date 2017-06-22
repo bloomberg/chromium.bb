@@ -48,11 +48,10 @@ URLSearchParams* URLSearchParams::Create(const URLSearchParamsInit& init,
       return new URLSearchParams(query_string.Substring(1));
     return new URLSearchParams(query_string);
   }
-  // TODO(sof): copy constructor no longer in the spec,
-  // consider removing.
-  if (init.isURLSearchParams())
-    return new URLSearchParams(init.getAsURLSearchParams());
-
+  if (init.isUSVStringUSVStringRecord()) {
+    return URLSearchParams::Create(init.getAsUSVStringUSVStringRecord(),
+                                   exception_state);
+  }
   if (init.isUSVStringSequenceSequence()) {
     return URLSearchParams::Create(init.getAsUSVStringSequenceSequence(),
                                    exception_state);
@@ -87,9 +86,16 @@ URLSearchParams::URLSearchParams(const String& query_string, DOMURL* url_object)
     SetInput(query_string);
 }
 
-URLSearchParams::URLSearchParams(URLSearchParams* search_params) {
-  DCHECK(search_params);
-  params_ = search_params->params_;
+URLSearchParams* URLSearchParams::Create(
+    const Vector<std::pair<String, String>>& init,
+    ExceptionState& exception_state) {
+  URLSearchParams* instance = new URLSearchParams(String());
+  if (init.IsEmpty())
+    return instance;
+  for (const auto& item : init)
+    instance->AppendWithoutUpdate(item.first, item.second);
+  instance->RunUpdateSteps();
+  return instance;
 }
 
 URLSearchParams::~URLSearchParams() {}
