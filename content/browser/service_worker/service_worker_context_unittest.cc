@@ -21,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -178,13 +179,16 @@ class RecordableEmbeddedWorkerInstanceClient
   const std::vector<Message>& events() const { return events_; }
 
  protected:
-  void StartWorker(const EmbeddedWorkerStartParams& params,
-                   mojom::ServiceWorkerEventDispatcherRequest request,
-                   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                       instance_host) override {
+  void StartWorker(
+      const EmbeddedWorkerStartParams& params,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     events_.push_back(Message::StartWorker);
     EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-        params, std::move(request), std::move(instance_host));
+        params, std::move(request), std::move(instance_host),
+        std::move(provider_info));
   }
 
   void StopWorker() override {
@@ -220,15 +224,13 @@ TEST_F(ServiceWorkerContextTest, Register) {
   EXPECT_TRUE(called);
 
   ASSERT_EQ(2UL, helper_->dispatched_events()->size());
-  ASSERT_EQ(2UL, client->events().size());
+  ASSERT_EQ(1UL, client->events().size());
   EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StartWorker,
             client->events()[0]);
   EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Install,
             helper_->dispatched_events()->at(0));
   EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Activate,
             helper_->dispatched_events()->at(1));
-  EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StopWorker,
-            client->events()[1]);
 
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, registration_id);
 
@@ -325,15 +327,13 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   EXPECT_TRUE(called);
 
   ASSERT_EQ(2UL, helper_->dispatched_events()->size());
-  ASSERT_EQ(2UL, client->events().size());
+  ASSERT_EQ(1UL, client->events().size());
   EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StartWorker,
             client->events()[0]);
   EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Install,
             helper_->dispatched_events()->at(0));
   EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Activate,
             helper_->dispatched_events()->at(1));
-  EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StopWorker,
-            client->events()[1]);
 
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, registration_id);
 
@@ -609,13 +609,28 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
           context()->AsWeakPtr(), &remote_endpoints.back());
   host3->SetDocumentUrl(kOrigin1);
 
-  // Host4 (provider_id=4): process_id=2, origin2, for ServiceWorker.
+  // Host4 (provider_id < -1): process_id=2, origin2, for ServiceWorker.
+  // Since the provider host is created via
+  // CreateProviderHostForServiceWorkerContext, the provider_id is not a fixed
+  // number.
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      base::MakeRefCounted<ServiceWorkerRegistration>(
+          GURL("http://www.example.com/test/"), 1L /* registration_id */,
+          helper_->context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> version =
+      base::MakeRefCounted<ServiceWorkerVersion>(
+          registration.get(), GURL("http://www.example.com/test/script_url"),
+          1L /* version_id */, helper_->context()->AsWeakPtr());
+  helper_->SimulateAddProcessToPattern(
+      GURL("http://www.example.com/test/script_url"), kRenderProcessId2);
   remote_endpoints.emplace_back();
   std::unique_ptr<ServiceWorkerProviderHost> host4 =
       CreateProviderHostForServiceWorkerContext(
-          kRenderProcessId2, provider_id++, true /* is_parent_frame_secure */,
+          kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
           context()->AsWeakPtr(), &remote_endpoints.back());
   host4->SetDocumentUrl(kOrigin2);
+  const int host4_provider_id = host4->provider_id();
+  EXPECT_LT(host4_provider_id, kInvalidServiceWorkerProviderId);
 
   ServiceWorkerProviderHost* host1_raw = host1.get();
   ServiceWorkerProviderHost* host2_raw = host2.get();
@@ -661,7 +676,7 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   context()->RemoveProviderHost(kRenderProcessId1, 1);
   context()->RemoveProviderHost(kRenderProcessId2, 2);
   context()->RemoveProviderHost(kRenderProcessId2, 3);
-  context()->RemoveProviderHost(kRenderProcessId2, 4);
+  context()->RemoveProviderHost(kRenderProcessId2, host4_provider_id);
 }
 
 class ServiceWorkerContextRecoveryTest
@@ -708,9 +723,10 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
                  true /* expect_active */));
   base::RunLoop().RunUntilIdle();
 
-  // Next handle ids should be 0 (the next call should return 1).
-  EXPECT_EQ(0, context()->GetNewServiceWorkerHandleId());
-  EXPECT_EQ(0, context()->GetNewRegistrationHandleId());
+  // Next handle ids should be 1 (the next call should return 2) because
+  // registered worker should have taken ID 0.
+  EXPECT_EQ(1, context()->GetNewServiceWorkerHandleId());
+  EXPECT_EQ(1, context()->GetNewRegistrationHandleId());
 
   context()->ScheduleDeleteAndStartOver();
 
@@ -753,9 +769,10 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
                  true /* expect_active */));
   base::RunLoop().RunUntilIdle();
 
-  // The new context should take over next handle ids.
-  EXPECT_EQ(1, context()->GetNewServiceWorkerHandleId());
-  EXPECT_EQ(1, context()->GetNewRegistrationHandleId());
+  // The new context should take over next handle ids. ID 2 should have been
+  // taken by the running registration, so the following method calls return 3.
+  EXPECT_EQ(3, context()->GetNewServiceWorkerHandleId());
+  EXPECT_EQ(3, context()->GetNewRegistrationHandleId());
 
   ASSERT_EQ(3u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);

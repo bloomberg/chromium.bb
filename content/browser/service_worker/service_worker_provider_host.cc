@@ -36,10 +36,13 @@ namespace content {
 
 namespace {
 
-// PlzNavigate
-// Next ServiceWorkerProviderHost ID for navigations, starts at -2 and keeps
-// going down.
-int g_next_navigation_provider_id = -2;
+// Provider host for navigation with PlzNavigate or when service worker's
+// context is created on the browser side. This function provides the next
+// ServiceWorkerProviderHost ID for them, starts at -2 and keeps going down.
+int NextBrowserProvidedProviderId() {
+  static int g_next_browser_provided_provider_id = -2;
+  return g_next_browser_provided_provider_id--;
+}
 
 // A request handler derivative used to handle navigation requests when
 // skip_service_worker flag is set. It tracks the document URL and sets the url
@@ -59,10 +62,9 @@ class ServiceWorkerURLTrackingRequestHandler
   ~ServiceWorkerURLTrackingRequestHandler() override {}
 
   // Called via custom URLRequestJobFactory.
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* /* network_delegate */,
-      ResourceContext* /* resource_context */) override {
+  net::URLRequestJob* MaybeCreateJob(net::URLRequest* request,
+                                     net::NetworkDelegate*,
+                                     ResourceContext*) override {
     // |provider_host_| may have been deleted when the request is resumed.
     if (!provider_host_)
       return nullptr;
@@ -114,15 +116,27 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
     bool are_ancestors_secure,
     const WebContentsGetter& web_contents_getter) {
   CHECK(IsBrowserSideNavigationEnabled());
-  // Generate a new browser-assigned id for the host.
-  int provider_id = g_next_navigation_provider_id--;
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID,
-      ServiceWorkerProviderHostInfo(provider_id, MSG_ROUTING_NONE,
-                                    SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                    are_ancestors_secure),
+      ServiceWorkerProviderHostInfo(
+          NextBrowserProvidedProviderId(), MSG_ROUTING_NONE,
+          SERVICE_WORKER_PROVIDER_FOR_WINDOW, are_ancestors_secure),
       context, nullptr));
   host->web_contents_getter_ = web_contents_getter;
+  return host;
+}
+
+// static
+std::unique_ptr<ServiceWorkerProviderHost>
+ServiceWorkerProviderHost::PreCreateForController(
+    base::WeakPtr<ServiceWorkerContextCore> context) {
+  auto host = base::WrapUnique(new ServiceWorkerProviderHost(
+      ChildProcessHost::kInvalidUniqueID,
+      ServiceWorkerProviderHostInfo(NextBrowserProvidedProviderId(),
+                                    MSG_ROUTING_NONE,
+                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+                                    true /* is_parent_frame_secure */),
+      std::move(context), nullptr));
   return host;
 }
 
@@ -177,20 +191,27 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       binding_(this) {
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, info_.type);
 
-  // PlzNavigate
-  CHECK(render_process_id != ChildProcessHost::kInvalidUniqueID ||
-        IsBrowserSideNavigationEnabled());
 
   if (info_.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
-    // Actual thread id is set when the service worker context gets started.
+    // Actual |render_process_id| will be set after choosing a process for the
+    // controller, and |render_thread id| will be set when the service worker
+    // context gets started.
+    DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id);
     render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
+  } else {
+    // PlzNavigate
+    DCHECK(render_process_id != ChildProcessHost::kInvalidUniqueID ||
+           IsBrowserSideNavigationEnabled());
   }
+
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
-  // PlzNavigate
-  // |provider_| and |binding_| will be bound on CompleteNavigationInitialized.
-  if (IsBrowserSideNavigationEnabled()) {
-    DCHECK(!info.client_ptr_info.is_valid() && !info.host_request.is_pending());
+  // |client_| and |binding_| will be bound on CompleteNavigationInitialized
+  // (PlzNavigate) or on CompleteStartWorkerPreparation (providers for
+  // controller).
+  if (!info_.client_ptr_info.is_valid() && !info_.host_request.is_pending()) {
+    DCHECK(IsBrowserSideNavigationEnabled() ||
+           info_.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER);
     return;
   }
 
@@ -322,14 +343,6 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
       render_thread_id_, provider_id(), GetOrCreateServiceWorkerHandle(version),
       notify_controllerchange,
       version ? version->used_features() : std::set<uint32_t>()));
-}
-
-void ServiceWorkerProviderHost::SetHostedVersion(
-    ServiceWorkerVersion* version) {
-  DCHECK(!IsProviderForClient());
-  DCHECK_EQ(EmbeddedWorkerStatus::STARTING, version->running_status());
-  DCHECK_EQ(render_process_id_, version->embedded_worker()->process_id());
-  running_hosted_version_ = version;
 }
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
@@ -657,6 +670,54 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
     IncreaseProcessReference(key_registration.second->pattern());
 
   NotifyControllerToAssociatedProvider();
+}
+
+mojom::ServiceWorkerProviderInfoForStartWorkerPtr
+ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
+    int process_id,
+    scoped_refptr<ServiceWorkerVersion> hosted_version) {
+  DCHECK(context_);
+  DCHECK_EQ(kInvalidEmbeddedWorkerThreadId, render_thread_id_);
+  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type());
+  DCHECK(!running_hosted_version_);
+
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
+
+  running_hosted_version_ = std::move(hosted_version);
+
+  ServiceWorkerDispatcherHost* dispatcher_host =
+      context_->GetDispatcherHost(process_id);
+  DCHECK(dispatcher_host);
+  render_process_id_ = process_id;
+  dispatcher_host_ = dispatcher_host;
+
+  // Retrieve the registration associated with |version|. The registration
+  // must be alive because the version keeps it during starting worker.
+  ServiceWorkerRegistration* registration = context_->GetLiveRegistration(
+      running_hosted_version()->registration_id());
+  DCHECK(registration);
+  ServiceWorkerRegistrationObjectInfo info;
+  ServiceWorkerVersionAttributes attrs;
+  dispatcher_host->GetRegistrationObjectInfoAndVersionAttributes(
+      AsWeakPtr(), registration, &info, &attrs);
+
+  // Initialize provider_info.
+  mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
+      mojom::ServiceWorkerProviderInfoForStartWorker::New();
+  provider_info->provider_id = provider_id();
+  provider_info->attributes = std::move(attrs);
+  provider_info->registration = std::move(info);
+  provider_info->client_request = mojo::MakeRequest(&provider_);
+  binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
+  binding_.set_connection_error_handler(
+      base::Bind(&RemoveProviderHost, context_, process_id, provider_id()));
+
+  // Set the document URL to the script url in order to allow
+  // register/unregister/getRegistration on ServiceWorkerGlobalScope.
+  SetDocumentUrl(running_hosted_version()->script_url());
+
+  return provider_info;
 }
 
 void ServiceWorkerProviderHost::SendUpdateFoundMessage(

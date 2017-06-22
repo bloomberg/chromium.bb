@@ -201,6 +201,21 @@ void OnEventDispatcherConnectionError(
   }
 }
 
+mojom::ServiceWorkerProviderInfoForStartWorkerPtr
+CompleteProviderHostPreparation(
+    ServiceWorkerVersion* version,
+    std::unique_ptr<ServiceWorkerProviderHost> provider_host,
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    int process_id) {
+  // Caller should ensure |context| is alive when completing StartWorker
+  // preparation.
+  DCHECK(context);
+  auto info =
+      provider_host->CompleteStartWorkerPreparation(process_id, version);
+  context->AddProviderHost(std::move(provider_host));
+  return info;
+}
+
 }  // namespace
 
 constexpr base::TimeDelta ServiceWorkerVersion::kTimeoutTimerDelay;
@@ -840,6 +855,9 @@ ServiceWorkerVersion::PendingRequest::~PendingRequest() {}
 
 void ServiceWorkerVersion::OnThreadStarted() {
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, running_status());
+  DCHECK(provider_host_);
+  provider_host_->SetReadyToSendMessagesToWorker(
+      embedded_worker()->thread_id());
   // Activate ping/pong now that JavaScript execution will start.
   ping_controller_->Activate();
 }
@@ -1458,6 +1476,10 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   StartTimeoutTimer();
 
+  std::unique_ptr<ServiceWorkerProviderHost> pending_provider_host =
+      ServiceWorkerProviderHost::PreCreateForController(context());
+  provider_host_ = pending_provider_host->AsWeakPtr();
+
   auto params = base::MakeUnique<EmbeddedWorkerStartParams>();
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
@@ -1466,7 +1488,12 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->pause_after_download = pause_after_download_;
 
   embedded_worker_->Start(
-      std::move(params), mojo::MakeRequest(&event_dispatcher_),
+      std::move(params),
+      // Unretained is used here because the callback will be owned by
+      // |embedded_worker_| whose owner is |this|.
+      base::BindOnce(&CompleteProviderHostPreparation, base::Unretained(this),
+                     base::Passed(&pending_provider_host), context()),
+      mojo::MakeRequest(&event_dispatcher_),
       base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                  weak_factory_.GetWeakPtr()));
   event_dispatcher_.set_connection_error_handler(base::Bind(

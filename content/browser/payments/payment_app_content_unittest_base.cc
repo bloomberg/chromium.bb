@@ -28,15 +28,22 @@ namespace content {
 namespace {
 
 void RegisterServiceWorkerCallback(bool* called,
+                                   int64_t* out_registration_id,
                                    ServiceWorkerStatusCode status,
                                    const std::string& status_message,
                                    int64_t registration_id) {
   EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   *called = true;
+  *out_registration_id = registration_id;
 }
 
 void UnregisterServiceWorkerCallback(bool* called,
                                      ServiceWorkerStatusCode status) {
+  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+  *called = true;
+}
+
+void StopWorkerCallback(bool* called, ServiceWorkerStatusCode status) {
   EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   *called = true;
 }
@@ -51,21 +58,24 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
         last_sw_registration_id_(kInvalidServiceWorkerRegistrationId) {}
   ~PaymentAppForWorkerTestHelper() override {}
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download,
-                     mojom::ServiceWorkerEventDispatcherRequest request,
-                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                         instance_host) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     ServiceWorkerVersion* version =
         context()->GetLiveVersion(service_worker_version_id);
     last_sw_registration_id_ = version->registration_id();
     last_sw_scope_ = scope;
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(request), std::move(instance_host));
+        pause_after_download, std::move(request), std::move(instance_host),
+        std::move(provider_info));
   }
 
   void OnPaymentRequestEvent(
@@ -111,9 +121,23 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
     const GURL& sw_script_url) {
   // Register service worker for payment manager.
   bool called = false;
+  int64_t registration_id;
   worker_helper_->context()->RegisterServiceWorker(
       scope_url, sw_script_url, nullptr,
-      base::Bind(&RegisterServiceWorkerCallback, &called));
+      base::Bind(&RegisterServiceWorkerCallback, &called, &registration_id));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  // Ensure the worker used for installation has stopped.
+  called = false;
+  ServiceWorkerRegistration* registration =
+      worker_helper_->context()->GetLiveRegistration(registration_id);
+  EXPECT_TRUE(registration);
+  EXPECT_TRUE(registration->active_version());
+  EXPECT_FALSE(registration->waiting_version());
+  EXPECT_FALSE(registration->installing_version());
+  registration->active_version()->StopWorker(
+      base::Bind(&StopWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 

@@ -7,9 +7,15 @@ public_headers = [
   "//content/common/service_worker/service_worker_client_info.h",
   "//content/common/service_worker/service_worker_types.h",
 ]
-traits_headers =
-    [ "//content/common/service_worker/service_worker_types_struct_traits.h" ]
+traits_headers = [
+  "//content/common/service_worker/service_worker_messages.h",
+  "//content/common/service_worker/service_worker_types_struct_traits.h",
+]
 sources = [
   "//content/common/service_worker/service_worker_types_struct_traits.cc",
 ]
-type_mappings = [ "content.mojom.ServiceWorkerProviderType=::content::ServiceWorkerProviderType" ]
+type_mappings = [
+  "content.mojom.ServiceWorkerProviderType=::content::ServiceWorkerProviderType",
+  "content.mojom.ServiceWorkerRegistrationObjectInfo=::content::ServiceWorkerRegistrationObjectInfo",
+  "content.mojom.ServiceWorkerVersionAttributes=::content::ServiceWorkerVersionAttributes",
+]

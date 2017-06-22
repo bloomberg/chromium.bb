@@ -260,6 +260,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
         helper_->mock_render_process_id(), 1 /* dummy provider_id */,
         true /* is_parent_frame_secure */, context()->AsWeakPtr(),
         &remote_endpoint_);
+    DCHECK(remote_endpoint_.client_request()->is_pending());
+    DCHECK(remote_endpoint_.host_ptr()->is_bound());
     version_1->AddControllee(host_.get());
 
     // Give the active version an in-flight request.

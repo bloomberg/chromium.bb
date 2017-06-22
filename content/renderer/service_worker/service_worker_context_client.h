@@ -22,6 +22,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
@@ -57,8 +58,8 @@ namespace content {
 struct PlatformNotificationData;
 struct PushEventPayload;
 struct ServiceWorkerClientInfo;
+class ServiceWorkerNetworkProvider;
 class ServiceWorkerProviderContext;
-class ServiceWorkerContextClient;
 class ThreadSafeSender;
 class EmbeddedWorkerInstanceClientImpl;
 class WebWorkerFetchContext;
@@ -87,6 +88,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const GURL& script_url,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client);
   ~ServiceWorkerContextClient() override;
 
@@ -342,7 +344,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
   const GURL script_url_;
-  int network_provider_id_ = kInvalidServiceWorkerProviderId;
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
@@ -358,6 +359,10 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   // This is bound on the main thread.
   scoped_refptr<mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr>
       instance_host_;
+
+  // This is passed to ServiceWorkerNetworkProvider when
+  // createServiceWorkerNetworkProvider is called.
+  std::unique_ptr<ServiceWorkerNetworkProvider> pending_network_provider_;
 
   // Renderer-side object corresponding to WebEmbeddedWorkerInstance.
   // This is valid from the ctor to workerContextDestroyed.

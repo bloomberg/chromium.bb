@@ -270,14 +270,16 @@ class MessageReceiverDisallowStart : public MessageReceiver {
 
   enum class StartMode { STALL, FAIL, SUCCEED };
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download,
-                     mojom::ServiceWorkerEventDispatcherRequest request,
-                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                         instance_host) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     switch (mode_) {
       case StartMode::STALL:
         // Prepare for OnStopWorker().
@@ -296,7 +298,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(
             embedded_worker_id, service_worker_version_id, scope, script_url,
-            pause_after_download, std::move(request), std::move(instance_host));
+            pause_after_download, std::move(request), std::move(instance_host),
+            std::move(provider_info));
         break;
     }
     current_mock_instance_index_++;
@@ -704,6 +707,11 @@ TEST_F(ServiceWorkerVersionTest, StoppingBeforeDestruct) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, listener.last_status);
 
+  // Destruct |version_| by releasing all references, including the provider
+  // host's.
+  helper_->context()->RemoveProviderHost(
+      version_->provider_host()->process_id(),
+      version_->provider_host()->provider_id());
   version_ = nullptr;
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, listener.last_status);
 }

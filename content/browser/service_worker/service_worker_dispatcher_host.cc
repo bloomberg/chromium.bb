@@ -245,7 +245,6 @@ ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
     existing_handle->IncrementRefCount();
     return existing_handle;
   }
-
   std::unique_ptr<ServiceWorkerRegistrationHandle> new_handle(
       new ServiceWorkerRegistrationHandle(GetContext()->AsWeakPtr(),
                                           provider_host, registration));
@@ -965,11 +964,22 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     }
 
     // Otherwise, completed the initialization of the pre-created host.
-    DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, info.type);
+    if (info.type != SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
+      bad_message::ReceivedBadMessage(
+          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE);
+      return;
+    }
     provider_host->CompleteNavigationInitialized(render_process_id_,
                                                  std::move(info), this);
     GetContext()->AddProviderHost(std::move(provider_host));
   } else {
+    // Provider host for controller should be pre-created on StartWorker in
+    // ServiceWorkerVersion.
+    if (info.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
+      bad_message::ReceivedBadMessage(
+          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE);
+      return;
+    }
     if (ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
       bad_message::ReceivedBadMessage(
           this, bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
@@ -978,88 +988,6 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
         render_process_id_, std::move(info), GetContext()->AsWeakPtr(), this));
   }
-}
-
-void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
-                                                       int64_t version_id,
-                                                       int embedded_worker_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnSetHostedVersionId");
-  if (!GetContext())
-    return;
-  ServiceWorkerProviderHost* provider_host =
-      GetContext()->GetProviderHost(render_process_id_, provider_id);
-  if (!provider_host) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_SET_HOSTED_VERSION_NO_HOST);
-    return;
-  }
-
-  // This provider host must be specialized for a controller.
-  if (provider_host->IsProviderForClient()) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_SET_HOSTED_VERSION_INVALID_HOST);
-    return;
-  }
-
-  // A service worker context associated with this provider host was destroyed
-  // due to restarting the service worker system etc.
-  if (!provider_host->IsContextAlive())
-    return;
-
-  // We might not be STARTING if the stop sequence was entered (STOPPING) or
-  // ended up being detached (STOPPED).
-  ServiceWorkerVersion* version = GetContext()->GetLiveVersion(version_id);
-  if (!version || version->running_status() != EmbeddedWorkerStatus::STARTING)
-    return;
-
-  // If the version has a different embedded worker, assume the message is about
-  // a detached worker and ignore.
-  if (version->embedded_worker()->embedded_worker_id() != embedded_worker_id)
-    return;
-
-  // A process for the worker must be equal to a process for the provider host.
-  if (version->embedded_worker()->process_id() != provider_host->process_id()) {
-    // Temporary debugging for https://crbug.com/668633
-    base::debug::ScopedCrashKey scope_worker_pid(
-        "swdh_set_hosted_version_worker_pid",
-        base::IntToString(version->embedded_worker()->process_id()));
-    base::debug::ScopedCrashKey scope_provider_host_pid(
-        "swdh_set_hosted_version_host_pid",
-        base::IntToString(provider_host->process_id()));
-    if (version->embedded_worker()->process_id() !=
-        ChildProcessHost::kInvalidUniqueID) {
-      base::debug::ScopedCrashKey scope_is_new_process(
-          "swdh_set_hosted_version_is_new_process",
-          version->embedded_worker()->is_new_process() ? "true" : "false");
-    }
-    base::debug::ScopedCrashKey scope_worker_restart_count(
-        "swdh_set_hosted_version_restart_count",
-        base::IntToString(version->embedded_worker()->restart_count()));
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH);
-    return;
-  }
-
-  provider_host->SetHostedVersion(version);
-
-  // Retrieve the registration associated with |version|. The registration
-  // must be alive because the version keeps it during starting worker.
-  ServiceWorkerRegistration* registration =
-      GetContext()->GetLiveRegistration(version->registration_id());
-  DCHECK(registration);
-
-  // Set the document URL to the script url in order to allow
-  // register/unregister/getRegistration on ServiceWorkerGlobalScope.
-  provider_host->SetDocumentUrl(version->script_url());
-
-  ServiceWorkerRegistrationObjectInfo info;
-  ServiceWorkerVersionAttributes attrs;
-  GetRegistrationObjectInfoAndVersionAttributes(
-      provider_host->AsWeakPtr(), registration, &info, &attrs);
-
-  Send(new ServiceWorkerMsg_AssociateRegistration(kDocumentMainThreadId,
-                                                  provider_id, info, attrs));
 }
 
 template <typename SourceInfo>
@@ -1178,17 +1106,17 @@ ServiceWorkerDispatcherHost::FindRegistrationHandle(int provider_id,
 void ServiceWorkerDispatcherHost::GetRegistrationObjectInfoAndVersionAttributes(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration,
-    ServiceWorkerRegistrationObjectInfo* info,
-    ServiceWorkerVersionAttributes* attrs) {
+    ServiceWorkerRegistrationObjectInfo* out_info,
+    ServiceWorkerVersionAttributes* out_attrs) {
   ServiceWorkerRegistrationHandle* handle =
       GetOrCreateRegistrationHandle(provider_host, registration);
-  *info = handle->GetObjectInfo();
+  *out_info = handle->GetObjectInfo();
 
-  attrs->installing = provider_host->GetOrCreateServiceWorkerHandle(
+  out_attrs->installing = provider_host->GetOrCreateServiceWorkerHandle(
       registration->installing_version());
-  attrs->waiting = provider_host->GetOrCreateServiceWorkerHandle(
+  out_attrs->waiting = provider_host->GetOrCreateServiceWorkerHandle(
       registration->waiting_version());
-  attrs->active = provider_host->GetOrCreateServiceWorkerHandle(
+  out_attrs->active = provider_host->GetOrCreateServiceWorkerHandle(
       registration->active_version());
 }
 

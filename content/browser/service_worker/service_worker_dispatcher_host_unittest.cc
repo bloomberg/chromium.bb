@@ -123,14 +123,16 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
  public:
   FailToStartWorkerTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download,
-                     mojom::ServiceWorkerEventDispatcherRequest request,
-                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                         instance_host) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
     instance_host_ptr.Bind(std::move(instance_host));
     instance_host_ptr->OnStopped();
@@ -196,13 +198,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     EXPECT_EQ(SERVICE_WORKER_OK, status);
   }
 
-  void SendSetHostedVersionId(int provider_id,
-                              int64_t version_id,
-                              int embedded_worker_id) {
-    dispatcher_host_->OnSetHostedVersionId(provider_id, version_id,
-                                           embedded_worker_id);
-  }
-
   void SendProviderCreated(ServiceWorkerProviderType type,
                            const GURL& pattern) {
     const int64_t kProviderId = 99;
@@ -215,6 +210,19 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
                                          helper_->mock_render_process_id());
     provider_host_ = context()->GetProviderHost(
         helper_->mock_render_process_id(), kProviderId);
+  }
+
+  void PrepareProviderForServiceWorkerContext(ServiceWorkerVersion* version,
+                                              const GURL& pattern) {
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForServiceWorkerContext(
+            helper_->mock_render_process_id(),
+            true /* is_parent_frame_secure */, version,
+            helper_->context()->AsWeakPtr(), &remote_endpoint_);
+    provider_host_ = host.get();
+    helper_->SimulateAddProcessToPattern(pattern,
+                                         helper_->mock_render_process_id());
+    context()->AddProviderHost(std::move(host));
   }
 
   void SendRegister(int64_t provider_id, GURL pattern, GURL worker_url) {
@@ -760,8 +768,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   GURL pattern = GURL("http://www.example.com/");
   GURL script_url = GURL("http://www.example.com/service_worker.js");
 
-  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, pattern);
   SetUpRegistration(pattern, script_url);
+  PrepareProviderForServiceWorkerContext(version_.get(), pattern);
 
   // Set the running hosted version so that we can retrieve a valid service
   // worker object information for the source attribute of the message event.
@@ -836,62 +844,6 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
-}
-
-TEST_F(ServiceWorkerDispatcherHostTest, OnSetHostedVersionId) {
-  GURL pattern = GURL("http://www.example.com/");
-  GURL script_url = GURL("http://www.example.com/service_worker.js");
-
-  Initialize(base::WrapUnique(new FailToStartWorkerTestHelper));
-  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, pattern);
-  SetUpRegistration(pattern, script_url);
-
-  const int64_t kProviderId = 99;  // Dummy value
-  bool called;
-  ServiceWorkerStatusCode status;
-  // StartWorker puts the worker in STARTING state but it will have no
-  // process id yet.
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        base::Bind(&SaveStatusCallback, &called, &status));
-  EXPECT_NE(version_->embedded_worker()->process_id(),
-            provider_host_->process_id());
-  // SendSetHostedVersionId should reject because the provider host process id
-  // is different. It should call BadMessageReceived because it's not an
-  // expected error state.
-  SendSetHostedVersionId(kProviderId, version_->version_id(),
-                         version_->embedded_worker()->embedded_worker_id());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_AssociateRegistration::ID));
-  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
-}
-
-TEST_F(ServiceWorkerDispatcherHostTest, OnSetHostedVersionId_DetachedWorker) {
-  GURL pattern = GURL("http://www.example.com/");
-  GURL script_url = GURL("http://www.example.com/service_worker.js");
-
-  Initialize(base::WrapUnique(new FailToStartWorkerTestHelper));
-  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, pattern);
-  SetUpRegistration(pattern, script_url);
-
-  const int64_t kProviderId = 99;  // Dummy value
-  bool called;
-  ServiceWorkerStatusCode status;
-  // StartWorker puts the worker in STARTING state.
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        base::Bind(&SaveStatusCallback, &called, &status));
-
-  // SendSetHostedVersionId should bail because the embedded worker is
-  // different. It shouldn't call BadMessageReceived because receiving a message
-  // for a detached worker is a legitimite possibility.
-  int bad_embedded_worker_id =
-      version_->embedded_worker()->embedded_worker_id() + 1;
-  SendSetHostedVersionId(kProviderId, version_->version_id(),
-                         bad_embedded_worker_id);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_AssociateRegistration::ID));
-  EXPECT_EQ(0, dispatcher_host_->bad_messages_received_count_);
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, ReceivedTimedOutRequestResponse) {

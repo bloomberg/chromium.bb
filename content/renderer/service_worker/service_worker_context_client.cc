@@ -554,6 +554,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& script_url,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
@@ -575,6 +576,11 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       "ServiceWorkerContextClient::StartingWorkerContext",
       this,
       "PrepareWorker");
+  // Create a content::ServiceWorkerNetworkProvider for this data source so
+  // we can observe its requests.
+  pending_network_provider_ =
+      base::MakeUnique<ServiceWorkerNetworkProvider>(std::move(provider_info));
+  provider_context_ = pending_network_provider_->context();
 }
 
 ServiceWorkerContextClient::~ServiceWorkerContextClient() {}
@@ -716,9 +722,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   SetRegistrationInServiceWorkerGlobalScope(registration_info, version_attrs);
 
-  (*instance_host_)
-      ->OnThreadStarted(WorkerThread::GetCurrentId(),
-                        provider_context_->provider_id());
+  (*instance_host_)->OnThreadStarted(WorkerThread::GetCurrentId());
 
   TRACE_EVENT_ASYNC_STEP_INTO0(
       "ServiceWorker",
@@ -1094,23 +1098,9 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-
-  // Create a content::ServiceWorkerNetworkProvider for this data source so
-  // we can observe its requests.
-  std::unique_ptr<ServiceWorkerNetworkProvider> provider =
-      base::MakeUnique<ServiceWorkerNetworkProvider>(
-          MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
-          true /* is_parent_frame_secure */);
-  provider_context_ = provider->context();
-  network_provider_id_ = provider->provider_id();
-
-  // Tell the network provider about which version to load.
-  provider->SetServiceWorkerVersionId(service_worker_version_id_,
-                                      embedded_worker_id_);
-
   // Blink is responsible for deleting the returned object.
   return base::MakeUnique<WebServiceWorkerNetworkProviderImpl>(
-      std::move(provider));
+      std::move(pending_network_provider_));
 }
 
 std::unique_ptr<blink::WebWorkerFetchContext>
@@ -1126,7 +1116,7 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
   // Blink is responsible for deleting the returned object.
   return base::MakeUnique<ServiceWorkerFetchContextImpl>(
       script_url_, worker_url_loader_factory_provider.PassInterface(),
-      network_provider_id_);
+      provider_context_->provider_id());
 }
 
 std::unique_ptr<blink::WebServiceWorkerProvider>

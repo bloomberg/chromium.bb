@@ -47,18 +47,19 @@ void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
 void EmbeddedWorkerInstanceClientImpl::StartWorker(
     const EmbeddedWorkerStartParams& params,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host) {
+    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!wrapper_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
 
   wrapper_ = StartWorkerContext(
-      params,
-      base::MakeUnique<ServiceWorkerContextClient>(
-          params.embedded_worker_id, params.service_worker_version_id,
-          params.scope, params.script_url, std::move(dispatcher_request),
-          std::move(instance_host), std::move(temporal_self_)));
+      params, base::MakeUnique<ServiceWorkerContextClient>(
+                  params.embedded_worker_id, params.service_worker_version_id,
+                  params.scope, params.script_url,
+                  std::move(dispatcher_request), std::move(instance_host),
+                  std::move(provider_info), std::move(temporal_self_)));
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {

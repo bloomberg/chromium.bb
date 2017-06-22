@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_event_dispatcher.mojom";
+import "content/common/service_worker/service_worker_provider.mojom";
 import "mojo/common/string16.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/public/web/console_message.mojom";
@@ -18,7 +19,8 @@ struct EmbeddedWorkerStartParams;
 interface EmbeddedWorkerInstanceClient {
   StartWorker(EmbeddedWorkerStartParams params,
               ServiceWorkerEventDispatcher& dispatcher_request,
-              associated EmbeddedWorkerInstanceHost instance_host);
+              associated EmbeddedWorkerInstanceHost instance_host,
+              ServiceWorkerProviderInfoForStartWorker provider_info);
   // The response is sent back via EmbeddedWorkerInstanceHost.OnStopped().
   StopWorker();
   ResumeAfterDownload();
@@ -37,12 +39,9 @@ interface EmbeddedWorkerInstanceHost {
   // Indicates that the worker has failed to load the script.
   OnScriptLoadFailed();
   // Indicates that the worker thread has started. |thread_id| is the actual
-  // platform thread id on which the worker runs, while |provider_id| is the id
-  // of the ServiceWorkerNetworkProvider instance, which is unique in one
-  // renderer process, and the browser process uses this id to maintain a
-  // counterpart ServiceWorkerProviderHost instance.
+  // platform thread id on which the worker runs.
   // This is called after OnScriptLoaded.
-  OnThreadStarted(int32 thread_id, int32 provider_id);
+  OnThreadStarted(int32 thread_id);
   // Indicates that the worker has evaluated the script. |success| means
   // evaluating the script completed and no uncaught exception occurred.
   // This is called after OnThreadStarted.
