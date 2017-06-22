@@ -132,7 +132,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Flaky: crbug.com/715963
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_CreateNewFolder,
+    CreateNewFolder,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "createNewFolderAfterSelectFile"),
@@ -676,8 +676,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
 // Flaky: crbug.com/715961.
 // Previously it was disabled via DISABLE_SLOW_FILESAPP_TESTS and in
 // OFFICIAL_BUILD, see http://crbug.com/429294.
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       DISABLED_PRE_BasicDrive) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDrive) {
   AddAllUsers();
 }
 
