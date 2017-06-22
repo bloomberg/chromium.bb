@@ -9,12 +9,14 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -148,6 +150,34 @@ TEST(FeatureProviderTest, PermissionFeatureAvailability) {
                 ->IsAvailableToContext(app.get(), Feature::UNSPECIFIED_CONTEXT,
                                        GURL())
                 .result());
+}
+
+TEST(FeatureProviderTest, GetChildren) {
+  FeatureProvider provider;
+
+  auto add_feature = [&provider](base::StringPiece name,
+                                 bool no_parent = false) {
+    auto feature = base::MakeUnique<SimpleFeature>();
+    feature->set_name(name);
+    feature->set_noparent(no_parent);
+    provider.AddFeature(name, std::move(feature));
+  };
+
+  add_feature("parent");
+  add_feature("parent.child");
+  add_feature("parent.child.grandchild");
+  add_feature("parent.other_child.other_grandchild");
+  add_feature("parent.unparented_child", true);
+
+  Feature* parent = provider.GetFeature("parent");
+  ASSERT_TRUE(parent);
+  std::vector<Feature*> children = provider.GetChildren(*parent);
+  std::set<std::string> children_names;
+  for (const Feature* child : children)
+    children_names.insert(child->name());
+  EXPECT_THAT(children_names, testing::UnorderedElementsAre(
+                                  "parent.child", "parent.child.grandchild",
+                                  "parent.other_child.other_grandchild"));
 }
 
 }  // namespace extensions

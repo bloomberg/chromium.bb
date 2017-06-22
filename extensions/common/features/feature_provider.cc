@@ -164,7 +164,8 @@ std::vector<Feature*> FeatureProvider::GetChildren(
   result.reserve(std::distance(first_child, after_children));
   for (FeatureMap::const_iterator it = first_child; it != after_children;
        ++it) {
-    result.push_back(it->second.get());
+    if (!it->second->no_parent())
+      result.push_back(it->second.get());
   }
   return result;
 }
