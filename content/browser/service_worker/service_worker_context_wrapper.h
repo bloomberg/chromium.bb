@@ -34,9 +34,11 @@ class SpecialStoragePolicy;
 namespace content {
 
 class BrowserContext;
+class ChromeBlobStorageContext;
 class ResourceContext;
 class ServiceWorkerContextObserver;
 class StoragePartitionImpl;
+class URLLoaderFactoryGetter;
 
 // A refcounted wrapper class for our core object. Higher level content lib
 // classes keep references to this class on mutliple threads. The inner core
@@ -61,9 +63,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // Init and Shutdown are for use on the UI thread when the profile,
   // storagepartition is being setup and torn down.
+  // |blob_context| and |url_loader_factory_getter| are used only
+  // when IsServicificationEnabled is true.
   void Init(const base::FilePath& user_data_directory,
             storage::QuotaManagerProxy* quota_manager_proxy,
-            storage::SpecialStoragePolicy* special_storage_policy);
+            storage::SpecialStoragePolicy* special_storage_policy,
+            ChromeBlobStorageContext* blob_context,
+            URLLoaderFactoryGetter* url_loader_factory_getter);
   void Shutdown();
 
   // Must be called on the IO thread.
@@ -265,7 +271,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
-      storage::SpecialStoragePolicy* special_storage_policy);
+      storage::SpecialStoragePolicy* special_storage_policy,
+      ChromeBlobStorageContext* blob_context,
+      URLLoaderFactoryGetter* url_loader_factory_getter);
   void ShutdownOnIO();
 
   void DidFindRegistrationForFindReady(

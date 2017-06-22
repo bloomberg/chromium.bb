@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -31,6 +32,7 @@
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/base/url_util.h"
+#include "storage/browser/blob/blob_storage_context.h"
 
 namespace content {
 
@@ -97,6 +99,155 @@ void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
   }
   context->RemoveProviderHost(process_id, provider_id);
 }
+
+// Used by a Service Worker for script loading (for all script loading for now,
+// but to be used only during installation once script streaming lands).
+// For now this is just a proxy loader for the network loader.
+// Eventually this should replace the existing URLRequestJob-based request
+// interception for script loading, namely ServiceWorkerWriteToCacheJob.
+// TODO(kinuko): Implement this. Hook up the existing code in
+// ServiceWorkerContextRequestHandler.
+class ScriptURLLoader : public mojom::URLLoader, public mojom::URLLoaderClient {
+ public:
+  ScriptURLLoader(
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const ResourceRequest& resource_request,
+      mojom::URLLoaderClientPtr client,
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+      scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      : network_client_binding_(this),
+        forwarding_client_(std::move(client)),
+        provider_host_(provider_host) {
+    mojom::URLLoaderClientPtr network_client;
+    network_client_binding_.Bind(mojo::MakeRequest(&network_client));
+    loader_factory_getter->GetNetworkFactory()->get()->CreateLoaderAndStart(
+        mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
+        resource_request, std::move(network_client), traffic_annotation);
+  }
+  ~ScriptURLLoader() override {}
+
+  // mojom::URLLoader:
+  void FollowRedirect() override { network_loader_->FollowRedirect(); }
+  void SetPriority(net::RequestPriority priority,
+                   int32_t intra_priority_value) override {
+    network_loader_->SetPriority(priority, intra_priority_value);
+  }
+
+  // mojom::URLLoaderClient for simply proxying network:
+  void OnReceiveResponse(
+      const ResourceResponseHead& response_head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      mojom::DownloadedTempFilePtr downloaded_file) override {
+    if (provider_host_) {
+      // We don't have complete info here, but fill in what we have now.
+      // At least we need headers and SSL info.
+      net::HttpResponseInfo response_info;
+      response_info.headers = response_head.headers;
+      if (ssl_info.has_value())
+        response_info.ssl_info = *ssl_info;
+      response_info.was_fetched_via_spdy = response_head.was_fetched_via_spdy;
+      response_info.was_alpn_negotiated = response_head.was_alpn_negotiated;
+      response_info.alpn_negotiated_protocol =
+          response_head.alpn_negotiated_protocol;
+      response_info.connection_info = response_head.connection_info;
+      response_info.socket_address = response_head.socket_address;
+
+      DCHECK(provider_host_->IsHostToRunningServiceWorker());
+      provider_host_->running_hosted_version()->SetMainScriptHttpResponseInfo(
+          response_info);
+    }
+    forwarding_client_->OnReceiveResponse(response_head, ssl_info,
+                                          std::move(downloaded_file));
+  }
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const ResourceResponseHead& response_head) override {
+    forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
+  }
+  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {
+    forwarding_client_->OnDataDownloaded(data_len, encoded_data_len);
+  }
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        OnUploadProgressCallback ack_callback) override {
+    forwarding_client_->OnUploadProgress(current_position, total_size,
+                                         std::move(ack_callback));
+  }
+  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
+    forwarding_client_->OnReceiveCachedMetadata(data);
+  }
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
+  }
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    forwarding_client_->OnStartLoadingResponseBody(std::move(body));
+  }
+  void OnComplete(const ResourceRequestCompletionStatus& status) override {
+    forwarding_client_->OnComplete(status);
+  }
+
+ private:
+  mojom::URLLoaderAssociatedPtr network_loader_;
+  mojo::Binding<mojom::URLLoaderClient> network_client_binding_;
+  mojom::URLLoaderClientPtr forwarding_client_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptURLLoader);
+};
+
+// Created per one controller worker for script loading (only during
+// installation, eventually). This is kept alive while
+// ServiceWorkerNetworkProvider in the renderer process is alive.
+// Used only when IsServicificationEnabled is true.
+class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
+ public:
+  ScriptURLLoaderFactory(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+      scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter)
+      : context_(context),
+        provider_host_(provider_host),
+        blob_storage_context_(blob_storage_context),
+        loader_factory_getter_(loader_factory_getter) {}
+  ~ScriptURLLoaderFactory() override {}
+
+  // mojom::URLLoaderFactory:
+  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const ResourceRequest& resource_request,
+                            mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    mojo::MakeStrongAssociatedBinding(
+        base::MakeUnique<ScriptURLLoader>(
+            routing_id, request_id, options, resource_request,
+            std::move(client), context_, provider_host_, blob_storage_context_,
+            loader_factory_getter_, traffic_annotation),
+        std::move(request));
+  }
+
+  void SyncLoad(int32_t routing_id,
+                int32_t request_id,
+                const ResourceRequest& request,
+                SyncLoadCallback callback) override {
+    NOTREACHED();
+  }
+
+ private:
+  base::WeakPtr<ServiceWorkerContextCore> context_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
+  scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
+  DISALLOW_COPY_AND_ASSIGN(ScriptURLLoaderFactory);
+};
 
 }  // anonymous namespace
 
@@ -579,6 +730,7 @@ bool ServiceWorkerProviderHost::GetRegistrationForReady(
 std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK(!IsBrowserSideNavigationEnabled());
+  DCHECK(!ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(MSG_ROUTING_NONE, info_.route_id);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
@@ -612,6 +764,7 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
 void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     ServiceWorkerProviderHost* provisional_host) {
   DCHECK(!IsBrowserSideNavigationEnabled());
+  DCHECK(!ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, provisional_host->process_id());
   DCHECK_NE(MSG_ROUTING_NONE, provisional_host->frame_id());
@@ -709,6 +862,18 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   provider_info->attributes = std::move(attrs);
   provider_info->registration = std::move(info);
   provider_info->client_request = mojo::MakeRequest(&provider_);
+
+  mojom::URLLoaderFactoryAssociatedPtrInfo loader_factory_ptr_info;
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    mojo::MakeStrongAssociatedBinding(
+        base::MakeUnique<ScriptURLLoaderFactory>(
+            context_, AsWeakPtr(), context_->blob_storage_context(),
+            context_->loader_factory_getter()),
+        mojo::MakeRequest(&loader_factory_ptr_info));
+    provider_info->script_loader_factory_ptr_info =
+        std::move(loader_factory_ptr_info);
+  }
+
   binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
   binding_.set_connection_error_handler(
       base::Bind(&RemoveProviderHost, context_, process_id, provider_id()));

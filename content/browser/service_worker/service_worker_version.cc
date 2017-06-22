@@ -914,14 +914,7 @@ void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
 }
 
 void ServiceWorkerVersion::OnScriptLoaded() {
-  DCHECK(GetMainScriptHttpResponseInfo() ||
-         // TODO(scottmg|falken): This DCHECK is currently triggered in
-         // --network-service because ServiceWorkerReadFromCacheJob isn't being
-         // used to retrieve the service worker js. This should be removed once
-         // that's done.
-         (IsBrowserSideNavigationEnabled() &&
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableNetworkService)));
+  DCHECK(GetMainScriptHttpResponseInfo());
   if (IsInstalled(status()))
     UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", true);
 }

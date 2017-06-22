@@ -33,11 +33,13 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "url/gurl.h"
 
@@ -239,12 +241,16 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy,
+    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+    URLLoaderFactoryGetter* url_loader_factory_getter,
     base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
         observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       providers_(base::MakeUnique<ProcessToProviderMap>()),
       provider_by_uuid_(base::MakeUnique<ProviderByClientUUIDMap>()),
+      blob_storage_context_(std::move(blob_storage_context)),
+      loader_factory_getter_(url_loader_factory_getter),
       force_update_on_page_load_(false),
       next_handle_id_(0),
       next_registration_handle_id_(0),
