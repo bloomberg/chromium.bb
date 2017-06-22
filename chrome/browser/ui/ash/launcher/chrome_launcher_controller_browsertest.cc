@@ -828,8 +828,14 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
 }
 
+// TODO(crbug.com/735842): Flaky on CrOS MSan.
+#if defined(OS_CHROMEOS)
+#define MAYBE_SetIcon DISABLED_SetIcon
+#else
+#define MAYBE_SetIcon SetIcon
+#endif
 // Test that opening an app sets the correct icon
-IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_SetIcon) {
   TestAppWindowIconObserver test_observer(browser()->profile());
 
   // Enable experimental APIs to allow panel creation.
