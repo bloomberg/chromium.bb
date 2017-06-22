@@ -70,8 +70,7 @@ TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestSelectableItems) {
   // The second item must be selected.
   EXPECT_EQ(1U, GetMediator().selectedItemIndex);
 
-  CollectionViewItem* item_1 =
-      [[GetMediator() selectableItems] objectAtIndex:0];
+  CollectionViewItem* item_1 = [selectable_items objectAtIndex:0];
   DCHECK([item_1 isKindOfClass:[AutofillProfileItem class]]);
   AutofillProfileItem* profile_item_1 =
       base::mac::ObjCCastStrict<AutofillProfileItem>(item_1);
@@ -87,8 +86,7 @@ TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestSelectableItems) {
   EXPECT_EQ(nil, profile_item_1.address);
   EXPECT_EQ(nil, profile_item_1.notification);
 
-  CollectionViewItem* item_2 =
-      [[GetMediator() selectableItems] objectAtIndex:1];
+  CollectionViewItem* item_2 = [selectable_items objectAtIndex:1];
   DCHECK([item_2 isKindOfClass:[AutofillProfileItem class]]);
   AutofillProfileItem* profile_item_2 =
       base::mac::ObjCCastStrict<AutofillProfileItem>(item_2);
@@ -121,4 +119,56 @@ TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestNoSelectedItem) {
 
   // The selected item index must be invalid.
   EXPECT_EQ(NSUIntegerMax, GetMediator().selectedItemIndex);
+}
+
+// Tests that only the requested fields are displayed.
+TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestOnlyRequestedData) {
+  // Update the web_payment_request and reload the items.
+  payment_request_->web_payment_request().options.request_payer_name = false;
+  [GetMediator() loadItems];
+
+  NSArray<CollectionViewItem*>* selectable_items =
+      [GetMediator() selectableItems];
+
+  CollectionViewItem* item = [selectable_items objectAtIndex:0];
+  DCHECK([item isKindOfClass:[AutofillProfileItem class]]);
+  AutofillProfileItem* profile_item =
+      base::mac::ObjCCastStrict<AutofillProfileItem>(item);
+  EXPECT_EQ(nil, profile_item.name);
+  EXPECT_NE(nil, profile_item.email);
+  EXPECT_NE(nil, profile_item.phoneNumber);
+  EXPECT_EQ(nil, profile_item.address);
+  EXPECT_EQ(nil, profile_item.notification);
+
+  // Update the web_payment_request and reload the items.
+  payment_request_->web_payment_request().options.request_payer_email = false;
+  [GetMediator() loadItems];
+
+  selectable_items = [GetMediator() selectableItems];
+
+  item = [selectable_items objectAtIndex:0];
+  DCHECK([item isKindOfClass:[AutofillProfileItem class]]);
+  profile_item = base::mac::ObjCCastStrict<AutofillProfileItem>(item);
+  EXPECT_EQ(nil, profile_item.name);
+  EXPECT_EQ(nil, profile_item.email);
+  EXPECT_NE(nil, profile_item.phoneNumber);
+  EXPECT_EQ(nil, profile_item.address);
+  EXPECT_EQ(nil, profile_item.notification);
+
+  // Update the web_payment_request and reload the items.
+  payment_request_->web_payment_request().options.request_payer_name = true;
+  payment_request_->web_payment_request().options.request_payer_email = true;
+  payment_request_->web_payment_request().options.request_payer_phone = false;
+  [GetMediator() loadItems];
+
+  selectable_items = [GetMediator() selectableItems];
+
+  item = [selectable_items objectAtIndex:0];
+  DCHECK([item isKindOfClass:[AutofillProfileItem class]]);
+  profile_item = base::mac::ObjCCastStrict<AutofillProfileItem>(item);
+  EXPECT_NE(nil, profile_item.name);
+  EXPECT_NE(nil, profile_item.email);
+  EXPECT_EQ(nil, profile_item.phoneNumber);
+  EXPECT_EQ(nil, profile_item.address);
+  EXPECT_EQ(nil, profile_item.notification);
 }

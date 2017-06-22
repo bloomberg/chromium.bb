@@ -358,6 +358,33 @@ TEST_F(PaymentRequestMediatorTest, TestContactInfoItem) {
   EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             contact_info_item.accessoryType);
 
+  // Contact Info item should only show requested fields.
+  payment_request_->web_payment_request().options.request_payer_name = false;
+  item = [GetPaymentRequestMediator() contactInfoItem];
+  ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
+  contact_info_item = base::mac::ObjCCastStrict<AutofillProfileItem>(item);
+  EXPECT_EQ(nil, contact_info_item.name);
+  EXPECT_NE(nil, contact_info_item.phoneNumber);
+  EXPECT_NE(nil, contact_info_item.email);
+
+  payment_request_->web_payment_request().options.request_payer_phone = false;
+  item = [GetPaymentRequestMediator() contactInfoItem];
+  ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
+  contact_info_item = base::mac::ObjCCastStrict<AutofillProfileItem>(item);
+  EXPECT_EQ(nil, contact_info_item.name);
+  EXPECT_EQ(nil, contact_info_item.phoneNumber);
+  EXPECT_NE(nil, contact_info_item.email);
+
+  payment_request_->web_payment_request().options.request_payer_name = true;
+  payment_request_->web_payment_request().options.request_payer_phone = false;
+  payment_request_->web_payment_request().options.request_payer_email = false;
+  item = [GetPaymentRequestMediator() contactInfoItem];
+  ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
+  contact_info_item = base::mac::ObjCCastStrict<AutofillProfileItem>(item);
+  EXPECT_NE(nil, contact_info_item.name);
+  EXPECT_EQ(nil, contact_info_item.phoneNumber);
+  EXPECT_EQ(nil, contact_info_item.email);
+
   // Reset the selected contact profile.
   payment_request_->set_selected_contact_profile(nullptr);
 

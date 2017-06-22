@@ -229,10 +229,17 @@ using ::payment_request_util::GetShippingSectionTitle;
   const autofill::AutofillProfile* profile =
       self.paymentRequest->selected_contact_profile();
   if (profile) {
+    DCHECK(self.paymentRequest->request_payer_name() ||
+           self.paymentRequest->request_payer_email() ||
+           self.paymentRequest->request_payer_phone());
+
     AutofillProfileItem* item = [[AutofillProfileItem alloc] init];
-    item.name = GetNameLabelFromAutofillProfile(*profile);
-    item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*profile);
-    item.email = GetEmailLabelFromAutofillProfile(*profile);
+    if (self.paymentRequest->request_payer_name())
+      item.name = GetNameLabelFromAutofillProfile(*profile);
+    if (self.paymentRequest->request_payer_phone())
+      item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*profile);
+    if (self.paymentRequest->request_payer_email())
+      item.email = GetEmailLabelFromAutofillProfile(*profile);
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
     return item;
   }
