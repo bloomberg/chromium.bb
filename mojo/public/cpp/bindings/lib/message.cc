@@ -24,10 +24,10 @@ namespace mojo {
 namespace {
 
 base::LazyInstance<base::ThreadLocalPointer<internal::MessageDispatchContext>>::
-    DestructorAtExit g_tls_message_dispatch_context = LAZY_INSTANCE_INITIALIZER;
+    Leaky g_tls_message_dispatch_context = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ThreadLocalPointer<SyncMessageResponseContext>>::
-    DestructorAtExit g_tls_sync_response_context = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<SyncMessageResponseContext>>::Leaky
+    g_tls_sync_response_context = LAZY_INSTANCE_INITIALIZER;
 
 void DoNotifyBadMessage(Message message, const std::string& error) {
   message.NotifyBadMessage(error);

@@ -38,7 +38,7 @@ class SyncCallSettings {
   size_t scoped_allow_count_ = 0;
 };
 
-base::LazyInstance<base::ThreadLocalPointer<SyncCallSettings>>::DestructorAtExit
+base::LazyInstance<base::ThreadLocalPointer<SyncCallSettings>>::Leaky
     g_sync_call_settings = LAZY_INSTANCE_INITIALIZER;
 
 // static
