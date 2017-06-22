@@ -24,7 +24,7 @@ class GURL;
 namespace safe_browsing {
 
 // Metadata that indicates what kind of URL match this is.
-enum class ThreatPatternType {
+enum class ThreatPatternType : int {
   NONE = 0,                        // Pattern type didn't appear in the metadata
   MALWARE_LANDING = 1,             // The match is a malware landing page
   MALWARE_DISTRIBUTION = 2,        // The match is a malware distribution page
