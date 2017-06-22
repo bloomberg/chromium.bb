@@ -1934,6 +1934,7 @@ void BrowserView::Layout() {
   // TODO(jamescook): Why was this in the middle of layout code?
   toolbar_->location_bar()->omnibox_view()->SetFocusBehavior(
       IsToolbarVisible() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
+  frame()->GetFrameView()->UpdateMinimumSize();
 }
 
 void BrowserView::OnGestureEvent(ui::GestureEvent* event) {
@@ -2129,6 +2130,7 @@ void BrowserView::InitViews() {
   GetLocationBar()->GetOmniboxView()->model()->popup_model()->AddObserver(this);
 
   frame_->OnBrowserViewInitViewsComplete();
+  frame_->GetFrameView()->UpdateMinimumSize();
 }
 
 void BrowserView::LoadingAnimationCallback() {

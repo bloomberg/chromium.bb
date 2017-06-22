@@ -60,6 +60,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Provided for mus. Updates the client-area of the WindowTreeHostMus.
   virtual void UpdateClientArea();
 
+  // Provided for mus to update the minimum window size property.
+  virtual void UpdateMinimumSize();
+
   // Overriden from views::View.
   void ChildPreferredSizeChanged(views::View* child) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;

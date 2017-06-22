@@ -173,6 +173,25 @@ TEST_F(CustomFrameViewAshTest, MinimumAndMaximumSize) {
             max_frame_size.height());
 }
 
+// Verify that CustomFrameViewAsh returns the correct minimum frame size when
+// the kMinimumSize property is set.
+TEST_F(CustomFrameViewAshTest, HonorsMinimumSizeProperty) {
+  const gfx::Size min_client_size(500, 500);
+  TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
+  delegate->set_minimum_size(min_client_size);
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+
+  // Update the native window's minimum size property.
+  const gfx::Size min_window_size(600, 700);
+  widget->GetNativeWindow()->SetProperty(aura::client::kMinimumSize,
+                                         new gfx::Size(min_window_size));
+
+  CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
+  const gfx::Size min_frame_size = custom_frame_view->GetMinimumSize();
+
+  EXPECT_EQ(min_window_size, min_frame_size);
+}
+
 // Verify that CustomFrameViewAsh updates the avatar icon based on the
 // avatar icon window property.
 TEST_F(CustomFrameViewAshTest, AvatarIcon) {
