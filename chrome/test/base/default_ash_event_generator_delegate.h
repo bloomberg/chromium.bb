@@ -26,8 +26,8 @@ class DefaultAshEventGeneratorDelegate
   aura::client::ScreenPositionClient* GetScreenPositionClient(
       const aura::Window* window) const override;
 
-  void DispatchKeyEventToIME(ui::EventTarget* target,
-                             ui::KeyEvent* event) override;
+  ui::EventDispatchDetails DispatchKeyEventToIME(ui::EventTarget* target,
+                                                 ui::KeyEvent* event) override;
 
  private:
   friend struct base::DefaultSingletonTraits<DefaultAshEventGeneratorDelegate>;

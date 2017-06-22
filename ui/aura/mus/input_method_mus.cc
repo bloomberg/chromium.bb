@@ -43,7 +43,7 @@ void InputMethodMus::Init(service_manager::Connector* connector) {
     connector->BindInterface(ui::mojom::kServiceName, &ime_driver_);
 }
 
-void InputMethodMus::DispatchKeyEvent(
+ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(
     ui::KeyEvent* event,
     std::unique_ptr<EventResultCallback> ack_callback) {
   DCHECK(event->type() == ui::ET_KEY_PRESSED ||
@@ -51,15 +51,15 @@ void InputMethodMus::DispatchKeyEvent(
 
   // If no text input client, do nothing.
   if (!GetTextInputClient()) {
-    DispatchKeyEventPostIME(event);
+    ui::EventDispatchDetails dispatch_details = DispatchKeyEventPostIME(event);
     if (ack_callback) {
       ack_callback->Run(event->handled() ? EventResult::HANDLED
                                          : EventResult::UNHANDLED);
     }
-    return;
+    return dispatch_details;
   }
 
-  SendKeyEventToInputMethod(*event, std::move(ack_callback));
+  return SendKeyEventToInputMethod(*event, std::move(ack_callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,11 +82,12 @@ bool InputMethodMus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
   return false;
 }
 
-void InputMethodMus::DispatchKeyEvent(ui::KeyEvent* event) {
-  DispatchKeyEvent(event, nullptr);
+ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(ui::KeyEvent* event) {
+  ui::EventDispatchDetails dispatch_details = DispatchKeyEvent(event, nullptr);
   // Mark the event as handled so that EventGenerator doesn't attempt to
   // deliver event as well.
   event->SetHandled();
+  return dispatch_details;
 }
 
 void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {
@@ -119,15 +120,14 @@ bool InputMethodMus::IsCandidatePopupOpen() const {
   return false;
 }
 
-void InputMethodMus::SendKeyEventToInputMethod(
+ui::EventDispatchDetails InputMethodMus::SendKeyEventToInputMethod(
     const ui::KeyEvent& event,
     std::unique_ptr<EventResultCallback> ack_callback) {
   if (!input_method_) {
     // This code path is hit in tests that don't connect to the server.
     DCHECK(!ack_callback);
     std::unique_ptr<ui::Event> event_clone = ui::Event::Clone(event);
-    DispatchKeyEventPostIME(event_clone->AsKeyEvent());
-    return;
+    return DispatchKeyEventPostIME(event_clone->AsKeyEvent());
   }
   // IME driver will notify us whether it handled the event or not by calling
   // ProcessKeyEventCallback(), in which we will run the |ack_callback| to tell
@@ -137,6 +137,8 @@ void InputMethodMus::SendKeyEventToInputMethod(
       ui::Event::Clone(event),
       base::Bind(&InputMethodMus::ProcessKeyEventCallback,
                  base::Unretained(this), event));
+
+  return ui::EventDispatchDetails();
 }
 
 void InputMethodMus::OnDidChangeFocusedClient(
@@ -207,7 +209,7 @@ void InputMethodMus::ProcessKeyEventCallback(
     // any client-side post-ime processing needs to be done. This includes cases
     // like backspace, return key, etc.
     std::unique_ptr<ui::Event> event_clone = ui::Event::Clone(event);
-    DispatchKeyEventPostIME(event_clone->AsKeyEvent());
+    ignore_result(DispatchKeyEventPostIME(event_clone->AsKeyEvent()));
     event_result =
         event_clone->handled() ? EventResult::HANDLED : EventResult::UNHANDLED;
   } else {

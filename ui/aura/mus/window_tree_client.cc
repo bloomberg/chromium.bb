@@ -1357,8 +1357,8 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   if (event->IsKeyEvent()) {
     InputMethodMus* input_method = GetWindowTreeHostMus(window)->input_method();
     if (input_method) {
-      input_method->DispatchKeyEvent(event->AsKeyEvent(),
-                                     CreateEventResultCallback(event_id));
+      ignore_result(input_method->DispatchKeyEvent(
+          event->AsKeyEvent(), CreateEventResultCallback(event_id)));
       return;
     }
   }

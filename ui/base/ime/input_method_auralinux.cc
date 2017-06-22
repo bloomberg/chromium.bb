@@ -57,27 +57,26 @@ bool InputMethodAuraLinux::OnUntranslatedIMEMessage(
   return false;
 }
 
-void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
+ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
+    ui::KeyEvent* event) {
   DCHECK(event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED);
 
   // If no text input client, do nothing.
-  if (!GetTextInputClient()) {
-    ignore_result(DispatchKeyEventPostIME(event));
-    return;
-  }
+  if (!GetTextInputClient())
+    return DispatchKeyEventPostIME(event);
 
   if (!event->HasNativeEvent() && sending_key_event_) {
     // Faked key events that are sent from input.ime.sendKeyEvents.
     ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
     if (details.dispatcher_destroyed || details.target_destroyed ||
         event->stopped_propagation()) {
-      return;
+      return details;
     }
     if ((event->is_char() || event->GetDomKey().IsCharacter()) &&
         event->type() == ui::ET_KEY_PRESSED) {
       GetTextInputClient()->InsertChar(*event);
     }
-    return;
+    return details;
   }
 
   suppress_next_result_ = false;
@@ -112,9 +111,10 @@ void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
         base::Owned(new ui::CompositionText(composition_)),
         base::Owned(new base::string16(result_text_)));
     GetEngine()->ProcessKeyEvent(*event, callback);
-  } else {
-    ProcessKeyEventDone(event, filtered, false);
+    return ui::EventDispatchDetails();
   }
+
+  return ProcessKeyEventDone(event, filtered, false);
 }
 
 void InputMethodAuraLinux::ProcessKeyEventByEngineDone(
@@ -127,15 +127,16 @@ void InputMethodAuraLinux::ProcessKeyEventByEngineDone(
   composition_changed_ = composition_changed;
   composition_.CopyFrom(*composition);
   result_text_ = *result_text;
-  ProcessKeyEventDone(event, filtered, is_handled);
+  ignore_result(ProcessKeyEventDone(event, filtered, is_handled));
 }
 
-void InputMethodAuraLinux::ProcessKeyEventDone(ui::KeyEvent* event,
-                                               bool filtered,
-                                               bool is_handled) {
+ui::EventDispatchDetails InputMethodAuraLinux::ProcessKeyEventDone(
+    ui::KeyEvent* event,
+    bool filtered,
+    bool is_handled) {
   DCHECK(event);
   if (is_handled)
-    return;
+    return ui::EventDispatchDetails();
 
   // If the IME extension has not handled the key event, passes the keyevent
   // back to the previous processing flow. Preconditions for this situation:
@@ -148,12 +149,12 @@ void InputMethodAuraLinux::ProcessKeyEventDone(ui::KeyEvent* event,
     else if (HasInputMethodResult())
       details = SendFakeProcessKeyEvent(event);
     if (details.dispatcher_destroyed)
-      return;
+      return details;
     // If the KEYDOWN is stopped propagation (e.g. triggered an accelerator),
     // don't InsertChar/InsertText to the input field.
     if (event->stopped_propagation() || details.target_destroyed) {
       ResetContext();
-      return;
+      return details;
     }
 
     // Don't send VKEY_PROCESSKEY event if there is no result text or
@@ -207,7 +208,7 @@ void InputMethodAuraLinux::ProcessKeyEventDone(ui::KeyEvent* event,
     if (details.dispatcher_destroyed) {
       if (should_stop_propagation)
         event->StopPropagation();
-      return;
+      return details;
     }
     if (event->stopped_propagation() || details.target_destroyed) {
       ResetContext();
@@ -229,6 +230,8 @@ void InputMethodAuraLinux::ProcessKeyEventDone(ui::KeyEvent* event,
 
   if (should_stop_propagation)
     event->StopPropagation();
+
+  return details;
 }
 
 void InputMethodAuraLinux::UpdateContextFocusState() {

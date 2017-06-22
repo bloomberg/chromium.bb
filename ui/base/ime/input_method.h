@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/events/event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -101,7 +102,8 @@ class InputMethod {
   // dispatched back to the caller via
   // ui::InputMethodDelegate::DispatchKeyEventPostIME(), once it's processed by
   // the input method. It should only be called by a message dispatcher.
-  virtual void DispatchKeyEvent(ui::KeyEvent* event) = 0;
+  virtual ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event)
+      WARN_UNUSED_RESULT = 0;
 
   // Called by the focused client whenever its text input type is changed.
   // Before calling this method, the focused client must confirm or clear

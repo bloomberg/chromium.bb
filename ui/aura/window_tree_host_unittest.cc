@@ -78,7 +78,9 @@ TEST_F(WindowTreeHostTest, NoRewritesPostIME) {
   host()->AddEventRewriter(&event_rewriter);
 
   ui::KeyEvent key_event('A', ui::VKEY_A, 0);
-  host()->GetInputMethod()->DispatchKeyEvent(&key_event);
+  ui::EventDispatchDetails details =
+      host()->GetInputMethod()->DispatchKeyEvent(&key_event);
+  ASSERT_TRUE(!details.dispatcher_destroyed && !details.target_destroyed);
   EXPECT_EQ(0, event_rewriter.events_seen());
 
   host()->RemoveEventRewriter(&event_rewriter);

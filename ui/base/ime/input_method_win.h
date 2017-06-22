@@ -29,7 +29,7 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // Overridden from InputMethod:
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
-  void DispatchKeyEvent(ui::KeyEvent* event) override;
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
@@ -97,7 +97,7 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // to be ready for receiving keyboard input.
   bool IsWindowFocused(const TextInputClient* client) const;
 
-  void DispatchFabricatedKeyEvent(ui::KeyEvent* event);
+  ui::EventDispatchDetails DispatchFabricatedKeyEvent(ui::KeyEvent* event);
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
@@ -109,6 +109,10 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   void ProcessKeyEventDone(ui::KeyEvent* event,
                            const std::vector<MSG>* char_msgs,
                            bool is_handled);
+
+  ui::EventDispatchDetails ProcessUnhandledKeyEvent(
+      ui::KeyEvent* event,
+      const std::vector<MSG>* char_msgs);
 
   // Windows IMM32 wrapper.
   // (See "ui/base/ime/win/ime_input.h" for its details.)

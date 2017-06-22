@@ -34,15 +34,16 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   ~InputMethodMus() override;
 
   void Init(service_manager::Connector* connector);
-  void DispatchKeyEvent(ui::KeyEvent* event,
-                        std::unique_ptr<EventResultCallback> ack_callback);
+  ui::EventDispatchDetails DispatchKeyEvent(
+      ui::KeyEvent* event,
+      std::unique_ptr<EventResultCallback> ack_callback) WARN_UNUSED_RESULT;
 
   // Overridden from ui::InputMethod:
   void OnFocus() override;
   void OnBlur() override;
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
-  void DispatchKeyEvent(ui::KeyEvent* event) override;
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void CancelComposition(const ui::TextInputClient* client) override;
@@ -54,9 +55,9 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   friend TextInputClientImpl;
 
   // Called from DispatchKeyEvent() to call to the InputMethod.
-  void SendKeyEventToInputMethod(
+  ui::EventDispatchDetails SendKeyEventToInputMethod(
       const ui::KeyEvent& event,
-      std::unique_ptr<EventResultCallback> ack_callback);
+      std::unique_ptr<EventResultCallback> ack_callback) WARN_UNUSED_RESULT;
 
   // Overridden from ui::InputMethodBase:
   void OnDidChangeFocusedClient(ui::TextInputClient* focused_before,

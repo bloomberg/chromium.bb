@@ -937,14 +937,14 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
   return PreDispatchLocatedEvent(target, event);
 }
 
-ui::EventDispatchDetails WindowEventDispatcher::PreDispatchKeyEvent(
+DispatchDetails WindowEventDispatcher::PreDispatchKeyEvent(
     ui::KeyEvent* event) {
   if (skip_ime_ || !host_->has_input_method() ||
       (event->flags() & ui::EF_IS_SYNTHESIZED))
-    return ui::EventDispatchDetails();
-  host_->GetInputMethod()->DispatchKeyEvent(event);
+    return DispatchDetails();
+  DispatchDetails details = host_->GetInputMethod()->DispatchKeyEvent(event);
   event->StopPropagation();
-  return ui::EventDispatchDetails();
+  return details;
 }
 
 }  // namespace aura

@@ -94,8 +94,8 @@ class UI_BASE_IME_EXPORT InputMethodBase
 
   // Convenience method to call delegate_->DispatchKeyEventPostIME().
   // Returns true if the event was processed
-  ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* event) const;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* event) const
+      WARN_UNUSED_RESULT;
 
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);

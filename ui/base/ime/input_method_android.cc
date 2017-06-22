@@ -28,17 +28,12 @@ bool InputMethodAndroid::OnUntranslatedIMEMessage(
   return false;
 }
 
-void InputMethodAndroid::DispatchKeyEvent(ui::KeyEvent* event) {
+ui::EventDispatchDetails InputMethodAndroid::DispatchKeyEvent(
+    ui::KeyEvent* event) {
   DCHECK(event->type() == ui::ET_KEY_PRESSED ||
          event->type() == ui::ET_KEY_RELEASED);
 
-  // If no text input client, do nothing.
-  if (!GetTextInputClient()) {
-    ignore_result(DispatchKeyEventPostIME(event));
-    return;
-  }
-
-  ignore_result(DispatchKeyEventPostIME(event));
+  return DispatchKeyEventPostIME(event);
 }
 
 void InputMethodAndroid::OnCaretBoundsChanged(
