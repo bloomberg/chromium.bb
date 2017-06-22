@@ -127,12 +127,14 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             // smoothly.
             getActiveLayout().onTabCreating(sourceId);
         } else if (animationsEnabled()) {
-            if (getActiveLayout() != null && getActiveLayout().isHiding()) {
-                setNextLayout(mSimpleAnimationLayout);
-                // The method Layout#doneHiding() will automatically show the next layout.
-                getActiveLayout().doneHiding();
-            } else {
-                startShowing(mSimpleAnimationLayout, false);
+            if (!FeatureUtilities.isChromeHomeEnabled()) {
+                if (getActiveLayout() != null && getActiveLayout().isHiding()) {
+                    setNextLayout(mSimpleAnimationLayout);
+                    // The method Layout#doneHiding() will automatically show the next layout.
+                    getActiveLayout().doneHiding();
+                } else {
+                    startShowing(mSimpleAnimationLayout, false);
+                }
             }
             getActiveLayout().onTabCreating(sourceId);
         }
@@ -168,14 +170,5 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
 
             return super.isSwipeEnabled(direction);
         }
-    }
-
-    /**
-     * Sets whether the foreground tab animation is disabled.
-     * TODO(twellington): Remove this after Chrome Home NTP animations are complete.
-     * @param disabled Whether the foreground tab animation should be disabled.
-     */
-    public void setForegroundTabAnimationDisabled(boolean disabled) {
-        mSimpleAnimationLayout.setForegroundTabAnimationDisabled(disabled);
     }
 }
