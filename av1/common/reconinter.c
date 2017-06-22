@@ -998,10 +998,10 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
 
 #if CONFIG_INTRABC
           const struct scale_factors *const sf =
-              is_intrabc ? &xd->sf_identity : &xd->block_refs[ref]->sf;
+              is_intrabc ? &xd->sf_identity : &ref_buf->sf;
           struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
 #else
-          const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
+          const struct scale_factors *const sf = &ref_buf->sf;
           struct buf_2d *const pre_buf = &pd->pre[ref];
 #endif  // CONFIG_INTRABC
           uint8_t *dst = dst_buf->buf;
