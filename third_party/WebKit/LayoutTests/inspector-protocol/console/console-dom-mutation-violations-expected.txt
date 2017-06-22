@@ -1,3 +1,4 @@
+
 {
     method : Log.entryAdded
     params : {
@@ -11,13 +12,13 @@
                         columnNumber : 14
                         functionName : 
                         lineNumber : 0
-                        scriptId : <string>
+                        scriptId : <scriptId>
                         url : 
                     }
                 ]
             }
             text : Added synchronous DOM mutation listener to a 'DOMSubtreeModified' event. Consider using MutationObserver to make the page more responsive.
-            timestamp : <number>
+            timestamp : <timestamp>
         }
     }
 }
