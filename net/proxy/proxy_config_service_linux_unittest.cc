@@ -271,10 +271,10 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
 // This helper class runs ProxyConfigServiceLinux::GetLatestProxyConfig() on
 // the IO thread and synchronously waits for the result.
 // Some code duplicated from proxy_script_fetcher_unittest.cc.
-class SynchConfigGetter : public ProxyConfigService::Observer {
+class SyncConfigGetter : public ProxyConfigService::Observer {
  public:
   // Takes ownership of |config_service|.
-  explicit SynchConfigGetter(ProxyConfigServiceLinux* config_service)
+  explicit SyncConfigGetter(ProxyConfigServiceLinux* config_service)
       : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                base::WaitableEvent::InitialState::NOT_SIGNALED),
         io_thread_("IO_Thread"),
@@ -289,16 +289,15 @@ class SynchConfigGetter : public ProxyConfigService::Observer {
 
     // Make sure the thread started.
     io_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SynchConfigGetter::Init, base::Unretained(this)));
+        FROM_HERE, base::Bind(&SyncConfigGetter::Init, base::Unretained(this)));
     Wait();
   }
 
-  ~SynchConfigGetter() override {
+  ~SyncConfigGetter() override {
     // Clean up the IO thread.
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SynchConfigGetter::CleanUp, base::Unretained(this)));
+        base::Bind(&SyncConfigGetter::CleanUp, base::Unretained(this)));
     Wait();
   }
 
@@ -315,7 +314,7 @@ class SynchConfigGetter : public ProxyConfigService::Observer {
   ProxyConfigService::ConfigAvailability SyncGetLatestProxyConfig(
       ProxyConfig* config) {
     io_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&SynchConfigGetter::GetLatestConfigOnIOThread,
+        FROM_HERE, base::Bind(&SyncConfigGetter::GetLatestConfigOnIOThread,
                               base::Unretained(this)));
     Wait();
     *config = proxy_config_;
@@ -755,7 +754,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicGConfTest) {
                                     tests[i].description.c_str()));
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     MockSettingGetter* setting_getter = new MockSettingGetter;
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env), setting_getter));
     ProxyConfig config;
     setting_getter->values = tests[i].values;
@@ -1085,7 +1084,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values = tests[i].values;
     MockSettingGetter* setting_getter = new MockSettingGetter;
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env), setting_getter));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
@@ -1106,7 +1105,7 @@ TEST_F(ProxyConfigServiceLinuxTest, GconfNotification) {
   MockSettingGetter* setting_getter = new MockSettingGetter;
   ProxyConfigServiceLinux* service =
       new ProxyConfigServiceLinux(std::move(env), setting_getter);
-  SynchConfigGetter sync_config_getter(service);
+  SyncConfigGetter sync_config_getter(service);
   ProxyConfig config;
 
   // Start with no proxy.
@@ -1582,7 +1581,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
     // Force the KDE getter to be used and tell it where the test is.
     env->values.DESKTOP_SESSION = "kde4";
     env->values.KDEHOME = kde_home_.value().c_str();
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     // Overwrite the kioslaverc file.
@@ -1630,7 +1629,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
@@ -1651,7 +1650,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
@@ -1666,7 +1665,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde";
     env->values.HOME = user_home_.value().c_str();
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
@@ -1682,7 +1681,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
     env->values.KDEHOME = kde_home_.value().c_str();
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
@@ -1701,7 +1700,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
@@ -1722,7 +1721,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     env->values.XDG_CURRENT_DESKTOP = "KDE";
     env->values.KDE_SESSION_VERSION = "5";
     env->values.HOME = user_home_.value().c_str();
-    SynchConfigGetter sync_config_getter(
+    SyncConfigGetter sync_config_getter(
         new ProxyConfigServiceLinux(std::move(env)));
     ProxyConfig config;
     sync_config_getter.SetupAndInitialFetch();
@@ -1749,7 +1748,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
   std::unique_ptr<MockEnvironment> env(new MockEnvironment);
   env->values.DESKTOP_SESSION = "kde4";
   env->values.HOME = user_home_.value().c_str();
-  SynchConfigGetter sync_config_getter(
+  SyncConfigGetter sync_config_getter(
       new ProxyConfigServiceLinux(std::move(env)));
   ProxyConfig config;
   sync_config_getter.SetupAndInitialFetch();
