@@ -1690,6 +1690,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   using ComputedStyleBase::GetTextAlign;
   ETextAlign GetTextAlign(bool is_last_line) const;
 
+  // text-indent utility functions.
+  bool ShouldUseTextIndent(bool is_first_line,
+                           bool is_after_forced_break) const;
+
   // Line-height utility functions.
   const Length& SpecifiedLineHeight() const;
   int ComputedLineHeight() const;

@@ -192,8 +192,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_);
       continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
-      box = PlaceAtomicInline(item, &item_result, line_info->IsFirstLine(),
-                              position, &line_box, &text_builder);
+      box = PlaceAtomicInline(item, &item_result, *line_info, position,
+                              &line_box, &text_builder);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       // TODO(layout-dev): Report the correct static position for the out of
       // flow descendant. We can't do this here yet as it doesn't know the
@@ -247,12 +247,20 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // the line box to the line top.
   line_box.MoveChildrenInBlockDirection(baseline);
 
+  // Compute the offset of the line box.
   LayoutUnit inline_size = position;
   NGLogicalOffset offset(line_info->LineLeft(),
                          baseline - box_states_.LineBoxState().metrics.ascent);
+  LayoutUnit available_width = line_info->AvailableWidth();
+  if (LayoutUnit text_indent = line_info->TextIndent()) {
+    // Move the line box by indent. Negative indents are ink overflow, let the
+    // line box overflow from the container box.
+    if (IsLtr(Node().BaseDirection()))
+      offset.inline_offset += text_indent;
+    available_width -= text_indent;
+  }
   ApplyTextAlign(line_style.GetTextAlign(line_info->IsLastLine()),
-                 &offset.inline_offset, inline_size,
-                 line_info->AvailableWidth());
+                 &offset.inline_offset, inline_size, available_width);
 
   line_box.SetInlineSize(inline_size);
   container_builder_.AddChild(line_box.ToLineBoxFragment(), offset);
@@ -268,7 +276,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
     const NGInlineItem& item,
     NGInlineItemResult* item_result,
-    bool is_first_line,
+    const NGLineInfo& line_info,
     LayoutUnit position,
     NGLineBoxFragmentBuilder* line_box,
     NGTextFragmentBuilder* text_builder) {
@@ -293,7 +301,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
       IsHorizontalWritingMode() ? LineDirectionMode::kHorizontalLine
                                 : LineDirectionMode::kVerticalLine;
   LayoutUnit baseline_offset(layout_box->BaselinePosition(
-      baseline_type_, is_first_line, line_direction_mode));
+      baseline_type_, line_info.UseFirstLineStyle(), line_direction_mode));
 
   NGLineHeightMetrics metrics(baseline_offset, block_size - baseline_offset);
   box->metrics.Unite(metrics);

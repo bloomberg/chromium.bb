@@ -55,7 +55,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   bool PlaceItems(NGLineInfo*, RefPtr<NGInlineBreakToken>);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       NGInlineItemResult*,
-                                      bool is_first_line,
+                                      const NGLineInfo&,
                                       LayoutUnit position,
                                       NGLineBoxFragmentBuilder*,
                                       NGTextFragmentBuilder*);

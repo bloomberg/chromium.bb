@@ -67,12 +67,33 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       offset_(0),
       break_iterator_(node.Text()),
       shaper_(node.Text().Characters16(), node.Text().length()),
-      spacing_(node.Text()) {
+      spacing_(node.Text()),
+      auto_wrap_(false),
+      should_create_line_box_(false),
+      is_after_forced_break_(false) {
   if (break_token) {
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
     node.AssertOffset(item_index_, offset_);
   }
+}
+
+// @return if this is the "first formatted line".
+// https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
+bool NGLineBreaker::IsFirstFormattedLine() const {
+  if (item_index_ || offset_)
+    return false;
+  // The first line of an anonymous block box is only affected if it is the
+  // first child of its parent element.
+  // https://drafts.csswg.org/css-text-3/#text-indent-property
+  LayoutBlockFlow* block = node_.GetLayoutBlockFlow();
+  if (block->IsAnonymousBlock() && block->PreviousSibling()) {
+    // TODO(kojii): In NG, leading OOF creates a block box.
+    // text-indent-first-line-002.html fails for this reason.
+    // crbug.com/734554
+    return false;
+  }
+  return true;
 }
 
 bool NGLineBreaker::NextLine(NGLineInfo* line_info,
@@ -101,11 +122,16 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
   NGInlineItemResults* item_results = &line_info->Results();
   item_results->clear();
   const Vector<NGInlineItem>& items = node_.Items();
-  line_info->SetLineStyle(node_, !item_index_ && !offset_);
+  line_info->SetLineStyle(node_, *constraint_space_, IsFirstFormattedLine(),
+                          is_after_forced_break_);
   SetCurrentStyle(line_info->LineStyle());
-  position_ = LayoutUnit(0);
+  is_after_forced_break_ = false;
   should_create_line_box_ = false;
   LineBreakState state = LineBreakState::kNotBreakable;
+
+  // Use 'text-indent' as the initial position. This lets tab positions to align
+  // regardless of 'text-indent'.
+  position_ = line_info->TextIndent();
 
   // We are only able to calculate our available_width if our container has
   // been positioned in the BFC coordinate space yet.
@@ -142,6 +168,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
     } else if (item.Type() == NGInlineItem::kControl) {
       state = HandleControlItem(item, item_result);
       if (state == LineBreakState::kForcedBreak) {
+        is_after_forced_break_ = true;
         line_info->SetIsLastLine(true);
         return;
       }

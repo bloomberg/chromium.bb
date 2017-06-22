@@ -5,6 +5,7 @@
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/ng_constraint_space.h"
 
 namespace blink {
 
@@ -19,16 +20,23 @@ NGInlineItemResult::NGInlineItemResult(unsigned index,
       no_break_opportunities_inside(false),
       prohibit_break_after(false) {}
 
-void NGLineInfo::SetLineStyle(const NGInlineNode& node, bool is_first_line) {
+void NGLineInfo::SetLineStyle(const NGInlineNode& node,
+                              const NGConstraintSpace& constraint_space,
+                              bool is_first_line,
+                              bool is_after_forced_break) {
   LayoutObject* layout_object = node.GetLayoutObject();
-  if (is_first_line &&
-      layout_object->GetDocument().GetStyleEngine().UsesFirstLineRules()) {
-    is_first_line_ = true;
-    line_style_ = layout_object->FirstLineStyle();
-    return;
+  use_first_line_style_ =
+      is_first_line &&
+      layout_object->GetDocument().GetStyleEngine().UsesFirstLineRules();
+  line_style_ = layout_object->Style(use_first_line_style_);
+
+  if (line_style_->ShouldUseTextIndent(is_first_line, is_after_forced_break)) {
+    text_indent_ =
+        MinimumValueForLength(line_style_->TextIndent(),
+                              constraint_space.AvailableSize().inline_size);
+  } else {
+    text_indent_ = LayoutUnit();
   }
-  is_first_line_ = false;
-  line_style_ = layout_object->Style();
 }
 
 void NGLineInfo::SetLineLocation(LayoutUnit line_left,

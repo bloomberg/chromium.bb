@@ -373,7 +373,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   NGLineInfo line_info;
   LayoutUnit result;
   while (line_breaker.NextLine(&line_info, NGLogicalOffset())) {
-    LayoutUnit inline_size;
+    LayoutUnit inline_size = line_info.TextIndent();
     for (const NGInlineItemResult item_result : line_info.Results())
       inline_size += item_result.inline_size;
     if (mode == ContentSizeMode::Max) {
