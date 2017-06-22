@@ -8,17 +8,18 @@
   <template>
     <link rel="stylesheet" href="oobe_voice_interaction_value_prop.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
-    <oobe-dialog id="voiceInteractionValuePropDialog" role="dialog" hide-shadow
-        has-buttons no-footer-padding>
+    <oobe-dialog id="voice-dialog" role="dialog" hide-shadow
+        has-buttons no-footer-padding android>
       <div class = "header">
         <webview id="value-prop-view"></webview>
       </div>
       <div class="bottom-buttons flex layout horizontal">
-        <div class="flex"></div>
-        <oobe-text-button id="noThanksButton" border on-tap="onNoThanksTap_">
+        <oobe-text-button id="noThanksButton" android on-tap="onNoThanksTap_">
           <div i18n-content="voiceInteractionValuePropNoThanksButton"></div>
         </oobe-text-button>
-        <oobe-text-button id="continueButton" inverse on-tap="onContinueTap_">
+        <div class="flex"></div>
+        <oobe-text-button id="continueButton" inverse android
+            on-tap="onContinueTap_">
           <div i18n-content="voiceInteractionValuePropContinueButton"></div>
         </oobe-text-button>
       </div>

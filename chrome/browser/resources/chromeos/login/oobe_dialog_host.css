@@ -12,3 +12,8 @@
   min-width: 768px;
   position: relative;
 }
+
+:host([android]) {
+  min-height: 480px;
+  min-width: 576px;
+}

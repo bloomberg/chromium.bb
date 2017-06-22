@@ -8,12 +8,13 @@
   <template>
     <link rel="stylesheet" href="oobe_wait_for_container_ready.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
-    <oobe-dialog id="waitForContainerReadyDialog" role="dialog" hide-shadow>
+    <oobe-dialog id="waitForContainerReadyDialog" role="dialog" hide-shadow
+        no-footer android>
       <iron-icon src="https://www.gstatic.com/opa-chromeos/oobe/images/assistant_logo.png" class="oobe-icon">
       </iron-icon>
       <div class="header">
-        <h1 class="title" i18n-content="waitForContainerReadyTitle"></h1>
-        <div class="subtitle">
+        <div class="title" i18n-content="waitForContainerReadyTitle"></div>
+        <div id="subtitle">
           <div i18n-content="waitForContainerReadyIntroMessage"></div>
         </div>
         <div class="content">

@@ -57,7 +57,7 @@
   <template>
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_dialog.css">
-    <div id="header-container" hidden="[[noHeader]]">
+    <div id="header-container" hidden="[[noHeader]]" android$="[[android]]">
       <div class="oobe-icon-div">
         <content select=".oobe-icon"></content>
       </div>
@@ -70,7 +70,7 @@
       <content select=".footer"></content>
     </div>
     <template is="dom-if" if="[[hasButtons]]">
-      <div id="oobe-bottom" hideShadow$="[[hideShadow]]"
+      <div id="oobe-bottom" hideShadow$="[[hideShadow]]" android$="[[android]]"
           class="layout horizontal center">
         <content select=".bottom-buttons"></content>
       </div>
