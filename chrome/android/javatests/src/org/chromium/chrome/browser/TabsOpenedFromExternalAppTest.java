@@ -260,7 +260,26 @@ public class TabsOpenedFromExternalAppTest {
     }
 
     /**
-     * Tests that URLs opened from external apps can set an android-app scheme referrer.
+     * Tests that URLs opened from external apps cannot set an invalid android-app referrer.
+     * @throws InterruptedException
+     */
+    @Test
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testInvalidAndroidAppReferrer() throws InterruptedException {
+        String invalidReferrer = "android-app:///note.the.extra.leading/";
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        mActivityTestRule.startMainActivityFromLauncher();
+        Bundle extras = new Bundle();
+        extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(invalidReferrer));
+        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
+        CriteriaHelper.pollInstrumentationThread(
+                new ReferrerCriteria(mActivityTestRule.getActivity().getActivityTab(), ""), 2000,
+                200);
+    }
+
+    /**
+     * Tests that URLs opened from external apps cannot set an arbitrary referrer scheme.
      * @throws InterruptedException
      */
     @Test

@@ -230,17 +230,28 @@ public class IntentHandlerTest {
                 Assert.assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(foreignIntent));
 
                 // Check that EXTRA_REFERRER with android-app URL works.
-                final String appUrl = "android-app://com.application/http/www.application.com";
+                String appUrl = "android-app://com.application/http/www.application.com";
                 Intent appIntent = new Intent(Intent.ACTION_VIEW);
                 appIntent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(appUrl));
                 Assert.assertEquals(
                         appUrl, IntentHandler.getReferrerUrlIncludingExtraHeaders(appIntent));
 
-                // Check that EXTRA_REFERRER_NAME with android-app works.
+                // Ditto, with EXTRA_REFERRER_NAME.
                 Intent nameIntent = new Intent(Intent.ACTION_VIEW);
                 nameIntent.putExtra(Intent.EXTRA_REFERRER_NAME, appUrl);
                 Assert.assertEquals(
                         appUrl, IntentHandler.getReferrerUrlIncludingExtraHeaders(nameIntent));
+
+                // Check that EXTRA_REFERRER with an empty host android-app URL doesn't work.
+                appUrl = "android-app:///www.application.com";
+                appIntent = new Intent(Intent.ACTION_VIEW);
+                appIntent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(appUrl));
+                Assert.assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(appIntent));
+
+                // Ditto, with EXTRA_REFERRER_NAME.
+                nameIntent = new Intent(Intent.ACTION_VIEW);
+                nameIntent.putExtra(Intent.EXTRA_REFERRER_NAME, appUrl);
+                Assert.assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(nameIntent));
             }
         });
     }
