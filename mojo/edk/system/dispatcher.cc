@@ -25,6 +25,7 @@ Dispatcher::DispatcherInTransit::~DispatcherInTransit() {}
 
 MojoResult Dispatcher::WatchDispatcher(scoped_refptr<Dispatcher> dispatcher,
                                        MojoHandleSignals signals,
+                                       MojoWatchCondition condition,
                                        uintptr_t context) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
@@ -146,7 +147,9 @@ bool Dispatcher::EndSerialize(void* destination,
   return true;
 }
 
-bool Dispatcher::BeginTransit() { return true; }
+bool Dispatcher::BeginTransit() {
+  return true;
+}
 
 void Dispatcher::CompleteTransitAndClose() {}
 
@@ -163,13 +166,13 @@ scoped_refptr<Dispatcher> Dispatcher::Deserialize(
     size_t num_platform_handles) {
   switch (type) {
     case Type::MESSAGE_PIPE:
-      return MessagePipeDispatcher::Deserialize(
-          bytes, num_bytes, ports, num_ports, platform_handles,
-          num_platform_handles);
+      return MessagePipeDispatcher::Deserialize(bytes, num_bytes, ports,
+                                                num_ports, platform_handles,
+                                                num_platform_handles);
     case Type::SHARED_BUFFER:
-      return SharedBufferDispatcher::Deserialize(
-          bytes, num_bytes, ports, num_ports, platform_handles,
-          num_platform_handles);
+      return SharedBufferDispatcher::Deserialize(bytes, num_bytes, ports,
+                                                 num_ports, platform_handles,
+                                                 num_platform_handles);
     case Type::DATA_PIPE_CONSUMER:
       return DataPipeConsumerDispatcher::Deserialize(
           bytes, num_bytes, ports, num_ports, platform_handles,
@@ -179,9 +182,9 @@ scoped_refptr<Dispatcher> Dispatcher::Deserialize(
           bytes, num_bytes, ports, num_ports, platform_handles,
           num_platform_handles);
     case Type::PLATFORM_HANDLE:
-      return PlatformHandleDispatcher::Deserialize(
-          bytes, num_bytes, ports, num_ports, platform_handles,
-          num_platform_handles);
+      return PlatformHandleDispatcher::Deserialize(bytes, num_bytes, ports,
+                                                   num_ports, platform_handles,
+                                                   num_platform_handles);
     default:
       LOG(ERROR) << "Deserializing invalid dispatcher type.";
       return nullptr;

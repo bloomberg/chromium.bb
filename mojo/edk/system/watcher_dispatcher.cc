@@ -26,7 +26,7 @@ void WatcherDispatcher::NotifyHandleState(Dispatcher* dispatcher,
     return;
 
   // Maybe fire a notification to the watch assoicated with this dispatcher,
-  // provided we're armed it cares about the new state.
+  // provided we're armed and it cares about the new state.
   if (it->second->NotifyState(state, armed_)) {
     ready_watches_.insert(it->second.get());
 
@@ -112,6 +112,7 @@ MojoResult WatcherDispatcher::Close() {
 MojoResult WatcherDispatcher::WatchDispatcher(
     scoped_refptr<Dispatcher> dispatcher,
     MojoHandleSignals signals,
+    MojoWatchCondition condition,
     uintptr_t context) {
   // NOTE: Because it's critical to avoid acquiring any other dispatcher locks
   // while |lock_| is held, we defer adding oursevles to the dispatcher until
@@ -121,7 +122,8 @@ MojoResult WatcherDispatcher::WatchDispatcher(
     if (watches_.count(context) || watched_handles_.count(dispatcher.get()))
       return MOJO_RESULT_ALREADY_EXISTS;
 
-    scoped_refptr<Watch> watch = new Watch(this, dispatcher, context, signals);
+    scoped_refptr<Watch> watch =
+        new Watch(this, dispatcher, context, signals, condition);
     watches_.insert({context, watch});
     auto result =
         watched_handles_.insert(std::make_pair(dispatcher.get(), watch));

@@ -69,6 +69,7 @@ class WatchContext : public base::RefCountedThreadSafe<WatchContext> {
 
 MojoResult Wait(Handle handle,
                 MojoHandleSignals signals,
+                MojoWatchCondition condition,
                 MojoHandleSignalsState* signals_state) {
   ScopedWatcherHandle watcher;
   MojoResult rv = CreateWatcher(&WatchContext::OnNotification, &watcher);
@@ -80,7 +81,7 @@ MojoResult Wait(Handle handle,
   // Otherwise balanced immediately below.
   context->AddRef();
 
-  rv = MojoWatch(watcher.get().value(), handle.value(), signals,
+  rv = MojoWatch(watcher.get().value(), handle.value(), signals, condition,
                  context->context_value());
   if (rv == MOJO_RESULT_INVALID_ARGUMENT) {
     // Balanced above.
@@ -135,8 +136,9 @@ MojoResult WaitMany(const Handle* handles,
     // Otherwise balanced immediately below.
     contexts[i]->AddRef();
 
-    MojoResult rv = MojoWatch(watcher.get().value(), handles[i].value(),
-                              signals[i], contexts[i]->context_value());
+    MojoResult rv =
+        MojoWatch(watcher.get().value(), handles[i].value(), signals[i],
+                  MOJO_WATCH_CONDITION_SATISFIED, contexts[i]->context_value());
     if (rv == MOJO_RESULT_INVALID_ARGUMENT) {
       if (result_index)
         *result_index = i;

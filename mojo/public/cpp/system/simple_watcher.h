@@ -111,7 +111,15 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // Destroying the SimpleWatcher implicitly calls |Cancel()|.
   MojoResult Watch(Handle handle,
                    MojoHandleSignals signals,
+                   MojoWatchCondition condition,
                    const ReadyCallback& callback);
+
+  // DEPRECATED: Please use the above signature instead.
+  MojoResult Watch(Handle handle,
+                   MojoHandleSignals signals,
+                   const ReadyCallback& callback) {
+    return Watch(handle, signals, MOJO_WATCH_CONDITION_SATISFIED, callback);
+  }
 
   // Cancels the current watch. Once this returns, the ReadyCallback previously
   // passed to |Watch()| will never be called again for this SimpleWatcher.

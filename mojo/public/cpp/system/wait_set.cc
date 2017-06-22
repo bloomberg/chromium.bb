@@ -73,8 +73,9 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
 
     // This can notify immediately if the watcher is already armed. Don't hold
     // |lock_| while calling it.
-    MojoResult rv = MojoWatch(watcher_handle_.get().value(), handle.value(),
-                              signals, context->context_value());
+    MojoResult rv =
+        MojoWatch(watcher_handle_.get().value(), handle.value(), signals,
+                  MOJO_WATCH_CONDITION_SATISFIED, context->context_value());
     if (rv == MOJO_RESULT_INVALID_ARGUMENT) {
       base::AutoLock lock(lock_);
       handle_to_context_.erase(handle);

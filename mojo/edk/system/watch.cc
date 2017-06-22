@@ -13,11 +13,13 @@ namespace edk {
 Watch::Watch(const scoped_refptr<WatcherDispatcher>& watcher,
              const scoped_refptr<Dispatcher>& dispatcher,
              uintptr_t context,
-             MojoHandleSignals signals)
+             MojoHandleSignals signals,
+             MojoWatchCondition condition)
     : watcher_(watcher),
       dispatcher_(dispatcher),
       context_(context),
-      signals_(signals) {}
+      signals_(signals),
+      condition_(condition) {}
 
 bool Watch::NotifyState(const HandleSignalsState& state,
                         bool allowed_to_call_callback) {
@@ -28,12 +30,18 @@ bool Watch::NotifyState(const HandleSignalsState& state,
 
   MojoResult rv = MOJO_RESULT_SHOULD_WAIT;
   RequestContext* const request_context = RequestContext::current();
-  if (state.satisfies(signals_)) {
+  const bool notify_success =
+      (state.satisfies_any(signals_) &&
+       condition_ == MOJO_WATCH_CONDITION_SATISFIED) ||
+      (!state.satisfies_all(signals_) &&
+       condition_ == MOJO_WATCH_CONDITION_NOT_SATISFIED);
+  if (notify_success) {
     rv = MOJO_RESULT_OK;
     if (allowed_to_call_callback && rv != last_known_result_) {
       request_context->AddWatchNotifyFinalizer(this, MOJO_RESULT_OK, state);
     }
-  } else if (!state.can_satisfy(signals_)) {
+  } else if (condition_ == MOJO_WATCH_CONDITION_SATISFIED &&
+             !state.can_satisfy_any(signals_)) {
     rv = MOJO_RESULT_FAILED_PRECONDITION;
     if (allowed_to_call_callback && rv != last_known_result_) {
       request_context->AddWatchNotifyFinalizer(

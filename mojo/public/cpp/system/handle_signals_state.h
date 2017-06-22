@@ -35,51 +35,59 @@ struct MOJO_CPP_SYSTEM_EXPORT HandleSignalsState final
            satisfiable_signals == other.satisfiable_signals;
   }
 
-  bool satisfies(MojoHandleSignals signals) const {
+  bool satisfies_any(MojoHandleSignals signals) const {
     return !!(satisfied_signals & signals);
   }
 
-  bool can_satisfy(MojoHandleSignals signals) const {
+  bool satisfies_all(MojoHandleSignals signals) const {
+    return (satisfied_signals & signals) == signals;
+  }
+
+  bool can_satisfy_any(MojoHandleSignals signals) const {
     return !!(satisfiable_signals & signals);
   }
 
   // The handle is currently readable. May apply to a message pipe handle or
   // data pipe consumer handle.
-  bool readable() const { return satisfies(MOJO_HANDLE_SIGNAL_READABLE); }
+  bool readable() const { return satisfies_any(MOJO_HANDLE_SIGNAL_READABLE); }
 
   // The handle is currently writable. May apply to a message pipe handle or
   // data pipe producer handle.
-  bool writable() const { return satisfies(MOJO_HANDLE_SIGNAL_WRITABLE); }
+  bool writable() const { return satisfies_any(MOJO_HANDLE_SIGNAL_WRITABLE); }
 
   // The handle's peer is closed. May apply to any message pipe or data pipe
   // handle.
-  bool peer_closed() const { return satisfies(MOJO_HANDLE_SIGNAL_PEER_CLOSED); }
+  bool peer_closed() const {
+    return satisfies_any(MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+  }
 
   // The handle's peer exists in a remote execution context (e.g. in another
   // process.)
-  bool peer_remote() const { return satisfies(MOJO_HANDLE_SIGNAL_PEER_REMOTE); }
+  bool peer_remote() const {
+    return satisfies_any(MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  }
 
   // The handle will never be |readable()| again.
   bool never_readable() const {
-    return !can_satisfy(MOJO_HANDLE_SIGNAL_READABLE);
+    return !can_satisfy_any(MOJO_HANDLE_SIGNAL_READABLE);
   }
 
   // The handle will never be |writable()| again.
   bool never_writable() const {
-    return !can_satisfy(MOJO_HANDLE_SIGNAL_WRITABLE);
+    return !can_satisfy_any(MOJO_HANDLE_SIGNAL_WRITABLE);
   }
 
   // The handle can never indicate |peer_closed()|. Never true for message pipe
   // or data pipe handles (they can always signal peer closure), but always true
   // for other types of handles (they have no peer.)
   bool never_peer_closed() const {
-    return !can_satisfy(MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+    return !can_satisfy_any(MOJO_HANDLE_SIGNAL_PEER_CLOSED);
   }
 
   // THe handle will never indicate |peer_remote()| again. True iff the peer is
   // known to be closed.
   bool never_peer_remote() const {
-    return !can_satisfy(MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+    return !can_satisfy_any(MOJO_HANDLE_SIGNAL_PEER_REMOTE);
   }
 
   // (Copy and assignment allowed.)

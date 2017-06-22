@@ -212,6 +212,28 @@ const MojoWatcherNotificationFlags MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM =
   ((MojoWatcherNotificationFlags)1 << 0);
 #endif
 
+// |MojoWatchCondition|: Given to |MojoWatch()| to indicate whether the
+// watched signals should trigger a notification when becoming satisfied or
+// becoming not-satisfied.
+//
+//   |MOJO_WATCH_CONDITION_NOT_SATISFIED| - A watch added with this setting will
+//       trigger a notification when any of the watched signals transition from
+//       being not-satisfied to being satisfied.
+//   |MOJO_WATCH_CONDITION_SATISFIED| - A watch added with this setting will
+//       trigger a notification when any of the watched signals transition from
+//       being satisfied to being not-satisfied, or when none of the watched
+//       signals can ever be satisfied again.
+
+typedef uint32_t MojoWatchCondition;
+
+#ifdef __cplusplus
+const MojoWatchCondition MOJO_WATCH_CONDITION_NOT_SATISFIED = 0;
+const MojoWatchCondition MOJO_WATCH_CONDITION_SATISFIED = 1;
+#else
+#define MOJO_WATCH_CONDITION_NOT_SATISFIED ((MojoWatchCondition)0)
+#define MOJO_WATCH_CONDITION_SATISFIED ((MojoWatchCondition)1)
+#endif
+
 // |MojoPropertyType|: Property types that can be passed to |MojoGetProperty()|
 // to retrieve system properties. May take the following values:
 //   |MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED| - Whether making synchronous calls

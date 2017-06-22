@@ -14,8 +14,8 @@
 namespace mojo {
 
 // Blocks the calling thread, waiting for one or more signals in |signals| to be
-// become satisfied -- or for all of them to become unsatisfiable -- on the
-// given Handle.
+// become satisfied, not-satisfied, or permanently unsatisfiable on the handle,
+// depending on the |condition| selected.
 //
 // If |signals_state| is non-null, |handle| is valid, the wait is not cancelled
 // (see return values below), the last known signaling state of |handle| is
@@ -23,16 +23,28 @@ namespace mojo {
 //
 // Return values:
 //   |MOJO_RESULT_OK| if one or more signals in |signals| has been raised on
-//       |handle| .
+//       |handle| with |condition| set to  |MOJO_WATCH_CONDITION_SATISFIED|, or
+//       one or more signals in |signals| has been lowered on |handle| with
+//       |condition| set to |MOJO_WATCH_CONDITION_NOT_SATISFIED|.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the state of |handle| changes such
-//       that no signals in |signals| can ever be raised again.
+//       that no signals in |signals| can ever be raised again and |condition|
+//       is |MOJO_WATCH_CONDITION_SATISFIED|.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |handle| is not a valid handle.
 //   |MOJO_RESULT_CANCELLED| if the wait was cancelled because |handle| was
 //       closed by some other thread while waiting.
 MOJO_CPP_SYSTEM_EXPORT MojoResult
 Wait(Handle handle,
      MojoHandleSignals signals,
+     MojoWatchCondition condition,
      MojoHandleSignalsState* signals_state = nullptr);
+
+// A pseudonym for the above Wait() which always waits on
+// |MOJO_WATCH_CONDITION_SATISFIED|.
+inline MojoResult Wait(Handle handle,
+                       MojoHandleSignals signals,
+                       MojoHandleSignalsState* signals_state = nullptr) {
+  return Wait(handle, signals, MOJO_WATCH_CONDITION_SATISFIED, signals_state);
+}
 
 // Waits on |handles[0]|, ..., |handles[num_handles-1]| until:
 //  - At least one handle satisfies a signal indicated in its respective
