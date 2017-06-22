@@ -8,6 +8,18 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
+// Enumerates different license types.
+enum LicenseType {
+  // Unknown/undefined
+  UNDEFINED = 0;
+  // Chrome Device Management Perpetual
+  CDM_PERPETUAL = 1;
+  // Chrome Device Management Annual
+  CDM_ANNUAL = 2;
+  // Chrome Kiosk
+  KIOSK = 3;
+};
+
 // Data along with a cryptographic signature verifying their authenticity.
 message SignedData {
   // The data to be signed.
@@ -99,6 +111,9 @@ message DeviceRegisterRequest {
   // Indicates the registration flavor. This is passed to the server FYI when
   // registering for policy so the server can distinguish registration triggers.
   optional Flavor flavor = 8;
+
+  // If specified, represents the license type selected by user on the device.
+  optional LicenseType license_type = 9;
 }
 
 // Response from server to device register request.
@@ -1183,6 +1198,46 @@ message ActiveDirectoryPlayActivityRequest {
 // Response to the Play account activity request.
 message ActiveDirectoryPlayActivityResponse {}
 
+// Request to retrieve available device licenses. User auth token or auth
+// cookie must be provided with DeviceManagementRequest when
+// CheckDeviceLicenseRequest is being sent.
+// See go/cdm-mixed-license-pool for more info
+message CheckDeviceLicenseRequest {}
+
+// Represents availability of a single license type.
+message LicenseAvailability {
+  // License type.
+  optional LicenseType license_type = 1;
+
+  // Remaining available licenses (can be 0).
+  optional int32 available_licenses = 2;
+}
+
+// Response to a check device license request.
+message CheckDeviceLicenseResponse {
+  enum LicenseSelectionMode {
+    // Should not happend, included for compatibility.
+    UNDEFINED = 0;
+    // User is allowed to choose license.
+    USER_SELECTION = 1;
+    // Admin controls license selection preferences through management UI.
+    ADMIN_SELECTION = 2;
+  }
+
+  // Policy setting value for license selection mode.
+  optional LicenseSelectionMode license_selection_mode = 1;
+
+  // Provides available license counts for each purchased license type.
+  // This field would list each subscription for the domain even if all licenses
+  // have been used up (in which case available_licenses field is set to zero).
+  //
+  // If license_selection_mode == USER_SELECTION and license_availability
+  // contains more than one entry then device should display a screen asking
+  // user to choose license type and send selected license type value in the
+  // DeviceRegisterRequest.license_type field.
+  repeated LicenseAvailability license_availability = 2;
+}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -1211,13 +1266,15 @@ message ActiveDirectoryPlayActivityResponse {}
 //     * certificate_based_register
 //     * active_directory_enroll_play_user
 //     * active_directory_play_activity
+//     * check_device_license
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
 //   * agent: MUST BE no more than 64-char long.
 // * HTTP Authorization header MUST be in the following formats:
-//   * For register, ping and check_android_management requests
+//   * For register, ping, check_android_management and
+//     check_device_license requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
 //   * For unregister, policy, status, cert_upload, remote_commands,
@@ -1252,6 +1309,7 @@ message ActiveDirectoryPlayActivityResponse {}
 //   active_directory_enroll_play_user:
 //       active_directory_enroll_play_user_request
 //   active_directory_play_activity: active_directory_play_activity_request
+//   check_device_license: check_device_license_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1317,6 +1375,9 @@ message DeviceManagementRequest {
   // Reports that a Play account is used.
   optional ActiveDirectoryPlayActivityRequest
       active_directory_play_activity_request = 20;
+
+  // Request device license information.
+  optional CheckDeviceLicenseRequest check_device_license_request = 21;
 }
 
 // Response from server to device.
@@ -1430,4 +1491,7 @@ message DeviceManagementResponse {
   // Response to a Play activity request.
   optional ActiveDirectoryPlayActivityResponse
       active_directory_play_activity_response = 20;
+
+  // Response to a check device license request.
+  optional CheckDeviceLicenseResponse check_device_license_response = 21;
 }
