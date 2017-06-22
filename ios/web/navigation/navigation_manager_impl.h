@@ -124,6 +124,9 @@ class NavigationManagerImpl : public NavigationManager {
   // moved from CRWWebController to NavigationManagerImpl.
   virtual int GetIndexForOffset(int offset) const = 0;
 
+  // Returns the index of the previous item. Only used by SessionStorageBuilder.
+  virtual int GetPreviousItemIndex() const = 0;
+
  protected:
   // The SessionStorageBuilder functions require access to private variables of
   // NavigationManagerImpl.
@@ -134,9 +137,6 @@ class NavigationManagerImpl : public NavigationManager {
   // SessionStorageBuilder to persist session state.
   virtual NavigationItemImpl* GetNavigationItemImplAtIndex(
       size_t index) const = 0;
-
-  // Returns the index of the previous item. Only used by SessionStorageBuilder.
-  virtual size_t GetPreviousItemIndex() const = 0;
 };
 
 }  // namespace web

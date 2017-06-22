@@ -46,7 +46,7 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
   session_storage.lastCommittedItemIndex =
       navigation_manager->GetLastCommittedItemIndex();
   session_storage.previousItemIndex =
-      static_cast<NSInteger>(navigation_manager->GetPreviousItemIndex());
+      navigation_manager->GetPreviousItemIndex();
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
   NavigationItemStorageBuilder item_storage_builder;
   for (size_t index = 0;
