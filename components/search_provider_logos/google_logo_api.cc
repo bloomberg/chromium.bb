@@ -21,48 +21,42 @@ namespace {
 const char kResponsePreamble[] = ")]}'";
 }
 
-GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
-                                      const std::string& fingerprint,
-                                      bool wants_cta,
-                                      bool gray_background) {
+GURL GoogleAppendQueryparamsToLogoURL(bool gray_background,
+                                      const GURL& logo_url,
+                                      const std::string& fingerprint) {
   // Note: we can't just use net::AppendQueryParameter() because it escapes
   // ":" to "%3A", but the server requires the colon not to be escaped.
   // See: http://crbug.com/413845
 
   // TODO(newt): Switch to using net::AppendQueryParameter once it no longer
   // escapes ":"
-  if (!fingerprint.empty() || wants_cta) {
-    std::string query(logo_url.query());
-    if (!query.empty())
-      query += "&";
+  std::string query(logo_url.query());
+  if (!query.empty())
+    query += "&";
 
-    query += "async=";
-    std::vector<base::StringPiece> params;
-    std::string fingerprint_param;
-    if (!fingerprint.empty()) {
-      fingerprint_param = "es_dfp:" + fingerprint;
-      params.push_back(fingerprint_param);
-    }
-
-    if (wants_cta)
-      params.push_back("cta:1");
-
-    if (gray_background) {
-      params.push_back("transp:1");
-      params.push_back("graybg:1");
-    }
-
-    query += base::JoinString(params, ",");
-    GURL::Replacements replacements;
-    replacements.SetQueryStr(query);
-    return logo_url.ReplaceComponents(replacements);
+  query += "async=";
+  std::vector<base::StringPiece> params;
+  std::string fingerprint_param;
+  if (!fingerprint.empty()) {
+    fingerprint_param = "es_dfp:" + fingerprint;
+    params.push_back(fingerprint_param);
   }
 
-  return logo_url;
+  params.push_back("cta:1");
+
+  if (gray_background) {
+    params.push_back("transp:1");
+    params.push_back("graybg:1");
+  }
+
+  query += base::JoinString(params, ",");
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+  return logo_url.ReplaceComponents(replacements);
 }
 
 std::unique_ptr<EncodedLogo> GoogleParseLogoResponse(
-    const std::unique_ptr<std::string>& response,
+    std::unique_ptr<std::string> response,
     base::Time response_time,
     bool* parsing_failed) {
   // Google doodles are sent as JSON with a prefix. Example:

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -91,6 +90,7 @@ public class NewTabPage
 
     private TabObserver mTabObserver;
     private boolean mSearchProviderHasLogo;
+
     private FakeboxDelegate mFakeboxDelegate;
     private SnippetsBridge mSnippetsBridge;
 
@@ -188,9 +188,7 @@ public class NewTabPage
         @Override
         public boolean isLocationBarShownInNTP() {
             if (mIsDestroyed) return false;
-            Context context = mNewTabPageView.getContext();
-            return isInSingleUrlBarMode(context)
-                    && !mNewTabPageView.urlFocusAnimationsDisabled();
+            return isInSingleUrlBarMode() && !mNewTabPageView.urlFocusAnimationsDisabled();
         }
 
         @Override
@@ -407,20 +405,20 @@ public class NewTabPage
         mNewTabPageView.setUrlFocusAnimationsDisabled(disable);
     }
 
-    private boolean isInSingleUrlBarMode(Context context) {
+    private boolean isInSingleUrlBarMode() {
         if (DeviceFormFactor.isTablet()) return false;
         if (FeatureUtilities.isChromeHomeEnabled()) return false;
         return mSearchProviderHasLogo;
     }
 
     private void updateSearchProviderHasLogo() {
-        mSearchProviderHasLogo = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+        mSearchProviderHasLogo = TemplateUrlService.getInstance().doesDefaultSearchEngineHaveLogo();
     }
 
     private void onSearchEngineUpdated() {
-        // TODO(newt): update this if other search providers provide logos.
         updateSearchProviderHasLogo();
         mNewTabPageView.setSearchProviderHasLogo(mSearchProviderHasLogo);
+        mNewTabPageView.loadSearchProviderLogo();
     }
 
     /**

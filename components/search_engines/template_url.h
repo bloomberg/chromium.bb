@@ -568,6 +568,8 @@ class TemplateURL {
   }
   const GURL& favicon_url() const { return data_.favicon_url; }
 
+  const GURL& logo_url() const { return data_.logo_url; }
+
   const GURL& originating_url() const { return data_.originating_url; }
 
   bool safe_for_autoreplace() const { return data_.safe_for_autoreplace; }

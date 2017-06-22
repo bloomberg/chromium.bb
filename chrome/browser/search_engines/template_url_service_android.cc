@@ -118,6 +118,18 @@ jboolean TemplateUrlServiceAndroid::IsDefaultSearchEngineGoogle(
           template_url_service_->search_terms_data());
 }
 
+jboolean TemplateUrlServiceAndroid::DoesDefaultSearchEngineHaveLogo(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  if (IsDefaultSearchEngineGoogle(env, obj))
+    return true;
+
+  const TemplateURL* default_search_provider =
+      template_url_service_->GetDefaultSearchProvider();
+  return default_search_provider &&
+         !default_search_provider->logo_url().is_empty();
+}
+
 jboolean
 TemplateUrlServiceAndroid::IsSearchResultsPageFromDefaultSearchProvider(
     JNIEnv* env,

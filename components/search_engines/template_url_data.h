@@ -37,6 +37,7 @@ struct TemplateURLData {
                   base::StringPiece image_url,
                   base::StringPiece new_tab_url,
                   base::StringPiece contextual_search_url,
+                  base::StringPiece logo_url,
                   base::StringPiece search_url_post_params,
                   base::StringPiece suggest_url_post_params,
                   base::StringPiece instant_url_post_params,
@@ -71,6 +72,9 @@ struct TemplateURLData {
   std::string new_tab_url;
   std::string contextual_search_url;
 
+  // Optional URL for the logo.
+  GURL logo_url;
+
   // The following post_params are comma-separated lists used to specify the
   // post parameters for the corresponding URL.
   std::string search_url_post_params;
@@ -78,7 +82,7 @@ struct TemplateURLData {
   std::string instant_url_post_params;
   std::string image_url_post_params;
 
-  // Optional favicon for the TemplateURL.
+  // Favicon for the TemplateURL.
   GURL favicon_url;
 
   // URL to the OSD file this came from. May be empty.
