@@ -4,8 +4,6 @@
 
 #include "chrome/browser/offline_pages/offliner_user_data.h"
 
-class ResourceTrackerObserver;
-
 namespace offline_pages {
 
 void OfflinerUserData::AddToWebContents(content::WebContents* webcontents,
