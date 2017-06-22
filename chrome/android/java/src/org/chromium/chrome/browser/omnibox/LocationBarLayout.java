@@ -627,12 +627,6 @@ public class LocationBarLayout extends FrameLayout
         }
 
         @Override
-        public void onWindowFocusChanged(boolean hasWindowFocus) {
-            super.onWindowFocusChanged(hasWindowFocus);
-            if (!hasWindowFocus && !mSuggestionModalShown) hideSuggestions();
-        }
-
-        @Override
         protected void layoutChildren() {
             super.layoutChildren();
             // In ICS, the selected view is not marked as selected despite calling setSelection(0),
@@ -2371,6 +2365,16 @@ public class LocationBarLayout extends FrameLayout
         }
 
         return FeatureUtilities.isRecognitionIntentPresent(getContext(), true);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        if (!hasWindowFocus && !mSuggestionModalShown) {
+            hideSuggestions();
+        } else if (hasWindowFocus && mUrlHasFocus && mNativeInitialized) {
+            onTextChangedForAutocomplete(false);
+        }
     }
 
     @Override
