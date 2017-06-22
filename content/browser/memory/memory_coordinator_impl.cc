@@ -351,6 +351,11 @@ void MemoryCoordinatorImpl::SetDelegateForTesting(
   delegate_ = std::move(delegate);
 }
 
+void MemoryCoordinatorImpl::SetPolicyForTesting(
+    std::unique_ptr<Policy> policy) {
+  policy_ = std::move(policy);
+}
+
 void MemoryCoordinatorImpl::AddChildForTesting(
     int dummy_render_process_id, mojom::ChildMemoryCoordinatorPtr child) {
   mojom::MemoryCoordinatorHandlePtr mch;
