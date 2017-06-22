@@ -163,7 +163,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   void SetDelegateForTesting(
       std::unique_ptr<MemoryCoordinatorDelegate> delegate);
 
+  // Sets a policy for testing.
+  void SetPolicyForTesting(std::unique_ptr<Policy> policy);
+
   MemoryCoordinatorDelegate* delegate() { return delegate_.get(); }
+  Policy* policy() { return policy_.get(); }
 
   // Adds the given ChildMemoryCoordinator as a child of this coordinator.
   void AddChildForTesting(int dummy_render_process_id,
@@ -182,14 +186,9 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
 #if !defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplBrowserTest, HandleAdded);
 #endif
-  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnChildVisibilityChanged);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextCondition);
-  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, UpdateCondition);
-  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, SetMemoryStateForTesting);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, ForceSetMemoryCondition);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, DiscardTabUnderCritical);
-  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnWarningCondition);
-  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnCriticalCondition);
 
   friend class MemoryCoordinatorHandleImpl;
 
