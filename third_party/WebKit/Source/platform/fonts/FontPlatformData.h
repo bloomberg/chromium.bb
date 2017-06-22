@@ -34,7 +34,6 @@
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "platform/PlatformExport.h"
-#include "platform/SharedBuffer.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/SmallCapsIterator.h"
@@ -43,6 +42,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringImpl.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -149,7 +149,7 @@ class PLATFORM_EXPORT FontPlatformData {
   bool FontContainsCharacter(UChar32 character);
 
   PassRefPtr<OpenTypeVerticalData> VerticalData() const;
-  PassRefPtr<SharedBuffer> OpenTypeTable(SkFontTableTag) const;
+  Vector<char> OpenTypeTable(SkFontTableTag) const;
 
 #if OS(LINUX) || OS(ANDROID)
   // The returned styles are all actual styles without
