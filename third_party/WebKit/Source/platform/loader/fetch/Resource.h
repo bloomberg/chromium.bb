@@ -179,14 +179,14 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // Returns the size of content (response body) before decoding. Adding a new
   // usage of this function is not recommended (See the TODO below).
   //
-  // TODO(hiroshige): Now encodedSize/decodedSize states are inconsistent and
+  // TODO(hiroshige): Now EncodedSize/DecodedSize states are inconsistent and
   // need to be refactored (crbug/643135).
   size_t EncodedSize() const { return encoded_size_; }
 
   // Returns the current memory usage for the encoded data. Adding a new usage
-  // of this function is not recommended as the same reason as |encodedSize()|.
+  // of this function is not recommended as the same reason as |EncodedSize()|.
   //
-  // |encodedSize()| and |encodedSizeMemoryUsageForTesting()| can return
+  // |EncodedSize()| and |EncodedSizeMemoryUsageForTesting()| can return
   // different values, e.g., when ImageResource purges encoded image data after
   // finishing loading.
   size_t EncodedSizeMemoryUsageForTesting() const {
@@ -252,7 +252,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
   void SetDataBufferingPolicy(DataBufferingPolicy);
 
-  // The isPreloaded() flag is using a counter in order to make sure that even
+  // The IsPreloaded() flag is using a counter in order to make sure that even
   // when multiple ResourceFetchers are preloading the resource, it will remain
   // marked as preloaded until *all* of them have used it.
   bool IsUnusedPreload() const {
@@ -319,8 +319,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void WillReloadAfterDiskCacheMiss() {}
 
   // TODO(shaochuan): This is for saving back the actual ResourceRequest sent
-  // in ResourceFetcher::startLoad() for retry in cache-aware loading, remove
-  // once ResourceRequest is not modified in startLoad(). crbug.com/632580
+  // in ResourceFetcher::StartLoad() for retry in cache-aware loading, remove
+  // once ResourceRequest is not modified in StartLoad(). crbug.com/632580
   void SetResourceRequest(const ResourceRequest& resource_request) {
     resource_request_ = resource_request;
   }
@@ -339,7 +339,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   // Used to notify ImageResourceContent of the start of actual loading.
   // JavaScript calls or client/observer notifications are disallowed inside
-  // notifyStartLoad().
+  // NotifyStartLoad().
   virtual void NotifyStartLoad() {}
 
   static const char* ResourceTypeToString(
@@ -403,7 +403,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual void DestroyDecodedDataIfPossible() {}
 
-  // Returns the memory dump name used for tracing. See Resource::onMemoryDump.
+  // Returns the memory dump name used for tracing. See Resource::OnMemoryDump.
   String GetMemoryDumpName() const;
 
   const HeapHashCountedSet<WeakMember<ResourceClient>>& Clients() const {
@@ -457,7 +457,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   size_t encoded_size_memory_usage_;
   size_t decoded_size_;
 
-  // Resource::calculateOverheadSize() is affected by changes in
+  // Resource::CalculateOverheadSize() is affected by changes in
   // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after
   // initial |m_resourceRequest| is given, to reduce MemoryCache manipulation
   // and thus potential bugs. crbug.com/594644

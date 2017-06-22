@@ -81,7 +81,7 @@ TEST_F(FontResourceTest,
   EXPECT_TRUE(resource3->IsCacheValidator());
   EXPECT_TRUE(resource3->StillNeedsLoad());
 
-  // startLoad() can be called from any initiator. Here, call it from the
+  // StartLoad() can be called from any initiator. Here, call it from the
   // latter.
   fetcher->StartLoad(resource3);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
@@ -132,7 +132,7 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   EXPECT_TRUE(client->FontLoadShortLimitExceededCalled());
   EXPECT_FALSE(client->FontLoadLongLimitExceededCalled());
 
-  // Add client now, fontLoadShortLimitExceeded() should be called.
+  // Add client now, FontLoadShortLimitExceeded() should be called.
   Persistent<MockFontResourceClient> client2 =
       new MockFontResourceClient(resource);
   EXPECT_TRUE(client2->FontLoadShortLimitExceededCalled());

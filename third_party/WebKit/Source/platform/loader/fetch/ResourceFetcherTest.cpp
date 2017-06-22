@@ -121,7 +121,7 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
   EXPECT_TRUE(resource->GetResourceError().IsAccessCheck());
   EXPECT_FALSE(GetMemoryCache()->ResourceForURL(secure_url));
 
-  // Start by calling startLoad() directly, rather than via requestResource().
+  // Start by calling StartLoad() directly, rather than via RequestResource().
   // This shouldn't crash.
   fetcher->StartLoad(RawResource::CreateForTest(secure_url, Resource::kRaw));
 }
@@ -342,8 +342,8 @@ class ServeRequestsOnCompleteClient final
     Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   }
 
-  // No callbacks should be received except for the notifyFinished() triggered
-  // by ResourceLoader::cancel().
+  // No callbacks should be received except for the NotifyFinished() triggered
+  // by ResourceLoader::Cancel().
   void DataSent(Resource*, unsigned long long, unsigned long long) override {
     ASSERT_TRUE(false);
   }
@@ -376,7 +376,7 @@ class ServeRequestsOnCompleteClient final
 
 // Regression test for http://crbug.com/594072.
 // This emulates a modal dialog triggering a nested run loop inside
-// ResourceLoader::cancel(). If the ResourceLoader doesn't promptly cancel its
+// ResourceLoader::Cancel(). If the ResourceLoader doesn't promptly cancel its
 // WebURLLoader before notifying its clients, a nested run loop  may send a
 // network response, leading to an invalid state transition in ResourceLoader.
 TEST_F(ResourceFetcherTest, ResponseOnCancel) {

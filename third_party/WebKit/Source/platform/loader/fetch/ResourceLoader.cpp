@@ -89,7 +89,7 @@ void ResourceLoader::Start(const ResourceRequest& request) {
 
   if (is_cache_aware_loading_activated_) {
     // Override cache policy for cache-aware loading. If this request fails, a
-    // reload with original request will be triggered in didFail().
+    // reload with original request will be triggered in DidFail().
     ResourceRequest cache_aware_request(request);
     cache_aware_request.SetCachePolicy(WebCachePolicy::kReturnCacheDataIfValid);
     loader_->LoadAsynchronously(WrappedResourceRequest(cache_aware_request),
@@ -242,10 +242,10 @@ bool ResourceLoader::WillFollowRedirect(
                                     redirect_response,
                                     resource_->Options().initiator_info);
 
-  // ResourceFetcher::willFollowRedirect() may rewrite the URL to
+  // ResourceFetcher::WillFollowRedirect() may rewrite the URL to
   // something else not for rejecting redirect but for other reasons.
-  // E.g. WebFrameTestClient::willSendRequest() and
-  // RenderFrameImpl::willSendRequest(). We should reflect the
+  // E.g. WebFrameTestClient::WillSendRequest() and
+  // RenderFrameImpl::WillSendRequest(). We should reflect the
   // rewriting but currently we cannot. So, return false to make the
   // redirect fail.
   if (new_request.Url() != original_url) {
@@ -516,7 +516,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     return;
   DCHECK_GE(response_out.ToResourceResponse().EncodedBodyLength(), 0);
 
-  // Follow the async case convention of not calling didReceiveData or
+  // Follow the async case convention of not calling DidReceiveData or
   // appending data to m_resource if the response body is empty. Copying the
   // empty buffer is a noop in most cases, but is destructive in the case of
   // a 304, where it will overwrite the cached data we should be reusing.
