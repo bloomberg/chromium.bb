@@ -30,6 +30,7 @@ class APIEventHandler;
 class APIRequestHandler;
 class APISignature;
 class APITypeReferenceMap;
+class BindingAccessChecker;
 
 namespace binding {
 enum class RequestThread;
@@ -51,11 +52,6 @@ class APIBinding {
       const std::string& property_name,
       const base::ListValue* property_values)>;
 
-  // The callback for determining if a given API feature (specified by |name|)
-  // is available in the given context.
-  using AvailabilityCallback =
-      base::Callback<bool(v8::Local<v8::Context>, const std::string& name)>;
-
   // The callback type for handling an API call.
   using HandlerCallback = base::Callback<void(gin::Arguments*)>;
 
@@ -68,11 +64,11 @@ class APIBinding {
              const base::ListValue* event_definitions,
              const base::DictionaryValue* property_definitions,
              const CreateCustomType& create_custom_type,
-             const AvailabilityCallback& is_available,
              std::unique_ptr<APIBindingHooks> binding_hooks,
              APITypeReferenceMap* type_refs,
              APIRequestHandler* request_handler,
-             APIEventHandler* event_handler);
+             APIEventHandler* event_handler,
+             BindingAccessChecker* access_checker);
   ~APIBinding();
 
   // Returns a new v8::Object for the API this APIBinding represents.
@@ -135,9 +131,6 @@ class APIBinding {
   // The callback for constructing a custom type.
   CreateCustomType create_custom_type_;
 
-  // The callback for checking availability of an API feature.
-  AvailabilityCallback is_available_;
-
   // The registered hooks for this API.
   std::unique_ptr<APIBindingHooks> binding_hooks_;
 
@@ -151,6 +144,9 @@ class APIBinding {
   // The associated event handler, shared between this and other bindings.
   // Required to outlive this object.
   APIEventHandler* event_handler_;
+
+  // The associated access checker; required to outlive this object.
+  const BindingAccessChecker* const access_checker_;
 
   // The template for this API. Note: some methods may only be available in
   // certain contexts, but this template contains all methods. Those that are
