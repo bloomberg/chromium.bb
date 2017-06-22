@@ -165,7 +165,7 @@ if (use_system_harfbuzz) {
       "HAVE_OT",
       "HAVE_ICU",
       "HAVE_ICU_BUILTIN",
-      "HB_NO_MT",
+      "HAVE_INTEL_ATOMIC_PRIMITIVES",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -229,7 +229,7 @@ if (use_system_harfbuzz) {
       "HAVE_OT",
       "HAVE_ICU",
       "HAVE_ICU_BUILTIN",
-      "HB_NO_MT",
+      "HAVE_INTEL_ATOMIC_PRIMITIVES",
     ]
 
     deps = [
