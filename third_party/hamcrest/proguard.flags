@@ -1,1 +1,1 @@
--dontobfuscate
+-keepnames class org.hamcrest.** { *; }
