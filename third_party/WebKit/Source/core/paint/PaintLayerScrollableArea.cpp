@@ -70,6 +70,7 @@
 #include "core/layout/api/LayoutBoxItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -398,6 +399,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   DCHECK(frame);
 
   LocalFrameView* frame_view = Box().GetFrameView();
+  bool is_root_layer = Layer()->IsRootLayer();
+  bool is_main_frame = is_root_layer && frame->IsMainFrame();
 
   TRACE_EVENT1("devtools.timeline", "ScrollLayer", "data",
                InspectorScrollLayerEvent::Data(&Box()));
@@ -451,7 +454,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   }
 
   // Only the root layer can overlap non-composited fixed-position elements.
-  if (!requires_paint_invalidation && Layer()->IsRootLayer() &&
+  if (!requires_paint_invalidation && is_root_layer &&
       frame_view->HasViewportConstrainedObjects()) {
     if (!frame_view->InvalidateViewportConstrainedObjects())
       requires_paint_invalidation = true;
@@ -467,8 +470,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     // The scrollOffsetTranslation paint property depends on the scroll offset.
     // (see: PaintPropertyTreeBuilder.updateProperties(LocalFrameView&,...) and
     // PaintPropertyTreeBuilder.updateScrollAndScrollTranslation).
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-        Layer()->IsRootLayer()) {
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() && is_root_layer) {
       frame_view->SetNeedsPaintPropertyUpdate();
     } else {
       Box().SetNeedsPaintPropertyUpdate();
@@ -485,9 +487,14 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   // Inform the FrameLoader of the new scroll position, so it can be restored
   // when navigating back.
-  if (Layer()->IsRootLayer()) {
+  if (is_root_layer) {
     frame_view->GetFrame().Loader().SaveScrollState();
     frame_view->DidChangeScrollOffset();
+    // TODO(szager): Clean up was_scrolled_by_user. (crbug.com/732955)
+    if (scroll_type == kCompositorScroll && is_main_frame) {
+      if (DocumentLoader* document_loader = frame->Loader().GetDocumentLoader())
+        document_loader->GetInitialScrollState().was_scrolled_by_user = true;
+    }
   }
 
   if (IsExplicitScrollType(scroll_type)) {
