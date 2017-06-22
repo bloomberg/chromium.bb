@@ -31,6 +31,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 @synthesize detailText = _detailText;
 @synthesize image = _image;
 @synthesize accessoryType = _accessoryType;
+@synthesize complete = _complete;
 
 #pragma mark CollectionViewItem
 

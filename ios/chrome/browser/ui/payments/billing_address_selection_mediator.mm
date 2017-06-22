@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/payments/billing_address_selection_mediator.h"
 
 #include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -22,8 +23,9 @@
 #endif
 
 namespace {
-using ::payment_request_util::GetNameLabelFromAutofillProfile;
+using ::payment_request_util::GetAddressNotificationLabelFromAutofillProfile;
 using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
+using ::payment_request_util::GetNameLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 }  // namespace
 
@@ -99,6 +101,10 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
     item.name = GetNameLabelFromAutofillProfile(*billingProfile);
     item.address = GetBillingAddressLabelFromAutofillProfile(*billingProfile);
     item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*billingProfile);
+    item.notification = GetAddressNotificationLabelFromAutofillProfile(
+        *_paymentRequest, *billingProfile);
+    item.complete = _paymentRequest->profile_comparator()->IsShippingComplete(
+        billingProfile);
     if (self.selectedBillingProfile == billingProfile)
       _selectedItemIndex = index;
 

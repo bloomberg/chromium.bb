@@ -7,12 +7,14 @@
 
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-// Protocol adopted by the payments collection view items that set the accessory
-// view type on their represented cells.
-@protocol PaymentsHasAccessoryType
+// Protocol adopted by the payment items that are selectable.
+@protocol PaymentsIsSelectable
 
 // The accessory view type for the represented cell.
 @property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
+
+// Whether or not the selectable cell has all of its required information.
+@property(nonatomic, assign, getter=isComplete) BOOL complete;
 
 @end
 

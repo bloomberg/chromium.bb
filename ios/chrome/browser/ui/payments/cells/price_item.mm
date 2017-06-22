@@ -29,6 +29,7 @@ const CGFloat kMinWidthRatio = 0.5f;
 @implementation PriceItem
 
 @synthesize accessoryType = _accessoryType;
+@synthesize complete = _complete;
 @synthesize item = _item;
 @synthesize notification = _notification;
 @synthesize price = _price;

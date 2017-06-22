@@ -9,6 +9,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/ui/payments/billing_address_selection_mediator.h"
+#import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -86,9 +87,20 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   // Update the data source with the selection.
   self.mediator.selectedItemIndex = index;
 
+  CollectionViewItem<PaymentsIsSelectable>* paymentItem =
+      self.mediator.selectableItems[index];
+
   DCHECK(index < self.paymentRequest->billing_profiles().size());
-  [self delayedNotifyDelegateOfSelection:self.paymentRequest
-                                             ->billing_profiles()[index]];
+  autofill::AutofillProfile* billingProfile =
+      self.paymentRequest->billing_profiles()[index];
+
+  // Proceed with item selection only if the item has all required info, or
+  // else bring up the address editor.
+  if (paymentItem.complete) {
+    [self delayedNotifyDelegateOfSelection:billingProfile];
+  } else {
+    [self startAddressEditCoordinatorWithAddress:billingProfile];
+  }
 }
 
 - (void)paymentRequestSelectorViewControllerDidFinish:
@@ -127,6 +139,12 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
   [self.addressEditCoordinator stop];
   self.addressEditCoordinator = nil;
+
+  // Mark the item as complete meaning all required information has been
+  // filled out.
+  CollectionViewItem<PaymentsIsSelectable>* paymentItem =
+      self.mediator.selectableItems[self.mediator.selectedItemIndex];
+  paymentItem.complete = YES;
 
   if (![self.viewController isEditing]) {
     // Inform |self.delegate| that |address| has been selected.

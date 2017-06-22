@@ -8,11 +8,11 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/payments/cells/payments_has_accessory_type.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_is_selectable.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // PaymentMethodItem is the model class corresponding to PaymentMethodCell.
-@interface PaymentMethodItem : CollectionViewItem<PaymentsHasAccessoryType>
+@interface PaymentMethodItem : CollectionViewItem<PaymentsIsSelectable>
 
 // A unique identifier for the payment method (for example, the type and last 4
 // digits of a credit card).

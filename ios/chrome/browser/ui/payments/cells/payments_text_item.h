@@ -8,11 +8,11 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/payments/cells/payments_has_accessory_type.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_is_selectable.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // PaymentsTextItem is the model class corresponding to PaymentsTextCell.
-@interface PaymentsTextItem : CollectionViewItem<PaymentsHasAccessoryType>
+@interface PaymentsTextItem : CollectionViewItem<PaymentsIsSelectable>
 
 // The main text to display.
 @property(nonatomic, copy) NSString* text;
