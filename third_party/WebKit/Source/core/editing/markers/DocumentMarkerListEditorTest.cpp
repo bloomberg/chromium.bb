@@ -399,4 +399,79 @@ TEST_F(DocumentMarkerListEditorTest,
   EXPECT_EQ(20u, markers[2]->EndOffset());
 }
 
+TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_Empty) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+
+  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 10, 15);
+  EXPECT_EQ(0u, markers_intersecting_range.size());
+}
+
+TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_TouchingAfter) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+
+  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 5, 10);
+  EXPECT_EQ(0u, markers_intersecting_range.size());
+}
+
+TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_TouchingBefore) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 10));
+
+  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 0, 5);
+  EXPECT_EQ(0u, markers_intersecting_range.size());
+}
+
+TEST_F(DocumentMarkerListEditorTest,
+       MarkersIntersectingRange_IntersectingAfter) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 10));
+
+  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 0, 6);
+  EXPECT_EQ(1u, markers_intersecting_range.size());
+
+  EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
+  EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
+}
+
+TEST_F(DocumentMarkerListEditorTest,
+       MarkersIntersectingRange_IntersectingBefore) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 10));
+
+  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 9, 15);
+  EXPECT_EQ(1u, markers_intersecting_range.size());
+
+  EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
+  EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
+}
+
+TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_MultipleMarkers) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+  markers.push_back(CreateMarker(5, 10));
+  markers.push_back(CreateMarker(10, 15));
+  markers.push_back(CreateMarker(15, 20));
+  markers.push_back(CreateMarker(20, 25));
+
+  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 7, 17);
+  EXPECT_EQ(3u, markers_intersecting_range.size());
+
+  EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
+  EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
+
+  EXPECT_EQ(10u, markers_intersecting_range[1]->StartOffset());
+  EXPECT_EQ(15u, markers_intersecting_range[1]->EndOffset());
+
+  EXPECT_EQ(15u, markers_intersecting_range[2]->StartOffset());
+  EXPECT_EQ(20u, markers_intersecting_range[2]->EndOffset());
+}
+
 }  // namespace blink

@@ -30,6 +30,14 @@ ActiveSuggestionMarkerListImpl::GetMarkers() const {
   return markers_;
 }
 
+HeapVector<Member<DocumentMarker>>
+ActiveSuggestionMarkerListImpl::MarkersIntersectingRange(
+    unsigned start_offset,
+    unsigned end_offset) const {
+  return DocumentMarkerListEditor::MarkersIntersectingRange(
+      markers_, start_offset, end_offset);
+}
+
 bool ActiveSuggestionMarkerListImpl::MoveMarkers(
     int length,
     DocumentMarkerList* dst_markers_) {

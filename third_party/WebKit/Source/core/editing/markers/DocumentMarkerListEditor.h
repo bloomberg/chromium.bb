@@ -45,6 +45,11 @@ class CORE_EXPORT DocumentMarkerListEditor final {
                                              unsigned offset,
                                              unsigned old_length,
                                              unsigned new_length);
+
+  static HeapVector<Member<DocumentMarker>> MarkersIntersectingRange(
+      const MarkerList&,
+      unsigned start_offset,
+      unsigned end_offset);
 };
 
 }  // namespace blink

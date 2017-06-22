@@ -31,7 +31,13 @@ class CORE_EXPORT DocumentMarkerList
   virtual void Add(DocumentMarker*) = 0;
   virtual void Clear() = 0;
 
+  // Returns all markers
   virtual const HeapVector<Member<DocumentMarker>>& GetMarkers() const = 0;
+  // Returns markers that have non-empty overlap with the range
+  // [start_offset, end_offset]
+  virtual HeapVector<Member<DocumentMarker>> MarkersIntersectingRange(
+      unsigned start_offset,
+      unsigned end_offset) const = 0;
 
   // Returns true if at least one marker is copied, false otherwise
   virtual bool MoveMarkers(int length, DocumentMarkerList* dst_list) = 0;

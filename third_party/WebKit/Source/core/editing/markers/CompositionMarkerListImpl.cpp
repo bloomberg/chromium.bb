@@ -30,6 +30,13 @@ CompositionMarkerListImpl::GetMarkers() const {
   return markers_;
 }
 
+HeapVector<Member<DocumentMarker>>
+CompositionMarkerListImpl::MarkersIntersectingRange(unsigned start_offset,
+                                                    unsigned end_offset) const {
+  return DocumentMarkerListEditor::MarkersIntersectingRange(
+      markers_, start_offset, end_offset);
+}
+
 bool CompositionMarkerListImpl::MoveMarkers(int length,
                                             DocumentMarkerList* dst_markers_) {
   return DocumentMarkerListEditor::MoveMarkers(&markers_, length, dst_markers_);
