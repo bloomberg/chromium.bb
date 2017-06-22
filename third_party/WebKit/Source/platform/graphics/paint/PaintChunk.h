@@ -43,7 +43,8 @@ struct PaintChunk {
         properties(props),
         outset_for_raster_effects(0),
         known_to_be_opaque(false),
-        is_cacheable(cacheable == kCacheable) {}
+        is_cacheable(cacheable == kCacheable),
+        client_is_just_created(id.client.IsJustCreated()) {}
 
   size_t size() const {
     DCHECK_GE(end_index, begin_index);
@@ -66,7 +67,7 @@ struct PaintChunk {
     // even if it's id equals the old chunk's id (which may happen if this
     // chunk's client is just created at the same address of the old chunk's
     // deleted client).
-    return !id.client.IsJustCreated();
+    return !client_is_just_created;
   }
 
   // Index of the first drawing in this chunk.
@@ -102,11 +103,16 @@ struct PaintChunk {
 
   bool is_cacheable : 1;
 
-  // SPv2 only. Rectangles that need to be re-rasterized in this chunk, in the
-  // coordinate space of the containing transform node.
-  Vector<FloatRect> raster_invalidation_rects;
+  // TODO(wangxianzhu): The following fields are 'mutable' for
+  // ContentLayerClientImpl to clear them, which will be unnecessary if we don't
+  // call PaintArtifactCompositor::Update() when paint artifact is unchanged.
+  mutable bool client_is_just_created : 1;
 
-  Vector<RasterInvalidationInfo> raster_invalidation_tracking;
+  // Rectangles that need to be re-rasterized in this chunk, in the coordinate
+  // space of the containing transform node.
+  mutable Vector<FloatRect> raster_invalidation_rects;
+
+  mutable Vector<RasterInvalidationInfo> raster_invalidation_tracking;
 };
 
 inline bool operator==(const PaintChunk& a, const PaintChunk& b) {

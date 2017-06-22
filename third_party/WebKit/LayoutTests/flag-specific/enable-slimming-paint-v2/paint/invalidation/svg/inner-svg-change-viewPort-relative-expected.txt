@@ -17,9 +17,24 @@
           "reason": "appeared"
         },
         {
+          "object": "InlineTextBox 'right-aligned text'",
+          "rect": [0, 85, 101, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [180, 120, 20, 20],
+          "reason": "chunk reordered"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [180, 60, 20, 20],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [80, 120, 20, 20],
+          "reason": "chunk reordered"
         },
         {
           "object": "LayoutSVGRect rect",

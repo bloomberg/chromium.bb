@@ -32,14 +32,6 @@
 
 namespace blink {
 
-#define EXPECT_BLINK_FLOAT_RECT_EQ(expected, actual)         \
-  do {                                                       \
-    EXPECT_FLOAT_EQ((expected).X(), (actual).X());           \
-    EXPECT_FLOAT_EQ((expected).Y(), (actual).Y());           \
-    EXPECT_FLOAT_EQ((expected).Width(), (actual).Width());   \
-    EXPECT_FLOAT_EQ((expected).Height(), (actual).Height()); \
-  } while (false)
-
 using ::blink::testing::CreateOpacityOnlyEffect;
 using ::testing::Pointee;
 
@@ -179,6 +171,12 @@ class PaintArtifactCompositorTestWithPropertyTrees
     if (include_subsequent_chunk)
       AddSimpleRectChunk(artifact);
     Update(artifact.Build());
+  }
+
+  using PendingLayer = PaintArtifactCompositor::PendingLayer;
+
+  bool MightOverlap(const PendingLayer& a, const PendingLayer& b) {
+    return PaintArtifactCompositor::MightOverlap(a, b);
   }
 
  private:
@@ -1519,15 +1517,14 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OverlapTransform) {
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
   PaintChunk paint_chunk = DefaultChunk();
   paint_chunk.bounds = FloatRect(0, 0, 100, 100);
-  PaintArtifactCompositor::PendingLayer pending_layer(paint_chunk, false);
+  PendingLayer pending_layer(paint_chunk, false);
 
   PaintChunk paint_chunk2 = DefaultChunk();
   paint_chunk2.bounds = FloatRect(0, 0, 100, 100);
 
   {
-    PaintArtifactCompositor::PendingLayer pending_layer2(paint_chunk2, false);
-    EXPECT_TRUE(
-        PaintArtifactCompositor::MightOverlap(pending_layer, pending_layer2));
+    PendingLayer pending_layer2(paint_chunk2, false);
+    EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
 
   RefPtr<TransformPaintPropertyNode> transform =
@@ -1537,9 +1534,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
           false);
   {
     paint_chunk2.properties.property_tree_state.SetTransform(transform.Get());
-    PaintArtifactCompositor::PendingLayer pending_layer2(paint_chunk2, false);
-    EXPECT_TRUE(
-        PaintArtifactCompositor::MightOverlap(pending_layer, pending_layer2));
+    PendingLayer pending_layer2(paint_chunk2, false);
+    EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
 
   RefPtr<TransformPaintPropertyNode> transform2 =
@@ -1549,9 +1545,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
           false);
   {
     paint_chunk2.properties.property_tree_state.SetTransform(transform2.Get());
-    PaintArtifactCompositor::PendingLayer pending_layer2(paint_chunk2, false);
-    EXPECT_FALSE(
-        PaintArtifactCompositor::MightOverlap(pending_layer, pending_layer2));
+    PendingLayer pending_layer2(paint_chunk2, false);
+    EXPECT_FALSE(MightOverlap(pending_layer, pending_layer2));
   }
 }
 
@@ -1564,34 +1559,34 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   chunk1.known_to_be_opaque = true;
   chunk1.bounds = FloatRect(0, 0, 30, 40);
 
-  PaintArtifactCompositor::PendingLayer pending_layer(chunk1, false);
+  PendingLayer pending_layer(chunk1, false);
 
   EXPECT_TRUE(pending_layer.backface_hidden);
   EXPECT_TRUE(pending_layer.known_to_be_opaque);
-  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
+  EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
 
   PaintChunk chunk2 = DefaultChunk();
   chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk2.properties.backface_hidden = true;
   chunk2.known_to_be_opaque = true;
   chunk2.bounds = FloatRect(10, 20, 30, 40);
-  pending_layer.Merge(PaintArtifactCompositor::PendingLayer(chunk2, false));
+  pending_layer.Merge(PendingLayer(chunk2, false));
 
   EXPECT_TRUE(pending_layer.backface_hidden);
   // Bounds not equal to one PaintChunk.
   EXPECT_FALSE(pending_layer.known_to_be_opaque);
-  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 40, 60), pending_layer.bounds);
+  EXPECT_EQ(FloatRect(0, 0, 40, 60), pending_layer.bounds);
 
   PaintChunk chunk3 = DefaultChunk();
   chunk3.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk3.properties.backface_hidden = true;
   chunk3.known_to_be_opaque = true;
   chunk3.bounds = FloatRect(-5, -25, 20, 20);
-  pending_layer.Merge(PaintArtifactCompositor::PendingLayer(chunk3, false));
+  pending_layer.Merge(PendingLayer(chunk3, false));
 
   EXPECT_TRUE(pending_layer.backface_hidden);
   EXPECT_FALSE(pending_layer.known_to_be_opaque);
-  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(-5, -25, 45, 85), pending_layer.bounds);
+  EXPECT_EQ(FloatRect(-5, -25, 45, 85), pending_layer.bounds);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
@@ -1607,17 +1602,17 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
       EffectPaintPropertyNode::Root());
   chunk1.bounds = FloatRect(0, 0, 30, 40);
 
-  PaintArtifactCompositor::PendingLayer pending_layer(chunk1, false);
+  PendingLayer pending_layer(chunk1, false);
 
-  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
+  EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
 
   PaintChunk chunk2 = DefaultChunk();
   chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk2.properties.property_tree_state.SetTransform(transform);
   chunk2.bounds = FloatRect(0, 0, 50, 60);
-  pending_layer.Merge(PaintArtifactCompositor::PendingLayer(chunk2, false));
+  pending_layer.Merge(PendingLayer(chunk2, false));
 
-  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 70, 85), pending_layer.bounds);
+  EXPECT_EQ(FloatRect(0, 0, 70, 85), pending_layer.bounds);
 }
 
 // TODO(crbug.com/701991):
@@ -1630,7 +1625,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
       EffectPaintPropertyNode::Root());
   chunk1.bounds = FloatRect(0, 0, 30, 40);
   chunk1.known_to_be_opaque = false;
-  PaintArtifactCompositor::PendingLayer pending_layer(chunk1, false);
+  PendingLayer pending_layer(chunk1, false);
 
   EXPECT_FALSE(pending_layer.known_to_be_opaque);
 
@@ -1638,7 +1633,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk2.bounds = FloatRect(0, 0, 25, 35);
   chunk2.known_to_be_opaque = true;
-  pending_layer.Merge(PaintArtifactCompositor::PendingLayer(chunk2, false));
+  pending_layer.Merge(PendingLayer(chunk2, false));
 
   // Chunk 2 doesn't cover the entire layer, so not opaque.
   EXPECT_FALSE(pending_layer.known_to_be_opaque);
@@ -1647,7 +1642,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   chunk3.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk3.bounds = FloatRect(0, 0, 50, 60);
   chunk3.known_to_be_opaque = true;
-  pending_layer.Merge(PaintArtifactCompositor::PendingLayer(chunk3, false));
+  pending_layer.Merge(PendingLayer(chunk3, false));
 
   // Chunk 3 covers the entire layer, so now it's opaque.
   EXPECT_TRUE(pending_layer.known_to_be_opaque);

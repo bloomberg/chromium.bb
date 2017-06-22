@@ -16,7 +16,7 @@
         {
           "object": "LayoutTableSection TBODY id='target'",
           "rect": [0, 0, 186, 134],
-          "reason": "appeared"
+          "reason": "full layer"
         }
       ]
     },

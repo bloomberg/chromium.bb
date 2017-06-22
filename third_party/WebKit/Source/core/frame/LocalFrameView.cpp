@@ -3794,8 +3794,10 @@ void LocalFrameView::SetTracksPaintInvalidations(
           paint_controller_ = PaintController::Create();
         paint_controller_->SetTracksRasterInvalidations(
             track_paint_invalidations);
-        if (paint_artifact_compositor_)
-          paint_artifact_compositor_->ResetTrackedRasterInvalidations();
+        if (paint_artifact_compositor_) {
+          paint_artifact_compositor_->SetTracksRasterInvalidations(
+              track_paint_invalidations);
+        }
       } else {
         layout_view.Compositor()->SetTracksRasterInvalidations(
             track_paint_invalidations);
