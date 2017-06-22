@@ -113,6 +113,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     configure_displays_ = configure_displays;
   }
 
+  void set_internal_display_has_accelerometer(bool has_accelerometer) {
+    internal_display_has_accelerometer_ = has_accelerometer;
+  }
+
   // Returns the display id of the first display in the outupt list.
   int64_t first_display_id() const { return first_display_id_; }
 
@@ -489,6 +493,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   Display::Rotation registered_internal_display_rotation_ = Display::ROTATE_0;
 
   bool unified_desktop_enabled_ = false;
+
+  bool internal_display_has_accelerometer_ = false;
 
   base::Closure created_mirror_window_;
 

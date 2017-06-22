@@ -66,6 +66,13 @@ class DISPLAY_EXPORT Display final {
     TOUCH_SUPPORT_UNAVAILABLE,
   };
 
+  // Accelerometer support for the display.
+  enum AccelerometerSupport {
+    ACCELEROMETER_SUPPORT_UNKNOWN,
+    ACCELEROMETER_SUPPORT_AVAILABLE,
+    ACCELEROMETER_SUPPORT_UNAVAILABLE,
+  };
+
   // Creates a display with kInvalidDisplayId as default.
   Display();
   explicit Display(int64_t id);
@@ -116,6 +123,13 @@ class DISPLAY_EXPORT Display final {
 
   TouchSupport touch_support() const { return touch_support_; }
   void set_touch_support(TouchSupport support) { touch_support_ = support; }
+
+  AccelerometerSupport accelerometer_support() const {
+    return accelerometer_support_;
+  }
+  void set_accelerometer_support(AccelerometerSupport support) {
+    accelerometer_support_ = support;
+  }
 
   // Utility functions that just return the size of display and
   // work area.
@@ -208,6 +222,7 @@ class DISPLAY_EXPORT Display final {
   float device_scale_factor_;
   Rotation rotation_ = ROTATE_0;
   TouchSupport touch_support_ = TOUCH_SUPPORT_UNKNOWN;
+  AccelerometerSupport accelerometer_support_ = ACCELEROMETER_SUPPORT_UNKNOWN;
   gfx::Size maximum_cursor_size_;
   // NOTE: this is not currently written to the mojom as it is not used in
   // aura.
