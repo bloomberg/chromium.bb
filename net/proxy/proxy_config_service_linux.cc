@@ -985,6 +985,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
     // inotify watches inodes (so we'll be watching the old deleted file after
     // the first change, and it will never change again). So, we watch the
     // directory instead. We then act only on changes to the kioslaverc entry.
+    // TODO(eroman): What if the file is deleted? (handle with IN_DELETE).
     if (inotify_add_watch(inotify_fd_, kde_config_dir_.value().c_str(),
                           IN_MODIFY | IN_MOVED_TO) < 0) {
       return false;
@@ -1311,6 +1312,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
       }
     }
     if (kioslaverc_touched) {
+      LOG(ERROR) << "kioslaverc_touched";
       // We don't use Reset() because the timer may not yet be running.
       // (In that case Stop() is a no-op.)
       debounce_timer_->Stop();
