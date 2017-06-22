@@ -26,6 +26,7 @@
 #include "media/base/test_helpers.h"
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"
+#include "media/filters/source_buffer_range.h"
 #include "media/filters/webvtt_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -218,6 +219,11 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
+      // TODO(wolenetz): Once SourceBufferRange is using PTS for buffered range
+      // reporting, also verify the reported range end time matches the
+      // internally tracked range end time, and that the "highest presentation
+      // timestamp" for the stream matches the last range's highest pts.  See
+      // https://crbug.com/718641.
       int64_t start = (r.start(i) / frame_duration_);
       int64_t end = (r.end(i) / frame_duration_) - 1;
       ss << "[" << start << "," << end << ") ";
@@ -232,12 +238,39 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
+      // TODO(wolenetz): Once SourceBufferRange is using PTS for buffered range
+      // reporting, also verify the reported range end time matches the
+      // internally tracked range end time, and that the "highest presentation
+      // timestamp" for the stream matches the last range's highest pts.  See
+      // https://crbug.com/718641.
       int64_t start = r.start(i).InMilliseconds();
       int64_t end = r.end(i).InMilliseconds();
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";
     EXPECT_EQ(expected, ss.str());
+  }
+
+  void CheckExpectedRangeEndTimes(const std::string& expected) {
+    std::stringstream ss;
+    ss << "{ ";
+    for (const auto& r : stream_->ranges_) {
+      base::TimeDelta highest_pts;
+      base::TimeDelta end_time;
+      r->GetRangeEndTimesForTesting(&highest_pts, &end_time);
+      ss << "<" << highest_pts.InMilliseconds() << ","
+         << end_time.InMilliseconds() << "> ";
+    }
+    ss << "}";
+    EXPECT_EQ(expected, ss.str());
+  }
+
+  void CheckIsNextInPTSSequenceWithFirstRange(int64_t pts_in_ms,
+                                              bool expectation) {
+    ASSERT_GE(stream_->ranges_.size(), 1u);
+    const auto& range_ptr = *(stream_->ranges_.begin());
+    EXPECT_EQ(expectation, range_ptr->IsNextInPresentationSequence(
+                               base::TimeDelta::FromMilliseconds(pts_in_ms)));
   }
 
   void CheckExpectedBuffers(
@@ -612,14 +645,17 @@ class SourceBufferStreamTest : public testing::Test {
     BufferQueue buffers = StringToBufferQueue(buffers_to_append);
 
     if (start_new_coded_frame_group) {
-      base::TimeDelta start_timestamp = coded_frame_group_start_timestamp;
-      if (start_timestamp == kNoTimestamp)
-        start_timestamp = buffers[0]->timestamp();
+      // TODO(wolenetz): Switch to signalling based on PTS, not DTS, once
+      // production code does that, too.  See https://crbug.com/718641.
+      DecodeTimestamp start_timestamp = DecodeTimestamp::FromPresentationTime(
+          coded_frame_group_start_timestamp);
 
-      ASSERT_TRUE(start_timestamp <= buffers[0]->timestamp());
+      if (start_timestamp == kNoDecodeTimestamp())
+        start_timestamp = buffers[0]->GetDecodeTimestamp();
 
-      stream_->OnStartOfCodedFrameGroup(
-          DecodeTimestamp::FromPresentationTime(start_timestamp));
+      ASSERT_TRUE(start_timestamp <= buffers[0]->GetDecodeTimestamp());
+
+      stream_->OnStartOfCodedFrameGroup(start_timestamp);
     }
 
     if (!one_by_one) {
@@ -4828,6 +4864,133 @@ TEST_F(SourceBufferStreamTest, InstantGarbageCollectionUnderMemoryPressure) {
       DecodeTimestamp::FromMilliseconds(9),
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true);
   CheckExpectedRangesByTimestamp("{ [9,16) }");
+}
+
+struct VideoEndTimeCase {
+  // Times in Milliseconds
+  int64_t new_frame_pts;
+  int64_t new_frame_duration;
+  int64_t expected_highest_pts;
+  int64_t expected_end_time;
+};
+
+TEST_F(SourceBufferStreamTest, VideoRangeEndTimeCases) {
+  // With a basic range containing just a single keyframe [10,20), verify
+  // various keyframe overlap append cases' results on the range end time.
+  const VideoEndTimeCase kCases[] = {
+      {0, 10, 10, 20},
+      {20, 1, 20, 21},
+      {15, 3, 15, 18},
+      {15, 5, 15, 20},
+      {15, 8, 15, 23},
+
+      // Cases where the new frame removes the previous frame:
+      {10, 3, 10, 13},
+      {10, 10, 10, 20},
+      {10, 13, 10, 23},
+      {5, 8, 5, 13},
+      {5, 15, 5, 20},
+      {5, 20, 5, 25}};
+
+  for (const auto& c : kCases) {
+    RemoveInMs(0, 100, 100);
+    NewCodedFrameGroupAppend("10D10K");
+    CheckExpectedRangesByTimestamp("{ [10,20) }");
+    CheckExpectedRangeEndTimes("{ <10,20> }");
+
+    std::stringstream ss;
+    ss << c.new_frame_pts << "D" << c.new_frame_duration << "K";
+    DVLOG(1) << "Appending " << ss.str();
+    NewCodedFrameGroupAppend(ss.str());
+
+    std::stringstream expected;
+    expected << "{ <" << c.expected_highest_pts << "," << c.expected_end_time
+             << "> }";
+    CheckExpectedRangeEndTimes(expected.str());
+  }
+}
+
+struct AudioEndTimeCase {
+  // Times in Milliseconds
+  int64_t new_frame_pts;
+  int64_t new_frame_duration;
+  int64_t expected_highest_pts;
+  int64_t expected_end_time;
+  bool expect_splice;
+};
+
+TEST_F(SourceBufferStreamTest, AudioRangeEndTimeCases) {
+  // With a basic range containing just a single keyframe [10,20), verify
+  // various keyframe overlap append cases' results on the range end time.
+  const AudioEndTimeCase kCases[] = {
+      {0, 10, 10, 20, false},
+      {20, 1, 20, 21, false},
+      {15, 3, 15, 18, true},
+      {15, 5, 15, 20, true},
+      {15, 8, 15, 23, true},
+
+      // Cases where the new frame removes the previous frame:
+      {10, 3, 10, 13, false},
+      {10, 10, 10, 20, false},
+      {10, 13, 10, 23, false},
+      {5, 8, 5, 13, false},
+      {5, 15, 5, 20, false},
+      {5, 20, 5, 25, false}};
+
+  SetAudioStream();
+  for (const auto& c : kCases) {
+    InSequence s;
+
+    RemoveInMs(0, 100, 100);
+    NewCodedFrameGroupAppend("10D10K");
+    CheckExpectedRangesByTimestamp("{ [10,20) }");
+    CheckExpectedRangeEndTimes("{ <10,20> }");
+
+    std::stringstream ss;
+    ss << c.new_frame_pts << "D" << c.new_frame_duration << "K";
+    if (c.expect_splice) {
+      EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(c.new_frame_pts * 1000, 10000,
+                                            (20 - c.new_frame_pts) * 1000));
+    }
+    DVLOG(1) << "Appending " << ss.str();
+    NewCodedFrameGroupAppend(ss.str());
+
+    std::stringstream expected;
+    expected << "{ <" << c.expected_highest_pts << "," << c.expected_end_time
+             << "> }";
+    CheckExpectedRangeEndTimes(expected.str());
+  }
+}
+
+TEST_F(SourceBufferStreamTest, RangeIsNextInPTS_Simple) {
+  // Append a simple GOP where DTS==PTS, perform basic PTS continuity checks.
+  NewCodedFrameGroupAppend("10D10K");
+  CheckIsNextInPTSSequenceWithFirstRange(9, false);
+  CheckIsNextInPTSSequenceWithFirstRange(10, true);
+  CheckIsNextInPTSSequenceWithFirstRange(20, true);
+  CheckIsNextInPTSSequenceWithFirstRange(30, true);
+  CheckIsNextInPTSSequenceWithFirstRange(31, false);
+}
+
+TEST_F(SourceBufferStreamTest, RangeIsNextInPTS_OutOfOrder) {
+  // Append a GOP where DTS != PTS such that a timestamp used as DTS would not
+  // be continuous, but used as PTS is, and verify PTS continuity.
+  NewCodedFrameGroupAppend("1000|0K 1120|30 1030|60 1060|90 1090|120");
+  CheckIsNextInPTSSequenceWithFirstRange(0, false);
+  CheckIsNextInPTSSequenceWithFirstRange(30, false);
+  CheckIsNextInPTSSequenceWithFirstRange(60, false);
+  CheckIsNextInPTSSequenceWithFirstRange(90, false);
+  CheckIsNextInPTSSequenceWithFirstRange(120, false);
+  CheckIsNextInPTSSequenceWithFirstRange(150, false);
+  CheckIsNextInPTSSequenceWithFirstRange(1000, false);
+  CheckIsNextInPTSSequenceWithFirstRange(1030, false);
+  CheckIsNextInPTSSequenceWithFirstRange(1060, false);
+  CheckIsNextInPTSSequenceWithFirstRange(1090, false);
+  CheckIsNextInPTSSequenceWithFirstRange(1119, false);
+  CheckIsNextInPTSSequenceWithFirstRange(1120, true);
+  CheckIsNextInPTSSequenceWithFirstRange(1150, true);
+  CheckIsNextInPTSSequenceWithFirstRange(1180, true);
+  CheckIsNextInPTSSequenceWithFirstRange(1181, false);
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.

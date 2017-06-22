@@ -1066,7 +1066,7 @@ void SourceBufferStream::TrimSpliceOverlap(const BufferQueue& new_buffers) {
   // At most one buffer should exist containing the time of the newly appended
   // buffer's start. GetBuffersInRange does not currently return buffers with
   // zero duration.
-  DCHECK_EQ(overlapped_buffers.size(), 1U)
+  CHECK_EQ(overlapped_buffers.size(), 1U)
       << __func__ << " Found more than one overlapped buffer";
   StreamParserBuffer* overlapped_buffer = overlapped_buffers.front().get();
 
@@ -1109,6 +1109,15 @@ void SourceBufferStream::TrimSpliceOverlap(const BufferQueue& new_buffers) {
   overlapped_buffer->set_discard_padding(discard_padding);
   overlapped_buffer->set_duration(overlapped_buffer->duration() -
                                   overlap_duration);
+
+  // Note that the range's end time tracking shouldn't need explicit updating
+  // here due to the overlapped buffer's truncation because the range tracks
+  // that end time using a pointer to the buffer (which should be
+  // |overlapped_buffer| if the overlap occurred at the end of the range).
+  // Every audio frame is a keyframe, so there is no out-of-order PTS vs DTS
+  // sequencing to overcome. If the overlap occurs in the middle of the range,
+  // the caller invokes methods on the range which internally update the end
+  // time(s) of the resulting range(s) involved in the append.
 
   std::stringstream log_string;
   log_string << "Audio buffer splice at PTS="
