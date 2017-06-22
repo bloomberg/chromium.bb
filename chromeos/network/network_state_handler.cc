@@ -67,6 +67,32 @@ std::string ValueAsString(const base::Value& value) {
   return vstr.empty() ? "''" : vstr;
 }
 
+bool ShouldIncludeNetworkInList(const NetworkState* network_state,
+                                bool configured_only,
+                                bool visible_only,
+                                bool get_active) {
+  if (configured_only && !network_state->IsInProfile())
+    return false;
+
+  if (visible_only && !network_state->visible())
+    return false;
+
+  bool is_network_active =
+      network_state->IsConnectedState() || network_state->IsConnectingState();
+  if (is_network_active != get_active)
+    return false;
+
+  if (network_state->type() == shill::kTypeWifi &&
+      !network_state->tether_guid().empty()) {
+    // Wi-Fi networks which are actually underlying Wi-Fi hotspots for a
+    // Tether network should not be included since they should only be shown
+    // to the user as Tether networks.
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
@@ -414,62 +440,80 @@ void NetworkStateHandler::GetVisibleNetworkList(NetworkStateList* list) {
 void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
                                                bool configured_only,
                                                bool visible_only,
-                                               int limit,
+                                               size_t limit,
                                                NetworkStateList* list) {
   DCHECK(list);
   list->clear();
 
-  // Sort the network list if necessary.
+  // If |limit| is 0, there is no limit. Simplify the calculations below by
+  // setting it to the maximum size_t value.
+  if (limit == 0)
+    limit = std::numeric_limits<size_t>::max();
+
   if (!network_list_sorted_)
     SortNetworkList();
 
+  // First, add active Tether networks.
   if (type.MatchesPattern(NetworkTypePattern::Tether()))
-    GetTetherNetworkList(limit, list);
+    AppendTetherNetworksToList(true /* get_active */, limit, list);
 
-  int count = list->size();
-
-  if (type.Equals(NetworkTypePattern::Tether()) ||
-      (limit != 0 && count >= limit)) {
-    // If only searching for Tether networks, there is no need to continue
-    // searching through other network types; likewise, if the limit has already
-    // been reached, there is no need to continue searching.
-    return;
-  }
-
-  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
+  // Second, add active non-Tether networks.
+  for (auto iter = network_list_.begin();
+       iter != network_list_.end() && list->size() < limit; ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
     if (!network->update_received() || !network->Matches(type))
       continue;
-    if (configured_only && !network->IsInProfile())
+    if (!ShouldIncludeNetworkInList(network, configured_only, visible_only,
+                                    true /* get_active */)) {
       continue;
-    if (visible_only && !network->visible())
-      continue;
+    }
     if (network->type() == shill::kTypeEthernet) {
       // Ethernet networks should always be in front.
       list->insert(list->begin(), network);
     } else {
       list->push_back(network);
     }
-    if (limit > 0 && ++count >= limit)
-      break;
+  }
+
+  // Third, add inactive Tether networks.
+  if (type.MatchesPattern(NetworkTypePattern::Tether()))
+    AppendTetherNetworksToList(false /* get_active */, limit, list);
+
+  // Fourth, add inactive non-Tether networks.
+  for (auto iter = network_list_.begin();
+       iter != network_list_.end() && list->size() < limit; ++iter) {
+    const NetworkState* network = (*iter)->AsNetworkState();
+    DCHECK(network);
+    if (!network->update_received() || !network->Matches(type))
+      continue;
+    if (!ShouldIncludeNetworkInList(network, configured_only, visible_only,
+                                    false /* get_active */)) {
+      continue;
+    }
+    list->push_back(network);
   }
 }
 
-void NetworkStateHandler::GetTetherNetworkList(int limit,
-                                               NetworkStateList* list) {
+void NetworkStateHandler::AppendTetherNetworksToList(bool get_active,
+                                                     size_t limit,
+                                                     NetworkStateList* list) {
   DCHECK(list);
-  list->clear();
-
+  DCHECK(limit != 0);
   if (!IsTechnologyEnabled(NetworkTypePattern::Tether()))
     return;
 
-  int count = 0;
   for (auto iter = tether_network_list_.begin();
-       iter != tether_network_list_.end(); ++iter) {
-    list->push_back((*iter)->AsNetworkState());
-    if (limit > 0 && ++count >= limit)
-      return;
+       iter != tether_network_list_.end() && list->size() < limit; ++iter) {
+    const NetworkState* network = (*iter)->AsNetworkState();
+    DCHECK(network);
+
+    if (!ShouldIncludeNetworkInList(network, false /* configured_only */,
+                                    false /* visible_only */, get_active)) {
+      continue;
+    }
+
+    list->push_back(network);
   }
 }
 
@@ -538,6 +582,8 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
   tether_network_state->set_signal_strength(signal_strength);
 
   tether_network_list_.push_back(std::move(tether_network_state));
+  network_list_sorted_ = false;
+
   NotifyNetworkListChanged();
 }
 
@@ -562,6 +608,7 @@ bool NetworkStateHandler::UpdateTetherNetworkProperties(
   tether_network_state->set_carrier(carrier);
   tether_network_state->set_battery_percentage(battery_percentage);
   tether_network_state->set_signal_strength(signal_strength);
+  network_list_sorted_ = false;
 
   NotifyNetworkPropertiesUpdated(tether_network_state);
   return true;
@@ -581,6 +628,7 @@ bool NetworkStateHandler::SetTetherNetworkHasConnectedToHost(
   }
 
   tether_network_state->set_tether_has_connected_to_host(true);
+  network_list_sorted_ = false;
 
   NotifyNetworkPropertiesUpdated(tether_network_state);
   return true;
@@ -634,6 +682,7 @@ bool NetworkStateHandler::DisassociateTetherNetworkStateFromWifiNetwork(
 
   wifi_network_state->set_tether_guid(std::string());
   tether_network_state->set_tether_guid(std::string());
+  network_list_sorted_ = false;
 
   NotifyNetworkPropertiesUpdated(wifi_network_state);
   NotifyNetworkPropertiesUpdated(tether_network_state);
@@ -681,6 +730,7 @@ bool NetworkStateHandler::AssociateTetherNetworkStateWithWifiNetwork(
 
   tether_network_state->set_tether_guid(wifi_network_guid);
   wifi_network_state->set_tether_guid(tether_network_guid);
+  network_list_sorted_ = false;
 
   NotifyNetworkPropertiesUpdated(wifi_network_state);
   NotifyNetworkPropertiesUpdated(tether_network_state);
@@ -739,8 +789,9 @@ void NetworkStateHandler::SetTetherNetworkStateConnectionState(
 
   std::string prev_connection_state = tether_network_state->connection_state();
   tether_network_state->set_connection_state(connection_state);
-  DCHECK(!tether_network_state->is_captive_portal());
+  network_list_sorted_ = false;
 
+  DCHECK(!tether_network_state->is_captive_portal());
   if (ConnectionStateChanged(tether_network_state, prev_connection_state,
                              false /* prev_is_captive_portal */)) {
     NET_LOG(EVENT) << "Changing connection state for Tether network with GUID "
@@ -1207,8 +1258,10 @@ void NetworkStateHandler::ManagedStateListChanged(
   }
 }
 
-// TODO(khorimoto): Add sorting for the Tether network list as well.
 void NetworkStateHandler::SortNetworkList() {
+  if (tether_sort_delegate_)
+    tether_sort_delegate_->SortTetherNetworkList(&tether_network_list_);
+
   // Note: usually active networks will precede inactive networks, however
   // this may briefly be untrue during state transitions (e.g. a network may
   // transition to idle before the list is updated).

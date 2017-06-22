@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <set>
@@ -32,6 +33,8 @@
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -199,9 +202,32 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
-}  // namespace
+class TestTetherSortDelegate : public NetworkStateHandler::TetherSortDelegate {
+ public:
+  TestTetherSortDelegate() {}
+  ~TestTetherSortDelegate() {}
 
-namespace chromeos {
+  // NetworkStateHandler::TetherSortDelegate:
+  void SortTetherNetworkList(
+      NetworkStateHandler::ManagedStateList* tether_networks) const override {
+    std::sort(tether_networks->begin(), tether_networks->end(),
+              [](const std::unique_ptr<ManagedState>& first,
+                 const std::unique_ptr<ManagedState>& second) {
+                const NetworkState* first_network =
+                    static_cast<const NetworkState*>(first.get());
+                const NetworkState* second_network =
+                    static_cast<const NetworkState*>(second.get());
+
+                // Sort by reverse-alphabetical order of GUIDs.
+                return first_network->guid() >= second_network->guid();
+              });
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestTetherSortDelegate);
+};
+
+}  // namespace
 
 class NetworkStateHandlerTest : public testing::Test {
  public:
@@ -302,7 +328,9 @@ class NetworkStateHandlerTest : public testing::Test {
 
   void GetTetherNetworkList(int limit,
                             NetworkStateHandler::NetworkStateList* list) {
-    network_state_handler_->GetTetherNetworkList(limit, list);
+    network_state_handler_->GetNetworkListByType(
+        NetworkTypePattern::Tether(), false /* configured_only */,
+        false /* visible_only */, limit, list);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -461,6 +489,136 @@ TEST_F(NetworkStateHandlerTest, GetTetherNetworkList) {
 
   GetTetherNetworkList(1 /* no limit */, &tether_networks);
   EXPECT_EQ(1u, tether_networks.size());
+}
+
+TEST_F(NetworkStateHandlerTest, SortTetherNetworkList) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
+  TestTetherSortDelegate sort_delegate;
+  network_state_handler_->set_tether_sort_delegate(&sort_delegate);
+
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid2, kTetherName2, kTetherCarrier2, kTetherBatteryPercentage2,
+      kTetherSignalStrength2, kTetherHasConnectedToHost2);
+
+  // Note: GetVisibleNetworkListByType() sorts before outputting networks.
+  NetworkStateHandler::NetworkStateList tether_networks;
+  network_state_handler_->GetVisibleNetworkListByType(
+      NetworkTypePattern::Tether(), &tether_networks);
+
+  // The list should have been reversed due to reverse-alphabetical sorting.
+  EXPECT_EQ(2u, tether_networks.size());
+  EXPECT_EQ(kTetherGuid2, tether_networks[0]->guid());
+  EXPECT_EQ(kTetherGuid1, tether_networks[1]->guid());
+}
+
+TEST_F(NetworkStateHandlerTest, SortTetherNetworkList_NoSortingDelegate) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
+  // Do not set a TetherSortDelegate.
+
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid2, kTetherName2, kTetherCarrier2, kTetherBatteryPercentage2,
+      kTetherSignalStrength2, kTetherHasConnectedToHost2);
+
+  // Note: GetVisibleNetworkListByType() sorts before outputting networks.
+  NetworkStateHandler::NetworkStateList tether_networks;
+  network_state_handler_->GetVisibleNetworkListByType(
+      NetworkTypePattern::Tether(), &tether_networks);
+
+  // The list should be in the original order.
+  EXPECT_EQ(2u, tether_networks.size());
+  EXPECT_EQ(kTetherGuid1, tether_networks[0]->guid());
+  EXPECT_EQ(kTetherGuid2, tether_networks[1]->guid());
+}
+
+TEST_F(NetworkStateHandlerTest,
+       GetNetworks_TetherIncluded_ActiveBeforeInactive) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
+  TestTetherSortDelegate sort_delegate;
+  network_state_handler_->set_tether_sort_delegate(&sort_delegate);
+
+  // To start the test, |eth1| and |wifi1| are connected, while |wifi2| and
+  // |cellular| are not.
+  const std::string eth1 = kShillManagerClientStubDefaultService;
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
+  const std::string wifi2 = kShillManagerClientStubWifi2;
+  const std::string cellular = kShillManagerClientStubCellular;
+
+  // Disconnect |wifi1|, which will serve as the underlying connection
+  // for the Tether network under test.
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+
+  // Connect |cellular| for this test.
+  service_test_->SetServiceProperty(cellular, shill::kStateProperty,
+                                    base::Value(shill::kStateOnline));
+  base::RunLoop().RunUntilIdle();
+
+  // Add two Tether networks. Neither is connected yet.
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid2, kTetherName2, kTetherCarrier2, kTetherBatteryPercentage2,
+      kTetherSignalStrength2, kTetherHasConnectedToHost2);
+
+  // Connect to the first Tether network (and the underlying Wi-Fi hotspot
+  // network, |wifi1|).
+  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
+  network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+      kTetherGuid1, "wifi1_guid");
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateOnline));
+  base::RunLoop().RunUntilIdle();
+  network_state_handler_->SetTetherNetworkStateConnected(kTetherGuid1);
+
+  // At this point, |eth1|, |cellular|, and |kTetherGuid1| are connected.
+  // |wifi1| is also connected, but it is not considered visible since it is the
+  // underlying network for the Tether connection.
+  NetworkStateHandler::NetworkStateList list;
+
+  // Get Tether networks. Even though the networks should be sorted according to
+  // reverse-alphabetical order, |kTetherGuid1| should be listed first since it
+  // is active.
+  network_state_handler_->GetVisibleNetworkListByType(
+      NetworkTypePattern::Tether(), &list);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_EQ(kTetherGuid1, list[0]->guid());
+  EXPECT_EQ(kTetherGuid2, list[1]->guid());
+
+  // Get Mobile networks. The connected Tether network should be first, followed
+  // by the connected Cellular network, followed by the non-connected Tether
+  // network.
+  network_state_handler_->GetVisibleNetworkListByType(
+      NetworkTypePattern::Mobile(), &list);
+  ASSERT_EQ(3u, list.size());
+  EXPECT_EQ(kTetherGuid1, list[0]->guid());
+  EXPECT_EQ(cellular, list[1]->path());
+  EXPECT_EQ(kTetherGuid2, list[2]->guid());
+
+  // Get all networks. The connected Ethernet network should be first, followed
+  // by the connected Tether network, followed by the connected Cellular
+  // network, followed by the non-connected Tether network, followed by the
+  // non-connected Wi-Fi network.
+  network_state_handler_->GetVisibleNetworkListByType(
+      NetworkTypePattern::Default(), &list);
+  EXPECT_EQ(5u, list.size());
+  EXPECT_EQ(eth1, list[0]->path());
+  EXPECT_EQ(kTetherGuid1, list[1]->guid());
+  EXPECT_EQ(cellular, list[2]->path());
+  EXPECT_EQ(kTetherGuid2, list[3]->guid());
+  EXPECT_EQ(wifi2, list[4]->path());
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkListChanged) {
