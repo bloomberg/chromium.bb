@@ -1747,6 +1747,83 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #define LS_PRODUCT2(a, b) \
   (((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP * 2) >> 2)
 
+#define USE_LIMITED_PREC_MULT 0
+
+#if USE_LIMITED_PREC_MULT
+
+#define MUL_PREC_BITS 16
+static uint16_t resolve_multiplier_64(uint64_t D, int16_t *shift) {
+  int msb = 0;
+  uint16_t mult = 0;
+  *shift = 0;
+  if (D != 0) {
+    msb = (int16_t)((D >> 32) ? get_msb((unsigned int)(D >> 32)) + 32
+                              : get_msb((unsigned int)D));
+    if (msb >= MUL_PREC_BITS) {
+      mult = (uint16_t)ROUND_POWER_OF_TWO_64(D, msb + 1 - MUL_PREC_BITS);
+      *shift = msb + 1 - MUL_PREC_BITS;
+    } else {
+      mult = (uint16_t)D;
+      *shift = 0;
+    }
+  }
+  return mult;
+}
+
+static int32_t get_mult_shift_ndiag(int64_t Px, int16_t iDet, int shift) {
+  int32_t ret;
+  int16_t mshift;
+  uint16_t Mul = resolve_multiplier_64(llabs(Px), &mshift);
+  int32_t v = (int32_t)Mul * (int32_t)iDet * (Px < 0 ? -1 : 1);
+  shift -= mshift;
+  if (shift > 0) {
+    return (int32_t)clamp(ROUND_POWER_OF_TWO_SIGNED(v, shift),
+                          -WARPEDMODEL_NONDIAGAFFINE_CLAMP + 1,
+                          WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
+  } else {
+    return (int32_t)clamp(v * (1 << (-shift)),
+                          -WARPEDMODEL_NONDIAGAFFINE_CLAMP + 1,
+                          WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
+  }
+  return ret;
+}
+
+static int32_t get_mult_shift_diag(int64_t Px, int16_t iDet, int shift) {
+  int16_t mshift;
+  uint16_t Mul = resolve_multiplier_64(llabs(Px), &mshift);
+  int32_t v = (int32_t)Mul * (int32_t)iDet * (Px < 0 ? -1 : 1);
+  shift -= mshift;
+  if (shift > 0) {
+    return (int32_t)clamp(
+        ROUND_POWER_OF_TWO_SIGNED(v, shift),
+        (1 << WARPEDMODEL_PREC_BITS) - WARPEDMODEL_NONDIAGAFFINE_CLAMP + 1,
+        (1 << WARPEDMODEL_PREC_BITS) + WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
+  } else {
+    return (int32_t)clamp(
+        v * (1 << (-shift)),
+        (1 << WARPEDMODEL_PREC_BITS) - WARPEDMODEL_NONDIAGAFFINE_CLAMP + 1,
+        (1 << WARPEDMODEL_PREC_BITS) + WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
+  }
+}
+
+#else
+
+static int32_t get_mult_shift_ndiag(int64_t Px, int16_t iDet, int shift) {
+  int64_t v = Px * (int64_t)iDet;
+  return (int32_t)clamp64(ROUND_POWER_OF_TWO_SIGNED_64(v, shift),
+                          -WARPEDMODEL_NONDIAGAFFINE_CLAMP + 1,
+                          WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
+}
+
+static int32_t get_mult_shift_diag(int64_t Px, int16_t iDet, int shift) {
+  int64_t v = Px * (int64_t)iDet;
+  return (int32_t)clamp64(
+      ROUND_POWER_OF_TWO_SIGNED_64(v, shift),
+      (1 << WARPEDMODEL_PREC_BITS) - WARPEDMODEL_NONDIAGAFFINE_CLAMP + 1,
+      (1 << WARPEDMODEL_PREC_BITS) + WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
+}
+#endif  // USE_LIMITED_PREC_MULT
+
 static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
                            int mvy, int mvx, WarpedMotionParams *wm, int mi_row,
                            int mi_col) {
@@ -1757,8 +1834,10 @@ static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
 
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
-  const int suy = (mi_row * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2 - 1) * 8;
-  const int sux = (mi_col * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2 - 1) * 8;
+  const int isuy = (mi_row * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2 - 1);
+  const int isux = (mi_col * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2 - 1);
+  const int suy = isuy * 8;
+  const int sux = isux * 8;
   const int duy = suy + mvy;
   const int dux = sux + mvx;
 
@@ -1845,38 +1924,27 @@ static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
     shift = 0;
   }
 
-  int64_t v;
-  v = Px[0] * (int64_t)iDet;
-  wm->wmmat[2] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
-  v = Px[1] * (int64_t)iDet;
-  wm->wmmat[3] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
-  v = ((int64_t)dux * (1 << WARPEDMODEL_PREC_BITS)) -
-      (int64_t)sux * wm->wmmat[2] - (int64_t)suy * wm->wmmat[3];
-  wm->wmmat[0] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED(v, 3));
+  wm->wmmat[2] = get_mult_shift_diag(Px[0], iDet, shift);
+  wm->wmmat[3] = get_mult_shift_ndiag(Px[1], iDet, shift);
+  wm->wmmat[4] = get_mult_shift_ndiag(Py[0], iDet, shift);
+  wm->wmmat[5] = get_mult_shift_diag(Py[1], iDet, shift);
 
-  v = Py[0] * (int64_t)iDet;
-  wm->wmmat[4] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
-  v = Py[1] * (int64_t)iDet;
-  wm->wmmat[5] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
-  v = ((int64_t)duy * (1 << WARPEDMODEL_PREC_BITS)) -
-      (int64_t)sux * wm->wmmat[4] - (int64_t)suy * wm->wmmat[5];
-  wm->wmmat[1] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED(v, 3));
+  // Note: In the vx, vy expressions below, the max value of each of the
+  // 2nd and 3rd terms are (2^16 - 1) * (2^13 - 1). That leaves enough room
+  // for the first term so that the overall sum in the worst case fits
+  // within 32 bits overall.
+  int32_t vx = mvx * (1 << (WARPEDMODEL_PREC_BITS - 3)) -
+               (isux * (wm->wmmat[2] - (1 << WARPEDMODEL_PREC_BITS)) +
+                isuy * wm->wmmat[3]);
+  int32_t vy = mvy * (1 << (WARPEDMODEL_PREC_BITS - 3)) -
+               (isux * wm->wmmat[4] +
+                isuy * (wm->wmmat[5] - (1 << WARPEDMODEL_PREC_BITS)));
+  wm->wmmat[0] =
+      clamp(vx, -WARPEDMODEL_TRANS_CLAMP, WARPEDMODEL_TRANS_CLAMP - 1);
+  wm->wmmat[1] =
+      clamp(vy, -WARPEDMODEL_TRANS_CLAMP, WARPEDMODEL_TRANS_CLAMP - 1);
 
   wm->wmmat[6] = wm->wmmat[7] = 0;
-
-  // Clamp values
-  wm->wmmat[0] = clamp(wm->wmmat[0], -WARPEDMODEL_TRANS_CLAMP,
-                       WARPEDMODEL_TRANS_CLAMP - 1);
-  wm->wmmat[1] = clamp(wm->wmmat[1], -WARPEDMODEL_TRANS_CLAMP,
-                       WARPEDMODEL_TRANS_CLAMP - 1);
-  wm->wmmat[2] = clamp(wm->wmmat[2], -WARPEDMODEL_DIAGAFFINE_CLAMP,
-                       WARPEDMODEL_DIAGAFFINE_CLAMP - 1);
-  wm->wmmat[5] = clamp(wm->wmmat[5], -WARPEDMODEL_DIAGAFFINE_CLAMP,
-                       WARPEDMODEL_DIAGAFFINE_CLAMP - 1);
-  wm->wmmat[3] = clamp(wm->wmmat[3], -WARPEDMODEL_NONDIAGAFFINE_CLAMP,
-                       WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
-  wm->wmmat[4] = clamp(wm->wmmat[4], -WARPEDMODEL_NONDIAGAFFINE_CLAMP,
-                       WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
   return 0;
 }
 
