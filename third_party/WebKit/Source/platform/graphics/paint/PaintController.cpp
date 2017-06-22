@@ -485,7 +485,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
 
     UpdateCurrentPaintChunkProperties(
         cached_chunk->is_cacheable ? &cached_chunk->id : nullptr,
-        cached_chunk->properties, ForceNewChunk);
+        cached_chunk->properties, kForceNewChunk);
   } else {
     // Avoid uninitialized variable error on Windows.
     cached_chunk = current_paint_artifact_.PaintChunks().begin();
@@ -509,7 +509,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
         DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
         UpdateCurrentPaintChunkProperties(
             cached_chunk->is_cacheable ? &cached_chunk->id : nullptr,
-            cached_chunk->properties, ForceNewChunk);
+            cached_chunk->properties, kForceNewChunk);
       }
 
 #if DCHECK_IS_ON()

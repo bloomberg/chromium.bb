@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
           "rect": [9, 73, 200, 200],
-          "reason": "full"
+          "reason": "geometry"
         }
       ]
     }

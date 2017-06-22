@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [8, 50, 300, 100],
-          "reason": "full"
+          "reason": "geometry"
         },
         {
           "object": "HorizontalScrollbar",

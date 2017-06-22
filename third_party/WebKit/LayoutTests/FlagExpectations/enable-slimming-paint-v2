@@ -1568,6 +1568,7 @@ crbug.com/644358 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Fail
 crbug.com/644358 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Failure ]
 crbug.com/644358 svg/transforms/change-transform-to-none-shape.html [ Failure ]
 crbug.com/644358 svg/transforms/change-transform-to-none-text.html [ Failure ]
+crbug.com/644358 paint/invalidation/relative-position-under-composited-scroll.html [ Failure ]
 
 Bug(none) compositing/layer-creation/main-thread-scrolling-for-non-composited-fixed-position-if-overflow-hidden.html [ Failure ]
 Bug(none) compositing/layer-creation/main-thread-scrolling-for-non-composited-fixed-position.html [ Failure ]

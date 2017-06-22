@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [8, 295, 552, 55],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGEllipse circle id='c1'",
           "rect": [196, 196, 76, 76],
           "reason": "full"

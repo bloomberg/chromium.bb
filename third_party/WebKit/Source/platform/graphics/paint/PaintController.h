@@ -76,7 +76,7 @@ class PLATFORM_EXPORT PaintController {
   void UpdateCurrentPaintChunkProperties(
       const PaintChunk::Id*,
       const PaintChunkProperties&,
-      NewChunkForceState force_new_chunk = DontForceNewChunk);
+      NewChunkForceState force_new_chunk = kDontForceNewChunk);
 
   // Retrieve the current paint properties.
   const PaintChunkProperties& CurrentPaintChunkProperties() const;

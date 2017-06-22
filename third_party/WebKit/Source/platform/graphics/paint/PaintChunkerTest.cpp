@@ -201,7 +201,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
           PaintChunk(5, 7, id4,
                      simple_transform_and_effect_with_updated_transform),
           PaintChunk(7, 9, item_after_restore.GetId(),
-                     simple_transform_and_effect, PaintChunk::kUncacheable)));
+                     simple_transform_and_effect)));
 }
 
 TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
@@ -242,8 +242,7 @@ TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
               ElementsAre(PaintChunk(0, 1, id1, DefaultPaintChunkProperties()),
                           PaintChunk(1, 3, id2, simple_transform),
                           PaintChunk(3, 4, item_after_restore.GetId(),
-                                     DefaultPaintChunkProperties(),
-                                     PaintChunk::kUncacheable)));
+                                     DefaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
@@ -323,8 +322,7 @@ TEST_F(PaintChunkerTest, CreatesSeparateChunksWhenRequested) {
           PaintChunk(1, 2, i1.GetId(), DefaultPaintChunkProperties()),
           PaintChunk(2, 3, i2.GetId(), DefaultPaintChunkProperties()),
           PaintChunk(3, 4, i3.GetId(), DefaultPaintChunkProperties()),
-          PaintChunk(4, 6, after_i3.GetId(), DefaultPaintChunkProperties(),
-                     PaintChunk::kUncacheable),
+          PaintChunk(4, 6, after_i3.GetId(), DefaultPaintChunkProperties()),
           PaintChunk(6, 7, i6.GetId(), DefaultPaintChunkProperties())));
 }
 
@@ -372,10 +370,9 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
           PaintChunk(2, 4, id2, simple_transform, PaintChunk::kUncacheable),
           PaintChunk(4, 5, uncacheable_separate_chunk_item.GetId(),
                      simple_transform, PaintChunk::kUncacheable),
-          PaintChunk(5, 6, after_separate_chunk.GetId(), simple_transform,
-                     PaintChunk::kUncacheable),
-          PaintChunk(6, 7, after_restore.GetId(), DefaultPaintChunkProperties(),
-                     PaintChunk::kUncacheable)));
+          PaintChunk(5, 6, after_separate_chunk.GetId(), simple_transform),
+          PaintChunk(6, 7, after_restore.GetId(),
+                     DefaultPaintChunkProperties())));
 }
 
 }  // namespace

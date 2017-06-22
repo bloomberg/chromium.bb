@@ -528,7 +528,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         context.GetPaintController(), paint_layer_, properties,
         // Force a new paint chunk, since it is required for subsequence
         // caching.
-        should_create_subsequence ? ForceNewChunk : DontForceNewChunk);
+        should_create_subsequence ? kForceNewChunk : kDontForceNewChunk);
   }
 
   bool selection_only =
