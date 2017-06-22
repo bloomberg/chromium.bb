@@ -64,6 +64,8 @@ class CONTENT_EXPORT PresentationDispatcher
                            TestReconnectPresentation);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest,
                            TestReconnectPresentationError);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest,
+                           TestReconnectPresentationNoConnection);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendString);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendArrayBuffer);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendBlobData);

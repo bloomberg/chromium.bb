@@ -510,7 +510,12 @@ void PresentationDispatcher::OnConnectionCreated(
   callback->OnSuccess(blink::WebPresentationInfo(
       presentation_info->presentation_url,
       blink::WebString::FromUTF8(presentation_info->presentation_id)));
-  SetControllerConnection(presentation_info.value(), callback->GetConnection());
+
+  auto* connection = callback->GetConnection();
+  if (!connection)
+    return;
+
+  SetControllerConnection(presentation_info.value(), connection);
 }
 
 void PresentationDispatcher::OnReceiverConnectionAvailable(
