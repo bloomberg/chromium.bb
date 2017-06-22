@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
@@ -21,10 +23,8 @@
 namespace device {
 
 SerialIoHandler::SerialIoHandler(
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : file_thread_task_runner_(file_thread_task_runner),
-      ui_thread_task_runner_(ui_thread_task_runner) {
+    : ui_thread_task_runner_(ui_thread_task_runner) {
   options_.bitrate = 9600;
   options_.data_bits = serial::DataBits::EIGHT;
   options_.parity_bit = serial::ParityBit::NO_PARITY;
@@ -44,7 +44,6 @@ void SerialIoHandler::Open(const std::string& port,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(open_complete_.is_null());
   open_complete_ = callback;
-  DCHECK(file_thread_task_runner_.get());
   DCHECK(ui_thread_task_runner_.get());
   MergeConnectionOptions(options);
   port_ = port;
@@ -63,9 +62,11 @@ void SerialIoHandler::Open(const std::string& port,
           port, base::Bind(&SerialIoHandler::OnPathOpened, this, task_runner),
           base::Bind(&SerialIoHandler::OnPathOpenError, this, task_runner)));
 #else
-  file_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SerialIoHandler::StartOpen, this, port,
-                            base::ThreadTaskRunnerHandle::Get()));
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::Bind(&SerialIoHandler::StartOpen, this, port,
+                 base::ThreadTaskRunnerHandle::Get()));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -126,7 +127,6 @@ void SerialIoHandler::StartOpen(
     const std::string& port,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   DCHECK(!open_complete_.is_null());
-  DCHECK(file_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!file_.IsValid());
   // It's the responsibility of the API wrapper around SerialIoHandler to
   // validate the supplied path against the set of valid port names, and
@@ -170,9 +170,9 @@ bool SerialIoHandler::PostOpen() {
 
 void SerialIoHandler::Close() {
   if (file_.IsValid()) {
-    DCHECK(file_thread_task_runner_.get());
-    file_thread_task_runner_->PostTask(
+    base::PostTaskWithTraits(
         FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(&SerialIoHandler::DoClose, Passed(std::move(file_))));
   }
 }
