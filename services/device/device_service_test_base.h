@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_DEVICE_SERVICE_TEST_BASE_H_
 
 #include "base/macros.h"
+#include "base/threading/thread.h"
 #include "services/service_manager/public/cpp/service_test.h"
 
 namespace device {
@@ -15,6 +16,10 @@ class DeviceServiceTestBase : public service_manager::test::ServiceTest {
  public:
   DeviceServiceTestBase();
   ~DeviceServiceTestBase() override;
+
+ protected:
+  base::Thread file_thread_;
+  base::Thread io_thread_;
 
  private:
   // service_manager::test::ServiceTest:
