@@ -7,7 +7,6 @@
 
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/offline_pages/resource_loading_observer.h"
-#include "components/offline_pages/features/features.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace offline_pages {

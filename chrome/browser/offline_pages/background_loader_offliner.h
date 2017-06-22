@@ -141,6 +141,10 @@ class BackgroundLoaderOffliner : public Offliner,
   // Callback for cancel.
   CancelCallback cancel_callback_;
 
+  // TODO(petewil): Replace with a map of all types
+  int64_t started_count_;
+  int64_t completed_count_;
+
   base::WeakPtrFactory<BackgroundLoaderOffliner> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderOffliner);
 };

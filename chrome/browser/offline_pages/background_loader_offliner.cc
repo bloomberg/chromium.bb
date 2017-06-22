@@ -106,6 +106,8 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
       network_bytes_(0LL),
       is_low_bar_met_(false),
       did_snapshot_on_last_retry_(false),
+      started_count_(0LL),
+      completed_count_(0LL),
       weak_ptr_factory_(this) {
   DCHECK(offline_page_model_);
   DCHECK(browser_context_);
@@ -355,8 +357,18 @@ void BackgroundLoaderOffliner::SetSnapshotControllerForTest(
 void BackgroundLoaderOffliner::ObserveResourceLoading(
     ResourceLoadingObserver::ResourceDataType type,
     bool started) {
-  // TODO(petewil) Not implemented yet.
-  return;
+  // TODO(petewil): Use actual signal type instead of hardcoding name to
+  // image.
+  // Add the signal to extra data, and use for tracking.
+  if (type == ResourceDataType::IMAGE) {
+    if (started) {
+      started_count_++;
+      signal_data_.SetDouble("StartedImages", started_count_);
+    } else {
+      completed_count_++;
+      signal_data_.SetDouble("CompletedImages", completed_count_);
+    }
+  }
 }
 
 void BackgroundLoaderOffliner::OnNetworkBytesChanged(int64_t bytes) {
