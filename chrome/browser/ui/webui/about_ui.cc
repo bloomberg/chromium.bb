@@ -33,6 +33,7 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
@@ -205,9 +206,10 @@ class ChromeOSTermsHandler
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (path_ == chrome::kOemEulaURLPath) {
       // Load local OEM EULA from the disk.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ChromeOSTermsHandler::LoadOemEulaFileOnFileThread, this));
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+          base::BindOnce(&ChromeOSTermsHandler::LoadOemEulaFileAsync, this),
+          base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
     } else {
       // Try to load online version of ChromeOS terms first.
       // ChromeOSOnlineTermsHandler object destroys itself.
@@ -222,33 +224,35 @@ class ChromeOSTermsHandler
     loader->GetResponseResult(&contents_);
     if (contents_.empty()) {
       // Load local ChromeOS terms from the file.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ChromeOSTermsHandler::LoadEulaFileOnFileThread, this));
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+          base::BindOnce(&ChromeOSTermsHandler::LoadEulaFileAsync, this),
+          base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
     } else {
       ResponseOnUIThread();
     }
   }
 
-  void LoadOemEulaFileOnFileThread() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  void LoadOemEulaFileAsync() {
+    base::ThreadRestrictions::AssertIOAllowed();
+
     const chromeos::StartupCustomizationDocument* customization =
         chromeos::StartupCustomizationDocument::GetInstance();
-    if (customization->IsReady()) {
-      base::FilePath oem_eula_file_path;
-      if (net::FileURLToFilePath(GURL(customization->GetEULAPage(locale_)),
-                                 &oem_eula_file_path)) {
-        if (!base::ReadFileToString(oem_eula_file_path, &contents_)) {
-          contents_.clear();
-        }
+    if (!customization->IsReady())
+      return;
+
+    base::FilePath oem_eula_file_path;
+    if (net::FileURLToFilePath(GURL(customization->GetEULAPage(locale_)),
+                               &oem_eula_file_path)) {
+      if (!base::ReadFileToString(oem_eula_file_path, &contents_)) {
+        contents_.clear();
       }
     }
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ChromeOSTermsHandler::ResponseOnUIThread, this));
   }
 
-  void LoadEulaFileOnFileThread() {
+  void LoadEulaFileAsync() {
+    base::ThreadRestrictions::AssertIOAllowed();
+
     std::string file_path =
         base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
     if (!base::ReadFileToString(base::FilePath(file_path), &contents_)) {
@@ -260,9 +264,6 @@ class ChromeOSTermsHandler
         contents_.clear();
       }
     }
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ChromeOSTermsHandler::ResponseOnUIThread, this));
   }
 
   void ResponseOnUIThread() {
