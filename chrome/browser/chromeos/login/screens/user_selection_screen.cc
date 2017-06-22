@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -149,7 +150,7 @@ bool AllowFingerprintForUser(const user_manager::User* user) {
 bool ShouldCheckNeedDircryptoMigration() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableEncryptionMigration) &&
-         arc::IsArcAvailable();
+         arc::IsArcAvailable() && arc::IsArcMigrationAllowed();
 }
 
 // Returns true if the user can run ARC based on the user type.

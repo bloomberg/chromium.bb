@@ -10711,6 +10711,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="371" label="DownloadRestrictions"/>
   <int value="372" label="DeviceSecondFactorAuthentication"/>
   <int value="373" label="UseSystemDefaultPrinterAsDefault"/>
+  <int value="374" label="DeviceEcryptfsMigrationStrategy"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

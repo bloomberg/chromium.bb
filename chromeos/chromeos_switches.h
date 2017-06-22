@@ -124,6 +124,7 @@ CHROMEOS_EXPORT extern const char kLoginProfile[];
 CHROMEOS_EXPORT extern const char kLoginUser[];
 CHROMEOS_EXPORT extern const char kMemoryPressureThresholds[];
 CHROMEOS_EXPORT extern const char kNaturalScrollDefault[];
+CHROMEOS_EXPORT extern const char kNeedArcMigrationPolicyCheck[];
 CHROMEOS_EXPORT extern const char kNetworkSettingsConfig[];
 CHROMEOS_EXPORT extern const char kNoteTakingAppIds[];
 CHROMEOS_EXPORT extern const char kOobeBootstrappingMaster[];
