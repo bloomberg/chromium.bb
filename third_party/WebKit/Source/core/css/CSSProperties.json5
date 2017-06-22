@@ -548,7 +548,6 @@
       field_template: "keyword",
       keywords: ["sideways", "mixed", "upright"],
       default_value: "mixed",
-      field_size: 2,
       field_group: "rare-inherited",
       getter: "GetTextOrientation"
     },
@@ -1074,7 +1073,6 @@
       field_template: "keyword",
       keywords: ["balance", "auto"],
       default_value: "balance",
-      field_size: 1,
       field_group: "rare-non-inherited->multi-col",
       getter: "GetColumnFill",
     },
@@ -1448,7 +1446,6 @@
       field_template: "keyword",
       keywords: ["auto", "isolate"],
       field_group: "rare-non-inherited",
-      field_size: 1,
       default_value: "auto",
     },
     {
@@ -1725,7 +1722,6 @@
       field_template: "keyword",
       keywords: ["fill", "contain", "cover", "none", "scale-down"],
       field_group: "rare-non-inherited",
-      field_size: 3,
       getter: "GetObjectFit",
       default_value: "fill",
     },
@@ -1893,7 +1889,6 @@
       field_template: "keyword",
       keywords: ["normal", "break-word"],
       default_value: "normal",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -2484,7 +2479,6 @@
       field_template: "keyword",
       keywords: ["auto", "start", "end", "left", "right", "center", "justify"],
       default_value: "auto",
-      field_size: 3,
       field_group: "rare-inherited",
     },
     {
@@ -2499,7 +2493,6 @@
       field_template: "keyword",
       keywords: ["none", "all"],
       default_value: "none",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -2692,7 +2685,6 @@
       keywords: ["flat", "preserve-3d"],
       field_group: "rare-non-inherited",
       default_value: "flat",
-      field_size: 1,
     },
     {
       name: "translate",
@@ -2988,7 +2980,6 @@
       field_group: "rare-non-inherited->multi-col",
       default_value: "none",
       getter: "GetColumnSpan",
-      field_size: 1,
     },
     {
       name: "column-width",
