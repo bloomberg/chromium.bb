@@ -331,10 +331,9 @@ void WebEmbeddedWorkerImpl::DidFinishDocumentLoad() {
   main_frame_->DataSource()->SetServiceWorkerNetworkProvider(
       worker_context_client_->CreateServiceWorkerNetworkProvider());
   main_script_loader_ = WorkerScriptLoader::Create();
-  main_script_loader_->SetRequestContext(
-      WebURLRequest::kRequestContextServiceWorker);
   main_script_loader_->LoadAsynchronously(
       *main_frame_->GetFrame()->GetDocument(), worker_start_data_.script_url,
+      WebURLRequest::kRequestContextServiceWorker,
       WebURLRequest::kFetchRequestModeSameOrigin,
       WebURLRequest::kFetchCredentialsModeSameOrigin,
       worker_start_data_.address_space, nullptr,

@@ -62,11 +62,13 @@ class CORE_EXPORT WorkerScriptLoader final
 
   void LoadSynchronously(ExecutionContext&,
                          const KURL&,
+                         WebURLRequest::RequestContext,
                          WebAddressSpace);
 
   // Note that callbacks could be invoked before loadAsynchronously() returns.
   void LoadAsynchronously(ExecutionContext&,
                           const KURL&,
+                          WebURLRequest::RequestContext,
                           WebURLRequest::FetchRequestMode,
                           WebURLRequest::FetchCredentialsMode,
                           WebAddressSpace,
@@ -117,17 +119,12 @@ class CORE_EXPORT WorkerScriptLoader final
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
-  void SetRequestContext(WebURLRequest::RequestContext request_context) {
-    request_context_ = request_context;
-  }
-
  private:
   friend class WTF::RefCounted<WorkerScriptLoader>;
 
   WorkerScriptLoader();
   ~WorkerScriptLoader() override;
 
-  ResourceRequest CreateResourceRequest(WebAddressSpace);
   void NotifyError();
   void NotifyFinished();
 
@@ -152,7 +149,6 @@ class CORE_EXPORT WorkerScriptLoader final
   unsigned long identifier_ = 0;
   long long app_cache_id_ = 0;
   std::unique_ptr<Vector<char>> cached_metadata_;
-  WebURLRequest::RequestContext request_context_;
   Persistent<ContentSecurityPolicy> content_security_policy_;
   Persistent<ExecutionContext> execution_context_;
   WebAddressSpace response_address_space_;

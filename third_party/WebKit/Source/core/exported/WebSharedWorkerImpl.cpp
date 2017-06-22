@@ -188,8 +188,6 @@ void WebSharedWorkerImpl::DidFinishDocumentLoad() {
   main_frame_->DataSource()->SetServiceWorkerNetworkProvider(
       client_->CreateServiceWorkerNetworkProvider());
   main_script_loader_ = WorkerScriptLoader::Create();
-  main_script_loader_->SetRequestContext(
-      WebURLRequest::kRequestContextSharedWorker);
   loading_document_ = main_frame_->GetFrame()->GetDocument();
 
   WebURLRequest::FetchRequestMode fetch_request_mode =
@@ -202,7 +200,8 @@ void WebSharedWorkerImpl::DidFinishDocumentLoad() {
   }
 
   main_script_loader_->LoadAsynchronously(
-      *loading_document_.Get(), url_, fetch_request_mode,
+      *loading_document_.Get(), url_,
+      WebURLRequest::kRequestContextSharedWorker, fetch_request_mode,
       fetch_credentials_mode, creation_address_space_,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
            WTF::Unretained(this)),
