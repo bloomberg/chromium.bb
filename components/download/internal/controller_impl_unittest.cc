@@ -423,17 +423,18 @@ TEST_F(DownloadServiceControllerImplTest,
 TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithDuplicateCall) {
   testing::InSequence sequence;
 
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
-  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
-  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
-  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
-  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   // Set up the Controller.
   controller_->Initialize();
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
+
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   // Trigger the download twice.
   DownloadParams params = MakeDownloadParams();

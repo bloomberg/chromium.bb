@@ -664,8 +664,10 @@ void ControllerImpl::NotifyClientsOfStartup() {
       clients_->GetRegisteredClients(), model_->PeekEntries(), ignored_states);
 
   for (auto client_id : clients_->GetRegisteredClients()) {
-    clients_->GetClient(client_id)->OnServiceInitialized(
-        categorized[client_id]);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ControllerImpl::SendOnServiceInitialized,
+                              weak_ptr_factory_.GetWeakPtr(), client_id,
+                              categorized[client_id]));
   }
 }
 
@@ -833,6 +835,14 @@ void ControllerImpl::HandleExternalDownload(const std::string& guid,
   }
 
   UpdateDriverStates();
+}
+
+void ControllerImpl::SendOnServiceInitialized(
+    DownloadClient client_id,
+    const std::vector<std::string>& guids) {
+  auto* client = clients_->GetClient(client_id);
+  DCHECK(client);
+  client->OnServiceInitialized(guids);
 }
 
 void ControllerImpl::SendOnDownloadUpdated(DownloadClient client_id,
