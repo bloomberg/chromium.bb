@@ -273,9 +273,12 @@ const char kChromeUIWorkersHost[] = "workers";
 const char kChromeUIPrintHost[] = "print";
 #endif  // ENABLE_PRINT_PREVIEW
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+const char kChromeUISigninDiceInternalsHost[] = "signin-dice-internals";
+#endif
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 const char kChromeUIDiscardsHost[] = "discards";
-const char kChromeUISigninDiceInternalsHost[] = "signin-dice-internals";
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)

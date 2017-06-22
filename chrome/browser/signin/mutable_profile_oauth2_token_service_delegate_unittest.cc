@@ -24,6 +24,7 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_features.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -353,6 +354,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ResetObserverCounts();
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        PersistenceLoadCredentialsEmptyPrimaryAccountId_DiceEnabled) {
   switches::EnableAccountConsistencyDiceForTesting(
@@ -410,6 +412,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(1, end_batch_changes_);
   ResetObserverCounts();
 }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistanceNotifications) {
   oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");

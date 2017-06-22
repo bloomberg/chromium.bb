@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/signin/features.gni")
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -89,26 +91,28 @@ static_library("browser") {
 
   public_deps = [
     ":account_info",
-    "//components/signin/core/account_id",
-    "//components/signin/core/common",
-  ]
-  deps = [
     "//base",
-    "//base:i18n",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
-    "//components/data_use_measurement/core",
-    "//components/google/core/browser",
     "//components/invalidation/public",
     "//components/keyed_service/core",
+    "//components/prefs",
+    "//components/signin/core/account_id",
+    "//components/signin/core/common",
+    "//components/signin/core/common:signin_features",
+    "//google_apis",
+    "//net",
+    "//url",
+  ]
+  deps = [
+    "//base:i18n",
+    "//components/data_use_measurement/core",
+    "//components/google/core/browser",
     "//components/metrics",
     "//components/os_crypt",
     "//components/pref_registry",
-    "//components/prefs",
     "//components/webdata/common",
     "//crypto",
-    "//google_apis",
-    "//net",
     "//sql",
     "//third_party/icu",
   ]
@@ -121,7 +125,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_android || is_ios) {
+  if (!enable_dice_support) {
     sources -= [
       "dice_header_helper.cc",
       "dice_header_helper.h",
@@ -188,6 +192,7 @@ source_set("unit_tests") {
     "//components/os_crypt:test_support",
     "//components/pref_registry:pref_registry",
     "//components/signin/core/common",
+    "//components/signin/core/common:signin_features",
     "//components/sync_preferences:test_support",
     "//testing/gmock",
   ]

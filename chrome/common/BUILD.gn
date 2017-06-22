@@ -243,6 +243,7 @@ static_library("common") {
     "//components/policy/core/common",
     "//components/prefs",
     "//components/signin/core/common",
+    "//components/signin/core/common:signin_features",
     "//components/strings",
     "//components/translate/content/common",
     "//components/translate/core/common",

@@ -20,6 +20,7 @@
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -40,7 +41,7 @@ namespace {
 
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
 #endif
 
@@ -107,7 +108,7 @@ void ProcessMirrorHeaderUIThread(
 #endif  // !defined(OS_ANDROID)
 }
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProcessDiceHeaderUIThread(
     const DiceResponseParams& dice_params,
     const content::ResourceRequestInfo::WebContentsGetter&
@@ -128,7 +129,7 @@ void ProcessDiceHeaderUIThread(
       DiceResponseHandler::GetForProfile(profile);
   dice_response_handler->ProcessDiceHeader(dice_params);
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the
@@ -182,7 +183,7 @@ void ProcessMirrorResponseHeaderIfExists(
       base::Bind(ProcessMirrorHeaderUIThread, params, web_contents_getter));
 }
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProcessDiceResponseHeaderIfExists(
     net::URLRequest* request,
     ProfileIOData* io_data,
@@ -226,7 +227,7 @@ void ProcessDiceResponseHeaderIfExists(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(ProcessDiceHeaderUIThread, params, web_contents_getter));
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace
 
@@ -284,11 +285,11 @@ void ProcessAccountConsistencyResponseHeaders(
   } else {
     // This is a redirect.
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
     // Process the Dice header: on sign-in, exchange the authorization code for
     // a refresh token, on sign-out just follow the sign-out URL.
     ProcessDiceResponseHeaderIfExists(request, io_data, web_contents_getter);
-#endif
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
   }
 }
 

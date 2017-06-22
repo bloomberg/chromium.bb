@@ -16,7 +16,7 @@ const char kDisableSigninPromo[] = "disable-signin-promo";
 // Disables sending signin scoped device id to LSO with refresh token request.
 const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(ENABLE_MIRROR)
 // Command line flag for enabling account consistency. Default mode is disabled.
 // Mirror is a legacy mode in which Google accounts are always addded to Chrome,
 // and Chrome then adds them to the Google authentication cookies.

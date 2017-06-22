@@ -9,7 +9,7 @@
 #ifndef COMPONENTS_SIGNIN_CORE_COMMON_PROFILE_MANAGEMENT_SWITCHES_H_
 #define COMPONENTS_SIGNIN_CORE_COMMON_PROFILE_MANAGEMENT_SWITCHES_H_
 
-#include "build/build_config.h"
+#include "components/signin/core/common/signin_features.h"
 
 namespace base {
 class CommandLine;
@@ -40,8 +40,7 @@ bool IsExtensionsMultiAccount();
 // Called in tests to force enable Mirror account consistency.
 void EnableAccountConsistencyMirrorForTesting(base::CommandLine* command_line);
 
-// Dice is only supported on desktop.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Called in tests to force enable Dice account consistency.
 void EnableAccountConsistencyDiceForTesting(base::CommandLine* command_line);
 #endif
