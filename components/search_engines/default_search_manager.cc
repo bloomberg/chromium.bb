@@ -53,6 +53,7 @@ const char DefaultSearchManager::kNewTabURL[] = "new_tab_url";
 const char DefaultSearchManager::kContextualSearchURL[] =
     "contextual_search_url";
 const char DefaultSearchManager::kFaviconURL[] = "favicon_url";
+const char DefaultSearchManager::kLogoURL[] = "logo_url";
 const char DefaultSearchManager::kOriginatingURL[] = "originating_url";
 
 const char DefaultSearchManager::kSearchURLPostParams[] =

@@ -4,6 +4,8 @@
 
 static_library("search_provider_logos") {
   sources = [
+    "fixed_logo_api.cc",
+    "fixed_logo_api.h",
     "google_logo_api.cc",
     "google_logo_api.h",
     "logo_cache.cc",

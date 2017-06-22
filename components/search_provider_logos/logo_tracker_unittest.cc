@@ -326,10 +326,9 @@ class LogoTrackerTest : public ::testing::Test {
                         new net::TestURLRequestContextGetter(
                             base::ThreadTaskRunnerHandle::Get()),
                         std::unique_ptr<LogoDelegate>(new TestLogoDelegate()));
-    logo_tracker_->SetServerAPI(logo_url_, base::Bind(&GoogleParseLogoResponse),
-                                base::Bind(&GoogleAppendQueryparamsToLogoURL),
-                                false,
-                                false);
+    logo_tracker_->SetServerAPI(
+        logo_url_, base::Bind(&GoogleParseLogoResponse),
+        base::Bind(&GoogleAppendQueryparamsToLogoURL, false));
     logo_tracker_->SetClockForTests(std::unique_ptr<base::Clock>(test_clock_));
     logo_tracker_->SetLogoCacheForTests(
         std::unique_ptr<LogoCache>(logo_cache_));
@@ -385,8 +384,8 @@ void LogoTrackerTest::SetServerResponse(
     const std::string& response,
     net::URLRequestStatus::Status request_status,
     net::HttpStatusCode response_code) {
-  fake_url_fetcher_factory_.SetFakeResponse(
-      logo_url_, response, response_code, request_status);
+  SetServerResponseWhenFingerprint(std::string(), response, request_status,
+                                   response_code);
 }
 
 void LogoTrackerTest::SetServerResponseWhenFingerprint(
@@ -395,7 +394,7 @@ void LogoTrackerTest::SetServerResponseWhenFingerprint(
     net::URLRequestStatus::Status request_status,
     net::HttpStatusCode response_code) {
   GURL url_with_fp =
-      GoogleAppendQueryparamsToLogoURL(logo_url_, fingerprint, false, false);
+      GoogleAppendQueryparamsToLogoURL(false, logo_url_, fingerprint);
   fake_url_fetcher_factory_.SetFakeResponse(
       url_with_fp, response_when_fingerprint, response_code, request_status);
 }
@@ -407,36 +406,26 @@ void LogoTrackerTest::GetLogo() {
 
 // Tests -----------------------------------------------------------------------
 
-TEST_F(LogoTrackerTest, FingerprintURLHasColon) {
-  GURL url_with_fp = GoogleAppendQueryparamsToLogoURL(
-      GURL("http://logourl.com/path"), "abc123", false, false);
-  EXPECT_EQ("http://logourl.com/path?async=es_dfp:abc123", url_with_fp.spec());
-
-  url_with_fp = GoogleAppendQueryparamsToLogoURL(
-      GURL("http://logourl.com/?a=b"), "cafe0", false, false);
-  EXPECT_EQ("http://logourl.com/?a=b&async=es_dfp:cafe0", url_with_fp.spec());
-}
-
 TEST_F(LogoTrackerTest, CTAURLHasComma) {
   GURL url_with_fp = GoogleAppendQueryparamsToLogoURL(
-      GURL("http://logourl.com/path"), "abc123", true, false);
+      false, GURL("http://logourl.com/path"), "abc123");
   EXPECT_EQ("http://logourl.com/path?async=es_dfp:abc123,cta:1",
             url_with_fp.spec());
 
   url_with_fp = GoogleAppendQueryparamsToLogoURL(
-      GURL("http://logourl.com/?a=b"), "", true, false);
+      false, GURL("http://logourl.com/?a=b"), "");
   EXPECT_EQ("http://logourl.com/?a=b&async=cta:1", url_with_fp.spec());
 }
 
 TEST_F(LogoTrackerTest, CTAGrayBackgroundHasCommas) {
   GURL url_with_fp = GoogleAppendQueryparamsToLogoURL(
-      GURL("http://logourl.com/path"), "abc123", true, true);
+      true, GURL("http://logourl.com/path"), "abc123");
   EXPECT_EQ(
       "http://logourl.com/path?async=es_dfp:abc123,cta:1,transp:1,graybg:1",
       url_with_fp.spec());
 
   url_with_fp = GoogleAppendQueryparamsToLogoURL(
-      GURL("http://logourl.com/?a=b"), "", true, true);
+      true, GURL("http://logourl.com/?a=b"), "");
   EXPECT_EQ("http://logourl.com/?a=b&async=cta:1,transp:1,graybg:1",
             url_with_fp.spec());
 }
@@ -744,10 +733,9 @@ TEST_F(LogoTrackerTest, DeleteObserversWhenLogoURLChanged) {
   logo_tracker_->GetLogo(&listener1);
 
   logo_url_ = GURL("http://example.com/new-logo-url");
-  logo_tracker_->SetServerAPI(logo_url_, base::Bind(&GoogleParseLogoResponse),
-                              base::Bind(&GoogleAppendQueryparamsToLogoURL),
-                              false,
-                              false);
+  logo_tracker_->SetServerAPI(
+      logo_url_, base::Bind(&GoogleParseLogoResponse),
+      base::Bind(&GoogleAppendQueryparamsToLogoURL, false));
   Logo logo = GetSampleLogo(logo_url_, test_clock_->Now());
   SetServerResponse(ServerResponse(logo));
 

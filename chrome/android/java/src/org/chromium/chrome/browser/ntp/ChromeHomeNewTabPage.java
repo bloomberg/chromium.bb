@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
  */
 public class ChromeHomeNewTabPage
         extends ChromeHomeNewTabPageBase implements TemplateUrlServiceObserver {
-    private final LogoView.Delegate mLogoDelegate;
+    private final LogoDelegateImpl mLogoDelegate;
 
     private final View mView;
     private final LogoView mLogoView;
@@ -89,14 +89,14 @@ public class ChromeHomeNewTabPage
     }
 
     private void updateSearchProviderLogoVisibility() {
-        boolean hasLogo = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+        boolean hasLogo = TemplateUrlService.getInstance().doesDefaultSearchEngineHaveLogo();
         mLogoView.setVisibility(hasLogo ? View.VISIBLE : View.GONE);
     }
 
-    private LogoView.Delegate initializeLogoView() {
+    private LogoDelegateImpl initializeLogoView() {
         TemplateUrlService.getInstance().addObserver(this);
 
-        final LogoView.Delegate logoDelegate = new LogoDelegateImpl(mTab, mLogoView);
+        final LogoDelegateImpl logoDelegate = new LogoDelegateImpl(mTab, mLogoView);
         logoDelegate.getSearchProviderLogo(new LogoObserver() {
             @Override
             public void onLogoAvailable(Logo logo, boolean fromCache) {

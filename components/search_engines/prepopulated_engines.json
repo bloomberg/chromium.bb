@@ -21,6 +21,8 @@
 //   - NOTIFY the Chrome Webstore team if you add/delete a search engine or
 //     change domain of an existing one (send email to webstore-eng@google.com).
 //     They need to know the mapping between an engine's "id" and its URLs.
+//   - Use HTTPS URLs when adding new search engines or adding URLs to existing
+//     ones. It's not the 90s anymore.
 
 {
   "int_variables": {
@@ -111,7 +113,7 @@
     "google": {
       "name": "Google",
       "keyword": "google.com",
-      "favicon_url": "http://www.google.com/favicon.ico",
+      "favicon_url": "https://www.google.com/favicon.ico",
       "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:iOSSearchLanguage}{google:searchClient}{google:sourceId}{google:instantExtendedEnabledParameter}{google:contextualSearchVersion}ie={inputEncoding}",
       "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client={google:suggestClient}&gs_ri={google:suggestRid}&xssi=t&q={searchTerms}&{google:inputType}{google:cursorPosition}{google:currentPageUrl}{google:pageClassification}{google:searchVersion}{google:sessionToken}{google:prefetchQuery}sugkey={google:suggestAPIKeyParameter}",
       "instant_url": "{google:baseURL}webhp?sourceid=chrome-instant&{google:RLZ}{google:forceInstantResults}{google:instantExtendedEnabledParameter}ie={inputEncoding}",

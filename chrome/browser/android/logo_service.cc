@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -111,27 +112,42 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
 
   const TemplateURL* template_url =
       template_url_service->GetDefaultSearchProvider();
-  if (!template_url || !template_url->url_ref().HasGoogleBaseURLs(
-          template_url_service->search_terms_data()))
+  if (!template_url)
     return;
 
+  const bool use_fixed_logo = !template_url->logo_url().is_empty();
+
+  if (!template_url->url_ref().HasGoogleBaseURLs(
+          template_url_service->search_terms_data()) &&
+      !use_fixed_logo) {
+    return;
+  }
+
   if (!logo_tracker_) {
-    logo_tracker_.reset(new LogoTracker(
+    logo_tracker_ = base::MakeUnique<LogoTracker>(
         profile_->GetPath().Append(kCachedLogoDirectory),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
         BrowserThread::GetBlockingPool(), profile_->GetRequestContext(),
-        std::unique_ptr<search_provider_logos::LogoDelegate>(
-            new ChromeLogoDelegate())));
+        base::MakeUnique<ChromeLogoDelegate>());
   }
+
+  GURL url =
+      use_fixed_logo ? template_url->logo_url() : GetGoogleDoodleURL(profile_);
+  auto parse_logo_response_callback =
+      use_fixed_logo
+          ? base::Bind(&search_provider_logos::ParseFixedLogoResponse)
+          : base::Bind(&search_provider_logos::GoogleParseLogoResponse);
 
   bool use_gray_background =
       !base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
-  logo_tracker_->SetServerAPI(
-      GetGoogleDoodleURL(profile_),
-      base::Bind(&search_provider_logos::GoogleParseLogoResponse),
-      base::Bind(&search_provider_logos::GoogleAppendQueryparamsToLogoURL),
-      true, /* wants_cta */
-      use_gray_background);
+  auto append_query_params_callback =
+      use_fixed_logo
+          ? base::Bind(&search_provider_logos::UseFixedLogoUrl)
+          : base::Bind(&search_provider_logos::GoogleAppendQueryparamsToLogoURL,
+                       use_gray_background);
+
+  logo_tracker_->SetServerAPI(url, parse_logo_response_callback,
+                              append_query_params_callback);
   logo_tracker_->GetLogo(observer);
 }
 

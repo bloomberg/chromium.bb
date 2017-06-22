@@ -68,20 +68,16 @@ class LogoDelegate {
 };
 
 // Parses the response from the server and returns it as an EncodedLogo. Returns
-// NULL if the response is invalid.
-typedef base::Callback<std::unique_ptr<EncodedLogo>(
-    const std::unique_ptr<std::string>& response,
+// null if the response is invalid.
+using ParseLogoResponse = base::Callback<std::unique_ptr<EncodedLogo>(
+    std::unique_ptr<std::string> response,
     base::Time response_time,
-    bool* parsing_failed)>
-    ParseLogoResponse;
+    bool* parsing_failed)>;
 
 // Encodes the fingerprint of the cached logo in the logo URL. This enables the
 // server to verify whether the cached logo is up to date.
-typedef base::Callback<GURL(const GURL& logo_url,
-                            const std::string& fingerprint,
-                            bool wants_cta,
-                            bool gray_background)>
-    AppendQueryparamsToLogoURL;
+using AppendQueryparamsToLogoURL =
+    base::Callback<GURL(const GURL& logo_url, const std::string& fingerprint)>;
 
 // This class provides the logo for a search provider. Logos are downloaded from
 // the search provider's logo URL and cached on disk.
@@ -124,17 +120,9 @@ class LogoTracker : public net::URLFetcherDelegate {
   // |parse_logo_response_func| is a callback that will be used to parse the
   // server's response into a EncodedLogo object. |append_queryparams_func| is a
   // callback that will return the URL from which to download the logo.
-  // |wants_cta| determines if the url should return a call to action image.
-  // |gray_background| determines whether to request a logo with a gray
-  // background. The gray will match the NTP background color.
-  // Note: |parse_logo_response_func| and |append_queryparams_func| must be
-  // suitable for running multiple times, concurrently, and on multiple threads.
-  // TODO(ianwen): remove wants_cta from parameter.
   void SetServerAPI(const GURL& logo_url,
                     const ParseLogoResponse& parse_logo_response_func,
-                    const AppendQueryparamsToLogoURL& append_queryparams_func,
-                    bool wants_cta,
-                    bool gray_background);
+                    const AppendQueryparamsToLogoURL& append_queryparams_func);
 
   // Retrieves the current search provider's logo from the local cache and/or
   // over the network, and registers |observer| to be called when the cached
@@ -220,12 +208,6 @@ class LogoTracker : public net::URLFetcherDelegate {
   // The function used to include the cached logo's fingerprint and call to
   // action request in the logo URL.
   AppendQueryparamsToLogoURL append_queryparams_func_;
-
-  // If |true| request call to action in server API.
-  bool wants_cta_;
-
-  // If |true| request a doodle with a gray background.
-  bool gray_background_;
 
   // False if an asynchronous task is currently running.
   bool is_idle_;
