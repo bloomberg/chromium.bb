@@ -14,40 +14,87 @@ from infra_libs import ts_mon
 
 logger = logging.getLogger(__name__)
 
-_proc_count_metric = ts_mon.GaugeMetric(
-    'dev/proc/count',
+_count_metric = ts_mon.GaugeMetric(
+    'proc/count',
     description='Number of processes currently running.')
-_autoserv_proc_count_metric = ts_mon.GaugeMetric(
-    'dev/proc/autoserv_count',
-    description='Number of autoserv processes currently running.')
-_sysmon_proc_count_metric = ts_mon.GaugeMetric(
-    'dev/proc/sysmon_count',
-    description='Number of sysmon processes currently running.')
-_apache_proc_count_metric = ts_mon.GaugeMetric(
-    'dev/proc/apache_count',
-    description='Number of apache processes currently running.')
+_cpu_percent_metric = ts_mon.GaugeMetric(
+    'proc/cpu_percent',
+    description='CPU usage percent of processes.')
 
 
 def collect_proc_info():
-  autoserv_count = 0
-  sysmon_count = 0
-  apache_count = 0
-  total = 0
-  for proc in psutil.process_iter():
-    if _is_parent_autoserv(proc):
-      autoserv_count += 1
-    elif _is_sysmon(proc):
-      sysmon_count += 1
-    elif _is_apache(proc):
-      apache_count += 1
-    total += 1
-  logger.debug(u'autoserv_count: %s', autoserv_count)
-  logger.debug(u'sysmon_count: %s', sysmon_count)
-  logger.debug(u'apache_count: %s', apache_count)
-  _autoserv_proc_count_metric.set(autoserv_count)
-  _sysmon_proc_count_metric.set(sysmon_count)
-  _apache_proc_count_metric.set(apache_count)
-  _proc_count_metric.set(total)
+  collector = _ProcessMetricsCollector()
+  collector.collect()
+
+
+class _ProcessMetricsCollector(object):
+  """Class for collecting process metrics."""
+
+  def __init__(self):
+    self._metrics = [
+      _ProcessMetric('autoserv',
+                     test_func=_is_parent_autoserv),
+      _ProcessMetric('sysmon',
+                     test_func=_is_sysmon),
+      _ProcessMetric('apache',
+                     test_func=_is_apache),
+    ]
+    self._other_metric = _ProcessMetric('other')
+
+  def collect(self):
+    for proc in psutil.process_iter():
+      self._collect_proc(proc)
+    self._flush()
+
+  def _collect_proc(self, proc):
+    collected = []
+    for metric in self._metrics:
+      collected.append(metric.add(proc))
+    if not any(collected):
+      self._other_metric.add(proc)
+
+  def _flush(self):
+    for metric in self._metrics:
+      metric.flush()
+    self._other_metric.flush()
+
+
+class _ProcessMetric(object):
+  """Class for gathering process metrics."""
+
+  def __init__(self, process_name, test_func=lambda proc: True):
+    """Initialize instance.
+
+    process_name is used to identify the metric stream.
+
+    test_func is a function called
+    for each process.  If it returns True, the process is counted.  The
+    default test is to count every process.
+    """
+    self._fields = {
+      'process_name': process_name,
+    }
+    self._test_func = test_func
+    self._count = 0
+    self._cpu_percent = 0
+
+  def add(self, proc):
+    """Do metric collection for the given process.
+
+    Returns True if the process was collected.
+    """
+    if not self._test_func(proc):
+      return False
+    self._count += 1
+    self._cpu_percent += proc.cpu_percent()
+    return True
+
+  def flush(self):
+    """Finish collection and send metrics."""
+    _count_metric.set(self._count, fields=self._fields)
+    self._count = 0
+    _cpu_percent_metric.set(self._count, fields=self._fields)
+    self._cpu_percent = 0
 
 
 def _is_parent_autoserv(proc):
