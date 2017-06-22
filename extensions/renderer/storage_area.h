@@ -23,6 +23,7 @@ namespace extensions {
 class APIEventHandler;
 class APIRequestHandler;
 class APITypeReferenceMap;
+class BindingAccessChecker;
 
 // Implementation of the storage.StorageArea custom type used in the
 // chrome.storage API.
@@ -30,7 +31,8 @@ class StorageArea {
  public:
   StorageArea(APIRequestHandler* request_handler,
               const APITypeReferenceMap* type_refs,
-              const std::string& name);
+              const std::string& name,
+              const BindingAccessChecker* access_checker);
   ~StorageArea();
 
   // Creates a StorageArea object for the given context and property name.
@@ -40,7 +42,8 @@ class StorageArea {
       const base::ListValue* property_values,
       APIRequestHandler* request_handler,
       APIEventHandler* event_handler,
-      APITypeReferenceMap* type_refs);
+      APITypeReferenceMap* type_refs,
+      const BindingAccessChecker* access_checker);
 
   void HandleFunctionCall(const std::string& method_name,
                           gin::Arguments* arguments);
@@ -51,6 +54,8 @@ class StorageArea {
   const APITypeReferenceMap* type_refs_;
 
   std::string name_;
+
+  const BindingAccessChecker* const access_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageArea);
 };
