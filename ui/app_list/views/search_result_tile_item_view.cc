@@ -18,18 +18,10 @@ namespace app_list {
 
 namespace {
 
-constexpr int kRecommendationTileWidth = 96;
-constexpr int kRecommendationTileHeight = 99;
-constexpr int kRecommendationIconTopPadding = 24;
-constexpr int kRecommendationTitleSpacing = 10;
-constexpr int kRecommendationTileMaxWidth = 80;
-
 constexpr int kSearchTileWidth = 80;
 constexpr int kSearchTileHeight = 92;
 constexpr int kSearchTileTopPadding = 4;
 constexpr int kSearchTitleSpacing = 6;
-
-constexpr SkColor kRecommendationTileColor = SK_ColorWHITE;
 
 constexpr SkColor kSearchTitleColor =
     SkColorSetARGBMacro(0xDF, 0x00, 0x00, 0x00);
@@ -108,7 +100,7 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
     // Customize title UI
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
       title()->SetFontList(base_font.DeriveWithSizeDelta(1));
-      title()->SetEnabledColor(kRecommendationTileColor);
+      title()->SetEnabledColor(kGridTitleColorFullscreen);
     } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
       title()->SetFontList(base_font.DeriveWithSizeDelta(1));
       title()->SetEnabledColor(kSearchTitleColor);
@@ -221,12 +213,13 @@ void SearchResultTileItemView::Layout() {
   }
 
   if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
-    rect.Inset(0, kRecommendationIconTopPadding, 0, 0);
+    rect.Inset(0, kGridIconTopPadding, 0, 0);
     icon()->SetBoundsRect(rect);
 
-    rect.Inset(0, kGridIconDimension + kRecommendationTitleSpacing, 0, 0);
+    rect.Inset(kGridTitleHorizontalPadding,
+               kGridIconDimension + kGridTitleSpacing,
+               kGridTitleHorizontalPadding, 0);
     rect.set_height(title()->GetPreferredSize().height());
-    rect.set_width(kRecommendationTileMaxWidth);
     title()->SetBoundsRect(rect);
   } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
     rect.Inset(0, kSearchTileTopPadding, 0, 0);
@@ -266,7 +259,7 @@ void SearchResultTileItemView::Layout() {
 gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
   if (is_fullscreen_app_list_enabled_ && item_) {
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION)
-      return gfx::Size(kRecommendationTileWidth, kRecommendationTileHeight);
+      return gfx::Size(kGridTileWidth, kGridTileHeight);
     if (item_->display_type() == SearchResult::DISPLAY_TILE)
       return gfx::Size(kSearchTileWidth, kSearchTileHeight);
   }
