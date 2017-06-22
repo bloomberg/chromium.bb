@@ -7322,6 +7322,93 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskWithNonExactTextureSize);
 
+class LayerTreeTestSolidColorMaskLayer : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    // Root
+    //  |
+    //  +-- Content Layer
+    //        +--Mask
+    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<FakePictureLayer> content_layer =
+        FakePictureLayer::Create(&client_);
+    root->AddChild(content_layer);
+    gfx::Size content_size(100, 100);
+    std::unique_ptr<RecordingSource> recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(content_size);
+    PaintFlags paint;
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(content_size), paint);
+
+    client_.set_fill_with_nonsolid_color(true);
+    static_cast<FakeRecordingSource*>(recording_source.get())->Rerecord();
+    scoped_refptr<FakePictureLayer> mask_layer =
+        FakePictureLayer::CreateWithRecordingSource(
+            &client_, std::move(recording_source));
+    content_layer->SetMaskLayer(mask_layer.get());
+    gfx::Size root_size(100, 100);
+    root->SetBounds(root_size);
+    content_layer->SetBounds(content_size);
+
+    mask_layer->SetBounds(content_size);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+    client_.set_bounds(root->bounds());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(2u, frame_data->render_passes.size());
+    RenderPass* root_pass = frame_data->render_passes.back().get();
+    EXPECT_EQ(2u, root_pass->quad_list.size());
+
+    // There's a solid color quad under everything.
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+
+    // Mask layer tiles should not be skipped even if the mask layer is solid
+    // color.
+    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+              render_pass_quad->rect.ToString());
+    EXPECT_EQ(gfx::RectF().ToString(),
+
+              render_pass_quad->mask_uv_rect.ToString());
+    EndTest();
+    return draw_result;
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+};
+
+class LayerTreeTestSingleTextureSolidColorMaskLayer
+    : public LayerTreeTestSolidColorMaskLayer {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = false;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestSingleTextureSolidColorMaskLayer);
+
+class LayerTreeTestMultiTextureSolidColorMaskLayer
+    : public LayerTreeTestSolidColorMaskLayer {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = true;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMultiTextureSolidColorMaskLayer);
+
 class LayerTreeTestPageScaleFlags : public LayerTreeTest {
  protected:
   void SetupTree() override {

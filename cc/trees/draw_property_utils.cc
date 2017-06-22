@@ -1026,6 +1026,7 @@ void ComputeMaskDrawProperties(LayerImpl* mask_layer,
                                    property_trees->transform_tree);
   mask_layer->draw_properties().visible_layer_rect =
       gfx::Rect(mask_layer->bounds());
+  mask_layer->draw_properties().opacity = 1;
 }
 
 void ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
