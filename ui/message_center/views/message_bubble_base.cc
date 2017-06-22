@@ -31,7 +31,7 @@ MessageBubbleBase::MessageBubbleBase(MessageCenter* message_center,
 
 MessageBubbleBase::~MessageBubbleBase() {
   if (bubble_view_)
-    bubble_view_->ResetDelegate();
+    bubble_view_->reset_delegate();
 }
 
 void MessageBubbleBase::BubbleViewDestroyed() {

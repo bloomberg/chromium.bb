@@ -38,6 +38,9 @@ class SystemTrayBubble {
                 LoginStatus login_status,
                 views::TrayBubbleView::InitParams* init_params);
 
+  // Focus the default item if no item is focused. Othewise, do nothing.
+  void FocusDefaultIfNeeded();
+
   BubbleType bubble_type() const { return bubble_type_; }
   views::TrayBubbleView* bubble_view() const { return bubble_view_; }
 
