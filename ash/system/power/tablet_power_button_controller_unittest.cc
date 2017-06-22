@@ -568,5 +568,21 @@ TEST_F(TabletPowerButtonControllerTest, SuspendMediaSessions) {
   EXPECT_TRUE(shell_delegate_->media_sessions_suspended());
 }
 
+// Tests that when system is suspended with backlights forced off, and then
+// system resumes due to power button pressed without power button event fired
+// (crbug.com/735291), that we stop forcing off backlights.
+TEST_F(TabletPowerButtonControllerTest, SuspendDoneStopsForcingOff) {
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, false);
+  ASSERT_TRUE(GetBacklightsForcedOff());
+
+  // Simulate an edge case that system resumes because of tablet power button
+  // pressed, but power button event is not delivered.
+  power_manager_client_->SendSuspendDone();
+
+  EXPECT_FALSE(GetBacklightsForcedOff());
+}
+
 }  // namespace test
 }  // namespace ash
