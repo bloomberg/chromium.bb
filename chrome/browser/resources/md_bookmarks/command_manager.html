@@ -26,23 +26,25 @@
         display: none;
       }
     </style>
-    <dialog is="cr-action-menu" id="dropdown" on-mousedown="onMenuMousedown_">
-      <template is="dom-repeat" items="[[menuCommands_]]" as="command">
-        <button class="dropdown-item"
-            command$="[[command]]"
-            hidden$="[[!isCommandVisible_(command, menuIds_)]]"
-            disabled$="[[!isCommandEnabled_(command, menuIds_)]]"
-            on-tap="onCommandClick_">
-          <span class="label">
-            [[getCommandLabel_(command, menuIds_)]]
-          </span>
-          <span class="sublabel">
-            [[getCommandSublabel_(command, menuIds_)]]
-          </span>
-        </button>
-        <hr hidden$="[[!showDividerAfter_(command, menuIds_)]]"></hr>
-      </template>
-    </dialog>
+    <template is="cr-lazy-render" id="dropdown">
+      <dialog is="cr-action-menu" on-mousedown="onMenuMousedown_">
+        <template is="dom-repeat" items="[[menuCommands_]]" as="command">
+          <button class="dropdown-item"
+              command$="[[command]]"
+              hidden$="[[!isCommandVisible_(command, menuIds_)]]"
+              disabled$="[[!isCommandEnabled_(command, menuIds_)]]"
+              on-tap="onCommandClick_">
+            <span class="label">
+              [[getCommandLabel_(command, menuIds_)]]
+            </span>
+            <span class="sublabel">
+              [[getCommandSublabel_(command, menuIds_)]]
+            </span>
+          </button>
+          <hr hidden$="[[!showDividerAfter_(command, menuIds_)]]"></hr>
+        </template>
+      </dialog>
+    </template>
     <template is="cr-lazy-render" id="editDialog">
       <bookmarks-edit-dialog></bookmarks-edit-dialog>
     </template>
