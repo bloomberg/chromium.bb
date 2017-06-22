@@ -852,11 +852,12 @@
       default_value: "false",
     },
     {
-      name: "ColumnRuleColorIsCurrentColor",
-      field_template: "primitive",
-      default_value: "true",
-      type_name: "bool",
+      name: "ColumnRule",
+      field_template: "storage_only",
+      type_name: "BorderValue",
       field_group: "rare-non-inherited->multi-col",
+      default_value: "BorderValue()",
+      include_paths: ["core/style/BorderValue.h"],
     },
     {
       name: "VisitedLinkColumnRuleColor",
