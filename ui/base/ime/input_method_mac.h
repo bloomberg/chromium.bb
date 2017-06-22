@@ -22,7 +22,7 @@ class UI_BASE_IME_EXPORT InputMethodMac : public InputMethodBase {
   // Overriden from InputMethod.
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
-  void DispatchKeyEvent(ui::KeyEvent* event) override;
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
   bool IsCandidatePopupOpen() const override;

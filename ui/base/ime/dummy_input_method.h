@@ -26,7 +26,7 @@ class DummyInputMethod : public InputMethod {
   void SetFocusedTextInputClient(TextInputClient* client) override;
   void DetachTextInputClient(TextInputClient* client) override;
   TextInputClient* GetTextInputClient() const override;
-  void DispatchKeyEvent(ui::KeyEvent* event) override;
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;

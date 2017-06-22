@@ -17,11 +17,13 @@ class InputMethodMusTestApi {
     input_method_mus->input_method_ = input_method;
   }
 
-  static void CallSendKeyEventToInputMethod(
+  static ui::EventDispatchDetails CallSendKeyEventToInputMethod(
       InputMethodMus* input_method_mus,
       const ui::KeyEvent& event,
-      std::unique_ptr<InputMethodMus::EventResultCallback> ack_callback) {
-    input_method_mus->SendKeyEventToInputMethod(event, std::move(ack_callback));
+      std::unique_ptr<InputMethodMus::EventResultCallback> ack_callback)
+      WARN_UNUSED_RESULT {
+    return input_method_mus->SendKeyEventToInputMethod(event,
+                                                       std::move(ack_callback));
   }
 
   static void Disable(InputMethodMus* input_method) {

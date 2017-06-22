@@ -77,12 +77,14 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
   };
 
   // Overridden from InputMethodChromeOS:
-  void ProcessKeyEventPostIME(ui::KeyEvent* key_event,
-                              bool handled) override {
-    InputMethodChromeOS::ProcessKeyEventPostIME(key_event, handled);
+  ui::EventDispatchDetails ProcessKeyEventPostIME(ui::KeyEvent* key_event,
+                                                  bool handled) override {
+    ui::EventDispatchDetails details =
+        InputMethodChromeOS::ProcessKeyEventPostIME(key_event, handled);
     process_key_event_post_ime_args_.event = key_event;
     process_key_event_post_ime_args_.handled = handled;
     ++process_key_event_post_ime_call_count_;
+    return details;
   }
 
   void ResetCallCount() {

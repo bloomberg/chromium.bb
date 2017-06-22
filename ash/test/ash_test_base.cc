@@ -75,10 +75,11 @@ class AshEventGeneratorDelegate
     return aura::client::GetScreenPositionClient(window->GetRootWindow());
   }
 
-  void DispatchKeyEventToIME(ui::EventTarget* target,
-                             ui::KeyEvent* event) override {
+  ui::EventDispatchDetails DispatchKeyEventToIME(ui::EventTarget* target,
+                                                 ui::KeyEvent* event) override {
     // In Ash environment, the key event will be processed by event rewriters
     // first.
+    return ui::EventDispatchDetails();
   }
 
  private:

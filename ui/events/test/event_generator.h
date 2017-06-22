@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
+#include "ui/events/event_dispatcher.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
@@ -72,8 +73,9 @@ class EventGeneratorDelegate {
   // Determines if the input method should be the first to handle key events
   // before dispatching to Views. If it does, the given |event| will be
   // dispatched and processed by the input method from the host of |target|.
-  virtual void DispatchKeyEventToIME(EventTarget* target,
-                                     ui::KeyEvent* event) = 0;
+  virtual ui::EventDispatchDetails DispatchKeyEventToIME(EventTarget* target,
+                                                         ui::KeyEvent* event)
+      WARN_UNUSED_RESULT = 0;
 
   // Offers the event to pointer watchers on systems that provide them.
   // Does not consume the event (pointer watchers cannot consume events).

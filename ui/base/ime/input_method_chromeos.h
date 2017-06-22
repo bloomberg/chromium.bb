@@ -29,13 +29,14 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   ~InputMethodChromeOS() override;
 
   using AckCallback = base::Callback<void(bool)>;
-  void DispatchKeyEvent(ui::KeyEvent* event,
-                        std::unique_ptr<AckCallback> ack_callback);
+  ui::EventDispatchDetails DispatchKeyEvent(
+      ui::KeyEvent* event,
+      std::unique_ptr<AckCallback> ack_callback);
 
   // Overridden from InputMethod:
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
-  void DispatchKeyEvent(ui::KeyEvent* event) override;
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
@@ -48,8 +49,9 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
                               CompositionText* out_composition) const;
 
   // Process a key returned from the input method.
-  virtual void ProcessKeyEventPostIME(ui::KeyEvent* event,
-                                      bool handled);
+  virtual ui::EventDispatchDetails ProcessKeyEventPostIME(ui::KeyEvent* event,
+                                                          bool handled)
+      WARN_UNUSED_RESULT;
 
   // Resets context and abandon all pending results and key events.
   void ResetContext();
@@ -74,10 +76,12 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   // A VKEY_PROCESSKEY may be dispatched to the EventTargets.
   // It returns the result of whether the event has been stopped propagation
   // when dispatching post IME.
-  void ProcessFilteredKeyPressEvent(ui::KeyEvent* event);
+  ui::EventDispatchDetails ProcessFilteredKeyPressEvent(ui::KeyEvent* event)
+      WARN_UNUSED_RESULT;
 
   // Processes a key event that was not filtered by the input method.
-  void ProcessUnfilteredKeyPressEvent(ui::KeyEvent* event);
+  ui::EventDispatchDetails ProcessUnfilteredKeyPressEvent(ui::KeyEvent* event)
+      WARN_UNUSED_RESULT;
 
   // Sends input method result caused by the given key event to the focused text
   // input client.
@@ -105,9 +109,13 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   void HidePreeditText();
 
   // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
-  void ProcessKeyEventDone(ui::KeyEvent* event,
-                           std::unique_ptr<AckCallback> ack_callback,
-                           bool is_handled);
+  void KeyEventDoneCallback(ui::KeyEvent* event,
+                            std::unique_ptr<AckCallback> ack_callback,
+                            bool is_handled);
+  ui::EventDispatchDetails ProcessKeyEventDone(
+      ui::KeyEvent* event,
+      std::unique_ptr<AckCallback> ack_callback,
+      bool is_handled) WARN_UNUSED_RESULT;
 
   // Returns whether an non-password input field is focused.
   bool IsNonPasswordInputFieldFocused();
