@@ -1,6 +1,5 @@
-DIV
+
 Recording started
-SUCCESS: testFunctionTimerFired
 Tracing complete
 TimerInstall has frame: true
 TimerInstall frames match: true
