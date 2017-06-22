@@ -335,10 +335,9 @@ def _create_property_field(property_):
              "so it should not specify a field_size")
         size = int(math.ceil(math.log(len(property_['keywords']), 2)))
     elif property_['field_template'] == 'storage_only':
-        # 'storage_only' fields need to specify a size, type_name and default_value
         type_name = property_['type_name']
         default_value = property_['default_value']
-        size = property_['field_size']
+        size = 1 if type_name == 'bool' else property_['field_size']
     elif property_['field_template'] == 'external':
         type_name = property_['type_name']
         default_value = property_['default_value']

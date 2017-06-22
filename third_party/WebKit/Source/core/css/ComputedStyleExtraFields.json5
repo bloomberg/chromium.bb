@@ -155,7 +155,6 @@
     {
       name: "EmptyState",
       field_template: "storage_only",
-      field_size: 1,
       default_value: "false",
       type_name: "bool",
       custom_copy: true,
@@ -183,7 +182,6 @@
     {
       name: "HasSimpleUnderline",
       field_template: "storage_only",
-      field_size: 1,
       default_value: "false",
       type_name: "bool",
       inherited: true,
@@ -242,7 +240,6 @@
       name: "HasAutoClip",
       field_template: "storage_only",
       type_name: "bool",
-      field_size: 1,
       default_value: "true",
       field_group: "visual",
     },
@@ -250,7 +247,6 @@
       name: "HasAutoZIndex",
       field_template: "storage_only",
       type_name: "bool",
-      field_size: 1,
       field_group: "box",
       default_value: "true",
     },
@@ -349,7 +345,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "true",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -358,7 +353,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "true",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -367,7 +361,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "true",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -376,7 +369,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "false",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -385,7 +377,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "true",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -394,7 +385,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "true",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -403,7 +393,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "true",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -412,7 +401,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "true",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -421,7 +409,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "false",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -430,7 +417,6 @@
       field_template: "storage_only",
       type_name: "bool",
       default_value: "true",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -495,7 +481,6 @@
       field_template: "primitive",
       type_name: "bool",
       default_value: "false",
-      field_size: 1,
       field_group: "rare-inherited",
     },
     {
@@ -865,7 +850,6 @@
       type_name: "bool",
       field_group: "rare-non-inherited->multi-col",
       default_value: "true",
-      field_size: 1,
     },
     {
       name: "ColumnAutoCount",
@@ -873,7 +857,6 @@
       type_name: "bool",
       field_group: "rare-non-inherited->multi-col",
       default_value: "true",
-      field_size: 1,
     },
     {
       name: "ColumnNormalGap",
@@ -881,7 +864,6 @@
       type_name: "bool",
       field_group: "rare-non-inherited->multi-col",
       default_value: "true",
-      field_size: 1,
     },
     {
       name: "TransformOperations",
