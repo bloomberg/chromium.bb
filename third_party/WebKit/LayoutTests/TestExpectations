@@ -2726,11 +2726,11 @@ crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
 crbug.com/727014 [ Linux ] external/wpt/IndexedDB/large-nested-cloning.html [ Pass Timeout ]
 
 # Sensor tests fail on Mac swarming
-crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass ]
-crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass ]
-crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass ]
-crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass ]
-crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass ]
+crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass Crash ]
+crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]
+crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass Crash ]
+crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass Crash ]
+crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass Crash ]
 
 # More flaky tests on Mac
 crbug.com/731111 [ Mac ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass Timeout ]
