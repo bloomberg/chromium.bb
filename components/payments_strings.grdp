@@ -134,11 +134,8 @@
     <message name="IDS_PAYMENTS_NAME_ON_CARD" desc="Title of the field representing the full name of a credit card holder.">
       Cardholder Name
     </message>
-      <message name="IDS_PAYMENTS_EXP_MONTH" desc="Title of the field representing the expiration month of a credit card.">
-      Expiration Month
-    </message>
-    <message name="IDS_PAYMENTS_EXP_YEAR" desc="Title of the field representing the expiration year of a credit card.">
-      Expiration Year
+      <message name="IDS_PAYMENTS_EXP_DATE" desc="Title of the field representing the expiration date of a credit card.">
+      Expiration Date
     </message>
     <message name="IDS_PAYMENTS_BILLING_ADDRESS" desc="Title of the field representing the billing address of a credit card.">
       Billing Address

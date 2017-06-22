@@ -50,13 +50,10 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 @property(nonatomic, strong)
     NSMutableDictionary<NSNumber*, EditorField*>* fieldsMap;
 
-// The reference to the autofill::CREDIT_CARD_EXP_MONTH field, if any (i.e if
-// we are dealing with a server card this will not exist).
-@property(nonatomic, strong) EditorField* creditCardExpMonthField;
-
-// The reference to the autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR field, if any
-// (i.e. if we are dealing with a server card this will not exist).
-@property(nonatomic, strong) EditorField* creditCardExpYearField;
+// The reference to the expiration date field that combines the values for
+// autofill::CREDIT_CARD_EXP_MONTH and autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR
+// field types. This is nil when editing a server card.
+@property(nonatomic, strong) EditorField* creditCardExpDateField;
 
 @end
 
@@ -68,8 +65,7 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 @synthesize paymentRequest = _paymentRequest;
 @synthesize creditCard = _creditCard;
 @synthesize fieldsMap = _fieldsMap;
-@synthesize creditCardExpMonthField = _creditCardExpMonthField;
-@synthesize creditCardExpYearField = _creditCardExpYearField;
+@synthesize creditCardExpDateField = _creditCardExpDateField;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
                             creditCard:(autofill::CreditCard*)creditCard {
@@ -96,12 +92,8 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   _consumer = consumer;
 
   [self.consumer setEditorFields:[self createEditorFields]];
-  if (self.creditCardExpMonthField) {
-    [self loadMonths];
-  }
-  if (self.creditCardExpYearField) {
-    [self loadYears];
-  }
+  if (self.creditCardExpDateField)
+    [self loadMonthsAndYears];
 }
 
 - (void)setBillingProfile:(autofill::AutofillProfile*)billingProfile {
@@ -181,8 +173,8 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 
 #pragma mark - Helper methods
 
-// Queries the month numbers.
-- (void)loadMonths {
+// Queries the month and year numbers and informs the consumer.
+- (void)loadMonthsAndYears {
   NSMutableArray<NSString*>* months = [[NSMutableArray alloc] init];
 
   for (int month = 1; month <= 12; month++) {
@@ -190,16 +182,6 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
     [months addObject:monthString];
   }
 
-  // Notify the view controller asynchronously to allow for the view to update.
-  __weak CreditCardEditViewControllerMediator* weakSelf = self;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [weakSelf.consumer setOptions:months
-                   forEditorField:weakSelf.creditCardExpMonthField];
-  });
-}
-
-// Queries the year numbers.
-- (void)loadYears {
   NSMutableArray<NSString*>* years = [[NSMutableArray alloc] init];
 
   NSDateComponents* dateComponents =
@@ -207,26 +189,26 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
                                       fromDate:[NSDate date]];
 
   int currentYear = [dateComponents year];
+  int cardExpYear = _creditCard ? _creditCard->expiration_year() : currentYear;
   bool foundCardExpirationYear = false;
   for (int year = currentYear; year < currentYear + 10; year++) {
-    NSString* yearString = [NSString stringWithFormat:@"%04d", year];
-    if ([yearString isEqualToString:_creditCardExpYearField.value])
+    if (year == cardExpYear)
       foundCardExpirationYear = true;
-    [years addObject:yearString];
+    [years addObject:[NSString stringWithFormat:@"%04d", year]];
   }
 
-  // Ensure that the expiration year on a user's saved card is
-  // always available as one of the options to select from. This is
-  // useful in the case that the user's card is expired.
+  // Ensure that the expiration year on a saved card is always available as one
+  // of the options to select from. This is useful in case of an expired card.
   if (!foundCardExpirationYear) {
-    [years insertObject:_creditCardExpYearField.value atIndex:0];
+    [years insertObject:[NSString stringWithFormat:@"%04d", cardExpYear]
+                atIndex:0];
   }
 
   // Notify the view controller asynchronously to allow for the view to update.
   __weak CreditCardEditViewControllerMediator* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{
-    [weakSelf.consumer setOptions:years
-                   forEditorField:weakSelf.creditCardExpYearField];
+    [weakSelf.consumer setOptions:@[ months, years ]
+                   forEditorField:weakSelf.creditCardExpDateField];
   });
 }
 
@@ -302,47 +284,31 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
       components:NSCalendarUnitMonth | NSCalendarUnitYear
         fromDate:[NSDate date]];
 
+  // Expiration date field.
   int currentMonth = [dateComponents month];
-
-  // Expiration month field.
-  NSString* creditCardExpMonth =
-      _creditCard && (_creditCard->expiration_month() >= 1 &&
-                      _creditCard->expiration_month() <= 12)
+  NSString* expMonth =
+      _creditCard
           ? [NSString stringWithFormat:@"%02d", _creditCard->expiration_month()]
           : [NSString stringWithFormat:@"%02d", currentMonth];
-  fieldKey = [NSNumber numberWithInt:AutofillUITypeCreditCardExpMonth];
-  EditorField* expirationMonthField = self.fieldsMap[fieldKey];
-  if (!expirationMonthField) {
-    expirationMonthField = [[EditorField alloc]
-        initWithAutofillUIType:AutofillUITypeCreditCardExpMonth
-                     fieldType:EditorFieldTypeTextField
-                         label:l10n_util::GetNSString(IDS_PAYMENTS_EXP_MONTH)
-                         value:creditCardExpMonth
-                      required:YES];
-    [self.fieldsMap setObject:expirationMonthField forKey:fieldKey];
-  }
-  self.creditCardExpMonthField = expirationMonthField;
-  [fields addObject:expirationMonthField];
-
-  // Expiration year field.
   int currentYear = [dateComponents year];
-  NSString* creditCardExpYear =
+  NSString* expYear =
       _creditCard
           ? [NSString stringWithFormat:@"%04d", _creditCard->expiration_year()]
           : [NSString stringWithFormat:@"%04d", currentYear];
-  fieldKey = [NSNumber numberWithInt:AutofillUITypeCreditCardExpYear];
-  EditorField* expirationYearField = self.fieldsMap[fieldKey];
-  if (!expirationYearField) {
-    expirationYearField = [[EditorField alloc]
-        initWithAutofillUIType:AutofillUITypeCreditCardExpYear
+  NSString* expDate = [NSString stringWithFormat:@"%@ / %@", expMonth, expYear];
+  fieldKey = [NSNumber numberWithInt:AutofillUITypeCreditCardExpDate];
+  EditorField* expirationDateField = self.fieldsMap[fieldKey];
+  if (!expirationDateField) {
+    expirationDateField = [[EditorField alloc]
+        initWithAutofillUIType:AutofillUITypeCreditCardExpDate
                      fieldType:EditorFieldTypeTextField
-                         label:l10n_util::GetNSString(IDS_PAYMENTS_EXP_YEAR)
-                         value:creditCardExpYear
+                         label:l10n_util::GetNSString(IDS_PAYMENTS_EXP_DATE)
+                         value:expDate
                       required:YES];
-    [self.fieldsMap setObject:expirationYearField forKey:fieldKey];
+    [self.fieldsMap setObject:expirationDateField forKey:fieldKey];
   }
-  self.creditCardExpYearField = expirationYearField;
-  [fields addObject:expirationYearField];
+  self.creditCardExpDateField = expirationDateField;
+  [fields addObject:expirationDateField];
 
   // The billing address field appears after the expiration year field.
   [fields addObject:billingAddressField];

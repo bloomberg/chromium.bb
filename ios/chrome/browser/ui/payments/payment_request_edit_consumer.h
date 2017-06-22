@@ -15,8 +15,9 @@
 // Sets the list of field definitions for the editor.
 - (void)setEditorFields:(NSArray<EditorField*>*)fields;
 
-// Sets the options to choose from for |field|.
-- (void)setOptions:(NSArray<NSString*>*)options
+// Sets the options to choose from for |field|. |options| is an array of columns
+// which themselves are arrays of string rows used for display in UIPickerView.
+- (void)setOptions:(NSArray<NSArray<NSString*>*>*)options
     forEditorField:(EditorField*)field;
 
 @end

@@ -7,13 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
-// Each one of the following types corresponds to an autofill::ServerFieldType.
+// Each one of the following types with the exception of
+// AutofillUITypeCreditCardExpDate, AutofillUITypeCreditCardBillingAddress,
+// and AutofillUITypeCreditCardSaveToChrome corresponds to an
+// autofill::ServerFieldType.
 typedef NS_ENUM(NSInteger, AutofillUIType) {
   AutofillUITypeUnknown,
   AutofillUITypeCreditCardNumber,
   AutofillUITypeCreditCardHolderFullName,
   AutofillUITypeCreditCardExpMonth,
   AutofillUITypeCreditCardExpYear,
+  AutofillUITypeCreditCardExpDate,
   AutofillUITypeCreditCardBillingAddress,
   AutofillUITypeCreditCardSaveToChrome,
   AutofillUITypeProfileFullName,
