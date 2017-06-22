@@ -94,9 +94,6 @@ class CSSPropertyParser {
                                  bool important);
   bool ConsumeBackgroundShorthand(const StylePropertyShorthand&,
                                   bool important);
-  bool ConsumeOffsetShorthand(bool important);
-
-  bool ConsumeColumns(bool important);
 
   bool ConsumeGridItemPositionShorthand(CSSPropertyID, bool important);
   bool ConsumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID, bool important);
@@ -108,12 +105,8 @@ class CSSPropertyParser {
   bool ConsumePlaceItemsShorthand(bool important);
   bool ConsumePlaceSelfShorthand(bool important);
 
-  bool ConsumeBorderSpacing(bool important);
-
   // CSS3 Parsing Routines (for properties specific to CSS3)
   bool ConsumeBorderImage(CSSPropertyID, bool default_fill, bool important);
-
-  bool ConsumeFlex(bool important);
 
   bool ConsumeLegacyBreakProperty(CSSPropertyID, bool important);
 
