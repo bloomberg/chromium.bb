@@ -32,11 +32,6 @@ function runTest()
     x = testElement.offsetLeft + testElement.offsetWidth / 2;
     y = testElement.offsetTop + testElement.offsetHeight / 2;
 
-    // Due to how mouse press / hover state is updated, the first mouse move is expected to generate incorrect hover state.
-    eventSender.mouseMoveTo(x, y);
-    verify('rgb(0, 0, 255)');
-
-    eventSender.mouseMoveTo(x - 100, y);
     eventSender.mouseMoveTo(x, y);
     verify('rgb(0, 128, 0)');
 }
