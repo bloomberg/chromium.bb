@@ -2359,6 +2359,12 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
     }
   }
 
+  void CleanUpTileManager() {
+    task_runner_->set_run_tasks_synchronously(true);
+    host_impl()->tile_manager()->FinishTasksAndCleanUp();
+    task_runner_->set_run_tasks_synchronously(false);
+  }
+
  private:
   scoped_refptr<SynchronousSimpleTaskRunner> task_runner_;
 };
@@ -2562,6 +2568,50 @@ TEST_F(CheckerImagingTileManagerTest, BuildsImageDecodeQueueAsExpected) {
   host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
   FlushDecodeTasks();
   EXPECT_FALSE(host_impl()->client()->did_request_impl_side_invalidation());
+}
+
+TEST_F(CheckerImagingTileManagerTest,
+       TileManagerCleanupClearsCheckerImagedDecodes) {
+  const gfx::Size layer_bounds(512, 512);
+  SetupDefaultTrees(layer_bounds);
+
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->set_fill_with_nonsolid_color(true);
+  sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(512, 512));
+  recording_source->add_draw_image(image, gfx::Point(0, 0));
+  recording_source->Rerecord();
+  scoped_refptr<RasterSource> raster_source =
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+
+  std::unique_ptr<PictureLayerImpl> layer_impl = PictureLayerImpl::Create(
+      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  layer_impl->set_contributes_to_drawn_render_surface(true);
+  PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
+
+  PictureLayerTiling* tiling =
+      tiling_set->AddTiling(gfx::AxisTransform2d(), raster_source);
+  tiling->set_resolution(HIGH_RESOLUTION);
+  tiling->CreateAllTilesForTesting();
+  tiling->SetTilePriorityRectsForTesting(
+      gfx::Rect(layer_bounds),   // Visible rect.
+      gfx::Rect(layer_bounds),   // Skewport rect.
+      gfx::Rect(layer_bounds),   // Soon rect.
+      gfx::Rect(layer_bounds));  // Eventually rect.
+
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  FlushDecodeTasks();
+  EXPECT_TRUE(host_impl()
+                  ->tile_manager()
+                  ->checker_image_tracker()
+                  .has_locked_decodes_for_testing());
+  CleanUpTileManager();
+  EXPECT_FALSE(host_impl()
+                   ->tile_manager()
+                   ->checker_image_tracker()
+                   .has_locked_decodes_for_testing());
+  EXPECT_TRUE(
+      host_impl()->tile_manager()->TakeImagesToInvalidateOnSyncTree().empty());
 }
 
 class CheckerImagingTileManagerMemoryTest

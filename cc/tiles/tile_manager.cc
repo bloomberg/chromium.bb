@@ -403,6 +403,10 @@ void TileManager::FinishTasksAndCleanUp() {
   ready_to_draw_callback_weak_ptr_factory_.InvalidateWeakPtrs();
   raster_buffer_provider_ = nullptr;
 
+  // Ask the tracker to drop any locked decodes since we will be destroying the
+  // decode cache.
+  bool can_clear_decode_policy_tracking = false;
+  checker_image_tracker_.ClearTracker(can_clear_decode_policy_tracking);
   image_controller_.SetImageDecodeCache(nullptr);
   locked_image_tasks_.clear();
 }

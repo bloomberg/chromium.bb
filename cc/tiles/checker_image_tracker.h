@@ -66,6 +66,10 @@ class CC_EXPORT CheckerImageTracker {
   // raster.
   void DisallowCheckeringForImage(const PaintImage& image);
 
+  bool has_locked_decodes_for_testing() const {
+    return !image_id_to_decode_.empty();
+  }
+
  private:
   enum class DecodePolicy {
     // The image can be decoded asynchronously from raster. When set, the image
