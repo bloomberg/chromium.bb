@@ -44,7 +44,7 @@ class AwCookieStoreWrapper : public net::CookieStore {
   void SetCookieWithOptionsAsync(const GURL& url,
                                  const std::string& cookie_line,
                                  const net::CookieOptions& options,
-                                 const SetCookiesCallback& callback) override;
+                                 SetCookiesCallback callback) override;
   void SetCookieWithDetailsAsync(const GURL& url,
                                  const std::string& name,
                                  const std::string& value,
@@ -57,34 +57,33 @@ class AwCookieStoreWrapper : public net::CookieStore {
                                  bool http_only,
                                  net::CookieSameSite same_site,
                                  net::CookiePriority priority,
-                                 const SetCookiesCallback& callback) override;
+                                 SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<net::CanonicalCookie> cookie,
                                bool secure_source,
                                bool modify_http_only,
-                               const SetCookiesCallback& callback) override;
+                               SetCookiesCallback callback) override;
   void GetCookiesWithOptionsAsync(const GURL& url,
                                   const net::CookieOptions& options,
-                                  const GetCookiesCallback& callback) override;
-  void GetCookieListWithOptionsAsync(
-      const GURL& url,
-      const net::CookieOptions& options,
-      const GetCookieListCallback& callback) override;
-  void GetAllCookiesAsync(const GetCookieListCallback& callback) override;
+                                  GetCookiesCallback callback) override;
+  void GetCookieListWithOptionsAsync(const GURL& url,
+                                     const net::CookieOptions& options,
+                                     GetCookieListCallback callback) override;
+  void GetAllCookiesAsync(GetCookieListCallback callback) override;
   void DeleteCookieAsync(const GURL& url,
                          const std::string& cookie_name,
-                         const base::Closure& callback) override;
+                         base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const net::CanonicalCookie& cookie,
-                                  const DeleteCallback& callback) override;
+                                  DeleteCallback callback) override;
   void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
                                     const base::Time& delete_end,
-                                    const DeleteCallback& callback) override;
+                                    DeleteCallback callback) override;
   void DeleteAllCreatedBetweenWithPredicateAsync(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       const CookiePredicate& predicate,
-      const DeleteCallback& callback) override;
-  void DeleteSessionCookiesAsync(const DeleteCallback& callback) override;
-  void FlushStore(const base::Closure& callback) override;
+      DeleteCallback callback) override;
+  void DeleteSessionCookiesAsync(DeleteCallback callback) override;
+  void FlushStore(base::OnceClosure callback) override;
   void SetForceKeepSessionState() override;
   std::unique_ptr<CookieChangedSubscription> AddCallbackForCookie(
       const GURL& url,
@@ -93,7 +92,7 @@ class AwCookieStoreWrapper : public net::CookieStore {
   bool IsEphemeral() override;
 
  private:
-  // Used by CreateWrappedCallback below. Takes an arugment of Type and posts
+  // Used by CreateWrappedCallback below. Takes an argument of Type and posts
   // a task to |task_runner| to invoke |callback| with that argument. If
   // |weak_cookie_store| is deleted before the task is run, the task will not
   // be run.
@@ -101,33 +100,35 @@ class AwCookieStoreWrapper : public net::CookieStore {
   static void RunCallbackOnClientThread(
       base::TaskRunner* task_runner,
       base::WeakPtr<AwCookieStoreWrapper> weak_cookie_store,
-      base::Callback<void(Type)> callback,
+      base::OnceCallback<void(Type)> callback,
       Type argument) {
     task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&AwCookieStoreWrapper::RunClosureCallback, weak_cookie_store,
-                   base::Bind(callback, argument)));
+        base::BindOnce(&AwCookieStoreWrapper::RunClosureCallback,
+                       weak_cookie_store,
+                       base::BindOnce(std::move(callback), argument)));
   }
 
   // Returns a base::Callback that takes an argument of Type and posts a task to
   // the |client_task_runner_| to invoke |callback| with that argument.
   template <class Type>
-  base::Callback<void(Type)> CreateWrappedCallback(
-      base::Callback<void(Type)> callback) {
+  base::OnceCallback<void(Type)> CreateWrappedCallback(
+      base::OnceCallback<void(Type)> callback) {
     if (callback.is_null())
-      return callback;
-    return base::Bind(&AwCookieStoreWrapper::RunCallbackOnClientThread<Type>,
-                      base::RetainedRef(client_task_runner_),
-                      weak_factory_.GetWeakPtr(), callback);
+      return std::move(callback);
+    return base::BindOnce(
+        &AwCookieStoreWrapper::RunCallbackOnClientThread<Type>,
+        base::RetainedRef(client_task_runner_), weak_factory_.GetWeakPtr(),
+        std::move(callback));
   }
 
-  // Returns a base::Closure that posts a task to the |client_task_runner_| to
-  // invoke |callback|.
-  base::Closure CreateWrappedClosureCallback(const base::Closure& callback);
+  // Returns a base::OnceClosure that posts a task to the |client_task_runner_|
+  // to invoke |callback|.
+  base::OnceClosure CreateWrappedClosureCallback(base::OnceClosure callback);
 
   // Runs |callback|. Used to prevent callbacks from being invoked after the
   // AwCookieStoreWrapper has been destroyed.
-  void RunClosureCallback(const base::Closure& callback);
+  void RunClosureCallback(base::OnceClosure callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 

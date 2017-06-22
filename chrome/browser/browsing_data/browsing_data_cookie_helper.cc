@@ -128,9 +128,8 @@ size_t CannedBrowsingDataCookieHelper::GetCookieCount() const {
   return count;
 }
 
-
 void CannedBrowsingDataCookieHelper::StartFetching(
-    const net::CookieStore::GetCookieListCallback& callback) {
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::CookieList cookie_list;
   for (const auto& pair : origin_cookie_set_map_) {
