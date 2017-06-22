@@ -39,7 +39,7 @@
         <structure type="chrome_scaled_image" name="IDR_ALLOWED_PLUGINS" file="common/allowed_plugins.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_POPUPS" file="common/allowed_popups.png" />
-      <structure type="chrome_scaled_image" name="IDR_ALLOWED_SUBRESOURCE_FILTER" file="common/allowed_subresource_filter.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_ADS" file="common/allowed_ads.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_USB" file="common/allowed_usb.png" />
       <if expr="enable_app_list and _google_chrome">
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH" file="google_chrome/google_logo_voice_search.png" />
@@ -89,7 +89,7 @@
         <structure type="chrome_scaled_image" name="IDR_BLOCKED_PLUGINS" file="common/blocked_plugins.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_POPUPS" file="common/blocked_popups.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLOCKED_SUBRESOURCE_FILTER" file="common/blocked_subresource_filter.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_ADS" file="common/blocked_ads.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_USB" file="common/blocked_usb.png" />
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_BLUETOOTH_KEYBOARD" file="cros/bluetooth_pairing_keyboard.png" />
