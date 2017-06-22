@@ -100,6 +100,22 @@ var testParams = [
   }
 ];
 
+test(() => {
+  assert_throws(new TypeError(), () => { new CSSRotation(); });
+  assert_throws(new TypeError(), () => { new CSSRotation(null); });
+  // Wrong number of arguments.
+  assert_throws(new TypeError(), () => {
+    new CSSRotation(1, 2, new CSSUnitValue(10, 'deg'));
+  });
+  // Length instead of angle.
+  assert_throws(new TypeError(), () => {
+    new CSSRotation(new CSSUnitValue(10, 'px'));
+  });
+  assert_throws(new TypeError(), () => {
+    new CSSRotation(1, 2, 3, new CSSUnitValue(10, 'px'));
+  });
+}, "Invalid arguments to constructor should throw");
+
 for (let params of testParams) {
   test(() => {
     assert_equals(params.input.angle.value, params.angle);
