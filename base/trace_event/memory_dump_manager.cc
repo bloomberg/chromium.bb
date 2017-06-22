@@ -50,26 +50,7 @@ namespace trace_event {
 
 namespace {
 
-StaticAtomicSequenceNumber g_next_guid;
 MemoryDumpManager* g_instance_for_testing = nullptr;
-
-// Callback wrapper to hook upon the completion of RequestGlobalDump() and
-// inject trace markers.
-void OnGlobalDumpDone(GlobalMemoryDumpCallback wrapped_callback,
-                      uint64_t dump_guid,
-                      bool success) {
-  char guid_str[20];
-  sprintf(guid_str, "0x%" PRIx64, dump_guid);
-  TRACE_EVENT_NESTABLE_ASYNC_END2(MemoryDumpManager::kTraceCategory,
-                                  "GlobalMemoryDump", TRACE_ID_LOCAL(dump_guid),
-                                  "dump_guid", TRACE_STR_COPY(guid_str),
-                                  "success", success);
-
-  if (!wrapped_callback.is_null()) {
-    wrapped_callback.Run(dump_guid, success);
-    wrapped_callback.Reset();
-  }
-}
 
 void FillOsDumpFromProcessMemoryDump(
     const ProcessMemoryDump* pmd,
@@ -81,14 +62,18 @@ void FillOsDumpFromProcessMemoryDump(
   }
 }
 
-void OnPeakDetected(MemoryDumpLevelOfDetail level_of_detail) {
-  MemoryDumpManager::GetInstance()->RequestGlobalDump(
-      MemoryDumpType::PEAK_MEMORY_USAGE, level_of_detail);
-}
-
-void OnPeriodicSchedulerTick(MemoryDumpLevelOfDetail level_of_detail) {
-  MemoryDumpManager::GetInstance()->RequestGlobalDump(
-      MemoryDumpType::PERIODIC_INTERVAL, level_of_detail);
+// Temporary (until peak detector and scheduler are moved outside of here)
+// trampoline function to match the |request_dump_function| passed to Initialize
+// to the callback expected by MemoryPeakDetector and MemoryDumpScheduler.
+// TODO(primiano): remove this.
+void DoGlobalDumpWithoutCallback(
+    MemoryDumpManager::RequestGlobalDumpFunction global_dump_fn,
+    MemoryDumpType dump_type,
+    MemoryDumpLevelOfDetail level_of_detail) {
+  // The actual dump_guid will be set by service. TODO(primiano): remove
+  // guid from the request args API.
+  MemoryDumpRequestArgs args{0 /* dump_guid */, dump_type, level_of_detail};
+  global_dump_fn.Run(args);
 }
 
 }  // namespace
@@ -134,8 +119,6 @@ MemoryDumpManager::MemoryDumpManager()
       tracing_process_id_(kInvalidTracingProcessId),
       dumper_registrations_ignored_for_testing_(false),
       heap_profiling_enabled_(false) {
-  g_next_guid.GetNext();  // Make sure that first guid is not zero.
-
   // At this point the command line may not be initialized but we try to
   // enable the heap profiler to capture allocations as soon as possible.
   EnableHeapProfilingIfNeeded();
@@ -402,35 +385,6 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
   dump_providers_.erase(mdp_iter);
 }
 
-void MemoryDumpManager::RequestGlobalDump(
-    MemoryDumpType dump_type,
-    MemoryDumpLevelOfDetail level_of_detail,
-    const GlobalMemoryDumpCallback& callback) {
-  if (!is_initialized()) {
-    VLOG(1) << "RequestGlobalDump() FAIL: MemoryDumpManager is not initialized";
-    if (!callback.is_null())
-      callback.Run(0u /* guid */, false /* success */);
-    return;
-  }
-
-  const uint64_t guid =
-      TraceLog::GetInstance()->MangleEventId(g_next_guid.GetNext());
-
-  // Creates an async event to keep track of the global dump evolution.
-  // The |wrapped_callback| will generate the ASYNC_END event and then invoke
-  // the real |callback| provided by the caller.
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
-      kTraceCategory, "GlobalMemoryDump", TRACE_ID_LOCAL(guid), "dump_type",
-      MemoryDumpTypeToString(dump_type), "level_of_detail",
-      MemoryDumpLevelOfDetailToString(level_of_detail));
-  GlobalMemoryDumpCallback wrapped_callback = Bind(&OnGlobalDumpDone, callback);
-
-  // The embedder will coordinate the IPC broadcast and at some point invoke
-  // CreateProcessDump() to get a dump for the current process.
-  MemoryDumpRequestArgs args = {guid, dump_type, level_of_detail};
-  request_dump_function_.Run(args, wrapped_callback);
-}
-
 void MemoryDumpManager::GetDumpProvidersForPolling(
     std::vector<scoped_refptr<MemoryDumpProviderInfo>>* providers) {
   DCHECK(providers->empty());
@@ -439,13 +393,6 @@ void MemoryDumpManager::GetDumpProvidersForPolling(
     if (mdp->options.is_fast_polling_supported)
       providers->push_back(mdp);
   }
-}
-
-void MemoryDumpManager::RequestGlobalDump(
-    MemoryDumpType dump_type,
-    MemoryDumpLevelOfDetail level_of_detail) {
-  auto noop_callback = [](uint64_t dump_guid, bool success) {};
-  RequestGlobalDump(dump_type, level_of_detail, Bind(noop_callback));
 }
 
 bool MemoryDumpManager::IsDumpProviderRegisteredForTesting(
@@ -811,7 +758,9 @@ void MemoryDumpManager::SetupForTracing(
   for (const auto& trigger : memory_dump_config.triggers) {
     if (trigger.trigger_type == MemoryDumpType::PERIODIC_INTERVAL) {
       if (periodic_config.triggers.empty()) {
-        periodic_config.callback = BindRepeating(&OnPeriodicSchedulerTick);
+        periodic_config.callback =
+            BindRepeating(&DoGlobalDumpWithoutCallback, request_dump_function_,
+                          MemoryDumpType::PERIODIC_INTERVAL);
       }
       periodic_config.triggers.push_back(
           {trigger.level_of_detail, trigger.min_time_between_dumps_ms});
@@ -823,7 +772,9 @@ void MemoryDumpManager::SetupForTracing(
           BindRepeating(&MemoryDumpManager::GetDumpProvidersForPolling,
                         Unretained(this)),
           GetOrCreateBgTaskRunnerLocked(),
-          BindRepeating(&OnPeakDetected, trigger.level_of_detail));
+          BindRepeating(&DoGlobalDumpWithoutCallback, request_dump_function_,
+                        MemoryDumpType::PEAK_MEMORY_USAGE,
+                        trigger.level_of_detail));
 
       MemoryPeakDetector::Config peak_config;
       peak_config.polling_interval_ms = 10;
@@ -836,7 +787,10 @@ void MemoryDumpManager::SetupForTracing(
       // gives a good reference point for analyzing the trace.
       if (is_coordinator_) {
         GetOrCreateBgTaskRunnerLocked()->PostTask(
-            FROM_HERE, BindRepeating(&OnPeakDetected, trigger.level_of_detail));
+            FROM_HERE,
+            BindRepeating(&DoGlobalDumpWithoutCallback, request_dump_function_,
+                          MemoryDumpType::PEAK_MEMORY_USAGE,
+                          trigger.level_of_detail));
       }
     }
   }

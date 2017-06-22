@@ -21,6 +21,7 @@ ACTION_P(RunClosure, closure) {
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::Ne;
 using ::testing::NotNull;
 using ::testing::NiceMock;
 
@@ -113,11 +114,11 @@ class MockGlobalMemoryDumpCallback {
 // Tests that the global dump is acked even in absence of clients.
 TEST_F(CoordinatorImplTest, NoClients) {
   base::trace_event::MemoryDumpRequestArgs args = {
-      1234, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(1234U, true, NotNull()));
+  EXPECT_CALL(callback, OnCall(Ne(0u), true, NotNull()));
   RequestGlobalMemoryDump(args, callback.Get());
 }
 
@@ -132,11 +133,11 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
   EXPECT_CALL(client_process_2, RequestProcessMemoryDump(_, _)).Times(1);
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      2345, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(2345U, true, NotNull()))
+  EXPECT_CALL(callback, OnCall(Ne(0u), true, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -148,7 +149,7 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
   base::RunLoop run_loop;
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      3456, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
   auto client_process_1 = base::MakeUnique<NiceMock<MockClientProcess>>(this);
@@ -180,7 +181,7 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
           }));
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(3456U, false, NotNull()))
+  EXPECT_CALL(callback, OnCall(Ne(0u), false, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();

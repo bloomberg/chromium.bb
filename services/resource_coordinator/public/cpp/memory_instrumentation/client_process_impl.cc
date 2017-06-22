@@ -46,8 +46,9 @@ ClientProcessImpl::ClientProcessImpl(const Config& config)
   bool is_coordinator_process =
       config.process_type == mojom::ProcessType::BROWSER;
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
-      base::BindRepeating(&ClientProcessImpl::RequestGlobalMemoryDump,
-                          base::Unretained(this)),
+      base::BindRepeating(
+          &ClientProcessImpl::RequestGlobalMemoryDump_NoCallback,
+          base::Unretained(this)),
       is_coordinator_process);
 }
 
@@ -83,62 +84,17 @@ void ClientProcessImpl::OnProcessMemoryDumpDone(
   callback.Run(dump_guid, success, std::move(process_memory_dump));
 }
 
-void ClientProcessImpl::RequestGlobalMemoryDump(
-    const base::trace_event::MemoryDumpRequestArgs& args,
-    const base::trace_event::GlobalMemoryDumpCallback& callback) {
-  // Note: This condition is here to match the old behavior. If the delegate is
-  // in the browser process, we do not drop parallel requests in the delegate
-  // and so they will be queued by the Coordinator service (see
-  // CoordinatorImpl::RequestGlobalMemoryDump). If the delegate is in a child
-  // process, parallel requests will be cancelled.
-  //
-  // TODO(primiano): Remove all this boilerplate. There should be no need of
-  // any lock, proxy, callback adaption or early out. The service is able to
-  // deal with queueing.
-  if (task_runner_) {
-    auto callback_proxy =
-        base::Bind(&ClientProcessImpl::MemoryDumpCallbackProxy,
-                   base::Unretained(this), callback);
+void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
+    const base::trace_event::MemoryDumpRequestArgs& args) {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&mojom::Coordinator::RequestGlobalMemoryDump,
-                   base::Unretained(coordinator_.get()), args, callback_proxy));
+        base::Bind(&ClientProcessImpl::RequestGlobalMemoryDump_NoCallback,
+                   base::Unretained(this), args));
     return;
   }
-
-  bool early_out_because_of_another_dump_pending = false;
-  {
-    base::AutoLock lock(pending_memory_dump_guid_lock_);
-    if (pending_memory_dump_guid_)
-      early_out_because_of_another_dump_pending = true;
-    else
-      pending_memory_dump_guid_ = args.dump_guid;
-  }
-  if (early_out_because_of_another_dump_pending) {
-    callback.Run(args.dump_guid, false);
-    return;
-  }
-
-  auto callback_proxy = base::Bind(&ClientProcessImpl::MemoryDumpCallbackProxy,
-                                   base::Unretained(this), callback);
-  coordinator_->RequestGlobalMemoryDump(args, callback_proxy);
-}
-
-void ClientProcessImpl::MemoryDumpCallbackProxy(
-    const base::trace_event::GlobalMemoryDumpCallback& callback,
-    uint64_t dump_guid,
-    bool success,
-    mojom::GlobalMemoryDumpPtr) {
-  {
-    base::AutoLock lock(pending_memory_dump_guid_lock_);
-    pending_memory_dump_guid_ = 0;
-  }
-
-  // The GlobalMemoryDumpPtr argument is ignored. The actual data of the dump
-  // is exposed only through the service and is not passed back to base.
-  // TODO(primiano): All these roundtrips are transitional until we move all
-  // the clients of memory-infra to use directly the service. crbug.com/720352 .
-  callback.Run(dump_guid, success);
+  coordinator_->RequestGlobalMemoryDump(
+      args, mojom::Coordinator::RequestGlobalMemoryDumpCallback());
 }
 
 ClientProcessImpl::Config::Config(service_manager::Connector* connector,

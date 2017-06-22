@@ -66,7 +66,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
   scoped_refptr<base::SingleThreadTaskRunner> connector_task_runner_;
   base::ThreadLocalStorage::Slot tls_coordinator_;
   const std::string service_name_;
-  uint64_t dump_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInstrumentation);
 };

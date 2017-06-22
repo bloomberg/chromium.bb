@@ -36,8 +36,7 @@ MemoryInstrumentation::MemoryInstrumentation(
     : connector_(connector),
       connector_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       tls_coordinator_(&DestroyCoordinatorTLS),
-      service_name_(service_name),
-      dump_id_() {
+      service_name_(service_name) {
   DCHECK(connector_task_runner_);
 }
 
@@ -56,8 +55,7 @@ void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(
     if (callback)
       callback.Run(success, dump_id);
   };
-  // TODO(primiano): get rid of dump_id. It should be a return-only argument.
-  base::trace_event::MemoryDumpRequestArgs args = {++dump_id_, dump_type,
+  base::trace_event::MemoryDumpRequestArgs args = {0, dump_type,
                                                    level_of_detail};
   coordinator->RequestGlobalMemoryDump(args,
                                        base::Bind(callback_adapter, callback));
@@ -73,9 +71,8 @@ MemoryInstrumentation::GetCoordinatorBindingForCurrentThread() {
     mojom::CoordinatorRequest coordinator_req = mojo::MakeRequest(coordinator);
 
     // The connector is not thread safe and BindInterface must be called on its
-    // own thread. Thankfully, the binding can happen *after* having started
-    // invoking methos on the |coordinator| proxy objects, as requests will be
-    // internally queued by Mojo and flushed when the BindInterface() happens.
+    // own thread. Thankfully, the binding can happen _after_ having started
+    // invoking methods on the |coordinator| proxy objects.
     connector_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(

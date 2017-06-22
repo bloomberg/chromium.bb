@@ -108,7 +108,7 @@ struct BASE_EXPORT MemoryDumpCallbackResult {
 };
 
 using GlobalMemoryDumpCallback =
-    Callback<void(uint64_t dump_guid, bool success)>;
+    Callback<void(bool success, uint64_t dump_guid)>;
 
 using ProcessMemoryDumpCallback =
     Callback<void(uint64_t dump_guid,

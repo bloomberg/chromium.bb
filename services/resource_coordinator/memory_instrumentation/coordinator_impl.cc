@@ -4,6 +4,9 @@
 
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 
+#include <inttypes.h>
+#include <stdio.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "base/trace_event/trace_event.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/constants.mojom.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -80,7 +84,7 @@ CoordinatorImpl* CoordinatorImpl::GetInstance() {
 }
 
 CoordinatorImpl::CoordinatorImpl(service_manager::Connector* connector)
-    : failed_memory_dump_count_(0) {
+    : failed_memory_dump_count_(0), next_dump_id_(0) {
   process_map_ = base::MakeUnique<ProcessMap>(connector);
   DCHECK(!g_coordinator_impl);
   g_coordinator_impl = this;
@@ -105,10 +109,16 @@ void CoordinatorImpl::BindCoordinatorRequest(
 }
 
 void CoordinatorImpl::RequestGlobalMemoryDump(
-    const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::trace_event::MemoryDumpRequestArgs& args_in,
     const RequestGlobalMemoryDumpCallback& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool another_dump_already_in_progress = !queued_memory_dump_requests_.empty();
+
+  // TODO(primiano): remove dump_guid from the request. For the moment callers
+  // should just pass a zero |dump_guid| in input. It should be an out-only arg.
+  DCHECK_EQ(0u, args_in.dump_guid);
+  base::trace_event::MemoryDumpRequestArgs args = args_in;
+  args.dump_guid = ++next_dump_id_;
 
   // If this is a periodic or peak memory dump request and there already is
   // another request in the queue with the same level of detail, there's no
@@ -176,9 +186,15 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   const base::trace_event::MemoryDumpRequestArgs& args =
       queued_memory_dump_requests_.front().args;
 
-  // No need to treat the service process different than other processes. The
-  // service process will register itself as a ClientProcess and
-  // will be treated like other client processes.
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
+      base::trace_event::MemoryDumpManager::kTraceCategory, "GlobalMemoryDump",
+      TRACE_ID_LOCAL(args.dump_guid), "dump_type",
+      base::trace_event::MemoryDumpTypeToString(args.dump_type),
+      "level_of_detail",
+      base::trace_event::MemoryDumpLevelOfDetailToString(args.level_of_detail));
+
+  // Note: the service process itself is registered as a ClientProcess and
+  // will be treated like any other process for the sake of memory dumps.
   pending_clients_for_current_dump_.clear();
   failed_memory_dump_count_ = 0;
   for (const auto& kv : clients_) {
@@ -250,7 +266,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     return;
 
   DCHECK(!queued_memory_dump_requests_.empty());
-  QueuedMemoryDumpRequest& request = queued_memory_dump_requests_.front();
+  QueuedMemoryDumpRequest* request = &queued_memory_dump_requests_.front();
 
   // Reconstruct a map of pid -> ProcessMemoryDump by reassembling the responses
   // received by the clients for this dump. In some cases the response coming
@@ -260,7 +276,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   // opening /proc pseudo files.
 
   std::map<base::ProcessId, OSMemDump> os_dumps;
-  for (auto& result : request.process_memory_dumps) {
+  for (auto& result : request->process_memory_dumps) {
     const base::ProcessId pid = result.first;
     const OSMemDump dump = result.second->os_dump;
 
@@ -279,7 +295,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   }
 
   std::map<base::ProcessId, mojom::ProcessMemoryDumpPtr> finalized_pmds;
-  for (auto& result : request.process_memory_dumps) {
+  for (auto& result : request->process_memory_dumps) {
     const base::ProcessId pid = result.first;
     mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
     if (!pmd)
@@ -303,10 +319,19 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     global_dump->process_dumps.push_back(std::move(pmd));
   }
 
-  const auto& callback = request.callback;
+  const auto& callback = request->callback;
   const bool global_success = failed_memory_dump_count_ == 0;
-  callback.Run(request.args.dump_guid, global_success, std::move(global_dump));
+  callback.Run(request->args.dump_guid, global_success, std::move(global_dump));
+
+  char guid_str[20];
+  sprintf(guid_str, "0x%" PRIx64, request->args.dump_guid);
+  TRACE_EVENT_NESTABLE_ASYNC_END2(
+      base::trace_event::MemoryDumpManager::kTraceCategory, "GlobalMemoryDump",
+      TRACE_ID_LOCAL(request->args.dump_guid), "dump_guid",
+      TRACE_STR_COPY(guid_str), "success", global_success);
+
   queued_memory_dump_requests_.pop_front();
+  request = nullptr;
 
   // Schedule the next queued dump (if applicable).
   if (!queued_memory_dump_requests_.empty()) {
