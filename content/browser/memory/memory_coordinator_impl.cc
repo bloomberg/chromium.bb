@@ -273,11 +273,6 @@ bool MemoryCoordinatorImpl::TryToPurgeMemoryFromChild(int render_process_id) {
   return true;
 }
 
-void MemoryCoordinatorImpl::RecordMemoryPressure(
-    base::MemoryPressureMonitor::MemoryPressureLevel level) {
-  // TODO(bashi): Record memory pressure level.
-}
-
 MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
   return browser_memory_state_;
 }

@@ -51,6 +51,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/page_importance_signals.h"
 
 #if defined(OS_CHROMEOS)
@@ -190,9 +191,11 @@ void TabManager::Start() {
         this, &TabManager::RecordRecentTabDiscard);
   }
   start_time_ = NowTicks();
-  // Create a |MemoryPressureListener| to listen for memory events.
+  // Create a |MemoryPressureListener| to listen for memory events when
+  // MemoryCoordinator is disabled. When MemoryCoordinator is enabled
+  // it asks TabManager to do tab discarding.
   base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
-  if (monitor) {
+  if (monitor && !base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     memory_pressure_listener_.reset(new base::MemoryPressureListener(
         base::Bind(&TabManager::OnMemoryPressure, base::Unretained(this))));
     base::MemoryPressureListener::MemoryPressureLevel level =
