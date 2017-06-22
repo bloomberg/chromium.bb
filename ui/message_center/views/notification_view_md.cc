@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -31,6 +32,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -58,6 +60,10 @@ const SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
 // Max number of lines for message_view_.
 constexpr int kMaxLinesForMessageView = 1;
 constexpr int kMaxLinesForExpandedMessageView = 4;
+
+constexpr int kCompactTitleMessageViewSpacing = 12;
+
+constexpr int kProgressBarHeight = 4;
 
 const gfx::ImageSkia CreateSolidColorImage(int width,
                                            int height,
@@ -125,6 +131,81 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
 
 ItemView::~ItemView() {}
 
+// CompactTitleMessageView /////////////////////////////////////////////////////
+
+// CompactTitleMessageView shows notification title and message in a single
+// line. This view is used for NOTIFICATION_TYPE_PROGRESS.
+class CompactTitleMessageView : public views::View {
+ public:
+  explicit CompactTitleMessageView();
+  ~CompactTitleMessageView() override;
+
+  void OnPaint(gfx::Canvas* canvas) override;
+
+  void set_title(const base::string16& title) { title_ = title; }
+  void set_message(const base::string16& message) { message_ = message; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CompactTitleMessageView);
+
+  base::string16 title_;
+  base::string16 message_;
+
+  views::Label* title_view_ = nullptr;
+  views::Label* message_view_ = nullptr;
+};
+
+CompactTitleMessageView::~CompactTitleMessageView() {}
+
+CompactTitleMessageView::CompactTitleMessageView() {
+  SetLayoutManager(new views::FillLayout());
+
+  const gfx::FontList& font_list = views::Label().font_list().Derive(
+      1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+
+  title_view_ = new views::Label();
+  title_view_->SetFontList(font_list);
+  title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_view_->SetEnabledColor(message_center::kRegularTextColor);
+  AddChildView(title_view_);
+
+  message_view_ = new views::Label();
+  message_view_->SetFontList(font_list);
+  message_view_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  message_view_->SetEnabledColor(message_center::kDimTextColor);
+  AddChildView(message_view_);
+}
+
+void CompactTitleMessageView::OnPaint(gfx::Canvas* canvas) {
+  base::string16 title = title_;
+  base::string16 message = message_;
+
+  const gfx::FontList& font_list = views::Label().font_list().Derive(
+      1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+
+  // Elides title and message. The behavior is based on Android's one.
+  // * If the title is too long, only the title is shown.
+  // * If the message is too long, the full content of the title is shown,
+  //   kCompactTitleMessageViewSpacing is added between them, and the elided
+  //   message is shown.
+  // * If they are short enough, the title is left-aligned and the message is
+  //   right-aligned.
+  const int original_title_width =
+      gfx::Canvas::GetStringWidthF(title, font_list);
+  if (original_title_width >= width())
+    message.clear();
+  title = gfx::ElideText(title, font_list, width(), gfx::ELIDE_TAIL);
+  const int title_width = gfx::Canvas::GetStringWidthF(title, font_list);
+  const int message_width =
+      std::max(0, width() - title_width - kCompactTitleMessageViewSpacing);
+  message = gfx::ElideText(message, font_list, message_width, gfx::ELIDE_TAIL);
+
+  title_view_->SetText(title);
+  message_view_->SetText(message);
+
+  views::View::OnPaint(canvas);
+}
+
 }  // anonymous namespace
 
 // ////////////////////////////////////////////////////////////
@@ -166,6 +247,7 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateContextTitleView(notification);
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
+  CreateOrUpdateCompactTitleMessageView(notification);
   CreateOrUpdateProgressBarView(notification);
   CreateOrUpdateListItemViews(notification);
   CreateOrUpdateIconView(notification);
@@ -339,6 +421,11 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
 
 void NotificationViewMD::CreateOrUpdateTitleView(
     const Notification& notification) {
+  if (notification.type() == NOTIFICATION_TYPE_PROGRESS) {
+    left_content_->RemoveChildView(title_view_);
+    title_view_ = nullptr;
+    return;
+  }
   const gfx::FontList& font_list = views::Label().font_list().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
 
@@ -360,8 +447,9 @@ void NotificationViewMD::CreateOrUpdateTitleView(
 
 void NotificationViewMD::CreateOrUpdateMessageView(
     const Notification& notification) {
-  if (notification.message().empty()) {
-    // Deletion will also remove |context_message_view_| from its parent.
+  if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
+      notification.message().empty()) {
+    // Deletion will also remove |message_view_| from its parent.
     delete message_view_;
     message_view_ = nullptr;
     return;
@@ -386,9 +474,43 @@ void NotificationViewMD::CreateOrUpdateMessageView(
   message_view_->SetVisible(notification.items().empty());
 }
 
+void NotificationViewMD::CreateOrUpdateCompactTitleMessageView(
+    const Notification& notification) {
+  if (notification.type() != NOTIFICATION_TYPE_PROGRESS) {
+    left_content_->RemoveChildView(compact_title_message_view_);
+    compact_title_message_view_ = nullptr;
+    return;
+  }
+  if (!compact_title_message_view_) {
+    compact_title_message_view_ = new CompactTitleMessageView();
+    left_content_->AddChildView(compact_title_message_view_);
+  }
+
+  compact_title_message_view_->set_title(notification.title());
+  compact_title_message_view_->set_message(notification.message());
+  left_content_->InvalidateLayout();
+}
+
 void NotificationViewMD::CreateOrUpdateProgressBarView(
     const Notification& notification) {
-  // TODO(yoshiki): Implement this.
+  if (notification.type() != NOTIFICATION_TYPE_PROGRESS) {
+    left_content_->RemoveChildView(progress_bar_view_);
+    progress_bar_view_ = nullptr;
+    return;
+  }
+
+  DCHECK(left_content_);
+
+  if (!progress_bar_view_) {
+    progress_bar_view_ = new views::ProgressBar(kProgressBarHeight,
+                                                /* allow_round_corner */ false);
+    progress_bar_view_->SetBorder(views::CreateEmptyBorder(
+        message_center::kProgressBarTopPadding, 0, 0, 0));
+    left_content_->AddChildView(progress_bar_view_);
+  }
+
+  progress_bar_view_->SetValue(notification.progress() / 100.0);
+  progress_bar_view_->SetVisible(notification.items().empty());
 }
 
 void NotificationViewMD::CreateOrUpdateListItemViews(
@@ -412,6 +534,13 @@ void NotificationViewMD::CreateOrUpdateListItemViews(
 
 void NotificationViewMD::CreateOrUpdateIconView(
     const Notification& notification) {
+  if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
+      notification.type() == NOTIFICATION_TYPE_MULTIPLE) {
+    right_content_->RemoveChildView(icon_view_);
+    icon_view_ = nullptr;
+    return;
+  }
+
   gfx::Size image_view_size(30, 30);
   if (!icon_view_) {
     icon_view_ = new ProportionalImageView(image_view_size);

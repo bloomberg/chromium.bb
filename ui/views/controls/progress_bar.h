@@ -21,7 +21,8 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
  public:
   // The preferred height parameter makes it easier to use a ProgressBar with
   // layout managers that size to preferred size.
-  explicit ProgressBar(int preferred_height = 5);
+  explicit ProgressBar(int preferred_height = 5,
+                       bool allow_round_corner = true);
   ~ProgressBar() override;
 
   // Overridden from View:
@@ -59,6 +60,8 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
 
   // In DP, the preferred height of this progress bar.
   const int preferred_height_;
+
+  const bool allow_round_corner_;
 
   std::unique_ptr<gfx::LinearAnimation> indeterminate_bar_animation_;
 

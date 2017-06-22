@@ -17,6 +17,7 @@
 namespace views {
 class Label;
 class LabelButton;
+class ProgressBar;
 }
 
 namespace message_center {
@@ -24,6 +25,10 @@ namespace message_center {
 class BoundedLabel;
 class NotificationHeaderView;
 class ProportionalImageView;
+
+namespace {
+class CompactTitleMessageView;
+}
 
 // View that displays all current types of notification (web, basic, image, and
 // list) except the custom notification. Future notification types may be
@@ -63,6 +68,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void CreateOrUpdateContextTitleView(const Notification& notification);
   void CreateOrUpdateTitleView(const Notification& notification);
   void CreateOrUpdateMessageView(const Notification& notification);
+  void CreateOrUpdateCompactTitleMessageView(const Notification& notification);
   void CreateOrUpdateProgressBarView(const Notification& notification);
   void CreateOrUpdateListItemViews(const Notification& notification);
   void CreateOrUpdateIconView(const Notification& notification);
@@ -99,6 +105,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   ProportionalImageView* image_view_ = nullptr;
   std::vector<views::LabelButton*> action_buttons_;
   std::vector<views::View*> item_views_;
+  views::ProgressBar* progress_bar_view_ = nullptr;
+  CompactTitleMessageView* compact_title_message_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMD);
 };
