@@ -2765,6 +2765,22 @@
             ]
         }
     ],
+    "SearchEnginePromo": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SearchEnginePromo.ExistingDevice",
+                        "SearchEnginePromo.NewDevice"
+                    ]
+                }
+            ]
+        }
+    ],
     "SearchGeolocationConsistency": [
         {
             "platforms": [
