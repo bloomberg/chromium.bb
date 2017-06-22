@@ -77,7 +77,7 @@
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/ntp_snippets/breaking_news/content_suggestions_gcm_app_handler.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
@@ -463,7 +463,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   MediaStreamDevicesController::RegisterProfilePrefs(registry);
   NetHttpSessionParamsObserver::RegisterProfilePrefs(registry);
   NotifierStateTracker::RegisterProfilePrefs(registry);
-  ntp_snippets::ContentSuggestionsGCMAppHandler::RegisterProfilePrefs(registry);
+  ntp_snippets::BreakingNewsGCMAppHandler::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_snippets::ForeignSessionsSuggestionsProvider::RegisterProfilePrefs(
       registry);

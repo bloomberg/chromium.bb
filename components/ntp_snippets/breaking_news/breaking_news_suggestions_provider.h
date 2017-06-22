@@ -11,7 +11,7 @@
 #include "components/prefs/pref_registry_simple.h"
 
 namespace ntp_snippets {
-class ContentSuggestionsGCMAppHandler;
+class BreakingNewsGCMAppHandler;
 }
 
 namespace base {
@@ -26,7 +26,7 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
  public:
   BreakingNewsSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
-      std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler,
+      std::unique_ptr<BreakingNewsGCMAppHandler> gcm_app_handler,
       std::unique_ptr<base::Clock> clock,
       std::unique_ptr<RemoteSuggestionsDatabase> database);
   ~BreakingNewsSuggestionsProvider() override;
@@ -67,7 +67,7 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
   void NotifyNewSuggestions(
       std::vector<std::unique_ptr<RemoteSuggestion>> suggestions);
 
-  std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler_;
+  std::unique_ptr<BreakingNewsGCMAppHandler> gcm_app_handler_;
   std::unique_ptr<base::Clock> clock_;
 
   // The database for persisting suggestions.

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/time/clock.h"
-#include "components/ntp_snippets/breaking_news/content_suggestions_gcm_app_handler.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
@@ -17,7 +17,7 @@ namespace ntp_snippets {
 
 BreakingNewsSuggestionsProvider::BreakingNewsSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
-    std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler,
+    std::unique_ptr<BreakingNewsGCMAppHandler> gcm_app_handler,
     std::unique_ptr<base::Clock> clock,
     std::unique_ptr<RemoteSuggestionsDatabase> database)
     : ContentSuggestionsProvider(observer),

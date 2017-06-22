@@ -38,8 +38,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_suggestions_provider.h"
-#include "components/ntp_snippets/breaking_news/content_suggestions_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
@@ -96,9 +96,9 @@ using content::BrowserThread;
 using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::BookmarkSuggestionsProvider;
+using ntp_snippets::BreakingNewsGCMAppHandler;
 using ntp_snippets::BreakingNewsSuggestionsProvider;
 using ntp_snippets::CategoryRanker;
-using ntp_snippets::ContentSuggestionsGCMAppHandler;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::GetFetchEndpoint;
@@ -398,7 +398,7 @@ void SubscribeForGCMPushUpdates(PrefService* pref_service,
   DCHECK(instance_id_profile_service);
   DCHECK(instance_id_profile_service->driver());
 
-  auto handler = base::MakeUnique<ContentSuggestionsGCMAppHandler>(
+  auto handler = base::MakeUnique<BreakingNewsGCMAppHandler>(
       gcm_driver, instance_id_profile_service->driver(), pref_service,
       std::move(subscription_manager),
       base::Bind(&safe_json::SafeJsonParser::Parse));
