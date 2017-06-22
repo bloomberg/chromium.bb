@@ -31,12 +31,6 @@
 NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
     @"JavaScriptDialogTextFieldAccessibiltyIdentifier";
 
-namespace {
-// The hostname to use for JavaScript alerts when there is no valid hostname in
-// the URL passed to |+localizedTitleForJavaScriptAlertFromPage:type:|.
-const char kAboutNullHostname[] = "about:null";
-}  // namespace
-
 @interface DialogPresenter () {
   // Queue of WebStates which correspond to the keys in
   // |_dialogCoordinatorsForWebStates|.
@@ -356,11 +350,16 @@ const char kAboutNullHostname[] = "about:null";
 }
 
 + (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL {
+  NSString* localizedTitle = nil;
   NSString* hostname = base::SysUTF8ToNSString(pageURL.host());
-  if (!hostname.length)
-    hostname = base::SysUTF8ToNSString(kAboutNullHostname);
-  return l10n_util::GetNSStringF(IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
-                                 base::SysNSStringToUTF16(hostname));
+  if (!hostname.length) {
+    localizedTitle = l10n_util::GetNSString(
+        IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
+  } else {
+    localizedTitle = l10n_util::GetNSStringF(
+        IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
+  }
+  return localizedTitle;
 }
 
 #pragma mark - Private methods.
