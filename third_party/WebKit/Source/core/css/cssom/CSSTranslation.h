@@ -24,13 +24,13 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   // Constructors defined in the IDL.
   static CSSTranslation* Create(CSSNumericValue* x,
                                 CSSNumericValue* y,
-                                ExceptionState&) {
-    return new CSSTranslation(x, y, nullptr);
-  }
-  static CSSTranslation* Create(CSSNumericValue* x,
-                                CSSNumericValue* y,
                                 CSSNumericValue* z,
                                 ExceptionState&);
+  static CSSTranslation* Create(CSSNumericValue* x,
+                                CSSNumericValue* y,
+                                ExceptionState& exception_state) {
+    return Create(x, y, nullptr, exception_state);
+  }
 
   // Blink-internal ways of creating CSSTranslations.
   static CSSTranslation* FromCSSValue(const CSSFunctionValue& value) {
