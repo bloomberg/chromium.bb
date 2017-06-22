@@ -81,8 +81,7 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
 TEST_VIEW(AutocompleteTextFieldCellTest, view_);
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
-// Flaky, disabled. Bug http://crbug.com/49522
-TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
+TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   [view_ display];
 
   // Test focused drawing.
