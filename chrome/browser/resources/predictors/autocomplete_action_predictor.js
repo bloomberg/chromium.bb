@@ -12,7 +12,7 @@ function requestAutocompleteActionPredictorDb() {
 /**
  * Callback from backend with the database contents. Sets up some globals and
  * calls to create the UI.
- * @param {Dictionary} database Information about AutocompleteActionPredictor
+ * @param {Object} database Information about AutocompleteActionPredictor
  *     including the database as a flattened list, a boolean indicating if the
  *     system is enabled and the current hit weight.
  */
@@ -30,7 +30,7 @@ function updateAutocompleteActionPredictorDb(database) {
 
 /**
  * Updates the table from the database.
- * @param {Dictionary} database Information about AutocompleteActionPredictor
+ * @param {Object} database Information about AutocompleteActionPredictor
  *     including the database as a flattened list, a boolean indicating if the
  *     system is enabled and the current hit weight.
  */

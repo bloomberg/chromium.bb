@@ -97,20 +97,27 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
   dict.SetBoolean("enabled", enabled);
 
   if (enabled) {
-    // Url Database cache.
-    auto db = base::MakeUnique<base::ListValue>();
     auto* resource_prefetch_predictor =
         loading_predictor_->resource_prefetch_predictor();
+    // URL table cache.
+    auto db = base::MakeUnique<base::ListValue>();
     AddPrefetchDataMapToListValue(
         *resource_prefetch_predictor->url_resource_data_->data_cache_,
         db.get());
     dict.Set("url_db", std::move(db));
 
+    // Host table cache.
     db = base::MakeUnique<base::ListValue>();
     AddPrefetchDataMapToListValue(
         *resource_prefetch_predictor->host_resource_data_->data_cache_,
         db.get());
     dict.Set("host_db", std::move(db));
+
+    // Origin table cache.
+    db = base::MakeUnique<base::ListValue>();
+    AddOriginDataMapToListValue(
+        *resource_prefetch_predictor->origin_data_->data_cache_, db.get());
+    dict.Set("origin_db", std::move(db));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("updateResourcePrefetchPredictorDb",
@@ -121,12 +128,11 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
     const std::map<std::string, predictors::PrefetchData>& data_map,
     base::ListValue* db) const {
   for (const auto& p : data_map) {
-    std::unique_ptr<base::DictionaryValue> main(new base::DictionaryValue());
+    auto main = base::MakeUnique<base::DictionaryValue>();
     main->SetString("main_frame_url", p.first);
     auto resources = base::MakeUnique<base::ListValue>();
     for (const predictors::ResourceData& r : p.second.resources()) {
-      std::unique_ptr<base::DictionaryValue> resource(
-          new base::DictionaryValue());
+      auto resource = base::MakeUnique<base::DictionaryValue>();
       resource->SetString("resource_url", r.resource_url());
       resource->SetString("resource_type",
                           ConvertResourceType(r.resource_type()));
@@ -146,6 +152,31 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
       resources->Append(std::move(resource));
     }
     main->Set("resources", std::move(resources));
+    db->Append(std::move(main));
+  }
+}
+
+void PredictorsHandler::AddOriginDataMapToListValue(
+    const std::map<std::string, predictors::OriginData>& data_map,
+    base::ListValue* db) const {
+  for (const auto& p : data_map) {
+    auto main = base::MakeUnique<base::DictionaryValue>();
+    main->SetString("main_frame_host", p.first);
+    auto origins = base::MakeUnique<base::ListValue>();
+    for (const predictors::OriginStat& o : p.second.origins()) {
+      auto origin = base::MakeUnique<base::DictionaryValue>();
+      origin->SetString("origin", o.origin());
+      origin->SetInteger("number_of_hits", o.number_of_hits());
+      origin->SetInteger("number_of_misses", o.number_of_misses());
+      origin->SetInteger("consecutive_misses", o.consecutive_misses());
+      origin->SetDouble("position", o.average_position());
+      origin->SetBoolean("always_access_network", o.always_access_network());
+      origin->SetBoolean("accessed_network", o.accessed_network());
+      origin->SetDouble("score",
+                        ResourcePrefetchPredictorTables::ComputeOriginScore(o));
+      origins->Append(std::move(origin));
+    }
+    main->Set("origins", std::move(origins));
     db->Append(std::move(main));
   }
 }
