@@ -1757,6 +1757,8 @@ static void daala_dist_sub8x8_txfm_rd(MACROBLOCK *x, BLOCK_SIZE bsize,
 
   args->rd_stats.rdcost = rd;
   args->this_rd = rd;
+
+  if (args->this_rd > args->best_rd) args->exit_early = 1;
 }
 #endif  // CONFIG_DAALA_DIST
 
