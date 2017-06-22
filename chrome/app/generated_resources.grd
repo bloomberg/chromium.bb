@@ -6429,7 +6429,10 @@ I don't think this site should be blocked!
         <message name="IDS_CHROME_CLEANUP_WEBUI_FOOTER_POWERED_BY" desc="Branding footer on the web page for Chrome Cleanup. COMPANY_NAME is the name of a technology service that Chrome uses to remove harmful software from the user's computer. It is not necessary to translate 'powered by' literally; use an appropriate word for your language to convey the meaning of 'uses'. A similar use in other Google products is 'Powered by Google Translate.'">
           Powered by <ph name="COMPANY_NAME">$1<ex>Google</ex></ph>
         </message>
-        <message name="IDS_CHROME_CLEANUP_WEBUI_LINK_SHOW_FILES" desc="A link, appearing on the Chrome Cleanup web page, that user can click to show the files that will be removed. Imperative.">
+        <message name="IDS_CHROME_CLEANUP_WEBUI_LINK_LEARN_MORE" desc="A link, appearing on the Chrome Cleanup web page, that the user can click to open a Help Center article that explains the Chrome Cleanup Tool, the data it sends to Google, why the data is collected, how it is used, and how to enable or disable data collection. Imperative.">
+          Learn more
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_LINK_SHOW_FILES" desc="A link, appearing on the Chrome Cleanup web page, that the user can click to show the files that will be removed. Imperative.">
           Show files to be removed
         </message>
         <message name="IDS_CHROME_CLEANUP_WEBUI_REMOVE_BUTTON_LABEL" desc="Button on the Chrome Cleanup web page. Allows users to start a cleanup of unwanted software on their computer and restore browser settings to default values. 'Remove' is imperative.">
