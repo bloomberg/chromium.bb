@@ -35,6 +35,13 @@ const HeapVector<Member<DocumentMarker>>& TextMatchMarkerListImpl::GetMarkers()
   return markers_;
 }
 
+HeapVector<Member<DocumentMarker>>
+TextMatchMarkerListImpl::MarkersIntersectingRange(unsigned start_offset,
+                                                  unsigned end_offset) const {
+  return DocumentMarkerListEditor::MarkersIntersectingRange(
+      markers_, start_offset, end_offset);
+}
+
 bool TextMatchMarkerListImpl::MoveMarkers(int length,
                                           DocumentMarkerList* dst_list) {
   return DocumentMarkerListEditor::MoveMarkers(&markers_, length, dst_list);
