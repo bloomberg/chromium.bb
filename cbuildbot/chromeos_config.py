@@ -2455,7 +2455,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('nyan_big',       'nyan_kitty',     None),            # nyan (K1)
     (None,             None,             None),            # auron (BDW)
     ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (RK3288)
-    (None,             None,             'cyan'),          # strago (BSW)
+    ('wizpig',         None,             'cyan'),          # strago (BSW)
     ('cave',           'sentry',         'caroline'),      # glados (SKL)
     ('elm',            None,             'hana'),          # oak (MTK8173)
     (None,             None,             'kevin'),         # gru (RK3399)
