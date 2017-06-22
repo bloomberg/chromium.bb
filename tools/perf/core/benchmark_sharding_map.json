@@ -1992,8 +1992,7 @@
         "system_health.memory_desktop",
         "thread_times.key_mobile_sites_smooth",
         "thread_times.key_silk_cases",
-        "tracing.tracing_with_debug_overhead",
-        "v8.runtime_stats.top_25"
+        "tracing.tracing_with_debug_overhead"
       ]
     },
     "build149-m1": {
@@ -2005,7 +2004,6 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
-        "page_cycler_v2.basic_oopif",
         "page_cycler_v2.intl_ar_fa_he",
         "power.idle_platform",
         "rasterize_and_record_micro.key_silk_cases",
@@ -2041,6 +2039,7 @@
         "image_decoding.image_decoding_measurement",
         "memory.dual_browser_test",
         "memory.long_running_idle_gmail_background_tbmv2",
+        "page_cycler_v2.basic_oopif",
         "page_cycler_v2.intl_hi_ru",
         "page_cycler_v2.intl_ja_zh",
         "page_cycler_v2.top_10_mobile",
@@ -2095,7 +2094,8 @@
         "system_health.webview_startup_multiprocess",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc",
-        "v8.mobile_infinite_scroll-classic_tbmv2"
+        "v8.mobile_infinite_scroll-classic_tbmv2",
+        "v8.runtime_stats.top_25"
       ]
     },
     "build152-m1": {
@@ -2490,8 +2490,7 @@
         "system_health.memory_desktop",
         "thread_times.key_mobile_sites_smooth",
         "thread_times.key_silk_cases",
-        "tracing.tracing_with_debug_overhead",
-        "v8.runtime_stats.top_25"
+        "tracing.tracing_with_debug_overhead"
       ]
     },
     "build124-b1": {
@@ -2558,7 +2557,8 @@
         "v8.browsing_desktop_turbo",
         "v8.infinite_scroll-turbo_tbmv2",
         "v8.runtimestats.browsing_desktop_classic",
-        "v8.runtimestats.browsing_desktop_turbo"
+        "v8.runtimestats.browsing_desktop_turbo",
+        "v8.runtime_stats.top_25"
       ]
     },
     "build126-b1": {
