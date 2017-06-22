@@ -127,6 +127,10 @@ void LogFileCleanupStatus(FileCleanupReason reason,
                           int failed_cleanups,
                           int external_cleanups);
 
+// Logs the case where the final downloaded file path turned out different from
+// the file path set at the beginning.
+void LogFilePathsAreStrangelyDifferent();
+
 }  // namespace stats
 }  // namespace download
 

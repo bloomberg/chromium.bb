@@ -31,8 +31,7 @@ class TestDownloadDriver : public DownloadDriver {
   // Simulates download events from content layer.
   void NotifyDownloadUpdate(const DriverEntry& entry);
   void NotifyDownloadFailed(const DriverEntry& entry, int reason);
-  void NotifyDownloadSucceeded(const DriverEntry& entry,
-                               const base::FilePath& path);
+  void NotifyDownloadSucceeded(const DriverEntry& entry);
 
   // DownloadDriver implementation.
   void Initialize(DownloadDriver::Client* client) override;
@@ -40,6 +39,7 @@ class TestDownloadDriver : public DownloadDriver {
   void Start(
       const RequestParams& params,
       const std::string& guid,
+      const base::FilePath& file_path,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
   void Remove(const std::string& guid) override;
   void Pause(const std::string& guid) override;
