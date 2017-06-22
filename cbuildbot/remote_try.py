@@ -44,6 +44,30 @@ class ValidationError(Exception):
   """Thrown when tryjob validation fails."""
 
 
+def DefaultDescription(description_branch='master', patches=None):
+  """Calculate the default description for a tryjob.
+
+  Args:
+    description_branch: String name of branch to build.
+    patches: List of strings describing all patches includes.
+             Usually based on raw command line values.
+
+  Returns:
+    str
+  """
+  result = ''
+  if description_branch != 'master':
+    result += '[%s] ' % description_branch
+
+  if patches:
+    result += ','.join(patches[:RemoteTryJob.MAX_PATCHES_IN_DESCRIPTION])
+    if len(patches) > RemoteTryJob.MAX_PATCHES_IN_DESCRIPTION:
+      remaining_patches = len(patches) - RemoteTryJob.MAX_PATCHES_IN_DESCRIPTION
+      result += '... (%d more CLs)' % (remaining_patches,)
+
+  return result
+
+
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
   EXTERNAL_URL = os.path.join(site_config.params.EXTERNAL_GOB_URL,
@@ -81,42 +105,40 @@ class RemoteTryJob(object):
                                  '[buildbucket_bucket:%s] '
                                  'with [config:%s] [buildbucket_id:%s].')
 
-  def __init__(self, options, bots, local_patches):
+  def __init__(self, bots, local_patches,
+               pass_through_args,
+               cache_dir,
+               remote_description,
+               committer_email=None,
+               use_buildbucket=True,
+               slaves=None):
     """Construct the object.
 
     Args:
-      options: The parsed options passed into cbuildbot.
       bots: A list of configs to run tryjobs for.
       local_patches: A list of LocalPatch objects.
+      pass_through_args: Command line arguments to pass to cbuildbot in job.
+      cache_dir: Cache directory used to hold manifest_versions checkout.
+      remote_description: Requested tryjob description.
+      committer_email: Email address of person requesting job, or None.
+      use_buildbucket: use buildbucket for scheduling?
+      slaves: Specific requested slaves for the job or []
     """
-    self.options = options
-    self.use_buildbucket = options.use_buildbucket
+    self.use_buildbucket = use_buildbucket
     self.user = getpass.getuser()
-    self.repo_cache = cache.DiskCache(self.options.cache_dir)
+    self.repo_cache = cache.DiskCache(cache_dir)
     cwd = os.path.dirname(os.path.realpath(__file__))
-    if options.committer_email is not None:
-      self.user_email = options.committer_email
+    if committer_email is not None:
+      self.user_email = committer_email
     else:
       self.user_email = git.GetProjectUserEmail(cwd)
     logging.info('Using email:%s', self.user_email)
     # Name of the job that appears on the waterfall.
-    patch_list = options.gerrit_patches + options.local_patches
-    self.name = options.remote_description
-    if self.name is None:
-      self.name = ''
-      if options.branch != 'master':
-        self.name = '[%s] ' % options.branch
-
-      self.name += ','.join(patch_list[:self.MAX_PATCHES_IN_DESCRIPTION])
-      if len(patch_list) > self.MAX_PATCHES_IN_DESCRIPTION:
-        remaining_patches = len(patch_list) - self.MAX_PATCHES_IN_DESCRIPTION
-        self.name += '... (%d more CLs)' % (remaining_patches,)
-
+    self.name = remote_description
     self.bots = bots[:]
-    self.slaves_request = options.slaves
-    self.description = ('name: %s\n patches: %s\nbots: %s' %
-                        (self.name, patch_list, self.bots))
-    self.extra_args = options.pass_through_args
+    self.slaves_request = slaves or []
+    self.description = ('name: %s' % self.name)
+    self.extra_args = pass_through_args
     if '--buildbot' not in self.extra_args:
       self.extra_args.append('--remote-trybot')
 
@@ -125,12 +147,10 @@ class RemoteTryJob(object):
     self.local_patches = local_patches
     self.repo_url = self.EXTERNAL_URL
     self.cache_key = ('trybot',)
-    self.manifest = None
-    if repository.IsARepoRoot(options.sourceroot):
-      self.manifest = git.ManifestCheckout.Cached(options.sourceroot)
-      if repository.IsInternalRepoCheckout(options.sourceroot):
-        self.repo_url = self.INTERNAL_URL
-        self.cache_key = ('trybot-internal',)
+    self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
+    if repository.IsInternalRepoCheckout(constants.SOURCE_ROOT):
+      self.repo_url = self.INTERNAL_URL
+      self.cache_key = ('trybot-internal',)
 
   @property
   def values(self):

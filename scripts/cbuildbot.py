@@ -1135,7 +1135,19 @@ def main(argv):
 
     print('Submitting tryjob...')
     with _SetupConnections(options, build_config):
-      tryjob = remote_try.RemoteTryJob(options, args, patch_pool.local_patches)
+      description = options.remote_description
+      if description is None:
+        description = remote_try.DefaultDescription(
+            options.branch,
+            options.gerrit_patches+options.local_patches)
+
+      tryjob = remote_try.RemoteTryJob(args, patch_pool.local_patches,
+                                       options.pass_through_args,
+                                       options.cache_dir,
+                                       description,
+                                       options.committer_email,
+                                       options.use_buildbucket,
+                                       options.slaves)
       tryjob.Submit(testjob=options.test_tryjob, dryrun=False)
     print('Tryjob submitted!')
     print(('Go to %s to view the status of your job.'
