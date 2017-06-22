@@ -58,6 +58,8 @@ static_library("content_shell_lib") {
     "app/shell_main_delegate_mac.mm",
     "browser/layout_test/blink_test_controller.cc",
     "browser/layout_test/blink_test_controller.h",
+    "browser/layout_test/devtools_protocol_test_bindings.cc",
+    "browser/layout_test/devtools_protocol_test_bindings.h",
     "browser/layout_test/layout_test_bluetooth_adapter_provider.cc",
     "browser/layout_test/layout_test_bluetooth_adapter_provider.h",
     "browser/layout_test/layout_test_bluetooth_chooser_factory.cc",

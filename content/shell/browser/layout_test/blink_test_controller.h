@@ -38,6 +38,7 @@ class SkBitmap;
 
 namespace content {
 
+class DevToolsProtocolTestBindings;
 class LayoutTestBluetoothChooserFactory;
 class LayoutTestDevToolsBindings;
 class RenderFrameHost;
@@ -240,6 +241,8 @@ class BlinkTestController : public WebContentsObserver,
   Shell* devtools_window_;
 
   std::unique_ptr<LayoutTestDevToolsBindings> devtools_bindings_;
+  std::unique_ptr<DevToolsProtocolTestBindings>
+      devtools_protocol_test_bindings_;
 
   // The PID of the render process of the render view host of main_window_.
   int current_pid_;
