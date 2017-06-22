@@ -31,6 +31,8 @@
 #ifndef WTF_ByteOrder_h
 #define WTF_ByteOrder_h
 
+#include "platform/wtf/build_config.h"
+
 #if OS(POSIX)
 #include <arpa/inet.h>
 #endif

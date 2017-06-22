@@ -22,7 +22,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/SharedBuffer.h"
 #include "platform/fonts/opentype/OpenTypeTypes.h"
 #include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,43 +33,43 @@ struct TestTable : OpenType::TableBase {
   OpenType::Int16 ascender;
 
   template <typename T>
-  const T* ValidateOffset(const SharedBuffer& buffer, uint16_t offset) const {
+  const T* ValidateOffset(const Vector<char>& buffer, uint16_t offset) const {
     return TableBase::ValidateOffset<T>(buffer, offset);
   }
 };
 
 TEST(OpenTypeVerticalDataTest, ValidateTableTest) {
-  RefPtr<SharedBuffer> buffer = SharedBuffer::Create(sizeof(TestTable));
+  Vector<char> buffer(sizeof(TestTable));
   const TestTable* table = OpenType::ValidateTable<TestTable>(buffer);
   EXPECT_TRUE(table);
 
-  buffer = SharedBuffer::Create(sizeof(TestTable) - 1);
+  buffer = Vector<char>(sizeof(TestTable) - 1);
   table = OpenType::ValidateTable<TestTable>(buffer);
   EXPECT_FALSE(table);
 
-  buffer = SharedBuffer::Create(sizeof(TestTable) + 1);
+  buffer = Vector<char>(sizeof(TestTable) + 1);
   table = OpenType::ValidateTable<TestTable>(buffer);
   EXPECT_TRUE(table);
 }
 
 TEST(OpenTypeVerticalDataTest, ValidateOffsetTest) {
-  RefPtr<SharedBuffer> buffer = SharedBuffer::Create(sizeof(TestTable));
+  Vector<char> buffer(sizeof(TestTable));
   const TestTable* table = OpenType::ValidateTable<TestTable>(buffer);
   ASSERT_TRUE(table);
 
   // Test overflow
-  EXPECT_FALSE(table->ValidateOffset<uint8_t>(*buffer, 0xFFFF));
+  EXPECT_FALSE(table->ValidateOffset<uint8_t>(buffer, 0xFFFF));
 
   // uint8_t is valid for all offsets
   for (uint16_t offset = 0; offset < sizeof(TestTable); offset++)
-    EXPECT_TRUE(table->ValidateOffset<uint8_t>(*buffer, offset));
-  EXPECT_FALSE(table->ValidateOffset<uint8_t>(*buffer, sizeof(TestTable)));
-  EXPECT_FALSE(table->ValidateOffset<uint8_t>(*buffer, sizeof(TestTable) + 1));
+    EXPECT_TRUE(table->ValidateOffset<uint8_t>(buffer, offset));
+  EXPECT_FALSE(table->ValidateOffset<uint8_t>(buffer, sizeof(TestTable)));
+  EXPECT_FALSE(table->ValidateOffset<uint8_t>(buffer, sizeof(TestTable) + 1));
 
   // For uint16_t, the last byte is invalid
   for (uint16_t offset = 0; offset < sizeof(TestTable) - 1; offset++)
-    EXPECT_TRUE(table->ValidateOffset<uint16_t>(*buffer, offset));
-  EXPECT_FALSE(table->ValidateOffset<uint16_t>(*buffer, sizeof(TestTable) - 1));
+    EXPECT_TRUE(table->ValidateOffset<uint16_t>(buffer, offset));
+  EXPECT_FALSE(table->ValidateOffset<uint16_t>(buffer, sizeof(TestTable) - 1));
 }
 
 }  // namespace blink
