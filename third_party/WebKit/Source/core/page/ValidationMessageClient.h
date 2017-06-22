@@ -32,7 +32,6 @@
 
 namespace blink {
 
-class Document;
 class Element;
 
 class ValidationMessageClient : public GarbageCollectedMixin {
@@ -55,9 +54,6 @@ class ValidationMessageClient : public GarbageCollectedMixin {
   // Returns true if the validation message for the specified anchor element
   // is visible.
   virtual bool IsValidationMessageVisible(const Element& anchor) = 0;
-
-  virtual void WillUnloadDocument(const Document&) = 0;
-  virtual void DocumentDetached(const Document&) = 0;
 
   virtual void WillBeDestroyed() = 0;
 

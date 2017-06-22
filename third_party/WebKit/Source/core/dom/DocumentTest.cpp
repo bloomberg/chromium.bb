@@ -294,12 +294,8 @@ class MockValidationMessageClient
   MockValidationMessageClient() { Reset(); }
   void Reset() {
     show_validation_message_was_called = false;
-    will_unload_document_was_called = false;
-    document_detached_was_called = false;
   }
   bool show_validation_message_was_called;
-  bool will_unload_document_was_called;
-  bool document_detached_was_called;
 
   // ValidationMessageClient functions.
   void ShowValidationMessage(const Element& anchor,
@@ -312,12 +308,6 @@ class MockValidationMessageClient
   void HideValidationMessage(const Element& anchor) override {}
   bool IsValidationMessageVisible(const Element& anchor) override {
     return true;
-  }
-  void WillUnloadDocument(const Document&) override {
-    will_unload_document_was_called = true;
-  }
-  void DocumentDetached(const Document&) override {
-    document_detached_was_called = true;
   }
   void WillBeDestroyed() override {}
 
@@ -826,8 +816,6 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
 
   // prepareForCommit() unloads the document, and shutdown.
   GetDocument().GetFrame()->PrepareForCommit();
-  EXPECT_TRUE(mock_client->will_unload_document_was_called);
-  EXPECT_TRUE(mock_client->document_detached_was_called);
   // Unload handler tried to show a validation message, but it should fail.
   EXPECT_FALSE(mock_client->show_validation_message_was_called);
 
