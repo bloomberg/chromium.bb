@@ -20,7 +20,8 @@ const char kDefaultGoogleApisBaseUrl[] = "https://www.googleapis.com";
 // API calls from accounts.google.com
 const char kClientLoginUrlSuffix[] = "ClientLogin";
 const char kServiceLoginUrlSuffix[] = "ServiceLogin";
-const char kEmbeddedSetupChromeOsUrlSuffix[] = "embedded/setup/chromeos";
+const char kEmbeddedSetupChromeOsUrlSuffixV1[] = "embedded/setup/chromeos";
+const char kEmbeddedSetupChromeOsUrlSuffixV2[] = "embedded/setup/v2/chromeos";
 const char kServiceLoginAuthUrlSuffix[] = "ServiceLoginAuth";
 const char kServiceLogoutUrlSuffix[] = "Logout";
 const char kIssueAuthTokenUrlSuffix[] = "IssueAuthToken";
@@ -97,8 +98,10 @@ GaiaUrls::GaiaUrls() {
   // URLs from accounts.google.com.
   client_login_url_ = gaia_url_.Resolve(kClientLoginUrlSuffix);
   service_login_url_ = gaia_url_.Resolve(kServiceLoginUrlSuffix);
-  embedded_setup_chromeos_url_ =
-      gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffix);
+  embedded_setup_chromeos_url_v1_ =
+      gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffixV1);
+  embedded_setup_chromeos_url_v2_ =
+      gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffixV2);
   service_login_auth_url_ = gaia_url_.Resolve(kServiceLoginAuthUrlSuffix);
   service_logout_url_ = gaia_url_.Resolve(kServiceLogoutUrlSuffix);
   issue_auth_token_url_ = gaia_url_.Resolve(kIssueAuthTokenUrlSuffix);
@@ -160,8 +163,13 @@ const GURL& GaiaUrls::service_login_url() const {
   return service_login_url_;
 }
 
-const GURL& GaiaUrls::embedded_setup_chromeos_url() const {
-  return embedded_setup_chromeos_url_;
+const GURL& GaiaUrls::embedded_setup_chromeos_url(unsigned version) const {
+  DCHECK_GT(version, 0U);
+  DCHECK_LE(version, 2U);
+  if (version == 2U)
+    return embedded_setup_chromeos_url_v2_;
+
+  return embedded_setup_chromeos_url_v1_;
 }
 
 
