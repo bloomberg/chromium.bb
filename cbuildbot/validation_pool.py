@@ -391,12 +391,16 @@ class ValidationPool(object):
     for helper in self._helper_pool:
       changes = helper.Query(gerrit_query, sort='lastUpdated')
       changes.reverse()
+      logging.info('Queried changes: %s', cros_patch.GetChangesAsString(
+          changes))
 
       if ready_fn:
         # The query passed in may include a dictionary of flags to use for
         # revalidating the query results. We need to do this because Gerrit
         # caches are sometimes stale and need sanity checking.
         changes = [x for x in changes if ready_fn(x)]
+        logging.info('Ready changes: %s', cros_patch.GetChangesAsString(
+            changes))
 
       # Tell users to publish drafts before marking them commit ready.
       for change in changes:

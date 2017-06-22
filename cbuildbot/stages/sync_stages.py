@@ -1719,7 +1719,11 @@ class PreCQLauncherStage(SyncStage):
         c: clactions.GetCLPreCQStatusAndTime(c, action_history)
         for c in changes}
     status_map = {c: v[0] for c, v in status_and_timestamp_map.items()}
-    logging.info('Processing status map: %s', status_map)
+
+    status_map_str = ''
+    for change, status in status_map.iteritems():
+      status_map_str += '%s: %s, ' % (change.PatchLink(), status)
+    logging.info('Processing status_map: %s', status_map_str)
 
     # Filter out failed speculative changes.
     changes = [c for c in changes if status_map[c] != constants.CL_STATUS_FAILED
@@ -1727,8 +1731,11 @@ class PreCQLauncherStage(SyncStage):
 
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
     busy, inflight, verified = clactions.GetPreCQCategories(progress_map)
-    logging.info('Changes in busy: %s\nChanges in inflight: %s\nChanges in '
-                 'verified: %s', busy, inflight, verified)
+    logging.info('Changes in busy: %s.\nChanges in inflight: %s.\nChanges in '
+                 'verified: %s.',
+                 cros_patch.GetChangesAsString(busy),
+                 cros_patch.GetChangesAsString(inflight),
+                 cros_patch.GetChangesAsString(verified))
 
     current_db_time = db.GetTime()
 
