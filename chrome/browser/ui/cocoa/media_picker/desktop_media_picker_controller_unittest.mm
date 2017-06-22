@@ -78,23 +78,30 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
   void SetUp() override {
     CocoaTest::SetUp();
 
-    screen_list_ = new FakeDesktopMediaList();
-    window_list_ = new FakeDesktopMediaList();
-    tab_list_ = new FakeDesktopMediaList();
+    std::vector<DesktopMediaID::Type> source_types = {
+        DesktopMediaID::TYPE_SCREEN, DesktopMediaID::TYPE_WINDOW,
+        DesktopMediaID::TYPE_WEB_CONTENTS};
+
+    screen_list_ = new FakeDesktopMediaList(DesktopMediaID::TYPE_SCREEN);
+    window_list_ = new FakeDesktopMediaList(DesktopMediaID::TYPE_WINDOW);
+    tab_list_ = new FakeDesktopMediaList(DesktopMediaID::TYPE_WEB_CONTENTS);
+
+    std::vector<std::unique_ptr<DesktopMediaList>> source_lists;
+    source_lists.push_back(std::unique_ptr<DesktopMediaList>(screen_list_));
+    source_lists.push_back(std::unique_ptr<DesktopMediaList>(window_list_));
+    source_lists.push_back(std::unique_ptr<DesktopMediaList>(tab_list_));
 
     DesktopMediaPicker::DoneCallback callback =
         base::Bind(&DesktopMediaPickerControllerTest::OnResult,
                    base::Unretained(this));
 
     controller_.reset([[DesktopMediaPickerController alloc]
-        initWithScreenList:std::unique_ptr<DesktopMediaList>(screen_list_)
-                windowList:std::unique_ptr<DesktopMediaList>(window_list_)
-                   tabList:std::unique_ptr<DesktopMediaList>(tab_list_)
-                    parent:nil
-                  callback:callback
-                   appName:base::ASCIIToUTF16("Screenshare Test")
-                targetName:base::ASCIIToUTF16("https://foo.com")
-              requestAudio:true]);
+        initWithSourceLists:std::move(source_lists)
+                     parent:nil
+                   callback:callback
+                    appName:base::ASCIIToUTF16("Screenshare Test")
+                 targetName:base::ASCIIToUTF16("https://foo.com")
+               requestAudio:true]);
   }
 
   void TearDown() override {

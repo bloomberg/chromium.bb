@@ -20,20 +20,16 @@ void DesktopMediaPickerCocoa::Show(
     gfx::NativeWindow parent,
     const base::string16& app_name,
     const base::string16& target_name,
-    std::unique_ptr<DesktopMediaList> screen_list,
-    std::unique_ptr<DesktopMediaList> window_list,
-    std::unique_ptr<DesktopMediaList> tab_list,
+    std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
     bool request_audio,
     const DoneCallback& done_callback) {
   controller_.reset([[DesktopMediaPickerController alloc]
-      initWithScreenList:std::move(screen_list)
-              windowList:std::move(window_list)
-                 tabList:std::move(tab_list)
-                  parent:parent
-                callback:done_callback
-                 appName:app_name
-              targetName:target_name
-            requestAudio:request_audio]);
+      initWithSourceLists:std::move(source_lists)
+                   parent:parent
+                 callback:done_callback
+                  appName:app_name
+               targetName:target_name
+             requestAudio:request_audio]);
   [controller_ showWindow:nil];
 }
 
