@@ -265,6 +265,19 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
+    'Win10 Release (Intel HD 630)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:5912',
+          'os': 'Windows-10',
+        },
+      ],
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'win',
+    },
     'Win10 Debug (Intel HD 530)': {
       'swarming_dimensions': [
         {
@@ -1403,7 +1416,7 @@ COMMON_GTESTS = {
   },
   # Face and barcode detection unit tests, which currently only run on
   # Mac OS, and require physical hardware.
-  'service_unittests': {
+  'services_unittests': {
     'tester_configs': [
       {
         # Run this on the FYI waterfall and optional tryservers.
