@@ -192,9 +192,8 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
 
   for (const KURL& complete_url : completed_urls) {
     RefPtr<WorkerScriptLoader> script_loader(WorkerScriptLoader::Create());
-    script_loader->SetRequestContext(WebURLRequest::kRequestContextScript);
     script_loader->LoadSynchronously(
-        execution_context, complete_url,
+        execution_context, complete_url, WebURLRequest::kRequestContextScript,
         execution_context.GetSecurityContext().AddressSpace());
 
     // If the fetching attempt failed, throw a NetworkError exception and

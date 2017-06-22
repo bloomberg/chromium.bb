@@ -61,7 +61,8 @@ bool InProcessWorkerBase::Initialize(ExecutionContext* context,
 
   script_loader_ = WorkerScriptLoader::Create();
   script_loader_->LoadAsynchronously(
-      *context, script_url, fetch_request_mode, fetch_credentials_mode,
+      *context, script_url, WebURLRequest::kRequestContextWorker,
+      fetch_request_mode, fetch_credentials_mode,
       context->GetSecurityContext().AddressSpace(),
       WTF::Bind(&InProcessWorkerBase::OnResponse, WrapPersistent(this)),
       WTF::Bind(&InProcessWorkerBase::OnFinished, WrapPersistent(this)));

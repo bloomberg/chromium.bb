@@ -51,7 +51,6 @@ namespace blink {
 WorkerScriptLoader::WorkerScriptLoader()
     : response_callback_(nullptr),
       finished_callback_(nullptr),
-      request_context_(WebURLRequest::kRequestContextWorker),
       response_address_space_(kWebAddressSpacePublic) {}
 
 WorkerScriptLoader::~WorkerScriptLoader() {
@@ -66,11 +65,16 @@ WorkerScriptLoader::~WorkerScriptLoader() {
 void WorkerScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
+    WebURLRequest::RequestContext request_context,
     WebAddressSpace creation_address_space) {
   url_ = url;
   execution_context_ = &execution_context;
 
-  ResourceRequest request(CreateResourceRequest(creation_address_space));
+  ResourceRequest request(url);
+  request.SetHTTPMethod(HTTPNames::GET);
+  request.SetExternalRequestStateFromRequestorAddressSpace(
+      creation_address_space);
+  request.SetRequestContext(request_context);
   request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeInclude);
 
   SECURITY_DCHECK(execution_context.IsWorkerGlobalScope());
@@ -91,6 +95,7 @@ void WorkerScriptLoader::LoadSynchronously(
 void WorkerScriptLoader::LoadAsynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
+    WebURLRequest::RequestContext request_context,
     WebURLRequest::FetchRequestMode fetch_request_mode,
     WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
     WebAddressSpace creation_address_space,
@@ -102,7 +107,11 @@ void WorkerScriptLoader::LoadAsynchronously(
   url_ = url;
   execution_context_ = &execution_context;
 
-  ResourceRequest request(CreateResourceRequest(creation_address_space));
+  ResourceRequest request(url);
+  request.SetHTTPMethod(HTTPNames::GET);
+  request.SetExternalRequestStateFromRequestorAddressSpace(
+      creation_address_space);
+  request.SetRequestContext(request_context);
   request.SetFetchCredentialsMode(fetch_credentials_mode);
 
   ThreadableLoaderOptions options;
@@ -126,16 +135,6 @@ void WorkerScriptLoader::LoadAsynchronously(
 const KURL& WorkerScriptLoader::ResponseURL() const {
   DCHECK(!Failed());
   return response_url_;
-}
-
-ResourceRequest WorkerScriptLoader::CreateResourceRequest(
-    WebAddressSpace creation_address_space) {
-  ResourceRequest request(url_);
-  request.SetHTTPMethod(HTTPNames::GET);
-  request.SetRequestContext(request_context_);
-  request.SetExternalRequestStateFromRequestorAddressSpace(
-      creation_address_space);
-  return request;
 }
 
 void WorkerScriptLoader::DidReceiveResponse(
