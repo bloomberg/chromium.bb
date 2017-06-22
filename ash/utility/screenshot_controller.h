@@ -90,7 +90,7 @@ class ASH_EXPORT ScreenshotController : public ui::EventHandler,
   void CompleteWindowScreenshot();
   void CompletePartialScreenshot();
   void Update(const ui::LocatedEvent& event);
-  void UpdateSelectedWindow(ui::LocatedEvent* event);
+  void UpdateSelectedWindow(const ui::LocatedEvent& event);
   void SetSelectedWindow(aura::Window* window);
 
   // Returns true if the event should be processed.
