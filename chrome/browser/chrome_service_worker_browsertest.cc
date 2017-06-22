@@ -610,7 +610,6 @@ class ChromeServiceWorkerNavigationHintTest : public ChromeServiceWorkerTest {
       const char* scope,
       content::StartServiceWorkerForNavigationHintResult expeced_requst,
       bool expected_started) {
-    base::HistogramTester histogram_tester;
     base::RunLoop run_loop;
     GetServiceWorkerContext()->StartServiceWorkerForNavigationHint(
         embedded_test_server()->GetURL(scope),
@@ -619,18 +618,21 @@ class ChromeServiceWorkerNavigationHintTest : public ChromeServiceWorkerTest {
                    expeced_requst, run_loop.QuitClosure()));
     run_loop.Run();
     if (expected_started) {
-      histogram_tester.ExpectBucketCount(
+      histogram_tester_.ExpectBucketCount(
           "ServiceWorker.StartWorker.Purpose",
           27 /* ServiceWorkerMetrics::EventType::NAVIGATION_HINT  */, 1);
-      histogram_tester.ExpectBucketCount(
+      histogram_tester_.ExpectBucketCount(
           "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT",
           0 /* SERVICE_WORKER_OK  */, 1);
     } else {
-      histogram_tester.ExpectTotalCount("ServiceWorker.StartWorker.Purpose", 0);
-      histogram_tester.ExpectTotalCount(
+      histogram_tester_.ExpectTotalCount("ServiceWorker.StartWorker.Purpose",
+                                         0);
+      histogram_tester_.ExpectTotalCount(
           "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT", 0);
     }
   }
+
+  base::HistogramTester histogram_tester_;
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest, Started) {
