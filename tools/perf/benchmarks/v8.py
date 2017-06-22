@@ -106,18 +106,7 @@ class V8InfiniteScroll(_InfiniteScrollBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory(
-            'discourse',
-            [story.expectations.ALL_LINUX],
-            'crbug.com/732577')
-        self.DisableStory(
-            'facebook',
-            [story.expectations.ALL_LINUX],
-            'crbug.com/732577')
-        self.DisableStory(
-            'twitter',
-            [story.expectations.ALL_DESKTOP],
-            'crbug.com/732577')
+         pass # blank_page.html not disabled.
     return StoryExpectations()
 
 
