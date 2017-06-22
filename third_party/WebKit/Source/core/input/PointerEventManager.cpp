@@ -519,6 +519,14 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   EventTarget* effective_target = GetEffectiveTargetForPointerEvent(
       pointer_event_target, pointer_event->pointerId());
 
+  // Do not send the fake mouse move event to the DOM, because the mouse does
+  // not move.
+  if ((mouse_event_type == EventTypeNames::mousemove) &&
+      mouse_event.GetModifiers() &
+          WebInputEvent::Modifiers::kRelativeMotionEvent) {
+    return WebInputEventResult::kNotHandled;
+  }
+
   WebInputEventResult result =
       DispatchPointerEvent(effective_target, pointer_event);
 

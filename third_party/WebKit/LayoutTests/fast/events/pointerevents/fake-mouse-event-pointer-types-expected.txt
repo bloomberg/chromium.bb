@@ -1,7 +1,5 @@
 pointermove
 mousemove
-pointermove
-mousemove
 Verifies that fake mouse events have correct pointer type for pointer events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -10,8 +8,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 --- move mouse into target ---
 1 Received pointermove mouse
 2 Received mousemove
-3 Received pointermove mouse
-4 Received mousemove
 PASS successfullyParsed is true
 
 TEST COMPLETE
