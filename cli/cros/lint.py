@@ -442,9 +442,9 @@ class SourceChecker(BaseChecker):
       'R9200': ('Shebang should be #!/usr/bin/env python2 or '
                 '#!/usr/bin/env python3',
                 ('bad-shebang'), _MessageR9200),
-      'R9201': ('Shebang is missing, but file is executable',
+      'R9201': ('Shebang is missing, but file is executable (chmod -x to fix)',
                 ('missing-shebang'), _MessageR9201),
-      'R9202': ('Shebang is set, but file is not executable',
+      'R9202': ('Shebang is set, but file is not executable (chmod +x to fix)',
                 ('spurious-shebang'), _MessageR9202),
       'R9203': ('Unittest not named xxx_unittest.py',
                 ('unittest-misnamed'), _MessageR9203),
