@@ -2360,6 +2360,8 @@ crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-res
 crbug.com/443374 virtual/off-main-thread-fetch/http/tests/inspector/service-workers/user-agent-override.html [ Failure ]
 
 crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
+crbug.com/735245 http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout ]
+crbug.com/735245 virtual/mojo-loading/http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout ]
 
 # [css-grid]
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
