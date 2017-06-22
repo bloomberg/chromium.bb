@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/secure_message_delegate.h"
@@ -68,9 +69,11 @@ std::unique_ptr<base::DictionaryValue> LogMessageToDictionary(
 
 // Keys in the JSON representation of an ExternalDeviceInfo proto.
 const char kExternalDevicePublicKey[] = "publicKey";
+const char kExternalDevicePublicKeyTruncated[] = "publicKeyTruncated";
 const char kExternalDeviceFriendlyName[] = "friendlyDeviceName";
 const char kExternalDeviceBluetoothAddress[] = "bluetoothAddress";
 const char kExternalDeviceUnlockKey[] = "unlockKey";
+const char kExternalDeviceMobileHotspot[] = "hasMobileHotspot";
 const char kExternalDeviceConnectionStatus[] = "connectionStatus";
 const char kExternalDeviceRemoteState[] = "remoteState";
 
@@ -207,11 +210,11 @@ void ProximityAuthWebUIHandler::OnSyncFinished(
 
   if (device_change_result ==
       cryptauth::CryptAuthDeviceManager::DeviceChangeResult::CHANGED) {
-    std::unique_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
+    std::unique_ptr<base::ListValue> synced_devices = GetRemoteDevicesList();
     PA_LOG(INFO) << "New unlock keys obtained after device sync:\n"
-                 << *unlock_keys;
+                 << *synced_devices;
     web_ui()->CallJavascriptFunctionUnsafe(
-        "LocalStateInterface.onUnlockKeysChanged", *unlock_keys);
+        "LocalStateInterface.onRemoteDevicesChanged", *synced_devices);
   }
 }
 
@@ -416,15 +419,16 @@ void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
       GetEnrollmentStateDictionary();
   std::unique_ptr<base::DictionaryValue> device_sync_state =
       GetDeviceSyncStateDictionary();
-  std::unique_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
+  std::unique_ptr<base::ListValue> synced_devices = GetRemoteDevicesList();
 
   PA_LOG(INFO) << "==== Got Local State ====\n"
-               << "Enrollment State: \n" << *enrollment_state
-               << "Device Sync State: \n" << *device_sync_state
-               << "Unlock Keys: \n" << *unlock_keys;
+               << "Enrollment State: \n"
+               << *enrollment_state << "Device Sync State: \n"
+               << *device_sync_state << "Unlock Keys: \n"
+               << *synced_devices;
   web_ui()->CallJavascriptFunctionUnsafe("LocalStateInterface.onGotLocalState",
                                          *enrollment_state, *device_sync_state,
-                                         *unlock_keys);
+                                         *synced_devices);
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -456,14 +460,14 @@ ProximityAuthWebUIHandler::GetDeviceSyncStateDictionary() {
 }
 
 std::unique_ptr<base::ListValue>
-ProximityAuthWebUIHandler::GetUnlockKeysList() {
+ProximityAuthWebUIHandler::GetRemoteDevicesList() {
   std::unique_ptr<base::ListValue> unlock_keys(new base::ListValue());
   cryptauth::CryptAuthDeviceManager* device_manager =
       proximity_auth_client_->GetCryptAuthDeviceManager();
   if (!device_manager)
     return unlock_keys;
 
-  for (const auto& unlock_key : device_manager->GetUnlockKeys()) {
+  for (const auto& unlock_key : device_manager->GetSyncedDevices()) {
     unlock_keys->Append(ExternalDeviceInfoToDictionary(unlock_key));
   }
 
@@ -496,11 +500,16 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   std::unique_ptr<base::DictionaryValue> dictionary(
       new base::DictionaryValue());
   dictionary->SetString(kExternalDevicePublicKey, base64_public_key);
+  dictionary->SetString(
+      kExternalDevicePublicKeyTruncated,
+      cryptauth::RemoteDevice::TruncateDeviceIdForLogs(base64_public_key));
   dictionary->SetString(kExternalDeviceFriendlyName,
                         device_info.friendly_device_name());
   dictionary->SetString(kExternalDeviceBluetoothAddress,
                         device_info.bluetooth_address());
   dictionary->SetBoolean(kExternalDeviceUnlockKey, device_info.unlock_key());
+  dictionary->SetBoolean(kExternalDeviceMobileHotspot,
+                         device_info.mobile_hotspot_supported());
   dictionary->SetString(kExternalDeviceConnectionStatus,
                         kExternalDeviceDisconnected);
 
@@ -574,7 +583,7 @@ void ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle() {
   selected_remote_device_ = cryptauth::RemoteDevice();
   last_remote_status_update_.reset();
   web_ui()->CallJavascriptFunctionUnsafe(
-      "LocalStateInterface.onUnlockKeysChanged", *GetUnlockKeysList());
+      "LocalStateInterface.onRemoteDevicesChanged", *GetRemoteDevicesList());
 }
 
 void ProximityAuthWebUIHandler::OnLifeCycleStateChanged(
@@ -597,7 +606,7 @@ void ProximityAuthWebUIHandler::OnLifeCycleStateChanged(
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(
-      "LocalStateInterface.onUnlockKeysChanged", *GetUnlockKeysList());
+      "LocalStateInterface.onRemoteDevicesChanged", *GetRemoteDevicesList());
 }
 
 void ProximityAuthWebUIHandler::OnRemoteStatusUpdate(
@@ -611,9 +620,9 @@ void ProximityAuthWebUIHandler::OnRemoteStatusUpdate(
                << static_cast<int>(status_update.trust_agent_state);
 
   last_remote_status_update_.reset(new RemoteStatusUpdate(status_update));
-  std::unique_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
+  std::unique_ptr<base::ListValue> synced_devices = GetRemoteDevicesList();
   web_ui()->CallJavascriptFunctionUnsafe(
-      "LocalStateInterface.onUnlockKeysChanged", *unlock_keys);
+      "LocalStateInterface.onRemoteDevicesChanged", *synced_devices);
 }
 
 }  // namespace proximity_auth

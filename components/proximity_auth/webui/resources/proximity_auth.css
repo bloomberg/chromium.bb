@@ -32,17 +32,19 @@ tr.subrow td:first-of-type {
 }
 
 .remote-device {
-  cursor: pointer;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   width: 100%;
-  align-items: center;
-  margin-top: 5px;
-  margin-bottom: 5px;
 }
 
 .remote-device:hover {
   background-color: #eee;
+}
+
+.remote-device .status-name-container,
+.remote-device .button-container {
+  align-items: center;
+  display: flex;
 }
 
 .device-connection-status {
@@ -58,36 +60,21 @@ tr.subrow td:first-of-type {
   color: green;
 }
 
-.device-info {
-  display: flex;
-  flex-direction: column;
-  margin-right: 10px;
-}
-
-.device-name {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.device-attributes {
+.remote-device table {
   font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 2px;
+  margin-left: 22px;
 }
 
-.device-public-key {
-  font-size: 10px;
-  color: #666;
-}
-
-.device-info-subtitle, .device-eid {
+.remote-device td:last-of-type {
   font-family: monospace;
-  font-size: 10px;
-  color: #666;
+}
+
+.remote-device .button-container {
+  margin: 2px 22px;
 }
 
 .remote-device button {
-  margin-left: 4px;
+  margin: 0px 2px;
 }
 
 #eligible-devices-list[device-count='0'],
