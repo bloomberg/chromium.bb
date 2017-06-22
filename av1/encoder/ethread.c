@@ -26,6 +26,10 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
         td_t->rd_counts.global_motion_used[i];
 #endif  // CONFIG_GLOBAL_MOTION
 
+  td->rd_counts.compound_ref_used_flag |=
+      td_t->rd_counts.compound_ref_used_flag;
+  td->rd_counts.single_ref_used_flag |= td_t->rd_counts.single_ref_used_flag;
+
   for (i = 0; i < TX_SIZES; i++)
     for (j = 0; j < PLANE_TYPES; j++)
       for (k = 0; k < REF_TYPES; k++)
