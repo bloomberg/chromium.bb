@@ -33,7 +33,6 @@
 #include "core/dom/TreeScope.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/events/EventTarget.h"
-#include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/geometry/LayoutRect.h"
@@ -44,6 +43,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class ContainerNode;
 class Document;
 class Element;
@@ -58,7 +58,6 @@ class EventDispatchHandlingState;
 class NodeList;
 class NodeListsNodeData;
 class NodeOrString;
-class NodeRenderingData;
 class NodeRareData;
 class QualifiedName;
 class RegisteredEventListener;
@@ -106,10 +105,8 @@ class NodeRenderingData {
 
  public:
   explicit NodeRenderingData(LayoutObject* layout_object,
-                             RefPtr<ComputedStyle> non_attached_style)
-      : layout_object_(layout_object),
-        non_attached_style_(non_attached_style) {}
-  ~NodeRenderingData() { CHECK(!layout_object_); }
+                             RefPtr<ComputedStyle> non_attached_style);
+  ~NodeRenderingData();
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
   void SetLayoutObject(LayoutObject* layout_object) {
@@ -120,16 +117,9 @@ class NodeRenderingData {
   ComputedStyle* GetNonAttachedStyle() const {
     return non_attached_style_.Get();
   }
-  void SetNonAttachedStyle(RefPtr<ComputedStyle> non_attached_style) {
-    DCHECK_NE(&SharedEmptyData(), this);
-    non_attached_style_ = non_attached_style;
-  }
+  void SetNonAttachedStyle(RefPtr<ComputedStyle> non_attached_style);
 
-  static NodeRenderingData& SharedEmptyData() {
-    DEFINE_STATIC_LOCAL(NodeRenderingData, shared_empty_data,
-                        (nullptr, nullptr));
-    return shared_empty_data;
-  }
+  static NodeRenderingData& SharedEmptyData();
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
 
  private:
