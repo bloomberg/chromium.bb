@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_orientation_hardware_buffer.h"
 
@@ -192,6 +193,10 @@ bool DataFetcherSharedMemoryBase::InitAndStartPollingThreadIfNecessary() {
     return true;
 
   polling_thread_.reset(new PollingThread("Device Sensor poller", this));
+
+#if defined(OS_WIN)
+  polling_thread_->init_com_with_mta(true);
+#endif
 
   if (!polling_thread_->Start()) {
     LOG(ERROR) << "Failed to start sensor data polling thread";
