@@ -1,4 +1,4 @@
-TestRunner.loadLazyModules(['quick_open']).then(test);
+TestRunner.loadModule('quick_open').then(test);
 function test() {
   TestRunner.addResult(
       'Test that FilteredListWidget.setProvider changes the provider.');

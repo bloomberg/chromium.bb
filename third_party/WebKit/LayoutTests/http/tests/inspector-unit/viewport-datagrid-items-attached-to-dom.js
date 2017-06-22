@@ -1,4 +1,4 @@
-TestRunner.loadLazyModules(['data_grid']).then(test);
+TestRunner.loadModule('data_grid').then(test);
 function test() {
   TestRunner.addResult("This tests viewport datagrid.");
 
