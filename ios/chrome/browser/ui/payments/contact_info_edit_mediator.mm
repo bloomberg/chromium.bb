@@ -107,6 +107,10 @@
                                    IDS_PAYMENTS_NAME_FIELD_IN_CONTACT_DETAILS)
                          value:name
                       required:YES];
+    if (!_paymentRequest->request_payer_phone() &&
+        !_paymentRequest->request_payer_email()) {
+      nameField.returnKeyType = UIReturnKeyDone;
+    }
     [self.fields addObject:nameField];
   }
 
@@ -125,6 +129,9 @@
                                    IDS_PAYMENTS_PHONE_FIELD_IN_CONTACT_DETAILS)
                          value:phone
                       required:YES];
+    phoneField.keyboardType = UIKeyboardTypePhonePad;
+    if (!_paymentRequest->request_payer_email())
+      phoneField.returnKeyType = UIReturnKeyDone;
     [self.fields addObject:phoneField];
   }
 
@@ -138,6 +145,9 @@
                                    IDS_PAYMENTS_EMAIL_FIELD_IN_CONTACT_DETAILS)
                          value:email
                       required:YES];
+    emailField.keyboardType = UIKeyboardTypeEmailAddress;
+    emailField.autoCapitalizationType = UITextAutocapitalizationTypeNone;
+    emailField.returnKeyType = UIReturnKeyDone;
     [self.fields addObject:emailField];
   }
 

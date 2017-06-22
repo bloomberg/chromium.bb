@@ -260,6 +260,15 @@
                                                   label:nil
                                                   value:value
                                                required:required];
+        // Set the keyboardType and autoCapitalizationType as appropriate.
+        if (autofillUIType == AutofillUITypeProfileEmailAddress) {
+          field.keyboardType = UIKeyboardTypeEmailAddress;
+          field.autoCapitalizationType = UITextAutocapitalizationTypeNone;
+        } else if (autofillUIType == AutofillUITypeProfileHomeAddressZip) {
+          field.autoCapitalizationType =
+              UITextAutocapitalizationTypeAllCharacters;
+        }
+
         [self.fieldsMap setObject:field forKey:fieldKey];
       }
 
@@ -321,6 +330,8 @@
                          label:l10n_util::GetNSString(IDS_IOS_AUTOFILL_PHONE)
                          value:value
                       required:YES];
+    field.keyboardType = UIKeyboardTypePhonePad;
+    field.returnKeyType = UIReturnKeyDone;
     [self.fieldsMap setObject:field forKey:phoneNumberFieldKey];
   }
   [self.fields addObject:field];
