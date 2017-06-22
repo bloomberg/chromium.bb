@@ -2234,6 +2234,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # A paladin is generally considered good enough for important if it can
   # pass the last ~20 build attempts, e.g. the builder page shows all green.
   _paladin_new_boards = frozenset([
+      'auron_paine',
+      'auron_yuna',
       'bob',
       'eve',
       'hana',
@@ -2453,7 +2455,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('peach_pit',      None,             None),            # peach (Exynos5420)
     ('winky',          'kip',            None),            # rambi (BYT)
     ('nyan_big',       'nyan_kitty',     None),            # nyan (K1)
-    (None,             None,             None),            # auron (BDW)
+    ('auron_paine',    None,             'auron_yuna'),    # auron (BDW)
     ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (RK3288)
     ('wizpig',         None,             'cyan'),          # strago (BSW)
     ('cave',           'sentry',         'caroline'),      # glados (SKL)
