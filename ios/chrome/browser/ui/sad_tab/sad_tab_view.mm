@@ -242,7 +242,6 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
               initWithString:feedbackIntroductionString];
       NSAttributedString* bulletedListString =
           [[self class] bulletedAttributedStringFromStrings:@[
-            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_CLOSE_NOTABS),
             l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO),
             l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_RESTART_BROWSER),
             l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_RESTART_DEVICE)
