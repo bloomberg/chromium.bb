@@ -376,9 +376,16 @@ gfx::Size CustomFrameViewAsh::GetMinimumSize() const {
     return gfx::Size();
 
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
-  return gfx::Size(
+  gfx::Size min_size(
       std::max(header_view_->GetMinimumWidth(), min_client_view_size.width()),
       NonClientTopBorderHeight() + min_client_view_size.height());
+
+  aura::Window* frame_window = frame_->GetNativeWindow();
+  const gfx::Size* min_window_size =
+      frame_window->GetProperty(aura::client::kMinimumSize);
+  if (min_window_size)
+    min_size.SetToMax(*min_window_size);
+  return min_size;
 }
 
 gfx::Size CustomFrameViewAsh::GetMaximumSize() const {

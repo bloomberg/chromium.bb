@@ -102,6 +102,10 @@ interface WindowManager {
   // Type: bool.
   const string kImmersiveFullscreen_Property = "prop:immersive-fullscreen";
 
+  // The window's minimum size as defined by its content. Maps to
+  // aura::client::kMinimumSize_Property. Type: gfx::Size.
+  const string kMinimumSize_Property = "prop:minimum-size";
+
   // Internal window name. Useful for debugging. Maps to aura::client::kNameKey.
   // Type: mojom::String
   const string kName_Property = "prop:name";

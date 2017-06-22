@@ -38,6 +38,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   void UpdateThrobber(bool running) override;
   views::View* GetProfileSwitcherView() const override;
   void UpdateClientArea() override;
+  void UpdateMinimumSize() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

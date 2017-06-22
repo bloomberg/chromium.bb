@@ -33,3 +33,7 @@ void TopContainerView::PaintChildren(const ui::PaintContext& context) {
   }
   View::PaintChildren(context);
 }
+
+void TopContainerView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
+}

@@ -86,6 +86,9 @@ AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
 // top portion of the window through a touch / mouse gesture.
 AURA_EXPORT extern const WindowProperty<bool>* const kImmersiveFullscreenKey;
 
+// A property key to store the minimum size of the window.
+AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMinimumSize;
+
 // A property key to indicate that a window is being "mirrored" and its contents
 // should render regardless of its actual visibility state.
 AURA_EXPORT extern const WindowProperty<bool>* const kMirroringEnabledKey;
