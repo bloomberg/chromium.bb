@@ -23,23 +23,23 @@ ArcSessionRunner::ArcSessionRunner(const ArcSessionFactory& factory)
       weak_ptr_factory_(this) {}
 
 ArcSessionRunner::~ArcSessionRunner() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (arc_session_)
     arc_session_->RemoveObserver(this);
 }
 
 void ArcSessionRunner::AddObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observer_list_.AddObserver(observer);
 }
 
 void ArcSessionRunner::RemoveObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observer_list_.RemoveObserver(observer);
 }
 
 void ArcSessionRunner::RequestStart() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Consecutive RequestStart() call. Do nothing.
   if (run_requested_)
@@ -65,7 +65,7 @@ void ArcSessionRunner::RequestStart() {
 }
 
 void ArcSessionRunner::RequestStop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Consecutive RequestStop() call. Do nothing.
   if (!run_requested_)
@@ -96,7 +96,7 @@ void ArcSessionRunner::RequestStop() {
 }
 
 void ArcSessionRunner::OnShutdown() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   VLOG(1) << "OnShutdown";
   run_requested_ = false;
@@ -112,12 +112,12 @@ void ArcSessionRunner::OnShutdown() {
 }
 
 bool ArcSessionRunner::IsRunning() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return state_ == State::RUNNING;
 }
 
 bool ArcSessionRunner::IsStopped() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return state_ == State::STOPPED;
 }
 
@@ -130,7 +130,7 @@ void ArcSessionRunner::SetRestartDelayForTesting(
 }
 
 void ArcSessionRunner::StartArcSession() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, State::STOPPED);
   DCHECK(!arc_session_);
   DCHECK(!restart_timer_.IsRunning());
@@ -143,7 +143,7 @@ void ArcSessionRunner::StartArcSession() {
 }
 
 void ArcSessionRunner::OnSessionReady() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, State::STARTING);
   DCHECK(arc_session_);
   DCHECK(!restart_timer_.IsRunning());
@@ -153,7 +153,7 @@ void ArcSessionRunner::OnSessionReady() {
 }
 
 void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(state_, State::STOPPED);
   DCHECK(arc_session_);
   DCHECK(!restart_timer_.IsRunning());

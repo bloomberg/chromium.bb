@@ -151,7 +151,7 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // of a document in documents providers.
   using DocumentKey = std::pair<std::string, std::string>;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   base::ScopedTempDir temp_dir_;
 

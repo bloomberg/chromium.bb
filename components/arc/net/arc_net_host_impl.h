@@ -111,7 +111,7 @@ class ArcNetHostImpl : public ArcService,
   std::string cached_service_path_;
   std::string cached_guid_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   mojo::Binding<mojom::NetHost> binding_;
   base::WeakPtrFactory<ArcNetHostImpl> weak_factory_;
 

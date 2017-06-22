@@ -94,7 +94,7 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
   // Called if one of the established channels is closed.
   void OnChannelClosed(MojoChannel* channel);
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Owned by ArcServiceManager.
   ArcBridgeService* const arc_bridge_service_;

@@ -81,7 +81,7 @@ class InstanceHolder {
   // class was created on. RemoveObserver does nothing if |observer| is not in
   // the list.
   void AddObserver(Observer* observer) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     observer_list_.AddObserver(observer);
 
     if (instance_)
@@ -89,7 +89,7 @@ class InstanceHolder {
   }
 
   void RemoveObserver(Observer* observer) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     observer_list_.RemoveObserver(observer);
   }
 
@@ -97,7 +97,7 @@ class InstanceHolder {
   // This can be called in both case; on ready, and on closed.
   // Passing nullptr to |instance| means closing.
   void SetInstance(T* instance, uint32_t version = T::Version_) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(instance == nullptr || instance_ == nullptr);
 
     // Note: This can be called with nullptr even if |instance_| is still
@@ -122,7 +122,7 @@ class InstanceHolder {
   T* instance_ = nullptr;
   uint32_t version_ = 0;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceHolder<T>);

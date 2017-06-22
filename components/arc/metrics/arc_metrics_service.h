@@ -43,14 +43,6 @@ class ArcMetricsService
                           mojom::BootType boot_type) override;
 
  private:
-  bool CalledOnValidThread();
-  void RequestProcessList();
-  void ParseProcessList(std::vector<mojom::RunningAppProcessInfoPtr> processes);
-
-  // DBus callbacks.
-  void OnArcStartTimeRetrieved(bool success, base::TimeTicks arc_start_time);
-
- private:
   // Adapter to be able to also observe ProcessInstance events.
   class ProcessObserver
       : public InstanceHolder<mojom::ProcessInstance>::Observer {
@@ -68,10 +60,17 @@ class ArcMetricsService
     DISALLOW_COPY_AND_ASSIGN(ProcessObserver);
   };
 
+  void RequestProcessList();
+  void ParseProcessList(std::vector<mojom::RunningAppProcessInfoPtr> processes);
+
+  // DBus callbacks.
+  void OnArcStartTimeRetrieved(bool success, base::TimeTicks arc_start_time);
+
+  THREAD_CHECKER(thread_checker_);
+
   mojo::Binding<mojom::MetricsHost> binding_;
 
   ProcessObserver process_observer_;
-  base::ThreadChecker thread_checker_;
   base::RepeatingTimer timer_;
 
   base::TimeTicks arc_start_time_;

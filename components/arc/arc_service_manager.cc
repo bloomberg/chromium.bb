@@ -30,7 +30,7 @@ ArcServiceManager::ArcServiceManager(
 }
 
 ArcServiceManager::~ArcServiceManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(g_arc_service_manager, this);
   g_arc_service_manager = nullptr;
 }
@@ -39,19 +39,19 @@ ArcServiceManager::~ArcServiceManager() {
 ArcServiceManager* ArcServiceManager::Get() {
   if (!g_arc_service_manager)
     return nullptr;
-  DCHECK(g_arc_service_manager->thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(g_arc_service_manager->thread_checker_);
   return g_arc_service_manager;
 }
 
 ArcBridgeService* ArcServiceManager::arc_bridge_service() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return arc_bridge_service_.get();
 }
 
 bool ArcServiceManager::AddServiceInternal(
     const std::string& name,
     std::unique_ptr<ArcService> service) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!name.empty() && services_.count(name) != 0) {
     LOG(ERROR) << "Ignoring registration of service with duplicate name: "
                << name;
@@ -63,7 +63,7 @@ bool ArcServiceManager::AddServiceInternal(
 
 ArcService* ArcServiceManager::GetNamedServiceInternal(
     const std::string& name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (name.empty()) {
     LOG(ERROR) << "kArcServiceName[] should be a fully-qualified class name.";
     return nullptr;
@@ -77,7 +77,7 @@ ArcService* ArcServiceManager::GetNamedServiceInternal(
 }
 
 void ArcServiceManager::Shutdown() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   activity_resolver_ = nullptr;
   services_.clear();
 }

@@ -112,7 +112,7 @@ class ArcSessionRunner : public ArcSession::Observer {
   void OnSessionReady() override;
   void OnSessionStopped(ArcStopReason reason) override;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Observers for the ARC instance state change events.
   base::ObserverList<Observer> observer_list_;
