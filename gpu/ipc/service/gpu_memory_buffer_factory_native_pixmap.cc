@@ -157,7 +157,7 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
 }
 
 unsigned GpuMemoryBufferFactoryNativePixmap::RequiredTextureType() {
-  return GL_TEXTURE_EXTERNAL_OES;
+  return GL_TEXTURE_2D;
 }
 
 }  // namespace gpu
