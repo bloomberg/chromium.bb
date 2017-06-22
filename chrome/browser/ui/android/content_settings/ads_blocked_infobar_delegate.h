@@ -34,10 +34,14 @@ class AdsBlockedInfobarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Cancel() override;
+  GURL GetLinkURL() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
  private:
   AdsBlockedInfobarDelegate();
+
+  // True when the infobar is in the expanded state.
+  bool infobar_expanded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AdsBlockedInfobarDelegate);
 };
