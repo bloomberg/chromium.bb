@@ -39,9 +39,12 @@ class PredictorsHandler : public content::WebUIMessageHandler {
   // DictionaryValue to the JS.
   void RequestResourcePrefetchPredictorDb(const base::ListValue* args);
 
-  // Helper for RequestResourcePrefetchPredictorDb.
+  // Helpers for RequestResourcePrefetchPredictorDb.
   void AddPrefetchDataMapToListValue(
       const std::map<std::string, predictors::PrefetchData>& data_map,
+      base::ListValue* db) const;
+  void AddOriginDataMapToListValue(
+      const std::map<std::string, predictors::OriginData>& data_map,
       base::ListValue* db) const;
 
   predictors::AutocompleteActionPredictor* autocomplete_action_predictor_;

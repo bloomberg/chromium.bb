@@ -3,10 +3,11 @@
     <tabs>
       <tab>URL Table Cache</tab>
       <tab>Host Table Cache</tab>
+      <tab>Origin Table Cache</tab>
     </tabs>
     <tabpanels>
       <tabpanel>
-        <table id="">
+        <table>
           <thead>
             <tr>
               <th>Main Frame Url</th>
@@ -25,7 +26,7 @@
         </table>
       </tabpanel>
       <tabpanel>
-        <table id="">
+        <table>
           <thead>
             <tr>
               <th>Host</th>
@@ -40,6 +41,25 @@
             </tr>
           </thead>
           <tbody id="rpp_host_body">
+          </tbody>
+        </table>
+      </tabpanel>
+      <tabpanel>
+        <table>
+          <thead>
+            <tr>
+              <th>Host</th>
+              <th>Origin</th>
+              <th>Num Hits</th>
+              <th>Num Misses</th>
+              <th>Consec Misses</th>
+              <th>Average Position</th>
+              <th>Always Access Net</th>
+              <th>Accessed Net</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody id="rpp_origin_body">
           </tbody>
         </table>
       </tabpanel>
