@@ -4,20 +4,16 @@
 
 <script>
 
-var simpleLength = new CSSUnitValue(0, "px");
+var zeroLength = new CSSUnitValue(0, "px");
 var decimalLength = new CSSUnitValue(1.1, "px");
 var negativeLength = new CSSUnitValue(-2.2, "em");
-// var calcLengthPx = new CSSCalcValue({px: 1});
-// var calcLength = new CSSCalcValue({px: 1, em: -2.2});
-
-var simplePercent = new CSSUnitValue(10, "percent");
-// var calcPercent = new CSSCalcValue({px: 1, percent: 2.2});
+var tenPercent = new CSSUnitValue(10, "percent");
 
 var testParams = [
   // 2D CSSTranslation Transform Components
   {
-    input: new CSSTranslation(simpleLength, simpleLength),
-    x: simpleLength, y: simpleLength,
+    input: new CSSTranslation(zeroLength, zeroLength),
+    x: zeroLength, y: zeroLength,
     is2D: true,
     cssText: "translate(0px, 0px)"
   },
@@ -27,52 +23,32 @@ var testParams = [
     is2D: true,
     cssText: "translate(1.1px, -2.2em)"
   },
-  // {input: new CSSTranslation(negativeLength, calcLengthPx),
-  //   x: negativeLength, y: calcLengthPx, is2D: true},
-  // {input: new CSSTranslation(calcLengthPx, negativeLength),
-  //   x: calcLengthPx, y: negativeLength, is2D: true},
-  // {input: new CSSTranslation(calcLengthPx, calcLength),
-  //   x: calcLengthPx, y: calcLength, is2D: true},
   {
-    input: new CSSTranslation(simplePercent, simpleLength),
-    x: simplePercent, y: simpleLength,
+    input: new CSSTranslation(tenPercent, zeroLength),
+    x: tenPercent, y: zeroLength,
     is2D: true,
     cssText: "translate(10%, 0px)"
   },
-  // {input: new CSSTranslation(calcLengthPx, simplePercent),
-  //   x: calcLengthPx, y: simplePercent, is2D: true},
-  // {input: new CSSTranslation(calcPercent, calcLength),
-  //   x: calcPercent, y: calcLength, is2D: true},
-  // {input: new CSSTranslation(simplePercent, calcPercent),
-  //   x: simplePercent, y: calcPercent, is2D: true},
 
   // 3D CSSTranslation Transform Components
   {
-    input: new CSSTranslation(simpleLength, simpleLength, simpleLength),
-    x: simpleLength, y: simpleLength, z: simpleLength,
+    input: new CSSTranslation(zeroLength, zeroLength, zeroLength),
+    x: zeroLength, y: zeroLength, z: zeroLength,
     is2D: false,
     cssText: "translate3d(0px, 0px, 0px)"
   },
   {
-    input: new CSSTranslation(simpleLength, decimalLength, negativeLength),
-    x: simpleLength, y: decimalLength, z: negativeLength,
+    input: new CSSTranslation(zeroLength, decimalLength, negativeLength),
+    x: zeroLength, y: decimalLength, z: negativeLength,
     is2D: false,
     cssText: "translate3d(0px, 1.1px, -2.2em)"
   },
-  // {input: new CSSTranslation(simpleLength, simpleLength, calcLengthPx),
-  //   x: simpleLength, y: simpleLength, z: calcLengthPx, is2D: false},
-  // {input: new CSSTranslation(calcLengthPx, calcLength, calcLength),
-  //   x: calcLengthPx, y: calcLength, z: calcLength, is2D: false},
   {
-    input: new CSSTranslation(simplePercent, decimalLength, simpleLength),
-    x: simplePercent, y: decimalLength, z: simpleLength,
+    input: new CSSTranslation(tenPercent, decimalLength, zeroLength),
+    x: tenPercent, y: decimalLength, z: zeroLength,
     is2D: false,
     cssText: "translate3d(10%, 1.1px, 0px)"
   },
-  // {input: new CSSTranslation(simpleLength, calcPercent, decimalLength),
-  //   x: simpleLength, y: calcPercent, z: decimalLength, is2D: false},
-  // {input: new CSSTranslation(calcPercent, simplePercent, calcLength),
-  //   x: calcPercent, y: simplePercent, z: calcLength, is2D: false}
 ];
 
 for (let params of testParams) {
@@ -100,20 +76,56 @@ for (let params of testParams) {
 }
 
 test(() => {
+  let translation = new CSSTranslation(
+      new CSSUnitValue(10, 'percent'),
+      new CSSUnitValue(20, 'percent'));
+  assert_equals(translation.x.value, 10);
+  assert_equals(translation.x.unit, 'percent');
+  assert_equals(translation.y.value, 20);
+  assert_equals(translation.y.unit, 'percent');
+  assert_equals(translation.z, null);
+
+  let translation3d = new CSSTranslation(
+      new CSSUnitValue(30, 'percent'),
+      new CSSUnitValue(40, 'percent'),
+      zeroLength);
+  assert_equals(translation3d.x.value, 30);
+  assert_equals(translation3d.x.unit, 'percent');
+  assert_equals(translation3d.y.value, 40);
+  assert_equals(translation3d.y.unit, 'percent');
+  assert_equals(translation3d.z.value, 0);
+}, "Constructor accepts percent for x and y");
+
+test(() => {
   assert_throws(new TypeError(), () => {
-    new CSSTranslation(simpleLength, simpleLength, simplePercent);
+    new CSSTranslation(new CSSUnitValue(10, 'deg'), zeroLength);
   });
-  // assert_throws(null, () => {
-  //  new CSSTranslation(simpleLength, simpleLength, calcPercent);
-  // });
   assert_throws(new TypeError(), () => {
-    new CSSTranslation(simplePercent, simplePercent, simplePercent);
+    new CSSTranslation(zeroLength, new CSSUnitValue(10, 'deg'));
   });
-}, "Constructor throws when z component contains percent.");
+  assert_throws(new TypeError(), () => {
+    new CSSTranslation(new CSSUnitValue(10, 'deg'), zeroLength, zeroLength);
+  });
+  assert_throws(new TypeError(), () => {
+    new CSSTranslation(zeroLength, new CSSUnitValue(10, 'deg'), zeroLength);
+  });
+  assert_throws(new TypeError(), () => {
+    new CSSTranslation(zeroLength, zeroLength, new CSSUnitValue(10, 'deg'));
+  });
+}, "Constructor throws when invalid numeric values are given to each argument");
+
+test(() => {
+  assert_throws(new TypeError(), () => {
+    new CSSTranslation(zeroLength, zeroLength, tenPercent);
+  });
+  assert_throws(new TypeError(), () => {
+    new CSSTranslation(tenPercent, tenPercent, tenPercent);
+  });
+}, "Constructor throws when z argument contains percent.");
 
 test(() => {
   assert_throws(new TypeError(), () => { new CSSTranslation(); });
-  assert_throws(new TypeError(), () => { new CSSTranslation(simpleLength); });
+  assert_throws(new TypeError(), () => { new CSSTranslation(zeroLength); });
 }, "Invalid number of arguments to constructor throws an exception.");
 
 </script>
