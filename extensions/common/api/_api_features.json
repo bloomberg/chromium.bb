@@ -16,7 +16,7 @@
   },
   "app.runtime": [{
     "channel": "stable",
-    "contexts": ["blessed_extension"],
+    "contexts": ["blessed_extension", "lock_screen_extension"],
     "extension_types": ["platform_app"],
     "noparent": true
   }, {
@@ -33,7 +33,7 @@
   }],
   "app.window": [{
     "channel": "stable",
-    "contexts": ["blessed_extension"],
+    "contexts": ["blessed_extension", "lock_screen_extension"],
     "extension_types": ["platform_app"],
     "noparent": true
   }, {
@@ -52,7 +52,7 @@
     "noparent": true,
     "internal": true,
     "channel": "stable",
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "lock_screen_extension"]
   },
   "app.currentWindowInternal.setShape": {
     "dependencies": ["permission:app.window.shape"],

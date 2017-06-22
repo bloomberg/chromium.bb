@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -12,6 +15,10 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature_channel.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
+#endif
 
 // TODO(jamescook): We probably shouldn't compile this class at all on Android.
 // See http://crbug.com/343612
@@ -43,11 +50,29 @@ extensions::AppWindow* ChromeAppWindowClient::CreateAppWindow(
 #endif
 }
 
+extensions::AppWindow*
+ChromeAppWindowClient::CreateAppWindowForLockScreenAction(
+    content::BrowserContext* context,
+    const extensions::Extension* extension,
+    extensions::api::app_runtime::ActionType action) {
+#if defined(OS_CHROMEOS)
+  if (!lock_screen_apps::StateController::IsEnabled())
+    return nullptr;
+
+  return lock_screen_apps::StateController::Get()
+      ->CreateAppWindowForLockScreenAction(
+          context, extension, action,
+          base::MakeUnique<ChromeAppDelegate>(true /* keep_alive */));
+#else
+  return nullptr;
+#endif
+}
+
 extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindow(
     extensions::AppWindow* window,
     extensions::AppWindow::CreateParams* params) {
 #if defined(OS_ANDROID)
-  return NULL;
+  return nullptr;
 #else
   return CreateNativeAppWindowImpl(window, *params);
 #endif
