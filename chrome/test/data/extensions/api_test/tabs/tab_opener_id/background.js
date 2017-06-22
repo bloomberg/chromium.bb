@@ -5,14 +5,15 @@
 // Add a listener just so we dispatch onUpdated events.
 chrome.tabs.onUpdated.addListener(function(update) {});
 
+var port;
+var getUrl = function(url) {
+  return 'http://localhost:' + port + '/' + url;
+};
+
 // Test a series of crazy events where we can set a tab's opener, then close it,
 // and hope the browser does the right thing.
 // Regression test for crbug.com/698681.
-chrome.test.getConfig((config) => {
-  var getUrl = function(url) {
-    return 'http://localhost:' + config.testServer.port + '/' + url;
-  };
-
+function testSetOpenerOutsideOfWindow() {
   var url1 = getUrl('title1.html');
   var url2 = getUrl('title2.html');
   var url3 = getUrl('title3.html');
@@ -32,8 +33,8 @@ chrome.test.getConfig((config) => {
       chrome.test.assertTrue(!!secondWin.tabs);
       chrome.test.assertEq(1, secondWin.tabs.length);
 
-      // Try to update the tab in the second window to have an opener of a tab
-      // in the first window. This *should* fail.
+      // Try to update the tab in the second window to have an opener of a
+      // tab in the first window. This *should* fail.
       chrome.tabs.update(secondWin.tabs[0].id, {openerTabId: openerId}, () => {
         chrome.test.assertLastError(
             'Tab opener must be in the same window as the updated tab.');
@@ -51,4 +52,33 @@ chrome.test.getConfig((config) => {
       });
     });
   });
+}
+
+// Tests that the tab in a window cannot be set to have an opener of itself.
+// Regression test for crbug.com/709961
+function testSetOpenerToSelf() {
+  var url1 = getUrl('title1.html');
+
+  // create a new window with one tab.
+  chrome.windows.create({url: [url1]}, (win) => {
+    chrome.test.assertNoLastError();
+    chrome.test.assertTrue(!!win);
+    chrome.test.assertTrue(!!win.tabs);
+    chrome.test.assertEq(1, win.tabs.length);
+    var openerId = win.tabs[0].id;
+
+    // Try to update the tab in the window to have an opener of itself.
+    // This *should* fail.
+    chrome.tabs.update(openerId, {openerTabId: openerId}, () => {
+      chrome.test.assertLastError(
+          'Cannot set a tab\'s opener to itself.');
+      chrome.test.succeed();
+    });
+  });
+}
+
+chrome.test.getConfig((config) => {
+  port = config.testServer.port;
+
+  chrome.test.runTests([testSetOpenerOutsideOfWindow, testSetOpenerToSelf]);
 });
