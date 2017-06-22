@@ -18,7 +18,6 @@
 
 namespace ash {
 
-class KeyEventWatcher;
 enum class LoginStatus;
 class ScreenTrayItem;
 class SystemBubbleWrapper;
@@ -133,7 +132,12 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void BubbleViewDestroyed() override;
   void OnMouseEnteredView() override;
   void OnMouseExitedView() override;
+  void RegisterAccelerators(const std::vector<ui::Accelerator>& accelerators,
+                            views::TrayBubbleView* tray_bubble_view) override;
+  void UnregisterAllAccelerators(
+      views::TrayBubbleView* tray_bubble_view) override;
   base::string16 GetAccessibleNameForBubble() override;
+  bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   ScreenTrayItem* GetScreenShareItem() { return screen_share_tray_item_; }
@@ -151,10 +155,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // Activates the bubble and starts key navigation with the |key_event|.
   void ActivateAndStartNavigation(const ui::KeyEvent& key_event);
-
-  // Creates the key event watcher. See |ShowItems()| for why key events are
-  // observed.
-  void CreateKeyEventWatcher();
 
   // Creates the default set of items for the sytem tray.
   void CreateItems(SystemTrayDelegate* delegate);
@@ -231,8 +231,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // A reference to the Screen share and capture item.
   ScreenTrayItem* screen_capture_tray_item_ = nullptr;  // not owned
   ScreenTrayItem* screen_share_tray_item_ = nullptr;    // not owned
-
-  std::unique_ptr<KeyEventWatcher> key_event_watcher_;
 
   std::unique_ptr<ActivationObserver> activation_observer_;
 
