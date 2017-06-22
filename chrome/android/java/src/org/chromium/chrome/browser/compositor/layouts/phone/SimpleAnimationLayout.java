@@ -69,6 +69,8 @@ public class SimpleAnimationLayout
     private final TabListSceneLayer mSceneLayer;
     private final BlackHoleEventFilter mBlackHoleEventFilter;
 
+    private boolean mForegroundTabCreationAnimationDisabled;
+
     /**
      * Creates an instance of the {@link SimpleAnimationLayout}.
      * @param context     The current Android's context.
@@ -195,6 +197,8 @@ public class SimpleAnimationLayout
 
         mTabModelSelector.selectModel(newIsIncognito);
         startHiding(id, false);
+
+        if (mForegroundTabCreationAnimationDisabled) forceAnimationToFinish();
     }
 
     /**
@@ -428,5 +432,14 @@ public class SimpleAnimationLayout
         // The content viewport is intentionally sent as both params below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager);
+    }
+
+    /**
+     * Sets whether the foreground tab animation is disabled.
+     * TODO(twellington): Remove this after Chrome Home NTP animations are complete.
+     * @param disabled Whether the foreground tab animation should be disabled.
+     */
+    public void setForegroundTabAnimationDisabled(boolean disabled) {
+        mForegroundTabCreationAnimationDisabled = disabled;
     }
 }

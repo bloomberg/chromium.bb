@@ -217,7 +217,6 @@ public class BottomSheetNewTabControllerTest {
             @Override
             public void run() {
                 mBottomSheet.loadUrl(new LoadUrlParams("about:blank"), incognito);
-                mActivity.getLayoutManager().getActiveLayout().finishAnimationsForTests();
             }
         });
     }
