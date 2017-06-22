@@ -27,6 +27,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/api/app_window.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/image_util.h"
@@ -77,6 +78,11 @@ const char kImeWindowMustBeImeWindowOrPanel[] =
 #endif
 const char kShowInShelfWindowKeyNotSet[] =
     "The \"showInShelf\" option requires the \"id\" option to be set.";
+const char kLockScreenActionRequiresLockScreenContext[] =
+    "The lockScreenAction option requires lock screen app context.";
+const char kLockScreenActionRequiresLockScreenPermission[] =
+    "The lockScreenAction option requires lockScreen permission.";
+const char kAppWindowCreationFailed[] = "Failed to create the app window.";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -356,11 +362,42 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     }
   }
 
+  api::app_runtime::ActionType action_type = api::app_runtime::ACTION_TYPE_NONE;
+  if (options &&
+      options->lock_screen_action != api::app_runtime::ACTION_TYPE_NONE) {
+    if (source_context_type() != Feature::LOCK_SCREEN_EXTENSION_CONTEXT) {
+      return RespondNow(Error(
+          app_window_constants::kLockScreenActionRequiresLockScreenContext));
+    }
+
+    if (!extension()->permissions_data()->HasAPIPermission(
+            APIPermission::kLockScreen)) {
+      return RespondNow(Error(
+          app_window_constants::kLockScreenActionRequiresLockScreenPermission));
+    }
+
+    action_type = options->lock_screen_action;
+    create_params.show_on_lock_screen = true;
+  }
+
   create_params.creator_process_id =
       render_frame_host()->GetProcess()->GetID();
 
-  AppWindow* app_window =
-      AppWindowClient::Get()->CreateAppWindow(browser_context(), extension());
+  AppWindow* app_window = nullptr;
+  if (action_type == api::app_runtime::ACTION_TYPE_NONE) {
+    app_window =
+        AppWindowClient::Get()->CreateAppWindow(browser_context(), extension());
+  } else {
+    app_window = AppWindowClient::Get()->CreateAppWindowForLockScreenAction(
+        browser_context(), extension(), action_type);
+  }
+
+  // App window client might refuse to create an app window, e.g. when the app
+  // attempts to create a lock screen action handler window when the action was
+  // not requested.
+  if (!app_window)
+    return RespondNow(Error(app_window_constants::kAppWindowCreationFailed));
+
   app_window->Init(url, new AppWindowContentsImpl(app_window),
                    render_frame_host(), create_params);
 

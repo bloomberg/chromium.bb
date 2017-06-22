@@ -30,6 +30,10 @@ class ChromeAppWindowClient : public extensions::AppWindowClient {
   extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) override;
+  extensions::AppWindow* CreateAppWindowForLockScreenAction(
+      content::BrowserContext* context,
+      const extensions::Extension* extension,
+      extensions::api::app_runtime::ActionType action) override;
   extensions::NativeAppWindow* CreateNativeAppWindow(
       extensions::AppWindow* window,
       extensions::AppWindow::CreateParams* params) override;

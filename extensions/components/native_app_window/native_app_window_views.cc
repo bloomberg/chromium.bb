@@ -219,7 +219,7 @@ bool NativeAppWindowViews::CanMaximize() const {
 }
 
 bool NativeAppWindowViews::CanMinimize() const {
-  return true;
+  return !app_window_->show_on_lock_screen();
 }
 
 base::string16 NativeAppWindowViews::GetWindowTitle() const {

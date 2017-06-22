@@ -16,6 +16,9 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 using ash::mojom::TrayActionState;
@@ -40,7 +43,8 @@ StateController* StateController::Get() {
   return g_instance;
 }
 
-StateController::StateController() : binding_(this), session_observer_(this) {
+StateController::StateController()
+    : binding_(this), app_window_observer_(this), session_observer_(this) {
   DCHECK(!g_instance);
   DCHECK(IsEnabled());
 
@@ -120,7 +124,7 @@ void StateController::RequestNewLockScreenNote() {
 void StateController::OnSessionStateChanged() {
   if (!session_manager::SessionManager::Get()->IsScreenLocked()) {
     app_manager_->Stop();
-    UpdateLockScreenNoteState(TrayActionState::kNotAvailable);
+    ResetNoteTakingWindowAndMoveToNextState(true /* close_window */);
     return;
   }
 
@@ -133,9 +137,42 @@ void StateController::OnSessionStateChanged() {
   OnNoteTakingAvailabilityChanged();
 }
 
+void StateController::OnAppWindowRemoved(extensions::AppWindow* app_window) {
+  if (note_app_window_ != app_window)
+    return;
+  ResetNoteTakingWindowAndMoveToNextState(false /* close_window */);
+}
+
+extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
+    content::BrowserContext* context,
+    const extensions::Extension* extension,
+    extensions::api::app_runtime::ActionType action,
+    std::unique_ptr<extensions::AppDelegate> app_delegate) {
+  if (action != extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE)
+    return nullptr;
+
+  if (lock_screen_note_state_ != TrayActionState::kLaunching)
+    return nullptr;
+
+  if (!chromeos::ProfileHelper::GetSigninProfile()->IsSameProfile(
+          Profile::FromBrowserContext(context))) {
+    return nullptr;
+  }
+
+  if (!extension || app_manager_->GetNoteTakingAppId() != extension->id())
+    return nullptr;
+
+  // The ownership of the window is passed to the caller of this method.
+  note_app_window_ =
+      new extensions::AppWindow(context, app_delegate.release(), extension);
+  app_window_observer_.Add(extensions::AppWindowRegistry::Get(
+      chromeos::ProfileHelper::GetSigninProfile()));
+  UpdateLockScreenNoteState(TrayActionState::kActive);
+  return note_app_window_;
+}
+
 void StateController::MoveToBackground() {
-  TrayActionState state = GetLockScreenNoteState();
-  if (state != TrayActionState::kActive && state != TrayActionState::kLaunching)
+  if (GetLockScreenNoteState() != TrayActionState::kActive)
     return;
   UpdateLockScreenNoteState(TrayActionState::kBackground);
 }
@@ -146,19 +183,31 @@ void StateController::MoveToForeground() {
   UpdateLockScreenNoteState(TrayActionState::kActive);
 }
 
-void StateController::SetLockScreenNoteStateForTesting(
-    ash::mojom::TrayActionState state) {
-  lock_screen_note_state_ = state;
-}
-
 void StateController::OnNoteTakingAvailabilityChanged() {
-  if (!app_manager_->IsNoteTakingAppAvailable()) {
-    UpdateLockScreenNoteState(TrayActionState::kNotAvailable);
+  if (!app_manager_->IsNoteTakingAppAvailable() ||
+      (note_app_window_ && note_app_window_->GetExtension()->id() !=
+                               app_manager_->GetNoteTakingAppId())) {
+    ResetNoteTakingWindowAndMoveToNextState(true /* close_window */);
     return;
   }
 
   if (GetLockScreenNoteState() == TrayActionState::kNotAvailable)
     UpdateLockScreenNoteState(TrayActionState::kAvailable);
+}
+
+void StateController::ResetNoteTakingWindowAndMoveToNextState(
+    bool close_window) {
+  app_window_observer_.RemoveAll();
+
+  if (note_app_window_) {
+    if (close_window && note_app_window_->GetBaseWindow())
+      note_app_window_->GetBaseWindow()->Close();
+    note_app_window_ = nullptr;
+  }
+
+  UpdateLockScreenNoteState(app_manager_->IsNoteTakingAppAvailable()
+                                ? TrayActionState::kAvailable
+                                : TrayActionState::kNotAvailable);
 }
 
 bool StateController::UpdateLockScreenNoteState(TrayActionState state) {

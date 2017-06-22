@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "extensions/browser/app_window/app_window.h"
+#include "extensions/common/api/app_runtime.h"
 
 namespace content {
 class BrowserContext;
@@ -29,6 +30,15 @@ class AppWindowClient {
   // Caller takes ownership.
   virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
                                      const Extension* extension) = 0;
+
+  // Creates a new AppWindow for |extension| as lock screen action handler for
+  // |action|. This should be used to create windows that will be used to handle
+  // |action| on lock screen. The method should return null window if the app
+  // was not requested to handle the action.
+  virtual AppWindow* CreateAppWindowForLockScreenAction(
+      content::BrowserContext* context,
+      const Extension* extension,
+      api::app_runtime::ActionType action) = 0;
 
   // Creates a new extensions::NativeAppWindow for |window|.
   virtual NativeAppWindow* CreateNativeAppWindow(

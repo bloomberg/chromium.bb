@@ -140,9 +140,12 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     views::Widget* widget) {
   ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(create_params, init_params,
                                                      widget);
-  if (create_params.is_ime_window) {
-    // Put ime windows into the ime window container on the primary display.
-    int container_id = ash::kShellWindowId_ImeWindowParentContainer;
+  if (create_params.is_ime_window || create_params.show_on_lock_screen) {
+    // Put ime windows and lock screen windows into their respective window
+    // containers on the primary display.
+    int container_id = create_params.is_ime_window
+                           ? ash::kShellWindowId_ImeWindowParentContainer
+                           : ash::kShellWindowId_LockActionHandlerContainer;
     if (ash_util::IsRunningInMash()) {
       init_params->mus_properties
           [ui::mojom::WindowManager::kContainerId_InitProperty] =
