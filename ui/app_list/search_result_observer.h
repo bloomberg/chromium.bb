@@ -17,6 +17,12 @@ class APP_LIST_EXPORT SearchResultObserver {
   // Invoked when the SearchResult's badge icon has changed.
   virtual void OnBadgeIconChanged() {}
 
+  // Invoked when the SearchResult's app rating has changed.
+  virtual void OnRatingChanged() {}
+
+  // Invoked when the SearchResult's app formatted price has changed.
+  virtual void OnFormattedPriceChanged() {}
+
   // Invoked when the SearchResult's actions have changed.
   virtual void OnActionsChanged() {}
 

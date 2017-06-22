@@ -45,6 +45,9 @@ class APP_LIST_EXPORT SearchResultTileItemListView
 
   views::Textfield* search_box_;  // Owned by the views hierarchy.
 
+  // Whether the fullscreen app list feature is enabled.
+  const bool is_fullscreen_app_list_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);
 };
 
