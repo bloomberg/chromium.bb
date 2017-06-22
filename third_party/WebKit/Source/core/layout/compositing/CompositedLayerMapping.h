@@ -204,7 +204,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
   void UpdateRenderingContext();
   void UpdateShouldFlattenTransform();
-  void UpdateElementIdAndCompositorMutableProperties();
+  void UpdateElementId();
 
   // GraphicsLayerClient interface
   void InvalidateTargetElementForTesting() override;

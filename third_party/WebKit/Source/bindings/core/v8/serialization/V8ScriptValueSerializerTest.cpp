@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8Blob.h"
-#include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMMatrix.h"
 #include "bindings/core/v8/V8DOMMatrixReadOnly.h"
@@ -27,7 +26,6 @@
 #include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
-#include "core/dom/CompositorProxy.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
@@ -43,7 +41,6 @@
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
@@ -1583,41 +1580,6 @@ class ScopedEnableCompositorWorker {
  private:
   bool was_enabled_;
 };
-
-TEST(V8ScriptValueSerializerTest, RoundTripCompositorProxy) {
-  ScopedEnableCompositorWorker enable_compositor_worker;
-  V8TestingScope scope;
-  HTMLElement* element = scope.GetDocument().body();
-  Vector<String> properties{"transform"};
-  CompositorProxy* proxy = CompositorProxy::Create(
-      scope.GetExecutionContext(), element, properties, ASSERT_NO_EXCEPTION);
-  uint64_t element_id = proxy->ElementId();
-
-  v8::Local<v8::Value> wrapper = ToV8(proxy, scope.GetScriptState());
-  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
-  ASSERT_TRUE(V8CompositorProxy::hasInstance(result, scope.GetIsolate()));
-  CompositorProxy* new_proxy =
-      V8CompositorProxy::toImpl(result.As<v8::Object>());
-  EXPECT_EQ(element_id, new_proxy->ElementId());
-  EXPECT_EQ(CompositorMutableProperty::kTransform,
-            new_proxy->CompositorMutableProperties());
-}
-
-TEST(V8ScriptValueSerializerTest, CompositorProxyBadElementDeserialization) {
-  ScopedEnableCompositorWorker enable_compositor_worker;
-  V8TestingScope scope;
-
-  // Normally a CompositorProxy will not be constructed with an element id of 0,
-  // but we force it here to test the deserialization code.
-  uint8_t element_id = 0;
-  uint8_t mutable_properties = CompositorMutableProperty::kOpacity;
-  RefPtr<SerializedScriptValue> input = SerializedValue(
-      {0xff, 0x09, 0x3f, 0x00, 0x43, element_id, mutable_properties, 0x00});
-  v8::Local<v8::Value> result =
-      V8ScriptValueDeserializer(scope.GetScriptState(), input).Deserialize();
-
-  EXPECT_TRUE(result->IsNull());
-}
 
 // Decode tests aren't included here because they're slightly non-trivial (an
 // element with the right ID must actually exist) and this feature is both

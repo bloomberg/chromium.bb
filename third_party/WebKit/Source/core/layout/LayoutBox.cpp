@@ -109,9 +109,8 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
   // since position:static elements that are not flex-items get their z-index
   // coerced to auto.
   if (IsPositioned() || CreatesGroup() || HasClipPath() ||
-      HasTransformRelatedProperty() || Style()->HasCompositorProxy() ||
-      HasHiddenBackface() || HasReflection() || Style()->SpecifiesColumns() ||
-      Style()->IsStackingContext() ||
+      HasTransformRelatedProperty() || HasHiddenBackface() || HasReflection() ||
+      Style()->SpecifiesColumns() || Style()->IsStackingContext() ||
       Style()->ShouldCompositeForCurrentAnimations() ||
       RootScrollerUtil::IsEffective(*this))
     return kNormalPaintLayer;

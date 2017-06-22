@@ -1890,13 +1890,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   if (!layer->ScrollsOverflow())
     return false;
 
-  Node* node = layer->EnclosingNode();
-  if (node && node->IsElementNode() &&
-      (ToElement(node)->CompositorMutableProperties() &
-       (CompositorMutableProperty::kScrollTop |
-        CompositorMutableProperty::kScrollLeft)))
-    return true;
-
   if (layer->size().IsEmpty())
     return false;
 

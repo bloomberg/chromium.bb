@@ -1018,20 +1018,6 @@ interface CompositionEvent : UIEvent
     getter data
     method constructor
     method initCompositionEvent
-interface CompositorProxy
-    attribute @@toStringTag
-    getter initialized
-    getter opacity
-    getter scrollLeft
-    getter scrollTop
-    getter transform
-    method constructor
-    method disconnect
-    method supports
-    setter opacity
-    setter scrollLeft
-    setter scrollTop
-    setter transform
 interface CompositorWorker : EventTarget
     attribute @@toStringTag
     getter onerror

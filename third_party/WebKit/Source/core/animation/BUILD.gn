@@ -102,8 +102,6 @@ blink_core_sources("animation") {
     "CompositorMutatorImpl.h",
     "CompositorPendingAnimations.cpp",
     "CompositorPendingAnimations.h",
-    "CompositorProxyClientImpl.cpp",
-    "CompositorProxyClientImpl.h",
     "CustomCompositorAnimationManager.cpp",
     "CustomCompositorAnimationManager.h",
     "CustomCompositorAnimations.cpp",

@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8Blob.h"
-#include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8DOMMatrix.h"
 #include "bindings/core/v8/V8DOMMatrixReadOnly.h"
 #include "bindings/core/v8/V8DOMPoint.h"
@@ -199,24 +198,6 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
       WriteUTF8String(blob->type());
       WriteUint64(blob->size());
     }
-    return true;
-  }
-  if (wrapper_type_info == &V8CompositorProxy::wrapperTypeInfo) {
-    DCHECK(RuntimeEnabledFeatures::CompositorWorkerEnabled());
-    CompositorProxy* proxy = wrappable->ToImpl<CompositorProxy>();
-    if (!proxy->Connected()) {
-      exception_state.ThrowDOMException(kDataCloneError,
-                                        "A CompositorProxy object has been "
-                                        "disconnected, and could therefore not "
-                                        "be cloned.");
-      return false;
-    }
-    // TODO(jbroman): This seems likely to break in cross-process or
-    // persistent scenarios. Keeping as-is for now because the successor
-    // does not use this approach (and this feature is unshipped).
-    WriteTag(kCompositorProxyTag);
-    WriteUint64(proxy->ElementId());
-    WriteUint32(proxy->CompositorMutableProperties());
     return true;
   }
   if (wrapper_type_info == &V8File::wrapperTypeInfo) {
