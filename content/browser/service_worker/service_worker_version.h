@@ -298,6 +298,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return controllee_map_;
   }
 
+  // The provider host hosting this version. Only valid while the version is
+  // running.
+  ServiceWorkerProviderHost* provider_host() {
+    DCHECK(provider_host_);
+    return provider_host_.get();
+  }
+
   base::WeakPtr<ServiceWorkerContextCore> context() const { return context_; }
 
   // Adds and removes |request_job| as a dependent job not to stop the
@@ -710,6 +717,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_;
 
   std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
+
+  // Keeps track of the provider hosting this running service worker for this
+  // version. |provider_host_| is always valid as long as this version is
+  // running.
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
 
   std::map<std::string, ServiceWorkerProviderHost*> controllee_map_;
   // Will be null while shutting down.

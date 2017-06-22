@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
@@ -30,10 +31,10 @@ class ServiceWorkerVersion;
 //
 // Has a reference to the corresponding ServiceWorkerRegistration in order to
 // ensure that the registration is alive while this handle is around.
-class ServiceWorkerRegistrationHandle
+class CONTENT_EXPORT ServiceWorkerRegistrationHandle
     : public ServiceWorkerRegistration::Listener {
  public:
-  CONTENT_EXPORT ServiceWorkerRegistrationHandle(
+  ServiceWorkerRegistrationHandle(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);

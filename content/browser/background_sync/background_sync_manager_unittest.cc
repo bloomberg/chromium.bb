@@ -27,6 +27,8 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
+#include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/background_sync_parameters.h"
@@ -445,7 +447,28 @@ TEST_F(BackgroundSyncManagerTest, RegistrationIntact) {
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
+  // Get a provider host which is used to install the service worker.
+  ASSERT_TRUE(sw_registration_1_->active_version());
+  ASSERT_FALSE(sw_registration_1_->waiting_version());
+  ASSERT_FALSE(sw_registration_1_->installing_version());
+  ServiceWorkerProviderHost* provider_host =
+      sw_registration_1_->active_version()->provider_host();
+  ASSERT_TRUE(provider_host);
+  int process_id = provider_host->process_id();
+  int provider_id = provider_host->provider_id();
+
+  // Remove the registration handle registered on the dispatcher host.
+  ServiceWorkerDispatcherHost* dispatcher_host =
+      helper_->context()->GetDispatcherHost(process_id);
+  ServiceWorkerRegistrationHandle* handle =
+      dispatcher_host->FindRegistrationHandle(provider_id,
+                                              sw_registration_1_->id());
+  dispatcher_host->OnDecrementRegistrationRefCount(handle->handle_id());
+
+  // Ensure |sw_registration_1_| is the last reference to the registration.
+  ASSERT_TRUE(sw_registration_1_->HasOneRef());
   sw_registration_1_ = nullptr;
+
   EXPECT_FALSE(Register(sync_options_1_));
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback_status_);
 }

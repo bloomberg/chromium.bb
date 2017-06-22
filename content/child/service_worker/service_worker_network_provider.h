@@ -15,6 +15,7 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker.mojom.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -57,20 +58,19 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
                                ServiceWorkerProviderType type,
                                int browser_provider_id,
                                bool is_parent_frame_secure);
+  // This is for service worker clients.
   ServiceWorkerNetworkProvider(int route_id,
                                ServiceWorkerProviderType type,
                                bool is_parent_frame_secure);
+  // This is for controllers.
+  explicit ServiceWorkerNetworkProvider(
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
   ServiceWorkerNetworkProvider();
   ~ServiceWorkerNetworkProvider();
 
   int provider_id() const { return provider_id_; }
   ServiceWorkerProviderContext* context() const { return context_.get(); }
-
-  // This method is called for a provider that's associated with a
-  // running service worker script. The version_id indicates which
-  // ServiceWorkerVersion should be used.
-  void SetServiceWorkerVersionId(int64_t version_id, int embedded_worker_id);
 
   bool IsControlledByServiceWorker() const;
 

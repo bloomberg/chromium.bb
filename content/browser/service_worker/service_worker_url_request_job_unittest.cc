@@ -439,7 +439,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id_, service_worker_version_id_, scope_, script_url_,
         pause_after_download_, std::move(start_worker_request_),
-        std::move(start_worker_instance_host_));
+        std::move(start_worker_instance_host_), std::move(provider_info_));
   }
 
   void Respond() {
@@ -458,14 +458,16 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   }
 
  protected:
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download,
-                     mojom::ServiceWorkerEventDispatcherRequest request,
-                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                         instance_host) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     embedded_worker_id_ = embedded_worker_id;
     service_worker_version_id_ = service_worker_version_id;
     scope_ = scope;
@@ -473,6 +475,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     pause_after_download_ = pause_after_download;
     start_worker_request_ = std::move(request);
     start_worker_instance_host_ = std::move(instance_host);
+    provider_info_ = std::move(provider_info);
   }
 
   void OnFetchEvent(
@@ -497,6 +500,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   mojom::ServiceWorkerEventDispatcherRequest start_worker_request_;
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
       start_worker_instance_host_;
+  mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;
   int embedded_worker_id_ = 0;
   int fetch_event_id_ = 0;
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;

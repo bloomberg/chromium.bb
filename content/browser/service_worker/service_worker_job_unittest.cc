@@ -20,13 +20,17 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
+#include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/io_buffer.h"
@@ -43,6 +47,45 @@ using net::WrappedIOBuffer;
 namespace content {
 
 namespace {
+
+// A dispatcher host that holds on to all registered ServiceWorkerHandles and
+// ServiceWorkerRegistrationHandles.
+class KeepHandlesDispatcherHost : public ServiceWorkerDispatcherHost {
+ public:
+  KeepHandlesDispatcherHost(int render_process_id,
+                            ResourceContext* resource_context)
+      : ServiceWorkerDispatcherHost(render_process_id, resource_context) {}
+  void RegisterServiceWorkerHandle(
+      std::unique_ptr<ServiceWorkerHandle> handle) override {
+    handles_.push_back(std::move(handle));
+  }
+  void RegisterServiceWorkerRegistrationHandle(
+      std::unique_ptr<ServiceWorkerRegistrationHandle> handle) override {
+    registration_handles_.push_back(std::move(handle));
+  }
+
+  void RemoveHandles() {
+    handles_.clear();
+    registration_handles_.clear();
+  }
+
+  const std::vector<std::unique_ptr<ServiceWorkerHandle>>& handles() {
+    return handles_;
+  }
+
+  const std::vector<std::unique_ptr<ServiceWorkerRegistrationHandle>>&
+  registration_handles() {
+    return registration_handles_;
+  }
+
+ private:
+  ~KeepHandlesDispatcherHost() override {}
+
+  std::vector<std::unique_ptr<ServiceWorkerHandle>> handles_;
+  std::vector<std::unique_ptr<ServiceWorkerRegistrationHandle>>
+      registration_handles_;
+  DISALLOW_COPY_AND_ASSIGN(KeepHandlesDispatcherHost);
+};
 
 void SaveRegistrationCallback(
     ServiceWorkerStatusCode expected_status,
@@ -357,17 +400,35 @@ TEST_F(ServiceWorkerJobTest, Register) {
 TEST_F(ServiceWorkerJobTest, Unregister) {
   GURL pattern("http://www.example.com/");
 
+  // During registration, handles will be created for hosting the worker's
+  // context. KeepHandlesDispatcherHost will store the handles.
+  scoped_refptr<KeepHandlesDispatcherHost> dispatcher_host =
+      base::MakeRefCounted<KeepHandlesDispatcherHost>(
+          helper_->mock_render_process_id(),
+          helper_->browser_context()->GetResourceContext());
+  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
+                                  dispatcher_host);
+  dispatcher_host->Init(helper_->context_wrapper());
+
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(pattern, GURL("http://www.example.com/service_worker.js"));
 
+  EXPECT_EQ(1UL, dispatcher_host->registration_handles().size());
+  EXPECT_EQ(3UL, dispatcher_host->handles().size());
+
   RunUnregisterJob(pattern);
 
+  // Remove the handles. The only reference to the registration object should be
+  // |registration|.
+  dispatcher_host->RemoveHandles();
+  EXPECT_EQ(0UL, dispatcher_host->registration_handles().size());
+  EXPECT_EQ(0UL, dispatcher_host->handles().size());
   ASSERT_TRUE(registration->HasOneRef());
 
   registration = FindRegistrationForPattern(pattern,
                                             SERVICE_WORKER_ERROR_NOT_FOUND);
 
-  ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(NULL), registration);
+  ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(nullptr), registration);
 }
 
 TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
@@ -405,11 +466,27 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
 // Make sure that when registering a duplicate pattern+script_url
 // combination, that the same registration is used.
 TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
+  // During registration, handles will be created for hosting the worker's
+  // context. KeepHandlesDispatcherHost will store the handles.
+  scoped_refptr<KeepHandlesDispatcherHost> dispatcher_host =
+      new KeepHandlesDispatcherHost(
+          helper_->mock_render_process_id(),
+          helper_->browser_context()->GetResourceContext());
+  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
+                                  dispatcher_host);
+  dispatcher_host->Init(helper_->context_wrapper());
+
   GURL pattern("http://www.example.com/");
   GURL script_url("http://www.example.com/service_worker.js");
 
   scoped_refptr<ServiceWorkerRegistration> old_registration =
       RunRegisterJob(pattern, script_url);
+
+  // Ensure that the registration's handle doesn't have the reference.
+  EXPECT_EQ(1UL, dispatcher_host->registration_handles().size());
+  dispatcher_host->RemoveHandles();
+  EXPECT_EQ(0UL, dispatcher_host->registration_handles().size());
+  ASSERT_TRUE(old_registration->HasOneRef());
 
   scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern =
       FindRegistrationForPattern(pattern);
@@ -433,14 +510,16 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
  public:
   FailToStartWorkerTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download,
-                     mojom::ServiceWorkerEventDispatcherRequest request,
-                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                         instance_host) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
     instance_host_ptr.Bind(std::move(instance_host));
     instance_host_ptr->OnStopped();
@@ -897,14 +976,16 @@ class UpdateJobTestHelper
   }
 
   // EmbeddedWorkerTestHelper overrides
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t version_id,
-                     const GURL& scope,
-                     const GURL& script,
-                     bool pause_after_download,
-                     mojom::ServiceWorkerEventDispatcherRequest request,
-                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                         instance_host) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t version_id,
+      const GURL& scope,
+      const GURL& script,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     const std::string kMockScriptBody = "mock_script";
     const uint64_t kMockScriptSize = 19284;
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
@@ -959,15 +1040,14 @@ class UpdateJobTestHelper
 
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download,
-        std::move(request), std::move(instance_host));
+        std::move(request), std::move(instance_host), std::move(provider_info));
   }
 
   void OnResumeAfterDownload(int embedded_worker_id) override {
     if (!force_start_worker_failure_) {
       EmbeddedWorkerTestHelper::OnResumeAfterDownload(embedded_worker_id);
     } else {
-      SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id,
-                                  GetNextProviderId());
+      SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
       SimulateWorkerScriptEvaluated(embedded_worker_id, false);
     }
   }
@@ -1015,14 +1095,16 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
   EvictIncumbentVersionHelper() {}
   ~EvictIncumbentVersionHelper() override {}
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t version_id,
-                     const GURL& scope,
-                     const GURL& script,
-                     bool pause_after_download,
-                     mojom::ServiceWorkerEventDispatcherRequest request,
-                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                         instance_host) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t version_id,
+      const GURL& scope,
+      const GURL& script,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ServiceWorkerRegistration* registration =
         context()->GetLiveRegistration(version->registration_id());
@@ -1036,7 +1118,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
     }
     UpdateJobTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download,
-        std::move(request), std::move(instance_host));
+        std::move(request), std::move(instance_host), std::move(provider_info));
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
@@ -1709,15 +1791,18 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
   }
 
  protected:
-  void StartWorker(const EmbeddedWorkerStartParams& params,
-                   mojom::ServiceWorkerEventDispatcherRequest request,
-                   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                       instance_host) override {
+  void StartWorker(
+      const EmbeddedWorkerStartParams& params,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     ASSERT_TRUE(next_pause_after_download_.has_value());
     EXPECT_EQ(next_pause_after_download_.value(), params.pause_after_download);
     num_of_startworker_++;
     EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-        params, std::move(request), std::move(instance_host));
+        params, std::move(request), std::move(instance_host),
+        std::move(provider_info));
   }
 
  private:

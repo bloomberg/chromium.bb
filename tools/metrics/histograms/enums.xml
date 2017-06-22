@@ -2541,6 +2541,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="170" label="RFH_ILLEGAL_UPLOAD_PARAMS"/>
   <int value="171" label="RFH_BASE_URL_FOR_DATA_URL_SPECIFIED"/>
   <int value="172" label="RFPH_ILLEGAL_UPLOAD_PARAMS"/>
+  <int value="173" label="SWDH_PROVIDER_CREATED_ILLEGAL_TYPE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

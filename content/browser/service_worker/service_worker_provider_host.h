@@ -58,17 +58,23 @@ class WebContents;
 // For providers hosting a running service worker, this class will observe
 // resource loads made directly by the service worker.
 //
-// A ServiceWorkerProviderHost instance is created when a
-// ServiceWorkerNetworkProvider is created on the renderer process, which
-// happens 1) when a document or worker (i.e., a service worker client) is
-// created, or 2) during service worker startup. Mojo's connection from
-// ServiceWorkerNetworkProvider is established on the creation time, and the
-// instance is destroyed on disconnection from the renderer side.
-// If PlzNavigate is turned on, an instance is pre-created on the browser
+// A ServiceWorkerProviderHost is created in the following situations:
+// 1) When it's for a document or worker (i.e., a service
+// worker client), the provider host is created when
+// ServiceWorkerNetworkProvider is created on the renderer process. Mojo's
+// connection from ServiceWorkerNetworkProvider is established on the creation
+// time.
+// 2) When it's for a running service worker, the provider host is created on
+// the browser process before launching the service worker's thread. Mojo's
+// connection to the renderer is established with the StartWorker message.
+// 3) When PlzNavigate is turned on, an instance is pre-created on the browser
 // before ServiceWorkerNetworkProvider is created on the renderer because
 // navigation is initiated on the browser side. In that case, establishment of
 // Mojo's connection will be deferred until ServiceWorkerNetworkProvider is
 // created on the renderer.
+// Destruction of the ServiceWorkerProviderHost instance happens on
+// disconnection of the Mojo's pipe from the renderer side regardless of what
+// the provider is for.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
@@ -90,6 +96,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
       const WebContentsGetter& web_contents_getter);
+
+  // Creates a ServiceWorkerProviderHost for hosting a running service worker.
+  // Information about this provider host is passed down to the service worker
+  // via StartWorker message.
+  static std::unique_ptr<ServiceWorkerProviderHost> PreCreateForController(
+      base::WeakPtr<ServiceWorkerContextCore> context);
 
   // Used to create a ServiceWorkerProviderHost when the renderer-side provider
   // is created. This ProviderHost will be created for the process specified by
@@ -200,8 +212,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Clears the associated registration and stop listening to it.
   void DisassociateRegistration();
 
-  void SetHostedVersion(ServiceWorkerVersion* version);
-
   // Returns a handler for a request, the handler may return NULL if
   // the request doesn't require special handling.
   std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
@@ -270,6 +280,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerProviderHostInfo info,
       ServiceWorkerDispatcherHost* dispatcher_host);
 
+  // Completes initialization of provider hosts for controllers and returns the
+  // value to create ServiceWorkerNetworkProvider on the renderer which will be
+  // connected to this instance.
+  // This instance will keep the reference to |hosted_version|, so please be
+  // careful not to create a reference cycle.
+  mojom::ServiceWorkerProviderInfoForStartWorkerPtr
+  CompleteStartWorkerPreparation(
+      int process_id,
+      scoped_refptr<ServiceWorkerVersion> hosted_version);
+
   // Sends event messages to the renderer. Events for the worker are queued up
   // until the worker thread id is known via SetReadyToSendMessagesToWorker().
   void SendUpdateFoundMessage(
@@ -305,6 +325,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void BindWorkerFetchContext(
       mojom::ServiceWorkerWorkerClientAssociatedPtrInfo client_ptr_info);
 
+ protected:
+  ServiceWorkerProviderHost(int process_id,
+                            ServiceWorkerProviderHostInfo info,
+                            base::WeakPtr<ServiceWorkerContextCore> context,
+                            ServiceWorkerDispatcherHost* dispatcher_host);
+
  private:
   friend class ForeignFetchRequestHandlerTest;
   friend class LinkHeaderServiceWorkerTest;
@@ -334,11 +360,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
         const GetRegistrationForReadyCallback& callback);
     ~OneShotGetReadyCallback();
   };
-
-  ServiceWorkerProviderHost(int process_id,
-                            ServiceWorkerProviderHostInfo info,
-                            base::WeakPtr<ServiceWorkerContextCore> context,
-                            ServiceWorkerDispatcherHost* dispatcher_host);
 
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(

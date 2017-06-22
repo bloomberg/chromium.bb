@@ -71,6 +71,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     STARTING_PHASE_MAX_VALUE,
   };
 
+  using ProviderInfoGetter =
+      base::OnceCallback<mojom::ServiceWorkerProviderInfoForStartWorkerPtr(
+          int /* process_id */)>;
+
   class Listener {
    public:
     virtual ~Listener() {}
@@ -108,8 +112,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // STOPPED status. |callback| is invoked after the worker script has been
   // started and evaluated, or when an error occurs.
   // |params| should be populated with service worker version info needed
-  // to start the worker.
+  // to start the worker. |provider_info_getter| is called when this instance
+  // allocates a process and is ready to send a StartWorker message.
   void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
+             ProviderInfoGetter provider_info_getter,
              mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
              const StatusCallback& callback);
 
@@ -228,7 +234,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void OnScriptLoaded() override;
   // Notifies the corresponding provider host that the thread has started and is
   // ready to receive messages.
-  void OnThreadStarted(int thread_id, int provider_id) override;
+  void OnThreadStarted(int thread_id) override;
   void OnScriptLoadFailed() override;
   // Fires the callback passed to Start().
   void OnScriptEvaluated(bool success) override;
@@ -283,7 +289,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   std::unique_ptr<EmbeddedWorkerInstance::WorkerProcessHandle> process_handle_;
   int thread_id_;
 
-  // |client_| is used to send messages to the renderer process.
+  // |client_| is used to send messages to the renderer process. The browser
+  // process should not disconnect the pipe because other associated interfaces
+  // may be using it. The renderer process will disconnect the pipe when
+  // appropriate.
   mojom::EmbeddedWorkerInstanceClientPtr client_;
 
   // Binding for EmbeddedWorkerInstanceHost, runs on IO thread.
@@ -292,6 +301,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // TODO(shimazu): Remove this after EmbeddedWorkerStartParams is changed to
   // a mojo struct.
   mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
+
+  // This is set at Start and used on SendStartWorker.
+  ProviderInfoGetter provider_info_getter_;
 
   // Whether devtools is attached or not.
   bool devtools_attached_;

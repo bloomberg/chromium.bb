@@ -163,6 +163,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       const ServiceWorkerRegistrationObjectInfo& info,
       const ServiceWorkerVersionAttributes& attrs);
 
+  void OnAssociateRegistration(int thread_id,
+                               int provider_id,
+                               const ServiceWorkerRegistrationObjectInfo& info,
+                               const ServiceWorkerVersionAttributes& attrs);
+
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender,
       base::SingleThreadTaskRunner* main_thread_task_runner);
@@ -210,10 +215,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void OnAssociateRegistration(int thread_id,
-                               int provider_id,
-                               const ServiceWorkerRegistrationObjectInfo& info,
-                               const ServiceWorkerVersionAttributes& attrs);
   void OnDisassociateRegistration(int thread_id,
                                   int provider_id);
   void OnRegistered(int thread_id,

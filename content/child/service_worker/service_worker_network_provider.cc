@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/request_extra_data.h"
+#include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/common/navigation_params.h"
@@ -207,6 +208,25 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
                                    GetNextProviderId(),
                                    is_parent_frame_secure) {}
 
+ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info)
+    : provider_id_(info->provider_id) {
+  context_ = new ServiceWorkerProviderContext(
+      provider_id_, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+      std::move(info->client_request),
+      ChildThreadImpl::current()->thread_safe_sender());
+
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+          ChildThreadImpl::current()->thread_safe_sender(),
+          base::ThreadTaskRunnerHandle::Get().get());
+  // TODO(shimazu): Set registration/attributes directly to |context_|.
+  dispatcher->OnAssociateRegistration(-1 /* unused thread_id */,
+                                      info->provider_id, info->registration,
+                                      info->attributes);
+  provider_host_.Bind(std::move(info->host_ptr_info));
+}
+
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
     : provider_id_(kInvalidServiceWorkerProviderId) {}
 
@@ -216,16 +236,6 @@ ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
   provider_host_.reset();
-}
-
-void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
-    int64_t version_id,
-    int embedded_worker_id) {
-  DCHECK_NE(kInvalidServiceWorkerProviderId, provider_id_);
-  if (!ChildThreadImpl::current())
-    return;  // May be null in some tests.
-  dispatcher_host_->OnSetHostedVersionId(provider_id(), version_id,
-                                         embedded_worker_id);
 }
 
 bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {

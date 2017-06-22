@@ -16,12 +16,4 @@ interface ServiceWorkerDispatcherHost {
   // ServiceWorkerProviderHost will be tied to the
   // mojom::ServiceWorkerProviderHost interface.
   OnProviderCreated(ServiceWorkerProviderHostInfo provider_info);
-
-  // Informs the browser that a service worker is starting up. |provider_id|
-  // identifies the ServiceWorkerProviderHost hosting the service
-  // worker. |version_id| identifies the ServiceWorkerVersion and
-  // |embedded_worker_id| identifies the EmbeddedWorkerInstance.  
-  OnSetHostedVersionId(int32 provider_id,
-                       int64 version_id,
-                       int32 embedded_worker_id);
 };
