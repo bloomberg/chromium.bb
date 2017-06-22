@@ -8,8 +8,12 @@
 
 namespace blink {
 
-CSSPerspective* CSSPerspective::Create(const CSSNumericValue* length,
+CSSPerspective* CSSPerspective::Create(CSSNumericValue* length,
                                        ExceptionState& exception_state) {
+  if (length->GetType() != CSSStyleValue::StyleValueType::kLengthType) {
+    exception_state.ThrowTypeError("Must pass length to CSSNumericValue");
+    return nullptr;
+  }
   if (length->ContainsPercent()) {
     exception_state.ThrowTypeError(
         "CSSPerspective does not support CSSNumericValues with percent units");
