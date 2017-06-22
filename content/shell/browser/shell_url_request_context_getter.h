@@ -34,6 +34,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       bool ignore_certificate_errors,
       const base::FilePath& base_path,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      // TODO(eroman): Remove the file_task_runner parameter (unused).
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors,

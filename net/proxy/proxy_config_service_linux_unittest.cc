@@ -194,8 +194,7 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
     values = zero_values;
   }
 
-  bool Init(const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
-            const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
+  bool Init(const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner)
       override {
     task_runner_ = glib_task_runner;
     return true;
@@ -208,7 +207,7 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
     return true;
   }
 
-  const scoped_refptr<base::SingleThreadTaskRunner>& GetNotificationTaskRunner()
+  const scoped_refptr<base::SequencedTaskRunner>& GetNotificationTaskRunner()
       override {
     return task_runner_;
   }
@@ -261,7 +260,7 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
   GConfValues values;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   SettingsTable<StringSetting, const char*> strings_table;
   SettingsTable<BoolSetting, BoolSettingValue> bools_table;
   SettingsTable<IntSetting, int> ints_table;
@@ -305,10 +304,8 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
   // all on the calling thread (meant to be the thread with the
   // default glib main loop, which is the UI thread).
   void SetupAndInitialFetch() {
-    // We pass the mock IO thread as both the IO and file threads.
     config_service_->SetupAndFetchInitialConfig(
-        base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner(),
-        io_thread_.task_runner());
+        base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner());
   }
   // Synchronously gets the proxy config.
   ProxyConfigService::ConfigAvailability SyncGetLatestProxyConfig(

@@ -428,8 +428,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // ProxyService::CreateSystemProxyConfigService()'s signature doesn't suck.
     if (!proxy_config_service_) {
       proxy_config_service_ = ProxyService::CreateSystemProxyConfigService(
-          base::ThreadTaskRunnerHandle::Get().get(),
-          context->GetFileTaskRunner());
+          base::ThreadTaskRunnerHandle::Get().get());
     }
 #endif  // !defined(OS_LINUX) && !defined(OS_ANDROID)
     proxy_service_ =

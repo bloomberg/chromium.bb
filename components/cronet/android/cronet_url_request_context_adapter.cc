@@ -511,8 +511,8 @@ void CronetURLRequestContextAdapter::InitRequestContextOnInitThread(
     const JavaParamRef<jobject>& jcaller) {
   base::android::ScopedJavaGlobalRef<jobject> jcaller_ref;
   jcaller_ref.Reset(env, jcaller);
-  proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
-      GetNetworkTaskRunner(), nullptr /* Ignored on Android */);
+  proxy_config_service_ =
+      net::ProxyService::CreateSystemProxyConfigService(GetNetworkTaskRunner());
   net::ProxyConfigServiceAndroid* android_proxy_config_service =
       static_cast<net::ProxyConfigServiceAndroid*>(proxy_config_service_.get());
   // If a PAC URL is present, ignore it and use the address and port of
