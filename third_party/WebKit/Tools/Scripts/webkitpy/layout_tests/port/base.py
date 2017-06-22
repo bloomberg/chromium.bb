@@ -728,6 +728,8 @@ class Port(object):
             else:
                 path_in_wpt = filename
             return self._wpt_manifest().is_test_file(path_in_wpt)
+        if 'inspector-protocol' in dirname and filesystem.splitext(filename)[1] == '.js':
+            return True
         if 'inspector-unit' in dirname or 'devtools-js' in dirname:
             return filesystem.splitext(filename)[1] == '.js'
         return Port._has_supported_extension(

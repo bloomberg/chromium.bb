@@ -44,6 +44,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/shell/browser/layout_test/devtools_protocol_test_bindings.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
@@ -300,6 +301,9 @@ bool BlinkTestController::PrepareForLayoutTest(
   bool is_devtools_js_test = false;
   test_url_ = LayoutTestDevToolsBindings::MapTestURLIfNeeded(
       test_url, &is_devtools_js_test);
+  bool is_devtools_protocol_test = false;
+  test_url_ = DevToolsProtocolTestBindings::MapTestURLIfNeeded(
+      test_url_, &is_devtools_protocol_test);
   did_send_initial_test_configuration_ = false;
   printer_->reset();
   frame_to_layout_dump_map_.clear();
@@ -323,6 +327,10 @@ bool BlinkTestController::PrepareForLayoutTest(
         NULL,
         initial_size_);
     WebContentsObserver::Observe(main_window_->web_contents());
+    if (is_devtools_protocol_test) {
+      devtools_protocol_test_bindings_.reset(
+          new DevToolsProtocolTestBindings(main_window_->web_contents()));
+    }
     current_pid_ = base::kNullProcessId;
     default_prefs_ =
       main_window_->web_contents()->GetRenderViewHost()->GetWebkitPreferences();
@@ -346,6 +354,11 @@ bool BlinkTestController::PrepareForLayoutTest(
         ->WasResized();
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
+
+    if (is_devtools_protocol_test) {
+      devtools_protocol_test_bindings_.reset(
+          new DevToolsProtocolTestBindings(main_window_->web_contents()));
+    }
 
     // Compositing tests override the default preferences (see
     // BlinkTestController::OverrideWebkitPrefs) so we force them to be
@@ -631,6 +644,7 @@ void BlinkTestController::DiscardMainWindow() {
   // loop. Otherwise, we're already outside of the message loop, and we just
   // discard the main window.
   devtools_bindings_.reset();
+  devtools_protocol_test_bindings_.reset();
   WebContentsObserver::Observe(NULL);
   if (test_phase_ != BETWEEN_TESTS) {
     Shell::CloseAllWindows();
@@ -709,6 +723,7 @@ void BlinkTestController::OnTestFinished() {
   if (!printer_->output_finished())
     printer_->PrintImageFooter();
   main_window_->web_contents()->ExitFullscreen(/*will_cause_resize=*/false);
+  devtools_protocol_test_bindings_.reset();
 
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
