@@ -17,10 +17,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
 import org.chromium.chrome.browser.download.DownloadSheetContent;
 import org.chromium.chrome.browser.history.HistorySheetContent;
@@ -33,9 +31,6 @@ import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheetObserver}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({BottomSheetTestRule.ENABLE_CHROME_HOME,
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class BottomSheetObserverTest {
     @Rule

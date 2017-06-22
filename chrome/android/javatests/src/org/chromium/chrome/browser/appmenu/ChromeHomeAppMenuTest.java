@@ -18,10 +18,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
@@ -31,9 +29,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * Tests for the app menu when Chrome Home is enabled.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({BottomSheetTestRule.ENABLE_CHROME_HOME,
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class ChromeHomeAppMenuTest {
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");

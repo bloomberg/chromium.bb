@@ -4,10 +4,15 @@
 
 package org.chromium.chrome.test;
 
+import static org.chromium.chrome.browser.ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE;
+import static org.chromium.chrome.test.BottomSheetTestRule.ENABLE_CHROME_HOME;
+import static org.chromium.chrome.test.ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG;
+
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -20,6 +25,8 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 /**
  * Junit4 rule for tests testing the Chrome Home bottom sheet.
  */
+@CommandLineFlags.Add({ENABLE_CHROME_HOME, DISABLE_FIRST_RUN_EXPERIENCE,
+        DISABLE_NETWORK_PREDICTION_FLAG})
 public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     /** An observer used to record events that occur with respect to the bottom sheet. */
     public static class Observer extends EmptyBottomSheetObserver {
@@ -158,7 +165,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     /**
      * Set the bottom sheet's state on the UI thread.
      *
-     * @param state The state to set the sheet to.
+     * @param state   The state to set the sheet to.
      * @param animate If the sheet should animate to the provided state.
      */
     public void setSheetState(final int state, final boolean animate) {
@@ -190,7 +197,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
 
     /**
      * @param itemId The id of the MenuItem corresponding to the {@link BottomSheetContent} to
-     *            select.
+     *               select.
      */
     public void selectBottomSheetContent(final int itemId) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

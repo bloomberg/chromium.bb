@@ -22,11 +22,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.SuggestionsBottomSheetTestRule;
@@ -37,9 +35,6 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
  * Instrumentation tests for {@link SuggestionsBottomSheetContent}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({SuggestionsBottomSheetTestRule.ENABLE_CHROME_HOME,
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        SuggestionsBottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class SuggestionsBottomSheetTest {
     @Rule

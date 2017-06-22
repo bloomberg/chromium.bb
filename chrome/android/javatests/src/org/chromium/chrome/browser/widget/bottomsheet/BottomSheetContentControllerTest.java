@@ -17,10 +17,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
@@ -36,9 +34,6 @@ import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheetContentController}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"enable-features=ChromeHome",
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class BottomSheetContentControllerTest {
     private BottomSheetTestRule.Observer mObserver;
