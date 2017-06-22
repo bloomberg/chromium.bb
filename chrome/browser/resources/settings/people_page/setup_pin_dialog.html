@@ -32,6 +32,12 @@
         justify-content: center;
       }
 
+      /* Hide this using visibility: hidden instead of hidden so that the
+         dialog does not resize when there are no problems to display. */
+      #problemDiv[invisible] {
+        visibility: hidden;
+      }
+
       #problemMessage {
         font-size: 10px;
       }
@@ -49,7 +55,7 @@
               autofocus>
             <!-- Warning/error; only shown if title is hidden. -->
             <div id="problemDiv" class$="[[problemClass_]]"
-                hidden$="[[!problemMessage_]]" problem>
+                hidden="[[!problemMessage_]]" problem>
               <iron-icon icon="settings:error-outline"></iron-icon>
               <span id="problemMessage">[[problemMessage_]]</span>
             </div>

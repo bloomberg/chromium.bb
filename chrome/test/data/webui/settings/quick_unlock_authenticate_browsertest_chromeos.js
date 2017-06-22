@@ -15,7 +15,8 @@ cr.define('settings_people_page_quick_unlock', function() {
   function isVisible(element) {
     while (element) {
       if (element.offsetWidth <= 0 || element.offsetHeight <= 0 ||
-          element.hidden) {
+          element.hidden ||
+          window.getComputedStyle(element).visibility == 'hidden') {
         return false;
       }
 
@@ -389,11 +390,24 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertTrue(isVisible(problemDiv));
       });
 
-      // If the PIN is too short an error problem is shown.
+      // If the PIN is too short a problem is shown.
       test('WarningShownForShortPins', function() {
-        pinKeyboard.value = '11';
-
+        // Verify initially when the PIN is less than 4 digits, the problem will
+        // be a warning.
+        pinKeyboard.value = '';
         assertTrue(isVisible(problemDiv));
+        assertHasClass(problemDiv, 'warning');
+        assertTrue(continueButton.disabled);
+
+        // Verify that once the PIN is 4 digits (do not use 1111 since that will
+        // bring up a easy to guess warning) the warning disappears.
+        pinKeyboard.value = '1321';
+        assertFalse(isVisible(problemDiv));
+        assertFalse(continueButton.disabled);
+
+        // Verify that after we pass 4 digits once, but delete some digits, the
+        // problem will be an error.
+        pinKeyboard.value = '11';
         assertHasClass(problemDiv, 'error');
         assertTrue(continueButton.disabled);
       });
@@ -423,16 +437,15 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertHasClass(problemDiv, 'warning');
       });
 
-      // If the confirm PIN does not match the initial PIN a warning is shown.
-      // If the user tries to submit the PIN, the warning changes to an error.
+      // Show a error if the user tries to submit a PIN that does not match the
+      // initial PIN. The error disappears once the user edits the wrong PIN.
       test('WarningThenErrorShownForMismatchedPins', function() {
         pinKeyboard.value = '1118';
         MockInteractions.tap(continueButton);
 
         // Entering a mismatched PIN shows a warning.
         pinKeyboard.value = '1119';
-        assertTrue(isVisible(problemDiv));
-        assertHasClass(problemDiv, 'warning');
+        assertFalse(isVisible(problemDiv));
 
         // Submitting a mistmatched PIN shows an error. Directly call the button
         // event since a tap on the disabled button does nothing.
@@ -441,7 +454,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
         // Changing the PIN changes the error to a warning.
         pinKeyboard.value = '111';
-        assertHasClass(problemDiv, 'warning');
+        assertFalse(isVisible(problemDiv));
       });
 
       // Hitting cancel at the setup step dismisses the dialog.
