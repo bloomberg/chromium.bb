@@ -15499,7 +15499,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2024" label="DeprecatedTimingFunctionStepMiddle"/>
   <int value="2025" label="DocumentDomainSetWithNonDefaultPort"/>
   <int value="2026" label="DocumentDomainSetWithDefaultPort"/>
-  <int value="2027" label="HTMLMediaElementPlayRejected"/>
+  <int value="2027" label="FeaturePolicyHeader"/>
+  <int value="2028" label="FeaturePolicyAllowAttribute"/>
 </enum>
 
 <enum name="FeedbackSource">

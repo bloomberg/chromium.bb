@@ -1559,6 +1559,8 @@ enum class WebFeature : uint32_t {
   kDeprecatedTimingFunctionStepMiddle = 2024,
   kDocumentDomainSetWithNonDefaultPort = 2025,
   kDocumentDomainSetWithDefaultPort = 2026,
+  kFeaturePolicyHeader = 2027,
+  kFeaturePolicyAllowAttribute = 2028,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
