@@ -1447,6 +1447,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void SendSensitiveInputVisibilityInternal();
 
   bool HaveImportsLoaded() const;
+  void ViewportDefiningElementDidChange();
 
   DocumentLifecycle lifecycle_;
 

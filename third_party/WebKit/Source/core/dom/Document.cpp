@@ -2164,7 +2164,10 @@ void Document::UpdateStyle() {
     InheritHtmlAndBodyElementStyles(change);
     if (document_element->ShouldCallRecalcStyle(change)) {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
+      Element* viewport_defining = ViewportDefiningElement();
       document_element->RecalcStyle(change);
+      if (viewport_defining != ViewportDefiningElement())
+        ViewportDefiningElementDidChange();
     }
     if (document_element->NeedsReattachLayoutTree() ||
         document_element->ChildNeedsReattachLayoutTree()) {
@@ -2203,6 +2206,23 @@ void Document::UpdateStyle() {
                       ("Style.UpdateTime", 0, 10000000, 50));
   update_histogram.Count(update_duration_seconds * 1000 * 1000);
   CSSTiming::From(*this).RecordUpdateDuration(update_duration_seconds);
+}
+
+void Document::ViewportDefiningElementDidChange() {
+  HTMLBodyElement* body = FirstBodyElement();
+  if (!body)
+    return;
+  LayoutObject* layout_object = body->GetLayoutObject();
+  if (layout_object && layout_object->IsLayoutBlock()) {
+    // When the overflow style for documentElement changes to or from visible,
+    // it changes whether the body element's box should have scrollable overflow
+    // on its own box or propagated to the viewport. If the body style did not
+    // need a recalc, this will not be updated as its done as part of setting
+    // ComputedStyle on the LayoutObject. Force a SetStyle for body when the
+    // ViewportDefiningElement changes in order to trigger an update of
+    // HasOverflowClip() and the PaintLayer in StyleDidChange().
+    layout_object->SetStyle(ComputedStyle::Clone(*layout_object->Style()));
+  }
 }
 
 void Document::NotifyLayoutTreeOfSubtreeChanges() {
@@ -2985,11 +3005,11 @@ Element* Document::ViewportDefiningElement(
   Element* root_element = documentElement();
   Element* body_element = body();
   if (!root_element)
-    return 0;
+    return nullptr;
   if (!root_style) {
     root_style = root_element->GetComputedStyle();
     if (!root_style)
-      return 0;
+      return nullptr;
   }
   if (body_element && root_style->IsOverflowVisible() &&
       isHTMLHtmlElement(*root_element))
