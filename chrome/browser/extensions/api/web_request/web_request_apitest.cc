@@ -235,7 +235,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestTypes) {
+// This test times out regularly on MSAN trybots. See https://crbug.com/733395.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_WebRequestTypes DISABLED_WebRequestTypes
+#else
+#define MAYBE_WebRequestTypes WebRequestTypes
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestTypes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_types.html")) << message_;
 }
@@ -373,7 +379,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative2) {
+// This test times out regularly on MSAN trybots. See https://crbug.com/733395.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_WebRequestDeclarative2 DISABLED_WebRequestDeclarative2
+#else
+#define MAYBE_WebRequestDeclarative2 WebRequestDeclarative2
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       MAYBE_WebRequestDeclarative2) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_declarative2.html"))
       << message_;
