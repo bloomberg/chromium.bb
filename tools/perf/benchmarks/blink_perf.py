@@ -269,6 +269,14 @@ class BlinkPerfBindings(_BlinkPerfBenchmark):
             'structured-clone-long-string-serialize.html',
             [story.expectations.ALL_ANDROID],
             'crbug.com/528472')
+        self.DisableStory(
+            'structured-clone-json-serialize.html',
+            [story.expectations.ANDROID_ONE],
+            'crbug.com/736123')
+        self.DisableStory(
+            'structured-clone-json-deserialize.html',
+            [story.expectations.ANDROID_ONE],
+            'crbug.com/736123')
     return StoryExpectations()
 
 
