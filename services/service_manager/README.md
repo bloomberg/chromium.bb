@@ -19,10 +19,10 @@ The Service Manager performs the following functions:
   system state.
 
 The Service Manager presents a series of Mojo
-[interfaces](https://cs.chromium.org/chromium/src/services/service_manager/public/interfaces)
+[interfaces](https://cs.chromium.org/chromium/src/services/service_manager/public/interfaces/)
 to services, though in practice most interaction with the Service Manager is
 made simpler by using its corresponding
-[C++ client library](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp).
+[C++ client library](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp/).
 
 ## Mojo Recap
 
@@ -56,9 +56,9 @@ comprised of the following pieces:
 
 The Service Manager is responsible for starting new service instances on-demand,
 and a given service many have any number of concurrently running instances. The
-Service Manager disambiguates service instances by their unique
-**identity**. A service's identity is represented by the 3-tuple of the its
-**service name**, **user ID**, and **instance qualifier**:
+Service Manager disambiguates service instances by their unique **identity**. A
+service's identity is represented by the 3-tuple of its **service name**, **user
+ID**, and **instance qualifier**:
 
 * The service name is a free-form -- typically short -- string identifying the
   the specific service being run in the instance.
@@ -93,7 +93,7 @@ This section walks through the creation of a simple skeleton service.
 
 Consider this implementation of the `service_manager::Service` interface:
 
-**`//services//my_service/my_service.h`**
+**`//services/my_service/my_service.h`**
 ``` cpp
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -117,7 +117,7 @@ class MyService : public service_manager::Service {
 }  // namespace my_service
 ```
 
-**`//services//my_service/my_service.cc`**
+**`//services/my_service/my_service.cc`**
 ``` cpp
 #include "services/my_service/my_service.h"
 
@@ -167,7 +167,7 @@ the capabilities exposed and required by the service:
 {
   "name": "my_service",
   "display_name": "My Service",
-  "interface_provider_spec": {
+  "interface_provider_specs": {
     "service_manager:connector": {}
   }
 }
@@ -225,7 +225,7 @@ of the details of the `service_manager::Service` interface.
 
 The `Service` implementation is guaranteed to receive a single `OnStart()`
 invocation from the Service Manager before anything else hapens. Once this
-method is called, the implementation can access it
+method is called, the implementation can access its
 `service_manager::ServiceContext` via `context()`. This object itself exposes a
 few values:
 
@@ -272,13 +272,12 @@ The arguments to `OnBindInterface` are as follows:
   the remote service expects us to bind to a concrete implementation of
   the requested interface.
 
-The Service Manager client library provides a
-`service_manager::InterfaceRegistry` class definition which can make it easier
-for services to bind incoming interface requests. Typesafe binding callbacks are
-added to an `InterfaceRegistry` ahead of time, and the incoming arguments to
-`OnBindInterface` can be forwarded to the registry, which will bind the message
-pipe if it knows how. For example, we could modify our `MyService`
-implementation as follows:
+The Service Manager client library provides a `service_manager::BinderRegistry`
+class definition which can make it easier for services to bind incoming
+interface requests. Typesafe binding callbacks are added to an `BinderRegistry`
+ahead of time, and the incoming arguments to `OnBindInterface` can be forwarded
+to the registry, which will bind the message pipe if it knows how. For example,
+we could modify our `MyService` implementation as follows:
 
 ``` cpp
 namespace {
@@ -292,7 +291,7 @@ void BindDatabase(my_service::mojom::DatabaseRequest request) {
 
 MyService::MyService() {
   // Imagine |registry_| is added as a member of MyService, with type
-  // service_manager::InterfaceRegistry.
+  // service_manager::BinderRegistry.
 
   // The |my_service::mojom::Database| interface type is inferred by the
   // compiler in the AddInterface call, and this effectively adds the bound
@@ -315,7 +314,7 @@ in C++, and working with C++ types like `InterfaceRequest`, see the
 
 ## Service Manifests
 
-If some service were to come along and attempt to connect to `my_servce` and
+If some service were to come along and attempt to connect to `my_service` and
 bind the `my_service::mojom::Database` interface, we might see the Service
 Manager spit out an error log complaining that `InterfaceProviderSpec` prevented
 a connection to `my_service`.
@@ -349,7 +348,7 @@ Let's update the `my_service` manifest as follows:
 {
   "name": "my_service",
   "display_name": "My Service",
-  "interface_provider_spec": {
+  "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
         "database": [
@@ -372,7 +371,7 @@ For the sake of this example, let's define another service manifest:
 {
   "name": "other_service",
   "display_name": "Other Service",
-  "interface_provider_spec": {
+  "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
         "my_service": [ "database" ]
@@ -423,12 +422,12 @@ class MyServiceTest : public service_manager::test::ServiceTest {
 }
 
 TEST_F(MyServiceTest, Basic) {
-  my_service::mojom::DatabsaePtr database;
+  my_service::mojom::DatabasePtr database;
   connector()->BindInterface("my_service", &database);
 
   base::RunLoop loop;
 
-  // This assumes DropTable expects a response with no arugments. When the
+  // This assumes DropTable expects a response with no arguments. When the
   // response is received, the RunLoop is quit.
   database->DropTable("foo", loop.QuitClosure());
 
@@ -478,7 +477,7 @@ We can do something like:
 {
   "name": "my_service_unittests",
   "display_name": "my_service tests",
-  "interface_provider_spec": {
+  "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
         "my_service": [ "database" ]
