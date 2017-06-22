@@ -129,8 +129,8 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
     // Autoplay is Android-only at the moment, and the Page Info popup on
     // Android ignores these block/allow icon pairs, so we can specify 0 there.
     {CONTENT_SETTINGS_TYPE_AUTOPLAY, IDS_PAGE_INFO_TYPE_AUTOPLAY, 0, 0},
-    {CONTENT_SETTINGS_TYPE_ADS, IDS_PAGE_INFO_TYPE_ADS,
-     IDR_ALLOWED_SUBRESOURCE_FILTER, IDR_BLOCKED_SUBRESOURCE_FILTER},
+    {CONTENT_SETTINGS_TYPE_ADS, IDS_PAGE_INFO_TYPE_ADS, IDR_BLOCKED_ADS,
+     IDR_ALLOWED_ADS},
 };
 
 std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
