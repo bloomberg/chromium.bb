@@ -158,31 +158,31 @@ esac
 
 AC_CONFIG_FILES([
 	Makefile
-        doc/Makefile
-        man/Makefile
-        liblouis/Makefile
-        liblouis/liblouis.h
+	doc/Makefile
+	man/Makefile
+	liblouis/Makefile
+	liblouis/liblouis.h
 	windows/Makefile
 	windows/include/Makefile
-        tables/Makefile
+	windows/utils/Makefile
+	tables/Makefile
 	liblouis.pc
-        tests/Makefile
-        tests/resolve_table.h
-        tests/tables/Makefile
-        tests/tables/emphclass/Makefile
-        tests/tables/moreTables/Makefile
-        tests/tables/resolve_table/Makefile
-        tests/tables/resolve_table/dir_1/Makefile
-        tests/tables/resolve_table/dir_1/dir_1.1/Makefile
-        tests/tables/resolve_table/dir_2/Makefile
+	tests/Makefile
+	tests/resolve_table.h
+	tests/tables/Makefile
+	tests/tables/emphclass/Makefile
+	tests/tables/moreTables/Makefile
+	tests/tables/resolve_table/Makefile
+	tests/tables/resolve_table/dir_1/Makefile
+	tests/tables/resolve_table/dir_1/dir_1.1/Makefile
+	tests/tables/resolve_table/dir_2/Makefile
 	tests/tablesWithMetadata/Makefile
-        tests/ueb_test_data/Makefile
-        tests/yaml/Makefile
+	tests/ueb_test_data/Makefile
+	tests/yaml/Makefile
 	python/Makefile
 	python/setup.py
 	python/louis/Makefile
-        tools/Makefile
-        tools/gnulib/Makefile
+	tools/Makefile
+	tools/gnulib/Makefile
 	gnulib/Makefile])
 AC_OUTPUT
-

@@ -298,6 +298,10 @@ output.txt
 /windows/include/Makefile
 /windows/include/Makefile.in
 
+# /windows/utils
+/windows/utils/Makefile
+/windows/utils/Makefile.in
+
 # stuff for local development
 local/
 local
