@@ -371,7 +371,7 @@ TEST_F(FrameSelectionTest, SelectInvalidPositionInFlatTreeDoesntCrash) {
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .Collapse(Position(body, 0))
                                // SELECT@AfterAnchor is invalid in flat tree.
-                               .Extend(Position::AfterNode(select))
+                               .Extend(Position::AfterNode(*select))
                                .Build());
   // Should not crash inside.
   const VisibleSelectionInFlatTree& selection =
@@ -974,7 +974,7 @@ TEST_F(FrameSelectionTest, InconsistentVisibleSelectionNoCrash) {
   // in flat tree. They should be canonicalized to null VisiblePositions, but
   // are currently not. See crbug.com/729636 for details.
   const Position& start = Position::BeforeNode(*anchor);
-  const Position& end = Position::AfterNode(anchor);
+  const Position& end = Position::AfterNode(*anchor);
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build());
 

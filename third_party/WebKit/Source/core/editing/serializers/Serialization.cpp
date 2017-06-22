@@ -410,7 +410,7 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
   tagged_document->AppendChild(root);
 
   const EphemeralRange range(
-      Position::AfterNode(node_before_context).ParentAnchoredEquivalent(),
+      Position::AfterNode(*node_before_context).ParentAnchoredEquivalent(),
       Position::BeforeNode(*node_after_context).ParentAnchoredEquivalent());
 
   Node* common_ancestor = range.CommonAncestorContainer();

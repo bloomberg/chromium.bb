@@ -474,9 +474,8 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::BeforeNode(
 // static
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::AfterNode(
-    Node* anchor_node) {
-  DCHECK(anchor_node);
-  return PositionTemplate<Strategy>(anchor_node,
+    const Node& anchor_node) {
+  return PositionTemplate<Strategy>(&anchor_node,
                                     PositionAnchorType::kAfterAnchor);
 }
 
@@ -525,7 +524,7 @@ PositionTemplate<Strategy>
 PositionTemplate<Strategy>::LastPositionInOrAfterNode(Node* node) {
   if (!node)
     return PositionTemplate<Strategy>();
-  return EditingIgnoresContent(*node) ? AfterNode(node)
+  return EditingIgnoresContent(*node) ? AfterNode(*node)
                                       : LastPositionInNode(node);
 }
 
@@ -597,7 +596,7 @@ Position ToPositionInDOMTree(const PositionInFlatTree& position) {
       // FIXME: When anchorNode is <img>, assertion fails in the constructor.
       return Position(anchor_node, PositionAnchorType::kAfterChildren);
     case PositionAnchorType::kAfterAnchor:
-      return Position::AfterNode(anchor_node);
+      return Position::AfterNode(*anchor_node);
     case PositionAnchorType::kBeforeChildren:
       return Position(anchor_node, PositionAnchorType::kBeforeChildren);
     case PositionAnchorType::kBeforeAnchor:

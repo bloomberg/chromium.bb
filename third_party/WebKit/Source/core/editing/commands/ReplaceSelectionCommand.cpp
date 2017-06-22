@@ -1523,7 +1523,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
         }
         SetEndingSelection(SelectionInDOMTree::Builder()
                                .Collapse(Position::AfterNode(
-                                   inserted_nodes.LastLeafInserted()))
+                                   *inserted_nodes.LastLeafInserted()))
                                .Build());
         // Select up to the paragraph separator that was added.
         last_position_to_select =

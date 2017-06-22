@@ -913,7 +913,7 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
             SelectionInDOMTree::Builder()
                 .SetBaseAndExtentDeprecated(
                     EndingSelection().End(),
-                    Position::AfterNode(downstream_end.ComputeContainerNode()))
+                    Position::AfterNode(*downstream_end.ComputeContainerNode()))
                 .SetIsDirectional(EndingSelection().IsDirectional())
                 .Build());
         TypingAddedToOpenCommand(kForwardDeleteKey);

@@ -32,7 +32,7 @@ TEST_F(RangeTest, createAdjustedToTreeScopeWithPositionInShadowTree) {
   GetDocument().body()->setInnerHTML("<div><select><option>012</option></div>");
   Element* const select_element = GetDocument().QuerySelector("select");
   const Position& position =
-      Position::AfterNode(select_element->UserAgentShadowRoot());
+      Position::AfterNode(*select_element->UserAgentShadowRoot());
   Range* const range =
       Range::CreateAdjustedToTreeScope(GetDocument(), position);
   EXPECT_EQ(range->startContainer(), select_element->parentNode());

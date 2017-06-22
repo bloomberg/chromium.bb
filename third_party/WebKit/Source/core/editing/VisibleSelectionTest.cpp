@@ -85,13 +85,13 @@ TEST_F(VisibleSelectionTest, appendTrailingWhitespaceWithAfterAnchor) {
   VisibleSelection selection =
       CreateVisibleSelection(SelectionInDOMTree::Builder()
                                  .Collapse(Position::BeforeNode(*input))
-                                 .Extend(Position::AfterNode(input))
+                                 .Extend(Position::AfterNode(*input))
                                  .SetGranularity(kWordGranularity)
                                  .Build());
   selection.AppendTrailingWhitespace();
 
   EXPECT_EQ(Position::BeforeNode(*input), selection.Start());
-  EXPECT_EQ(Position::AfterNode(input), selection.End());
+  EXPECT_EQ(Position::AfterNode(*input), selection.End());
 }
 
 TEST_F(VisibleSelectionTest, expandUsingGranularity) {
@@ -379,7 +379,7 @@ TEST_F(VisibleSelectionTest, ShadowNested) {
   VisibleSelectionInFlatTree selection_in_flat_tree = CreateVisibleSelection(
       SelectionInFlatTree::Builder()
           .Collapse(PositionInFlatTree::FirstPositionInNode(one))
-          .Extend(PositionInFlatTree::AfterNode(eight))
+          .Extend(PositionInFlatTree::AfterNode(*eight))
           .Build());
 
   EXPECT_EQ(Position(host, PositionAnchorType::kBeforeAnchor),
