@@ -139,14 +139,36 @@ void InputDispatcher::NotifyTask() {
 
 // Private functions ----------------------------------------------------------
 
+// Whether scan code should be used for |key|.
+// When sending keyboard events by SendInput() function, Windows does not
+// "smartly" add scan code if virtual key-code is used. So these key events
+// won't have scan code or DOM UI Event code string.
+// But we cannot blindly send all events with scan code. For some layout
+// dependent keys, the Windows may not translate them to what they used to be,
+// because the test cases are usually running in headless environment with
+// default keyboard layout. So fall back to use virtual key code for these keys.
+bool ShouldSendThroughScanCode(ui::KeyboardCode key) {
+  const DWORD native_code = ui::WindowsKeyCodeForKeyboardCode(key);
+  const DWORD scan_code = MapVirtualKey(native_code, MAPVK_VK_TO_VSC);
+  return native_code == MapVirtualKey(scan_code, MAPVK_VSC_TO_VK);
+}
+
 // Populate the INPUT structure with the appropriate keyboard event
 // parameters required by SendInput
 bool FillKeyboardInput(ui::KeyboardCode key, INPUT* input, bool key_up) {
   memset(input, 0, sizeof(INPUT));
   input->type = INPUT_KEYBOARD;
   input->ki.wVk = ui::WindowsKeyCodeForKeyboardCode(key);
-  input->ki.dwFlags = key_up ? KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP :
-                               KEYEVENTF_EXTENDEDKEY;
+  if (ShouldSendThroughScanCode(key)) {
+    input->ki.wScan = MapVirtualKey(input->ki.wVk, MAPVK_VK_TO_VSC);
+    // When KEYEVENTF_SCANCODE is used, ki.wVk is ignored, so we do not need to
+    // clear it.
+    input->ki.dwFlags = KEYEVENTF_SCANCODE;
+    if ((input->ki.wScan & 0xFF00) != 0)
+      input->ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+  }
+  if (key_up)
+    input->ki.dwFlags |= KEYEVENTF_KEYUP;
 
   return true;
 }
