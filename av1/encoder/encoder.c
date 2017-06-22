@@ -73,6 +73,8 @@
 
 #if CONFIG_ENTROPY_STATS
 FRAME_COUNTS aggregate_fc;
+// Aggregate frame counts per frame context type
+FRAME_COUNTS aggregate_fc_per_type[FRAME_CONTEXTS];
 #endif  // CONFIG_ENTROPY_STATS
 
 #define AM_SEGMENT_ID_INACTIVE 7
@@ -2242,6 +2244,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif
 #if CONFIG_ENTROPY_STATS
   av1_zero(aggregate_fc);
+  av1_zero_array(aggregate_fc_per_type, FRAME_CONTEXTS);
 #endif  // CONFIG_ENTROPY_STATS
 
   cpi->first_time_stamp_ever = INT64_MAX;
@@ -2524,6 +2527,8 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       fprintf(stderr, "Writing counts.stt\n");
       FILE *f = fopen("counts.stt", "wb");
       fwrite(&aggregate_fc, sizeof(aggregate_fc), 1, f);
+      fwrite(aggregate_fc_per_type, sizeof(aggregate_fc_per_type[0]),
+             FRAME_CONTEXTS, f);
       fclose(f);
     }
 #endif  // CONFIG_ENTROPY_STATS
@@ -4762,6 +4767,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                              cpi->td.rd_counts.coef_counts[t]);
 #if CONFIG_ENTROPY_STATS
   av1_accumulate_frame_counts(&aggregate_fc, &cm->counts);
+  assert(cm->frame_context_idx < FRAME_CONTEXTS);
+  av1_accumulate_frame_counts(&aggregate_fc_per_type[cm->frame_context_idx],
+                              &cm->counts);
 #endif  // CONFIG_ENTROPY_STATS
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
     av1_adapt_coef_probs(cm);
