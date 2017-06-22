@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -45,10 +46,8 @@ void OnGetPagesByURLDone(
   std::string tab_id_str = base::IntToString(tab_id);
 
   for (const auto& page : pages) {
-    auto result = std::find(namespaces_to_show_in_original_tab.begin(),
-                            namespaces_to_show_in_original_tab.end(),
-                            page.client_id.name_space);
-    if (result != namespaces_to_show_in_original_tab.end() &&
+    if (base::ContainsValue(namespaces_to_show_in_original_tab,
+                            page.client_id.name_space) &&
         page.client_id.id != tab_id_str) {
       continue;
     }

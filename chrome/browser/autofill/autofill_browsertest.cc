@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -358,10 +359,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   SetProfiles(&profiles);
   ASSERT_EQ(profiles.size(), personal_data_manager()->GetProfiles().size());
   for (size_t i = 0; i < profiles.size(); ++i) {
-    EXPECT_TRUE(std::find(profiles.begin(),
-                          profiles.end(),
-                          *personal_data_manager()->GetProfiles()[i]) !=
-                profiles.end());
+    EXPECT_TRUE(base::ContainsValue(
+        profiles, *personal_data_manager()->GetProfiles()[i]));
   }
 
   std::vector<CreditCard> cards;
@@ -413,10 +412,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   SetCards(&cards);
   ASSERT_EQ(cards.size(), personal_data_manager()->GetCreditCards().size());
   for (size_t i = 0; i < cards.size(); ++i) {
-    EXPECT_TRUE(std::find(cards.begin(),
-                          cards.end(),
-                          *personal_data_manager()->GetCreditCards()[i]) !=
-                cards.end());
+    EXPECT_TRUE(base::ContainsValue(
+        cards, *personal_data_manager()->GetCreditCards()[i]));
   }
 }
 

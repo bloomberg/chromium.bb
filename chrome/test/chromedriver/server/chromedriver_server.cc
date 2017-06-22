@@ -23,6 +23,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -145,8 +146,7 @@ void HandleRequestOnCmdThread(
   if (!whitelisted_ips.empty()) {
     std::string peer_address = request.peer.ToStringWithoutPort();
     if (peer_address != net::IPAddress::IPv4Localhost().ToString() &&
-        std::find(whitelisted_ips.begin(), whitelisted_ips.end(),
-                  peer_address) == whitelisted_ips.end()) {
+        !base::ContainsValue(whitelisted_ips, peer_address)) {
       LOG(WARNING) << "unauthorized access from " << request.peer.ToString();
       std::unique_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_UNAUTHORIZED));

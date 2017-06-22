@@ -18,6 +18,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
@@ -167,8 +168,7 @@ void GetOrigins(JNIEnv* env,
 
   for (const auto& settings_it : embargo_settings) {
     const std::string origin = settings_it.primary_pattern.ToString();
-    if (std::find(seen_origins.begin(), seen_origins.end(), origin) !=
-        seen_origins.end()) {
+    if (base::ContainsValue(seen_origins, origin)) {
       // This origin has already been added to the list, so don't add it again.
       continue;
     }

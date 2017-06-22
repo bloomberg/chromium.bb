@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <functional>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -523,8 +523,7 @@ bool PrerenderContents::Matches(
       session_storage_namespace_id_ != session_storage_namespace->id()) {
     return false;
   }
-  return std::find(alias_urls_.begin(), alias_urls_.end(), url) !=
-         alias_urls_.end();
+  return base::ContainsValue(alias_urls_, url);
 }
 
 void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {

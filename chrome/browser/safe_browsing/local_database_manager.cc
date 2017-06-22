@@ -4,7 +4,6 @@
 
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 
-#include <algorithm>
 #include <limits>
 
 #include "base/bind.h"
@@ -16,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -71,9 +71,7 @@ void RecordGetHashCheckStatus(
 
 bool IsExpectedThreat(const SBThreatType threat_type,
                       const std::vector<SBThreatType>& expected_threats) {
-  return expected_threats.end() != std::find(expected_threats.begin(),
-                                             expected_threats.end(),
-                                             threat_type);
+  return base::ContainsValue(expected_threats, threat_type);
 }
 
 // Returns threat level of the list. Lists with lower threat levels are more
