@@ -113,6 +113,9 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
           RawResource::FetchSynchronously(params, g_global_resource_fetcher);
       if (!resource || !g_global_processor)
         return nullptr;
+      RefPtr<const SharedBuffer> data = resource->ResourceBuffer();
+      if (!data)
+        return nullptr;
 
       FrameConsole* console = nullptr;
       LocalFrame* frame =
@@ -122,13 +125,25 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
       xmlSetStructuredErrorFunc(console, XSLTProcessor::ParseErrorFunc);
       xmlSetGenericErrorFunc(console, XSLTProcessor::GenericErrorFunc);
 
+      xmlDocPtr doc = nullptr;
+
       // We don't specify an encoding here. Neither Gecko nor WinIE respects
       // the encoding specified in the HTTP headers.
-      RefPtr<const SharedBuffer> data = resource->ResourceBuffer();
-      xmlDocPtr doc = data ? xmlReadMemory(data->Data(), data->size(),
-                                           (const char*)uri, 0, options)
-                           : nullptr;
+      xmlParserCtxtPtr ctx = xmlCreatePushParserCtxt(
+          nullptr, nullptr, nullptr, 0, reinterpret_cast<const char*>(uri));
+      if (ctx && !xmlCtxtUseOptions(ctx, options)) {
+        data->ForEachSegment([&data, &ctx](const char* segment,
+                                           size_t segment_size,
+                                           size_t segment_offset) -> bool {
+          bool final_chunk = segment_offset + segment_size == data->size();
+          return !xmlParseChunk(ctx, segment, segment_size, final_chunk);
+        });
 
+        if (ctx->wellFormed)
+          doc = ctx->myDoc;
+      }
+
+      xmlFreeParserCtxt(ctx);
       xmlSetStructuredErrorFunc(0, 0);
       xmlSetGenericErrorFunc(0, 0);
 
