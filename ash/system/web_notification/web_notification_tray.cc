@@ -4,8 +4,6 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accessibility_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -94,6 +92,7 @@ class WebNotificationBubbleWrapper {
     init_params.min_width = width;
     init_params.max_width = width;
     init_params.max_height = bubble->max_height();
+    init_params.can_activate = true;
     init_params.bg_color = message_center::kBackgroundDarkColor;
 
     views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
@@ -456,24 +455,8 @@ void WebNotificationTray::OnMouseEnteredView() {}
 
 void WebNotificationTray::OnMouseExitedView() {}
 
-void WebNotificationTray::RegisterAccelerators(
-    const std::vector<ui::Accelerator>& accelerators,
-    views::TrayBubbleView* tray_bubble_view) {
-  Shell::Get()->accelerator_controller()->Register(accelerators,
-                                                   tray_bubble_view);
-}
-
-void WebNotificationTray::UnregisterAllAccelerators(
-    views::TrayBubbleView* tray_bubble_view) {
-  Shell::Get()->accelerator_controller()->UnregisterAll(tray_bubble_view);
-}
-
 base::string16 WebNotificationTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
-}
-
-bool WebNotificationTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 }
 
 void WebNotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {

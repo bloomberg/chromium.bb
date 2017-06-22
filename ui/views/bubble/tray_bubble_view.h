@@ -9,8 +9,6 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "ui/base/accelerators/accelerator.h"
-#include "ui/events/event.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/mouse_watcher.h"
@@ -60,26 +58,9 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     virtual void OnMouseEnteredView() = 0;
     virtual void OnMouseExitedView() = 0;
 
-    // Called to register/unregister accelerators for TrayBubbleView.
-    // TrayBubbleView wants to register those accelerators at the global level.
-    // Those accelerators are used to activate TrayBubbleView, i.e. those
-    // accelerators need to be processed even if TrayBubbleView is not active.
-    // UnregisterAllAccelerators can be called even if RegisterAccelerators is
-    // not called.
-    virtual void RegisterAccelerators(
-        const std::vector<ui::Accelerator>& accelerators,
-        TrayBubbleView* tray_bubble_view) = 0;
-    virtual void UnregisterAllAccelerators(
-        TrayBubbleView* tray_bubble_view) = 0;
-
     // Called from GetAccessibleNodeData(); should return the appropriate
     // accessible name for the bubble.
     virtual base::string16 GetAccessibleNameForBubble() = 0;
-
-    // Should return true if extra keyboard accessibility is enabled.
-    // TrayBubbleView will put focus on the default item if extra keyboard
-    // accessibility is enabled.
-    virtual bool ShouldEnableExtraKeyboardAccessibility() = 0;
 
     // Called when a bubble wants to hide/destroy itself (e.g. last visible
     // child view was closed).
@@ -99,6 +80,7 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     int min_width = 0;
     int max_width = 0;
     int max_height = 0;
+    bool can_activate = false;
     bool close_on_deactivate = true;
     // If not provided, the bg color will be derived from the NativeTheme.
     base::Optional<SkColor> bg_color;
@@ -129,10 +111,8 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   // Returns the border insets. Called by TrayEventFilter.
   gfx::Insets GetBorderInsets() const;
 
-  // Called when the delegate is destroyed. This must be called before the
-  // delegate is actually destroyed. TrayBubbleView will do clean up in
-  // ResetDelegate.
-  void ResetDelegate();
+  // Called when the delegate is destroyed.
+  void reset_delegate() { delegate_ = NULL; }
 
   Delegate* delegate() { return delegate_; }
 
@@ -162,9 +142,6 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   // Overridden from MouseWatcherListener
   void MouseMovedOutOfHost() override;
 
-  // Overridden from ui::AcceleratorTarget
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-
  protected:
   // Overridden from views::BubbleDialogDelegateView.
   int GetDialogButtons() const override;
@@ -176,12 +153,6 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
       const ViewHierarchyChangedDetails& details) override;
 
  private:
-  void CloseBubbleView();
-  void ActivateAndStartNavigation(const ui::KeyEvent& key_event);
-
-  // Focus the default item if no item is focused.
-  void FocusDefaultIfNeeded();
-
   InitParams params_;
   BoxLayout* layout_;
   Delegate* delegate_;

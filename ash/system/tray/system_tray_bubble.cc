@@ -84,7 +84,7 @@ SystemTrayBubble::~SystemTrayBubble() {
   DestroyItemViews();
   // Reset the host pointer in bubble_view_ in case its destruction is deferred.
   if (bubble_view_)
-    bubble_view_->ResetDelegate();
+    bubble_view_->reset_delegate();
 }
 
 void SystemTrayBubble::UpdateView(
@@ -208,6 +208,17 @@ void SystemTrayBubble::InitView(views::View* anchor,
   if (bubble_view_->CanActivate()) {
     bubble_view_->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   }
+}
+
+void SystemTrayBubble::FocusDefaultIfNeeded() {
+  views::FocusManager* manager = bubble_view_->GetFocusManager();
+  if (!manager || manager->GetFocusedView())
+    return;
+
+  views::View* view =
+      manager->GetNextFocusableView(nullptr, nullptr, false, false);
+  if (view)
+    view->RequestFocus();
 }
 
 void SystemTrayBubble::DestroyItemViews() {

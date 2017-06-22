@@ -194,7 +194,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   bubble_border_->set_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_border_->set_paint_arrow(BubbleBorder::PAINT_NONE);
   set_parent_window(params_.parent_window);
-  set_can_activate(false);
+  set_can_activate(params_.can_activate);
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
@@ -209,12 +209,9 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
 
 TrayBubbleView::~TrayBubbleView() {
   mouse_watcher_.reset();
-  if (delegate_) {
-    delegate_->UnregisterAllAccelerators(this);
-
-    // Inform host items (models) that their views are being destroyed.
+  // Inform host items (models) that their views are being destroyed.
+  if (delegate_)
     delegate_->BubbleViewDestroyed();
-  }
 }
 
 // static
@@ -231,17 +228,6 @@ void TrayBubbleView::InitializeAndShowBubble() {
   UpdateBubble();
 
   ++g_current_tray_bubble_showing_count_;
-
-  // If TrayBubbleView cannot be activated, register accelerators to capture key
-  // events for activating the view or closing it. TrayBubbleView expects that
-  // those accelerators are registered at the global level.
-  if (delegate_ && !CanActivate()) {
-    delegate_->RegisterAccelerators(
-        {ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE),
-         ui::Accelerator(ui::VKEY_TAB, ui::EF_NONE),
-         ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN)},
-        this);
-  }
 }
 
 void TrayBubbleView::UpdateBubble() {
@@ -249,11 +235,6 @@ void TrayBubbleView::UpdateBubble() {
     SizeToContents();
     bubble_content_mask_->layer()->SetBounds(layer()->bounds());
     GetWidget()->GetRootView()->SchedulePaint();
-
-    // When extra keyboard accessibility is enabled, focus the default item if
-    // no item is focused.
-    if (delegate_ && delegate_->ShouldEnableExtraKeyboardAccessibility())
-      FocusDefaultIfNeeded();
   }
 }
 
@@ -278,13 +259,6 @@ void TrayBubbleView::SetWidth(int width) {
 
 gfx::Insets TrayBubbleView::GetBorderInsets() const {
   return bubble_border_->GetInsets();
-}
-
-void TrayBubbleView::ResetDelegate() {
-  if (delegate_)
-    delegate_->UnregisterAllAccelerators(this);
-
-  delegate_ = nullptr;
 }
 
 int TrayBubbleView::GetDialogButtons() const {
@@ -402,26 +376,6 @@ void TrayBubbleView::MouseMovedOutOfHost() {
   mouse_watcher_->Stop();
 }
 
-bool TrayBubbleView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  if (accelerator == ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)) {
-    CloseBubbleView();
-    return true;
-  }
-
-  if (accelerator == ui::Accelerator(ui::VKEY_TAB, ui::EF_NONE) ||
-      accelerator == ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN)) {
-    ui::KeyEvent key_event(
-        accelerator.key_state() == ui::Accelerator::KeyState::PRESSED
-            ? ui::EventType::ET_KEY_PRESSED
-            : ui::EventType::ET_KEY_RELEASED,
-        accelerator.key_code(), accelerator.modifiers());
-    ActivateAndStartNavigation(key_event);
-    return true;
-  }
-
-  return false;
-}
-
 void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
   SizeToContents();
 }
@@ -432,44 +386,6 @@ void TrayBubbleView::ViewHierarchyChanged(
     details.parent->SetPaintToLayer();
     details.parent->layer()->SetMasksToBounds(true);
   }
-}
-
-void TrayBubbleView::CloseBubbleView() {
-  if (!delegate_)
-    return;
-
-  delegate_->UnregisterAllAccelerators(this);
-  delegate_->HideBubble(this);
-}
-
-void TrayBubbleView::ActivateAndStartNavigation(const ui::KeyEvent& key_event) {
-  // No need to explicitly activate the widget. FocusManager will activate it if
-  // necessary.
-  set_can_activate(true);
-
-  if (!GetWidget()->GetFocusManager()->OnKeyEvent(key_event) && delegate_) {
-    // No need to handle accelerators by TrayBubbleView after focus has moved to
-    // the widget. The focused view will handle focus traversal.
-    // FocusManager::OnKeyEvent returns false when it consumes a key event.
-    delegate_->UnregisterAllAccelerators(this);
-  }
-}
-
-void TrayBubbleView::FocusDefaultIfNeeded() {
-  views::FocusManager* manager = GetFocusManager();
-  if (!manager || manager->GetFocusedView())
-    return;
-
-  views::View* view =
-      manager->GetNextFocusableView(nullptr, nullptr, false, false);
-  if (!view)
-    return;
-
-  // No need to explicitly activate the widget. View::RequestFocus will activate
-  // it if necessary.
-  set_can_activate(true);
-
-  view->RequestFocus();
 }
 
 }  // namespace views

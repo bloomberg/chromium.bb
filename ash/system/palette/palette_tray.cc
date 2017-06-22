@@ -4,8 +4,6 @@
 
 #include "ash/system/palette/palette_tray.h"
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accessibility_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -157,7 +155,7 @@ PaletteTray::PaletteTray(Shelf* shelf)
 
 PaletteTray::~PaletteTray() {
   if (bubble_)
-    bubble_->bubble_view()->ResetDelegate();
+    bubble_->bubble_view()->reset_delegate();
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
@@ -187,6 +185,7 @@ bool PaletteTray::ShowPalette() {
   init_params.anchor_alignment = GetAnchorAlignment();
   init_params.min_width = kPaletteWidth;
   init_params.max_width = kPaletteWidth;
+  init_params.can_activate = true;
   init_params.close_on_deactivate = true;
 
   // TODO(tdanderson): Refactor into common row layout code.
@@ -300,24 +299,8 @@ void PaletteTray::OnMouseEnteredView() {}
 
 void PaletteTray::OnMouseExitedView() {}
 
-void PaletteTray::RegisterAccelerators(
-    const std::vector<ui::Accelerator>& accelerators,
-    views::TrayBubbleView* tray_bubble_view) {
-  Shell::Get()->accelerator_controller()->Register(accelerators,
-                                                   tray_bubble_view);
-}
-
-void PaletteTray::UnregisterAllAccelerators(
-    views::TrayBubbleView* tray_bubble_view) {
-  Shell::Get()->accelerator_controller()->UnregisterAll(tray_bubble_view);
-}
-
 base::string16 PaletteTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
-}
-
-bool PaletteTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 }
 
 void PaletteTray::HideBubble(const views::TrayBubbleView* bubble_view) {
