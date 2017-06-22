@@ -237,7 +237,7 @@ var testBroadcast = function() {
 
   function onCreate(socketInfo) {
     console.log("socket created: " + socketInfo.socketId);
-    chrome.test.assertTrue(socketId > 0, "failed to create socket");
+    chrome.test.assertTrue(socketInfo.socketId > 0, "failed to create socket");
 
     if (listeningSocketId == undefined) {
       listeningSocketId = socketInfo.socketId;
