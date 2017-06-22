@@ -4,6 +4,7 @@
 
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_constants.h"
 #include "ash/ime/ime_controller.h"
@@ -298,7 +299,7 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
 
 ImeMenuTray::~ImeMenuTray() {
   if (bubble_)
-    bubble_->bubble_view()->reset_delegate();
+    bubble_->bubble_view()->ResetDelegate();
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->RemoveIMEObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);
@@ -329,7 +330,6 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   init_params.anchor_alignment = GetAnchorAlignment();
   init_params.min_width = kTrayMenuMinimumWidth;
   init_params.max_width = kTrayMenuMinimumWidth;
-  init_params.can_activate = true;
   init_params.close_on_deactivate = true;
 
   views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
@@ -467,8 +467,24 @@ void ImeMenuTray::OnMouseEnteredView() {}
 
 void ImeMenuTray::OnMouseExitedView() {}
 
+void ImeMenuTray::RegisterAccelerators(
+    const std::vector<ui::Accelerator>& accelerators,
+    views::TrayBubbleView* tray_bubble_view) {
+  Shell::Get()->accelerator_controller()->Register(accelerators,
+                                                   tray_bubble_view);
+}
+
+void ImeMenuTray::UnregisterAllAccelerators(
+    views::TrayBubbleView* tray_bubble_view) {
+  Shell::Get()->accelerator_controller()->UnregisterAll(tray_bubble_view);
+}
+
 base::string16 ImeMenuTray::GetAccessibleNameForBubble() {
   return l10n_util::GetStringUTF16(IDS_ASH_IME_MENU_ACCESSIBLE_NAME);
+}
+
+bool ImeMenuTray::ShouldEnableExtraKeyboardAccessibility() {
+  return Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 }
 
 void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {

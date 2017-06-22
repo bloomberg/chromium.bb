@@ -91,7 +91,12 @@ class ASH_EXPORT WebNotificationTray
   void BubbleViewDestroyed() override;
   void OnMouseEnteredView() override;
   void OnMouseExitedView() override;
+  void RegisterAccelerators(const std::vector<ui::Accelerator>& accelerators,
+                            views::TrayBubbleView* tray_bubble_view) override;
+  void UnregisterAllAccelerators(
+      views::TrayBubbleView* tray_bubble_view) override;
   base::string16 GetAccessibleNameForBubble() override;
+  bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   // Overridden from MessageCenterTrayDelegate.
