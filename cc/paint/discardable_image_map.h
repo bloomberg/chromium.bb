@@ -64,7 +64,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   std::vector<std::pair<DrawImage, gfx::Rect>> all_images_;
   base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
 
-  RTree images_rtree_;
+  RTree<size_t> images_rtree_;
 };
 
 }  // namespace cc
