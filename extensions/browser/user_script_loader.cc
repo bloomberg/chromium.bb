@@ -421,10 +421,8 @@ void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
   if (!handle_for_process.IsValid())
     return;
 
-  if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    process->Send(new ExtensionMsg_UpdateUserScripts(
-        handle_for_process, host_id(), changed_hosts, whitelisted_only));
-  }
+  process->Send(new ExtensionMsg_UpdateUserScripts(
+      handle_for_process, host_id(), changed_hosts, whitelisted_only));
 }
 
 }  // namespace extensions
