@@ -12341,6 +12341,13 @@ read aloud to screenreader users to announce that a completion is available.">
         Sharing screen
       </message>
     </if>
+
+    <!-- VR specific strings -->
+    <if expr="enable_vr">
+      <message name="IDS_PRESS_APP_TO_EXIT" desc="Text displayed in a transient bubble to tell users how to return from cinema mode (where the page displayed in a cinema like environment) or presentation mode (where the WebVR page occupies the entire screen) to normal mode.">
+        Press App button to exit
+      </message>
+    </if>
   </messages>
  </release>
 </grit>

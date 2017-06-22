@@ -29,6 +29,7 @@ enum UiElementDebugId {
   kExitPromptBackplane,
   kTransientUrlBar,
   kLocationAccessIndicator,
+  kPresentationToast,
 };
 
 }  // namespace vr_shell
