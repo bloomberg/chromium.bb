@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
@@ -96,6 +97,14 @@ class SettingsResetter : public base::RefCounted<SettingsResetter> {
   // The profiles to be reset.
   std::vector<Profile*> profiles_to_reset_;
 
+  // The ProfileResetter objects that are used to reset each profile. We need to
+  // hold on to these until each reset operation has been completed.
+  std::vector<std::unique_ptr<ProfileResetter>> profile_resetters_;
+
+  // Used to check that modifications to |profile_resetters_| are sequenced
+  // correctly.
+  SEQUENCE_CHECKER(sequence_checker_);
+
   // The number of profiles that need to be reset.
   int num_pending_resets_;
 
@@ -118,6 +127,8 @@ SettingsResetter::SettingsResetter(
   DCHECK_LT(0, num_pending_resets_);
   DCHECK(done_callback_);
   DCHECK(delegate_);
+
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 SettingsResetter::~SettingsResetter() {
@@ -135,12 +146,15 @@ void SettingsResetter::Run() {
 void SettingsResetter::OnFetchCompleted(
     Profile* profile,
     std::unique_ptr<BrandcodedDefaultSettings> master_settings) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   static const ProfileResetter::ResettableFlags kSettingsToReset =
       ProfileResetter::DEFAULT_SEARCH_ENGINE | ProfileResetter::HOMEPAGE |
       ProfileResetter::EXTENSIONS | ProfileResetter::STARTUP_PAGES |
       ProfileResetter::SHORTCUTS;
 
-  delegate_->GetProfileResetter(profile)->Reset(
+  profile_resetters_.push_back(delegate_->GetProfileResetter(profile));
+  profile_resetters_.back()->Reset(
       kSettingsToReset, std::move(master_settings),
       base::Bind(&SettingsResetter::OnResetCompleted, this, profile));
 }
