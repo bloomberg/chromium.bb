@@ -48,13 +48,16 @@ class InterstitialPage {
       const GURL& url,
       InterstitialPageDelegate* delegate);
 
-  // Retrieves the InterstitialPage if any associated with the specified
-  // |web_contents|.
+  // Returns the InterstitialPage, if any, associated with the specified
+  // |web_contents|. Note: This returns a value from the time the interstitial
+  // page has Show() called on it.
+  //
+  // Compare to WebContents::GetInterstitialPage.
   CONTENT_EXPORT static InterstitialPage* GetInterstitialPage(
       WebContents* web_contents);
 
-  // Retrieves the InterstitialPage that hosts the RenderFrameHost, or nullptr
-  // if |rfh| is not a part of any InterstitialPage.
+  // Returns the InterstitialPage that hosts the RenderFrameHost, or nullptr if
+  // |rfh| is not a part of any InterstitialPage.
   CONTENT_EXPORT static InterstitialPage* FromRenderFrameHost(
       RenderFrameHost* rfh);
 

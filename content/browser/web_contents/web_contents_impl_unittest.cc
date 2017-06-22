@@ -2215,6 +2215,51 @@ TEST_F(WebContentsImplTest, CreateInterstitialForClosingTab) {
   EXPECT_TRUE(deleted);
 }
 
+// Test for https://crbug.com/703655, where navigating a tab and showing an
+// interstitial could race.
+TEST_F(WebContentsImplTest, TabNavigationDoesntRaceInterstitial) {
+  // Navigate to a page.
+  GURL url1("http://www.google.com");
+  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  EXPECT_EQ(1, controller().GetEntryCount());
+
+  // Initiate a browser navigation that will trigger an interstitial.
+  GURL evil_url("http://www.evil.com");
+  controller().LoadURL(evil_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
+  NavigationEntry* entry = contents()->GetController().GetPendingEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(evil_url, entry->GetURL());
+
+  // Show an interstitial.
+  TestInterstitialPage::InterstitialState state = TestInterstitialPage::INVALID;
+  bool deleted = false;
+  GURL url2("http://interstitial");
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(contents(), true, url2, &state, &deleted);
+  TestInterstitialPageStateGuard state_guard(interstitial);
+  interstitial->Show();
+  // The interstitial should not show until its navigation has committed.
+  EXPECT_FALSE(interstitial->is_showing());
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
+
+  // At this point, there is an interstitial that has been instructed to show
+  // but has not yet committed its own navigation. This is a window; navigate
+  // back one page within this window.
+  //
+  // Because the page with the interstitial did not commit, this invokes an
+  // early return in NavigationControllerImpl::NavigateToPendingEntry which just
+  // drops the pending entry, so no committing is required.
+  controller().GoBack();
+  entry = contents()->GetController().GetPendingEntry();
+  ASSERT_FALSE(entry);
+
+  // The interstitial should be gone.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
+}
+
 // Test that after Proceed is called and an interstitial is still shown, no more
 // commands get executed.
 TEST_F(WebContentsImplTest, ShowInterstitialProceedMultipleCommands) {

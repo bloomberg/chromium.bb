@@ -1880,10 +1880,18 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
       pending_entry_->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) {
     delegate_->Stop();
 
-    // If an interstitial page is showing, we want to close it to get back
-    // to what was showing before.
-    if (delegate_->GetInterstitialPage())
-      delegate_->GetInterstitialPage()->DontProceed();
+    // If an interstitial page is showing, we want to close it to get back to
+    // what was showing before.
+    //
+    // There are two ways to get the interstitial page given a WebContents.
+    // Because WebContents::GetInterstitialPage() returns null between the
+    // interstitial's Show() method being called and the interstitial becoming
+    // visible, while InterstitialPage::GetInterstitialPage() returns the
+    // interstitial during that time, use the latter.
+    InterstitialPage* interstitial =
+        InterstitialPage::GetInterstitialPage(GetWebContents());
+    if (interstitial)
+      interstitial->DontProceed();
 
     DiscardNonCommittedEntries();
     return;
