@@ -9,7 +9,8 @@
     Constructor(CSSNumericValue angleValue),
     Constructor(double x, double y, double z, CSSNumericValue angle),
     Exposed=(Window,PaintWorklet),
-    RuntimeEnabled=CSSTypedOM
+    RuntimeEnabled=CSSTypedOM,
+    RaisesException=Constructor
 ] interface CSSRotation : CSSTransformComponent {
     readonly attribute CSSNumericValue angle;
     readonly attribute double x;

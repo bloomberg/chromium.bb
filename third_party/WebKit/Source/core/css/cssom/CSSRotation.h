@@ -21,17 +21,24 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
 
  public:
   // Constructors defined in the IDL.
-  static CSSRotation* Create(const CSSNumericValue* angle_value) {
-    return new CSSRotation(angle_value);
+  static CSSRotation* Create(CSSNumericValue* angle,
+                             ExceptionState& exception_state) {
+    return Create(0, 0, 1, angle, exception_state);
   }
   static CSSRotation* Create(double x,
                              double y,
                              double z,
-                             const CSSNumericValue* angle_value) {
-    return new CSSRotation(x, y, z, angle_value);
-  }
+                             CSSNumericValue* angle,
+                             ExceptionState&);
 
   // Blink-internal ways of creating CSSRotations.
+  static CSSRotation* Create(CSSNumericValue* angle) {
+    return Create(0, 0, 1, angle);
+  }
+  static CSSRotation* Create(double x,
+                             double y,
+                             double z,
+                             CSSNumericValue* angle);
   static CSSRotation* FromCSSValue(const CSSFunctionValue&);
 
   // Getters and setters for attributes defined in the IDL.
