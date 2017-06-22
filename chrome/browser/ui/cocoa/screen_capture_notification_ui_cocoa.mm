@@ -95,15 +95,13 @@ ScreenCaptureNotificationUI::Create(const base::string16& text) {
     stop_callback_ = stop_callback;
     [self populateWithText:text];
 
-    // Center the window at the bottom of the screen, above the dock (if
+    // Center the window at the bottom of the main screen, above the dock (if
     // present).
     NSRect desktopRect = [[NSScreen mainScreen] visibleFrame];
     NSRect contentRect = [[window contentView] frame];
-    NSRect windowRect =
-        NSMakeRect((NSWidth(desktopRect) - NSWidth(contentRect)) / 2,
-                   NSMinY(desktopRect),
-                   NSWidth(contentRect),
-                   NSHeight(contentRect));
+    NSRect windowRect = NSMakeRect(
+        (NSWidth(desktopRect) - NSWidth(contentRect)) / 2 + NSMinX(desktopRect),
+        NSMinY(desktopRect), NSWidth(contentRect), NSHeight(contentRect));
     [window setFrame:windowRect display:YES];
   }
   return self;
