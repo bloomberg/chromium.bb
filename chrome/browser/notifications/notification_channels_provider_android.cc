@@ -102,13 +102,12 @@ class ChannelsRuleIterator : public content_settings::RuleIterator {
 
   content_settings::Rule Next() override {
     DCHECK(HasNext());
-    DCHECK_NE(channels_[index_].status_,
-              NotificationChannelStatus::UNAVAILABLE);
+    DCHECK_NE(channels_[index_].status, NotificationChannelStatus::UNAVAILABLE);
     content_settings::Rule rule = content_settings::Rule(
-        ContentSettingsPattern::FromString(channels_[index_].origin_),
+        ContentSettingsPattern::FromString(channels_[index_].origin),
         ContentSettingsPattern::Wildcard(),
         new base::Value(
-            ChannelStatusToContentSetting(channels_[index_].status_)));
+            ChannelStatusToContentSetting(channels_[index_].status)));
     index_++;
     return rule;
   }
@@ -210,8 +209,18 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
 
 void NotificationChannelsProviderAndroid::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
-  // TODO(crbug.com/700377): If |content_type| == NOTIFICATIONS, delete
-  // all channels.
+  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+      !should_use_channels_) {
+    return;
+  }
+  std::vector<NotificationChannel> channels = bridge_->GetChannels();
+  for (auto channel : channels)
+    bridge_->DeleteChannel(channel.origin);
+
+  if (channels.size() > 0) {
+    NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
+                    content_type, std::string());
+  }
 }
 
 void NotificationChannelsProviderAndroid::ShutdownOnUIThread() {

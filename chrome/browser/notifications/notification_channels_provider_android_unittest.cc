@@ -265,7 +265,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
     EXPECT_CALL(check, Call("2: GetRuleIterator()"));
 
     // Now report channel as blocked.
-    channels[0].status_ = NotificationChannelStatus::BLOCKED;
+    channels[0].status = NotificationChannelStatus::BLOCKED;
     EXPECT_CALL(*mock_bridge_, GetChannels()).WillOnce(Return(channels));
 
     // GetRuleIterator should now notify observer.
@@ -304,4 +304,51 @@ TEST_F(NotificationChannelsProviderAndroidTest,
       ContentSettingsPattern::FromString(kTestOrigin), ContentSettingsPattern(),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
       new base::Value(CONTENT_SETTING_ALLOW));
+}
+
+TEST_F(NotificationChannelsProviderAndroidTest,
+       ClearAllContentSettingsRulesDeletesChannelsAndNotifiesObservers) {
+  InitChannelsProvider(true /* should_use_channels */);
+  content_settings::MockObserver mock_observer;
+  channels_provider_->AddObserver(&mock_observer);
+
+  std::vector<NotificationChannel> channels;
+  channels.emplace_back("https://abc.com", NotificationChannelStatus::ENABLED);
+  channels.emplace_back("https://xyz.com", NotificationChannelStatus::BLOCKED);
+  ON_CALL(*mock_bridge_, GetChannels()).WillByDefault(Return(channels));
+
+  EXPECT_CALL(*mock_bridge_, DeleteChannel("https://abc.com"));
+  EXPECT_CALL(*mock_bridge_, DeleteChannel("https://xyz.com"));
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(
+                  ContentSettingsPattern(), ContentSettingsPattern(),
+                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+  channels_provider_->ClearAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+}
+
+TEST_F(NotificationChannelsProviderAndroidTest,
+       ClearAllContentSettingsRulesNoopsForUnrelatedContentSettings) {
+  InitChannelsProvider(true /* should_use_channels */);
+
+  EXPECT_CALL(*mock_bridge_, GetChannels()).Times(0);
+  EXPECT_CALL(*mock_bridge_, DeleteChannel(_)).Times(0);
+
+  channels_provider_->ClearAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_COOKIES);
+  channels_provider_->ClearAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  channels_provider_->ClearAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION);
+}
+
+TEST_F(NotificationChannelsProviderAndroidTest,
+       ClearAllContentSettingsRulesNoopsIfNotUsingChannels) {
+  InitChannelsProvider(false /* should_use_channels */);
+
+  EXPECT_CALL(*mock_bridge_, GetChannels()).Times(0);
+  EXPECT_CALL(*mock_bridge_, DeleteChannel(_)).Times(0);
+
+  channels_provider_->ClearAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }

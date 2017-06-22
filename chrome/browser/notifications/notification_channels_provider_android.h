@@ -24,15 +24,15 @@ enum NotificationChannelStatus { ENABLED, BLOCKED, UNAVAILABLE };
 
 struct NotificationChannel {
   NotificationChannel(std::string origin, NotificationChannelStatus status)
-      : origin_(origin), status_(status) {}
+      : origin(origin), status(status) {}
   bool operator==(const NotificationChannel& other) const {
-    return origin_ == other.origin_ && status_ == other.status_;
+    return origin == other.origin && status == other.status;
   }
   bool operator<(const NotificationChannel& other) const {
-    return std::tie(origin_, status_) < std::tie(other.origin_, other.status_);
+    return std::tie(origin, status) < std::tie(other.origin, other.status);
   }
-  std::string origin_;
-  NotificationChannelStatus status_ = NotificationChannelStatus::UNAVAILABLE;
+  std::string origin;
+  NotificationChannelStatus status = NotificationChannelStatus::UNAVAILABLE;
 };
 
 // This class provides notification content settings from system notification
