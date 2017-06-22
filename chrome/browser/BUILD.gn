@@ -1238,6 +1238,8 @@ split_static_library("browser") {
     "signin/chrome_signin_client_factory.h",
     "signin/chrome_signin_helper.cc",
     "signin/chrome_signin_helper.h",
+    "signin/dice_response_handler.cc",
+    "signin/dice_response_handler.h",
     "signin/gaia_cookie_manager_service_factory.cc",
     "signin/gaia_cookie_manager_service_factory.h",
     "signin/investigator_dependency_provider.cc",
