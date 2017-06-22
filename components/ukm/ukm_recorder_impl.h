@@ -13,10 +13,6 @@
 #include "components/ukm/public/interfaces/ukm_interface.mojom.h"
 #include "components/ukm/public/ukm_recorder.h"
 
-namespace metrics {
-class UkmBrowserTest;
-}
-
 namespace ukm {
 
 class UkmSource;
@@ -52,9 +48,7 @@ class UkmRecorderImpl : public UkmRecorder {
   const std::vector<mojom::UkmEntryPtr>& entries() const { return entries_; }
 
  private:
-  friend ::metrics::UkmBrowserTest;
   friend ::ukm::debug::DebugPage;
-
   // UkmRecorder:
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
   void AddEntry(mojom::UkmEntryPtr entry) override;

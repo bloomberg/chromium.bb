@@ -80,8 +80,6 @@ class ChromeMetricsServicesManagerClient
 
   bool IsMetricsReportingForceEnabled() override;
 
-  bool IsIncognitoSessionActive() override;
-
   // Gets the MetricsStateManager, creating it if it has not already been
   // created.
   metrics::MetricsStateManager* GetMetricsStateManager();

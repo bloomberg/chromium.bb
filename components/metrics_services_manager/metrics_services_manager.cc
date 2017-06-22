@@ -137,8 +137,7 @@ void MetricsServicesManager::UpdateUkmService() {
   bool sync_enabled =
       client_->IsMetricsReportingForceEnabled() ||
       metrics_service_client_->IsHistorySyncEnabledOnAllProfiles();
-  bool is_incognito = client_->IsIncognitoSessionActive();
-  if (may_record_ && sync_enabled & !is_incognito) {
+  if (may_record_ && sync_enabled) {
     ukm->EnableRecording();
     if (may_upload_)
       ukm->EnableReporting();
