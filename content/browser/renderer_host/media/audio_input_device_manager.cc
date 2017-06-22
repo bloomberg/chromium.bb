@@ -168,13 +168,18 @@ void AudioInputDeviceManager::OpenedOnIOThread(
   UMA_HISTOGRAM_TIMES("Media.AudioInputDeviceManager.OpenOnDeviceThreadTime",
                       base::TimeTicks::Now() - start_time);
 
+  media::AudioParameters valid_input_params =
+      input_params.IsValid()
+          ? input_params
+          : media::AudioParameters::UnavailableDeviceParams();
+
   StreamDeviceInfo info(device.type, device.name, device.id);
   info.session_id = session_id;
-  info.device.input.sample_rate = input_params.sample_rate();
-  info.device.input.channel_layout = input_params.channel_layout();
-  info.device.input.frames_per_buffer = input_params.frames_per_buffer();
-  info.device.input.effects = input_params.effects();
-  info.device.input.mic_positions = input_params.mic_positions();
+  info.device.input.sample_rate = valid_input_params.sample_rate();
+  info.device.input.channel_layout = valid_input_params.channel_layout();
+  info.device.input.frames_per_buffer = valid_input_params.frames_per_buffer();
+  info.device.input.effects = valid_input_params.effects();
+  info.device.input.mic_positions = valid_input_params.mic_positions();
   info.device.matched_output_device_id = matched_output_device_id;
   info.device.matched_output.sample_rate = matched_output_params.sample_rate();
   info.device.matched_output.channel_layout =
