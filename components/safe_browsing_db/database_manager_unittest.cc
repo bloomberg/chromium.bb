@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
@@ -68,8 +69,9 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::RunLoop().RunUntilIdle();
     db_manager_->StopOnIOThread(false);
+    db_manager_ = nullptr;
+    base::RunLoop().RunUntilIdle();
   }
 
   std::string GetStockV4GetHashResponse() {

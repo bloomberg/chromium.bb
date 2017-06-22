@@ -331,7 +331,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   base::WeakPtrFactory<V4LocalDatabaseManager> weak_factory_;
 
-  friend class base::RefCountedThreadSafe<V4LocalDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(V4LocalDatabaseManager);
 };  // class V4LocalDatabaseManager
 
