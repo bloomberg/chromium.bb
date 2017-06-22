@@ -281,19 +281,6 @@ config("common_sanitizer_flags") {
   }
 }
 
-# TODO(thomasanderson): Move this out of build/config/sanitizers.
-config("libcxx_flags") {
-  if (use_custom_libcxx) {
-    prefix = "//buildtools/third_party"
-    include = "trunk/include"
-    cflags_cc = [
-      "-nostdinc++",
-      "-isystem" + rebase_path("$prefix/libc++/$include", root_build_dir),
-      "-isystem" + rebase_path("$prefix/libc++abi/$include", root_build_dir),
-    ]
-  }
-}
-
 config("asan_flags") {
   cflags = []
   if (is_asan) {
@@ -539,7 +526,6 @@ config("fuzzing_build_mode") {
 
 all_sanitizer_configs = [
   ":common_sanitizer_flags",
-  ":libcxx_flags",
   ":coverage_flags",
   ":default_sanitizer_ldflags",
   ":asan_flags",
