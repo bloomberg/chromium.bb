@@ -339,24 +339,8 @@ static SelectionPaintRange CalcSelectionPaintRange(
     return SelectionPaintRange();
 
   DCHECK(!selection.IsNone());
-  // Use the rightmost candidate for the start of the selection, and the
-  // leftmost candidate for the end of the selection. Example: foo <a>bar</a>.
-  // Imagine that a line wrap occurs after 'foo', and that 'bar' is selected.
-  // If we pass [foo, 3] as the start of the selection, the selection painting
-  // code will think that content on the line containing 'foo' is selected
-  // and will fill the gap before 'bar'.
-  PositionInFlatTree start_pos = selection.Start();
-  const PositionInFlatTree most_forward_start =
-      MostForwardCaretPosition(start_pos);
-  if (IsVisuallyEquivalentCandidate(most_forward_start))
-    start_pos = most_forward_start;
-  PositionInFlatTree end_pos = selection.End();
-  const PositionInFlatTree most_backward = MostBackwardCaretPosition(end_pos);
-  if (IsVisuallyEquivalentCandidate(most_backward))
-    end_pos = most_backward;
-
-  DCHECK(start_pos.IsNotNull());
-  DCHECK(end_pos.IsNotNull());
+  const PositionInFlatTree start_pos = selection.Start();
+  const PositionInFlatTree end_pos = selection.End();
   DCHECK_LE(start_pos, end_pos);
   LayoutObject* start_layout_object = start_pos.AnchorNode()->GetLayoutObject();
   LayoutObject* end_layout_object = end_pos.AnchorNode()->GetLayoutObject();
