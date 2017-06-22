@@ -29,6 +29,7 @@
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
+#include "ios/web_view/internal/web_view_global_state_util.h"
 #import "ios/web_view/internal/web_view_java_script_dialog_presenter.h"
 #import "ios/web_view/internal/web_view_web_state_policy_decider.h"
 #import "ios/web_view/public/cwv_navigation_delegate.h"
@@ -108,6 +109,14 @@ static NSString* gUserAgentProduct = nil;
 @synthesize UIDelegate = _UIDelegate;
 @synthesize scrollView = _scrollView;
 @synthesize visibleURL = _visibleURL;
+
++ (void)initialize {
+  if (self != [CWVWebView class]) {
+    return;
+  }
+
+  ios_web_view::InitializeGlobalState();
+}
 
 + (NSString*)userAgentProduct {
   return gUserAgentProduct;
