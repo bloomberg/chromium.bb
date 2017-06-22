@@ -2,17 +2,18 @@
 <head>
 <script>
 var xhrStatus = -1;
-var imgUrl = 'chrome-extension://eemcgdkfndhakfknompkggombfjjjeno/images/bookmark_manager_search.png';
+// An icon in the simple_with_icon test extension.
+var imgUrl = 'chrome-extension://ombfbiolafbecdcaofoilglhmobpdbnd/icon.png';
 
 window.onload = function() {
   // The call to pushState with chrome-extension:// URL will succeed, since the
   // test uses --disable-web-security.
   history.pushState('', '',
-      'chrome-extension://eemcgdkfndhakfknompkggombfjjjeno/main.html');
+      'chrome-extension://ombfbiolafbecdcaofoilglhmobpdbnd/');
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
-      xhrStatus = xhr.status;    
+      xhrStatus = xhr.status;
       if (xhrStatus == 200) {
         document.getElementById('star').src =
             window.URL.createObjectURL(this.response);

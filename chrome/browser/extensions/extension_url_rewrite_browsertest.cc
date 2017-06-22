@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -94,6 +95,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURL) {
+  if (MdBookmarksUI::IsEnabled())
+    return;
+
   // Navigate to chrome://bookmarks and check that the location bar URL is
   // what was entered and the internal URL uses the chrome-extension:// scheme.
   const GURL bookmarks_url(chrome::kChromeUIBookmarksURL);
@@ -107,6 +111,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURL) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURLWithRef) {
+  if (MdBookmarksUI::IsEnabled())
+    return;
+
   // Navigate to chrome://bookmarks/#1 and check that the location bar URL is
   // what was entered and the internal URL uses the chrome-extension:// scheme.
   GURL url_with_ref(chrome::kChromeUIBookmarksURL + std::string("#1"));
