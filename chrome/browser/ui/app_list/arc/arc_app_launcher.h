@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
 namespace content {
@@ -20,6 +21,7 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
  public:
   ArcAppLauncher(content::BrowserContext* context,
                  const std::string& app_id,
+                 const base::Optional<std::string>& launch_intent,
                  bool landscape_layout,
                  bool deferred_launch_allowed);
   ~ArcAppLauncher() override;
@@ -36,8 +38,12 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
 
   // Unowned pointer.
   content::BrowserContext* context_;
-  // ARC app id and requested layout.
+  // ARC app id.
   const std::string app_id_;
+  // Optional intent to launch the app. If not set then app is started default
+  // way.
+  const base::Optional<std::string> launch_intent_;
+  // Requested layout.
   const bool landscape_layout_;
   // If it is set to true that means app is allowed to launch in deferred mode
   // once it is registered, regardless it is ready or not. Otherwise app is
