@@ -1,4 +1,8 @@
 include_rules = [
   "+components/keyed_service",
+  "+components/gcm_driver",
+  "+components/ntp_snippets",
+  "+components/version_info",
+  "+net",
   "+sql",
 ]
