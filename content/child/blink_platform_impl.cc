@@ -44,6 +44,7 @@
 #include "content/child/notifications/notification_manager.h"
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/child/web_data_consumer_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/worker_thread_registry.h"
@@ -392,6 +393,12 @@ void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread,
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
+}
+
+std::unique_ptr<blink::WebDataConsumerHandle>
+BlinkPlatformImpl::CreateDataConsumerHandle(
+    mojo::ScopedDataPipeConsumerHandle handle) {
+  return base::MakeUnique<WebDataConsumerHandleImpl>(std::move(handle));
 }
 
 WebString BlinkPlatformImpl::UserAgent() {

@@ -42,6 +42,7 @@
 #include "WebAudioDevice.h"
 #include "WebCommon.h"
 #include "WebData.h"
+#include "WebDataConsumerHandle.h"
 #include "WebFeaturePolicy.h"
 #include "WebGamepadListener.h"
 #include "WebGestureDevice.h"
@@ -59,6 +60,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace device {
@@ -333,6 +335,12 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Returns a new WebURLLoader instance.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader() { return nullptr; }
+
+  // Returns a WebDataConsumerHandle for given a mojo data pipe endpoint.
+  virtual std::unique_ptr<WebDataConsumerHandle> CreateDataConsumerHandle(
+      mojo::ScopedDataPipeConsumerHandle handle) {
+    return nullptr;
+  }
 
   // May return null.
   virtual WebPrescientNetworking* PrescientNetworking() { return nullptr; }
