@@ -206,6 +206,3 @@
 -VerifyPathControlledByUserTest.OwnershipChecks
 -VerifyPathControlledByUserTest.Symlinks
 -VerifyPathControlledByUserTest.WriteBitChecks
-
-# https://crbug.com/734218
--MemoryPeakDetectorTest.StartStopQuickly
