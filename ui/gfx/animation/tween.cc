@@ -61,6 +61,9 @@ double Tween::CalculateValue(Tween::Type type, double state) {
     case LINEAR_OUT_SLOW_IN:
       return gfx::CubicBezier(0, 0, .2, 1).Solve(state);
 
+    case SLOW_OUT_LINEAR_IN:
+      return gfx::CubicBezier(0, 0, 1, .2).Solve(state);
+
     case FAST_OUT_LINEAR_IN:
       return gfx::CubicBezier(0.4, 0, 1, 1).Solve(state);
 

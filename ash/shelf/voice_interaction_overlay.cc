@@ -381,7 +381,7 @@ void VoiceInteractionOverlay::EndAnimation() {
                                        IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kFullRetractDurationMs));
-    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetTweenType(gfx::Tween::SLOW_OUT_LINEAR_IN);
 
     ripple_layer_->SetTransform(transform);
 
@@ -405,7 +405,7 @@ void VoiceInteractionOverlay::EndAnimation() {
                                        IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kFullRetractDurationMs));
-    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetTweenType(gfx::Tween::SLOW_OUT_LINEAR_IN);
 
     icon_layer_->SetTransform(transform);
     icon_layer_->SetOpacity(0);
@@ -426,7 +426,7 @@ void VoiceInteractionOverlay::EndAnimation() {
                                        IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kFullRetractDurationMs));
-    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetTweenType(gfx::Tween::SLOW_OUT_LINEAR_IN);
 
     background_layer_->SetTransform(transform);
     background_layer_->SetOpacity(0);
