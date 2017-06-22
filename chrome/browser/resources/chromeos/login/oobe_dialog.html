@@ -44,12 +44,20 @@
       <iron-icon icon-"icon2" ... class="oobe-icon oobe-icon-2x">
 
   |bottom-buttons| block is shown only if |has-buttons| attribute is set.
+
+  Attributes:
+    no-header - hides header
+    no-footer-padding - disables footer padding.
+    has-buttons - shows bottom buttons menu
+
+  I.e. [no-header no-footer-padding] will make the footer occupy all the dialog
+  space.
 -->
 <dom-module id="oobe-dialog">
   <template>
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_dialog.css">
-    <div id="header-container">
+    <div id="header-container" hidden="[[noHeader]]">
       <div class="oobe-icon-div">
         <content select=".oobe-icon"></content>
       </div>
@@ -57,7 +65,7 @@
         <content select=".header"></content>
       </div>
     </div>
-    <div id="footer-container" noFooter$="[[noFooter]]"
+    <div id="footer-container" noFooterPadding$="[[noFooterPadding]]"
         class="flex layout vertical">
       <content select=".footer"></content>
     </div>

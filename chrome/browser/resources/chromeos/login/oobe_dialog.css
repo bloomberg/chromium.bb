@@ -14,7 +14,7 @@
   padding: 44px 64px 0 64px;
 }
 
-#footer-container[noFooter] {
+#footer-container[noFooterPadding] {
   padding: 0;
 }
 

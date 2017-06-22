@@ -23,9 +23,17 @@ Polymer({
     },
 
     /**
-     * Control visibility of the footer container.
+     * Control visibility of the header container.
      */
-    noFooter: {
+    noHeader: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Removes footer padding.
+     */
+    noFooterPadding: {
       type: Boolean,
       value: false,
     },
