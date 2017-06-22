@@ -131,6 +131,12 @@ void VrGLThread::ToggleCardboardGamepad(bool enabled) {
       base::Bind(&VrShell::ToggleCardboardGamepad, weak_vr_shell_, enabled));
 }
 
+void VrGLThread::OnGLInitialized() {
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&UiSceneManager::OnGLInitialized, weak_scene_manager_));
+}
+
 void VrGLThread::OnUnsupportedMode(UiUnsupportedMode mode) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,

@@ -26,9 +26,6 @@ void TexturedElement::Initialize() {
   initialized_ = true;
   UpdateTexture();
   set_fill(Fill::SELF);
-  gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
-  float y = drawn_size.height() / drawn_size.width() * size().x();
-  set_size({size().x(), y, 1});
 }
 
 void TexturedElement::UpdateTexture() {
@@ -38,6 +35,15 @@ void TexturedElement::UpdateTexture() {
       texture_size_.width(), texture_size_.height());
   GetTexture()->DrawAndLayout(surface->getCanvas(), texture_size_);
   Flush(surface.get());
+  // Update the element size's aspect ratio to match the texture.
+  UpdateElementSize();
+}
+
+void TexturedElement::UpdateElementSize() {
+  // Updating the height according to width is a hack.  This may be overridden.
+  gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
+  float y = drawn_size.height() / drawn_size.width() * size().x();
+  set_size({size().x(), y, 1});
 }
 
 void TexturedElement::Render(UiElementRenderer* renderer,

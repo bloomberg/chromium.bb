@@ -46,7 +46,7 @@ class VrGLThread : public base::Thread,
     return weak_scene_manager_;
   }
 
-  // GlBrowserInterface implementation (VrShellGl calling to VrShell).
+  // GlBrowserInterface implementation (VrShellGl calling out to UI/VrShell).
   void ContentSurfaceChanged(jobject surface) override;
   void GvrDelegateReady(gvr::ViewerType viewer_type) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
@@ -60,6 +60,7 @@ class VrGLThread : public base::Thread,
       device::mojom::VRDisplayInfoPtr* info) override;
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
+  void OnGLInitialized() override;
 
   // UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;
