@@ -62,6 +62,15 @@ NSString* GetEmailLabelFromAutofillProfile(
   return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
 }
 
+NSString* GetAddressNotificationLabelFromAutofillProfile(
+    PaymentRequest& payment_request,
+    const autofill::AutofillProfile& profile) {
+  base::string16 label =
+      payment_request.profile_comparator()->GetStringForMissingShippingFields(
+          profile);
+  return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
+}
+
 NSString* GetShippingSectionTitle(payments::PaymentShippingType shipping_type) {
   switch (shipping_type) {
     case payments::PaymentShippingType::SHIPPING:

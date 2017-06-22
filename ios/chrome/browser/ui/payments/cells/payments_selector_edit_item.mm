@@ -15,6 +15,7 @@
 @implementation PaymentsSelectorEditItem
 
 @synthesize accessoryType = _accessoryType;
+@synthesize complete = _complete;
 @synthesize name = _name;
 @synthesize value = _value;
 @synthesize autofillUIType = _autofillUIType;

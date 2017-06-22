@@ -9,12 +9,11 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/payments/cells/payments_has_accessory_type.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_is_selectable.h"
 
 // Item that configures a CollectionViewDetailCell in order to represent a
 // selector-backed editor form field.
-@interface PaymentsSelectorEditItem
-    : CollectionViewItem<PaymentsHasAccessoryType>
+@interface PaymentsSelectorEditItem : CollectionViewItem<PaymentsIsSelectable>
 
 // The name of the field.
 @property(nonatomic, nullable, copy) NSString* name;

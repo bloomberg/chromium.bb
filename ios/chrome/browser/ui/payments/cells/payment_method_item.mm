@@ -32,6 +32,7 @@ const CGFloat kHorizontalPadding = 16;
 @synthesize methodTypeIcon = _methodTypeIcon;
 @synthesize reserveRoomForAccessoryType = _reserveRoomForAccessoryType;
 @synthesize accessoryType = _accessoryType;
+@synthesize complete = _complete;
 
 #pragma mark CollectionViewItem
 

@@ -43,6 +43,12 @@ NSString* GetPhoneNumberLabelFromAutofillProfile(
 NSString* GetEmailLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile);
 
+// Helper function to create a notification label for an address cell from an
+// autofill profile. Returns nil if the resulting label is empty.
+NSString* GetAddressNotificationLabelFromAutofillProfile(
+    PaymentRequest& payment_request,
+    const autofill::AutofillProfile& profile);
+
 // Returns the title for the shipping section of the payment summary view given
 // the shipping type specified in |payment_request|.
 NSString* GetShippingSectionTitle(payments::PaymentShippingType shipping_type);

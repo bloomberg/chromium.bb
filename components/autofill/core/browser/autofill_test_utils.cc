@@ -212,6 +212,21 @@ AutofillProfile GetFullProfile2() {
   return profile;
 }
 
+AutofillProfile GetIncompleteProfile1() {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+  SetProfileInfo(&profile, "John", "H.", "Doe", "jsmith@example.com", "ACME",
+                 "123 Main Street", "Unit 1", "Greensdale", "MI", "48838", "US",
+                 "");
+  return profile;
+}
+
+AutofillProfile GetIncompleteProfile2() {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+  SetProfileInfo(&profile, "", "", "", "jsmith@example.com", "", "", "", "", "",
+                 "", "", "");
+  return profile;
+}
+
 AutofillProfile GetVerifiedProfile() {
   AutofillProfile profile(GetFullProfile());
   profile.set_origin(kSettingsOrigin);
