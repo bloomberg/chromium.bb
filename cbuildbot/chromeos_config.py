@@ -2210,7 +2210,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'peach_pit',
       'peppy',
       'poppy',
-      'reef',
       'samus',
       'scarlet',
       'smaug',
@@ -2240,6 +2239,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'lakitu-gpu', # crbug.com/732942
       'lakitu-st',
+      'reef',
       'sentry',
       'wizpig',
   ])
@@ -2459,7 +2459,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('cave',           'sentry',         'caroline'),      # glados (SKL)
     ('elm',            None,             'hana'),          # oak (MTK8173)
     (None,             None,             'kevin'),         # gru (RK3399)
-    (None,             None,             None),            # reef (APL)
+    ('reef',           None,             None),            # reef (APL)
     (None,             None,             None),            # poppy (KBL)
   ])
 
