@@ -441,10 +441,9 @@ static void ThreadSafeObserverHarness(int num_threads,
   observer_list->AddObserver(&b);
 
   std::vector<AddRemoveThread*> threaded_observer;
-  std::vector<base::PlatformThreadHandle> threads;
+  std::vector<base::PlatformThreadHandle> threads(num_threads);
   std::vector<std::unique_ptr<base::WaitableEvent>> ready;
   threaded_observer.reserve(num_threads);
-  threads.reserve(num_threads);
   ready.reserve(num_threads);
   for (int index = 0; index < num_threads; index++) {
     ready.push_back(
@@ -452,12 +451,10 @@ static void ThreadSafeObserverHarness(int num_threads,
                                   WaitableEvent::InitialState::NOT_SIGNALED));
     threaded_observer.push_back(new AddRemoveThread(
         observer_list.get(), cross_thread_notifies, ready.back().get()));
-    base::PlatformThreadHandle thread;
-    EXPECT_TRUE(PlatformThread::Create(0, threaded_observer.back(), &thread));
-    threads.push_back(thread);
+    EXPECT_TRUE(
+        PlatformThread::Create(0, threaded_observer.back(), &threads[index]));
   }
   ASSERT_EQ(static_cast<size_t>(num_threads), threaded_observer.size());
-  ASSERT_EQ(static_cast<size_t>(num_threads), threads.size());
   ASSERT_EQ(static_cast<size_t>(num_threads), ready.size());
 
   // This makes sure that threaded_observer has gotten to set loop_, so that we
