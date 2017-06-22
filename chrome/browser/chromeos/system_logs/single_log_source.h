@@ -28,6 +28,9 @@ class SingleLogSource : public SystemLogsSource {
 
     // For /var/log/ui/ui.LATEST.
     kUiLatest,
+
+    // For /var/log/atrus.log.
+    kAtrusLog,
   };
 
   explicit SingleLogSource(SupportedSource source);

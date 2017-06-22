@@ -40,6 +40,8 @@ base::FilePath GetLogFileSourceRelativeFilePath(
       return base::FilePath("messages");
     case SingleLogSource::SupportedSource::kUiLatest:
       return base::FilePath("ui/ui.LATEST");
+    case SingleLogSource::SupportedSource::kAtrusLog:
+      return base::FilePath("atrus.log");
   }
   NOTREACHED();
   return base::FilePath();
