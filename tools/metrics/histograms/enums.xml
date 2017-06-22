@@ -37688,6 +37688,21 @@ from previous Chrome versions.
   <int value="1" label="Android Wallpapers App"/>
 </enum>
 
+<enum name="WallpaperColorExtractionResult">
+  <int value="0" label="(Dark, Vibrant): failure"/>
+  <int value="1" label="(Dark, Vibrant): success"/>
+  <int value="2" label="(Normal, Vibrant): failure"/>
+  <int value="3" label="(Normal, Vibrant): success"/>
+  <int value="4" label="(Light, Vibrant): failure"/>
+  <int value="5" label="(Light, Vibrant): success"/>
+  <int value="6" label="(Dark, Muted): failure"/>
+  <int value="7" label="(Dark, Muted): success"/>
+  <int value="8" label="(Normal, Muted): failure"/>
+  <int value="9" label="(Normal, Muted): success"/>
+  <int value="10" label="(Light, Muted): failure"/>
+  <int value="11" label="(Light, Muted): success"/>
+</enum>
+
 <enum name="WallpaperLayout">
   <int value="0" label="Center"/>
   <int value="1" label="Center Cropped"/>

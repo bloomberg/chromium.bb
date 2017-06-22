@@ -28,7 +28,12 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
+
+using color_utils::ColorProfile;
+using color_utils::LumaRange;
+using color_utils::SaturationRange;
 
 namespace ash {
 
@@ -39,6 +44,17 @@ constexpr int kWallpaperReloadDelayMs = 100;
 
 // How long to wait for resizing of the the wallpaper.
 constexpr int kCompositorLockTimeoutMs = 750;
+
+// This enum is used to get the corresponding prominent color from the
+// calculation results.
+enum ColorProfileIndex {
+  COLOR_PROFILE_INDEX_DARK_VIBRANT = 0,
+  COLOR_PROFILE_INDEX_NORMAL_VIBRANT,
+  COLOR_PROFILE_INDEX_LIGHT_VIBRANT,
+  COLOR_PROFILE_INDEX_DARK_MUTED,
+  COLOR_PROFILE_INDEX_NORMAL_MUTED,
+  COLOR_PROFILE_INDEX_LIGHT_MUTED,
+};
 
 // Returns true if a color should be extracted from the wallpaper based on the
 // command kAshShelfColor line arg.
@@ -64,42 +80,58 @@ bool IsShelfColoringEnabled() {
   return switch_value == switches::kAshShelfColorEnabled;
 }
 
-// Returns the |luma| and |saturation| output parameters based on the
-// kAshShelfColorScheme command line arg.
-void GetProminentColorProfile(color_utils::LumaRange* luma,
-                              color_utils::SaturationRange* saturation) {
-  const std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAshShelfColorScheme);
+// Gets the color profiles for extracting wallpaper prominent colors.
+std::vector<ColorProfile> GetProminentColorProfiles() {
+  return {ColorProfile(LumaRange::DARK, SaturationRange::VIBRANT),
+          ColorProfile(LumaRange::NORMAL, SaturationRange::VIBRANT),
+          ColorProfile(LumaRange::LIGHT, SaturationRange::VIBRANT),
+          ColorProfile(LumaRange::DARK, SaturationRange::MUTED),
+          ColorProfile(LumaRange::NORMAL, SaturationRange::MUTED),
+          ColorProfile(LumaRange::LIGHT, SaturationRange::MUTED)};
+}
 
-  *luma = color_utils::LumaRange::DARK;
-  *saturation = color_utils::SaturationRange::MUTED;
-
-  if (switch_value.find("light") != std::string::npos)
-    *luma = color_utils::LumaRange::LIGHT;
-  else if (switch_value.find("normal") != std::string::npos)
-    *luma = color_utils::LumaRange::NORMAL;
-  else if (switch_value.find("dark") != std::string::npos)
-    *luma = color_utils::LumaRange::DARK;
-
-  if (switch_value.find("vibrant") != std::string::npos)
-    *saturation = color_utils::SaturationRange::VIBRANT;
-  else if (switch_value.find("muted") != std::string::npos)
-    *saturation = color_utils::SaturationRange::MUTED;
+// Gets the corresponding color profile index based on the given
+// |color_profile|.
+ColorProfileIndex GetColorProfileIndex(ColorProfile color_profile) {
+  if (color_profile.saturation == SaturationRange::VIBRANT) {
+    switch (color_profile.luma) {
+      case LumaRange::DARK:
+        return COLOR_PROFILE_INDEX_DARK_VIBRANT;
+      case LumaRange::NORMAL:
+        return COLOR_PROFILE_INDEX_NORMAL_VIBRANT;
+      case LumaRange::LIGHT:
+        return COLOR_PROFILE_INDEX_LIGHT_VIBRANT;
+    }
+  } else {
+    switch (color_profile.luma) {
+      case LumaRange::DARK:
+        return COLOR_PROFILE_INDEX_DARK_MUTED;
+      case LumaRange::NORMAL:
+        return COLOR_PROFILE_INDEX_NORMAL_MUTED;
+      case LumaRange::LIGHT:
+        return COLOR_PROFILE_INDEX_LIGHT_MUTED;
+    }
+  }
+  NOTREACHED();
+  return COLOR_PROFILE_INDEX_DARK_MUTED;
 }
 
 }  // namespace
 
+const SkColor WallpaperController::kInvalidColor = SK_ColorTRANSPARENT;
+
 WallpaperController::WallpaperController()
     : locked_(false),
       wallpaper_mode_(WALLPAPER_NONE),
-      prominent_color_(kInvalidColor),
+      color_profiles_(GetProminentColorProfiles()),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
       sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE,
            // Don't need to finish resize or color extraction during shutdown.
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       scoped_session_observer_(this) {
+  prominent_colors_ =
+      std::vector<SkColor>(color_profiles_.size(), kInvalidColor);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
 }
@@ -139,6 +171,12 @@ void WallpaperController::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+SkColor WallpaperController::GetProminentColor(
+    ColorProfile color_profile) const {
+  ColorProfileIndex index = GetColorProfileIndex(color_profile);
+  return prominent_colors_[index];
+}
+
 wallpaper::WallpaperLayout WallpaperController::GetWallpaperLayout() const {
   if (current_wallpaper_)
     return current_wallpaper_->layout();
@@ -168,7 +206,8 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
 }
 
 void WallpaperController::CreateEmptyWallpaper() {
-  SetProminentColor(kInvalidColor);
+  SetProminentColors(
+      std::vector<SkColor>(color_profiles_.size(), kInvalidColor));
   current_wallpaper_.reset();
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
@@ -284,9 +323,9 @@ void WallpaperController::OnWallpaperResized() {
 }
 
 void WallpaperController::OnColorCalculationComplete() {
-  const SkColor color = color_calculator_->prominent_color();
+  const std::vector<SkColor> colors = color_calculator_->prominent_colors();
   color_calculator_.reset();
-  SetProminentColor(color);
+  SetProminentColors(colors);
 }
 
 void WallpaperController::InstallDesktopController(aura::Window* root_window) {
@@ -356,11 +395,12 @@ void WallpaperController::UpdateWallpaper(bool clear_cache) {
   Shell::Get()->wallpaper_delegate()->UpdateWallpaper(clear_cache);
 }
 
-void WallpaperController::SetProminentColor(SkColor color) {
-  if (prominent_color_ == color)
+void WallpaperController::SetProminentColors(
+    const std::vector<SkColor>& colors) {
+  if (prominent_colors_ == colors)
     return;
 
-  prominent_color_ = color;
+  prominent_colors_ = colors;
   for (auto& observer : observers_)
     observer.OnWallpaperColorsChanged();
 }
@@ -372,22 +412,24 @@ void WallpaperController::CalculateWallpaperColors() {
   }
 
   if (!ShouldCalculateColors()) {
-    SetProminentColor(kInvalidColor);
+    SetProminentColors(
+        std::vector<SkColor>(color_profiles_.size(), kInvalidColor));
     return;
   }
 
-  color_utils::LumaRange luma;
-  color_utils::SaturationRange saturation;
-  GetProminentColorProfile(&luma, &saturation);
-
   color_calculator_ = base::MakeUnique<wallpaper::WallpaperColorCalculator>(
-      GetWallpaper(), luma, saturation, sequenced_task_runner_);
+      GetWallpaper(), color_profiles_, sequenced_task_runner_);
   color_calculator_->AddObserver(this);
-  if (!color_calculator_->StartCalculation())
-    SetProminentColor(kInvalidColor);
+  if (!color_calculator_->StartCalculation()) {
+    SetProminentColors(
+        std::vector<SkColor>(color_profiles_.size(), kInvalidColor));
+  }
 }
 
 bool WallpaperController::ShouldCalculateColors() const {
+  if (color_profiles_.empty())
+    return false;
+
   gfx::ImageSkia image = GetWallpaper();
   return IsShelfColoringEnabled() &&
          Shell::Get()->session_controller()->GetSessionState() ==

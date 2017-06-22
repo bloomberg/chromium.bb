@@ -2529,7 +2529,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>tbuckley@chromium.org</owner>
   <summary>
     The time taken to extract colors from wallpapers. Recorded each time the
-    wallpaper image changes.
+    wallpaper image changes. It may contain multiple colors extracted.
   </summary>
 </histogram>
 
@@ -2540,16 +2540,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The time taken to extract colors from 'expensive' wallpapers. Recorded each
     time the wallpaper image changes and the color extraction is expected to be
     expensive, e.g. image size &gt; 100 pixels. This includes time spent
-    switching threads.
+    switching threads. It may contain multiple colors extracted.
   </summary>
 </histogram>
 
 <histogram name="Ash.Wallpaper.ColorExtractionResult" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated as of 6/2017.
+  </obsolete>
   <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <summary>
     Tracks the success rate for wallpaper color extraction. Recorded each time
     the wallpaper image changes.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wallpaper.ColorExtractionResult2"
+    enum="WallpaperColorExtractionResult">
+  <owner>warx@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    Tracks the success rate for wallpaper color extraction. Recorded each time
+    the wallpaper image changes for each extracted wallpaper prominent color.
   </summary>
 </histogram>
 
