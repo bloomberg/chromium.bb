@@ -50,6 +50,7 @@ class ModelTypeController : public DataTypeController {
   State state() const override;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
+  void RecordMemoryUsageHistogram() override;
 
  private:
   void RecordStartFailure(ConfigureResult result) const;

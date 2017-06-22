@@ -292,6 +292,10 @@ class Directory {
   // Adds memory statistics to |pmd| for chrome://tracing.
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
+  // Estimates memory usage of entries and corresponding indices of type
+  // |model_type|.
+  size_t EstimateMemoryUsageByType(ModelType model_type);
+
   // Gets/Increments transaction version of a model type. Must be called when
   // holding kernel mutex.
   int64_t GetTransactionVersion(ModelType type) const;

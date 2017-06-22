@@ -725,6 +725,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Check if previous shutdown is shutdown cleanly.
   void ReportPreviousSessionMemoryWarningCount();
 
+  // Estimates and records memory usage histograms per type.
+  void RecordMemoryUsageHistograms();
+
   // After user switches to custom passphrase encryption a set of steps needs to
   // be performed:
   //
