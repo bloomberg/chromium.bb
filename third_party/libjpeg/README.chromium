@@ -8,7 +8,7 @@ License Android Compatible: yes
 Description:
 This contains a copy of libjpeg-6b.
 
-The project files does not incldue from the distribution:
+The project files does not include from the distribution:
   jidctred.c : downsampling
   jdtrans.c : decoder transcoder
 
@@ -23,3 +23,6 @@ avoid conflicts that arise when system libraries attempt to use our libjpeg.
 
 Also patch in google.jdmarker.patch to better handle multiple SOS CSi values and
 their ordering.
+
+Also patch in google.shift-negative-values.patch to fix -Wshift-negative-value
+errors.
