@@ -468,7 +468,7 @@
     {
       name: "FullscreenUnprefixed",
       settable_from_internals: true,
-      status: "test",
+      status: "experimental",
     },
     {
       name: "GamepadExtensions",
