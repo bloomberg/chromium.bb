@@ -1417,19 +1417,19 @@
       "models": [
         {
           "board_name": "reef-uni",
-          "name": "pyro"
-        },
-        {
-          "board_name": "reef-uni",
           "name": "nasher"
         },
         {
           "board_name": "reef-uni",
-          "name": "sand"
+          "name": "snappy"
         },
         {
           "board_name": "reef-uni",
-          "name": "snappy"
+          "name": "pyro"
+        },
+        {
+          "board_name": "reef-uni",
+          "name": "sand"
         }
       ]
     }
