@@ -14877,7 +14877,6 @@
             "reks-release",
             "relm-release",
             "rikku-release",
-            "rowan-release",
             "samus-release",
             "sand-release",
             "scarlet-release",
@@ -20668,7 +20667,6 @@
     },
     "rowan-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "rowan"
         ],
