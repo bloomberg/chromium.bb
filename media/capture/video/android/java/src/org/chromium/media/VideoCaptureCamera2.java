@@ -365,18 +365,18 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
 
         // |mFocusMode| indicates if we're in auto/continuous, single-shot or manual mode.
+        // AndroidMeteringMode.SINGLE_SHOT is dealt with independently since it needs to be
+        // triggered by a capture.
         if (mFocusMode == AndroidMeteringMode.CONTINUOUS) {
             requestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                     CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-        } else if (mFocusMode == AndroidMeteringMode.SINGLE_SHOT) {
-            requestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                    CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
             requestBuilder.set(
-                    CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+                    CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
         } else if (mFocusMode == AndroidMeteringMode.FIXED) {
             requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_OFF);
-            // TODO(mcasas): Support controlling LENS_FOCUS_DISTANCE in this mode,
-            // https://crbug.com/518807.
+            requestBuilder.set(
+                    CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
+            // TODO(mcasas): Support manual focus (LENS_FOCUS_DISTANCE), https://crbug.com/732807.
         }
 
         // |mExposureMode|, |mFillLightMode| and |mTorch| interact to configure the AE and Flash
@@ -1028,6 +1028,29 @@ public class VideoCaptureCamera2 extends VideoCapture {
         // Reuse most of |mPreviewRequestBuilder| since it has expensive items inside that have
         // to do with preview, e.g. the ImageReader and its associated Surface.
         configureCommonCaptureSettings(mPreviewRequestBuilder);
+
+        // Trigger a focus adjustment when |focusMode| is being configured to SINGLE_SHOT or if we
+        // are already in CONTROL_AF_MODE_AUTO and we get a set of |pointsOfInterest2D|.
+        if (focusMode == AndroidMeteringMode.SINGLE_SHOT
+                || (pointsOfInterest2D.length > 0
+                           && mPreviewRequestBuilder.get(CaptureRequest.CONTROL_AF_MODE)
+                                   == CameraMetadata.CONTROL_AF_MODE_AUTO)) {
+            // CONTROL_AF_MODE_AUTO only updates the focus upon trigger and not continuously.
+            mPreviewRequestBuilder.set(
+                    CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
+            mPreviewRequestBuilder.set(
+                    CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+            try {
+                // No need to listen to the Auto Focus state updates, so leave |listener| empty.
+                mCaptureSession.capture(
+                        mPreviewRequestBuilder.build(), null /* listener */, mBackgroundHandler);
+            } catch (CameraAccessException | SecurityException | IllegalStateException
+                    | IllegalArgumentException ex) {
+                Log.e(TAG, "Single-shot focus mCaptureSession.capture: ", ex);
+                return;
+            }
+        }
+
         restartPreview(mBackgroundHandler);
     }
 
