@@ -108,7 +108,7 @@ void MojoTestBase::CloseHandle(MojoHandle h) {
 }
 
 // static
-void MojoTestBase::CreateMessagePipe(MojoHandle *p0, MojoHandle* p1) {
+void MojoTestBase::CreateMessagePipe(MojoHandle* p0, MojoHandle* p1) {
   MojoCreateMessagePipe(nullptr, p0, p1);
   CHECK_NE(*p0, MOJO_HANDLE_INVALID);
   CHECK_NE(*p1, MOJO_HANDLE_INVALID);
@@ -117,7 +117,7 @@ void MojoTestBase::CreateMessagePipe(MojoHandle *p0, MojoHandle* p1) {
 // static
 void MojoTestBase::WriteMessageWithHandles(MojoHandle mp,
                                            const std::string& message,
-                                           const MojoHandle *handles,
+                                           const MojoHandle* handles,
                                            uint32_t num_handles) {
   CHECK_EQ(WriteMessageRaw(MessagePipeHandle(mp), message.data(),
                            static_cast<uint32_t>(message.size()), handles,
@@ -176,9 +176,7 @@ std::string MojoTestBase::ReadMessage(MojoHandle mp) {
 }
 
 // static
-void MojoTestBase::ReadMessage(MojoHandle mp,
-                               char* data,
-                               size_t num_bytes) {
+void MojoTestBase::ReadMessage(MojoHandle mp, char* data, size_t num_bytes) {
   CHECK_EQ(WaitForSignals(mp, MOJO_HANDLE_SIGNAL_READABLE), MOJO_RESULT_OK);
 
   std::vector<uint8_t> bytes;
@@ -202,8 +200,7 @@ void MojoTestBase::VerifyTransmission(MojoHandle source,
 }
 
 // static
-void MojoTestBase::VerifyEcho(MojoHandle mp,
-                              const std::string& message) {
+void MojoTestBase::VerifyEcho(MojoHandle mp, const std::string& message) {
   VerifyTransmission(mp, mp, message);
 }
 
@@ -218,9 +215,8 @@ MojoHandle MojoTestBase::CreateBuffer(uint64_t size) {
 MojoHandle MojoTestBase::DuplicateBuffer(MojoHandle h, bool read_only) {
   MojoHandle new_handle;
   MojoDuplicateBufferHandleOptions options = {
-    sizeof(MojoDuplicateBufferHandleOptions),
-    MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE
-  };
+      sizeof(MojoDuplicateBufferHandleOptions),
+      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE};
   if (read_only)
     options.flags |= MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY;
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -253,7 +249,7 @@ void MojoTestBase::ExpectBufferContents(MojoHandle h,
 }
 
 // static
-void MojoTestBase::CreateDataPipe(MojoHandle *p0,
+void MojoTestBase::CreateDataPipe(MojoHandle* p0,
                                   MojoHandle* p1,
                                   size_t capacity) {
   MojoCreateDataPipeOptions options;
@@ -285,7 +281,7 @@ std::string MojoTestBase::ReadData(MojoHandle consumer, size_t size) {
   std::vector<char> buffer(size);
   uint32_t num_bytes = static_cast<uint32_t>(size);
   CHECK_EQ(MojoReadData(consumer, buffer.data(), &num_bytes,
-                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE),
+                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE),
            MOJO_RESULT_OK);
   CHECK_EQ(num_bytes, static_cast<uint32_t>(size));
 
@@ -302,8 +298,16 @@ MojoHandleSignalsState MojoTestBase::GetSignalsState(MojoHandle handle) {
 // static
 MojoResult MojoTestBase::WaitForSignals(MojoHandle handle,
                                         MojoHandleSignals signals,
+                                        MojoWatchCondition condition,
                                         MojoHandleSignalsState* state) {
-  return Wait(Handle(handle), signals, state);
+  return Wait(Handle(handle), signals, condition, state);
+}
+
+// static
+MojoResult MojoTestBase::WaitForSignals(MojoHandle handle,
+                                        MojoHandleSignals signals,
+                                        MojoHandleSignalsState* state) {
+  return Wait(Handle(handle), signals, MOJO_WATCH_CONDITION_SATISFIED, state);
 }
 
 }  // namespace test

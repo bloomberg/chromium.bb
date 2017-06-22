@@ -130,10 +130,12 @@ TEST_F(WatcherTest, InvalidArguments) {
 
   // Try to watch unwatchable handles.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWatch(w, w, MOJO_HANDLE_SIGNAL_READABLE, 0));
+            MojoWatch(w, w, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, 0));
   MojoHandle buffer_handle = CreateBuffer(42);
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWatch(w, buffer_handle, MOJO_HANDLE_SIGNAL_READABLE, 0));
+            MojoWatch(w, buffer_handle, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, 0));
 
   // Try to cancel a watch on an invalid watcher handle.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoCancelWatch(buffer_handle, 0));
@@ -186,7 +188,8 @@ TEST_F(WatcherTest, WatchMessagePipeReadable) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -243,7 +246,8 @@ TEST_F(WatcherTest, CloseWatchedMessagePipeHandle) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
 
   // Test that closing a watched handle fires an appropriate notification, even
   // when the watcher is unarmed.
@@ -272,7 +276,8 @@ TEST_F(WatcherTest, CloseWatchedMessagePipeHandlePeer) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
 
   // Test that closing a watched handle's peer with an armed watcher fires an
   // appropriate notification.
@@ -325,6 +330,7 @@ TEST_F(WatcherTest, WatchDataPipeConsumerReadable) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, consumer, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED,
                                       readable_consumer_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
@@ -391,7 +397,7 @@ TEST_F(WatcherTest, WatchDataPipeConsumerNewDataReadable) {
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWatch(w, consumer, MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-                      new_data_context));
+                      MOJO_WATCH_CONDITION_SATISFIED, new_data_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -478,6 +484,7 @@ TEST_F(WatcherTest, WatchDataPipeProducerWritable) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED,
                                       writable_producer_context));
 
   // The producer is already writable, so arming should fail with relevant
@@ -548,6 +555,7 @@ TEST_F(WatcherTest, CloseWatchedDataPipeConsumerHandle) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, consumer, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED,
                                       readable_consumer_context));
 
   // Closing the consumer should fire a cancellation notification.
@@ -577,6 +585,7 @@ TEST_F(WatcherTest, CloseWatcherDataPipeConsumerHandlePeer) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, consumer, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED,
                                       readable_consumer_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
@@ -619,6 +628,7 @@ TEST_F(WatcherTest, CloseWatchedDataPipeProducerHandle) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED,
                                       writable_producer_context));
 
   // Closing the consumer should fire a cancellation notification.
@@ -655,6 +665,7 @@ TEST_F(WatcherTest, CloseWatchedDataPipeProducerHandlePeer) {
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED,
                                       writable_producer_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
@@ -698,9 +709,11 @@ TEST_F(WatcherTest, WatchDuplicateContext) {
 
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED, 0));
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE, 0));
+            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, 0));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
@@ -719,7 +732,8 @@ TEST_F(WatcherTest, ArmWithWatchAlreadySatisfied) {
 
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_WRITABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED, 0));
 
   // |a| is always writable, so we can never arm this watcher.
   constexpr size_t kMaxReadyContexts = 10;
@@ -745,7 +759,8 @@ TEST_F(WatcherTest, ArmWithWatchAlreadyUnsatisfiable) {
 
   MojoHandle w;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED, 0));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 
@@ -799,9 +814,11 @@ TEST_F(WatcherTest, MultipleWatches) {
 
   // Add two independent watch contexts to watch for |a| or |b| readability.
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE, readable_b_context));
+            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_b_context));
 
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
@@ -872,7 +889,8 @@ TEST_F(WatcherTest, MultipleWatches) {
   CreateMessagePipe(&c, &d);
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_WRITABLE, writable_c_context));
+            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_WRITABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, writable_c_context));
   num_ready_contexts = kMaxReadyContexts;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
@@ -933,9 +951,11 @@ TEST_F(WatcherTest, NotifyOtherFromNotificationCallback) {
       &event, w, b));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE, readable_b_context));
+            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_b_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -982,7 +1002,8 @@ TEST_F(WatcherTest, NotifySelfFromNotificationCallback) {
       &expected_notifications, w, a, b, &event));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -1048,9 +1069,11 @@ TEST_F(WatcherTest, ImplicitCancelOtherFromNotificationCallback) {
       w, a, b, c));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_READABLE, readable_c_context));
+            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_c_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -1113,9 +1136,11 @@ TEST_F(WatcherTest, ExplicitCancelOtherFromNotificationCallback) {
       &event, readable_a_context, w, a, b, c));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_READABLE, readable_c_context));
+            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_c_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -1202,14 +1227,15 @@ TEST_F(WatcherTest, NestedCancellation) {
       },
       cd_watcher, readable_c_context, c));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(b_watcher, b, MOJO_HANDLE_SIGNAL_READABLE,
-                                      readable_b_context));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWatch(b_watcher, b, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_b_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWatch(cd_watcher, c, MOJO_HANDLE_SIGNAL_READABLE,
-                      readable_c_context));
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_c_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWatch(cd_watcher, d, MOJO_HANDLE_SIGNAL_READABLE,
-                      readable_d_context));
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_d_context));
 
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(b_watcher, nullptr, nullptr, nullptr, nullptr));
@@ -1264,7 +1290,8 @@ TEST_F(WatcherTest, CancelSelfInNotificationCallback) {
       &event, w, a));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -1312,7 +1339,8 @@ TEST_F(WatcherTest, CloseWatcherInNotificationCallback) {
       &event, w, a, b));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -1352,7 +1380,8 @@ TEST_F(WatcherTest, CloseWatcherAfterImplicitCancel) {
       &event, w, a));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -1422,7 +1451,8 @@ TEST_F(WatcherTest, OtherThreadCancelDuringNotification) {
   runner.Start();
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, readable_a_context));
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
 
@@ -1515,12 +1545,14 @@ TEST_F(WatcherTest, WatchesCancelEachOtherFromNotifications) {
           },
           &wait_for_a_to_cancel, &wait_for_b_to_cancel, &b_cancelled));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(a_watcher, a, MOJO_HANDLE_SIGNAL_READABLE,
-                                      readable_a_context));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWatch(a_watcher, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(a_watcher, nullptr, nullptr, nullptr, nullptr));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(b_watcher, b, MOJO_HANDLE_SIGNAL_READABLE,
-                                      readable_b_context));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWatch(b_watcher, b, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_b_context));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoArmWatcher(b_watcher, nullptr, nullptr, nullptr, nullptr));
 
@@ -1560,8 +1592,8 @@ TEST_F(WatcherTest, AlwaysCancel) {
   // Cancel via |MojoCancelWatch()|.
   uintptr_t context = helper.CreateContextWithCancel(
       WatchHelper::ContextCallback(), signal_event);
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, context));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED, context));
   EXPECT_EQ(MOJO_RESULT_OK, MojoCancelWatch(w, context));
   event.Wait();
   event.Reset();
@@ -1569,8 +1601,8 @@ TEST_F(WatcherTest, AlwaysCancel) {
   // Cancel by closing the watched handle.
   context = helper.CreateContextWithCancel(WatchHelper::ContextCallback(),
                                            signal_event);
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, context));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED, context));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
   event.Wait();
   event.Reset();
@@ -1578,8 +1610,8 @@ TEST_F(WatcherTest, AlwaysCancel) {
   // Cancel by closing the watcher handle.
   context = helper.CreateContextWithCancel(WatchHelper::ContextCallback(),
                                            signal_event);
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE, context));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_SATISFIED, context));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
   event.Wait();
 
@@ -1608,7 +1640,8 @@ TEST_F(WatcherTest, ArmFailureCirculation) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
   for (size_t i = 0; i < kNumTestHandles; ++i) {
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWatch(w, handles[i], MOJO_HANDLE_SIGNAL_READABLE, i));
+              MojoWatch(w, handles[i], MOJO_HANDLE_SIGNAL_READABLE,
+                        MOJO_WATCH_CONDITION_SATISFIED, i));
   }
 
   // Keep trying to arm |w| until every watch gets an entry in |ready_contexts|.
@@ -1630,6 +1663,63 @@ TEST_F(WatcherTest, ArmFailureCirculation) {
   for (size_t i = 0; i < kNumTestHandles; ++i)
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[i]));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+}
+
+TEST_F(WatcherTest, WatchNotSatisfied) {
+  MojoHandle a, b;
+  CreateMessagePipe(&a, &b);
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WatchHelper helper;
+  const uintptr_t readable_a_context = helper.CreateContext(base::Bind(
+      [](base::WaitableEvent* event, MojoResult result,
+         MojoHandleSignalsState state) {
+        EXPECT_EQ(MOJO_RESULT_OK, result);
+        event->Signal();
+      },
+      &event));
+
+  MojoHandle w;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+
+  const char kMessage[] = "this is not a message";
+
+  WriteMessage(b, kMessage);
+  event.Wait();
+
+  // Now we know |a| is readable. Cancel the watch and watch for the
+  // not-readable state.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  const uintptr_t not_readable_a_context = helper.CreateContext(base::Bind(
+      [](base::WaitableEvent* event, MojoResult result,
+         MojoHandleSignalsState state) {
+        EXPECT_EQ(MOJO_RESULT_OK, result);
+        event->Signal();
+      },
+      &event));
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_WATCH_CONDITION_NOT_SATISFIED,
+                                      not_readable_a_context));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+
+  // This should not block, because the event should be signaled by
+  // |not_readable_a_context| when we read the only available message off of
+  // |a|.
+  event.Reset();
+  EXPECT_EQ(kMessage, ReadMessage(a));
+  event.Wait();
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 }
 
 }  // namespace

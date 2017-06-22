@@ -65,6 +65,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateWatcher(MojoWatcherCallback callback,
 //   |watcher_handle|: The watcher to which |handle| is to be added.
 //   |handle|: The handle to add to the watcher.
 //   |signals|: The signals to watch for on |handle|.
+//   |level|: The level to watch for on |signals|.
 //   |context|: An arbitrary context value given to any invocation of the
 //       watcher's callback when invoked as a result of some state change
 //       relevant to this combination of |handle| and |signals|. Must be
@@ -97,6 +98,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateWatcher(MojoWatcherCallback callback,
 MOJO_SYSTEM_EXPORT MojoResult MojoWatch(MojoHandle watcher_handle,
                                         MojoHandle handle,
                                         MojoHandleSignals signals,
+                                        MojoWatchCondition condition,
                                         uintptr_t context);
 
 // Removes a watch from a watcher.

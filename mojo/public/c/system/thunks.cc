@@ -147,9 +147,10 @@ MojoResult MojoCreateWatcher(MojoWatcherCallback callback,
 MojoResult MojoWatch(MojoHandle watcher_handle,
                      MojoHandle handle,
                      MojoHandleSignals signals,
+                     MojoWatchCondition condition,
                      uintptr_t context) {
   assert(g_thunks.Watch);
-  return g_thunks.Watch(watcher_handle, handle, signals, context);
+  return g_thunks.Watch(watcher_handle, handle, signals, condition, context);
 }
 
 MojoResult MojoCancelWatch(MojoHandle watcher_handle, uintptr_t context) {

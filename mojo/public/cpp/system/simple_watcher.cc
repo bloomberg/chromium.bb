@@ -27,6 +27,7 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
       WatcherHandle watcher_handle,
       Handle handle,
       MojoHandleSignals signals,
+      MojoWatchCondition condition,
       int watch_id,
       MojoResult* watch_result) {
     scoped_refptr<Context> context =
@@ -38,7 +39,7 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
     context->AddRef();
 
     *watch_result = MojoWatch(watcher_handle.value(), handle.value(), signals,
-                              context->value());
+                              condition, context->value());
     if (*watch_result != MOJO_RESULT_OK) {
       // Balanced by the AddRef() above since watching failed.
       context->Release();
@@ -146,6 +147,7 @@ bool SimpleWatcher::IsWatching() const {
 
 MojoResult SimpleWatcher::Watch(Handle handle,
                                 MojoHandleSignals signals,
+                                MojoWatchCondition condition,
                                 const ReadyCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsWatching());
@@ -157,8 +159,8 @@ MojoResult SimpleWatcher::Watch(Handle handle,
 
   MojoResult watch_result = MOJO_RESULT_UNKNOWN;
   context_ = Context::Create(weak_factory_.GetWeakPtr(), task_runner_,
-                             watcher_handle_.get(), handle_, signals, watch_id_,
-                             &watch_result);
+                             watcher_handle_.get(), handle_, signals, condition,
+                             watch_id_, &watch_result);
   if (!context_) {
     handle_.set_value(kInvalidHandleValue);
     callback_.Reset();

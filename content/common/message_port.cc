@@ -11,14 +11,11 @@
 
 namespace content {
 
-MessagePort::~MessagePort() {
-}
+MessagePort::~MessagePort() {}
 
-MessagePort::MessagePort() : state_(new State()) {
-}
+MessagePort::MessagePort() : state_(new State()) {}
 
-MessagePort::MessagePort(const MessagePort& other) : state_(other.state_) {
-}
+MessagePort::MessagePort(const MessagePort& other) : state_(other.state_) {}
 
 MessagePort& MessagePort::operator=(const MessagePort& other) {
   state_ = other.state_;
@@ -26,8 +23,7 @@ MessagePort& MessagePort::operator=(const MessagePort& other) {
 }
 
 MessagePort::MessagePort(mojo::ScopedMessagePipeHandle handle)
-    : state_(new State(std::move(handle))) {
-}
+    : state_(new State(std::move(handle))) {}
 
 const mojo::ScopedMessagePipeHandle& MessagePort::GetHandle() const {
   return state_->handle();
@@ -121,12 +117,10 @@ void MessagePort::ClearCallback() {
   state_->StopWatching();
 }
 
-MessagePort::State::State() {
-}
+MessagePort::State::State() {}
 
 MessagePort::State::State(mojo::ScopedMessagePipeHandle handle)
-    : handle_(std::move(handle)) {
-}
+    : handle_(std::move(handle)) {}
 
 void MessagePort::State::StartWatching(const base::Closure& callback) {
   base::AutoLock lock(lock_);
@@ -143,9 +137,9 @@ void MessagePort::State::StartWatching(const base::Closure& callback) {
 
   // NOTE: An HTML MessagePort does not receive an event to tell it when the
   // peer has gone away, so we only watch for readability here.
-  rv =
-      MojoWatch(watcher_handle_.get().value(), handle_.get().value(),
-                MOJO_HANDLE_SIGNAL_READABLE, reinterpret_cast<uintptr_t>(this));
+  rv = MojoWatch(watcher_handle_.get().value(), handle_.get().value(),
+                 MOJO_HANDLE_SIGNAL_READABLE, MOJO_WATCH_CONDITION_SATISFIED,
+                 reinterpret_cast<uintptr_t>(this));
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
   ArmWatcher();

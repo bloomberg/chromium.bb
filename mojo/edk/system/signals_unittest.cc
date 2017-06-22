@@ -130,20 +130,24 @@ TEST_F(SignalsTest, RemotePeers) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
   EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
   EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(a, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                                           MOJO_WATCH_CONDITION_NOT_SATISFIED));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
   EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
   EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                                           MOJO_WATCH_CONDITION_NOT_SATISFIED));
 
   RunTestClient("RemotePeersClient", [&](MojoHandle h) {
     // The bootstrap pipe should eventually signal remoteness.
-    EXPECT_EQ(MOJO_RESULT_OK,
-              WaitForSignals(h, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+    EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(h, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                                             MOJO_WATCH_CONDITION_SATISFIED));
 
     // And so should |a| after we send its peer.
     WriteMessageWithHandles(h, ":)", &b, 1);
-    EXPECT_EQ(MOJO_RESULT_OK,
-              WaitForSignals(a, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+    EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(a, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                                             MOJO_WATCH_CONDITION_SATISFIED));
     EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
     EXPECT_TRUE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
 
@@ -151,8 +155,8 @@ TEST_F(SignalsTest, RemotePeers) {
     MojoHandle c, d;
     CreateMessagePipe(&c, &d);
     EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(d, a));
-    EXPECT_EQ(MOJO_RESULT_OK,
-              WaitForSignals(c, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+    EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(c, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                                             MOJO_WATCH_CONDITION_SATISFIED));
     EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(c, &state));
     EXPECT_TRUE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
 
@@ -164,30 +168,27 @@ TEST_F(SignalsTest, RemotePeers) {
 
     // Read |b| back before joining the client.
     EXPECT_EQ("O_O", ReadMessageWithHandles(h, &b, 1));
+
+    // Wait for |a| to see its peer as local again.
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WaitForSignals(a, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                             MOJO_WATCH_CONDITION_NOT_SATISFIED));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
+    EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
   });
-
-  // We have no way to wait for signals to go low, but because the above code
-  // blocks until the child process cleanly terminated, it is effectively
-  // guaranteed in practice that |a| and |b| must both see their peers as local
-  // again by this point.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
-  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
-  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
-
-  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
-  EXPECT_TRUE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
-  EXPECT_FALSE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_REMOTE);
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(RemotePeersClient, SignalsTest, h) {
   // The bootstrap pipe should eventually signal remoteness.
-  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(h, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(h, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                                           MOJO_WATCH_CONDITION_SATISFIED));
 
   MojoHandle b;
   EXPECT_EQ(":)", ReadMessageWithHandles(h, &b, 1));
 
   // And so should |b|.
-  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_PEER_REMOTE));
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                                           MOJO_WATCH_CONDITION_SATISFIED));
 
   // Wait for the test to signal that it's ready to read |b| back.
   EXPECT_EQ("OK!", ReadMessage(h));
