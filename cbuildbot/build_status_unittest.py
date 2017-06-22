@@ -1060,7 +1060,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     relevant_changes.TriageRelevantChanges.__init__ = mock.Mock(
         return_value=None)
     self.PatchObject(relevant_changes.TriageRelevantChanges,
-                     'ShouldWait', return_value=False)
+                     'ShouldSelfDestruct', return_value=(True, False))
     self.PatchObject(build_status.SlaveStatus,
                      '_Completed', return_value=False)
     self.PatchObject(build_status.SlaveStatus,
@@ -1076,6 +1076,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertFalse(slave_status.ShouldWait())
     self.assertTrue(slave_status.metadata.GetValueWithDefault(
         constants.SELF_DESTRUCTED_BUILD, False))
+    self.assertFalse(slave_status.metadata.GetValueWithDefault(
+        constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD, False))
 
     build_messages = self.db.GetBuildMessages(self.master_build_id)
     self.assertEqual(len(build_messages), 3)
@@ -1091,7 +1093,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     relevant_changes.TriageRelevantChanges.__init__ = mock.Mock(
         return_value=None)
     self.PatchObject(relevant_changes.TriageRelevantChanges,
-                     'ShouldWait', return_value=True)
+                     'ShouldSelfDestruct', return_value=(False, False))
     self.PatchObject(build_status.SlaveStatus,
                      '_Completed',
                      return_value=False)
@@ -1108,6 +1110,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertTrue(slave_status.ShouldWait())
     self.assertFalse(slave_status.metadata.GetValueWithDefault(
         constants.SELF_DESTRUCTED_BUILD, False))
+    self.assertFalse(slave_status.metadata.GetValueWithDefault(
+        constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD, False))
 
   def testRetryBuilds(self):
     """Test RetryBuilds."""

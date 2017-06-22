@@ -491,12 +491,23 @@ class SlaveStatus(object):
           self.completed_builds, self.dependency_map, self.buildbucket_client,
           dry_run=self.dry_run)
 
-      if not triage_relevant_changes.ShouldWait():
-        logging.warning('No need to wait for the remaining running slaves given'
-                        ' the results of relevant change triages.')
-        self.metadata.UpdateWithDict({constants.SELF_DESTRUCTED_BUILD: True})
+      should_self_destruct, should_self_destruct_with_success = (
+          triage_relevant_changes.ShouldSelfDestruct())
+      if should_self_destruct:
+        logging.warning('This build will self-destruct given the results of '
+                        'relevant change triages.')
 
-        fields = {'build_config': self.config.name}
+        if should_self_destruct_with_success:
+          logging.info('This build will self-destruct with success.')
+
+        self.metadata.UpdateWithDict({
+            constants.SELF_DESTRUCTED_BUILD: True,
+            constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD:
+            should_self_destruct_with_success})
+
+        fields = {
+            'build_config': self.config.name,
+            'self_destructed_with_success': should_self_destruct_with_success}
         metrics.Counter(constants.MON_CQ_SELF_DESTRUCTION_COUNT).increment(
             fields=fields)
 

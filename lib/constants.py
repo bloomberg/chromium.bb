@@ -1202,3 +1202,6 @@ METADATA_UNSCHEDULED_SLAVES = 'unscheduled_slaves'
 
 # Metadata key to indicate whether a build is self-destructed.
 SELF_DESTRUCTED_BUILD = 'self_destructed_build'
+
+# Metadata key to indicate whether a build is self-destructed with success.
+SELF_DESTRUCTED_WITH_SUCCESS_BUILD = 'self_destructed_with_success_build'

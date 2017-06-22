@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import datetime
 
+from chromite.cbuildbot.stages import artifact_stages
 from chromite.lib import builder_status_lib
 from chromite.lib import clactions
 from chromite.lib import constants
@@ -228,8 +229,10 @@ class TriageRelevantChanges(object):
   # Get stage names from stage classes instead of duplicating them here.
   COMMIT_QUEUE_SYNC = 'CommitQueueSync'
   MASTER_SLAVE_LKGM_SYNC = 'MasterSlaveLKGMSync'
-
   STAGE_SYNC = {COMMIT_QUEUE_SYNC, MASTER_SLAVE_LKGM_SYNC}
+
+  STAGE_UPLOAD_PREBUILTS = (
+      artifact_stages.UploadPrebuiltsStage.StageNamePrefix())
 
   def __init__(self, master_build_id, db, builders_array, config, metadata,
                version, build_root, changes, buildbucket_info_dict,
@@ -694,13 +697,35 @@ class TriageRelevantChanges(object):
                    'passed in CQ history.',
                    cros_patch.GetChangesAsString(will_submit_changes))
 
-  def ShouldWait(self):
-    """Process builds and relevant changes, decide whether to wait on slaves.
+  def _AllCompletedSlavesPassedUploadPrebuiltsStage(self):
+    """Check if all completed slaves have passed the UploadPrebuiltsStage."""
+    for build_config in self.completed_builds:
+      if not self.PassedAnyOfStages(self.slave_stages_dict[build_config],
+                                    {self.STAGE_UPLOAD_PREBUILTS}):
+        logging.info('Build %s completed but did\'t pass the upload prebuilts '
+                     'stage, should not wait.', build_config)
+        return False
+
+    return True
+
+  def _AllUncompletedSlavesPassedUploadPrebuiltsStage(self):
+    """Check if all uncompleted slaves have passed the UploadPrebuiltsStage."""
+    for build_config in set(self.builders_array) - self.completed_builds:
+      if not self.PassedAnyOfStages(self.slave_stages_dict[build_config],
+                                    {self.STAGE_UPLOAD_PREBUILTS}):
+        logging.info('Build %s completed but did\'t pass the upload prebuilts '
+                     'stage, should not wait.', build_config)
+        return False
+
+    return True
+
+  def ShouldSelfDestruct(self):
+    """Process builds and relevant changes, decide whether to self-destruct.
 
     Returns:
-      True if the master should wait for running slaves to finish testing
-      changes in might_submit set; False if the master shouldn't wait for any
-      not completed slaves.
+      A tuple of (boolean indicating if the master should self-destruct,
+                  boolean indicating if the master should self-destruct with
+                  with success)
     """
     self._ProcessCompletedBuilds()
     self._ProcessMightSubmitChanges()
@@ -715,7 +740,19 @@ class TriageRelevantChanges(object):
                  len(self.will_not_submit),
                  cros_patch.GetChangesAsString(self.will_not_submit))
 
-    if not self.might_submit:
-      return False
+    # The master should wait for all the necessary slaves to pass the
+    # UploadPrebuiltsStage so the master can publish prebuilts after
+    # self-destruction with success. More context: crbug.com/703819
+    all_completed_slaves_passed = (
+        self._AllCompletedSlavesPassedUploadPrebuiltsStage())
+    all_uncompleted_slaves_passed = (
+        self._AllUncompletedSlavesPassedUploadPrebuiltsStage())
+    should_self_destruct = (bool(not self.might_submit) and
+                            (not all_completed_slaves_passed or
+                             all_uncompleted_slaves_passed))
+    should_self_destruct_with_success = (bool(not self.might_submit) and
+                                         bool(not self.will_not_submit) and
+                                         all_completed_slaves_passed and
+                                         all_uncompleted_slaves_passed)
 
-    return True
+    return should_self_destruct, should_self_destruct_with_success
