@@ -328,72 +328,21 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Non-Inherited properties.
 
-  // Content alignment properties.
+  static StyleSelfAlignmentData InitialSelfAlignment() {
+    return StyleSelfAlignmentData(kItemPositionAuto, kOverflowAlignmentDefault);
+  }
+
   static StyleContentAlignmentData InitialContentAlignment() {
     return StyleContentAlignmentData(kContentPositionNormal,
                                      kContentDistributionDefault,
                                      kOverflowAlignmentDefault);
   }
 
-  // align-content (aka -webkit-align-content)
-  const StyleContentAlignmentData& AlignContent() const {
-    return rare_non_inherited_data_->align_content_;
-  }
-  void SetAlignContent(const StyleContentAlignmentData& data) {
-    SET_VAR(rare_non_inherited_data_, align_content_, data);
-  }
-
-  // justify-content (aka -webkit-justify-content)
-  const StyleContentAlignmentData& JustifyContent() const {
-    return rare_non_inherited_data_->justify_content_;
-  }
-  void SetJustifyContent(const StyleContentAlignmentData& data) {
-    SET_VAR(rare_non_inherited_data_, justify_content_, data);
-  }
-
-  // Default-Alignment properties.
   static StyleSelfAlignmentData InitialDefaultAlignment() {
     return StyleSelfAlignmentData(RuntimeEnabledFeatures::CSSGridLayoutEnabled()
                                       ? kItemPositionNormal
                                       : kItemPositionStretch,
                                   kOverflowAlignmentDefault);
-  }
-
-  // align-items (aka -webkit-align-items)
-  const StyleSelfAlignmentData& AlignItems() const {
-    return rare_non_inherited_data_->align_items_;
-  }
-  void SetAlignItems(const StyleSelfAlignmentData& data) {
-    SET_VAR(rare_non_inherited_data_, align_items_, data);
-  }
-
-  // justify-items
-  const StyleSelfAlignmentData& JustifyItems() const {
-    return rare_non_inherited_data_->justify_items_;
-  }
-  void SetJustifyItems(const StyleSelfAlignmentData& data) {
-    SET_VAR(rare_non_inherited_data_, justify_items_, data);
-  }
-
-  // Self-Alignment properties.
-  static StyleSelfAlignmentData InitialSelfAlignment() {
-    return StyleSelfAlignmentData(kItemPositionAuto, kOverflowAlignmentDefault);
-  }
-
-  // align-self (aka -webkit-align-self)
-  const StyleSelfAlignmentData& AlignSelf() const {
-    return rare_non_inherited_data_->align_self_;
-  }
-  void SetAlignSelf(const StyleSelfAlignmentData& data) {
-    SET_VAR(rare_non_inherited_data_, align_self_, data);
-  }
-
-  // justify-self
-  const StyleSelfAlignmentData& JustifySelf() const {
-    return rare_non_inherited_data_->justify_self_;
-  }
-  void SetJustifySelf(const StyleSelfAlignmentData& data) {
-    SET_VAR(rare_non_inherited_data_, justify_self_, data);
   }
 
   // Filter properties.
