@@ -17,26 +17,44 @@ namespace {
 NSString* const kUIApplicationDelegateInfoKey = @"UIApplicationDelegate";
 
 void StartCrashController() {
-  std::string channel_string = GetChannelString();
+  @autoreleasepool {
+    std::string channel_string = GetChannelString();
 
-  RegisterChromeIOSCrashKeys();
-  base::debug::SetCrashKeyValue(crash_keys::kChannel, channel_string);
-  breakpad_helper::Start(channel_string);
+    RegisterChromeIOSCrashKeys();
+    base::debug::SetCrashKeyValue(crash_keys::kChannel, channel_string);
+    breakpad_helper::Start(channel_string);
+  }
+}
+
+void SetTextDirectionIfPseudoRTLEnabled() {
+  @autoreleasepool {
+    NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
+    if ([standard_defaults boolForKey:@"EnablePseudoRTL"]) {
+      NSDictionary* pseudoDict = @{@"YES" : @"AppleTextDirection"};
+      [standard_defaults registerDefaults:pseudoDict];
+    }
+  }
+}
+
+int RunUIApplicationMain(int argc, char* argv[]) {
+  @autoreleasepool {
+    // Fetch the name of the UIApplication delegate stored in the application
+    // Info.plist under the "UIApplicationDelegate" key.
+    NSString* delegate_class_name = [[NSBundle mainBundle]
+        objectForInfoDictionaryKey:kUIApplicationDelegateInfoKey];
+    CHECK(delegate_class_name);
+
+    return UIApplicationMain(argc, argv, nil, delegate_class_name);
+  }
 }
 
 }  // namespace
 
 int main(int argc, char* argv[]) {
   IOSChromeMain::InitStartTime();
-  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-
-  NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
 
   // Set NSUserDefaults keys to force pseudo-RTL if needed.
-  if ([standardDefaults boolForKey:@"EnablePseudoRTL"]) {
-    NSDictionary* pseudoDict = @{ @"YES" : @"AppleTextDirection" };
-    [standardDefaults registerDefaults:pseudoDict];
-  }
+  SetTextDirectionIfPseudoRTLEnabled();
 
   // Create this here since it's needed to start the crash handler.
   base::AtExitManager at_exit;
@@ -49,18 +67,5 @@ int main(int argc, char* argv[]) {
   // Always ignore SIGPIPE.  We check the return value of write().
   CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
 
-  // Purging the pool to prevent autorelease objects created by the previous
-  // calls to live forever.
-  [pool release];
-  pool = [[NSAutoreleasePool alloc] init];
-
-  // Part of code that requires us to specify which UIApplication delegate class
-  // to use by adding "UIApplicationDelegate" key to Info.plist file.
-  NSString* delegateClassName = [[NSBundle mainBundle]
-      objectForInfoDictionaryKey:kUIApplicationDelegateInfoKey];
-  CHECK(delegateClassName);
-
-  int retVal = UIApplicationMain(argc, argv, nil, delegateClassName);
-  [pool release];
-  return retVal;
+  return RunUIApplicationMain(argc, argv);
 }
