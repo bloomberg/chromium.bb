@@ -159,6 +159,9 @@ void TabletPowerButtonController::BrightnessChanged(int level,
 void TabletPowerButtonController::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   last_resume_time_ = tick_clock_->NowTicks();
+  // Stop forcing backlights off on resume to handle situations where the power
+  // button resumed but we didn't receive the event (crbug.com/735291).
+  SetDisplayForcedOff(false);
 }
 
 void TabletPowerButtonController::LidEventReceived(
