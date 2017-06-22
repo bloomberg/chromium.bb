@@ -113,10 +113,8 @@ namespace device {
 
 // static
 scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
-  return new SerialIoHandlerPosix(file_thread_task_runner,
-                                  ui_thread_task_runner);
+  return new SerialIoHandlerPosix(ui_thread_task_runner);
 }
 
 void SerialIoHandlerPosix::ReadImpl() {
@@ -292,9 +290,8 @@ bool SerialIoHandlerPosix::PostOpen() {
 }
 
 SerialIoHandlerPosix::SerialIoHandlerPosix(
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : SerialIoHandler(file_thread_task_runner, ui_thread_task_runner) {}
+    : SerialIoHandler(ui_thread_task_runner) {}
 
 SerialIoHandlerPosix::~SerialIoHandlerPosix() {
 }

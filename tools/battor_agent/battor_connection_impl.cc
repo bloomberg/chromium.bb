@@ -61,11 +61,9 @@ size_t GetMaxBytesForMessageType(BattOrMessageType type) {
 BattOrConnectionImpl::BattOrConnectionImpl(
     const std::string& path,
     BattOrConnection::Listener* listener,
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : BattOrConnection(listener),
       path_(path),
-      file_thread_task_runner_(file_thread_task_runner),
       ui_thread_task_runner_(ui_thread_task_runner) {
   std::string serial_log_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -193,8 +191,7 @@ void BattOrConnectionImpl::Flush() {
 }
 
 scoped_refptr<device::SerialIoHandler> BattOrConnectionImpl::CreateIoHandler() {
-  return device::SerialIoHandler::Create(file_thread_task_runner_,
-                                         ui_thread_task_runner_);
+  return device::SerialIoHandler::Create(ui_thread_task_runner_);
 }
 
 void BattOrConnectionImpl::BeginReadBytes(size_t max_bytes_to_read) {

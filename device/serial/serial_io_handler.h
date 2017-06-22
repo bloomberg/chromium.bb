@@ -30,7 +30,6 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
  public:
   // Constructs an instance of some platform-specific subclass.
   static scoped_refptr<SerialIoHandler> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
 
   typedef base::Callback<void(bool success)> OpenCompleteCallback;
@@ -112,7 +111,6 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
 
  protected:
   explicit SerialIoHandler(
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   virtual ~SerialIoHandler();
 
@@ -195,10 +193,6 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // Possibly fixes up a serial port path name in a platform-specific manner.
   static std::string MaybeFixUpPortName(const std::string& port_name);
 
-  base::SingleThreadTaskRunner* file_thread_task_runner() const {
-    return file_thread_task_runner_.get();
-  }
-
   base::SingleThreadTaskRunner* ui_thread_task_runner() const {
     return ui_thread_task_runner_.get();
   }
@@ -242,7 +236,6 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // Callback to handle the completion of a pending Open() request.
   OpenCompleteCallback open_complete_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner_;
   // On Chrome OS, PermissionBrokerClient should be called on the UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
 
