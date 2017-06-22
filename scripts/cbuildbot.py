@@ -624,8 +624,12 @@ def _CreateParser():
                           default=True, help="Don't sync before building.")
   group.add_remote_option('--notests', action='store_false', dest='tests',
                           default=True,
-                          help='Override values from buildconfig and run no '
-                               'tests.')
+                          help='Override values from buildconfig, run no '
+                               'tests, and build no autotest and artifacts.')
+  group.add_remote_option('--novmtests', action='store_false', dest='vmtests',
+                          default=True,
+                          help='Override values from buildconfig, run no '
+                               'vmtests.')
   group.add_remote_option('--noimagetests', action='store_false',
                           dest='image_test', default=True,
                           help='Override values from buildconfig and run no '

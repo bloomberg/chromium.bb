@@ -147,6 +147,12 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     stage = self.ConstructStage()
     self.assertRaises(failures_lib.InfrastructureFailure, stage.PerformStage)
 
+  def testSkipVMTest(self):
+    """Tests trybot with no vm test."""
+    extra_cmd_args = ['--novmtests']
+    self._Prepare(extra_cmd_args=extra_cmd_args)
+    self.RunStage()
+
 
 class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for the UnitTest stage."""

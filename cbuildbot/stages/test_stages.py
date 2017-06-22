@@ -201,6 +201,9 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
+    if not self._run.options.vmtests:
+      return
+
     test_results_root = commands.CreateTestRoot(self._build_root)
     test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
     try:
