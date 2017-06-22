@@ -131,7 +131,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   [self.contactInfoEditCoordinator stop];
   self.contactInfoEditCoordinator = nil;
 
-  if (self.mediator.state != PaymentRequestSelectorStateEdit) {
+  if (![self.viewController isEditing]) {
     // Inform |self.delegate| that |profile| has been selected.
     [self.delegate contactInfoSelectionCoordinator:self
                            didSelectContactProfile:profile];

@@ -15,8 +15,6 @@
 typedef NS_ENUM(NSUInteger, PaymentRequestSelectorState) {
   // The view controller is in normal state.
   PaymentRequestSelectorStateNormal,
-  // The view controller is in edit state.
-  PaymentRequestSelectorStateEdit,
   // The view controller is in pending state.
   PaymentRequestSelectorStatePending,
   // The view controller is in error state.

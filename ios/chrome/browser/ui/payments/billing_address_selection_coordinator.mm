@@ -128,7 +128,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   [self.addressEditCoordinator stop];
   self.addressEditCoordinator = nil;
 
-  if (self.mediator.state != PaymentRequestSelectorStateEdit) {
+  if (![self.viewController isEditing]) {
     // Inform |self.delegate| that |address| has been selected.
     [self.delegate billingAddressSelectionCoordinator:self
                               didSelectBillingAddress:address];

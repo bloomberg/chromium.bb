@@ -48,9 +48,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface PaymentRequestSelectorViewController ()<
     PaymentRequestSelectorViewControllerActions>
 
-// Whether or not the editor is in the editing mode.
-@property(nonatomic, assign, getter=isEditing) BOOL editing;
-
 @end
 
 @implementation PaymentRequestSelectorViewController

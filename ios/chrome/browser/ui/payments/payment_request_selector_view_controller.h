@@ -58,6 +58,9 @@
 @property(nonatomic, weak) id<PaymentRequestSelectorViewControllerDataSource>
     dataSource;
 
+// Whether or not the editor is in the editing mode.
+@property(nonatomic, assign, getter=isEditing) BOOL editing;
+
 // Convenience initializer. Initializes this object with the
 // CollectionViewControllerStyleAppBar style and sets up the leading (back)
 // button.
