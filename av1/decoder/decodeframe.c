@@ -2153,7 +2153,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
-#if CONFIG_NCOBMC && CONFIG_MOTION_VAR
+#if (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT) && CONFIG_MOTION_VAR
 static void detoken_and_recon_sb(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                                  int mi_row, int mi_col, aom_reader *r,
                                  BLOCK_SIZE bsize) {
@@ -2253,7 +2253,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
                     bsize);
 
-#if !(CONFIG_MOTION_VAR && CONFIG_NCOBMC)
+#if !(CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT))
 #if CONFIG_SUPERTX
   if (!supertx_enabled)
 #endif  // CONFIG_SUPERTX
@@ -3883,7 +3883,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_SUPERTX
                            mi_row, mi_col, &td->bit_reader, cm->sb_size,
                            b_width_log2_lookup[cm->sb_size]);
-#if CONFIG_NCOBMC && CONFIG_MOTION_VAR
+#if (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT) && CONFIG_MOTION_VAR
           detoken_and_recon_sb(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                                cm->sb_size);
 #endif
@@ -4024,7 +4024,7 @@ static int tile_worker_hook(TileWorkerData *const tile_data,
 #endif
                        mi_row, mi_col, &tile_data->bit_reader, cm->sb_size,
                        b_width_log2_lookup[cm->sb_size]);
-#if CONFIG_NCOBMC && CONFIG_MOTION_VAR
+#if (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT) && CONFIG_MOTION_VAR
       detoken_and_recon_sb(pbi, &tile_data->xd, mi_row, mi_col,
                            &tile_data->bit_reader, cm->sb_size);
 #endif
@@ -5138,6 +5138,13 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     }
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
+#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
+    for (i = 0; i < ADAPT_OVERLAP_BLOCKS; ++i) {
+      for (j = 0; j < MAX_NCOBMC_MODES - 1; ++j)
+        av1_diff_update_prob(&r, &fc->ncobmc_mode_prob[i][j], ACCT_STR);
+    }
+#endif
+
 #if !CONFIG_EC_ADAPT
     if (cm->interp_filter == SWITCHABLE) read_switchable_interp_probs(fc, &r);
 #endif
@@ -5227,6 +5234,10 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   assert(!memcmp(cm->counts.motion_mode, zero_counts.motion_mode,
                  sizeof(cm->counts.motion_mode)));
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
+  assert(!memcmp(cm->counts.ncobmc_mode, zero_counts.ncobmc_mode,
+                 sizeof(cm->counts.ncobmc_mode)));
+#endif
   assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,
                  sizeof(cm->counts.intra_inter)));
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF

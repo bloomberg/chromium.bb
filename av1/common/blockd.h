@@ -432,6 +432,13 @@ typedef struct MB_MODE_INFO {
   MOTION_MODE motion_mode;
 #if CONFIG_MOTION_VAR
   int overlappable_neighbors[2];
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+  // Applying different weighting kernels in ncobmc
+  // In current implementation, interpolation modes only defined for squared
+  // blocks. A rectangular block is divided into two squared blocks and each
+  // squared block has an interpolation mode.
+  NCOBMC_MODE ncobmc_mode[2];
+#endif
 #endif  // CONFIG_MOTION_VAR
   int_mv mv[2];
   int_mv pred_mv[2];
@@ -1361,6 +1368,15 @@ static INLINE MOTION_MODE motion_mode_allowed(
     return SIMPLE_TRANSLATION;
   }
 }
+
+#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
+static INLINE NCOBMC_MODE ncobmc_mode_allowed(BLOCK_SIZE block) {
+  if (block < BLOCK_8X8 || block > BLOCK_64X64)
+    return NO_OVERLAP;
+  else
+    return (NCOBMC_MODE)(MAX_NCOBMC_MODES - 1);
+}
+#endif
 
 static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION

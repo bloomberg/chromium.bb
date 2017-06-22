@@ -118,6 +118,9 @@ static struct av1_token compound_type_encodings[COMPOUND_TYPES];
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static struct av1_token motion_mode_encodings[MOTION_MODES];
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+static struct av1_token ncobmc_mode_encodings[MAX_NCOBMC_MODES];
+#endif
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_LOOP_RESTORATION
 static struct av1_token switchable_restore_encodings[RESTORE_SWITCHABLE_TYPES];
@@ -174,6 +177,9 @@ void av1_encode_token_init(void) {
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   av1_tokens_from_tree(motion_mode_encodings, av1_motion_mode_tree);
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+  av1_tokens_from_tree(ncobmc_mode_encodings, av1_ncobmc_mode_tree);
+#endif
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_LOOP_RESTORATION
   av1_tokens_from_tree(switchable_restore_encodings,
@@ -351,7 +357,7 @@ static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
     (CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION || CONFIG_EXT_INTER)
 static void prob_diff_update(const aom_tree_index *tree,
                              aom_prob probs[/*n - 1*/],
-                             const unsigned int counts[/*n - 1*/], int n,
+                             const unsigned int counts[/* n */], int n,
                              int probwt, aom_writer *w) {
   int i;
   unsigned int branch_ct[32][2];
@@ -611,6 +617,25 @@ static void write_motion_mode(const AV1_COMMON *cm, const MODE_INFO *mi,
   }
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 }
+
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+static void write_ncobmc_mode(const AV1_COMMON *cm, const MODE_INFO *mi,
+                              aom_writer *w) {
+  const MB_MODE_INFO *mbmi = &mi->mbmi;
+  ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
+  if (ncobmc_mode_allowed(mbmi->sb_type) == NO_OVERLAP ||
+      ao_block == ADAPT_OVERLAP_BLOCK_INVALID)
+    return;
+
+  av1_write_token(w, av1_ncobmc_mode_tree, cm->fc->ncobmc_mode_prob[ao_block],
+                  &ncobmc_mode_encodings[mbmi->ncobmc_mode[0]]);
+
+  if (mi_size_wide[mbmi->sb_type] != mi_size_high[mbmi->sb_type]) {
+    av1_write_token(w, av1_ncobmc_mode_tree, cm->fc->ncobmc_mode_prob[ao_block],
+                    &ncobmc_mode_encodings[mbmi->ncobmc_mode[1]]);
+  }
+}
+#endif
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_DELTA_Q
@@ -2212,6 +2237,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       if (mbmi->ref_frame[1] != INTRA_FRAME)
 #endif  // CONFIG_EXT_INTER
         write_motion_mode(cm, mi, w);
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+    write_ncobmc_mode(cm, mi, w);
+#endif
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
@@ -2853,7 +2881,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_COEF_INTERLEAVE
 }
 
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+#if CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
 static void write_tokens_sb(AV1_COMP *cpi, const TileInfo *const tile,
                             aom_writer *w, const TOKENEXTRA **tok,
                             const TOKENEXTRA *const tok_end, int mi_row,
@@ -2939,7 +2967,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                supertx_enabled,
 #endif
                mi_row, mi_col);
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+#if CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
   (void)tok;
   (void)tok_end;
 #else
@@ -3270,7 +3298,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
     for (mi_col = mi_col_start; mi_col < mi_col_end; mi_col += cm->mib_size) {
       write_modes_sb_wrapper(cpi, tile, w, tok, tok_end, 0, mi_row, mi_col,
                              cm->sb_size);
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+#if CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
       write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, cm->sb_size);
 #endif
     }
@@ -5103,6 +5131,13 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     for (i = BLOCK_8X8; i < BLOCK_SIZES; ++i)
       prob_diff_update(av1_motion_mode_tree, fc->motion_mode_prob[i],
                        counts->motion_mode[i], MOTION_MODES, probwt, header_bc);
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+    for (i = ADAPT_OVERLAP_BLOCK_8X8; i < ADAPT_OVERLAP_BLOCKS; ++i) {
+      prob_diff_update(av1_ncobmc_mode_tree, fc->ncobmc_mode_prob[i],
+                       counts->ncobmc_mode[i], MAX_NCOBMC_MODES, probwt,
+                       header_bc);
+    }
+#endif
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if !CONFIG_EC_ADAPT
     if (cm->interp_filter == SWITCHABLE)

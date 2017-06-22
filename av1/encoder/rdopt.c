@@ -7755,6 +7755,7 @@ static int64_t motion_mode_rd(
     int mi_col, HandleInterModeArgs *const args, const int64_t ref_best_rd,
     const int *refs, int rate_mv,
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+    // only used when WARPED_MOTION is on?
     int_mv *const single_newmv,
 #if CONFIG_EXT_INTER
     int rate2_bmc_nocoeff, MB_MODE_INFO *best_bmc_mbmi, int rate_mv_bmc,
@@ -8217,6 +8218,11 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int skip_txfm_sb = 0;
   int64_t skip_sse_sb = INT64_MAX;
   int16_t mode_ctx;
+#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
+  // dummy fillers
+  mbmi->ncobmc_mode[0] = NO_OVERLAP;
+  mbmi->ncobmc_mode[1] = NO_OVERLAP;
+#endif
 
 #if CONFIG_EXT_INTER
 #if CONFIG_INTERINTRA

@@ -1158,7 +1158,7 @@ static void update_supertx_param_sb(const AV1_COMP *const cpi, ThreadData *td,
 }
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+#if CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
 static void set_mode_info_b(const AV1_COMP *const cpi,
                             const TileInfo *const tile, ThreadData *td,
                             int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -1723,6 +1723,18 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
         if (motion_allowed > SIMPLE_TRANSLATION)
           counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+        if (ncobmc_mode_allowed(mbmi->sb_type) > NO_OVERLAP) {
+          ADAPT_OVERLAP_BLOCK ao_block =
+              adapt_overlap_block_lookup[mbmi->sb_type];
+          ++counts->ncobmc_mode[ao_block][mbmi->ncobmc_mode[0]];
+          if (mi_size_wide[mbmi->sb_type] != mi_size_high[mbmi->sb_type]) {
+            ++counts->ncobmc_mode[ao_block][mbmi->ncobmc_mode[1]];
+          }
+        }
+#endif
+
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
