@@ -60,10 +60,10 @@
 
     <!-- Administrator-provided certificate notifications -->
     <!-- TODO(crbug.com/717802): Only include this on Chrome OS. -->
-    <message name="IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE" desc="Text that is displayed in the Website Settings popup when using an administrator-provided certificate">
+    <message name="IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE" desc="Text that is displayed in the Page Info popup when using an administrator-provided certificate">
       You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> can be intercepted by your administrator.
     </message>
-    
+
     <!-- Certificate exception decision UI (after clicking through an SSL certificate error) -->
     <!-- TODO(crbug.com/502473): Support revoking certificate overrides on iOS Page Info. -->
     <message name="IDS_PAGE_INFO_INVALID_CERTIFICATE_DESCRIPTION" desc="A short paragraph to the user that security warnings are disabled. This is the case when the user has encountered a certificate error for the current site and chosen to override it.">
@@ -176,68 +176,68 @@
     </if>
 
     <!-- Permission names -->
-    <message name="IDS_PAGE_INFO_TYPE_ADS" desc="The label used for the ads permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_ADS" desc="The label used for the ads permission controls in the Page Info popup.">
       Ads
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_AUTOPLAY" desc="The label used for the autoplay permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_AUTOPLAY" desc="The label used for the autoplay permission controls in the Page Info popup.">
       Autoplay
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC" desc="The label used for the background sync permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC" desc="The label used for the background sync permission controls in the Page Info popup.">
       Background Sync
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_IMAGES" desc="The label used for images permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_IMAGES" desc="The label used for images permission controls in the Page Info popup.">
       Images
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_JAVASCRIPT" desc="The label used for JavaScript permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_JAVASCRIPT" desc="The label used for JavaScript permission controls in the Page Info popup.">
       JavaScript
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_POPUPS" desc="The label used for popups permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_POPUPS" desc="The label used for popups permission controls in the Page Info popup.">
       Popups
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_FLASH" desc="The label used for Flash permissions in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_FLASH" desc="The label used for Flash permissions in the Page Info popup.">
       Flash
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_LOCATION" desc="The label used for location permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_LOCATION" desc="The label used for location permission controls in the Page Info popup.">
       Location
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_NOTIFICATIONS" desc="The label used for notifications permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_NOTIFICATIONS" desc="The label used for notifications permission controls in the Page Info popup.">
       Notifications
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_MIC" desc="The label used for the microphone permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_MIC" desc="The label used for the microphone permission controls in the Page Info popup.">
       Microphone
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_CAMERA" desc="The label used for the camera permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_CAMERA" desc="The label used for the camera permission controls in the Page Info popup.">
       Camera
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_MIDI_SYSEX" desc="The label used for MIDI system exclusive message permission controls in the Website Settings popup.">
+    <message name="IDS_PAGE_INFO_TYPE_MIDI_SYSEX" desc="The label used for MIDI system exclusive message permission controls in the Page Info popup.">
       MIDI devices full control
     </message>
     <!-- TODO(crbug.com/716303): A few permissions are missing here. -->
 
     <!-- Permission values -->
-    <message name="IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to allow by the user.">
+    <message name="IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_USER" desc="The Page Info popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to allow by the user.">
       Allow
     </message>
-    <message name="IDS_PAGE_INFO_BUTTON_TEXT_BLOCKED_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to block by the user.">
+    <message name="IDS_PAGE_INFO_BUTTON_TEXT_BLOCKED_BY_USER" desc="The Page Info popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to block by the user.">
       Block
     </message>
-    <message name="IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to ask by the user.">
+    <message name="IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_USER" desc="The Page Info popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to ask by the user.">
       Ask
     </message>
-    <message name="IDS_PAGE_INFO_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to detect important content by the user.">
+    <message name="IDS_PAGE_INFO_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_USER" desc="The Page Info popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to detect important content by the user.">
       Detect
     </message>
 
-    <message name="IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is allow.">
+    <message name="IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT" desc="The Page Info popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is allow.">
       Allow (default)
     </message>
-    <message name="IDS_PAGE_INFO_BUTTON_TEXT_BLOCKED_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is block.">
+    <message name="IDS_PAGE_INFO_BUTTON_TEXT_BLOCKED_BY_DEFAULT" desc="The Page Info popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is block.">
       Block (default)
     </message>
-    <message name="IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is ask.">
+    <message name="IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_DEFAULT" desc="The Page Info popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is ask.">
       Ask (default)
     </message>
-    <message name="IDS_PAGE_INFO_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is detect important content.">
+    <message name="IDS_PAGE_INFO_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT" desc="The Page Info popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is detect important content.">
       Detect (default)
     </message>
 

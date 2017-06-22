@@ -47432,8 +47432,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>fgorski@chromium.org</owner>
   <summary>
     Indicates whether the browser was connected when Open online button was
-    clicked on Website Settings popup, which causes a reload of an offline page
-    to online version.
+    clicked on Page Info popup, which causes a reload of an offline page to
+    online version.
   </summary>
 </histogram>
 
@@ -47441,9 +47441,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="BooleanVisible">
   <owner>fgorski@chromium.org</owner>
   <summary>
-    Indicates whether Open online was visible in Website Settings popup, when it
-    was shown for an offline page. (The button is visible only when Chrome is
-    connected when the Website Settings popup is opened for offline page.)
+    Indicates whether Open online was visible in Page Info popup, when it was
+    shown for an offline page. (The button is visible only when Chrome is
+    connected when the Page Info popup is opened for offline page.)
   </summary>
 </histogram>
 
