@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<title>CSS Test: Absolutely positioned children of flexboxes</title>
+<link rel="author" title="Google Inc." href="http://www.google.com/">
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#abspos-items">
+<link rel="match" href="position-absolute-005-ref.html">
+<meta name="assert" content="Checks that we correctly handle overflow: auto in
+abspos nodes in flexbox">
 
 <style>
   body {
@@ -23,7 +29,7 @@
     overflow-y: auto;
     position: relative;
   }
-  
+
   #abspos {
     position: absolute;
     left: 0;
