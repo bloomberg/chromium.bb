@@ -26,7 +26,7 @@ eventSender.mouseMoveTo(10, 10);
 
 const testCases = {
     'contextmenu': _ => eventSender.gestureTwoFingerTap(10, 10), // contextmenu event dispatched as a result of two finger tap
-    'mousemove': _ => document.scrollingElement.scrollTop = 400  // mousemove dispatched as a result of scrolling (with 100ms delay)
+    'scroll': _ => document.scrollingElement.scrollTop = 400  // scroll dispatched as a result of scrolling (with 100ms delay)
 };
 
 for (let eventName in testCases)
