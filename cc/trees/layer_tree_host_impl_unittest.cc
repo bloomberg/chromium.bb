@@ -8733,12 +8733,15 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   host_impl_->SetHasGpuRasterizationTrigger(false);
   host_impl_->CommitComplete();
   EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
+  host_impl_->NotifyReadyToActivate();
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
+  host_impl_->NotifyReadyToActivate();
   host_impl_->SetHasGpuRasterizationTrigger(false);
   host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
+  host_impl_->NotifyReadyToActivate();
 
   host_impl_->ResetRequiresHighResToDraw();
 
@@ -8746,6 +8749,7 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
+  host_impl_->NotifyReadyToActivate();
 }
 
 class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
@@ -11842,12 +11846,14 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusTrigger) {
   EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+  host_impl_->NotifyReadyToActivate();
 
   // Toggle the trigger on.
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  host_impl_->NotifyReadyToActivate();
 
   // And off.
   host_impl_->SetHasGpuRasterizationTrigger(false);
@@ -11855,6 +11861,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusTrigger) {
   EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+  host_impl_->NotifyReadyToActivate();
 }
 
 // Tests that SetContentIsSuitableForGpuRasterization behaves as expected.
@@ -11875,6 +11882,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusSuitability) {
   EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
             host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_msaa());
+  host_impl_->NotifyReadyToActivate();
 
   // Toggle suitability on.
   host_impl_->SetContentIsSuitableForGpuRasterization(true);
@@ -11882,6 +11890,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusSuitability) {
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
   EXPECT_FALSE(host_impl_->use_msaa());
+  host_impl_->NotifyReadyToActivate();
 
   // And off.
   host_impl_->SetContentIsSuitableForGpuRasterization(false);
@@ -11890,6 +11899,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusSuitability) {
             host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
   EXPECT_TRUE(host_impl_->use_msaa());
+  host_impl_->NotifyReadyToActivate();
 }
 
 // Tests that SetDeviceScaleFactor correctly impacts GPU rasterization.
@@ -11910,6 +11920,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusDeviceScaleFactor) {
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  host_impl_->NotifyReadyToActivate();
 
   // Set device scale factor to 2, which lowers the required MSAA samples from
   // 8 to 4.
@@ -11919,6 +11930,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusDeviceScaleFactor) {
             host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
   EXPECT_TRUE(host_impl_->use_msaa());
+  host_impl_->NotifyReadyToActivate();
 
   // Set device scale factor back to 1.
   host_impl_->active_tree()->SetDeviceScaleFactor(1.0f);
@@ -11926,6 +11938,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusDeviceScaleFactor) {
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
   EXPECT_FALSE(host_impl_->use_msaa());
+  host_impl_->NotifyReadyToActivate();
 }
 
 // Tests that explicit MSAA sample count correctly impacts GPU rasterization.

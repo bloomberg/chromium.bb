@@ -66,6 +66,7 @@ class MutatorEvents;
 class MutatorHost;
 class PageScaleAnimation;
 class PendingTreeDurationHistogramTimer;
+class PendingTreeRasterDurationHistogramTimer;
 class RasterTilePriorityQueue;
 class RasterBufferProvider;
 class RenderingStatsInstrumentation;
@@ -861,6 +862,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::unique_ptr<PendingTreeDurationHistogramTimer>
       pending_tree_duration_timer_;
+  std::unique_ptr<PendingTreeRasterDurationHistogramTimer>
+      pending_tree_raster_duration_timer_;
 
   // The id of the scroll node to which scroll animations must latch.
   // This gets reset at ScrollAnimatedBegin, and updated the first time that a
