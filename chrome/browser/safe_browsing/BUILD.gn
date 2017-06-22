@@ -48,7 +48,8 @@ static_library("safe_browsing") {
 
   if (enable_extensions) {
     sources += [
-      "chrome_cleaner/chrome_cleaner_dialog_controller_win.cc",
+      "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.cc",
+      "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.h",
       "chrome_cleaner/chrome_cleaner_dialog_controller_win.h",
       "settings_reset_prompt/default_settings_fetcher.cc",
       "settings_reset_prompt/default_settings_fetcher.h",

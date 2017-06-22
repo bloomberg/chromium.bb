@@ -5,59 +5,43 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_CLEANER_DIALOG_CONTROLLER_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_CLEANER_DIALOG_CONTROLLER_WIN_H_
 
-#include <vector>
-
 #include "base/macros.h"
-#include "base/strings/string16.h"
 
 namespace safe_browsing {
 
-// Provides the various elements that will be displayed in the Chrome Cleaner
-// UI. Also provides functions, such as |Accept()| and |Cancel()|, that should
-// be called by the UI in response to user actions.
+// Provides functions, such as |Accept()| and |Cancel()|, that should
+// be called by the Chrome Cleaner UI in response to user actions.
 //
-// This class manages its own lifetime and will delete itself once the Cleaner
-// dialog has been dismissed and either of |Accept()| or |Cancel()| have been
-// called.
+// Implementations manage their own lifetimes and delete themselves once the
+// Cleaner dialog has been dismissed and either of |Accept()|, |Cancel()| or
+// |Close()| have been called.
 class ChromeCleanerDialogController {
  public:
-  ChromeCleanerDialogController();
-
-  base::string16 GetWindowTitle() const;
-  base::string16 GetMainText() const;
-  base::string16 GetAcceptButtonLabel() const;
-  base::string16 GetDetailsButtonLabel() const;
-
   // Called by the Cleaner dialog when the dialog has been shown. Used for
   // reporting metrics.
-  void DialogShown();
+  virtual void DialogShown() = 0;
   // Called by the Cleaner dialog when user accepts the prompt. Once |Accept()|
   // has been called, the controller will eventually delete itself and no member
   // functions should be called after that.
-  void Accept();
+  virtual void Accept() = 0;
   // Called by the Cleaner dialog when the dialog is closed via the cancel
   // button. Once |Cancel()| has been called, the controller will eventually
   // delete itself and no member functions should be called after that.
-  void Cancel();
+  virtual void Cancel() = 0;
   // Called by the Cleaner dialog when the dialog is closed by some other means
   // than the cancel button (for example, by pressing Esc or clicking the 'x' on
   // the top of the dialog). After a call to |Dismiss()|, the controller will
   // eventually delete itself and no member functions should be called after
   // that.
-  void Close();
+  virtual void Close() = 0;
   // Called when the details button is clicked, after which the dialog will
   // close. After a call to |DetailsButtonClicked()|, the controller will
   // eventually delete itself and no member functions should be called after
   // that.
-  void DetailsButtonClicked();
+  virtual void DetailsButtonClicked() = 0;
 
  protected:
-  ~ChromeCleanerDialogController();
-
- private:
-  void OnInteractionDone();
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialogController);
+  virtual ~ChromeCleanerDialogController() {}
 };
 
 }  // namespace safe_browsing
