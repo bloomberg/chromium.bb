@@ -27210,6 +27210,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LocalStorageContext.CachePurgedInKB" units="KB">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    Total size of the HTML5 LocalStorage browser-side cache purged in KB when
+    memory pressure signal was triggered or cache size hit the limits.
+  </summary>
+</histogram>
+
+<histogram name="LocalStorageContext.CacheSizeInKB" units="KB">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    Total size of the HTML5 LocalStorage databases in KB in the browser-side
+    cache. Recorded each time a new database is opened in memory.
+  </summary>
+</histogram>
+
 <histogram name="LocalStorageContext.CommitResult" enum="LevelDBStatus">
   <owner>mek@chromium.org</owner>
   <summary>
@@ -90015,6 +90031,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Moderate purge was triggered on memory pressure."/>
   <suffix name="SizeLimitExceeded" label="Cache size exceeded limit."/>
   <affected-histogram name="LocalStorage.BrowserLocalStorageCachePurgedInKB"/>
+  <affected-histogram name="LocalStorageContext.CachePurgedInKB"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LocalStorageSizes" separator="">
