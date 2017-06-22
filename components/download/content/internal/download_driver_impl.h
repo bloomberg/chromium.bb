@@ -27,9 +27,8 @@ class DownloadDriverImpl : public DownloadDriver,
   // Creates a driver entry based on a download item.
   static DriverEntry CreateDriverEntry(const content::DownloadItem* item);
 
-  // Create the driver. All files downloaded will be saved to |dir|.
-  DownloadDriverImpl(content::DownloadManager* manager,
-                     const base::FilePath& dir);
+  // Create the driver.
+  DownloadDriverImpl(content::DownloadManager* manager);
   ~DownloadDriverImpl() override;
 
   // DownloadDriver implementation.
@@ -38,6 +37,7 @@ class DownloadDriverImpl : public DownloadDriver,
   void Start(
       const RequestParams& request_params,
       const std::string& guid,
+      const base::FilePath& file_path,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
   void Remove(const std::string& guid) override;
   void Pause(const std::string& guid) override;
@@ -57,9 +57,6 @@ class DownloadDriverImpl : public DownloadDriver,
 
   // Low level download handle.
   content::DownloadManager* download_manager_;
-
-  // Target directory of download files.
-  base::FilePath file_dir_;
 
   // The client that receives updates from low level download logic.
   DownloadDriver::Client* client_;

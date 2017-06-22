@@ -41,8 +41,7 @@ class DownloadDriver {
     virtual void OnDownloadFailed(const DriverEntry& download, int reason) = 0;
 
     // Called when any download is successfully completed.
-    virtual void OnDownloadSucceeded(const DriverEntry& download,
-                                     const base::FilePath& path) = 0;
+    virtual void OnDownloadSucceeded(const DriverEntry& download) = 0;
 
     // Called when any download is updated.
     virtual void OnDownloadUpdated(const DriverEntry& download) = 0;
@@ -62,6 +61,7 @@ class DownloadDriver {
   virtual void Start(
       const RequestParams& request_params,
       const std::string& guid,
+      const base::FilePath& file_path,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Cancels an existing download, all data associated with this download should

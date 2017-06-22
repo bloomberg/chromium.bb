@@ -54,5 +54,9 @@ void LogFileDeletionFailed(int count) {
   // TODO(shaktisahu): Log |count|.
 }
 
+void LogFilePathsAreStrangelyDifferent() {
+  // TODO(shaktisahu): Log this occurrence.
+}
+
 }  // namespace stats
 }  // namespace download

@@ -57,8 +57,9 @@ struct DriverEntry {
 
   // The physical file path for the download. It can be different from the
   // target file path requested while the file is downloading, as it may
-  // download to a temporary path.
-  base::FilePath temporary_physical_file_path;
+  // download to a temporary path. After completion, this would be set to the
+  // target file path.
+  base::FilePath current_file_path;
 
   // Time the download was marked as complete, base::Time() if the download is
   // not yet complete.

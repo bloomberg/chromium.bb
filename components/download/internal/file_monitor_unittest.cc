@@ -66,12 +66,11 @@ TEST_F(FileMonitorTest, TestDeleteUnknownFiles) {
 
   DriverEntry driver_entry1;
   driver_entry1.guid = entry1.guid;
-  driver_entry1.temporary_physical_file_path = entry1.target_file_path;
+  driver_entry1.current_file_path = entry1.target_file_path;
 
   DriverEntry driver_entry2;
   driver_entry2.guid = base::GenerateGUID();
-  driver_entry2.temporary_physical_file_path =
-      CreateTemporaryFile(driver_entry2.guid);
+  driver_entry2.current_file_path = CreateTemporaryFile(driver_entry2.guid);
 
   base::FilePath temp_file1 = CreateTemporaryFile("temp1");
   base::FilePath temp_file2 = CreateTemporaryFile("temp2");
@@ -80,10 +79,8 @@ TEST_F(FileMonitorTest, TestDeleteUnknownFiles) {
                                   bool t2) {
     EXPECT_EQ(e1, base::PathExists(entry1.target_file_path));
     EXPECT_EQ(e2, base::PathExists(entry2.target_file_path));
-    EXPECT_EQ(de1,
-              base::PathExists(driver_entry1.temporary_physical_file_path));
-    EXPECT_EQ(de2,
-              base::PathExists(driver_entry2.temporary_physical_file_path));
+    EXPECT_EQ(de1, base::PathExists(driver_entry1.current_file_path));
+    EXPECT_EQ(de2, base::PathExists(driver_entry2.current_file_path));
     EXPECT_EQ(t1, base::PathExists(temp_file1));
     EXPECT_EQ(t2, base::PathExists(temp_file2));
   };

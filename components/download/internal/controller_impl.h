@@ -73,8 +73,7 @@ class ControllerImpl : public Controller,
   void OnDriverReady(bool success) override;
   void OnDownloadCreated(const DriverEntry& download) override;
   void OnDownloadFailed(const DriverEntry& download, int reason) override;
-  void OnDownloadSucceeded(const DriverEntry& download,
-                           const base::FilePath& path) override;
+  void OnDownloadSucceeded(const DriverEntry& download) override;
   void OnDownloadUpdated(const DriverEntry& download) override;
 
   // Model::Client implementation.

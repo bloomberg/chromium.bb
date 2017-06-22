@@ -321,8 +321,7 @@ void ControllerImpl::OnDownloadFailed(const DriverEntry& download, int reason) {
   HandleCompleteDownload(CompletionType::FAIL, download.guid);
 }
 
-void ControllerImpl::OnDownloadSucceeded(const DriverEntry& download,
-                                         const base::FilePath& path) {
+void ControllerImpl::OnDownloadSucceeded(const DriverEntry& download) {
   if (initializing_internals_)
     return;
 
@@ -639,7 +638,7 @@ void ControllerImpl::UpdateDriverState(const Entry& entry) {
     if (driver_entry.has_value()) {
       driver_->Resume(entry.guid);
     } else {
-      driver_->Start(entry.request_params, entry.guid,
+      driver_->Start(entry.request_params, entry.guid, entry.target_file_path,
                      NO_TRAFFIC_ANNOTATION_YET);
     }
   }
@@ -700,15 +699,16 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
   if (type == CompletionType::SUCCEED) {
     auto driver_entry = driver_->Find(guid);
     DCHECK(driver_entry.has_value());
-    // TODO(dtrainor): Move the FilePath generation to the controller and store
-    // it in Entry.  Then pass it into the DownloadDriver.
-    entry->target_file_path = driver_entry->temporary_physical_file_path;
+    if (driver_entry->current_file_path != entry->target_file_path) {
+      stats::LogFilePathsAreStrangelyDifferent();
+      entry->target_file_path = driver_entry->current_file_path;
+    }
     entry->completion_time = driver_entry->completion_time;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&ControllerImpl::SendOnDownloadSucceeded,
-                   weak_ptr_factory_.GetWeakPtr(), entry->client, guid,
-                   base::FilePath(), driver_entry->bytes_downloaded));
+        FROM_HERE, base::Bind(&ControllerImpl::SendOnDownloadSucceeded,
+                              weak_ptr_factory_.GetWeakPtr(), entry->client,
+                              guid, driver_entry->current_file_path,
+                              driver_entry->bytes_downloaded));
     TransitTo(entry, Entry::State::COMPLETE, model_.get());
     ScheduleCleanupTask();
   } else {

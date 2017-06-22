@@ -54,7 +54,7 @@ void FileMonitorImpl::DeleteUnknownFiles(
   }
 
   for (const DriverEntry& driver_entry : known_driver_entries) {
-    download_file_paths.insert(driver_entry.temporary_physical_file_path);
+    download_file_paths.insert(driver_entry.current_file_path);
   }
 
   file_thread_task_runner_->PostTask(
