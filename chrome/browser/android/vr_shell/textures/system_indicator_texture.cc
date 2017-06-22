@@ -44,8 +44,8 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
   gfx::Canvas* canvas = &gfx_canvas;
 
-  DCHECK(texture_size.height() * kHeightWidthRatio == texture_size.width());
   size_.set_height(texture_size.height());
+
   SkPaint paint;
   paint.setColor(color_scheme().system_indicator_background);
 
@@ -99,9 +99,10 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
 
 gfx::Size SystemIndicatorTexture::GetPreferredTextureSize(
     int maximum_width) const {
-  // Ensuring height is a quarter of the width.
+  // All indicators need to be the same height, so compute height, and then
+  // re-compute with based on whether the indicator has text or not.
   int height = maximum_width / kHeightWidthRatio;
-  return gfx::Size(height * kHeightWidthRatio, height);
+  return gfx::Size(has_text_ ? maximum_width : height, height);
 }
 
 gfx::SizeF SystemIndicatorTexture::GetDrawnSize() const {

@@ -51,6 +51,7 @@ class UiSceneManager {
   // These methods are currently stubbed.
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
 
+  void OnGLInitialized();
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
 
@@ -112,6 +113,8 @@ class UiSceneManager {
   UrlBar* url_bar_ = nullptr;
   TransientUrlBar* transient_url_bar_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
+
+  std::vector<UiElement*> system_indicators_;
 
   bool in_cct_;
   bool web_vr_mode_;
