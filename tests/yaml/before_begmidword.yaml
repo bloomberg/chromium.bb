@@ -1,7 +1,14 @@
+# This test case illustrates a bug with the before opcode. When we
+# have more than 19 class definitions a before rule is triggered that
+# should not match. In the following scenario the `begmidword lande`
+# rule should only trigger when 'lande' is before a 'u'. If one class
+# definition is removed as in the second test then the correct rules
+# are triggered.
+
 table: |
   include tables/unicode.dis
   include tables/de-chardefs6.cti
-  class puncAfterOrdinal ;:?!()
+  class foo zz
   class a a
   class b b
   class c c
@@ -67,7 +74,7 @@ tests:
 table: |
   include tables/unicode.dis
   include tables/de-chardefs6.cti
-  class puncAfterOrdinal ;:?!()
+  class foo zz
   class b b
   class c c
   class d d
@@ -100,7 +107,7 @@ tests:
 table: |
   include tables/unicode.dis
   include tables/de-chardefs6.cti
-  class puncAfterOrdinal ;:?!()
+  class foo zz
   class a a
   class b b
   class c c
