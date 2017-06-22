@@ -139,6 +139,25 @@ struct SameSizeAsNode : EventTarget {
   void* pointer_;
 };
 
+NodeRenderingData::NodeRenderingData(LayoutObject* layout_object,
+                                     RefPtr<ComputedStyle> non_attached_style)
+    : layout_object_(layout_object), non_attached_style_(non_attached_style) {}
+
+NodeRenderingData::~NodeRenderingData() {
+  CHECK(!layout_object_);
+}
+
+void NodeRenderingData::SetNonAttachedStyle(
+    RefPtr<ComputedStyle> non_attached_style) {
+  DCHECK_NE(&SharedEmptyData(), this);
+  non_attached_style_ = non_attached_style;
+}
+
+NodeRenderingData& NodeRenderingData::SharedEmptyData() {
+  DEFINE_STATIC_LOCAL(NodeRenderingData, shared_empty_data, (nullptr, nullptr));
+  return shared_empty_data;
+}
+
 static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
 
 #if DUMP_NODE_STATISTICS

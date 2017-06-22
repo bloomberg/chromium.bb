@@ -7,10 +7,12 @@
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSProperty.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
+#include "core/layout/LayoutTheme.h"
 #include "platform/fonts/FontTraits.h"
 
 namespace blink {

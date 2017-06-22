@@ -6,6 +6,7 @@
 #define WebViewBase_h
 
 #include "core/page/EventWithHitTestResults.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/RefCounted.h"
 #include "public/platform/WebDisplayMode.h"

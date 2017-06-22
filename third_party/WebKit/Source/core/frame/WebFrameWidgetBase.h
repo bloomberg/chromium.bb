@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "platform/wtf/Assertions.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebDragData.h"
