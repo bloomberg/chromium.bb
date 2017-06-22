@@ -33,6 +33,22 @@ bool HasPointerEventListener(const EventHandlerRegistry& registry) {
   return registry.HasEventHandlers(EventHandlerRegistry::kPointerEvent);
 }
 
+Vector<WebPointerEvent> GetCoalescedWebPointerEventsWithNoTransformation(
+    const Vector<WebTouchEvent>& coalesced_events,
+    int id) {
+  Vector<WebPointerEvent> related_pointer_events;
+  for (const auto& touch_event : coalesced_events) {
+    for (unsigned i = 0; i < touch_event.touches_length; ++i) {
+      if (touch_event.touches[i].id == id &&
+          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
+        related_pointer_events.push_back(
+            WebPointerEvent(touch_event, touch_event.touches[i]));
+      }
+    }
+  }
+  return related_pointer_events;
+}
+
 Vector<std::pair<WebTouchPoint, TimeTicks>> GetCoalescedPoints(
     const Vector<WebTouchEvent>& coalesced_events,
     int id) {
@@ -324,7 +340,6 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
   }
   UserGestureIndicator holder(possible_gesture_token);
 
-  HeapVector<EventHandlingUtil::PointerEventTarget> pointer_event_targets;
 
   for (unsigned touch_point_idx = 0; touch_point_idx < event.touches_length;
        ++touch_point_idx) {
@@ -334,17 +349,26 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
     EventHandlingUtil::PointerEventTarget pointer_event_target =
         touch_point_idx ? ComputePointerEventTarget(touch_point)
                         : first_pointer_event_target;
-    pointer_event_targets.push_back(pointer_event_target);
 
-    DispatchTouchPointerEvent(
-        touch_point, pointer_event_target,
-        GetCoalescedPoints(coalesced_events, touch_point.id),
-        static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
-        event.TimeStampSeconds(), event.unique_touch_event_id);
+    if (touch_point.state != blink::WebTouchPoint::kStateStationary) {
+      DispatchTouchPointerEvent(
+          touch_point, pointer_event_target,
+          GetCoalescedPoints(coalesced_events, touch_point.id),
+          static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
+          event.TimeStampSeconds(), event.unique_touch_event_id);
+
+      touch_event_manager_->HandleTouchPoint(
+          WebPointerEvent(event, event.touches[touch_point_idx]),
+          GetCoalescedWebPointerEventsWithNoTransformation(
+              coalesced_events, event.touches[touch_point_idx].id),
+          pointer_event_target);
+    }
   }
 
-  return touch_event_manager_->HandleTouchEvent(event, coalesced_events,
-                                                pointer_event_targets);
+  // Calling this function |FlushEvents| will be moved to MainThreadEventQueue
+  // class. It will be called before rAF and also whenever we run in low latency
+  // mode as mentioned in crbug.com/728250.
+  return touch_event_manager_->FlushEvents();
 }
 
 EventHandlingUtil::PointerEventTarget
@@ -410,7 +434,6 @@ void PointerEventManager::DispatchTouchPointerEvent(
   // required.
   // Do not send pointer events for stationary touches or null targetFrame
   if (pointer_event_target.target_node && pointer_event_target.target_frame &&
-      touch_point.state != WebTouchPoint::kStateStationary &&
       !in_canceled_state_for_pointer_type_touch_) {
     PointerEvent* pointer_event = pointer_event_factory_.Create(
         touch_point, coalesced_events,

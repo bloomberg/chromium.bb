@@ -332,6 +332,7 @@ component("platform") {
     "WebIconSizesParser.cpp",
     "WebMouseEvent.cpp",
     "WebMouseWheelEvent.cpp",
+    "WebPointerEvent.cpp",
     "WebScheduler.cpp",
     "WebTaskRunner.cpp",
     "WebTaskRunner.h",

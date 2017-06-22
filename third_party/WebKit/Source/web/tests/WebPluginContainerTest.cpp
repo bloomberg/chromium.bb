@@ -655,36 +655,60 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebTouchEvent event(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
-  WebRect rect = plugin_container_one_element.BoundsInViewport();
-  event.touches_length = 1;
-  event.touches[0].state = WebTouchPoint::kStatePressed;
-  event.touches[0].SetPositionInWidget(rect.x + rect.width / 2,
-                                       rect.y + rect.height / 2);
-
-  WebCoalescedInputEvent coalesced_event(event);
-
-  WebTouchEvent c_event(WebInputEvent::kTouchMove, WebInputEvent::kNoModifiers,
+  {
+    WebTouchEvent event(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
                         WebInputEvent::kTimeStampForTesting);
-  c_event.touches_length = 1;
-  c_event.touches[0].state = WebTouchPoint::kStatePressed;
-  c_event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 1,
+    WebRect rect = plugin_container_one_element.BoundsInViewport();
+    event.touches_length = 1;
+    event.touches[0].state = WebTouchPoint::kStatePressed;
+    event.touches[0].SetPositionInWidget(rect.x + rect.width / 2,
+                                         rect.y + rect.height / 2);
+
+    WebCoalescedInputEvent coalesced_event(event);
+
+    web_view->HandleInputEvent(coalesced_event);
+    RunPendingTasks();
+
+    EXPECT_EQ(static_cast<const size_t>(1),
+              test_plugin->GetCoalescedEventCount());
+    EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
+    EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
+    EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());
+  }
+
+  {
+    WebTouchEvent event(WebInputEvent::kTouchMove, WebInputEvent::kNoModifiers,
+                        WebInputEvent::kTimeStampForTesting);
+    WebRect rect = plugin_container_one_element.BoundsInViewport();
+    event.touches_length = 1;
+    event.touches[0].state = WebTouchPoint::kStateMoved;
+    event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 1,
                                          rect.y + rect.height / 2 + 1);
 
-  coalesced_event.AddCoalescedEvent(c_event);
-  c_event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 2,
-                                         rect.y + rect.height / 2 + 2);
-  coalesced_event.AddCoalescedEvent(c_event);
+    WebCoalescedInputEvent coalesced_event(event);
 
-  web_view->HandleInputEvent(coalesced_event);
-  RunPendingTasks();
+    WebTouchEvent c_event(WebInputEvent::kTouchMove,
+                          WebInputEvent::kNoModifiers,
+                          WebInputEvent::kTimeStampForTesting);
+    c_event.touches_length = 1;
+    c_event.touches[0].state = WebTouchPoint::kStateMoved;
+    c_event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 2,
+                                           rect.y + rect.height / 2 + 2);
 
-  EXPECT_EQ(static_cast<const size_t>(3),
-            test_plugin->GetCoalescedEventCount());
-  EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
-  EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
-  EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());
+    coalesced_event.AddCoalescedEvent(c_event);
+    c_event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 3,
+                                           rect.y + rect.height / 2 + 3);
+    coalesced_event.AddCoalescedEvent(c_event);
+
+    web_view->HandleInputEvent(coalesced_event);
+    RunPendingTasks();
+
+    EXPECT_EQ(static_cast<const size_t>(3),
+              test_plugin->GetCoalescedEventCount());
+    EXPECT_EQ(WebInputEvent::kTouchMove, test_plugin->GetLastInputEventType());
+    EXPECT_EQ(rect.width / 2 + 1, test_plugin->GetLastEventLocation().X());
+    EXPECT_EQ(rect.height / 2 + 1, test_plugin->GetLastEventLocation().Y());
+  }
 }
 
 TEST_F(WebPluginContainerTest, MouseWheelEventScrolled) {
