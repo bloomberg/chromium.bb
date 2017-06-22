@@ -20,22 +20,24 @@ namespace gfx {
 class ANIMATION_EXPORT Tween {
  public:
   enum Type {
-    LINEAR,             // Linear.
-    EASE_OUT,           // Fast in, slow out (default).
-    EASE_IN,            // Slow in, fast out.
-    EASE_IN_2,          // Variant of EASE_IN that starts out slower than
-                        // EASE_IN.
-    EASE_IN_OUT,        // Slow in and out, fast in the middle.
-    FAST_IN_OUT,        // Fast in and out, slow in the middle.
-    EASE_OUT_SNAP,      // Fast in, slow out, snap to final value.
-    SMOOTH_IN_OUT,      // Smooth, consistent speeds in and out (sine wave).
-    FAST_OUT_SLOW_IN,   // Variant of EASE_IN_OUT which should be used in most
-                        // cases.
-    LINEAR_OUT_SLOW_IN, // Variant of EASE_OUT which should be used for
-                        // fading in from 0% or motion when entering a scene.
-    FAST_OUT_LINEAR_IN, // Variant of EASE_IN which should should be used for
-                        // fading out to 0% or motion when exiting a scene.
-    ZERO,               // Returns a value of 0 always.
+    LINEAR,              // Linear.
+    EASE_OUT,            // Fast in, slow out (default).
+    EASE_IN,             // Slow in, fast out.
+    EASE_IN_2,           // Variant of EASE_IN that starts out slower than
+                         // EASE_IN.
+    EASE_IN_OUT,         // Slow in and out, fast in the middle.
+    FAST_IN_OUT,         // Fast in and out, slow in the middle.
+    EASE_OUT_SNAP,       // Fast in, slow out, snap to final value.
+    SMOOTH_IN_OUT,       // Smooth, consistent speeds in and out (sine wave).
+    FAST_OUT_SLOW_IN,    // Variant of EASE_IN_OUT which should be used in most
+                         // cases.
+    LINEAR_OUT_SLOW_IN,  // Variant of EASE_OUT which should be used for
+                         // fading in from 0% or motion when entering a scene.
+    SLOW_OUT_LINEAR_IN,  // Reverse of LINEAR_OUT_SLOW_IN which should be used
+                         // in reverse animation to create a rubberband effect.
+    FAST_OUT_LINEAR_IN,  // Variant of EASE_IN which should should be used for
+                         // fading out to 0% or motion when exiting a scene.
+    ZERO,                // Returns a value of 0 always.
   };
 
   // Returns the value based on the tween type. |state| is from 0-1.
