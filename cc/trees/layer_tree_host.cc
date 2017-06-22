@@ -41,6 +41,7 @@
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -49,6 +50,7 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/proxy_main.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/transform_node.h"
@@ -355,6 +357,20 @@ void LayerTreeHost::FinishCommitOnImplThread(
     mutator_host_->PushPropertiesTo(host_impl->mutator_host());
 
     sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
+  }
+
+  // Temporary check to debug crbug.com/726423. The property tree indices on the
+  // LayerTree should be valid after the PropertyTree update above.
+  for (auto* layer_impl : *sync_tree) {
+    CHECK(layer_impl);
+    CHECK(sync_tree->property_trees()->transform_tree.Node(
+        layer_impl->transform_tree_index()));
+    CHECK(sync_tree->property_trees()->clip_tree.Node(
+        layer_impl->clip_tree_index()));
+    CHECK(sync_tree->property_trees()->effect_tree.Node(
+        layer_impl->effect_tree_index()));
+    CHECK(sync_tree->property_trees()->scroll_tree.Node(
+        layer_impl->scroll_tree_index()));
   }
 
   // Transfer image decode requests to the impl thread.
@@ -728,6 +744,17 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
           TRACE_EVENT_SCOPE_THREAD, "property_trees",
           property_trees->AsTracedValue());
     }
+
+    // Temporary check to debug crbug.com/726423. The property tree indices on
+    // the LayerTreeImpl should be valid after all state synchronization has
+    // finished.
+    for (auto* layer : *this) {
+      CHECK(property_trees_.transform_tree.Node(layer->transform_tree_index()));
+      CHECK(property_trees_.clip_tree.Node(layer->clip_tree_index()));
+      CHECK(property_trees_.effect_tree.Node(layer->effect_tree_index()));
+      CHECK(property_trees_.scroll_tree.Node(layer->scroll_tree_index()));
+    }
+
     draw_property_utils::UpdatePropertyTrees(this, property_trees);
     draw_property_utils::FindLayersThatNeedUpdates(this, property_trees,
                                                    &update_layer_list);
