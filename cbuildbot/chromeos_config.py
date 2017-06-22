@@ -2441,21 +2441,27 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # suites returned by DefaultListNonCanary().  If you change the
   # ordering here, you must also change the ordering there.
   #
+  # TODO: Fill in any notable gaps in this table. crbug.com/730076
   # pylint: disable=bad-continuation
   # pylint: disable=bad-whitespace
   _paladin_hwtest_assignments = frozenset([
-    #bvt-inline        bvt-cq            arc-bvt-cq        family
-    ('wolf',           'peppy',          None),            # slippy
-    ('peach_pit',      None,             None),            # peach
-    ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (N)
-    ('hana',           None,             'cyan'),          # strago
-    (None,             None,             'kevin'),         # gru
+    # bvt-inline        bvt-cq           bvt-arc           family
     ('lumpy',          'stumpy',         None),            # sandybridge
-    ('nyan_big',       'nyan_kitty',     None),            # nyan
-    ('winky',          'kip',            None),            # rambi
-    ('elm',            None,             None),            # oak
-    ('cave',           None,             'caroline'),      # glados
     ('link',           None,             None),            # ivybridge
+    (None,             None,             None),            # daisy (Exynos5250)
+    ('wolf',           'peppy',          None),            # slippy (HSW)
+    ('peach_pit',      None,             None),            # peach (Exynos5420)
+    ('winky',          'kip',            None),            # rambi (BYT)
+    ('nyan_big',       'nyan_kitty',     None),            # nyan (K1)
+    (None,             None,             None),            # auron (BDW)
+    ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (RK3288)
+    (None,             None,             'cyan'),          # strago (BSW)
+    ('cave',           None,             'caroline'),      # glados (SKL)
+    ('elm',            None,             None),            # oak (MTK8173)
+    ('hana',           None,             None),            # oak (MTK8173)
+    (None,             None,             'kevin'),         # gru (RK3399)
+    (None,             None,             None),            # reef (APL)
+    (None,             None,             None),            # poppy (KBL)
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
