@@ -87,13 +87,6 @@ cr.define('cloudprint', function() {
     this.xsrfTokens_ = {};
 
     /**
-     * Pending requests delayed until we get access token.
-     * @type {!Array<!cloudprint.CloudPrintRequest>}
-     * @private
-     */
-    this.requestQueue_ = [];
-
-    /**
      * Outstanding cloud destination search requests.
      * @type {!Array<!cloudprint.CloudPrintRequest>}
      * @private
@@ -101,13 +94,13 @@ cr.define('cloudprint', function() {
     this.outstandingCloudSearchRequests_ = [];
 
     /**
-     * Event tracker used to keep track of native layer events.
-     * @type {!EventTracker}
-     * @private
+     * Promise that will be resolved when the access token for
+     * DestinationOrigin.DEVICE is available. Null if there is no request
+     * currently pending.
+     * @private {?Promise<string>}
      */
-    this.tracker_ = new EventTracker();
+    this.accessTokenRequestPromise_ = null;
 
-    this.addEventListeners_();
   }
 
   /**
@@ -163,8 +156,6 @@ cr.define('cloudprint', function() {
   CloudPrintInterface.CLOUD_ORIGINS_ = [
     print_preview.DestinationOrigin.COOKIES,
     print_preview.DestinationOrigin.DEVICE
-    // TODO(vitalybuka): Enable when implemented.
-    // ready print_preview.DestinationOrigin.PROFILE
   ];
 
   CloudPrintInterface.prototype = {
@@ -316,17 +307,6 @@ cr.define('cloudprint', function() {
     },
 
     /**
-     * Adds event listeners to relevant events.
-     * @private
-     */
-    addEventListeners_: function() {
-      this.tracker_.add(
-          this.nativeLayer_.getEventTarget(),
-          print_preview.NativeLayer.EventType.ACCESS_TOKEN_READY,
-          this.onAccessTokenReady_.bind(this));
-    },
-
-    /**
      * Builds request to the Google Cloud Print API.
      * @param {string} method HTTP method of the request.
      * @param {string} action Google Cloud Print action to perform.
@@ -401,11 +381,17 @@ cr.define('cloudprint', function() {
      */
     sendOrQueueRequest_: function(request) {
       if (request.origin == print_preview.DestinationOrigin.COOKIES) {
-        return this.sendRequest_(request);
-      } else {
-        this.requestQueue_.push(request);
-        this.nativeLayer_.startGetAccessToken(request.origin);
+        this.sendRequest_(request);
+        return;
       }
+
+      if (this.accessTokenRequestPromise_ == null) {
+        this.accessTokenRequestPromise_ =
+            this.nativeLayer_.getAccessToken(request.origin);
+      }
+
+      this.accessTokenRequestPromise_.then(
+          this.onAccessTokenReady_.bind(this, request));
     },
 
     /**
@@ -477,29 +463,25 @@ cr.define('cloudprint', function() {
     },
 
     /**
-     * Called when a native layer receives access token.
-     * @param {Event} event Contains the authentication type and access token.
+     * Called when a native layer receives access token. Assumes that the
+     * destination type for this token is DestinationOrigin.DEVICE.
+     * @param {cloudprint.CloudPrintRequest} request The pending request that
+     *     requires the access token.
+     * @param {string} accessToken The access token obtained.
      * @private
      */
-    onAccessTokenReady_: function(event) {
-      // TODO(vitalybuka): remove when other Origins implemented.
-      assert(event.authType == print_preview.DestinationOrigin.DEVICE);
-      this.requestQueue_ = this.requestQueue_.filter(function(request) {
-        assert(request.origin == print_preview.DestinationOrigin.DEVICE);
-        if (request.origin != event.authType) {
-          return true;
-        }
-        if (event.accessToken) {
-          request.xhr.setRequestHeader(
-              'Authorization', 'Bearer ' + event.accessToken);
-          this.sendRequest_(request);
-        } else {  // No valid token.
-          // Without abort status does not exist.
-          request.xhr.abort();
-          request.callback(request);
-        }
-        return false;
-      }, this);
+    onAccessTokenReady_: function(request, accessToken) {
+      assert(request.origin == print_preview.DestinationOrigin.DEVICE);
+      if (accessToken) {
+        request.xhr.setRequestHeader(
+            'Authorization', 'Bearer ' + accessToken);
+        this.sendRequest_(request);
+      } else {  // No valid token.
+        // Without abort status does not exist.
+        request.xhr.abort();
+        request.callback(request);
+      }
+      this.accessTokenRequestPromise_ = null;
     },
 
     /**

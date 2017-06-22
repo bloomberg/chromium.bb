@@ -757,9 +757,7 @@ cr.define('print_preview', function() {
       if (destinationMatch.matchOrigin(
               print_preview.DestinationOrigin.COOKIES) ||
           destinationMatch.matchOrigin(
-              print_preview.DestinationOrigin.DEVICE) ||
-          destinationMatch.matchOrigin(
-              print_preview.DestinationOrigin.PROFILE)) {
+              print_preview.DestinationOrigin.DEVICE)) {
         this.startLoadCloudDestinations();
       }
     },
@@ -802,7 +800,6 @@ cr.define('print_preview', function() {
       if (isCloud) {
         origins.push(print_preview.DestinationOrigin.COOKIES);
         origins.push(print_preview.DestinationOrigin.DEVICE);
-        origins.push(print_preview.DestinationOrigin.PROFILE);
       }
 
       var idRegExp = null;
@@ -1001,7 +998,35 @@ cr.define('print_preview', function() {
           destination.provisionalType ==
               print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION,
           'Provisional type cannot be resolved.');
-      this.nativeLayer_.grantExtensionPrinterAccess(destination.id);
+      this.nativeLayer_.grantExtensionPrinterAccess(destination.id).then(
+          /**
+           * @param {!print_preview.ProvisionalDestinationInfo}
+           *     destinationInfo Information about the resolved printer.
+           */
+          function(destinationInfo) {
+            /**
+             * Removes the destination from the store and replaces it with a
+             * destination created from the resolved destination properties, if
+             * any are reported. Then sends a PROVISIONAL_DESTINATION_RESOLVED
+             * event.
+             */
+            this.removeProvisionalDestination_(destination.id);
+            var parsedDestination =
+                print_preview.ExtensionDestinationParser.parse(destinationInfo);
+            this.insertIntoStore_(parsedDestination);
+            this.dispatchProvisionalDestinationResolvedEvent_(
+                destination.id, parsedDestination);
+          }.bind(this),
+          function() {
+            /**
+             * The provisional destination is removed from the store and a
+             * PROVISIONAL_DESTINATION_RESOLVED event is dispatched with a null
+             * destination.
+             */
+            this.removeProvisionalDestination_(destination.id);
+            this.dispatchProvisionalDestinationResolvedEvent_(destination.id,
+                                                              null);
+          }.bind(this));
     },
 
     /**
@@ -1130,48 +1155,35 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Event handler for {@code
-     * print_preview.NativeLayer.EventType.PROVISIONAL_DESTINATION_RESOLVED}.
-     * Currently assumes the provisional destination is an extension
-     * destination.
-     * Called when a provisional destination resolvement attempt finishes.
-     * The provisional destination is removed from the store and replaced with
-     * a destination created from the resolved destination properties, if any
-     * are reported.
-     * Emits {@code DestinationStore.EventType.PROVISIONAL_DESTINATION_RESOLVED}
-     * event.
-     * @param {!Event} evt The event containing the provisional destination ID
-     *     and resolved destination description. If the destination was not
-     *     successfully resolved, the description will not be set.
+     * Removes the provisional destination with ID |provisionalId| from
+     * |destinationMap_| and |destinations_|.
+     * @param{string} provisionalId The provisional destination ID.
      * @private
      */
-    handleProvisionalDestinationResolved_: function(evt) {
-      var provisionalDestinationIndex = -1;
-      var provisionalDestination = null;
-      for (var i = 0; i < this.destinations_.length; ++i) {
-        if (evt.provisionalId == this.destinations_[i].id) {
-          provisionalDestinationIndex = i;
-          provisionalDestination = this.destinations_[i];
-          break;
-        }
-      }
+    removeProvisionalDestination_: function(provisionalId) {
+      this.destinations_ = this.destinations_.filter(
+          function(el) {
+            if (el.id == provisionalId) {
+              delete this.destinationMap_[this.getKey_(el)];
+              return false;
+            }
+            return true;
+          }, this);
+    },
 
-      if (!provisionalDestination)
-        return;
-
-      this.destinations_.splice(provisionalDestinationIndex, 1);
-      delete this.destinationMap_[this.getKey_(provisionalDestination)];
-
-      var destination = evt.destination ?
-          print_preview.ExtensionDestinationParser.parse(evt.destination) :
-          null;
-
-      if (destination)
-        this.insertIntoStore_(destination);
-
+    /**
+     * Dispatches the PROVISIONAL_DESTINATION_RESOLVED event for id
+     * |provisionalId| and destination |destination|.
+     * @param {string} provisionalId The ID of the destination that was
+     *     resolved.
+     * @param {?print_preview.Destination} destination Information about the
+     *     destination if it was resolved successfully.
+     */
+    dispatchProvisionalDestinationResolvedEvent_: function(provisionalId,
+                                                           destination) {
       var event = new Event(
           DestinationStore.EventType.PROVISIONAL_DESTINATION_RESOLVED);
-      event.provisionalId = evt.provisionalId;
+      event.provisionalId = provisionalId;
       event.destination = destination;
       this.dispatchEvent(event);
     },
@@ -1330,10 +1342,6 @@ cr.define('print_preview', function() {
           nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.DESTINATIONS_RELOAD,
           this.onDestinationsReload_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PROVISIONAL_DESTINATION_RESOLVED,
-          this.handleProvisionalDestinationResolved_.bind(this));
     },
 
     /**

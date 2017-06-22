@@ -223,8 +223,11 @@ class PrintPreviewHandler
                            const std::string& default_printer);
 
   // Send OAuth2 access token.
-  void SendAccessToken(const std::string& type,
+  void SendAccessToken(const std::string& callback_id,
                        const std::string& access_token);
+
+  // Send message indicating a request for token was already in progress.
+  void SendRequestInProgress(const std::string& callback_id);
 
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information. If |settings_info| is empty, sends
@@ -334,9 +337,9 @@ class PrintPreviewHandler
 
   // Called when an extension reports information requested for a provisional
   // printer.
-  // |printer_id|: The provisional printer id.
+  // |callback_id|: The javascript callback to resolve or reject.
   // |printer_info|: The data reported by the extension.
-  void OnGotExtensionPrinterInfo(const std::string& printer_id,
+  void OnGotExtensionPrinterInfo(const std::string& callback_id,
                                  const base::DictionaryValue& printer_info);
 
   // Called when an extension reports the set of print capabilites for a

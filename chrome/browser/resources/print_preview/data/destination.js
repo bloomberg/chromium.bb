@@ -22,7 +22,6 @@ print_preview.DestinationType = {
 print_preview.DestinationOrigin = {
   LOCAL: 'local',
   COOKIES: 'cookies',
-  PROFILE: 'profile',
   DEVICE: 'device',
   PRIVET: 'privet',
   EXTENSION: 'extension',
