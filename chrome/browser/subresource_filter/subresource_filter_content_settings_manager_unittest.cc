@@ -46,6 +46,7 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
     settings_manager_ =
         SubresourceFilterProfileContextFactory::GetForProfile(&testing_profile_)
             ->settings_manager();
+    settings_manager_->set_should_use_smart_ui_for_testing(true);
     auto test_clock = base::MakeUnique<base::SimpleTestClock>();
     test_clock_ = test_clock.get();
     settings_manager_->set_clock_for_testing(std::move(test_clock));
@@ -181,9 +182,6 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, WildcardUpdate) {
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, SmartUI) {
-  if (!settings_manager()->should_use_smart_ui())
-    return;
-
   GURL url("https://example.test/");
   GURL url2("https://example.test/path");
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
@@ -208,13 +206,23 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, SmartUI) {
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url2));
 }
 
+TEST_F(SubresourceFilterContentSettingsManagerTest, NoSmartUI) {
+  settings_manager()->set_should_use_smart_ui_for_testing(false);
+
+  GURL url("https://example.test/");
+  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            GetContentSettingMatchingUrlWithEmptyPath(url));
+  settings_manager()->OnDidShowUI(url);
+
+  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
+}
+
 // If the user manually sets a content setting to block the feature, the smart
 // UI should be reset.
 TEST_F(SubresourceFilterContentSettingsManagerTest,
        SmartUIWithOverride_Resets) {
-  if (!settings_manager()->should_use_smart_ui())
-    return;
-
   GURL url("https://example.test/");
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
 
@@ -287,7 +295,7 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
        NoExperimentalUI_NoWebsiteSetting) {
   GURL url("https://example.test/");
 
-  // Do no explicitly allow the experimental UI.
+  // Do not explicitly allow the experimental UI.
   scoped_feature_toggle().ResetSubresourceFilterState(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE);
   settings_manager()->OnDidShowUI(url);
@@ -300,11 +308,27 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
   EXPECT_TRUE(settings_manager()->GetSiteMetadata(url));
 }
 
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       ManualSettingsChange_ResetsSmartUI) {
+  GURL url("https://example.test/");
+  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
+  settings_manager()->OnDidShowUI(url);
+
+  EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url));
+
+  // Manual settings change should reset the smart UI.
+  GetSettingsMap()->SetContentSettingDefaultScope(
+      url, GURL(), CONTENT_SETTINGS_TYPE_ADS, std::string(),
+      CONTENT_SETTING_BLOCK);
+  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
+
+  // Metadata should not be completely cleared, as we still want to maintain the
+  // invariant that the existence of the metadata implies that the UI was shown.
+  EXPECT_TRUE(settings_manager()->GetSiteMetadata(url));
+}
+
 TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
        HistoryUrlDeleted_ClearsWebsiteSetting) {
-  if (!settings_manager()->should_use_smart_ui())
-    return;
-
   // Simulate a history already populated with a URL.
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::EXPLICIT_ACCESS);
@@ -333,9 +357,6 @@ TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
 
 TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
        AllHistoryUrlDeleted_ClearsWebsiteSetting) {
-  if (!settings_manager()->should_use_smart_ui())
-    return;
-
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::EXPLICIT_ACCESS);
   ASSERT_TRUE(history_service);
