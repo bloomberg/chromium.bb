@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/media_export.h"
 #include "media/base/stream_parser_buffer.h"
 
 namespace media {
@@ -20,7 +21,7 @@ namespace media {
 // Helper class representing a continuous range of buffered data in the
 // presentation timeline. All buffers in a SourceBufferRange are ordered
 // sequentially in decode timestamp order with no gaps.
-class SourceBufferRange {
+class MEDIA_EXPORT SourceBufferRange {
  public:
   // Returns the maximum distance in time between any buffer seen in the stream
   // of which this range is a part. Used to estimate the duration of a buffer if
@@ -78,6 +79,7 @@ class SourceBufferRange {
   // room). The latter scenario is required when a muxed coded frame group has
   // such a large jagged start across tracks that its first buffer is not within
   // the fudge room, yet its group start was.
+  // During append, |highest_frame_| is updated, if necessary.
   void AppendBuffersToEnd(const BufferQueue& buffers,
                           DecodeTimestamp new_buffers_group_start_timestamp);
   bool CanAppendBuffersToEnd(
@@ -92,6 +94,7 @@ class SourceBufferRange {
   // Note: Use these only to merge existing ranges. |range|'s first buffer
   // timestamp must be adjacent to this range. No group start timestamp
   // adjacency is involved in these methods.
+  // During append, |highest_frame_| is updated, if necessary.
   void AppendRangeToEnd(const SourceBufferRange& range,
                         bool transfer_current_position);
   bool CanAppendRangeToEnd(const SourceBufferRange& range) const;
@@ -126,6 +129,7 @@ class SourceBufferRange {
   // this range. If there is no keyframe at or after |timestamp|, SplitRange()
   // returns null and this range is unmodified. This range can become empty if
   // |timestamp| <= the DTS of the first buffer in this range.
+  // |highest_frame_| is updated, if necessary.
   std::unique_ptr<SourceBufferRange> SplitRange(DecodeTimestamp timestamp);
 
   // Deletes the buffers from this range starting at |timestamp|, exclusive if
@@ -133,6 +137,7 @@ class SourceBufferRange {
   // Resets |next_buffer_index_| if the buffer at |next_buffer_index_| was
   // deleted, and deletes the |keyframe_map_| entries for the buffers that
   // were removed.
+  // |highest_frame_| is updated, if necessary.
   // |deleted_buffers| contains the buffers that were deleted from this range,
   // starting at the buffer that had been at |next_buffer_index_|.
   // Returns true if everything in the range was deleted. Otherwise
@@ -145,6 +150,7 @@ class SourceBufferRange {
   // Deletes a GOP from the front or back of the range and moves these
   // buffers into |deleted_buffers|. Returns the number of bytes deleted from
   // the range (i.e. the size in bytes of |deleted_buffers|).
+  // |highest_frame_| is updated, if necessary.
   // This range must NOT be empty when these methods are called.
   // The GOP being deleted must NOT contain the next buffer position.
   size_t DeleteGOPFromFront(BufferQueue* deleted_buffers);
@@ -203,6 +209,12 @@ class SourceBufferRange {
   // is unset.
   DecodeTimestamp GetBufferedEndTimestamp() const;
 
+  // TODO(wolenetz): Remove in favor of
+  // GetEndTimestamp()/GetBufferedEndTimestamp() once they report in PTS, not
+  // DTS. See https://crbug.com/718641.
+  void GetRangeEndTimesForTesting(base::TimeDelta* highest_pts,
+                                  base::TimeDelta* end_time) const;
+
   // Gets the timestamp for the keyframe that is after |timestamp|. If
   // there isn't a keyframe in the range after |timestamp| then kNoTimestamp
   // is returned. If |timestamp| is in the "gap" between the value  returned by
@@ -232,12 +244,6 @@ class SourceBufferRange {
   // the beginning of |range|.
   bool EndOverlaps(const SourceBufferRange& range) const;
 
-  // Returns true if |decode_timestamp| is allowed in this range as the decode
-  // timestamp of the next buffer in decode sequence at or after the last buffer
-  // in |buffers_|'s decode timestamp.  |buffers_| must not be empty. Uses
-  // |gap_policy_| to potentially allow gaps.
-  bool IsNextInDecodeSequence(DecodeTimestamp decode_timestamp) const;
-
   // Adds all buffers which overlap [start, end) to the end of |buffers|.  If
   // no buffers exist in the range returns false, true otherwise.
   bool GetBuffersInRange(DecodeTimestamp start, DecodeTimestamp end,
@@ -246,6 +252,9 @@ class SourceBufferRange {
   size_t size_in_bytes() const { return size_in_bytes_; }
 
  private:
+  // Friend of private is only for IsNextInPresentationSequence testing.
+  friend class SourceBufferStreamTest;
+
   typedef std::map<DecodeTimestamp, int> KeyframeMap;
 
   // Called during AppendBuffersToEnd to adjust estimated duration at the
@@ -294,6 +303,48 @@ class SourceBufferRange {
   // Returns the approximate duration of a buffer in this range.
   base::TimeDelta GetApproximateDuration() const;
 
+  // Updates |highest_frame_| if |new_buffer| has a higher PTS than
+  // |highest_frame_| or if the range was previously empty.
+  void UpdateEndTime(const scoped_refptr<StreamParserBuffer>& new_buffer);
+
+  // Updates |highest_frame_| to be the frame with highest PTS in the last GOP
+  // in this range.  If there are no buffers in this range, resets
+  // |highest_frame_|.
+  // Normally, incremental additions to this range should just use
+  // UpdateEndTime(). When removing buffers from this range (which could be out
+  // of order presentation vs decode order), inspecting the last buffer in
+  // decode order of this range can be insufficient to determine the correct
+  // presentation end time of this range. Hence this helper method.
+  void UpdateEndTimeUsingLastGOP();
+
+  // Returns true if |timestamp| is allowed in this range as the timestamp of
+  // the next buffer in presentation sequence at or after |highest_frame_|.
+  // |buffers_| must not be empty, and |highest_frame_| must not be nullptr.
+  // Uses |gap_policy_| to potentially allow gaps.
+  // TODO(wolenetz): Switch to using this helper in CanAppendBuffersToEnd(),
+  // etc, when switching to managing ranges by their presentation interval, and
+  // not necessarily just their decode times. See https://crbug.com/718641. Once
+  // being used and not just tested, the following also applies:
+  // Due to potential for out-of-order decode vs presentation time, this method
+  // should only be used to determine adjacency of keyframes with the end of
+  // |buffers_|.
+  bool IsNextInPresentationSequence(base::TimeDelta timestamp) const;
+
+  // Returns true if |decode_timestamp| is allowed in this range as the decode
+  // timestamp of the next buffer in decode sequence at or after the last buffer
+  // in |buffers_|'s decode timestamp.  |buffers_| must not be empty. Uses
+  // |gap_policy_| to potentially allow gaps.
+  // TODO(wolenetz): Switch to using this helper in CanAppendBuffersToEnd(),
+  // etc, appropriately when switching to managing ranges by their presentation
+  // interval between GOPs, and by their decode sequence within GOPs. See
+  // https://crbug.com/718641. Once that's done, the following also would apply:
+  // Due to potential for out-of-order decode vs presentation time, this method
+  // should only be used to determine adjacency of non-keyframes with the end of
+  // |buffers_|, when determining if a non-keyframe with |decode_timestamp|
+  // continues the decode sequence of the coded frame group at the end of
+  // |buffers_|.
+  bool IsNextInDecodeSequence(DecodeTimestamp decode_timestamp) const;
+
   // Keeps track of whether gaps are allowed.
   const GapPolicy gap_policy_;
 
@@ -323,6 +374,14 @@ class SourceBufferRange {
   // potentially multiple muxed streams, the coded frame group start timestamp
   // for the new range.
   DecodeTimestamp range_start_time_;
+
+  // Caches the buffer, if any, with the highest PTS currently in |buffers_|.
+  // This is nullptr if this range is empty.
+  // This is useful in determining range membership and adjacency.
+  // TODO(wolenetz): Switch to using this in CanAppendBuffersToEnd(), etc., when
+  // switching to managing ranges by their presentation interval between GOPs,
+  // and by their decode sequence within GOPs. See https://crbug.com/718641.
+  scoped_refptr<StreamParserBuffer> highest_frame_;
 
   // Called to get the largest interbuffer distance seen so far in the stream.
   InterbufferDistanceCB interbuffer_distance_cb_;

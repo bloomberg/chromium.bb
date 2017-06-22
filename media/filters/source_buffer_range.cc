@@ -62,7 +62,9 @@ void SourceBufferRange::AppendBuffersToEnd(
        itr != new_buffers.end();
        ++itr) {
     DCHECK((*itr)->GetDecodeTimestamp() != kNoDecodeTimestamp());
+
     buffers_.push_back(*itr);
+    UpdateEndTime(*itr);
     size_in_bytes_ += (*itr)->data_size();
 
     if ((*itr)->is_key_frame()) {
@@ -93,6 +95,11 @@ void SourceBufferRange::AdjustEstimatedDurationForNewAppend(
                << ") from previous range-end with derived duration ("
                << timestamp_delta << ").";
       last_appended_buffer->set_duration(timestamp_delta);
+      // To update the range end time here, there is no need to inspect an
+      // entire GOP or even reset the currently tracked |highest_frame_| because
+      // estimated durations should only occur in WebM, which doesn't contain
+      // out-of-order presentation/decode sequences.
+      CHECK_EQ(last_appended_buffer.get(), highest_frame_.get());
     }
   }
 }
@@ -187,8 +194,9 @@ std::unique_ptr<SourceBufferRange> SourceBufferRange::SplitRange(
       GetFirstKeyframeAt(timestamp, false);
 
   // If there is no keyframe after |timestamp|, we can't split the range.
-  if (new_beginning_keyframe == keyframe_map_.end())
+  if (new_beginning_keyframe == keyframe_map_.end()) {
     return NULL;
+  }
 
   // Remove the data beginning at |keyframe_index| from |buffers_| and save it
   // into |removed_buffers|.
@@ -209,6 +217,7 @@ std::unique_ptr<SourceBufferRange> SourceBufferRange::SplitRange(
 
   keyframe_map_.erase(new_beginning_keyframe, keyframe_map_.end());
   FreeBufferRange(starting_point, buffers_.end());
+  UpdateEndTimeUsingLastGOP();
 
   // Create a new range with |removed_buffers|.
   std::unique_ptr<SourceBufferRange> split_range =
@@ -324,8 +333,13 @@ size_t SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
   }
 
   // Invalidate range start time if we've deleted the first buffer of the range.
-  if (buffers_deleted > 0)
+  if (buffers_deleted > 0) {
     range_start_time_ = kNoDecodeTimestamp();
+    // Reset the range end time tracking if there are no more buffers in the
+    // range.
+    if (buffers_.empty())
+      highest_frame_ = nullptr;
+  }
 
   return total_bytes_deleted;
 }
@@ -357,6 +371,8 @@ size_t SourceBufferRange::DeleteGOPFromBack(BufferQueue* deleted_buffers) {
     deleted_buffers->push_front(buffers_.back());
     buffers_.pop_back();
   }
+
+  UpdateEndTimeUsingLastGOP();
 
   return total_bytes_deleted;
 }
@@ -481,6 +497,8 @@ bool SourceBufferRange::TruncateAt(
 
   // Remove everything from |starting_point| onward.
   FreeBufferRange(starting_point, buffers_.end());
+
+  UpdateEndTimeUsingLastGOP();
   return buffers_.empty();
 }
 
@@ -601,6 +619,20 @@ DecodeTimestamp SourceBufferRange::GetBufferedEndTimestamp() const {
   return GetEndTimestamp() + duration;
 }
 
+void SourceBufferRange::GetRangeEndTimesForTesting(
+    base::TimeDelta* highest_pts,
+    base::TimeDelta* end_time) const {
+  if (highest_frame_) {
+    *highest_pts = highest_frame_->timestamp();
+    *end_time = *highest_pts + highest_frame_->duration();
+    DCHECK_NE(*highest_pts, kNoTimestamp);
+    DCHECK_NE(*end_time, kNoTimestamp);
+    return;
+  }
+
+  *highest_pts = *end_time = kNoTimestamp;
+}
+
 DecodeTimestamp SourceBufferRange::NextKeyframeTimestamp(
     DecodeTimestamp timestamp) {
   DCHECK(!keyframe_map_.empty());
@@ -644,6 +676,71 @@ base::TimeDelta SourceBufferRange::GetApproximateDuration() const {
   base::TimeDelta max_interbuffer_distance = interbuffer_distance_cb_.Run();
   DCHECK(max_interbuffer_distance != kNoTimestamp);
   return max_interbuffer_distance;
+}
+
+void SourceBufferRange::UpdateEndTime(
+    const scoped_refptr<StreamParserBuffer>& new_buffer) {
+  base::TimeDelta timestamp = new_buffer->timestamp();
+  base::TimeDelta duration = new_buffer->duration();
+  DVLOG(1) << __func__ << " timestamp=" << timestamp
+           << ", duration=" << duration;
+  DCHECK_NE(timestamp, kNoTimestamp);
+  DCHECK_GE(timestamp, base::TimeDelta());
+  DCHECK_GE(duration, base::TimeDelta());
+
+  if (!highest_frame_) {
+    DVLOG(1) << "Updating range end time from <empty> to " << timestamp << ", "
+             << timestamp + duration;
+    highest_frame_ = new_buffer;
+    return;
+  }
+
+  if (highest_frame_->timestamp() < timestamp ||
+      (highest_frame_->timestamp() == timestamp &&
+       highest_frame_->duration() <= duration)) {
+    DVLOG(1) << "Updating range end time from " << highest_frame_->timestamp()
+             << ", " << highest_frame_->timestamp() + highest_frame_->duration()
+             << " to " << timestamp << ", " << timestamp + duration;
+    highest_frame_ = new_buffer;
+  }
+}
+
+void SourceBufferRange::UpdateEndTimeUsingLastGOP() {
+  if (buffers_.empty()) {
+    DVLOG(1) << __func__ << " Empty range, resetting range end";
+    highest_frame_ = nullptr;
+    return;
+  }
+
+  highest_frame_ = nullptr;
+
+  KeyframeMap::const_iterator last_gop = keyframe_map_.end();
+  CHECK_GT(keyframe_map_.size(), 0u);
+  --last_gop;
+
+  // Iterate through the frames of the last GOP in this range, finding the
+  // frame with the highest PTS.
+  for (BufferQueue::const_iterator buffer_itr =
+           buffers_.begin() + (last_gop->second - keyframe_map_index_base_);
+       buffer_itr != buffers_.end(); ++buffer_itr) {
+    UpdateEndTime(*buffer_itr);
+  }
+
+  DVLOG(1) << __func__ << " Updated range end time to "
+           << highest_frame_->timestamp() << ", "
+           << highest_frame_->timestamp() + highest_frame_->duration();
+}
+
+bool SourceBufferRange::IsNextInPresentationSequence(
+    base::TimeDelta timestamp) const {
+  DCHECK_NE(timestamp, kNoTimestamp);
+  CHECK(!buffers_.empty());
+  base::TimeDelta highest_timestamp = highest_frame_->timestamp();
+  DCHECK_NE(highest_timestamp, kNoTimestamp);
+  return (highest_timestamp == timestamp ||
+          (highest_timestamp < timestamp &&
+           (gap_policy_ == ALLOW_GAPS ||
+            timestamp <= highest_timestamp + GetFudgeRoom())));
 }
 
 bool SourceBufferRange::IsNextInDecodeSequence(
