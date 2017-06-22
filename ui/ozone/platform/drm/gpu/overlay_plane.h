@@ -56,6 +56,7 @@ struct OverlayPlane {
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;
+  // TODO(dshwang): remove unused |processing_callback|. crbug.com/683347
   ProcessBufferCallback processing_callback;
 };
 
