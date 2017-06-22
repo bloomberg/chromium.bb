@@ -108,6 +108,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   // Maintains a map of service_manager::Identity -> pid for registered clients.
   std::unique_ptr<ProcessMap> process_map_;
 
+  uint64_t next_dump_id_;
+
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(CoordinatorImpl);
 };
