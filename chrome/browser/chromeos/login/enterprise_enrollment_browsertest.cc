@@ -319,8 +319,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory credentials. Verifies that the AuthpolicyClient
 // calls us back with the correct realm.
+// TODO(crbug.com/735621): Flaky.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestActiveDirectoryEnrollment_Success) {
+                       DISABLED_TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SetupActiveDirectoryJoin();
@@ -349,8 +350,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
+// TODO(crbug.com/735621): Flaky.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestActiveDirectoryEnrollment_UIErrors) {
+                       DISABLED_TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   SetupActiveDirectoryJoin();
   SubmitEnrollmentCredentials();
