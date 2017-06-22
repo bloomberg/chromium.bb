@@ -1629,6 +1629,11 @@ split_static_library("ui") {
       "//components/payments/core",
       "//services/ui/public/cpp/input_devices",
     ]
+
+    if (use_aura) {
+      deps += [ "//components/ui_devtools/views" ]
+    }
+
     allow_circular_includes_from += [ "//chrome/browser/ui/views" ]
 
     if (enable_extensions) {
