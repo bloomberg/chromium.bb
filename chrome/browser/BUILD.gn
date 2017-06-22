@@ -335,8 +335,6 @@ split_static_library("browser") {
     "domain_reliability/service_factory.h",
     "doodle/doodle_service_factory.cc",
     "doodle/doodle_service_factory.h",
-    "download/all_download_item_notifier.cc",
-    "download/all_download_item_notifier.h",
     "download/chrome_download_manager_delegate.cc",
     "download/chrome_download_manager_delegate.h",
     "download/download_confirmation_reason.h",

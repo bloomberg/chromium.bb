@@ -15,13 +15,13 @@
 #include "base/time/time.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_query.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/all_download_item_notifier.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -354,7 +354,7 @@ void DownloadsListTracker::Init() {
       GetMainNotifierManager()->GetBrowserContext());
   if (profile->IsOffTheRecord()) {
     Profile* original_profile = profile->GetOriginalProfile();
-    original_notifier_.reset(new AllDownloadItemNotifier(
+    original_notifier_.reset(new content::AllDownloadItemNotifier(
         BrowserContext::GetDownloadManager(original_profile), this));
   }
 

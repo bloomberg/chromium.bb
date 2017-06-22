@@ -22,6 +22,7 @@ source_set("browser_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
+    "all_download_item_notifier.h",
     "android/android_overlay_provider.h",
     "android/browser_media_player_manager_register.cc",
     "android/browser_media_player_manager_register.h",

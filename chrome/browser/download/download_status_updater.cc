@@ -92,7 +92,7 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
 
 void DownloadStatusUpdater::AddManager(content::DownloadManager* manager) {
   notifiers_.push_back(
-      base::MakeUnique<AllDownloadItemNotifier>(manager, this));
+      base::MakeUnique<content::AllDownloadItemNotifier>(manager, this));
   content::DownloadManager::DownloadVector items;
   manager->GetAllDownloads(&items);
   for (auto* item : items)

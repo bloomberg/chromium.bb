@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/all_download_item_notifier.h"
+#include "content/public/browser/all_download_item_notifier.h"
 
 #include "base/macros.h"
 #include "content/public/test/mock_download_item.h"
@@ -14,22 +14,26 @@ using testing::NiceMock;
 using testing::SetArgPointee;
 using testing::_;
 
+namespace content {
 namespace {
 
 class MockNotifierObserver : public AllDownloadItemNotifier::Observer {
  public:
-  MockNotifierObserver() {
-  }
+  MockNotifierObserver() {}
   virtual ~MockNotifierObserver() {}
 
-  MOCK_METHOD2(OnDownloadCreated, void(
-      content::DownloadManager* manager, content::DownloadItem* item));
-  MOCK_METHOD2(OnDownloadUpdated, void(
-      content::DownloadManager* manager, content::DownloadItem* item));
-  MOCK_METHOD2(OnDownloadOpened, void(
-      content::DownloadManager* manager, content::DownloadItem* item));
-  MOCK_METHOD2(OnDownloadRemoved, void(
-      content::DownloadManager* manager, content::DownloadItem* item));
+  MOCK_METHOD2(OnDownloadCreated,
+               void(content::DownloadManager* manager,
+                    content::DownloadItem* item));
+  MOCK_METHOD2(OnDownloadUpdated,
+               void(content::DownloadManager* manager,
+                    content::DownloadItem* item));
+  MOCK_METHOD2(OnDownloadOpened,
+               void(content::DownloadManager* manager,
+                    content::DownloadItem* item));
+  MOCK_METHOD2(OnDownloadRemoved,
+               void(content::DownloadManager* manager,
+                    content::DownloadItem* item));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNotifierObserver);
@@ -38,14 +42,11 @@ class MockNotifierObserver : public AllDownloadItemNotifier::Observer {
 class AllDownloadItemNotifierTest : public testing::Test {
  public:
   AllDownloadItemNotifierTest()
-    : download_manager_(new content::MockDownloadManager) {
-  }
+      : download_manager_(new content::MockDownloadManager) {}
 
   virtual ~AllDownloadItemNotifierTest() {}
 
-  content::MockDownloadManager& manager() {
-    return *download_manager_.get();
-  }
+  content::MockDownloadManager& manager() { return *download_manager_.get(); }
 
   content::MockDownloadItem& item() { return item_; }
 
@@ -61,13 +62,11 @@ class AllDownloadItemNotifierTest : public testing::Test {
 
   void SetNotifier() {
     EXPECT_CALL(*download_manager_.get(), AddObserver(_));
-    notifier_.reset(new AllDownloadItemNotifier(
-        download_manager_.get(), &observer_));
+    notifier_.reset(
+        new AllDownloadItemNotifier(download_manager_.get(), &observer_));
   }
 
-  void ClearNotifier() {
-    notifier_.reset();
-  }
+  void ClearNotifier() { notifier_.reset(); }
 
  private:
   NiceMock<content::MockDownloadItem> item_;
@@ -80,12 +79,10 @@ class AllDownloadItemNotifierTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(AllDownloadItemNotifierTest,
-    AllDownloadItemNotifierTest_0) {
+TEST_F(AllDownloadItemNotifierTest, AllDownloadItemNotifierTest_0) {
   content::DownloadManager::DownloadVector items;
   items.push_back(&item());
-  EXPECT_CALL(manager(), GetAllDownloads(_))
-    .WillOnce(SetArgPointee<0>(items));
+  EXPECT_CALL(manager(), GetAllDownloads(_)).WillOnce(SetArgPointee<0>(items));
   SetNotifier();
 
   EXPECT_CALL(observer(), OnDownloadUpdated(&manager(), &item()));
@@ -101,17 +98,17 @@ TEST_F(AllDownloadItemNotifierTest,
   ClearNotifier();
 }
 
-TEST_F(AllDownloadItemNotifierTest,
-    AllDownloadItemNotifierTest_1) {
+TEST_F(AllDownloadItemNotifierTest, AllDownloadItemNotifierTest_1) {
   EXPECT_CALL(manager(), GetAllDownloads(_));
   SetNotifier();
 
   EXPECT_CALL(observer(), OnDownloadCreated(&manager(), &item()));
-  NotifierAsManagerObserver()->OnDownloadCreated(
-      &manager(), &item());
+  NotifierAsManagerObserver()->OnDownloadCreated(&manager(), &item());
 
   EXPECT_CALL(manager(), RemoveObserver(NotifierAsManagerObserver()));
   NotifierAsManagerObserver()->ManagerGoingDown(&manager());
 
   ClearNotifier();
 }
+
+}  // namespace content

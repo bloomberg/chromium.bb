@@ -3056,7 +3056,6 @@ test("unit_tests") {
     "../browser/data_use_measurement/chrome_data_use_ascriber_service_unittest.cc",
     "../browser/data_use_measurement/chrome_data_use_ascriber_unittest.cc",
     "../browser/devtools/devtools_network_controller_unittest.cc",
-    "../browser/download/all_download_item_notifier_unittest.cc",
     "../browser/download/chrome_download_manager_delegate_unittest.cc",
     "../browser/download/download_history_unittest.cc",
     "../browser/download/download_item_model_unittest.cc",
