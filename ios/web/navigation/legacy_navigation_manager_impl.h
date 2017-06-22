@@ -56,6 +56,7 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   GetTransientURLRewriters() override;
   void RemoveTransientURLRewriters() override;
   int GetIndexForOffset(int offset) const override;
+  int GetPreviousItemIndex() const override;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;
@@ -93,7 +94,6 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
 
   // NavigationManagerImpl methods used by SessionStorageBuilder.
   NavigationItemImpl* GetNavigationItemImplAtIndex(size_t index) const override;
-  size_t GetPreviousItemIndex() const override;
 
   // Returns true if the PageTransition for the underlying navigation item at
   // |index| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.

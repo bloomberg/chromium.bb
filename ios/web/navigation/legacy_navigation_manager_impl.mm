@@ -456,8 +456,8 @@ LegacyNavigationManagerImpl::GetLastCommittedNonAppSpecificItem() const {
   return nullptr;
 }
 
-size_t LegacyNavigationManagerImpl::GetPreviousItemIndex() const {
-  return [session_controller_ previousItemIndex];
+int LegacyNavigationManagerImpl::GetPreviousItemIndex() const {
+  return base::checked_cast<int>([session_controller_ previousItemIndex]);
 }
 
 }  // namespace web

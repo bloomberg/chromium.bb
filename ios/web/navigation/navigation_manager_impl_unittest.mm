@@ -103,6 +103,7 @@ TEST_P(NavigationManagerTest, EmptyManager) {
   EXPECT_FALSE(navigation_manager()->GetPendingItem());
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_EQ(-1, navigation_manager()->GetIndexForOffset(0));
+  EXPECT_EQ(-1, navigation_manager()->GetPreviousItemIndex());
 }
 
 // Tests that GetPendingItemIndex() returns -1 if there is no pending entry.
