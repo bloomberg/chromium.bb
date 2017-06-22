@@ -7,12 +7,10 @@
 
 #import "remoting/client/chromoting_client_runtime.h"
 
-#include "base/memory/weak_ptr.h"
-#include "remoting/base/oauth_token_getter.h"
-
 @class HostInfo;
 @class UserInfo;
-@class RemotingAuthentication;
+
+@protocol RemotingAuthentication;
 
 // Eventing related keys:
 
@@ -30,13 +28,11 @@ extern NSString* const kUserInfo;
 @interface RemotingService : NSObject
 
 // Access to the singleton shared instance from this method.
-+ (RemotingService*)SharedInstance;
++ (RemotingService*)instance;
 
 // Start a request to fetch the host list. This will produce an notification on
 // |kHostsDidUpdate| when a new host is ready.
 - (void)requestHostListFetch;
-
-@property(nonatomic, readonly) RemotingAuthentication* authentication;
 
 // Returns the current host list.
 @property(nonatomic, readonly) NSArray<HostInfo*>* hosts;
@@ -44,6 +40,10 @@ extern NSString* const kUserInfo;
 // The Chromoting Client Runtime, this holds the threads and other shared
 // resources used by the Chromoting clients
 @property(nonatomic, readonly) remoting::ChromotingClientRuntime* runtime;
+
+// This must be set immediately after the authentication object is created. It
+// can only be set once.
+@property(nonatomic) id<RemotingAuthentication> authentication;
 
 @end
 

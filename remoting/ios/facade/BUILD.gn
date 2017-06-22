@@ -15,7 +15,8 @@ source_set("facade") {
     "ios_client_runtime_delegate.h",
     "ios_client_runtime_delegate.mm",
     "remoting_authentication.h",
-    "remoting_authentication.mm",
+    "remoting_oauth_authentication.h",
+    "remoting_oauth_authentication.mm",
     "remoting_service.h",
     "remoting_service.mm",
   ]

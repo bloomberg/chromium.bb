@@ -14,6 +14,8 @@
 @property(nonatomic, copy) NSString* userId;
 @property(nonatomic, copy) NSString* userFullName;
 @property(nonatomic, copy) NSString* userEmail;
+// TODO(yuweih): SSO doesn't use a refresh token and it should not be used to
+// decide whether the UserInfo is authenticated.
 @property(nonatomic, copy) NSString* refreshToken;
 
 // Convert a json blob into a |UserInfo| object. Most useful for test.

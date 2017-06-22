@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace remoting {
 
@@ -44,14 +45,13 @@ void IosClientRuntimeDelegate::RequestAuthTokenForLogger() {
                    base::Unretained(this)));
     return;
   }
-  if ([[RemotingService SharedInstance].authentication.user isAuthenticated]) {
-    [[RemotingService SharedInstance].authentication
-        callbackWithAccessToken:base::BindBlockArc(^(
-                                    remoting::OAuthTokenGetter::Status status,
-                                    const std::string& user_email,
-                                    const std::string& access_token) {
-          if (status == remoting::OAuthTokenGetter::Status::SUCCESS) {
+  if ([RemotingService.instance.authentication.user isAuthenticated]) {
+    [RemotingService.instance.authentication
+        callbackWithAccessToken:^(RemotingAuthenticationStatus status,
+                                  NSString* userEmail, NSString* accessToken) {
+          if (status == RemotingAuthenticationStatusSuccess) {
             // Set the new auth token for the log writer on the network thread.
+            std::string access_token = base::SysNSStringToUTF8(accessToken);
             runtime_->network_task_runner()->PostTask(
                 FROM_HERE, base::BindBlockArc(^{
                   runtime_->log_writer()->SetAuthToken(access_token);
@@ -60,7 +60,7 @@ void IosClientRuntimeDelegate::RequestAuthTokenForLogger() {
             LOG(ERROR) << "Failed to fetch access token for log writer. ("
                        << status << ")";
           }
-        })];
+        }];
   }
 }
 

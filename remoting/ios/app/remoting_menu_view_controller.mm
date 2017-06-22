@@ -203,7 +203,7 @@ std::string GetAuthorizationCodeUri() {
 }
 
 - (void)didTapLogout:(id)sender {
-  [[RemotingService SharedInstance].authentication logout];
+  [RemotingService.instance.authentication logout];
 }
 
 @end
