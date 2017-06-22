@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/views/chrome_cleaner_dialog_win.h"
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -13,16 +17,37 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::NiceMock;
+using ::testing::Return;
+
 namespace {
+
+class MockChromeCleanerDialogController
+    : public safe_browsing::ChromeCleanerDialogController {
+ public:
+  MOCK_METHOD0(DialogShown, void());
+  MOCK_METHOD0(Accept, void());
+  MOCK_METHOD0(Cancel, void());
+  MOCK_METHOD0(Close, void());
+  MOCK_METHOD0(DetailsButtonClicked, void());
+};
 
 class ChromeCleanerDialogTest : public DialogBrowserTest {
  public:
-  ChromeCleanerDialogTest() {}
+  ChromeCleanerDialogTest()
+      : mock_dialog_controller_(
+            base::MakeUnique<NiceMock<MockChromeCleanerDialogController>>()) {}
 
   void ShowDialog(const std::string& name) override {
-    chrome::ShowChromeCleanerPrompt(
-        browser(), new safe_browsing::ChromeCleanerDialogController());
+    chrome::ShowChromeCleanerPrompt(browser(), mock_dialog_controller_.get());
   }
+
+ protected:
+  // Since the DialogBrowserTest can be run interactively, we use NiceMock here
+  // to suppress warnings about uninteresting calls.
+  std::unique_ptr<NiceMock<MockChromeCleanerDialogController>>
+      mock_dialog_controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialogTest);

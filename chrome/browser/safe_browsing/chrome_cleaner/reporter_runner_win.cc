@@ -35,6 +35,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
@@ -577,12 +579,34 @@ void DisplaySRTPromptForTesting(const base::FilePath& download_path) {
 
 namespace {
 
+void ScanAndPrompt(const SwReporterInvocation& reporter_invocation) {
+  if (g_testing_delegate_) {
+    g_testing_delegate_->TriggerPrompt();
+    return;
+  }
+
+  ChromeCleanerController* cleaner_controller =
+      ChromeCleanerController::GetInstance();
+
+  if (cleaner_controller->state() != ChromeCleanerController::State::kIdle)
+    return;
+
+  cleaner_controller->Scan(reporter_invocation);
+  DCHECK_EQ(ChromeCleanerController::State::kScanning,
+            cleaner_controller->state());
+
+  // The dialog controller manages its own lifetime. If the controller enters
+  // the kInfected state, the dialog controller will show the chrome cleaner
+  // dialog to the user.
+  new ChromeCleanerDialogControllerImpl(cleaner_controller);
+}
+
 // Try to fetch the SRT, and on success, show the prompt to run it.
 void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (g_testing_delegate_) {
-    g_testing_delegate_->TriggerPrompt(browser, reporter_version.GetString());
+    g_testing_delegate_->TriggerPrompt();
     return;
   }
   Profile* profile = browser->profile();
@@ -750,7 +774,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
       return;
     }
 
-    if (!IsInSRTPromptFieldTrialGroups()) {
+    if (!base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature) &&
+        !IsInSRTPromptFieldTrialGroups()) {
       // Knowing about disabled field trial is more important than reporter not
       // finding anything to remove, so check this case first.
       RecordReporterStepHistogram(SW_REPORTER_NO_PROMPT_FIELD_TRIAL);
@@ -760,6 +785,14 @@ class ReporterRunner : public chrome::BrowserListObserver {
     if (exit_code != chrome_cleaner::kSwReporterPostRebootCleanupNeeded &&
         exit_code != chrome_cleaner::kSwReporterCleanupNeeded) {
       RecordReporterStepHistogram(SW_REPORTER_NO_PROMPT_NEEDED);
+      return;
+    }
+
+    // The kInBrowserCleanerUI feature takes precedence over the
+    // SRTPromptFieldTrial. If it is enabled, no attempt will be made to show
+    // the old SRT prompt.
+    if (base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature)) {
+      ScanAndPrompt(finished_invocation);
       return;
     }
 

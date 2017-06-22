@@ -149,7 +149,12 @@ ChromeCleanerController* ChromeCleanerController::GetInstance() {
 bool ChromeCleanerController::ShouldShowCleanupInSettingsUI() {
   // Short-circuit if the instance doesn't exist to avoid creating it during
   // navigation to chrome://settings.
-  return g_instance_exists && GetInstance()->state() == State::kInfected;
+  if (!g_instance_exists)
+    return false;
+
+  State state = GetInstance()->state();
+  return state == State::kInfected || state == State::kCleaning ||
+         state == State::kRebootRequired;
 }
 
 void ChromeCleanerController::SetDelegateForTesting(
@@ -200,10 +205,11 @@ void ChromeCleanerController::ReplyWithUserResponse(
     Profile* profile,
     UserResponse user_response) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(prompt_user_callback_);
 
   if (state() != State::kInfected)
     return;
+
+  DCHECK(prompt_user_callback_);
 
   PromptAcceptance acceptance = PromptAcceptance::DENIED;
   State new_state = State::kIdle;
