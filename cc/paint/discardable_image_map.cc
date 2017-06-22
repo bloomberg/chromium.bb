@@ -26,10 +26,13 @@ DiscardableImageMap::BeginGeneratingMetadata(const gfx::Size& bounds) {
 }
 
 void DiscardableImageMap::EndGeneratingMetadata() {
-  images_rtree_.Build(all_images_,
-                      [](const std::pair<DrawImage, gfx::Rect>& image) {
-                        return image.second;
-                      });
+  // TODO(vmpstr): We should be able to store the payload right on the rtree.
+  images_rtree_.Build(
+      all_images_,
+      [](const std::vector<std::pair<DrawImage, gfx::Rect>>& items,
+         size_t index) { return items[index].second; },
+      [](const std::vector<std::pair<DrawImage, gfx::Rect>>& items,
+         size_t index) { return index; });
 }
 
 void DiscardableImageMap::GetDiscardableImagesInRect(

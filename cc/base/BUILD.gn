@@ -40,7 +40,6 @@ component("base") {
     "reverse_spiral_iterator.h",
     "rolling_time_delta_history.cc",
     "rolling_time_delta_history.h",
-    "rtree.cc",
     "rtree.h",
     "simple_enclosed_region.cc",
     "simple_enclosed_region.h",

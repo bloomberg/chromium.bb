@@ -19,7 +19,7 @@ TEST(RTreeTest, ReserveNodesDoesntDcheck) {
     std::vector<gfx::Rect> rects;
     for (int j = 0; j < i; ++j)
       rects.push_back(gfx::Rect(j, i, 1, 1));
-    RTree rtree;
+    RTree<size_t> rtree;
     rtree.Build(rects);
   }
 }
@@ -32,7 +32,7 @@ TEST(RTreeTest, NoOverlap) {
     }
   }
 
-  RTree rtree;
+  RTree<size_t> rtree;
   rtree.Build(rects);
 
   std::vector<size_t> results = rtree.Search(gfx::Rect(0, 0, 50, 50));
@@ -61,7 +61,7 @@ TEST(RTreeTest, Overlap) {
     }
   }
 
-  RTree rtree;
+  RTree<size_t> rtree;
   rtree.Build(rects);
 
   std::vector<size_t> results = rtree.Search(gfx::Rect(0, 0, 1, 1));
@@ -95,7 +95,7 @@ TEST(RTreeTest, SortedResults) {
     }
   }
 
-  RTree rtree;
+  RTree<size_t> rtree;
   rtree.Build(rects);
 
   for (int y = 0; y < 50; ++y) {
@@ -108,7 +108,7 @@ TEST(RTreeTest, SortedResults) {
 }
 
 TEST(RTreeTest, GetBoundsEmpty) {
-  RTree rtree;
+  RTree<size_t> rtree;
   EXPECT_EQ(gfx::Rect(), rtree.GetBounds());
 }
 
@@ -117,7 +117,7 @@ TEST(RTreeTest, GetBoundsNonOverlapping) {
   rects.push_back(gfx::Rect(5, 6, 7, 8));
   rects.push_back(gfx::Rect(11, 12, 13, 14));
 
-  RTree rtree;
+  RTree<size_t> rtree;
   rtree.Build(rects);
 
   EXPECT_EQ(gfx::Rect(5, 6, 19, 20), rtree.GetBounds());
@@ -128,7 +128,7 @@ TEST(RTreeTest, GetBoundsOverlapping) {
   rects.push_back(gfx::Rect(0, 0, 10, 10));
   rects.push_back(gfx::Rect(5, 5, 5, 5));
 
-  RTree rtree;
+  RTree<size_t> rtree;
   rtree.Build(rects);
 
   EXPECT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
@@ -141,7 +141,7 @@ TEST(RTreeTest, BuildAfterReset) {
   rects.push_back(gfx::Rect(0, 0, 10, 10));
   rects.push_back(gfx::Rect(0, 0, 10, 10));
 
-  RTree rtree;
+  RTree<size_t> rtree;
   rtree.Build(rects);
 
   // Resetting should give the same as an empty rtree.
@@ -151,6 +151,33 @@ TEST(RTreeTest, BuildAfterReset) {
   // Should be able to rebuild from a reset rtree.
   rtree.Build(rects);
   EXPECT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
+}
+
+TEST(RTreeTest, Payload) {
+  using Container = std::vector<std::pair<gfx::Rect, float>>;
+  Container data;
+  data.emplace_back(gfx::Rect(10, 10, 10, 10), 40.f);
+  data.emplace_back(gfx::Rect(0, 0, 10, 10), 10.f);
+  data.emplace_back(gfx::Rect(0, 10, 10, 10), 30.f);
+  data.emplace_back(gfx::Rect(10, 0, 10, 10), 20.f);
+
+  RTree<float> rtree;
+  rtree.Build(
+      data,
+      [](const Container& items, size_t index) { return items[index].first; },
+      [](const Container& items, size_t index) { return items[index].second; });
+
+  auto results = rtree.Search(gfx::Rect(0, 0, 1, 1));
+  ASSERT_EQ(1u, results.size());
+  EXPECT_FLOAT_EQ(10.f, results[0]);
+
+  results = rtree.Search(gfx::Rect(5, 5, 10, 10));
+  ASSERT_EQ(4u, results.size());
+  // Items returned should be in the order they were inserted.
+  EXPECT_FLOAT_EQ(40.f, results[0]);
+  EXPECT_FLOAT_EQ(10.f, results[1]);
+  EXPECT_FLOAT_EQ(30.f, results[2]);
+  EXPECT_FLOAT_EQ(20.f, results[3]);
 }
 
 }  // namespace cc

@@ -34,7 +34,7 @@ class RTreePerfTest : public testing::Test {
     std::vector<gfx::Rect> rects = BuildRects(rect_count);
     timer_.Reset();
     do {
-      RTree rtree;
+      RTree<size_t> rtree;
       rtree.Build(rects);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -53,7 +53,7 @@ class RTreePerfTest : public testing::Test {
     size_t query_index = 0;
 
     std::vector<gfx::Rect> rects = BuildRects(rect_count);
-    RTree rtree;
+    RTree<size_t> rtree;
     rtree.Build(rects);
 
     timer_.Reset();

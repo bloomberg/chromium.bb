@@ -153,7 +153,9 @@ class CC_PAINT_EXPORT DisplayItemList
   // given visual rect with the begin display item's visual rect.
   void GrowCurrentBeginItemVisualRect(const gfx::Rect& visual_rect);
 
-  RTree rtree_;
+  // RTree stores indices into the paint op buffer.
+  // TODO(vmpstr): Update the rtree to store offsets instead.
+  RTree<size_t> rtree_;
   DiscardableImageMap image_map_;
   PaintOpBuffer paint_op_buffer_;
 
