@@ -458,6 +458,11 @@ base::FilePath GetUniquePath(const base::FilePath& path) {
   return unique_path;
 }
 
+void CreateDirectoryIfNeeded(const base::FilePath& path) {
+  if (!base::DirectoryExists(path))
+    base::CreateDirectory(path);
+}
+
 bool PrivetPrintingEnabled() {
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   return true;
@@ -1445,36 +1450,50 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename,
   // Get save location from Download Preferences.
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
       preview_web_contents()->GetBrowserContext());
-  base::FilePath file_path = download_prefs->SaveFilePath();
+  base::FilePath path = download_prefs->SaveFilePath();
   printing::StickySettings* sticky_settings = GetStickySettings();
   sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
+
   // Handle the no prompting case. Like the dialog prompt, this function
   // returns and eventually FileSelected() gets called.
   if (!prompt_user) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(&GetUniquePath,
-                   download_prefs->SaveFilePath().Append(default_filename)),
+        base::Bind(&GetUniquePath, path.Append(default_filename)),
         base::Bind(&PrintPreviewHandler::OnGotUniqueFileName,
                    weak_factory_.GetWeakPtr()));
     return;
   }
 
-  // Otherwise prompt the user.
+  // If the directory is empty there is no reason to create it.
+  if (path.empty()) {
+    OnDirectoryCreated(default_filename);
+    return;
+  }
+
+  // Create the directory to save in if it does not exist.
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&CreateDirectoryIfNeeded, path),
+      base::Bind(&PrintPreviewHandler::OnDirectoryCreated,
+                 weak_factory_.GetWeakPtr(), path.Append(default_filename)));
+}
+
+void PrintPreviewHandler::OnDirectoryCreated(const base::FilePath& path) {
+  // Prompts the user to select the file.
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
+  file_type_info.include_all_files = true;
+  file_type_info.allowed_paths =
+      ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH;
 
   select_file_dialog_ =
       ui::SelectFileDialog::Create(this, nullptr /*policy already checked*/);
   select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-      base::string16(),
-      download_prefs->SaveFilePath().Append(default_filename),
-      &file_type_info,
-      0,
-      base::FilePath::StringType(),
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), path,
+      &file_type_info, 0, base::FilePath::StringType(),
       platform_util::GetTopLevel(preview_web_contents()->GetNativeView()),
       NULL);
 }
