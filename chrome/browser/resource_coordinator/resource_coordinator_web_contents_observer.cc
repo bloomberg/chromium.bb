@@ -4,21 +4,72 @@
 
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 
+#include <utility>
+
+#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
+#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ResourceCoordinatorWebContentsObserver);
+
+bool ResourceCoordinatorWebContentsObserver::ukm_recorder_initialized = false;
 
 ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents) {
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+
   tab_resource_coordinator_ =
       base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          resource_coordinator::CoordinationUnitType::kWebContents);
+          connector, resource_coordinator::CoordinationUnitType::kWebContents);
+
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                           mojo::MakeRequest(&service_callbacks_));
+
+  EnsureUkmRecorderInterface();
+}
+
+// TODO(matthalp) integrate into ResourceCoordinatorService once the UKM mojo
+// interface can be accessed directly within GRC. GRC cannot currently use
+// the UKM mojo inteface directly because of software layering issues
+// (i.e. the UKM mojo interface is only reachable from the content_browser
+// service which cannot be accesses by services in the services/ directory).
+// Instead the ResourceCoordinatorWebContentsObserver is used as it lives
+// within the content_browser service and can initialize the
+// UkmRecorderInterface and pass that interface into GRC through
+// resource_coordinator::mojom::ServiceCallbacks.
+void ResourceCoordinatorWebContentsObserver::EnsureUkmRecorderInterface() {
+  if (ukm_recorder_initialized) {
+    return;
+  }
+
+  service_callbacks_->IsUkmRecorderInterfaceInitialized(base::Bind(
+      &ResourceCoordinatorWebContentsObserver::MaybeSetUkmRecorderInterface,
+      base::Unretained(this)));
+}
+
+void ResourceCoordinatorWebContentsObserver::MaybeSetUkmRecorderInterface(
+    bool ukm_recorder_already_initialized) {
+  if (ukm_recorder_already_initialized) {
+    return;
+  }
+
+  ukm::mojom::UkmRecorderInterfacePtr ukm_recorder_interface;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(content::mojom::kBrowserServiceName,
+                      mojo::MakeRequest(&ukm_recorder_interface));
+  service_callbacks_->SetUkmRecorderInterface(
+      std::move(ukm_recorder_interface));
+  ukm_recorder_initialized = true;
 }
 
 ResourceCoordinatorWebContentsObserver::

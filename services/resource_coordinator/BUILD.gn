@@ -30,10 +30,13 @@ source_set("lib") {
     "memory_instrumentation/process_map.h",
     "resource_coordinator_service.cc",
     "resource_coordinator_service.h",
+    "service_callbacks_impl.cc",
+    "service_callbacks_impl.h",
   ]
 
   public_deps = [
     "//base",
+    "//components/ukm:ukm",
     "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp/standalone_service:standalone_service",

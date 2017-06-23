@@ -4,7 +4,7 @@
 
 #include "components/ukm/public/mojo_ukm_recorder.h"
 
-#include "base/memory/ptr_util.h"
+#include <utility>
 
 namespace ukm {
 

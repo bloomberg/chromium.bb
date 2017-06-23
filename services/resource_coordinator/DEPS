@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/ukm/public",
   "+third_party/smhasher",
   "+services/service_manager/public"
 ]

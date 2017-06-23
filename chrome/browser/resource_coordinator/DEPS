@@ -3,4 +3,5 @@ include_rules = [
   "+ash/multi_profile_uma.h",
   "+ash/shell.h",
   "+ash/shell_port.h",
+  "+services/resource_coordinator/public",
 ]

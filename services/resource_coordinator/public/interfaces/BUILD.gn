@@ -13,11 +13,13 @@ mojom("interfaces_internal") {
     "events.mojom",
     "memory_instrumentation/constants.mojom",
     "memory_instrumentation/memory_instrumentation.mojom",
+    "service_callbacks.mojom",
     "service_constants.mojom",
     "tracing/tracing.mojom",
   ]
 
   public_deps = [
+    "//components/ukm/public/interfaces:interfaces",
     "//mojo/common:common_custom_types",
   ]
 
