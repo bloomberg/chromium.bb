@@ -2741,14 +2741,14 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
   // [PutForwards] => location.href
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "location");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "location")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "location")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "href"), v8Value).To(&result))
     return;
   if (!result)
     return;
@@ -2772,14 +2772,14 @@ static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> v8Value, c
   // [PutForwards] => locationWithException.hrefThrows
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationWithException");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationWithException")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "locationWithException")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "hrefThrows"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "hrefThrows"), v8Value).To(&result))
     return;
   if (!result)
     return;
@@ -2803,14 +2803,14 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> v8Value, co
   // [PutForwards] => locationWithCallWith.hrefCallWith
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationWithCallWith");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationWithCallWith")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "locationWithCallWith")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "hrefCallWith"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "hrefCallWith"), v8Value).To(&result))
     return;
   if (!result)
     return;
@@ -2834,14 +2834,14 @@ static void locationByteStringAttributeSetter(v8::Local<v8::Value> v8Value, cons
   // [PutForwards] => locationByteString.hrefByteString
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationByteString");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationByteString")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "locationByteString")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "hrefByteString"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "hrefByteString"), v8Value).To(&result))
     return;
   if (!result)
     return;
@@ -2865,14 +2865,14 @@ static void locationWithPerWorldBindingsAttributeSetter(v8::Local<v8::Value> v8V
   // [PutForwards] => locationWithPerWorldBindings.href
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationWithPerWorldBindings");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationWithPerWorldBindings")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "locationWithPerWorldBindings")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "href"), v8Value).To(&result))
     return;
   if (!result)
     return;
@@ -2896,14 +2896,14 @@ static void locationWithPerWorldBindingsAttributeSetterForMainWorld(v8::Local<v8
   // [PutForwards] => locationWithPerWorldBindings.href
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationWithPerWorldBindings");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationWithPerWorldBindings")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "locationWithPerWorldBindings")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "href"), v8Value).To(&result))
     return;
   if (!result)
     return;
@@ -2927,14 +2927,14 @@ static void locationLegacyInterfaceTypeCheckingAttributeSetter(v8::Local<v8::Val
   // [PutForwards] => locationLegacyInterfaceTypeChecking.href
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationLegacyInterfaceTypeChecking");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationLegacyInterfaceTypeChecking")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "locationLegacyInterfaceTypeChecking")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "href"), v8Value).To(&result))
     return;
   if (!result)
     return;
@@ -2969,14 +2969,14 @@ static void locationGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value
   // [PutForwards] => locationGarbageCollected.attr1
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationGarbageCollected");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationGarbageCollected")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "locationGarbageCollected")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "attr1"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "attr1"), v8Value).To(&result))
     return;
   if (!result)
     return;
@@ -3860,14 +3860,14 @@ static void locationPutForwardsAttributeSetter(v8::Local<v8::Value> v8Value, con
   // [PutForwards] => locationPutForwards.href
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationPutForwards");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationPutForwards")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "locationPutForwards")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "href"), v8Value).To(&result))
     return;
   if (!result)
     return;

@@ -345,14 +345,14 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   // [PutForwards] => {{attribute.name}}.{{attribute.target_attribute_name}}
   {{define_exception_state}}
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "{{attribute.name}}")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "{{attribute.name}}")).ToLocal(&target))
     return;
   if (!target->IsObject()) {
     exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "{{attribute.target_attribute_name}}"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "{{attribute.target_attribute_name}}"), v8Value).To(&result))
     return;
   if (!result)
     return;
