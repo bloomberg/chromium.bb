@@ -50,7 +50,6 @@ extern const base::Feature kPhysicalWebSharing;
 extern const base::Feature kSpecialLocaleFeature;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kTabReparenting;
-extern const base::Feature kUseNewDoodleApi;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;
 extern const base::Feature kVrBrowsingFeedback;

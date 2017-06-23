@@ -230,9 +230,6 @@ const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
 const base::Feature kTabReparenting{"TabReparenting",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kUseNewDoodleApi{"UseNewDoodleApi",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
 
