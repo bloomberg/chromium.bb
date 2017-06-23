@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -59,7 +61,8 @@ class DiceTestSigninClient : public TestSigninClient, public GaiaAuthConsumer {
 class DiceResponseHandlerTest : public testing::Test {
  protected:
   DiceResponseHandlerTest()
-      : task_runner_(new base::TestSimpleTaskRunner()),
+      : loop_(base::MessageLoop::TYPE_IO),  // URLRequestContext requires IO.
+        task_runner_(new base::TestMockTimeTaskRunner()),
         request_context_getter_(
             new net::TestURLRequestContextGetter(task_runner_)),
         signin_client_(&pref_service_),
@@ -68,6 +71,8 @@ class DiceResponseHandlerTest : public testing::Test {
         dice_response_handler_(&signin_client_,
                                &token_service_,
                                &account_tracker_service_) {
+    loop_.SetTaskRunner(task_runner_);
+    DCHECK_EQ(task_runner_, base::ThreadTaskRunnerHandle::Get());
     switches::EnableAccountConsistencyDiceForTesting(
         base::CommandLine::ForCurrentProcess());
     signin_client_.SetURLRequestContext(request_context_getter_.get());
@@ -88,7 +93,7 @@ class DiceResponseHandlerTest : public testing::Test {
   }
 
   base::MessageLoop loop_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   DiceTestSigninClient signin_client_;
@@ -168,6 +173,22 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(
       token_service_.RefreshTokenIsAvailable(dice_params_2.obfuscated_gaia_id));
+}
+
+TEST_F(DiceResponseHandlerTest, Timeout) {
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
+  ASSERT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.obfuscated_gaia_id));
+  dice_response_handler_.ProcessDiceHeader(dice_params);
+  // Check that a GaiaAuthFetcher has been created.
+  ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
+  EXPECT_EQ(
+      1u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  // Force a timeout.
+  task_runner_->FastForwardBy(
+      base::TimeDelta::FromSeconds(kDiceTokenFetchTimeoutSeconds + 1));
+  EXPECT_EQ(
+      0u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
 }
 
 // Tests that the DiceResponseHandler is created for a normal profile but not
