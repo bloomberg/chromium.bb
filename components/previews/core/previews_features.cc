@@ -17,7 +17,7 @@ const base::Feature kClientLoFi{"ClientLoFi",
 
 // Enables the Stale Previews timestamp on Previews infobars.
 const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace previews
