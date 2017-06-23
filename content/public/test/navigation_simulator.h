@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
@@ -151,6 +152,12 @@ class NavigationSimulator : public WebContentsObserver {
   // navigation has finished (successfully or not).
   virtual NavigationHandle* GetNavigationHandle() const;
 
+  // Returns the GlobalRequestID for the simulated navigation request. Can be
+  // invoked after the navigation has completed. It is an error to call this
+  // before the simulated navigation has completed its WillProcessResponse
+  // callback.
+  content::GlobalRequestID GetGlobalRequestID() const;
+
  private:
   // WebContentsObserver:
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
@@ -212,6 +219,10 @@ class NavigationSimulator : public WebContentsObserver {
   // while throttles are being run, but before they finish.
   base::Optional<NavigationThrottle::ThrottleCheckResult>
       last_throttle_check_result_;
+
+  // GlobalRequestID for the associated NavigationHandle. Only valid after
+  // WillProcessResponse has been invoked on the NavigationHandle.
+  content::GlobalRequestID request_id_;
 
   // Closure that is set when WaitForThrottleChecksComplete is called.
   base::Closure throttle_checks_wait_closure_;

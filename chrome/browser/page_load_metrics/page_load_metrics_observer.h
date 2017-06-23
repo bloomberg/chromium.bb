@@ -219,6 +219,8 @@ struct ExtraRequestCompleteInfo {
       content::ResourceType detected_resource_type,
       int net_error);
 
+  ExtraRequestCompleteInfo(const ExtraRequestCompleteInfo& other);
+
   ~ExtraRequestCompleteInfo();
 
   // The URL for the request.

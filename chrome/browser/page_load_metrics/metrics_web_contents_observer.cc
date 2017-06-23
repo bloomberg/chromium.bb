@@ -238,12 +238,8 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     const content::GlobalRequestID& request_id,
     content::ResourceType resource_type,
     base::TimeTicks creation_time) {
-  // TODO(jkarlin): The WebContentsTester framework doesn't provide a default
-  // GlobalRequestID to its NavigationHandles. Once the test framework
-  // supports real ids, remove the request_id != content::GlobalRequestID()
-  // condition. See https://crbug.com/711352.
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME &&
-      request_id != content::GlobalRequestID()) {
+  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+    DCHECK(request_id != content::GlobalRequestID());
     // The main frame request can complete either before or after commit, so we
     // look at both provisional loads and the committed load to find a
     // PageLoadTracker with a matching request id. See https://goo.gl/6TzCYN for

@@ -24,6 +24,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,10 +48,12 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
       std::vector<mojom::PageLoadTimingPtr>* updated_timings,
       std::vector<mojom::PageLoadTimingPtr>* updated_subframe_timings,
       std::vector<mojom::PageLoadTimingPtr>* complete_timings,
+      std::vector<ExtraRequestCompleteInfo>* loaded_resources,
       std::vector<GURL>* observed_committed_urls)
       : updated_timings_(updated_timings),
         updated_subframe_timings_(updated_subframe_timings),
         complete_timings_(complete_timings),
+        loaded_resources_(loaded_resources),
         observed_committed_urls_(observed_committed_urls) {}
 
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
@@ -80,10 +83,16 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     return STOP_OBSERVING;
   }
 
+  void OnLoadedResource(
+      const ExtraRequestCompleteInfo& extra_request_complete_info) override {
+    loaded_resources_->emplace_back(extra_request_complete_info);
+  }
+
  private:
   std::vector<mojom::PageLoadTimingPtr>* const updated_timings_;
   std::vector<mojom::PageLoadTimingPtr>* const updated_subframe_timings_;
   std::vector<mojom::PageLoadTimingPtr>* const complete_timings_;
+  std::vector<ExtraRequestCompleteInfo>* const loaded_resources_;
   std::vector<GURL>* const observed_committed_urls_;
 };
 
@@ -130,7 +139,7 @@ class TestPageLoadMetricsEmbedderInterface
   void RegisterObservers(PageLoadTracker* tracker) override {
     tracker->AddObserver(base::MakeUnique<TestPageLoadMetricsObserver>(
         &updated_timings_, &updated_subframe_timings_, &complete_timings_,
-        &observed_committed_urls_));
+        &loaded_resources_, &observed_committed_urls_));
     tracker->AddObserver(base::MakeUnique<FilteringPageLoadMetricsObserver>(
         &completed_filtered_urls_));
   }
@@ -155,6 +164,10 @@ class TestPageLoadMetricsEmbedderInterface
     return observed_committed_urls_;
   }
 
+  const std::vector<ExtraRequestCompleteInfo>& loaded_resources() const {
+    return loaded_resources_;
+  }
+
   // committed URLs passed to FilteringPageLoadMetricsObserver::OnComplete().
   const std::vector<GURL>& completed_filtered_urls() const {
     return completed_filtered_urls_;
@@ -165,6 +178,7 @@ class TestPageLoadMetricsEmbedderInterface
   std::vector<mojom::PageLoadTimingPtr> updated_subframe_timings_;
   std::vector<mojom::PageLoadTimingPtr> complete_timings_;
   std::vector<GURL> observed_committed_urls_;
+  std::vector<ExtraRequestCompleteInfo> loaded_resources_;
   std::vector<GURL> completed_filtered_urls_;
   bool is_ntp_;
 };
@@ -275,6 +289,10 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   const std::vector<GURL>& completed_filtered_urls() const {
     return embedder_interface_->completed_filtered_urls();
+  }
+
+  const std::vector<ExtraRequestCompleteInfo>& loaded_resources() const {
+    return embedder_interface_->loaded_resources();
   }
 
  protected:
@@ -946,6 +964,55 @@ TEST_F(MetricsWebContentsObserverTest, DispatchDelayedMetricsOnPageClose) {
   EXPECT_TRUE(timing.Equals(*complete_timings().back()));
 
   CheckNoErrorEvents();
+}
+
+TEST_F(MetricsWebContentsObserverTest, OnLoadedResourceMainFrame) {
+  GURL main_resource_url(kDefaultTestUrl);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(main_resource_url);
+
+  auto navigation_simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          main_resource_url, web_contents()->GetMainFrame());
+  navigation_simulator->Start();
+  int frame_tree_node_id =
+      navigation_simulator->GetNavigationHandle()->GetFrameTreeNodeId();
+  navigation_simulator->Commit();
+
+  const auto request_id = navigation_simulator->GetGlobalRequestID();
+
+  observer()->OnRequestComplete(
+      main_resource_url, net::HostPortPair(), frame_tree_node_id, request_id,
+      content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, false, nullptr, 0, 0,
+      base::TimeTicks::Now(), 0);
+  EXPECT_EQ(1u, loaded_resources().size());
+  EXPECT_EQ(main_resource_url, loaded_resources().back().url);
+
+  NavigateToUntrackedUrl();
+
+  // Deliver a second main frame resource. This one should be ignored, since the
+  // specified |request_id| is no longer associated with any tracked page loads.
+  observer()->OnRequestComplete(
+      main_resource_url, net::HostPortPair(), frame_tree_node_id, request_id,
+      content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, false, nullptr, 0, 0,
+      base::TimeTicks::Now(), 0);
+  EXPECT_EQ(1u, loaded_resources().size());
+  EXPECT_EQ(main_resource_url, loaded_resources().back().url);
+}
+
+TEST_F(MetricsWebContentsObserverTest, OnLoadedResource) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  GURL loaded_resource_url("http://www.other.com/");
+  observer()->OnRequestComplete(
+      loaded_resource_url, net::HostPortPair(),
+      web_contents()->GetMainFrame()->GetFrameTreeNodeId(),
+      content::GlobalRequestID(), content::RESOURCE_TYPE_SCRIPT, false, nullptr,
+      0, 0, base::TimeTicks::Now(), 0);
+
+  EXPECT_EQ(1u, loaded_resources().size());
+  EXPECT_EQ(loaded_resource_url, loaded_resources().back().url);
 }
 
 }  // namespace page_load_metrics
