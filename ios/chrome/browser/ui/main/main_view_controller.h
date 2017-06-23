@@ -12,7 +12,7 @@
 @interface MainViewController : UIViewController
 // The child view controller, if any, that is active. Assigning to
 // |activeViewController| will remove any previous active view controller.
-@property(nonatomic, retain) UIViewController* activeViewController;
+@property(nonatomic, strong) UIViewController* activeViewController;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_MAIN_VIEW_CONTROLLER_H_

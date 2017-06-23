@@ -4,14 +4,16 @@
 
 #import "ios/chrome/browser/ui/main/main_coordinator.h"
 
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/main/main_view_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface MainCoordinator () {
   // Instance variables backing properties of the same name.
   // |_mainViewController| will be owned by |self.window|.
-  base::WeakNSObject<MainViewController> _mainViewController;
+  __weak MainViewController* _mainViewController;
 }
 
 @end
@@ -27,9 +29,8 @@
 #pragma mark - ChromeCoordinator implementation.
 
 - (void)start {
-  base::scoped_nsobject<MainViewController> mainViewController(
-      [[MainViewController alloc] init]);
-  _mainViewController.reset(mainViewController);
+  MainViewController* mainViewController = [[MainViewController alloc] init];
+  _mainViewController = mainViewController;
   self.window.rootViewController = self.mainViewController;
 
   // Size the main view controller to fit the whole screen.
