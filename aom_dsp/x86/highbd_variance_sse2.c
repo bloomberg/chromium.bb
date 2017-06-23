@@ -416,9 +416,9 @@ FNS(sse2);
       const uint16_t *dst, ptrdiff_t dst_stride, const uint16_t *sec,        \
       ptrdiff_t sec_stride, int height, unsigned int *sse, void *unused0,    \
       void *unused);
-#define DECLS(opt1) \
-  DECL(16, opt1)    \
-  DECL(8, opt1)
+#define DECLS(opt) \
+  DECL(16, opt)    \
+  DECL(8, opt)
 
 DECLS(sse2);
 #undef DECL
@@ -550,18 +550,18 @@ DECLS(sse2);
     return (var >= 0) ? (uint32_t)var : 0;                                     \
   }
 
-#define FNS(opt1)                        \
-  FN(64, 64, 16, 6, 6, opt1, (int64_t)); \
-  FN(64, 32, 16, 6, 5, opt1, (int64_t)); \
-  FN(32, 64, 16, 5, 6, opt1, (int64_t)); \
-  FN(32, 32, 16, 5, 5, opt1, (int64_t)); \
-  FN(32, 16, 16, 5, 4, opt1, (int64_t)); \
-  FN(16, 32, 16, 4, 5, opt1, (int64_t)); \
-  FN(16, 16, 16, 4, 4, opt1, (int64_t)); \
-  FN(16, 8, 16, 4, 3, opt1, (int64_t));  \
-  FN(8, 16, 8, 4, 3, opt1, (int64_t));   \
-  FN(8, 8, 8, 3, 3, opt1, (int64_t));    \
-  FN(8, 4, 8, 3, 2, opt1, (int64_t));
+#define FNS(opt)                        \
+  FN(64, 64, 16, 6, 6, opt, (int64_t)); \
+  FN(64, 32, 16, 6, 5, opt, (int64_t)); \
+  FN(32, 64, 16, 5, 6, opt, (int64_t)); \
+  FN(32, 32, 16, 5, 5, opt, (int64_t)); \
+  FN(32, 16, 16, 5, 4, opt, (int64_t)); \
+  FN(16, 32, 16, 4, 5, opt, (int64_t)); \
+  FN(16, 16, 16, 4, 4, opt, (int64_t)); \
+  FN(16, 8, 16, 4, 3, opt, (int64_t));  \
+  FN(8, 16, 8, 3, 4, opt, (int64_t));   \
+  FN(8, 8, 8, 3, 3, opt, (int64_t));    \
+  FN(8, 4, 8, 3, 2, opt, (int64_t));
 
 FNS(sse2);
 
