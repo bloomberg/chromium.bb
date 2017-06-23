@@ -194,6 +194,7 @@ source_set("unittests") {
   sources = [
     "app_launch_unittest.cc",
     "bridge/shell_port_mash_test_api.h",
+    "display_synchronizer_unittest.cc",
     "non_client_frame_controller_unittest.cc",
     "top_level_window_factory_unittest.cc",
     "window_manager_unittest.cc",

@@ -7,6 +7,7 @@
 
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
+#include "ui/display/display_observer.h"
 
 namespace aura {
 class WindowManagerClient;
@@ -17,7 +18,8 @@ namespace ash {
 // DisplaySynchronizer keeps the display state in mus in sync with ash's display
 // state. As ash controls the overall display state this synchronization is one
 // way (from ash to mus).
-class DisplaySynchronizer : public ash::WindowTreeHostManager::Observer {
+class DisplaySynchronizer : public WindowTreeHostManager::Observer,
+                            public display::DisplayObserver {
  public:
   explicit DisplaySynchronizer(
       aura::WindowManagerClient* window_manager_client);
@@ -30,7 +32,13 @@ class DisplaySynchronizer : public ash::WindowTreeHostManager::Observer {
   void OnDisplaysInitialized() override;
   void OnDisplayConfigurationChanged() override;
 
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
   aura::WindowManagerClient* window_manager_client_;
+
+  bool sent_initial_config_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySynchronizer);
 };

@@ -15,10 +15,12 @@ DisplaySynchronizer::DisplaySynchronizer(
     aura::WindowManagerClient* window_manager_client)
     : window_manager_client_(window_manager_client) {
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
+  Shell::Get()->display_manager()->AddObserver(this);
   SendDisplayConfigurationToServer();
 }
 
 DisplaySynchronizer::~DisplaySynchronizer() {
+  Shell::Get()->display_manager()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
@@ -44,6 +46,8 @@ void DisplaySynchronizer::SendDisplayConfigurationToServer() {
   window_manager_client_->SetDisplayConfiguration(
       displays, std::move(metrics),
       WindowTreeHostManager::GetPrimaryDisplayId());
+
+  sent_initial_config_ = true;
 }
 
 void DisplaySynchronizer::OnDisplaysInitialized() {
@@ -52,6 +56,17 @@ void DisplaySynchronizer::OnDisplaysInitialized() {
 
 void DisplaySynchronizer::OnDisplayConfigurationChanged() {
   SendDisplayConfigurationToServer();
+}
+
+void DisplaySynchronizer::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  // Changing only the work area doesn't trigger
+  // OnDisplayConfigurationChanged().
+  // Wait for the initial config before sending anything as initial display
+  // creation may trigger numerous calls to OnDisplayConfigurationChanged().
+  if (sent_initial_config_ && changed_metrics == DISPLAY_METRIC_WORK_AREA)
+    SendDisplayConfigurationToServer();
 }
 
 }  // namespace ash
