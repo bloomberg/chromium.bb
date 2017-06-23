@@ -6,7 +6,10 @@
 
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_app_list_view_presenter_impl.h"
@@ -228,6 +231,35 @@ TEST_F(AppListPresenterDelegateTest, TapAndClickOutsideClosesPeekingAppList) {
   generator.MoveMouseTo(tap_point);
   generator.ClickLeftButton();
   EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
+}
+
+// Tests that the shelf background displays/hides with bottom shelf
+// alignment.
+TEST_F(AppListPresenterDelegateTest,
+       ShelfBackgroundRespondsToAppListBeingShown) {
+  // TODO(newcomer): Investigate mash failures crbug.com/726838
+   if (Shell::GetAshConfig() == Config::MASH)
+     return;
+  EnableFullscreenAppList();
+  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+
+  // Show the app list, the shelf background should be transparent.
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  ShelfLayoutManager* shelf_layout_manager =
+      GetPrimaryShelf()->shelf_layout_manager();
+  EXPECT_EQ(shelf_layout_manager->GetShelfBackgroundType(),
+            SHELF_BACKGROUND_DEFAULT);
+  app_list_presenter_impl()->Dismiss();
+
+  // Set the alignment to the side and show the app list. The background should
+  // show.
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::SHELF_ALIGNMENT_LEFT);
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
+  EXPECT_FALSE(GetPrimaryShelf()->IsHorizontalAlignment());
+  EXPECT_EQ(GetPrimaryShelf()->shelf_layout_manager()->
+            GetShelfBackgroundType(),
+            SHELF_BACKGROUND_DEFAULT);
 }
 
 }  // namespace ash
