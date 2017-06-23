@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/renderer/extensions/app_bindings_core.h"
-#include "extensions/renderer/api_binding_hooks_delegate.h"
+#include "extensions/renderer/bindings/api_binding_hooks_delegate.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

@@ -34,7 +34,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
-#include "extensions/renderer/api_bindings_system.h"
+#include "extensions/renderer/bindings/api_bindings_system.h"
 #include "extensions/renderer/css_native_handler.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/i18n_custom_bindings.h"

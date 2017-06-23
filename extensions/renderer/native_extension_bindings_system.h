@@ -10,9 +10,9 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/renderer/api_binding_types.h"
-#include "extensions/renderer/api_bindings_system.h"
-#include "extensions/renderer/event_emitter.h"
+#include "extensions/renderer/bindings/api_binding_types.h"
+#include "extensions/renderer/bindings/api_bindings_system.h"
+#include "extensions/renderer/bindings/event_emitter.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "v8/include/v8.h"
 
