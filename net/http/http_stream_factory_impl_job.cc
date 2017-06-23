@@ -64,7 +64,7 @@ namespace {
 // Experiment to preconnect only one connection if HttpServerProperties is
 // not supported or initialized.
 const base::Feature kLimitEarlyPreconnectsExperiment{
-    "LimitEarlyPreconnects", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LimitEarlyPreconnects", base::FEATURE_ENABLED_BY_DEFAULT};
 void DoNothingAsyncCallback(int result) {}
 void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
                              ChannelIDService* channel_id_service,
