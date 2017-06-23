@@ -2665,10 +2665,10 @@ crbug.com/714862 [ Android ] tables/mozilla/collapsing_borders/bug41262-3.html [
 crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Pass Timeout ]
 
 # Sheriff failures 2017-05-11
-crbug.com/724027 [ Linux ] http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Failure Pass Timeout ]
-crbug.com/724027 [ Linux ] http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Failure Pass Timeout ]
-crbug.com/724027 [ Linux ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Failure Pass Timeout ]
-crbug.com/724027 [ Linux ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Failure Pass Timeout ]
+crbug.com/724027 http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
+crbug.com/724027 http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
+crbug.com/724027 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
+crbug.com/724027 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
 
 # Sheriff failures 2017-05-16
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
