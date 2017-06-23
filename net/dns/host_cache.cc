@@ -248,6 +248,13 @@ void HostCache::OnNetworkChange() {
   ++network_changes_;
 }
 
+void HostCache::set_persistence_delegate(PersistenceDelegate* delegate) {
+  // A PersistenceDelegate shouldn't be added if there already was one, and
+  // shouldn't be removed (by setting to nullptr) if it wasn't previously there.
+  DCHECK_NE(delegate == nullptr, delegate_ == nullptr);
+  delegate_ = delegate;
+}
+
 void HostCache::clear() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   RecordEraseAll(ERASE_CLEAR, base::TimeTicks::Now());
@@ -288,9 +295,10 @@ void HostCache::ClearForHosts(
     delegate_->ScheduleWrite();
 }
 
-std::unique_ptr<base::ListValue> HostCache::GetAsListValue(
-    bool include_staleness) const {
-  std::unique_ptr<base::ListValue> entry_list(new base::ListValue());
+void HostCache::GetAsListValue(base::ListValue* entry_list,
+                               bool include_staleness) const {
+  DCHECK(entry_list);
+  entry_list->Clear();
 
   for (const auto& pair : entries_) {
     const Key& key = pair.first;
@@ -332,8 +340,6 @@ std::unique_ptr<base::ListValue> HostCache::GetAsListValue(
 
     entry_list->Append(std::move(entry_dict));
   }
-
-  return entry_list;
 }
 
 // TODO(mgersh): Add histograms to track failures.

@@ -167,9 +167,7 @@ class NET_EXPORT HostCache {
     eviction_callback_ = callback;
   }
 
-  void set_persistence_delegate(PersistenceDelegate* delegate) {
-    delegate_ = delegate;
-  }
+  void set_persistence_delegate(PersistenceDelegate* delegate);
 
   // Empties the cache.
   void clear();
@@ -178,9 +176,11 @@ class NET_EXPORT HostCache {
   void ClearForHosts(
       const base::Callback<bool(const std::string&)>& host_filter);
 
-  // Returns the contents of the cache represented as a base::ListValue for
-  // serialization.
-  std::unique_ptr<base::ListValue> GetAsListValue(bool include_staleness) const;
+  // Fills the provided base::ListValue with the contents of the cache for
+  // serialization. |entry_list| must be non-null and will be cleared before
+  // adding the cache contents.
+  void GetAsListValue(base::ListValue* entry_list,
+                      bool include_staleness) const;
   // Takes a base::ListValue representing cache entries and stores them in the
   // cache, skipping any that already have entries. Returns true on success,
   // false on failure.
