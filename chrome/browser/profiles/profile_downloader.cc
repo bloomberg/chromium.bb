@@ -237,9 +237,11 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   if (source->GetResponseCode() == net::HTTP_OK) {
     std::string data;
     source->GetResponseAsString(&data);
+    profile_image_fetcher_.reset();
     DVLOG(1) << "Decoding the image...";
     ImageDecoder::Start(this, data);
   } else if (source->GetResponseCode() == net::HTTP_NOT_FOUND) {
+    profile_image_fetcher_.reset();
     VLOG(1) << "Got 404, using default picture...";
     picture_status_ = PICTURE_DEFAULT;
     delegate_->OnProfileDownloadSuccess(this);
@@ -251,11 +253,11 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "  Url: " << source->GetURL().spec();
     bool network_error =
         source->GetStatus().status() != net::URLRequestStatus::SUCCESS;
+    profile_image_fetcher_.reset();
     delegate_->OnProfileDownloadFailure(this, network_error ?
         ProfileDownloaderDelegate::NETWORK_ERROR :
         ProfileDownloaderDelegate::SERVICE_ERROR);
   }
-  profile_image_fetcher_.reset();
 }
 
 void ProfileDownloader::OnImageDecoded(const SkBitmap& decoded_image) {
