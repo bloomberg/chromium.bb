@@ -16,10 +16,6 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/wtf/Compiler.h"
 
-namespace gfx {
-class GpuMemoryBuffer;
-}
-
 namespace blink {
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
@@ -40,12 +36,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   void SetSuspendAnimation(bool) final;
   bool NeedsBeginFrame() const final { return needs_begin_frame_; }
   bool IsAnimationSuspended() const final { return suspend_animation_; }
-
   void DispatchFrame(RefPtr<StaticBitmapImage>,
                      double commit_start_time,
                      const SkIRect& damage_rect,
-                     bool is_web_gl_software_rendering,
-                     GpuMemoryBufferMode) final;
+                     bool is_web_gl_software_rendering = false) final;
   void ReclaimResource(unsigned resource_id) final;
   void Reshape(int width, int height) final;
 
@@ -58,10 +52,9 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   // This enum is used in histogram, so it should be append-only.
   enum OffscreenCanvasCommitType {
     kCommitGPUCanvasGPUCompositing = 0,
+    kCommitGPUCanvasSoftwareCompositing = 1,
+    kCommitSoftwareCanvasGPUCompositing = 2,
     kCommitSoftwareCanvasSoftwareCompositing = 3,
-    kCommitGPUCanvasGPUMemoryBuffer = 4,
-    kCommitSoftwareCanvasGPUMemoryBuffer = 5,
-    kCommitGPUCanvasSoftwareCompositing = 6,
     kOffscreenCanvasCommitTypeCount,
   };
 
@@ -107,21 +100,15 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   cc::mojom::blink::MojoCompositorFrameSinkPtr sink_;
   mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> binding_;
 
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
-  gfx::BufferUsage buffer_usage_;
-  gfx::BufferFormat buffer_format_;
-
   int placeholder_canvas_id_;
 
   cc::BeginFrameAck current_begin_frame_ack_;
 
-  bool SetTransferableResourceToSharedBitmap(cc::TransferableResource&,
+  void SetTransferableResourceToSharedBitmap(cc::TransferableResource&,
                                              RefPtr<StaticBitmapImage>);
-  bool SetTransferableResourceToGpuMemoryBuffer(cc::TransferableResource&,
-                                                RefPtr<StaticBitmapImage>,
-                                                const SkIRect& damage_rect,
-                                                bool image_uses_gpu);
-  bool SetTransferableResourceToStaticBitmapImage(cc::TransferableResource&,
+  void SetTransferableResourceToSharedGPUContext(cc::TransferableResource&,
+                                                 RefPtr<StaticBitmapImage>);
+  void SetTransferableResourceToStaticBitmapImage(cc::TransferableResource&,
                                                   RefPtr<StaticBitmapImage>);
 };
 

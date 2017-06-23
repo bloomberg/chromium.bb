@@ -49,10 +49,6 @@ class MotionData;
 class OrientationData;
 }
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}
-
 namespace service_manager {
 class Connector;
 }
@@ -313,8 +309,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 
   PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory> url_loader_factory_;
-
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

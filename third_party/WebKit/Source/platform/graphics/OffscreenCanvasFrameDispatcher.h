@@ -23,16 +23,10 @@ class OffscreenCanvasFrameDispatcherClient {
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
  public:
   virtual ~OffscreenCanvasFrameDispatcher() {}
-
-  enum GpuMemoryBufferMode {
-    kUseGpuMemoryBuffer,
-    kDontUseGpuMemoryBuffer,
-  };
   virtual void DispatchFrame(RefPtr<StaticBitmapImage>,
                              double commit_start_time,
                              const SkIRect& damage_rect,
-                             bool is_web_gl_software_rendering,
-                             GpuMemoryBufferMode) = 0;
+                             bool is_web_gl_software_rendering) = 0;
   virtual void ReclaimResource(unsigned resource_id) = 0;
   virtual void SetNeedsBeginFrame(bool) = 0;
   virtual void SetSuspendAnimation(bool) = 0;
