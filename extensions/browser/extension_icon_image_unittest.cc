@@ -304,14 +304,18 @@ TEST_F(ExtensionIconImageTest, NoResources) {
                   default_icon,
                   this);
 
+  // Default icon is loaded asynchronously.
+  image.image_skia().GetRepresentation(1.0f);
+  base::RunLoop().RunUntilIdle();
   gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(1.0f);
+
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
       EnsureBitmapSize(
           default_icon.GetRepresentation(1.0f).sk_bitmap(),
           kRequestedSize)));
 
-  EXPECT_EQ(0, ImageLoadedCount());
+  EXPECT_EQ(1, ImageLoadedCount());
   // We should have a default icon representation.
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
 
@@ -385,6 +389,9 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
 
   ASSERT_FALSE(lazy_default_icon.HasRepresentation(1.0f));
 
+  // Default icon is loaded asynchronously.
+  image.image_skia().GetRepresentation(1.0f);
+  base::RunLoop().RunUntilIdle();
   gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(1.0f);
 
   // The resouce set is empty, so we should get the result right away.
@@ -491,8 +498,8 @@ TEST_F(ExtensionIconImageTest, IconImageDestruction) {
   EXPECT_EQ(2.0f, representation.scale());
 }
 
-// Test that new representations added to the image of an IconImage are cached
-// for future use.
+// Test that new representations added to the image of an IconImageSkia are
+// cached for future use.
 TEST_F(ExtensionIconImageTest, ImageCachesNewRepresentations) {
   // Load up an extension and create an icon image.
   scoped_refptr<Extension> extension(
@@ -503,28 +510,18 @@ TEST_F(ExtensionIconImageTest, ImageCachesNewRepresentations) {
       browser_context(), extension.get(), IconsInfo::GetIcons(extension.get()),
       16, default_icon, this));
 
-  // Load an image representation.
-  gfx::ImageSkiaRep representation =
-      icon_image->image_skia().GetRepresentation(1.0f);
+  // Load an blank image representation.
+  EXPECT_EQ(0, ImageLoadedCount());
+  icon_image->image_skia().GetRepresentation(1.0f);
+  EXPECT_EQ(0, ImageLoadedCount());
   WaitForImageLoad();
-
-  // Cache for later use.
-  gfx::Image prior_image = icon_image->image();
-
-  // Now the fun part: access the image from the IconImage, and create a png
-  // representation of it.
-  gfx::Image image = icon_image->image();
-  scoped_refptr<base::RefCountedMemory> image_as_png = image.As1xPNGBytes();
-
-  // Access the image from the IconImage again, and get a png representation.
-  // The two png representations should be exactly equal (the same object),
-  // because image storage is shared, so when we created one from the first
-  // image, all other images should also have that representation...
-  gfx::Image image2 = icon_image->image();
-  EXPECT_EQ(image_as_png.get(), image2.As1xPNGBytes().get());
-
-  // ...even images that were copied before the representation was constructed.
-  EXPECT_EQ(image_as_png.get(), prior_image.As1xPNGBytes().get());
+  EXPECT_EQ(1, ImageLoadedCount());
+  icon_image->image_skia().GetRepresentation(1.0f);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, ImageLoadedCount());
+  icon_image->image_skia().GetRepresentation(1.0f);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, ImageLoadedCount());
 }
 
 }  // namespace extensions
