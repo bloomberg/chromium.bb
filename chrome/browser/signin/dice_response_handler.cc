@@ -156,7 +156,7 @@ void DiceResponseHandler::ProcessDiceHeader(
 
   switch (dice_params.user_intention) {
     case signin::DiceAction::SIGNIN:
-      ProcessDiceSigninHeader(dice_params.obfuscated_gaia_id, dice_params.email,
+      ProcessDiceSigninHeader(dice_params.gaia_id, dice_params.email,
                               dice_params.authorization_code);
       return;
     case signin::DiceAction::SIGNOUT:

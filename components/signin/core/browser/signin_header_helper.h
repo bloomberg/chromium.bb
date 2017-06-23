@@ -82,7 +82,7 @@ struct DiceResponseParams {
   // Gaia ID of the account signed in or signed out (which may be a secondary
   // account). When |user_intention| is SIGNOUT, this is the ID of the primary
   // account.
-  std::string obfuscated_gaia_id;
+  std::string gaia_id;
 
   // Email of the account signed in or signed out. When |user_intention| is
   // SIGNOUT, this is the email of the primary account.

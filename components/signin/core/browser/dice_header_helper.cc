@@ -50,7 +50,7 @@ DiceResponseParams DiceHeaderHelper::BuildDiceResponseParams(
     if (key_name == kActionAttrName) {
       params.user_intention = GetDiceActionFromHeader(value);
     } else if (key_name == kIdAttrName) {
-      params.obfuscated_gaia_id = value;
+      params.gaia_id = value;
     } else if (key_name == kEmailAttrName) {
       params.email = value;
     } else if (key_name == kAuthUserAttrName) {
@@ -64,7 +64,7 @@ DiceResponseParams DiceHeaderHelper::BuildDiceResponseParams(
     }
   }
 
-  if (params.obfuscated_gaia_id.empty() || params.email.empty() ||
+  if (params.gaia_id.empty() || params.email.empty() ||
       params.session_index == -1) {
     DLOG(WARNING) << "Missing parameters for Dice header.";
     params.user_intention = DiceAction::NONE;
