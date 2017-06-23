@@ -62,12 +62,12 @@ size_t GetPathDepth(const std::string& cache_expression_path) {
       .size();
 }
 
-// Given a URL of either http or https scheme, return its scheme://hostname.
+// Given a URL of either http or https scheme, return its http://hostname.
 // e.g., "https://www.foo.com:80/bar/test.cgi" -> "http://www.foo.com".
 GURL GetHostNameWithHTTPScheme(const GURL& url) {
   DCHECK(url.SchemeIsHTTPOrHTTPS());
   std::string result(url::kHttpScheme);
-  result.append(url::kStandardSchemeSeparator).append(url.HostNoBrackets());
+  result.append(url::kStandardSchemeSeparator).append(url.host());
   return GURL(result);
 }
 
@@ -115,7 +115,7 @@ bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return false;
 
-  const std::string& hostname = url.HostNoBrackets();
+  const std::string hostname = url.HostNoBrackets();
   return !net::IsLocalhost(hostname) && !net::IsHostnameNonUnique(hostname) &&
          hostname.find('.') != std::string::npos;
 }
