@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/browser/credential_manager_impl.h"
@@ -115,6 +116,9 @@ class ChromePasswordManagerClient
                                    bool password_field_exists) override;
 #endif
 
+  ukm::UkmRecorder* GetUkmRecorder() override;
+  ukm::SourceId GetUkmSourceId() override;
+
   static void CreateForWebContentsWithAutofillClient(
       content::WebContents* contents,
       autofill::AutofillClient* autofill_client);
@@ -214,6 +218,10 @@ class ChromePasswordManagerClient
   // Set during 'NotifyUserCouldBeAutoSignedIn' in order to store the
   // form for potential use during 'NotifySuccessfulLoginWithExistingPassword'.
   std::unique_ptr<autofill::PasswordForm> possible_auto_sign_in_;
+
+  // If set, this stores a ukm::SourceId that is bound to the last committed
+  // navigation of the tab owning this ChromePasswordManagerClient.
+  base::Optional<ukm::SourceId> ukm_source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

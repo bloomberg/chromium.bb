@@ -71,6 +71,8 @@ class IOSChromePasswordManagerClient
   const GURL& GetLastCommittedEntryURL() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
+  ukm::UkmRecorder* GetUkmRecorder() override;
+  ukm::SourceId GetUkmSourceId() override;
 
  private:
   id<PasswordManagerClientDelegate> delegate_;  // (weak)
@@ -80,6 +82,14 @@ class IOSChromePasswordManagerClient
   BooleanPrefMember saving_passwords_enabled_;
 
   const password_manager::SyncCredentialsFilter credentials_filter_;
+
+  // The URL to which the ukm_source_id_ was bound.
+  GURL ukm_source_url_;
+
+  // If ukm_source_url_ == delegate_.lastCommittedURL, this stores a
+  // ukm::SourceId that is bound to the last committed navigation of the tab
+  // owning this ChromePasswordManagerClient.
+  ukm::SourceId ukm_source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromePasswordManagerClient);
 };

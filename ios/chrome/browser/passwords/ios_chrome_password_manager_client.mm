@@ -14,6 +14,8 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/ukm/public/ukm_recorder.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
@@ -50,7 +52,8 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
       credentials_filter_(
           this,
           base::Bind(&GetSyncService, delegate_.browserState),
-          base::Bind(&GetSigninManager, delegate_.browserState)) {
+          base::Bind(&GetSigninManager, delegate_.browserState)),
+      ukm_source_id_(0) {
   saving_passwords_enabled_.Init(
       password_manager::prefs::kPasswordManagerSavingEnabled, GetPrefs());
 }
@@ -136,4 +139,21 @@ const GURL& IOSChromePasswordManagerClient::GetLastCommittedEntryURL() const {
 const password_manager::CredentialsFilter*
 IOSChromePasswordManagerClient::GetStoreResultFilter() const {
   return &credentials_filter_;
+}
+
+ukm::UkmRecorder* IOSChromePasswordManagerClient::GetUkmRecorder() {
+  return GetApplicationContext()->GetUkmRecorder();
+}
+
+ukm::SourceId IOSChromePasswordManagerClient::GetUkmSourceId() {
+  // TODO(crbug.com/732846): The UKM Source should be recycled (e.g. from the
+  // web contents), once the UKM framework provides a mechanism for that.
+  if (ukm_source_url_ != delegate_.lastCommittedURL) {
+    ukm_source_url_ = delegate_.lastCommittedURL;
+    ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
+    ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
+    if (ukm_recorder)
+      ukm_recorder->UpdateSourceURL(ukm_source_id_, ukm_source_url_);
+  }
+  return ukm_source_id_;
 }

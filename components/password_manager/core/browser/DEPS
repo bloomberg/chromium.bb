@@ -5,6 +5,7 @@ include_rules = [
   "+components/security_state",
   "+components/sync/base",
   "+components/sync/driver",
+  "+components/ukm",
   "+components/url_formatter",
   "+components/variations",
   "+components/webdata/common",

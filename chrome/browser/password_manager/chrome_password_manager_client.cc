@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -51,6 +52,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -436,12 +438,31 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
 }
 #endif
 
+ukm::UkmRecorder* ChromePasswordManagerClient::GetUkmRecorder() {
+  return g_browser_process->ukm_recorder();
+}
+
+ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
+  // TODO(crbug.com/732846): The UKM Source should be recycled (e.g. from the
+  // web contents), once the UKM framework provides a mechanism for that.
+  if (!ukm_source_id_) {
+    ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
+    ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
+    if (ukm_recorder)
+      ukm_recorder->UpdateSourceURL(*ukm_source_id_, GetMainFrameURL());
+  }
+  return *ukm_source_id_;
+}
+
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
+
+  if (!navigation_handle->IsSameDocument())
+    ukm_source_id_.reset();
 
   password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());
   // After some navigations RenderViewHost persists and just adding the observer

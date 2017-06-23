@@ -52,6 +52,7 @@ source_set("passwords") {
     "//components/signin/core/browser",
     "//components/strings",
     "//components/sync",
+    "//components/ukm",
     "//google_apis",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",

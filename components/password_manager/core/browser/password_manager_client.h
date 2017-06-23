@@ -12,6 +12,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/ukm/public/ukm_recorder.h"
 
 class PrefService;
 
@@ -214,6 +215,13 @@ class PasswordManagerClient {
       const std::string& password_saved_domain,
       bool password_field_exists) = 0;
 #endif
+
+  // Gets the UKM service associated with this client (for metrics).
+  virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
+
+  // Gets a ukm::SourceId that is associated with the WebContents object
+  // and its last committed main frame navigation.
+  virtual ukm::SourceId GetUkmSourceId() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
