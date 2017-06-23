@@ -36,10 +36,8 @@ void PlatformSensorProviderAndroid::CreateSensorInternal(
   ScopedJavaLocalRef<jobject> sensor = Java_PlatformSensorProvider_createSensor(
       env, j_object_.obj(), static_cast<jint>(type));
 
-  if (!sensor.obj()) {
+  if (!sensor.obj())
     callback.Run(nullptr);
-    return;
-  }
 
   scoped_refptr<PlatformSensorAndroid> concrete_sensor =
       new PlatformSensorAndroid(type, std::move(mapping), this, sensor);
