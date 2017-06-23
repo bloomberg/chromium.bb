@@ -353,7 +353,7 @@ void OneGoogleBarFetcherImpl::FetchDone(const net::URLFetcher* source) {
     // response).
     DLOG(WARNING) << "Request failed with error: " << request_status.error()
                   << ": " << net::ErrorToString(request_status.error());
-    Respond(base::nullopt);
+    Respond(Status::TRANSIENT_ERROR, base::nullopt);
     return;
   }
 
@@ -363,7 +363,7 @@ void OneGoogleBarFetcherImpl::FetchDone(const net::URLFetcher* source) {
     std::string response;
     source->GetResponseAsString(&response);
     DLOG(WARNING) << "Response: " << response;
-    Respond(base::nullopt);
+    Respond(Status::FATAL_ERROR, base::nullopt);
     return;
   }
 
@@ -386,18 +386,20 @@ void OneGoogleBarFetcherImpl::FetchDone(const net::URLFetcher* source) {
 }
 
 void OneGoogleBarFetcherImpl::JsonParsed(std::unique_ptr<base::Value> value) {
-  Respond(JsonToOGBData(*value));
+  base::Optional<OneGoogleBarData> result = JsonToOGBData(*value);
+  Respond(result.has_value() ? Status::OK : Status::FATAL_ERROR, result);
 }
 
 void OneGoogleBarFetcherImpl::JsonParseFailed(const std::string& message) {
   DLOG(WARNING) << "Parsing JSON failed: " << message;
-  Respond(base::nullopt);
+  Respond(Status::FATAL_ERROR, base::nullopt);
 }
 
 void OneGoogleBarFetcherImpl::Respond(
+    Status status,
     const base::Optional<OneGoogleBarData>& data) {
   for (auto& callback : callbacks_) {
-    std::move(callback).Run(data);
+    std::move(callback).Run(status, data);
   }
   callbacks_.clear();
 }

@@ -13,8 +13,19 @@ struct OneGoogleBarData;
 // Interface for fetching OneGoogleBarData over the network.
 class OneGoogleBarFetcher {
  public:
+  enum class Status {
+    // Received a valid response.
+    OK,
+    // Some transient error occurred, e.g. the network request failed because
+    // there is no network connectivity. A previously cached response may still
+    // be used.
+    TRANSIENT_ERROR,
+    // A fatal error occurred, such as the server responding with an error code
+    // or with invalid data. Any previously cached response should be cleared.
+    FATAL_ERROR
+  };
   using OneGoogleCallback =
-      base::OnceCallback<void(const base::Optional<OneGoogleBarData>&)>;
+      base::OnceCallback<void(Status, const base::Optional<OneGoogleBarData>&)>;
 
   virtual ~OneGoogleBarFetcher() = default;
 
