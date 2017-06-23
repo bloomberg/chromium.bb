@@ -741,19 +741,28 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
 }
 
 float FrameFetchContext::ClientHintsDeviceRAM(int64_t physical_memory_mb) {
-  // TODO(fmeawad): The calculations in this method are still evolving as the
-  // spec gets updated: https://github.com/WICG/device-ram. The reported
-  // device-ram is rounded down to next power of 2 in GB. Ex. 3072MB will return
-  // 2, and 768MB will return 0.5.
+  // The calculations in this method are described in the specifcations:
+  // https://github.com/WICG/device-ram.
   DCHECK_GT(physical_memory_mb, 0);
+  int lower_bound = physical_memory_mb;
   int power = 0;
-  // Extract the MSB location.
-  while (physical_memory_mb > 1) {
-    physical_memory_mb >>= 1;
+
+  // Extract the most significant 2-bits and their location.
+  while (lower_bound >= 4) {
+    lower_bound >>= 1;
     power++;
   }
-  // Restore to the power of 2, and convert to GB.
-  return static_cast<float>(1 << power) / 1024.0;
+  // The lower_bound value is either 0b10 or 0b11.
+  DCHECK(lower_bound & 2);
+
+  int64_t upper_bound = lower_bound + 1;
+  lower_bound = lower_bound << power;
+  upper_bound = upper_bound << power;
+
+  // Find the closest bound, and convert it to GB.
+  if (physical_memory_mb - lower_bound <= upper_bound - physical_memory_mb)
+    return static_cast<float>(lower_bound) / 1024.0;
+  return static_cast<float>(upper_bound) / 1024.0;
 }
 
 void FrameFetchContext::AddClientHintsIfNecessary(
