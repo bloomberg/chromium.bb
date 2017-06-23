@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/xcallback_parameters.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

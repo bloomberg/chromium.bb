@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/app_startup_parameters.h"
 
-#include "base/logging.h"
-#import "ios/chrome/browser/xcallback_parameters.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,7 +16,6 @@
 
 @synthesize launchVoiceSearch = _launchVoiceSearch;
 @synthesize launchInIncognito = _launchInIncognito;
-@synthesize xCallbackParameters = _xCallbackParameters;
 @synthesize launchFocusOmnibox = _launchFocusOmnibox;
 @synthesize launchQRScanner = _launchQRScanner;
 
@@ -26,30 +23,18 @@
   return _externalURL;
 }
 
-
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithExternalURL:(const GURL&)externalURL {
-  return [self initWithExternalURL:externalURL xCallbackParameters:nil];
-}
-
-- (instancetype)initWithExternalURL:(const GURL&)externalURL
-                xCallbackParameters:(XCallbackParameters*)xCallbackParameters {
   self = [super init];
   if (self) {
     _externalURL = externalURL;
-    _xCallbackParameters = xCallbackParameters;
   }
   return self;
 }
 
 - (NSString*)description {
-  NSMutableString* description = [NSMutableString
-      stringWithFormat:@"ExternalURL: %s \nXCallbackParams: %@",
-                       _externalURL.spec().c_str(), _xCallbackParameters];
+  NSMutableString* description =
+      [NSMutableString stringWithFormat:@"AppStartupParameters: %s",
+                                        _externalURL.spec().c_str()];
 
   if (self.launchQRScanner) {
     [description appendString:@", should launch QR scanner"];

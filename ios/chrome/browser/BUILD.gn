@@ -74,8 +74,6 @@ source_set("browser") {
     "tab_parenting_global_observer.h",
     "web_data_service_factory.cc",
     "web_data_service_factory.h",
-    "xcallback_parameters.h",
-    "xcallback_parameters.mm",
   ]
 
   deps = [
