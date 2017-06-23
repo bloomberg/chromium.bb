@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.15",
+  "version": "10.16",
   "entries": [
     {
       "id": 1,
@@ -2523,6 +2523,18 @@
       "vendor_id": "0x10de",
       "features": [
         "disable_delayed_copy_nv12"
+      ]
+    },
+    {
+      "id": 234,
+      "description": "Disable EGL_EXT_image_flush_external on NVIDIA",
+      "cr_bugs": [727462],
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "disabled_extensions": [
+        "EGL_EXT_image_flush_external"
       ]
     }
   ],
