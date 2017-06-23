@@ -1,8 +1,48 @@
 'use strict';
 
+// These tests rely on the User Agent providing an implementation of the
+// WebUSB Testing API (https://wicg.github.io/webusb/test/).
+//
+// In Chromium-based browsers this implementation is provided by a polyfill
+// in order to reduce the amount of test-only code shipped to users. To enable
+// these tests the browser must be run with these options:
+//
+//   --enable-blink-features=MojoJS,MojoJSTest
+let loadChromiumResources = Promise.resolve().then(() => {
+  if (!MojoInterfaceInterceptor) {
+    // Do nothing on non-Chromium-based browsers or when the Mojo bindings are
+    // not present in the global namespace.
+    return;
+  }
+
+  let chain = Promise.resolve();
+  [
+    '/resources/chromium/mojo_bindings.js',
+    '/resources/chromium/device.mojom.js',
+    '/resources/chromium/device_manager.mojom.js',
+    '/resources/chromium/chooser_service.mojom.js',
+    '/resources/chromium/webusb-test.js',
+  ].forEach(path => {
+    let script = document.createElement('script');
+    script.src = path;
+    script.async = false;
+    chain = chain.then(() => new Promise(resolve => {
+      script.onload = () => resolve();
+    }));
+    document.head.appendChild(script);
+  });
+
+  return chain;
+});
+
 function usb_test(func, name, properties) {
   promise_test(async () => {
-    await navigator.usb.test.initialize()
+    if (navigator.usb.test === undefined) {
+      // Try loading a polyfill for the WebUSB Testing API.
+      await loadChromiumResources;
+    }
+
+    await navigator.usb.test.initialize();
     try {
       await func();
     } finally {
@@ -72,24 +112,17 @@ function assertDeviceInfoEquals(usbDevice, deviceInit) {
   }
 }
 
-// TODO(reillyg): Remove when jyasskin upstreams this to testharness.js:
-// https://crbug.com/509058.
-function callWithKeyDown(functionCalledOnKeyPress) {
+function callWithTrustedClick(callback) {
   return new Promise(resolve => {
-    function onKeyPress() {
-      document.removeEventListener('keypress', onKeyPress, false);
-      resolve(functionCalledOnKeyPress());
-    }
-    document.addEventListener('keypress', onKeyPress, false);
-
-    eventSender.keyDown(' ', []);
-  });
-}
-
-function runGarbageCollection() {
-  // Run gc() as a promise.
-  return new Promise((resolve, reject) => {
-    GCController.collect();
-    setTimeout(resolve, 0);
+    let button = document.createElement('button');
+    button.textContent = 'click to continue test';
+    button.style.display = 'block';
+    button.style.fontSize = '20px';
+    button.style.padding = '10px';
+    button.onclick = () => {
+      resolve(callback());
+      document.body.removeChild(button);
+    };
+    document.body.appendChild(button);
   });
 }

@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script src="resources/fake-devices.js"></script>
 <script src="resources/usb-helpers.js"></script>
-<script src="resources/webusb-test.js"></script>
 <script>
 'use strict';
 
@@ -39,7 +38,7 @@ usb_test(() => {
 }, 'requestDevice rejects when called without a user gesture');
 
 usb_test(() => {
-  return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
+  return callWithTrustedClick(() => navigator.usb.requestDevice({ filters: [] })
     .then(device => {
       assert_unreachable('requestDevice should reject when no device selected');
     })
@@ -52,7 +51,7 @@ usb_test(() => {
 usb_test(() => {
   return getFakeDevice().then(({ device, fakeDevice }) => {
     navigator.usb.test.chosenDevice = fakeDevice;
-    return callWithKeyDown(() => {
+    return callWithTrustedClick(() => {
       return navigator.usb.requestDevice({ filters: [] }).then(chosenDevice => {
         assert_equals(chosenDevice, device);
       });
@@ -63,7 +62,7 @@ usb_test(() => {
 usb_test(() => {
   return getFakeDevice().then(({ device, fakeDevice }) => {
     navigator.usb.test.chosenDevice = fakeDevice;
-    return callWithKeyDown(() => {
+    return callWithTrustedClick(() => {
       return navigator.usb.requestDevice({ filters: [] }).then(chosenDevice => {
         assert_equals(chosenDevice, device);
         return navigator.usb.getDevices().then(devices => {
@@ -81,18 +80,19 @@ usb_test(() => {
     { vendorId: 5678, productId: 0xF00F }
   ];
 
-  return callWithKeyDown(() => navigator.usb.requestDevice({ filters: expectedFilters })
-    .then(device => {
-      assert_unreachable('requestDevice should reject because no device selected');
-    })
-    .catch(error => {
-      assert_equals(error.code, DOMException.NOT_FOUND_ERR);
-      let actualFilters = navigator.usb.test.lastFilters;
-      assert_equals(actualFilters.length, expectedFilters.length);
-      for (var i = 0; i < actualFilters.length; ++i)
-        assert_object_equals(actualFilters[i], expectedFilters[i]);
-    })
-  );
+  return callWithTrustedClick(() => {
+    return navigator.usb.requestDevice({ filters: expectedFilters })
+      .then(device => {
+        assert_unreachable('requestDevice should reject because no device selected');
+      })
+      .catch(error => {
+        assert_equals(error.code, DOMException.NOT_FOUND_ERR);
+        let actualFilters = navigator.usb.test.lastFilters;
+        assert_equals(actualFilters.length, expectedFilters.length);
+        for (var i = 0; i < actualFilters.length; ++i)
+          assert_object_equals(actualFilters[i], expectedFilters[i]);
+      });
+  });
 }, 'filters are sent correctly');
 
 usb_test(() => {
