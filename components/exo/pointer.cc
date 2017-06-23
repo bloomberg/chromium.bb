@@ -41,10 +41,6 @@ namespace {
 // for now. See crbug.com/708378.
 const float kLargeCursorScale = 2.8f;
 
-// Scale at which cursor snapshot is captured. The resulting bitmap is scaled on
-// displays whose DSF does not match this scale.
-const float kCursorCaptureScale = 2.0f;
-
 const double kLocatedEventEpsilonSquared = 1.0 / (2000.0 * 2000.0);
 
 // Synthesized events typically lack floating point precision so to avoid
@@ -65,6 +61,16 @@ bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
   return offset.LengthSquared() < (2 * kLocatedEventEpsilonSquared);
 }
 
+float GetCaptureScale() {
+  float capture_scale = 1.0f;
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    const auto& info = WMHelper::GetInstance()->GetDisplayInfo(display.id());
+    if (info.device_scale_factor() > capture_scale)
+      capture_scale = info.device_scale_factor();
+  }
+  return capture_scale;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,6 +79,7 @@ bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
 Pointer::Pointer(PointerDelegate* delegate)
     : delegate_(delegate),
       cursor_(ui::CursorType::kNull),
+      capture_scale_(GetCaptureScale()),
       cursor_capture_source_id_(base::UnguessableToken::Create()),
       cursor_capture_weak_ptr_factory_(this) {
   auto* helper = WMHelper::GetInstance();
@@ -270,6 +277,7 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
 
 void Pointer::OnDisplayConfigurationChanged() {
   UpdatePointerSurface(surface_);
+  capture_scale_ = GetCaptureScale();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,7 +352,7 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   auto* helper = WMHelper::GetInstance();
   float scale = helper->GetDisplayInfo(display.id()).GetEffectiveUIScale() *
-                kCursorCaptureScale / display.device_scale_factor();
+                capture_scale_ / display.device_scale_factor();
   surface_->window()->SetTransform(gfx::GetScaleTransform(gfx::Point(), scale));
 
   std::unique_ptr<cc::CopyOutputRequest> request =
@@ -379,13 +387,12 @@ void Pointer::UpdateCursor() {
     cursor_ = ui::CursorType::kNone;
   } else {
     SkBitmap bitmap = cursor_bitmap_;
-    gfx::Point hotspot =
-        gfx::ScaleToFlooredPoint(hotspot_, kCursorCaptureScale);
+    gfx::Point hotspot = gfx::ScaleToFlooredPoint(hotspot_, capture_scale_);
 
     auto* helper = WMHelper::GetInstance();
     const display::Display& display = helper->GetCursorDisplay();
     float scale = helper->GetDisplayInfo(display.id()).device_scale_factor() /
-                  kCursorCaptureScale;
+                  capture_scale_;
 
     if (helper->GetCursorSet() == ui::CURSOR_SET_LARGE)
       scale *= kLargeCursorScale;
