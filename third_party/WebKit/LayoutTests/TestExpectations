@@ -2834,7 +2834,9 @@ crbug.com/736177 [ Mac ] virtual/rootlayerscrolls/scrollbars/custom-scrollbar-wi
 
 crbug.com/734762 [ Mac Debug ] inspector-protocol/timeline/page-frames.js [ Failure ]
 
+crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Skip ]
 crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-001.html [ Skip ]
+crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-004.html [ Skip ]
 
 # These tests crash, fail or are flaky on Mac 10.9
 crbug.com/736257 [ Mac10.9 ] editing/selection/modify_move/move_left_right_character_in_mixed_bidi.html [ Skip ]
