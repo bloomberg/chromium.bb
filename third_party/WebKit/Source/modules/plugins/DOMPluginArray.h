@@ -22,6 +22,7 @@
 #define DOMPluginArray_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/page/PluginsChangedObserver.h"
 #include "modules/plugins/DOMPlugin.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -35,7 +36,8 @@ class PluginData;
 
 class DOMPluginArray final : public GarbageCollectedFinalized<DOMPluginArray>,
                              public ScriptWrappable,
-                             public ContextLifecycleObserver {
+                             public ContextLifecycleObserver,
+                             public PluginsChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
 
@@ -50,6 +52,9 @@ class DOMPluginArray final : public GarbageCollectedFinalized<DOMPluginArray>,
   DOMPlugin* namedItem(const AtomicString& property_name);
 
   void refresh(bool reload);
+
+  // PluginsChangedObserver implementation.
+  void PluginsChanged();
 
   DECLARE_VIRTUAL_TRACE();
 

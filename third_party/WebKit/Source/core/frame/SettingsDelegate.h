@@ -64,6 +64,7 @@ class CORE_EXPORT SettingsDelegate {
     kTextTrackKindUserPreferenceChange,
     kDOMWorldsChange,
     kMediaControlsChange,
+    kPluginsChange,
   };
 
   virtual void SettingsChanged(ChangeType) = 0;
