@@ -22,15 +22,18 @@ class WPTGitHub(object):
     This class contains methods for sending requests to the GitHub API.
     """
 
-    def __init__(self, host, user, token, pr_history_window=30):
+    def __init__(self, host, user=None, token=None, pr_history_window=30):
         self.host = host
         self.user = user
         self.token = token
-        assert self.user and self.token
 
         self._pr_history_window = pr_history_window
 
+    def has_credentials(self):
+        return self.user and self.token
+
     def auth_token(self):
+        assert self.has_credentials()
         return base64.b64encode('{}:{}'.format(self.user, self.token))
 
     def request(self, path, method, body=None):
@@ -39,14 +42,16 @@ class WPTGitHub(object):
         if body:
             body = json.dumps(body)
 
+        headers = {'Accept': 'application/vnd.github.v3+json'}
+
+        if self.has_credentials():
+            headers['Authorization'] = 'Basic {}'.format(self.auth_token())
+
         response = self.host.web.request(
             method=method,
             url=API_BASE + path,
             data=body,
-            headers={
-                'Accept': 'application/vnd.github.v3+json',
-                'Authorization': 'Basic {}'.format(self.auth_token()),
-            },
+            headers=headers
         )
 
         status_code = response.getcode()
@@ -148,8 +153,11 @@ class WPTGitHub(object):
             EXPORT_LABEL,
             self._pr_history_window
         )
+
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
+            for item in data['items']:
+                print item['state'], item['number']
             return [self.make_pr_from_item(item) for item in data['items']]
         else:
             raise Exception('Non-200 status code (%s): %s' % (status_code, data))

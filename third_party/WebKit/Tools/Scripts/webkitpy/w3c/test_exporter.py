@@ -78,7 +78,8 @@ class TestExporter(object):
                 self.create_or_update_pull_request_from_cl(cl)
 
     def get_exportable_commits(self):
-        return exportable_commits_over_last_n_commits(self.host, self.local_wpt)
+        return exportable_commits_over_last_n_commits(
+            self.host, self.local_wpt, self.wpt_github)
 
     def merge_pull_request(self, pull_request):
         _log.info('In-flight PR found: %s', pull_request.title)
@@ -130,7 +131,8 @@ class TestExporter(object):
         _log.info('chromium@%s', chromium_commit.sha)
         _log.info('(%d behind chromium@origin/master)', chromium_commit.num_behind_master())
 
-        exportable_commits = exportable_commits_since(chromium_commit.sha, self.host, self.local_wpt)
+        exportable_commits = exportable_commits_over_last_n_commits(
+            chromium_commit.sha, self.host, self.local_wpt, self.wpt_github)
 
         if not exportable_commits:
             _log.info('No exportable commits found in Chromium, stopping.')

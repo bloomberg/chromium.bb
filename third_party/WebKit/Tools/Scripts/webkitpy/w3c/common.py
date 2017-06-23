@@ -29,15 +29,36 @@ WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-test
 _log = logging.getLogger(__name__)
 
 
-def _exportable_commits_since(chromium_commit_hash, host, local_wpt):
+def exportable_commits_over_last_n_commits(
+        host, local_wpt, wpt_github, number=DEFAULT_COMMIT_HISTORY_WINDOW):
+    """Lists exportable commits after a certain point.
+
+    Args:
+        number: The number of commits back to look. The commits to check will
+            include all commits starting from the commit before HEAD~n, up
+            to and including HEAD.
+        host: A Host object.
+        local_wpt: A LocalWPT instance, used to see whether a Chromium commit
+            can be applied cleanly in the upstream repo.
+        wpt_github: A WPTGitHub instance, used to check whether PRs are closed.
+
+    Returns:
+        A list of ChromiumCommit objects for commits that are exportable after
+        the given commit, in chronological order.
+    """
+    start_commit = 'HEAD~{}'.format(number + 1)
+    return _exportable_commits_since(start_commit, host, local_wpt, wpt_github)
+
+
+def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github):
     """Lists exportable commits after a certain point.
 
     Args:
         chromium_commit_hash: The SHA of the Chromium commit from which this
             method will look. This commit is not included in the commits searched.
         host: A Host object.
-        local_wpt: A LocalWPT instance, used to see whether a Chromium commit
-            can be applied cleanly in the upstream repo.
+        local_wpt: A LocalWPT instance.
+        wpt_github: A WPTGitHub instance.
 
     Returns:
         A list of ChromiumCommit objects for commits that are exportable after
@@ -53,32 +74,22 @@ def _exportable_commits_since(chromium_commit_hash, host, local_wpt):
         'git', 'rev-list', commit_range, '--reverse', '--', wpt_path
     ], cwd=absolute_chromium_dir(host)).splitlines()
     chromium_commits = [ChromiumCommit(host, sha=sha) for sha in commit_hashes]
-    return [commit for commit in chromium_commits if is_exportable(commit, local_wpt)]
+    exportable_commits = []
+    for commit in chromium_commits:
+        if is_exportable(commit, local_wpt, wpt_github):
+            exportable_commits.append(commit)
+    return exportable_commits
 
 
-def exportable_commits_over_last_n_commits(host, local_wpt, number=DEFAULT_COMMIT_HISTORY_WINDOW):
-    """Lists exportable commits after a certain point.
-
-    Args:
-        number: Number of commits back to look. The commits to check will
-            include all commits starting from the commit before HEAD~n, up
-            to and including HEAD.
-        host: A Host object.
-        local_wpt: A LocalWPT instance, used to see whether a Chromium commit
-            can be applied cleanly in the upstream repo.
-
-    Returns:
-        A list of ChromiumCommit objects for commits that are exportable after
-        the given commit, in chronological order.
-    """
-    return _exportable_commits_since('HEAD~{}'.format(number + 1), host, local_wpt)
-
-
-def is_exportable(chromium_commit, local_wpt):
+def is_exportable(chromium_commit, local_wpt, wpt_github):
     """Checks whether a given patch is exportable and can be applied."""
+    message = chromium_commit.message()
+    if 'NOEXPORT=true' in message or message.startswith('Import'):
+        return False
     patch = chromium_commit.format_patch()
-
-    return ('NOEXPORT=true' not in chromium_commit.message() and
-            not chromium_commit.message().startswith('Import') and
-            patch and
-            local_wpt.test_patch(patch, chromium_commit))
+    if not (patch and local_wpt.test_patch(patch, chromium_commit)):
+        return False
+    pull_request = wpt_github.pr_with_position(chromium_commit.position)
+    if pull_request and pull_request.state == 'closed':
+        return False
+    return True

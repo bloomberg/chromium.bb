@@ -134,13 +134,10 @@ class LocalWPT(object):
             self.run(['git', 'add', '.'])
             output = self.run(['git', 'diff', 'origin/master'])
         except ScriptError:
-            _log.warning('Patch did not apply cleanly, skipping.')
+            _log.debug('Patch did not apply cleanly for the following commit, skipping:')
             if chromium_commit:
-                _log.info('Commit: %s', chromium_commit.url())
-                _log.info('  Commit subject: "%s"', chromium_commit.subject())
-                _log.info('  Modified files in wpt directory in this commit:')
-                for path in chromium_commit.filtered_changed_files():
-                    _log.info('    %s', path)
+                _log.debug('Commit: %s', chromium_commit.url())
+                _log.debug('Commit subject: "%s"', chromium_commit.subject())
             output = ''
 
         self.clean()
