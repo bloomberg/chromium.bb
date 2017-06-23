@@ -7,6 +7,7 @@
 #include "ash/system/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -162,6 +164,7 @@ void UpdateAuthParams(base::DictionaryValue* params,
   // 4. Supervised users are allowed by owner.
   ChromeUserManager* user_manager = ChromeUserManager::Get();
   bool supervised_users_can_create =
+      base::FeatureList::IsEnabled(features::kSupervisedUserCreation) &&
       user_manager->AreSupervisedUsersAllowed() && allow_new_user &&
       !user_manager->GetUsersAllowedForSupervisedUsersCreation().empty();
   params->SetBoolean("supervisedUsersCanCreate", supervised_users_can_create);

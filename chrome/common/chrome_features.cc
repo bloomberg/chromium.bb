@@ -329,6 +329,11 @@ const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
 const base::Feature kSiteDetails{"SiteDetails",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the creation of (legacy) supervised users. Does not
+// affect existing supervised users.
+const base::Feature kSupervisedUserCreation{"SupervisedUserCreation",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(SYZYASAN)
 // Enable the deferred free mechanism in the syzyasan module, which helps the
 // performance by deferring some work on the critical path to a background

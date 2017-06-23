@@ -172,6 +172,8 @@ extern const base::Feature kSiteDetails;
 extern const base::Feature kSiteNotificationChannels;
 #endif
 
+extern const base::Feature kSupervisedUserCreation;
+
 #if defined(SYZYASAN)
 extern const base::Feature kSyzyasanDeferredFree;
 #endif
