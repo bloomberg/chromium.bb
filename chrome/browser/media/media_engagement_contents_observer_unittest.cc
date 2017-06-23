@@ -10,6 +10,7 @@
 #include "chrome/browser/media/media_engagement_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,6 +29,8 @@ class MediaEngagementContentsObserverTest
 
     playback_timer_ = new base::MockTimer(true, false);
     contents_observer_->SetTimerForTest(base::WrapUnique(playback_timer_));
+
+    ASSERT_FALSE(GetStoredPlayerStatesCount());
   }
 
   bool IsTimerRunning() const { return playback_timer_->IsRunning(); }
@@ -38,6 +41,17 @@ class MediaEngagementContentsObserverTest
 
   size_t GetSignificantActivePlayersCount() const {
     return contents_observer_->significant_players_.size();
+  }
+
+  size_t GetStoredPlayerStatesCount() const {
+    return contents_observer_->player_states_.size();
+  }
+
+  void Navigate(GURL url) {
+    std::unique_ptr<content::NavigationHandle> test_handle =
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            url, main_rfh(), true /** committed */);
+    contents_observer_->DidFinishNavigation(test_handle.get());
   }
 
   void SimulatePlaybackStarted(int id) {
@@ -51,6 +65,7 @@ class MediaEngagementContentsObserverTest
     content::WebContentsObserver::MediaPlayerId player_id =
         std::make_pair(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaStartedPlaying(player_info, player_id);
+    SimulateMutedStateChange(id, false);
   }
 
   void SimulatePlaybackStopped(int id) {
@@ -58,6 +73,12 @@ class MediaEngagementContentsObserverTest
     content::WebContentsObserver::MediaPlayerId player_id =
         std::make_pair(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaStoppedPlaying(player_info, player_id);
+  }
+
+  void SimulateMutedStateChange(int id, bool muted_state) {
+    content::WebContentsObserver::MediaPlayerId player_id =
+        std::make_pair(nullptr /* RenderFrameHost */, id);
+    contents_observer_->MediaMutedStateChanged(player_id, muted_state);
   }
 
   void SimulateIsVisible() { contents_observer_->WasShown(); }
@@ -129,6 +150,22 @@ TEST_F(MediaEngagementContentsObserverTest, AreConditionsMet) {
 
   SimulatePlaybackStarted(0);
   EXPECT_TRUE(AreConditionsMet());
+
+  SimulateMutedStateChange(0, true);
+  EXPECT_FALSE(AreConditionsMet());
+
+  SimulatePlaybackStarted(1);
+  EXPECT_TRUE(AreConditionsMet());
+}
+
+TEST_F(MediaEngagementContentsObserverTest, EnsureCleanupAfterNavigation) {
+  EXPECT_FALSE(GetStoredPlayerStatesCount());
+
+  SimulateMutedStateChange(0, true);
+  EXPECT_TRUE(GetStoredPlayerStatesCount());
+
+  Navigate(GURL("https://example.com"));
+  EXPECT_FALSE(GetStoredPlayerStatesCount());
 }
 
 TEST_F(MediaEngagementContentsObserverTest, TimerRunsDependingOnConditions) {
@@ -151,6 +188,12 @@ TEST_F(MediaEngagementContentsObserverTest, TimerRunsDependingOnConditions) {
   EXPECT_FALSE(IsTimerRunning());
 
   SimulatePlaybackStarted(0);
+  EXPECT_TRUE(IsTimerRunning());
+
+  SimulateMutedStateChange(0, true);
+  EXPECT_FALSE(IsTimerRunning());
+
+  SimulatePlaybackStarted(1);
   EXPECT_TRUE(IsTimerRunning());
 }
 
