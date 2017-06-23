@@ -3149,17 +3149,19 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     assert(mbmi->segment_id_supertx < MAX_SEGMENTS);
 
     skip = write_skip(cm, xd, mbmi->segment_id_supertx, xd->mi[0], w);
+
+#if CONFIG_EC_ADAPT
+    FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+    FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+
 #if CONFIG_EXT_TX
     if (get_ext_tx_types(supertx_size, bsize, 1, cm->reduced_tx_set_used) > 1 &&
         !skip) {
       const int eset =
           get_ext_tx_set(supertx_size, bsize, 1, cm->reduced_tx_set_used);
       if (eset > 0) {
-#if CONFIG_EC_ADAPT
-        FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-        FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
         aom_write_symbol(w, av1_ext_tx_inter_ind[eset][mbmi->tx_type],
                          ec_ctx->inter_ext_tx_cdf[eset][supertx_size],
                          ext_tx_cnt_inter[eset]);
@@ -3167,9 +3169,8 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     }
 #else
     if (supertx_size < TX_32X32 && !skip) {
-      av1_write_token(w, av1_ext_tx_tree,
-                      cm->fc->inter_ext_tx_prob[supertx_size],
-                      &ext_tx_encodings[mbmi->tx_type]);
+      aom_write_symbol(w, mbmi->tx_type, ec_ctx->inter_ext_tx_cdf[supertx_size],
+                       TX_TYPES);
     }
 #endif  // CONFIG_EXT_TX
 

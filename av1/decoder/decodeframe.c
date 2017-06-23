@@ -2589,22 +2589,28 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     if (skip) {
       av1_reset_skip_context(xd, mi_row, mi_col, bsize);
     } else {
+#if CONFIG_EC_ADAPT
+      FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+      FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
 #if CONFIG_EXT_TX
       if (get_ext_tx_types(supertx_size, bsize, 1, cm->reduced_tx_set_used) >
           1) {
         const int eset =
             get_ext_tx_set(supertx_size, bsize, 1, cm->reduced_tx_set_used);
         if (eset > 0) {
-          txfm = aom_read_tree(r, av1_ext_tx_inter_tree[eset],
-                               cm->fc->inter_ext_tx_prob[eset][supertx_size],
-                               ACCT_STR);
+          const int packed_sym =
+              aom_read_symbol(r, ec_ctx->inter_ext_tx_cdf[eset][supertx_size],
+                              ext_tx_cnt_inter[eset], ACCT_STR);
+          txfm = av1_ext_tx_inter_inv[eset][packed_sym];
           if (xd->counts) ++xd->counts->inter_ext_tx[eset][supertx_size][txfm];
         }
       }
 #else
       if (supertx_size < TX_32X32) {
-        txfm = aom_read_tree(r, av1_ext_tx_tree,
-                             cm->fc->inter_ext_tx_prob[supertx_size], ACCT_STR);
+        txfm = aom_read_symbol(r, ec_ctx->inter_ext_tx_cdf[supertx_size],
+                               TX_TYPES, ACCT_STR);
         if (xd->counts) ++xd->counts->inter_ext_tx[supertx_size][txfm];
       }
 #endif  // CONFIG_EXT_TX
