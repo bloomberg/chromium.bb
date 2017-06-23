@@ -10,14 +10,9 @@
 #include "base/compiler_specific.h"
 
 @class CWVWebView;
-@class CWVWebViewConfiguration;
 
 namespace ios_web_view {
 namespace test {
-
-// Creates web view with given |configuration| and frame equal to screen bounds.
-CWVWebView* CreateWebView(CWVWebViewConfiguration* configuration)
-    WARN_UNUSED_RESULT;
 
 // Creates web view with default configuration and frame equal to screen bounds.
 CWVWebView* CreateWebView() WARN_UNUSED_RESULT;
