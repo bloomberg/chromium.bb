@@ -49,4 +49,18 @@ LayoutUnit GridLayoutUtils::MarginLogicalHeightForChild(
              : child.MarginLogicalHeight();
 }
 
+bool GridLayoutUtils::IsOrthogonalChild(const LayoutGrid& grid,
+                                        const LayoutBox& child) {
+  return child.IsHorizontalWritingMode() != grid.IsHorizontalWritingMode();
+}
+
+GridTrackSizingDirection GridLayoutUtils::FlowAwareDirectionForChild(
+    const LayoutGrid& grid,
+    const LayoutBox& child,
+    GridTrackSizingDirection direction) {
+  return !IsOrthogonalChild(grid, child)
+             ? direction
+             : (direction == kForColumns ? kForRows : kForColumns);
+}
+
 }  // namespace blink

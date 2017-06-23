@@ -147,9 +147,12 @@ GridTrackSizingAlgorithmStrategy::OverrideContainingBlockContentSizeForChild(
 
 bool GridTrackSizingAlgorithmStrategy::
     ShouldClearOverrideContainingBlockContentSizeForChild(
+        const LayoutGrid& grid,
         const LayoutBox& child,
         GridTrackSizingDirection direction) {
-  if (direction == kForColumns) {
+  GridTrackSizingDirection child_inline_direction =
+      GridLayoutUtils::FlowAwareDirectionForChild(grid, child, kForColumns);
+  if (direction == child_inline_direction) {
     return child.HasRelativeLogicalWidth() ||
            child.StyleRef().LogicalWidth().IsIntrinsicOrAuto();
   }
@@ -168,20 +171,9 @@ void GridTrackSizingAlgorithmStrategy::
     child.SetOverrideContainingBlockContentLogicalHeight(size);
 }
 
-GridTrackSizingDirection
-GridTrackSizingAlgorithmStrategy::FlowAwareDirectionForChild(
-    const LayoutGrid* layout_grid,
-    const LayoutBox& child,
-    GridTrackSizingDirection direction) {
-  return child.IsHorizontalWritingMode() ==
-                 layout_grid->IsHorizontalWritingMode()
-             ? direction
-             : (direction == kForColumns ? kForRows : kForColumns);
-}
-
 LayoutUnit GridTrackSizingAlgorithm::AssumedRowsSizeForOrthogonalChild(
     const LayoutBox& child) const {
-  DCHECK(layout_grid_->IsOrthogonalChild(child));
+  DCHECK(GridLayoutUtils::IsOrthogonalChild(*layout_grid_, child));
   const GridSpan& span = grid_.GridItemSpan(child, kForRows);
   LayoutUnit grid_area_size;
   bool grid_area_is_indefinite = false;
@@ -246,12 +238,14 @@ bool GridTrackSizingAlgorithmStrategy::
 LayoutUnit GridTrackSizingAlgorithmStrategy::LogicalHeightForChild(
     LayoutBox& child) const {
   GridTrackSizingDirection child_block_direction =
-      FlowAwareDirectionForChild(GetLayoutGrid(), child, kForRows);
-
-  // If |child| has a relative logical height, we shouldn't let it override its
-  // intrinsic height, which is what we are interested in here. Thus we need to
-  // set the block-axis override size to -1 (no possible resolution).
-  if (ShouldClearOverrideContainingBlockContentSizeForChild(child, kForRows)) {
+      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
+                                                  kForRows);
+  // If |child| has a relative block-axis size, we shouldn't let it override its
+  // intrinsic size, which is what we are interested in here. Thus we
+  // need to set the block-axis OverrideContainingBlock size to -1 (no possible
+  // resolution).
+  if (ShouldClearOverrideContainingBlockContentSizeForChild(
+          *GetLayoutGrid(), child, child_block_direction)) {
     SetOverrideContainingBlockContentSizeForChild(child, child_block_direction,
                                                   LayoutUnit(-1));
     child.SetNeedsLayout(LayoutInvalidationReason::kGridChanged, kMarkOnlyThis);
@@ -269,13 +263,15 @@ DISABLE_CFI_PERF
 LayoutUnit GridTrackSizingAlgorithmStrategy::MinContentForChild(
     LayoutBox& child) const {
   GridTrackSizingDirection child_inline_direction =
-      FlowAwareDirectionForChild(GetLayoutGrid(), child, kForColumns);
+      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
+                                                  kForColumns);
   if (Direction() == child_inline_direction) {
-    // If |child| has a relative logical width, we shouldn't let it override its
-    // intrinsic width, which is what we are interested in here. Thus we need to
-    // set the inline-axis override size to -1 (no possible resolution).
-    if (ShouldClearOverrideContainingBlockContentSizeForChild(child,
-                                                              kForColumns)) {
+    // If |child| has a relative inline-axis size, we shouldn't let it override
+    // its intrinsic size, which is what we are interested in here.
+    // Thus we need to set the inline-axis OverrideContainingBlock size to -1
+    // (no possible resolution).
+    if (ShouldClearOverrideContainingBlockContentSizeForChild(
+            *GetLayoutGrid(), child, child_inline_direction)) {
       SetOverrideContainingBlockContentSizeForChild(
           child, child_inline_direction, LayoutUnit(-1));
     }
@@ -288,7 +284,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinContentForChild(
   }
 
   if (Direction() == kForColumns && !AvailableSpace()) {
-    DCHECK(GetLayoutGrid()->IsOrthogonalChild(child));
+    DCHECK(GridLayoutUtils::IsOrthogonalChild(*GetLayoutGrid(), child));
     if (auto baseline_extent = ExtentForBaselineAlignment(child))
       return baseline_extent.value();
   }
@@ -303,13 +299,15 @@ DISABLE_CFI_PERF
 LayoutUnit GridTrackSizingAlgorithmStrategy::MaxContentForChild(
     LayoutBox& child) const {
   GridTrackSizingDirection child_inline_direction =
-      FlowAwareDirectionForChild(GetLayoutGrid(), child, kForColumns);
+      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
+                                                  kForColumns);
   if (Direction() == child_inline_direction) {
-    // If |child| has a relative logical width, we shouldn't let it override its
-    // intrinsic width, which is what we are interested in here. Thus we need to
-    // set the inline-axis override size to -1 (no possible resolution).
-    if (ShouldClearOverrideContainingBlockContentSizeForChild(child,
-                                                              kForColumns)) {
+    // If |child| has a relative inline-axis size, we shouldn't let it override
+    // its intrinsic size, which is what we are interested in here.
+    // Thus we need to set the inline-axis OverrideContainingBlock size to -1
+    // (no possible resolution).
+    if (ShouldClearOverrideContainingBlockContentSizeForChild(
+            *GetLayoutGrid(), child, child_inline_direction)) {
       SetOverrideContainingBlockContentSizeForChild(
           child, child_inline_direction, LayoutUnit(-1));
     }
@@ -330,7 +328,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MaxContentForChild(
 LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
     LayoutBox& child) const {
   GridTrackSizingDirection child_inline_direction =
-      FlowAwareDirectionForChild(GetLayoutGrid(), child, kForColumns);
+      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
+                                                  kForColumns);
   bool is_row_axis = Direction() == child_inline_direction;
   const Length& child_size = is_row_axis ? child.StyleRef().LogicalWidth()
                                          : child.StyleRef().LogicalHeight();
@@ -390,8 +389,9 @@ Optional<LayoutUnit>
 GridTrackSizingAlgorithmStrategy::ExtentForBaselineAlignment(
     LayoutBox& child) const {
   auto grid = algorithm_.layout_grid_;
-  GridAxis baseline_axis =
-      grid->IsOrthogonalChild(child) ? kGridRowAxis : kGridColumnAxis;
+  GridAxis baseline_axis = GridLayoutUtils::IsOrthogonalChild(*grid, child)
+                               ? kGridRowAxis
+                               : kGridColumnAxis;
   if (!grid->IsBaselineAlignmentForChild(child, baseline_axis) ||
       !grid->IsBaselineContextComputed(baseline_axis))
     return WTF::nullopt;

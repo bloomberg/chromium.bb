@@ -582,10 +582,6 @@ LayoutUnit LayoutGrid::OverrideContainingBlockContentSizeForChild(
              : child.OverrideContainingBlockContentLogicalHeight();
 }
 
-bool LayoutGrid::IsOrthogonalChild(const LayoutBox& child) const {
-  return child.IsHorizontalWritingMode() != IsHorizontalWritingMode();
-}
-
 // Unfortunately there are still many layout methods that return -1 for
 // non-resolvable sizes. We prefer to represent them with WTF::nullopt.
 static Optional<LayoutUnit> ConvertLayoutUnitToOptional(LayoutUnit size) {
@@ -798,7 +794,8 @@ void LayoutGrid::PlaceItemsOnGrid(
       continue;
 
     has_any_orthogonal_grid_item =
-        has_any_orthogonal_grid_item || IsOrthogonalChild(*child);
+        has_any_orthogonal_grid_item ||
+        GridLayoutUtils::IsOrthogonalChild(*this, *child);
     grid.SetGridItemPaintOrder(*child, child_index++);
 
     GridArea area = grid.GridItemArea(*child);
@@ -1319,7 +1316,8 @@ void LayoutGrid::LayoutPositionedObjects(bool relayout_children,
 
     LayoutPositionedObject(child, relayout_children, info);
 
-    bool is_orthogonal_child = IsOrthogonalChild(*child);
+    bool is_orthogonal_child =
+        GridLayoutUtils::IsOrthogonalChild(*this, *child);
     LayoutUnit logical_left =
         child->LogicalLeft() +
         (is_orthogonal_child ? row_offset : column_offset);
@@ -1577,19 +1575,11 @@ StyleSelfAlignmentData LayoutGrid::JustifySelfForChild(
       SelfAlignmentNormalBehavior(&child), style);
 }
 
-GridTrackSizingDirection LayoutGrid::FlowAwareDirectionForChild(
-    const LayoutBox& child,
-    GridTrackSizingDirection direction) const {
-  return !IsOrthogonalChild(child)
-             ? direction
-             : (direction == kForColumns ? kForRows : kForColumns);
-}
-
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to
 // LayoutBox.
 void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
   GridTrackSizingDirection child_block_direction =
-      FlowAwareDirectionForChild(child, kForRows);
+      GridLayoutUtils::FlowAwareDirectionForChild(*this, child, kForRows);
   bool block_flow_is_column_axis = child_block_direction == kForRows;
   bool allowed_to_stretch_child_block_size =
       block_flow_is_column_axis ? AllowedToStretchChildAlongColumnAxis(child)
@@ -1751,7 +1741,7 @@ int LayoutGrid::FirstLineBoxBaseline() const {
   if (!baseline_child)
     return -1;
 
-  int baseline = IsOrthogonalChild(*baseline_child)
+  int baseline = GridLayoutUtils::IsOrthogonalChild(*this, *baseline_child)
                      ? -1
                      : baseline_child->FirstLineBoxBaseline();
   // We take border-box's bottom if no valid baseline.
@@ -1787,8 +1777,9 @@ bool LayoutGrid::IsHorizontalGridAxis(GridAxis axis) const {
 
 bool LayoutGrid::IsParallelToBlockAxisForChild(const LayoutBox& child,
                                                GridAxis axis) const {
-  return axis == kGridColumnAxis ? !IsOrthogonalChild(child)
-                                 : IsOrthogonalChild(child);
+  return axis == kGridColumnAxis
+             ? !GridLayoutUtils::IsOrthogonalChild(*this, child)
+             : GridLayoutUtils::IsOrthogonalChild(*this, child);
 }
 
 bool LayoutGrid::IsDescentBaselineForChild(const LayoutBox& child,
@@ -1987,7 +1978,7 @@ GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
       // Aligns the alignment subject to be flush with the edge of the alignment
       // container corresponding to the alignment subject's 'start' side in the
       // column axis.
-      if (IsOrthogonalChild(child)) {
+      if (GridLayoutUtils::IsOrthogonalChild(*this, child)) {
         // If orthogonal writing-modes, self-start will be based on the child's
         // inline-axis direction (inline-start), because it's the one parallel
         // to the column axis.
@@ -2004,7 +1995,7 @@ GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
       // Aligns the alignment subject to be flush with the edge of the alignment
       // container corresponding to the alignment subject's 'end' side in the
       // column axis.
-      if (IsOrthogonalChild(child)) {
+      if (GridLayoutUtils::IsOrthogonalChild(*this, child)) {
         // If orthogonal writing-modes, self-end will be based on the child's
         // inline-axis direction, (inline-end) because it's the one parallel to
         // the column axis.
@@ -2066,7 +2057,7 @@ GridAxisPosition LayoutGrid::RowAxisPositionForChild(
       // Aligns the alignment subject to be flush with the edge of the alignment
       // container corresponding to the alignment subject's 'start' side in the
       // row axis.
-      if (IsOrthogonalChild(child)) {
+      if (GridLayoutUtils::IsOrthogonalChild(*this, child)) {
         // If orthogonal writing-modes, self-start will be based on the child's
         // block-axis direction, because it's the one parallel to the row axis.
         if (child.StyleRef().IsFlippedBlocksWritingMode())
@@ -2082,7 +2073,7 @@ GridAxisPosition LayoutGrid::RowAxisPositionForChild(
       // Aligns the alignment subject to be flush with the edge of the alignment
       // container corresponding to the alignment subject's 'end' side in the
       // row axis.
-      if (IsOrthogonalChild(child)) {
+      if (GridLayoutUtils::IsOrthogonalChild(*this, child)) {
         // If orthogonal writing-modes, self-end will be based on the child's
         // block-axis direction, because it's the one parallel to the row axis.
         if (child.StyleRef().IsFlippedBlocksWritingMode())
@@ -2156,7 +2147,7 @@ LayoutUnit LayoutGrid::ColumnAxisOffsetForChild(const LayoutBox& child) const {
         end_of_row -= offset_between_rows_;
       }
       LayoutUnit column_axis_child_size =
-          IsOrthogonalChild(child)
+          GridLayoutUtils::IsOrthogonalChild(*this, child)
               ? child.LogicalWidth() + child.MarginLogicalWidth()
               : child.LogicalHeight() + child.MarginLogicalHeight();
       OverflowAlignment overflow = AlignSelfForChild(child).Overflow();
@@ -2198,7 +2189,7 @@ LayoutUnit LayoutGrid::RowAxisOffsetForChild(const LayoutBox& child) const {
         end_of_column -= offset_between_columns_;
       }
       LayoutUnit row_axis_child_size =
-          IsOrthogonalChild(child)
+          GridLayoutUtils::IsOrthogonalChild(*this, child)
               ? child.LogicalHeight() + child.MarginLogicalHeight()
               : child.LogicalWidth() + child.MarginLogicalWidth();
       OverflowAlignment overflow = JustifySelfForChild(child).Overflow();
@@ -2355,13 +2346,15 @@ LayoutUnit LayoutGrid::TranslateRTLCoordinate(LayoutUnit coordinate) const {
 LayoutPoint LayoutGrid::FindChildLogicalPosition(const LayoutBox& child) const {
   LayoutUnit column_axis_offset = ColumnAxisOffsetForChild(child);
   LayoutUnit row_axis_offset = RowAxisOffsetForChild(child);
+  bool is_orthogonal_child = GridLayoutUtils::IsOrthogonalChild(*this, child);
   // We stored m_columnPosition's data ignoring the direction, hence we might
   // need now to translate positions from RTL to LTR, as it's more convenient
   // for painting.
-  if (!Style()->IsLeftToRightDirection())
-    row_axis_offset = TranslateRTLCoordinate(row_axis_offset) -
-                      (IsOrthogonalChild(child) ? child.LogicalHeight()
-                                                : child.LogicalWidth());
+  if (!Style()->IsLeftToRightDirection()) {
+    row_axis_offset =
+        TranslateRTLCoordinate(row_axis_offset) -
+        (is_orthogonal_child ? child.LogicalHeight() : child.LogicalWidth());
+  }
 
   // "In the positioning phase [...] calculations are performed according to the
   // writing mode of the containing block of the box establishing the orthogonal
@@ -2369,8 +2362,8 @@ LayoutPoint LayoutGrid::FindChildLogicalPosition(const LayoutBox& child) const {
   // 'setLogicalPosition' in order to set the child's logical position, which
   // will only take into account the child's writing-mode.
   LayoutPoint child_location(row_axis_offset, column_axis_offset);
-  return IsOrthogonalChild(child) ? child_location.TransposedPoint()
-                                  : child_location;
+  return is_orthogonal_child ? child_location.TransposedPoint()
+                             : child_location;
 }
 
 LayoutPoint LayoutGrid::GridAreaLogicalPosition(const GridArea& area) const {
