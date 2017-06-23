@@ -104,13 +104,70 @@ TEST_F(DiceResponseHandlerTest, Signin) {
       token_service_.RefreshTokenIsAvailable(dice_params.obfuscated_gaia_id));
   dice_response_handler_.ProcessDiceHeader(dice_params);
   // Check that a GaiaAuthFetcher has been created.
-  ASSERT_TRUE(signin_client_.consumer_);
+  ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
   // Simulate GaiaAuthFetcher success.
   signin_client_.consumer_->OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(
       token_service_.RefreshTokenIsAvailable(dice_params.obfuscated_gaia_id));
+}
+
+// Checks that a second token for the same account is not requested when a
+// request is already in flight.
+TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
+  ASSERT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.obfuscated_gaia_id));
+  dice_response_handler_.ProcessDiceHeader(dice_params);
+  // Check that a GaiaAuthFetcher has been created.
+  GaiaAuthConsumer* consumer = signin_client_.consumer_;
+  ASSERT_THAT(consumer, testing::NotNull());
+  // Start a second request for the same account.
+  signin_client_.consumer_ = nullptr;
+  dice_response_handler_.ProcessDiceHeader(dice_params);
+  // Check that there is no new request.
+  ASSERT_THAT(signin_client_.consumer_, testing::IsNull());
+  // Simulate GaiaAuthFetcher success for the first request.
+  consumer->OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+  // Check that the token has been inserted in the token service.
+  EXPECT_TRUE(
+      token_service_.RefreshTokenIsAvailable(dice_params.obfuscated_gaia_id));
+}
+
+// Checks that two SIGNIN requests can happen concurrently.
+TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
+  DiceResponseParams dice_params_1 = MakeDiceParams(DiceAction::SIGNIN);
+  DiceResponseParams dice_params_2 = MakeDiceParams(DiceAction::SIGNIN);
+  dice_params_2.email = "other_email";
+  dice_params_2.obfuscated_gaia_id = "other_gaia_id";
+  ASSERT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params_1.obfuscated_gaia_id));
+  ASSERT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params_2.obfuscated_gaia_id));
+  // Start first request.
+  dice_response_handler_.ProcessDiceHeader(dice_params_1);
+  // Check that a GaiaAuthFetcher has been created.
+  GaiaAuthConsumer* consumer_1 = signin_client_.consumer_;
+  ASSERT_THAT(consumer_1, testing::NotNull());
+  // Start second request.
+  signin_client_.consumer_ = nullptr;
+  dice_response_handler_.ProcessDiceHeader(dice_params_2);
+  GaiaAuthConsumer* consumer_2 = signin_client_.consumer_;
+  ASSERT_THAT(consumer_2, testing::NotNull());
+  // Simulate GaiaAuthFetcher success for the first request.
+  consumer_1->OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+  // Check that the token has been inserted in the token service.
+  EXPECT_TRUE(
+      token_service_.RefreshTokenIsAvailable(dice_params_1.obfuscated_gaia_id));
+  // Simulate GaiaAuthFetcher success for the second request.
+  consumer_2->OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+  // Check that the token has been inserted in the token service.
+  EXPECT_TRUE(
+      token_service_.RefreshTokenIsAvailable(dice_params_2.obfuscated_gaia_id));
 }
 
 // Tests that the DiceResponseHandler is created for a normal profile but not
