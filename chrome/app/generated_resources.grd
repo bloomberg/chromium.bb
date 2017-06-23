@@ -8467,6 +8467,10 @@ I don't think this site should be blocked!
                    desc="Text for the button that activates Android App. (In sentence case.)">
             Open
           </message>
+          <message name="IDS_APP_CONTEXT_MENU_INSTALL_ARC"
+                   desc="Text for the button that installs the Android app. (In sentence case.)">
+            Install
+          </message>
         </if>
       </if>
 
@@ -8523,6 +8527,10 @@ I don't think this site should be blocked!
           <message name="IDS_APP_CONTEXT_MENU_ACTIVATE_ARC"
                    desc="Text for the button that activates Android App. (In title case.)">
             Open
+          </message>
+          <message name="IDS_APP_CONTEXT_MENU_INSTALL_ARC"
+                   desc="Text for the button that installs the Android app. (In title case.)">
+            Install
           </message>
         </if>
       </if>
