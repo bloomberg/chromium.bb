@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 class GURL;
-@class XCallbackParameters;
 
 // This class stores all the parameters relevant to the app startup in case
 // of launch from another app.
@@ -16,10 +15,6 @@ class GURL;
 
 // The URL received that should be opened.
 @property(nonatomic, readonly, assign) const GURL& externalURL;
-
-// Parameters representing an x-callback-url request from another app.
-// Can be nil.
-@property(nonatomic, readonly, strong) XCallbackParameters* xCallbackParameters;
 
 // Boolean to track if a voice search is requested at startup.
 @property(nonatomic, readwrite, assign) BOOL launchVoiceSearch;
@@ -32,10 +27,7 @@ class GURL;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (instancetype)initWithExternalURL:(const GURL&)externalURL;
-
 - (instancetype)initWithExternalURL:(const GURL&)externalURL
-                xCallbackParameters:(XCallbackParameters*)xCallbackParameters
     NS_DESIGNATED_INITIALIZER;
 
 @end
