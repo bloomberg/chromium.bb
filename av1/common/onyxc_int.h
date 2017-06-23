@@ -86,11 +86,13 @@ typedef enum {
   REFERENCE_MODES = 3,
 } REFERENCE_MODE;
 
+#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
 typedef enum {
   RESET_FRAME_CONTEXT_NONE = 0,
   RESET_FRAME_CONTEXT_CURRENT = 1,
   RESET_FRAME_CONTEXT_ALL = 2,
 } RESET_FRAME_CONTEXT_MODE;
+#endif
 
 typedef enum {
   /**
@@ -235,8 +237,10 @@ typedef struct AV1Common {
 #endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #endif  // CONFIG_EXT_INTER
 
+#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   // Flag signaling which frame contexts should be reset to default values.
   RESET_FRAME_CONTEXT_MODE reset_frame_context;
+#endif
 
   // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
   // MODE_INFO (8-pixel) units.
