@@ -34,11 +34,23 @@ public class WebsitePermissionsFetcher {
     // The callback to run when the permissions have been fetched.
     private final WebsitePermissionsCallback mCallback;
 
+    private final boolean mFetchSiteImportantInfo;
+
     /**
      * @param callback The callback to run when the fetch is complete.
      */
     public WebsitePermissionsFetcher(WebsitePermissionsCallback callback) {
+        this(callback, false);
+    }
+
+    /**
+     * @param callback The callback to run when the fetch is complete.
+     * @param fetchSiteImportantInfo if the fetcher should query whether each site is 'important'.
+     */
+    public WebsitePermissionsFetcher(
+            WebsitePermissionsCallback callback, boolean fetchSiteImportantInfo) {
         mCallback = callback;
+        mFetchSiteImportantInfo = fetchSiteImportantInfo;
     }
 
     /**
@@ -298,7 +310,7 @@ public class WebsitePermissionsFetcher {
                     }
                     queue.next();
                 }
-            });
+            }, mFetchSiteImportantInfo);
         }
     }
 

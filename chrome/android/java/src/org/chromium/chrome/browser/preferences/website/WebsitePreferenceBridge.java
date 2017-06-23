@@ -187,8 +187,8 @@ public abstract class WebsitePreferenceBridge {
         return managedExceptions;
     }
 
-    public static void fetchLocalStorageInfo(Callback<HashMap> callback) {
-        nativeFetchLocalStorageInfo(callback);
+    public static void fetchLocalStorageInfo(Callback<HashMap> callback, boolean fetchImportant) {
+        nativeFetchLocalStorageInfo(callback, fetchImportant);
     }
 
     public static void fetchStorageInfo(Callback<ArrayList> callback) {
@@ -281,7 +281,8 @@ public abstract class WebsitePreferenceBridge {
     static native void nativeClearCookieData(String path);
     static native void nativeClearLocalStorageData(String path);
     static native void nativeClearStorageData(String origin, int type, Object callback);
-    private static native void nativeFetchLocalStorageInfo(Object callback);
+    private static native void nativeFetchLocalStorageInfo(
+            Object callback, boolean includeImportant);
     private static native void nativeFetchStorageInfo(Object callback);
     static native boolean nativeIsContentSettingsPatternValid(String pattern);
     static native boolean nativeUrlMatchesContentSettingsPattern(String url, String pattern);

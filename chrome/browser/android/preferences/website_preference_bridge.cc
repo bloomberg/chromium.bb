@@ -645,10 +645,11 @@ class StorageInfoClearedCallback {
 
 class LocalStorageInfoReadyCallback {
  public:
-  explicit LocalStorageInfoReadyCallback(const JavaRef<jobject>& java_callback)
+  LocalStorageInfoReadyCallback(const JavaRef<jobject>& java_callback,
+                                bool fetch_important)
       : env_(base::android::AttachCurrentThread()),
-        java_callback_(java_callback) {
-  }
+        java_callback_(java_callback),
+        fetch_important_(fetch_important) {}
 
   void OnLocalStorageModelInfoLoaded(
       Profile* profile,
@@ -657,9 +658,11 @@ class LocalStorageInfoReadyCallback {
     ScopedJavaLocalRef<jobject> map =
         Java_WebsitePreferenceBridge_createLocalStorageInfoMap(env_);
 
-    std::vector<ImportantSitesUtil::ImportantDomainInfo> important_domains =
-        ImportantSitesUtil::GetImportantRegisterableDomains(profile,
-                                                            kMaxImportantSites);
+    std::vector<ImportantSitesUtil::ImportantDomainInfo> important_domains;
+    if (fetch_important_) {
+      important_domains = ImportantSitesUtil::GetImportantRegisterableDomains(
+          profile, kMaxImportantSites);
+    }
 
     std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::const_iterator
         i;
@@ -667,23 +670,27 @@ class LocalStorageInfoReadyCallback {
       ScopedJavaLocalRef<jstring> full_origin =
           ConvertUTF8ToJavaString(env_, i->origin_url.spec());
       std::string origin_str = i->origin_url.GetOrigin().spec();
+
       bool important = false;
-      std::string registerable_domain;
-      if (i->origin_url.HostIsIPAddress()) {
-        registerable_domain = i->origin_url.host();
-      } else {
-        registerable_domain =
-            net::registry_controlled_domains::GetDomainAndRegistry(
-                i->origin_url,
-                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-      }
-      auto important_domain_search = [&registerable_domain](
-          const ImportantSitesUtil::ImportantDomainInfo& item) {
-        return item.registerable_domain == registerable_domain;
-      };
-      if (std::find_if(important_domains.begin(), important_domains.end(),
-                       important_domain_search) != important_domains.end()) {
-        important = true;
+      if (fetch_important_) {
+        std::string registerable_domain;
+        if (i->origin_url.HostIsIPAddress()) {
+          registerable_domain = i->origin_url.host();
+        } else {
+          registerable_domain =
+              net::registry_controlled_domains::GetDomainAndRegistry(
+                  i->origin_url,
+                  net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+        }
+        auto important_domain_search =
+            [&registerable_domain](
+                const ImportantSitesUtil::ImportantDomainInfo& item) {
+              return item.registerable_domain == registerable_domain;
+            };
+        if (std::find_if(important_domains.begin(), important_domains.end(),
+                         important_domain_search) != important_domains.end()) {
+          important = true;
+        }
       }
       // Remove the trailing slash so the origin is matched correctly in
       // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
@@ -702,6 +709,7 @@ class LocalStorageInfoReadyCallback {
  private:
   JNIEnv* env_;
   ScopedJavaGlobalRef<jobject> java_callback_;
+  bool fetch_important_;
 };
 
 }  // anonymous namespace
@@ -718,13 +726,14 @@ class LocalStorageInfoReadyCallback {
 
 static void FetchLocalStorageInfo(JNIEnv* env,
                                   const JavaParamRef<jclass>& clazz,
-                                  const JavaParamRef<jobject>& java_callback) {
+                                  const JavaParamRef<jobject>& java_callback,
+                                  jboolean fetch_important) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
       new BrowsingDataLocalStorageHelper(profile));
   // local_storage_callback will delete itself when it is run.
   LocalStorageInfoReadyCallback* local_storage_callback =
-      new LocalStorageInfoReadyCallback(java_callback);
+      new LocalStorageInfoReadyCallback(java_callback, fetch_important);
   local_storage_helper->StartFetching(
       base::Bind(&LocalStorageInfoReadyCallback::OnLocalStorageModelInfoLoaded,
                  base::Unretained(local_storage_callback), profile));
