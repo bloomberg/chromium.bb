@@ -3345,6 +3345,26 @@
             ]
         }
     ],
+    "VsyncAlignedInput": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enable",
+                    "enable_features": [
+                        "RequestUnbufferedDispatch",
+                        "VsyncAlignedInput"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebApkGooglePlay": [
         {
             "platforms": [
