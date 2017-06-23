@@ -653,6 +653,11 @@ typedef struct AV1_COMP {
 #if CONFIG_SPEED_REFS
   int sb_scanning_pass_idx;
 #endif  // CONFIG_SPEED_REFS
+
+#if CONFIG_FLEX_REFS
+  int extra_arf_allowed;
+  int bwd_ref_allowed;
+#endif  // CONFIG_FLEX_REFS
 } AV1_COMP;
 
 void av1_initialize_enc(void);

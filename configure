@@ -269,6 +269,7 @@ EXPERIMENT_LIST="
     altref2
     speed_refs
     gf_groups
+    flex_refs
     global_motion
     new_quant
     supertx
