@@ -139,6 +139,7 @@ WebFrameWidgetImpl::~WebFrameWidgetImpl() {}
 DEFINE_TRACE(WebFrameWidgetImpl) {
   visitor->Trace(local_root_);
   visitor->Trace(mouse_capture_node_);
+  WebFrameWidgetBase::Trace(visitor);
 }
 
 // WebWidget ------------------------------------------------------------------

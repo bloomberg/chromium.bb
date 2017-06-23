@@ -9,6 +9,7 @@
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -107,10 +108,14 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebWidgetClient* Client() const override { return client_; }
   HitTestResult CoreHitTestResultAt(const WebPoint&) override;
 
+  DECLARE_VIRTUAL_TRACE();
+
  private:
   WebWidgetClient* client_;
   RefPtr<WebViewBase> web_view_;
-  Persistent<WebLocalFrameBase> main_frame_;
+  Member<WebLocalFrameBase> main_frame_;
+
+  SelfKeepAlive<WebViewFrameWidget> self_keep_alive_;
 };
 
 }  // namespace blink

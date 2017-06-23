@@ -257,6 +257,10 @@ void WebFrameWidgetBase::RequestDecode(
   View()->RequestDecode(image, std::move(callback));
 }
 
+DEFINE_TRACE(WebFrameWidgetBase) {
+  visitor->Trace(current_drag_data_);
+}
+
 // TODO(665924): Remove direct dispatches of mouse events from
 // PointerLockController, instead passing them through EventHandler.
 void WebFrameWidgetBase::PointerLockMouseEvent(

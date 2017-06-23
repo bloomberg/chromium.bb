@@ -62,10 +62,8 @@ class WebFrameWidgetImpl;
 using WebFrameWidgetsSet =
     PersistentHeapHashSet<WeakMember<WebFrameWidgetImpl>>;
 
-class WebFrameWidgetImpl final
-    : public GarbageCollectedFinalized<WebFrameWidgetImpl>,
-      public WebFrameWidgetBase,
-      public PageWidgetEventHandler {
+class WebFrameWidgetImpl final : public WebFrameWidgetBase,
+                                 public PageWidgetEventHandler {
  public:
   static WebFrameWidgetImpl* Create(WebWidgetClient*, WebLocalFrame*);
 
