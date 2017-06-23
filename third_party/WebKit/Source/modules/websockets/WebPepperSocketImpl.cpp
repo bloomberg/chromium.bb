@@ -38,6 +38,7 @@
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebPepperSocketChannelClientProxy.h"
 #include "modules/websockets/WebSocketChannel.h"
+#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURL.h"
@@ -46,32 +47,29 @@
 
 namespace blink {
 
+std::unique_ptr<WebPepperSocket> WebPepperSocket::Create(
+    const WebDocument& document,
+    WebPepperSocketClient* client) {
+  DCHECK(client);
+
+  return WTF::MakeUnique<WebPepperSocketImpl>(document, client);
+}
+
 WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document,
                                          WebPepperSocketClient* client)
     : client_(client),
       channel_proxy_(WebPepperSocketChannelClientProxy::Create(this)),
-      binary_type_(kBinaryTypeBlob),
       is_closing_or_closed_(false),
       buffered_amount_(0),
       buffered_amount_after_close_(0) {
   Document* core_document = document;
   private_ = DocumentWebSocketChannel::Create(
       core_document, channel_proxy_.Get(), SourceLocation::Capture());
+  DCHECK(private_);
 }
 
 WebPepperSocketImpl::~WebPepperSocketImpl() {
   private_->Disconnect();
-}
-
-WebPepperSocket::BinaryType WebPepperSocketImpl::GetBinaryType() const {
-  return binary_type_;
-}
-
-bool WebPepperSocketImpl::SetBinaryType(BinaryType binary_type) {
-  if (binary_type > kBinaryTypeArrayBuffer)
-    return false;
-  binary_type_ = binary_type;
-  return true;
 }
 
 void WebPepperSocketImpl::Connect(const WebURL& url,
@@ -81,10 +79,6 @@ void WebPepperSocketImpl::Connect(const WebURL& url,
 
 WebString WebPepperSocketImpl::Subprotocol() {
   return subprotocol_;
-}
-
-WebString WebPepperSocketImpl::Extensions() {
-  return extensions_;
 }
 
 bool WebPepperSocketImpl::SendText(const WebString& message) {
@@ -123,10 +117,6 @@ bool WebPepperSocketImpl::SendArrayBuffer(
   return true;
 }
 
-unsigned long WebPepperSocketImpl::BufferedAmount() const {
-  return buffered_amount_;
-}
-
 void WebPepperSocketImpl::Close(int code, const WebString& reason) {
   is_closing_or_closed_ = true;
   private_->Close(code, reason);
@@ -148,7 +138,6 @@ void WebPepperSocketImpl::DidConnect(const String& subprotocol,
 
   // FIXME: Deprecate these statements.
   subprotocol_ = subprotocol;
-  extensions_ = extensions;
   client_->DidConnect();
 }
 
@@ -158,15 +147,8 @@ void WebPepperSocketImpl::DidReceiveTextMessage(const String& payload) {
 
 void WebPepperSocketImpl::DidReceiveBinaryMessage(
     std::unique_ptr<Vector<char>> payload) {
-  switch (binary_type_) {
-    case kBinaryTypeBlob:
-      // FIXME: Handle Blob after supporting WebBlob.
-      break;
-    case kBinaryTypeArrayBuffer:
-      client_->DidReceiveArrayBuffer(WebArrayBuffer(
-          DOMArrayBuffer::Create(payload->data(), payload->size())));
-      break;
-  }
+  client_->DidReceiveArrayBuffer(
+      WebArrayBuffer(DOMArrayBuffer::Create(payload->data(), payload->size())));
 }
 
 void WebPepperSocketImpl::DidError() {

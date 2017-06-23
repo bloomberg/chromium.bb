@@ -52,16 +52,11 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   WebPepperSocketImpl(const WebDocument&, WebPepperSocketClient*);
   ~WebPepperSocketImpl() override;
 
-  bool IsNull() const { return !private_; }
-
-  BinaryType GetBinaryType() const override;
-  bool SetBinaryType(BinaryType) override;
+  // WebPepperSocket implementation.
   void Connect(const WebURL&, const WebString& protocol) override;
   WebString Subprotocol() override;
-  WebString Extensions() override;
   bool SendText(const WebString&) override;
   bool SendArrayBuffer(const WebArrayBuffer&) override;
-  unsigned long BufferedAmount() const override;
   void Close(int code, const WebString& reason) override;
   void Fail(const WebString& reason) override;
   void Disconnect() override;
@@ -82,9 +77,7 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   Persistent<WebSocketChannel> private_;
   WebPepperSocketClient* client_;
   Persistent<WebPepperSocketChannelClientProxy> channel_proxy_;
-  BinaryType binary_type_;
   WebString subprotocol_;
-  WebString extensions_;
   bool is_closing_or_closed_;
   // m_bufferedAmount includes m_bufferedAmountAfterClose.
   unsigned long buffered_amount_;
