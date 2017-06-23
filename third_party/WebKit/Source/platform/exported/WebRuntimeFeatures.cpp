@@ -308,6 +308,10 @@ void WebRuntimeFeatures::EnablePushMessaging(bool enable) {
   RuntimeEnabledFeatures::SetPushMessagingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebShare(bool enable) {
+  RuntimeEnabledFeatures::SetWebShareEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebVR(bool enable) {
   RuntimeEnabledFeatures::SetWebVREnabled(enable);
 }
