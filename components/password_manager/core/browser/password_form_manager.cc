@@ -239,7 +239,10 @@ PasswordFormManager::PasswordFormManager(
                              true /* should_query_suppressed_https_forms */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
       is_main_frame_secure_(client->IsMainFrameSecure()),
-      metrics_recorder_(client->IsMainFrameSecure()) {
+      metrics_recorder_(client->IsMainFrameSecure(),
+                        PasswordFormMetricsRecorder::CreateUkmEntryBuilder(
+                            client->GetUkmRecorder(),
+                            client->GetUkmSourceId())) {
   if (owned_form_fetcher_)
     owned_form_fetcher_->Fetch();
   DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,

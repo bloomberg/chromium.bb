@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/safe_conversions.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
@@ -17,8 +18,10 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 PasswordFormMetricsRecorder::PasswordFormMetricsRecorder(
-    bool is_main_frame_secure)
-    : is_main_frame_secure_(is_main_frame_secure) {}
+    bool is_main_frame_secure,
+    std::unique_ptr<ukm::UkmEntryBuilder> ukm_entry_builder)
+    : is_main_frame_secure_(is_main_frame_secure),
+      ukm_entry_builder_(std::move(ukm_entry_builder)) {}
 
 PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenV3", GetActionsTaken(),
@@ -40,6 +43,7 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
       metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
           metrics_util::PASSWORD_NOT_SUBMITTED);
     }
+    RecordUkmMetric(internal::kUkmSubmissionObserved, 0 /*false*/);
   }
 
   if (submitted_form_type_ != kSubmittedFormTypeUnspecified) {
@@ -49,7 +53,19 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
       UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedNonSecureFormType",
                                 submitted_form_type_, kSubmittedFormTypeMax);
     }
+
+    RecordUkmMetric(internal::kUkmSubmissionFormType, submitted_form_type_);
   }
+}
+
+// static
+std::unique_ptr<ukm::UkmEntryBuilder>
+PasswordFormMetricsRecorder::CreateUkmEntryBuilder(
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id) {
+  if (!ukm_recorder)
+    return nullptr;
+  return ukm_recorder->GetEntryBuilder(source_id, "PasswordForm");
 }
 
 void PasswordFormMetricsRecorder::MarkGenerationAvailable() {
@@ -96,6 +112,8 @@ void PasswordFormMetricsRecorder::LogSubmitPassed() {
     }
   }
   base::RecordAction(base::UserMetricsAction("PasswordManager_LoginPassed"));
+  RecordUkmMetric(internal::kUkmSubmissionObserved, 1 /*true*/);
+  RecordUkmMetric(internal::kUkmSubmissionResult, kSubmitResultPassed);
   submit_result_ = kSubmitResultPassed;
 }
 
@@ -108,6 +126,8 @@ void PasswordFormMetricsRecorder::LogSubmitFailed() {
         metrics_util::PASSWORD_SUBMISSION_FAILED);
   }
   base::RecordAction(base::UserMetricsAction("PasswordManager_LoginFailed"));
+  RecordUkmMetric(internal::kUkmSubmissionObserved, 1 /*true*/);
+  RecordUkmMetric(internal::kUkmSubmissionResult, kSubmitResultFailed);
   submit_result_ = kSubmitResultFailed;
 }
 
@@ -216,6 +236,12 @@ int PasswordFormMetricsRecorder::GetHistogramSampleForSuppressedAccounts(
   mixed_base_encoding += GetActionsTakenNew();
   DCHECK_LT(mixed_base_encoding, kMaxSuppressedAccountStats);
   return mixed_base_encoding;
+}
+
+void PasswordFormMetricsRecorder::RecordUkmMetric(const char* metric_name,
+                                                  int64_t value) {
+  if (ukm_entry_builder_)
+    ukm_entry_builder_->AddMetric(metric_name, value);
 }
 
 }  // namespace password_manager
