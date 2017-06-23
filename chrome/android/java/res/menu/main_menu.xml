@@ -59,10 +59,16 @@
             android:title="@string/menu_add_to_homescreen" />
         <item android:id="@+id/open_webapk_id"
             android:title="@string/menu_open_webapk" />
-        <item android:id="@+id/request_desktop_site_id"
-            android:title="@string/menu_request_desktop_site"
-            android:checkable="true"
-            android:icon="?android:attr/listChoiceIndicatorMultiple" />
+        <item android:id="@+id/request_desktop_site_row_menu_id"
+            android:title="@null">
+          <menu>
+              <item android:id="@+id/request_desktop_site_id"
+                android:title="@string/menu_request_desktop_site" />
+              <item android:id="@+id/request_desktop_site_check_id"
+                android:title="@null"
+                android:checkable="true" />
+          </menu>
+        </item>
         <item android:id="@+id/reader_mode_prefs_id"
             android:title="@string/menu_reader_mode_prefs"
             android:icon="@drawable/reader_mode_prefs_icon" />

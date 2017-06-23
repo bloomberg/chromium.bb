@@ -228,26 +228,31 @@ class AppMenuAdapter extends BaseAdapter {
                 break;
             }
             case TITLE_BUTTON_MENU_ITEM: {
+                assert item.hasSubMenu();
+                final MenuItem titleItem = item.getSubMenu().getItem(0);
+                final MenuItem subItem = item.getSubMenu().getItem(1);
+
                 TitleButtonMenuItemViewHolder holder = null;
                 if (convertView == null
                         || !(convertView.getTag() instanceof TitleButtonMenuItemViewHolder)) {
-                    holder = new TitleButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.title_button_menu_item, parent, false);
+
+                    holder = new TitleButtonMenuItemViewHolder();
                     holder.title = (TextView) convertView.findViewById(R.id.title);
+                    holder.checkbox = (AppMenuItemIcon) convertView.findViewById(R.id.checkbox);
                     holder.button = (TintedImageButton) convertView.findViewById(R.id.button);
                     holder.button.setTag(
                             R.id.menu_item_original_background, holder.button.getBackground());
-                    View animatedView = convertView;
 
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
-                            buildStandardItemEnterAnimator(animatedView, position));
+                            buildStandardItemEnterAnimator(convertView, position));
                     convertView.setTag(
                             R.id.menu_item_original_background, convertView.getBackground());
                 } else {
                     holder = (TitleButtonMenuItemViewHolder) convertView.getTag();
                 }
-                final MenuItem titleItem = item.hasSubMenu() ? item.getSubMenu().getItem(0) : item;
+
                 holder.title.setText(titleItem.getTitle());
                 holder.title.setEnabled(titleItem.isEnabled());
                 holder.title.setFocusable(titleItem.isEnabled());
@@ -258,12 +263,22 @@ class AppMenuAdapter extends BaseAdapter {
                     }
                 });
 
-                if (item.getSubMenu().getItem(1).getIcon() != null) {
+                if (subItem.isCheckable()) {
+                    // Display a checkbox for the MenuItem.
+                    holder.checkbox.setVisibility(View.VISIBLE);
+                    holder.button.setVisibility(View.GONE);
+                    setupCheckBox(holder.checkbox, subItem);
+                } else if (subItem.getIcon() != null) {
+                    // Display an icon alongside the MenuItem.
+                    holder.checkbox.setVisibility(View.GONE);
                     holder.button.setVisibility(View.VISIBLE);
-                    setupImageButton(holder.button, item.getSubMenu().getItem(1));
+                    setupImageButton(holder.button, subItem);
                 } else {
+                    // Display just the label of the MenuItem.
+                    holder.checkbox.setVisibility(View.GONE);
                     holder.button.setVisibility(View.GONE);
                 }
+
                 convertView.setFocusable(false);
                 convertView.setEnabled(false);
                 break;
@@ -277,16 +292,33 @@ class AppMenuAdapter extends BaseAdapter {
         return convertView;
     }
 
+    private void setupCheckBox(AppMenuItemIcon button, final MenuItem item) {
+        button.setChecked(item.isChecked());
+
+        // The checkbox must be tinted to make Android consistently style it across OS versions.
+        // http://crbug.com/571445
+        button.setTint(ApiCompatibilityUtils.getColorStateList(
+                button.getResources(), R.color.checkbox_tint));
+
+        setupMenuButton(button, item);
+    }
+
     private void setupImageButton(TintedImageButton button, final MenuItem item) {
         // Store and recover the level of image as button.setimageDrawable
         // resets drawable to default level.
         int currentLevel = item.getIcon().getLevel();
         button.setImageDrawable(item.getIcon());
         item.getIcon().setLevel(currentLevel);
+
         if (item.isChecked()) {
             button.setTint(ApiCompatibilityUtils.getColorStateList(
                     button.getResources(), R.color.blue_mode_tint));
         }
+
+        setupMenuButton(button, item);
+    }
+
+    private void setupMenuButton(View button, final MenuItem item) {
         button.setEnabled(item.isEnabled());
         button.setFocusable(item.isEnabled());
         button.setContentDescription(item.getTitleCondensed());
@@ -497,6 +529,7 @@ class AppMenuAdapter extends BaseAdapter {
 
     static class TitleButtonMenuItemViewHolder {
         public TextView title;
+        public AppMenuItemIcon checkbox;
         public TintedImageButton button;
     }
 }

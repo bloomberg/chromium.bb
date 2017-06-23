@@ -82,18 +82,14 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             MenuItem downloadItem = menu.findItem(R.id.offline_page_id);
 
             boolean addToHomeScreenVisible = true;
-
-            // Hide request desktop site on all chrome:// pages except for the NTP. Check request
-            // desktop site if it's activated on this page.
-            MenuItem requestItem = menu.findItem(R.id.request_desktop_site_id);
-            updateRequestDesktopSiteMenuItem(requestItem, currentTab);
+            updateRequestDesktopSiteMenuItem(menu, currentTab);
 
             if (mIsMediaViewer) {
                 // Most of the menu items don't make sense when viewing media.
                 iconRow.setVisible(false);
                 openInChromeItem.setVisible(false);
                 menu.findItem(R.id.find_in_page_id).setVisible(false);
-                menu.findItem(R.id.request_desktop_site_id).setVisible(false);
+                menu.findItem(R.id.request_desktop_site_row_menu_id).setVisible(false);
                 addToHomeScreenVisible = false;
             } else if (mIsPaymentRequestUI) {
                 // Only the icon row and 'find in page' are shown for openning payment request UI
