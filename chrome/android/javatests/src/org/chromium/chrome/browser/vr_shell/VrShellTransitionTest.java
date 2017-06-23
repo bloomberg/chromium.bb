@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
@@ -81,6 +82,7 @@ public class VrShellTransitionTest {
      */
     @Test
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VIEWER_DAYDREAM})
+    @RetryOnFailure(message = "crbug.com/736527")
     @MediumTest
     public void test2dtoVrShellNfcSupported() {
         enterVrShellNfc(true /* supported */);
