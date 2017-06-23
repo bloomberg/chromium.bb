@@ -185,7 +185,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // (and for assertions).
     void SetUpAndFetchInitialConfig(
         const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+        const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
     // Handler for setting change notifications: fetches a new proxy
     // configuration from settings, and if this config is different
@@ -267,7 +267,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     scoped_refptr<base::SingleThreadTaskRunner> glib_task_runner_;
     // Task runner for the IO thread. GetLatestProxyConfig() is called from
     // the thread running this loop.
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
     base::ObserverList<Observer> observers_;
 
@@ -289,7 +289,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
 
   void SetupAndFetchInitialConfig(
       const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
     delegate_->SetUpAndFetchInitialConfig(glib_task_runner, io_task_runner);
   }
   void OnCheckProxyConfigSettings() {

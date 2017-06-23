@@ -1523,7 +1523,7 @@ void ProxyService::ForceReloadProxyConfig() {
 // static
 std::unique_ptr<ProxyConfigService>
 ProxyService::CreateSystemProxyConfigService(
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
 #if defined(OS_WIN)
   return base::MakeUnique<ProxyConfigServiceWin>();
 #elif defined(OS_IOS)
