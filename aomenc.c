@@ -275,17 +275,22 @@ static const arg_def_t resize_mode =
     ARG_DEF(NULL, "resize-mode", 1, "Frame resize mode");
 static const arg_def_t resize_numerator =
     ARG_DEF(NULL, "resize-numerator", 1, "Frame resize numerator");
-static const struct arg_enum_list end_usage_enum[] = { { "vbr", AOM_VBR },
-                                                       { "cbr", AOM_CBR },
-                                                       { "cq", AOM_CQ },
-                                                       { "q", AOM_Q },
-                                                       { NULL, 0 } };
+static const arg_def_t resize_kf_numerator =
+    ARG_DEF(NULL, "resize-kf-numerator", 1, "Frame resize keyframe numerator");
 #if CONFIG_FRAME_SUPERRES
 static const arg_def_t superres_mode =
     ARG_DEF(NULL, "superres-mode", 1, "Frame super-resolution mode");
 static const arg_def_t superres_numerator =
     ARG_DEF(NULL, "superres-numerator", 1, "Frame super-resolution numerator");
+static const arg_def_t superres_kf_numerator =
+    ARG_DEF(NULL, "superres-kf-numerator", 1,
+            "Frame super-resolution keyframe numerator");
 #endif  // CONFIG_FRAME_SUPERRES
+static const struct arg_enum_list end_usage_enum[] = { { "vbr", AOM_VBR },
+                                                       { "cbr", AOM_CBR },
+                                                       { "cq", AOM_CQ },
+                                                       { "q", AOM_Q },
+                                                       { NULL, 0 } };
 static const arg_def_t end_usage =
     ARG_DEF_ENUM(NULL, "end-usage", 1, "Rate control mode", end_usage_enum);
 static const arg_def_t target_bitrate =
@@ -304,16 +309,25 @@ static const arg_def_t buf_initial_sz =
     ARG_DEF(NULL, "buf-initial-sz", 1, "Client initial buffer size (ms)");
 static const arg_def_t buf_optimal_sz =
     ARG_DEF(NULL, "buf-optimal-sz", 1, "Client optimal buffer size (ms)");
-static const arg_def_t *rc_args[] = { &dropframe_thresh, &resize_mode,
+static const arg_def_t *rc_args[] = { &dropframe_thresh,
+                                      &resize_mode,
                                       &resize_numerator,
+                                      &resize_kf_numerator,
 #if CONFIG_FRAME_SUPERRES
-                                      &superres_mode,    &superres_numerator,
+                                      &superres_mode,
+                                      &superres_numerator,
+                                      &superres_kf_numerator,
 #endif  // CONFIG_FRAME_SUPERRES
-                                      &end_usage,        &target_bitrate,
-                                      &min_quantizer,    &max_quantizer,
-                                      &undershoot_pct,   &overshoot_pct,
-                                      &buf_sz,           &buf_initial_sz,
-                                      &buf_optimal_sz,   NULL };
+                                      &end_usage,
+                                      &target_bitrate,
+                                      &min_quantizer,
+                                      &max_quantizer,
+                                      &undershoot_pct,
+                                      &overshoot_pct,
+                                      &buf_sz,
+                                      &buf_initial_sz,
+                                      &buf_optimal_sz,
+                                      NULL };
 
 static const arg_def_t bias_pct =
     ARG_DEF(NULL, "bias-pct", 1, "CBR/VBR bias (0=CBR, 100=VBR)");
@@ -1009,11 +1023,15 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.rc_resize_mode = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &resize_numerator, argi)) {
       config->cfg.rc_resize_numerator = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &resize_kf_numerator, argi)) {
+      config->cfg.rc_resize_kf_numerator = arg_parse_uint(&arg);
 #if CONFIG_FRAME_SUPERRES
     } else if (arg_match(&arg, &superres_mode, argi)) {
       config->cfg.rc_superres_mode = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &superres_numerator, argi)) {
       config->cfg.rc_superres_numerator = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &superres_kf_numerator, argi)) {
+      config->cfg.rc_superres_kf_numerator = arg_parse_uint(&arg);
 #endif  // CONFIG_FRAME_SUPERRES
     } else if (arg_match(&arg, &end_usage, argi)) {
       config->cfg.rc_end_usage = arg_parse_enum_or_int(&arg);
@@ -1218,9 +1236,11 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(rc_dropframe_thresh);
   SHOW(rc_resize_mode);
   SHOW(rc_resize_numerator);
+  SHOW(rc_resize_kf_numerator);
 #if CONFIG_FRAME_SUPERRES
   SHOW(rc_superres_mode);
   SHOW(rc_superres_numerator);
+  SHOW(rc_superres_kf_numerator);
 #endif  // CONFIG_FRAME_SUPERRES
   SHOW(rc_end_usage);
   SHOW(rc_target_bitrate);
