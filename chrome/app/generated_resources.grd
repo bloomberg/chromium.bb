@@ -6456,6 +6456,9 @@ I don't think this site should be blocked!
         <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_RESTART" desc="A status message, appearing on the Chrome Cleanup web page, that the cleanup of unwanted software initiated by the user was performed but isn't finished. User must take additional action to finish the cleanup. 'Restart' is imperative. Short for 'To finish removing harmful software...'">
           To finish removing harmful software, restart your computer
         </message>
+        <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION" desc="A checkbox label, appearing on both the Chrome Cleanup dialog and web page, asking the user for permission to send some system information to Google in order to help with detection of harmful software. The word 'settings' refers to the user's operating system settings. The word 'applications' refers to any software that is installed or runs on the user's computer.">
+          Send information about your system and applications to Google to help detect harmful software
+        </message>
       </if>
 
       <!-- Settings reset prompt dialog messages -->
