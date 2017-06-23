@@ -100,31 +100,6 @@ class WinPortTest(port_testcase.PortTestCase):
         self.assert_baseline_paths('win-win7', 'win7', '/win')
         self.assert_baseline_paths('win-win10', 'win')
 
-    def test_build_path(self):
-        # Test that optional paths are used regardless of whether they exist.
-        options = optparse.Values({'configuration': 'Release', 'build_directory': '/foo'})
-        self.assert_build_path(options, ['/mock-checkout/out/Release'], '/foo/Release')
-
-        # Test that optional relative paths are returned unmodified.
-        options = optparse.Values({'configuration': 'Release', 'build_directory': 'foo'})
-        self.assert_build_path(options, ['/mock-checkout/out/Release'], 'foo/Release')
-
-        # Test that we prefer the legacy dir over the new dir.
-        options = optparse.Values({'configuration': 'Release', 'build_directory': None})
-        self.assert_build_path(options, ['/mock-checkout/build/Release', '/mock-checkout/out'], '/mock-checkout/build/Release')
-
-    def test_build_path_timestamps(self):
-        options = optparse.Values({'configuration': 'Release', 'build_directory': None})
-        port = self.make_port(options=options)
-        port.host.filesystem.maybe_make_directory('/mock-checkout/out/Release')
-        port.host.filesystem.maybe_make_directory('/mock-checkout/build/Release')
-        # Check with 'out' being newer.
-        port.host.filesystem.mtime = lambda f: 5 if '/out/' in f else 4
-        self.assertEqual(port._build_path(), '/mock-checkout/out/Release')
-        # Check with 'build' being newer.
-        port.host.filesystem.mtime = lambda f: 5 if '/build/' in f else 4
-        self.assertEqual(port._build_path(), '/mock-checkout/build/Release')
-
     def test_operating_system(self):
         self.assertEqual('win', self.make_port().operating_system())
 

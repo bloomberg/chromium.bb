@@ -46,32 +46,6 @@ class MacPortTest(port_testcase.PortTestCase):
     def test_operating_system(self):
         self.assertEqual('mac', self.make_port().operating_system())
 
-    def test_build_path(self):
-        # Test that optional paths are used regardless of whether they exist.
-        options = optparse.Values({'configuration': 'Release', 'build_directory': '/foo'})
-        self.assert_build_path(options, ['/mock-checkout/out/Release'], '/foo/Release')
-
-        # Test that optional relative paths are returned unmodified.
-        options = optparse.Values({'configuration': 'Release', 'build_directory': 'foo'})
-        self.assert_build_path(options, ['/mock-checkout/out/Release'], 'foo/Release')
-
-        # Test that we prefer the legacy dir over the new dir.
-        options = optparse.Values({'configuration': 'Release', 'build_directory': None})
-        self.assert_build_path(
-            options, ['/mock-checkout/xcodebuild/Release', '/mock-checkout/out/Release'], '/mock-checkout/xcodebuild/Release')
-
-    def test_build_path_timestamps(self):
-        options = optparse.Values({'configuration': 'Release', 'build_directory': None})
-        port = self.make_port(options=options)
-        port.host.filesystem.maybe_make_directory('/mock-checkout/out/Release')
-        port.host.filesystem.maybe_make_directory('/mock-checkout/xcodebuild/Release')
-        # Check with 'out' being newer.
-        port.host.filesystem.mtime = lambda f: 5 if '/out/' in f else 4
-        self.assertEqual(port._build_path(), '/mock-checkout/out/Release')
-        # Check with 'xcodebuild' being newer.
-        port.host.filesystem.mtime = lambda f: 5 if '/xcodebuild/' in f else 4
-        self.assertEqual(port._build_path(), '/mock-checkout/xcodebuild/Release')
-
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith('Content Shell'))
         port = self.make_port(options=optparse.Values(dict(driver_name='OtherDriver')))

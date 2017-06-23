@@ -108,8 +108,6 @@ class Port(object):
         'android': ['kitkat'],
     }
 
-    DEFAULT_BUILD_DIRECTORIES = ('out',)
-
     FALLBACK_PATHS = {}
 
     SUPPORTED_VERSIONS = []
@@ -123,25 +121,6 @@ class Port(object):
     @classmethod
     def latest_platform_fallback_path(cls):
         return cls.FALLBACK_PATHS[cls.SUPPORTED_VERSIONS[-1]]
-
-    @classmethod
-    def _static_build_path(cls, filesystem, build_directory, chromium_base, target, comps):
-        if build_directory:
-            return filesystem.join(build_directory, target, *comps)
-
-        hits = []
-        for directory in cls.DEFAULT_BUILD_DIRECTORIES:
-            base_dir = filesystem.join(chromium_base, directory, target)
-            path = filesystem.join(base_dir, *comps)
-            if filesystem.exists(path):
-                hits.append((filesystem.mtime(path), path))
-
-        if hits:
-            hits.sort(reverse=True)
-            return hits[0][1]  # Return the newest file found.
-
-        # We have to default to something, so pick the last one.
-        return filesystem.join(base_dir, *comps)
 
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
@@ -1587,14 +1566,15 @@ class Port(object):
             directory) for directory in self._options.image_first_tests)
 
     def _build_path(self, *comps):
+        """Returns a path from the build directory."""
         return self._build_path_with_target(self._options.target, *comps)
 
     def _build_path_with_target(self, target, *comps):
-        # Note that we don't do the option caching that the base class does,
-        # because finding the right directory is relatively fast.
         target = target or self.get_option('target')
-        return self._static_build_path(self._filesystem, self.get_option('build_directory'),
-                                       self.path_from_chromium_base(), target, comps)
+        return self._filesystem.join(
+            self.path_from_chromium_base(),
+            self.get_option('build_directory') or 'out',
+            target, *comps)
 
     def _check_driver_build_up_to_date(self, target):
         # FIXME: We should probably get rid of this check altogether as it has

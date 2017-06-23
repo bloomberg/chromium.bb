@@ -147,8 +147,9 @@ def parse_args(args):
                       'multiple search path entries.')),
             optparse.make_option(
                 '--build-directory',
-                help=('Path to the directory under which build files are kept (should not '
-                      'include configuration)')),
+                default='out',
+                help=('Path to the directory where build files are kept, not including '
+                      'configuration. In general this will be "out".')),
             optparse.make_option(
                 '--clobber-old-results',
                 action='store_true',
