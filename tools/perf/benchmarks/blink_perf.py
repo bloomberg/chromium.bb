@@ -413,5 +413,17 @@ class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
             [story.expectations.ANDROID_NEXUS5X], 'crbug.com/702319')
+        self.DisableStory(
+            'v1-large-deep-layout.html',
+            [story.expectations.ANDROID_ONE],
+            'crbug.com/736512')
+        self.DisableStory(
+            'v1-large-deep-distribution.html',
+            [story.expectations.ANDROID_ONE],
+            'crbug.com/736512')
+        self.DisableStory(
+            'v1-distribution-disconnected-and-reconnected.html',
+            [story.expectations.ANDROID_ONE],
+            'crbug.com/736512')
     return StoryExpectations()
 
