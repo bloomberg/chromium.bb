@@ -197,7 +197,6 @@ if (enable_extensions) {
       "manifest_handlers/web_accessible_resources_info.h",
       "manifest_handlers/webview_info.cc",
       "manifest_handlers/webview_info.h",
-      "manifest_location_param_traits.cc",
       "manifest_location_param_traits.h",
       "manifest_url_handlers.cc",
       "manifest_url_handlers.h",
