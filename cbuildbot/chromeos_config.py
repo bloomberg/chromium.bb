@@ -2260,6 +2260,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-st',
       'reef',
       'sentry',
+      'tidus',
       'wizpig',
   ])
 
@@ -2474,7 +2475,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('peach_pit',      None,             None),            # peach (Exynos5420)
     ('winky',          'kip',            None),            # rambi (BYT)
     ('nyan_big',       'nyan_kitty',     None),            # nyan (K1)
-    ('auron_paine',    None,             'auron_yuna'),    # auron (BDW)
+    ('auron_paine',    'tidus',          'auron_yuna'),    # auron (BDW)
     ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (RK3288)
     ('wizpig',         'edgar',          'cyan'),          # strago (BSW)
     ('cave',           'sentry',         'caroline'),      # glados (SKL)
