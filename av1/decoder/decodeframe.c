@@ -3393,7 +3393,7 @@ static int mem_get_varsize(const uint8_t *src, int sz) {
     case 2: return mem_get_le16(src);
     case 3: return mem_get_le24(src);
     case 4: return mem_get_le32(src);
-    default: assert("Invalid size" && 0); return -1;
+    default: assert(0 && "Invalid size"); return -1;
   }
 }
 

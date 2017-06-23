@@ -6056,7 +6056,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
           MAX_MVSEARCH_STEPS - 1 - step_param, 1, &cpi->fn_ptr[bsize], &ref_mv,
           &(x->best_mv.as_mv), 0);
       break;
-    default: assert("Invalid motion mode!\n");
+    default: assert(0 && "Invalid motion mode!\n");
   }
 #endif  // CONFIG_MOTION_VAR
 
@@ -6136,7 +6136,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
             cpi->sf.mv.subpel_iters_per_step, x->nmvjointcost, x->mvcost, &dis,
             &x->pred_sse[ref], 0, cpi->sf.use_upsampled_references);
         break;
-      default: assert("Invalid motion mode!\n");
+      default: assert(0 && "Invalid motion mode!\n");
     }
 #endif  // CONFIG_MOTION_VAR
   }
