@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/keyboard_brightness_controller.h"
+#include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
