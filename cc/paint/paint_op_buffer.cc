@@ -188,6 +188,72 @@ TYPES(M);
 
 SkRect PaintOp::kUnsetRect = {SK_ScalarInfinity, 0, 0, 0};
 
+std::string PaintOpTypeToString(PaintOpType type) {
+  switch (type) {
+    case PaintOpType::Annotate:
+      return "Annotate";
+    case PaintOpType::ClipPath:
+      return "ClipPath";
+    case PaintOpType::ClipRect:
+      return "ClipRect";
+    case PaintOpType::ClipRRect:
+      return "ClipRRect";
+    case PaintOpType::Concat:
+      return "Concat";
+    case PaintOpType::DrawArc:
+      return "DrawArc";
+    case PaintOpType::DrawCircle:
+      return "DrawCircle";
+    case PaintOpType::DrawColor:
+      return "DrawColor";
+    case PaintOpType::DrawDRRect:
+      return "DrawDRRect";
+    case PaintOpType::DrawImage:
+      return "DrawImage";
+    case PaintOpType::DrawImageRect:
+      return "DrawImageRect";
+    case PaintOpType::DrawIRect:
+      return "DrawIRect";
+    case PaintOpType::DrawLine:
+      return "DrawLine";
+    case PaintOpType::DrawOval:
+      return "DrawOval";
+    case PaintOpType::DrawPath:
+      return "DrawPath";
+    case PaintOpType::DrawPosText:
+      return "DrawPosText";
+    case PaintOpType::DrawRecord:
+      return "DrawRecord";
+    case PaintOpType::DrawRect:
+      return "DrawRect";
+    case PaintOpType::DrawRRect:
+      return "DrawRRect";
+    case PaintOpType::DrawText:
+      return "DrawText";
+    case PaintOpType::DrawTextBlob:
+      return "DrawTextBlob";
+    case PaintOpType::Noop:
+      return "Noop";
+    case PaintOpType::Restore:
+      return "Restore";
+    case PaintOpType::Rotate:
+      return "Rotate";
+    case PaintOpType::Save:
+      return "Save";
+    case PaintOpType::SaveLayer:
+      return "SaveLayer";
+    case PaintOpType::SaveLayerAlpha:
+      return "SaveLayerAlpha";
+    case PaintOpType::Scale:
+      return "Scale";
+    case PaintOpType::SetMatrix:
+      return "SetMatrix";
+    case PaintOpType::Translate:
+      return "Translate";
+  }
+  return "UNKNOWN";
+}
+
 void AnnotateOp::Raster(const PaintOp* base_op,
                         SkCanvas* canvas,
                         const SkMatrix& original_ctm) {
