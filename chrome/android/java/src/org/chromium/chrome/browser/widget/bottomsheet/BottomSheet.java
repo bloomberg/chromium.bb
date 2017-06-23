@@ -30,6 +30,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -52,6 +53,7 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
+import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.UiUtils;
 
@@ -222,7 +224,7 @@ public class BottomSheet
     private BottomToolbarPhone mDefaultToolbarView;
 
     /** Whether the {@link BottomSheet} and its children should react to touch events. */
-    private boolean mIsTouchEnabled = true;
+    private boolean mIsTouchEnabled;
 
     /** Whether the sheet is currently open. */
     private boolean mIsSheetOpen;
@@ -462,6 +464,17 @@ public class BottomSheet
 
         mMetrics = new BottomSheetMetrics();
         addObserver(mMetrics);
+
+        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
+                    @Override
+                    public void onSuccess(boolean alreadyStarted) {
+                        mIsTouchEnabled = true;
+                    }
+
+                    @Override
+                    public void onFailure() {}
+                });
     }
 
     /**
