@@ -1011,10 +1011,6 @@ void XMLHttpRequest::CreateRequest(PassRefPtr<EncodedFormData> http_body,
   options.fetch_request_mode =
       upload_events ? WebURLRequest::kFetchRequestModeCORSWithForcedPreflight
                     : WebURLRequest::kFetchRequestModeCORS;
-  options.content_security_policy_enforcement =
-      ContentSecurityPolicy::ShouldBypassMainWorld(&execution_context)
-          ? kDoNotEnforceContentSecurityPolicy
-          : kEnforceContentSecurityPolicy;
   options.timeout_milliseconds = timeout_milliseconds_;
 
   ResourceLoaderOptions resource_loader_options;

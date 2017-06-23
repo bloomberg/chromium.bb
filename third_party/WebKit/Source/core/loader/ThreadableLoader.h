@@ -48,17 +48,11 @@ class ThreadableLoaderClient;
 
 enum PreflightPolicy { kConsiderPreflight, kPreventPreflight };
 
-enum ContentSecurityPolicyEnforcement {
-  kEnforceContentSecurityPolicy,
-  kDoNotEnforceContentSecurityPolicy,
-};
-
 struct ThreadableLoaderOptions {
   DISALLOW_NEW();
   ThreadableLoaderOptions()
       : preflight_policy(kConsiderPreflight),
         fetch_request_mode(WebURLRequest::kFetchRequestModeSameOrigin),
-        content_security_policy_enforcement(kEnforceContentSecurityPolicy),
         timeout_milliseconds(0) {}
 
   // When adding members, CrossThreadThreadableLoaderOptionsData should
@@ -68,7 +62,6 @@ struct ThreadableLoaderOptions {
   PreflightPolicy preflight_policy;
 
   WebURLRequest::FetchRequestMode fetch_request_mode;
-  ContentSecurityPolicyEnforcement content_security_policy_enforcement;
   unsigned long timeout_milliseconds;
 };
 
@@ -79,23 +72,18 @@ struct CrossThreadThreadableLoaderOptionsData {
       const ThreadableLoaderOptions& options)
       : preflight_policy(options.preflight_policy),
         fetch_request_mode(options.fetch_request_mode),
-        content_security_policy_enforcement(
-            options.content_security_policy_enforcement),
         timeout_milliseconds(options.timeout_milliseconds) {}
 
   operator ThreadableLoaderOptions() const {
     ThreadableLoaderOptions options;
     options.preflight_policy = preflight_policy;
     options.fetch_request_mode = fetch_request_mode;
-    options.content_security_policy_enforcement =
-        content_security_policy_enforcement;
     options.timeout_milliseconds = timeout_milliseconds;
     return options;
   }
 
   PreflightPolicy preflight_policy;
   WebURLRequest::FetchRequestMode fetch_request_mode;
-  ContentSecurityPolicyEnforcement content_security_policy_enforcement;
   unsigned long timeout_milliseconds;
 };
 
