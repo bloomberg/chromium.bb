@@ -40,16 +40,6 @@ bool IsUserRotationLocked() {
   return Shell::Get()->screen_orientation_controller()->user_rotation_locked();
 }
 
-bool IsCurrentRotationPortrait() {
-  display::Display::Rotation current_rotation =
-      Shell::Get()
-          ->display_manager()
-          ->GetDisplayInfo(display::Display::InternalDisplayId())
-          .GetActiveRotation();
-  return current_rotation == display::Display::ROTATE_90 ||
-         current_rotation == display::Display::ROTATE_270;
-}
-
 }  // namespace
 
 namespace tray {
@@ -117,12 +107,19 @@ void RotationLockDefaultView::Update() {
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
   base::string16 label;
   if (IsUserRotationLocked()) {
-    icon_->SetImage(gfx::CreateVectorIcon(
-        IsCurrentRotationPortrait() ? kSystemMenuRotationLockPortraitIcon
-                                    : kSystemMenuRotationLockLandscapeIcon,
-        kMenuIconSize, style.GetIconColor()));
+    // If user rotation is locked, display the icon and text of the preferred
+    // orientation.
+    bool is_user_locked_orientation_portrait =
+        Shell::Get()
+            ->screen_orientation_controller()
+            ->IsUserLockedOrientationPortrait();
+    icon_->SetImage(
+        gfx::CreateVectorIcon(is_user_locked_orientation_portrait
+                                  ? kSystemMenuRotationLockPortraitIcon
+                                  : kSystemMenuRotationLockLandscapeIcon,
+                              kMenuIconSize, style.GetIconColor()));
     label = l10n_util::GetStringUTF16(
-        IsCurrentRotationPortrait()
+        is_user_locked_orientation_portrait
             ? IDS_ASH_STATUS_TRAY_ROTATION_LOCK_PORTRAIT
             : IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LANDSCAPE);
   } else {
