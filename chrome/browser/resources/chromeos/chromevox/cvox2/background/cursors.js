@@ -445,9 +445,14 @@ cursors.Cursor.prototype = {
         var target = newNode.firstChild;
         var length = 0;
         while (target && length < newIndex) {
-          if (length <= newIndex && newIndex < (length + target.name.length))
+          var newLength = length + target.name.length;
+
+          // Either |newIndex| falls between target's text or |newIndex| is the
+          // total length of all sibling text content.
+          if ((length <= newIndex && newIndex < newLength) ||
+              (newIndex == newLength && !target.nextSibling))
             break;
-          length += target.name.length;
+          length = newLength;
           target = target.nextSibling;
         }
         if (target) {

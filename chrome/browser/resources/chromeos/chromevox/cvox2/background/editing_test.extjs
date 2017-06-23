@@ -373,6 +373,43 @@ TEST_F('EditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
   });
 });
 
+TEST_F('EditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
+  editing.useRichText = true;
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go" role="textbox" contenteditable>Test</div>
+
+    <script>
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('move', 'forward', 'character');
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var moveByChar = input.doDefault.bind(input);
+    var lineText = 'Test';
+
+    this.listenOnce(input, 'focus', function() {
+      mockFeedback.call(moveByChar)
+          .expectSpeech('e')
+          .expectBraille(lineText, { startIndex: 1, endIndex: 1 })
+          .call(moveByChar)
+          .expectSpeech('s')
+          .expectBraille(lineText, { startIndex: 2, endIndex: 2 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectBraille(lineText, { startIndex: 3, endIndex: 3 })
+          .call(moveByChar)
+          .expectSpeech('\n')
+          .expectBraille(lineText, { startIndex: 4, endIndex: 4 })
+
+          .replay();
+    });
+    input.focus();
+  });
+});
+
 TEST_F('EditingTest', 'EditableLineOneStaticText', function() {
   this.runWithLoadedTree(function() {/*!
     <p contenteditable style="word-spacing:100000px">this is a test</p>
