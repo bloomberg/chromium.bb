@@ -132,10 +132,13 @@ sk_sp<SkImageFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
     // can be serialized.
     SkBitmap bitmap;
     const SkRect mask_record_bounds = reflection.MaskBounds();
-    SkScalar mask_buffer_size = mask_record_bounds.width() * mask_record_bounds.height();
+    SkRect mask_bounds_rounded;
+    mask_record_bounds.roundOut(&mask_bounds_rounded);
+    SkScalar mask_buffer_size =
+        mask_bounds_rounded.width() * mask_bounds_rounded.height();
     if (mask_buffer_size < kMaxMaskBufferSize && mask_buffer_size > 0.0f) {
       bitmap.allocPixels(SkImageInfo::MakeN32Premul(
-          mask_record_bounds.width(), mask_record_bounds.height()));
+          mask_bounds_rounded.width(), mask_bounds_rounded.height()));
       SkiaPaintCanvas canvas(bitmap);
       canvas.clear(SK_ColorTRANSPARENT);
       canvas.translate(-mask_record_bounds.x(), -mask_record_bounds.y());

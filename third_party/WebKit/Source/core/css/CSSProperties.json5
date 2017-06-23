@@ -755,7 +755,7 @@
     {
       name: "border-bottom-width",
       api_class: "CSSPropertyAPIBorderWidth",
-      converter: "ConvertLineWidth<float>",
+      converter: "ConvertBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
       typedom_types: ["Length"],
@@ -827,7 +827,7 @@
     {
       name: "border-left-width",
       api_class: "CSSPropertyAPIBorderWidth",
-      converter: "ConvertLineWidth<float>",
+      converter: "ConvertBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
       typedom_types: ["Length"],
@@ -859,7 +859,7 @@
     {
       name: "border-right-width",
       api_class: "CSSPropertyAPIBorderWidth",
-      converter: "ConvertLineWidth<float>",
+      converter: "ConvertBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
       typedom_types: ["Length"],
@@ -915,7 +915,7 @@
     {
       name: "border-top-width",
       api_class: "CSSPropertyAPIBorderWidth",
-      converter: "ConvertLineWidth<float>",
+      converter: "ConvertBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
       typedom_types: ["Length"],
