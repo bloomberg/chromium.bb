@@ -213,6 +213,8 @@ class PLATFORM_EXPORT FetchContext
     return nullptr;
   }
 
+  virtual bool IsDetached() const { return false; }
+
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
   // with "keepalive" specified).

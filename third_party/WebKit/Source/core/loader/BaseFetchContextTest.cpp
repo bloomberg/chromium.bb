@@ -77,6 +77,9 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   const KURL& Url() const override { return execution_context_->Url(); }
 
+  SecurityOrigin* GetSecurityOrigin() const override {
+    return execution_context_->GetSecurityOrigin();
+  }
   const SecurityOrigin* GetParentSecurityOrigin() const override {
     return nullptr;
   }
@@ -94,8 +97,12 @@ class MockBaseFetchContext final : public BaseFetchContext {
     BaseFetchContext::Trace(visitor);
   }
 
+  bool IsDetached() const override { return is_detached_; }
+  void SetIsDetached(bool is_detached) { is_detached_ = is_detached; }
+
  private:
   Member<ExecutionContext> execution_context_;
+  bool is_detached_ = false;
 };
 
 class BaseFetchContextTest : public ::testing::Test {
@@ -108,7 +115,7 @@ class BaseFetchContextTest : public ::testing::Test {
   }
 
   Persistent<ExecutionContext> execution_context_;
-  Persistent<BaseFetchContext> fetch_context_;
+  Persistent<MockBaseFetchContext> fetch_context_;
 };
 
 TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
@@ -297,6 +304,39 @@ TEST_F(BaseFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
             fetch_context_->AllowResponse(Resource::kScript, resource_request,
                                           url, options));
   EXPECT_EQ(2u, policy->violation_reports_sent_.size());
+}
+
+TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
+  KURL url(KURL(), "http://www.example.com/");
+  ResourceRequest request(url);
+  ResourceRequest keepalive_request(url);
+  keepalive_request.SetKeepalive(true);
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+            fetch_context_->CanRequest(
+                Resource::kRaw, request, url, ResourceLoaderOptions(),
+                SecurityViolationReportingPolicy::kSuppressReporting,
+                FetchParameters::kNoOriginRestriction));
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+            fetch_context_->CanRequest(
+                Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
+                SecurityViolationReportingPolicy::kSuppressReporting,
+                FetchParameters::kNoOriginRestriction));
+
+  fetch_context_->SetIsDetached(true);
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kOther,
+            fetch_context_->CanRequest(
+                Resource::kRaw, request, url, ResourceLoaderOptions(),
+                SecurityViolationReportingPolicy::kSuppressReporting,
+                FetchParameters::kNoOriginRestriction));
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+            fetch_context_->CanRequest(
+                Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
+                SecurityViolationReportingPolicy::kSuppressReporting,
+                FetchParameters::kNoOriginRestriction));
 }
 
 }  // namespace blink
