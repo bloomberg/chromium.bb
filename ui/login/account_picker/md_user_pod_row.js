@@ -3169,7 +3169,7 @@ cr.define('login', function() {
         this.smallPodsContainer.classList.remove('images-loading');
         this.topMask.classList.remove('images-loading');
         this.bottomMask.classList.remove('images-loading');
-      }, POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
+      }.bind(this), POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
 
       var isAccountPicker = $('login-header-bar').signinUIState ==
           SIGNIN_UI_STATE.ACCOUNT_PICKER;
