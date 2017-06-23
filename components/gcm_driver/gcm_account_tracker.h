@@ -96,8 +96,6 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   typedef std::map<std::string, AccountInfo> AccountInfos;
 
   // AccountTracker::Observer overrides.
-  void OnAccountAdded(const gaia::AccountIds& ids) override;
-  void OnAccountRemoved(const gaia::AccountIds& ids) override;
   void OnAccountSignInChanged(const gaia::AccountIds& ids,
                               bool is_signed_in) override;
 
