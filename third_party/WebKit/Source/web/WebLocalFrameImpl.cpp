@@ -2471,6 +2471,22 @@ void WebLocalFrameImpl::ExtractSmartClipData(WebRect rect_in_viewport,
   }
 }
 
+void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
+  DCHECK(GetFrame()->GetDocument());
+  Element* element = GetFrame()->GetDocument()->FocusedElement();
+  if (!element)
+    return;
+
+  Element* next_element =
+      GetFrame()->GetPage()->GetFocusController().NextFocusableElementInForm(
+          element, focus_type);
+  if (!next_element)
+    return;
+
+  next_element->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
+  next_element->focus();
+}
+
 TextCheckerClient& WebLocalFrameImpl::GetTextCheckerClient() const {
   return *text_checker_client_;
 }

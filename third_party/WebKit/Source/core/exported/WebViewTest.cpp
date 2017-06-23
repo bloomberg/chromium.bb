@@ -59,6 +59,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
 #include "core/page/ScopedPageSuspender.h"
@@ -1629,6 +1630,488 @@ TEST_P(WebViewTest, IsSelectionAnchorFirst) {
   web_view->SelectionBounds(anchor, focus);
   frame->SelectRange(WebPoint(focus.x, focus.y), WebPoint(anchor.x, anchor.y));
   EXPECT_FALSE(web_view->IsSelectionAnchorFirst());
+}
+
+TEST_P(
+    WebViewTest,
+    MoveFocusToNextFocusableElementInFormWithKeyEventListenersAndNonEditableElements) {
+  const std::string test_file =
+      "advance_focus_in_form_with_key_event_listeners.html";
+  RegisterMockedHttpURLLoad(test_file);
+  WebViewBase* web_view =
+      web_view_helper_.InitializeAndLoad(base_url_ + test_file);
+  web_view->SetInitialFocus(false);
+  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
+  WebInputMethodController* active_input_method_controller =
+      web_view->MainFrameImpl()
+          ->FrameWidget()
+          ->GetActiveWebInputMethodController();
+  const int default_text_input_flags = kWebTextInputFlagAutocapitalizeSentences;
+
+  struct FocusedElement {
+    AtomicString element_id;
+    int text_input_flags;
+  } focused_elements[] = {
+      {"input1",
+       default_text_input_flags | kWebTextInputFlagHaveNextFocusableElement},
+      {"contenteditable1", kWebTextInputFlagHaveNextFocusableElement |
+                               kWebTextInputFlagHavePreviousFocusableElement},
+      {"input2", default_text_input_flags |
+                     kWebTextInputFlagHaveNextFocusableElement |
+                     kWebTextInputFlagHavePreviousFocusableElement},
+      {"textarea1", default_text_input_flags |
+                        kWebTextInputFlagHaveNextFocusableElement |
+                        kWebTextInputFlagHavePreviousFocusableElement},
+      {"input3", default_text_input_flags |
+                     kWebTextInputFlagHaveNextFocusableElement |
+                     kWebTextInputFlagHavePreviousFocusableElement},
+      {"textarea2", default_text_input_flags |
+                        kWebTextInputFlagHavePreviousFocusableElement},
+  };
+
+  // Forward Navigation in form1 with NEXT
+  Element* input1 = document->getElementById("input1");
+  input1->focus();
+  Element* current_focus = nullptr;
+  Element* next_focus = nullptr;
+  WebTextInputInfo text_input_info;
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(focused_elements); ++i) {
+    current_focus = document->getElementById(focused_elements[i].element_id);
+    EXPECT_EQ(current_focus, document->FocusedElement());
+    text_input_info = active_input_method_controller->TextInputInfo();
+    EXPECT_EQ(focused_elements[i].text_input_flags, text_input_info.flags);
+    next_focus =
+        document->GetPage()->GetFocusController().NextFocusableElementInForm(
+            current_focus, kWebFocusTypeForward);
+    if (next_focus) {
+      EXPECT_EQ(next_focus->GetIdAttribute(),
+                focused_elements[i + 1].element_id);
+    }
+    web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  }
+  // Now focus will stay on previous focus itself, because it has no next
+  // element.
+  EXPECT_EQ(current_focus, document->FocusedElement());
+
+  // Backward Navigation in form1 with PREVIOUS
+  for (size_t i = WTF_ARRAY_LENGTH(focused_elements); i-- > 0;) {
+    current_focus = document->getElementById(focused_elements[i].element_id);
+    EXPECT_EQ(current_focus, document->FocusedElement());
+    text_input_info = active_input_method_controller->TextInputInfo();
+    EXPECT_EQ(focused_elements[i].text_input_flags, text_input_info.flags);
+    next_focus =
+        document->GetPage()->GetFocusController().NextFocusableElementInForm(
+            current_focus, kWebFocusTypeBackward);
+    if (next_focus) {
+      EXPECT_EQ(next_focus->GetIdAttribute(),
+                focused_elements[i - 1].element_id);
+    }
+    web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  }
+  // Now focus will stay on previous focus itself, because it has no previous
+  // element.
+  EXPECT_EQ(current_focus, document->FocusedElement());
+
+  // Setting a non editable element as focus in form1, and ensuring editable
+  // navigation is fine in forward and backward.
+  Element* button1 = document->getElementById("button1");
+  button1->focus();
+  text_input_info = active_input_method_controller->TextInputInfo();
+  EXPECT_EQ(kWebTextInputFlagHaveNextFocusableElement |
+                kWebTextInputFlagHavePreviousFocusableElement,
+            text_input_info.flags);
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          button1, kWebFocusTypeForward);
+  EXPECT_EQ(next_focus->GetIdAttribute(), "contenteditable1");
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  Element* content_editable1 = document->getElementById("contenteditable1");
+  EXPECT_EQ(content_editable1, document->FocusedElement());
+  button1->focus();
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          button1, kWebFocusTypeBackward);
+  EXPECT_EQ(next_focus->GetIdAttribute(), "input1");
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  EXPECT_EQ(input1, document->FocusedElement());
+
+  Element* anchor1 = document->getElementById("anchor1");
+  anchor1->focus();
+  text_input_info = active_input_method_controller->TextInputInfo();
+  // No Next/Previous element for elements outside form.
+  EXPECT_EQ(0, text_input_info.flags);
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          anchor1, kWebFocusTypeForward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  // Since anchor is not a form control element, next/previous element will
+  // be null, hence focus will stay same as it is.
+  EXPECT_EQ(anchor1, document->FocusedElement());
+
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          anchor1, kWebFocusTypeBackward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  EXPECT_EQ(anchor1, document->FocusedElement());
+
+  // Navigation of elements which is not part of any forms.
+  Element* text_area3 = document->getElementById("textarea3");
+  text_area3->focus();
+  text_input_info = active_input_method_controller->TextInputInfo();
+  // No Next/Previous element for elements outside form.
+  EXPECT_EQ(default_text_input_flags, text_input_info.flags);
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          text_area3, kWebFocusTypeForward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  // No Next/Previous element to this element because it's not part of any
+  // form. Hence focus won't change wrt NEXT/PREVIOUS.
+  EXPECT_EQ(text_area3, document->FocusedElement());
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          text_area3, kWebFocusTypeBackward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  EXPECT_EQ(text_area3, document->FocusedElement());
+
+  // Navigation from an element which is part of a form but not an editable
+  // element.
+  Element* button2 = document->getElementById("button2");
+  button2->focus();
+  text_input_info = active_input_method_controller->TextInputInfo();
+  // No Next element for this element, due to last element outside the form.
+  EXPECT_EQ(kWebTextInputFlagHavePreviousFocusableElement,
+            text_input_info.flags);
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          button2, kWebFocusTypeForward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  // No Next element to this element because it's not part of any form.
+  // Hence focus won't change wrt NEXT.
+  EXPECT_EQ(button2, document->FocusedElement());
+  Element* text_area2 = document->getElementById("textarea2");
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          button2, kWebFocusTypeBackward);
+  EXPECT_EQ(next_focus, text_area2);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  // Since button is a form control element from form1, ensuring focus is set
+  // at correct position.
+  EXPECT_EQ(text_area2, document->FocusedElement());
+
+  Element* content_editable2 = document->getElementById("contenteditable2");
+  document->SetFocusedElement(
+      content_editable2,
+      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+  text_input_info = active_input_method_controller->TextInputInfo();
+  // No Next/Previous element for elements outside form.
+  EXPECT_EQ(0, text_input_info.flags);
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          content_editable2, kWebFocusTypeForward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  // No Next/Previous element to this element because it's not part of any
+  // form. Hence focus won't change wrt NEXT/PREVIOUS.
+  EXPECT_EQ(content_editable2, document->FocusedElement());
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          content_editable2, kWebFocusTypeBackward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  EXPECT_EQ(content_editable2, document->FocusedElement());
+
+  // Navigation of elements which is having invalid form attribute and hence
+  // not part of any forms.
+  Element* text_area4 = document->getElementById("textarea4");
+  text_area4->focus();
+  text_input_info = active_input_method_controller->TextInputInfo();
+  // No Next/Previous element for elements which is having invalid form
+  // attribute.
+  EXPECT_EQ(default_text_input_flags, text_input_info.flags);
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          text_area4, kWebFocusTypeForward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  // No Next/Previous element to this element because it's not part of any
+  // form. Hence focus won't change wrt NEXT/PREVIOUS.
+  EXPECT_EQ(text_area4, document->FocusedElement());
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          text_area4, kWebFocusTypeBackward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  EXPECT_EQ(text_area4, document->FocusedElement());
+
+  web_view_helper_.Reset();
+}
+
+TEST_P(
+    WebViewTest,
+    MoveFocusToNextFocusableElementInFormWithNonEditableNonFormControlElements) {
+  const std::string test_file =
+      "advance_focus_in_form_with_key_event_listeners.html";
+  RegisterMockedHttpURLLoad(test_file);
+  WebViewBase* web_view =
+      web_view_helper_.InitializeAndLoad(base_url_ + test_file);
+  web_view->SetInitialFocus(false);
+  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
+  WebInputMethodController* active_input_method_controller =
+      web_view->MainFrameImpl()
+          ->FrameWidget()
+          ->GetActiveWebInputMethodController();
+  const int default_text_input_flags = kWebTextInputFlagAutocapitalizeSentences;
+
+  struct FocusedElement {
+    const char* element_id;
+    int text_input_flags;
+  } focused_elements[] = {
+      {"textarea5",
+       default_text_input_flags | kWebTextInputFlagHaveNextFocusableElement},
+      {"input4", default_text_input_flags |
+                     kWebTextInputFlagHaveNextFocusableElement |
+                     kWebTextInputFlagHavePreviousFocusableElement},
+      {"contenteditable3", kWebTextInputFlagHaveNextFocusableElement |
+                               kWebTextInputFlagHavePreviousFocusableElement},
+      {"input5", kWebTextInputFlagHavePreviousFocusableElement},
+  };
+
+  // Forward Navigation in form2 with NEXT
+  Element* text_area5 = document->getElementById("textarea5");
+  text_area5->focus();
+  Element* current_focus = nullptr;
+  Element* next_focus = nullptr;
+  WebTextInputInfo text_input_info;
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(focused_elements); ++i) {
+    current_focus = document->getElementById(focused_elements[i].element_id);
+    EXPECT_EQ(current_focus, document->FocusedElement());
+    text_input_info = active_input_method_controller->TextInputInfo();
+    EXPECT_EQ(focused_elements[i].text_input_flags, text_input_info.flags);
+    next_focus =
+        document->GetPage()->GetFocusController().NextFocusableElementInForm(
+            current_focus, kWebFocusTypeForward);
+    if (next_focus) {
+      EXPECT_EQ(next_focus->GetIdAttribute(),
+                focused_elements[i + 1].element_id);
+    }
+    web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  }
+  // Now focus will stay on previous focus itself, because it has no next
+  // element.
+  EXPECT_EQ(current_focus, document->FocusedElement());
+
+  // Backward Navigation in form1 with PREVIOUS
+  for (size_t i = WTF_ARRAY_LENGTH(focused_elements); i-- > 0;) {
+    current_focus = document->getElementById(focused_elements[i].element_id);
+    EXPECT_EQ(current_focus, document->FocusedElement());
+    text_input_info = active_input_method_controller->TextInputInfo();
+    EXPECT_EQ(focused_elements[i].text_input_flags, text_input_info.flags);
+    next_focus =
+        document->GetPage()->GetFocusController().NextFocusableElementInForm(
+            current_focus, kWebFocusTypeBackward);
+    if (next_focus) {
+      EXPECT_EQ(next_focus->GetIdAttribute(),
+                focused_elements[i - 1].element_id);
+    }
+    web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  }
+  // Now focus will stay on previous focus itself, because it has no previous
+  // element.
+  EXPECT_EQ(current_focus, document->FocusedElement());
+
+  // Setting a non editable element as focus in form1, and ensuring editable
+  // navigation is fine in forward and backward.
+  Element* anchor2 = document->getElementById("anchor2");
+  anchor2->focus();
+  text_input_info = active_input_method_controller->TextInputInfo();
+  // No Next/Previous element for non-form control elements inside form.
+  EXPECT_EQ(0, text_input_info.flags);
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          anchor2, kWebFocusTypeForward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  // Since anchor is not a form control element, next/previous element will
+  // be null, hence focus will stay same as it is.
+  EXPECT_EQ(anchor2, document->FocusedElement());
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          anchor2, kWebFocusTypeBackward);
+  EXPECT_EQ(next_focus, nullptr);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  EXPECT_EQ(anchor2, document->FocusedElement());
+
+  web_view_helper_.Reset();
+}
+
+TEST_P(WebViewTest, MoveFocusToNextFocusableElementInFormWithTabIndexElements) {
+  const std::string test_file =
+      "advance_focus_in_form_with_tabindex_elements.html";
+  RegisterMockedHttpURLLoad(test_file);
+  WebViewBase* web_view =
+      web_view_helper_.InitializeAndLoad(base_url_ + test_file);
+  web_view->SetInitialFocus(false);
+  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
+  WebInputMethodController* active_input_method_controller =
+      web_view->MainFrameImpl()
+          ->FrameWidget()
+          ->GetActiveWebInputMethodController();
+  const int default_text_input_flags = kWebTextInputFlagAutocapitalizeSentences;
+
+  struct FocusedElement {
+    const char* element_id;
+    int text_input_flags;
+  } focused_elements[] = {
+      {"textarea6",
+       default_text_input_flags | kWebTextInputFlagHaveNextFocusableElement},
+      {"input5", default_text_input_flags |
+                     kWebTextInputFlagHaveNextFocusableElement |
+                     kWebTextInputFlagHavePreviousFocusableElement},
+      {"contenteditable4", kWebTextInputFlagHaveNextFocusableElement |
+                               kWebTextInputFlagHavePreviousFocusableElement},
+      {"input6", default_text_input_flags |
+                     kWebTextInputFlagHavePreviousFocusableElement},
+  };
+
+  // Forward Navigation in form with NEXT which has tabindex attribute
+  // which differs visual order.
+  Element* text_area6 = document->getElementById("textarea6");
+  text_area6->focus();
+  Element* current_focus = nullptr;
+  Element* next_focus = nullptr;
+  WebTextInputInfo text_input_info;
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(focused_elements); ++i) {
+    current_focus = document->getElementById(focused_elements[i].element_id);
+    EXPECT_EQ(current_focus, document->FocusedElement());
+    text_input_info = active_input_method_controller->TextInputInfo();
+    EXPECT_EQ(focused_elements[i].text_input_flags, text_input_info.flags);
+    next_focus =
+        document->GetPage()->GetFocusController().NextFocusableElementInForm(
+            current_focus, kWebFocusTypeForward);
+    if (next_focus) {
+      EXPECT_EQ(next_focus->GetIdAttribute(),
+                focused_elements[i + 1].element_id);
+    }
+    web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  }
+  // No next editable element which is focusable with proper tab index, hence
+  // staying on previous focus.
+  EXPECT_EQ(current_focus, document->FocusedElement());
+
+  // Backward Navigation in form with PREVIOUS which has tabindex attribute
+  // which differs visual order.
+  for (size_t i = WTF_ARRAY_LENGTH(focused_elements); i-- > 0;) {
+    current_focus = document->getElementById(focused_elements[i].element_id);
+    EXPECT_EQ(current_focus, document->FocusedElement());
+    text_input_info = active_input_method_controller->TextInputInfo();
+    EXPECT_EQ(focused_elements[i].text_input_flags, text_input_info.flags);
+    next_focus =
+        document->GetPage()->GetFocusController().NextFocusableElementInForm(
+            current_focus, kWebFocusTypeBackward);
+    if (next_focus) {
+      EXPECT_EQ(next_focus->GetIdAttribute(),
+                focused_elements[i - 1].element_id);
+    }
+    web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  }
+  // Now focus will stay on previous focus itself, because it has no previous
+  // element.
+  EXPECT_EQ(current_focus, document->FocusedElement());
+
+  // Setting an element which has invalid tabindex and ensuring it is not
+  // modifying further navigation.
+  Element* content_editable5 = document->getElementById("contenteditable5");
+  content_editable5->focus();
+  Element* input6 = document->getElementById("input6");
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          content_editable5, kWebFocusTypeForward);
+  EXPECT_EQ(next_focus, input6);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  EXPECT_EQ(input6, document->FocusedElement());
+  content_editable5->focus();
+  next_focus =
+      document->GetPage()->GetFocusController().NextFocusableElementInForm(
+          content_editable5, kWebFocusTypeBackward);
+  EXPECT_EQ(next_focus, text_area6);
+  web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  EXPECT_EQ(text_area6, document->FocusedElement());
+
+  web_view_helper_.Reset();
+}
+
+TEST_P(WebViewTest,
+       MoveFocusToNextFocusableElementInFormWithDisabledAndReadonlyElements) {
+  const std::string test_file =
+      "advance_focus_in_form_with_disabled_and_readonly_elements.html";
+  RegisterMockedHttpURLLoad(test_file);
+  WebViewBase* web_view =
+      web_view_helper_.InitializeAndLoad(base_url_ + test_file);
+  web_view->SetInitialFocus(false);
+  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
+  WebInputMethodController* active_input_method_controller =
+      web_view->MainFrameImpl()
+          ->FrameWidget()
+          ->GetActiveWebInputMethodController();
+
+  struct FocusedElement {
+    const char* element_id;
+    int text_input_flags;
+  } focused_elements[] = {
+      {"contenteditable6", kWebTextInputFlagHaveNextFocusableElement},
+      {"contenteditable7", kWebTextInputFlagHavePreviousFocusableElement},
+  };
+  // Forward Navigation in form with NEXT which has has disabled/enabled
+  // elements which will gets skipped during navigation.
+  Element* content_editable6 = document->getElementById("contenteditable6");
+  content_editable6->focus();
+  Element* current_focus = nullptr;
+  Element* next_focus = nullptr;
+  WebTextInputInfo text_input_info;
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(focused_elements); ++i) {
+    current_focus = document->getElementById(focused_elements[i].element_id);
+    EXPECT_EQ(current_focus, document->FocusedElement());
+    text_input_info = active_input_method_controller->TextInputInfo();
+    EXPECT_EQ(focused_elements[i].text_input_flags, text_input_info.flags);
+    next_focus =
+        document->GetPage()->GetFocusController().NextFocusableElementInForm(
+            current_focus, kWebFocusTypeForward);
+    if (next_focus) {
+      EXPECT_EQ(next_focus->GetIdAttribute(),
+                focused_elements[i + 1].element_id);
+    }
+    web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeForward);
+  }
+  // No next editable element which is focusable, hence staying on previous
+  // focus.
+  EXPECT_EQ(current_focus, document->FocusedElement());
+
+  // Backward Navigation in form with PREVIOUS which has has
+  // disabled/enabled elements which will gets skipped during navigation.
+  for (size_t i = WTF_ARRAY_LENGTH(focused_elements); i-- > 0;) {
+    current_focus = document->getElementById(focused_elements[i].element_id);
+    EXPECT_EQ(current_focus, document->FocusedElement());
+    text_input_info = active_input_method_controller->TextInputInfo();
+    EXPECT_EQ(focused_elements[i].text_input_flags, text_input_info.flags);
+    next_focus =
+        document->GetPage()->GetFocusController().NextFocusableElementInForm(
+            current_focus, kWebFocusTypeBackward);
+    if (next_focus) {
+      EXPECT_EQ(next_focus->GetIdAttribute(),
+                focused_elements[i - 1].element_id);
+    }
+    web_view->MainFrameImpl()->AdvanceFocusInForm(kWebFocusTypeBackward);
+  }
+  // Now focus will stay on previous focus itself, because it has no previous
+  // element.
+  EXPECT_EQ(current_focus, document->FocusedElement());
+
+  web_view_helper_.Reset();
 }
 
 TEST_P(WebViewTest, ExitingDeviceEmulationResetsPageScale) {
