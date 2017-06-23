@@ -54,9 +54,6 @@ http://www.chromium.org/developers/design-documents/idl-compiler#TOC-Front-end
 # Disable attribute validation, as lint can't import parent class to check
 # pylint: disable=E1101
 #
-# Disable check for invalid name as patterns use p_ prefix and they take |p|
-# argument
-# pylint: disable=C0103
 
 import os.path
 import sys
@@ -71,168 +68,14 @@ from ply import yacc
 # Base parser is in Chromium src/tools/idl_parser
 tools_dir = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'tools')
 sys.path.append(tools_dir)
-from idl_parser.idl_parser import IDLParser, ListFromConcat
+from idl_parser.idl_parser import IDLParser  # pylint: disable=import-error
 from idl_parser.idl_parser import ParseFile as parse_file
 
 from blink_idl_lexer import BlinkIDLLexer
 import blink_idl_lexer
 
 
-# Explicitly set starting symbol to rule defined only in base parser.
-# BEWARE that the starting symbol should NOT be defined in both the base parser
-# and the derived one, as otherwise which is used depends on which line number
-# is lower, which is fragile. Instead, either use one in base parser or
-# create a new symbol, so that this is unambiguous.
-# FIXME: unfortunately, this doesn't work in PLY 3.4, so need to duplicate the
-# rule below.
-STARTING_SYMBOL = 'Definitions'
-
-# We ignore comments (and hence don't need 'Top') but base parser preserves them
-# FIXME: Upstream: comments should be removed in base parser
-REMOVED_RULES = ['Top',  # [0]
-                 'Comments',  # [0.1]
-                 'CommentsRest',  # [0.2]
-                ]
-
-# Remove rules from base class
-# FIXME: add a class method upstream: @classmethod IDLParser._RemoveRules
-for rule in REMOVED_RULES:
-    production_name = 'p_' + rule
-    delattr(IDLParser, production_name)
-
-
 class BlinkIDLParser(IDLParser):
-    # [1]
-    # FIXME: Need to duplicate rule for starting symbol here, with line number
-    # *lower* than in the base parser (idl_parser.py).
-    # This is a bug in PLY: it determines starting symbol by lowest line number.
-    # This can be overridden by the 'start' parameter, but as of PLY 3.4 this
-    # doesn't work correctly.
-    def p_Definitions(self, p):
-        """Definitions : ExtendedAttributeList Definition Definitions
-                       | """
-        if len(p) > 1:
-            p[2].AddChildren(p[1])
-            p[0] = ListFromConcat(p[2], p[3])
-
-    # Below are grammar rules used by yacc, given by functions named p_<RULE>.
-    # * The docstring is the production rule in BNF (grammar).
-    # * The body is the yacc action (semantics).
-    #
-    # The PLY framework builds the actual low-level parser by introspecting this
-    # parser object, selecting all attributes named p_<RULE> as grammar rules.
-    # It extracts the docstrings and uses them as the production rules, building
-    # the table of a LALR parser, and uses the body of the functions as actions.
-    #
-    # Reference:
-    # http://www.dabeaz.com/ply/ply.html#ply_nn23
-    #
-    # Review of yacc:
-    # Yacc parses a token stream, internally producing a Concrete Syntax Tree
-    # (CST), where each node corresponds to a production rule in the grammar.
-    # At each node, it runs an action, which is usually "produce a node in the
-    # Abstract Syntax Tree (AST)" or "ignore this node" (for nodes in the CST
-    # that aren't included in the AST, since only needed for parsing).
-    #
-    # The rules use pseudo-variables; in PLY syntax:
-    # p[0] is the left side: assign return value to p[0] instead of returning,
-    # p[1] ... p[n] are the right side: the values can be accessed, and they
-    # can be modified.
-    # (In yacc these are $$ and $1 ... $n.)
-    #
-    # The rules can look cryptic at first, but there are a few standard
-    # transforms from the CST to AST. With these in mind, the actions should
-    # be reasonably legible.
-    #
-    # * Ignore production
-    #   Discard this branch. Primarily used when one alternative is empty.
-    #
-    #   Sample code:
-    #   if len(p) > 1:
-    #       p[0] = ...
-    #   # Note no assignment if len(p) == 1
-    #
-    # * Eliminate singleton production
-    #   Discard this node in the CST, pass the next level down up the tree.
-    #   Used to ignore productions only necessary for parsing, but not needed
-    #   in the AST.
-    #
-    #   Sample code:
-    #   p[0] = p[1]
-    #
-    # * Build node
-    #   The key type of rule. In this parser, produces object of class IDLNode.
-    #   There are several helper functions:
-    #   * BuildProduction: actually builds an IDLNode, based on a production.
-    #   * BuildAttribute: builds an IDLAttribute, which is a temporary
-    #                     object to hold a name-value pair, which is then
-    #                     set as a Property of the IDLNode when the IDLNode
-    #                     is built.
-    #   * BuildNamed: Same as BuildProduction, and sets the 'NAME' property.
-    #   * BuildTrue: BuildAttribute with value True, for flags.
-    #   See base idl_parser.py for definitions and more examples of use.
-    #
-    #   Sample code:
-    #   # Build node of type NodeType, with value p[1], and children.
-    #   p[0] = self.BuildProduction('NodeType', p, 1, children)
-    #
-    #   # Build named node of type NodeType, with name and value p[1].
-    #   # (children optional)
-    #   p[0] = self.BuildNamed('NodeType', p, 1)
-    #
-    #   # Make a list
-    #   # Used if one node has several children.
-    #   children = ListFromConcat(p[2], p[3])
-    #   p[0] = self.BuildProduction('NodeType', p, 1, children)
-    #
-    #   # Also used to collapse the right-associative tree
-    #   # produced by parsing a list back into a single list.
-    #   """Foos : Foo Foos
-    #           |"""
-    #   if len(p) > 1:
-    #       p[0] = ListFromConcat(p[1], p[2])
-    #
-    #   # Add children.
-    #   # Primarily used to add attributes, produced via BuildTrue.
-    #   # p_StaticAttribute
-    #   """StaticAttribute : STATIC Attribute"""
-    #   p[2].AddChildren(self.BuildTrue('STATIC'))
-    #   p[0] = p[2]
-    #
-    # Numbering scheme for the rules is:
-    # [1] for Web IDL spec (or additions in base parser)
-    #     These should all be upstreamed to the base parser.
-    # [b1] for Blink IDL changes (overrides Web IDL)
-    # [b1.1] for Blink IDL additions, auxiliary rules for [b1]
-    # Numbers are as per Candidate Recommendation 19 April 2012:
-    # http://www.w3.org/TR/2012/CR-WebIDL-20120419/
-
-    # Extended attributes
-    # [b49] Override base parser: remove comment field, since comments stripped
-    # FIXME: Upstream
-    def p_ExtendedAttributeList(self, p):
-        """ExtendedAttributeList : '[' ExtendedAttribute ExtendedAttributes ']'
-                                 | """
-        if len(p) > 3:
-            items = ListFromConcat(p[2], p[3])
-            p[0] = self.BuildProduction('ExtAttributes', p, 1, items)
-
-    # Error handling for ExtendedAttributeList.
-    # We can't upstream this because we override ExtendedAttributeList.
-    def p_ExtendedAttributeListError(self, p):
-        """ExtendedAttributeList : '[' ExtendedAttribute ',' error"""
-        p[0] = self.BuildError(p, "ExtendedAttributeList")
-
-    # Historically we allowed trailing comma but now it's a syntax error.
-    def p_ExtendedAttributes(self, p):
-        """ExtendedAttributes : ',' ExtendedAttribute ExtendedAttributes
-                              | ','
-                              |"""
-        if len(p) > 3:
-            p[0] = ListFromConcat(p[2], p[3])
-        elif len(p) == 2:
-            p[0] = self.BuildError(p, 'ExtendedAttributes')
-
     def __init__(self,
                  # common parameters
                  debug=False,
@@ -277,7 +120,6 @@ class BlinkIDLParser(IDLParser):
         # See: CHANGES, Version 3.2
         # http://ply.googlecode.com/svn/trunk/CHANGES
         self.yaccobj = yacc.yacc(module=self,
-                                 start=STARTING_SYMBOL,
                                  method='SLR',
                                  debug=debug,
                                  optimize=optimize,
