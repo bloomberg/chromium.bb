@@ -1155,9 +1155,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            referrer_chain.Get(2));
 }
 
+#if defined(OS_WIN)
+#define MAYBE_SubFrameDirectDownload DISABLED_SubFrameDirectDownload
+#else
+#define MAYBE_SubFrameDirectDownload SubFrameDirectDownload
+#endif
 // Click a link in a subframe and start download.
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
-                       SubFrameDirectDownload) {
+                       MAYBE_SubFrameDirectDownload) {
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
   ClickTestLink("sub_frame_download_attribution", 1, initial_url);
   std::string test_name =
