@@ -323,6 +323,12 @@
         ]
     },
     {
+        name: "DiffTransformData",
+        fields_to_diff: ["TransformOperations", "translate", "rotate",
+                    "scale", "offset-path", "offset-rotate", "transform-origin",
+                     "offset-position", "offset-anchor", "offset-distance"],
+    },
+    {
         name: "UpdatePropertySpecificDifferencesTransform",
         fields_to_diff: ["TransformOperations", "translate", "rotate",
                     "scale", "offset-path", "offset-rotate", "transform-origin",

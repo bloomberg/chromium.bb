@@ -537,40 +537,27 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Column properties.
   // column-count (aka -webkit-column-count)
   static unsigned short InitialColumnCount() { return 1; }
-  unsigned short ColumnCount() const {
-    return rare_non_inherited_data_->multi_col_data_->column_count_;
-  }
+  unsigned short ColumnCount() const { return ColumnCountInternal(); }
   void SetColumnCount(unsigned short c) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
-                   column_auto_count_, false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_count_, c);
+    SetColumnAutoCountInternal(false);
+    SetColumnCountInternal(c);
   }
-  bool HasAutoColumnCount() const {
-    return rare_non_inherited_data_->multi_col_data_->column_auto_count_;
-  }
+  bool HasAutoColumnCount() const { return ColumnAutoCountInternal(); }
   void SetHasAutoColumnCount() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
-                   column_auto_count_, true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_count_,
-                   InitialColumnCount());
+    SetColumnAutoCountInternal(true);
+    SetColumnCountInternal(InitialColumnCount());
   }
 
   // column-gap (aka -webkit-column-gap)
-  float ColumnGap() const {
-    return rare_non_inherited_data_->multi_col_data_->column_gap_;
-  }
+  float ColumnGap() const { return ColumnGapInternal(); }
   void SetColumnGap(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
-                   column_normal_gap_, false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_gap_, f);
+    SetColumnNormalGapInternal(false);
+    SetColumnGapInternal(f);
   }
-  bool HasNormalColumnGap() const {
-    return rare_non_inherited_data_->multi_col_data_->column_normal_gap_;
-  }
+  bool HasNormalColumnGap() const { return ColumnNormalGapInternal(); }
   void SetHasNormalColumnGap() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
-                   column_normal_gap_, true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_gap_, 0);
+    SetColumnNormalGapInternal(true);
+    SetColumnGapInternal(0);
   }
 
   // column-rule-color (aka -webkit-column-rule-color)
@@ -594,21 +581,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // column-width (aka -webkit-column-width)
-  float ColumnWidth() const {
-    return rare_non_inherited_data_->multi_col_data_->column_width_;
-  }
+  float ColumnWidth() const { return ColumnWidthInternal(); }
   void SetColumnWidth(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
-                   column_auto_width_, false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_width_, f);
+    SetColumnAutoWidthInternal(false);
+    SetColumnWidthInternal(f);
   }
-  bool HasAutoColumnWidth() const {
-    return rare_non_inherited_data_->multi_col_data_->column_auto_width_;
-  }
+  bool HasAutoColumnWidth() const { return ColumnAutoWidthInternal(); }
   void SetHasAutoColumnWidth() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
-                   column_auto_width_, true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_width_, 0);
+    SetColumnAutoWidthInternal(true);
+    SetColumnWidthInternal(0);
   }
 
   // contain
@@ -622,14 +603,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // -webkit-box-ordinal-group
   static unsigned InitialBoxOrdinalGroup() { return 1; }
-  unsigned BoxOrdinalGroup() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_data_
-        ->box_ordinal_group_;
-  }
+  unsigned BoxOrdinalGroup() const { return BoxOrdinalGroupInternal(); }
   void SetBoxOrdinalGroup(unsigned og) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   box_ordinal_group_,
-                   std::min(std::numeric_limits<unsigned>::max() - 1, og));
+    SetBoxOrdinalGroupInternal(
+        std::min(std::numeric_limits<unsigned>::max() - 1, og));
   }
 
   // -webkit-box-reflect
@@ -651,9 +628,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // offset-path
   static BasicShape* InitialOffsetPath() { return nullptr; }
-  BasicShape* OffsetPath() const {
-    return rare_non_inherited_data_->transform_data_->offset_path_.Get();
-  }
+  BasicShape* OffsetPath() const { return OffsetPathInternal().Get(); }
   void SetOffsetPath(RefPtr<BasicShape>);
 
   // opacity (aka -webkit-opacity)
@@ -755,11 +730,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return EmptyTransformOperations();
   }
   const TransformOperations& Transform() const {
-    return rare_non_inherited_data_->transform_data_->transform_operations_;
+    return TransformOperationsInternal();
   }
   void SetTransform(const TransformOperations& ops) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_,
-                   transform_operations_, ops);
+    SetTransformOperationsInternal(ops);
   }
 
   // -webkit-transform-origin-x
@@ -792,31 +766,24 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return nullptr;
   }
   TranslateTransformOperation* Translate() const {
-    return rare_non_inherited_data_->transform_data_->translate_.Get();
+    return TranslateInternal().Get();
   }
   void SetTranslate(RefPtr<TranslateTransformOperation> v) {
-    rare_non_inherited_data_.Access()->transform_data_.Access()->translate_ =
-        std::move(v);
+    SetTranslateInternal(std::move(v));
   }
 
   // rotate
   static RefPtr<RotateTransformOperation> InitialRotate() { return nullptr; }
-  RotateTransformOperation* Rotate() const {
-    return rare_non_inherited_data_->transform_data_->rotate_.Get();
-  }
+  RotateTransformOperation* Rotate() const { return RotateInternal().Get(); }
   void SetRotate(RefPtr<RotateTransformOperation> v) {
-    rare_non_inherited_data_.Access()->transform_data_.Access()->rotate_ =
-        std::move(v);
+    SetRotateInternal(std::move(v));
   }
 
   // scale
   static RefPtr<ScaleTransformOperation> InitialScale() { return nullptr; }
-  ScaleTransformOperation* Scale() const {
-    return rare_non_inherited_data_->transform_data_->scale_.Get();
-  }
+  ScaleTransformOperation* Scale() const { return ScaleInternal().Get(); }
   void SetScale(RefPtr<ScaleTransformOperation> v) {
-    rare_non_inherited_data_.Access()->transform_data_.Access()->scale_ =
-        std::move(v);
+    SetScaleInternal(std::move(v));
   }
 
   // Scroll properties.
@@ -1429,27 +1396,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasTextCombine() const { return TextCombine() != ETextCombine::kNone; }
 
   // Grid utility functions.
-  GridAutoFlow GetGridAutoFlow() const {
-    return static_cast<GridAutoFlow>(
-        rare_non_inherited_data_->grid_data_->grid_auto_flow_);
-  }
+  GridAutoFlow GetGridAutoFlow() const { return GridAutoFlowInternal(); }
   bool IsGridAutoFlowDirectionRow() const {
-    return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
-            kInternalAutoFlowDirectionRow) == kInternalAutoFlowDirectionRow;
+    return (GridAutoFlowInternal() & kInternalAutoFlowDirectionRow) ==
+           kInternalAutoFlowDirectionRow;
   }
   bool IsGridAutoFlowDirectionColumn() const {
-    return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
-            kInternalAutoFlowDirectionColumn) ==
+    return (GridAutoFlowInternal() & kInternalAutoFlowDirectionColumn) ==
            kInternalAutoFlowDirectionColumn;
   }
   bool IsGridAutoFlowAlgorithmSparse() const {
-    return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
-            kInternalAutoFlowAlgorithmSparse) ==
+    return (GridAutoFlowInternal() & kInternalAutoFlowAlgorithmSparse) ==
            kInternalAutoFlowAlgorithmSparse;
   }
   bool IsGridAutoFlowAlgorithmDense() const {
-    return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
-            kInternalAutoFlowAlgorithmDense) == kInternalAutoFlowAlgorithmDense;
+    return (GridAutoFlowInternal() & kInternalAutoFlowAlgorithmDense) ==
+           kInternalAutoFlowAlgorithmDense;
   }
 
   // align-content utility functions.
@@ -2153,8 +2115,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Filter/transform utility functions.
   bool Has3DTransform() const {
-    return rare_non_inherited_data_->transform_data_->transform_operations_
-               .Has3DOperation() ||
+    return TransformOperationsInternal().Has3DOperation() ||
            (Translate() && Translate()->Z() != 0) ||
            (Rotate() && (Rotate()->X() != 0 || Rotate()->Y() != 0)) ||
            (Scale() && Scale()->Z() != 1);
@@ -2164,9 +2125,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            HasCurrentTransformAnimation() || Translate() || Rotate() || Scale();
   }
   bool HasTransformOperations() const {
-    return !rare_non_inherited_data_->transform_data_->transform_operations_
-                .Operations()
-                .IsEmpty();
+    return !TransformOperationsInternal().Operations().IsEmpty();
   }
   ETransformStyle3D UsedTransformStyle3D() const {
     return HasGroupingProperty() ? ETransformStyle3D::kFlat
@@ -2178,8 +2137,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // transform operations but differ in other transform-impacting style
   // respects.
   bool TransformDataEquivalent(const ComputedStyle& other) const {
-    return rare_non_inherited_data_->transform_data_ ==
-           other.rare_non_inherited_data_->transform_data_;
+    return !DiffTransformData(*this, other);
   }
   bool Preserves3D() const {
     return UsedTransformStyle3D() != ETransformStyle3D::kFlat;
