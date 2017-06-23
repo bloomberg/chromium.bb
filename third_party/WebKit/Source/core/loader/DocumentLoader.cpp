@@ -78,6 +78,7 @@
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -1018,6 +1019,32 @@ bool DocumentLoader::ShouldClearWindowName(
       previous_security_origin);
 }
 
+// static
+bool DocumentLoader::CheckOriginIsHttpOrHttps(const SecurityOrigin* origin) {
+  return origin &&
+         (origin->Protocol() == "http" || origin->Protocol() == "https");
+}
+
+// static
+bool DocumentLoader::ShouldPersistUserGestureValue(
+    const SecurityOrigin* previous_security_origin,
+    const SecurityOrigin* new_security_origin) {
+  if (!CheckOriginIsHttpOrHttps(previous_security_origin) ||
+      !CheckOriginIsHttpOrHttps(new_security_origin))
+    return false;
+
+  if (previous_security_origin->Host() == new_security_origin->Host())
+    return true;
+
+  String previous_domain = NetworkUtils::GetDomainAndRegistry(
+      previous_security_origin->Host(),
+      NetworkUtils::kIncludePrivateRegistries);
+  String new_domain = NetworkUtils::GetDomainAndRegistry(
+      new_security_origin->Host(), NetworkUtils::kIncludePrivateRegistries);
+
+  return !previous_domain.IsEmpty() && previous_domain == new_domain;
+}
+
 void DocumentLoader::InstallNewDocument(
     const DocumentInit& init,
     const AtomicString& mime_type,
@@ -1041,7 +1068,22 @@ void DocumentLoader::InstallNewDocument(
   if (!init.ShouldReuseDefaultView())
     frame_->SetDOMWindow(LocalDOMWindow::Create(*frame_));
 
+  bool user_gesture_bit_set = frame_->HasReceivedUserGesture() ||
+                              frame_->HasReceivedUserGestureBeforeNavigation();
+
   Document* document = frame_->DomWindow()->InstallNewDocument(mime_type, init);
+
+  // Persist the user gesture state between frames.
+  if (user_gesture_bit_set) {
+    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(
+        ShouldPersistUserGestureValue(previous_security_origin,
+                                      document->GetSecurityOrigin()));
+
+    // Clear the user gesture bit that is not persisted.
+    // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
+    if (frame_->IsMainFrame())
+      frame_->ClearDocumentHasReceivedUserGesture();
+  }
 
   if (ShouldClearWindowName(*frame_, previous_security_origin, *document)) {
     // TODO(andypaicu): experimentalSetNullName will just record the fact
