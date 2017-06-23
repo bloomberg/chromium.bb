@@ -3339,6 +3339,7 @@ Bug(none) webaudio/decodeAudioData/decode-audio-data-basic.html [ Failure Pass T
 Bug(none) webaudio/dom-exceptions.html [ Timeout ]
 Bug(none) webaudio/internals/audiocontext-close.html [ Timeout ]
 Bug(none) webaudio/internals/audiocontext-lock-threading-race.html [ Timeout ]
+Bug(none) webaudio/internals/audiosource-premature-gc.html [ Timeout ]
 Bug(none) webaudio/internals/audiosummingjunction-crash.html [ Timeout ]
 Bug(none) webaudio/internals/mediaelementaudiosourcenode-wrapper.html [ Timeout ]
 Bug(none) webaudio/test-basic.html [ Timeout ]
