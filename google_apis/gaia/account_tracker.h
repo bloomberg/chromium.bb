@@ -49,8 +49,6 @@ class AccountTracker : public OAuth2TokenService::Observer,
 
   class Observer {
    public:
-    virtual void OnAccountAdded(const AccountIds& ids) = 0;
-    virtual void OnAccountRemoved(const AccountIds& ids) = 0;
     virtual void OnAccountSignInChanged(const AccountIds& ids,
                                         bool is_signed_in) = 0;
   };
@@ -92,8 +90,6 @@ class AccountTracker : public OAuth2TokenService::Observer,
     bool is_signed_in;
   };
 
-  void NotifyAccountAdded(const AccountState& account);
-  void NotifyAccountRemoved(const AccountState& account);
   void NotifySignInChanged(const AccountState& account);
 
   void UpdateSignInState(const std::string& account_key, bool is_signed_in);

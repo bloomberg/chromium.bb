@@ -101,17 +101,6 @@ void GCMAccountTracker::ScheduleReportTokens() {
       GetTimeToNextTokenReporting());
 }
 
-void GCMAccountTracker::OnAccountAdded(const gaia::AccountIds& ids) {
-  DVLOG(1) << "Account added: " << ids.email;
-  // We listen for the account signing in, which happens after account is added.
-}
-
-void GCMAccountTracker::OnAccountRemoved(const gaia::AccountIds& ids) {
-  DVLOG(1) << "Account removed: " << ids.email;
-  // We listen for the account signing out, which happens before account is
-  // removed.
-}
-
 void GCMAccountTracker::OnAccountSignInChanged(const gaia::AccountIds& ids,
                                                bool is_signed_in) {
   if (is_signed_in)

@@ -101,8 +101,6 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
 
   // gaia::AccountTracker::Observer implementation:
-  void OnAccountAdded(const gaia::AccountIds& ids) override;
-  void OnAccountRemoved(const gaia::AccountIds& ids) override;
   void OnAccountSignInChanged(const gaia::AccountIds& ids,
                               bool is_signed_in) override;
 

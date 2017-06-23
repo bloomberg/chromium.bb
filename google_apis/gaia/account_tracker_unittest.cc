@@ -23,8 +23,6 @@ namespace {
 const char kPrimaryAccountKey[] = "primary_account@example.com";
 
 enum TrackingEventType {
-  ADDED,
-  REMOVED,
   SIGN_IN,
   SIGN_OUT
 };
@@ -56,12 +54,6 @@ class TrackingEvent {
   std::string ToString() const {
     const char * typestr = "INVALID";
     switch (type_) {
-      case ADDED:
-        typestr = "ADD";
-        break;
-      case REMOVED:
-        typestr = "REM";
-        break;
       case SIGN_IN:
         typestr = " IN";
         break;
@@ -136,8 +128,6 @@ class AccountTrackerObserver : public AccountTracker::Observer {
   void SortEventsByUser();
 
   // AccountTracker::Observer implementation
-  void OnAccountAdded(const AccountIds& ids) override;
-  void OnAccountRemoved(const AccountIds& ids) override;
   void OnAccountSignInChanged(const AccountIds& ids,
                               bool is_signed_in) override;
 
@@ -147,14 +137,6 @@ class AccountTrackerObserver : public AccountTracker::Observer {
 
   std::vector<TrackingEvent> events_;
 };
-
-void AccountTrackerObserver::OnAccountAdded(const AccountIds& ids) {
-  events_.push_back(TrackingEvent(ADDED, ids.email, ids.gaia));
-}
-
-void AccountTrackerObserver::OnAccountRemoved(const AccountIds& ids) {
-  events_.push_back(TrackingEvent(REMOVED, ids.email, ids.gaia));
-}
 
 void AccountTrackerObserver::OnAccountSignInChanged(const AccountIds& ids,
                                                     bool is_signed_in) {
@@ -397,8 +379,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLoginThenTokenAvailable) {
 
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
   EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(ADDED, kPrimaryAccountKey),
-                              TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 }
 
 TEST_F(IdentityAccountTrackerTest, PrimaryTokenAvailableThenLogin) {
@@ -408,8 +389,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryTokenAvailableThenLogin) {
   NotifyLogin(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
   EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(ADDED, kPrimaryAccountKey),
-                              TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 }
 
 TEST_F(IdentityAccountTrackerTest, PrimaryTokenAvailableAndRevokedThenLogin) {
@@ -419,11 +399,10 @@ TEST_F(IdentityAccountTrackerTest, PrimaryTokenAvailableAndRevokedThenLogin) {
   NotifyLogin(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
   EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(ADDED, kPrimaryAccountKey),
-                              TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 }
 
-TEST_F(IdentityAccountTrackerTest, PrimaryRevokeThenLogout) {
+TEST_F(IdentityAccountTrackerTest, PrimaryRevoke) {
   NotifyLogin(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
@@ -432,10 +411,6 @@ TEST_F(IdentityAccountTrackerTest, PrimaryRevokeThenLogout) {
   NotifyTokenRevoked(kPrimaryAccountKey);
   EXPECT_TRUE(
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey)));
-
-  NotifyLogout();
-  EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(REMOVED, kPrimaryAccountKey)));
 }
 
 TEST_F(IdentityAccountTrackerTest, PrimaryRevokeThenLogin) {
@@ -469,8 +444,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLogoutThenRevoke) {
 
   NotifyLogout();
   EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey),
-                              TrackingEvent(REMOVED, kPrimaryAccountKey)));
+      observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey)));
 
   NotifyTokenRevoked(kPrimaryAccountKey);
   EXPECT_TRUE(observer()->CheckEvents());
@@ -487,7 +461,6 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLogoutFetchCancelAvailable) {
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, kPrimaryAccountKey),
       TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 }
 
@@ -501,7 +474,6 @@ TEST_F(IdentityAccountTrackerTest, Available) {
 
   ReturnOAuthUrlFetchSuccess("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "user@example.com"),
       TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
@@ -519,7 +491,6 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailable) {
   ReturnOAuthUrlFetchSuccess("user@example.com");
   NotifyTokenRevoked("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "user@example.com"),
       TrackingEvent(SIGN_IN, "user@example.com"),
       TrackingEvent(SIGN_OUT, "user@example.com")));
 
@@ -538,7 +509,6 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailableWithPendingFetch) {
   NotifyTokenAvailable("user@example.com");
   ReturnOAuthUrlFetchSuccess("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "user@example.com"),
       TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
@@ -549,7 +519,6 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeRevoke) {
   ReturnOAuthUrlFetchSuccess("user@example.com");
   NotifyTokenRevoked("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "user@example.com"),
       TrackingEvent(SIGN_IN, "user@example.com"),
       TrackingEvent(SIGN_OUT, "user@example.com")));
 
@@ -563,7 +532,6 @@ TEST_F(IdentityAccountTrackerTest, AvailableAvailable) {
   NotifyTokenAvailable("user@example.com");
   ReturnOAuthUrlFetchSuccess("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "user@example.com"),
       TrackingEvent(SIGN_IN, "user@example.com")));
 
   NotifyTokenAvailable("user@example.com");
@@ -576,13 +544,11 @@ TEST_F(IdentityAccountTrackerTest, TwoAccounts) {
   NotifyTokenAvailable("alpha@example.com");
   ReturnOAuthUrlFetchSuccess("alpha@example.com");
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "alpha@example.com"),
       TrackingEvent(SIGN_IN, "alpha@example.com")));
 
   NotifyTokenAvailable("beta@example.com");
   ReturnOAuthUrlFetchSuccess("beta@example.com");
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "beta@example.com"),
       TrackingEvent(SIGN_IN, "beta@example.com")));
 
   NotifyTokenRevoked("alpha@example.com");
@@ -604,7 +570,6 @@ TEST_F(IdentityAccountTrackerTest, AvailableTokenFetchFailAvailable) {
   NotifyTokenAvailable("user@example.com");
   ReturnOAuthUrlFetchSuccess("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "user@example.com"),
       TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
@@ -618,20 +583,15 @@ TEST_F(IdentityAccountTrackerTest, MultiSignOutSignIn) {
 
   observer()->SortEventsByUser();
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "alpha@example.com"),
       TrackingEvent(SIGN_IN, "alpha@example.com"),
-      TrackingEvent(ADDED, "beta@example.com"),
       TrackingEvent(SIGN_IN, "beta@example.com")));
 
   NotifyLogout();
   observer()->SortEventsByUser();
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_OUT, "alpha@example.com"),
-      TrackingEvent(REMOVED, "alpha@example.com"),
-      TrackingEvent(SIGN_OUT, "beta@example.com"),
-      TrackingEvent(REMOVED, "beta@example.com"),
-      TrackingEvent(SIGN_OUT, kPrimaryAccountKey),
-      TrackingEvent(REMOVED, kPrimaryAccountKey)));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_OUT, "alpha@example.com"),
+                              TrackingEvent(SIGN_OUT, "beta@example.com"),
+                              TrackingEvent(SIGN_OUT, kPrimaryAccountKey)));
 
   // No events fire at all while profile is signed out.
   NotifyTokenRevoked("alpha@example.com");
@@ -646,11 +606,8 @@ TEST_F(IdentityAccountTrackerTest, MultiSignOutSignIn) {
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
   observer()->SortEventsByUser();
   EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(ADDED, "beta@example.com"),
       TrackingEvent(SIGN_IN, "beta@example.com"),
-      TrackingEvent(ADDED, "gamma@example.com"),
       TrackingEvent(SIGN_IN, "gamma@example.com"),
-      TrackingEvent(ADDED, kPrimaryAccountKey),
       TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 
   // Revoking the primary token does not affect other accounts.
@@ -686,9 +643,7 @@ TEST_F(IdentityAccountTrackerTest, MultiLogoutRemovesAllAccounts) {
   observer()->SortEventsByUser();
   EXPECT_TRUE(
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey),
-                              TrackingEvent(REMOVED, kPrimaryAccountKey),
-                              TrackingEvent(SIGN_OUT, "user@example.com"),
-                              TrackingEvent(REMOVED, "user@example.com")));
+                              TrackingEvent(SIGN_OUT, "user@example.com")));
 }
 
 TEST_F(IdentityAccountTrackerTest, MultiRevokePrimaryDoesNotRemoveAllAccounts) {
