@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,6 +35,11 @@
 
 namespace {
 
+const char kMinStalenessParamName[] = "min_staleness_in_minutes";
+const char kMaxStalenessParamName[] = "max_staleness_in_minutes";
+const int kMinStalenessParamDefaultValue = 2;
+const int kMaxStalenessParamDefaultValue = 1440;
+
 void RecordPreviewsInfoBarAction(
     previews::PreviewsType previews_type,
     PreviewsInfoBarDelegate::PreviewsInfoBarAction action) {
@@ -45,6 +51,11 @@ void RecordPreviewsInfoBarAction(
       1, max_limit, max_limit + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(static_cast<int32_t>(action));
+}
+
+void RecordStaleness(PreviewsInfoBarDelegate::PreviewsInfoBarTimestamp value) {
+  UMA_HISTOGRAM_ENUMERATION("Previews.InfoBarTimestamp", value,
+                            PreviewsInfoBarDelegate::TIMESTAMP_INDEX_BOUNDARY);
 }
 
 // Sends opt out information to the pingback service based on a key value in the
@@ -245,14 +256,16 @@ base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
   }
 
   int min_staleness_in_minutes = base::GetFieldTrialParamByFeatureAsInt(
-      previews::features::kStalePreviewsTimestamp, "min_staleness_in_minutes",
-      0);
+      previews::features::kStalePreviewsTimestamp, kMinStalenessParamName,
+      kMinStalenessParamDefaultValue);
   int max_staleness_in_minutes = base::GetFieldTrialParamByFeatureAsInt(
-      previews::features::kStalePreviewsTimestamp, "max_staleness_in_minutes",
-      0);
+      previews::features::kStalePreviewsTimestamp, kMaxStalenessParamName,
+      kMaxStalenessParamDefaultValue);
 
-  if (min_staleness_in_minutes == 0 || max_staleness_in_minutes == 0)
+  if (min_staleness_in_minutes <= 0 || max_staleness_in_minutes <= 0) {
+    NOTREACHED();
     return base::string16();
+  }
 
   base::Time network_time;
   if (g_browser_process->network_time_tracker()->GetNetworkTime(&network_time,
@@ -263,12 +276,22 @@ base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
     network_time = base::Time::Now();
   }
 
+  if (network_time < previews_freshness_) {
+    RecordStaleness(TIMESTAMP_NOT_SHOWN_STALENESS_NEGATIVE);
+    return base::string16();
+  }
+
   int staleness_in_minutes = (network_time - previews_freshness_).InMinutes();
-  // TODO(megjablon): record metrics for out of bounds staleness.
-  if (staleness_in_minutes < min_staleness_in_minutes)
+  if (staleness_in_minutes < min_staleness_in_minutes) {
+    RecordStaleness(TIMESTAMP_NOT_SHOWN_PREVIEW_NOT_STALE);
     return base::string16();
-  if (staleness_in_minutes > max_staleness_in_minutes)
+  }
+  if (staleness_in_minutes > max_staleness_in_minutes) {
+    RecordStaleness(TIMESTAMP_NOT_SHOWN_STALENESS_GREATER_THAN_MAX);
     return base::string16();
+  }
+
+  RecordStaleness(TIMESTAMP_SHOWN);
 
   if (staleness_in_minutes < 60) {
     return l10n_util::GetStringFUTF16(
