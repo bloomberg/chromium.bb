@@ -12,6 +12,7 @@
 
 namespace views {
 class Textfield;
+class Separator;
 }
 
 namespace app_list {
@@ -42,6 +43,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
 
   std::vector<SearchResultTileItemView*> tile_views_;
+
+  std::vector<views::Separator*> separator_views_;
 
   views::Textfield* search_box_;  // Owned by the views hierarchy.
 

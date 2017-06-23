@@ -49,6 +49,16 @@ class APP_LIST_EXPORT SearchResult {
     DISPLAY_TYPE_LAST,
   };
 
+  // Type of the search result. This should be set in corresponding subclass's
+  // constructor.
+  enum ResultType {
+    RESULT_UNKNOWN,        // Unknown type.
+    RESULT_INSTALLED_APP,  // Installed apps.
+    RESULT_PLAYSTORE_APP,  // Uninstalled apps from playstore.
+    RESULT_INSTANT_APP,    // Instant apps.
+    // Add new values here.
+  };
+
   // A tagged range in search result text.
   struct APP_LIST_EXPORT Tag {
     // Similar to ACMatchClassification::Style, the style values are not
@@ -134,6 +144,9 @@ class APP_LIST_EXPORT SearchResult {
   void set_display_type(DisplayType display_type) {
     display_type_ = display_type;
   }
+
+  ResultType result_type() const { return result_type_; }
+  void set_result_type(ResultType result_type) { result_type_ = result_type; }
 
   int distance_from_origin() { return distance_from_origin_; }
   void set_distance_from_origin(int distance) {
@@ -222,6 +235,8 @@ class APP_LIST_EXPORT SearchResult {
   std::string id_;
   double relevance_ = 0;
   DisplayType display_type_ = DISPLAY_LIST;
+
+  ResultType result_type_ = RESULT_UNKNOWN;
 
   // The Manhattan distance from the origin of all search results to this
   // result. This is logged for UMA.

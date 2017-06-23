@@ -100,6 +100,8 @@ APP_LIST_EXPORT extern const char kSearchResultOpenDisplayTypeHistogram[];
 APP_LIST_EXPORT extern const char kSearchQueryLength[];
 APP_LIST_EXPORT extern const char kSearchResultDistanceFromOrigin[];
 
+APP_LIST_EXPORT extern const int kSearchTileHeight;
+
 // Returns the shadow values for a view at |z_height|.
 APP_LIST_EXPORT gfx::ShadowValue GetShadowForZHeight(int z_height);
 
