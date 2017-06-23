@@ -81,6 +81,10 @@ AudioSinkAndroidAudioTrackImpl::AudioSinkAndroidAudioTrackImpl(
   Java_AudioSinkAudioTrackImpl_init(
       base::android::AttachCurrentThread(), j_audio_sink_audiotrack_impl_,
       input_samples_per_second_, kDirectBufferSize);
+  // Should be set now.
+  DCHECK(direct_pcm_buffer_address_);
+  DCHECK(direct_rendering_delay_address_);
+
   base::Thread::Options options;
   options.priority = base::ThreadPriority::REALTIME_AUDIO;
   feeder_thread_.StartWithOptions(options);
@@ -118,7 +122,6 @@ const char* AudioSinkAndroidAudioTrackImpl::GetContentTypeName() const {
 
 void AudioSinkAndroidAudioTrackImpl::FinalizeOnFeederThread() {
   RUN_ON_FEEDER_THREAD(FinalizeOnFeederThread);
-  LOG(INFO) << __func__ << "(" << this << "):";
   if (j_audio_sink_audiotrack_impl_.is_null()) {
     LOG(WARNING) << "j_audio_sink_audiotrack_impl_ is NULL";
     return;
@@ -143,7 +146,6 @@ void AudioSinkAndroidAudioTrackImpl::CacheDirectBufferAddress(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& pcm_byte_buffer,
     const JavaParamRef<jobject>& timestamp_byte_buffer) {
-  LOG(INFO) << __func__ << "(" << this << "):";
   direct_pcm_buffer_address_ =
       static_cast<uint8_t*>(env->GetDirectBufferAddress(pcm_byte_buffer));
   direct_rendering_delay_address_ = static_cast<uint64_t*>(
@@ -170,9 +172,9 @@ void AudioSinkAndroidAudioTrackImpl::FeedData() {
     return;
   }
 
-  VLOG(3) << __func__ << "(" << this << "):"
-          << " [" << pending_data_->data_size() << "]"
-          << " @ts=" << pending_data_->timestamp();
+  DVLOG(3) << __func__ << "(" << this << "):"
+           << " [" << pending_data_->data_size() << "]"
+           << " @ts=" << pending_data_->timestamp();
 
   if (pending_data_->data_size() == 0) {
     LOG(INFO) << __func__ << "(" << this << "): empty data buffer!";
@@ -322,9 +324,6 @@ void AudioSinkAndroidAudioTrackImpl::SetPaused(bool paused) {
 
 void AudioSinkAndroidAudioTrackImpl::UpdateVolume() {
   DCHECK(feeder_task_runner_->BelongsToCurrentThread());
-
-  LOG(INFO) << __func__ << "(" << this << "): vol=" << EffectiveVolume();
-
   Java_AudioSinkAudioTrackImpl_setVolume(base::android::AttachCurrentThread(),
                                          j_audio_sink_audiotrack_impl_,
                                          EffectiveVolume());

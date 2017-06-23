@@ -44,7 +44,7 @@ import java.nio.ByteOrder;
 @TargetApi(Build.VERSION_CODES.N)
 class AudioSinkAudioTrackImpl {
     private static final String TAG = "AudiotrackImpl";
-    private static final int DEBUG_LEVEL = 1;
+    private static final int DEBUG_LEVEL = 0;
 
     // hardcoded AudioTrack config parameters
     private static final int STREAM_TYPE = AudioManager.STREAM_MUSIC;
@@ -57,6 +57,7 @@ class AudioSinkAudioTrackImpl {
 
     private static final long SEC_IN_NSEC = 1000000000L;
     private static final long TIMESTAMP_UPDATE_PERIOD = 3 * SEC_IN_NSEC;
+    private static final long UNDERRUN_LOG_THROTTLE_PERIOD = SEC_IN_NSEC;
 
     private final long mNativeAudioSinkAudioTrackImpl;
 
@@ -73,6 +74,7 @@ class AudioSinkAudioTrackImpl {
     private boolean mTriggerTimestampUpdateNow; // Set to true to trigger an early update.
 
     private int mLastUnderrunCount;
+    private long mLastUnderrunLogNsec;
 
     // Statistics
     private long mTotalFramesWritten;
@@ -94,16 +96,16 @@ class AudioSinkAudioTrackImpl {
     @CalledByNative
     private static AudioSinkAudioTrackImpl createAudioSinkAudioTrackImpl(
             long nativeAudioSinkAudioTrackImpl) {
-        Log.i(TAG, "Creating new AudioSinkAudioTrackImpl instance");
         return new AudioSinkAudioTrackImpl(nativeAudioSinkAudioTrackImpl);
     }
 
     private AudioSinkAudioTrackImpl(long nativeAudioSinkAudioTrackImpl) {
-        Log.i(TAG, "Ctor called...");
         mNativeAudioSinkAudioTrackImpl = nativeAudioSinkAudioTrackImpl;
+        mIsInitialized = false;
         mLastTimestampUpdateNsec = NO_TIMESTAMP;
         mTriggerTimestampUpdateNow = false;
         mLastUnderrunCount = 0;
+        mLastUnderrunLogNsec = NO_TIMESTAMP;
         mTotalFramesWritten = 0;
     }
 
@@ -116,7 +118,7 @@ class AudioSinkAudioTrackImpl {
         Log.i(TAG,
                 "Init:"
                         + " sampleRateInHz=" + sampleRateInHz
-                        + " API-version=" + android.os.Build.VERSION.SDK_INT);
+                        + " bytesPerBuffer=" + bytesPerBuffer);
 
         if (mIsInitialized) {
             Log.w(TAG, "Init: already initialized.");
@@ -326,9 +328,7 @@ class AudioSinkAudioTrackImpl {
     private void updateTimestamp() {
         int underruns = getUnderrunCount();
         if (underruns != mLastUnderrunCount) {
-            Log.i(TAG,
-                    "Underrun detected (" + mLastUnderrunCount + "->" + underruns
-                            + ")! Resetting rendering delay logic.");
+            logUnderruns(underruns);
             mLastTimestampUpdateNsec = NO_TIMESTAMP;
             mLastUnderrunCount = underruns;
         }
@@ -348,6 +348,18 @@ class AudioSinkAudioTrackImpl {
             }
             mLastTimestampUpdateNsec = System.nanoTime();
             mTriggerTimestampUpdateNow = false;
+        }
+    }
+
+    /** Logs underruns in a throttled manner. */
+    private void logUnderruns(int newUnderruns) {
+        if (DEBUG_LEVEL >= 1
+                || (mLastUnderrunLogNsec == NO_TIMESTAMP
+                           || elapsedNsec(mLastUnderrunLogNsec) > UNDERRUN_LOG_THROTTLE_PERIOD)) {
+            Log.i(TAG,
+                    "Underrun detected (" + mLastUnderrunCount + "->" + newUnderruns
+                            + ")! Resetting rendering delay logic.");
+            mLastUnderrunLogNsec = System.nanoTime();
         }
     }
 
