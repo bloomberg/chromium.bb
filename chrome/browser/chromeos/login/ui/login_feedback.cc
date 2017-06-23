@@ -259,7 +259,8 @@ void LoginFeedback::EnsureFeedbackUI() {
   // Make sure there is a feedback app window opened.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&LoginFeedback::EnsureFeedbackUI, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&LoginFeedback::EnsureFeedbackUI,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(1));
 }
 

@@ -103,8 +103,8 @@ void ExtendedUserFlow::HandleOAuthTokenStatusChange(
 void ExtendedUserFlow::UnregisterFlowSoon() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromeUserManager::ResetUserFlow,
-                 base::Unretained(ChromeUserManager::Get()), account_id()));
+      base::BindOnce(&ChromeUserManager::ResetUserFlow,
+                     base::Unretained(ChromeUserManager::Get()), account_id()));
 }
 
 }  // namespace chromeos

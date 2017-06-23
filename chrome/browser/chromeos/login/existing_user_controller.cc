@@ -152,7 +152,7 @@ void TransferContextAuthenticationsOnIOThread(
   // Last but not least tell the policy subsystem to refresh now as it might
   // have been stuck until now too.
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(&RefreshPoliciesOnUIThread));
+                                   base::BindOnce(&RefreshPoliciesOnUIThread));
 }
 
 // Record UMA for password login of regular user when Easy sign-in is enabled.
@@ -372,10 +372,10 @@ void ExistingUserController::Observe(
 
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&TransferContextAuthenticationsOnIOThread,
-                   base::RetainedRef(signin_profile_context_getter),
-                   base::RetainedRef(webview_context_getter),
-                   base::RetainedRef(browser_process_context_getter)),
+        base::BindOnce(&TransferContextAuthenticationsOnIOThread,
+                       base::RetainedRef(signin_profile_context_getter),
+                       base::RetainedRef(webview_context_getter),
+                       base::RetainedRef(browser_process_context_getter)),
         base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
   }
 }
@@ -727,9 +727,10 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     ShowError(IDS_LOGIN_ERROR_OWNER_REQUIRED, error);
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&SessionManagerClient::StopSession,
-                   base::Unretained(DBusThreadManager::Get()->
-                                    GetSessionManagerClient())),
+        base::BindOnce(
+            &SessionManagerClient::StopSession,
+            base::Unretained(
+                DBusThreadManager::Get()->GetSessionManagerClient())),
         base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();

@@ -47,8 +47,8 @@ void MergeSessionXHRRequestWaiter::StartWaiting() {
     manager->AddObserver(this);
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&MergeSessionXHRRequestWaiter::OnTimeout,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&MergeSessionXHRRequestWaiter::OnTimeout,
+                       weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kMaxRequestWaitTimeMS));
   } else {
     NotifyBlockingDone();

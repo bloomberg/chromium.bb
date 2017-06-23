@@ -190,43 +190,35 @@ void SupervisedUserAuthenticator::Resolve() {
       // the user in because their data is horked.  So, override with
       // the appropriate failure.
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&SupervisedUserAuthenticator::OnAuthenticationFailure,
-                     this,
-                     state));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&SupervisedUserAuthenticator::OnAuthenticationFailure,
+                         this, state));
       break;
     case NO_MOUNT:
       // In this case, whether login succeeded or not, we can't log
       // the user in because no data exist. So, override with
       // the appropriate failure.
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&SupervisedUserAuthenticator::OnAuthenticationFailure,
-                     this,
-                     state));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&SupervisedUserAuthenticator::OnAuthenticationFailure,
+                         this, state));
       break;
     case FAILED_TPM:
       // In this case, we tried to create/mount cryptohome and failed
       // because of the critical TPM error.
       // Chrome will notify user and request reboot.
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&SupervisedUserAuthenticator::OnAuthenticationFailure,
-                     this,
-                     state));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&SupervisedUserAuthenticator::OnAuthenticationFailure,
+                         this, state));
       break;
     case SUCCESS:
       VLOG(2) << "Supervised user login";
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&SupervisedUserAuthenticator::OnAuthenticationSuccess,
-                     this,
-                     current_state_->hash(),
-                     current_state_->add_key));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&SupervisedUserAuthenticator::OnAuthenticationSuccess,
+                         this, current_state_->hash(),
+                         current_state_->add_key));
       break;
     default:
       NOTREACHED();

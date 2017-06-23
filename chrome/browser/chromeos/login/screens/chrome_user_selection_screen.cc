@@ -109,8 +109,8 @@ void ChromeUserSelectionScreen::CheckForPublicSessionDisplayNameChange(
   // been informed of the change.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromeUserSelectionScreen::SetPublicSessionDisplayName,
-                 weak_factory_.GetWeakPtr(), account_id));
+      base::BindOnce(&ChromeUserSelectionScreen::SetPublicSessionDisplayName,
+                     weak_factory_.GetWeakPtr(), account_id));
 }
 
 void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(

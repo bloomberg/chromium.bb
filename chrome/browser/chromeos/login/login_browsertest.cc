@@ -221,8 +221,8 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     StartupUtils::MarkOobeCompleted();
     base::RunLoop loop;
     fake_auth_policy_client()->RefreshDevicePolicy(
-        base::Bind(&ActiveDirectoryLoginTest::OnRefreshedPolicy,
-                   base::Unretained(this), loop.QuitClosure()));
+        base::BindOnce(&ActiveDirectoryLoginTest::OnRefreshedPolicy,
+                       base::Unretained(this), loop.QuitClosure()));
     loop.Run();
   }
 

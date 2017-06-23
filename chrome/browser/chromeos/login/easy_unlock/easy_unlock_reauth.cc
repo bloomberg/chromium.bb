@@ -100,7 +100,7 @@ class ReauthHandler : public content::NotificationObserver,
     callback_.Run(user_context);
     // Schedule deletion.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&EndReauthAttempt));
+        FROM_HERE, base::BindOnce(&EndReauthAttempt));
   }
 
   void OnAuthFailure(const chromeos::AuthFailure& error) override {}

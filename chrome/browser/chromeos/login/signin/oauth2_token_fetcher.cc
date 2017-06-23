@@ -53,12 +53,9 @@ void OAuth2TokenFetcher::StartExchangeFromCookies(
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
     BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&OAuth2TokenFetcher::StartExchangeFromCookies,
-                   AsWeakPtr(),
-                   session_index,
-                   signin_scoped_device_id),
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&OAuth2TokenFetcher::StartExchangeFromCookies,
+                       AsWeakPtr(), session_index, signin_scoped_device_id),
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }

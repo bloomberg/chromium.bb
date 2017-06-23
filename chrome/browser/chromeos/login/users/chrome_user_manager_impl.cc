@@ -221,8 +221,8 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
+                       weak_factory_.GetWeakPtr()));
   }
 
   local_accounts_subscription_ = cros_settings_->AddSettingsObserver(
@@ -519,9 +519,9 @@ void ChromeUserManagerImpl::Observe(
         // in ProfileManager. It happens in case of sync profile load when
         // NOTIFICATION_PROFILE_CREATED is called synchronously.
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::Bind(&ChromeUserManagerImpl::SwitchActiveUser,
-                       weak_factory_.GetWeakPtr(), GetPendingUserSwitchID()));
+            FROM_HERE, base::BindOnce(&ChromeUserManagerImpl::SwitchActiveUser,
+                                      weak_factory_.GetWeakPtr(),
+                                      GetPendingUserSwitchID()));
         SetPendingUserSwitchId(EmptyAccountId());
       }
       break;
@@ -1361,7 +1361,8 @@ void ChromeUserManagerImpl::ScheduleResolveLocale(
     std::string* out_resolved_locale) const {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(ResolveLocale, locale, base::Unretained(out_resolved_locale)),
+      base::BindOnce(ResolveLocale, locale,
+                     base::Unretained(out_resolved_locale)),
       on_resolved_callback);
 }
 

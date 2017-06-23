@@ -1248,7 +1248,7 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&EnableSystemSoundsForAccessibility),
+      FROM_HERE, base::BindOnce(&EnableSystemSoundsForAccessibility),
       media::SoundsManager::Get()->GetDuration(SOUND_STARTUP));
 }
 

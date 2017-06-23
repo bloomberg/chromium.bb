@@ -48,7 +48,7 @@ class LoginScreenPolicyTest : public policy::DevicePolicyCrosBrowserTest {
   void TearDownOnMainThread() override {
     // This shuts down the login UI.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&chrome::AttemptExit));
+        FROM_HERE, base::BindOnce(&chrome::AttemptExit));
     base::RunLoop().RunUntilIdle();
   }
 };

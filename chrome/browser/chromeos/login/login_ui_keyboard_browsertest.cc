@@ -56,8 +56,8 @@ class FocusPODWaiter {
     focused_ = true;
     if (runner_.get()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&FocusPODWaiter::ExitMessageLoop, base::Unretained(this)));
+          FROM_HERE, base::BindOnce(&FocusPODWaiter::ExitMessageLoop,
+                                    base::Unretained(this)));
     }
   }
 

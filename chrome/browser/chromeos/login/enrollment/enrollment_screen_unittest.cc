@@ -158,8 +158,9 @@ TEST_F(EnrollmentScreenUnitTest, DoesNotRetryOnTopOfUser) {
 
   // Schedule user retry button click after 30 sec.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&EnrollmentScreen::OnRetry,
-                            enrollment_screen_->weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&EnrollmentScreen::OnRetry,
+                     enrollment_screen_->weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(30));
 
   // Fast forward time by 1 minute.

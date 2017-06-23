@@ -50,9 +50,8 @@ void UserAddingScreenImpl::Start() {
   CHECK(!IsRunning());
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   display_host_ = new chromeos::LoginDisplayHostImpl(screen_bounds);
-  display_host_->StartUserAdding(
-      base::Bind(&UserAddingScreenImpl::OnDisplayHostCompletion,
-                 base::Unretained(this)));
+  display_host_->StartUserAdding(base::BindOnce(
+      &UserAddingScreenImpl::OnDisplayHostCompletion, base::Unretained(this)));
 
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOGIN_SECONDARY);

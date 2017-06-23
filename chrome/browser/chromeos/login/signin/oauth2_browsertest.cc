@@ -151,7 +151,7 @@ class BrowserThreadBlocker {
             base::WaitableEvent::InitialState::NOT_SIGNALED)) {
     content::BrowserThread::PostTask(
         identifier, FROM_HERE,
-        base::Bind(&BlockThreadOnThread, base::Owned(unblock_event_)));
+        base::BindOnce(&BlockThreadOnThread, base::Owned(unblock_event_)));
   }
   ~BrowserThreadBlocker() { unblock_event_->Signal(); }
 
@@ -408,8 +408,7 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
     context_ = profile->GetRequestContext();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CookieReader::ReadCookiesOnIOThread,
-                   this));
+        base::BindOnce(&CookieReader::ReadCookiesOnIOThread, this));
     runner_ = new content::MessageLoopRunner;
     runner_->Run();
   }
@@ -441,8 +440,7 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
     cookie_list_ = cookies;
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&CookieReader::OnCookiesReadyOnUIThread,
-                   this));
+        base::BindOnce(&CookieReader::OnCookiesReadyOnUIThread, this));
   }
 
   void OnCookiesReadyOnUIThread() {
@@ -647,8 +645,8 @@ class FakeGoogle {
       start_event_.Signal();
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&FakeGoogle::QuitRunnerOnUIThread,
-                     base::Unretained(this)));
+          base::BindOnce(&FakeGoogle::QuitRunnerOnUIThread,
+                         base::Unretained(this)));
 
       http_response->set_code(net::HTTP_OK);
       http_response->set_content_type("text/html");
@@ -721,8 +719,8 @@ class DelayedFakeGaia : public FakeGaia {
     start_event_.Signal();
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&DelayedFakeGaia::QuitRunnerOnUIThread,
-                   base::Unretained(this)));
+        base::BindOnce(&DelayedFakeGaia::QuitRunnerOnUIThread,
+                       base::Unretained(this)));
     blocking_event_.Wait();
     FakeGaia::HandleMergeSession(request, http_response);
   }

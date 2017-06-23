@@ -361,7 +361,7 @@ void UpdateScreen::OnPortalDetectionCompleted(
     is_first_detection_notification_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             base::IgnoreResult(&NetworkPortalDetector::StartDetectionIfIdle),
             base::Unretained(network_portal_detector::GetInstance())));
     return;
@@ -536,8 +536,8 @@ void UpdateScreen::SetHostPairingControllerStatus(
     // Send UPDATE_STATUS_UPDATING message every |kHostStatusReportDelay|ms.
     base::SequencedTaskRunnerHandle::Get()->PostNonNestableDelayedTask(
         FROM_HERE,
-        base::Bind(&UpdateScreen::SetHostPairingControllerStatus,
-                   weak_factory_.GetWeakPtr(), update_status),
+        base::BindOnce(&UpdateScreen::SetHostPairingControllerStatus,
+                       weak_factory_.GetWeakPtr(), update_status),
         base::TimeDelta::FromMilliseconds(kHostStatusReportDelay));
   }
 }

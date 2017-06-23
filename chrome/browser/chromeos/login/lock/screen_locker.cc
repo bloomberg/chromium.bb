@@ -320,8 +320,9 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   // Add guard for case when something get broken in call chain to unlock
   // for sure.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ScreenLocker::UnlockOnLoginSuccess,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&ScreenLocker::UnlockOnLoginSuccess,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUnlockGuardTimeoutMs));
   delegate_->AnimateAuthenticationSuccess();
 
@@ -397,20 +398,21 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
                                         ->TransformKey(user_context);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ExtendedAuthenticator::AuthenticateToCheck,
-                     extended_authenticator_.get(), updated_context,
-                     base::Bind(&ScreenLocker::OnPasswordAuthSuccess,
-                                weak_factory_.GetWeakPtr(), updated_context)));
+          base::BindOnce(
+              &ExtendedAuthenticator::AuthenticateToCheck,
+              extended_authenticator_.get(), updated_context,
+              base::Bind(&ScreenLocker::OnPasswordAuthSuccess,
+                         weak_factory_.GetWeakPtr(), updated_context)));
       return;
     }
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExtendedAuthenticator::AuthenticateToCheck,
-                 extended_authenticator_.get(), user_context,
-                 base::Bind(&ScreenLocker::OnPasswordAuthSuccess,
-                            weak_factory_.GetWeakPtr(), user_context)));
+      base::BindOnce(&ExtendedAuthenticator::AuthenticateToCheck,
+                     extended_authenticator_.get(), user_context,
+                     base::Bind(&ScreenLocker::OnPasswordAuthSuccess,
+                                weak_factory_.GetWeakPtr(), user_context)));
 }
 
 const user_manager::User* ScreenLocker::FindUnlockUser(
