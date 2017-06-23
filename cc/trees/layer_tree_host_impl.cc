@@ -2116,6 +2116,12 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     // Reset will call the destructor and log the timer histogram.
     pending_tree_duration_timer_.reset();
 
+    // In most cases, this will be reset in NotifyReadyToActivate, since we
+    // activate the pending tree only when its ready. But an activation may be
+    // forced, in the case of a context loss for instance, so reset it here as
+    // well.
+    pending_tree_raster_duration_timer_.reset();
+
     // Process any requests in the UI resource queue.  The request queue is
     // given in LayerTreeHost::FinishCommitOnImplThread.  This must take place
     // before the swap.
