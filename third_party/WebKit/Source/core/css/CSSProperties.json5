@@ -954,7 +954,6 @@
     {
       name: "box-sizing",
       field_template: "keyword",
-      type_name: "EBoxSizing",
       default_value: "content-box",
       keywords: ["content-box", "border-box"],
       field_group: "box",
@@ -1175,7 +1174,6 @@
       default_value: "show",
       field_template: "keyword",
       keywords: ["show", "hide"],
-      type_name: "EEmptyCells",
     },
     {
       name: "fill",
@@ -1221,7 +1219,6 @@
     },
     {
       name: "flex-direction",
-      type_name: "EFlexDirection",
       field_template: "keyword",
       default_value: "row",
       field_group: "rare-non-inherited->flexible-box",
@@ -1249,7 +1246,6 @@
     },
     {
       name: "flex-wrap",
-      type_name: "EFlexWrap",
       field_template: "keyword",
       default_value: "nowrap",
       field_group: "rare-non-inherited->flexible-box",
@@ -1442,7 +1438,6 @@
     },
     {
       name: "isolation",
-      type_name: "EIsolation",
       field_template: "keyword",
       keywords: ["auto", "isolate"],
       field_group: "rare-non-inherited",
@@ -2873,7 +2868,6 @@
     },
     {
       name: "-webkit-box-lines",
-      type_name: "EBoxLines",
       field_template: "keyword",
       keywords: ["single", "multiple"],
       default_value: "single",
@@ -2890,7 +2884,6 @@
     },
     {
       name: "-webkit-box-orient",
-      type_name: "EBoxOrient",
       field_template: "keyword",
       keywords: ["horizontal", "vertical"],
       default_value: "horizontal",
@@ -2898,7 +2891,6 @@
     },
     {
       name: "-webkit-box-pack",
-      type_name: "EBoxPack",
       field_template: "keyword",
       keywords: ["start", "center", "end", "justify"],
       default_value: "start",
