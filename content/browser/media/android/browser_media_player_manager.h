@@ -66,6 +66,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Any actual seek started by renderer will be handled by browser in OnSeek().
   void OnSeekRequest(int player_id, const base::TimeDelta& time_to_seek);
 
+  WebContents* web_contents() const { return web_contents_; }
+
   // media::MediaPlayerManager overrides.
   void OnTimeUpdate(int player_id,
                     base::TimeDelta current_timestamp,
@@ -110,8 +112,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
  protected:
   // Clients must use Create() or subclass constructor.
   explicit BrowserMediaPlayerManager(RenderFrameHost* render_frame_host);
-
-  WebContents* web_contents() const { return web_contents_; }
 
   // Adds a given player to the list.  Not private to allow embedders
   // to extend the manager and still utilize the base player management.
