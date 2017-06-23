@@ -4,6 +4,7 @@
 
 #include "ui/views/focus/focus_manager_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 
@@ -17,16 +18,17 @@ class DefaultFocusManagerFactory : public FocusManagerFactory {
   ~DefaultFocusManagerFactory() override {}
 
  protected:
-  FocusManager* CreateFocusManager(Widget* widget,
-                                   bool desktop_widget) override {
-    return new FocusManager(widget, nullptr /* delegate */);
+  std::unique_ptr<FocusManager> CreateFocusManager(
+      Widget* widget,
+      bool desktop_widget) override {
+    return base::MakeUnique<FocusManager>(widget, nullptr /* delegate */);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultFocusManagerFactory);
 };
 
-FocusManagerFactory* focus_manager_factory = nullptr;
+FocusManagerFactory* g_focus_manager_factory = nullptr;
 
 }  // namespace
 
@@ -37,19 +39,19 @@ FocusManagerFactory::~FocusManagerFactory() {
 }
 
 // static
-FocusManager* FocusManagerFactory::Create(Widget* widget,
-                                          bool desktop_widget) {
-  if (!focus_manager_factory)
-    focus_manager_factory = new DefaultFocusManagerFactory();
-  return focus_manager_factory->CreateFocusManager(widget, desktop_widget);
+std::unique_ptr<FocusManager> FocusManagerFactory::Create(Widget* widget,
+                                                          bool desktop_widget) {
+  if (!g_focus_manager_factory)
+    g_focus_manager_factory = new DefaultFocusManagerFactory();
+  return g_focus_manager_factory->CreateFocusManager(widget, desktop_widget);
 }
 
 // static
 void FocusManagerFactory::Install(FocusManagerFactory* f) {
-  if (f == focus_manager_factory)
+  if (f == g_focus_manager_factory)
     return;
-  delete focus_manager_factory;
-  focus_manager_factory = f ? f : new DefaultFocusManagerFactory();
+  delete g_focus_manager_factory;
+  g_focus_manager_factory = f ? f : new DefaultFocusManagerFactory();
 }
 
 }  // namespace views
