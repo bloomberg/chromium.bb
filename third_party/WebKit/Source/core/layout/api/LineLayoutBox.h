@@ -79,7 +79,7 @@ class LineLayoutBox : public LineLayoutBoxModel {
     return ToBox()->LogicalVisualOverflowRectForPropagation();
   }
   LayoutRect LogicalLayoutOverflowRectForPropagation() const {
-    return ToBox()->LogicalLayoutOverflowRectForPropagation();
+    return ToBox()->LogicalLayoutOverflowRectForPropagation(nullptr);
   }
 
   void SetLocation(const LayoutPoint& location) {

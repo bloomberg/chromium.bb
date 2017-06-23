@@ -5128,7 +5128,7 @@ void LayoutBox::AddOverflowFromChild(const LayoutBox& child,
   // care about it. LayoutOverflowRectForPropagation takes care of this and just
   // propagates the border box rect instead.
   LayoutRect child_layout_overflow_rect =
-      child.LayoutOverflowRectForPropagation();
+      child.LayoutOverflowRectForPropagation(this);
   child_layout_overflow_rect.Move(delta);
   AddLayoutOverflow(child_layout_overflow_rect);
 
@@ -5360,15 +5360,17 @@ LayoutRect LayoutBox::RectForOverflowPropagation(const LayoutRect& rect) const {
 }
 
 DISABLE_CFI_PERF
-LayoutRect LayoutBox::LogicalLayoutOverflowRectForPropagation() const {
-  LayoutRect rect = LayoutOverflowRectForPropagation();
+LayoutRect LayoutBox::LogicalLayoutOverflowRectForPropagation(
+    LayoutObject* container) const {
+  LayoutRect rect = LayoutOverflowRectForPropagation(container);
   if (!Parent()->StyleRef().IsHorizontalWritingMode())
     return rect.TransposedRect();
   return rect;
 }
 
 DISABLE_CFI_PERF
-LayoutRect LayoutBox::LayoutOverflowRectForPropagation() const {
+LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
+    LayoutObject* container) const {
   // Only propagate interior layout overflow if we don't clip it.
   LayoutRect rect = BorderBoxRect();
   // We want to include the margin, but only when it adds height. Quirky margins
@@ -5388,11 +5390,19 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation() const {
     // positioning and transforms to it, and then convert it back.
     FlipForWritingMode(rect);
 
-    if (has_transform)
-      rect = Layer()->CurrentTransform().MapRect(rect);
+    LayoutSize container_offset;
 
     if (IsInFlowPositioned())
-      rect.Move(OffsetForInFlowPosition());
+      container_offset = OffsetForInFlowPosition();
+
+    if (ShouldUseTransformFromContainer(container)) {
+      TransformationMatrix t;
+      GetTransformFromContainer(container ? container : Container(),
+                                container_offset, t);
+      rect = t.MapRect(rect);
+    } else {
+      rect.Move(container_offset);
+    }
 
     // Now we need to flip back.
     FlipForWritingMode(rect);
