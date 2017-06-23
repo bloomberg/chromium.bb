@@ -1007,6 +1007,8 @@ static_library("ash_shell_lib") {
     "shell/panel_window.h",
     "shell/shell_delegate_impl.cc",
     "shell/shell_delegate_impl.h",
+    "shell/shell_views_delegate.cc",
+    "shell/shell_views_delegate.h",
     "shell/toplevel_window.cc",
     "shell/toplevel_window.h",
     "shell/widgets.cc",

@@ -63,8 +63,9 @@ AuraInit::AuraInit(service_manager::Connector* connector,
       env_(aura::Env::CreateInstance(
           (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS_WINDOW_MANAGER)
               ? aura::Env::Mode::MUS
-              : aura::Env::Mode::LOCAL)),
-      views_delegate_(new MusViewsDelegate) {
+              : aura::Env::Mode::LOCAL)) {
+  if (!ViewsDelegate::GetInstance())
+    views_delegate_ = base::MakeUnique<MusViewsDelegate>();
   if (mode == Mode::AURA_MUS) {
     mus_client_ =
         base::WrapUnique(new MusClient(connector, identity, io_task_runner));

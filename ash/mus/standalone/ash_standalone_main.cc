@@ -7,6 +7,7 @@
 #include "ash/shell/example_app_list_presenter.h"
 #include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"
+#include "ash/shell/shell_views_delegate.h"
 #include "ash/shell/window_type_launcher.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_observer.h"
@@ -97,6 +98,7 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
 }  // namespace ash
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
+  ash::shell::ShellViewsDelegate shell_views_delegate;
   const bool show_primary_host_on_connect = false;
   std::unique_ptr<ash::ShellInit> shell_init_ptr =
       base::MakeUnique<ash::ShellInit>();
