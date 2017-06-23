@@ -58,9 +58,9 @@ const char* const name_suffixes[] = {"b.a", "ba", "d.d.s", "dds",  "i",   "ii",
                                      "ma",  "md", "ms",    "ph.d", "phd", "sr",
                                      "v",   "vi", "vii",   "viii", "x"};
 
-const char* const family_name_prefixes[] = {"d'",  "de",  "del", "der", "di",
-                                            "la",  "le",  "mc",  "san", "st",
-                                            "ter", "van", "von"};
+const char* const family_name_prefixes[] = {"d'", "de",  "del", "den", "der",
+                                            "di", "la",  "le",  "mc",  "san",
+                                            "st", "ter", "van", "von"};
 
 // The common and non-ambiguous CJK surnames (last names) that have more than
 // one character.
