@@ -70,23 +70,24 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
       return false;
 
     // Intercept arrow key messages to switch between grouped views.
+    bool is_left = key_code == ui::VKEY_LEFT || key_code == ui::VKEY_UP;
+    bool is_right = key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_DOWN;
     if (focused_view_ && focused_view_->GetGroup() != -1 &&
-        (key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN ||
-         key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT)) {
-      bool next = (key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_DOWN);
+        (is_left || is_right)) {
+      bool next = is_right;
       View::Views views;
       focused_view_->parent()->GetViewsInGroup(focused_view_->GetGroup(),
                                                &views);
       View::Views::const_iterator i(
           std::find(views.begin(), views.end(), focused_view_));
       DCHECK(i != views.end());
-      int index = static_cast<int>(i - views.begin());
-      index += next ? 1 : -1;
-      if (index < 0) {
-        index = static_cast<int>(views.size()) - 1;
-      } else if (index >= static_cast<int>(views.size())) {
+      size_t index = i - views.begin();
+      if (next && index == views.size() - 1)
         index = 0;
-      }
+      else if (!next && index == 0)
+        index = views.size() - 1;
+      else
+        index += next ? 1 : -1;
       SetFocusedViewWithReason(views[index], kReasonFocusTraversal);
       return false;
     }
@@ -241,51 +242,50 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
 
   // Traverse the FocusTraversable tree down to find the focusable view.
   View* v = FindFocusableView(focus_traversable, starting_view, reverse);
-  if (v) {
+  if (v)
     return v;
-  } else {
-    // Let's go up in the FocusTraversable tree.
-    FocusTraversable* parent_focus_traversable =
-        focus_traversable->GetFocusTraversableParent();
+
+  // Let's go up in the FocusTraversable tree.
+  FocusTraversable* parent_focus_traversable =
+      focus_traversable->GetFocusTraversableParent();
+  starting_view = focus_traversable->GetFocusTraversableParentView();
+  while (parent_focus_traversable) {
+    FocusTraversable* new_focus_traversable = nullptr;
+    View* new_starting_view = nullptr;
+    // When we are going backward, the parent view might gain the next focus.
+    bool check_starting_view = reverse;
+    v = parent_focus_traversable->GetFocusSearch()->FindNextFocusableView(
+        starting_view, reverse, FocusSearch::UP, check_starting_view,
+        &new_focus_traversable, &new_starting_view);
+
+    if (new_focus_traversable) {
+      DCHECK(!v);
+
+      // There is a FocusTraversable, traverse it down.
+      v = FindFocusableView(new_focus_traversable, nullptr, reverse);
+    }
+
+    if (v)
+      return v;
+
     starting_view = focus_traversable->GetFocusTraversableParentView();
-    while (parent_focus_traversable) {
-      FocusTraversable* new_focus_traversable = NULL;
-      View* new_starting_view = NULL;
-      // When we are going backward, the parent view might gain the next focus.
-      bool check_starting_view = reverse;
-      v = parent_focus_traversable->GetFocusSearch()->FindNextFocusableView(
-          starting_view, reverse, FocusSearch::UP,
-          check_starting_view, &new_focus_traversable, &new_starting_view);
-
-      if (new_focus_traversable) {
-        DCHECK(!v);
-
-        // There is a FocusTraversable, traverse it down.
-        v = FindFocusableView(new_focus_traversable, NULL, reverse);
-      }
-
-      if (v)
-        return v;
-
-      starting_view = focus_traversable->GetFocusTraversableParentView();
-      parent_focus_traversable =
-          parent_focus_traversable->GetFocusTraversableParent();
-    }
-
-    // If we get here, we have reached the end of the focus hierarchy, let's
-    // loop. Make sure there was at least a view to start with, to prevent
-    // infinitely looping in empty windows.
-    if (!dont_loop && original_starting_view) {
-      // Easy, just clear the selection and press tab again.
-      // By calling with NULL as the starting view, we'll start from either
-      // the starting views widget or |widget_|.
-      Widget* widget = original_starting_view->GetWidget();
-      if (widget->widget_delegate()->ShouldAdvanceFocusToTopLevelWidget())
-        widget = widget_;
-      return GetNextFocusableView(NULL, widget, reverse, true);
-    }
+    parent_focus_traversable =
+        parent_focus_traversable->GetFocusTraversableParent();
   }
-  return NULL;
+
+  // If we get here, we have reached the end of the focus hierarchy, let's
+  // loop. Make sure there was at least a view to start with, to prevent
+  // infinitely looping in empty windows.
+  if (dont_loop || !original_starting_view)
+    return nullptr;
+
+  // Easy, just clear the selection and press tab again.
+  // By calling with NULL as the starting view, we'll start from either
+  // the starting views widget or |widget_|.
+  Widget* widget = original_starting_view->GetWidget();
+  if (widget->widget_delegate()->ShouldAdvanceFocusToTopLevelWidget())
+    widget = widget_;
+  return GetNextFocusableView(nullptr, widget, reverse, true);
 }
 
 void FocusManager::SetKeyboardAccessible(bool keyboard_accessible) {
@@ -482,9 +482,7 @@ void FocusManager::UnregisterAccelerators(ui::AcceleratorTarget* target) {
 bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
   if (accelerator_manager_.Process(accelerator))
     return true;
-  if (delegate_.get())
-    return delegate_->ProcessAccelerator(accelerator);
-  return false;
+  return delegate_ && delegate_->ProcessAccelerator(accelerator);
 }
 
 bool FocusManager::HasPriorityHandler(
