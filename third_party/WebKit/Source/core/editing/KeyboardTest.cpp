@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <memory>
 #include "core/editing/EditingBehavior.h"
 #include "core/editing/Editor.h"
 #include "core/events/EventTarget.h"
@@ -37,7 +38,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebInputEvent.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
