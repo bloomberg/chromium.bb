@@ -103,6 +103,7 @@ Polymer({
   attached: function() {
     this.resetState_();
     this.$.dialog.showModal();
+    this.$.pinKeyboard.focus();
 
     // Show the pin is too short error when first displaying the PIN dialog.
     this.problemClass_ = ProblemType.WARNING;

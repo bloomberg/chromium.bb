@@ -174,9 +174,26 @@ Polymer({
     this.passwordElement.selectionEnd = end;
   },
 
-  /** Transfers focus to the input element. */
-  focus: function() {
-    this.passwordElement.focus();
+  /**
+   * Transfers blur to the input element.
+   */
+  blur: function() {
+    this.passwordElement.blur();
+  },
+
+  /**
+   * Transfers focus to the input element. This should not bring up the virtual
+   * keyboard, if it is enabled. After focus, moves the caret to the correct
+   * location if specified.
+   * @param {number=} opt_selectionStart
+   * @param {number=} opt_selectionEnd
+   */
+  focus: function(opt_selectionStart, opt_selectionEnd) {
+    setTimeout(function() {
+      this.passwordElement.focus();
+      this.selectionStart_ = opt_selectionStart || 0;
+      this.selectionEnd_ = opt_selectionEnd || 0;
+    }.bind(this), 0);
   },
 
   /**
@@ -192,16 +209,14 @@ Polymer({
     var selectionStart = this.selectionStart_;
     this.value = this.value.substring(0, this.selectionStart_) + numberValue +
         this.value.substring(this.selectionEnd_);
-    this.selectionStart_ = selectionStart + 1;
-    this.selectionEnd_ = this.selectionStart_;
 
     // If a number button is clicked, we do not want to switch focus to the
     // button, therefore we transfer focus back to the input, but if a number
     // button is tabbed into, it should keep focus, so users can use tab and
     // spacebar/return to enter their PIN.
     if (!event.target.receivedFocusFromKeyboard)
-      this.focus();
-    event.preventDefault();
+      this.focus(selectionStart + 1, selectionStart + 1);
+    event.stopImmediatePropagation();
   },
 
   /** Fires a submit event with the current PIN value. */
@@ -233,7 +248,7 @@ Polymer({
     // character in front of the caret.
     var selectionStart = this.selectionStart_;
     var selectionEnd = this.selectionEnd_;
-    if (selectionStart == selectionEnd)
+    if (selectionStart == selectionEnd && selectionStart)
       selectionStart--;
 
     this.value = this.value.substring(0, selectionStart) +
@@ -258,8 +273,8 @@ Polymer({
     }.bind(this), INITIAL_BACKSPACE_DELAY_MS);
 
     if (!event.target.receivedFocusFromKeyboard)
-      this.focus();
-    event.preventDefault();
+      this.focus(this.selectionStart_, this.selectionEnd_);
+    event.stopImmediatePropagation();
   },
 
   /**
@@ -271,20 +286,6 @@ Polymer({
     this.repeatBackspaceIntervalId_ = 0;
     clearTimeout(this.startAutoBackspaceId_);
     this.startAutoBackspaceId_ = 0;
-  },
-
-  /**
-   * Called when the user exits the backspace button. Stops the interval
-   * callback.
-   * @param {Event} event The event object.
-   * @private
-   */
-  onBackspacePointerOut_: function(event) {
-    this.clearAndReset_();
-
-    if (!event.target.receivedFocusFromKeyboard)
-      this.focus();
-    event.preventDefault();
   },
 
   /**
@@ -300,9 +301,14 @@ Polymer({
       this.onPinClear_();
     this.clearAndReset_();
 
+    // Since on-down gives the input element focus, the input element will
+    // already have focus when on-up is called. This will actually bring up the
+    // virtual keyboard, even if focus() is wrapped in a setTimeout. Blur the
+    // input element first to workaround this.
+    this.blur();
     if (!event.target.receivedFocusFromKeyboard)
-      this.focus();
-    event.preventDefault();
+      this.focus(this.selectionStart_, this.selectionEnd_);
+    event.stopImmediatePropagation();
   },
 
   /**
@@ -394,6 +400,17 @@ Polymer({
     // keyboard, we swap the input box to rtl when we think it is a password
     // (just numbers), if the document direction is rtl.
     return (document.dir == 'rtl') && !Number.isInteger(+password);
+  },
+
+  /**
+   * Catch and stop propagation of context menu events since we the backspace
+   * button can be held down on touch.
+   * @param {!Event} e
+   * @private
+   */
+  onContextMenu_: function(e) {
+    e.preventDefault();
+    e.stopPropagation();
   },
 });
 })();

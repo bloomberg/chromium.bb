@@ -174,7 +174,7 @@
       }
     </style>
 
-    <div id="root">
+    <div id="root" on-contextmenu="onContextMenu_">
       <div id="container-constrained-width">
         <div class="row first-row">
           <paper-input id="pinInput" type="password" no-label-float
@@ -183,7 +183,7 @@
               has-content$="[[hasInput_(value)]]"
               label="[[getInputPlaceholder_(enablePassword)]]"
               on-keydown="onInputKeyDown_"
-              hidden="[[!showPinInput_]]" autofocus>
+              hidden="[[!showPinInput_]]">
           </paper-input>
         </div>
         <content select="[problem]"></content>
@@ -251,7 +251,7 @@
                 has-content$="[[hasInput_(value)]]"
                 icon="pin-keyboard:backspace"
                 on-pointerdown="onBackspacePointerDown_"
-                on-pointerout="onBackspacePointerOut_"
+                on-pointerout="clearAndReset_"
                 on-pointerup="onBackspacePointerUp_"
                 aria-label="$i18n{pinKeyboardDeleteAccessibleName}"
                 noink>
