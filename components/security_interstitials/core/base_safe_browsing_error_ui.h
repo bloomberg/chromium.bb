@@ -99,6 +99,10 @@ class BaseSafeBrowsingErrorUI {
     return display_options_.help_center_article_link;
   }
 
+  const SBErrorDisplayOptions& get_error_display_options() const {
+    return display_options_;
+  }
+
   // Checks if we should even show the extended reporting option. We don't show
   // it in incognito mode or if kSafeBrowsingExtendedReportingOptInAllowed
   // preference is disabled.

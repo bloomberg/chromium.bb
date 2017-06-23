@@ -9,9 +9,15 @@
 
 #include "base/feature_list.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace prefs {
+// Boolean that tells us whether users are given the option to opt in to Safe
+// Browsing extended reporting. This is exposed as a preference that can be
+// overridden by enterprise policy.
+extern const char kSafeBrowsingExtendedReportingOptInAllowed[];
+
 // Boolean that tell us whether Safe Browsing extended reporting is enabled.
 extern const char kSafeBrowsingExtendedReportingEnabled[];
 
@@ -113,6 +119,10 @@ const char* GetExtendedReportingPrefName(const PrefService& prefs);
 // TODO: this is temporary (crbug.com/662944)
 void InitializeSafeBrowsingPrefs(PrefService* prefs);
 
+// Returns whether the user is able to modify the Safe Browsing Extended
+// Reporting opt-in.
+bool IsExtendedReportingOptInAllowed(const PrefService& prefs);
+
 // Returns whether Safe Browsing Extended Reporting is currently enabled.
 // This should be used to decide if any of the reporting preferences are set,
 // regardless of which specific one is set.
@@ -123,6 +133,9 @@ bool IsScout(const PrefService& prefs);
 
 // Updates UMA metrics about Safe Browsing Extended Reporting states.
 void RecordExtendedReportingMetrics(const PrefService& prefs);
+
+// Registers user preferences related to Safe Browsing.
+void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // Sets the currently active Safe Browsing Extended Reporting preference to the
 // specified value. The |location| indicates the UI where the change was

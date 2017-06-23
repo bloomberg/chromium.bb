@@ -11,10 +11,12 @@ source_set("triggers") {
   ]
   public_deps = [
     "//components/security_interstitials/content:security_interstitial_page",
+    "//components/security_interstitials/core:core",
     "//content/public/browser:browser",
   ]
   deps = [
     "//base:base",
+    "//components/prefs:prefs",
     "//components/safe_browsing:safe_browsing",
     "//components/safe_browsing/browser:browser",
   ]
@@ -29,6 +31,7 @@ source_set("unit_tests") {
     ":triggers",
     "//base",
     "//chrome/test:test_support",
+    "//components/prefs:test_support",
     "//components/safe_browsing/browser:browser",
     "//content/test:test_support",
     "//testing/gtest",
