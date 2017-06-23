@@ -2772,6 +2772,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken when a user navigates to the end of strike through text." name="IDS_CHROMEVOX_LINE_THROUGH_END">
         Strike through end
       </message>
+      <message desc="Spoken when a user navigates to the beginning of a link's text." name="IDS_CHROMEVOX_LINK_START">
+        Link start
+      </message>
+      <message desc="Spoken when a user navigates to the end of a link's text." name="IDS_CHROMEVOX_LINK_END">
+        Link end
+      </message>
     </messages>
   </release>
 </grit>

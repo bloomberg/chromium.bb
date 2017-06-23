@@ -360,6 +360,8 @@ AutomationRichEditableText.prototype = {
    */
   speakTextStyle_: function(style, opt_end) {
     var msgs = [];
+    if (style.state.linked)
+      msgs.push(opt_end ? 'link_end' : 'link_start');
     if (style.bold)
       msgs.push(opt_end ? 'bold_end' : 'bold_start');
     if (style.italic)
