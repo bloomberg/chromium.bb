@@ -307,6 +307,8 @@ component("headless") {
     "public/util/navigation_request.h",
     "public/util/testing/generic_url_request_mocks.cc",
     "public/util/testing/generic_url_request_mocks.h",
+    "public/util/throttled_dispatcher.cc",
+    "public/util/throttled_dispatcher.h",
     "public/util/url_fetcher.cc",
     "public/util/url_fetcher.h",
     "public/util/url_request_dispatcher.h",
@@ -471,6 +473,7 @@ test("headless_unittests") {
     "public/util/generic_url_request_job_test.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
+    "public/util/throttled_dispatcher_test.cc",
   ]
 
   if (!is_component_build) {
