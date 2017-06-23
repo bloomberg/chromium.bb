@@ -128,6 +128,10 @@ void ErrorReport::SetInterstitialInfo(
       interstitial_info->set_interstitial_reason(
           CertLoggerInterstitialInfo::INTERSTITIAL_CLOCK);
       break;
+    case INTERSTITIAL_SUPERFISH:
+      interstitial_info->set_interstitial_reason(
+          CertLoggerInterstitialInfo::INTERSTITIAL_SUPERFISH);
+      break;
   }
 
   interstitial_info->set_user_proceeded(proceed_decision == USER_PROCEEDED);

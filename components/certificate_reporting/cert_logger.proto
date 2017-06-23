@@ -28,12 +28,15 @@ message CertLoggerInterstitialInfo {
   // a user.
   enum InterstitialReason {
     UNKNOWN_INTERSTITIAL_REASON = 0;
-    // A standard SSL interstitial
+    // A standard SSL interstitial.
     INTERSTITIAL_SSL = 1;
-    // An interstitial alerting the user that they are in a captive portal
+    // An interstitial alerting the user that they are in a captive portal.
     INTERSTITIAL_CAPTIVE_PORTAL = 2;
-    // An interstitial telling the user to update their system clock
+    // An interstitial telling the user to update their system clock.
     INTERSTITIAL_CLOCK = 3;
+    // An interstitial telling the user to remove the Superfish software from
+    // their system.
+    INTERSTITIAL_SUPERFISH = 4;
   }
 
   // The type of interstitial that was shown

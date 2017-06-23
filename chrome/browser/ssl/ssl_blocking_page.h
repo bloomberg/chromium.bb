@@ -59,6 +59,7 @@ class SSLBlockingPage
       int options_mask,
       const base::Time& time_triggered,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      bool is_superfish,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback);
 
@@ -99,6 +100,7 @@ class SSLBlockingPage
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       bool overrideable,
       std::unique_ptr<ChromeMetricsHelper> metrics_helper,
+      bool is_superfish,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback);
 

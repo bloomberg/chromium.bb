@@ -68,6 +68,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
 #include "components/ssl_errors/error_classification.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -115,6 +116,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
@@ -4068,7 +4070,7 @@ class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     return SSLBlockingPage::Create(
         contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
-        base::Time::NowFromSystemTime(), nullptr,
+        base::Time::NowFromSystemTime(), nullptr, false /* is superfish */,
         base::Callback<void(content::CertificateRequestResultType)>());
   }
 };
@@ -4880,11 +4882,63 @@ IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishRecorded) {
 // certificate is not present.
 IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, NoSuperfishRecorded) {
   SetUpCertVerifier(false /* use superfish cert */);
-  GURL url(https_server_.GetURL("/ssl/google.html"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), url);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
   histograms.ExpectUniqueSample("interstitial.ssl_error_handler.superfish",
                                 false, 1);
+}
+
+// Tests that the Superfish interstitial is shown when the Finch feature is
+// enabled and the Superfish certificate is present.
+IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishInterstitial) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("SuperfishInterstitial",
+                                          std::string());
+  SetUpCertVerifier(true /* use superfish cert */);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForInterstitialAttach(tab);
+  InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  EXPECT_TRUE(WaitForRenderFrameReady(interstitial_page->GetMainFrame()));
+  EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+
+  // Look for keywords on the page to check that the Superfish interstitial is
+  // showing.
+  const std::string expected_title =
+      l10n_util::GetStringUTF8(IDS_SSL_SUPERFISH_HEADING);
+  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial_page, expected_title));
+}
+
+// Tests that the Superfish interstitial is not shown when the Finch feature is
+// disabled.
+IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishInterstitialDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(std::string(),
+                                          "SuperfishInterstitial");
+  SetUpCertVerifier(true /* use superfish cert */);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForInterstitialAttach(tab);
+  InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  EXPECT_TRUE(WaitForRenderFrameReady(interstitial_page->GetMainFrame()));
+  EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+
+  // Look for keywords on the page to check that the Superfish interstitial is
+  // not showing.
+  const std::string expected_title =
+      l10n_util::GetStringUTF8(IDS_SSL_V2_HEADING);
+  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial_page, expected_title));
 }
 
 // TODO(jcampan): more tests to do below.

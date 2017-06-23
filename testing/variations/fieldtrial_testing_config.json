@@ -2994,6 +2994,21 @@
             ]
         }
     ],
+    "SuperfishInterstitial": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SuperfishInterstitial"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncUSSAutocomplete": [
         {
             "platforms": [

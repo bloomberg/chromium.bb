@@ -59,6 +59,9 @@ const base::Feature kCaptivePortalCertificateList{
 const base::Feature kSSLCommonNameMismatchHandling{
     "SSLCommonNameMismatchHandling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kSuperfishInterstitial{"SuperfishInterstitial",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Default delay in milliseconds before displaying the SSL interstitial.
 // This can be changed in tests.
 // - If there is a name mismatch and a suggested URL available result arrives
@@ -70,26 +73,34 @@ const int64_t kInterstitialDelayInMilliseconds = 3000;
 
 const char kHistogram[] = "interstitial.ssl_error_handler";
 
-// Records an UMA histogram for whether the Superfish SPKI was present in the
-// certificate chain.
-void RecordSuperfishUMA(const net::HashValueVector& public_key_hashes) {
-  // This is the SPKI hash of the well-known Superfish certificate at
-  // https://pastebin.com/WcXv8QcG.
-  const char kSuperfishSPKI[] =
-      "sha256/S7jzW6HhJvjd4bDEIGJe2G3OYae92tveqauleP8TFF4=";
-  net::HashValue superfish_spki_hash_value;
-  if (!superfish_spki_hash_value.FromString(kSuperfishSPKI)) {
-    NOTREACHED();
-  }
-  bool found_superfish = false;
-  for (const auto& hash : public_key_hashes) {
-    if (hash == superfish_spki_hash_value) {
-      found_superfish = true;
-      break;
+bool IsSuperfish(const scoped_refptr<net::X509Certificate>& cert) {
+  // This is the fingerprint of the well-known Superfish certificate at
+  // https://pastebin.com/WcXv8QcG. Superfish is identified by certificate
+  // fingerprint rather than SPKI because net::SSLInfo does not guarantee
+  // |public_key_hashes| (the SPKIs) to be populated if the certificate doesn't
+  // verify successfully. It so happens that Superfish uses the same certificate
+  // universally (not just the same public key), and calculating the fingerprint
+  // is more convenient here than calculating the SPKI.
+  const net::SHA256HashValue kSuperfishFingerprint{
+      {0xB6, 0xFE, 0x91, 0x51, 0x40, 0x2B, 0xAD, 0x1C, 0x06, 0xD7, 0xE6,
+       0x6D, 0xB6, 0x7A, 0x26, 0xAA, 0x73, 0x56, 0xF2, 0xE6, 0xC6, 0x44,
+       0xDB, 0xCF, 0x9F, 0x98, 0x96, 0x8F, 0xF6, 0x32, 0xE1, 0xB7}};
+  for (const net::X509Certificate::OSCertHandle& intermediate :
+       cert->GetIntermediateCertificates()) {
+    net::SHA256HashValue hash =
+        net::X509Certificate::CalculateFingerprint256(intermediate);
+    if (hash == kSuperfishFingerprint) {
+      return true;
     }
   }
+  return false;
+}
+
+// Records an UMA histogram for whether the Superfish certificate was present in
+// the certificate chain.
+void RecordSuperfishUMA(const scoped_refptr<net::X509Certificate>& cert) {
   UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_error_handler.superfish",
-                        found_superfish);
+                        IsSuperfish(cert));
 }
 
 // Adds a message to console after navigation commits and then, deletes itself.
@@ -447,9 +458,12 @@ void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
 
 void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial() {
   // Show SSL blocking page. The interstitial owns the blocking page.
-  (SSLBlockingPage::Create(web_contents_, cert_error_, ssl_info_, request_url_,
-                           options_mask_, base::Time::NowFromSystemTime(),
-                           std::move(ssl_cert_reporter_), callback_))
+  (SSLBlockingPage::Create(
+       web_contents_, cert_error_, ssl_info_, request_url_, options_mask_,
+       base::Time::NowFromSystemTime(), std::move(ssl_cert_reporter_),
+       base::FeatureList::IsEnabled(kSuperfishInterstitial) &&
+           IsSuperfish(ssl_info_.cert),
+       callback_))
       ->Show();
 }
 
@@ -563,7 +577,7 @@ SSLErrorHandler::~SSLErrorHandler() {
 void SSLErrorHandler::StartHandlingError() {
   RecordUMA(HANDLE_ALL);
 
-  RecordSuperfishUMA(ssl_info_.public_key_hashes);
+  RecordSuperfishUMA(ssl_info_.cert);
 
   if (ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_) ==
       ssl_errors::ErrorInfo::CERT_DATE_INVALID) {
