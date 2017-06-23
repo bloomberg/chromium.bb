@@ -24,6 +24,10 @@ class ShellWebClient : public WebClient {
   std::unique_ptr<WebMainParts> CreateWebMainParts() override;
   std::string GetProduct() const override;
   std::string GetUserAgent(UserAgentType type) const override;
+  base::StringPiece GetDataResource(
+      int resource_id,
+      ui::ScaleFactor scale_factor) const override;
+  base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
   void AllowCertificateError(
       WebState* web_state,
       int cert_error,

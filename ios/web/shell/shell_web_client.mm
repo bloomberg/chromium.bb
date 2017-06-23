@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/shell/shell_web_main_parts.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,6 +40,18 @@ std::string ShellWebClient::GetProduct() const {
 std::string ShellWebClient::GetUserAgent(UserAgentType type) const {
   std::string product = GetProduct();
   return web::BuildUserAgentFromProduct(product);
+}
+
+base::StringPiece ShellWebClient::GetDataResource(
+    int resource_id,
+    ui::ScaleFactor scale_factor) const {
+  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+      resource_id, scale_factor);
+}
+
+base::RefCountedMemory* ShellWebClient::GetDataResourceBytes(
+    int resource_id) const {
+  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }
 
 void ShellWebClient::AllowCertificateError(
