@@ -110,9 +110,15 @@ void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
 void MojoVideoDecoder::OnVideoFrameDecoded(
     const scoped_refptr<VideoFrame>& frame,
+    bool can_read_without_stalling,
     const base::Optional<base::UnguessableToken>& release_token) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // TODO(sandersd): Prove that all paths read this value again after running
+  // |output_cb_|. In practice this isn't very important, since all decoders
+  // running via MojoVideoDecoder currently use a static value.
+  can_read_without_stalling_ = can_read_without_stalling;
 
   if (release_token) {
     frame->SetReleaseMailboxCB(
@@ -172,7 +178,7 @@ bool MojoVideoDecoder::NeedsBitstreamConversion() const {
 
 bool MojoVideoDecoder::CanReadWithoutStalling() const {
   DVLOG(3) << __func__;
-  return true;
+  return can_read_without_stalling_;
 }
 
 int MojoVideoDecoder::GetMaxDecodeRequests() const {
