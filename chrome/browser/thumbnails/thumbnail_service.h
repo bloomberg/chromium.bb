@@ -7,6 +7,7 @@
 
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/image/image.h"
 
 class GURL;
@@ -56,7 +57,8 @@ class ThumbnailService : public RefcountedKeyedService {
   virtual void AddForcedURL(const GURL& url) = 0;
 
   // Returns true if the page thumbnail should be updated.
-  virtual bool ShouldAcquirePageThumbnail(const GURL& url) = 0;
+  virtual bool ShouldAcquirePageThumbnail(const GURL& url,
+                                          ui::PageTransition transition) = 0;
 
  protected:
   ~ThumbnailService() override {}
