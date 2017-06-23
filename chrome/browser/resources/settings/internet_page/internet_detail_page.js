@@ -887,8 +887,9 @@ Polymer({
    */
   getAdvancedFields_: function() {
     /** @type {!Array<string>} */ var fields = [];
-    fields.push('MacAddress');
     var type = this.networkProperties.Type;
+    if (type != CrOnc.Type.TETHER)
+      fields.push('MacAddress');
     if (type == CrOnc.Type.CELLULAR && !!this.networkProperties.Cellular) {
       fields.push(
           'Cellular.Carrier', 'Cellular.Family', 'Cellular.NetworkTechnology',
@@ -928,6 +929,11 @@ Polymer({
    * @private
    */
   showAdvanced_: function(networkProperties) {
+    if (networkProperties.Type == CrOnc.Type.TETHER) {
+      // These settings apply to the underlying WiFi network, not the Tether
+      // network.
+      return false;
+    }
     return this.hasAdvancedFields_() || this.hasDeviceFields_() ||
         this.isRememberedOrConnected_(networkProperties);
   },
@@ -962,6 +968,11 @@ Polymer({
    * @private
    */
   hasNetworkSection_: function(networkProperties) {
+    if (networkProperties.Type == CrOnc.Type.TETHER) {
+      // These settings apply to the underlying WiFi network, not the Tether
+      // network.
+      return false;
+    }
     if (networkProperties.Type == CrOnc.Type.VPN)
       return false;
     if (networkProperties.Type == CrOnc.Type.CELLULAR)
