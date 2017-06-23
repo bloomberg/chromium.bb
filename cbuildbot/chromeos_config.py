@@ -2460,7 +2460,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('wizpig',         None,             'cyan'),          # strago (BSW)
     ('cave',           'sentry',         'caroline'),      # glados (SKL)
     ('elm',            None,             'hana'),          # oak (MTK8173)
-    (None,             None,             'kevin'),         # gru (RK3399)
+    ('bob',            None,             'kevin'),         # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
     (None,             None,             None),            # poppy (KBL)
   ])
