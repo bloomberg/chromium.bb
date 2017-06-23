@@ -22,6 +22,7 @@ from webkitpy.layout_tests.port.base import Port
 from webkitpy.w3c.common import WPT_REPO_URL, WPT_DEST_NAME, exportable_commits_over_last_n_commits
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
+from webkitpy.w3c.wpt_github import WPTGitHub
 from webkitpy.w3c.test_copier import TestCopier
 from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 from webkitpy.w3c.wpt_manifest import WPTManifest
@@ -35,13 +36,14 @@ _log = logging.getLogger(__file__)
 
 class TestImporter(object):
 
-    def __init__(self, host):
+    def __init__(self, host, wpt_github=None):
         self.host = host
         self.executive = host.executive
         self.fs = host.filesystem
         self.finder = PathFinder(self.fs)
         self.verbose = False
         self.git_cl = None
+        self.wpt_github = wpt_github or WPTGitHub(self.host)
 
     def main(self, argv=None):
         options = self.parse_args(argv)
@@ -71,17 +73,19 @@ class TestImporter(object):
         if not options.ignore_exportable_commits:
             commits = self.exportable_but_not_exported_commits(temp_repo_path)
             if commits:
-                # If there are exportable commits, then there's no more work
-                # to do for now. This isn't really an error case; we expect
-                # to hit this case some of the time.
-
                 _log.info('There were exportable but not-yet-exported commits:')
                 for commit in commits:
                     _log.info('Commit: %s', commit.url())
+                    _log.info('Subject: %s', commit.subject().strip())
+                    pull_request = self.wpt_github.pr_with_position(commit.position)
+                    if pull_request:
+                        _log.info('PR: https://github.com/w3c/web-platform-tests/pull/%d', pull_request.number)
+                    else:
+                        _log.warning('No pull request found.')
                     _log.info('Modified files in wpt directory in this commit:')
                     for path in commit.filtered_changed_files():
                         _log.info('  %s', path)
-                _log.info('Aborting import to prevent clobbering these commits.')
+                _log.info('Aborting import to prevent clobbering commits.')
                 self.clean_up_temp_repo(temp_repo_path)
                 return 0
 
@@ -142,7 +146,7 @@ class TestImporter(object):
         return True
 
     def exportable_but_not_exported_commits(self, wpt_path):
-        """Checks for commits that might be overwritten by importing.
+        """Checks for commits that might be overwritten by importing and lists them.
 
         Args:
             wpt_path: The path to a local checkout of web-platform-tests.
@@ -153,7 +157,8 @@ class TestImporter(object):
         """
         assert self.host.filesystem.exists(wpt_path)
         local_wpt = LocalWPT(self.host, path=wpt_path)
-        return exportable_commits_over_last_n_commits(self.host, local_wpt)
+        return exportable_commits_over_last_n_commits(
+            self.host, local_wpt, self.wpt_github)
 
     def clean_up_temp_repo(self, temp_repo_path):
         """Removes the temporary copy of the wpt repo that was downloaded."""
