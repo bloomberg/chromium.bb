@@ -318,6 +318,7 @@ def main():
 
   if sys.platform.startswith('linux'):
     os.symlink('lld', os.path.join(pdir, 'bin', 'ld.lld'))
+    os.symlink('lld', os.path.join(pdir, 'bin', 'lld-link'))
 
   # Copy libc++ headers.
   if sys.platform == 'darwin':
