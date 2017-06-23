@@ -1567,6 +1567,30 @@ TEST_F(FaviconHandlerManifestsEnabledTest, GetFaviconFromUnknownManifest) {
   EXPECT_THAT(delegate_.downloads(), ElementsAre(kManifestURL, kIconURL16x16));
 }
 
+// Test that icons from a web manifest use a desired size of 192x192.
+TEST_F(FaviconHandlerManifestsEnabledTest, Prefer192x192IconFromManifest) {
+  const GURL kIconURL144x144 = GURL("http://www.google.com/favicon144x144");
+  const GURL kIconURL192x192 = GURL("http://www.google.com/favicon192x192");
+
+  delegate_.fake_image_downloader().Add(kIconURL144x144, IntVector{144});
+  delegate_.fake_image_downloader().Add(kIconURL192x192, IntVector{192});
+
+  const std::vector<favicon::FaviconURL> kManifestIcons = {
+      FaviconURL(kIconURL144x144, WEB_MANIFEST_ICON,
+                 SizeVector(1U, gfx::Size(144, 144))),
+      FaviconURL(kIconURL192x192, WEB_MANIFEST_ICON,
+                 SizeVector(1U, gfx::Size(192, 192))),
+  };
+
+  delegate_.fake_manifest_downloader().Add(kManifestURL, kManifestIcons);
+
+  RunHandlerWithCandidates(FaviconDriverObserver::TOUCH_LARGEST,
+                           std::vector<favicon::FaviconURL>(), kManifestURL);
+
+  EXPECT_THAT(delegate_.downloads(),
+              ElementsAre(kManifestURL, kIconURL192x192));
+}
+
 // Test that the manifest and icon are redownloaded if the icon cached for the
 // page URL expired.
 TEST_F(FaviconHandlerManifestsEnabledTest, GetFaviconFromExpiredManifest) {
