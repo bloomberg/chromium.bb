@@ -62,6 +62,7 @@
 #include <initguid.h>
 #include "base/logging_win.h"
 #include "base/syslog_logging.h"
+#include "chrome/common/win/eventlog_messages.h"
 #include "chrome/install_static/install_details.h"
 #endif
 
@@ -332,8 +333,9 @@ void InitChromeLogging(const base::CommandLine& command_line,
   LogEventProvider::Initialize(kChromeTraceProviderName);
 
   // Enable logging to the Windows Event Log.
-  SetEventSourceName(base::UTF16ToASCII(
-      install_static::InstallDetails::Get().install_full_name()));
+  SetEventSource(base::UTF16ToASCII(
+                     install_static::InstallDetails::Get().install_full_name()),
+                 BROWSER_CATEGORY, MSG_LOG_MESSAGE);
 #endif
 
   base::StatisticsRecorder::InitLogOnShutdown();

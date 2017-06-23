@@ -443,6 +443,10 @@ static_library("common") {
   }
 
   if (is_win) {
+    deps = [
+      "//chrome/common/win:eventlog_messages",
+    ]
+
     public_deps += [
       "//components/dom_distiller/core",  # Needed by chrome_content_client.cc.
       "//third_party/wtl",
