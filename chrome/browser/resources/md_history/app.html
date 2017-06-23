@@ -113,8 +113,7 @@
     </div>
 
     <template is="cr-lazy-render" id="drawer">
-      <dialog is="cr-drawer" swipe-open>
-        <div class="drawer-header">$i18n{title}</div>
+      <dialog is="cr-drawer" title="$i18n{title}" swipe-open>
         <history-side-bar id="drawer-side-bar" class="drawer-content"
             selected-page="{{selectedPage_}}"
             show-footer="[[showSidebarFooter]]">

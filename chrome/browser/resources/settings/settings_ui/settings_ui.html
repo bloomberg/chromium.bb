@@ -32,10 +32,6 @@
         overflow: hidden;  /* Prevent double scroll bar bugs. */
       }
 
-      .drawer-header {
-        outline: none;
-      }
-
       .last {
         display: flex;
         justify-content: flex-end;
@@ -92,8 +88,8 @@
         role="none"
         show-menu>
     </cr-toolbar>
-    <dialog id="drawer" is="cr-drawer" on-close="onMenuClosed_">
-      <div class="drawer-header" tabindex="-1">$i18n{settings}</div>
+    <dialog id="drawer" is="cr-drawer" on-close="onMenuClosed_"
+        title="$i18n{settings}">
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
           <settings-menu page-visibility="[[pageVisibility_]]"
