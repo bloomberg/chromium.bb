@@ -27,6 +27,12 @@ message SnippetProto {
   optional int32 remote_category_id = 10;
   // The time when the snippet was fetched from the server.
   optional int64 fetch_date = 11;
+
+  enum ContentType {
+    UNKNOWN = 0;
+    VIDEO = 1;
+  }
+  optional ContentType content_type = 12 [default = UNKNOWN];
 }
 
 message SnippetImageProto {

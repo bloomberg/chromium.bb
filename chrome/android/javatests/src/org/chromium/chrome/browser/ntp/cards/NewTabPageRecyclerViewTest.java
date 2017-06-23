@@ -427,7 +427,7 @@ public class NewTabPageRecyclerViewTest {
             String url = mTestServer.getURL(TEST_PAGE) + "#" + i;
             suggestions.add(new SnippetArticle(TEST_CATEGORY, "id" + i, "title" + i,
                     "publisher" + i, "previewText" + i, url, FAKE_PUBLISH_TIMESTAMP + i,
-                    FAKE_SNIPPET_SCORE, FAKE_FETCH_TIMESTAMP));
+                    FAKE_SNIPPET_SCORE, FAKE_FETCH_TIMESTAMP, false));
         }
         return suggestions;
     }

@@ -68,7 +68,8 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
             ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
             ConvertUTF8ToJavaString(env, suggestion.url().spec()),
             suggestion.publish_date().ToJavaTime(), suggestion.score(),
-            suggestion.fetch_date().ToJavaTime());
+            suggestion.fetch_date().ToJavaTime(),
+            suggestion.is_video_suggestion());
     if (suggestion.id().category().IsKnownCategory(
             KnownCategories::DOWNLOADS) &&
         suggestion.download_suggestion_extra() != nullptr) {

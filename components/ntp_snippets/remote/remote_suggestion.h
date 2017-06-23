@@ -31,6 +31,8 @@ class RemoteSuggestion {
  public:
   using PtrVector = std::vector<std::unique_ptr<RemoteSuggestion>>;
 
+  enum ContentType { UNKNOWN, VIDEO };
+
   ~RemoteSuggestion();
 
   // Creates a RemoteSuggestion from a dictionary, as returned by Chrome Reader.
@@ -107,6 +109,8 @@ class RemoteSuggestion {
   bool should_notify() const { return should_notify_; }
   base::Time notification_deadline() const { return notification_deadline_; }
 
+  ContentType content_type() const { return content_type_; }
+
   bool is_dismissed() const { return is_dismissed_; }
   void set_dismissed(bool dismissed) { is_dismissed_ = dismissed; }
 
@@ -147,6 +151,8 @@ class RemoteSuggestion {
 
   bool should_notify_;
   base::Time notification_deadline_;
+
+  ContentType content_type_;
 
   // The time when the remote suggestion was fetched from the server.
   base::Time fetch_date_;

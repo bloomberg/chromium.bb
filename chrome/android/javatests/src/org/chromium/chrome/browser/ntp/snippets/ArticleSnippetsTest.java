@@ -208,7 +208,7 @@ public class ArticleSnippetsTest {
 
                 SnippetArticle download = new SnippetArticle(KnownCategories.DOWNLOADS, "id1",
                         "test_image.jpg", "example.com", null, "http://example.com", timestamp, 10f,
-                        timestamp);
+                        timestamp, false);
                 download.setAssetDownloadData("asdf", filePath, "image/jpeg");
                 SuggestionsCategoryInfo categoryInfo =
                         new SuggestionsCategoryInfo(KnownCategories.DOWNLOADS, "Downloads",
@@ -248,7 +248,8 @@ public class ArticleSnippetsTest {
                 "Publisher", "Preview Text", "www.google.com",
                 1466614774, // Publish timestamp
                 10f, // Score
-                1466634774); // Fetch timestamp
+                1466634774, // Fetch timestamp
+                false); // IsVideoSuggestion
         Bitmap bitmap = BitmapFactory.decodeResource(mActivityTestRule.getActivity().getResources(),
                 R.drawable.signin_promo_illustration);
         int thumbnailSize = mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
@@ -263,20 +264,23 @@ public class ArticleSnippetsTest {
                 new String(new char[80]).replace("\0", "Preview Text "), "www.google.com",
                 1466614074, // Publish timestamp
                 20f, // Score
-                1466634774); // Fetch timestamp
+                1466634774, // Fetch timestamp
+                false); // IsVideoSuggestion
 
         SnippetArticle minimalSnippet = new SnippetArticle(minimalCategory, "id3",
                 new String(new char[20]).replace("\0", "Bookmark "), "Publisher",
                 "This should not be displayed", "www.google.com",
                 1466614774, // Publish timestamp
                 10f, // Score
-                1466634774); // Fetch timestamp
+                1466634774, // Fetch timestamp
+                false); // IsVideoSuggestion
 
         SnippetArticle minimalSnippet2 = new SnippetArticle(minimalCategory, "id4", "Bookmark",
                 "Publisher", "This should not be displayed", "www.google.com",
                 1466614774, // Publish timestamp
                 10f, // Score
-                1466634774); // Fetch timestamp
+                1466634774, // Fetch timestamp
+                false); // IsVideoSuggestion
 
         mSnippetsSource.setInfoForCategory(fullCategory,
                 new SuggestionsCategoryInfo(fullCategory, "Section Title",

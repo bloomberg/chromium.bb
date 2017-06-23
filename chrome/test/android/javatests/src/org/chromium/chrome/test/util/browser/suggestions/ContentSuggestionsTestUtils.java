@@ -27,7 +27,7 @@ public final class ContentSuggestionsTestUtils {
         for (int index = 0; index < count; index++) {
             suggestions.add(new SnippetArticle(category, "https://site.com/url" + prefix + index,
                     prefix + "title" + index, "pub" + index, "txt" + index,
-                    "https://site.com/url" + index, 0, 0, 0));
+                    "https://site.com/url" + index, 0, 0, 0, false));
         }
         return suggestions;
     }

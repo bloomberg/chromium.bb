@@ -193,10 +193,10 @@ public class SnippetsBridge implements SuggestionsSource, DestructionObserver {
     @CalledByNative
     private static SnippetArticle addSuggestion(List<SnippetArticle> suggestions, int category,
             String id, String title, String publisher, String previewText, String url,
-            long timestamp, float score, long fetchTime) {
+            long timestamp, float score, long fetchTime, boolean isVideoSuggestion) {
         int position = suggestions.size();
-        suggestions.add(new SnippetArticle(
-                category, id, title, publisher, previewText, url, timestamp, score, fetchTime));
+        suggestions.add(new SnippetArticle(category, id, title, publisher, previewText, url,
+                timestamp, score, fetchTime, isVideoSuggestion));
         return suggestions.get(position);
     }
 

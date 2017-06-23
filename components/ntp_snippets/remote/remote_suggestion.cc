@@ -87,7 +87,8 @@ RemoteSuggestion::RemoteSuggestion(const std::vector<std::string>& ids,
       score_(0),
       is_dismissed_(false),
       remote_category_id_(remote_category_id),
-      should_notify_(false) {}
+      should_notify_(false),
+      content_type_(ContentType::UNKNOWN) {}
 
 RemoteSuggestion::~RemoteSuggestion() = default;
 
@@ -267,6 +268,21 @@ RemoteSuggestion::CreateFromContentSuggestionsDictionary(
     }
   }
 
+  // In the JSON dictionary contentType is an optional field. The field
+  // content_type_ of the class |RemoteSuggestion| is by default initialized to
+  // ContentType::UNKNOWN.
+  std::string content_type;
+  if (dict.GetString("contentType", &content_type)) {
+    if (content_type == "VIDEO") {
+      snippet->content_type_ = ContentType::VIDEO;
+    } else {
+      // The supported values are: VIDEO, UNKNOWN. Therefore if the field is
+      // present the value has to be "UNKNOWN" here.
+      DCHECK_EQ(content_type, "UNKNOWN");
+      snippet->content_type_ = ContentType::UNKNOWN;
+    }
+  }
+
   return snippet;
 }
 
@@ -326,6 +342,10 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
     snippet->fetch_date_ = base::Time::FromInternalValue(proto.fetch_date());
   }
 
+  if (proto.content_type() == SnippetProto_ContentType_VIDEO) {
+    snippet->content_type_ = ContentType::VIDEO;
+  }
+
   return snippet;
 }
 
@@ -365,6 +385,10 @@ SnippetProto RemoteSuggestion::ToProto() const {
   if (!fetch_date_.is_null()) {
     result.set_fetch_date(fetch_date_.ToInternalValue());
   }
+
+  if (content_type_ == ContentType::VIDEO) {
+    result.set_content_type(SnippetProto_ContentType_VIDEO);
+  }
   return result;
 }
 
@@ -393,6 +417,9 @@ ContentSuggestion RemoteSuggestion::ToContentSuggestion(
         base::MakeUnique<NotificationExtra>(extra));
   }
   suggestion.set_fetch_date(fetch_date_);
+  if (content_type_ == ContentType::VIDEO) {
+    suggestion.set_is_video_suggestion(true);
+  }
   return suggestion;
 }
 

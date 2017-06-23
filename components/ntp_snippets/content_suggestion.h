@@ -141,6 +141,11 @@ class ContentSuggestion {
     publisher_name_ = publisher_name;
   }
 
+  bool is_video_suggestion() const { return is_video_suggestion_; }
+  void set_is_video_suggestion(bool is_video_suggestion) {
+    is_video_suggestion_ = is_video_suggestion;
+  }
+
   // TODO(pke): Remove the score from the ContentSuggestion class. The UI only
   // uses it to track user clicks (histogram data). Instead, the providers
   // should be informed about clicks and do appropriate logging themselves.
@@ -208,6 +213,8 @@ class ContentSuggestion {
   // is only populated when the ContentSuggestion is created from a
   // RemoteSuggestion.
   base::Time fetch_date_;
+
+  bool is_video_suggestion_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestion);
 };
