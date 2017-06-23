@@ -70,7 +70,8 @@ AuraInit::AuraInit(service_manager::Connector* connector,
         base::WrapUnique(new MusClient(connector, identity, io_task_runner));
   }
   ui::MaterialDesignController::Initialize();
-  InitializeResources(connector);
+  if (!InitializeResources(connector))
+    return;
 
 // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX)
@@ -83,6 +84,7 @@ AuraInit::AuraInit(service_manager::Connector* connector,
   gfx::Font();
 
   ui::InitializeInputMethodForTesting();
+  initialized_ = true;
 }
 
 AuraInit::~AuraInit() {
@@ -97,11 +99,11 @@ AuraInit::~AuraInit() {
 #endif
 }
 
-void AuraInit::InitializeResources(service_manager::Connector* connector) {
+bool AuraInit::InitializeResources(service_manager::Connector* connector) {
   // Resources may have already been initialized (e.g. when 'chrome --mash' is
   // used to launch the current app).
   if (ui::ResourceBundle::HasSharedInstance())
-    return;
+    return false;
 
   std::set<std::string> resource_paths({resource_file_});
   if (!resource_file_200_.empty())
@@ -110,7 +112,15 @@ void AuraInit::InitializeResources(service_manager::Connector* connector) {
   catalog::ResourceLoader loader;
   filesystem::mojom::DirectoryPtr directory;
   connector->BindInterface(catalog::mojom::kServiceName, &directory);
-  CHECK(loader.OpenFiles(std::move(directory), resource_paths));
+  // TODO(jonross): if this proves useful in resolving the crash of
+  // mash_unittests then switch AuraInit to have an Init method, returning a
+  // bool for success. Then update all callsites to use this to determine the
+  // shutdown of their ServiceContext.
+  // One cause of failure is that the peer has closed, but we have not been
+  // notified yet. It is not possible to complete initialization, so exit now.
+  // Calling services will shutdown ServiceContext as appropriate.
+  if (!loader.OpenFiles(std::move(directory), resource_paths))
+    return false;
   ui::RegisterPathProvider();
   base::File pak_file = loader.TakeFile(resource_file_);
   base::File pak_file_2 = pak_file.Duplicate();
@@ -121,6 +131,7 @@ void AuraInit::InitializeResources(service_manager::Connector* connector) {
   if (!resource_file_200_.empty())
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
         loader.TakeFile(resource_file_200_), ui::SCALE_FACTOR_200P);
+  return true;
 }
 
 }  // namespace views

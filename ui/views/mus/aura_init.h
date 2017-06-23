@@ -65,8 +65,13 @@ class VIEWS_MUS_EXPORT AuraInit {
   // Only valid if Mode::AURA_MUS was passed to constructor.
   MusClient* mus_client() { return mus_client_.get(); }
 
+  // Returns true if AuraInit was able to successfully complete initialization.
+  // If this returns false, then Aura is in an unusable state, and calling
+  // services should shutdown.
+  bool initialized() { return initialized_; }
+
  private:
-  void InitializeResources(service_manager::Connector* connector);
+  bool InitializeResources(service_manager::Connector* connector);
 
 #if defined(OS_LINUX)
   sk_sp<font_service::FontLoader> font_loader_;
@@ -78,6 +83,9 @@ class VIEWS_MUS_EXPORT AuraInit {
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<MusClient> mus_client_;
   std::unique_ptr<ViewsDelegate> views_delegate_;
+
+  // Whether or not initialization succeeds.
+  bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AuraInit);
 };

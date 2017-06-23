@@ -175,6 +175,14 @@ void QuickLaunch::OnStart() {
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 
+  // If AuraInit was unable to initialize there is no longer a peer connection.
+  // The ServiceManager is in the process of shutting down, however we haven't
+  // been notified yet. Close our ServiceContext and shutdown.
+  if (!aura_init_->initialized()) {
+    context()->QuitNow();
+    return;
+  }
+
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }
 
