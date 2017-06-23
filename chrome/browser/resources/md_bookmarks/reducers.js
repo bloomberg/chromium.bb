@@ -55,7 +55,7 @@ cr.define('bookmarks', function() {
    * @param {!Set<string>} deleted
    * @return SelectionState
    */
-  SelectionState.deselectDeletedItems = function(selectionState, deleted) {
+  SelectionState.deselectItems = function(selectionState, deleted) {
     return /** @type {SelectionState} */ Object.assign({}, selectionState, {
       items: bookmarks.util.removeIdsFromSet(selectionState.items, deleted),
       anchor: !selectionState.anchor || deleted.has(selectionState.anchor) ?
@@ -90,8 +90,16 @@ cr.define('bookmarks', function() {
       case 'select-items':
         return SelectionState.selectItems(selection, action);
       case 'remove-bookmark':
-        return SelectionState.deselectDeletedItems(
-            selection, action.descendants);
+        return SelectionState.deselectItems(selection, action.descendants);
+      case 'move-bookmark':
+        // Deselect items when they are moved to another folder, since they will
+        // no longer be visible on screen (for simplicity, ignores items visible
+        // in search results).
+        if (action.parentId != action.oldParentId &&
+            selection.items.has(action.id)) {
+          return SelectionState.deselectItems(selection, new Set([action.id]));
+        }
+        return selection;
       case 'update-anchor':
         return SelectionState.updateAnchor(selection, action);
       default:
