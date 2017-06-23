@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config.h"
 #include "base/values.h"
 #include "content/browser/tracing/tracing_ui.h"
@@ -36,7 +37,8 @@ std::string GetOldStyleConfig() {
 
 std::string GetNewStyleConfig() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  std::unique_ptr<base::Value> filter1(new base::Value("filter1"));
+  std::unique_ptr<base::Value> filter1(
+      new base::Value(base::trace_event::MemoryDumpManager::kTraceCategory));
   std::unique_ptr<base::Value> filter2(new base::Value("filter2"));
   std::unique_ptr<base::ListValue> included(new base::ListValue);
   included->Append(std::move(filter1));
@@ -47,6 +49,16 @@ std::string GetNewStyleConfig() {
   dict->SetList("excluded_categories", std::move(excluded));
   dict->SetString("record_mode", "record-continuously");
   dict->SetBoolean("enable_systrace", true);
+
+  std::unique_ptr<base::DictionaryValue> memory_config(
+      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> trigger(new base::DictionaryValue());
+  trigger->SetString("mode", "detailed");
+  trigger->SetInteger("periodic_interval_ms", 10000);
+  std::unique_ptr<base::ListValue> triggers(new base::ListValue);
+  triggers->Append(std::move(trigger));
+  memory_config->SetList("triggers", std::move(triggers));
+  dict->SetDictionary("memory_dump_config", std::move(memory_config));
 
   std::string results;
   if (!base::JSONWriter::Write(*dict.get(), &results))
@@ -71,8 +83,16 @@ TEST_F(TracingUITest, NewStyleConfig) {
   ASSERT_TRUE(TracingUI::GetTracingOptions(GetNewStyleConfig(), &config));
   EXPECT_EQ(config.GetTraceRecordMode(),
             base::trace_event::RECORD_CONTINUOUSLY);
-  EXPECT_EQ(config.ToCategoryFilterString(), "filter1,-filter2");
+  std::string expected(base::trace_event::MemoryDumpManager::kTraceCategory);
+  expected += ",-filter2";
+  EXPECT_EQ(config.ToCategoryFilterString(), expected);
   EXPECT_TRUE(config.IsSystraceEnabled());
+
+  ASSERT_EQ(config.memory_dump_config().triggers.size(), 1u);
+  EXPECT_EQ(config.memory_dump_config().triggers[0].min_time_between_dumps_ms,
+            10000u);
+  EXPECT_EQ(config.memory_dump_config().triggers[0].level_of_detail,
+            base::trace_event::MemoryDumpLevelOfDetail::DETAILED);
 }
 
 }  // namespace content
