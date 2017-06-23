@@ -2656,7 +2656,7 @@ crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [
 crbug.com/708499 crbug.com/724817 fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout Crash ]
 crbug.com/708499 crbug.com/724817 virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout Crash ]
 
-crbug.com/706091 [ Linux ] virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
+crbug.com/706091 virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
 
 # Sheriff failures 2017-04-24
 crbug.com/714862 [ Android ] tables/mozilla/collapsing_borders/bug41262-3.html [ Failure ]
