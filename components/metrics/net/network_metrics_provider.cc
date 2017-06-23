@@ -42,6 +42,29 @@ void GetAndSetNetworkQualityEstimator(
       network_quality_estimator_provider->GetNetworkQualityEstimator());
 }
 
+SystemProfileProto::Network::EffectiveConnectionType
+ConvertEffectiveConnectionType(
+    net::EffectiveConnectionType effective_connection_type) {
+  switch (effective_connection_type) {
+    case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+    case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G;
+    case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_3G;
+    case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_4G;
+    case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+    case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+      NOTREACHED();
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  }
+  NOTREACHED();
+  return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+}
+
 }  // namespace
 
 // Listens to the changes in the effective conection type.
@@ -112,7 +135,8 @@ NetworkMetricsProvider::NetworkMetricsProvider(
       network_quality_estimator_provider_(
           std::move(network_quality_estimator_provider)),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      effective_connection_type_is_ambiguous_(false),
+      min_effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      max_effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_ptr_factory_(this) {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
@@ -179,7 +203,11 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
   network->set_wifi_phy_layer_protocol_is_ambiguous(
       wifi_phy_layer_protocol_is_ambiguous_);
   network->set_wifi_phy_layer_protocol(GetWifiPHYLayerProtocol());
-  network->set_effective_connection_type(GetEffectiveConnectionType());
+
+  network->set_min_effective_connection_type(
+      ConvertEffectiveConnectionType(min_effective_connection_type_));
+  network->set_max_effective_connection_type(
+      ConvertEffectiveConnectionType(max_effective_connection_type_));
 
   // Update the connection type. Note that this is necessary to set the network
   // type to "none" if there is no network connection for an entire UMA logging
@@ -189,7 +217,8 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
   // Reset the "ambiguous" flags, since a new metrics log session has started.
   connection_type_is_ambiguous_ = false;
   wifi_phy_layer_protocol_is_ambiguous_ = false;
-  effective_connection_type_is_ambiguous_ = false;
+  min_effective_connection_type_ = effective_connection_type_;
+  max_effective_connection_type_ = effective_connection_type_;
 
   if (!wifi_access_point_info_provider_.get()) {
 #if defined(OS_CHROMEOS)
@@ -222,7 +251,6 @@ void NetworkMetricsProvider::OnConnectionTypeChanged(
   if (type != connection_type_ &&
       connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE) {
     connection_type_is_ambiguous_ = true;
-    effective_connection_type_is_ambiguous_ = true;
   }
   connection_type_ = type;
 
@@ -275,34 +303,6 @@ NetworkMetricsProvider::GetWifiPHYLayerProtocol() const {
   }
   NOTREACHED();
   return SystemProfileProto::Network::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN;
-}
-
-SystemProfileProto::Network::EffectiveConnectionType
-NetworkMetricsProvider::GetEffectiveConnectionType() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (effective_connection_type_is_ambiguous_)
-    return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_AMBIGUOUS;
-
-  switch (effective_connection_type_) {
-    case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
-      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-    case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
-      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_OFFLINE;
-    case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
-      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-    case net::EFFECTIVE_CONNECTION_TYPE_2G:
-      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G;
-    case net::EFFECTIVE_CONNECTION_TYPE_3G:
-      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_3G;
-    case net::EFFECTIVE_CONNECTION_TYPE_4G:
-      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_4G;
-    case net::EFFECTIVE_CONNECTION_TYPE_LAST:
-      NOTREACHED();
-      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  }
-  NOTREACHED();
-  return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 }
 
 void NetworkMetricsProvider::ProbeWifiPHYLayerProtocol() {
@@ -427,12 +427,35 @@ void NetworkMetricsProvider::LogAggregatedMetrics() {
 void NetworkMetricsProvider::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (effective_connection_type_ != type &&
-      type != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
-      effective_connection_type_ != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
-    effective_connection_type_is_ambiguous_ = true;
-  }
   effective_connection_type_ = type;
+
+  if (effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
+      effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    // The effective connection type may be reported as Unknown if there is a
+    // change in the connection type. Disregard it since network requests can't
+    // be send during the changes in connection type. Similarly, disregard
+    // offline as the type since it may be reported as the effective connection
+    // type for a short period when there is a change in the connection type.
+    return;
+  }
+
+  if (min_effective_connection_type_ ==
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
+      max_effective_connection_type_ ==
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    min_effective_connection_type_ = type;
+    max_effective_connection_type_ = type;
+    return;
+  }
+
+  min_effective_connection_type_ =
+      std::min(min_effective_connection_type_, effective_connection_type_);
+  max_effective_connection_type_ =
+      std::max(max_effective_connection_type_, effective_connection_type_);
+
+  DCHECK_EQ(
+      min_effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+      max_effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 }
 
 }  // namespace metrics
