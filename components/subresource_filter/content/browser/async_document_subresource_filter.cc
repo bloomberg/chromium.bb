@@ -151,6 +151,12 @@ void AsyncDocumentSubresourceFilter::ReportDisallowedLoad() {
     std::move(first_disallowed_load_callback_).Run();
 }
 
+const ActivationState& AsyncDocumentSubresourceFilter::activation_state()
+    const {
+  CHECK(activation_state_);
+  return activation_state_.value();
+}
+
 // AsyncDocumentSubresourceFilter::Core ----------------------------------------
 
 AsyncDocumentSubresourceFilter::Core::Core() {
