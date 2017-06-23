@@ -192,7 +192,7 @@ void PowerHandler::HandleSetIdleBehavior(const base::ListValue* args) {
       prefs_->ClearPref(prefs::kPowerBatteryScreenOffDelayMs);
       prefs_->ClearPref(prefs::kPowerBatteryScreenLockDelayMs);
       break;
-    case IdleBehavior::DISPLAY_OFF_STAY_AWAKE:
+    case IdleBehavior::DISPLAY_OFF:
       // Override idle actions to keep the system awake, but use the default
       // screen delays.
       prefs_->SetInteger(prefs::kPowerAcIdleAction,
@@ -305,7 +305,7 @@ void PowerHandler::SendPowerManagementSettings(bool force) {
     idle_behavior = IdleBehavior::DISPLAY_OFF_SLEEP;
   } else if (idle_action == PowerPolicyController::ACTION_DO_NOTHING) {
     idle_behavior = (prefs_->GetInteger(prefs::kPowerAcScreenOffDelayMs) > 0
-                         ? IdleBehavior::DISPLAY_OFF_STAY_AWAKE
+                         ? IdleBehavior::DISPLAY_OFF
                          : IdleBehavior::DISPLAY_ON);
   }
 

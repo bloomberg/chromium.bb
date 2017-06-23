@@ -3161,8 +3161,8 @@
     <message name="IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF_SLEEP" desc="In Device Settings > Power, menu item for idle behavior that turns the screen off and later puts the device to sleep.">
       Turn off display and sleep
     </message>
-    <message name="IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF_STAY_AWAKE" desc="In Device Settings > Power, menu item for idle behavior that turns the screen off but prevents the device from sleeping.">
-      Turn off display but stay awake
+    <message name="IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF" desc="In Device Settings > Power, menu item for idle behavior that turns the screen off but prevents the device from sleeping.">
+      Turn off display
     </message>
     <message name="IDS_SETTINGS_POWER_IDLE_DISPLAY_ON" desc="In Device Settings > Power, menu item for idle behavior that prevents the screen from turning off and prevents the device from sleeping.">
       Keep display on
