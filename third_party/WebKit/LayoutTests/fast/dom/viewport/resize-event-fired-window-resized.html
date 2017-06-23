@@ -13,11 +13,11 @@
     // Turn off smooth scrolling.
     internals.settings.setScrollAnimatorEnabled(false);
 
-    window.view.addEventListener('scroll', function(e) {
+    window.visualViewport.addEventListener('scroll', function(e) {
       numCallsScroll++;
     });
 
-    window.view.addEventListener('resize', function(e) {
+    window.visualViewport.addEventListener('resize', function(e) {
       numCallsResize++;
     });
 

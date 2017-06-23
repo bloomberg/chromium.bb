@@ -147,7 +147,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   double pageXOffset() const { return scrollX(); }
   double pageYOffset() const { return scrollY(); }
 
-  DOMVisualViewport* view();
+  DOMVisualViewport* visualViewport();
 
   const AtomicString& name() const;
   void setName(const AtomicString&);
