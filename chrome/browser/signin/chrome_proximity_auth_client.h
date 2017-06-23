@@ -42,6 +42,7 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
       const std::string& remote_public_key,
       const std::string& nonce,
       base::Callback<void(const std::string& challenge)> callback) override;
+  std::string GetLocalDevicePublicKey() override;
 
  private:
   cryptauth::CryptAuthService* GetCryptAuthService();

@@ -31,6 +31,10 @@ tr.subrow td:first-of-type {
   flex: 1;
 }
 
+#local-device-id {
+  font-family: monospace;
+}
+
 .remote-device {
   display: flex;
   flex-direction: column;

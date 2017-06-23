@@ -120,6 +120,9 @@ class ProximityAuthWebUIHandler
   // MessengerObserver:
   void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update) override;
 
+  // Returns the truncated device ID of the local device.
+  std::unique_ptr<base::Value> GetTruncatedLocalDeviceId();
+
   // Returns the current enrollment state that can be used as a JSON object.
   std::unique_ptr<base::DictionaryValue> GetEnrollmentStateDictionary();
 

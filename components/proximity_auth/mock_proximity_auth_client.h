@@ -47,6 +47,7 @@ class MockProximityAuthClient : public ProximityAuthClient {
   CreateSecureMessageDelegate() override;
   std::unique_ptr<cryptauth::CryptAuthClientFactory>
   CreateCryptAuthClientFactory() override;
+  MOCK_METHOD0(GetLocalDevicePublicKey, std::string(void));
 
   // Proxy mock methods because implementation requires returning scoped_ptr.
   MOCK_METHOD0(CreateSecureMessageDelegatePtr,
