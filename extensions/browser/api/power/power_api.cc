@@ -7,42 +7,37 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "content/public/common/service_manager_connection.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/power.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 
 namespace {
 
-const char kPowerSaveBlockerDescription[] = "extension";
+const char kWakeLockDescription[] = "extension";
 
-device::PowerSaveBlocker::PowerSaveBlockerType LevelToPowerSaveBlockerType(
-    api::power::Level level) {
+device::mojom::WakeLockType LevelToWakeLockType(api::power::Level level) {
   switch (level) {
     case api::power::LEVEL_SYSTEM:
-      return device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension;
+      return device::mojom::WakeLockType::PreventAppSuspension;
     case api::power::LEVEL_DISPLAY:  // fallthrough
     case api::power::LEVEL_NONE:
-      return device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
+      return device::mojom::WakeLockType::PreventDisplaySleep;
   }
   NOTREACHED() << "Unhandled level " << level;
-  return device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
+  return device::mojom::WakeLockType::PreventDisplaySleep;
 }
 
 base::LazyInstance<BrowserContextKeyedAPIFactory<PowerAPI>>::DestructorAtExit
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
-std::unique_ptr<device::PowerSaveBlocker> CreatePowerSaveBlocker(
-    device::PowerSaveBlocker::PowerSaveBlockerType type,
-    device::PowerSaveBlocker::Reason reason,
-    const std::string& description,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
-  return std::unique_ptr<device::PowerSaveBlocker>(new device::PowerSaveBlocker(
-      type, reason, description, ui_task_runner, file_task_runner));
-}
+void DoNothing(bool b) {}
 
 }  // namespace
 
@@ -72,30 +67,41 @@ BrowserContextKeyedAPIFactory<PowerAPI>* PowerAPI::GetFactoryInstance() {
 void PowerAPI::AddRequest(const std::string& extension_id,
                           api::power::Level level) {
   extension_levels_[extension_id] = level;
-  UpdatePowerSaveBlocker();
+  UpdateWakeLock();
 }
 
 void PowerAPI::RemoveRequest(const std::string& extension_id) {
   extension_levels_.erase(extension_id);
-  UpdatePowerSaveBlocker();
+  UpdateWakeLock();
 }
 
-void PowerAPI::SetCreateBlockerFunctionForTesting(
-    const CreateBlockerFunction& function) {
-  create_blocker_function_ =
-      !function.is_null() ? function : base::Bind(&CreatePowerSaveBlocker);
+void PowerAPI::SetWakeLockFunctionsForTesting(
+    const ActivateWakeLockFunction& activate_function,
+    const CancelWakeLockFunction& cancel_function) {
+  activate_wake_lock_function_ =
+      !activate_function.is_null()
+          ? activate_function
+          : base::Bind(&PowerAPI::ActivateWakeLock, base::Unretained(this));
+  cancel_wake_lock_function_ =
+      !cancel_function.is_null()
+          ? cancel_function
+          : base::Bind(&PowerAPI::CancelWakeLock, base::Unretained(this));
 }
 
 void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
                                    UnloadedExtensionReason reason) {
   RemoveRequest(extension->id());
-  UpdatePowerSaveBlocker();
+  UpdateWakeLock();
 }
 
 PowerAPI::PowerAPI(content::BrowserContext* context)
     : browser_context_(context),
-      create_blocker_function_(base::Bind(&CreatePowerSaveBlocker)),
+      activate_wake_lock_function_(
+          base::Bind(&PowerAPI::ActivateWakeLock, base::Unretained(this))),
+      cancel_wake_lock_function_(
+          base::Bind(&PowerAPI::CancelWakeLock, base::Unretained(this))),
+      is_wake_lock_active_(false),
       current_level_(api::power::LEVEL_SYSTEM) {
   ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 }
@@ -103,9 +109,9 @@ PowerAPI::PowerAPI(content::BrowserContext* context)
 PowerAPI::~PowerAPI() {
 }
 
-void PowerAPI::UpdatePowerSaveBlocker() {
+void PowerAPI::UpdateWakeLock() {
   if (extension_levels_.empty()) {
-    power_save_blocker_.reset();
+    cancel_wake_lock_function_.Run();
     return;
   }
 
@@ -116,21 +122,9 @@ void PowerAPI::UpdatePowerSaveBlocker() {
       new_level = it->second;
   }
 
-  // If the level changed and we need to create a new blocker, do a swap
-  // to ensure that there isn't a brief period where power management is
-  // unblocked.
-  if (!power_save_blocker_ || new_level != current_level_) {
-    device::PowerSaveBlocker::PowerSaveBlockerType type =
-        LevelToPowerSaveBlockerType(new_level);
-    std::unique_ptr<device::PowerSaveBlocker> new_blocker(
-        create_blocker_function_.Run(
-            type, device::PowerSaveBlocker::kReasonOther,
-            kPowerSaveBlockerDescription,
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::UI),
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::FILE)));
-    power_save_blocker_.swap(new_blocker);
+  if (!is_wake_lock_active_ || new_level != current_level_) {
+    device::mojom::WakeLockType type = LevelToWakeLockType(new_level);
+    activate_wake_lock_function_.Run(type);
     current_level_ = new_level;
   }
 }
@@ -139,7 +133,42 @@ void PowerAPI::Shutdown() {
   // Unregister here rather than in the d'tor; otherwise this call will recreate
   // the already-deleted ExtensionRegistry.
   ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
-  power_save_blocker_.reset();
+  cancel_wake_lock_function_.Run();
+}
+
+void PowerAPI::ActivateWakeLock(device::mojom::WakeLockType type) {
+  GetWakeLock()->ChangeType(type, base::Bind(&DoNothing));
+  if (!is_wake_lock_active_) {
+    GetWakeLock()->RequestWakeLock();
+    is_wake_lock_active_ = true;
+  }
+}
+
+void PowerAPI::CancelWakeLock() {
+  if (is_wake_lock_active_) {
+    GetWakeLock()->CancelWakeLock();
+    is_wake_lock_active_ = false;
+  }
+}
+
+device::mojom::WakeLock* PowerAPI::GetWakeLock() {
+  // Here is a lazy binding, and will not reconnect after connection error.
+  if (wake_lock_)
+    return wake_lock_.get();
+
+  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+
+  DCHECK(content::ServiceManagerConnection::GetForProcess());
+  auto* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  device::mojom::WakeLockProviderPtr wake_lock_provider;
+  connector->BindInterface(device::mojom::kServiceName,
+                           mojo::MakeRequest(&wake_lock_provider));
+  wake_lock_provider->GetWakeLockWithoutContext(
+      LevelToWakeLockType(current_level_),
+      device::mojom::WakeLockReason::ReasonOther, kWakeLockDescription,
+      std::move(request));
+  return wake_lock_.get();
 }
 
 }  // namespace extensions

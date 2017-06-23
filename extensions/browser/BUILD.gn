@@ -568,7 +568,7 @@ source_set("unit_tests") {
     "//components/user_prefs",
     "//content/test:test_support",
     "//device/bluetooth:mocks",
-    "//device/power_save_blocker",
+    "//device/wake_lock/public/interfaces",
     "//extensions:extensions_browser_resources",
     "//extensions:test_support",
     "//extensions/common",

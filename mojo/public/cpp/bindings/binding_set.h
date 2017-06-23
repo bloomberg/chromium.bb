@@ -127,6 +127,8 @@ class BindingSetBase {
 
   bool empty() const { return bindings_.empty(); }
 
+  size_t size() const { return bindings_.size(); }
+
   // Implementations may call this when processing a dispatched message or
   // error. During the extent of message or error dispatch, this will return the
   // context associated with the specific binding which received the message or
