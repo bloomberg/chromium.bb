@@ -78,6 +78,11 @@ class ASH_EXPORT ScreenOrientationController
 
   bool ScreenOrientationProviderSupported() const;
 
+  // Returns true if the user has locked the orientation to portrait, false if
+  // the user has locked the orientation to landscape or not locked the
+  // orientation.
+  bool IsUserLockedOrientationPortrait();
+
   bool ignore_display_configuration_updates() const {
     return ignore_display_configuration_updates_;
   }

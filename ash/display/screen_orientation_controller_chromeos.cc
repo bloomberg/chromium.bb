@@ -220,6 +220,17 @@ bool ScreenOrientationController::ScreenOrientationProviderSupported() const {
       ->IsMaximizeModeWindowManagerEnabled();
 }
 
+bool ScreenOrientationController::IsUserLockedOrientationPortrait() {
+  switch (user_locked_orientation_) {
+    case blink::kWebScreenOrientationLockPortraitPrimary:
+    case blink::kWebScreenOrientationLockPortraitSecondary:
+    case blink::kWebScreenOrientationLockPortrait:
+      return true;
+    default:
+      return false;
+  }
+}
+
 void ScreenOrientationController::ToggleUserRotationLock() {
   if (!display::Display::HasInternalDisplay())
     return;
