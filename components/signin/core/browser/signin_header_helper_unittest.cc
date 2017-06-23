@@ -243,16 +243,16 @@ TEST_F(SigninHeaderHelperTest, TestDiceInvalidResponseParams) {
 TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
   const char kAuthorizationCode[] = "authorization_code";
   const char kEmail[] = "foo@example.com";
-  const char kObfuscatedGaiaID[] = "obfuscated_gaia_id";
+  const char kGaiaID[] = "gaia_id";
   const int kSessionIndex = 42;
 
   {
     // Signin response.
     DiceResponseParams params = BuildDiceResponseParams(base::StringPrintf(
         "action=SIGNIN,id=%s,email=%s,authuser=%i,authorization_code=%s",
-        kObfuscatedGaiaID, kEmail, kSessionIndex, kAuthorizationCode));
+        kGaiaID, kEmail, kSessionIndex, kAuthorizationCode));
     EXPECT_EQ(DiceAction::SIGNIN, params.user_intention);
-    EXPECT_EQ(kObfuscatedGaiaID, params.obfuscated_gaia_id);
+    EXPECT_EQ(kGaiaID, params.gaia_id);
     EXPECT_EQ(kEmail, params.email);
     EXPECT_EQ(kSessionIndex, params.session_index);
     EXPECT_EQ(kAuthorizationCode, params.authorization_code);
@@ -261,10 +261,10 @@ TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
   {
     // Signout response.
     DiceResponseParams params = BuildDiceResponseParams(
-        base::StringPrintf("action=SIGNOUT,id=%s,email=%s,authuser=%i",
-                           kObfuscatedGaiaID, kEmail, kSessionIndex));
+        base::StringPrintf("action=SIGNOUT,id=%s,email=%s,authuser=%i", kGaiaID,
+                           kEmail, kSessionIndex));
     EXPECT_EQ(DiceAction::SIGNOUT, params.user_intention);
-    EXPECT_EQ(kObfuscatedGaiaID, params.obfuscated_gaia_id);
+    EXPECT_EQ(kGaiaID, params.gaia_id);
     EXPECT_EQ(kEmail, params.email);
     EXPECT_EQ(kSessionIndex, params.session_index);
     EXPECT_EQ("", params.authorization_code);
@@ -273,16 +273,16 @@ TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
   {
     // Missing authorization code.
     DiceResponseParams params = BuildDiceResponseParams(
-        base::StringPrintf("action=SIGNIN,id=%s,email=%s,authuser=%i",
-                           kObfuscatedGaiaID, kEmail, kSessionIndex));
+        base::StringPrintf("action=SIGNIN,id=%s,email=%s,authuser=%i", kGaiaID,
+                           kEmail, kSessionIndex));
     EXPECT_EQ(DiceAction::NONE, params.user_intention);
   }
 
   {
     // Missing non-optional field (email).
     DiceResponseParams params = BuildDiceResponseParams(base::StringPrintf(
-        "action=SIGNIN,id=%s,authuser=%i,authorization_code=%s",
-        kObfuscatedGaiaID, kSessionIndex, kAuthorizationCode));
+        "action=SIGNIN,id=%s,authuser=%i,authorization_code=%s", kGaiaID,
+        kSessionIndex, kAuthorizationCode));
     EXPECT_EQ(DiceAction::NONE, params.user_intention);
   }
 }
