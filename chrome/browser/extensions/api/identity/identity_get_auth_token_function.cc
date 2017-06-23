@@ -106,26 +106,11 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
 
   std::set<std::string> scopes(oauth2_info.scopes.begin(),
                                oauth2_info.scopes.end());
-
-  std::string account_key = GetPrimaryAccountId(GetProfile());
+  std::string gaia_id;
 
   if (params->details.get()) {
-    if (params->details->account.get()) {
-      std::string detail_key =
-          AccountTrackerServiceFactory::GetForProfile(GetProfile())
-              ->FindAccountInfoByGaiaId(params->details->account->id)
-              .account_id;
-
-      if (detail_key != account_key) {
-        if (detail_key.empty() || !switches::IsExtensionsMultiAccount()) {
-          // TODO(courage): should this be a different error?
-          error_ = identity_constants::kUserNotSignedIn;
-          return false;
-        }
-
-        account_key = detail_key;
-      }
-    }
+    if (params->details->account.get())
+      gaia_id = params->details->account->id;
 
     if (params->details->scopes.get()) {
       scopes = std::set<std::string>(params->details->scopes->begin(),
@@ -138,11 +123,64 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
     return false;
   }
 
-  token_key_.reset(
-      new ExtensionTokenKey(extension()->id(), account_key, scopes));
-
   // From here on out, results must be returned asynchronously.
   StartAsyncRun();
+
+  GetIdentityManager()->GetPrimaryAccountInfo(
+      base::Bind(&IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo,
+                 this, scopes, gaia_id));
+
+  return true;
+}
+
+void IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo(
+    const std::set<std::string>& scopes,
+    const std::string& extension_gaia_id,
+    const base::Optional<AccountInfo>& account_info) {
+  std::string primary_gaia_id;
+  if (account_info)
+    primary_gaia_id = account_info->gaia;
+
+  // Detect and handle the case where the extension is using an account other
+  // than the primary account.
+  if (!extension_gaia_id.empty() && extension_gaia_id != primary_gaia_id) {
+    if (!switches::IsExtensionsMultiAccount()) {
+      // TODO(courage): should this be a different error?
+      CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
+      return;
+    }
+
+    // Get the AccountInfo for the account that the extension wishes to use.
+    identity_manager_->GetAccountInfoFromGaiaId(
+        extension_gaia_id,
+        base::Bind(
+            &IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo, this,
+            false /* not primary account */, scopes));
+    return;
+  }
+
+  // The extension is using the primary account.
+  OnReceivedExtensionAccountInfo(true /* primary account */, scopes,
+                                 account_info);
+}
+
+void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
+    bool is_primary_account,
+    const std::set<std::string>& scopes,
+    const base::Optional<AccountInfo>& account_info) {
+  std::string account_id;
+  if (account_info)
+    account_id = account_info->account_id;
+
+  if (!is_primary_account && account_id.empty()) {
+    // It is not possible to sign in the user to an account other than the
+    // primary account, so just error out here.
+    CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
+    return;
+  }
+
+  token_key_.reset(
+      new ExtensionTokenKey(extension()->id(), account_id, scopes));
 
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -154,26 +192,24 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   if (connector->IsEnterpriseManaged() && (is_kiosk || is_public_session)) {
     if (is_public_session && !IsOriginWhitelistedInPublicSession()) {
       CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
-      return true;
+      return;
     }
 
     StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
-    return true;
+    return;
   }
 #endif
 
   if (!HasLoginToken()) {
     if (!should_prompt_for_signin_) {
       CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
-      return true;
+      return;
     }
     // Display a login prompt.
     StartSigninFlow();
   } else {
     StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
   }
-
-  return true;
 }
 
 void IdentityGetAuthTokenFunction::StartAsyncRun() {
@@ -539,10 +575,16 @@ void IdentityGetAuthTokenFunction::Shutdown() {
   signin_flow_.reset();
   login_token_request_.reset();
   identity_manager_.reset();
-  extensions::IdentityAPI::GetFactoryInstance()
-      ->Get(GetProfile())
-      ->mint_queue()
-      ->RequestCancel(*token_key_, this);
+
+  // Note that if |token_key_| hasn't yet been populated then this instance has
+  // definitely not made a request with the MintQueue.
+  if (token_key_) {
+    extensions::IdentityAPI::GetFactoryInstance()
+        ->Get(GetProfile())
+        ->mint_queue()
+        ->RequestCancel(*token_key_, this);
+  }
+
   CompleteFunctionWithError(identity_constants::kCanceled);
 }
 
@@ -595,8 +637,7 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
   }
 #endif
 
-  ConnectToIdentityManager();
-  identity_manager_->GetAccessToken(
+  GetIdentityManager()->GetAccessToken(
       token_key_->account_id, ::identity::ScopeSet(), "extensions_identity_api",
       base::Bind(&IdentityGetAuthTokenFunction::OnGetAccessTokenComplete,
                  base::Unretained(this)));
@@ -673,13 +714,14 @@ std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
   return client_id;
 }
 
-void IdentityGetAuthTokenFunction::ConnectToIdentityManager() {
-  if (identity_manager_.is_bound())
-    return;
-
-  content::BrowserContext::GetConnectorFor(GetProfile())
-      ->BindInterface(::identity::mojom::kServiceName,
-                      mojo::MakeRequest(&identity_manager_));
+::identity::mojom::IdentityManager*
+IdentityGetAuthTokenFunction::GetIdentityManager() {
+  if (!identity_manager_.is_bound()) {
+    content::BrowserContext::GetConnectorFor(GetProfile())
+        ->BindInterface(::identity::mojom::kServiceName,
+                        mojo::MakeRequest(&identity_manager_));
+  }
+  return identity_manager_.get();
 }
 
 }  // namespace extensions

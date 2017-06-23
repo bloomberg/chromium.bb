@@ -106,6 +106,27 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, InteractiveQueueShutdown);
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, NoninteractiveShutdown);
 
+  // Called by the IdentityManager in response to this class' request for the
+  // primary account info. Extra arguments that are bound internally at the time
+  // of calling the IdentityManager:
+  // |scopes|: The scopes that this instance should use for access token
+  // requests.
+  // |extension_gaia_id|: The GAIA ID that was set in the parameters for this
+  // instance, or empty if this was not in the parameters.
+  void OnReceivedPrimaryAccountInfo(
+      const std::set<std::string>& scopes,
+      const std::string& extension_gaia_id,
+      const base::Optional<AccountInfo>& account_info);
+
+  // Called when the AccountInfo that this instance should use is available.
+  // |is_primary_account| is a bool specifying whether the account being used is
+  // the primary account. |scopes| is the set of scopes that this instance
+  // should use for access token requests.
+  void OnReceivedExtensionAccountInfo(
+      bool is_primary_account,
+      const std::set<std::string>& scopes,
+      const base::Optional<AccountInfo>& account_info);
+
   // ExtensionFunction:
   bool RunAsync() override;
 
@@ -152,8 +173,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   std::string GetOAuth2ClientId() const;
 
-  // Connects to the Identity Manager. No-op if already connected.
-  void ConnectToIdentityManager();
+  // Gets the Identity Manager, lazily binding it.
+  ::identity::mojom::IdentityManager* GetIdentityManager();
 
   bool interactive_;
   bool should_prompt_for_scopes_;

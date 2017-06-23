@@ -31,9 +31,11 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                           public service_manager::mojom::ServiceFactory {
  public:
   ServiceTestClient(service_manager::test::ServiceTest* test,
+                    AccountTrackerService* account_tracker,
                     SigninManagerBase* signin_manager,
                     ProfileOAuth2TokenService* token_service)
       : service_manager::test::ServiceTestClient(test),
+        account_tracker_(account_tracker),
         signin_manager_(signin_manager),
         token_service_(token_service) {
     registry_.AddInterface<service_manager::mojom::ServiceFactory>(
@@ -52,7 +54,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                      const std::string& name) override {
     if (name == mojom::kServiceName) {
       identity_service_context_.reset(new service_manager::ServiceContext(
-          base::MakeUnique<IdentityService>(signin_manager_, token_service_),
+          base::MakeUnique<IdentityService>(account_tracker_, signin_manager_,
+                                            token_service_),
           std::move(request)));
     }
   }
@@ -63,6 +66,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   }
 
  private:
+  AccountTrackerService* account_tracker_;
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
   service_manager::BinderRegistry registry_;
@@ -91,6 +95,13 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
     quit_closure.Run();
   }
 
+  void OnReceivedAccountInfoFromGaiaId(
+      base::Closure quit_closure,
+      const base::Optional<AccountInfo>& account_info) {
+    account_info_from_gaia_id_ = account_info;
+    quit_closure.Run();
+  }
+
   void OnReceivedAccessToken(base::Closure quit_closure,
                              const base::Optional<std::string>& access_token,
                              base::Time expiration_time,
@@ -109,15 +120,17 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
 
   // service_manager::test::ServiceTest:
   std::unique_ptr<service_manager::Service> CreateService() override {
-    return base::MakeUnique<ServiceTestClient>(this, &signin_manager_,
-                                               &token_service_);
+    return base::MakeUnique<ServiceTestClient>(
+        this, &account_tracker_, &signin_manager_, &token_service_);
   }
 
   mojom::IdentityManagerPtr identity_manager_;
   base::Optional<AccountInfo> primary_account_info_;
+  base::Optional<AccountInfo> account_info_from_gaia_id_;
   base::Optional<std::string> access_token_;
   GoogleServiceAuthError access_token_error_;
 
+  AccountTrackerService* account_tracker() { return &account_tracker_; }
   SigninManagerBase* signin_manager() { return &signin_manager_; }
   FakeProfileOAuth2TokenService* token_service() { return &token_service_; }
 
@@ -131,8 +144,8 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
 };
 
-// Check that the primary account ID is null if not signed in.
-TEST_F(IdentityManagerTest, GetPrimaryAccountNotSignedIn) {
+// Check that the primary account info is null if not signed in.
+TEST_F(IdentityManagerTest, GetPrimaryAccountInfoNotSignedIn) {
   base::RunLoop run_loop;
   identity_manager_->GetPrimaryAccountInfo(
       base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
@@ -141,8 +154,8 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountNotSignedIn) {
   EXPECT_FALSE(primary_account_info_);
 }
 
-// Check that the primary account ID has expected values if signed in.
-TEST_F(IdentityManagerTest, GetPrimaryAccountSignedIn) {
+// Check that the primary account info has expected values if signed in.
+TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedIn) {
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
   base::RunLoop run_loop;
   identity_manager_->GetPrimaryAccountInfo(
@@ -152,6 +165,33 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountSignedIn) {
   EXPECT_TRUE(primary_account_info_);
   EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
   EXPECT_EQ(kTestEmail, primary_account_info_->email);
+}
+
+// Check that the account info for a given GAIA ID is null if that GAIA ID is
+// unknown.
+TEST_F(IdentityManagerTest, GetAccountInfoForUnknownGaiaID) {
+  base::RunLoop run_loop;
+  identity_manager_->GetAccountInfoFromGaiaId(
+      kTestGaiaId,
+      base::Bind(&IdentityManagerTest::OnReceivedAccountInfoFromGaiaId,
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_FALSE(account_info_from_gaia_id_);
+}
+
+// Check that the account info for a given GAIA ID has expected values if that
+// GAIA ID is known.
+TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaId) {
+  account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
+  base::RunLoop run_loop;
+  identity_manager_->GetAccountInfoFromGaiaId(
+      kTestGaiaId,
+      base::Bind(&IdentityManagerTest::OnReceivedAccountInfoFromGaiaId,
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_TRUE(account_info_from_gaia_id_);
+  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
+  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
 }
 
 // Check that the expected error is received if requesting an access token when
