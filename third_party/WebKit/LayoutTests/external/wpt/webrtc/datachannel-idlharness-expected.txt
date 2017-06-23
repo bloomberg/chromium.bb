@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 53 tests; 42 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 55 tests; 43 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL RTCDataChannel interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
 PASS RTCDataChannel interface object length 
 PASS RTCDataChannel interface object name 
@@ -27,6 +27,8 @@ PASS RTCDataChannel interface: operation send(USVString)
 PASS RTCDataChannel interface: operation send(Blob) 
 PASS RTCDataChannel interface: operation send(ArrayBuffer) 
 PASS RTCDataChannel interface: operation send(ArrayBufferView) 
+PASS RTCDataChannel must be primary interface of channel 
+FAIL Stringification of channel Cannot read property 'has_stringifier' of undefined
 PASS RTCDataChannel interface: channel must inherit property "label" with the proper type (0) 
 PASS RTCDataChannel interface: channel must inherit property "ordered" with the proper type (1) 
 FAIL RTCDataChannel interface: channel must inherit property "maxPacketLifeTime" with the proper type (2) assert_inherits: property "maxPacketLifeTime" not found in prototype chain

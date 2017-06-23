@@ -1,26 +1,18 @@
 This is a testharness.js-based test.
 PASS Element interface: operation requestPointerLock() 
-FAIL Element must be primary interface of window.document.documentElement assert_equals: window.document.documentElement's prototype is not Element.prototype expected object "[object Element]" but got object "[object HTMLHtmlElement]"
-FAIL Stringification of window.document.documentElement assert_equals: class string of window.document.documentElement expected "[object Element]" but got "[object HTMLHtmlElement]"
 PASS Element interface: window.document.documentElement must inherit property "requestPointerLock" with the proper type (0) 
 PASS Document interface: attribute onpointerlockchange 
 PASS Document interface: attribute onpointerlockerror 
 PASS Document interface: attribute pointerLockElement 
 PASS Document interface: operation exitPointerLock() 
-FAIL Document must be primary interface of window.document assert_equals: window.document's prototype is not Document.prototype expected object "[object Document]" but got object "[object HTMLDocument]"
-FAIL Stringification of window.document assert_equals: class string of window.document expected "[object Document]" but got "[object HTMLDocument]"
 FAIL Document interface: window.document must inherit property "onpointerlockchange" with the proper type (0) Unrecognized type EventHandler
 FAIL Document interface: window.document must inherit property "onpointerlockerror" with the proper type (1) Unrecognized type EventHandler
 PASS Document interface: window.document must inherit property "pointerLockElement" with the proper type (2) 
 PASS Document interface: window.document must inherit property "exitPointerLock" with the proper type (3) 
 PASS MouseEvent interface: attribute movementX 
 PASS MouseEvent interface: attribute movementY 
-PASS MouseEvent must be primary interface of new MouseEvent('mousemove') 
-PASS Stringification of new MouseEvent('mousemove') 
 PASS MouseEvent interface: new MouseEvent('mousemove') must inherit property "movementX" with the proper type (0) 
 PASS MouseEvent interface: new MouseEvent('mousemove') must inherit property "movementY" with the proper type (1) 
-PASS MouseEvent must be primary interface of new MouseEvent('pointerlockchange') 
-PASS Stringification of new MouseEvent('pointerlockchange') 
 PASS MouseEvent interface: new MouseEvent('pointerlockchange') must inherit property "movementX" with the proper type (0) 
 PASS MouseEvent interface: new MouseEvent('pointerlockchange') must inherit property "movementY" with the proper type (1) 
 Harness: the test ran to completion.

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 92 tests; 89 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 98 tests; 95 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL interface: operation createObjectURL(MediaSource) 
 PASS AudioTrack interface: attribute sourceBuffer 
 PASS VideoTrack interface: attribute sourceBuffer 
@@ -22,6 +22,8 @@ PASS MediaSource interface: operation endOfStream(EndOfStreamError)
 PASS MediaSource interface: operation setLiveSeekableRange(double,double) 
 PASS MediaSource interface: operation clearLiveSeekableRange() 
 PASS MediaSource interface: operation isTypeSupported(DOMString) 
+PASS MediaSource must be primary interface of mediaSource 
+PASS Stringification of mediaSource 
 PASS MediaSource interface: mediaSource must inherit property "sourceBuffers" with the proper type (0) 
 PASS MediaSource interface: mediaSource must inherit property "activeSourceBuffers" with the proper type (1) 
 PASS MediaSource interface: mediaSource must inherit property "readyState" with the proper type (2) 
@@ -62,6 +64,8 @@ PASS SourceBuffer interface: attribute onabort
 PASS SourceBuffer interface: operation appendBuffer(BufferSource) 
 PASS SourceBuffer interface: operation abort() 
 PASS SourceBuffer interface: operation remove(double,unrestricted double) 
+PASS SourceBuffer must be primary interface of sourceBuffer 
+PASS Stringification of sourceBuffer 
 PASS SourceBuffer interface: sourceBuffer must inherit property "mode" with the proper type (0) 
 PASS SourceBuffer interface: sourceBuffer must inherit property "updating" with the proper type (1) 
 PASS SourceBuffer interface: sourceBuffer must inherit property "buffered" with the proper type (2) 
@@ -89,6 +93,8 @@ PASS SourceBufferList interface: existence and properties of interface prototype
 PASS SourceBufferList interface: attribute length 
 PASS SourceBufferList interface: attribute onaddsourcebuffer 
 PASS SourceBufferList interface: attribute onremovesourcebuffer 
+PASS SourceBufferList must be primary interface of mediaSource.sourceBuffers 
+PASS Stringification of mediaSource.sourceBuffers 
 PASS SourceBufferList interface: mediaSource.sourceBuffers must inherit property "length" with the proper type (0) 
 PASS SourceBufferList interface: mediaSource.sourceBuffers must inherit property "onaddsourcebuffer" with the proper type (1) 
 PASS SourceBufferList interface: mediaSource.sourceBuffers must inherit property "onremovesourcebuffer" with the proper type (2) 

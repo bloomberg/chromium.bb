@@ -1,7 +1,5 @@
 This is a testharness.js-based test.
 PASS Navigator interface: attribute mediaSession 
-PASS Navigator must be primary interface of navigator 
-PASS Stringification of navigator 
 PASS Navigator interface: navigator must inherit property "mediaSession" with the proper type (0) 
 PASS MediaSession interface: existence and properties of interface object 
 PASS MediaSession interface object length 
@@ -20,6 +18,8 @@ PASS MediaMetadata interface: attribute title
 PASS MediaMetadata interface: attribute artist 
 PASS MediaMetadata interface: attribute album 
 PASS MediaMetadata interface: attribute artwork 
+PASS MediaMetadata must be primary interface of [object MediaMetadata] 
+PASS Stringification of [object MediaMetadata] 
 PASS MediaMetadata interface: [object MediaMetadata] must inherit property "title" with the proper type (0) 
 PASS MediaMetadata interface: [object MediaMetadata] must inherit property "artist" with the proper type (1) 
 PASS MediaMetadata interface: [object MediaMetadata] must inherit property "album" with the proper type (2) 

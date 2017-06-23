@@ -1,7 +1,5 @@
 This is a testharness.js-based test.
 FAIL Window interface: attribute performance assert_true: The prototype object must have a property "performance" expected true got false
-PASS Window must be primary interface of window 
-PASS Stringification of window 
 FAIL Window interface: window must inherit property "performance" with the proper type (0) assert_inherits: property "performance" found on object expected in prototype chain
 PASS PerformanceTiming interface: existence and properties of interface object 
 PASS PerformanceTiming interface object length 
@@ -29,6 +27,8 @@ PASS PerformanceTiming interface: attribute domContentLoadedEventEnd
 PASS PerformanceTiming interface: attribute domComplete 
 PASS PerformanceTiming interface: attribute loadEventStart 
 PASS PerformanceTiming interface: attribute loadEventEnd 
+PASS PerformanceTiming must be primary interface of window.performance.timing 
+PASS Stringification of window.performance.timing 
 PASS PerformanceTiming interface: window.performance.timing must inherit property "navigationStart" with the proper type (0) 
 PASS PerformanceTiming interface: window.performance.timing must inherit property "unloadEventStart" with the proper type (1) 
 PASS PerformanceTiming interface: window.performance.timing must inherit property "unloadEventEnd" with the proper type (2) 
@@ -65,6 +65,8 @@ PASS PerformanceNavigation interface: constant TYPE_RESERVED on interface object
 PASS PerformanceNavigation interface: constant TYPE_RESERVED on interface prototype object 
 PASS PerformanceNavigation interface: attribute type 
 PASS PerformanceNavigation interface: attribute redirectCount 
+PASS PerformanceNavigation must be primary interface of window.performance.navigation 
+PASS Stringification of window.performance.navigation 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_NAVIGATE" with the proper type (0) 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RELOAD" with the proper type (1) 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_BACK_FORWARD" with the proper type (2) 
@@ -78,6 +80,8 @@ FAIL Performance interface: existence and properties of interface prototype obje
 PASS Performance interface: existence and properties of interface prototype object's "constructor" property 
 PASS Performance interface: attribute timing 
 PASS Performance interface: attribute navigation 
+PASS Performance must be primary interface of window.performance 
+PASS Stringification of window.performance 
 PASS Performance interface: window.performance must inherit property "timing" with the proper type (0) 
 PASS Performance interface: window.performance must inherit property "navigation" with the proper type (1) 
 Harness: the test ran to completion.
