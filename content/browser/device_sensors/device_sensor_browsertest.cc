@@ -17,6 +17,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
+#include "device/generic_sensor/platform_sensor.h"
+#include "device/generic_sensor/platform_sensor_provider.h"
 #include "device/sensors/data_fetcher_shared_memory.h"
 #include "device/sensors/device_sensor_service.h"
 #include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
@@ -30,14 +32,6 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
  public:
   FakeDataFetcher() : sensor_data_available_(true) {}
   ~FakeDataFetcher() override {}
-
-  void SetMotionStartedCallback(base::Closure motion_started_callback) {
-    motion_started_callback_ = motion_started_callback;
-  }
-
-  void SetMotionStoppedCallback(base::Closure motion_stopped_callback) {
-    motion_stopped_callback_ = motion_stopped_callback;
-  }
 
   void SetOrientationStartedCallback(
       base::Closure orientation_started_callback) {
@@ -65,15 +59,6 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
     EXPECT_TRUE(buffer);
 
     switch (consumer_type) {
-      case device::CONSUMER_TYPE_MOTION: {
-        device::DeviceMotionHardwareBuffer* motion_buffer =
-            static_cast<device::DeviceMotionHardwareBuffer*>(buffer);
-        if (sensor_data_available_)
-          UpdateMotion(motion_buffer);
-        SetMotionBufferReady(motion_buffer);
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                motion_started_callback_);
-      } break;
       case device::CONSUMER_TYPE_ORIENTATION: {
         device::DeviceOrientationHardwareBuffer* orientation_buffer =
             static_cast<device::DeviceOrientationHardwareBuffer*>(buffer);
@@ -100,10 +85,6 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
 
   bool Stop(device::ConsumerType consumer_type) override {
     switch (consumer_type) {
-      case device::CONSUMER_TYPE_MOTION:
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                motion_stopped_callback_);
-        break;
       case device::CONSUMER_TYPE_ORIENTATION:
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 orientation_stopped_callback_);
@@ -128,43 +109,9 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
     sensor_data_available_ = available;
   }
 
-  void SetMotionBufferReady(device::DeviceMotionHardwareBuffer* buffer) {
-    buffer->seqlock.WriteBegin();
-    buffer->data.all_available_sensors_are_active = true;
-    buffer->seqlock.WriteEnd();
-  }
-
   void SetOrientationBufferReady(
       device::DeviceOrientationHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
-    buffer->data.all_available_sensors_are_active = true;
-    buffer->seqlock.WriteEnd();
-  }
-
-  void UpdateMotion(device::DeviceMotionHardwareBuffer* buffer) {
-    buffer->seqlock.WriteBegin();
-    buffer->data.acceleration_x = 1;
-    buffer->data.has_acceleration_x = true;
-    buffer->data.acceleration_y = 2;
-    buffer->data.has_acceleration_y = true;
-    buffer->data.acceleration_z = 3;
-    buffer->data.has_acceleration_z = true;
-
-    buffer->data.acceleration_including_gravity_x = 4;
-    buffer->data.has_acceleration_including_gravity_x = true;
-    buffer->data.acceleration_including_gravity_y = 5;
-    buffer->data.has_acceleration_including_gravity_y = true;
-    buffer->data.acceleration_including_gravity_z = 6;
-    buffer->data.has_acceleration_including_gravity_z = true;
-
-    buffer->data.rotation_rate_alpha = 7;
-    buffer->data.has_rotation_rate_alpha = true;
-    buffer->data.rotation_rate_beta = 8;
-    buffer->data.has_rotation_rate_beta = true;
-    buffer->data.rotation_rate_gamma = 9;
-    buffer->data.has_rotation_rate_gamma = true;
-
-    buffer->data.interval = 100;
     buffer->data.all_available_sensors_are_active = true;
     buffer->seqlock.WriteEnd();
   }
@@ -196,16 +143,195 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
   }
 
   // The below callbacks should be run on the UI thread.
-  base::Closure motion_started_callback_;
   base::Closure orientation_started_callback_;
   base::Closure orientation_absolute_started_callback_;
-  base::Closure motion_stopped_callback_;
   base::Closure orientation_stopped_callback_;
   base::Closure orientation_absolute_stopped_callback_;
   bool sensor_data_available_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDataFetcher);
+};
+
+class FakeAccelerometer : public device::PlatformSensor {
+ public:
+  FakeAccelerometer(mojo::ScopedSharedBufferMapping mapping,
+                    device::PlatformSensorProvider* provider)
+      : PlatformSensor(device::mojom::SensorType::ACCELEROMETER,
+                       std::move(mapping),
+                       provider) {}
+
+  device::mojom::ReportingMode GetReportingMode() override {
+    return device::mojom::ReportingMode::ON_CHANGE;
+  }
+
+  bool StartSensor(
+      const device::PlatformSensorConfiguration& configuration) override {
+    device::SensorReading reading;
+    reading.timestamp =
+        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+    reading.values[0] = 4;
+    reading.values[1] = 5;
+    reading.values[2] = 6;
+    UpdateSensorReading(reading, true);
+    return true;
+  }
+
+  void StopSensor() override {}
+
+ protected:
+  ~FakeAccelerometer() override = default;
+
+  bool CheckSensorConfiguration(
+      const device::PlatformSensorConfiguration& configuration) override {
+    return true;
+  }
+
+  device::PlatformSensorConfiguration GetDefaultConfiguration() override {
+    return device::PlatformSensorConfiguration(60 /* frequency */);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeAccelerometer);
+};
+
+class FakeLinearAccelerationSensor : public device::PlatformSensor {
+ public:
+  FakeLinearAccelerationSensor(mojo::ScopedSharedBufferMapping mapping,
+                               device::PlatformSensorProvider* provider)
+      : PlatformSensor(device::mojom::SensorType::LINEAR_ACCELERATION,
+                       std::move(mapping),
+                       provider) {}
+
+  device::mojom::ReportingMode GetReportingMode() override {
+    return device::mojom::ReportingMode::CONTINUOUS;
+  }
+
+  bool StartSensor(
+      const device::PlatformSensorConfiguration& configuration) override {
+    device::SensorReading reading;
+    reading.timestamp =
+        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+    reading.values[0] = 1;
+    reading.values[1] = 2;
+    reading.values[2] = 3;
+    UpdateSensorReading(reading, true);
+    return true;
+  }
+
+  void StopSensor() override {}
+
+ protected:
+  ~FakeLinearAccelerationSensor() override = default;
+
+  bool CheckSensorConfiguration(
+      const device::PlatformSensorConfiguration& configuration) override {
+    return true;
+  }
+
+  device::PlatformSensorConfiguration GetDefaultConfiguration() override {
+    return device::PlatformSensorConfiguration(60 /* frequency */);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeLinearAccelerationSensor);
+};
+
+class FakeGyroscope : public device::PlatformSensor {
+ public:
+  FakeGyroscope(mojo::ScopedSharedBufferMapping mapping,
+                device::PlatformSensorProvider* provider)
+      : PlatformSensor(device::mojom::SensorType::GYROSCOPE,
+                       std::move(mapping),
+                       provider) {}
+
+  device::mojom::ReportingMode GetReportingMode() override {
+    return device::mojom::ReportingMode::ON_CHANGE;
+  }
+
+  bool StartSensor(
+      const device::PlatformSensorConfiguration& configuration) override {
+    device::SensorReading reading;
+    reading.timestamp =
+        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+    reading.values[0] = 7;
+    reading.values[1] = 8;
+    reading.values[2] = 9;
+    UpdateSensorReading(reading, true);
+    return true;
+  }
+
+  void StopSensor() override {}
+
+ protected:
+  ~FakeGyroscope() override = default;
+
+  bool CheckSensorConfiguration(
+      const device::PlatformSensorConfiguration& configuration) override {
+    return true;
+  }
+
+  device::PlatformSensorConfiguration GetDefaultConfiguration() override {
+    return device::PlatformSensorConfiguration(60 /* frequency */);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeGyroscope);
+};
+
+class FakeSensorProvider : public device::PlatformSensorProvider {
+ public:
+  static FakeSensorProvider* GetInstance() {
+    return base::Singleton<FakeSensorProvider, base::LeakySingletonTraits<
+                                                   FakeSensorProvider>>::get();
+  }
+  FakeSensorProvider() {}
+  ~FakeSensorProvider() override = default;
+
+  void set_accelerometer_is_available(bool accelerometer_is_available) {
+    accelerometer_is_available_ = accelerometer_is_available;
+  }
+
+  void set_linear_acceleration_sensor_is_available(
+      bool linear_acceleration_sensor_is_available) {
+    linear_acceleration_sensor_is_available_ =
+        linear_acceleration_sensor_is_available;
+  }
+
+  void set_gyroscope_is_available(bool gyroscope_is_available) {
+    gyroscope_is_available_ = gyroscope_is_available;
+  }
+
+ protected:
+  void CreateSensorInternal(device::mojom::SensorType type,
+                            mojo::ScopedSharedBufferMapping mapping,
+                            const CreateSensorCallback& callback) override {
+    // Create Sensors here.
+    scoped_refptr<device::PlatformSensor> sensor;
+
+    switch (type) {
+      case device::mojom::SensorType::ACCELEROMETER:
+        if (accelerometer_is_available_)
+          sensor = new FakeAccelerometer(std::move(mapping), this);
+        break;
+      case device::mojom::SensorType::LINEAR_ACCELERATION:
+        if (linear_acceleration_sensor_is_available_)
+          sensor = new FakeLinearAccelerationSensor(std::move(mapping), this);
+        break;
+      case device::mojom::SensorType::GYROSCOPE:
+        if (gyroscope_is_available_)
+          sensor = new FakeGyroscope(std::move(mapping), this);
+        break;
+      default:
+        NOTIMPLEMENTED();
+    }
+
+    callback.Run(std::move(sensor));
+  }
+
+  bool accelerometer_is_available_ = true;
+  bool linear_acceleration_sensor_is_available_ = true;
+  bool gyroscope_is_available_ = true;
 };
 
 class DeviceSensorBrowserTest : public ContentBrowserTest {
@@ -218,8 +344,6 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     // Initialize the RunLoops now that the main thread has been created.
-    motion_started_runloop_.reset(new base::RunLoop());
-    motion_stopped_runloop_.reset(new base::RunLoop());
     orientation_started_runloop_.reset(new base::RunLoop());
     orientation_stopped_runloop_.reset(new base::RunLoop());
     orientation_absolute_started_runloop_.reset(new base::RunLoop());
@@ -227,20 +351,16 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
 #if defined(OS_ANDROID)
     // On Android, the DeviceSensorService lives on the UI thread.
     SetUpFetcher();
-#else
-    // On all other platforms, the DeviceSensorService lives on the IO thread.
+#endif  // defined(OS_ANDROID)
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&DeviceSensorBrowserTest::SetUpOnIOThread,
                    base::Unretained(this)));
     io_loop_finished_event_.Wait();
-#endif
   }
 
   void SetUpFetcher() {
     fetcher_ = new FakeDataFetcher();
-    fetcher_->SetMotionStartedCallback(motion_started_runloop_->QuitClosure());
-    fetcher_->SetMotionStoppedCallback(motion_stopped_runloop_->QuitClosure());
     fetcher_->SetOrientationStartedCallback(
         orientation_started_runloop_->QuitClosure());
     fetcher_->SetOrientationStoppedCallback(
@@ -254,8 +374,17 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpOnIOThread() {
+#if !defined(OS_ANDROID)
+    // On non-Android platforms, the DeviceSensorService lives on the IO thread.
     SetUpFetcher();
+#endif  // !defined(OS_ANDROID)
+    sensor_provider_ = FakeSensorProvider::GetInstance();
+    device::PlatformSensorProvider::SetProviderForTesting(sensor_provider_);
     io_loop_finished_event_.Signal();
+  }
+
+  void TearDown() override {
+    device::PlatformSensorProvider::SetProviderForTesting(nullptr);
   }
 
   void DelayAndQuit(base::TimeDelta delay) {
@@ -276,11 +405,10 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
   }
 
   FakeDataFetcher* fetcher_;
+  FakeSensorProvider* sensor_provider_;
 
   // NOTE: These can only be initialized once the main thread has been created
   // and so must be pointers instead of plain objects.
-  std::unique_ptr<base::RunLoop> motion_started_runloop_;
-  std::unique_ptr<base::RunLoop> motion_stopped_runloop_;
   std::unique_ptr<base::RunLoop> orientation_started_runloop_;
   std::unique_ptr<base::RunLoop> orientation_stopped_runloop_;
   std::unique_ptr<base::RunLoop> orientation_absolute_started_runloop_;
@@ -323,8 +451,6 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  motion_started_runloop_->Run();
-  motion_stopped_runloop_->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, OrientationNullTest) {
@@ -359,13 +485,27 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionNullTest) {
   // The test page registers an event handler for motion events and
   // expects to get an event with null values, because no sensor data can be
   // provided.
-  fetcher_->SetSensorDataAvailable(false);
+  sensor_provider_->set_accelerometer_is_available(false);
+  sensor_provider_->set_linear_acceleration_sensor_is_available(false);
+  sensor_provider_->set_gyroscope_is_available(false);
   GURL test_url = GetTestUrl("device_sensors", "device_motion_null_test.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  motion_started_runloop_->Run();
-  motion_stopped_runloop_->Run();
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
+                       MotionOnlySomeSensorsAreAvailableTest) {
+  // The test page registers an event handler for motion events and
+  // expects to get an event with only the gyroscope and linear acceleration
+  // sensor values, because no accelerometer values can be provided.
+  sensor_provider_->set_accelerometer_is_available(false);
+  GURL test_url =
+      GetTestUrl("device_sensors",
+                 "device_motion_only_some_sensors_are_available_test.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
+
+  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, NullTestWithAlert) {
@@ -375,6 +515,9 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, NullTestWithAlert) {
   // window after the alert is dismissed and the callbacks are invoked which
   // eventually navigate to #pass.
   fetcher_->SetSensorDataAvailable(false);
+  sensor_provider_->set_accelerometer_is_available(false);
+  sensor_provider_->set_linear_acceleration_sensor_is_available(false);
+  sensor_provider_->set_gyroscope_is_available(false);
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
 
   GURL test_url =
@@ -385,8 +528,6 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, NullTestWithAlert) {
   // delay, crbug.com/360044.
   WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta::FromMilliseconds(500));
 
-  motion_started_runloop_->Run();
-  motion_stopped_runloop_->Run();
   orientation_started_runloop_->Run();
   orientation_stopped_runloop_->Run();
   same_tab_observer.Wait();

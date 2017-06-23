@@ -18,6 +18,8 @@ include_rules = [
   "+device/base/synchronization",
   "+device/gamepad/public/cpp",
   "+device/gamepad/public/interfaces",
+  "+device/generic_sensor/public/cpp",
+  "+device/generic_sensor/public/interfaces",
   "+device/screen_orientation/public/interfaces",
   "+device/sensors/public",
   "+device/usb/public",
