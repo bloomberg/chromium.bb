@@ -83,8 +83,8 @@ CSSParserContext* CSSParserContext::Create(
   CSSParserMode mode =
       document.InQuirksMode() ? kHTMLQuirksMode : kHTMLStandardMode;
   CSSParserMode match_mode;
-  if (HTMLImportsController* imports_controller =
-          document.ImportsController()) {
+  HTMLImportsController* imports_controller = document.ImportsController();
+  if (imports_controller && profile == kDynamicProfile) {
     match_mode = imports_controller->Master()->InQuirksMode()
                      ? kHTMLQuirksMode
                      : kHTMLStandardMode;
