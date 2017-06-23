@@ -62,6 +62,16 @@ class MockMediaRouterWebUIMessageHandler
                     base::Optional<MediaCastMode> forced_cast_mode));
 };
 
+class MockMediaRouterFileDialog : public MediaRouterFileDialog {
+ public:
+  MockMediaRouterFileDialog() : MediaRouterFileDialog(nullptr) {}
+  ~MockMediaRouterFileDialog() override {}
+
+  MOCK_METHOD0(GetLastSelectedFileUrl, GURL());
+  MOCK_METHOD0(GetLastSelectedFileName, base::string16());
+  MOCK_METHOD1(OpenFileDialog, void(Browser* browser));
+};
+
 class PresentationRequestCallbacks {
  public:
   PresentationRequestCallbacks() {}
@@ -122,9 +132,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
     message_handler_ = base::MakeUnique<MockMediaRouterWebUIMessageHandler>(
         media_router_ui_.get());
 
-    auto file_dialog =
-        base::MakeUnique<MediaRouterFileDialog>(media_router_ui_.get());
-
+    auto file_dialog = base::MakeUnique<MockMediaRouterFileDialog>();
     mock_file_dialog_ = file_dialog.get();
 
     EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
@@ -179,7 +187,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<CreatePresentationConnectionRequest> create_session_request_;
   std::unique_ptr<MediaRouterUI> media_router_ui_;
   std::unique_ptr<MockMediaRouterWebUIMessageHandler> message_handler_;
-  MediaRouterFileDialog* mock_file_dialog_ = nullptr;
+  MockMediaRouterFileDialog* mock_file_dialog_ = nullptr;
   std::vector<MediaSinksObserver*> media_sinks_observers_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -250,13 +258,13 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
 // file will be opened in the new tab.
 TEST_F(MediaRouterUITest, RouteCreationLocalFileModeInTab) {
   const GURL empty_tab = GURL(chrome::kChromeUINewTabURL);
-  const std::string file_path = "some/url/for/a/file.mp3";
+  const std::string file_url = "file:///some/url/for/a/file.mp3";
 
   // Setup the UI
   CreateMediaRouterUIForURL(profile(), empty_tab);
 
-  mock_file_dialog_->FileSelected(
-      base::FilePath(FILE_PATH_LITERAL("some/url/for/a/file.mp3")), 0, 0);
+  EXPECT_CALL(*mock_file_dialog_, GetLastSelectedFileUrl())
+      .WillOnce(Return(GURL(file_url)));
 
   content::WebContents* location_file_opened = nullptr;
 
@@ -269,8 +277,7 @@ TEST_F(MediaRouterUITest, RouteCreationLocalFileModeInTab) {
                                 MediaCastMode::LOCAL_FILE);
 
   ASSERT_EQ(location_file_opened, web_contents());
-  ASSERT_TRUE(location_file_opened->GetVisibleURL().GetContent().find(
-                  file_path) != std::string::npos);
+  ASSERT_EQ(location_file_opened->GetVisibleURL(), file_url);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {

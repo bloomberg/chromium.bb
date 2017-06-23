@@ -150,13 +150,8 @@ void MediaRouterUI::FileDialogFileSelected(
   handler_->UserSelectedLocalMediaFile(file_info.display_name);
 }
 
-void MediaRouterUI::FileDialogSelectionFailed(
-    MediaRouterFileDialog::FailureReason reason) {
-  if (reason == MediaRouterFileDialog::CANCELED) {
-    VLOG(2) << "File selection cancelled.";
-  } else {
-    VLOG(0) << "File selection errored!";
-  }
+void MediaRouterUI::FileDialogSelectionFailed(const IssueInfo& issue) {
+  AddIssue(issue);
 }
 
 // This class calls to refresh the UI when the highest priority issue is

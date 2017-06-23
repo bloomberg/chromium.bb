@@ -5,12 +5,19 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_FILE_DIALOG_H_
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_FILE_DIALOG_H_
 
-#include "base/files/file_path.h"
-#include "chrome/browser/ui/browser.h"
+#include "base/files/file_util.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/common/media_router/issue.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "url/gurl.h"
+
+class Browser;
+
+namespace base {
+class FilePath;
+}
 
 namespace media_router {
 
@@ -18,13 +25,18 @@ class MediaRouterFileDialog : public ui::SelectFileDialog::Listener {
  public:
   // The reasons that the file selection might have failed. Passed into the
   // failure callback.
-  enum FailureReason {
-    // User canceled dialog, probably most common reason.
-    CANCELED,
-    // The file is invalid, it does not pass the validity checks.
-    INVALID_FILE,
+  enum ValidationResult {
+    FILE_OK,
+    // File does not exist.
+    FILE_MISSING,
+    // The selected file is empty.
+    FILE_EMPTY,
+    // This file type is not supported by the chrome player.
+    FILE_TYPE_NOT_SUPPORTED,
+    // The selected file cannot be read.
+    READ_FAILURE,
     // The reason for the failure is unknown.
-    UNKNOWN,
+    UNKNOWN_FAILURE,
   };
 
   class MediaRouterFileDialogDelegate {
@@ -36,21 +48,65 @@ class MediaRouterFileDialog : public ui::SelectFileDialog::Listener {
     virtual void FileDialogFileSelected(
         const ui::SelectedFileInfo& file_info) = 0;
 
-    // Called when the file selection fails for whatever reason, including user
-    // cancelation.
-    virtual void FileDialogSelectionFailed(FailureReason) = 0;
+    // Called when the file selection fails.
+    virtual void FileDialogSelectionFailed(const IssueInfo& issue) = 0;
+
+    // Called when the file selection is canceled by the user. Optionally
+    // implementable.
+    virtual void FileDialogSelectionCanceled() {}
+  };
+
+  // A class which defines functions to interact with the file systems.
+  class FileSystemDelegate {
+   public:
+    FileSystemDelegate();
+    virtual ~FileSystemDelegate();
+
+    // Checks if a file exists.
+    virtual bool FileExists(const base::FilePath& file_path) const;
+
+    // Checks if a file can be read.
+    virtual bool IsFileReadable(const base::FilePath& file_path) const;
+
+    // Checks if the file type is supported in this browser.
+    virtual bool IsFileTypeSupported(const base::FilePath& file_path) const;
+
+    // Checks the size of a file, returns -1 if the file size cannot be read.
+    virtual int64_t GetFileSize(const base::FilePath& file_path) const;
+
+    // Gets the last selected directory based on the browser.
+    virtual base::FilePath GetLastSelectedDirectory(Browser* browser) const;
+
+    // Opens a dialog with |file_type_info| as the configuration, and shows
+    // |default_directory| as the starting place.
+    virtual void OpenFileDialog(
+        ui::SelectFileDialog::Listener* listener,
+        const Browser* browser,
+        const base::FilePath& default_directory,
+        const ui::SelectFileDialog::FileTypeInfo* file_type_info);
+
+   private:
+    // The dialog object for the file dialog. Needs to be kept in scope while
+    // the dialog is open, but is not used for anything else.
+    scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   };
 
   explicit MediaRouterFileDialog(MediaRouterFileDialogDelegate* delegate);
+
+  // Constuctor with injectable FileSystemDelegate, used for tests.
+  MediaRouterFileDialog(
+      MediaRouterFileDialogDelegate* delegate,
+      std::unique_ptr<FileSystemDelegate> file_system_delegate);
+
   ~MediaRouterFileDialog() override;
 
-  GURL GetLastSelectedFileUrl();
-  base::string16 GetLastSelectedFileName();
-  base::string16 GetDetailedErrorMessage();
+  virtual GURL GetLastSelectedFileUrl();
+  virtual base::string16 GetLastSelectedFileName();
 
   // Opens the dialog configured to get a media file.
-  void OpenFileDialog(Browser* browser);
+  virtual void OpenFileDialog(Browser* browser);
 
+ private:
   // Overridden from SelectFileDialog::Listener:
   void FileSelected(const base::FilePath& path,
                     int index,
@@ -60,18 +116,35 @@ class MediaRouterFileDialog : public ui::SelectFileDialog::Listener {
                                  void* params) override;
   void FileSelectionCanceled(void* params) override;
 
- private:
-  MediaRouterFileDialogDelegate* delegate_;
+  // Returns a reason for failure if the file is not valid, or base::nullopt if
+  // it passes validation. Has to be run on seperate thread.
+  ValidationResult ValidateFile(const ui::SelectedFileInfo& file_info);
+
+  // Takes a file info and optionally a reason for validation failure, and calls
+  // the appropriate delegate function.
+  void OnValidationResults(
+      ui::SelectedFileInfo file_info,
+      MediaRouterFileDialog::ValidationResult validation_result);
+
+  IssueInfo CreateIssue(
+      const ui::SelectedFileInfo& file_info,
+      MediaRouterFileDialog::ValidationResult validation_result);
+
+  // Used to post file operations. Cleans up after itself and cancels unrun
+  // tasks when destructed.
+  base::CancelableTaskTracker cancelable_task_tracker_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   // Pointer to the file last indicated by the system.
   base::Optional<ui::SelectedFileInfo> selected_file_;
 
-  // A string that stores additional error information
-  // TODO(offenwanger): Set this when a file is invalid.
-  base::Optional<base::string16> detailed_error_message_;
+  // The object which all file system calls go through.
+  std::unique_ptr<FileSystemDelegate> file_system_delegate_;
 
-  // The dialog object for the file dialog.
-  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+  // Object which the media router file dialog callbacks get sent to.
+  MediaRouterFileDialogDelegate* const delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaRouterFileDialog);
 };
 
 }  // namespace media_router
