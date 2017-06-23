@@ -152,6 +152,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       ignore_text_changes_(false),
       is_popup_possibly_visible_(false),
       is_generation_popup_possibly_visible_(false),
+      is_user_gesture_required_(true),
       page_click_tracker_(new PageClickTracker(render_frame, this)),
       binding_(this),
       weak_ptr_factory_(this) {
@@ -316,6 +317,10 @@ void AutofillAgent::TextFieldDidEndEditing(const WebInputElement& element) {
   GetAutofillDriver()->DidEndTextFieldEditing();
 }
 
+void AutofillAgent::SetUserGestureRequired(bool required) {
+  is_user_gesture_required_ = required;
+}
+
 void AutofillAgent::TextFieldDidChange(const WebFormControlElement& element) {
   DCHECK(ToWebInputElement(&element) || form_util::IsTextAreaElement(element));
 
@@ -325,7 +330,8 @@ void AutofillAgent::TextFieldDidChange(const WebFormControlElement& element) {
   // Disregard text changes that aren't caused by user gestures or pastes. Note
   // that pastes aren't necessarily user gestures because Blink's conception of
   // user gestures is centered around creating new windows/tabs.
-  if (!IsUserGesture() && !render_frame()->IsPasting())
+  if (is_user_gesture_required_ && !IsUserGesture() &&
+      !render_frame()->IsPasting())
     return;
 
   // We post a task for doing the Autofill as the caret position is not set
