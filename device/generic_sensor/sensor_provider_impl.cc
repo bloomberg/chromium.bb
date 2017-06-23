@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/generic_sensor/platform_sensor_provider.h"
 #include "device/generic_sensor/sensor_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/device/public/cpp/device_features.h"
 
 namespace device {
 
@@ -54,6 +56,17 @@ SensorProviderImpl::~SensorProviderImpl() {}
 void SensorProviderImpl::GetSensor(mojom::SensorType type,
                                    mojom::SensorRequest sensor_request,
                                    GetSensorCallback callback) {
+  // TODO(juncai): remove when the GenericSensor feature goes stable.
+  // For sensors that are used by DeviceMotionEvent, don't check the
+  // features::kGenericSensor flag.
+  if (!base::FeatureList::IsEnabled(features::kGenericSensor) &&
+      !(type == mojom::SensorType::ACCELEROMETER ||
+        type == mojom::SensorType::LINEAR_ACCELERATION ||
+        type == mojom::SensorType::GYROSCOPE)) {
+    NotifySensorCreated(nullptr, nullptr, std::move(callback));
+    return;
+  }
+
   auto cloned_handle = provider_->CloneSharedBufferHandle();
   if (!cloned_handle.is_valid()) {
     NotifySensorCreated(nullptr, nullptr, std::move(callback));
