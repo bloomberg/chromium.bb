@@ -33,7 +33,7 @@ class HEADLESS_EXPORT ExpeditedDispatcher : public URLRequestDispatcher {
   void NavigationRequested(
       std::unique_ptr<NavigationRequest> navigation_request) override;
 
- private:
+ protected:
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpeditedDispatcher);
