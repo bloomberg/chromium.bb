@@ -296,7 +296,8 @@ public class ChildProcessLauncherHelper {
     static ChildConnectionAllocator getConnectionAllocator(
             Context context, ChildProcessCreationParams creationParams, boolean sandboxed) {
         assert LauncherThread.runningOnLauncherThread();
-        String packageName = getPackageNameFromCreationParams(context, creationParams, sandboxed);
+        final String packageName =
+                getPackageNameFromCreationParams(context, creationParams, sandboxed);
         boolean bindAsExternalService =
                 isServiceExternalFromCreationParams(creationParams, sandboxed);
 
@@ -333,6 +334,21 @@ public class ChildProcessLauncherHelper {
                         sSandboxedServiceFactoryForTesting);
             }
             sSandboxedChildConnectionAllocatorMap.put(packageName, connectionAllocator);
+            final ChildConnectionAllocator finalConnectionAllocator = connectionAllocator;
+            // Tracks connections removal so the allocator can be freed when no longer used.
+            connectionAllocator.addListener(new ChildConnectionAllocator.Listener() {
+                @Override
+                public void onConnectionFreed(
+                        ChildConnectionAllocator allocator, ChildProcessConnection connection) {
+                    assert allocator == finalConnectionAllocator;
+                    if (!allocator.anyConnectionAllocated()) {
+                        allocator.removeListener(this);
+                        ChildConnectionAllocator removedAllocator =
+                                sSandboxedChildConnectionAllocatorMap.remove(packageName);
+                        assert removedAllocator == allocator;
+                    }
+                }
+            });
         }
         return sSandboxedChildConnectionAllocatorMap.get(packageName);
     }
@@ -513,12 +529,6 @@ public class ChildProcessLauncherHelper {
             public void run() {
                 assert connectionAllocator != null;
                 connectionAllocator.free(connection);
-                String packageName = connectionAllocator.getPackageName();
-                if (!connectionAllocator.anyConnectionAllocated()
-                        && sSandboxedChildConnectionAllocatorMap.get(packageName)
-                                == connectionAllocator) {
-                    sSandboxedChildConnectionAllocatorMap.remove(packageName);
-                }
             }
         }, FREE_CONNECTION_DELAY_MILLIS);
     }
