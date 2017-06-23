@@ -415,6 +415,8 @@ void ProximityAuthWebUIHandler::OnReachablePhonesFound(
 }
 
 void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
+  std::unique_ptr<base::Value> truncated_local_device_id =
+      GetTruncatedLocalDeviceId();
   std::unique_ptr<base::DictionaryValue> enrollment_state =
       GetEnrollmentStateDictionary();
   std::unique_ptr<base::DictionaryValue> device_sync_state =
@@ -422,13 +424,28 @@ void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
   std::unique_ptr<base::ListValue> synced_devices = GetRemoteDevicesList();
 
   PA_LOG(INFO) << "==== Got Local State ====\n"
-               << "Enrollment State: \n"
+               << "Device ID (truncated): " << *truncated_local_device_id
+               << "\nEnrollment State: \n"
                << *enrollment_state << "Device Sync State: \n"
                << *device_sync_state << "Unlock Keys: \n"
                << *synced_devices;
-  web_ui()->CallJavascriptFunctionUnsafe("LocalStateInterface.onGotLocalState",
-                                         *enrollment_state, *device_sync_state,
-                                         *synced_devices);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "LocalStateInterface.onGotLocalState", *truncated_local_device_id,
+      *enrollment_state, *device_sync_state, *synced_devices);
+}
+
+std::unique_ptr<base::Value>
+ProximityAuthWebUIHandler::GetTruncatedLocalDeviceId() {
+  std::string local_public_key =
+      proximity_auth_client_->GetLocalDevicePublicKey();
+
+  std::string device_id;
+  base::Base64UrlEncode(local_public_key,
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &device_id);
+
+  return base::MakeUnique<base::Value>(
+      cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id));
 }
 
 std::unique_ptr<base::DictionaryValue>
