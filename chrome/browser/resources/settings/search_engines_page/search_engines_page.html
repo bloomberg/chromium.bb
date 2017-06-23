@@ -52,7 +52,7 @@
         <h2>$i18n{searchEnginesExtension}</h2>
       </div>
       <iron-list id="extensions" class="extension-engines fixed-height-list"
-          items="[[extensions]]">
+          items="[[extensions]]" preserve-focus>
         <template>
           <settings-omnibox-extension-entry engine="[[item]]"
               tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
