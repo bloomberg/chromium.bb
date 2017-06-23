@@ -68,6 +68,8 @@ enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
+const std::string kTestCertificateIssuerName = "Test Root CA";
+
 // Inject a script into every frame in the page. Used by tests that check for
 // visible password fields to wait for notifications about these
 // fields. Notifications about visible password fields are queued at the end of
@@ -166,11 +168,14 @@ void CheckSecureExplanations(
   ASSERT_EQ(cert_status == VALID_CERTIFICATE ? 2u : 1u,
             secure_explanations.size());
   if (cert_status == VALID_CERTIFICATE) {
+    ASSERT_EQ(kTestCertificateIssuerName,
+              expected_cert->issuer().GetDisplayName());
     EXPECT_EQ(l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
               secure_explanations[0].summary);
-    EXPECT_EQ(
-        l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION),
-        secure_explanations[0].description);
+    EXPECT_EQ(l10n_util::GetStringFUTF8(
+                  IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION,
+                  base::UTF8ToUTF16(kTestCertificateIssuerName)),
+              secure_explanations[0].description);
     net::X509Certificate* cert = browser->tab_strip_model()
                                      ->GetActiveWebContents()
                                      ->GetController()
@@ -2120,16 +2125,16 @@ IN_PROC_BROWSER_TEST_F(
   // Populate description string replacement with values corresponding
   // to test constants.
   std::vector<base::string16> description_replacements;
-  description_replacements.push_back(
-      l10n_util::GetStringUTF16(IDS_SSL_AN_OBSOLETE_PROTOCOL));
   description_replacements.push_back(base::ASCIIToUTF16("TLS 1.1"));
   description_replacements.push_back(
-      l10n_util::GetStringUTF16(IDS_SSL_A_STRONG_KEY_EXCHANGE));
+      l10n_util::GetStringUTF16(IDS_SSL_AN_OBSOLETE_PROTOCOL));
   description_replacements.push_back(base::ASCIIToUTF16("ECDHE_RSA"));
   description_replacements.push_back(
-      l10n_util::GetStringUTF16(IDS_SSL_AN_OBSOLETE_CIPHER));
+      l10n_util::GetStringUTF16(IDS_SSL_A_STRONG_KEY_EXCHANGE));
   description_replacements.push_back(
       base::ASCIIToUTF16("AES_128_CBC with HMAC-SHA1"));
+  description_replacements.push_back(
+      l10n_util::GetStringUTF16(IDS_SSL_AN_OBSOLETE_CIPHER));
   base::string16 obsolete_description = l10n_util::GetStringFUTF16(
       IDS_OBSOLETE_SSL_DESCRIPTION, description_replacements, nullptr);
 

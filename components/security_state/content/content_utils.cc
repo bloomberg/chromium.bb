@@ -112,19 +112,19 @@ void AddConnectionExplanation(
   str_id = (status & net::OBSOLETE_SSL_MASK_PROTOCOL)
                ? IDS_SSL_AN_OBSOLETE_PROTOCOL
                : IDS_SSL_A_STRONG_PROTOCOL;
-  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
   description_replacements.push_back(protocol_name);
+  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
 
   str_id = (status & net::OBSOLETE_SSL_MASK_KEY_EXCHANGE)
                ? IDS_SSL_AN_OBSOLETE_KEY_EXCHANGE
                : IDS_SSL_A_STRONG_KEY_EXCHANGE;
-  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
   description_replacements.push_back(key_exchange_name);
+  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
 
   str_id = (status & net::OBSOLETE_SSL_MASK_CIPHER) ? IDS_SSL_AN_OBSOLETE_CIPHER
                                                     : IDS_SSL_A_STRONG_CIPHER;
-  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
   description_replacements.push_back(cipher_name);
+  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
 
   security_style_explanations->info_explanations.push_back(
       content::SecurityStyleExplanation(
@@ -297,12 +297,26 @@ blink::WebSecurityStyle GetSecurityStyle(
   } else {
     // If the certificate does not have errors and is not using SHA1, then add
     // an explanation that the certificate is valid.
+
+    base::string16 issuer_name;
+    if (security_info.certificate) {
+      // This results in the empty string if there is no relevant display name.
+      issuer_name = base::UTF8ToUTF16(
+          security_info.certificate->issuer().GetDisplayName());
+    } else {
+      issuer_name = base::string16();
+    }
+    if (issuer_name.empty()) {
+      issuer_name.assign(
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
+    }
+
     if (!security_info.sha1_in_chain) {
       security_style_explanations->secure_explanations.push_back(
           content::SecurityStyleExplanation(
               l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
-              l10n_util::GetStringUTF8(
-                  IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION),
+              l10n_util::GetStringFUTF8(
+                  IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION, issuer_name),
               !!security_info.certificate));
     }
   }
