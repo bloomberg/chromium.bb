@@ -4402,8 +4402,11 @@ def colorize_CMDstatus_doc():
 
 
 def write_json(path, contents):
-  with open(path, 'w') as f:
-    json.dump(contents, f)
+  if path == '-':
+    json.dump(contents, sys.stdout)
+  else:
+    with open(path, 'w') as f:
+      json.dump(contents, f)
 
 
 @subcommand.usage('[issue_number]')
@@ -4416,7 +4419,8 @@ def CMDissue(parser, args):
                     help='Lookup the branch(es) for the specified issues. If '
                          'no issues are specified, all branches with mapped '
                          'issues will be listed.')
-  parser.add_option('--json', help='Path to JSON output file.')
+  parser.add_option('--json',
+                    help='Path to JSON output file, or "-" for stdout.')
   _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
@@ -4473,7 +4477,7 @@ def CMDcomments(parser, args):
                     help='output comments in a format compatible with '
                          'editor parsing')
   parser.add_option('-j', '--json-file',
-                    help='File to write JSON summary to')
+                    help='File to write JSON summary to, or "-" for stdout')
   auth.add_auth_options(parser)
   _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
@@ -5517,7 +5521,8 @@ def CMDtry_results(parser, args):
       '--buildbucket-host', default='cr-buildbucket.appspot.com',
       help='Host of buildbucket. The default host is %default.')
   group.add_option(
-      '--json', help='Path of JSON output file to write try job results to.')
+      '--json', help=('Path of JSON output file to write try job results to,'
+                      'or "-" for stdout.'))
   parser.add_option_group(group)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
