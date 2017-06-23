@@ -48,6 +48,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   void SetCursor(const ui::CursorData& cursor) override {
     *cursor_storage_ = cursor;
   }
+  void SetCursorSize(const ui::CursorSize& cursor_size) override {}
   void MoveCursorTo(const gfx::Point& window_pixel_location) override {}
   void UpdateTextInputState(const ui::TextInputState& state) override {}
   void SetImeVisibility(bool visible) override {}

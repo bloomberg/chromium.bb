@@ -70,6 +70,9 @@ class AURA_EXPORT WindowManagerClient {
   // Globally shows or hides the cursor.
   virtual void SetCursorVisible(bool visible) = 0;
 
+  // Globally sets whether we use normal or large cursors.
+  virtual void SetCursorSize(ui::CursorSize cursor_size) = 0;
+
   // Sets a cursor which is used instead of the per window cursors. Pass a
   // nullopt in |cursor| to clear the override.
   virtual void SetGlobalOverrideCursor(

@@ -7,6 +7,7 @@
 
 #include "services/ui/public/interfaces/cursor/cursor.mojom-shared.h"
 #include "ui/base/cursor/cursor_data.h"
+#include "ui/base/cursor/cursor_type.h"
 
 namespace mojo {
 
@@ -14,6 +15,12 @@ template <>
 struct EnumTraits<ui::mojom::CursorType, ui::CursorType> {
   static ui::mojom::CursorType ToMojom(ui::CursorType input);
   static bool FromMojom(ui::mojom::CursorType input, ui::CursorType* out);
+};
+
+template <>
+struct EnumTraits<ui::mojom::CursorSize, ui::CursorSize> {
+  static ui::mojom::CursorSize ToMojom(ui::CursorSize input);
+  static bool FromMojom(ui::mojom::CursorSize input, ui::CursorSize* out);
 };
 
 template <>

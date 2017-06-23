@@ -60,8 +60,7 @@ const CursorType kAnimatedCursorIds[] = {CursorType::kWait,
 
 }  // namespace
 
-ImageCursors::ImageCursors() : cursor_set_(CURSOR_SET_NORMAL) {
-}
+ImageCursors::ImageCursors() : cursor_size_(CursorSize::kNormal) {}
 
 ImageCursors::~ImageCursors() {
 }
@@ -109,22 +108,18 @@ void ImageCursors::ReloadCursors() {
   for (size_t i = 0; i < arraysize(kImageCursorIds); ++i) {
     int resource_id = -1;
     gfx::Point hot_point;
-    bool success = GetCursorDataFor(cursor_set_,
-                                    kImageCursorIds[i],
-                                    device_scale_factor,
-                                    &resource_id,
-                                    &hot_point);
+    bool success =
+        GetCursorDataFor(cursor_size_, kImageCursorIds[i], device_scale_factor,
+                         &resource_id, &hot_point);
     DCHECK(success);
     cursor_loader_->LoadImageCursor(kImageCursorIds[i], resource_id, hot_point);
   }
   for (size_t i = 0; i < arraysize(kAnimatedCursorIds); ++i) {
     int resource_id = -1;
     gfx::Point hot_point;
-    bool success = GetAnimatedCursorDataFor(cursor_set_,
-                                            kAnimatedCursorIds[i],
-                                            device_scale_factor,
-                                            &resource_id,
-                                            &hot_point);
+    bool success =
+        GetAnimatedCursorDataFor(cursor_size_, kAnimatedCursorIds[i],
+                                 device_scale_factor, &resource_id, &hot_point);
     DCHECK(success);
     cursor_loader_->LoadAnimatedCursor(kAnimatedCursorIds[i],
                                        resource_id,
@@ -133,11 +128,11 @@ void ImageCursors::ReloadCursors() {
   }
 }
 
-void ImageCursors::SetCursorSet(CursorSetType cursor_set) {
-  if (cursor_set_ == cursor_set)
+void ImageCursors::SetCursorSize(CursorSize cursor_size) {
+  if (cursor_size_ == cursor_size)
     return;
 
-  cursor_set_ = cursor_set;
+  cursor_size_ = cursor_size;
 
   if (cursor_loader_.get())
     ReloadCursors();

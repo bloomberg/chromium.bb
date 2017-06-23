@@ -33,7 +33,7 @@ class WMHelperMus : public WMHelper,
   aura::Window* GetPrimaryDisplayContainer(int container_id) override;
   aura::Window* GetActiveWindow() const override;
   aura::Window* GetFocusedWindow() const override;
-  ui::CursorSetType GetCursorSet() const override;
+  ui::CursorSize GetCursorSize() const override;
   const display::Display& GetCursorDisplay() const override;
   void AddPreTargetHandler(ui::EventHandler* handler) override;
   void PrependPreTargetHandler(ui::EventHandler* handler) override;

@@ -848,8 +848,8 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_FALSE(observer_b.did_visibility_change());
   EXPECT_FALSE(observer_a.is_cursor_visible());
   EXPECT_FALSE(observer_b.is_cursor_visible());
-  EXPECT_FALSE(observer_a.did_cursor_set_change());
-  EXPECT_FALSE(observer_b.did_cursor_set_change());
+  EXPECT_FALSE(observer_a.did_cursor_size_change());
+  EXPECT_FALSE(observer_b.did_cursor_size_change());
 
   // Keypress should hide the cursor.
   generator.PressKey(ui::VKEY_A, ui::EF_NONE);
@@ -859,11 +859,11 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_FALSE(observer_b.is_cursor_visible());
 
   // Set cursor set.
-  cursor_manager->SetCursorSet(ui::CURSOR_SET_LARGE);
-  EXPECT_TRUE(observer_a.did_cursor_set_change());
-  EXPECT_EQ(ui::CURSOR_SET_LARGE, observer_a.cursor_set());
-  EXPECT_TRUE(observer_b.did_cursor_set_change());
-  EXPECT_EQ(ui::CURSOR_SET_LARGE, observer_b.cursor_set());
+  cursor_manager->SetCursorSize(ui::CursorSize::kLarge);
+  EXPECT_TRUE(observer_a.did_cursor_size_change());
+  EXPECT_EQ(ui::CursorSize::kLarge, observer_a.cursor_size());
+  EXPECT_TRUE(observer_b.did_cursor_size_change());
+  EXPECT_EQ(ui::CursorSize::kLarge, observer_b.cursor_size());
 
   // Mouse move should show the cursor.
   observer_a.reset();
@@ -887,10 +887,10 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_FALSE(observer_a.is_cursor_visible());
 
   // Set back cursor set to normal.
-  cursor_manager->SetCursorSet(ui::CURSOR_SET_NORMAL);
-  EXPECT_TRUE(observer_a.did_cursor_set_change());
-  EXPECT_EQ(ui::CURSOR_SET_NORMAL, observer_a.cursor_set());
-  EXPECT_FALSE(observer_b.did_cursor_set_change());
+  cursor_manager->SetCursorSize(ui::CursorSize::kNormal);
+  EXPECT_TRUE(observer_a.did_cursor_size_change());
+  EXPECT_EQ(ui::CursorSize::kNormal, observer_a.cursor_size());
+  EXPECT_FALSE(observer_b.did_cursor_size_change());
 
   // Mouse move should show the cursor.
   observer_a.reset();

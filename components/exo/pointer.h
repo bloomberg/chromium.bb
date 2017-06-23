@@ -60,7 +60,7 @@ class Pointer : public ui::EventHandler,
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // Overridden from WMHelper::CursorObserver:
-  void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
+  void OnCursorSizeChanged(ui::CursorSize cursor_size) override;
   void OnCursorDisplayChanged(const display::Display& display) override;
 
   // Overridden from WMHelper::DisplayConfigurationObserver:

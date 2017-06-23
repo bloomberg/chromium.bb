@@ -41,8 +41,8 @@ class ASH_EXPORT NativeCursorManagerAshMus : public NativeCursorManagerAsh {
                  ::wm::NativeCursorManagerDelegate* delegate) override;
   void SetVisibility(bool visible,
                      ::wm::NativeCursorManagerDelegate* delegate) override;
-  void SetCursorSet(ui::CursorSetType cursor_set,
-                    ::wm::NativeCursorManagerDelegate* delegate) override;
+  void SetCursorSize(ui::CursorSize cursor_size,
+                     ::wm::NativeCursorManagerDelegate* delegate) override;
   void SetMouseEventsEnabled(
       bool enabled,
       ::wm::NativeCursorManagerDelegate* delegate) override;

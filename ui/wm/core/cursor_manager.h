@@ -49,8 +49,8 @@ class WM_CORE_EXPORT CursorManager : public aura::client::CursorClient,
   void ShowCursor() override;
   void HideCursor() override;
   bool IsCursorVisible() const override;
-  void SetCursorSet(ui::CursorSetType cursor_set) override;
-  ui::CursorSetType GetCursorSet() const override;
+  void SetCursorSize(ui::CursorSize cursor_size) override;
+  ui::CursorSize GetCursorSize() const override;
   void EnableMouseEvents() override;
   void DisableMouseEvents() override;
   bool IsMouseEventsEnabled() const override;
@@ -67,7 +67,7 @@ class WM_CORE_EXPORT CursorManager : public aura::client::CursorClient,
   // Overridden from NativeCursorManagerDelegate:
   void CommitCursor(gfx::NativeCursor cursor) override;
   void CommitVisibility(bool visible) override;
-  void CommitCursorSet(ui::CursorSetType cursor_set) override;
+  void CommitCursorSize(ui::CursorSize cursor_size) override;
   void CommitMouseEventsEnabled(bool enabled) override;
 
   std::unique_ptr<NativeCursorManager> delegate_;

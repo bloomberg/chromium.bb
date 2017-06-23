@@ -202,6 +202,10 @@ void Display::SetNativeCursor(const ui::CursorData& cursor) {
   platform_display_->SetCursor(cursor);
 }
 
+void Display::SetNativeCursorSize(ui::CursorSize cursor_size) {
+  platform_display_->SetCursorSize(cursor_size);
+}
+
 void Display::SetSize(const gfx::Size& size) {
   platform_display_->SetViewportSize(size);
 }

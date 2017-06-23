@@ -56,6 +56,7 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
   void WmLockCursor() override;
   void WmUnlockCursor() override;
   void WmSetCursorVisible(bool visible) override;
+  void WmSetCursorSize(ui::CursorSize cursor_size) override;
   void WmSetGlobalOverrideCursor(
       base::Optional<ui::CursorData> cursor) override;
   void WmMoveCursorToDisplayLocation(const gfx::Point& display_pixels,

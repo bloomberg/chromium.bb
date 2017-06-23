@@ -33,6 +33,10 @@ namespace gfx {
 class Point;
 }
 
+namespace ui {
+enum class CursorSize;
+}
+
 namespace views {
 class PointerWatcher;
 enum class PointerWatcherEventTypes;
@@ -102,6 +106,7 @@ class ASH_EXPORT ShellPort {
   virtual void UnlockCursor() = 0;
   virtual void ShowCursor() = 0;
   virtual void HideCursor() = 0;
+  virtual void SetCursorSize(ui::CursorSize cursor_size) = 0;
   virtual void SetGlobalOverrideCursor(
       base::Optional<ui::CursorData> cursor) = 0;
   virtual bool IsMouseEventsEnabled() = 0;

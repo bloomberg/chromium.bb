@@ -50,7 +50,7 @@ class ASH_EXPORT CursorWindowController {
   // Sets cursor location, shape, set and visibility.
   void UpdateLocation();
   void SetCursor(gfx::NativeCursor cursor);
-  void SetCursorSet(ui::CursorSetType);
+  void SetCursorSize(ui::CursorSize cursor_size);
   void SetVisibility(bool visible);
 
  private:
@@ -84,7 +84,7 @@ class ASH_EXPORT CursorWindowController {
   // The last requested cursor visibility.
   bool visible_;
 
-  ui::CursorSetType cursor_set_;
+  ui::CursorSize cursor_size_;
   gfx::Point hot_point_;
 
   int large_cursor_size_in_dip_;

@@ -174,12 +174,17 @@ void NativeCursorManagerAshMus::SetVisibility(
   NotifyCursorVisibilityChange(visible);
 }
 
-void NativeCursorManagerAshMus::SetCursorSet(
-    ui::CursorSetType cursor_set,
+void NativeCursorManagerAshMus::SetCursorSize(
+    ui::CursorSize cursor_size,
     ::wm::NativeCursorManagerDelegate* delegate) {
-  // We can't just hand this off to ImageCursors like we do in the classic ash
-  // case. We need to collaborate with the mus server to fully implement this.
-  NOTIMPLEMENTED();
+  delegate->CommitCursorSize(cursor_size);
+
+  ShellPort::Get()->SetCursorSize(cursor_size);
+
+  Shell::Get()
+      ->window_tree_host_manager()
+      ->cursor_window_controller()
+      ->SetCursorSize(cursor_size);
 }
 
 void NativeCursorManagerAshMus::SetMouseEventsEnabled(

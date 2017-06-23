@@ -165,8 +165,8 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
     }
   }
 
-  void SetCursorSet(ui::CursorSetType cursor_set,
-                    wm::NativeCursorManagerDelegate* delegate) override {
+  void SetCursorSize(ui::CursorSize cursor_size,
+                     wm::NativeCursorManagerDelegate* delegate) override {
     // TODO(erg): For now, ignore the difference between SET_NORMAL and
     // SET_LARGE here. This feels like a thing that mus should decide instead.
     //

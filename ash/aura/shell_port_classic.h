@@ -39,6 +39,7 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
   void UnlockCursor() override;
   void ShowCursor() override;
   void HideCursor() override;
+  void SetCursorSize(ui::CursorSize cursor_size) override;
   void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
   bool IsMouseEventsEnabled() override;
   void RecordGestureAction(GestureActionType action) override;

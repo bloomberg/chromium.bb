@@ -296,7 +296,7 @@ TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
 // Make sure ScreenshotController doesn't prevent handling of large
 // cursor. See http://crbug.com/459214
 TEST_F(PartialScreenshotControllerTest, LargeCursor) {
-  Shell::Get()->cursor_manager()->SetCursorSet(ui::CURSOR_SET_LARGE);
+  Shell::Get()->cursor_manager()->SetCursorSize(ui::CursorSize::kLarge);
   Shell::Get()
       ->window_tree_host_manager()
       ->cursor_window_controller()

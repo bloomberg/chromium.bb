@@ -40,10 +40,10 @@ class AURA_EXPORT CursorClient {
   virtual void HideCursor() = 0;
 
   // Sets the type of the mouse cursor icon.
-  virtual void SetCursorSet(ui::CursorSetType cursor_set) = 0;
+  virtual void SetCursorSize(ui::CursorSize cursor_size) = 0;
 
   // Gets the type of the mouse cursor icon.
-  virtual ui::CursorSetType GetCursorSet() const = 0;
+  virtual ui::CursorSize GetCursorSize() const = 0;
 
   // Gets whether the cursor is visible.
   virtual bool IsCursorVisible() const = 0;

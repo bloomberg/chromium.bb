@@ -33,8 +33,8 @@ struct CursorData {
   HotPoint hot_2x;
 };
 
-struct CursorSet {
-  const CursorSetType id;
+struct CursorSizeData {
+  const CursorSize id;
   const CursorData* cursors;
   const int length;
   const CursorData* animated_cursors;
@@ -202,24 +202,19 @@ const CursorData kAnimatedCursors[] = {
     {CursorType::kProgress, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
 };
 
-const CursorSet kCursorSets[] = {
-  {
-    CURSOR_SET_NORMAL,
-    kNormalCursors, arraysize(kNormalCursors),
-    kAnimatedCursors, arraysize(kAnimatedCursors)
-  },
-  {
-    CURSOR_SET_LARGE,
-    kLargeCursors, arraysize(kLargeCursors),
-    // TODO(yoshiki): Replace animated cursors with big assets. crbug.com/247254
-    kAnimatedCursors, arraysize(kAnimatedCursors)
-  },
+const CursorSizeData kCursorSizes[] = {
+    {CursorSize::kNormal, kNormalCursors, arraysize(kNormalCursors),
+     kAnimatedCursors, arraysize(kAnimatedCursors)},
+    {CursorSize::kLarge, kLargeCursors, arraysize(kLargeCursors),
+     // TODO(yoshiki): Replace animated cursors with big assets.
+     // crbug.com/247254
+     kAnimatedCursors, arraysize(kAnimatedCursors)},
 };
 
-const CursorSet* GetCursorSetByType(CursorSetType cursor_set_id) {
-  for (size_t i = 0; i < arraysize(kCursorSets); ++i) {
-    if (kCursorSets[i].id == cursor_set_id)
-      return &kCursorSets[i];
+const CursorSizeData* GetCursorSizeByType(CursorSize cursor_size) {
+  for (size_t i = 0; i < arraysize(kCursorSizes); ++i) {
+    if (kCursorSizes[i].id == cursor_size)
+      return &kCursorSizes[i];
   }
 
   return NULL;
@@ -249,12 +244,12 @@ bool SearchTable(const CursorData* table,
 
 }  // namespace
 
-bool GetCursorDataFor(CursorSetType cursor_set_id,
+bool GetCursorDataFor(CursorSize cursor_size,
                       CursorType id,
                       float scale_factor,
                       int* resource_id,
                       gfx::Point* point) {
-  const CursorSet* cursor_set = GetCursorSetByType(cursor_set_id);
+  const CursorSizeData* cursor_set = GetCursorSizeByType(cursor_size);
   if (cursor_set &&
       SearchTable(cursor_set->cursors,
                   cursor_set->length,
@@ -263,19 +258,19 @@ bool GetCursorDataFor(CursorSetType cursor_set_id,
   }
 
   // Falls back to the default cursor set.
-  cursor_set = GetCursorSetByType(ui::CURSOR_SET_NORMAL);
+  cursor_set = GetCursorSizeByType(ui::CursorSize::kNormal);
   DCHECK(cursor_set);
   return SearchTable(cursor_set->cursors,
                      cursor_set->length,
                      id, scale_factor, resource_id, point);
 }
 
-bool GetAnimatedCursorDataFor(CursorSetType cursor_set_id,
+bool GetAnimatedCursorDataFor(CursorSize cursor_size,
                               CursorType id,
                               float scale_factor,
                               int* resource_id,
                               gfx::Point* point) {
-  const CursorSet* cursor_set = GetCursorSetByType(cursor_set_id);
+  const CursorSizeData* cursor_set = GetCursorSizeByType(cursor_size);
   if (cursor_set &&
       SearchTable(cursor_set->animated_cursors,
                   cursor_set->animated_length,
@@ -284,7 +279,7 @@ bool GetAnimatedCursorDataFor(CursorSetType cursor_set_id,
   }
 
   // Falls back to the default cursor set.
-  cursor_set = GetCursorSetByType(ui::CURSOR_SET_NORMAL);
+  cursor_set = GetCursorSizeByType(ui::CursorSize::kNormal);
   DCHECK(cursor_set);
   return SearchTable(cursor_set->animated_cursors,
                      cursor_set->animated_length,
@@ -304,11 +299,8 @@ bool GetCursorBitmap(const Cursor& cursor,
   *point = IconUtil::GetHotSpotFromHICON(cursor_copy.platform());
 #else
   int resource_id;
-  if (!GetCursorDataFor(ui::CURSOR_SET_NORMAL,
-                        cursor.native_type(),
-                        cursor.device_scale_factor(),
-                        &resource_id,
-                        point)) {
+  if (!GetCursorDataFor(ui::CursorSize::kNormal, cursor.native_type(),
+                        cursor.device_scale_factor(), &resource_id, point)) {
     return false;
   }
 
