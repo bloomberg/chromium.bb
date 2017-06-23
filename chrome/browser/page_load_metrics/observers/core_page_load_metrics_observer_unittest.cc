@@ -433,13 +433,13 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
        true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
        0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
       // Uncached non-proxied request.
       {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
        false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
   };
 
   int64_t network_bytes = 0;
@@ -524,13 +524,13 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
        true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
        0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
       // Uncached non-proxied request.
       {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
        false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
   };
 
   int64_t network_bytes = 0;
@@ -609,13 +609,13 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
        true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
        0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
       // Uncached non-proxied request.
       {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
        false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
   };
 
   int64_t network_bytes = 0;

@@ -79,6 +79,21 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
       resource_type(detected_resource_type),
       net_error(net_error) {}
 
+ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
+    const ExtraRequestCompleteInfo& other)
+    : url(other.url),
+      host_port_pair(other.host_port_pair),
+      frame_tree_node_id(other.frame_tree_node_id),
+      was_cached(other.was_cached),
+      raw_body_bytes(other.raw_body_bytes),
+      original_network_content_length(other.original_network_content_length),
+      data_reduction_proxy_data(
+          other.data_reduction_proxy_data == nullptr
+              ? nullptr
+              : other.data_reduction_proxy_data->DeepCopy()),
+      resource_type(other.resource_type),
+      net_error(other.net_error) {}
+
 ExtraRequestCompleteInfo::~ExtraRequestCompleteInfo() {}
 
 FailedProvisionalLoadInfo::FailedProvisionalLoadInfo(base::TimeDelta interval,

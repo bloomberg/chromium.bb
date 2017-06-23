@@ -10,7 +10,6 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -252,12 +251,16 @@ void NavigationSimulator::Commit() {
   // Note that the handle's state can be CANCELING if a throttle cancelled it
   // synchronously in PrepareForCommit.
   if (handle_->state_for_testing() < NavigationHandleImpl::CANCELING) {
+    // This code path should only be executed when browser-side navigation isn't
+    // enabled. When browser-side navigation is enabled, WillProcessResponse
+    // gets invoked via the call to PrepareForCommit() above.
+    DCHECK(!IsBrowserSideNavigationEnabled());
+
     // Start the request_ids at 1000 to avoid collisions with request ids from
     // network resources (it should be rare to compare these in unit tests).
     static int request_id = 1000;
     GlobalRequestID global_id(render_frame_host_->GetProcess()->GetID(),
                               ++request_id);
-    DCHECK(!IsBrowserSideNavigationEnabled());
     handle_->WillProcessResponse(
         render_frame_host_, scoped_refptr<net::HttpResponseHeaders>(),
         net::HttpResponseInfo::ConnectionInfo(), SSLStatus(), global_id,
@@ -275,6 +278,8 @@ void NavigationSimulator::Commit() {
 
   CHECK_EQ(1, num_will_process_response_called_);
   CHECK_EQ(1, num_ready_to_commit_called_);
+
+  request_id_ = handle_->GetGlobalRequestID();
 
   // Update the RenderFrameHost now that we know which RenderFrameHost will
   // commit the navigation.
@@ -486,6 +491,13 @@ NavigationSimulator::GetLastThrottleCheckResult() {
 NavigationHandle* NavigationSimulator::GetNavigationHandle() const {
   CHECK_EQ(STARTED, state_);
   return handle_;
+}
+
+content::GlobalRequestID NavigationSimulator::GetGlobalRequestID() const {
+  CHECK_GT(state_, STARTED) << "The GlobalRequestID is not available until "
+                               "after the navigation has completed "
+                               "WillProcessResponse";
+  return request_id_;
 }
 
 void NavigationSimulator::DidStartNavigation(

@@ -136,7 +136,7 @@ TEST_F(LoFiPageLoadMetricsObserverTest, LoFiNotSeen) {
       {GURL(), net::HostPortPair(), -1, true /*was_cached*/,
        1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
       // Uncached non-proxied request.
       {GURL(), net::HostPortPair(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
@@ -196,7 +196,7 @@ TEST_F(LoFiPageLoadMetricsObserverTest, ClientLoFiSeen) {
       {GURL(), net::HostPortPair(), -1, true /*was_cached*/,
        1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
       // Uncached non-proxied request.
       {GURL(), net::HostPortPair(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
@@ -257,7 +257,7 @@ TEST_F(LoFiPageLoadMetricsObserverTest, ServerLoFiSeen) {
       {GURL(), net::HostPortPair(), -1, true /*was_cached*/,
        1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
       // Uncached non-proxied request.
       {GURL(), net::HostPortPair(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,
@@ -323,7 +323,7 @@ TEST_F(LoFiPageLoadMetricsObserverTest, BothLoFiSeen) {
       {GURL(), net::HostPortPair(), -1, true /*was_cached*/,
        1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
+       content::ResourceType::RESOURCE_TYPE_SCRIPT, 0},
       // Uncached non-proxied request.
       {GURL(), net::HostPortPair(), -1, false /*was_cached*/,
        1024 * 40 /* raw_body_bytes */,

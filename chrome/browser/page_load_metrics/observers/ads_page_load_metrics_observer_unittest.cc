@@ -683,6 +683,37 @@ TEST_F(AdsPageLoadMetricsObserverTest, FrameWithNoParent) {
       content::RESOURCE_TYPE_SUB_FRAME, 1);
 }
 
+TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
+  // Start main-frame navigation
+  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
+      GURL(kNonAdUrl), web_contents()->GetMainFrame());
+  navigation_simulator->Start();
+  int frame_tree_node_id =
+      navigation_simulator->GetNavigationHandle()->GetFrameTreeNodeId();
+  navigation_simulator->Commit();
+
+  page_load_metrics::ExtraRequestCompleteInfo request(
+      GURL(kNonAdUrl), net::HostPortPair(), frame_tree_node_id,
+      false /* was_cached */, 10 * 1024 /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr /* data_reduction_proxy_data */,
+      content::RESOURCE_TYPE_MAIN_FRAME, 0);
+
+  SimulateLoadedResource(request, navigation_simulator->GetGlobalRequestID());
+
+  NavigateToUntrackedUrl();
+
+  // We only log histograms if we observed bytes for the page. Verify that the
+  // main frame resource was properly tracked and attributed.
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 0, 1);
+
+  // There shouldn't be any other histograms for a page with no ad resources.
+  EXPECT_EQ(1u, histogram_tester()
+                    .GetTotalCountsForPrefix("PageLoad.Clients.Ads.")
+                    .size());
+}
+
 // Make sure that ads histograms aren't recorded if the tracker never commits
 // (see https://crbug.com/723219).
 TEST_F(AdsPageLoadMetricsObserverTest, NoHistogramWithoutCommit) {
@@ -705,6 +736,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, NoHistogramWithoutCommit) {
   // The commit will defer after calling WillProcessNavigationResponse, it
   // will load a resource, and then the throttle will cancel the commit.
   navigation_simulator->Commit();
+
+  // Force navigation to a new page to make sure OnComplete() runs for the
+  // previous failed navigation.
+  NavigateToUntrackedUrl();
 
   // There shouldn't be any histograms for an aborted main frame.
   EXPECT_EQ(0u, histogram_tester()
