@@ -391,9 +391,13 @@ AutomationRichEditableText.prototype = {
 
   /** @override */
   describeSelectionChanged: function(evt) {
-    // Ignore end of text announcements.
-    if ((this.start + 1) == evt.start && evt.start == this.value.length)
+    // Note that since Chrome allows for selection to be placed immediately at
+    // the end of a line (i.e. end == value.length) and since we try to describe
+    // the character to the right, just describe it as a new line.
+    if ((this.start + 1) == evt.start && evt.start == this.value.length) {
+      this.speak('\n', evt.triggeredByUser);
       return;
+    }
 
     cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged.call(
         this, evt);

@@ -462,3 +462,54 @@ TEST_F('CursorsTest', 'ContentEquality', function() {
     assertFalse(inlineTextBoxRange.contentEquals(rootRange));
   });
 });
+
+TEST_F('CursorsTest', 'DeepEquivalency', function() {
+  this.runWithLoadedTree(function() {/*!
+    <p style="word-spacing:100000px">this is a test</p>
+  */}, function(root) {
+    var textNode = root.find({role: RoleType.STATIC_TEXT});
+
+    var text = new cursors.Cursor(textNode, 2);
+    deep = text.deepEquivalent;
+    assertEquals('this ', deep.node.name);
+    assertEquals(RoleType.INLINE_TEXT_BOX, deep.node.role);
+    assertEquals(2, deep.index);
+
+    text = new cursors.Cursor(textNode, 5);
+    deep = text.deepEquivalent;
+    assertEquals('is ', deep.node.name);
+    assertEquals(RoleType.INLINE_TEXT_BOX, deep.node.role);
+    assertEquals(0, deep.index);
+
+    text = new cursors.Cursor(textNode, 7);
+    deep = text.deepEquivalent;
+    assertEquals('is ', deep.node.name);
+    assertEquals(RoleType.INLINE_TEXT_BOX, deep.node.role);
+    assertEquals(2, deep.index);
+
+    text = new cursors.Cursor(textNode, 8);
+    deep = text.deepEquivalent;
+    assertEquals('a ', deep.node.name);
+    assertEquals(RoleType.INLINE_TEXT_BOX, deep.node.role);
+    assertEquals(0, deep.index);
+
+    text = new cursors.Cursor(textNode, 11);
+    deep = text.deepEquivalent;
+    assertEquals('test', deep.node.name);
+    assertEquals(RoleType.INLINE_TEXT_BOX, deep.node.role);
+    assertEquals(1, deep.index);
+
+    // This is the only selection that can be placed at the length of the node's
+    // text. This only happens at the end of a line.
+    text = new cursors.Cursor(textNode, 14);
+    deep = text.deepEquivalent;
+    assertEquals('test', deep.node.name);
+    assertEquals(RoleType.INLINE_TEXT_BOX, deep.node.role);
+    assertEquals(4, deep.index);
+
+    // However, any offset larger is invalid.
+    text = new cursors.Cursor(textNode, 15);
+    deep = text.deepEquivalent;
+    assertTrue(text.equals(deep));
+  });
+});
