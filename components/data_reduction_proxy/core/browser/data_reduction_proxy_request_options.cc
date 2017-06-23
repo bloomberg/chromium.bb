@@ -182,12 +182,17 @@ void DataReductionProxyRequestOptions::AddRequestHeader(
   header_value += header_value_;
 
   if (page_id) {
-    char page_id_buffer[16];
+    // 64 bit uint fits in 16 characters when represented in hexadecimal, but
+    // there needs to be a trailing null termianted character in the buffer.
+    char page_id_buffer[17];
     if (base::strings::SafeSPrintf(page_id_buffer, "%x", page_id.value()) > 0) {
       header_value += ", " + FormatOption(kPageIdOption, page_id_buffer);
     }
+    uint64_t page_id_tested;
+    DCHECK(base::HexStringToUInt64(page_id_buffer, &page_id_tested) &&
+           page_id_tested == page_id.value());
+    ALLOW_UNUSED_LOCAL(page_id_tested);
   }
-
   request_headers->SetHeader(kChromeProxyHeader, header_value);
 }
 

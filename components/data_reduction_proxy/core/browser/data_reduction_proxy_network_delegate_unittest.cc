@@ -712,7 +712,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
     std::string page_id_value;
     if (page_id) {
-      char page_id_buffer[16];
+      char page_id_buffer[17];
       if (base::strings::SafeSPrintf(page_id_buffer, "%x", page_id.value()) >
           0) {
         page_id_value = std::string("pid=") + page_id_buffer;
