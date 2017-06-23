@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "extensions/renderer/api_binding_hooks_delegate.h"
-#include "extensions/renderer/api_binding_types.h"
+#include "extensions/renderer/bindings/api_binding_hooks_delegate.h"
+#include "extensions/renderer/bindings/api_binding_types.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

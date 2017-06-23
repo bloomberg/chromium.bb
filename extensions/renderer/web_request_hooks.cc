@@ -7,7 +7,7 @@
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "extensions/common/extension_api.h"
-#include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"

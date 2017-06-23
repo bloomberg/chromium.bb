@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
 
-#include "extensions/renderer/api_request_handler.h"
-#include "extensions/renderer/api_signature.h"
+#include "extensions/renderer/bindings/api_request_handler.h"
+#include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/converter.h"
 
