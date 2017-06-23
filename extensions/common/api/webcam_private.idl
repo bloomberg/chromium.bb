@@ -22,9 +22,22 @@ namespace webcamPrivate {
     double? zoom;
   };
 
+  dictionary Range { double min; double max; };
+
+  dictionary WebcamCurrentConfiguration {
+    double pan;
+    double tilt;
+    double zoom;
+
+    // Supported range of pan, tilt and zoom values.
+    Range? panRange;
+    Range? tiltRange;
+    Range? zoomRange;
+  };
+
   callback WebcamIdCallback = void(DOMString webcamId);
   callback WebcamConfigurationCallback =
-      void(WebcamConfiguration configuration);
+      void(WebcamCurrentConfiguration configuration);
 
   interface Functions {
     // Open a serial port that controls a webcam.
@@ -36,9 +49,9 @@ namespace webcamPrivate {
 
     static void get(DOMString webcamId, WebcamConfigurationCallback callback);
     static void set(DOMString webcamId, WebcamConfiguration config);
-    
+
     // Reset a webcam. Note: the value of the parameter have no effect, it's the
-    // presence of the parameter that matters. E.g.: reset(webcamId, {pan: 0, 
+    // presence of the parameter that matters. E.g.: reset(webcamId, {pan: 0,
     // tilt: 1}); will reset pan & tilt, but not zoom.
     static void reset(DOMString webcamId, WebcamConfiguration config);
   };

@@ -77,32 +77,58 @@ bool V4L2Webcam::SetWebcamParameter(int fd, uint32_t control_id, int value) {
   return res >= 0;
 }
 
-bool V4L2Webcam::GetWebcamParameter(int fd, uint32_t control_id, int* value) {
+bool V4L2Webcam::GetWebcamParameter(int fd,
+                                    uint32_t control_id,
+                                    int* value,
+                                    int* min_value,
+                                    int* max_value) {
+  // Try to query current value for |control_id|. The getter fails if not
+  // supported.
   struct v4l2_control v4l2_ctrl = {control_id};
-
   if (HANDLE_EINTR(ioctl(fd, VIDIOC_G_CTRL, &v4l2_ctrl)))
     return false;
-
   *value = v4l2_ctrl.value;
+
+  // Try to query the valid range for |control_id|. Not supporting a range query
+  // is not a failure.
+  struct v4l2_queryctrl v4l2_range_query = {control_id};
+  if (HANDLE_EINTR(ioctl(fd, VIDIOC_QUERYCTRL, &v4l2_range_query))) {
+    *min_value = 0;
+    *max_value = 0;
+  } else {
+    *min_value = v4l2_range_query.minimum;
+    *max_value = v4l2_range_query.maximum;
+  }
+
   return true;
 }
 
 void V4L2Webcam::GetPan(const GetPTZCompleteCallback& callback) {
   int value = 0;
-  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_PAN_ABSOLUTE, &value);
-  callback.Run(success, value);
+  int min_value = 0;
+  int max_value = 0;
+  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_PAN_ABSOLUTE, &value,
+                                    &min_value, &max_value);
+
+  callback.Run(success, value, min_value, max_value);
 }
 
 void V4L2Webcam::GetTilt(const GetPTZCompleteCallback& callback) {
   int value = 0;
-  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_TILT_ABSOLUTE, &value);
-  callback.Run(success, value);
+  int min_value = 0;
+  int max_value = 0;
+  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_TILT_ABSOLUTE, &value,
+                                    &min_value, &max_value);
+  callback.Run(success, value, min_value, max_value);
 }
 
 void V4L2Webcam::GetZoom(const GetPTZCompleteCallback& callback) {
   int value = 0;
-  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_ZOOM_ABSOLUTE, &value);
-  callback.Run(success, value);
+  int min_value = 0;
+  int max_value = 0;
+  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_ZOOM_ABSOLUTE, &value,
+                                    &min_value, &max_value);
+  callback.Run(success, value, min_value, max_value);
 }
 
 void V4L2Webcam::SetPan(int value,

@@ -61,9 +61,14 @@ class GetPTZExpectations {
   GetPTZExpectations(bool expected_success, int expected_value)
       : expected_success_(expected_success), expected_value_(expected_value) {}
 
-  void OnCallback(bool success, int value) {
+  void OnCallback(bool success, int value, int min_value, int max_value) {
     EXPECT_EQ(expected_success_, success);
     EXPECT_EQ(expected_value_, value);
+
+    // TODO(pbos): min/max values aren't currently supported. These expectations
+    // should be updated when we do.
+    EXPECT_EQ(0, min_value);
+    EXPECT_EQ(0, max_value);
   }
 
  private:
