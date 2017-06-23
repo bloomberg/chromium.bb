@@ -1312,7 +1312,7 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
 bool V4L2VideoDecodeAccelerator::DequeueResolutionChangeEvent() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
-  VLOGF(2);
+  DVLOGF(3);
 
   struct v4l2_event ev;
   memset(&ev, 0, sizeof(ev));
@@ -1682,7 +1682,7 @@ bool V4L2VideoDecodeAccelerator::IsDecoderCmdSupported() {
   memset(&cmd, 0, sizeof(cmd));
   cmd.cmd = V4L2_DEC_CMD_STOP;
   if (device_->Ioctl(VIDIOC_TRY_DECODER_CMD, &cmd) != 0) {
-    VLOGF(2) "V4L2_DEC_CMD_STOP is not supported.";
+    DVLOGF(3) "V4L2_DEC_CMD_STOP is not supported.";
     return false;
   }
 
@@ -2529,7 +2529,7 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
       }
     }
 
-    VLOGF(2) << "dismissing PictureBuffer id=" << output_record.picture_id;
+    DVLOGF(3) << "dismissing PictureBuffer id=" << output_record.picture_id;
     child_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Client::DismissPictureBuffer, client_,
                               output_record.picture_id));
