@@ -143,7 +143,7 @@ template <typename Strategy>
 EphemeralRangeTemplate<Strategy>
 EphemeralRangeTemplate<Strategy>::RangeOfContents(const Node& node) {
   return EphemeralRangeTemplate<Strategy>(
-      PositionTemplate<Strategy>::FirstPositionInNode(&const_cast<Node&>(node)),
+      PositionTemplate<Strategy>::FirstPositionInNode(node),
       PositionTemplate<Strategy>::LastPositionInNode(&const_cast<Node&>(node)));
 }
 

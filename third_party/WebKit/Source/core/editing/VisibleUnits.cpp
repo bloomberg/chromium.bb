@@ -418,7 +418,7 @@ static PositionTemplate<Strategy> NextBoundaryAlgorithm(
   BackwardsTextBuffer prefix_string;
   if (RequiresContextForWordBoundary(CharacterAfter(c))) {
     SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwards_iterator(
-        PositionTemplate<Strategy>::FirstPositionInNode(&d), start);
+        PositionTemplate<Strategy>::FirstPositionInNode(d), start);
     while (!backwards_iterator.AtEnd()) {
       backwards_iterator.CopyTextTo(&prefix_string);
       int context_start_index = StartOfLastWordBoundaryContext(
@@ -590,7 +590,7 @@ static VisiblePositionTemplate<Strategy> StartOfDocumentAlgorithm(
     return VisiblePositionTemplate<Strategy>();
 
   return CreateVisiblePosition(PositionTemplate<Strategy>::FirstPositionInNode(
-      node->GetDocument().documentElement()));
+      *node->GetDocument().documentElement()));
 }
 
 VisiblePosition StartOfDocument(const VisiblePosition& c) {

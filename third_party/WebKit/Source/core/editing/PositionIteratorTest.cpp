@@ -141,7 +141,7 @@ TEST_F(PositionIteratorTest, incrementWithInputElement) {
 
   // Increment until start of "123" from INPUT on DOM tree
   PositionIterator dom_iterator(
-      Position::FirstPositionInNode(GetDocument().body()));
+      Position::FirstPositionInNode(*GetDocument().body()));
   EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
   dom_iterator.Increment();
   EXPECT_EQ(Position::BeforeNode(*input), dom_iterator.ComputePosition());
@@ -154,7 +154,7 @@ TEST_F(PositionIteratorTest, incrementWithInputElement) {
 
   // Increment until start of "123" from INPUT on flat tree
   PositionIteratorInFlatTree flat_iterator(
-      PositionInFlatTree::FirstPositionInNode(GetDocument().body()));
+      PositionInFlatTree::FirstPositionInNode(*GetDocument().body()));
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 0),
             flat_iterator.ComputePosition());
   flat_iterator.Increment();
@@ -177,7 +177,7 @@ TEST_F(PositionIteratorTest, incrementWithSelectElement) {
 
   // Increment until start of "123" from SELECT on DOM tree
   PositionIterator dom_iterator(
-      Position::FirstPositionInNode(GetDocument().body()));
+      Position::FirstPositionInNode(*GetDocument().body()));
   EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
   dom_iterator.Increment();
   EXPECT_EQ(Position::BeforeNode(*select), dom_iterator.ComputePosition());
@@ -194,7 +194,7 @@ TEST_F(PositionIteratorTest, incrementWithSelectElement) {
 
   // Increment until start of "123" from SELECT on flat tree
   PositionIteratorInFlatTree flat_iterator(
-      PositionInFlatTree::FirstPositionInNode(GetDocument().body()));
+      PositionInFlatTree::FirstPositionInNode(*GetDocument().body()));
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 0),
             flat_iterator.ComputePosition());
   flat_iterator.Increment();
@@ -223,7 +223,7 @@ TEST_F(PositionIteratorTest, incrementWithTextAreaElement) {
 
   // Increment until start of "123" from TEXTAREA on DOM tree
   PositionIterator dom_iterator(
-      Position::FirstPositionInNode(GetDocument().body()));
+      Position::FirstPositionInNode(*GetDocument().body()));
   EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
   dom_iterator.Increment();
   EXPECT_EQ(Position::BeforeNode(*textarea), dom_iterator.ComputePosition());
@@ -236,7 +236,7 @@ TEST_F(PositionIteratorTest, incrementWithTextAreaElement) {
 
   // Increment until start of "123" from TEXTAREA on flat tree
   PositionIteratorInFlatTree flat_iterator(
-      PositionInFlatTree::FirstPositionInNode(GetDocument().body()));
+      PositionInFlatTree::FirstPositionInNode(*GetDocument().body()));
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 0),
             flat_iterator.ComputePosition());
   // TODO(yosin): We should not traverse inside TEXTAREA

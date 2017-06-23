@@ -685,7 +685,7 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
   if (editing_state->IsAborted())
     return false;
   SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(Position::FirstPositionInNode(root))
+                         .Collapse(Position::FirstPositionInNode(*root))
                          .SetIsDirectional(EndingSelection().IsDirectional())
                          .Build());
 

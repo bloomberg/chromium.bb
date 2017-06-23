@@ -1504,7 +1504,7 @@ void CompositeEditCommand::MoveParagraphs(
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   destination_index = TextIterator::RangeLength(
-      Position::FirstPositionInNode(GetDocument().documentElement()),
+      Position::FirstPositionInNode(*GetDocument().documentElement()),
       destination.ToParentAnchoredPosition(),
       TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior());
 
@@ -1678,7 +1678,7 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
     return false;
 
   SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(Position::FirstPositionInNode(new_block))
+                         .Collapse(Position::FirstPositionInNode(*new_block))
                          .SetIsDirectional(EndingSelection().IsDirectional())
                          .Build());
 

@@ -655,9 +655,9 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
       << position << ' ' << highest_root;
   // position falls before highestRoot.
   if (position.CompareTo(PositionTemplate<Strategy>::FirstPositionInNode(
-          &highest_root)) == -1 &&
+          highest_root)) == -1 &&
       HasEditableStyle(highest_root))
-    return PositionTemplate<Strategy>::FirstPositionInNode(&highest_root);
+    return PositionTemplate<Strategy>::FirstPositionInNode(highest_root);
 
   PositionTemplate<Strategy> editable_position = position;
 
@@ -1907,7 +1907,7 @@ int IndexForVisiblePosition(const VisiblePosition& visible_position,
   else
     scope = document.documentElement();
 
-  EphemeralRange range(Position::FirstPositionInNode(scope),
+  EphemeralRange range(Position::FirstPositionInNode(*scope),
                        p.ParentAnchoredEquivalent());
 
   return TextIterator::RangeLength(

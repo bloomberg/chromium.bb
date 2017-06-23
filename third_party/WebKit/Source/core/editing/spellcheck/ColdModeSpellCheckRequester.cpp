@@ -26,8 +26,7 @@ bool ShouldCheckNode(const Node& node) {
   if (!node.IsElementNode())
     return false;
   // TODO(editing-dev): Make |Position| constructors take const parameters.
-  const Position& position =
-      Position::FirstPositionInNode(const_cast<Node*>(&node));
+  const Position& position = Position::FirstPositionInNode(node);
   if (!IsEditablePosition(position))
     return false;
   return SpellChecker::IsSpellCheckingEnabledAt(position);

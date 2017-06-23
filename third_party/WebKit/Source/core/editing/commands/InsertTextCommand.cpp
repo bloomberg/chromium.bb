@@ -58,7 +58,7 @@ Position InsertTextCommand::PositionInsideTextNode(
     InsertNodeAtTabSpanPosition(text_node, pos, editing_state);
     if (editing_state->IsAborted())
       return Position();
-    return Position::FirstPositionInNode(text_node);
+    return Position::FirstPositionInNode(*text_node);
   }
 
   // Prepare for text input by looking at the specified position.
@@ -68,7 +68,7 @@ Position InsertTextCommand::PositionInsideTextNode(
     InsertNodeAt(text_node, pos, editing_state);
     if (editing_state->IsAborted())
       return Position();
-    return Position::FirstPositionInNode(text_node);
+    return Position::FirstPositionInNode(*text_node);
   }
 
   return pos;

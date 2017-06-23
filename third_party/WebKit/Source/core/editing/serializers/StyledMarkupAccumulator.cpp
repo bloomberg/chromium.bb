@@ -115,7 +115,7 @@ void StyledMarkupAccumulator::AppendTextWithInlineStyle(
     AppendText(text);
   } else {
     const bool use_rendered_text = !EnclosingElementWithTag(
-        Position::FirstPositionInNode(&text), selectTag);
+        Position::FirstPositionInNode(text), selectTag);
     String content =
         use_rendered_text ? RenderedText(text) : StringValueForRange(text);
     StringBuilder buffer;

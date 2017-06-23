@@ -337,7 +337,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       return;
 
     SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::FirstPositionInNode(parent))
+                           .Collapse(Position::FirstPositionInNode(*parent))
                            .SetIsDirectional(EndingSelection().IsDirectional())
                            .Build());
     return;
@@ -496,7 +496,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       SplitTextNode(text_node, text_offset);
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-      position_after_split = Position::FirstPositionInNode(text_node);
+      position_after_split = Position::FirstPositionInNode(*text_node);
       insertion_position = Position(text_node->previousSibling(), text_offset);
     }
   }
@@ -590,7 +590,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
 
   SetEndingSelection(
       SelectionInDOMTree::Builder()
-          .Collapse(Position::FirstPositionInNode(block_to_insert))
+          .Collapse(Position::FirstPositionInNode(*block_to_insert))
           .SetIsDirectional(EndingSelection().IsDirectional())
           .Build());
   ApplyStyleAfterInsertion(start_block, editing_state);

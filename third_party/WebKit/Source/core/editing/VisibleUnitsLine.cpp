@@ -359,7 +359,7 @@ static PositionWithAffinityTemplate<Strategy> LogicalStartOfLineAlgorithm(
     if (!editable_root->contains(
             vis_pos.GetPosition().ComputeContainerNode())) {
       return PositionWithAffinityTemplate<Strategy>(
-          PositionTemplate<Strategy>::FirstPositionInNode(editable_root));
+          PositionTemplate<Strategy>::FirstPositionInNode(*editable_root));
     }
   }
 

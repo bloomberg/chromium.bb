@@ -231,7 +231,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
         *start_.ComputeContainerNode(), *end_.ComputeContainerNode());
     DCHECK(common_ancestor);
     HTMLBodyElement* body = toHTMLBodyElement(EnclosingElementWithTag(
-        Position::FirstPositionInNode(common_ancestor), bodyTag));
+        Position::FirstPositionInNode(*common_ancestor), bodyTag));
     HTMLBodyElement* fully_selected_root = nullptr;
     // FIXME: Do this for all fully selected blocks, not just the body.
     if (body && AreSameRanges(body, start_, end_))

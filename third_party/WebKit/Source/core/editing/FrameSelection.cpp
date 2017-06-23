@@ -448,7 +448,7 @@ bool FrameSelection::SelectionHasFocus() const {
 
   // Selection has focus if it contains the focused element.
   const PositionInFlatTree& focused_position =
-      PositionInFlatTree::FirstPositionInNode(focused_element);
+      PositionInFlatTree::FirstPositionInNode(*focused_element);
   if (ComputeVisibleSelectionInFlatTree().Start() <= focused_position &&
       ComputeVisibleSelectionInFlatTree().End() >= focused_position)
     return true;

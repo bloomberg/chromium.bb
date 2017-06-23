@@ -212,7 +212,7 @@ void SpellChecker::DidBeginEditing(Element* element) {
   TextControlElement* enclosing_text_control_element = nullptr;
   if (!IsTextControlElement(*element)) {
     enclosing_text_control_element =
-        EnclosingTextControl(Position::FirstPositionInNode(element));
+        EnclosingTextControl(Position::FirstPositionInNode(*element));
   }
   element =
       enclosing_text_control_element ? enclosing_text_control_element : element;
@@ -537,7 +537,7 @@ void SpellChecker::MarkMisspellingsAfterReplaceSelectionCommand(
   if (!node)
     return;
 
-  EphemeralRange paragraph_range(Position::FirstPositionInNode(node),
+  EphemeralRange paragraph_range(Position::FirstPositionInNode(*node),
                                  Position::LastPositionInNode(node));
   TextCheckingParagraph text_to_check(inserted_range, paragraph_range);
   ChunkAndMarkAllMisspellings(text_to_check);
