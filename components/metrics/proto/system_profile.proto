@@ -281,7 +281,7 @@ message SystemProfileProto {
   optional Hardware hardware = 6;
 
   // Information about the network connection.
-  // Next tag: 7
+  // Next tag: 9
   message Network {
     // Set to true if connection_type changed during the lifetime of the log.
     optional bool connection_type_is_ambiguous = 1;
@@ -372,22 +372,34 @@ message SystemProfileProto {
     // translated through NetworkMetricsProvider::GetConnectionType.
     enum EffectiveConnectionType {
       EFFECTIVE_CONNECTION_TYPE_UNKNOWN = 0;
-      // Specifies that the connection_type changed during the lifetime of the
-      // log.
-      EFFECTIVE_CONNECTION_TYPE_AMBIGUOUS = 1;
-      EFFECTIVE_CONNECTION_TYPE_OFFLINE = 2;
+      // Deprecated: Specifies that the connection_type changed during the
+      // lifetime of the log.
+      DEPRECATED_EFFECTIVE_CONNECTION_TYPE_AMBIGUOUS = 1 [deprecated = true];
+      DEPRECATED_EFFECTIVE_CONNECTION_TYPE_OFFLINE = 2 [deprecated = true];
       EFFECTIVE_CONNECTION_TYPE_SLOW_2G = 3;
       EFFECTIVE_CONNECTION_TYPE_2G = 4;
       EFFECTIVE_CONNECTION_TYPE_3G = 5;
       EFFECTIVE_CONNECTION_TYPE_4G = 6;
     }
-    // The connection type according to net::NetworkQualityEstimator.
+    // Deprecated: The connection type according to
+    // net::NetworkQualityEstimator. EffectiveConnectionType is the connection
+    // type whose typical performance is most similar to the measured
+    // performance of the network in use. In many cases, the "effective"
+    // connection type and the actual type of connection in use are the same,
+    // but often a network connection performs significantly differently,
+    // usually worse, from its expected capabilities.
+    optional EffectiveConnectionType deprecated_effective_connection_type = 6
+        [deprecated = true];
+
+    // The minimum and maximum values of the effective connection type enum
+    // during the lifetime of the log according to net::NetworkQualityEstimator.
     // EffectiveConnectionType is the connection type whose typical performance
     // is most similar to the measured performance of the network in use. In
     // many cases, the "effective" connection type and the actual type of
     // connection in use are the same, but often a network connection performs
     // significantly differently, usually worse, from its expected capabilities.
-    optional EffectiveConnectionType effective_connection_type = 6;
+    optional EffectiveConnectionType min_effective_connection_type = 7;
+    optional EffectiveConnectionType max_effective_connection_type = 8;
   }
   optional Network network = 13;
 
