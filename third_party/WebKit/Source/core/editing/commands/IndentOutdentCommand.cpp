@@ -109,7 +109,7 @@ bool IndentOutdentCommand::TryIndentingAsListItem(const Position& start,
   const VisiblePosition& end_of_paragraph_to_move =
       should_keep_selected_list
           ? CreateVisiblePosition(end)
-          : VisiblePosition::AfterNode(selected_list_item->lastChild());
+          : VisiblePosition::AfterNode(*selected_list_item->lastChild());
 
   // The insertion of |newList| may change the computed style of other
   // elements, resulting in failure in visible canonicalization.
