@@ -396,15 +396,9 @@ def VeryifyVersionOfBuiltClangMatchesVERSION():
 def UpdateClang(args):
   print 'Updating Clang to %s...' % PACKAGE_VERSION
 
-  need_gold_plugin = 'LLVM_DOWNLOAD_GOLD_PLUGIN' in os.environ or (
-      sys.platform.startswith('linux') and
-      'buildtype=Official' in os.environ.get('GYP_DEFINES', ''))
-
   if ReadStampFile() == PACKAGE_VERSION and not args.force_local_build:
     print 'Clang is already up to date.'
-    if not need_gold_plugin or os.path.exists(
-        os.path.join(LLVM_BUILD_DIR, "lib/LLVMgold.so")):
-      return 0
+    return 0
 
   # Reset the stamp file in case the build is unsuccessful.
   WriteStampFile('')
@@ -427,11 +421,6 @@ def UpdateClang(args):
       print 'clang %s unpacked' % PACKAGE_VERSION
       if sys.platform == 'win32':
         CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
-      # Download the gold plugin if requested to by an environment variable.
-      # This is used by the CFI ClusterFuzz bot, and it's required for official
-      # builds on linux.
-      if need_gold_plugin:
-        RunCommand(['python', CHROMIUM_DIR+'/build/download_gold_plugin.py'])
       WriteStampFile(PACKAGE_VERSION)
       return 0
     except urllib2.URLError:
