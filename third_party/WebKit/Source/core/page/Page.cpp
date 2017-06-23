@@ -253,9 +253,16 @@ void Page::SetMainFrame(Frame* main_frame) {
   main_frame_ = main_frame;
 }
 
+void Page::WillUnloadDocument(const Document& document) {
+  if (validation_message_client_)
+    validation_message_client_->WillUnloadDocument(document);
+}
+
 void Page::DocumentDetached(Document* document) {
   pointer_lock_controller_->DocumentDetached(document);
   context_menu_controller_->DocumentDetached(document);
+  if (validation_message_client_)
+    validation_message_client_->DocumentDetached(*document);
   hosts_using_features_.DocumentDetached(*document);
 }
 

@@ -152,6 +152,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     return ToLocalFrame(main_frame_);
   }
 
+  void WillUnloadDocument(const Document&);
   void DocumentDetached(Document*);
 
   bool OpenedByDOM() const;
