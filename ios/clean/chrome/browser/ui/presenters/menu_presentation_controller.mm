@@ -31,8 +31,12 @@
   if (CGRectIsEmpty(self.presentationFrame)) {
     [self updatePresentationDelegate];
     if (self.presentationDelegate) {
-      self.presentationFrame =
-          [self.presentationDelegate frameForMenuPresentation:self];
+      self.presentationFrame = [self
+          frameForPresentationWithSize:self.presentedView.frame.size
+                                origin:[self.presentationDelegate
+                                               originForMenuPresentation]
+                                bounds:[self.presentationDelegate
+                                               boundsForMenuPresentation]];
     } else {
       // Placeholder default frame: centered in the presenting view.
       CGSize menuSize = self.presentedView.frame.size;
@@ -73,6 +77,39 @@
     self.presentationDelegate = static_cast<id<MenuPresentationDelegate>>(
         self.presentingViewController);
   }
+}
+
+- (CGRect)frameForPresentationWithSize:(CGSize)menuSize
+                                origin:(CGRect)menuOriginRect
+                                bounds:(CGRect)presentationBounds {
+  CGRect menuRect;
+  menuRect.size = menuSize;
+
+  if (CGRectIsNull(menuOriginRect)) {
+    menuRect.origin = CGPointMake(50, 50);
+    return menuRect;
+  }
+  // Calculate which corner of the menu the origin rect is in. This is
+  // determined by comparing frames, and thus is RTL-independent.
+  if (CGRectGetMinX(menuOriginRect) - CGRectGetMinX(presentationBounds) <
+      CGRectGetMaxX(presentationBounds) - CGRectGetMaxX(menuOriginRect)) {
+    // Origin rect is closer to the left edge of |self.view| than to the right.
+    menuRect.origin.x = CGRectGetMinX(menuOriginRect);
+  } else {
+    // Origin rect is closer to the right edge of |self.view| than to the left.
+    menuRect.origin.x = CGRectGetMaxX(menuOriginRect) - menuSize.width;
+  }
+
+  if (CGRectGetMinY(menuOriginRect) - CGRectGetMinY(presentationBounds) <
+      CGRectGetMaxY(presentationBounds) - CGRectGetMaxY(menuOriginRect)) {
+    // Origin rect is closer to the top edge of |self.view| than to the bottom.
+    menuRect.origin.y = CGRectGetMinY(menuOriginRect);
+  } else {
+    // Origin rect is closer to the bottom edge of |self.view| than to the top.
+    menuRect.origin.y = CGRectGetMaxY(menuOriginRect) - menuSize.height;
+  }
+
+  return menuRect;
 }
 
 @end

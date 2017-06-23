@@ -7,12 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-// Protocol for an object to assist with menu presentation by providing a
-// frame for the menu.
+// Protocol for an object to assist with menu presentation by providing
+// spatial information for the menu.
 @protocol MenuPresentationDelegate
-// Return the rect, in the coordinate space of the presenting view controller's
-// view, that |presentation| should use for the presenting view controller.
-- (CGRect)frameForMenuPresentation:(UIPresentationController*)presentation;
+// Return the CGRect in which the Menu presentation will take place.
+- (CGRect)boundsForMenuPresentation;
+// Return the origin in the coordinate space of the presenting view controller's
+// view, in which the Menu presentation will present from.
+- (CGRect)originForMenuPresentation;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_PRESENTERS_MENU_PRESENTATION_DELEGATE_H_
