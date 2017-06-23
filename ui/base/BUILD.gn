@@ -160,6 +160,7 @@ component("base") {
     "cursor/cursor_data.cc",
     "cursor/cursor_data.h",
     "cursor/cursor_loader.h",
+    "cursor/cursor_type.h",
     "cursor/cursor_win.cc",
     "default_style.h",
     "default_theme_provider_mac.mm",

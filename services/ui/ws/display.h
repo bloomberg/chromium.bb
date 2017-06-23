@@ -152,6 +152,9 @@ class Display : public PlatformDisplayDelegate,
   // Sets the native cursor to |cursor|.
   void SetNativeCursor(const ui::CursorData& curosor);
 
+  // Sets the native cursor size to |cursor_size|.
+  void SetNativeCursorSize(ui::CursorSize cursor_size);
+
   // mojom::WindowTreeHost:
   void SetSize(const gfx::Size& size) override;
   void SetTitle(const std::string& title) override;

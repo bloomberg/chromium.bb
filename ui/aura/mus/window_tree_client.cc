@@ -1884,6 +1884,11 @@ void WindowTreeClient::SetCursorVisible(bool visible) {
     window_manager_client_->WmSetCursorVisible(visible);
 }
 
+void WindowTreeClient::SetCursorSize(ui::CursorSize cursor_size) {
+  if (window_manager_client_)
+    window_manager_client_->WmSetCursorSize(cursor_size);
+}
+
 void WindowTreeClient::SetGlobalOverrideCursor(
     base::Optional<ui::CursorData> cursor) {
   if (window_manager_client_)

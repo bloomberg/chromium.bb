@@ -2,13 +2,10 @@
 # http://crbug.com/734806.
 # The following fail as they use wm::CursorManager:
 -NativeCursorManagerAshTest.LockCursor
--NativeCursorManagerAshTest.SetCursorSet
 -ExtendedDesktopTest.TestCursor
 -LockStateControllerTest.LegacyLockAndShutDown
 -LockStateControllerTest.RequestShutdownFromLockScreen
 -LockStateControllerTest.RequestShutdownFromLoginScreen
--WindowManagerTest.TestCursorClientObserver
--WindowSelectorTest.Basic
 
 # TODO: fix these. They fail because ShellPortMash::IsMouseEventsEnabled() isn't
 # implemented. http://crbug.com/734808.

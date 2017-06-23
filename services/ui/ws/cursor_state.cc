@@ -14,10 +14,9 @@ namespace ws {
 
 class CursorState::StateSnapshot {
  public:
-  StateSnapshot()
-      : cursor_data_(ui::CursorData(ui::CursorType::kNull)), visible_(true) {}
+  StateSnapshot() = default;
   StateSnapshot(const StateSnapshot& rhs) = default;
-  ~StateSnapshot() {}
+  ~StateSnapshot() = default;
 
   const base::Optional<ui::CursorData>& global_override_cursor() const {
     return global_override_cursor_;
@@ -32,16 +31,24 @@ class CursorState::StateSnapshot {
   bool visible() const { return visible_; }
   void set_visible(bool visible) { visible_ = visible; }
 
+  ui::CursorSize cursor_size() const { return cursor_size_; }
+  void set_cursor_size(ui::CursorSize cursor_size) {
+    cursor_size_ = cursor_size;
+  }
+
  private:
   // An optional cursor set by the window manager which overrides per-window
   // requests.
   base::Optional<ui::CursorData> global_override_cursor_;
 
   // The last cursor set. Used to track whether we need to change the cursor.
-  ui::CursorData cursor_data_;
+  ui::CursorData cursor_data_ = ui::CursorData(ui::CursorType::kNull);
+
+  // Which cursor set to use.
+  ui::CursorSize cursor_size_ = CursorSize::kNormal;
 
   // Whether the cursor is visible.
-  bool visible_;
+  bool visible_ = true;
 };
 
 CursorState::CursorState(DisplayManager* display_manager)
@@ -73,6 +80,7 @@ void CursorState::UnlockCursor() {
     return;
 
   *current_state_ = *state_on_unlock_;
+  SetPlatformCursorSize();
   SetPlatformCursor();
 }
 
@@ -92,6 +100,22 @@ void CursorState::SetGlobalOverrideCursor(
     current_state_->SetGlobalOverrideCursor(cursor);
     SetPlatformCursor();
   }
+}
+
+void CursorState::SetCursorSize(ui::CursorSize cursor_size) {
+  state_on_unlock_->set_cursor_size(cursor_size);
+  if (cursor_lock_count_ == 0 &&
+      current_state_->cursor_size() != state_on_unlock_->cursor_size()) {
+    current_state_->set_cursor_size(cursor_size);
+    SetPlatformCursorSize();
+    SetPlatformCursor();
+  }
+}
+
+void CursorState::SetPlatformCursorSize() {
+  DisplayManager* manager = display_manager_;
+  for (Display* display : manager->displays())
+    display->SetNativeCursorSize(current_state_->cursor_size());
 }
 
 void CursorState::SetPlatformCursor() {

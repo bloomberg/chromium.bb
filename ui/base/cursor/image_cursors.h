@@ -33,8 +33,8 @@ class UI_BASE_EXPORT ImageCursors {
   // size of the image to load. Returns true if the cursor image is reloaded.
   bool SetDisplay(const display::Display& display, float scale_factor);
 
-  // Sets the type of the mouse cursor icon.
-  void SetCursorSet(CursorSetType cursor_set);
+  // Sets the size of the mouse cursor icon.
+  void SetCursorSize(CursorSize cursor_size);
 
   // Sets the platform cursor based on the native type of |cursor|.
   void SetPlatformCursor(gfx::NativeCursor* cursor);
@@ -44,7 +44,7 @@ class UI_BASE_EXPORT ImageCursors {
   void ReloadCursors();
 
   std::unique_ptr<CursorLoader> cursor_loader_;
-  CursorSetType cursor_set_;
+  CursorSize cursor_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCursors);
 };

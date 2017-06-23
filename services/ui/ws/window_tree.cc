@@ -2356,6 +2356,11 @@ void WindowTree::WmSetCursorVisible(bool visible) {
   window_manager_state_->cursor_state().SetCursorVisible(visible);
 }
 
+void WindowTree::WmSetCursorSize(ui::CursorSize cursor_size) {
+  DCHECK(window_manager_state_);
+  window_manager_state_->cursor_state().SetCursorSize(cursor_size);
+}
+
 void WindowTree::WmSetGlobalOverrideCursor(
     base::Optional<ui::CursorData> cursor) {
   DCHECK(window_manager_state_);

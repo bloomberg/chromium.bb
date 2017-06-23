@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//services/ui/public/interfaces/cursor/cursor.mojom"
-public_headers = [ "//ui/base/cursor/cursor_data.h" ]
+public_headers = [
+  "//ui/base/cursor/cursor_type.h",
+  "//ui/base/cursor/cursor_data.h",
+]
 traits_headers =
     [ "//services/ui/public/interfaces/cursor/cursor_struct_traits.h" ]
 sources = [
@@ -16,4 +19,8 @@ deps = [
   "//ui/gfx/geometry",
 ]
 
-type_mappings = [ "ui.mojom.CursorData=ui::CursorData[copyable_pass_by_value]" ]
+type_mappings = [
+  "ui.mojom.CursorType=ui::CursorType",
+  "ui.mojom.CursorSize=ui::CursorSize",
+  "ui.mojom.CursorData=ui::CursorData[copyable_pass_by_value]",
+]

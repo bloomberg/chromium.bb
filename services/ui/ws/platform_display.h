@@ -18,6 +18,7 @@
 
 namespace ui {
 
+enum class CursorSize;
 struct TextInputState;
 
 namespace ws {
@@ -49,6 +50,8 @@ class PlatformDisplay : public ui::EventSource {
   virtual void SetCursor(const ui::CursorData& cursor) = 0;
 
   virtual void MoveCursorTo(const gfx::Point& window_pixel_location) = 0;
+
+  virtual void SetCursorSize(const ui::CursorSize& cursor_size) = 0;
 
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;

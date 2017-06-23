@@ -420,8 +420,8 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 
   NotifyAccessibilityStatusChanged(details);
 
-  ash::Shell::Get()->cursor_manager()->SetCursorSet(
-      enabled ? ui::CURSOR_SET_LARGE : ui::CURSOR_SET_NORMAL);
+  ash::Shell::Get()->cursor_manager()->SetCursorSize(
+      enabled ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
   ash::Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
   ash::Shell::Get()->SetCursorCompositingEnabled(
       ShouldEnableCursorCompositing());

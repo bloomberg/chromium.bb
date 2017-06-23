@@ -147,6 +147,10 @@ void ShellPortMash::HideCursor() {
   window_manager_->window_manager_client()->SetCursorVisible(false);
 }
 
+void ShellPortMash::SetCursorSize(ui::CursorSize cursor_size) {
+  window_manager_->window_manager_client()->SetCursorSize(cursor_size);
+}
+
 void ShellPortMash::SetGlobalOverrideCursor(
     base::Optional<ui::CursorData> cursor) {
   window_manager_->window_manager_client()->SetGlobalOverrideCursor(

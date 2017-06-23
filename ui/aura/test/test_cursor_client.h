@@ -36,8 +36,8 @@ class TestCursorClient : public aura::client::CursorClient {
   gfx::NativeCursor GetCursor() const override;
   void ShowCursor() override;
   void HideCursor() override;
-  void SetCursorSet(ui::CursorSetType cursor_set) override;
-  ui::CursorSetType GetCursorSet() const override;
+  void SetCursorSize(ui::CursorSize cursor_size) override;
+  ui::CursorSize GetCursorSize() const override;
   bool IsCursorVisible() const override;
   void EnableMouseEvents() override;
   void DisableMouseEvents() override;

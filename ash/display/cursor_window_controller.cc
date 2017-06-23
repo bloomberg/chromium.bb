@@ -90,7 +90,7 @@ CursorWindowController::CursorWindowController()
       container_(NULL),
       cursor_type_(ui::CursorType::kNone),
       visible_(true),
-      cursor_set_(ui::CURSOR_SET_NORMAL),
+      cursor_size_(ui::CursorSize::kNormal),
       large_cursor_size_in_dip_(ash::kDefaultLargeCursorSize),
       delegate_(new CursorWindowDelegate()) {}
 
@@ -190,8 +190,8 @@ void CursorWindowController::SetCursor(gfx::NativeCursor cursor) {
   UpdateCursorVisibility();
 }
 
-void CursorWindowController::SetCursorSet(ui::CursorSetType cursor_set) {
-  cursor_set_ = cursor_set;
+void CursorWindowController::SetCursorSize(ui::CursorSize cursor_size) {
+  cursor_size_ = cursor_size;
   UpdateCursorImage();
 }
 
@@ -246,7 +246,7 @@ void CursorWindowController::UpdateCursorImage() {
   }
   int resource_id;
   // TODO(hshi): support custom cursor set.
-  if (!ui::GetCursorDataFor(cursor_set_, cursor_type_, cursor_scale,
+  if (!ui::GetCursorDataFor(cursor_size_, cursor_type_, cursor_scale,
                             &resource_id, &hot_point_)) {
     return;
   }
@@ -288,7 +288,7 @@ void CursorWindowController::UpdateCursorImage() {
     // large cursor. We don't need to care about the case where cursor
     // compositing is disabled as we always use cursor compositing if
     // accessibility large cursor is enabled.
-    if (cursor_set_ == ui::CursorSetType::CURSOR_SET_LARGE &&
+    if (cursor_size_ == ui::CursorSize::kLarge &&
         large_cursor_size_in_dip_ != image->size().width()) {
       float rescale = static_cast<float>(large_cursor_size_in_dip_) /
                       static_cast<float>(image->size().width());

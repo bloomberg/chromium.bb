@@ -144,6 +144,10 @@ void PlatformDisplayDefault::MoveCursorTo(
   platform_window_->MoveCursorTo(window_pixel_location);
 }
 
+void PlatformDisplayDefault::SetCursorSize(const ui::CursorSize& cursor_size) {
+  image_cursors_->SetCursorSize(cursor_size);
+}
+
 void PlatformDisplayDefault::UpdateTextInputState(
     const ui::TextInputState& state) {
   ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();

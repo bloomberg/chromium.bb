@@ -48,7 +48,7 @@ class WMHelper {
   class CursorObserver {
    public:
     virtual void OnCursorVisibilityChanged(bool is_visible) {}
-    virtual void OnCursorSetChanged(ui::CursorSetType cursor_set) {}
+    virtual void OnCursorSizeChanged(ui::CursorSize cursor_size) {}
     virtual void OnCursorDisplayChanged(const display::Display& display) {}
 
    protected:
@@ -105,7 +105,7 @@ class WMHelper {
   virtual aura::Window* GetPrimaryDisplayContainer(int container_id) = 0;
   virtual aura::Window* GetActiveWindow() const = 0;
   virtual aura::Window* GetFocusedWindow() const = 0;
-  virtual ui::CursorSetType GetCursorSet() const = 0;
+  virtual ui::CursorSize GetCursorSize() const = 0;
   virtual const display::Display& GetCursorDisplay() const = 0;
   virtual void AddPreTargetHandler(ui::EventHandler* handler) = 0;
   virtual void PrependPreTargetHandler(ui::EventHandler* handler) = 0;
@@ -122,7 +122,7 @@ class WMHelper {
   void NotifyWindowFocused(aura::Window* gained_focus,
                            aura::Window* lost_focus);
   void NotifyCursorVisibilityChanged(bool is_visible);
-  void NotifyCursorSetChanged(ui::CursorSetType cursor_set);
+  void NotifyCursorSizeChanged(ui::CursorSize cursor_size);
   void NotifyCursorDisplayChanged(const display::Display& display);
   void NotifyMaximizeModeStarted();
   void NotifyMaximizeModeEnding();

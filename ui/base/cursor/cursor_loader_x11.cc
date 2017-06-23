@@ -346,7 +346,7 @@ bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   // fallback icon.
   int resource_id;
   gfx::Point point;
-  if (ui::GetCursorDataFor(ui::CURSOR_SET_NORMAL, id, scale(), &resource_id,
+  if (ui::GetCursorDataFor(ui::CursorSize::kNormal, id, scale(), &resource_id,
                            &point)) {
     LoadImageCursor(id, resource_id, point);
     return image_cursors_[id]->cursor;

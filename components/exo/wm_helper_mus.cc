@@ -58,9 +58,9 @@ aura::Window* WMHelperMus::GetFocusedWindow() const {
   return focused_window_;
 }
 
-ui::CursorSetType WMHelperMus::GetCursorSet() const {
+ui::CursorSize WMHelperMus::GetCursorSize() const {
   NOTIMPLEMENTED();
-  return ui::CursorSetType::CURSOR_SET_NORMAL;
+  return ui::CursorSize::kNormal;
 }
 
 const display::Display& WMHelperMus::GetCursorDisplay() const {

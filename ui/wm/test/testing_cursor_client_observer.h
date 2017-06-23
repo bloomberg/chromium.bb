@@ -15,18 +15,18 @@ class TestingCursorClientObserver : public aura::client::CursorClientObserver {
 
   bool is_cursor_visible() const { return cursor_visibility_; }
   bool did_visibility_change() const { return did_visibility_change_; }
-  ui::CursorSetType cursor_set() const { return cursor_set_; }
-  bool did_cursor_set_change() const { return did_cursor_set_change_; }
+  ui::CursorSize cursor_size() const { return cursor_size_; }
+  bool did_cursor_size_change() const { return did_cursor_size_change_; }
 
   // Overridden from aura::client::CursorClientObserver:
   void OnCursorVisibilityChanged(bool is_visible) override;
-  void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
+  void OnCursorSizeChanged(ui::CursorSize cursor_size) override;
 
  private:
   bool cursor_visibility_;
   bool did_visibility_change_;
-  ui::CursorSetType cursor_set_;
-  bool did_cursor_set_change_;
+  ui::CursorSize cursor_size_;
+  bool did_cursor_size_change_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingCursorClientObserver);
 };

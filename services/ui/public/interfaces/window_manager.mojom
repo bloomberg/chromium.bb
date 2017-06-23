@@ -323,6 +323,9 @@ interface WindowManagerClient {
   // Shows and hides the cursor globally. Used during window management tasks.
   WmSetCursorVisible(bool visible);
 
+  // Sets whether we're using normal or large cursors.
+  WmSetCursorSize(CursorSize cursor_size);
+
   // Sets a global cursor which overrides per-window cursors. Pass null to
   // clear.
   WmSetGlobalOverrideCursor(CursorData? cursor);

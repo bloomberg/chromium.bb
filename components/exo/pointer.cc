@@ -262,7 +262,7 @@ void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelper::CursorObserver overrides:
 
-void Pointer::OnCursorSetChanged(ui::CursorSetType cursor_set) {
+void Pointer::OnCursorSizeChanged(ui::CursorSize cursor_size) {
   if (focus_)
     UpdateCursor();
 }
@@ -394,7 +394,7 @@ void Pointer::UpdateCursor() {
     float scale = helper->GetDisplayInfo(display.id()).device_scale_factor() /
                   capture_scale_;
 
-    if (helper->GetCursorSet() == ui::CURSOR_SET_LARGE)
+    if (helper->GetCursorSize() == ui::CursorSize::kLarge)
       scale *= kLargeCursorScale;
 
     ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.rotation(),

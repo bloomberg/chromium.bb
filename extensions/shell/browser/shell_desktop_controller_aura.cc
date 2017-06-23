@@ -134,10 +134,10 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
     }
   }
 
-  void SetCursorSet(ui::CursorSetType cursor_set,
-                    wm::NativeCursorManagerDelegate* delegate) override {
-    image_cursors_->SetCursorSet(cursor_set);
-    delegate->CommitCursorSet(cursor_set);
+  void SetCursorSize(ui::CursorSize cursor_size,
+                     wm::NativeCursorManagerDelegate* delegate) override {
+    image_cursors_->SetCursorSize(cursor_size);
+    delegate->CommitCursorSize(cursor_size);
     if (delegate->IsCursorVisible())
       SetCursor(delegate->GetCursor(), delegate);
   }
