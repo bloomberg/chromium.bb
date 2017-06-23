@@ -110,7 +110,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
     js_checker().ExecuteAsync(set_machine_name);
     js_checker().ExecuteAsync(set_username);
     js_checker().ExecuteAsync(set_password);
-    js_checker().Evaluate(
+    js_checker().ExecuteAsync(
         "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
         "#button').fire('tap')");
     ExecutePendingJavaScript();
@@ -161,7 +161,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
   }
 
   void SetupActiveDirectoryJSNotifications() {
-    js_checker().Evaluate(
+    js_checker().ExecuteAsync(
         "var testShowStep = login.OAuthEnrollmentScreen.showStep;"
         "login.OAuthEnrollmentScreen.showStep = function(step) {"
         "  testShowStep(step);"
@@ -170,7 +170,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
         "    window.domAutomationController.send('ShowSpinnerScreen');"
         "  }"
         "}");
-    js_checker().Evaluate(
+    js_checker().ExecuteAsync(
         "var testInvalidateAd = login.OAuthEnrollmentScreen.invalidateAd;"
         "login.OAuthEnrollmentScreen.invalidateAd = function(machineName, "
         "user, errorState) {"
@@ -319,9 +319,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory credentials. Verifies that the AuthpolicyClient
 // calls us back with the correct realm.
-// TODO(crbug.com/735621): Flaky.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       DISABLED_TestActiveDirectoryEnrollment_Success) {
+                       TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SetupActiveDirectoryJoin();
@@ -350,9 +349,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
-// TODO(crbug.com/735621): Flaky.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       DISABLED_TestActiveDirectoryEnrollment_UIErrors) {
+                       TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   SetupActiveDirectoryJoin();
   SubmitEnrollmentCredentials();
