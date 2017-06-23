@@ -16,7 +16,7 @@
   var scrollbarHeight = 15;
 
   function frameViewport() {
-    return frame.contentWindow.view;
+    return frame.contentWindow.visualViewport;
   }
 
   async_test(function(t) {

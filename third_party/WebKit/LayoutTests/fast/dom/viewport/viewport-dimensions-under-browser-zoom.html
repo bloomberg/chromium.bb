@@ -15,7 +15,7 @@
   var browserZoomFactor = 1.25;
 
   function viewport() {
-    return window.view;
+    return window.visualViewport;
   }
 
   var numCallsResize = 0;
@@ -23,7 +23,7 @@
   async_test(function(t) {
     window.onload = t.step_func(function() {
 
-      window.view.addEventListener('resize', function(e) {
+      window.visualViewport.addEventListener('resize', function(e) {
         numCallsResize++;
       });
 

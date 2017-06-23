@@ -9061,7 +9061,7 @@ interface webkitURL
     getter statusbar
     getter styleMedia
     getter toolbar
-    getter view
+    getter visualViewport
     getter webkitStorageInfo
     method NodeFilter
     method alert
@@ -9239,7 +9239,7 @@ interface webkitURL
     setter status
     setter statusbar
     setter toolbar
-    setter view
+    setter visualViewport
 PASS successfullyParsed is true
 
 TEST COMPLETE

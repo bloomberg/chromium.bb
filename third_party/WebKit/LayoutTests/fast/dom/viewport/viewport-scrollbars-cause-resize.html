@@ -2,21 +2,21 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <h1>Viewport: Scrollbars Cause Resize</h1>
-<h4>Test Description: This test checks that the appearance of classic scrollbars will cause a resize event to be fired at window.view.</h4>
+<h4>Test Description: This test checks that the appearance of classic scrollbars will cause a resize event to be fired at window.visualViewport.</h4>
 <script>
     document.documentElement.style.overflow = "hidden";
-    var initialWidth = view.width;
-    var initialHeight = view.height;
+    var initialWidth = visualViewport.width;
+    var initialHeight = visualViewport.height;
 
     test(function() {
-          assert_equals(window.view.width, window.innerWidth);
-          assert_equals(window.view.height, window.innerHeight);
+          assert_equals(window.visualViewport.width, window.innerWidth);
+          assert_equals(window.visualViewport.height, window.innerHeight);
         }, "view size initially matches window size");
 
 
-    var t = async_test("Resize event was fired at window.view");
+    var t = async_test("Resize event was fired at window.visualViewport");
     var viewResized = false;
-    window.view.addEventListener('resize', function() {
+    window.visualViewport.addEventListener('resize', function() {
         viewResized = true;
     });
 
@@ -29,8 +29,8 @@
     document.body.style.height = "10000px";
 
     test(function() {
-          assert_equals(window.view.width, initialWidth - 15);
-          assert_equals(window.view.height, initialHeight - 15);
+          assert_equals(window.visualViewport.width, initialWidth - 15);
+          assert_equals(window.visualViewport.height, initialHeight - 15);
         }, "view size reflects appearance of classic scrollbars");
 
 

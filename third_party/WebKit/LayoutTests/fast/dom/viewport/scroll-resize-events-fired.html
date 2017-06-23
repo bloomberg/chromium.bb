@@ -13,17 +13,17 @@
   var numCallsResize = 0;
   var pageScaleFactor = 2;
 
-  var t = async_test('verify that the scroll and resize events get fired on window.view');
+  var t = async_test('verify that the scroll and resize events get fired on window.visualViewport');
 
   window.onload = t.step_func(function() {
     // Turn off smooth scrolling.
     internals.settings.setScrollAnimatorEnabled(false);
 
-    window.view.addEventListener('scroll', function(e) {
+    window.visualViewport.addEventListener('scroll', function(e) {
       numCallsScroll++;
     });
 
-    window.view.addEventListener('resize', function(e) {
+    window.visualViewport.addEventListener('resize', function(e) {
       numCallsResize++;
     });
 
