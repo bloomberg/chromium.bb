@@ -622,6 +622,18 @@
             ]
         }
     ],
+    "DataReductionProxyPreviewsBlacklistTransition": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "DataReductionProxyServerExperiments": [
         {
             "platforms": [
