@@ -84,7 +84,7 @@ template("remoting_android_client_java_tmpl") {
       "//third_party/android_tools:android_support_core_ui_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
       "//third_party/android_tools:android_support_v7_mediarouter_java",
-      "//ui/android:ui_java",
+      "//ui/android:ui_utils_java",
     ]
 
     deps += [ invoker.remoting_google_play_services_library ]

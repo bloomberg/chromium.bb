@@ -167,7 +167,26 @@ android_resources("ui_java_resources") {
   ]
 }
 
-android_library("ui_java") {
+java_group("ui_java") {
+  deps = [
+    ":ui_full_java",
+    ":ui_utils_java",
+  ]
+}
+
+# This is created explicitly for remoting_apk to avoid including
+# unused JNI functions.
+android_library("ui_utils_java") {
+  java_files = [
+    "java/src/org/chromium/ui/PhotoPickerListener.java",
+    "java/src/org/chromium/ui/UiUtils.java",
+  ]
+  deps = [
+    "//base:base_java",
+  ]
+}
+
+android_library("ui_full_java") {
   java_files = [
     "java/src/org/chromium/ui/DropdownAdapter.java",
     "java/src/org/chromium/ui/DropdownDividerDrawable.java",
@@ -176,8 +195,6 @@ android_library("ui_java") {
     "java/src/org/chromium/ui/DropdownPopupWindow.java",
     "java/src/org/chromium/ui/HorizontalListDividerDrawable.java",
     "java/src/org/chromium/ui/OverscrollRefreshHandler.java",
-    "java/src/org/chromium/ui/PhotoPickerListener.java",
-    "java/src/org/chromium/ui/UiUtils.java",
     "java/src/org/chromium/ui/VSyncMonitor.java",
     "java/src/org/chromium/ui/base/ActivityWindowAndroid.java",
     "java/src/org/chromium/ui/base/AndroidPermissionDelegate.java",
@@ -225,6 +242,7 @@ android_library("ui_java") {
   ]
   deps = [
     ":ui_java_resources",
+    ":ui_utils_java",
     "//base:base_java",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
