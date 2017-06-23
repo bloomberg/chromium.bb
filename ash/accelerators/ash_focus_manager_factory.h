@@ -20,12 +20,16 @@ class AshFocusManagerFactory : public views::FocusManagerFactory {
 
  protected:
   // views::FocusManagerFactory overrides:
-  views::FocusManager* CreateFocusManager(views::Widget* widget,
-                                          bool desktop_widget) override;
+  std::unique_ptr<views::FocusManager> CreateFocusManager(
+      views::Widget* widget,
+      bool desktop_widget) override;
 
  private:
   class Delegate : public views::FocusManagerDelegate {
    public:
+    Delegate();
+    ~Delegate() override;
+
     // views::FocusManagerDelegate overrides:
     bool ProcessAccelerator(const ui::Accelerator& accelerator) override;
   };

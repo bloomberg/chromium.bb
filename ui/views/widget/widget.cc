@@ -1069,7 +1069,7 @@ void Widget::OnNativeWidgetVisibilityChanged(bool visible) {
 
 void Widget::OnNativeWidgetCreated(bool desktop_widget) {
   if (is_top_level())
-    focus_manager_.reset(FocusManagerFactory::Create(this, desktop_widget));
+    focus_manager_ = FocusManagerFactory::Create(this, desktop_widget);
 
   native_widget_->InitModalType(widget_delegate_->GetModalType());
 
