@@ -70,7 +70,7 @@ class URLLoaderImplTest : public testing::Test {
   ~URLLoaderImplTest() override {}
 
   void SetUp() override {
-    test_server_.ServeFilesFromSourceDirectory(
+    test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("content/test/data")));
     ASSERT_TRUE(test_server_.Start());
   }
@@ -112,6 +112,7 @@ class URLLoaderImplTest : public testing::Test {
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
   NetworkContext* context() { return context_.get(); }
+  void DestroyContext() { context_.reset(); }
 
  private:
   base::MessageLoopForIO message_loop_;
@@ -153,6 +154,38 @@ TEST_F(URLLoaderImplTest, SSLSentOnlyWhenRequested) {
   GURL url = https_server.GetURL("/simple_page.html");
   Load(url, &client, 0);
   ASSERT_FALSE(!!client.ssl_info());
+}
+
+TEST_F(URLLoaderImplTest, DestroyContextWithLiveRequest) {
+  TestURLLoaderClient client;
+  GURL url = test_server()->GetURL("/hung-after-headers");
+  ResourceRequest request =
+      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
+
+  mojom::URLLoaderAssociatedPtr loader;
+  // The loader is implicitly owned by the client and the NetworkContext, so
+  // don't hold on to a pointer to it.
+  base::WeakPtr<URLLoaderImpl> loader_impl =
+      (new URLLoaderImpl(context(), mojo::MakeIsolatedRequest(&loader), 0,
+                         request, client.CreateInterfacePtr(),
+                         TRAFFIC_ANNOTATION_FOR_TESTS))
+          ->GetWeakPtrForTests();
+
+  client.RunUntilResponseReceived();
+  EXPECT_TRUE(client.has_received_response());
+  EXPECT_FALSE(client.has_received_completion());
+
+  // Request hasn't completed, so the loader should not have been destroyed.
+  EXPECT_TRUE(loader_impl);
+
+  // Destroying the context should result in destroying the loader and the
+  // client receiving a connection error.
+  DestroyContext();
+  EXPECT_FALSE(loader_impl);
+
+  client.RunUntilConnectionError();
+  EXPECT_FALSE(client.has_received_completion());
+  EXPECT_EQ(0u, client.download_data_length());
 }
 
 }  // namespace content

@@ -48,6 +48,9 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   void OnResponseStarted(net::URLRequest* url_request, int net_error) override;
   void OnReadCompleted(net::URLRequest* url_request, int bytes_read) override;
 
+  // Returns a WeakPtr so tests can validate that the object was destroyed.
+  base::WeakPtr<URLLoaderImpl> GetWeakPtrForTests();
+
  private:
   void ReadMore();
   void DidRead(uint32_t num_bytes, bool completed_synchronously);

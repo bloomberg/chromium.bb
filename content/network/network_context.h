@@ -62,10 +62,6 @@ class NetworkContext : public mojom::NetworkContext {
   // net::URLRequestContext (held by NetworkContext) is destroyed.
   std::set<URLLoaderImpl*> url_loaders_;
 
-  // Set when entering the destructor, in order to avoid manipulations of the
-  // |url_loaders_| (as a url_loader might delete itself in Cleanup()).
-  bool in_shutdown_;
-
   mojom::NetworkContextParamsPtr params_;
 
   mojo::Binding<mojom::NetworkContext> binding_;

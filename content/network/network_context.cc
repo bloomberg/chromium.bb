@@ -89,18 +89,16 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
 NetworkContext::NetworkContext(mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
     : url_request_context_(MakeURLRequestContext()),
-      in_shutdown_(false),
       params_(std::move(params)),
       binding_(this, std::move(request)) {}
 
 NetworkContext::~NetworkContext() {
-  in_shutdown_ = true;
   // Call each URLLoaderImpl and ask it to release its net::URLRequest, as the
   // corresponding net::URLRequestContext is going away with this
   // NetworkContext. The loaders can be deregistering themselves in Cleanup(),
-  // so iterate over a copy.
-  for (auto* url_loader : url_loaders_)
-    url_loader->Cleanup();
+  // so have to be careful.
+  while (!url_loaders_.empty())
+    (*url_loaders_.begin())->Cleanup();
 }
 
 std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting() {
@@ -113,10 +111,8 @@ void NetworkContext::RegisterURLLoader(URLLoaderImpl* url_loader) {
 }
 
 void NetworkContext::DeregisterURLLoader(URLLoaderImpl* url_loader) {
-  if (!in_shutdown_) {
-    size_t removed_count = url_loaders_.erase(url_loader);
-    DCHECK(removed_count);
-  }
+  size_t removed_count = url_loaders_.erase(url_loader);
+  DCHECK(removed_count);
 }
 
 void NetworkContext::CreateURLLoaderFactory(
@@ -134,7 +130,6 @@ void NetworkContext::HandleViewCacheRequest(const GURL& url,
 
 NetworkContext::NetworkContext()
     : url_request_context_(MakeURLRequestContext()),
-      in_shutdown_(false),
       binding_(this) {}
 
 }  // namespace content
