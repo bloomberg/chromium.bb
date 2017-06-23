@@ -99,9 +99,6 @@ void FileReaderLoader::Start(ExecutionContext* execution_context,
 
   ThreadableLoaderOptions options;
   options.fetch_request_mode = WebURLRequest::kFetchRequestModeSameOrigin;
-  // FIXME: Is there a directive to which this load should be subject?
-  options.content_security_policy_enforcement =
-      kDoNotEnforceContentSecurityPolicy;
 
   ResourceLoaderOptions resource_loader_options;
   // Use special initiator to hide the request from the inspector.

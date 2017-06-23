@@ -773,10 +773,6 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
   resource_loader_options.security_origin = request_->Origin().Get();
 
   ThreadableLoaderOptions threadable_loader_options;
-  threadable_loader_options.content_security_policy_enforcement =
-      ContentSecurityPolicy::ShouldBypassMainWorld(execution_context_)
-          ? kDoNotEnforceContentSecurityPolicy
-          : kEnforceContentSecurityPolicy;
   switch (request_->Mode()) {
     case WebURLRequest::kFetchRequestModeSameOrigin:
     case WebURLRequest::kFetchRequestModeNoCORS:
@@ -830,10 +826,6 @@ void FetchManager::Loader::PerformDataFetch() {
   resource_loader_options.security_origin = request_->Origin().Get();
 
   ThreadableLoaderOptions threadable_loader_options;
-  threadable_loader_options.content_security_policy_enforcement =
-      ContentSecurityPolicy::ShouldBypassMainWorld(execution_context_)
-          ? kDoNotEnforceContentSecurityPolicy
-          : kEnforceContentSecurityPolicy;
   threadable_loader_options.fetch_request_mode =
       WebURLRequest::kFetchRequestModeNoCORS;
 

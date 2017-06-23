@@ -81,9 +81,6 @@ void WorkerScriptLoader::LoadSynchronously(
 
   ThreadableLoaderOptions options;
   options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
-  // FIXME: Should we add EnforceScriptSrcDirective here?
-  options.content_security_policy_enforcement =
-      kDoNotEnforceContentSecurityPolicy;
 
   ResourceLoaderOptions resource_loader_options;
 
