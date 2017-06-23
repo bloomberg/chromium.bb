@@ -18,13 +18,10 @@ using testing::WaitUntilConditionOrTimeout;
 namespace ios_web_view {
 namespace test {
 
-CWVWebView* CreateWebView(CWVWebViewConfiguration* configuration) {
-  return [[CWVWebView alloc] initWithFrame:UIScreen.mainScreen.bounds
-                             configuration:configuration];
-}
-
 CWVWebView* CreateWebView() {
-  return CreateWebView([CWVWebViewConfiguration defaultConfiguration]);
+  return [[CWVWebView alloc]
+      initWithFrame:UIScreen.mainScreen.bounds
+      configuration:[CWVWebViewConfiguration defaultConfiguration]];
 }
 
 bool LoadUrl(CWVWebView* web_view, NSURL* url) {
