@@ -344,6 +344,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
+        power_manager::kKeyboardBrightnessChangedSignal,
+        base::Bind(&PowerManagerClientImpl::KeyboardBrightnessChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
         power_manager::kPeripheralBatteryStatusSignal,
         base::Bind(&PowerManagerClientImpl::PeripheralBatteryStatusReceived,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -469,6 +477,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
                      << ": user initiated " << user_initiated;
     for (auto& observer : observers_)
       observer.BrightnessChanged(brightness_level, user_initiated);
+  }
+
+  void KeyboardBrightnessChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    int32_t brightness_level = 0;
+    bool user_initiated = 0;
+    if (!(reader.PopInt32(&brightness_level) &&
+          reader.PopBool(&user_initiated))) {
+      POWER_LOG(ERROR) << "Keyboard brightness changed signal had incorrect "
+                       << "parameters: " << signal->ToString();
+      return;
+    }
+    POWER_LOG(DEBUG) << "Keyboard brightness changed to " << brightness_level
+                     << ": user initiated " << user_initiated;
+    for (auto& observer : observers_)
+      observer.KeyboardBrightnessChanged(brightness_level, user_initiated);
   }
 
   void PeripheralBatteryStatusReceived(dbus::Signal* signal) {
