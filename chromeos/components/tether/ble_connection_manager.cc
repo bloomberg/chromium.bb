@@ -169,7 +169,7 @@ void BleConnectionManager::ConnectionMetadata::OnMessageReceived(
 BleConnectionManager::BleConnectionManager(
     cryptauth::CryptAuthService* cryptauth_service,
     scoped_refptr<device::BluetoothAdapter> adapter,
-    const LocalDeviceDataProvider* local_device_data_provider,
+    const cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
     cryptauth::BluetoothThrottler* bluetooth_throttler)
     : BleConnectionManager(

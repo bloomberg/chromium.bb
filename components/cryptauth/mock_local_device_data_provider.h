@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_
-#define CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_
+#ifndef COMPONENTS_CRYPTAUTH_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_
+#define COMPONENTS_CRYPTAUTH_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -11,15 +11,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/tether/local_device_data_provider.h"
+#include "components/cryptauth/local_device_data_provider.h"
 
 namespace cryptauth {
+
 class BeaconSeed;
-}
-
-namespace chromeos {
-
-namespace tether {
 
 // Test double for LocalDeviceDataProvider.
 class MockLocalDeviceDataProvider : public LocalDeviceDataProvider {
@@ -28,23 +24,20 @@ class MockLocalDeviceDataProvider : public LocalDeviceDataProvider {
   ~MockLocalDeviceDataProvider() override;
 
   void SetPublicKey(std::unique_ptr<std::string> public_key);
-  void SetBeaconSeeds(
-      std::unique_ptr<std::vector<cryptauth::BeaconSeed>> beacon_seeds);
+  void SetBeaconSeeds(std::unique_ptr<std::vector<BeaconSeed>> beacon_seeds);
 
   // LocalDeviceDataProvider:
   bool GetLocalDeviceData(
       std::string* public_key_out,
-      std::vector<cryptauth::BeaconSeed>* beacon_seeds_out) const override;
+      std::vector<BeaconSeed>* beacon_seeds_out) const override;
 
  private:
   std::unique_ptr<std::string> public_key_;
-  std::unique_ptr<std::vector<cryptauth::BeaconSeed>> beacon_seeds_;
+  std::unique_ptr<std::vector<BeaconSeed>> beacon_seeds_;
 
   DISALLOW_COPY_AND_ASSIGN(MockLocalDeviceDataProvider);
 };
 
-}  // namespace tether
+}  // namespace cryptauth
 
-}  // namespace chromeos
-
-#endif  // CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_
+#endif  // COMPONENTS_CRYPTAUTH_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_

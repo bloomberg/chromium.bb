@@ -46,7 +46,7 @@ BleScanner::ServiceDataProviderImpl::GetServiceDataForUUID(
 
 BleScanner::BleScanner(
     scoped_refptr<device::BluetoothAdapter> adapter,
-    const LocalDeviceDataProvider* local_device_data_provider)
+    const cryptauth::LocalDeviceDataProvider* local_device_data_provider)
     : BleScanner(base::MakeUnique<ServiceDataProviderImpl>(),
                  adapter,
                  base::WrapUnique(new cryptauth::ForegroundEidGenerator()),
@@ -56,7 +56,7 @@ BleScanner::BleScanner(
     std::unique_ptr<ServiceDataProvider> service_data_provider,
     scoped_refptr<device::BluetoothAdapter> adapter,
     std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
-    const LocalDeviceDataProvider* local_device_data_provider)
+    const cryptauth::LocalDeviceDataProvider* local_device_data_provider)
     : service_data_provider_(std::move(service_data_provider)),
       adapter_(adapter),
       eid_generator_(std::move(eid_generator)),

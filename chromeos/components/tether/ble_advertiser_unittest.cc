@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/mock_local_device_data_provider.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
+#include "components/cryptauth/mock_local_device_data_provider.h"
 #include "components/cryptauth/mock_remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -148,7 +148,8 @@ class BleAdvertiserTest : public testing::Test {
     mock_seed_fetcher_->SetSeedsForDevice(fake_devices_[2],
                                           &device_2_beacon_seeds);
 
-    mock_local_data_provider_ = base::MakeUnique<MockLocalDeviceDataProvider>();
+    mock_local_data_provider_ =
+        base::MakeUnique<cryptauth::MockLocalDeviceDataProvider>();
     mock_local_data_provider_->SetPublicKey(
         base::MakeUnique<std::string>(kFakePublicKey));
 
@@ -233,7 +234,8 @@ class BleAdvertiserTest : public testing::Test {
       mock_adapter_;
   cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
-  std::unique_ptr<MockLocalDeviceDataProvider> mock_local_data_provider_;
+  std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
+      mock_local_data_provider_;
 
   std::vector<scoped_refptr<RegisterAdvertisementArgs>>
       register_advertisement_args_;

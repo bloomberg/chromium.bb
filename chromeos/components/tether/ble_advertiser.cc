@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/local_device_data_provider.h"
+#include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -145,7 +145,7 @@ BleAdvertiser::IndividualAdvertisement::CreateServiceData() const {
 
 BleAdvertiser::BleAdvertiser(
     scoped_refptr<device::BluetoothAdapter> adapter,
-    const LocalDeviceDataProvider* local_device_data_provider,
+    const cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher)
     : BleAdvertiser(adapter,
                     base::MakeUnique<cryptauth::ForegroundEidGenerator>(),
@@ -158,7 +158,7 @@ BleAdvertiser::BleAdvertiser(
     scoped_refptr<device::BluetoothAdapter> adapter,
     std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
     const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    const LocalDeviceDataProvider* local_device_data_provider)
+    const cryptauth::LocalDeviceDataProvider* local_device_data_provider)
     : adapter_(adapter),
       eid_generator_(std::move(eid_generator)),
       remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),

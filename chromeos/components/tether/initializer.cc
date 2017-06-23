@@ -14,7 +14,6 @@
 #include "chromeos/components/tether/host_scan_scheduler.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/keep_alive_scheduler.h"
-#include "chromeos/components/tether/local_device_data_provider.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/network_connection_handler_tether_delegate.h"
 #include "chromeos/components/tether/notification_presenter.h"
@@ -30,6 +29,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/cryptauth/bluetooth_throttler_impl.h"
 #include "components/cryptauth/cryptauth_service.h"
+#include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
 #include "components/prefs/pref_service.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -174,7 +174,7 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   tether_host_fetcher_ =
       base::MakeUnique<TetherHostFetcher>(cryptauth_service_);
   local_device_data_provider_ =
-      base::MakeUnique<LocalDeviceDataProvider>(cryptauth_service_);
+      base::MakeUnique<cryptauth::LocalDeviceDataProvider>(cryptauth_service_);
   remote_beacon_seed_fetcher_ =
       base::MakeUnique<cryptauth::RemoteBeaconSeedFetcher>(
           cryptauth_service_->GetCryptAuthDeviceManager());

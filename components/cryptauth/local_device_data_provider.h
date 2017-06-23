@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H_
-#define CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H_
+#ifndef COMPONENTS_CRYPTAUTH_LOCAL_DEVICE_DATA_PROVIDER_H_
+#define COMPONENTS_CRYPTAUTH_LOCAL_DEVICE_DATA_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -13,20 +13,15 @@
 #include "base/memory/ptr_util.h"
 
 namespace cryptauth {
+
 class BeaconSeed;
 class CryptAuthService;
-}
-
-namespace chromeos {
-
-namespace tether {
 
 // Fetches CryptAuth data about the local device (i.e., the device on which this
 // code is running) for the current user (i.e., the one which is logged-in).
 class LocalDeviceDataProvider {
  public:
-  explicit LocalDeviceDataProvider(
-      cryptauth::CryptAuthService* cryptauth_service);
+  explicit LocalDeviceDataProvider(CryptAuthService* cryptauth_service);
   virtual ~LocalDeviceDataProvider();
 
   // Fetches the public key and/or the beacon seeds for the local device.
@@ -34,18 +29,16 @@ class LocalDeviceDataProvider {
   // parameter, the associated data will not be fetched.
   virtual bool GetLocalDeviceData(
       std::string* public_key_out,
-      std::vector<cryptauth::BeaconSeed>* beacon_seeds_out) const;
+      std::vector<BeaconSeed>* beacon_seeds_out) const;
 
  private:
   friend class LocalDeviceDataProviderTest;
 
-  cryptauth::CryptAuthService* cryptauth_service_;
+  CryptAuthService* cryptauth_service_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDeviceDataProvider);
 };
 
-}  // namespace tether
+}  // namespace cryptauth
 
-}  // namespace chromeos
-
-#endif  // CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H_
+#endif  // COMPONENTS_CRYPTAUTH_LOCAL_DEVICE_DATA_PROVIDER_H_
