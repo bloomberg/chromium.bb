@@ -29793,6 +29793,16 @@ from previous Chrome versions.
   <int value="5" label="Infobar dismissed by tab closure"/>
 </enum>
 
+<enum name="PreviewsInfoBarTimestamp">
+  <int value="0" label="Timestamp shown"/>
+  <int value="1" label="Timestamp not shown because the preview was not stale"/>
+  <int value="2"
+      label="Timestamp not shown because the staleness was negative."/>
+  <int value="3"
+      label="Timestamp not shown because the staleness was greater than the
+             max"/>
+</enum>
+
 <enum name="PreviewsUserOptedOut">
   <int value="0" label="The user did not choose to reload the full page."/>
   <int value="1" label="The user chose to reload the full page."/>

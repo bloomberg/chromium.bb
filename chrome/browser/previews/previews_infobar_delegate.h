@@ -35,6 +35,17 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
     INFOBAR_INDEX_BOUNDARY
   };
 
+  // Values of the UMA Previews.InfoBarTimestamp histogram. This enum must
+  // remain synchronized with the enum of the same name in
+  // metrics/histograms/histograms.xml.
+  enum PreviewsInfoBarTimestamp {
+    TIMESTAMP_SHOWN = 0,
+    TIMESTAMP_NOT_SHOWN_PREVIEW_NOT_STALE = 1,
+    TIMESTAMP_NOT_SHOWN_STALENESS_NEGATIVE = 2,
+    TIMESTAMP_NOT_SHOWN_STALENESS_GREATER_THAN_MAX = 3,
+    TIMESTAMP_INDEX_BOUNDARY
+  };
+
   ~PreviewsInfoBarDelegate() override;
 
   // Creates a preview infobar and corresponding delegate and adds the infobar
