@@ -1870,7 +1870,11 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   TX_TYPE best_tx_type = txk_start;
   int64_t best_rd = INT64_MAX;
   const int coeff_ctx = combine_entropy_contexts(*a, *l);
+  RD_STATS best_rd_stats;
   TX_TYPE tx_type;
+
+  av1_invalid_rd_stats(&best_rd_stats);
+
   for (tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (plane == 0) mbmi->txk_type[block] = tx_type;
     TX_TYPE ref_tx_type =
@@ -1894,10 +1898,13 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     int rd = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
     if (rd < best_rd) {
       best_rd = rd;
-      *rd_stats = this_rd_stats;
+      best_rd_stats = this_rd_stats;
       best_tx_type = tx_type;
     }
   }
+
+  av1_merge_rd_stats(rd_stats, &best_rd_stats);
+
   if (plane == 0) mbmi->txk_type[block] = best_tx_type;
   // TODO(angiebird): Instead of re-call av1_xform_quant and av1_optimize_b,
   // copy the best result in the above tx_type search for loop

@@ -4182,6 +4182,12 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   int coeff_ctx = get_entropy_context(tx_size, a, l);
 
+#if CONFIG_TXK_SEL
+  av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
+                      tx_size, a, l, 0, rd_stats);
+  return;
+#endif
+
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
 
@@ -4288,6 +4294,10 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   int zero_blk_rate;
   RD_STATS sum_rd_stats;
   const int tx_size_ctx = txsize_sqr_map[tx_size];
+#if CONFIG_TXK_SEL
+  TX_TYPE best_tx_type = TX_TYPES;
+  int txk_idx = block;
+#endif
 
   av1_init_rd_stats(&sum_rd_stats);
 
@@ -4346,6 +4356,9 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
           av1_cost_bit(cpi->common.fc->txfm_partition_prob[ctx], 0);
     this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
     tmp_eob = p->eobs[block];
+#if CONFIG_TXK_SEL
+    best_tx_type = mbmi->txk_type[txk_idx];
+#endif
   }
 
   if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH) {
@@ -4496,6 +4509,9 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
         inter_tx_size[idy][idx] = tx_size;
     mbmi->tx_size = tx_size;
+#if CONFIG_TXK_SEL
+    mbmi->txk_type[txk_idx] = best_tx_type;
+#endif
     if (this_rd == INT64_MAX) *is_cost_valid = 0;
     x->blk_skip[plane][blk_row * bw + blk_col] = rd_stats->skip;
   } else {
@@ -4643,6 +4659,12 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   TX_SIZE best_tx = max_txsize_lookup[bsize];
   TX_SIZE best_min_tx_size = TX_SIZES_ALL;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
+  TX_TYPE txk_start = DCT_DCT;
+#if CONFIG_TXK_SEL
+  TX_TYPE txk_end = DCT_DCT + 1;
+#else
+  TX_TYPE txk_end = TX_TYPES;
+#endif
   const int n4 = bsize_to_num_blk(bsize);
   int idx, idy;
   int prune = 0;
@@ -4670,7 +4692,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   for (idx = 0; idx < count32; ++idx)
     av1_invalid_rd_stats(&rd_stats_stack[idx]);
 
-  for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+  for (tx_type = txk_start; tx_type < txk_end; ++tx_type) {
     RD_STATS this_rd_stats;
     av1_init_rd_stats(&this_rd_stats);
 #if CONFIG_EXT_TX
