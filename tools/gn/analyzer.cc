@@ -395,7 +395,9 @@ bool Analyzer::TargetRefersToFile(const Target* target,
 void Analyzer::AddTargetsDirectlyReferringToFileTo(const SourceFile* file,
                                                    TargetSet* matches) const {
   for (auto* target : all_targets_) {
-    if (TargetRefersToFile(target, file))
+    // Only handles targets in the default toolchain.
+    if ((target->label().GetToolchainLabel() == default_toolchain_) &&
+        TargetRefersToFile(target, file))
       matches->insert(target);
   }
 }
