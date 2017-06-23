@@ -938,7 +938,7 @@ crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
-crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]
+crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
 
 # Web Components related tests (Shadow DOM, Custom Elements) failures.
 crbug.com/505364 external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
