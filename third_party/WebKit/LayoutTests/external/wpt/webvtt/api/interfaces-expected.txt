@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 50 tests; 46 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS VTTCue interface: existence and properties of interface object 
 PASS VTTCue interface object length 
 PASS VTTCue interface object name 
@@ -15,6 +16,8 @@ PASS VTTCue interface: attribute size
 PASS VTTCue interface: attribute align 
 PASS VTTCue interface: attribute text 
 PASS VTTCue interface: operation getCueAsHTML() 
+PASS VTTCue must be primary interface of new VTTCue(0, 0, "") 
+PASS Stringification of new VTTCue(0, 0, "") 
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "region" with the proper type (0) 
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "vertical" with the proper type (1) 
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "snapToLines" with the proper type (2) 
@@ -38,6 +41,8 @@ PASS VTTRegion interface: attribute regionAnchorY
 PASS VTTRegion interface: attribute viewportAnchorX 
 PASS VTTRegion interface: attribute viewportAnchorY 
 PASS VTTRegion interface: attribute scroll 
+PASS VTTRegion must be primary interface of new VTTRegion() 
+PASS Stringification of new VTTRegion() 
 PASS VTTRegion interface: new VTTRegion() must inherit property "width" with the proper type (0) 
 PASS VTTRegion interface: new VTTRegion() must inherit property "lines" with the proper type (1) 
 PASS VTTRegion interface: new VTTRegion() must inherit property "regionAnchorX" with the proper type (2) 

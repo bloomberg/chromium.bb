@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 530 tests; 527 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 548 tests; 545 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS DOMPointReadOnly interface: existence and properties of interface object 
 PASS DOMPointReadOnly interface object length 
@@ -12,6 +12,8 @@ PASS DOMPointReadOnly interface: attribute y
 PASS DOMPointReadOnly interface: attribute z 
 PASS DOMPointReadOnly interface: attribute w 
 PASS DOMPointReadOnly interface: operation matrixTransform(DOMMatrixInit) 
+PASS DOMPointReadOnly must be primary interface of new DOMPointReadOnly() 
+PASS Stringification of new DOMPointReadOnly() 
 PASS DOMPointReadOnly interface: new DOMPointReadOnly() must inherit property "fromPoint" with the proper type (0) 
 PASS DOMPointReadOnly interface: calling fromPoint(DOMPointInit) on new DOMPointReadOnly() with too few arguments must throw TypeError 
 PASS DOMPointReadOnly interface: new DOMPointReadOnly() must inherit property "x" with the proper type (1) 
@@ -31,6 +33,8 @@ PASS DOMPoint interface: attribute x
 PASS DOMPoint interface: attribute y 
 PASS DOMPoint interface: attribute z 
 PASS DOMPoint interface: attribute w 
+PASS DOMPoint must be primary interface of new DOMPoint() 
+PASS Stringification of new DOMPoint() 
 PASS DOMPoint interface: new DOMPoint() must inherit property "fromPoint" with the proper type (0) 
 PASS DOMPoint interface: calling fromPoint(DOMPointInit) on new DOMPoint() with too few arguments must throw TypeError 
 PASS DOMPoint interface: new DOMPoint() must inherit property "x" with the proper type (1) 
@@ -59,6 +63,8 @@ PASS DOMRectReadOnly interface: attribute top
 PASS DOMRectReadOnly interface: attribute right 
 PASS DOMRectReadOnly interface: attribute bottom 
 PASS DOMRectReadOnly interface: attribute left 
+PASS DOMRectReadOnly must be primary interface of new DOMRectReadOnly() 
+PASS Stringification of new DOMRectReadOnly() 
 PASS DOMRectReadOnly interface: new DOMRectReadOnly() must inherit property "fromRect" with the proper type (0) 
 PASS DOMRectReadOnly interface: calling fromRect(DOMRectInit) on new DOMRectReadOnly() with too few arguments must throw TypeError 
 PASS DOMRectReadOnly interface: new DOMRectReadOnly() must inherit property "x" with the proper type (1) 
@@ -80,6 +86,8 @@ PASS DOMRect interface: attribute x
 PASS DOMRect interface: attribute y 
 PASS DOMRect interface: attribute width 
 PASS DOMRect interface: attribute height 
+PASS DOMRect must be primary interface of new DOMRect() 
+PASS Stringification of new DOMRect() 
 PASS DOMRect interface: new DOMRect() must inherit property "fromRect" with the proper type (0) 
 PASS DOMRect interface: calling fromRect(DOMRectInit) on new DOMRect() with too few arguments must throw TypeError 
 PASS DOMRect interface: new DOMRect() must inherit property "x" with the proper type (1) 
@@ -108,6 +116,8 @@ PASS DOMQuad interface: attribute p2
 PASS DOMQuad interface: attribute p3 
 PASS DOMQuad interface: attribute p4 
 PASS DOMQuad interface: operation getBounds() 
+PASS DOMQuad must be primary interface of new DOMQuad() 
+PASS Stringification of new DOMQuad() 
 PASS DOMQuad interface: new DOMQuad() must inherit property "fromRect" with the proper type (0) 
 PASS DOMQuad interface: calling fromRect(DOMRectInit) on new DOMQuad() with too few arguments must throw TypeError 
 PASS DOMQuad interface: new DOMQuad() must inherit property "fromQuad" with the proper type (1) 
@@ -165,6 +175,8 @@ PASS DOMMatrixReadOnly interface: operation transformPoint(DOMPointInit)
 PASS DOMMatrixReadOnly interface: operation toFloat32Array() 
 PASS DOMMatrixReadOnly interface: operation toFloat64Array() 
 PASS DOMMatrixReadOnly interface: stringifier 
+PASS DOMMatrixReadOnly must be primary interface of new DOMMatrixReadOnly() 
+PASS Stringification of new DOMMatrixReadOnly() 
 PASS DOMMatrixReadOnly interface: new DOMMatrixReadOnly() must inherit property "fromMatrix" with the proper type (0) 
 PASS DOMMatrixReadOnly interface: calling fromMatrix(DOMMatrixInit) on new DOMMatrixReadOnly() with too few arguments must throw TypeError 
 PASS DOMMatrixReadOnly interface: new DOMMatrixReadOnly() must inherit property "fromFloat32Array" with the proper type (1) 
@@ -220,6 +232,8 @@ PASS DOMMatrixReadOnly interface: new DOMMatrixReadOnly() must inherit property 
 PASS DOMMatrixReadOnly interface: calling transformPoint(DOMPointInit) on new DOMMatrixReadOnly() with too few arguments must throw TypeError 
 PASS DOMMatrixReadOnly interface: new DOMMatrixReadOnly() must inherit property "toFloat32Array" with the proper type (40) 
 PASS DOMMatrixReadOnly interface: new DOMMatrixReadOnly() must inherit property "toFloat64Array" with the proper type (41) 
+PASS DOMMatrixReadOnly must be primary interface of DOMMatrixReadOnly.fromMatrix({is2D: false}) 
+PASS Stringification of DOMMatrixReadOnly.fromMatrix({is2D: false}) 
 PASS DOMMatrixReadOnly interface: DOMMatrixReadOnly.fromMatrix({is2D: false}) must inherit property "fromMatrix" with the proper type (0) 
 PASS DOMMatrixReadOnly interface: calling fromMatrix(DOMMatrixInit) on DOMMatrixReadOnly.fromMatrix({is2D: false}) with too few arguments must throw TypeError 
 PASS DOMMatrixReadOnly interface: DOMMatrixReadOnly.fromMatrix({is2D: false}) must inherit property "fromFloat32Array" with the proper type (1) 
@@ -318,6 +332,8 @@ PASS DOMMatrix interface: operation skewXSelf(unrestricted double)
 PASS DOMMatrix interface: operation skewYSelf(unrestricted double) 
 PASS DOMMatrix interface: operation invertSelf() 
 PASS DOMMatrix interface: operation setMatrixValue(DOMString) 
+PASS DOMMatrix must be primary interface of new DOMMatrix() 
+PASS Stringification of new DOMMatrix() 
 PASS DOMMatrix interface: new DOMMatrix() must inherit property "fromMatrix" with the proper type (0) 
 PASS DOMMatrix interface: calling fromMatrix(DOMMatrixInit) on new DOMMatrix() with too few arguments must throw TypeError 
 PASS DOMMatrix interface: new DOMMatrix() must inherit property "fromFloat32Array" with the proper type (1) 
@@ -424,6 +440,8 @@ PASS DOMMatrixReadOnly interface: new DOMMatrix() must inherit property "transfo
 PASS DOMMatrixReadOnly interface: calling transformPoint(DOMPointInit) on new DOMMatrix() with too few arguments must throw TypeError 
 PASS DOMMatrixReadOnly interface: new DOMMatrix() must inherit property "toFloat32Array" with the proper type (40) 
 PASS DOMMatrixReadOnly interface: new DOMMatrix() must inherit property "toFloat64Array" with the proper type (41) 
+PASS DOMMatrix must be primary interface of DOMMatrix.fromMatrix({is2D: false}) 
+PASS Stringification of DOMMatrix.fromMatrix({is2D: false}) 
 PASS DOMMatrix interface: DOMMatrix.fromMatrix({is2D: false}) must inherit property "fromMatrix" with the proper type (0) 
 PASS DOMMatrix interface: calling fromMatrix(DOMMatrixInit) on DOMMatrix.fromMatrix({is2D: false}) with too few arguments must throw TypeError 
 PASS DOMMatrix interface: DOMMatrix.fromMatrix({is2D: false}) must inherit property "fromFloat32Array" with the proper type (1) 

@@ -1,0 +1,15 @@
+This is a testharness.js-based test.
+FAIL Single item get assert_unreached: open should succeed Reached unreachable code
+FAIL Single item get (generated key) assert_unreached: open should succeed Reached unreachable code
+FAIL getAllKeys on empty object store assert_unreached: open should succeed Reached unreachable code
+FAIL Get all values assert_unreached: open should succeed Reached unreachable code
+FAIL Test maxCount assert_unreached: open should succeed Reached unreachable code
+FAIL Get bound range assert_unreached: open should succeed Reached unreachable code
+FAIL Get bound range with maxCount assert_unreached: open should succeed Reached unreachable code
+FAIL Get upper excluded assert_unreached: open should succeed Reached unreachable code
+FAIL Get lower excluded assert_unreached: open should succeed Reached unreachable code
+FAIL Get bound range (generated) with maxCount assert_unreached: open should succeed Reached unreachable code
+FAIL Non existent key assert_unreached: open should succeed Reached unreachable code
+FAIL zero maxCount assert_unreached: open should succeed Reached unreachable code
+Harness: the test ran to completion.
+

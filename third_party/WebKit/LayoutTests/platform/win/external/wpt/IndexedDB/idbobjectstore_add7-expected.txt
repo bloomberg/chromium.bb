@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL IDBObjectStore.add() - autoIncrement and out-of-line keys  assert_unreached: unexpected db.abort Reached unreachable code
+Harness: the test ran to completion.
+

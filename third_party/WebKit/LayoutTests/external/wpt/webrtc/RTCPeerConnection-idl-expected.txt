@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 114 tests; 64 PASS, 50 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 116 tests; 66 PASS, 50 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object 
 PASS EventTarget interface object length 
 PASS EventTarget interface object name 
@@ -65,6 +65,8 @@ FAIL RTCPeerConnection interface: operation setIdentityProvider(DOMString,DOMStr
 FAIL RTCPeerConnection interface: operation getIdentityAssertion() assert_own_property: interface prototype object missing non-static operation expected property "getIdentityAssertion" missing
 FAIL RTCPeerConnection interface: attribute peerIdentity assert_true: The prototype object must have a property "peerIdentity" expected true got false
 FAIL RTCPeerConnection interface: attribute idpLoginUrl assert_true: The prototype object must have a property "idpLoginUrl" expected true got false
+PASS RTCPeerConnection must be primary interface of pc 
+PASS Stringification of pc 
 PASS RTCPeerConnection interface: pc must inherit property "createOffer" with the proper type (0) 
 PASS RTCPeerConnection interface: calling createOffer(RTCOfferOptions) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "createAnswer" with the proper type (1) 

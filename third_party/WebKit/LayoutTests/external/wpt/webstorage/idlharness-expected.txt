@@ -12,6 +12,8 @@ FAIL Storage interface: operation getItem(DOMString) assert_true: property shoul
 FAIL Storage interface: operation setItem(DOMString,DOMString) assert_true: property should be enumerable expected true got false
 FAIL Storage interface: operation removeItem(DOMString) assert_true: property should be enumerable expected true got false
 FAIL Storage interface: operation clear() assert_true: property should be enumerable expected true got false
+PASS Storage must be primary interface of window.localStorage 
+PASS Stringification of window.localStorage 
 PASS Storage interface: window.localStorage must inherit property "length" with the proper type (0) 
 PASS Storage interface: window.localStorage must inherit property "key" with the proper type (1) 
 PASS Storage interface: calling key(unsigned long) on window.localStorage with too few arguments must throw TypeError 

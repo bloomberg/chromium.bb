@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 80 tests; 59 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 82 tests; 61 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test MediaDevices.enumerateDevices call and result. Types only. 
 PASS Navigator interface: attribute mediaDevices 
 PASS Navigator interface: operation getUserMedia(MediaStreamConstraints,NavigatorUserMediaSuccessCallback,NavigatorUserMediaErrorCallback) 
@@ -70,6 +70,8 @@ PASS MediaDeviceInfo interface: attribute deviceId
 PASS MediaDeviceInfo interface: attribute kind 
 PASS MediaDeviceInfo interface: attribute label 
 PASS MediaDeviceInfo interface: attribute groupId 
+PASS MediaDeviceInfo must be primary interface of _mediaInfo 
+PASS Stringification of _mediaInfo 
 PASS MediaDeviceInfo interface: _mediaInfo must inherit property "deviceId" with the proper type (0) 
 PASS MediaDeviceInfo interface: _mediaInfo must inherit property "kind" with the proper type (1) 
 PASS MediaDeviceInfo interface: _mediaInfo must inherit property "label" with the proper type (2) 

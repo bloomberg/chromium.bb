@@ -29,6 +29,8 @@ PASS MediaStreamTrack interface: operation getCapabilities()
 PASS MediaStreamTrack interface: operation getConstraints() 
 PASS MediaStreamTrack interface: operation getSettings() 
 PASS MediaStreamTrack interface: operation applyConstraints(MediaTrackConstraints) 
+PASS MediaStreamTrack must be primary interface of track 
+PASS Stringification of track 
 PASS MediaStreamTrack interface: track must inherit property "kind" with the proper type (0) 
 PASS MediaStreamTrack interface: track must inherit property "id" with the proper type (1) 
 PASS MediaStreamTrack interface: track must inherit property "label" with the proper type (2) 

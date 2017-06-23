@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 54 tests; 48 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 56 tests; 50 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS MediaRecorder interface: existence and properties of interface object 
 PASS MediaRecorder interface object length 
 PASS MediaRecorder interface object name 
@@ -22,6 +22,8 @@ PASS MediaRecorder interface: operation pause()
 PASS MediaRecorder interface: operation resume() 
 PASS MediaRecorder interface: operation requestData() 
 PASS MediaRecorder interface: operation isTypeSupported(DOMString) 
+PASS MediaRecorder must be primary interface of [object MediaRecorder] 
+PASS Stringification of [object MediaRecorder] 
 PASS MediaRecorder interface: [object MediaRecorder] must inherit property "stream" with the proper type (0) 
 PASS MediaRecorder interface: [object MediaRecorder] must inherit property "mimeType" with the proper type (1) 
 PASS MediaRecorder interface: [object MediaRecorder] must inherit property "state" with the proper type (2) 

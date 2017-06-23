@@ -1,7 +1,5 @@
 This is a testharness.js-based test.
 PASS Navigator interface: attribute mediaCapabilities 
-PASS Navigator must be primary interface of navigator 
-PASS Stringification of navigator 
 PASS Navigator interface: navigator must inherit property "mediaCapabilities" with the proper type (0) 
 PASS WorkerNavigator interface: existence and properties of interface object 
 PASS MediaCapabilitiesInfo interface: existence and properties of interface object 

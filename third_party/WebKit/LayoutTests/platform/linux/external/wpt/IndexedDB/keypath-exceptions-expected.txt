@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS The last element of keypath is validated 
+FAIL Key path evaluation: Exceptions from non-enumerable getters assert_unreached: open should succeed Reached unreachable code
+PASS Key path evaluation: Exceptions from enumerable getters 
+FAIL Key path evaluation: Exceptions from non-enumerable getters on prototype Assignment to constant variable.
+FAIL Key path evaluation: Exceptions from enumerable getters on prototype Assignment to constant variable.
+PASS Array key conversion should not invoke prototype getters 
+Harness: the test ran to completion.
+

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 477 tests; 306 PASS, 171 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 493 tests; 321 PASS, 172 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data… 
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar> 
@@ -487,5 +487,21 @@ FAIL Parsing: <non-special://[1:2::3]:80/> against <about:blank> assert_equals: 
 FAIL Parsing: <non-special://[:80/> against <about:blank> assert_unreached: Expected URL to fail parsing Reached unreachable code
 PASS Parsing: <blob:https://example.com:443/> against <about:blank> 
 PASS Parsing: <blob:d3958f5c-0777-0845-9dcf-2cb28783acaf> against <about:blank> 
+PASS Parsing: <http://0177.0.0.0189> against <about:blank> 
+PASS Parsing: <http://0x7f.0.0.0x7g> against <about:blank> 
+PASS Parsing: <http://0X7F.0.0.0X7G> against <about:blank> 
+FAIL Parsing: <http://[::127.0.0.0.1]> against <about:blank> assert_equals: failure should set href to input expected "http://[::127.0.0.0.1]" but got "http://[::127.0.0.0.1]/"
+PASS Parsing: <http://[0:1:0:1:0:1:0:1]> against <about:blank> 
+PASS Parsing: <http://[1:0:1:0:1:0:1:0]> against <about:blank> 
+PASS Parsing: <http://example.org/test?"> against <about:blank> 
+PASS Parsing: <http://example.org/test?#> against <about:blank> 
+PASS Parsing: <http://example.org/test?<> against <about:blank> 
+PASS Parsing: <http://example.org/test?>> against <about:blank> 
+PASS Parsing: <http://example.org/test?⌣> against <about:blank> 
+PASS Parsing: <http://example.org/test?%23%23> against <about:blank> 
+PASS Parsing: <http://example.org/test?%GH> against <about:blank> 
+PASS Parsing: <http://example.org/test?a#%EF> against <about:blank> 
+PASS Parsing: <http://example.org/test?a#%GH> against <about:blank> 
+PASS Parsing: <http://example.org/test?a#b\0c> against <about:blank> 
 Harness: the test ran to completion.
 

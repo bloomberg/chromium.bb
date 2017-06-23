@@ -15,6 +15,8 @@ PASS SecurityPolicyViolationEvent interface: attribute disposition
 PASS SecurityPolicyViolationEvent interface: attribute statusCode 
 PASS SecurityPolicyViolationEvent interface: attribute lineNumber 
 PASS SecurityPolicyViolationEvent interface: attribute columnNumber 
+PASS SecurityPolicyViolationEvent must be primary interface of new SecurityPolicyViolationEvent({}) 
+FAIL Stringification of new SecurityPolicyViolationEvent({}) Cannot read property 'has_stringifier' of undefined
 PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "documentURI" with the proper type (0) 
 PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "referrer" with the proper type (1) 
 PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "blockedURI" with the proper type (2) 

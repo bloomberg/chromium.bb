@@ -5348,7 +5348,7 @@ crbug.com/591099 external/wpt/encoding/textdecoder-fatal-single-byte.html [ Time
 crbug.com/591099 external/wpt/eventsource/eventsource-onmessage-realm.htm [ Crash ]
 crbug.com/591099 external/wpt/fetch/api/request/multi-globals/url-parsing.html [ Crash ]
 crbug.com/591099 external/wpt/fetch/api/response/multi-globals/url-parsing.html [ Crash ]
-crbug.com/591099 external/wpt/fetch/dangling-markup-mitigation.tentative.html [ Crash ]
+crbug.com/591099 external/wpt/fetch/security/dangling-markup-mitigation.tentative.html [ Crash ]
 crbug.com/591099 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-iframe-manual.html [ Crash ]
 crbug.com/591099 external/wpt/fullscreen/model/move-to-iframe-manual.html [ Crash ]
 crbug.com/591099 external/wpt/html-media-capture/capture_audio_cancel-manual.html [ Crash Failure ]

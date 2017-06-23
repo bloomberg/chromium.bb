@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 241 tests; 98 PASS, 143 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 246 tests; 101 PASS, 145 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data… 
 FAIL URL's href: file://example:1/ should throw assert_throws: function "() => url.href = test.input" did not throw
 PASS XHR: file://example:1/ should throw 
@@ -241,5 +241,10 @@ FAIL XHR: non-special://[:80/ should throw assert_throws: function "() => client
 PASS sendBeacon(): non-special://[:80/ should throw 
 FAIL Location's href: non-special://[:80/ should throw assert_throws: function "() => self[0].location = test.input" did not throw
 FAIL window.open(): non-special://[:80/ should throw assert_throws: function "() => self.open(test.input).close()" did not throw
+FAIL URL's href: http://[::127.0.0.0.1] should throw assert_throws: function "() => url.href = test.input" did not throw
+PASS XHR: http://[::127.0.0.0.1] should throw 
+PASS sendBeacon(): http://[::127.0.0.0.1] should throw 
+FAIL Location's href: http://[::127.0.0.0.1] should throw assert_throws: function "() => self[0].location = test.input" threw object "SyntaxError: Failed to set the 'href' property on 'Location': 'http://[::127.0.0.0.1]' is not a valid URL." ("SyntaxError") expected object "TypeError" ("TypeError")
+PASS window.open(): http://[::127.0.0.0.1] should throw 
 Harness: the test ran to completion.
 

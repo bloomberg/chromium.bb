@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Attempting to use deleted IDBObjectStore assert_unreached: unexpected db.abort Reached unreachable code
+Harness: the test ran to completion.
+

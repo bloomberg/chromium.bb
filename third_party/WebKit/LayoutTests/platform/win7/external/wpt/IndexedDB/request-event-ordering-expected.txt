@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL small values assert_equals: Expected success event, but got error event instead expected "success" but got "error"
+FAIL large values assert_equals: Expected success event, but got error event instead expected "success" but got "error"
+FAIL large value followed by small values assert_equals: Expected success event, but got error event instead expected "success" but got "error"
+FAIL large values mixed with small values assert_equals: Expected success event, but got error event instead expected "success" but got "error"
+Harness: the test ran to completion.
+

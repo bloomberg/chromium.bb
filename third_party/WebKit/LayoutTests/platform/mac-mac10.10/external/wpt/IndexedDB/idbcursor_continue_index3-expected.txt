@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL IDBCursor.continue() - index - attempt to iterate to the previous record when the direction is set for the next record  assert_unreached: unexpected db.abort Reached unreachable code
+Harness: the test ran to completion.
+

@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Deleted indexes in newly created stores are still marked as deleted after the transaction aborts assert_equals: Expected success event, but got error event instead expected "success" but got "error"
+FAIL Deleted indexes in deleted stores are still marked as not-deleted after the transaction aborts assert_equals: Expected success event, but got error event instead expected "success" but got "error"
+FAIL Deleted indexes in created+deleted stores are still marked as deleted after their transaction aborts assert_equals: Expected success event, but got error event instead expected "success" but got "error"
+Harness: the test ran to completion.
+

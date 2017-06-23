@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL IDBObjectStore.openKeyCursor() - forward iteration assert_unreached: open should succeed Reached unreachable code
+FAIL IDBObjectStore.openKeyCursor() - reverse iteration assert_unreached: open should succeed Reached unreachable code
+FAIL IDBObjectStore.openKeyCursor() - forward iteration with range assert_unreached: open should succeed Reached unreachable code
+FAIL IDBObjectStore.openKeyCursor() - reverse iteration with range assert_unreached: open should succeed Reached unreachable code
+FAIL IDBObjectStore.openKeyCursor() - invalid inputs assert_unreached: open should succeed Reached unreachable code
+Harness: the test ran to completion.
+

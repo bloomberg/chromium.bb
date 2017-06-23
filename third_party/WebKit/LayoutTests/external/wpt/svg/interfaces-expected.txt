@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 2374 tests; 2274 PASS, 100 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 2528 tests; 2424 PASS, 104 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Document interface: attribute rootElement 
 PASS SVGElement interface: existence and properties of interface object 
 PASS SVGElement interface object length 
@@ -40,6 +40,8 @@ PASS SVGNumber interface object name
 PASS SVGNumber interface: existence and properties of interface prototype object 
 PASS SVGNumber interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGNumber interface: attribute value 
+PASS SVGNumber must be primary interface of svg.createSVGNumber() 
+PASS Stringification of svg.createSVGNumber() 
 PASS SVGNumber interface: svg.createSVGNumber() must inherit property "value" with the proper type (0) 
 PASS SVGLength interface: existence and properties of interface object 
 PASS SVGLength interface object length 
@@ -74,6 +76,8 @@ PASS SVGLength interface: attribute valueInSpecifiedUnits
 PASS SVGLength interface: attribute valueAsString 
 PASS SVGLength interface: operation newValueSpecifiedUnits(unsigned short,float) 
 PASS SVGLength interface: operation convertToSpecifiedUnits(unsigned short) 
+PASS SVGLength must be primary interface of svg.createSVGLength() 
+PASS Stringification of svg.createSVGLength() 
 PASS SVGLength interface: svg.createSVGLength() must inherit property "SVG_LENGTHTYPE_UNKNOWN" with the proper type (0) 
 PASS SVGLength interface: svg.createSVGLength() must inherit property "SVG_LENGTHTYPE_NUMBER" with the proper type (1) 
 PASS SVGLength interface: svg.createSVGLength() must inherit property "SVG_LENGTHTYPE_PERCENTAGE" with the proper type (2) 
@@ -114,6 +118,8 @@ PASS SVGAngle interface: attribute valueInSpecifiedUnits
 PASS SVGAngle interface: attribute valueAsString 
 PASS SVGAngle interface: operation newValueSpecifiedUnits(unsigned short,float) 
 PASS SVGAngle interface: operation convertToSpecifiedUnits(unsigned short) 
+PASS SVGAngle must be primary interface of svg.createSVGAngle() 
+PASS Stringification of svg.createSVGAngle() 
 PASS SVGAngle interface: svg.createSVGAngle() must inherit property "SVG_ANGLETYPE_UNKNOWN" with the proper type (0) 
 PASS SVGAngle interface: svg.createSVGAngle() must inherit property "SVG_ANGLETYPE_UNSPECIFIED" with the proper type (1) 
 PASS SVGAngle interface: svg.createSVGAngle() must inherit property "SVG_ANGLETYPE_DEG" with the proper type (2) 
@@ -141,6 +147,8 @@ PASS SVGNumberList interface: operation insertItemBefore(SVGNumber,unsigned long
 PASS SVGNumberList interface: operation replaceItem(SVGNumber,unsigned long) 
 PASS SVGNumberList interface: operation removeItem(unsigned long) 
 PASS SVGNumberList interface: operation appendItem(SVGNumber) 
+PASS SVGNumberList must be primary interface of text.rotate.baseVal 
+PASS Stringification of text.rotate.baseVal 
 PASS SVGNumberList interface: text.rotate.baseVal must inherit property "length" with the proper type (0) 
 PASS SVGNumberList interface: text.rotate.baseVal must inherit property "numberOfItems" with the proper type (1) 
 PASS SVGNumberList interface: text.rotate.baseVal must inherit property "clear" with the proper type (2) 
@@ -177,6 +185,8 @@ PASS SVGAnimatedBoolean interface: existence and properties of interface prototy
 PASS SVGAnimatedBoolean interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedBoolean interface: attribute baseVal 
 PASS SVGAnimatedBoolean interface: attribute animVal 
+PASS SVGAnimatedBoolean must be primary interface of feConvolveMatrix.preserveAlpha 
+PASS Stringification of feConvolveMatrix.preserveAlpha 
 PASS SVGAnimatedBoolean interface: feConvolveMatrix.preserveAlpha must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedBoolean interface: feConvolveMatrix.preserveAlpha must inherit property "animVal" with the proper type (1) 
 PASS SVGAnimatedEnumeration interface: existence and properties of interface object 
@@ -186,6 +196,8 @@ PASS SVGAnimatedEnumeration interface: existence and properties of interface pro
 PASS SVGAnimatedEnumeration interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedEnumeration interface: attribute baseVal 
 PASS SVGAnimatedEnumeration interface: attribute animVal 
+PASS SVGAnimatedEnumeration must be primary interface of text.lengthAdjust 
+PASS Stringification of text.lengthAdjust 
 PASS SVGAnimatedEnumeration interface: text.lengthAdjust must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedEnumeration interface: text.lengthAdjust must inherit property "animVal" with the proper type (1) 
 PASS SVGAnimatedInteger interface: existence and properties of interface object 
@@ -195,6 +207,8 @@ PASS SVGAnimatedInteger interface: existence and properties of interface prototy
 PASS SVGAnimatedInteger interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedInteger interface: attribute baseVal 
 PASS SVGAnimatedInteger interface: attribute animVal 
+PASS SVGAnimatedInteger must be primary interface of feConvolveMatrix.orderX 
+PASS Stringification of feConvolveMatrix.orderX 
 PASS SVGAnimatedInteger interface: feConvolveMatrix.orderX must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedInteger interface: feConvolveMatrix.orderX must inherit property "animVal" with the proper type (1) 
 PASS SVGAnimatedNumber interface: existence and properties of interface object 
@@ -204,6 +218,8 @@ PASS SVGAnimatedNumber interface: existence and properties of interface prototyp
 PASS SVGAnimatedNumber interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedNumber interface: attribute baseVal 
 PASS SVGAnimatedNumber interface: attribute animVal 
+PASS SVGAnimatedNumber must be primary interface of stop.offset 
+PASS Stringification of stop.offset 
 PASS SVGAnimatedNumber interface: stop.offset must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedNumber interface: stop.offset must inherit property "animVal" with the proper type (1) 
 PASS SVGAnimatedLength interface: existence and properties of interface object 
@@ -213,6 +229,8 @@ PASS SVGAnimatedLength interface: existence and properties of interface prototyp
 PASS SVGAnimatedLength interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedLength interface: attribute baseVal 
 PASS SVGAnimatedLength interface: attribute animVal 
+PASS SVGAnimatedLength must be primary interface of svg.x 
+PASS Stringification of svg.x 
 PASS SVGAnimatedLength interface: svg.x must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedLength interface: svg.x must inherit property "animVal" with the proper type (1) 
 PASS SVGAnimatedAngle interface: existence and properties of interface object 
@@ -222,6 +240,8 @@ PASS SVGAnimatedAngle interface: existence and properties of interface prototype
 PASS SVGAnimatedAngle interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedAngle interface: attribute baseVal 
 PASS SVGAnimatedAngle interface: attribute animVal 
+PASS SVGAnimatedAngle must be primary interface of marker.orientAngle 
+PASS Stringification of marker.orientAngle 
 PASS SVGAnimatedAngle interface: marker.orientAngle must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedAngle interface: marker.orientAngle must inherit property "animVal" with the proper type (1) 
 PASS SVGAnimatedString interface: existence and properties of interface object 
@@ -231,6 +251,8 @@ PASS SVGAnimatedString interface: existence and properties of interface prototyp
 PASS SVGAnimatedString interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedString interface: attribute baseVal 
 PASS SVGAnimatedString interface: attribute animVal 
+PASS SVGAnimatedString must be primary interface of a.target 
+PASS Stringification of a.target 
 PASS SVGAnimatedString interface: a.target must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedString interface: a.target must inherit property "animVal" with the proper type (1) 
 PASS SVGAnimatedRect interface: existence and properties of interface object 
@@ -240,6 +262,8 @@ PASS SVGAnimatedRect interface: existence and properties of interface prototype 
 PASS SVGAnimatedRect interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedRect interface: attribute baseVal 
 PASS SVGAnimatedRect interface: attribute animVal 
+PASS SVGAnimatedRect must be primary interface of svg.viewBox 
+PASS Stringification of svg.viewBox 
 FAIL SVGAnimatedRect interface: svg.viewBox must inherit property "baseVal" with the proper type (0) assert_true: instanceof DOMRect expected true got false
 FAIL SVGAnimatedRect interface: svg.viewBox must inherit property "animVal" with the proper type (1) assert_true: instanceof DOMRectReadOnly expected true got false
 PASS SVGAnimatedNumberList interface: existence and properties of interface object 
@@ -249,6 +273,8 @@ PASS SVGAnimatedNumberList interface: existence and properties of interface prot
 PASS SVGAnimatedNumberList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedNumberList interface: attribute baseVal 
 PASS SVGAnimatedNumberList interface: attribute animVal 
+PASS SVGAnimatedNumberList must be primary interface of text.rotate 
+PASS Stringification of text.rotate 
 PASS SVGAnimatedNumberList interface: text.rotate must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedNumberList interface: text.rotate must inherit property "animVal" with the proper type (1) 
 PASS SVGAnimatedLengthList interface: existence and properties of interface object 
@@ -258,6 +284,8 @@ PASS SVGAnimatedLengthList interface: existence and properties of interface prot
 PASS SVGAnimatedLengthList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedLengthList interface: attribute baseVal 
 PASS SVGAnimatedLengthList interface: attribute animVal 
+PASS SVGAnimatedLengthList must be primary interface of text.x 
+PASS Stringification of text.x 
 PASS SVGAnimatedLengthList interface: text.x must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedLengthList interface: text.x must inherit property "animVal" with the proper type (1) 
 PASS SVGStringList interface: existence and properties of interface object 
@@ -274,6 +302,8 @@ PASS SVGStringList interface: operation insertItemBefore(DOMString,unsigned long
 PASS SVGStringList interface: operation replaceItem(DOMString,unsigned long) 
 PASS SVGStringList interface: operation removeItem(unsigned long) 
 PASS SVGStringList interface: operation appendItem(DOMString) 
+PASS SVGStringList must be primary interface of a.requiredExtensions 
+PASS Stringification of a.requiredExtensions 
 PASS SVGStringList interface: a.requiredExtensions must inherit property "length" with the proper type (0) 
 PASS SVGStringList interface: a.requiredExtensions must inherit property "numberOfItems" with the proper type (1) 
 PASS SVGStringList interface: a.requiredExtensions must inherit property "clear" with the proper type (2) 
@@ -337,6 +367,8 @@ PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_DISABLE on interface proto
 PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_MAGNIFY on interface object 
 PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_MAGNIFY on interface prototype object 
 PASS SVGSVGElement interface: attribute zoomAndPan 
+PASS SVGSVGElement must be primary interface of svg 
+PASS Stringification of svg 
 PASS SVGSVGElement interface: svg must inherit property "x" with the proper type (0) 
 PASS SVGSVGElement interface: svg must inherit property "y" with the proper type (1) 
 PASS SVGSVGElement interface: svg must inherit property "width" with the proper type (2) 
@@ -392,6 +424,8 @@ PASS SVGGElement interface object length
 PASS SVGGElement interface object name 
 PASS SVGGElement interface: existence and properties of interface prototype object 
 PASS SVGGElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGGElement must be primary interface of g 
+PASS Stringification of g 
 PASS SVGGraphicsElement interface: g must inherit property "transform" with the proper type (0) 
 PASS SVGGraphicsElement interface: g must inherit property "getBBox" with the proper type (1) 
 PASS SVGGraphicsElement interface: calling getBBox(SVGBoundingBoxOptions) on g with too few arguments must throw TypeError 
@@ -416,6 +450,8 @@ PASS SVGDefsElement interface object length
 PASS SVGDefsElement interface object name 
 PASS SVGDefsElement interface: existence and properties of interface prototype object 
 PASS SVGDefsElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGDefsElement must be primary interface of defs 
+PASS Stringification of defs 
 PASS SVGGraphicsElement interface: defs must inherit property "transform" with the proper type (0) 
 PASS SVGGraphicsElement interface: defs must inherit property "getBBox" with the proper type (1) 
 PASS SVGGraphicsElement interface: calling getBBox(SVGBoundingBoxOptions) on defs with too few arguments must throw TypeError 
@@ -435,6 +471,8 @@ PASS SVGDescElement interface object length
 PASS SVGDescElement interface object name 
 PASS SVGDescElement interface: existence and properties of interface prototype object 
 PASS SVGDescElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGDescElement must be primary interface of Desc 
+PASS Stringification of Desc 
 PASS SVGElement interface: Desc must inherit property "className" with the proper type (0) 
 PASS SVGElement interface: Desc must inherit property "dataset" with the proper type (1) 
 PASS SVGElement interface: Desc must inherit property "ownerSVGElement" with the proper type (2) 
@@ -447,6 +485,8 @@ PASS SVGMetadataElement interface object length
 PASS SVGMetadataElement interface object name 
 PASS SVGMetadataElement interface: existence and properties of interface prototype object 
 PASS SVGMetadataElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGMetadataElement must be primary interface of metadata 
+PASS Stringification of metadata 
 PASS SVGElement interface: metadata must inherit property "className" with the proper type (0) 
 PASS SVGElement interface: metadata must inherit property "dataset" with the proper type (1) 
 PASS SVGElement interface: metadata must inherit property "ownerSVGElement" with the proper type (2) 
@@ -459,6 +499,8 @@ PASS SVGTitleElement interface object length
 PASS SVGTitleElement interface object name 
 PASS SVGTitleElement interface: existence and properties of interface prototype object 
 PASS SVGTitleElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGTitleElement must be primary interface of title 
+PASS Stringification of title 
 PASS SVGElement interface: title must inherit property "className" with the proper type (0) 
 PASS SVGElement interface: title must inherit property "dataset" with the proper type (1) 
 PASS SVGElement interface: title must inherit property "ownerSVGElement" with the proper type (2) 
@@ -473,6 +515,8 @@ PASS SVGSymbolElement interface: existence and properties of interface prototype
 PASS SVGSymbolElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGSymbolElement interface: attribute viewBox 
 PASS SVGSymbolElement interface: attribute preserveAspectRatio 
+PASS SVGSymbolElement must be primary interface of symbol 
+PASS Stringification of symbol 
 PASS SVGSymbolElement interface: symbol must inherit property "viewBox" with the proper type (0) 
 PASS SVGSymbolElement interface: symbol must inherit property "preserveAspectRatio" with the proper type (1) 
 PASS SVGElement interface: symbol must inherit property "className" with the proper type (0) 
@@ -492,6 +536,8 @@ PASS SVGUseElement interface: attribute y
 PASS SVGUseElement interface: attribute width 
 PASS SVGUseElement interface: attribute height 
 PASS SVGUseElement interface: attribute href 
+PASS SVGUseElement must be primary interface of use 
+PASS Stringification of use 
 PASS SVGUseElement interface: use must inherit property "x" with the proper type (0) 
 PASS SVGUseElement interface: use must inherit property "y" with the proper type (1) 
 PASS SVGUseElement interface: use must inherit property "width" with the proper type (2) 
@@ -516,6 +562,8 @@ PASS SVGSwitchElement interface object length
 PASS SVGSwitchElement interface object name 
 PASS SVGSwitchElement interface: existence and properties of interface prototype object 
 PASS SVGSwitchElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGSwitchElement must be primary interface of Switch 
+PASS Stringification of Switch 
 PASS SVGGraphicsElement interface: Switch must inherit property "transform" with the proper type (0) 
 PASS SVGGraphicsElement interface: Switch must inherit property "getBBox" with the proper type (1) 
 PASS SVGGraphicsElement interface: calling getBBox(SVGBoundingBoxOptions) on Switch with too few arguments must throw TypeError 
@@ -538,6 +586,8 @@ PASS SVGStyleElement interface: existence and properties of interface prototype 
 PASS SVGStyleElement interface: attribute type 
 PASS SVGStyleElement interface: attribute media 
 PASS SVGStyleElement interface: attribute title 
+PASS SVGStyleElement must be primary interface of style 
+PASS Stringification of style 
 PASS SVGStyleElement interface: style must inherit property "type" with the proper type (0) 
 PASS SVGStyleElement interface: style must inherit property "media" with the proper type (1) 
 PASS SVGStyleElement interface: style must inherit property "title" with the proper type (2) 
@@ -576,6 +626,8 @@ PASS SVGTransform interface: operation setScale(float,float)
 PASS SVGTransform interface: operation setRotate(float,float,float) 
 PASS SVGTransform interface: operation setSkewX(float) 
 PASS SVGTransform interface: operation setSkewY(float) 
+PASS SVGTransform must be primary interface of svg.createSVGTransform() 
+PASS Stringification of svg.createSVGTransform() 
 PASS SVGTransform interface: svg.createSVGTransform() must inherit property "SVG_TRANSFORM_UNKNOWN" with the proper type (0) 
 PASS SVGTransform interface: svg.createSVGTransform() must inherit property "SVG_TRANSFORM_MATRIX" with the proper type (1) 
 PASS SVGTransform interface: svg.createSVGTransform() must inherit property "SVG_TRANSFORM_TRANSLATE" with the proper type (2) 
@@ -614,6 +666,8 @@ PASS SVGTransformList interface: operation removeItem(unsigned long)
 PASS SVGTransformList interface: operation appendItem(SVGTransform) 
 PASS SVGTransformList interface: operation createSVGTransformFromMatrix(DOMMatrixReadOnly) 
 PASS SVGTransformList interface: operation consolidate() 
+PASS SVGTransformList must be primary interface of pattern.patternTransform.baseVal 
+PASS Stringification of pattern.patternTransform.baseVal 
 PASS SVGTransformList interface: pattern.patternTransform.baseVal must inherit property "length" with the proper type (0) 
 PASS SVGTransformList interface: pattern.patternTransform.baseVal must inherit property "numberOfItems" with the proper type (1) 
 PASS SVGTransformList interface: pattern.patternTransform.baseVal must inherit property "clear" with the proper type (2) 
@@ -639,6 +693,8 @@ PASS SVGAnimatedTransformList interface: existence and properties of interface p
 PASS SVGAnimatedTransformList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedTransformList interface: attribute baseVal 
 PASS SVGAnimatedTransformList interface: attribute animVal 
+PASS SVGAnimatedTransformList must be primary interface of pattern.patternTransform 
+PASS Stringification of pattern.patternTransform 
 PASS SVGAnimatedTransformList interface: pattern.patternTransform must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedTransformList interface: pattern.patternTransform must inherit property "animVal" with the proper type (1) 
 PASS SVGPreserveAspectRatio interface: existence and properties of interface object 
@@ -676,6 +732,8 @@ PASS SVGPreserveAspectRatio interface: constant SVG_MEETORSLICE_SLICE on interfa
 PASS SVGPreserveAspectRatio interface: constant SVG_MEETORSLICE_SLICE on interface prototype object 
 PASS SVGPreserveAspectRatio interface: attribute align 
 PASS SVGPreserveAspectRatio interface: attribute meetOrSlice 
+PASS SVGPreserveAspectRatio must be primary interface of image.preserveAspectRatio.baseVal 
+PASS Stringification of image.preserveAspectRatio.baseVal 
 PASS SVGPreserveAspectRatio interface: image.preserveAspectRatio.baseVal must inherit property "SVG_PRESERVEASPECTRATIO_UNKNOWN" with the proper type (0) 
 PASS SVGPreserveAspectRatio interface: image.preserveAspectRatio.baseVal must inherit property "SVG_PRESERVEASPECTRATIO_NONE" with the proper type (1) 
 PASS SVGPreserveAspectRatio interface: image.preserveAspectRatio.baseVal must inherit property "SVG_PRESERVEASPECTRATIO_XMINYMIN" with the proper type (2) 
@@ -699,6 +757,8 @@ PASS SVGAnimatedPreserveAspectRatio interface: existence and properties of inter
 PASS SVGAnimatedPreserveAspectRatio interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedPreserveAspectRatio interface: attribute baseVal 
 PASS SVGAnimatedPreserveAspectRatio interface: attribute animVal 
+PASS SVGAnimatedPreserveAspectRatio must be primary interface of image.preserveAspectRatio 
+PASS Stringification of image.preserveAspectRatio 
 PASS SVGAnimatedPreserveAspectRatio interface: image.preserveAspectRatio must inherit property "baseVal" with the proper type (0) 
 PASS SVGAnimatedPreserveAspectRatio interface: image.preserveAspectRatio must inherit property "animVal" with the proper type (1) 
 PASS SVGPathElement interface: existence and properties of interface object 
@@ -706,6 +766,8 @@ PASS SVGPathElement interface object length
 PASS SVGPathElement interface object name 
 PASS SVGPathElement interface: existence and properties of interface prototype object 
 PASS SVGPathElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGPathElement must be primary interface of path 
+PASS Stringification of path 
 PASS SVGGeometryElement interface: path must inherit property "pathLength" with the proper type (0) 
 PASS SVGGeometryElement interface: path must inherit property "isPointInFill" with the proper type (1) 
 PASS SVGGeometryElement interface: calling isPointInFill(DOMPoint) on path with too few arguments must throw TypeError 
@@ -739,6 +801,8 @@ PASS SVGRectElement interface: attribute width
 PASS SVGRectElement interface: attribute height 
 PASS SVGRectElement interface: attribute rx 
 PASS SVGRectElement interface: attribute ry 
+PASS SVGRectElement must be primary interface of rect 
+PASS Stringification of rect 
 PASS SVGRectElement interface: rect must inherit property "x" with the proper type (0) 
 PASS SVGRectElement interface: rect must inherit property "y" with the proper type (1) 
 PASS SVGRectElement interface: rect must inherit property "width" with the proper type (2) 
@@ -775,6 +839,8 @@ PASS SVGCircleElement interface: existence and properties of interface prototype
 PASS SVGCircleElement interface: attribute cx 
 PASS SVGCircleElement interface: attribute cy 
 PASS SVGCircleElement interface: attribute r 
+PASS SVGCircleElement must be primary interface of circle 
+PASS Stringification of circle 
 PASS SVGCircleElement interface: circle must inherit property "cx" with the proper type (0) 
 PASS SVGCircleElement interface: circle must inherit property "cy" with the proper type (1) 
 PASS SVGCircleElement interface: circle must inherit property "r" with the proper type (2) 
@@ -809,6 +875,8 @@ PASS SVGEllipseElement interface: attribute cx
 PASS SVGEllipseElement interface: attribute cy 
 PASS SVGEllipseElement interface: attribute rx 
 PASS SVGEllipseElement interface: attribute ry 
+PASS SVGEllipseElement must be primary interface of ellipse 
+PASS Stringification of ellipse 
 PASS SVGEllipseElement interface: ellipse must inherit property "cx" with the proper type (0) 
 PASS SVGEllipseElement interface: ellipse must inherit property "cy" with the proper type (1) 
 PASS SVGEllipseElement interface: ellipse must inherit property "rx" with the proper type (2) 
@@ -844,6 +912,8 @@ PASS SVGLineElement interface: attribute x1
 PASS SVGLineElement interface: attribute y1 
 PASS SVGLineElement interface: attribute x2 
 PASS SVGLineElement interface: attribute y2 
+PASS SVGLineElement must be primary interface of line 
+PASS Stringification of line 
 PASS SVGLineElement interface: line must inherit property "x1" with the proper type (0) 
 PASS SVGLineElement interface: line must inherit property "y1" with the proper type (1) 
 PASS SVGLineElement interface: line must inherit property "x2" with the proper type (2) 
@@ -884,6 +954,8 @@ PASS SVGPointList interface: operation insertItemBefore(DOMPoint,unsigned long)
 PASS SVGPointList interface: operation replaceItem(DOMPoint,unsigned long) 
 PASS SVGPointList interface: operation removeItem(unsigned long) 
 PASS SVGPointList interface: operation appendItem(DOMPoint) 
+PASS SVGPointList must be primary interface of polygon.points 
+PASS Stringification of polygon.points 
 PASS SVGPointList interface: polygon.points must inherit property "length" with the proper type (0) 
 PASS SVGPointList interface: polygon.points must inherit property "numberOfItems" with the proper type (1) 
 PASS SVGPointList interface: polygon.points must inherit property "clear" with the proper type (2) 
@@ -906,6 +978,8 @@ PASS SVGPolylineElement interface: existence and properties of interface prototy
 PASS SVGPolylineElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPolylineElement interface: attribute points 
 PASS SVGPolylineElement interface: attribute animatedPoints 
+PASS SVGPolylineElement must be primary interface of polyline 
+PASS Stringification of polyline 
 PASS SVGPolylineElement interface: polyline must inherit property "points" with the proper type (0) 
 PASS SVGPolylineElement interface: polyline must inherit property "animatedPoints" with the proper type (1) 
 PASS SVGGeometryElement interface: polyline must inherit property "pathLength" with the proper type (0) 
@@ -937,6 +1011,8 @@ PASS SVGPolygonElement interface: existence and properties of interface prototyp
 PASS SVGPolygonElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPolygonElement interface: attribute points 
 PASS SVGPolygonElement interface: attribute animatedPoints 
+PASS SVGPolygonElement must be primary interface of polygon 
+PASS Stringification of polygon 
 PASS SVGPolygonElement interface: polygon must inherit property "points" with the proper type (0) 
 PASS SVGPolygonElement interface: polygon must inherit property "animatedPoints" with the proper type (1) 
 PASS SVGGeometryElement interface: polygon must inherit property "pathLength" with the proper type (0) 
@@ -983,6 +1059,8 @@ PASS SVGTextContentElement interface: operation getExtentOfChar(unsigned long)
 PASS SVGTextContentElement interface: operation getRotationOfChar(unsigned long) 
 PASS SVGTextContentElement interface: operation getCharNumAtPosition(DOMPoint) 
 PASS SVGTextContentElement interface: operation selectSubString(unsigned long,unsigned long) 
+FAIL SVGTextContentElement must be primary interface of textContent assert_equals: textContent's prototype is not SVGTextContentElement.prototype expected object "[object SVGTextContentElement]" but got object "[object SVGElement]"
+FAIL Stringification of textContent assert_equals: class string of textContent expected "[object SVGTextContentElement]" but got "[object SVGElement]"
 FAIL SVGTextContentElement interface: textContent must inherit property "LENGTHADJUST_UNKNOWN" with the proper type (0) assert_inherits: property "LENGTHADJUST_UNKNOWN" not found in prototype chain
 FAIL SVGTextContentElement interface: textContent must inherit property "LENGTHADJUST_SPACING" with the proper type (1) assert_inherits: property "LENGTHADJUST_SPACING" not found in prototype chain
 FAIL SVGTextContentElement interface: textContent must inherit property "LENGTHADJUST_SPACINGANDGLYPHS" with the proper type (2) assert_inherits: property "LENGTHADJUST_SPACINGANDGLYPHS" not found in prototype chain
@@ -1033,6 +1111,8 @@ PASS SVGTextElement interface object length
 PASS SVGTextElement interface object name 
 PASS SVGTextElement interface: existence and properties of interface prototype object 
 PASS SVGTextElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGTextElement must be primary interface of text 
+PASS Stringification of text 
 PASS SVGTextPositioningElement interface: text must inherit property "x" with the proper type (0) 
 PASS SVGTextPositioningElement interface: text must inherit property "y" with the proper type (1) 
 PASS SVGTextPositioningElement interface: text must inherit property "dx" with the proper type (2) 
@@ -1078,6 +1158,8 @@ PASS SVGTSpanElement interface object length
 PASS SVGTSpanElement interface object name 
 PASS SVGTSpanElement interface: existence and properties of interface prototype object 
 PASS SVGTSpanElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGTSpanElement must be primary interface of tspan 
+PASS Stringification of tspan 
 PASS SVGTextPositioningElement interface: tspan must inherit property "x" with the proper type (0) 
 PASS SVGTextPositioningElement interface: tspan must inherit property "y" with the proper type (1) 
 PASS SVGTextPositioningElement interface: tspan must inherit property "dx" with the proper type (2) 
@@ -1139,6 +1221,8 @@ PASS SVGTextPathElement interface: attribute startOffset
 PASS SVGTextPathElement interface: attribute method 
 PASS SVGTextPathElement interface: attribute spacing 
 PASS SVGTextPathElement interface: attribute href 
+PASS SVGTextPathElement must be primary interface of textPath 
+PASS Stringification of textPath 
 PASS SVGTextPathElement interface: textPath must inherit property "TEXTPATH_METHODTYPE_UNKNOWN" with the proper type (0) 
 PASS SVGTextPathElement interface: textPath must inherit property "TEXTPATH_METHODTYPE_ALIGN" with the proper type (1) 
 PASS SVGTextPathElement interface: textPath must inherit property "TEXTPATH_METHODTYPE_STRETCH" with the proper type (2) 
@@ -1196,6 +1280,8 @@ PASS SVGImageElement interface: attribute height
 PASS SVGImageElement interface: attribute preserveAspectRatio 
 FAIL SVGImageElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
 PASS SVGImageElement interface: attribute href 
+PASS SVGImageElement must be primary interface of image 
+PASS Stringification of image 
 PASS SVGImageElement interface: image must inherit property "x" with the proper type (0) 
 PASS SVGImageElement interface: image must inherit property "y" with the proper type (1) 
 PASS SVGImageElement interface: image must inherit property "width" with the proper type (2) 
@@ -1226,6 +1312,8 @@ PASS SVGForeignObjectElement interface: attribute x
 PASS SVGForeignObjectElement interface: attribute y 
 PASS SVGForeignObjectElement interface: attribute width 
 PASS SVGForeignObjectElement interface: attribute height 
+PASS SVGForeignObjectElement must be primary interface of foreignObject 
+PASS Stringification of foreignObject 
 PASS SVGForeignObjectElement interface: foreignObject must inherit property "x" with the proper type (0) 
 PASS SVGForeignObjectElement interface: foreignObject must inherit property "y" with the proper type (1) 
 PASS SVGForeignObjectElement interface: foreignObject must inherit property "width" with the proper type (2) 
@@ -1273,6 +1361,8 @@ PASS SVGMarkerElement interface: operation setOrientToAuto()
 PASS SVGMarkerElement interface: operation setOrientToAngle(SVGAngle) 
 PASS SVGMarkerElement interface: attribute viewBox 
 PASS SVGMarkerElement interface: attribute preserveAspectRatio 
+PASS SVGMarkerElement must be primary interface of marker 
+PASS Stringification of marker 
 PASS SVGMarkerElement interface: marker must inherit property "SVG_MARKERUNITS_UNKNOWN" with the proper type (0) 
 PASS SVGMarkerElement interface: marker must inherit property "SVG_MARKERUNITS_USERSPACEONUSE" with the proper type (1) 
 PASS SVGMarkerElement interface: marker must inherit property "SVG_MARKERUNITS_STROKEWIDTH" with the proper type (2) 
@@ -1330,6 +1420,8 @@ PASS SVGLinearGradientElement interface: attribute x1
 PASS SVGLinearGradientElement interface: attribute y1 
 PASS SVGLinearGradientElement interface: attribute x2 
 PASS SVGLinearGradientElement interface: attribute y2 
+PASS SVGLinearGradientElement must be primary interface of linearGradient 
+PASS Stringification of linearGradient 
 PASS SVGLinearGradientElement interface: linearGradient must inherit property "x1" with the proper type (0) 
 PASS SVGLinearGradientElement interface: linearGradient must inherit property "y1" with the proper type (1) 
 PASS SVGLinearGradientElement interface: linearGradient must inherit property "x2" with the proper type (2) 
@@ -1360,6 +1452,8 @@ PASS SVGRadialGradientElement interface: attribute r
 PASS SVGRadialGradientElement interface: attribute fx 
 PASS SVGRadialGradientElement interface: attribute fy 
 PASS SVGRadialGradientElement interface: attribute fr 
+PASS SVGRadialGradientElement must be primary interface of radialGradient 
+PASS Stringification of radialGradient 
 PASS SVGRadialGradientElement interface: radialGradient must inherit property "cx" with the proper type (0) 
 PASS SVGRadialGradientElement interface: radialGradient must inherit property "cy" with the proper type (1) 
 PASS SVGRadialGradientElement interface: radialGradient must inherit property "r" with the proper type (2) 
@@ -1402,6 +1496,8 @@ PASS SVGStopElement interface object name
 PASS SVGStopElement interface: existence and properties of interface prototype object 
 PASS SVGStopElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGStopElement interface: attribute offset 
+PASS SVGStopElement must be primary interface of stop 
+PASS Stringification of stop 
 PASS SVGStopElement interface: stop must inherit property "offset" with the proper type (0) 
 PASS SVGElement interface: stop must inherit property "className" with the proper type (0) 
 PASS SVGElement interface: stop must inherit property "dataset" with the proper type (1) 
@@ -1425,6 +1521,8 @@ PASS SVGPatternElement interface: attribute height
 PASS SVGPatternElement interface: attribute viewBox 
 PASS SVGPatternElement interface: attribute preserveAspectRatio 
 PASS SVGPatternElement interface: attribute href 
+PASS SVGPatternElement must be primary interface of pattern 
+PASS Stringification of pattern 
 PASS SVGPatternElement interface: pattern must inherit property "patternUnits" with the proper type (0) 
 PASS SVGPatternElement interface: pattern must inherit property "patternContentUnits" with the proper type (1) 
 PASS SVGPatternElement interface: pattern must inherit property "patternTransform" with the proper type (2) 
@@ -1460,6 +1558,8 @@ FAIL SVGCursorElement interface: existence and properties of interface prototype
 FAIL SVGCursorElement interface: attribute x assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
 FAIL SVGCursorElement interface: attribute y assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
 FAIL SVGCursorElement interface: attribute href assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement must be primary interface of cursor assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL Stringification of cursor assert_equals: class string of cursor expected "[object SVGCursorElement]" but got "[object SVGElement]"
 FAIL SVGCursorElement interface: cursor must inherit property "x" with the proper type (0) assert_inherits: property "x" not found in prototype chain
 FAIL SVGCursorElement interface: cursor must inherit property "y" with the proper type (1) assert_inherits: property "y" not found in prototype chain
 FAIL SVGCursorElement interface: cursor must inherit property "href" with the proper type (2) assert_inherits: property "href" not found in prototype chain
@@ -1478,6 +1578,8 @@ PASS SVGScriptElement interface: existence and properties of interface prototype
 PASS SVGScriptElement interface: attribute type 
 FAIL SVGScriptElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
 PASS SVGScriptElement interface: attribute href 
+PASS SVGScriptElement must be primary interface of script 
+PASS Stringification of script 
 PASS SVGScriptElement interface: script must inherit property "type" with the proper type (0) 
 FAIL SVGScriptElement interface: script must inherit property "crossOrigin" with the proper type (1) assert_inherits: property "crossOrigin" not found in prototype chain
 PASS SVGScriptElement interface: script must inherit property "href" with the proper type (2) 
@@ -1495,6 +1597,8 @@ PASS SVGAElement interface: existence and properties of interface prototype obje
 PASS SVGAElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAElement interface: attribute target 
 PASS SVGAElement interface: attribute href 
+PASS SVGAElement must be primary interface of a 
+PASS Stringification of a 
 PASS SVGAElement interface: a must inherit property "target" with the proper type (0) 
 PASS SVGAElement interface: a must inherit property "href" with the proper type (1) 
 PASS SVGGraphicsElement interface: a must inherit property "transform" with the proper type (0) 
@@ -1525,6 +1629,8 @@ PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_DISABLE on interface prot
 PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_MAGNIFY on interface object 
 PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_MAGNIFY on interface prototype object 
 PASS SVGViewElement interface: attribute zoomAndPan 
+PASS SVGViewElement must be primary interface of view 
+PASS Stringification of view 
 PASS SVGViewElement interface: view must inherit property "viewBox" with the proper type (0) 
 PASS SVGViewElement interface: view must inherit property "preserveAspectRatio" with the proper type (1) 
 PASS SVGViewElement interface: view must inherit property "SVG_ZOOMANDPAN_UNKNOWN" with the proper type (2) 
@@ -1550,6 +1656,8 @@ PASS SVGFilterElement interface: attribute y
 PASS SVGFilterElement interface: attribute width 
 PASS SVGFilterElement interface: attribute height 
 PASS SVGFilterElement interface: attribute href 
+PASS SVGFilterElement must be primary interface of filter 
+PASS Stringification of filter 
 PASS SVGFilterElement interface: filter must inherit property "filterUnits" with the proper type (0) 
 PASS SVGFilterElement interface: filter must inherit property "primitiveUnits" with the proper type (1) 
 PASS SVGFilterElement interface: filter must inherit property "x" with the proper type (2) 
@@ -1589,6 +1697,8 @@ PASS SVGFEBlendElement interface: attribute y
 PASS SVGFEBlendElement interface: attribute width 
 PASS SVGFEBlendElement interface: attribute height 
 PASS SVGFEBlendElement interface: attribute result 
+PASS SVGFEBlendElement must be primary interface of feBlend 
+PASS Stringification of feBlend 
 PASS SVGFEBlendElement interface: feBlend must inherit property "SVG_FEBLEND_MODE_UNKNOWN" with the proper type (0) 
 PASS SVGFEBlendElement interface: feBlend must inherit property "SVG_FEBLEND_MODE_NORMAL" with the proper type (1) 
 PASS SVGFEBlendElement interface: feBlend must inherit property "SVG_FEBLEND_MODE_MULTIPLY" with the proper type (2) 
@@ -1633,6 +1743,8 @@ PASS SVGFEColorMatrixElement interface: attribute y
 PASS SVGFEColorMatrixElement interface: attribute width 
 PASS SVGFEColorMatrixElement interface: attribute height 
 PASS SVGFEColorMatrixElement interface: attribute result 
+PASS SVGFEColorMatrixElement must be primary interface of feColorMatrix 
+PASS Stringification of feColorMatrix 
 PASS SVGFEColorMatrixElement interface: feColorMatrix must inherit property "SVG_FECOLORMATRIX_TYPE_UNKNOWN" with the proper type (0) 
 PASS SVGFEColorMatrixElement interface: feColorMatrix must inherit property "SVG_FECOLORMATRIX_TYPE_MATRIX" with the proper type (1) 
 PASS SVGFEColorMatrixElement interface: feColorMatrix must inherit property "SVG_FECOLORMATRIX_TYPE_SATURATE" with the proper type (2) 
@@ -1664,6 +1776,8 @@ PASS SVGFEComponentTransferElement interface: attribute y
 PASS SVGFEComponentTransferElement interface: attribute width 
 PASS SVGFEComponentTransferElement interface: attribute height 
 PASS SVGFEComponentTransferElement interface: attribute result 
+PASS SVGFEComponentTransferElement must be primary interface of feComponentTransfer 
+PASS Stringification of feComponentTransfer 
 PASS SVGFEComponentTransferElement interface: feComponentTransfer must inherit property "in1" with the proper type (0) 
 PASS SVGFEComponentTransferElement interface: feComponentTransfer must inherit property "x" with the proper type (1) 
 PASS SVGFEComponentTransferElement interface: feComponentTransfer must inherit property "y" with the proper type (2) 
@@ -1706,6 +1820,8 @@ PASS SVGFEFuncRElement interface object length
 PASS SVGFEFuncRElement interface object name 
 PASS SVGFEFuncRElement interface: existence and properties of interface prototype object 
 PASS SVGFEFuncRElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGFEFuncRElement must be primary interface of feFuncR 
+PASS Stringification of feFuncR 
 PASS SVGComponentTransferFunctionElement interface: feFuncR must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN" with the proper type (0) 
 PASS SVGComponentTransferFunctionElement interface: feFuncR must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY" with the proper type (1) 
 PASS SVGComponentTransferFunctionElement interface: feFuncR must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_TABLE" with the proper type (2) 
@@ -1731,6 +1847,8 @@ PASS SVGFEFuncGElement interface object length
 PASS SVGFEFuncGElement interface object name 
 PASS SVGFEFuncGElement interface: existence and properties of interface prototype object 
 PASS SVGFEFuncGElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGFEFuncGElement must be primary interface of feFuncG 
+PASS Stringification of feFuncG 
 PASS SVGComponentTransferFunctionElement interface: feFuncG must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN" with the proper type (0) 
 PASS SVGComponentTransferFunctionElement interface: feFuncG must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY" with the proper type (1) 
 PASS SVGComponentTransferFunctionElement interface: feFuncG must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_TABLE" with the proper type (2) 
@@ -1756,6 +1874,8 @@ PASS SVGFEFuncBElement interface object length
 PASS SVGFEFuncBElement interface object name 
 PASS SVGFEFuncBElement interface: existence and properties of interface prototype object 
 PASS SVGFEFuncBElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGFEFuncBElement must be primary interface of feFuncB 
+PASS Stringification of feFuncB 
 PASS SVGComponentTransferFunctionElement interface: feFuncB must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN" with the proper type (0) 
 PASS SVGComponentTransferFunctionElement interface: feFuncB must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY" with the proper type (1) 
 PASS SVGComponentTransferFunctionElement interface: feFuncB must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_TABLE" with the proper type (2) 
@@ -1781,6 +1901,8 @@ PASS SVGFEFuncAElement interface object length
 PASS SVGFEFuncAElement interface object name 
 PASS SVGFEFuncAElement interface: existence and properties of interface prototype object 
 PASS SVGFEFuncAElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS SVGFEFuncAElement must be primary interface of feFuncA 
+PASS Stringification of feFuncA 
 PASS SVGComponentTransferFunctionElement interface: feFuncA must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN" with the proper type (0) 
 PASS SVGComponentTransferFunctionElement interface: feFuncA must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY" with the proper type (1) 
 PASS SVGComponentTransferFunctionElement interface: feFuncA must inherit property "SVG_FECOMPONENTTRANSFER_TYPE_TABLE" with the proper type (2) 
@@ -1832,6 +1954,8 @@ PASS SVGFECompositeElement interface: attribute y
 PASS SVGFECompositeElement interface: attribute width 
 PASS SVGFECompositeElement interface: attribute height 
 PASS SVGFECompositeElement interface: attribute result 
+PASS SVGFECompositeElement must be primary interface of feComposite 
+PASS Stringification of feComposite 
 PASS SVGFECompositeElement interface: feComposite must inherit property "SVG_FECOMPOSITE_OPERATOR_UNKNOWN" with the proper type (0) 
 PASS SVGFECompositeElement interface: feComposite must inherit property "SVG_FECOMPOSITE_OPERATOR_OVER" with the proper type (1) 
 PASS SVGFECompositeElement interface: feComposite must inherit property "SVG_FECOMPOSITE_OPERATOR_IN" with the proper type (2) 
@@ -1887,6 +2011,8 @@ PASS SVGFEConvolveMatrixElement interface: attribute y
 PASS SVGFEConvolveMatrixElement interface: attribute width 
 PASS SVGFEConvolveMatrixElement interface: attribute height 
 PASS SVGFEConvolveMatrixElement interface: attribute result 
+PASS SVGFEConvolveMatrixElement must be primary interface of feConvolveMatrix 
+PASS Stringification of feConvolveMatrix 
 PASS SVGFEConvolveMatrixElement interface: feConvolveMatrix must inherit property "SVG_EDGEMODE_UNKNOWN" with the proper type (0) 
 PASS SVGFEConvolveMatrixElement interface: feConvolveMatrix must inherit property "SVG_EDGEMODE_DUPLICATE" with the proper type (1) 
 PASS SVGFEConvolveMatrixElement interface: feConvolveMatrix must inherit property "SVG_EDGEMODE_WRAP" with the proper type (2) 
@@ -1929,6 +2055,8 @@ PASS SVGFEDiffuseLightingElement interface: attribute y
 PASS SVGFEDiffuseLightingElement interface: attribute width 
 PASS SVGFEDiffuseLightingElement interface: attribute height 
 PASS SVGFEDiffuseLightingElement interface: attribute result 
+PASS SVGFEDiffuseLightingElement must be primary interface of feDiffuseLighting 
+PASS Stringification of feDiffuseLighting 
 PASS SVGFEDiffuseLightingElement interface: feDiffuseLighting must inherit property "in1" with the proper type (0) 
 PASS SVGFEDiffuseLightingElement interface: feDiffuseLighting must inherit property "surfaceScale" with the proper type (1) 
 PASS SVGFEDiffuseLightingElement interface: feDiffuseLighting must inherit property "diffuseConstant" with the proper type (2) 
@@ -1961,6 +2089,8 @@ PASS SVGFEPointLightElement interface: existence and properties of interface pro
 PASS SVGFEPointLightElement interface: attribute x 
 PASS SVGFEPointLightElement interface: attribute y 
 PASS SVGFEPointLightElement interface: attribute z 
+PASS SVGFEPointLightElement must be primary interface of fePointLight 
+PASS Stringification of fePointLight 
 PASS SVGFEPointLightElement interface: fePointLight must inherit property "x" with the proper type (0) 
 PASS SVGFEPointLightElement interface: fePointLight must inherit property "y" with the proper type (1) 
 PASS SVGFEPointLightElement interface: fePointLight must inherit property "z" with the proper type (2) 
@@ -1984,6 +2114,8 @@ PASS SVGFESpotLightElement interface: attribute pointsAtY
 PASS SVGFESpotLightElement interface: attribute pointsAtZ 
 PASS SVGFESpotLightElement interface: attribute specularExponent 
 PASS SVGFESpotLightElement interface: attribute limitingConeAngle 
+PASS SVGFESpotLightElement must be primary interface of feSpotLight 
+PASS Stringification of feSpotLight 
 PASS SVGFESpotLightElement interface: feSpotLight must inherit property "x" with the proper type (0) 
 PASS SVGFESpotLightElement interface: feSpotLight must inherit property "y" with the proper type (1) 
 PASS SVGFESpotLightElement interface: feSpotLight must inherit property "z" with the proper type (2) 
@@ -2024,6 +2156,8 @@ PASS SVGFEDisplacementMapElement interface: attribute y
 PASS SVGFEDisplacementMapElement interface: attribute width 
 PASS SVGFEDisplacementMapElement interface: attribute height 
 PASS SVGFEDisplacementMapElement interface: attribute result 
+PASS SVGFEDisplacementMapElement must be primary interface of feDisplacementMap 
+PASS Stringification of feDisplacementMap 
 PASS SVGFEDisplacementMapElement interface: feDisplacementMap must inherit property "SVG_CHANNEL_UNKNOWN" with the proper type (0) 
 PASS SVGFEDisplacementMapElement interface: feDisplacementMap must inherit property "SVG_CHANNEL_R" with the proper type (1) 
 PASS SVGFEDisplacementMapElement interface: feDisplacementMap must inherit property "SVG_CHANNEL_G" with the proper type (2) 
@@ -2062,6 +2196,8 @@ PASS SVGFEDropShadowElement interface: attribute y
 PASS SVGFEDropShadowElement interface: attribute width 
 PASS SVGFEDropShadowElement interface: attribute height 
 PASS SVGFEDropShadowElement interface: attribute result 
+PASS SVGFEDropShadowElement must be primary interface of feDropShadow 
+PASS Stringification of feDropShadow 
 PASS SVGFEDropShadowElement interface: feDropShadow must inherit property "in1" with the proper type (0) 
 PASS SVGFEDropShadowElement interface: feDropShadow must inherit property "dx" with the proper type (1) 
 PASS SVGFEDropShadowElement interface: feDropShadow must inherit property "dy" with the proper type (2) 
@@ -2091,6 +2227,8 @@ PASS SVGFEFloodElement interface: attribute y
 PASS SVGFEFloodElement interface: attribute width 
 PASS SVGFEFloodElement interface: attribute height 
 PASS SVGFEFloodElement interface: attribute result 
+PASS SVGFEFloodElement must be primary interface of feFlood 
+PASS Stringification of feFlood 
 PASS SVGFEFloodElement interface: feFlood must inherit property "x" with the proper type (0) 
 PASS SVGFEFloodElement interface: feFlood must inherit property "y" with the proper type (1) 
 PASS SVGFEFloodElement interface: feFlood must inherit property "width" with the proper type (2) 
@@ -2126,6 +2264,8 @@ PASS SVGFEGaussianBlurElement interface: attribute y
 PASS SVGFEGaussianBlurElement interface: attribute width 
 PASS SVGFEGaussianBlurElement interface: attribute height 
 PASS SVGFEGaussianBlurElement interface: attribute result 
+PASS SVGFEGaussianBlurElement must be primary interface of feGaussianBlur 
+PASS Stringification of feGaussianBlur 
 FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_UNKNOWN" with the proper type (0) assert_inherits: property "SVG_EDGEMODE_UNKNOWN" not found in prototype chain
 FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_DUPLICATE" with the proper type (1) assert_inherits: property "SVG_EDGEMODE_DUPLICATE" not found in prototype chain
 FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_WRAP" with the proper type (2) assert_inherits: property "SVG_EDGEMODE_WRAP" not found in prototype chain
@@ -2161,6 +2301,8 @@ PASS SVGFEImageElement interface: attribute width
 PASS SVGFEImageElement interface: attribute height 
 PASS SVGFEImageElement interface: attribute result 
 PASS SVGFEImageElement interface: attribute href 
+PASS SVGFEImageElement must be primary interface of feImage 
+PASS Stringification of feImage 
 PASS SVGFEImageElement interface: feImage must inherit property "preserveAspectRatio" with the proper type (0) 
 FAIL SVGFEImageElement interface: feImage must inherit property "crossOrigin" with the proper type (1) assert_inherits: property "crossOrigin" not found in prototype chain
 PASS SVGFEImageElement interface: feImage must inherit property "x" with the proper type (2) 
@@ -2186,6 +2328,8 @@ PASS SVGFEMergeElement interface: attribute y
 PASS SVGFEMergeElement interface: attribute width 
 PASS SVGFEMergeElement interface: attribute height 
 PASS SVGFEMergeElement interface: attribute result 
+PASS SVGFEMergeElement must be primary interface of feMerge 
+PASS Stringification of feMerge 
 PASS SVGFEMergeElement interface: feMerge must inherit property "x" with the proper type (0) 
 PASS SVGFEMergeElement interface: feMerge must inherit property "y" with the proper type (1) 
 PASS SVGFEMergeElement interface: feMerge must inherit property "width" with the proper type (2) 
@@ -2204,6 +2348,8 @@ PASS SVGFEMergeNodeElement interface object name
 PASS SVGFEMergeNodeElement interface: existence and properties of interface prototype object 
 PASS SVGFEMergeNodeElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEMergeNodeElement interface: attribute in1 
+PASS SVGFEMergeNodeElement must be primary interface of feMergeNode 
+PASS Stringification of feMergeNode 
 PASS SVGFEMergeNodeElement interface: feMergeNode must inherit property "in1" with the proper type (0) 
 PASS SVGElement interface: feMergeNode must inherit property "className" with the proper type (0) 
 PASS SVGElement interface: feMergeNode must inherit property "dataset" with the proper type (1) 
@@ -2232,6 +2378,8 @@ PASS SVGFEMorphologyElement interface: attribute y
 PASS SVGFEMorphologyElement interface: attribute width 
 PASS SVGFEMorphologyElement interface: attribute height 
 PASS SVGFEMorphologyElement interface: attribute result 
+PASS SVGFEMorphologyElement must be primary interface of feMorphology 
+PASS Stringification of feMorphology 
 PASS SVGFEMorphologyElement interface: feMorphology must inherit property "SVG_MORPHOLOGY_OPERATOR_UNKNOWN" with the proper type (0) 
 PASS SVGFEMorphologyElement interface: feMorphology must inherit property "SVG_MORPHOLOGY_OPERATOR_ERODE" with the proper type (1) 
 PASS SVGFEMorphologyElement interface: feMorphology must inherit property "SVG_MORPHOLOGY_OPERATOR_DILATE" with the proper type (2) 
@@ -2280,6 +2428,8 @@ PASS SVGFESpecularLightingElement interface: attribute y
 PASS SVGFESpecularLightingElement interface: attribute width 
 PASS SVGFESpecularLightingElement interface: attribute height 
 PASS SVGFESpecularLightingElement interface: attribute result 
+PASS SVGFESpecularLightingElement must be primary interface of feSpecularLighting 
+PASS Stringification of feSpecularLighting 
 PASS SVGFESpecularLightingElement interface: feSpecularLighting must inherit property "in1" with the proper type (0) 
 PASS SVGFESpecularLightingElement interface: feSpecularLighting must inherit property "surfaceScale" with the proper type (1) 
 PASS SVGFESpecularLightingElement interface: feSpecularLighting must inherit property "specularConstant" with the proper type (2) 
@@ -2309,6 +2459,8 @@ PASS SVGFETileElement interface: attribute y
 PASS SVGFETileElement interface: attribute width 
 PASS SVGFETileElement interface: attribute height 
 PASS SVGFETileElement interface: attribute result 
+PASS SVGFETileElement must be primary interface of feTile 
+PASS Stringification of feTile 
 PASS SVGFETileElement interface: feTile must inherit property "in1" with the proper type (0) 
 PASS SVGFETileElement interface: feTile must inherit property "x" with the proper type (1) 
 PASS SVGFETileElement interface: feTile must inherit property "y" with the proper type (2) 
@@ -2350,6 +2502,8 @@ PASS SVGFETurbulenceElement interface: attribute y
 PASS SVGFETurbulenceElement interface: attribute width 
 PASS SVGFETurbulenceElement interface: attribute height 
 PASS SVGFETurbulenceElement interface: attribute result 
+PASS SVGFETurbulenceElement must be primary interface of feTurbulence 
+PASS Stringification of feTurbulence 
 PASS SVGFETurbulenceElement interface: feTurbulence must inherit property "SVG_TURBULENCE_TYPE_UNKNOWN" with the proper type (0) 
 PASS SVGFETurbulenceElement interface: feTurbulence must inherit property "SVG_TURBULENCE_TYPE_FRACTALNOISE" with the proper type (1) 
 PASS SVGFETurbulenceElement interface: feTurbulence must inherit property "SVG_TURBULENCE_TYPE_TURBULENCE" with the proper type (2) 

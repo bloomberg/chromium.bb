@@ -1,12 +1,8 @@
 This is a testharness.js-based test.
 PASS HTMLCanvasElement interface: operation captureStream(double) 
-PASS HTMLCanvasElement must be primary interface of [object HTMLCanvasElement] 
-PASS Stringification of [object HTMLCanvasElement] 
 PASS HTMLCanvasElement interface: [object HTMLCanvasElement] must inherit property "captureStream" with the proper type (0) 
 PASS HTMLCanvasElement interface: calling captureStream(double) on [object HTMLCanvasElement] with too few arguments must throw TypeError 
 PASS HTMLMediaElement interface: operation captureStream() 
-FAIL HTMLMediaElement must be primary interface of [object HTMLUnknownElement] assert_equals: [object HTMLUnknownElement]'s prototype is not HTMLMediaElement.prototype expected object "[object HTMLMediaElement]" but got object "[object HTMLUnknownElement]"
-FAIL Stringification of [object HTMLUnknownElement] assert_equals: class string of [object HTMLUnknownElement] expected "[object HTMLMediaElement]" but got "[object HTMLUnknownElement]"
 FAIL HTMLMediaElement interface: [object HTMLUnknownElement] must inherit property "captureStream" with the proper type (0) assert_inherits: property "captureStream" not found in prototype chain
 PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface object 
 PASS CanvasCaptureMediaStreamTrack interface object length 
@@ -15,6 +11,8 @@ PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interf
 PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property 
 PASS CanvasCaptureMediaStreamTrack interface: attribute canvas 
 PASS CanvasCaptureMediaStreamTrack interface: operation requestFrame() 
+PASS CanvasCaptureMediaStreamTrack must be primary interface of [object CanvasCaptureMediaStreamTrack] 
+PASS Stringification of [object CanvasCaptureMediaStreamTrack] 
 PASS CanvasCaptureMediaStreamTrack interface: [object CanvasCaptureMediaStreamTrack] must inherit property "canvas" with the proper type (0) 
 PASS CanvasCaptureMediaStreamTrack interface: [object CanvasCaptureMediaStreamTrack] must inherit property "requestFrame" with the proper type (1) 
 Harness: the test ran to completion.

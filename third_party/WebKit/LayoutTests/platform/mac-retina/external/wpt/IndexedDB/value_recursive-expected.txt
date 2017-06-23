@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Recursive value - array directly contains self assert_unreached: unexpected db.abort Reached unreachable code
+FAIL Recursive value - array indirectly contains self assert_unreached: unexpected db.abort Reached unreachable code
+FAIL Recursive value - array member contains self assert_unreached: unexpected db.abort Reached unreachable code
+Harness: the test ran to completion.
+
