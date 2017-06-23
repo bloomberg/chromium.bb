@@ -543,7 +543,7 @@ public class CustomTabActivityTest {
         Assert.assertFalse(menu.findItem(R.id.share_row_menu_id).isEnabled());
         Assert.assertNotNull(menu.findItem(R.id.find_in_page_id));
         Assert.assertNotNull(menu.findItem(R.id.add_to_homescreen_id));
-        Assert.assertNotNull(menu.findItem(R.id.request_desktop_site_id));
+        Assert.assertNotNull(menu.findItem(R.id.request_desktop_site_row_menu_id));
     }
 
     /**
@@ -568,7 +568,7 @@ public class CustomTabActivityTest {
         Assert.assertEquals(expectedMenuSize, actualMenuSize);
         Assert.assertFalse(menu.findItem(R.id.find_in_page_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.add_to_homescreen_id).isVisible());
-        Assert.assertFalse(menu.findItem(R.id.request_desktop_site_id).isVisible());
+        Assert.assertFalse(menu.findItem(R.id.request_desktop_site_row_menu_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.open_in_browser_id).isVisible());
     }
 

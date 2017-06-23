@@ -1947,7 +1947,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (launchFailed) {
                 Toast.makeText(context, R.string.open_webapk_failed, Toast.LENGTH_SHORT).show();
             }
-        } else if (id == R.id.request_desktop_site_id) {
+        } else if (id == R.id.request_desktop_site_id || id == R.id.request_desktop_site_check_id) {
             final boolean reloadOnChange = !currentTab.isNativePage();
             final boolean usingDesktopUserAgent = currentTab.getUseDesktopUserAgent();
             currentTab.setUseDesktopUserAgent(!usingDesktopUserAgent, reloadOnChange);
