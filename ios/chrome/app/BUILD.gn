@@ -183,7 +183,6 @@ source_set("app_internal") {
     "//ios/chrome/browser/memory",
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/metrics:metrics_internal",
-    "//ios/chrome/browser/native_app_launcher:native_app_launcher_internal",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/omaha",
     "//ios/chrome/browser/prefs",
