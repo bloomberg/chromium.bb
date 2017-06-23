@@ -58,24 +58,7 @@ class Host(SystemHost):
         # FIXME: PortFactory doesn't belong on this Host object if Port is going to have a Host (circular dependency).
         self.port_factory = PortFactory(self)
 
-        self._engage_awesome_locale_hacks()
-
         self.builders = BuilderList(BUILDERS)
-
-    # We call this from the Host constructor, as it's one of the
-    # earliest calls made for all webkitpy-based programs.
-    # TODO(qyearsley): Remove this in a separate clean-up CL.
-    def _engage_awesome_locale_hacks(self):
-        # To make life easier on our non-English users, we override
-        # the locale environment variables inside webkitpy.
-        # If we don't do this, programs like SVN will output localized
-        # messages and svn.py will fail to parse them.
-        # FIXME: We should do these overrides *only* for the subprocesses we know need them!
-        # This hack only works in unix environments.
-        self.environ['LANGUAGE'] = 'en'
-        self.environ['LANG'] = 'en_US.UTF-8'
-        self.environ['LC_MESSAGES'] = 'en_US.UTF-8'
-        self.environ['LC_ALL'] = ''
 
     def git(self, path=None):
         if path:
