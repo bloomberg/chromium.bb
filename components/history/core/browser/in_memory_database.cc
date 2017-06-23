@@ -79,8 +79,23 @@ bool InMemoryDatabase::InitFromDisk(const base::FilePath& history_name) {
 
   // Copy URL data to memory.
   base::TimeTicks begin_load = base::TimeTicks::Now();
+
+  // Need to explicitly specify the column names here since databases on disk
+  // may or may not have a favicon_id column, but the in-memory one will never
+  // have it. Therefore, the columns aren't guaranteed to match.
+  //
+  // TODO(https://crbug.com/736136) Once we can guarantee that the favicon_id
+  // column doesn't exist with migration code, this can be replaced with the
+  // simpler:
+  //   "INSERT INTO urls SELECT * FROM history.urls WHERE typed_count > 0"
+  // which does not require us to keep the list of columns in sync. However,
+  // we may still want to keep the explicit columns as a safety measure.
   if (!db_.Execute(
-      "INSERT INTO urls SELECT * FROM history.urls WHERE typed_count > 0")) {
+      "INSERT INTO urls "
+      "(id, url, title, visit_count, typed_count, last_visit_time, hidden) "
+      "SELECT "
+      "id, url, title, visit_count, typed_count, last_visit_time, hidden "
+      "FROM history.urls WHERE typed_count > 0")) {
     // Unable to get data from the history database. This is OK, the file may
     // just not exist yet.
   }
