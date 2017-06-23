@@ -138,6 +138,8 @@ class CC_PAINT_EXPORT DisplayItemList
   // an empty state.
   sk_sp<PaintRecord> ReleaseAsRecord();
 
+  bool GetColorIfSolidInRect(const gfx::Rect& rect, SkColor* color);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithOps);

@@ -89,9 +89,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Returns whether the given rect at given scale is of solid color in
   // this raster source, as well as the solid color value.
-  bool PerformSolidColorAnalysis(const gfx::Rect& content_rect,
-                                 float contents_scale,
-                                 SkColor* color) const;
+  bool PerformSolidColorAnalysis(gfx::Rect content_rect, SkColor* color) const;
 
   // Returns true iff the whole raster source is of solid color.
   bool IsSolidColor() const;

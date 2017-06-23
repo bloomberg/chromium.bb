@@ -45,8 +45,10 @@ void RunBenchmark(RasterSource* raster_source,
                    base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                    kTimeCheckInterval);
     SkColor color = SK_ColorTRANSPARENT;
-    *is_solid_color = raster_source->PerformSolidColorAnalysis(
-        content_rect, contents_scale, &color);
+    gfx::Rect layer_rect =
+        gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale);
+    *is_solid_color =
+        raster_source->PerformSolidColorAnalysis(layer_rect, &color);
 
     do {
       SkBitmap bitmap;

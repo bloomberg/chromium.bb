@@ -685,11 +685,9 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
       // canvas which is reset between tiles.
       tile->set_solid_color_analysis_performed(true);
       SkColor color = SK_ColorTRANSPARENT;
-      gfx::RectF layer_rect = tile->raster_transform().InverseMapRect(
-          gfx::RectF(tile->content_rect()));
       bool is_solid_color =
           prioritized_tile.raster_source()->PerformSolidColorAnalysis(
-              gfx::ToEnclosingRect(layer_rect), 1.f, &color);
+              tile->enclosing_layer_rect(), &color);
       if (is_solid_color) {
         tile->draw_info().set_solid_color(color);
         client_->NotifyTileStateChanged(tile);

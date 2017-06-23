@@ -35,6 +35,8 @@ cc_component("paint") {
     "record_paint_canvas.h",
     "skia_paint_canvas.cc",
     "skia_paint_canvas.h",
+    "solid_color_analyzer.cc",
+    "solid_color_analyzer.h",
   ]
 
   defines = [ "CC_PAINT_IMPLEMENTATION=1" ]

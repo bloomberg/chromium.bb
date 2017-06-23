@@ -15,6 +15,7 @@
 #include "cc/base/render_surface_filters.h"
 #include "cc/debug/picture_debug_util.h"
 #include "cc/paint/discardable_image_store.h"
+#include "cc/paint/solid_color_analyzer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect.h"
@@ -198,6 +199,25 @@ sk_sp<PaintRecord> DisplayItemList::ReleaseAsRecord() {
 
   Reset();
   return record;
+}
+
+bool DisplayItemList::GetColorIfSolidInRect(const gfx::Rect& rect,
+                                            SkColor* color) {
+  std::vector<size_t>* indices_to_use = nullptr;
+  std::vector<size_t> indices;
+  if (!rect.Contains(rtree_.GetBounds())) {
+    indices = rtree_.Search(rect);
+    indices_to_use = &indices;
+  }
+
+  base::Optional<SkColor> solid_color =
+      SolidColorAnalyzer::DetermineIfSolidColor(&paint_op_buffer_, rect,
+                                                indices_to_use);
+  if (solid_color) {
+    *color = *solid_color;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace cc
