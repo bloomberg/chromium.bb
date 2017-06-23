@@ -61,6 +61,31 @@ WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
   return WebContentsImpl::FromFrameTreeNode(frame_tree_node);
 }
 
+net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("navigation_url_loader", R"(
+        semantics {
+          sender: "Navigation URL Loader"
+          description:
+            "This request is issued by a main frame navigation to fetch the "
+            "content of the page that is being navigated to."
+          trigger:
+            "Navigating Chrome (by clicking on a link, bookmark, history item, "
+            "using session restore, etc)."
+          data:
+            "Arbitrary site-controlled data can be included in the URL, HTTP "
+            "headers, and request body. Requests may include cookies and "
+            "site-specific credentials."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting: "This feature cannot be disabled."
+          policy_exception_justification:
+            "Not implemented, without this type of request, Chrome would be "
+            "unable to navigate to websites."
+        })");
+
 }  // namespace
 
 // Kept around during the lifetime of the navigation request, and is
@@ -114,7 +139,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               web_contents_getter_),
           0 /* routing_id? */, 0 /* request_id? */,
           mojom::kURLLoadOptionSendSSLInfo, *resource_request_, this,
-          net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET));
+          net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
       return;
     }
 
@@ -196,7 +221,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
             web_contents_getter_),
         0 /* routing_id? */, 0 /* request_id? */,
         mojom::kURLLoadOptionSendSSLInfo, *resource_request_, this,
-        net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET));
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
   }
 
   void FollowRedirect() {
