@@ -398,9 +398,12 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
   def _ShouldEnableGoma(self):
-    # Enable goma if 1) chrome actually needs to be built and 2) goma is
-    # available.
-    return self._run.options.managed_chrome and self._run.options.goma_dir
+    # Enable goma if 1) chrome actually needs to be built, 2) not
+    # latest_toolchain (because toolchain prebuilt package may not be available
+    # for goma, crbug.com/728971) and 3) goma is available.
+    return (self._run.options.managed_chrome and
+            not self._latest_toolchain and
+            self._run.options.goma_dir)
 
   def _SetupGomaIfNecessary(self):
     """Sets up goma envs if necessary.
