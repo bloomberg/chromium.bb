@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/components/tether/local_device_data_provider.h"
 #include "components/cryptauth/foreground_eid_generator.h"
+#include "components/cryptauth/local_device_data_provider.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -33,8 +33,9 @@ class BleScanner : public device::BluetoothAdapter::Observer {
         cryptauth::RemoteDevice remote_device) = 0;
   };
 
-  BleScanner(scoped_refptr<device::BluetoothAdapter> adapter,
-             const LocalDeviceDataProvider* local_device_data_provider);
+  BleScanner(
+      scoped_refptr<device::BluetoothAdapter> adapter,
+      const cryptauth::LocalDeviceDataProvider* local_device_data_provider);
   ~BleScanner() override;
 
   virtual bool RegisterScanFilterForDevice(
@@ -76,10 +77,11 @@ class BleScanner : public device::BluetoothAdapter::Observer {
         device::BluetoothDevice* bluetooth_device) override;
   };
 
-  BleScanner(std::unique_ptr<ServiceDataProvider> service_data_provider,
-             scoped_refptr<device::BluetoothAdapter> adapter,
-             std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
-             const LocalDeviceDataProvider* local_device_data_provider);
+  BleScanner(
+      std::unique_ptr<ServiceDataProvider> service_data_provider,
+      scoped_refptr<device::BluetoothAdapter> adapter,
+      std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
+      const cryptauth::LocalDeviceDataProvider* local_device_data_provider);
 
   void UpdateDiscoveryStatus();
   void StartDiscoverySession();
@@ -98,7 +100,7 @@ class BleScanner : public device::BluetoothAdapter::Observer {
   std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator_;
   // |local_device_data_provider_| is not owned by this instance and must
   // outlive it.
-  const LocalDeviceDataProvider* local_device_data_provider_;
+  const cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
 
   bool is_initializing_discovery_session_;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;

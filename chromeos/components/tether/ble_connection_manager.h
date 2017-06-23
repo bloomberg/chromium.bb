@@ -23,6 +23,7 @@
 namespace cryptauth {
 class BluetoothThrottler;
 class CryptAuthService;
+class LocalDeviceDataProvider;
 }  // namespace cryptauth
 
 namespace chromeos {
@@ -71,7 +72,7 @@ class BleConnectionManager : public BleScanner::Observer {
   BleConnectionManager(
       cryptauth::CryptAuthService* cryptauth_service,
       scoped_refptr<device::BluetoothAdapter> adapter,
-      const LocalDeviceDataProvider* local_device_data_provider,
+      const cryptauth::LocalDeviceDataProvider* local_device_data_provider,
       const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
       cryptauth::BluetoothThrottler* bluetooth_throttler);
   virtual ~BleConnectionManager();

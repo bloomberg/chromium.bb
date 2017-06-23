@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/local_device_data_provider.h"
+#include "components/cryptauth/local_device_data_provider.h"
 
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
-namespace chromeos {
-
-namespace tether {
+namespace cryptauth {
 
 LocalDeviceDataProvider::LocalDeviceDataProvider(
-    cryptauth::CryptAuthService* cryptauth_service)
+    CryptAuthService* cryptauth_service)
     : cryptauth_service_(cryptauth_service) {}
 
 LocalDeviceDataProvider::~LocalDeviceDataProvider() {}
 
 bool LocalDeviceDataProvider::GetLocalDeviceData(
     std::string* public_key_out,
-    std::vector<cryptauth::BeaconSeed>* beacon_seeds_out) const {
+    std::vector<BeaconSeed>* beacon_seeds_out) const {
   DCHECK(public_key_out || beacon_seeds_out);
 
   std::string public_key =
@@ -30,7 +28,7 @@ bool LocalDeviceDataProvider::GetLocalDeviceData(
     return false;
   }
 
-  std::vector<cryptauth::ExternalDeviceInfo> synced_devices =
+  std::vector<ExternalDeviceInfo> synced_devices =
       cryptauth_service_->GetCryptAuthDeviceManager()->GetSyncedDevices();
   for (const auto& device : synced_devices) {
     if (device.has_public_key() && device.public_key() == public_key &&
@@ -53,6 +51,4 @@ bool LocalDeviceDataProvider::GetLocalDeviceData(
   return false;
 }
 
-}  // namespace tether
-
-}  // namespace chromeos
+}  // namespace cryptauth

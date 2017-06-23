@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/mock_local_device_data_provider.h"
+#include "components/cryptauth/mock_local_device_data_provider.h"
 
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
-namespace chromeos {
-
-namespace tether {
+namespace cryptauth {
 
 MockLocalDeviceDataProvider::MockLocalDeviceDataProvider()
     : LocalDeviceDataProvider(nullptr /* cryptauth_service */) {}
@@ -27,7 +25,7 @@ void MockLocalDeviceDataProvider::SetPublicKey(
 }
 
 void MockLocalDeviceDataProvider::SetBeaconSeeds(
-    std::unique_ptr<std::vector<cryptauth::BeaconSeed>> beacon_seeds) {
+    std::unique_ptr<std::vector<BeaconSeed>> beacon_seeds) {
   if (beacon_seeds) {
     beacon_seeds_ = std::move(beacon_seeds);
   } else {
@@ -37,7 +35,7 @@ void MockLocalDeviceDataProvider::SetBeaconSeeds(
 
 bool MockLocalDeviceDataProvider::GetLocalDeviceData(
     std::string* public_key_out,
-    std::vector<cryptauth::BeaconSeed>* beacon_seeds_out) const {
+    std::vector<BeaconSeed>* beacon_seeds_out) const {
   bool success = false;
 
   if (public_key_ && public_key_out) {
@@ -53,6 +51,4 @@ bool MockLocalDeviceDataProvider::GetLocalDeviceData(
   return success;
 }
 
-}  // namespace tether
-
-}  // namespace chromeos
+}  // namespace cryptauth

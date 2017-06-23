@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/mock_local_device_data_provider.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
+#include "components/cryptauth/mock_local_device_data_provider.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -159,7 +159,7 @@ class BleScannerTest : public testing::Test {
         CreateFakeBackgroundScanFilter());
 
     mock_local_device_data_provider_ =
-        base::MakeUnique<MockLocalDeviceDataProvider>();
+        base::MakeUnique<cryptauth::MockLocalDeviceDataProvider>();
     mock_local_device_data_provider_->SetPublicKey(
         base::MakeUnique<std::string>(fake_local_public_key));
     mock_local_device_data_provider_->SetBeaconSeeds(
@@ -226,7 +226,8 @@ class BleScannerTest : public testing::Test {
 
   TestServiceDataProvider* test_service_data_provider_;
   cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
-  std::unique_ptr<MockLocalDeviceDataProvider> mock_local_device_data_provider_;
+  std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
+      mock_local_device_data_provider_;
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   device::MockBluetoothDiscoverySession* mock_discovery_session_;
