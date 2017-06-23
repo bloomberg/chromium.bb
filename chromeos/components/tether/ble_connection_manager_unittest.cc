@@ -4,7 +4,6 @@
 
 #include "chromeos/components/tether/ble_connection_manager.h"
 
-#include "base/logging.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
@@ -69,6 +68,8 @@ class MockTimerFactory : public TimerFactory {
   }
 };
 
+// Observer used in all tests except for ObserverUnregisters() which tracks all
+// status changes and messages received.
 class TestObserver : public BleConnectionManager::Observer {
  public:
   TestObserver() {}
@@ -98,6 +99,33 @@ class TestObserver : public BleConnectionManager::Observer {
  private:
   std::vector<SecureChannelStatusChange> connection_status_changes_;
   std::vector<ReceivedMessage> received_messages_;
+};
+
+// Observer used in ObserverUnregisters() which unregisters a device when it
+// receives a callback from the manager. The device it unregisters is the same
+// one it receives the event about.
+class UnregisteringObserver : public BleConnectionManager::Observer {
+ public:
+  UnregisteringObserver(BleConnectionManager* manager,
+                        MessageType connection_reason)
+      : manager_(manager), connection_reason_(connection_reason) {}
+
+  // BleConnectionManager::Observer:
+  void OnSecureChannelStatusChanged(
+      const cryptauth::RemoteDevice& remote_device,
+      const cryptauth::SecureChannel::Status& old_status,
+      const cryptauth::SecureChannel::Status& new_status) override {
+    manager_->UnregisterRemoteDevice(remote_device, connection_reason_);
+  }
+
+  void OnMessageReceived(const cryptauth::RemoteDevice& remote_device,
+                         const std::string& payload) override {
+    manager_->UnregisterRemoteDevice(remote_device, connection_reason_);
+  }
+
+ private:
+  BleConnectionManager* manager_;
+  MessageType connection_reason_;
 };
 
 class MockBleScanner : public BleScanner {
@@ -336,8 +364,8 @@ class BleConnectionManagerTest : public testing::Test {
   }
 
   void VerifyNoTimeoutSet(const cryptauth::RemoteDevice& remote_device) {
-    std::shared_ptr<BleConnectionManager::ConnectionMetadata>
-        connection_metadata = manager_->GetConnectionMetadata(remote_device);
+    BleConnectionManager::ConnectionMetadata* connection_metadata =
+        manager_->GetConnectionMetadata(remote_device);
     EXPECT_TRUE(connection_metadata);
     EXPECT_FALSE(
         connection_metadata->connection_attempt_timeout_timer_->IsRunning());
@@ -357,8 +385,8 @@ class BleConnectionManagerTest : public testing::Test {
 
   void VerifyTimeoutSet(const cryptauth::RemoteDevice& remote_device,
                         int64_t expected_num_millis) {
-    std::shared_ptr<BleConnectionManager::ConnectionMetadata>
-        connection_metadata = manager_->GetConnectionMetadata(remote_device);
+    BleConnectionManager::ConnectionMetadata* connection_metadata =
+        manager_->GetConnectionMetadata(remote_device);
     EXPECT_TRUE(connection_metadata);
     EXPECT_TRUE(
         connection_metadata->connection_attempt_timeout_timer_->IsRunning());
@@ -368,8 +396,8 @@ class BleConnectionManagerTest : public testing::Test {
   }
 
   void FireTimerForDevice(const cryptauth::RemoteDevice& remote_device) {
-    std::shared_ptr<BleConnectionManager::ConnectionMetadata>
-        connection_metadata = manager_->GetConnectionMetadata(remote_device);
+    BleConnectionManager::ConnectionMetadata* connection_metadata =
+        manager_->GetConnectionMetadata(remote_device);
     EXPECT_TRUE(connection_metadata);
     EXPECT_TRUE(
         connection_metadata->connection_attempt_timeout_timer_->IsRunning());
@@ -380,8 +408,8 @@ class BleConnectionManagerTest : public testing::Test {
 
   FakeSecureChannel* GetChannelForDevice(
       const cryptauth::RemoteDevice& remote_device) {
-    std::shared_ptr<BleConnectionManager::ConnectionMetadata>
-        connection_metadata = manager_->GetConnectionMetadata(remote_device);
+    BleConnectionManager::ConnectionMetadata* connection_metadata =
+        manager_->GetConnectionMetadata(remote_device);
     EXPECT_TRUE(connection_metadata);
     EXPECT_TRUE(connection_metadata->secure_channel_);
     return static_cast<FakeSecureChannel*>(
@@ -389,14 +417,14 @@ class BleConnectionManagerTest : public testing::Test {
   }
 
   void VerifyDeviceRegistered(const cryptauth::RemoteDevice& remote_device) {
-    std::shared_ptr<BleConnectionManager::ConnectionMetadata>
-        connection_metadata = manager_->GetConnectionMetadata(remote_device);
+    BleConnectionManager::ConnectionMetadata* connection_metadata =
+        manager_->GetConnectionMetadata(remote_device);
     EXPECT_TRUE(connection_metadata);
   }
 
   void VerifyDeviceNotRegistered(const cryptauth::RemoteDevice& remote_device) {
-    std::shared_ptr<BleConnectionManager::ConnectionMetadata>
-        connection_metadata = manager_->GetConnectionMetadata(remote_device);
+    BleConnectionManager::ConnectionMetadata* connection_metadata =
+        manager_->GetConnectionMetadata(remote_device);
     EXPECT_FALSE(connection_metadata);
   }
 
@@ -1214,6 +1242,70 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
        cryptauth::SecureChannel::Status::DISCONNECTED},
       {test_devices_[2], cryptauth::SecureChannel::Status::CONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED}});
+}
+
+// Regression test for crbug.com/733360. This bug caused a crash when there were
+// multiple observers of BleConnectionManager. The bug was that when an event
+// occurred which triggered observers to be notified (i.e., a status changed or
+// message received event), sometimes one of the observers would unregister the
+// device, which, in turn, caused the associated ConnectionMetadata to be
+// deleted. Then, the next observer would be notified of the event after the
+// deletion. Since the parameters to the observer callbacks were passed by
+// reference (and the reference was held by the deleted ConnectionMetadata),
+// this led to the second observer referencing deleted memory. The fix is to
+// pass the parameters from the ConnectionMetadata to BleConnectionManager by
+// value instead.
+TEST_F(BleConnectionManagerTest, ObserverUnregisters) {
+  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[0]))
+      .Times(2);
+  EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
+      .Times(2);
+  EXPECT_CALL(*mock_ble_scanner_,
+              UnregisterScanFilterForDevice(test_devices_[0]))
+      .Times(2);
+  EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]))
+      .Times(2);
+
+  FakeSecureChannel* channel =
+      ConnectSuccessfully(test_devices_[0], std::string(kBluetoothAddress1),
+                          MessageType::TETHER_AVAILABILITY_REQUEST);
+
+  // Register two separate UnregisteringObservers. When a message is received,
+  // the first observer will unregister the device.
+  UnregisteringObserver first(manager_.get(),
+                              MessageType::TETHER_AVAILABILITY_REQUEST);
+  UnregisteringObserver second(manager_.get(),
+                               MessageType::TETHER_AVAILABILITY_REQUEST);
+  manager_->AddObserver(&first);
+  manager_->AddObserver(&second);
+
+  // Receive a message over the channel. This should invoke the observer
+  // callbacks. This would have caused a crash before the fix for
+  // crbug.com/733360.
+  channel->ReceiveMessage(std::string(kTetherFeature), "response1");
+  VerifyReceivedMessages(
+      std::vector<ReceivedMessage>{{test_devices_[0], "response1"}});
+
+  // We expect the device to be unregistered (by the observer).
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTED}});
+  VerifyDeviceNotRegistered(test_devices_[0]);
+
+  // Now, register the device again. This should cause a "disconnected =>
+  // connecting" status change. This time, the multiple observers will respond
+  // to a status change event instead of a message received event. This also
+  // would have caused a crash before the fix for crbug.com/733360.
+  manager_->RegisterRemoteDevice(test_devices_[0],
+                                 MessageType::TETHER_AVAILABILITY_REQUEST);
+
+  // We expect the device to be unregistered (by the observer).
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED,
+       cryptauth::SecureChannel::Status::CONNECTING},
+      {test_devices_[0], cryptauth::SecureChannel::Status::CONNECTING,
+       cryptauth::SecureChannel::Status::DISCONNECTED}});
+  VerifyDeviceNotRegistered(test_devices_[0]);
 }
 
 }  // namespace tether
