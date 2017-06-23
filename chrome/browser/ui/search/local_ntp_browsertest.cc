@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSmokeTest, FrenchGoogleNTPLoadsWithoutError) {
 class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
  public:
   void Fetch(OneGoogleCallback callback) override {
-    std::move(callback).Run(one_google_bar_data_);
+    std::move(callback).Run(Status::OK, one_google_bar_data_);
   }
 
   void set_one_google_bar_data(

@@ -112,6 +112,19 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void RespondWithNetworkError() {
+    net::TestURLFetcher* url_fetcher = GetRunningURLFetcher();
+    url_fetcher->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
+    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  }
+
+  void RespondWithHttpError() {
+    net::TestURLFetcher* url_fetcher = GetRunningURLFetcher();
+    url_fetcher->set_status(net::URLRequestStatus());
+    url_fetcher->set_response_code(net::HTTP_NOT_FOUND);
+    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  }
+
   OneGoogleBarFetcherImpl* one_google_bar_fetcher() {
     return &one_google_bar_fetcher_;
   }
@@ -143,7 +156,8 @@ TEST_F(OneGoogleBarFetcherImplTest, UnauthenticatedRequestReturns) {
   one_google_bar_fetcher()->Fetch(callback.Get());
 
   base::Optional<OneGoogleBarData> data;
-  EXPECT_CALL(callback, Run(_)).WillOnce(SaveArg<0>(&data));
+  EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::OK, _))
+      .WillOnce(SaveArg<1>(&data));
   RespondWithData(kMinimalValidResponse);
 
   EXPECT_TRUE(data.has_value());
@@ -158,7 +172,8 @@ TEST_F(OneGoogleBarFetcherImplTest, AuthenticatedRequestReturns) {
   IssueAccessToken();
 
   base::Optional<OneGoogleBarData> data;
-  EXPECT_CALL(callback, Run(_)).WillOnce(SaveArg<0>(&data));
+  EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::OK, _))
+      .WillOnce(SaveArg<1>(&data));
   RespondWithData(kMinimalValidResponse);
 
   EXPECT_TRUE(data.has_value());
@@ -222,7 +237,8 @@ TEST_F(OneGoogleBarFetcherImplTest, HandlesResponsePreamble) {
   // The reponse may contain a ")]}'" prefix. The fetcher should ignore that
   // during parsing.
   base::Optional<OneGoogleBarData> data;
-  EXPECT_CALL(callback, Run(_)).WillOnce(SaveArg<0>(&data));
+  EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::OK, _))
+      .WillOnce(SaveArg<1>(&data));
   RespondWithData(std::string(")]}'") + kMinimalValidResponse);
 
   EXPECT_TRUE(data.has_value());
@@ -233,7 +249,8 @@ TEST_F(OneGoogleBarFetcherImplTest, ParsesFullResponse) {
   one_google_bar_fetcher()->Fetch(callback.Get());
 
   base::Optional<OneGoogleBarData> data;
-  EXPECT_CALL(callback, Run(_)).WillOnce(SaveArg<0>(&data));
+  EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::OK, _))
+      .WillOnce(SaveArg<1>(&data));
   RespondWithData(R"json({"oneGoogleBar": {
     "html": { "privateDoNotAccessOrElseSafeHtmlWrappedValue": "bar_html" },
     "pageHooks": {
@@ -280,12 +297,53 @@ TEST_F(OneGoogleBarFetcherImplTest, CoalescesMultipleRequests) {
   base::Optional<OneGoogleBarData> first_data;
   base::Optional<OneGoogleBarData> second_data;
 
-  EXPECT_CALL(first_callback, Run(_)).WillOnce(SaveArg<0>(&first_data));
-  EXPECT_CALL(second_callback, Run(_)).WillOnce(SaveArg<0>(&second_data));
+  EXPECT_CALL(first_callback, Run(OneGoogleBarFetcher::Status::OK, _))
+      .WillOnce(SaveArg<1>(&first_data));
+  EXPECT_CALL(second_callback, Run(OneGoogleBarFetcher::Status::OK, _))
+      .WillOnce(SaveArg<1>(&second_data));
 
   RespondWithData(kMinimalValidResponse);
 
   // Ensure that both requests received a response.
   EXPECT_TRUE(first_data.has_value());
   EXPECT_TRUE(second_data.has_value());
+}
+
+TEST_F(OneGoogleBarFetcherImplTest, NetworkErrorIsTransient) {
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::TRANSIENT_ERROR,
+                            Eq(base::nullopt)));
+  RespondWithNetworkError();
+}
+
+TEST_F(OneGoogleBarFetcherImplTest, HttpErrorIsFatal) {
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  EXPECT_CALL(callback,
+              Run(OneGoogleBarFetcher::Status::FATAL_ERROR, Eq(base::nullopt)));
+  RespondWithHttpError();
+}
+
+TEST_F(OneGoogleBarFetcherImplTest, InvalidJsonErrorIsFatal) {
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  EXPECT_CALL(callback,
+              Run(OneGoogleBarFetcher::Status::FATAL_ERROR, Eq(base::nullopt)));
+  RespondWithData(kMinimalValidResponse + std::string(")"));
+}
+
+TEST_F(OneGoogleBarFetcherImplTest, IncompleteJsonErrorIsFatal) {
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  EXPECT_CALL(callback,
+              Run(OneGoogleBarFetcher::Status::FATAL_ERROR, Eq(base::nullopt)));
+  RespondWithData(R"json({"oneGoogleBar": {
+  "html": {},
+  "pageHooks": {}
+}})json");
 }

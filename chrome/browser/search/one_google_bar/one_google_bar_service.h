@@ -10,10 +10,10 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class OneGoogleBarFetcher;
 class SigninManagerBase;
 
 // A service that downloads, caches, and hands out OneGoogleBarData. It never
@@ -49,7 +49,8 @@ class OneGoogleBarService : public KeyedService {
 
   void SigninStatusChanged();
 
-  void OneGoogleBarDataFetched(const base::Optional<OneGoogleBarData>& data);
+  void OneGoogleBarDataFetched(OneGoogleBarFetcher::Status status,
+                               const base::Optional<OneGoogleBarData>& data);
 
   void SetOneGoogleBarData(const base::Optional<OneGoogleBarData>& data);
 

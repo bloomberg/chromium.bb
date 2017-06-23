@@ -13,8 +13,9 @@ class OneGoogleBarServiceObserver {
   // OneGoogleBarService::one_google_bar_data().
   virtual void OnOneGoogleBarDataChanged() = 0;
 
-  // Called when an attempt to fetch the OneGoogleBarData failed. Note that if
-  // there was cached data before the failed fetch attempt, then
+  // Called when an attempt to fetch the OneGoogleBarData failed. Note that
+  // there may still be cached data from a previous fetch. If there was cached
+  // data before the failed fetch attempt and it got cleared, then
   // OnOneGoogleBarDataChanged gets called first.
   virtual void OnOneGoogleBarFetchFailed() {}
 

@@ -49,7 +49,7 @@ class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
   void JsonParsed(std::unique_ptr<base::Value> value);
   void JsonParseFailed(const std::string& message);
 
-  void Respond(const base::Optional<OneGoogleBarData>& data);
+  void Respond(Status status, const base::Optional<OneGoogleBarData>& data);
 
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
