@@ -25,11 +25,13 @@
 // https://developers.google.com/console/.
 //
 // The keys must either be provided using preprocessor variables (set
-// via e.g. ~/.gyp/include.gypi). Alternatively, they can be
+// via e.g. ~/.gyp/include.gypi). Alternatively, in Chromium builds, they can be
 // overridden at runtime using environment variables of the same name.
+// Environment variable overrides will be ignored for official Google Chrome
+// builds.
 //
 // The names of the preprocessor variables (or environment variables
-// to override them at runtime) are as follows:
+// to override them at runtime in Chromium builds) are as follows:
 // - GOOGLE_API_KEY: The API key, a.k.a. developer key.
 // - GOOGLE_DEFAULT_CLIENT_ID: If set, this is used as the default for
 //   all client IDs not otherwise set.  This is intended only for
