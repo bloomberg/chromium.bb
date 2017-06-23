@@ -407,6 +407,49 @@ TEST_F('EditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
   });
 });
 
+TEST_F('EditingTest', 'RichTextLinkOutput', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go" role="textbox" contenteditable>a <a href="#">test</a></div>
+
+    <script>
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('move', 'forward', 'character');
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var moveByChar = input.doDefault.bind(input);
+    var lineText = 'a test';
+
+    this.listenOnce(input, 'focus', function() {
+      mockFeedback.call(moveByChar)
+          .expectSpeech(' ')
+          .expectBraille(lineText, { startIndex: 1, endIndex: 1 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectSpeech('Link start')
+          .expectSpeech('Underline start')
+          .expectBraille(lineText, { startIndex: 2, endIndex: 2 })
+          .call(moveByChar)
+          .expectSpeech('e')
+          .expectBraille(lineText, { startIndex: 3, endIndex: 3 })
+          .call(moveByChar)
+          .expectSpeech('s')
+          .expectBraille(lineText, { startIndex: 4, endIndex: 4 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectSpeech('Link end')
+          .expectSpeech('Underline end')
+          .expectBraille(lineText, { startIndex: 5, endIndex: 5 })
+
+          .replay();
+    });
+    input.focus();
+  });
+});
+
 TEST_F('EditingTest', 'EditableLineOneStaticText', function() {
   this.runWithLoadedTree(function() {/*!
     <p contenteditable style="word-spacing:100000px">this is a test</p>
