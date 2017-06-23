@@ -178,6 +178,26 @@
     8
    ],
    "dns_api_endpoint": "startcom1.ct.googleapis.com"
+  },
+  {
+   "description": "Comodo 'Sabre' CT log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8m/SiQ8/xfiHHqtls9m7FyOMBg4JVZY9CgiixXGz0akvKD6DEL8S0ERmFe9U4ZiA0M4kbT5nmuk3I85Sk4bagA==",
+   "url": "sabre.ct.comodo.com/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    9
+   ],
+   "dns_api_endpoint": "comodo-sabre.ct.googleapis.com"
+  },
+  {
+   "description": "Comodo 'Mammoth' CT log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7+R9dC4VFbbpuyOL+yy14ceAmEf7QGlo/EmtYU6DRzwat43f/3swtLr/L8ugFOOt1YU/RFmMjGCL17ixv66MZw==",
+   "url": "mammoth.ct.comodo.com/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    9
+   ],
+   "dns_api_endpoint": "comodo-mammoth.ct.googleapis.com"
   }
  ],
  "operators": [
@@ -216,6 +236,10 @@
   {
    "name": "StartSSL",
    "id": 8
+  },
+  {
+   "name": "Comodo",
+   "id": 9
   }
  ]
 }
