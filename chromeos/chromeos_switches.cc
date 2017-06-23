@@ -204,9 +204,6 @@ const char kDisableNetworkPortalNotification[] =
 // Disables new channel switcher UI.
 const char kDisableNewChannelSwitcherUI[] = "disable-new-channel-switcher-ui";
 
-// Disables new Kiosk UI when kiosk apps are represented as user pods.
-const char kDisableNewKioskUI[] = "disable-new-kiosk-ui";
-
 // Disables the new Korean IME in chrome://settings/languages.
 const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
 
@@ -277,10 +274,6 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
 // Enables action handler apps (e.g. creating new notes) on lock screen.
 const char kEnableLockScreenApps[] = "enable-lock-screen-apps";
-
-// Enables Kiosk mode for Chrome OS. Note this switch refers to retail mode
-// rather than the kiosk app mode.
-const char kEnableKioskMode[] = "enable-kiosk-mode";
 
 // Overrides Tether with stub service. Provide integer arguments for the number
 // of fake networks desired, e.g. 'tether-stub=2'.
@@ -447,11 +440,6 @@ const char kShowMdLogin[] = "show-md-login";
 
 // If true, the non-md login and lock screens will be shown.
 const char kShowNonMdLogin[] = "show-non-md-login";
-
-// Specifies power stub behavior:
-//  'cycle=2' - Cycles power states every 2 seconds.
-// See FakeDBusThreadManager::ParsePowerCommandLineSwitch for full details.
-const char kPowerStub[] = "power-stub";
 
 // Overrides network stub behavior. By default, ethernet, wifi and vpn are
 // enabled, and transitions occur instantaneously. Multiple options can be
