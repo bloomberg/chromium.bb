@@ -39,7 +39,7 @@ id<GREYMatcher> InputAccessoryViewNextButton() {
   return grey_allOf(
       grey_accessibilityLabel(l10n_util::GetNSString(IDS_ACCNAME_NEXT)),
       grey_accessibilityTrait(UIAccessibilityTraitButton),
-      grey_sufficientlyVisible(), nil);
+      grey_kindOfClass([UIButton class]), grey_sufficientlyVisible(), nil);
 }
 
 // Returns the GREYMatcher for the input accessory view's close button.
