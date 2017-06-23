@@ -867,9 +867,9 @@ static const GLenum kSupportedInternalFormatsTexImageES3[] = {
 };
 
 // Exposed by EXT_color_buffer_float
-static const GLenum kSupportedInternalFormatsFloatES3[] = {
-    GL_R16F,    GL_R32F,    GL_RG16F,         GL_RG32F,
-    GL_RGBA16F, GL_RGBA32F, GL_R11F_G11F_B10F};
+static const GLenum kSupportedInternalFormatsCopyTexImageFloatES3[] = {
+    GL_R16F,   GL_R32F,    GL_RG16F,   GL_RG32F,         GL_RGB16F,
+    GL_RGB32F, GL_RGBA16F, GL_RGBA32F, GL_R11F_G11F_B10F};
 
 // ES3 enums supported by TexImageSource
 static const GLenum kSupportedInternalFormatsTexImageSourceES3[] = {
@@ -2076,7 +2076,7 @@ bool WebGLRenderingContextBase::ValidateCopyTexFormat(const char* function_name,
   if (!is_ext_color_buffer_float_formats_added_ &&
       ExtensionEnabled(kEXTColorBufferFloatName)) {
     ADD_VALUES_TO_SET(supported_internal_formats_copy_tex_image_,
-                      kSupportedInternalFormatsFloatES3);
+                      kSupportedInternalFormatsCopyTexImageFloatES3);
     is_ext_color_buffer_float_formats_added_ = true;
   }
 
