@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
@@ -51,12 +52,15 @@ class UrlBarTexture : public UiTexture {
   void SetBackButtonHovered(bool hovered);
   void SetBackButtonPressed(bool pressed);
 
-  // Public for testability.
+ protected:
   static void ApplyUrlStyling(const base::string16& formatted_url,
                               const url::Parsed& parsed,
                               security_state::SecurityLevel security_level,
                               vr_shell::RenderTextWrapper* render_text,
                               const ColorScheme& color_scheme);
+
+  std::unique_ptr<gfx::RenderText> url_render_text_;
+  base::string16 url_text_;
 
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
@@ -77,7 +81,6 @@ class UrlBarTexture : public UiTexture {
       security_state::SecurityLevel::NONE;
   bool malware_ = false;
 
-  std::unique_ptr<gfx::RenderText> url_render_text_;
   GURL last_drawn_gurl_;
   bool has_back_button_ = true;
   bool has_security_chip_ = true;

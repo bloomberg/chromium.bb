@@ -50,6 +50,15 @@ class TestUrlBarTexture : public UrlBarTexture {
     DrawAndLayout(surface->getCanvas(), texture_size_);
   }
 
+  static void TestUrlStyling(const base::string16& formatted_url,
+                             const url::Parsed& parsed,
+                             security_state::SecurityLevel security_level,
+                             vr_shell::RenderTextWrapper* render_text,
+                             const ColorScheme& color_scheme) {
+    ApplyUrlStyling(formatted_url, parsed, security_level, render_text,
+                    color_scheme);
+  }
+
   void SetForceFontFallbackFailure(bool force) {
     SetForceFontFallbackFailureForTesting(force);
   }
@@ -70,6 +79,9 @@ class TestUrlBarTexture : public UrlBarTexture {
   // Reports the last unsupported mode that was encountered. Returns kCount if
   // no unsupported mode was encountered.
   UiUnsupportedMode unsupported_mode() const { return unsupported_mode_; }
+
+  gfx::RenderText* url_render_text() { return url_render_text_.get(); }
+  const base::string16& url_text() { return url_text_; }
 
  private:
   void OnUnsupportedFeature(UiUnsupportedMode mode) {
@@ -116,10 +128,10 @@ class UrlEmphasisTest : public testing::Test {
         url, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
         &parsed, nullptr, nullptr);
     EXPECT_EQ(formatted_url, base::UTF8ToUTF16(expected_string));
-    UrlBarTexture::ApplyUrlStyling(
+    TestUrlBarTexture::TestUrlStyling(
         formatted_url, parsed, level, &mock_,
         ColorScheme::GetColorScheme(ColorScheme::kModeNormal));
-    UrlBarTexture::ApplyUrlStyling(
+    TestUrlBarTexture::TestUrlStyling(
         formatted_url, parsed, level, &mock_,
         ColorScheme::GetColorScheme(ColorScheme::kModeIncognito));
   }
@@ -202,11 +214,44 @@ TEST(UrlBarTextureTest, WillFailOnUnhandledCodePoint) {
   EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
 }
 
-TEST(UrlBarTextureTest, WillFailOnStrongRTLChar) {
+TEST(UrlBarTextureTest, MaliciousRTLIsRenderedLTR) {
   TestUrlBarTexture texture;
-  texture.DrawURL(GURL("https://ש.com"));
-  EXPECT_EQ(UiUnsupportedMode::kURLWithStrongRTLChars,
-            texture.unsupported_mode());
+
+  // Construct a malicious URL that attempts to spoof the hostname.
+  const std::string real_host("127.0.0.1");
+  const std::string spoofed_host("attack.com");
+  const std::string url =
+      "http://" + real_host + "/ا/http://" + spoofed_host + "‬";
+
+  texture.DrawURL(GURL(base::UTF8ToUTF16(url)));
+
+  // Determine the logical character ranges of the legitimate and spoofed
+  // hostnames in the processed URL text.
+  base::string16 text = texture.url_text();
+  base::string16 real_16 = base::UTF8ToUTF16(real_host);
+  base::string16 spoofed_16 = base::UTF8ToUTF16(spoofed_host);
+  size_t position = text.find(real_16);
+  ASSERT_NE(position, base::string16::npos);
+  gfx::Range real_range(position, position + real_16.size());
+  position = text.find(spoofed_16);
+  ASSERT_NE(position, base::string16::npos);
+  gfx::Range spoofed_range(position, position + spoofed_16.size());
+
+  // Extract the pixel locations at which hostnames were actually rendered.
+  auto real_bounds =
+      texture.url_render_text()->GetSubstringBoundsForTesting(real_range);
+  auto spoofed_bounds =
+      texture.url_render_text()->GetSubstringBoundsForTesting(spoofed_range);
+  EXPECT_EQ(real_bounds.size(), 1u);
+  EXPECT_GE(spoofed_bounds.size(), 1u);
+
+  // Verify that any spoofed portion of the hostname has remained to the right
+  // of the legitimate hostname. This will fail if LTR directionality is not
+  // specified during URL rendering.
+  auto minimum_position = real_bounds[0].x() + real_bounds[0].width();
+  for (const auto& region : spoofed_bounds) {
+    EXPECT_GT(region.x(), minimum_position);
+  }
 }
 
 TEST(UrlBarTexture, ElisionIsAnUnsupportedMode) {
