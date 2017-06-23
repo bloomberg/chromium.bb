@@ -1125,11 +1125,6 @@ config("default_warnings") {
     ]
   }
 
-  if (is_chromeos && is_clang && !is_nacl) {
-    # TODO(thakis): Enable this, crbug.com/507717
-    cflags += [ "-Wno-shift-negative-value" ]
-  }
-
   if (is_clang) {
     cflags += [
       # TODO(thakis): Consider -Wloop-analysis (turns on
