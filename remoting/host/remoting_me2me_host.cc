@@ -84,6 +84,7 @@
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/single_window_desktop_environment.h"
 #include "remoting/host/switches.h"
+#include "remoting/host/test_echo_extension.h"
 #include "remoting/host/third_party_auth_config.h"
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
@@ -1491,6 +1492,8 @@ void HostProcess::StartHost() {
     host_->AddExtension(
         base::MakeUnique<SecurityKeyExtension>(context_->file_task_runner()));
   }
+
+  host_->AddExtension(base::MakeUnique<TestEchoExtension>());
 
   // TODO(simonmorris): Get the maximum session duration from a policy.
 #if defined(OS_LINUX)
