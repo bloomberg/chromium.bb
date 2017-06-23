@@ -68,7 +68,7 @@ fetchFaviconImageForItem:(nonnull CollectionViewItem<SuggestedContent>*)item
     (nonnull ContentSuggestionIdentifier*)suggestionIdentifier;
 
 // Returns the header view containing the logo and omnibox to be displayed.
-- (nullable UIView*)headerView;
+- (nullable UIView*)headerViewForWidth:(CGFloat)width;
 
 @end
 
