@@ -40,7 +40,6 @@ class ThumbnailServiceImpl : public ThumbnailService {
   ~ThumbnailServiceImpl() override;
 
   scoped_refptr<history::TopSites> top_sites_;
-  bool use_thumbnail_retargeting_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailServiceImpl);
 };

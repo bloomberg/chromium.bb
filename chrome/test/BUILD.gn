@@ -3283,8 +3283,6 @@ test("unit_tests") {
     "../browser/sync/sessions/sync_sessions_web_contents_router_unittest.cc",
     "../browser/sync/sync_startup_tracker_unittest.cc",
     "../browser/task_profiler/task_profiler_data_serializer_unittest.cc",
-    "../browser/thumbnails/content_analysis_unittest.cc",
-    "../browser/thumbnails/content_based_thumbnailing_algorithm_unittest.cc",
     "../browser/thumbnails/simple_thumbnail_crop_unittest.cc",
     "../browser/thumbnails/thumbnail_service_unittest.cc",
     "../browser/translate/chrome_translate_client_unittest.cc",

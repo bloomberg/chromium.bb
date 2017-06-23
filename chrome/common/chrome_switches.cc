@@ -424,10 +424,6 @@ const char kEnableSupervisedUserManagedBookmarksFolder[] =
 // Enables user control over muting tab audio from the tab strip.
 const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
 
-// Enables fanciful thumbnail processing. Used with NTP for
-// instant-extended-api, where thumbnails are generally smaller.
-const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
-
 // Enables Web Notification custom layouts.
 const char kEnableWebNotificationCustomLayouts[] =
     "enable-web-notification-custom-layouts";

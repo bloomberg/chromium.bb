@@ -36,6 +36,7 @@ class ThumbnailService : public RefcountedKeyedService {
   // process of creating a thumbnail from tab contents. The lifetime of these
   // instances is limited to the act of processing a single tab image. They
   // are permitted to hold the state of such process.
+  // TODO(treib): Return a scoped_refptr rather than raw pointer.
   virtual ThumbnailingAlgorithm* GetThumbnailingAlgorithm() const = 0;
 
   // Gets a thumbnail for a given page. Returns true iff we have the thumbnail.
