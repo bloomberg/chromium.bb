@@ -5,7 +5,7 @@
 // https://wicg.github.io/web-share/
 
 [
-  OriginTrialEnabled=WebShare
+  RuntimeEnabled=WebShare
 ] partial interface Navigator {
   [SecureContext, CallWith=ScriptState, MeasureAs=WebShareShare]
   Promise<void> share(ShareData data);

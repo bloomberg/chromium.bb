@@ -56,11 +56,6 @@ void InstallConditionalFeaturesForModules(
           isolate, world, v8::Local<v8::Object>(), prototype_object,
           interface_object);
     }
-    if (OriginTrials::webShareEnabled(execution_context)) {
-      V8NavigatorPartial::installWebShare(isolate, world,
-                                          v8::Local<v8::Object>(),
-                                          prototype_object, interface_object);
-    }
     if (OriginTrials::webVREnabled(execution_context)) {
       V8NavigatorPartial::installWebVR(isolate, world, v8::Local<v8::Object>(),
                                        prototype_object, interface_object);
@@ -165,16 +160,6 @@ void InstallPendingConditionalFeatureForModules(
       V8NavigatorPartial::installInstalledApp(
           isolate, world, v8::Local<v8::Object>(), prototype_object,
           interface_object);
-    }
-    return;
-  }
-  if (feature == "WebShare") {
-    if (context_data->GetExistingConstructorAndPrototypeForType(
-            &V8Navigator::wrapperTypeInfo, &prototype_object,
-            &interface_object)) {
-      V8NavigatorPartial::installWebShare(isolate, world,
-                                          v8::Local<v8::Object>(),
-                                          prototype_object, interface_object);
     }
     return;
   }

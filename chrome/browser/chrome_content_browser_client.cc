@@ -112,7 +112,6 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/common/features.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -3353,14 +3352,12 @@ void ChromeContentBrowserClient::InitFrameInterfaces() {
   }
 #endif
 
-  if (!ChromeOriginTrialPolicy().IsFeatureDisabled("WebShare")) {
 #if defined(OS_ANDROID)
-    frame_interfaces_parameterized_->AddInterface(base::Bind(
-        &ForwardToJavaWebContentsRegistry<blink::mojom::ShareService>));
+  frame_interfaces_parameterized_->AddInterface(base::Bind(
+      &ForwardToJavaWebContentsRegistry<blink::mojom::ShareService>));
 #elif defined(OS_LINUX) || defined(OS_WIN)
-    frame_interfaces_->AddInterface(base::Bind(&ShareServiceImpl::Create));
+  frame_interfaces_->AddInterface(base::Bind(&ShareServiceImpl::Create));
 #endif
-  }
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
