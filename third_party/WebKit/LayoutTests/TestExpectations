@@ -2833,3 +2833,5 @@ crbug.com/736177 [ Mac ] virtual/prefer_compositing_to_lcd_text/scrollbars/custo
 crbug.com/736177 [ Mac ] virtual/rootlayerscrolls/scrollbars/custom-scrollbar-with-incomplete-style.html [ Failure Pass ]
 
 crbug.com/734762 [ Mac Debug ] inspector-protocol/timeline/page-frames.js [ Failure ]
+
+crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-001.html [ Skip ]
