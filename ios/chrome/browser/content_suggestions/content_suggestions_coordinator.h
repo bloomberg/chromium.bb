@@ -12,6 +12,7 @@ class ChromeBrowserState;
 }
 
 @protocol UrlLoader;
+class WebStateList;
 
 // Coordinator to manage the Suggestions UI via a
 // ContentSuggestionsViewController.
@@ -21,6 +22,8 @@ class ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // URLLoader used to open pages.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
+@property(nonatomic, assign) WebStateList* webStateList;
+@property(nonatomic, weak) id dispatcher;
 // Whether the Suggestions UI is displayed. If this is true, start is a no-op.
 @property(nonatomic, readonly) BOOL visible;
 

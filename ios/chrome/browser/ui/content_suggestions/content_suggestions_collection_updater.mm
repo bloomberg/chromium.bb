@@ -533,7 +533,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
           headerForSectionWithIdentifier:SectionIdentifierLogo]) {
     ContentSuggestionsHeaderItem* header =
         [[ContentSuggestionsHeaderItem alloc] initWithType:ItemTypeHeader];
-    header.view = self.dataSource.headerView;
+    header.view = [self.dataSource headerViewForWidth:self.collectionWidth];
     [self.collectionViewController.collectionViewModel
                        setHeader:header
         forSectionWithIdentifier:SectionIdentifierLogo];

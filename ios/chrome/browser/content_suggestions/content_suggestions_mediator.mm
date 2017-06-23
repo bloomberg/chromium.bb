@@ -334,8 +334,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   self.contentService->DismissSuggestion(suggestion_id);
 }
 
-- (UIView*)headerView {
-  return [self.headerProvider header];
+- (UIView*)headerViewForWidth:(CGFloat)width {
+  return [self.headerProvider headerForWidth:width];
 }
 
 #pragma mark - ContentSuggestionsServiceObserver

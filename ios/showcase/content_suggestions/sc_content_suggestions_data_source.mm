@@ -138,7 +138,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 - (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
 }
 
-- (UIView*)headerView {
+- (UIView*)headerViewForWidth:(CGFloat)width {
   return nil;
 }
 
