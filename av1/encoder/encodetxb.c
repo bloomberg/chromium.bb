@@ -93,7 +93,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   if (eob == 0) return;
 #if CONFIG_TXK_SEL
-  av1_write_tx_type(cm, xd, block, plane, w);
+  av1_write_tx_type(cm, xd, block, plane, get_min_tx_size(tx_size), w);
 #endif
 
   nz_map = cm->fc->nz_map[txs_ctx][plane_type];
@@ -1599,8 +1599,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   }
 
 #if CONFIG_TXK_SEL
-  av1_update_tx_type_count(cm, xd, block, plane, mbmi->sb_type, tx_size,
-                           td->counts);
+  av1_update_tx_type_count(cm, xd, block, plane, mbmi->sb_type,
+                           get_min_tx_size(tx_size), td->counts);
 #endif
 
   for (c = 0; c < eob; ++c) {

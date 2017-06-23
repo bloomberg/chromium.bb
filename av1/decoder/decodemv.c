@@ -917,16 +917,18 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                       int supertx_enabled,
 #endif
 #if CONFIG_TXK_SEL
-                      int block, int plane,
+                      int block, int plane, TX_SIZE tx_size,
 #endif
                       aom_reader *r) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int inter_block = is_inter_block(mbmi);
+#if !CONFIG_TXK_SEL
 #if CONFIG_VAR_TX
   const TX_SIZE tx_size = inter_block ? mbmi->min_tx_size : mbmi->tx_size;
 #else
   const TX_SIZE tx_size = mbmi->tx_size;
 #endif
+#endif  // !CONFIG_TXK_SEL
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 #else

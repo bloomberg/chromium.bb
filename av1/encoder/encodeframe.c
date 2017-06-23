@@ -5649,6 +5649,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               FRAME_COUNTS *counts) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   int is_inter = is_inter_block(mbmi);
+
 #if !CONFIG_TXK_SEL
   TX_TYPE tx_type = mbmi->tx_type;
 #else

@@ -2059,6 +2059,10 @@ int av1_tx_type_cost(const AV1_COMP *cpi, const MACROBLOCKD *xd,
                      TX_TYPE tx_type) {
   if (plane > 0) return 0;
 
+#if CONFIG_VAR_TX
+  tx_size = get_min_tx_size(tx_size);
+#endif
+
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
 #if CONFIG_EXT_TX
@@ -4152,6 +4156,13 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   MACROBLOCKD *xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
+
+#if CONFIG_TXK_SEL
+  av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
+                      tx_size, a, l, 0, rd_stats);
+  return;
+#endif
+
   int64_t tmp;
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   PLANE_TYPE plane_type = get_plane_type(plane);
@@ -4626,10 +4637,12 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
                                     [mbmi->tx_type];
     }
   }
-#else   // CONFIG_EXT_TX
+#else  // CONFIG_EXT_TX
+#if !CONFIG_TXK_SEL
   if (mbmi->min_tx_size < TX_32X32 && !xd->lossless[xd->mi[0]->mbmi.segment_id])
     rd_stats->rate +=
         cpi->inter_tx_type_costs[mbmi->min_tx_size][mbmi->tx_type];
+#endif
 #endif  // CONFIG_EXT_TX
 
   if (rd_stats->skip)

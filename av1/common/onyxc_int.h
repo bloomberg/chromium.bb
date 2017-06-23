@@ -946,7 +946,6 @@ static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {
 #endif
 }
 
-#if CONFIG_VAR_TX
 // Disable array-bounds checks as the TX_SIZE enum contains values larger than
 // TX_SIZES_ALL (TX_INVALID) which make extending the array as a workaround
 // infeasible. The assert is enough for static analysis and this or other tools
@@ -962,6 +961,7 @@ static INLINE TX_SIZE get_min_tx_size(TX_SIZE tx_size) {
 #pragma GCC diagnostic warning "-Warray-bounds"
 #endif
 
+#if CONFIG_VAR_TX
 static INLINE void set_txfm_ctx(TXFM_CONTEXT *txfm_ctx, uint8_t txs, int len) {
   int i;
   for (i = 0; i < len; ++i) txfm_ctx[i] = txs;
