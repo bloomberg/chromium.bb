@@ -240,54 +240,6 @@ TEST_F(AnimationAnimationTimelineTest, PlaybackRateFast) {
   EXPECT_FALSE(is_null);
 }
 
-TEST_F(AnimationAnimationTimelineTest, SetCurrentTime) {
-  double zero_time = timeline->ZeroTime();
-
-  document->GetAnimationClock().UpdateTime(100);
-  EXPECT_EQ(zero_time, timeline->ZeroTime());
-  EXPECT_EQ(100, timeline->CurrentTimeInternal());
-
-  timeline->SetCurrentTimeInternal(0);
-  EXPECT_EQ(0, timeline->CurrentTimeInternal());
-  EXPECT_EQ(zero_time + 100, timeline->ZeroTime());
-
-  timeline->SetCurrentTimeInternal(100);
-  EXPECT_EQ(100, timeline->CurrentTimeInternal());
-  EXPECT_EQ(zero_time, timeline->ZeroTime());
-
-  timeline->SetCurrentTimeInternal(200);
-  EXPECT_EQ(200, timeline->CurrentTimeInternal());
-  EXPECT_EQ(zero_time - 100, timeline->ZeroTime());
-
-  document->GetAnimationClock().UpdateTime(200);
-  EXPECT_EQ(300, timeline->CurrentTimeInternal());
-  EXPECT_EQ(zero_time - 100, timeline->ZeroTime());
-
-  timeline->SetCurrentTimeInternal(0);
-  EXPECT_EQ(0, timeline->CurrentTimeInternal());
-  EXPECT_EQ(zero_time + 200, timeline->ZeroTime());
-
-  timeline->SetCurrentTimeInternal(100);
-  EXPECT_EQ(100, timeline->CurrentTimeInternal());
-  EXPECT_EQ(zero_time + 100, timeline->ZeroTime());
-
-  timeline->SetCurrentTimeInternal(200);
-  EXPECT_EQ(200, timeline->CurrentTimeInternal());
-  EXPECT_EQ(zero_time, timeline->ZeroTime());
-
-  timeline->setCurrentTime(0, false);
-  EXPECT_EQ(0, timeline->currentTime());
-  EXPECT_EQ(zero_time + 200, timeline->ZeroTime());
-
-  timeline->setCurrentTime(1000, false);
-  EXPECT_EQ(1000, timeline->currentTime());
-  EXPECT_EQ(zero_time + 199, timeline->ZeroTime());
-
-  timeline->setCurrentTime(2000, false);
-  EXPECT_EQ(2000, timeline->currentTime());
-  EXPECT_EQ(zero_time + 198, timeline->ZeroTime());
-}
-
 TEST_F(AnimationAnimationTimelineTest, PauseForTesting) {
   float seek_time = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;

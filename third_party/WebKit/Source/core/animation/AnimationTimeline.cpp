@@ -222,29 +222,6 @@ double AnimationTimeline::CurrentTimeInternal() {
   return CurrentTimeInternal(is_null);
 }
 
-void AnimationTimeline::setCurrentTime(double current_time, bool is_null) {
-  SetCurrentTimeInternal(current_time / 1000);
-}
-
-void AnimationTimeline::SetCurrentTimeInternal(double current_time) {
-  if (!IsActive())
-    return;
-  zero_time_ = playback_rate_ == 0
-                   ? current_time
-                   : GetDocument()->GetAnimationClock().CurrentTime() -
-                         current_time / playback_rate_;
-  zero_time_initialized_ = true;
-
-  for (const auto& animation : animations_) {
-    // The Player needs a timing update to pick up a new time.
-    animation->SetOutdated();
-  }
-
-  // Any corresponding compositor animation will need to be restarted. Marking
-  // the effect changed forces this.
-  SetAllCompositorPending(true);
-}
-
 double AnimationTimeline::EffectiveTime() {
   double time = CurrentTimeInternal();
   return std::isnan(time) ? 0 : time;

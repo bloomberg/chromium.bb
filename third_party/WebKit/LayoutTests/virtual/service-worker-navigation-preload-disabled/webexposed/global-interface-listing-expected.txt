@@ -195,7 +195,6 @@ interface AnimationTimeline
     getter currentTime
     method constructor
     method getAnimations
-    setter currentTime
 interface AppBannerPromptResult
     attribute @@toStringTag
     getter outcome
