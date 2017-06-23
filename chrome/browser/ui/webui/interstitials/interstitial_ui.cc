@@ -447,7 +447,7 @@ std::string InterstitialHTMLSource::GetSupervisedUserInterstitialHTML(
   std::string allow_access_requests_string;
   if (net::GetValueForKeyInQuery(url, "allow_access_requests",
                                  &allow_access_requests_string)) {
-    allow_access_requests = allow_access_requests_string == "0";
+    allow_access_requests = allow_access_requests_string == "1";
   }
 
   bool is_child_account = false;
@@ -455,6 +455,12 @@ std::string InterstitialHTMLSource::GetSupervisedUserInterstitialHTML(
   if (net::GetValueForKeyInQuery(url, "is_child_account",
                                  &is_child_account_string)) {
     is_child_account = is_child_account_string == "1";
+  }
+
+  bool is_deprecated = false;
+  std::string is_deprecated_string;
+  if (net::GetValueForKeyInQuery(url, "is_deprecated", &is_deprecated_string)) {
+    is_deprecated = is_deprecated_string == "1" && !is_child_account;
   }
 
   std::string custodian;
@@ -487,5 +493,6 @@ std::string InterstitialHTMLSource::GetSupervisedUserInterstitialHTML(
   return supervised_user_error_page::BuildHtml(
       allow_access_requests, profile_image_url, profile_image_url2, custodian,
       custodian_email, second_custodian, second_custodian_email,
-      is_child_account, reason, g_browser_process->GetApplicationLocale());
+      is_child_account, is_deprecated, reason,
+      g_browser_process->GetApplicationLocale());
 }

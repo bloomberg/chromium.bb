@@ -41,6 +41,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -466,14 +467,16 @@ void SupervisedUserService::SetActive(bool active) {
       token_service->LoadCredentials(
           supervised_users::kSupervisedUserPseudoEmail);
 
-      permissions_creators_.push_back(
-          base::MakeUnique<PermissionRequestCreatorSync>(
-              GetSettingsService(),
-              SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
-                  profile_),
-              ProfileSyncServiceFactory::GetForProfile(profile_),
-              GetSupervisedUserName(),
-              profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
+      if (base::FeatureList::IsEnabled(features::kSupervisedUserCreation)) {
+        permissions_creators_.push_back(base::MakeUnique<
+                                        PermissionRequestCreatorSync>(
+            GetSettingsService(),
+            SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
+                profile_),
+            ProfileSyncServiceFactory::GetForProfile(profile_),
+            GetSupervisedUserName(),
+            profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
+      }
 
       SetupSync();
 #else
