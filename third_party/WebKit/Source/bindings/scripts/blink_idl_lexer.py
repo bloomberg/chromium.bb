@@ -70,25 +70,9 @@ sys.path.append(tools_dir)
 from idl_parser.idl_lexer import IDLLexer
 
 LEXTAB = 'lextab'
-REMOVE_TOKENS = ['COMMENT']
 
 
 class BlinkIDLLexer(IDLLexer):
-    # ignore comments
-    def t_COMMENT(self, t):
-        r'(/\*(.|\n)*?\*/)|(//.*(\n[ \t]*//.*)*)'
-        self.AddLines(t.value.count('\n'))
-
-    # Analogs to _AddToken/_AddTokens in base lexer
-    # Needed to remove COMMENT token, since comments ignored
-    def _RemoveToken(self, token):
-        if token in self.tokens:
-            self.tokens.remove(token)
-
-    def _RemoveTokens(self, tokens):
-        for token in tokens:
-            self._RemoveToken(token)
-
     def __init__(self, debug=False, optimize=True, outputdir=None,
                  rewrite_tables=False):
         if debug:
@@ -115,8 +99,6 @@ class BlinkIDLLexer(IDLLexer):
             lextab = None
 
         IDLLexer.__init__(self)
-        # Overrides to parent class
-        self._RemoveTokens(REMOVE_TOKENS)
         # Optimized mode substantially decreases startup time (by disabling
         # error checking), and also allows use of Python's optimized mode.
         # See: Optimized Mode

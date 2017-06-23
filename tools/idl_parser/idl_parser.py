@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""" Parser for Web IDL """
+"""Parser for Web IDL."""
 
 #
 # IDL Parser
@@ -34,7 +34,8 @@ import sys
 import time
 
 from idl_lexer import IDLLexer
-from idl_node import IDLAttribute, IDLNode
+from idl_node import IDLAttribute
+from idl_node import IDLNode
 
 SRC_DIR = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
 sys.path.insert(0, os.path.join(SRC_DIR, 'third_party'))
@@ -52,7 +53,6 @@ ERROR_REMAP = {
   'Unexpected ")" after ",".' : 'Missing argument.',
   'Unexpected "}" after ",".' : 'Trailing comma in block.',
   'Unexpected "}" after "{".' : 'Unexpected empty block.',
-  'Unexpected comment after "}".' : 'Unexpected trailing comment.',
   'Unexpected "{" after keyword "enum".' : 'Enum missing name.',
   'Unexpected "{" after keyword "struct".' : 'Struct missing name.',
   'Unexpected "{" after keyword "interface".' : 'Interface missing name.',
@@ -101,8 +101,6 @@ def TokenTypeName(t):
     return 'value %s' % t.value
   if t.type == 'string' :
     return 'string "%s"' % t.value
-  if t.type == 'COMMENT' :
-    return 'comment'
   if t.type == t.value:
     return '"%s"' % t.value
   if t.type == ',':
@@ -129,51 +127,73 @@ def TokenTypeName(t):
 # and p[n] is the set of inputs for positive values of 'n'.  Len(p) can be
 # used to distinguish between multiple item sets in the pattern.
 #
+# The rules can look cryptic at first, but there are a few standard
+# transforms from the CST to AST. With these in mind, the actions should
+# be reasonably legible.
+#
+# * Ignore production
+#   Discard this branch. Primarily used when one alternative is empty.
+#
+#   Sample code:
+#   if len(p) > 1:
+#       p[0] = ...
+#   # Note no assignment if len(p) == 1
+#
+# * Eliminate singleton production
+#   Discard this node in the CST, pass the next level down up the tree.
+#   Used to ignore productions only necessary for parsing, but not needed
+#   in the AST.
+#
+#   Sample code:
+#   p[0] = p[1]
+#
+# * Build node
+#   The key type of rule. In this parser, produces object of class IDLNode.
+#   There are several helper functions:
+#   * BuildProduction: actually builds an IDLNode, based on a production.
+#   * BuildAttribute: builds an IDLAttribute, which is a temporary
+#                     object to hold a name-value pair, which is then
+#                     set as a Property of the IDLNode when the IDLNode
+#                     is built.
+#   * BuildNamed: Same as BuildProduction, and sets the 'NAME' property.
+#   * BuildTrue: BuildAttribute with value True, for flags.
+#
+#   Sample code:
+#   # Build node of type NodeType, with value p[1], and children.
+#   p[0] = self.BuildProduction('NodeType', p, 1, children)
+#
+#   # Build named node of type NodeType, with name and value p[1].
+#   # (children optional)
+#   p[0] = self.BuildNamed('NodeType', p, 1)
+#
+#   # Make a list
+#   # Used if one node has several children.
+#   children = ListFromConcat(p[2], p[3])
+#   p[0] = self.BuildProduction('NodeType', p, 1, children)
+#
+#   # Also used to collapse the right-associative tree
+#   # produced by parsing a list back into a single list.
+#   """Foos : Foo Foos
+#           |"""
+#   if len(p) > 1:
+#       p[0] = ListFromConcat(p[1], p[2])
+#
+#   # Add children.
+#   # Primarily used to add attributes, produced via BuildTrue.
+#   # p_StaticAttribute
+#   """StaticAttribute : STATIC Attribute"""
+#   p[2].AddChildren(self.BuildTrue('STATIC'))
+#   p[0] = p[2]
+#
 # For more details on parsing refer to the PLY documentation at
 #    http://www.dabeaz.com/ply/
 #
-# The parser is based on the WebIDL standard.  See:
+# The parser is based on the Web IDL standard.  See:
 #    http://heycam.github.io/webidl/#idl-grammar
 #
-# The various productions are annotated so that the WHOLE number greater than
-# zero in the comment denotes the matching WebIDL grammar definition.
-#
 # Productions with a fractional component in the comment denote additions to
-# the WebIDL spec, such as comments.
-#
-
-
+# the Web IDL spec, such as allowing string list in extended attributes.
 class IDLParser(object):
-#
-# We force all input files to start with two comments.  The first comment is a
-# Copyright notice followed by a file comment and finally by file level
-# productions.
-#
-  # [0] Insert a TOP definition for Copyright and Comments
-  def p_Top(self, p):
-    """Top : COMMENT COMMENT Definitions"""
-    Copyright = self.BuildComment('Copyright', p, 1)
-    Filedoc = self.BuildComment('Comment', p, 2)
-    p[0] = ListFromConcat(Copyright, Filedoc, p[3])
-
-  # [0.1] Add support for Multiple COMMENTS
-  def p_Comments(self, p):
-    """Comments : CommentsRest"""
-    if len(p) > 1:
-      p[0] = p[1]
-
-  # [0.2] Produce a COMMENT and aggregate sibling comments
-  def p_CommentsRest(self, p):
-    """CommentsRest : COMMENT CommentsRest
-                    | """
-    if len(p) > 1:
-      p[0] = ListFromConcat(self.BuildComment('Comment', p, 1), p[2])
-
-
-#
-#The parser is based on the WebIDL standard.  See:
-# http://heycam.github.io/webidl/#idl-grammar
-#
   # [1]
   def p_Definitions(self, p):
     """Definitions : ExtendedAttributeList Definition Definitions
@@ -410,7 +430,7 @@ class IDLParser(object):
 
   # [24]
   def p_Typedef(self, p):
-    """Typedef : TYPEDEF ExtendedAttributeListNoComments Type identifier ';'"""
+    """Typedef : TYPEDEF ExtendedAttributeList Type identifier ';'"""
     p[0] = self.BuildNamed('Typedef', p, 4, ListFromConcat(p[2], p[3]))
 
   # [24.1] Error recovery for Typedefs
@@ -785,24 +805,18 @@ class IDLParser(object):
     """SetlikeRest : SETLIKE '<' Type '>' ';'"""
     p[0] = self.BuildProduction('Setlike', p, 2, p[3])
 
-  # [65] No comment version for mid statement attributes.
-  def p_ExtendedAttributeListNoComments(self, p):
-    """ExtendedAttributeListNoComments : '[' ExtendedAttribute ExtendedAttributes ']'
-                                       | """
-    if len(p) > 2:
+  # [65]
+  def p_ExtendedAttributeList(self, p):
+    """ExtendedAttributeList : '[' ExtendedAttribute ExtendedAttributes ']'
+                             | """
+    if len(p) > 3:
       items = ListFromConcat(p[2], p[3])
       p[0] = self.BuildProduction('ExtAttributes', p, 1, items)
 
-  # [65.1] Add optional comment field for start of statements.
-  def p_ExtendedAttributeList(self, p):
-    """ExtendedAttributeList : Comments '[' ExtendedAttribute ExtendedAttributes ']'
-                             | Comments """
-    if len(p) > 2:
-      items = ListFromConcat(p[3], p[4])
-      attribs = self.BuildProduction('ExtAttributes', p, 2, items)
-      p[0] = ListFromConcat(p[1], attribs)
-    else:
-      p[0] = p[1]
+  # Error recovery for ExtendedAttributeList
+  def p_ExtendedAttributeListError(self, p):
+    """ExtendedAttributeList : '[' ExtendedAttribute ',' error"""
+    p[0] = self.BuildError(p, 'ExtendedAttributeList')
 
   # [66]
   def p_ExtendedAttributes(self, p):
@@ -1131,7 +1145,6 @@ class IDLParser(object):
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'DOMString'),
                           self.BuildAttribute('NAME', p[1]))
 
-
   # [99]
   def p_StringType(self, p):
     """StringType : BYTESTRING
@@ -1236,35 +1249,6 @@ class IDLParser(object):
   def BuildNamed(self, cls, p, index, childlist=None):
     childlist = ListFromConcat(childlist)
     childlist.append(self.BuildAttribute('NAME', p[index]))
-    return self.BuildProduction(cls, p, index, childlist)
-
-  def BuildComment(self, cls, p, index):
-    name = p[index]
-
-    # Remove comment markers
-    lines = []
-    if name[:2] == '//':
-      # For C++ style, remove any leading whitespace and the '//' marker from
-      # each line.
-      form = 'cc'
-      for line in name.split('\n'):
-        start = line.find('//')
-        lines.append(line[start+2:])
-    else:
-      # For C style, remove ending '*/''
-      form = 'c'
-      for line in name[:-2].split('\n'):
-        # Remove characters until start marker for this line '*' if found
-        # otherwise it should be blank.
-        offs = line.find('*')
-        if offs >= 0:
-          line = line[offs + 1:].rstrip()
-        else:
-          line = ''
-        lines.append(line)
-    name = '\n'.join(lines)
-    childlist = [self.BuildAttribute('NAME', name),
-                 self.BuildAttribute('FORM', form)]
     return self.BuildProduction(cls, p, index, childlist)
 
 #
