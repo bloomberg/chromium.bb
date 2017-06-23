@@ -262,6 +262,9 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ 
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip ]
 
+crbug.com/727173 external/wpt/html/rendering/non-replaced-elements/tables/table-row-direction.html [ Failure ]
+crbug.com/727173 external/wpt/html/rendering/non-replaced-elements/tables/table-row-group-direction.html [ Failure ]
+
 #### third_party/WebKit/LayoutTests/overflow
 #### Passed: 6
 #### Failed: 3
