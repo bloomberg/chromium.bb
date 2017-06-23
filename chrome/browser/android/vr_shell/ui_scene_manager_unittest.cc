@@ -77,15 +77,29 @@ class UiSceneManagerTest : public testing::Test {
     return element ? element->visible() : false;
   }
 
+  // Verify that only the elements in the set are visible.
   void VerifyElementsVisible(const std::string& debug_name,
-                             const std::set<UiElementDebugId>& elements) {
+                             const std::set<UiElementDebugId>& debug_ids) {
     SCOPED_TRACE(debug_name);
     for (const auto& element : scene_->GetUiElements()) {
       SCOPED_TRACE(element->debug_id());
       bool should_be_visible =
-          elements.find(element->debug_id()) != elements.end();
+          debug_ids.find(element->debug_id()) != debug_ids.end();
       EXPECT_EQ(should_be_visible, element->visible());
     }
+  }
+
+  // Return false if not all elements in the set match the specified visibility
+  // state. Other elements are ignored.
+  bool VerifyVisibility(const std::set<UiElementDebugId>& debug_ids,
+                        bool visible) {
+    for (const auto& element : scene_->GetUiElements()) {
+      if (debug_ids.find(element->debug_id()) != debug_ids.end() &&
+          element->visible() != visible) {
+        return false;
+      }
+    }
+    return true;
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -358,42 +372,37 @@ TEST_F(UiSceneManagerTest, UiUpdateTransitionToWebVR) {
 }
 
 TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
+  const std::set<UiElementDebugId> indicators = {
+      kAudioCaptureIndicator, kVideoCaptureIndicator, kScreenCaptureIndicator,
+      kLocationAccessIndicator,
+  };
+
   MakeManager(kNotInCct, kNotInWebVr);
-  EXPECT_FALSE(IsVisible(kAudioCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kVideoCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kScreenCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kLocationAccessIndicator));
+  EXPECT_TRUE(VerifyVisibility(indicators, false));
 
   manager_->SetAudioCapturingIndicator(true);
   manager_->SetVideoCapturingIndicator(true);
   manager_->SetScreenCapturingIndicator(true);
   manager_->SetLocationAccessIndicator(true);
+  EXPECT_TRUE(VerifyVisibility(indicators, true));
 
-  EXPECT_TRUE(IsVisible(kAudioCaptureIndicator));
-  EXPECT_TRUE(IsVisible(kVideoCaptureIndicator));
-  EXPECT_TRUE(IsVisible(kScreenCaptureIndicator));
-  EXPECT_TRUE(IsVisible(kLocationAccessIndicator));
-
+  // Go into non-browser modes and make sure all indicators are hidden.
   manager_->SetWebVrMode(true, false, false);
-  EXPECT_FALSE(IsVisible(kAudioCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kVideoCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kScreenCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kLocationAccessIndicator));
-
+  EXPECT_TRUE(VerifyVisibility(indicators, false));
   manager_->SetWebVrMode(false, false, false);
-  EXPECT_TRUE(IsVisible(kAudioCaptureIndicator));
-  EXPECT_TRUE(IsVisible(kVideoCaptureIndicator));
-  EXPECT_TRUE(IsVisible(kScreenCaptureIndicator));
-  EXPECT_TRUE(IsVisible(kLocationAccessIndicator));
+  manager_->SetFullscreen(true);
+  EXPECT_TRUE(VerifyVisibility(indicators, false));
+  manager_->SetFullscreen(false);
 
+  // Back to browser, make sure the indicators reappear.
+  EXPECT_TRUE(VerifyVisibility(indicators, true));
+
+  // Ensure they can be turned off.
   manager_->SetAudioCapturingIndicator(false);
   manager_->SetVideoCapturingIndicator(false);
   manager_->SetScreenCapturingIndicator(false);
   manager_->SetLocationAccessIndicator(false);
-
-  EXPECT_FALSE(IsVisible(kAudioCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kVideoCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kScreenCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kLocationAccessIndicator));
+  EXPECT_TRUE(VerifyVisibility(indicators, false));
 }
+
 }  // namespace vr_shell
