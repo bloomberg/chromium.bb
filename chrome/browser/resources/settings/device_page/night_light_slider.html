@@ -3,11 +3,13 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-inky-focus-behavior.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 </head><body><dom-module id="night-light-slider">
   <template>
     <style>
       :host {
         cursor: default;
+        font-family: 'Roboto', sans-serif;
         text-align: center;
         user-select: none;
       }
@@ -79,7 +81,6 @@
         background: var(--google-blue-700);
         border-radius: 14px;
         color: white;
-        font-family: Roboto-Bold;
         font-size: 12px;
         left: 0;
         line-height: 1.5em;
@@ -122,7 +123,6 @@
 
       #legendContainer > div {
         color: rgb(100, 100, 100);
-        font-family: Roboto-Regular;
         font-size: 12px;
         margin-left: -2.5em;
         position: absolute;
