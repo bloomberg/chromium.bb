@@ -1033,17 +1033,32 @@ bool ResourceFetcher::IsReusableAlsoForPreloading(const FetchParameters& params,
   //
   // TODO(tyoshino): Consider returning false when the credentials mode
   // differs.
-  if ((params.Options().cors_handling_by_resource_fetcher ==
-           kEnableCORSHandlingByResourceFetcher &&
-       params.GetResourceRequest().GetFetchRequestMode() ==
-           WebURLRequest::kFetchRequestModeCORS) ==
-      (existing_resource->Options().cors_handling_by_resource_fetcher ==
-           kEnableCORSHandlingByResourceFetcher &&
-       existing_resource->GetResourceRequest().GetFetchRequestMode() ==
-           WebURLRequest::kFetchRequestModeCORS))
-    return true;
 
-  return false;
+  bool new_is_with_fetcher_cors_suppressed =
+      params.Options().cors_handling_by_resource_fetcher ==
+      kDisableCORSHandlingByResourceFetcher;
+  bool existing_was_with_fetcher_cors_suppressed =
+      existing_resource->Options().cors_handling_by_resource_fetcher ==
+      kDisableCORSHandlingByResourceFetcher;
+
+  bool new_is_with_cors_mode =
+      params.GetResourceRequest().GetFetchRequestMode() ==
+      WebURLRequest::kFetchRequestModeCORS;
+  bool existing_was_with_cors_mode =
+      existing_resource->GetResourceRequest().GetFetchRequestMode() ==
+      WebURLRequest::kFetchRequestModeCORS;
+
+  if (new_is_with_fetcher_cors_suppressed) {
+    if (existing_was_with_fetcher_cors_suppressed)
+      return true;
+
+    return !existing_was_with_cors_mode;
+  }
+
+  if (existing_was_with_fetcher_cors_suppressed)
+    return !new_is_with_cors_mode;
+
+  return new_is_with_cors_mode == existing_was_with_cors_mode;
 }
 
 ResourceFetcher::RevalidationPolicy
