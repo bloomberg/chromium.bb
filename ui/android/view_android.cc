@@ -190,7 +190,7 @@ void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
 
   float dip_scale = GetDipScale();
   int left_margin = std::round(bounds.x() * dip_scale);
-  int top_margin = std::round((content_offset().y() + bounds.y()) * dip_scale);
+  int top_margin = std::round((content_offset() + bounds.y()) * dip_scale);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_setViewPosition(
       env, delegate, anchor, bounds.x(), bounds.y(), bounds.width(),

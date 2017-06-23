@@ -1431,8 +1431,9 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
 
   float dip_scale = view_.GetDipScale();
   float top_controls_pix = frame_metadata.top_controls_height * dip_scale;
-  float top_shown_pix =
-      top_controls_pix * frame_metadata.top_controls_shown_ratio;
+  float top_content_offset = frame_metadata.top_controls_height *
+                             frame_metadata.top_controls_shown_ratio;
+  float top_shown_pix = top_content_offset * dip_scale;
 
   if (ime_adapter_android_)
     ime_adapter_android_->UpdateFrameInfo(frame_metadata.selection.start,
@@ -1464,9 +1465,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   UpdateBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
                                        : frame_metadata.root_background_color);
 
-  view_.set_content_offset(gfx::Vector2dF(0.0f,
-      frame_metadata.top_controls_height *
-          frame_metadata.top_controls_shown_ratio));
+  view_.set_content_offset(top_content_offset);
+  view_.set_viewport_size(frame_metadata.scrollable_viewport_size);
 
   bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
   if (top_changed) {
@@ -1491,9 +1491,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       gfx::Vector2dF(frame_metadata.min_page_scale_factor,
                      frame_metadata.max_page_scale_factor),
       frame_metadata.root_layer_size, frame_metadata.scrollable_viewport_size,
-      frame_metadata.top_controls_height *
-          frame_metadata.top_controls_shown_ratio,
-      top_shown_pix, top_changed, is_mobile_optimized);
+      top_content_offset, top_shown_pix, top_changed, is_mobile_optimized);
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {

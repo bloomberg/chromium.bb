@@ -2440,7 +2440,7 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
     // On Android, call sites should pass in the bounds with correct offset
     // to capture the intended content area.
     gfx::Rect snapshot_bounds(GetView()->GetViewBounds());
-    snapshot_bounds.Offset(0, GetView()->GetNativeView()->content_offset().y());
+    snapshot_bounds.Offset(0, GetView()->GetNativeView()->content_offset());
 #else
     gfx::Rect snapshot_bounds(GetView()->GetViewBounds().size());
 #endif

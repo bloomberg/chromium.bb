@@ -402,7 +402,8 @@ void ContentViewCoreImpl::UpdateFrameInfo(
   if (obj.is_null() || !GetWindowAndroid())
     return;
 
-  GetViewAndroid()->set_content_offset(gfx::Vector2dF(0.0f, content_offset));
+  GetViewAndroid()->set_content_offset(content_offset);
+  GetViewAndroid()->set_viewport_size(viewport_size);
 
   page_scale_ = page_scale_factor;
 
