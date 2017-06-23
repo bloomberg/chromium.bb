@@ -85,6 +85,8 @@ class CheckerImageTrackerTest : public testing::Test,
   void SetUpTracker(bool checker_images_enabled) {
     checker_image_tracker_ = base::MakeUnique<CheckerImageTracker>(
         &image_controller_, this, checker_images_enabled);
+    checker_image_tracker_->SetMaxDecodePriorityAllowed(
+        CheckerImageTracker::DecodeType::kPreDecode);
   }
 
   void TearDown() override { checker_image_tracker_.reset(); }
@@ -122,7 +124,8 @@ class CheckerImageTrackerTest : public testing::Test,
     CheckerImageTracker::ImageDecodeQueue decode_queue;
     for (const auto& image : images) {
       if (checker_image_tracker_->ShouldCheckerImage(image, tree))
-        decode_queue.push_back(image.paint_image());
+        decode_queue.push_back(CheckerImageTracker::ImageDecodeRequest(
+            image.paint_image(), CheckerImageTracker::DecodeType::kRaster));
     }
     return decode_queue;
   }
@@ -170,8 +173,8 @@ TEST_F(CheckerImageTrackerTest, UpdatesImagesAtomically) {
       BuildImageDecodeQueue(draw_images, WhichTree::PENDING_TREE);
 
   ASSERT_EQ(2u, image_decode_queue.size());
-  EXPECT_EQ(checkerable_image.paint_image(), image_decode_queue[0]);
-  EXPECT_EQ(checkerable_image.paint_image(), image_decode_queue[1]);
+  EXPECT_EQ(checkerable_image.paint_image(), image_decode_queue[0].paint_image);
+  EXPECT_EQ(checkerable_image.paint_image(), image_decode_queue[1].paint_image);
 
   checker_image_tracker_->ScheduleImageDecodeQueue(image_decode_queue);
   EXPECT_EQ(image_controller_.num_of_locked_images(), 1);
@@ -416,7 +419,7 @@ TEST_F(CheckerImageTrackerTest, CheckersOnlyStaticCompletedImages) {
   CheckerImageTracker::ImageDecodeQueue image_decode_queue =
       BuildImageDecodeQueue(draw_images, WhichTree::PENDING_TREE);
   EXPECT_EQ(image_decode_queue.size(), 1U);
-  EXPECT_EQ(image_decode_queue[0], static_image.paint_image());
+  EXPECT_EQ(image_decode_queue[0].paint_image, static_image.paint_image());
 
   // Change the partial image to complete and try again. It should sstill not
   // be checkered.
@@ -486,6 +489,46 @@ TEST_F(CheckerImageTrackerTest, DontCheckerMultiPartImages) {
       image, WhichTree::PENDING_TREE));
   EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
       multi_part_image, WhichTree::PENDING_TREE));
+}
+
+TEST_F(CheckerImageTrackerTest, RespectsDecodePriority) {
+  SetUpTracker(true);
+
+  DrawImage image1 = CreateImage(ImageType::CHECKERABLE);
+  DrawImage image2 = CreateImage(ImageType::CHECKERABLE);
+  DrawImage image3 = CreateImage(ImageType::CHECKERABLE);
+  DrawImage image4 = CreateImage(ImageType::CHECKERABLE);
+  CheckerImageTracker::ImageDecodeQueue image_decode_queue =
+      BuildImageDecodeQueue({image1, image2, image3, image4},
+                            WhichTree::PENDING_TREE);
+
+  // Mark the last 2 images as pre-decode.
+  EXPECT_EQ(image_decode_queue.size(), 4u);
+  image_decode_queue[2].type = CheckerImageTracker::DecodeType::kPreDecode;
+  image_decode_queue[3].type = CheckerImageTracker::DecodeType::kPreDecode;
+
+  // No decodes allowed. Nothing should be scheduled.
+  EXPECT_EQ(image_controller_.decoded_images().size(), 0u);
+  checker_image_tracker_->SetNoDecodesAllowed();
+  checker_image_tracker_->ScheduleImageDecodeQueue(image_decode_queue);
+  EXPECT_EQ(image_controller_.decoded_images().size(), 0u);
+
+  // Raster decodes allowed. Only those should be scheduled.
+  checker_image_tracker_->SetMaxDecodePriorityAllowed(
+      CheckerImageTracker::DecodeType::kRaster);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(image_controller_.decoded_images().size(), 2u);
+  EXPECT_EQ(image_controller_.decoded_images()[0], image1);
+  EXPECT_EQ(image_controller_.decoded_images()[1], image2);
+
+  // All decodes allowed. The complete queue should be flushed.
+  checker_image_tracker_->SetMaxDecodePriorityAllowed(
+      CheckerImageTracker::DecodeType::kPreDecode);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(image_controller_.decoded_images()[0], image1);
+  EXPECT_EQ(image_controller_.decoded_images()[1], image2);
+  EXPECT_EQ(image_controller_.decoded_images()[2], image3);
+  EXPECT_EQ(image_controller_.decoded_images()[3], image4);
 }
 
 }  // namespace

@@ -39,6 +39,14 @@ std::string ToString(PaintImage::Id paint_image_id,
 
 }  // namespace
 
+// static
+const int CheckerImageTracker::kNoDecodeAllowedPriority = -1;
+
+CheckerImageTracker::ImageDecodeRequest::ImageDecodeRequest(
+    PaintImage paint_image,
+    DecodeType type)
+    : paint_image(std::move(paint_image)), type(type) {}
+
 CheckerImageTracker::CheckerImageTracker(ImageController* image_controller,
                                          CheckerImageTrackerClient* client,
                                          bool enable_checker_imaging)
@@ -49,6 +57,23 @@ CheckerImageTracker::CheckerImageTracker(ImageController* image_controller,
 
 CheckerImageTracker::~CheckerImageTracker() = default;
 
+void CheckerImageTracker::SetNoDecodesAllowed() {
+  decode_priority_allowed_ = kNoDecodeAllowedPriority;
+}
+
+void CheckerImageTracker::SetMaxDecodePriorityAllowed(DecodeType decode_type) {
+  DCHECK_GT(decode_type, kNoDecodeAllowedPriority);
+  DCHECK_GE(decode_type, decode_priority_allowed_);
+  DCHECK_LE(decode_type, DecodeType::kLast);
+
+  if (decode_priority_allowed_ == decode_type)
+    return;
+  decode_priority_allowed_ = decode_type;
+
+  // This will start the next decode if applicable.
+  ScheduleNextImageDecode();
+}
+
 void CheckerImageTracker::ScheduleImageDecodeQueue(
     ImageDecodeQueue image_decode_queue) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
@@ -57,6 +82,15 @@ void CheckerImageTracker::ScheduleImageDecodeQueue(
   // decode service. If |enable_checker_imaging_| is false, no image should
   // be checkered.
   DCHECK(image_decode_queue.empty() || enable_checker_imaging_);
+
+#if DCHECK_IS_ON()
+  // The decodes in the queue should be prioritized correctly.
+  DecodeType type = DecodeType::kRaster;
+  for (const auto& image_request : image_decode_queue) {
+    DCHECK_GE(image_request.type, type);
+    type = image_request.type;
+  }
+#endif
 
   image_decode_queue_ = std::move(image_decode_queue);
   ScheduleNextImageDecode();
@@ -250,9 +284,17 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
   if (outstanding_image_decode_.has_value())
     return;
 
+  if (image_decode_queue_.empty())
+    return;
+
+  // If scheduling decodes for this priority is not allowed right now, don't
+  // schedule them. We will come back here when the allowed priority changes.
+  if (image_decode_queue_.front().type > decode_priority_allowed_)
+    return;
+
   DrawImage draw_image;
   while (!image_decode_queue_.empty()) {
-    auto candidate = std::move(image_decode_queue_.front());
+    auto candidate = std::move(image_decode_queue_.front().paint_image);
     image_decode_queue_.erase(image_decode_queue_.begin());
 
     // Once an image has been decoded, it can still be present in the decode
