@@ -316,7 +316,7 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
                                      const std::vector<char>& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success) {
-    callback.Run(false, 0);
+    callback.Run(false, 0 /* value */, 0 /* min_value */, 0 /* max_value */);
     ProcessNextCommand();
     return;
   }
@@ -334,7 +334,7 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
       break;
   }
   if (!is_valid_response) {
-    callback.Run(false, 0);
+    callback.Run(false, 0 /* value */, 0 /* min_value */, 0 /* max_value */);
     ProcessNextCommand();
     return;
   }
@@ -356,7 +356,8 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
       value = BuildResponseInt(response, 2);
       break;
   }
-  callback.Run(true, value);
+  // TODO(pbos): Add support for valid ranges.
+  callback.Run(true, value, 0, 0);
   ProcessNextCommand();
 }
 

@@ -140,10 +140,21 @@ class WebcamPrivateGetFunction : public AsyncExtensionFunction {
     INQUIRY_TILT,
     INQUIRY_ZOOM,
   };
-  void OnGetWebcamParameters(InquiryType type, bool success, int value);
 
+  void OnGetWebcamParameters(InquiryType type,
+                             bool success,
+                             int value,
+                             int min_value,
+                             int max_value);
+
+  int min_pan_;
+  int max_pan_;
   int pan_;
+  int min_tilt_;
+  int max_tilt_;
   int tilt_;
+  int min_zoom_;
+  int max_zoom_;
   int zoom_;
   bool get_pan_;
   bool get_tilt_;
