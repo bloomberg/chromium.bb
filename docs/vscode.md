@@ -81,9 +81,12 @@ To install You-Complete-Me, enter these commands in a terminal:
 
 ```
 $ git clone https://github.com/Valloric/ycmd.git ~/.ycmd
+$ git submodule update --init --recursive
 $ cd ~/.ycmd
 $ ./build.py --clang-completer
 ```
+If it fails with "Your C++ compiler does NOT fully support C++11." but you know
+you have a good compiler, hack cpp/CMakeLists.txt to set CPP11_AVAILABLE true.
 
 The following extensions might be useful for you as well:
 
@@ -213,8 +216,8 @@ Remember to replace `<full_path_to_your_home>`!
   "C_Cpp.clang_format_formatOnSave": true,
 
   // YouCompleteMe
-  "ycmd.path": "<full_path_to_your_home>/.vim/bundle/YouCompleteMe/third_party/ycmd",
-  "ycmd.global_extra_config": "<full_path_to_your_home>/chromium/src/tools/vim/.ycm_extra_conf.py",
+  "ycmd.path": "<full_path_to_your_home>/.ycmd",
+  "ycmd.global_extra_config": "${workspaceRoot}/tools/vim/chromium.ycm_extra_conf.py",
   "ycmd.confirm_extra_conf": false,
 }
 ```
