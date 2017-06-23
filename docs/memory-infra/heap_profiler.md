@@ -38,20 +38,47 @@ integrated with the chrome://tracing ecosystem.
 By default heap profiling collects pseudo allocation traces, which are based
 on trace events. I.e. frames in allocation traces correspond to trace events
 that were active at the time of allocations, and are not real function names.
-However, you can build a special Linux / Android build that will collect
-real C/C++ stack traces.
+It's also possible to use heap profiling with native, symbolized stack traces.
+
+#### Native stack traces (Chrome - macOS/Windows)
+
+1. Using any officially distributed build of Chrome, navigate to chrome://flags,
+   and set "enable-heap-profiling" to Enabled (native mode).
+
+2. Use the [TraceOnTap][extension-link] extension to grab a trace.
+
+3. Run the following script to symbolize the trace.
+
+        third_party/catapult/tracing/bin/symbolize_trace <trace file>
+
+4. Load the trace file in `chrome://tracing`. Locate a purple ![M][m-purple]
+   dot, and continue from step *3* from the instructions above. Native stack
+   traces will be shown in the _Heap Details_ pane.
+
+[extension-link]: https://cs.chromium.org/chromium/src/third_party/catapult/experimental/trace_on_tap/?q=traceontap+package:%5Echromium$&dr=CSs
+
+#### Native stack traces (Chromium - all OSes)
+
+On Linux / Android, you need to build Chromium with special flags to use native
+heap profiling. On macOS / Windows, it's also possible to use native heap
+profiling with Chromium.
 
  1. Build with the following GN flags:
 
-	Linux
+	macOS / Windows
+
+        symbol_level = 1
+
+  Linux
 
         enable_profiling = true
-
+        symbol_level = 1
 
 	Android
 
         arm_use_thumb = false
         enable_profiling = true
+        symbol_level = 1
 
  2. Start Chrome with `--enable-heap-profiling=native` switch (notice
  	`=native` part).
