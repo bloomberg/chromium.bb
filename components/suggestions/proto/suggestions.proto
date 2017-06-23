@@ -23,15 +23,19 @@ enum ProviderId {
 //
 // Notice that the tags on this proto must match the ones on the server side.
 //
-// Next tag: 2
+// Next tag: 17
 message SuggestionsProfile {
   repeated ChromeSuggestion suggestions = 1;
+
+  reserved 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15;
 
   // Timestamp when the profile was generated (usec).
   optional int64 timestamp = 16;
 }
 
-// The suggestions for this user, ordered from best to worst.
+// An individual suggestion.
+//
+// Notice that the tags on this proto must match the ones on the server side.
 //
 // Next tag: 15
 message ChromeSuggestion {
@@ -50,8 +54,12 @@ message ChromeSuggestion {
   // The provider(s) responsible for this suggestion.
   repeated ProviderId providers = 5;
 
+  reserved 6;
+
   // The timestamp (usec) at which this suggestion ceases to be valid.
   optional int64 expiry_ts = 7;
+
+  reserved 8, 9, 10, 11, 12, 13, 14;
 }
 
 // A list of URLs that should be filtered from the SuggestionsProfile.
