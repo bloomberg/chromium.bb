@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/media/android/remote/record_cast_action.h"
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/RemoteMediaPlayerBridge_jni.h"
@@ -455,14 +454,10 @@ base::android::ScopedJavaLocalRef<jstring> RemoteMediaPlayerBridge::GetTitle(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   base::string16 title;
-  content::ContentViewCore* core =
-      static_cast<RemoteMediaPlayerManager*>(manager())->GetContentViewCore();
-  if (core) {
-    content::WebContents* contents = core->GetWebContents();
-    if (contents) {
-      title = contents->GetTitle();
-    }
-  }
+  auto* contents =
+      static_cast<RemoteMediaPlayerManager*>(manager())->web_contents();
+  if (contents)
+    title = contents->GetTitle();
   return base::android::ConvertUTF16ToJavaString(env, title);
 }
 
