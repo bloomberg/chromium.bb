@@ -1570,7 +1570,7 @@ ProxyConfigServiceLinux::Delegate::Delegate(
 
 void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
     const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   // We should be running on the default glib main loop thread right
   // now. gconf can only be accessed from this thread.
   DCHECK(glib_task_runner->RunsTasksInCurrentSequence());
