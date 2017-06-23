@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -70,8 +71,7 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
              "</form>");
     GetWebWidget()->Resize(blink::WebSize(500, 500));
     GetWebWidget()->SetFocus(true);
-    blink::WebDocument document =
-        view_->GetWebView()->MainFrame()->GetDocument();
+    blink::WebDocument document = GetMainFrame()->GetDocument();
     text_ = document.GetElementById("text_1");
     textarea_ = document.GetElementById("textarea_1");
     ASSERT_FALSE(text_.IsNull());

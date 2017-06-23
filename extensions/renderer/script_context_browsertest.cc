@@ -17,7 +17,7 @@ namespace {
 
 class ScriptContextTest : public ChromeRenderViewTest {
  protected:
-  GURL GetEffectiveDocumentURL(const WebLocalFrame* frame) {
+  GURL GetEffectiveDocumentURL(WebLocalFrame* frame) {
     return ScriptContext::GetEffectiveDocumentURL(
         frame, frame->GetDocument().Url(), true);
   }

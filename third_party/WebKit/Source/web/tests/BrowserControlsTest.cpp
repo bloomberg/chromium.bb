@@ -123,7 +123,7 @@ class BrowserControlsTest : public ::testing::Test {
 
   Element* GetElementById(const WebString& id) {
     return static_cast<Element*>(
-        GetWebView()->MainFrame()->GetDocument().GetElementById(id));
+        GetWebView()->MainFrameImpl()->GetDocument().GetElementById(id));
   }
 
   WebViewBase* GetWebView() const { return helper_.WebView(); }

@@ -5,6 +5,9 @@
 #include "content/public/test/layouttest_support.h"
 
 #include <stddef.h>
+
+#include <algorithm>
+#include <unordered_map>
 #include <utility>
 
 #include "base/callback.h"
@@ -260,7 +263,10 @@ void FetchManifest(blink::WebView* view, const GURL& url,
   // A raw pointer is used instead of a scoped_ptr as base::Passes passes
   // ownership and thus nulls the scoped_ptr. On MSVS this happens before
   // the call to Start, resulting in a crash.
-  fetcher->Start(view->MainFrame(), false,
+  CHECK(view->MainFrame()->IsWebLocalFrame())
+      << "This function cannot be called if the main frame is not a "
+         "local frame.";
+  fetcher->Start(view->MainFrame()->ToWebLocalFrame(), false,
                  base::Bind(&FetchManifestDoneCallback,
                             base::Passed(&autodeleter), callback));
 }
@@ -551,7 +557,7 @@ std::string DumpHistoryItem(HistoryEntry::HistoryNode* node,
   const blink::WebHistoryItem& item = node->item();
   if (is_current_index) {
     result.append("curr->");
-    result.append(indent - 6, ' '); // 6 == "curr->".length()
+    result.append(indent - 6, ' ');  // 6 == "curr->".length()
   } else {
     result.append(indent, ' ');
   }

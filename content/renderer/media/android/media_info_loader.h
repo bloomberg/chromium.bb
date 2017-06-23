@@ -22,7 +22,7 @@
 
 namespace blink {
 class WebAssociatedURLLoader;
-class WebFrame;
+class WebLocalFrame;
 class WebURLRequest;
 }
 
@@ -66,7 +66,7 @@ class CONTENT_EXPORT MediaInfoLoader
   ~MediaInfoLoader() override;
 
   // Start loading media info.
-  void Start(blink::WebFrame* frame);
+  void Start(blink::WebLocalFrame* frame);
 
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after the loader becomes ready.

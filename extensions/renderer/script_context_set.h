@@ -118,10 +118,9 @@ class ScriptContextSet {
   // specified |frame| and isolated world. If |world_id| is zero, finds the
   // extension ID associated with the main world's JavaScript context. If the
   // JavaScript context isn't from an extension, returns empty string.
-  const Extension* GetExtensionFromFrameAndWorld(
-      const blink::WebLocalFrame* frame,
-      int world_id,
-      bool use_effective_url);
+  const Extension* GetExtensionFromFrameAndWorld(blink::WebLocalFrame* frame,
+                                                 int world_id,
+                                                 bool use_effective_url);
 
   // Returns the Feature::Context type of context for a JavaScript context.
   Feature::Context ClassifyJavaScriptContext(

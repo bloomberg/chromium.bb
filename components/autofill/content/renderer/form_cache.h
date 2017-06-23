@@ -17,8 +17,8 @@
 
 namespace blink {
 class WebFormControlElement;
-class WebFrame;
 class WebInputElement;
+class WebLocalFrame;
 class WebSelectElement;
 }
 
@@ -29,7 +29,7 @@ struct FormDataPredictions;
 // Manages the forms in a single RenderFrame.
 class FormCache {
  public:
-  explicit FormCache(const blink::WebFrame& frame);
+  explicit FormCache(const blink::WebLocalFrame& frame);
   ~FormCache();
 
   // Scans the DOM in |frame_| extracting and storing forms that have not been
@@ -62,7 +62,7 @@ class FormCache {
       const std::vector<blink::WebFormControlElement>& control_elements);
 
   // The frame this FormCache is associated with.
-  const blink::WebFrame& frame_;
+  const blink::WebLocalFrame& frame_;
 
   // The cached forms. Used to prevent re-extraction of forms.
   std::set<FormData> parsed_forms_;

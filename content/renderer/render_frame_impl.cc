@@ -4,6 +4,7 @@
 
 #include "content/renderer/render_frame_impl.h"
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <utility>
@@ -2899,9 +2900,9 @@ RenderFrameImpl::CreateApplicationCacheHost(
 std::unique_ptr<blink::WebContentSettingsClient>
 RenderFrameImpl::CreateWorkerContentSettingsClient() {
   if (!frame_ || !frame_->View())
-    return NULL;
+    return nullptr;
   return GetContentClient()->renderer()->CreateWorkerContentSettingsClient(
-      this, frame_);
+      this);
 }
 
 std::unique_ptr<blink::WebWorkerFetchContext>
@@ -3763,7 +3764,7 @@ void RenderFrameImpl::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
       // them different).
       render_view_->Send(new ViewHostMsg_DocumentAvailableInMainFrame(
           render_view_->GetRoutingID(),
-          main_frame->GetDocument().IsPluginDocument()));
+          frame->GetDocument().IsPluginDocument()));
     }
   }
 
@@ -4907,6 +4908,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     if (render_view_->webview()->MainFrame()->IsWebLocalFrame() &&
         render_view_->webview()
             ->MainFrame()
+            ->ToWebLocalFrame()
             ->GetDocument()
             .IsPluginDocument()) {
       // Reset the zoom levels for plugins.
@@ -6749,7 +6751,7 @@ void RenderFrameImpl::SendFindReply(int request_id,
                                     int ordinal,
                                     const WebRect& selection_rect,
                                     bool final_status_update) {
-  DCHECK(ordinal >= -1);
+  DCHECK_GE(ordinal, -1);
 
   Send(new FrameHostMsg_Find_Reply(routing_id_,
                                    request_id,

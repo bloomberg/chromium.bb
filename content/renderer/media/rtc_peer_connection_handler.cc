@@ -1133,7 +1133,7 @@ void RTCPeerConnectionHandler::DestructAllHandlers() {
     handler->client_->ReleasePeerConnectionHandler();
 }
 
-void RTCPeerConnectionHandler::associateWithFrame(blink::WebFrame* frame) {
+void RTCPeerConnectionHandler::associateWithFrame(blink::WebLocalFrame* frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(frame);
   frame_ = frame;

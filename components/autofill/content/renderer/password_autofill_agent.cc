@@ -624,7 +624,7 @@ bool HasPasswordField(const blink::WebLocalFrame& frame) {
 // preceding the |password_element| either in a form, if it belongs to one, or
 // in the |frame|.
 blink::WebInputElement FindUsernameElementPrecedingPasswordElement(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebInputElement& password_element) {
   DCHECK(!password_element.IsNull());
 
@@ -775,7 +775,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
                                          &field_value_and_properties_map_);
   }
 
-  blink::WebFrame* const element_frame = element.GetDocument().GetFrame();
+  blink::WebLocalFrame* const element_frame = element.GetDocument().GetFrame();
   // The element's frame might have been detached in the meantime (see
   // http://crbug.com/585363, comments 5 and 6), in which case frame() will
   // return null. This was hardly caused by form submission (unless the user
@@ -998,7 +998,8 @@ bool PasswordAutofillAgent::IsUsernameOrPasswordField(
   // to be the username field.
   std::unique_ptr<PasswordForm> password_form;
   if (element.Form().IsNull()) {
-    blink::WebFrame* const element_frame = element.GetDocument().GetFrame();
+    blink::WebLocalFrame* const element_frame =
+        element.GetDocument().GetFrame();
     if (!element_frame)
       return false;
 
@@ -1117,7 +1118,7 @@ void PasswordAutofillAgent::OnSameDocumentNavigationCompleted(
 
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const auto& password_form = provisionally_saved_form_.password_form();
   // TODO(crbug.com/720347): This method could be called often and checking form
   // visibility could be expesive. Add performance metrics for this.

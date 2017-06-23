@@ -11,13 +11,13 @@
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/origin.h"
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
-    content::RenderFrame* render_frame,
-    blink::WebFrame* frame)
+    content::RenderFrame* render_frame)
     : routing_id_(render_frame->GetRoutingID()), is_unique_origin_(false) {
+  blink::WebLocalFrame* frame = render_frame->GetWebFrame();
   if (frame->GetDocument().GetSecurityOrigin().IsUnique() ||
       frame->Top()->GetSecurityOrigin().IsUnique())
     is_unique_origin_ = true;

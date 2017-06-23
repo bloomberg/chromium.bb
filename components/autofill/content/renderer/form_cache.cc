@@ -4,6 +4,10 @@
 
 #include "components/autofill/content/renderer/form_cache.h"
 
+#include <algorithm>
+#include <string>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -28,7 +32,7 @@ using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebInputElement;
 using blink::WebNode;
 using blink::WebSelectElement;
@@ -82,8 +86,7 @@ bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
 
 }  // namespace
 
-FormCache::FormCache(const WebFrame& frame) : frame_(frame) {
-}
+FormCache::FormCache(const WebLocalFrame& frame) : frame_(frame) {}
 
 FormCache::~FormCache() {
 }

@@ -895,7 +895,7 @@ TEST_F(PasswordAutofillAgentTest, WaitUsername) {
 TEST_F(PasswordAutofillAgentTest, IsWebElementVisibleTest) {
   blink::WebVector<WebFormElement> forms1, forms2, forms3;
   blink::WebVector<blink::WebFormControlElement> web_control_elements;
-  blink::WebFrame* frame;
+  blink::WebLocalFrame* frame;
 
   LoadHTML(kVisibleFormWithNoUsernameHTML);
   frame = GetMainFrame();

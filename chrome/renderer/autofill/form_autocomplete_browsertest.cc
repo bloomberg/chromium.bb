@@ -141,7 +141,7 @@ void VerifyNoSubmitMessagesReceived(
 
 // Simulates receiving a message from the browser to fill a form.
 void SimulateOnFillForm(autofill::AutofillAgent* autofill_agent,
-                        blink::WebFrame* main_frame) {
+                        blink::WebLocalFrame* main_frame) {
   WebDocument document = main_frame->GetDocument();
   WebElement element = document.GetElementById(WebString::FromUTF8("fname"));
   ASSERT_FALSE(element.IsNull());

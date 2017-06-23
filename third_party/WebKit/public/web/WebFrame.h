@@ -50,7 +50,6 @@ class Page;
 class Visitor;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
-class WebDocument;
 class WebElement;
 class WebLocalFrame;
 class WebPerformance;
@@ -188,8 +187,6 @@ class BLINK_EXPORT WebFrame {
   WebFrame* TraverseNext() const;
 
   // Content ------------------------------------------------------------
-
-  virtual WebDocument GetDocument() const = 0;
 
   virtual WebPerformance Performance() const = 0;
 

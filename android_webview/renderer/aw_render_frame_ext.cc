@@ -186,15 +186,17 @@ bool AwRenderFrameExt::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AwRenderFrameExt::OnDocumentHasImagesRequest(uint32_t id) {
-  bool hasImages = false;
-  blink::WebView* webview = GetWebView();
-  if (webview) {
-    blink::WebDocument document = webview->MainFrame()->GetDocument();
-    const blink::WebElement child_img = GetImgChild(document);
-    hasImages = !child_img.IsNull();
-  }
-  Send(
-      new AwViewHostMsg_DocumentHasImagesResponse(routing_id(), id, hasImages));
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+
+  // AwViewMsg_DocumentHasImages should only be sent to the main frame.
+  DCHECK(frame);
+  DCHECK(!frame->Parent());
+
+  const blink::WebElement child_img = GetImgChild(frame->GetDocument());
+  bool has_images = !child_img.IsNull();
+
+  Send(new AwViewHostMsg_DocumentHasImagesResponse(routing_id(), id,
+                                                   has_images));
 }
 
 void AwRenderFrameExt::FocusedNodeChanged(const blink::WebNode& node) {

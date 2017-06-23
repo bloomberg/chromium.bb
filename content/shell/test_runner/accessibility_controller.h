@@ -50,6 +50,8 @@ class AccessibilityController {
       const blink::WebAXObject&,
       const blink::WebString& id);
 
+  blink::WebAXObject GetAccessibilityObjectForMainFrame();
+
   // If true, will log all accessibility notifications.
   bool log_accessibility_events_;
 

@@ -1367,9 +1367,8 @@ bool ChromeContentRendererClient::ShouldGatherSiteIsolationStats() const {
 
 std::unique_ptr<blink::WebContentSettingsClient>
 ChromeContentRendererClient::CreateWorkerContentSettingsClient(
-    content::RenderFrame* render_frame,
-    WebFrame* frame) {
-  return base::MakeUnique<WorkerContentSettingsClient>(render_frame, frame);
+    content::RenderFrame* render_frame) {
+  return base::MakeUnique<WorkerContentSettingsClient>(render_frame);
 }
 
 bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {

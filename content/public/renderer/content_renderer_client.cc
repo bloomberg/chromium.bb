@@ -215,8 +215,7 @@ bool ContentRendererClient::ShouldGatherSiteIsolationStats() const {
 
 std::unique_ptr<blink::WebContentSettingsClient>
 ContentRendererClient::CreateWorkerContentSettingsClient(
-    RenderFrame* render_frame,
-    blink::WebFrame* frame) {
+    RenderFrame* render_frame) {
   return nullptr;
 }
 
