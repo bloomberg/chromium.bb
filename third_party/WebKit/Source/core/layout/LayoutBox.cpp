@@ -1408,8 +1408,8 @@ LayoutUnit LayoutBox::OverrideLogicalContentHeight() const {
   return rare_data_->override_logical_content_height_;
 }
 
-// TODO (lajava) Now that we have implemented these functions based on physical
-// direction, we'd rather remove the logical ones.
+// TODO (lajava) Shouldn't we implement these functions based on physical
+// direction ?.
 LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalWidth() const {
   DCHECK(HasOverrideContainingBlockLogicalWidth());
   return rare_data_->override_containing_block_content_logical_width_;

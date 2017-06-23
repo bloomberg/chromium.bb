@@ -282,6 +282,7 @@ class GridTrackSizingAlgorithmStrategy {
       const LayoutBox& child,
       GridTrackSizingDirection);
   static bool ShouldClearOverrideContainingBlockContentSizeForChild(
+      const LayoutGrid&,
       const LayoutBox& child,
       GridTrackSizingDirection);
   static void SetOverrideContainingBlockContentSizeForChild(

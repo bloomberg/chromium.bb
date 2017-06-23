@@ -16,6 +16,11 @@ class GridLayoutUtils {
                                                const LayoutBox&);
   static LayoutUnit MarginLogicalHeightForChild(const LayoutGrid&,
                                                 const LayoutBox&);
+  static bool IsOrthogonalChild(const LayoutGrid&, const LayoutBox&);
+  static GridTrackSizingDirection FlowAwareDirectionForChild(
+      const LayoutGrid&,
+      const LayoutBox&,
+      GridTrackSizingDirection);
 };
 }  // namespace blink
 
