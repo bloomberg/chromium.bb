@@ -313,6 +313,11 @@ AutomationRichEditableText.prototype = {
               new Range(cur.start_, cur.end_),
               new Range(prev.start_, prev.end_), Output.EventType.NAVIGATE)
           .go();
+    } else if (!cur.hasCollapsedSelection()) {
+      // This is a selection.
+      cvox.ChromeVox.tts.speak(cur.selectedText, cvox.QueueMode.CATEGORY_FLUSH);
+      cvox.ChromeVox.tts.speak(Msgs.getMsg('selected'), cvox.QueueMode.QUEUE);
+      this.brailleCurrentRichLine_();
     } else {
       // Describe the current line. This accounts for previous/current
       // selections and picking the line edge boundary that changed (as computed
@@ -724,6 +729,16 @@ editing.EditableLine.prototype = {
    */
   get text() {
     return this.value_.toString();
+  },
+
+  /** @return {string} */
+  get selectedText() {
+    return this.value_.toString().substring(this.startOffset, this.endOffset);
+  },
+
+  /** @return {boolean} */
+  hasCollapsedSelection: function() {
+    return this.start_.equals(this.end_);
   },
 
   /**

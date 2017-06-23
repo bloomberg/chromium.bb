@@ -450,6 +450,40 @@ TEST_F('EditingTest', 'RichTextLinkOutput', function() {
   });
 });
 
+TEST_F('EditingTest', 'RichTextExtendByCharacter', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go" role="textbox" contenteditable>Te<br>st</div>
+
+    <script>
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('extend', 'forward', 'character');
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var moveByChar = input.doDefault.bind(input);
+
+    this.listenOnce(input, 'focus', function() {
+      mockFeedback.call(moveByChar)
+          .expectSpeech('T', 'selected')
+          .call(moveByChar)
+          .expectSpeech('e', 'added to selection')
+          .call(moveByChar)
+          .expectSpeech('selected')
+          .call(moveByChar)
+          // This gets described by the line logic in EditableLine.
+          .expectSpeech('s', 'selected')
+          .call(moveByChar)
+          .expectSpeech('t', 'added to selection')
+
+          .replay();
+    });
+    input.focus();
+  });
+});
+
 TEST_F('EditingTest', 'EditableLineOneStaticText', function() {
   this.runWithLoadedTree(function() {/*!
     <p contenteditable style="word-spacing:100000px">this is a test</p>
