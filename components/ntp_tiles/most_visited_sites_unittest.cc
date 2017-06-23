@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_observer.h"
@@ -259,8 +258,7 @@ class PopularSitesFactoryForTest {
       : prefs_(pref_service),
         url_fetcher_factory_(/*default_factory=*/nullptr),
         url_request_context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
-        worker_pool_owner_(/*max_threads=*/2, "PopularSitesFactoryForTest.") {
+            base::ThreadTaskRunnerHandle::Get())) {
     PopularSitesImpl::RegisterProfilePrefs(pref_service->registry());
     if (enabled) {
       prefs_->SetString(prefs::kPopularSitesOverrideCountry, "IN");
@@ -285,17 +283,16 @@ class PopularSitesFactoryForTest {
 
   std::unique_ptr<PopularSites> New() {
     return base::MakeUnique<PopularSitesImpl>(
-        worker_pool_owner_.pool().get(), prefs_,
+        prefs_,
         /*template_url_service=*/nullptr,
         /*variations_service=*/nullptr, url_request_context_.get(),
-        /*directory=*/base::FilePath(), base::Bind(JsonUnsafeParser::Parse));
+        base::Bind(JsonUnsafeParser::Parse));
   }
 
  private:
   PrefService* prefs_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_;
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
 };
 
 // CallbackList-like container without Subscription, mimicking the
