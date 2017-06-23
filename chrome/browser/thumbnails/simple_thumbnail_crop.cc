@@ -4,8 +4,6 @@
 
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 
-#include <algorithm>
-
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/platform_canvas.h"
@@ -46,10 +44,14 @@ void SimpleThumbnailCrop::ProcessBitmap(
   if (bitmap.isNull() || bitmap.empty())
     return;
 
-  SkBitmap thumbnail = CreateThumbnail(
-      bitmap,
-      ComputeTargetSizeAtMaximumScale(target_size_),
-      &context->clip_result);
+  DCHECK(context->clip_result != thumbnails::CLIP_RESULT_UNPROCESSED);
+  // TODO(treib): Getting the maximum supported scale here seems pointless -
+  // we only read back what GetCopySizeForThumbnail said. The max scale could
+  // only ever be smaller in the 1x -> 2x hack case (see
+  // GetCopySizeForThumbnail), but that seems like a bug - why would we scale
+  // on the CPU in that case?
+  SkBitmap thumbnail =
+      CreateThumbnail(bitmap, ComputeTargetSizeAtMaximumScale(target_size_));
 
   context->score.boring_score = color_utils::CalculateBoringScore(thumbnail);
   context->score.good_clipping =
@@ -58,21 +60,6 @@ void SimpleThumbnailCrop::ProcessBitmap(
        context->clip_result == CLIP_RESULT_NOT_CLIPPED);
 
   callback.Run(*context.get(), thumbnail);
-}
-
-SkBitmap SimpleThumbnailCrop::GetClippedBitmap(const SkBitmap& bitmap,
-                                               int desired_width,
-                                               int desired_height,
-                                               ClipResult* clip_result) {
-  gfx::Rect clipping_rect =
-      GetClippingRect(gfx::Size(bitmap.width(), bitmap.height()),
-                      gfx::Size(desired_width, desired_height),
-                      clip_result);
-  SkIRect src_rect = { clipping_rect.x(), clipping_rect.y(),
-                       clipping_rect.right(), clipping_rect.bottom() };
-  SkBitmap clipped_bitmap;
-  bitmap.extractSubset(&clipped_bitmap, src_rect);
-  return clipped_bitmap;
 }
 
 // RenderWidgetHostView::CopyFromSurface() can be costly especially when it is
@@ -151,32 +138,14 @@ SimpleThumbnailCrop::~SimpleThumbnailCrop() {
 // Creates a downsampled thumbnail from the given bitmap.
 // store. The returned bitmap will be isNull if there was an error creating it.
 SkBitmap SimpleThumbnailCrop::CreateThumbnail(const SkBitmap& bitmap,
-                                              const gfx::Size& desired_size,
-                                              ClipResult* clip_result) {
+                                              const gfx::Size& desired_size) {
   base::TimeTicks begin_compute_thumbnail = base::TimeTicks::Now();
-
-  SkBitmap clipped_bitmap;
-  if (*clip_result == thumbnails::CLIP_RESULT_UNPROCESSED) {
-    // Clip the pixels that will commonly hold a scrollbar, which looks bad in
-    // thumbnails.
-    int scrollbar_size = gfx::scrollbar_size();
-    SkIRect scrollbarless_rect =
-        { 0, 0,
-          std::max(1, bitmap.width() - scrollbar_size),
-          std::max(1, bitmap.height() - scrollbar_size) };
-    SkBitmap bmp;
-    bitmap.extractSubset(&bmp, scrollbarless_rect);
-
-    clipped_bitmap = GetClippedBitmap(
-        bmp, desired_size.width(), desired_size.height(), clip_result);
-  } else {
-    clipped_bitmap = bitmap;
-  }
 
   // Need to resize it to the size we want, so downsample until it's
   // close, and let the caller make it the exact size if desired.
+  // TODO(treib): This is probably pointless, see TODO in ProcessBitmap.
   SkBitmap result = SkBitmapOperations::DownsampleByTwoUntilSize(
-      clipped_bitmap, desired_size.width(), desired_size.height());
+      bitmap, desired_size.width(), desired_size.height());
 
   LOCAL_HISTOGRAM_TIMES(kThumbnailHistogramName,
                         base::TimeTicks::Now() - begin_compute_thumbnail);

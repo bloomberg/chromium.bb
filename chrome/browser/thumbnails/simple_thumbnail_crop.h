@@ -28,16 +28,6 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
                      const ConsumerCallback& callback,
                      const SkBitmap& bitmap) override;
 
-  // Gets the clipped bitmap from |bitmap| per the aspect ratio of the
-  // desired width and the desired height. For instance, if the input
-  // bitmap is vertically long (ex. 400x900) and the desired size is
-  // square (ex. 100x100), the clipped bitmap will be the top half of the
-  // input bitmap (400x400).
-  // Statically exposed for use by tests only.
-  static SkBitmap GetClippedBitmap(const SkBitmap& bitmap,
-                                   int desired_width,
-                                   int desired_height,
-                                   thumbnails::ClipResult* clip_result);
   // Returns the size copied from the backing store. |thumbnail_size| is in
   // DIP, returned size in pixels.
   static gfx::Size GetCopySizeForThumbnail(ui::ScaleFactor scale_factor,
@@ -57,8 +47,7 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
 
  private:
   static SkBitmap CreateThumbnail(const SkBitmap& bitmap,
-                                  const gfx::Size& desired_size,
-                                  ClipResult* clip_result);
+                                  const gfx::Size& desired_size);
 
   // The target size of the captured thumbnails, in DIPs.
   const gfx::Size target_size_;
