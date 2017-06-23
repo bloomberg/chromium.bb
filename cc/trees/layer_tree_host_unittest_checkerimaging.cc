@@ -46,15 +46,6 @@ class LayerTreeHostCheckerImagingTest : public LayerTreeTest {
     LayerTreeTest::SetupTree();
   }
 
-  void FlushImageDecodeTasks() {
-    CompletionEvent completion_event;
-    image_worker_task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce([](CompletionEvent* event) { event->Signal(); },
-                       base::Unretained(&completion_event)));
-    completion_event.Wait();
-  }
-
  private:
   // Accessed only on the main thread.
   FakeContentLayerClient content_layer_client_;
@@ -73,26 +64,24 @@ class LayerTreeHostCheckerImagingTestMergeWithMainFrame
     }
   }
 
-  void ReadyToCommitOnThread(LayerTreeHostImpl* host_impl) override {
-    if (num_of_commits_ == 1) {
-      // Send the blocked invalidation request before notifying that we're ready
-      // to commit, since the invalidation will be merged with the commit.
-      host_impl->BlockImplSideInvalidationRequestsForTesting(false);
-    }
+  void DidReceiveImplSideInvalidationRequest(
+      LayerTreeHostImpl* host_impl) override {
+    if (invalidation_requested_)
+      return;
+    invalidation_requested_ = true;
+
+    // Request a commit.
+    host_impl->SetNeedsCommit();
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     switch (++num_of_commits_) {
-      case 1: {
-        // The first commit has happened. Run all tasks on the image worker to
-        // ensure that the decode completion triggers an impl-side invalidation
-        // request.
-        FlushImageDecodeTasks();
-
-        // Block notifying the scheduler of this request until we get a commit.
+      case 1:
+        // Block notifying the scheduler of this request until we've had a
+        // chance to make sure that the decode work was scheduled, flushed and
+        // the commit requested after it is received.
         host_impl->BlockImplSideInvalidationRequestsForTesting(true);
-        host_impl->SetNeedsCommit();
-      } break;
+        break;
       case 2: {
         // Ensure that the expected tiles are invalidated on the sync tree.
         PictureLayerImpl* sync_layer_impl = static_cast<PictureLayerImpl*>(
@@ -102,7 +91,9 @@ class LayerTreeHostCheckerImagingTestMergeWithMainFrame
                 ->FindTilingWithResolution(TileResolution::HIGH_RESOLUTION);
 
         for (int i = 0; i < 4; i++) {
+          SCOPED_TRACE(i);
           for (int j = 0; j < 2; j++) {
+            SCOPED_TRACE(j);
             Tile* tile =
                 sync_tiling->TileAt(i, j) ? sync_tiling->TileAt(i, j) : nullptr;
 
@@ -110,10 +101,12 @@ class LayerTreeHostCheckerImagingTestMergeWithMainFrame
             // exist and have a raster task. If its the active tree, then only
             // the invalidated tiles have a raster task.
             if (i < 3) {
+              ASSERT_TRUE(tile);
               EXPECT_TRUE(tile->HasRasterTask());
             } else if (host_impl->pending_tree()) {
               EXPECT_EQ(tile, nullptr);
             } else {
+              ASSERT_TRUE(tile);
               EXPECT_FALSE(tile->HasRasterTask());
             }
           }
@@ -127,7 +120,9 @@ class LayerTreeHostCheckerImagingTestMergeWithMainFrame
 
   void AfterTest() override { EXPECT_EQ(num_of_commits_, 2); }
 
+  // Use only on impl thread.
   int num_of_commits_ = 0;
+  bool invalidation_requested_ = false;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -158,10 +153,12 @@ class LayerTreeHostCheckerImagingTestImplSideTree
         // exist and have a raster task. If its the active tree, then only
         // the invalidated tiles have a raster task.
         if (i < 2) {
+          ASSERT_TRUE(tile);
           EXPECT_TRUE(tile->HasRasterTask());
         } else if (host_impl->pending_tree()) {
           EXPECT_EQ(tile, nullptr);
         } else {
+          ASSERT_TRUE(tile);
           EXPECT_FALSE(tile->HasRasterTask());
         }
       }

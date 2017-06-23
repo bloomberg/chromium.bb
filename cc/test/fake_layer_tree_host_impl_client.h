@@ -17,8 +17,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void SetBeginFrameSource(BeginFrameSource* source) override {}
   void DidReceiveCompositorFrameAckOnImplThread() override {}
   void OnCanDrawStateChanged(bool can_draw) override {}
-  void NotifyReadyToActivate() override {}
-  void NotifyReadyToDraw() override {}
+  void NotifyReadyToActivate() override;
+  void NotifyReadyToDraw() override;
   void SetNeedsRedrawOnImplThread() override {}
   void SetNeedsOneBeginImplFrameOnImplThread() override {}
   void SetNeedsCommitOnImplThread() override {}
@@ -46,8 +46,16 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
     return did_request_impl_side_invalidation_;
   }
 
+  void reset_ready_to_activate() { ready_to_activate_ = false; }
+  bool ready_to_activate() const { return ready_to_activate_; }
+
+  void reset_ready_to_draw() { ready_to_draw_ = false; }
+  bool ready_to_draw() const { return ready_to_draw_; }
+
  private:
   bool did_request_impl_side_invalidation_ = false;
+  bool ready_to_activate_ = false;
+  bool ready_to_draw_ = false;
 };
 
 }  // namespace cc

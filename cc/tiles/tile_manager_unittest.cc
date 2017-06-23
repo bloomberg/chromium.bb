@@ -2533,6 +2533,11 @@ TEST_F(CheckerImagingTileManagerTest, BuildsImageDecodeQueueAsExpected) {
       gfx::Rect(rect_to_raster));  // Eventually rect.
   host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
 
+  // Finish all raster and dispatch completion callback so that the decode work
+  // for checkered images can be scheduled.
+  static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+
   // Run decode tasks to trigger completion of any pending decodes.
   FlushDecodeTasks();
 
@@ -2573,7 +2578,6 @@ TEST_F(CheckerImagingTileManagerTest, BuildsImageDecodeQueueAsExpected) {
 TEST_F(CheckerImagingTileManagerTest,
        TileManagerCleanupClearsCheckerImagedDecodes) {
   const gfx::Size layer_bounds(512, 512);
-  SetupDefaultTrees(layer_bounds);
 
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
@@ -2584,34 +2588,99 @@ TEST_F(CheckerImagingTileManagerTest,
   scoped_refptr<RasterSource> raster_source =
       RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
-  std::unique_ptr<PictureLayerImpl> layer_impl = PictureLayerImpl::Create(
-      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
-  layer_impl->set_contributes_to_drawn_render_surface(true);
-  PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
-
-  PictureLayerTiling* tiling =
-      tiling_set->AddTiling(gfx::AxisTransform2d(), raster_source);
-  tiling->set_resolution(HIGH_RESOLUTION);
-  tiling->CreateAllTilesForTesting();
-  tiling->SetTilePriorityRectsForTesting(
-      gfx::Rect(layer_bounds),   // Visible rect.
-      gfx::Rect(layer_bounds),   // Skewport rect.
-      gfx::Rect(layer_bounds),   // Soon rect.
-      gfx::Rect(layer_bounds));  // Eventually rect.
+  SetupPendingTree(raster_source, gfx::Size(100, 100),
+                   Region(gfx::Rect(0, 0, 500, 500)));
 
   host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  // Finish all raster and dispatch completion callback so that the decode work
+  // for checkered images can be scheduled.
+  static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   FlushDecodeTasks();
+
   EXPECT_TRUE(host_impl()
                   ->tile_manager()
                   ->checker_image_tracker()
                   .has_locked_decodes_for_testing());
+
+  host_impl()->pending_tree()->ReleaseTileResources();
   CleanUpTileManager();
+
   EXPECT_FALSE(host_impl()
                    ->tile_manager()
                    ->checker_image_tracker()
                    .has_locked_decodes_for_testing());
   EXPECT_TRUE(
       host_impl()->tile_manager()->TakeImagesToInvalidateOnSyncTree().empty());
+}
+
+TEST_F(CheckerImagingTileManagerTest,
+       TileManagerCorrectlyPrioritizesCheckerImagedDecodes) {
+  gfx::Size layer_bounds(500, 500);
+
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->set_fill_with_nonsolid_color(true);
+  sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(512, 512));
+  recording_source->add_draw_image(image, gfx::Point(0, 0));
+  recording_source->Rerecord();
+  scoped_refptr<RasterSource> raster_source =
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+
+  // Required for activation tiles block checker-imaged decodes.
+  SetupPendingTree(raster_source, gfx::Size(100, 100),
+                   Region(gfx::Rect(0, 0, 500, 500)));
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  EXPECT_TRUE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+  EXPECT_TRUE(host_impl()
+                  ->tile_manager()
+                  ->checker_image_tracker()
+                  .no_decodes_allowed_for_testing());
+  while (!host_impl()->client()->ready_to_activate()) {
+    static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())
+        ->RunSingleTaskForTesting();
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_EQ(host_impl()
+                ->tile_manager()
+                ->checker_image_tracker()
+                .decode_priority_allowed_for_testing(),
+            CheckerImageTracker::DecodeType::kRaster);
+
+  // Finishing all tasks allows pre-decodes.
+  static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(host_impl()
+                ->tile_manager()
+                ->checker_image_tracker()
+                .decode_priority_allowed_for_testing(),
+            CheckerImageTracker::DecodeType::kPreDecode);
+
+  // Required for draw tiles block checker-imaged decodes.
+  // Free all tile resources and perform another PrepareTiles.
+  ActivateTree();
+  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
+  host_impl()->tile_manager()->PrepareTiles(
+      GlobalStateThatImpactsTilePriority());
+  EXPECT_FALSE(host_impl()->tile_manager()->IsReadyToDraw());
+
+  host_impl()->client()->reset_ready_to_draw();
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  EXPECT_TRUE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+  EXPECT_TRUE(host_impl()
+                  ->tile_manager()
+                  ->checker_image_tracker()
+                  .no_decodes_allowed_for_testing());
+  while (!host_impl()->client()->ready_to_draw()) {
+    static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())
+        ->RunSingleTaskForTesting();
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_EQ(host_impl()
+                ->tile_manager()
+                ->checker_image_tracker()
+                .decode_priority_allowed_for_testing(),
+            CheckerImageTracker::DecodeType::kRaster);
 }
 
 class CheckerImagingTileManagerMemoryTest
@@ -2685,6 +2754,11 @@ TEST_F(CheckerImagingTileManagerMemoryTest, AddsAllNowTilesToImageDecodeQueue) {
       complete_tiling_rect,   // Soon rect.
       complete_tiling_rect);  // Eventually rect.
   host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+
+  // Finish all raster work so the decode work for checkered images can be
+  // scheduled.
+  static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Flush all decode tasks. The tiles with checkered images should be
   // invalidated.

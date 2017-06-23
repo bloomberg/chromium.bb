@@ -230,6 +230,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     block_impl_side_invalidation_ = block;
     if (!block_impl_side_invalidation_ && impl_side_invalidation_was_blocked_) {
       RequestImplSideInvalidation();
+      impl_side_invalidation_was_blocked_ = false;
     }
   }
 
@@ -281,6 +282,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   void RequestImplSideInvalidation() override {
+    test_hooks_->DidReceiveImplSideInvalidationRequest(this);
     if (block_impl_side_invalidation_) {
       impl_side_invalidation_was_blocked_ = true;
       return;

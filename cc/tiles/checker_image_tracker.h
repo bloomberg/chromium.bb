@@ -33,6 +33,24 @@ class CC_EXPORT CheckerImageTrackerClient {
 // sync tree until the previous tree is activated.
 class CC_EXPORT CheckerImageTracker {
  public:
+  // The priority type for a decode. Note we use int to specify a decreasing
+  // order of priority with higher values.
+  enum DecodeType : int {
+    // Priority for images on tiles being rasterized (visible or pre-paint).
+    kRaster = 0,
+    // Lowest priority for images on tiles in pre-decode region. These are tiles
+    // which are beyond the pre-paint region, but have their images decoded.
+    kPreDecode = 1,
+
+    kLast = kPreDecode
+  };
+
+  struct CC_EXPORT ImageDecodeRequest {
+    ImageDecodeRequest(PaintImage paint_image, DecodeType type);
+    PaintImage paint_image;
+    DecodeType type;
+  };
+
   CheckerImageTracker(ImageController* image_controller,
                       CheckerImageTrackerClient* client,
                       bool enable_checker_imaging);
@@ -42,8 +60,15 @@ class CC_EXPORT CheckerImageTracker {
   // service and it should be be skipped during raster.
   bool ShouldCheckerImage(const DrawImage& image, WhichTree tree);
 
-  using ImageDecodeQueue = std::vector<PaintImage>;
+  // Provides a prioritized queue of images to decode.
+  using ImageDecodeQueue = std::vector<ImageDecodeRequest>;
   void ScheduleImageDecodeQueue(ImageDecodeQueue image_decode_queue);
+
+  // Disables scheduling any decode work by the tracker.
+  void SetNoDecodesAllowed();
+
+  // The max decode priority type that is allowed to run.
+  void SetMaxDecodePriorityAllowed(DecodeType decode_type);
 
   // Returns the set of images to invalidate on the sync tree.
   const PaintImageIdFlatSet& TakeImagesToInvalidateOnSyncTree();
@@ -70,7 +95,16 @@ class CC_EXPORT CheckerImageTracker {
     return !image_id_to_decode_.empty();
   }
 
+  int decode_priority_allowed_for_testing() const {
+    return decode_priority_allowed_;
+  }
+  bool no_decodes_allowed_for_testing() const {
+    return decode_priority_allowed_ == kNoDecodeAllowedPriority;
+  }
+
  private:
+  static const int kNoDecodeAllowedPriority;
+
   enum class DecodePolicy {
     // The image can be decoded asynchronously from raster. When set, the image
     // is always skipped during rasterization of content that includes this
@@ -133,6 +167,9 @@ class CC_EXPORT CheckerImageTracker {
   // order in which images are decoded is aligned with the priority of the tiles
   // dependent on these images.
   ImageDecodeQueue image_decode_queue_;
+
+  // The max decode type that is allowed to run, if decodes are allowed to run.
+  int decode_priority_allowed_ = kNoDecodeAllowedPriority;
 
   // The currently outstanding image decode that has been scheduled with the
   // decode service. There can be only one outstanding decode at a time.

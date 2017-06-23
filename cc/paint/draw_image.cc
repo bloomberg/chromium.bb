@@ -46,4 +46,12 @@ DrawImage::DrawImage(const DrawImage& other) = default;
 
 DrawImage::~DrawImage() = default;
 
+bool DrawImage::operator==(const DrawImage& other) const {
+  return paint_image_ == other.paint_image_ && src_rect_ == other.src_rect_ &&
+         filter_quality_ == other.filter_quality_ && matrix_ == other.matrix_ &&
+         scale_ == other.scale_ &&
+         matrix_is_decomposable_ == other.matrix_is_decomposable_ &&
+         target_color_space_ == other.target_color_space_;
+}
+
 }  // namespace cc
