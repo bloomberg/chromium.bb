@@ -30,7 +30,7 @@ class TestDownloadDriver : public DownloadDriver {
 
   // Simulates download events from content layer.
   void NotifyDownloadUpdate(const DriverEntry& entry);
-  void NotifyDownloadFailed(const DriverEntry& entry, int reason);
+  void NotifyDownloadFailed(const DriverEntry& entry, FailureType failure_type);
   void NotifyDownloadSucceeded(const DriverEntry& entry);
 
   // DownloadDriver implementation.

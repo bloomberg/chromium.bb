@@ -71,6 +71,9 @@ struct Entry {
   // Time the download was marked as complete, base::Time() if the download is
   // not yet complete.
   base::Time completion_time;
+
+  // Stores the number of retries for this download.
+  uint32_t attempt_count;
 };
 
 }  // namespace download

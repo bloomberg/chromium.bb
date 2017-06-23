@@ -20,6 +20,15 @@ namespace download {
 
 struct RequestParams;
 
+// Indicates the recovery type of a download.
+enum class FailureType {
+  // Download failed due to an irrecoverable error.
+  NOT_RECOVERABLE = 0,
+
+  // Download failed, but we might be able to recover if we try again.
+  RECOVERABLE = 1,
+};
+
 // The interface that includes all the operations to interact with low level
 // download library functionalities.
 class DownloadDriver {
@@ -38,7 +47,8 @@ class DownloadDriver {
 
     // Called when any download is failed. |reason| is propagated from low level
     // download library.
-    virtual void OnDownloadFailed(const DriverEntry& download, int reason) = 0;
+    virtual void OnDownloadFailed(const DriverEntry& download,
+                                  FailureType failure_type) = 0;
 
     // Called when any download is successfully completed.
     virtual void OnDownloadSucceeded(const DriverEntry& download) = 0;
