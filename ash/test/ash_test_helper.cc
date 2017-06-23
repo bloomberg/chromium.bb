@@ -205,7 +205,7 @@ void AshTestHelper::TearDown() {
     Shell::DeleteInstance();
 
   // Suspend the tear down until all resources are returned via
-  // MojoCompositorFrameSinkClient::ReclaimResources()
+  // CompositorFrameSinkClient::ReclaimResources()
   RunAllPendingInMessageLoop();
   ash_test_environment_->TearDown();
 

@@ -77,11 +77,11 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const LayerTreeFrameSinkCallback& callback) {
-  cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info;
-  cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+  cc::mojom::CompositorFrameSinkPtrInfo sink_info;
+  cc::mojom::CompositorFrameSinkRequest sink_request =
       mojo::MakeRequest(&sink_info);
-  cc::mojom::MojoCompositorFrameSinkClientPtr client;
-  cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
+  cc::mojom::CompositorFrameSinkClientPtr client;
+  cc::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&client);
   constexpr bool enable_surface_synchronization = true;
   auto frame_sink = base::MakeUnique<viz::ClientLayerTreeFrameSink>(

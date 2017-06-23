@@ -19,7 +19,7 @@ class LayerTreeFrameSink;
 namespace exo {
 class Surface;
 
-// This class talks to MojoCompositorFrameSink and keeps track of references to
+// This class talks to CompositorFrameSink and keeps track of references to
 // the contents of Buffers. It's keeped alive by references from
 // release_callbacks_. It's destroyed when its owning Surface is destroyed and
 // the last outstanding release callback is called.

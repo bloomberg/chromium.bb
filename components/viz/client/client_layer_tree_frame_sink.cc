@@ -19,8 +19,8 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     cc::SharedBitmapManager* shared_bitmap_manager,
     std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
-    cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
-    cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+    cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
+    cc::mojom::CompositorFrameSinkClientRequest client_request,
     std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
     bool enable_surface_synchronization)
     : cc::LayerTreeFrameSink(std::move(context_provider),
@@ -40,8 +40,8 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
 ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
     std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
-    cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
-    cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+    cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
+    cc::mojom::CompositorFrameSinkClientRequest client_request,
     std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
     bool enable_surface_synchronization)
     : cc::LayerTreeFrameSink(std::move(vulkan_context_provider)),

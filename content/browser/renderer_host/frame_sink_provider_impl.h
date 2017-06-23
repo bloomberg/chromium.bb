@@ -10,7 +10,7 @@
 
 namespace content {
 
-// This class lives in the browser and provides MojoCompositorFrameSink for the
+// This class lives in the browser and provides CompositorFrameSink for the
 // renderer.
 class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
  public:
@@ -21,10 +21,9 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
   void Unbind();
 
   // mojom::FrameSinkProvider implementation.
-  void CreateForWidget(
-      int32_t widget_id,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
+  void CreateForWidget(int32_t widget_id,
+                       cc::mojom::CompositorFrameSinkRequest request,
+                       cc::mojom::CompositorFrameSinkClientPtr client) override;
 
  private:
   const int32_t process_id_;

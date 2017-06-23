@@ -8,7 +8,7 @@ import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/surface_info.mojom";
-import "cc/ipc/mojo_compositor_frame_sink.mojom";
+import "cc/ipc/compositor_frame_sink.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/mus_constants.mojom";
@@ -152,8 +152,8 @@ interface WindowTree {
   // Attaches a CompositorFrameSink to a particular window.
   AttachCompositorFrameSink(
       uint32 window_id,
-      cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
-      cc.mojom.MojoCompositorFrameSinkClient client);
+      cc.mojom.CompositorFrameSink& compositor_frame_sink,
+      cc.mojom.CompositorFrameSinkClient client);
 
   // Reparents a window.
   // This fails for any of the following reasons:

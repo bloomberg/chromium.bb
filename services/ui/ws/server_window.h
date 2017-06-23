@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
@@ -62,13 +62,13 @@ class ServerWindow {
   // existing.
   void CreateRootCompositorFrameSink(
       gfx::AcceleratedWidget widget,
-      cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
+      cc::mojom::CompositorFrameSinkAssociatedRequest sink_request,
+      cc::mojom::CompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateAssociatedRequest display_request);
 
   void CreateCompositorFrameSink(
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+      cc::mojom::CompositorFrameSinkRequest request,
+      cc::mojom::CompositorFrameSinkClientPtr client);
 
   const WindowId& id() const { return id_; }
 

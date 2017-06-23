@@ -119,7 +119,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Public interface exposed to RenderWidgetHostView.
 
   void DidCreateNewRendererCompositorFrameSink(
-      cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink);
+      cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void ClearDelegatedFrame();
@@ -320,7 +320,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       cc::BeginFrameArgs::kInvalidFrameNumber;
 
   bool has_frame_ = false;
-  cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink_ =
+  cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;

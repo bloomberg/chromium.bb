@@ -49,9 +49,9 @@ void MojoFrameSinkManager::BindPtrAndSetClient(
 void MojoFrameSinkManager::CreateRootCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
-    cc::mojom::MojoCompositorFrameSinkAssociatedRequest request,
-    cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client,
+    cc::mojom::CompositorFrameSinkAssociatedRequest request,
+    cc::mojom::CompositorFrameSinkPrivateRequest private_request,
+    cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_private_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
@@ -72,9 +72,9 @@ void MojoFrameSinkManager::CreateRootCompositorFrameSink(
 
 void MojoFrameSinkManager::CreateCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
-    cc::mojom::MojoCompositorFrameSinkRequest request,
-    cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+    cc::mojom::CompositorFrameSinkRequest request,
+    cc::mojom::CompositorFrameSinkPrivateRequest private_request,
+    cc::mojom::CompositorFrameSinkClientPtr client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
 

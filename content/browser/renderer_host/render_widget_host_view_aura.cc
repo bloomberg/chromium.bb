@@ -887,7 +887,7 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 #endif
 
 void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink(
-    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+    cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
   if (delegated_frame_host_) {
     delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(

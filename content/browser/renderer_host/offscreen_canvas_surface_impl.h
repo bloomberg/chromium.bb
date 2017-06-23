@@ -44,13 +44,12 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
     return local_surface_id_;
   }
 
-  // Creates a MojoCompositorFrameSink connection to FrameSinkManager for an
+  // Creates a CompositorFrameSink connection to FrameSinkManager for an
   // offscreen canvas client. The corresponding private interface will be owned
   // here to control CompositorFrameSink lifetime. This should only ever be
   // called once.
-  void CreateCompositorFrameSink(
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
-      cc::mojom::MojoCompositorFrameSinkRequest request);
+  void CreateCompositorFrameSink(cc::mojom::CompositorFrameSinkClientPtr client,
+                                 cc::mojom::CompositorFrameSinkRequest request);
 
   // FrameSinkObserver implementation.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;

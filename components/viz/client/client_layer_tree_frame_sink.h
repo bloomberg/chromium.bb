@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
+#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
@@ -19,10 +19,9 @@ namespace viz {
 
 class LocalSurfaceIdProvider;
 
-class ClientLayerTreeFrameSink
-    : public cc::LayerTreeFrameSink,
-      public cc::mojom::MojoCompositorFrameSinkClient,
-      public cc::ExternalBeginFrameSourceClient {
+class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
+                                 public cc::mojom::CompositorFrameSinkClient,
+                                 public cc::ExternalBeginFrameSourceClient {
  public:
   ClientLayerTreeFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
@@ -31,8 +30,8 @@ class ClientLayerTreeFrameSink
       cc::SharedBitmapManager* shared_bitmap_manager,
       std::unique_ptr<cc::SyntheticBeginFrameSource>
           synthetic_begin_frame_source,
-      cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
-      cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+      cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
+      cc::mojom::CompositorFrameSinkClientRequest client_request,
       std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
       bool enable_surface_synchronization);
 
@@ -40,8 +39,8 @@ class ClientLayerTreeFrameSink
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
       std::unique_ptr<cc::SyntheticBeginFrameSource>
           synthetic_begin_frame_source,
-      cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
-      cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+      cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
+      cc::mojom::CompositorFrameSinkClientRequest client_request,
       std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
       bool enable_surface_synchronization);
 
@@ -57,7 +56,7 @@ class ClientLayerTreeFrameSink
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
 
  private:
-  // cc::mojom::MojoCompositorFrameSinkClient implementation:
+  // cc::mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const cc::ReturnedResourceArray& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override;
@@ -73,10 +72,10 @@ class ClientLayerTreeFrameSink
   std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
-  cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info_;
-  cc::mojom::MojoCompositorFrameSinkClientRequest client_request_;
-  cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
-  mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> client_binding_;
+  cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info_;
+  cc::mojom::CompositorFrameSinkClientRequest client_request_;
+  cc::mojom::CompositorFrameSinkPtr compositor_frame_sink_;
+  mojo::Binding<cc::mojom::CompositorFrameSinkClient> client_binding_;
   THREAD_CHECKER(thread_checker_);
   const bool enable_surface_synchronization_;
 

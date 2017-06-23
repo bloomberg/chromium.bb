@@ -566,15 +566,15 @@ class RenderWidgetHostTest : public testing::Test {
     host_->Init();
     host_->DisableGestureDebounce();
 
-    cc::mojom::MojoCompositorFrameSinkPtr sink;
-    cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+    cc::mojom::CompositorFrameSinkPtr sink;
+    cc::mojom::CompositorFrameSinkRequest sink_request =
         mojo::MakeRequest(&sink);
-    cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
+    cc::mojom::CompositorFrameSinkClientRequest client_request =
         mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
     renderer_compositor_frame_sink_ =
         base::MakeUnique<FakeRendererCompositorFrameSink>(
             std::move(sink), std::move(client_request));
-    host_->RequestMojoCompositorFrameSink(
+    host_->RequestCompositorFrameSink(
         std::move(sink_request),
         std::move(renderer_compositor_frame_sink_ptr_));
   }
@@ -754,8 +754,7 @@ class RenderWidgetHostTest : public testing::Test {
 
   TestBrowserThreadBundle thread_bundle_;
   base::test::ScopedFeatureList feature_list_;
-  cc::mojom::MojoCompositorFrameSinkClientPtr
-      renderer_compositor_frame_sink_ptr_;
+  cc::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };

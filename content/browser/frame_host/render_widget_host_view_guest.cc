@@ -443,7 +443,7 @@ void RenderWidgetHostViewGuest::UnlockMouse() {
 }
 
 void RenderWidgetHostViewGuest::DidCreateNewRendererCompositorFrameSink(
-    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+    cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
       renderer_compositor_frame_sink);
   platform_view_->DidCreateNewRendererCompositorFrameSink(

@@ -45,8 +45,8 @@ class VIZ_HOST_EXPORT FrameSinkManagerHost
   // call DestroyCompositorFrameSink().
   void CreateCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+      cc::mojom::CompositorFrameSinkRequest request,
+      cc::mojom::CompositorFrameSinkClientPtr client);
 
   // Destroys a client connection. Will call UnregisterFrameSinkHierarchy() with
   // the registered parent if there is one.
@@ -54,7 +54,7 @@ class VIZ_HOST_EXPORT FrameSinkManagerHost
 
   // Registers FrameSink hierarchy. Clients can call this multiple times to
   // reparent without calling UnregisterFrameSinkHierarchy(). If a client uses
-  // MojoCompositorFrameSink, then CreateCompositorFrameSink() should be called
+  // CompositorFrameSink, then CreateCompositorFrameSink() should be called
   // before this.
   void RegisterFrameSinkHierarchy(const cc::FrameSinkId& parent_frame_sink_id,
                                   const cc::FrameSinkId& child_frame_sink_id);
@@ -77,8 +77,9 @@ class VIZ_HOST_EXPORT FrameSinkManagerHost
 
     // The private interface that gives the host control over the
     // CompositorFrameSink connection between the client and viz.
-    cc::mojom::MojoCompositorFrameSinkPrivatePtr private_interface;
+    cc::mojom::CompositorFrameSinkPrivatePtr private_interface;
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
   };
 

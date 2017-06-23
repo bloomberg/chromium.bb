@@ -7,8 +7,8 @@
 namespace content {
 
 FakeRendererCompositorFrameSink::FakeRendererCompositorFrameSink(
-    cc::mojom::MojoCompositorFrameSinkPtr sink,
-    cc::mojom::MojoCompositorFrameSinkClientRequest request)
+    cc::mojom::CompositorFrameSinkPtr sink,
+    cc::mojom::CompositorFrameSinkClientRequest request)
     : binding_(this, std::move(request)), sink_(std::move(sink)) {}
 
 FakeRendererCompositorFrameSink::~FakeRendererCompositorFrameSink() = default;

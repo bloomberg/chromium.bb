@@ -31,16 +31,16 @@ class FrameSinkManagerClientBinding : public cc::mojom::FrameSinkManager {
   void CreateRootCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
-      cc::mojom::MojoCompositorFrameSinkAssociatedRequest request,
-      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
+      cc::mojom::CompositorFrameSinkAssociatedRequest request,
+      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::CompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
       override;
   void CreateCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
+      cc::mojom::CompositorFrameSinkRequest request,
+      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::CompositorFrameSinkClientPtr client) override;
   void RegisterFrameSinkHierarchy(
       const cc::FrameSinkId& parent_frame_sink_id,
       const cc::FrameSinkId& child_frame_sink_id) override;

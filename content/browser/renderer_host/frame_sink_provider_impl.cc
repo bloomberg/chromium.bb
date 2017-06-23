@@ -26,8 +26,8 @@ void FrameSinkProviderImpl::Unbind() {
 
 void FrameSinkProviderImpl::CreateForWidget(
     int32_t widget_id,
-    cc::mojom::MojoCompositorFrameSinkRequest request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+    cc::mojom::CompositorFrameSinkRequest request,
+    cc::mojom::CompositorFrameSinkClientPtr client) {
   RenderWidgetHostImpl* render_widget_host_impl =
       RenderWidgetHostImpl::FromID(process_id_, widget_id);
   if (!render_widget_host_impl) {
@@ -35,8 +35,8 @@ void FrameSinkProviderImpl::CreateForWidget(
                 << "in process " << process_id_;
     return;
   }
-  render_widget_host_impl->RequestMojoCompositorFrameSink(std::move(request),
-                                                          std::move(client));
+  render_widget_host_impl->RequestCompositorFrameSink(std::move(request),
+                                                      std::move(client));
 }
 
 }  // namespace content

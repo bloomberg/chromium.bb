@@ -26,29 +26,29 @@ ACTION_P(InvokeClosure, closure) {
   closure.Run();
 }
 
-// A stub MojoCompositorFrameSinkClient that does nothing.
-class StubClientCompositorFrameSink
-    : public cc::mojom::MojoCompositorFrameSinkClient {
+// A stub CompositorFrameSinkClient that does nothing.
+class StubCompositorFrameSinkClient
+    : public cc::mojom::CompositorFrameSinkClient {
  public:
-  StubClientCompositorFrameSink() : binding_(this) {}
-  ~StubClientCompositorFrameSink() override = default;
+  StubCompositorFrameSinkClient() : binding_(this) {}
+  ~StubCompositorFrameSinkClient() override = default;
 
-  cc::mojom::MojoCompositorFrameSinkClientPtr GetInterfacePtr() {
-    cc::mojom::MojoCompositorFrameSinkClientPtr client;
+  cc::mojom::CompositorFrameSinkClientPtr GetInterfacePtr() {
+    cc::mojom::CompositorFrameSinkClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));
     return client;
   }
 
  private:
-  // cc::mojom::MojoCompositorFrameSinkClient:
+  // cc::mojom::CompositorFrameSinkClient:
   void DidReceiveCompositorFrameAck(
       const cc::ReturnedResourceArray& resources) override {}
   void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override {}
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override {}
 
-  mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> binding_;
+  mojo::Binding<cc::mojom::CompositorFrameSinkClient> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(StubClientCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(StubCompositorFrameSinkClient);
 };
 
 // A mock implementation of mojom::FrameSinkManager.
@@ -68,16 +68,16 @@ class MockFrameSinkManagerImpl : public cc::mojom::FrameSinkManager {
   void CreateRootCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
-      cc::mojom::MojoCompositorFrameSinkAssociatedRequest request,
-      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
+      cc::mojom::CompositorFrameSinkAssociatedRequest request,
+      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::CompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
       override {}
   void CreateCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client) override {}
+      cc::mojom::CompositorFrameSinkRequest request,
+      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::CompositorFrameSinkClientPtr client) override {}
   MOCK_METHOD2(RegisterFrameSinkHierarchy,
                void(const cc::FrameSinkId& parent,
                     const cc::FrameSinkId& child));
@@ -135,8 +135,8 @@ class FrameSinkManagerHostTest : public testing::Test {
 TEST_F(FrameSinkManagerHostTest, UnregisterHierarchyOnDestroy) {
   base::RunLoop run_loop;
 
-  cc::mojom::MojoCompositorFrameSinkPtr frame_sink;
-  StubClientCompositorFrameSink frame_sink_client;
+  cc::mojom::CompositorFrameSinkPtr frame_sink;
+  StubCompositorFrameSinkClient frame_sink_client;
   manager_host().CreateCompositorFrameSink(kFrameSinkId1,
                                            mojo::MakeRequest(&frame_sink),
                                            frame_sink_client.GetInterfacePtr());

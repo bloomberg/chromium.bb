@@ -155,8 +155,8 @@ class AURA_EXPORT WindowTreeClient
 
   void AttachCompositorFrameSink(
       Id window_id,
-      cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+      cc::mojom::CompositorFrameSinkRequest compositor_frame_sink,
+      cc::mojom::CompositorFrameSinkClientPtr client);
 
   bool IsRoot(WindowMus* window) const { return roots_.count(window) > 0; }
 

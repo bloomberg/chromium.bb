@@ -25,7 +25,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
-#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
+#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -103,7 +103,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public InputAckHandler,
       public TouchEmulatorClient,
       public NON_EXPORTED_BASE(SyntheticGestureController::Delegate),
-      public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSink),
+      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
       public IPC::Listener {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
@@ -577,9 +577,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // renderer unless it is for an immediate request.
   void RequestCompositionUpdates(bool immediate_request, bool monitor_updates);
 
-  void RequestMojoCompositorFrameSink(
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+  void RequestCompositorFrameSink(
+      cc::mojom::CompositorFrameSinkRequest request,
+      cc::mojom::CompositorFrameSinkClientPtr client);
 
   const cc::CompositorFrameMetadata& last_frame_metadata() {
     return last_frame_metadata_;
@@ -587,7 +587,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool HasGestureStopped() override;
 
-  // cc::mojom::MojoCompositorFrameSink implementation.
+  // cc::mojom::CompositorFrameSink implementation.
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
@@ -979,9 +979,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   cc::LocalSurfaceId last_local_surface_id_;
   RenderWidgetSurfaceProperties last_surface_properties_;
 
-  mojo::Binding<cc::mojom::MojoCompositorFrameSink>
-      compositor_frame_sink_binding_;
-  cc::mojom::MojoCompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
+  mojo::Binding<cc::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
+  cc::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
 
   cc::CompositorFrameMetadata last_frame_metadata_;
 

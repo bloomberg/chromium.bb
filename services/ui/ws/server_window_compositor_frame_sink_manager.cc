@@ -24,8 +24,8 @@ ServerWindowCompositorFrameSinkManager::
 
 void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
     gfx::AcceleratedWidget widget,
-    cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client,
+    cc::mojom::CompositorFrameSinkAssociatedRequest sink_request,
+    cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_request) {
   if (!pending_compositor_frame_sink_request_.is_pending()) {
     pending_compositor_frame_sink_request_ =
@@ -42,8 +42,8 @@ void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
-    cc::mojom::MojoCompositorFrameSinkRequest request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+    cc::mojom::CompositorFrameSinkRequest request,
+    cc::mojom::CompositorFrameSinkClientPtr client) {
   if (!pending_compositor_frame_sink_request_.is_pending()) {
     pending_compositor_frame_sink_request_ =
         mojo::MakeRequest(&compositor_frame_sink_);
