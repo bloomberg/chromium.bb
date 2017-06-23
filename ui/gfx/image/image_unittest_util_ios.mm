@@ -12,10 +12,11 @@
 namespace gfx {
 namespace test {
 
+// The |x| and |y| coordinates are interpreted as scale-independent in ios.
 SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
   // Start by extracting the target pixel into a 1x1 CGImage.
-  base::ScopedCFTypeRef<CGImageRef> pixel_image(
-      CGImageCreateWithImageInRect(image.CGImage, CGRectMake(x, y, 1, 1)));
+  base::ScopedCFTypeRef<CGImageRef> pixel_image(CGImageCreateWithImageInRect(
+      image.CGImage, CGRectMake(x * image.scale, y * image.scale, 1, 1)));
 
   // Draw that pixel into a 1x1 bitmap context.
   base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
