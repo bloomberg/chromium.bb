@@ -34,7 +34,8 @@ class ErrorReport {
   enum InterstitialReason {
     INTERSTITIAL_SSL,
     INTERSTITIAL_CAPTIVE_PORTAL,
-    INTERSTITIAL_CLOCK
+    INTERSTITIAL_CLOCK,
+    INTERSTITIAL_SUPERFISH,
   };
 
   // Whether the user clicked through the interstitial or not.

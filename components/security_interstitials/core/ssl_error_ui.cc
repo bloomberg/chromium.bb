@@ -86,6 +86,22 @@ void SSLErrorUI::PopulateStringsForHTML(base::DictionaryValue* load_time_data) {
     PopulateNonOverridableStrings(load_time_data);
 }
 
+const net::SSLInfo& SSLErrorUI::ssl_info() const {
+  return ssl_info_;
+}
+
+const base::Time& SSLErrorUI::time_triggered() const {
+  return time_triggered_;
+}
+
+ControllerClient* SSLErrorUI::controller() const {
+  return controller_;
+}
+
+int SSLErrorUI::cert_error() const {
+  return cert_error_;
+}
+
 void SSLErrorUI::PopulateOverridableStrings(
     base::DictionaryValue* load_time_data) {
   DCHECK(soft_override_enabled_);

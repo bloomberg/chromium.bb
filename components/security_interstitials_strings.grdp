@@ -60,6 +60,14 @@
     Attackers might be trying to steal your information from <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> (for example, passwords, messages, or credit cards). <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>
   </message>
 
+  <!-- SSL error page: Superfish-specific -->
+  <message name="IDS_SSL_SUPERFISH_HEADING" desc="The large heading at the top of the Superfish-specific SSL interstitial.">
+    Software on your computer is stopping Chrome from connecting to the web
+  </message>
+  <message name="IDS_SSL_SUPERFISH_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the Superfish-specific SSL interstitial.">
+    Follow these steps to remove the software and its associated certificate. You'll need administrator privileges. <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>
+  </message>
+
   <!-- SSL error page: overridable -->
   <message name="IDS_SSL_OVERRIDABLE_SAFETY_BUTTON" desc="The text for the button that takes the user back to the previous page.">
     Back to safety

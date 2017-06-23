@@ -45,10 +45,16 @@ class SSLErrorUI {
              int display_options,  // Bitmask of SSLErrorOptionsMask values.
              const base::Time& time_triggered,
              ControllerClient* controller);
-  ~SSLErrorUI();
+  virtual ~SSLErrorUI();
 
-  void PopulateStringsForHTML(base::DictionaryValue* load_time_data);
-  void HandleCommand(SecurityInterstitialCommands command);
+  virtual void PopulateStringsForHTML(base::DictionaryValue* load_time_data);
+  virtual void HandleCommand(SecurityInterstitialCommands command);
+
+ protected:
+  const net::SSLInfo& ssl_info() const;
+  const base::Time& time_triggered() const;
+  ControllerClient* controller() const;
+  int cert_error() const;
 
  private:
   void PopulateOverridableStrings(base::DictionaryValue* load_time_data);

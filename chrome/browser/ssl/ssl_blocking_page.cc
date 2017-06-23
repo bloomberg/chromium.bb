@@ -27,6 +27,7 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
+#include "components/security_interstitials/core/superfish_error_ui.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -99,7 +100,6 @@ std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
     int cert_error,
     const GURL& request_url,
     bool overridable) {
-  // Set up the metrics helper for the SSLErrorUI.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix =
       overridable ? "ssl_overridable" : "ssl_nonoverridable";
@@ -123,6 +123,7 @@ SSLBlockingPage* SSLBlockingPage::Create(
     int options_mask,
     const base::Time& time_triggered,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    bool is_superfish,
     const base::Callback<void(content::CertificateRequestResultType)>&
         callback) {
   // Override prefs for the SSLErrorUI.
@@ -132,9 +133,11 @@ SSLBlockingPage* SSLBlockingPage::Create(
       !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed)) {
     options_mask |= SSLErrorUI::HARD_OVERRIDE_DISABLED;
   }
-  bool overridable = IsOverridable(
-      options_mask,
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  const bool overridable =
+      is_superfish
+          ? false
+          : IsOverridable(options_mask, Profile::FromBrowserContext(
+                                            web_contents->GetBrowserContext()));
   if (overridable)
     options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   else
@@ -147,7 +150,7 @@ SSLBlockingPage* SSLBlockingPage::Create(
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
                              options_mask, time_triggered,
                              std::move(ssl_cert_reporter), overridable,
-                             std::move(metrics_helper), callback);
+                             std::move(metrics_helper), is_superfish, callback);
 }
 
 bool SSLBlockingPage::ShouldCreateNewNavigation() const {
@@ -186,12 +189,13 @@ SSLBlockingPage::SSLBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     bool overridable,
     std::unique_ptr<ChromeMetricsHelper> metrics_helper,
+    bool is_superfish,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SecurityInterstitialPage(
           web_contents,
           request_url,
-          base::MakeUnique<ChromeControllerClient>(
-              web_contents, std::move(metrics_helper))),
+          base::MakeUnique<ChromeControllerClient>(web_contents,
+                                                   std::move(metrics_helper))),
       callback_(callback),
       ssl_info_(ssl_info),
       overridable_(overridable),
@@ -202,16 +206,27 @@ SSLBlockingPage::SSLBlockingPage(
           web_contents,
           request_url,
           ssl_info,
-          certificate_reporting::ErrorReport::INTERSTITIAL_SSL,
+          is_superfish
+              ? certificate_reporting::ErrorReport::INTERSTITIAL_SUPERFISH
+              : certificate_reporting::ErrorReport::INTERSTITIAL_SSL,
           overridable_,
           time_triggered,
           controller()->metrics_helper())),
-      ssl_error_ui_(new SSLErrorUI(request_url,
-                                   cert_error,
-                                   ssl_info,
-                                   options_mask,
-                                   time_triggered,
-                                   controller())) {
+      ssl_error_ui_(
+          is_superfish
+              ? base::MakeUnique<security_interstitials::SuperfishErrorUI>(
+                    request_url,
+                    cert_error,
+                    ssl_info,
+                    options_mask,
+                    time_triggered,
+                    controller())
+              : base::MakeUnique<SSLErrorUI>(request_url,
+                                             cert_error,
+                                             ssl_info,
+                                             options_mask,
+                                             time_triggered,
+                                             controller())) {
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
 }
