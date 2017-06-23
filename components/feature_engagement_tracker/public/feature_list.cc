@@ -10,7 +10,7 @@ namespace feature_engagement_tracker {
 
 namespace {
 // Whenever a feature is added to |kAllFeatures|, it should also be added as
-// DEFINE_VARIATION_PARAM below, and also added to the
+// DEFINE_VARIATION_PARAM in the header, and also added to the
 // |kIPHDemoModeChoiceVariations| array.
 const base::Feature* kAllFeatures[] = {
     &kIPHDummyFeature,  // Ensures non-empty array for all platforms.
