@@ -18,16 +18,14 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/crash/content/app/breakpad_linux.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/file_descriptor_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "jni/CrashDumpManager_jni.h"
-
-using content::BrowserThread;
 
 namespace breakpad {
 
@@ -40,8 +38,6 @@ CrashDumpManager::~CrashDumpManager() {
 
 void CrashDumpManager::OnChildStart(int child_process_id,
                                     content::FileDescriptorInfo* mappings) {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
-
   if (!breakpad::IsCrashReporterEnabled())
     return;
 
@@ -79,7 +75,6 @@ void CrashDumpManager::ProcessMinidump(
     content::ProcessType process_type,
     base::TerminationStatus termination_status,
     base::android::ApplicationState app_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   int64_t file_size = 0;
   int r = base::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump "
@@ -185,8 +180,8 @@ void CrashDumpManager::OnChildExit(int child_process_id,
     minidump_path = iter->second;
     child_process_id_to_minidump_path_.erase(iter);
   }
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CrashDumpManager::ProcessMinidump, minidump_path,
                  crash_dump_dir_, pid, process_type, termination_status,
                  app_state));
