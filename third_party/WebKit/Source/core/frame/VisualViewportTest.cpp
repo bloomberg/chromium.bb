@@ -1114,10 +1114,7 @@ MATCHER_P2(ContextMenuAtLocation,
            x,
            y,
            std::string(negation ? "is" : "isn't") + " at expected location [" +
-               PrintToString(x) +
-               ", " +
-               PrintToString(y) +
-               "]") {
+               PrintToString(x) + ", " + PrintToString(y) + "]") {
   return arg.mouse_position.x == x && arg.mouse_position.y == y;
 }
 
