@@ -10,6 +10,7 @@
 */
 
 #include <climits>
+#include <vector>
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/codec_factory.h"
 #include "test/encode_test_driver.h"
@@ -28,8 +29,7 @@ class SuperframeTest
     : public ::libaom_test::CodecTestWithParam<SuperframeTestParam>,
       public ::libaom_test::EncoderTest {
  protected:
-  SuperframeTest()
-      : EncoderTest(GET_PARAM(0)), modified_buf_(NULL), last_sf_pts_(0) {}
+  SuperframeTest() : EncoderTest(GET_PARAM(0)), last_sf_pts_(0) {}
   virtual ~SuperframeTest() {}
 
   virtual void SetUp() {
@@ -42,8 +42,6 @@ class SuperframeTest
     n_tile_cols_ = std::tr1::get<kTileCols>(input);
     n_tile_rows_ = std::tr1::get<kTileRows>(input);
   }
-
-  virtual void TearDown() { delete[] modified_buf_; }
 
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
@@ -70,12 +68,11 @@ class SuperframeTest
     if ((marker & 0xe0) == 0xc0 && pkt->data.frame.sz >= index_sz &&
         buffer[index_sz - 1] == marker) {
       // frame is a superframe. strip off the index.
-      delete[] modified_buf_;
-      modified_buf_ = new uint8_t[pkt->data.frame.sz - index_sz];
-      memcpy(modified_buf_, (uint8_t *)pkt->data.frame.buf + index_sz,
+      modified_buf_.resize(pkt->data.frame.sz - index_sz);
+      memcpy(&modified_buf_[0], (uint8_t *)pkt->data.frame.buf + index_sz,
              pkt->data.frame.sz - index_sz);
       modified_pkt_ = *pkt;
-      modified_pkt_.data.frame.buf = modified_buf_;
+      modified_pkt_.data.frame.buf = &modified_buf_[0];
       modified_pkt_.data.frame.sz -= index_sz;
 
       sf_count_++;
@@ -92,7 +89,7 @@ class SuperframeTest
   int sf_count_;
   int sf_count_max_;
   aom_codec_cx_pkt_t modified_pkt_;
-  uint8_t *modified_buf_;
+  std::vector<uint8_t> modified_buf_;
   aom_codec_pts_t last_sf_pts_;
 
  private:
