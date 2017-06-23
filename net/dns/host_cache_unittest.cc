@@ -704,8 +704,8 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   // Advance to t=12, ansd serialize the cache.
   now += base::TimeDelta::FromSeconds(7);
 
-  std::unique_ptr<base::ListValue> serialized_cache =
-      cache.GetAsListValue(/*include_staleness=*/false);
+  base::ListValue serialized_cache;
+  cache.GetAsListValue(&serialized_cache, /*include_staleness=*/false);
   HostCache restored_cache(kMaxCacheEntries);
 
   // Add entries for "foobar3.com" and "foobar4.com" to the cache before
@@ -720,7 +720,7 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   EXPECT_TRUE(restored_cache.Lookup(key4, now));
   EXPECT_EQ(2u, restored_cache.size());
 
-  restored_cache.RestoreFromListValue(*serialized_cache);
+  restored_cache.RestoreFromListValue(serialized_cache);
 
   HostCache::EntryStaleness stale;
 
