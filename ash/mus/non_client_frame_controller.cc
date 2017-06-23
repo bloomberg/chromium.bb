@@ -263,13 +263,6 @@ class ClientViewMus : public views::ClientView {
   DISALLOW_COPY_AND_ASSIGN(ClientViewMus);
 };
 
-// Returns the frame insets to use when ShouldUseExtendedHitRegionForWindow()
-// returns true.
-gfx::Insets GetExtendedHitRegion() {
-  return gfx::Insets(kResizeOutsideBoundsSize, kResizeOutsideBoundsSize,
-                     kResizeOutsideBoundsSize, kResizeOutsideBoundsSize);
-}
-
 }  // namespace
 
 NonClientFrameController::NonClientFrameController(
@@ -332,11 +325,6 @@ NonClientFrameController::NonClientFrameController(
   ui::Layer* layer = widget_->GetNativeWindow()->layer();
   layer->SetColor(SK_ColorTRANSPARENT);
   layer->SetFillsBoundsOpaquely(true);
-
-  const gfx::Insets extended_hit_region =
-      wm::ShouldUseExtendedHitRegionForWindow(window_) ? GetExtendedHitRegion()
-                                                       : gfx::Insets();
-  window_manager_client_->SetExtendedHitArea(window_, extended_hit_region);
 
   aura::client::GetTransientWindowClient()->AddObserver(this);
 }

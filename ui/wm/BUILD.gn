@@ -66,6 +66,7 @@ component("wm") {
 
   deps = [
     "//base",
+    "//services/ui/public/interfaces",
     "//skia",
     "//ui/aura",
     "//ui/base",

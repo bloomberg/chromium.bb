@@ -83,7 +83,6 @@ ASH_EXPORT int GetNonClientComponent(aura::Window* window,
 // When set, the child windows should get a slightly larger hit region to make
 // resizing easier.
 ASH_EXPORT void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window);
-ASH_EXPORT bool ShouldUseExtendedHitRegionForWindow(const aura::Window* window);
 
 // Requests the |window| to close and destroy itself. This is intended to
 // forward to an associated widget.

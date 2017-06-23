@@ -1,5 +1,6 @@
 include_rules = [
   "+third_party/skia",
+  "+services/ui/public",
   "+ui/aura",
   "+ui/base/accelerators",
   "+ui/base/cursor",

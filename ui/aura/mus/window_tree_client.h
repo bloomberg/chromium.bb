@@ -480,7 +480,10 @@ class AURA_EXPORT WindowTreeClient
   void AddActivationParent(Window* window) override;
   void RemoveActivationParent(Window* window) override;
   void ActivateNextWindow() override;
-  void SetExtendedHitArea(Window* window, const gfx::Insets& hit_area) override;
+  void SetExtendedHitRegionForChildren(
+      Window* window,
+      const gfx::Insets& mouse_insets,
+      const gfx::Insets& touch_insets) override;
   void LockCursor() override;
   void UnlockCursor() override;
   void SetCursorVisible(bool visible) override;

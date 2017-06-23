@@ -33,7 +33,10 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
   void AddActivationParent(Id transport_window_id) override;
   void RemoveActivationParent(Id transport_window_id) override;
   void ActivateNextWindow() override;
-  void SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) override;
+  void SetExtendedHitRegionForChildren(
+      Id window_id,
+      const gfx::Insets& mouse_insets,
+      const gfx::Insets& touch_insets) override;
   void AddAccelerators(std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
                        const AddAcceleratorsCallback& callback) override;
   void RemoveAccelerator(uint32_t id) override;

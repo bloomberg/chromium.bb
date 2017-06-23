@@ -1859,14 +1859,18 @@ void WindowTreeClient::ActivateNextWindow() {
     window_manager_client_->ActivateNextWindow();
 }
 
-void WindowTreeClient::SetExtendedHitArea(Window* window,
-                                          const gfx::Insets& hit_area) {
-  if (window_manager_client_) {
-    float device_scale_factor = ScaleFactorForDisplay(window);
-    window_manager_client_->SetExtendedHitArea(
-        WindowMus::Get(window)->server_id(),
-        gfx::ConvertInsetsToPixel(device_scale_factor, hit_area));
-  }
+void WindowTreeClient::SetExtendedHitRegionForChildren(
+    Window* window,
+    const gfx::Insets& mouse_insets,
+    const gfx::Insets& touch_insets) {
+  if (!window_manager_client_)
+    return;
+
+  const float device_scale_factor = ScaleFactorForDisplay(window);
+  window_manager_client_->SetExtendedHitRegionForChildren(
+      WindowMus::Get(window)->server_id(),
+      gfx::ConvertInsetsToPixel(device_scale_factor, mouse_insets),
+      gfx::ConvertInsetsToPixel(device_scale_factor, touch_insets));
 }
 
 void WindowTreeClient::LockCursor() {

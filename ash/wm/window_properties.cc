@@ -11,8 +11,6 @@ DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WidgetCreationType);
 
 namespace ash {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kChildrenUseExtendedHitRegion, false);
-
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kLockedToRootKey, false);
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsOverrideKey, NULL);

@@ -17,6 +17,7 @@
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "ui/gfx/geometry/insets.h"
@@ -181,11 +182,19 @@ class ServerWindow {
   // visible.
   bool IsDrawn() const;
 
-  const gfx::Insets& extended_hit_test_region() const {
-    return extended_hit_test_region_;
+  mojom::ShowState GetShowState() const;
+
+  const gfx::Insets& extended_mouse_hit_test_region() const {
+    return extended_mouse_hit_test_region_;
   }
-  void set_extended_hit_test_region(const gfx::Insets& insets) {
-    extended_hit_test_region_ = insets;
+  const gfx::Insets& extended_touch_hit_test_region() const {
+    return extended_touch_hit_test_region_;
+  }
+  void set_extended_hit_test_regions_for_children(
+      const gfx::Insets& mouse_insets,
+      const gfx::Insets& touch_insets) {
+    extended_mouse_hit_test_region_ = mouse_insets;
+    extended_touch_hit_test_region_ = touch_insets;
   }
 
   ServerWindowCompositorFrameSinkManager*
@@ -265,7 +274,8 @@ class ServerWindow {
 
   // The hit test for windows extends outside the bounds of the window by this
   // amount.
-  gfx::Insets extended_hit_test_region_;
+  gfx::Insets extended_mouse_hit_test_region_;
+  gfx::Insets extended_touch_hit_test_region_;
 
   // Mouse events outside the hit test mask don't hit the window. An empty mask
   // means all events miss the window. If null there is no mask.

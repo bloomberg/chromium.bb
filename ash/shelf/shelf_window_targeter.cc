@@ -58,8 +58,7 @@ void ShelfWindowTargeter::WillChangeVisibilityState(
                                          shelf_->alignment());
   }
 
-  set_mouse_extend(mouse_insets);
-  set_touch_extend(touch_insets);
+  SetInsets(mouse_insets, touch_insets);
 }
 
 }  // namespace ash

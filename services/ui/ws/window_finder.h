@@ -19,11 +19,17 @@ struct DeepestWindow {
   bool in_non_client_area = false;
 };
 
+enum class EventSource {
+  MOUSE,
+  TOUCH,
+};
+
 // Finds the deepest visible child of |root| that should receive an event at
 // |location|. |location| is in the coordinate space of |root_window|. The
 // |window| field in the returned structure is set to the child window. If no
 // valid child window is found |window| is set to null.
 DeepestWindow FindDeepestVisibleWindowForLocation(ServerWindow* root_window,
+                                                  EventSource event_source,
                                                   const gfx::Point& location);
 
 }  // namespace ws

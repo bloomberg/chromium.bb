@@ -37,7 +37,8 @@ class EventTargeter {
 
   // Calls WindowFinder to find the target for |location|.
   // |callback| is called with the LocationTarget found.
-  void FindTargetForLocation(const gfx::Point& location,
+  void FindTargetForLocation(EventSource event_source,
+                             const gfx::Point& location,
                              int64_t display_id,
                              HitTestCallback callback);
 
@@ -45,21 +46,25 @@ class EventTargeter {
 
  private:
   struct HitTestRequest {
-    HitTestRequest(const gfx::Point& location,
+    HitTestRequest(EventSource event_source,
+                   const gfx::Point& location,
                    int64_t display_id,
                    HitTestCallback hittest_callback);
     ~HitTestRequest();
 
+    EventSource event_source;
     gfx::Point location;
     int64_t display_id;
     HitTestCallback callback;
   };
 
-  void ProcessFindTarget(const gfx::Point& location,
+  void ProcessFindTarget(EventSource event_source,
+                         const gfx::Point& location,
                          int64_t display_id,
                          HitTestCallback callback);
 
-  void FindTargetForLocationNow(const gfx::Point& location,
+  void FindTargetForLocationNow(EventSource event_source,
+                                const gfx::Point& location,
                                 int64_t display_id,
                                 HitTestCallback callback);
 

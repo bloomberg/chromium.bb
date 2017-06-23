@@ -377,6 +377,14 @@ bool ServerWindow::IsDrawn() const {
   return root == window;
 }
 
+mojom::ShowState ServerWindow::GetShowState() const {
+  auto iter = properties_.find(mojom::WindowManager::kShowState_Property);
+  if (iter == properties_.end() || iter->second.empty())
+    return mojom::ShowState::DEFAULT;
+
+  return static_cast<mojom::ShowState>(iter->second[0]);
+}
+
 ServerWindowCompositorFrameSinkManager*
 ServerWindow::GetOrCreateCompositorFrameSinkManager() {
   if (!compositor_frame_sink_manager_.get())

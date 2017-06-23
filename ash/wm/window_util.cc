@@ -147,7 +147,6 @@ int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {
 }
 
 void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
-  window->SetProperty(kChildrenUseExtendedHitRegion, true);
   gfx::Insets mouse_extend(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
                            -kResizeOutsideBoundsSize,
                            -kResizeOutsideBoundsSize);
@@ -160,11 +159,6 @@ void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
   // function calls into. http://crbug.com/679056.
   window->SetEventTargeter(base::MakeUnique<::wm::EasyResizeWindowTargeter>(
       window, mouse_extend, touch_extend));
-}
-
-bool ShouldUseExtendedHitRegionForWindow(const aura::Window* window) {
-  const aura::Window* parent = window->parent();
-  return parent && parent->GetProperty(kChildrenUseExtendedHitRegion);
 }
 
 void CloseWidgetForWindow(aura::Window* window) {

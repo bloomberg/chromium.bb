@@ -32,23 +32,30 @@ TEST(WindowFinderTest, FindDeepestVisibleWindow) {
   child2.SetVisible(true);
   child2.SetBounds(gfx::Rect(15, 15, 20, 20), base::nullopt);
 
-  EXPECT_EQ(
-      &child2,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(16, 16)).window);
+  EXPECT_EQ(&child2, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(16, 16))
+                         .window);
 
-  EXPECT_EQ(
-      &child1,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(13, 14)).window);
+  EXPECT_EQ(&child1, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(13, 14))
+                         .window);
 
   child1.set_event_targeting_policy(mojom::EventTargetingPolicy::NONE);
-  EXPECT_EQ(
-      nullptr,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(13, 14)).window);
+  EXPECT_EQ(nullptr, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(13, 14))
+                         .window);
 
-  child2.set_extended_hit_test_region(gfx::Insets(10, 10, 10, 10));
-  EXPECT_EQ(
-      &child2,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(13, 14)).window);
+  root.set_extended_hit_test_regions_for_children(gfx::Insets(-1, -1, -1, -1),
+                                                  gfx::Insets(-2, -2, -2, -2));
+  EXPECT_EQ(&child2, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(14, 14))
+                         .window);
+  EXPECT_EQ(nullptr, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(13, 13))
+                         .window);
+  EXPECT_EQ(&child2, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::TOUCH, gfx::Point(13, 13))
+                         .window);
 }
 
 TEST(WindowFinderTest, FindDeepestVisibleWindowNonClientArea) {
@@ -63,36 +70,41 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowNonClientArea) {
   child1.SetVisible(true);
   child1.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
 
-  DeepestWindow result =
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(13, 14));
+  DeepestWindow result = FindDeepestVisibleWindowForLocation(
+      &root, EventSource::MOUSE, gfx::Point(13, 14));
   EXPECT_EQ(&child1, result.window);
   EXPECT_FALSE(result.in_non_client_area);
 
-  result = FindDeepestVisibleWindowForLocation(&root, gfx::Point(11, 11));
+  result = FindDeepestVisibleWindowForLocation(&root, EventSource::MOUSE,
+                                               gfx::Point(11, 11));
   EXPECT_EQ(&child1, result.window);
   EXPECT_FALSE(result.in_non_client_area);
 
   // 11, 11 is over the non-client area.
   child1.SetClientArea(gfx::Insets(2, 3, 4, 5), std::vector<gfx::Rect>());
-  result = FindDeepestVisibleWindowForLocation(&root, gfx::Point(11, 11));
+  result = FindDeepestVisibleWindowForLocation(&root, EventSource::MOUSE,
+                                               gfx::Point(11, 11));
   EXPECT_EQ(&child1, result.window);
   EXPECT_TRUE(result.in_non_client_area);
 
   // 15, 15 is over the client area.
-  result = FindDeepestVisibleWindowForLocation(&root, gfx::Point(15, 15));
+  result = FindDeepestVisibleWindowForLocation(&root, EventSource::MOUSE,
+                                               gfx::Point(15, 15));
   EXPECT_EQ(&child1, result.window);
   EXPECT_FALSE(result.in_non_client_area);
 
   // EventTargetingPolicy::NONE should not impact the result for the
   // non-client area.
   child1.set_event_targeting_policy(mojom::EventTargetingPolicy::NONE);
-  result = FindDeepestVisibleWindowForLocation(&root, gfx::Point(11, 11));
+  result = FindDeepestVisibleWindowForLocation(&root, EventSource::MOUSE,
+                                               gfx::Point(11, 11));
   child1.SetClientArea(gfx::Insets(2, 3, 4, 5), std::vector<gfx::Rect>());
   EXPECT_EQ(&child1, result.window);
   EXPECT_TRUE(result.in_non_client_area);
 
   // EventTargetingPolicy::NONE means the client area won't be matched though.
-  result = FindDeepestVisibleWindowForLocation(&root, gfx::Point(15, 15));
+  result = FindDeepestVisibleWindowForLocation(&root, EventSource::MOUSE,
+                                               gfx::Point(15, 15));
   EXPECT_EQ(&root, result.window);
   EXPECT_FALSE(result.in_non_client_area);
 }
@@ -111,14 +123,14 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
   child_with_mask.SetHitTestMask(gfx::Rect(2, 2, 16, 16));
 
   // Test a point inside the window but outside the mask.
-  EXPECT_EQ(
-      &root,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(11, 11)).window);
+  EXPECT_EQ(&root, FindDeepestVisibleWindowForLocation(
+                       &root, EventSource::MOUSE, gfx::Point(11, 11))
+                       .window);
 
   // Test a point inside the window and inside the mask.
-  EXPECT_EQ(
-      &child_with_mask,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(15, 15)).window);
+  EXPECT_EQ(&child_with_mask, FindDeepestVisibleWindowForLocation(
+                                  &root, EventSource::MOUSE, gfx::Point(15, 15))
+                                  .window);
 }
 
 TEST(WindowFinderTest, FindDeepestVisibleWindowOverNonTarget) {
@@ -143,9 +155,9 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowOverNonTarget) {
 
   // 16, 16 is over |child2| and |child1|, but as |child2| isn't a valid event
   // target |child1| should be picked.
-  EXPECT_EQ(
-      &child1,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(16, 16)).window);
+  EXPECT_EQ(&child1, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(16, 16))
+                         .window);
 }
 
 TEST(WindowFinderTest, NonClientPreferredOverChild) {
@@ -170,9 +182,9 @@ TEST(WindowFinderTest, NonClientPreferredOverChild) {
   child_child.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
   // |child| was should be returned as the event is over the non-client area.
-  EXPECT_EQ(
-      &child,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(1, 1)).window);
+  EXPECT_EQ(&child, FindDeepestVisibleWindowForLocation(
+                        &root, EventSource::MOUSE, gfx::Point(1, 1))
+                        .window);
 }
 
 TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
@@ -191,21 +203,22 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
   transform.Scale(SkIntToMScalar(2), SkIntToMScalar(2));
   child.SetTransform(transform);
 
-  EXPECT_EQ(
-      &child,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(49, 49)).window);
-  EXPECT_EQ(
-      nullptr,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(9, 9)).window);
+  EXPECT_EQ(&child, FindDeepestVisibleWindowForLocation(
+                        &root, EventSource::MOUSE, gfx::Point(49, 49))
+                        .window);
+  EXPECT_EQ(nullptr, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(9, 9))
+                         .window);
 
   // Verify extended hit test with transform is picked up.
-  child.set_extended_hit_test_region(gfx::Insets(2, 2, 2, 2));
-  EXPECT_EQ(
-      &child,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(7, 7)).window);
-  EXPECT_EQ(
-      nullptr,
-      FindDeepestVisibleWindowForLocation(&root, gfx::Point(4, 4)).window);
+  root.set_extended_hit_test_regions_for_children(gfx::Insets(-2, -2, -2, -2),
+                                                  gfx::Insets(-2, -2, -2, -2));
+  EXPECT_EQ(&child, FindDeepestVisibleWindowForLocation(
+                        &root, EventSource::MOUSE, gfx::Point(7, 7))
+                        .window);
+  EXPECT_EQ(nullptr, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(4, 4))
+                         .window);
 }
 
 }  // namespace ws

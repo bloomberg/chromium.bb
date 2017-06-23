@@ -89,6 +89,13 @@ void WindowPortMus::SetCanAcceptDrops(bool can_accept_drops) {
   window_tree_client_->SetCanAcceptDrops(this, can_accept_drops);
 }
 
+void WindowPortMus::SetExtendedHitRegionForChildren(
+    const gfx::Insets& mouse_insets,
+    const gfx::Insets& touch_insets) {
+  window_tree_client_->SetExtendedHitRegionForChildren(window_, mouse_insets,
+                                                       touch_insets);
+}
+
 void WindowPortMus::Embed(
     ui::mojom::WindowTreeClientPtr client,
     uint32_t flags,
