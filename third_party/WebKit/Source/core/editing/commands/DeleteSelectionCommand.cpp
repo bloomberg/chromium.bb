@@ -433,7 +433,7 @@ bool DeleteSelectionCommand::HandleSpecialCaseBRDelete(
     if (!(IsStartOfBlock(
               VisiblePosition::BeforeNode(node_after_upstream_start)) &&
           IsEndOfBlock(
-              VisiblePosition::AfterNode(node_after_upstream_start)))) {
+              VisiblePosition::AfterNode(*node_after_upstream_start)))) {
       starts_at_empty_line_ = true;
       ending_position_ = downstream_end_;
     }
