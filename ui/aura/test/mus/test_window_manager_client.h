@@ -17,6 +17,7 @@ namespace aura {
 
 enum class WindowManagerClientChangeType {
   ADD_ACTIVATION_PARENT,
+  SET_DISPLAY_CONFIGURATION,
 };
 
 // WindowManagerClient implementation for tests.

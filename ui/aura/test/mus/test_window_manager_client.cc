@@ -48,7 +48,9 @@ void TestWindowManagerClient::SetDisplayConfiguration(
     const std::vector<display::Display>& displays,
     std::vector<::ui::mojom::WmViewportMetricsPtr> viewport_metrics,
     int64_t primary_display_id,
-    const SetDisplayConfigurationCallback& callback) {}
+    const SetDisplayConfigurationCallback& callback) {
+  changes_.push_back(WindowManagerClientChangeType::SET_DISPLAY_CONFIGURATION);
+}
 
 void TestWindowManagerClient::WmResponse(uint32_t change_id, bool response) {}
 
