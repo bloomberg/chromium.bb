@@ -56,7 +56,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&provider));
 
-    cc::mojom::blink::MojoCompositorFrameSinkClientPtr client;
+    cc::mojom::blink::CompositorFrameSinkClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));
     provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client),
                                         mojo::MakeRequest(&sink_));

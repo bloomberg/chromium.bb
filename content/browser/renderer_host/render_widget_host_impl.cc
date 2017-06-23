@@ -2562,9 +2562,9 @@ void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
                                               monitor_updates));
 }
 
-void RenderWidgetHostImpl::RequestMojoCompositorFrameSink(
-    cc::mojom::MojoCompositorFrameSinkRequest request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+void RenderWidgetHostImpl::RequestCompositorFrameSink(
+    cc::mojom::CompositorFrameSinkRequest request,
+    cc::mojom::CompositorFrameSinkClientPtr client) {
   if (compositor_frame_sink_binding_.is_bound())
     compositor_frame_sink_binding_.Close();
 #if defined(OS_MACOSX)

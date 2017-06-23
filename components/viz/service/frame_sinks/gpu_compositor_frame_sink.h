@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
+#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/local_surface_id.h"
@@ -23,26 +23,26 @@ namespace viz {
 // Server side representation of a WindowSurface.
 class GpuCompositorFrameSink
     : public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
-      public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSink),
-      public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSinkPrivate) {
+      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
+      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSinkPrivate) {
  public:
   GpuCompositorFrameSink(
       GpuCompositorFrameSinkDelegate* delegate,
       cc::SurfaceManager* surface_manager,
       const cc::FrameSinkId& frame_sink_id,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+      cc::mojom::CompositorFrameSinkRequest request,
+      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::CompositorFrameSinkClientPtr client);
 
   ~GpuCompositorFrameSink() override;
 
-  // cc::mojom::MojoCompositorFrameSink:
+  // cc::mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& begin_frame_ack) override;
 
-  // cc::mojom::MojoCompositorFrameSinkPrivate:
+  // cc::mojom::CompositorFrameSinkPrivate:
   void ClaimTemporaryReference(const cc::SurfaceId& surface_id) override;
   void RequestCopyOfSurface(
       std::unique_ptr<cc::CopyOutputRequest> request) override;
@@ -65,10 +65,9 @@ class GpuCompositorFrameSink
   bool client_connection_lost_ = false;
   bool private_connection_lost_ = false;
 
-  cc::mojom::MojoCompositorFrameSinkClientPtr client_;
-  mojo::Binding<cc::mojom::MojoCompositorFrameSink>
-      compositor_frame_sink_binding_;
-  mojo::Binding<cc::mojom::MojoCompositorFrameSinkPrivate>
+  cc::mojom::CompositorFrameSinkClientPtr client_;
+  mojo::Binding<cc::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
+  mojo::Binding<cc::mojom::CompositorFrameSinkPrivate>
       compositor_frame_sink_private_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);

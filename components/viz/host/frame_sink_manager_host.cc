@@ -33,8 +33,8 @@ void FrameSinkManagerHost::RemoveObserver(FrameSinkObserver* observer) {
 
 void FrameSinkManagerHost::CreateCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
-    cc::mojom::MojoCompositorFrameSinkRequest request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+    cc::mojom::CompositorFrameSinkRequest request,
+    cc::mojom::CompositorFrameSinkClientPtr client) {
   DCHECK_EQ(frame_sink_data_map_.count(frame_sink_id), 0u);
 
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
@@ -53,7 +53,7 @@ void FrameSinkManagerHost::DestroyCompositorFrameSink(
   if (data.parent.has_value())
     UnregisterFrameSinkHierarchy(data.parent.value(), frame_sink_id);
 
-  // This destroys the MojoCompositorFrameSinkPrivatePtr and closes the pipe.
+  // This destroys the CompositorFrameSinkPrivatePtr and closes the pipe.
   frame_sink_data_map_.erase(iter);
 }
 

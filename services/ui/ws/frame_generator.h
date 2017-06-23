@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
+#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_id.h"
@@ -25,7 +25,7 @@ namespace ws {
 
 // Responsible for redrawing the display in response to the redraw requests by
 // submitting CompositorFrames to the owned CompositorFrameSink.
-class FrameGenerator : public cc::mojom::MojoCompositorFrameSinkClient {
+class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
  public:
   FrameGenerator();
   ~FrameGenerator() override;
@@ -38,11 +38,11 @@ class FrameGenerator : public cc::mojom::MojoCompositorFrameSinkClient {
 
   void OnWindowDamaged();
   void OnWindowSizeChanged(const gfx::Size& pixel_size);
-  void Bind(std::unique_ptr<cc::mojom::MojoCompositorFrameSink>
-                compositor_frame_sink);
+  void Bind(
+      std::unique_ptr<cc::mojom::CompositorFrameSink> compositor_frame_sink);
 
  private:
-  // cc::mojom::MojoCompositorFrameSinkClient implementation:
+  // cc::mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const cc::ReturnedResourceArray& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -60,7 +60,7 @@ class FrameGenerator : public cc::mojom::MojoCompositorFrameSinkClient {
   float device_scale_factor_ = 1.f;
   gfx::Size pixel_size_;
 
-  std::unique_ptr<cc::mojom::MojoCompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<cc::mojom::CompositorFrameSink> compositor_frame_sink_;
   cc::BeginFrameArgs last_begin_frame_args_;
   cc::BeginFrameAck current_begin_frame_ack_;
   bool high_contrast_mode_enabled_ = false;

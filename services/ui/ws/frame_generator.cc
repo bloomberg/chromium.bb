@@ -60,7 +60,7 @@ void FrameGenerator::OnWindowSizeChanged(const gfx::Size& pixel_size) {
 }
 
 void FrameGenerator::Bind(
-    std::unique_ptr<cc::mojom::MojoCompositorFrameSink> compositor_frame_sink) {
+    std::unique_ptr<cc::mojom::CompositorFrameSink> compositor_frame_sink) {
   DCHECK(!compositor_frame_sink_);
   compositor_frame_sink_ = std::move(compositor_frame_sink);
 }

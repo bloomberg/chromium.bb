@@ -198,7 +198,7 @@ gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
 }
 
 void TestRenderWidgetHostView::DidCreateNewRendererCompositorFrameSink(
-    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+    cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   did_change_compositor_frame_sink_ = true;
 }
 

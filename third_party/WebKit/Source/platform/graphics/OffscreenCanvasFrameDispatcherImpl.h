@@ -6,7 +6,7 @@
 #define OffscreenCanvasFrameDispatcherImpl_h
 
 #include <memory>
-#include "cc/ipc/mojo_compositor_frame_sink.mojom-blink.h"
+#include "cc/ipc/compositor_frame_sink.mojom-blink.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
@@ -20,8 +20,7 @@ namespace blink {
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
     : public OffscreenCanvasFrameDispatcher,
-      NON_EXPORTED_BASE(
-          public cc::mojom::blink::MojoCompositorFrameSinkClient) {
+      NON_EXPORTED_BASE(public cc::mojom::blink::CompositorFrameSinkClient) {
  public:
   OffscreenCanvasFrameDispatcherImpl(OffscreenCanvasFrameDispatcherClient*,
                                      uint32_t client_id,
@@ -43,7 +42,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   void ReclaimResource(unsigned resource_id) final;
   void Reshape(int width, int height) final;
 
-  // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
+  // cc::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const cc::ReturnedResourceArray& resources) final;
   void OnBeginFrame(const cc::BeginFrameArgs&) final;
@@ -97,8 +96,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   bool VerifyImageSize(const IntSize);
   void PostImageToPlaceholder(RefPtr<StaticBitmapImage>);
 
-  cc::mojom::blink::MojoCompositorFrameSinkPtr sink_;
-  mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> binding_;
+  cc::mojom::blink::CompositorFrameSinkPtr sink_;
+  mojo::Binding<cc::mojom::blink::CompositorFrameSinkClient> binding_;
 
   int placeholder_canvas_id_;
 

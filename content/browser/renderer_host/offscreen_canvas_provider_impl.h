@@ -21,7 +21,7 @@ namespace content {
 
 class OffscreenCanvasSurfaceImpl;
 
-// Creates OffscreenCanvasSurfaces and MojoCompositorFrameSinks for a renderer.
+// Creates OffscreenCanvasSurfaces and CompositorFrameSinks for a renderer.
 class CONTENT_EXPORT OffscreenCanvasProviderImpl
     : public blink::mojom::OffscreenCanvasProvider {
  public:
@@ -40,8 +40,8 @@ class CONTENT_EXPORT OffscreenCanvasProviderImpl
       blink::mojom::OffscreenCanvasSurfaceRequest request) override;
   void CreateCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
-      cc::mojom::MojoCompositorFrameSinkRequest request) override;
+      cc::mojom::CompositorFrameSinkClientPtr client,
+      cc::mojom::CompositorFrameSinkRequest request) override;
 
  private:
   friend class OffscreenCanvasProviderImplTest;

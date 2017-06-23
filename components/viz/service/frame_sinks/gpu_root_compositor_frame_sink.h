@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
 
+#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/local_surface_id.h"
@@ -28,8 +28,8 @@ class GpuCompositorFrameSinkDelegate;
 
 class GpuRootCompositorFrameSink
     : public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
-      public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSink),
-      public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSinkPrivate),
+      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
+      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSinkPrivate),
       public NON_EXPORTED_BASE(cc::mojom::DisplayPrivate),
       public NON_EXPORTED_BASE(cc::DisplayClient) {
  public:
@@ -39,9 +39,9 @@ class GpuRootCompositorFrameSink
       const cc::FrameSinkId& frame_sink_id,
       std::unique_ptr<cc::Display> display,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
-      cc::mojom::MojoCompositorFrameSinkAssociatedRequest request,
-      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
+      cc::mojom::CompositorFrameSinkAssociatedRequest request,
+      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::CompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request);
 
   ~GpuRootCompositorFrameSink() override;
@@ -54,13 +54,13 @@ class GpuRootCompositorFrameSink
   void SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id,
                          float scale_factor) override;
 
-  // cc::mojom::MojoCompositorFrameSink:
+  // cc::mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& begin_frame_ack) override;
 
-  // cc::mojom::MojoCompositorFrameSinkPrivate:
+  // cc::mojom::CompositorFrameSinkPrivate:
   void ClaimTemporaryReference(const cc::SurfaceId& surface_id) override;
   void RequestCopyOfSurface(
       std::unique_ptr<cc::CopyOutputRequest> request) override;
@@ -94,10 +94,10 @@ class GpuRootCompositorFrameSink
   bool client_connection_lost_ = false;
   bool private_connection_lost_ = false;
 
-  cc::mojom::MojoCompositorFrameSinkClientPtr client_;
-  mojo::AssociatedBinding<cc::mojom::MojoCompositorFrameSink>
+  cc::mojom::CompositorFrameSinkClientPtr client_;
+  mojo::AssociatedBinding<cc::mojom::CompositorFrameSink>
       compositor_frame_sink_binding_;
-  mojo::Binding<cc::mojom::MojoCompositorFrameSinkPrivate>
+  mojo::Binding<cc::mojom::CompositorFrameSinkPrivate>
       compositor_frame_sink_private_binding_;
   mojo::AssociatedBinding<cc::mojom::DisplayPrivate> display_private_binding_;
 

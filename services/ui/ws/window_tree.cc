@@ -1644,8 +1644,8 @@ void WindowTree::SetWindowOpacity(uint32_t change_id,
 
 void WindowTree::AttachCompositorFrameSink(
     Id transport_window_id,
-    cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+    cc::mojom::CompositorFrameSinkRequest compositor_frame_sink,
+    cc::mojom::CompositorFrameSinkClientPtr client) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   if (!window) {

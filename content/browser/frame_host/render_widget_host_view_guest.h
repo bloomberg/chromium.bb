@@ -106,7 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   bool LockMouse() override;
   void UnlockMouse() override;
   void DidCreateNewRendererCompositorFrameSink(
-      cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink)
+      cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;
 
 #if defined(OS_MACOSX)

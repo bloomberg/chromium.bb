@@ -14,12 +14,12 @@ import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/surface_sequence.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
-// A MojoCompositorFrameSink is an interface for receiving CompositorFrame
+// A CompositorFrameSink is an interface for receiving CompositorFrame
 // structs. A CompositorFrame contains the complete output meant for display.
 // Each time a client has a graphical update, and receives an OnBeginFrame, it
 // is responsible for creating a CompositorFrame to update its portion of the
 // screen.
-interface MojoCompositorFrameSink {
+interface CompositorFrameSink {
   // Lets the display compositor know that the client wishes to receive the next
   // BeginFrame event.
   SetNeedsBeginFrame(bool needs_begin_frame);
@@ -40,7 +40,7 @@ interface MojoCompositorFrameSink {
   DidNotProduceFrame(cc.mojom.BeginFrameAck ack);
 };
 
-interface MojoCompositorFrameSinkClient {
+interface CompositorFrameSinkClient {
   // Notification that the previous CompositorFrame given to
   // SubmitCompositorFrame() has been processed and that another frame
   // can be submitted. This provides backpressure from the display compositor
@@ -57,10 +57,10 @@ interface MojoCompositorFrameSinkClient {
   ReclaimResources(ReturnedResourceArray resources);
 };
 
-// MojoCompositorFrameSinkPrivate is used by the display compositor host to
+// CompositorFrameSinkPrivate is used by the display compositor host to
 // perform privilieged operations on a CompositorFrameSink such as
 // CopyOutputRequests.
-interface MojoCompositorFrameSinkPrivate {
+interface CompositorFrameSinkPrivate {
   // Claims this FrameSinkId will embed |surface_id| so it should own the
   // temporary reference to |surface_id|.
   ClaimTemporaryReference(SurfaceId surface_id);

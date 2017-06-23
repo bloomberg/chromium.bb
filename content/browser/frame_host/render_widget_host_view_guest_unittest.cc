@@ -169,10 +169,10 @@ class RenderWidgetHostViewGuestSurfaceTest
     view_ = RenderWidgetHostViewGuest::Create(
         widget_host_, browser_plugin_guest_,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
-    cc::mojom::MojoCompositorFrameSinkPtr sink;
-    cc::mojom::MojoCompositorFrameSinkRequest sink_request =
+    cc::mojom::CompositorFrameSinkPtr sink;
+    cc::mojom::CompositorFrameSinkRequest sink_request =
         mojo::MakeRequest(&sink);
-    cc::mojom::MojoCompositorFrameSinkClientRequest client_request =
+    cc::mojom::CompositorFrameSinkClientRequest client_request =
         mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
     renderer_compositor_frame_sink_ =
         base::MakeUnique<FakeRendererCompositorFrameSink>(
@@ -220,8 +220,7 @@ class RenderWidgetHostViewGuestSurfaceTest
       renderer_compositor_frame_sink_;
 
  private:
-  cc::mojom::MojoCompositorFrameSinkClientPtr
-      renderer_compositor_frame_sink_ptr_;
+  cc::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuestSurfaceTest);
 };
 

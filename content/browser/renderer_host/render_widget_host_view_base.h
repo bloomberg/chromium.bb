@@ -18,7 +18,7 @@
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
+#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/surface_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -224,8 +224,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // expected not to return resources belonging to the old
   // RendererCompositorFrameSink after this method finishes.
   virtual void DidCreateNewRendererCompositorFrameSink(
-      cc::mojom::MojoCompositorFrameSinkClient*
-          renderer_compositor_frame_sink) = 0;
+      cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) = 0;
 
   virtual void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                                      cc::CompositorFrame frame) = 0;

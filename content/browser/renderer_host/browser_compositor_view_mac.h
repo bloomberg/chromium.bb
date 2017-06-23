@@ -56,7 +56,7 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac();
 
   void DidCreateNewRendererCompositorFrameSink(
-      cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink);
+      cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void OnDidNotProduceFrame(const cc::BeginFrameAck& ack);
@@ -163,7 +163,7 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
   std::unique_ptr<ui::Layer> root_layer_;
 
   bool has_transparent_background_ = false;
-  cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink_ =
+  cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;

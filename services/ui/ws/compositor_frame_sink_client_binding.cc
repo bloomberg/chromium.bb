@@ -8,9 +8,9 @@ namespace ui {
 namespace ws {
 
 CompositorFrameSinkClientBinding::CompositorFrameSinkClientBinding(
-    cc::mojom::MojoCompositorFrameSinkClient* sink_client,
-    cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
-    cc::mojom::MojoCompositorFrameSinkAssociatedPtr compositor_frame_sink,
+    cc::mojom::CompositorFrameSinkClient* sink_client,
+    cc::mojom::CompositorFrameSinkClientRequest sink_client_request,
+    cc::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink,
     cc::mojom::DisplayPrivateAssociatedPtr display_private)
     : binding_(sink_client, std::move(sink_client_request)),
       display_private_(std::move(display_private)),

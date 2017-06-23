@@ -271,7 +271,7 @@ void BrowserCompositorMac::CopyFromCompositingSurfaceToVideoFrame(
 }
 
 void BrowserCompositorMac::DidCreateNewRendererCompositorFrameSink(
-    cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+    cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
   delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
       renderer_compositor_frame_sink_);

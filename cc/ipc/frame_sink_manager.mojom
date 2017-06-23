@@ -6,7 +6,7 @@ module cc.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
-import "cc/ipc/mojo_compositor_frame_sink.mojom";
+import "cc/ipc/compositor_frame_sink.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/surface_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
@@ -29,15 +29,15 @@ interface DisplayPrivate {
 // The FrameSinkManager interface is a privileged interface that allows the
 // frame sink manager host (browser or window server) to create
 // CompositorFrameSinks. Clients acquire a CompositorFrameSink connection
-// through the frame sink manager host. Clients request a
-// MojoCompositorFrameSink interface, and implement a
-// MojoCompositorFrameSinkClient interface. The frame sink manager host
-// holds one or more display CompositorFrameSinks that are tied to a valid
-// |surface_handle| and cc::Display. All other CompositorFrameSinks must be
-// parented by another CompositorFrameSink. FrameSinkIds are fixed for a given
-// client and are determined ahead of time. Thus, a client will typically simply
-// request a CompositorFrameSink from the frame sink manager host which will
-// forward the request to the frame sink manager.
+// through the frame sink manager host. Clients request a CompositorFrameSink
+// interface, and implement a CompositorFrameSinkClient interface. The frame
+// sink manager host holds one or more display CompositorFrameSinks that are
+// tied to a valid |surface_handle| and cc::Display. All other
+// CompositorFrameSinks must be parented by another CompositorFrameSink.
+// FrameSinkIds are fixed for a given client and are determined ahead of time.
+// Thus, a client will typically simply request a CompositorFrameSink from the
+// frame sink manager host which will forward the request to the frame sink
+// manager.
 interface FrameSinkManager {
   // Create a CompositorFrameSink for a privileged client (e.g. WindowServer).
   // This is only used by privileged clients. The client can call methods that
@@ -45,9 +45,9 @@ interface FrameSinkManager {
   CreateRootCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
       gpu.mojom.SurfaceHandle widget,
-      associated cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
-      cc.mojom.MojoCompositorFrameSinkPrivate& compositor_frame_sink_private,
-      cc.mojom.MojoCompositorFrameSinkClient compositor_frame_sink_client,
+      associated cc.mojom.CompositorFrameSink& compositor_frame_sink,
+      cc.mojom.CompositorFrameSinkPrivate& compositor_frame_sink_private,
+      cc.mojom.CompositorFrameSinkClient compositor_frame_sink_client,
       associated DisplayPrivate& display_private);
 
   // CreateCompositorFrameSink is used by unprivileged clients. This
@@ -55,9 +55,9 @@ interface FrameSinkManager {
   // CompositorFrameSink in order to appear on screen.
   CreateCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
-      cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
-      cc.mojom.MojoCompositorFrameSinkPrivate& compositor_frame_sink_private,
-      cc.mojom.MojoCompositorFrameSinkClient compositor_frame_sink_client);
+      cc.mojom.CompositorFrameSink& compositor_frame_sink,
+      cc.mojom.CompositorFrameSinkPrivate& compositor_frame_sink_private,
+      cc.mojom.CompositorFrameSinkClient compositor_frame_sink_client);
 
   // Set up a BeginFrame relationship between two FrameSinkIds. In this case,
   // the child inherits the BeginFrameSource from the parent if it doesn't
