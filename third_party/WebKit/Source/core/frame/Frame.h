@@ -98,7 +98,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   bool IsLocalRoot() const;
 
   FrameOwner* Owner() const;
-  void SetOwner(FrameOwner* owner) { owner_ = owner; }
+  void SetOwner(FrameOwner*);
   HTMLFrameOwnerElement* DeprecatedLocalOwner() const;
 
   DOMWindow* DomWindow() const { return dom_window_; }
@@ -154,6 +154,12 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // the given frame.
   bool IsFeatureEnabled(WebFeaturePolicyFeature) const;
 
+  // Called to make a frame inert or non-inert. A frame is inert when there
+  // is a modal dialog displayed within an ancestor frame, and this frame
+  // itself is not within the dialog.
+  virtual void SetIsInert(bool) = 0;
+  void UpdateInertIfPossible();
+
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 
@@ -166,6 +172,11 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   bool has_received_user_gesture_ = false;
 
   FrameLifecycle lifecycle_;
+
+  // This is set to true if this is a subframe, and the frame element in the
+  // parent frame's document becomes inert. This should always be false for
+  // the main frame.
+  bool is_inert_ = false;
 
  private:
   Member<FrameClient> client_;

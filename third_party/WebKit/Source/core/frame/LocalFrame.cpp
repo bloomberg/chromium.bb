@@ -447,6 +447,22 @@ void LocalFrame::DidChangeVisibilityState() {
   Frame::DidChangeVisibilityState();
 }
 
+void LocalFrame::SetIsInert(bool inert) {
+  is_inert_ = inert;
+  PropagateInertToChildFrames();
+}
+
+void LocalFrame::PropagateInertToChildFrames() {
+  for (Frame* child = Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    // is_inert_ means that this Frame is inert because of a modal dialog or
+    // inert element in an ancestor Frame. Otherwise, decide whether a child
+    // Frame element is inert because of an element in this Frame.
+    child->SetIsInert(is_inert_ ||
+                      ToHTMLFrameOwnerElement(child->Owner())->IsInert());
+  }
+}
+
 LocalFrame& LocalFrame::LocalFrameRoot() const {
   const LocalFrame* cur_frame = this;
   while (cur_frame && cur_frame->Tree().Parent() &&
@@ -761,6 +777,10 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     probe_sink_ = new CoreProbeSink();
     performance_monitor_ = new PerformanceMonitor(this);
   } else {
+    // Inertness only needs to be updated if this frame might inherit the
+    // inert state from a higher-level frame. If this is an OOPIF local root,
+    // it will be updated later.
+    UpdateInertIfPossible();
     probe_sink_ = LocalFrameRoot().probe_sink_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }

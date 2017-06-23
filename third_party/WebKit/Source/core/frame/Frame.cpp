@@ -193,6 +193,19 @@ bool Frame::IsFeatureEnabled(WebFeaturePolicyFeature feature) const {
   return feature_policy->IsFeatureEnabled(feature);
 }
 
+void Frame::SetOwner(FrameOwner* owner) {
+  owner_ = owner;
+  UpdateInertIfPossible();
+}
+
+void Frame::UpdateInertIfPossible() {
+  if (owner_ && owner_->IsLocal()) {
+    ToHTMLFrameOwnerElement(owner_)->UpdateDistribution();
+    if (ToHTMLFrameOwnerElement(owner_)->IsInert())
+      SetIsInert(true);
+  }
+}
+
 Frame::Frame(FrameClient* client,
              Page& page,
              FrameOwner* owner,

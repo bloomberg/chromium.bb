@@ -117,6 +117,10 @@ class WebFrameWidget : public WebWidget {
   // This is needed for out-of-process iframes to know if they are clipped
   // by ancestor frames in another process.
   virtual void SetRemoteViewportIntersection(const WebRect&) {}
+
+  // Sets the inert bit on an out-of-process iframe, causing it to ignore
+  // input.
+  virtual void SetIsInert(bool) {}
 };
 
 }  // namespace blink

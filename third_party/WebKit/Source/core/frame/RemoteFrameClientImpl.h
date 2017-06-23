@@ -40,6 +40,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void UpdateRemoteViewportIntersection(const IntRect&) override;
   void AdvanceFocus(WebFocusType, LocalFrame*) override;
   void VisibilityChanged(bool visible) override;
+  void SetIsInert(bool) override;
 
   WebRemoteFrameBase* GetWebFrame() const { return web_frame_; }
 

@@ -8,6 +8,9 @@ window.onload = parent.parent.frameLoaded;
 <body>
 <dialog id="dialog">
     <button id="dialog-button" tabindex="0">Button</button>
+    <iframe id="iframe-in-dialog" srcdoc='
+        <input id="iframe-under-dialog-input" class="target" type="date">
+    '></iframe>
 </dialog>
 <input id="frame1-input" class="target" type="text">
 <iframe id="iframe1" srcdoc='

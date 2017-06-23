@@ -889,7 +889,7 @@ bool Node::IsInert() const {
       element = FlatTreeTraversal::ParentElement(*element);
     }
   }
-  return GetDocument().LocalOwner() && GetDocument().LocalOwner()->IsInert();
+  return GetDocument().GetFrame() && GetDocument().GetFrame()->IsInert();
 }
 
 unsigned Node::NodeIndex() const {

@@ -122,6 +122,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void PrintNavigationWarning(const String&) override;
   bool PrepareForCommit() override;
   void DidChangeVisibilityState() override;
+  // This sets the is_inert_ flag and also recurses through this frame's
+  // subtree, updating the inert bit on all descendant frames.
+  void SetIsInert(bool) override;
 
   void DetachChildren();
   void DocumentAttached();
@@ -247,6 +250,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   std::unique_ptr<WebURLLoader> CreateURLLoader();
 
+  bool IsInert() const { return is_inert_; }
+
   using FrameInitCallback = void (*)(LocalFrame*);
   // Allows for the registration of a callback that is invoked whenever a new
   // LocalFrame is initialized. Callbacks are executed in the order that they
@@ -286,6 +291,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DisableNavigation() { ++navigation_disable_count_; }
 
   bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
+
+  void PropagateInertToChildFrames();
 
   std::unique_ptr<WebFrameScheduler> frame_scheduler_;
 

@@ -162,4 +162,8 @@ void RemoteFrameClientImpl::VisibilityChanged(bool visible) {
   web_frame_->Client()->VisibilityChanged(visible);
 }
 
+void RemoteFrameClientImpl::SetIsInert(bool inert) {
+  web_frame_->Client()->SetIsInert(inert);
+}
+
 }  // namespace blink

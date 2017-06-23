@@ -1447,6 +1447,9 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
 
+// Sets or unsets the inert bit on a remote frame.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_SetIsInert, bool /* inert */)
+
 // Indicates that this frame recieved a user gesture, so that the state can be
 // propagated to any remote frames.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SetHasReceivedUserGesture)

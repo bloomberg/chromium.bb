@@ -39,12 +39,16 @@ function test() {
     frame1.querySelector('dialog').showModal();
 
     testFocus(frame1.querySelector('.target'), false);
-    var iframe = frame1.querySelector('iframe').contentDocument;
+    var iframe = frame1.querySelector('#iframe1').contentDocument;
     testFocus(iframe.querySelector('.target'), false);
 
     debug('Even a modal dialog in the iframe is blocked by the modal dialog in the parent frame1.');
     iframe.querySelector('dialog').showModal();
     testFocus(iframe.querySelector('button'), false);
+
+    debug('An iframe within a modal dialog can still be focused.');
+    var dialogIframe = frame1.querySelector('#iframe-in-dialog').contentDocument;
+    testFocus(dialogIframe.querySelector('.target'), true);
 
     debug('A modal dialog does not block nodes in a sibling frame.');
     var frame2 = mainIframe.contentWindow.frames[1].document;

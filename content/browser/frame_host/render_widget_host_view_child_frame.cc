@@ -391,6 +391,13 @@ void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
                                                     viewport_intersection));
 }
 
+void RenderWidgetHostViewChildFrame::SetIsInert() {
+  if (host_ && frame_connector_) {
+    host_->Send(new ViewMsg_SetIsInert(host_->GetRoutingID(),
+                                       frame_connector_->is_inert()));
+  }
+}
+
 void RenderWidgetHostViewChildFrame::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
@@ -630,8 +637,18 @@ bool RenderWidgetHostViewChildFrame::IsRenderWidgetHostViewChildFrame() {
 }
 
 void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
-  if (frame_connector_)
+  // TODO(kenrb): These represent post-initialization state updates that are
+  // needed by the renderer. During normal OOPIF setup these are unnecessary,
+  // as the parent renderer will send the information and it will be
+  // immediately propagated to the OOPIF. However when an OOPIF navigates from
+  // one process to another, the parent doesn't know that, and certain
+  // browser-side state needs to be sent again. There is probably a less
+  // spammy way to do this, but triggering on SendScreenRects() is reasonable
+  // until somebody figures that out. RWHVCF::Init() is too early.
+  if (frame_connector_) {
     UpdateViewportIntersection(frame_connector_->viewport_intersection());
+    SetIsInert();
+  }
 }
 
 #if defined(OS_MACOSX)
