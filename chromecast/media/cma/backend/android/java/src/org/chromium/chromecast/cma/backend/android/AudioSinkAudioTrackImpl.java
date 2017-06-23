@@ -151,9 +151,6 @@ class AudioSinkAudioTrackImpl {
         nativeCacheDirectBufferAddress(
                 mNativeAudioSinkAudioTrackImpl, mPcmBuffer, mRenderingDelayBuffer);
 
-        // Put into PLAYING state so it starts playing right when data is fed in.
-        play();
-
         mIsInitialized = true;
     }
 
@@ -178,6 +175,10 @@ class AudioSinkAudioTrackImpl {
         if (ret != AudioTrack.SUCCESS) {
             Log.e(TAG, "Cannot set volume: ret=" + ret);
         }
+    }
+
+    private boolean isStopped() {
+        return mAudioTrack.getPlayState() == AudioTrack.PLAYSTATE_STOPPED;
     }
 
     private boolean isPlaying() {
@@ -247,6 +248,32 @@ class AudioSinkAudioTrackImpl {
         long beforeMsecs = SystemClock.elapsedRealtime();
         int bytesWritten = mAudioTrack.write(mPcmBuffer, sizeInBytes, AudioTrack.WRITE_BLOCKING);
 
+        if (bytesWritten < 0) {
+            int error = bytesWritten;
+            Log.e(TAG, "Couldn't write into AudioTrack (" + error + ")");
+            return error;
+        }
+
+        if (isStopped()) {
+            // Data was written, start playing now.
+            play();
+
+            // If not all data fit on the previous write() call (since we were not in PLAYING state
+            // it didn't block), do a second (now blocking) call to write().
+            int bytesLeft = sizeInBytes - bytesWritten;
+            if (bytesLeft > 0) {
+                mPcmBuffer.position(bytesWritten);
+                int moreBytesWritten =
+                        mAudioTrack.write(mPcmBuffer, bytesLeft, AudioTrack.WRITE_BLOCKING);
+                if (moreBytesWritten < 0) {
+                    int error = moreBytesWritten;
+                    Log.e(TAG, "Couldn't write into AudioTrack (" + error + ")");
+                    return error;
+                }
+                bytesWritten += moreBytesWritten;
+            }
+        }
+
         int framesWritten = bytesWritten / BYTES_PER_FRAME;
         mTotalFramesWritten += framesWritten;
 
@@ -257,10 +284,9 @@ class AudioSinkAudioTrackImpl {
                             + " took:" + (SystemClock.elapsedRealtime() - beforeMsecs) + "ms");
         }
 
-        if (bytesWritten <= 0 || isPaused()) {
-            // Either hit an error or we are in PAUSED state, in which case the
-            // write() is non-blocking. If not all data was written, we will come
-            // back here once we transition back into PLAYING state.
+        if (bytesWritten < sizeInBytes && isPaused()) {
+            // We are in PAUSED state, in which case the write() is non-blocking. If not all data
+            // was written, we will come back here once we transition back into PLAYING state.
             return bytesWritten;
         }
 
