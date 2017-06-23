@@ -158,10 +158,8 @@ TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; i++)
     RunAllPendingInMessageLoop(BrowserThread::UI);
-    RunAllPendingInMessageLoop(BrowserThread::FILE);
-  }
   DevToolsAgentHost::StopRemoteDebuggingServer();
   // Make sure the handler actually stops.
   run_loop_2.Run();
