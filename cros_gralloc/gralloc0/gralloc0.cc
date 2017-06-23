@@ -185,33 +185,22 @@ static int gralloc0_unregister_buffer(struct gralloc_module_t const *module, buf
 static int gralloc0_lock(struct gralloc_module_t const *module, buffer_handle_t handle, int usage,
 			 int l, int t, int w, int h, void **vaddr)
 {
-	int32_t ret, fence;
-	uint64_t flags;
-	uint8_t *addr[DRV_MAX_PLANES];
-	auto mod = (struct gralloc0_module *)module;
-
-	auto hnd = cros_gralloc_convert_handle(handle);
-	if (!hnd) {
-		cros_gralloc_error("Invalid handle.");
-		return -EINVAL;
-	}
-
-	if ((hnd->droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888)) {
-		cros_gralloc_error("HAL_PIXEL_FORMAT_YCbCr_*_888 format not compatible.");
-		return -EINVAL;
-	}
-
-	fence = -1;
-	flags = gralloc0_convert_flags(usage);
-	ret = mod->driver->lock(handle, fence, flags, addr);
-	*vaddr = addr[0];
-	return ret;
+	return module->lockAsync(module, handle, usage, l, t, w, h, vaddr, -1);
 }
 
 static int gralloc0_unlock(struct gralloc_module_t const *module, buffer_handle_t handle)
 {
+	int32_t fence_fd, ret;
 	auto mod = (struct gralloc0_module *)module;
-	return mod->driver->unlock(handle);
+	ret = mod->driver->unlock(handle, &fence_fd);
+	if (ret)
+		return ret;
+
+	ret = cros_gralloc_sync_wait(fence_fd);
+	if (ret)
+		return ret;
+
+	return 0;
 }
 
 static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
@@ -274,8 +263,47 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 static int gralloc0_lock_ycbcr(struct gralloc_module_t const *module, buffer_handle_t handle,
 			       int usage, int l, int t, int w, int h, struct android_ycbcr *ycbcr)
 {
+	return module->lockAsync_ycbcr(module, handle, usage, l, t, w, h, ycbcr, -1);
+}
+
+static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_handle_t handle,
+			       int usage, int l, int t, int w, int h, void **vaddr, int fence_fd)
+{
+	int32_t ret;
 	uint64_t flags;
-	int32_t fence, ret;
+	uint8_t *addr[DRV_MAX_PLANES];
+	auto mod = (struct gralloc0_module *)module;
+
+	auto hnd = cros_gralloc_convert_handle(handle);
+	if (!hnd) {
+		cros_gralloc_error("Invalid handle.");
+		return -EINVAL;
+	}
+
+	if (hnd->droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
+		cros_gralloc_error("HAL_PIXEL_FORMAT_YCbCr_*_888 format not compatible.");
+		return -EINVAL;
+	}
+
+	flags = gralloc0_convert_flags(usage);
+	ret = mod->driver->lock(handle, fence_fd, flags, addr);
+	*vaddr = addr[0];
+	return ret;
+}
+
+static int gralloc0_unlock_async(struct gralloc_module_t const *module, buffer_handle_t handle,
+				 int *fence_fd)
+{
+	auto mod = (struct gralloc0_module *)module;
+	return mod->driver->unlock(handle, fence_fd);
+}
+
+static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buffer_handle_t handle,
+				     int usage, int l, int t, int w, int h,
+				     struct android_ycbcr *ycbcr, int fence_fd)
+{
+	uint64_t flags;
+	int32_t ret;
 	uint8_t *addr[DRV_MAX_PLANES] = { nullptr, nullptr, nullptr, nullptr };
 	auto mod = (struct gralloc0_module *)module;
 
@@ -292,9 +320,8 @@ static int gralloc0_lock_ycbcr(struct gralloc_module_t const *module, buffer_han
 		return -EINVAL;
 	}
 
-	fence = -1;
 	flags = gralloc0_convert_flags(usage);
-	ret = mod->driver->lock(handle, fence, flags, addr);
+	ret = mod->driver->lock(handle, fence_fd, flags, addr);
 	if (ret)
 		return ret;
 
@@ -317,7 +344,7 @@ static int gralloc0_lock_ycbcr(struct gralloc_module_t const *module, buffer_han
 		ycbcr->chroma_step = 1;
 		break;
 	default:
-		mod->driver->unlock(handle);
+		module->unlock(module, handle);
 		return -EINVAL;
 	}
 
@@ -332,7 +359,7 @@ struct gralloc0_module HAL_MODULE_INFO_SYM = {
 		.common =
 		    {
 			.tag = HARDWARE_MODULE_TAG,
-			.module_api_version = GRALLOC_MODULE_API_VERSION_0_2,
+			.module_api_version = GRALLOC_MODULE_API_VERSION_0_3,
 			.hal_api_version = 0,
 			.id = GRALLOC_HARDWARE_MODULE_ID,
 			.name = "CrOS Gralloc",
@@ -346,6 +373,9 @@ struct gralloc0_module HAL_MODULE_INFO_SYM = {
 		.unlock = gralloc0_unlock,
 		.perform = gralloc0_perform,
 		.lock_ycbcr = gralloc0_lock_ycbcr,
+		.lockAsync = gralloc0_lock_async,
+		.unlockAsync = gralloc0_unlock_async,
+		.lockAsync_ycbcr = gralloc0_lock_async_ycbcr,
 	    },
 
 	.alloc = nullptr,

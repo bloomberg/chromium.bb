@@ -236,8 +236,11 @@ int32_t cros_gralloc_driver::release(buffer_handle_t handle)
 int32_t cros_gralloc_driver::lock(buffer_handle_t handle, int32_t acquire_fence, uint64_t flags,
 				  uint8_t *addr[DRV_MAX_PLANES])
 {
-	std::lock_guard<std::mutex> lock(mutex_);
+	int32_t ret = cros_gralloc_sync_wait(acquire_fence);
+	if (ret)
+		return ret;
 
+	std::lock_guard<std::mutex> lock(mutex_);
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
@@ -250,15 +253,10 @@ int32_t cros_gralloc_driver::lock(buffer_handle_t handle, int32_t acquire_fence,
 		return -EINVAL;
 	}
 
-	if (acquire_fence >= 0) {
-		cros_gralloc_error("Sync wait not yet supported.");
-		return -EINVAL;
-	}
-
 	return buffer->lock(flags, addr);
 }
 
-int32_t cros_gralloc_driver::unlock(buffer_handle_t handle)
+int32_t cros_gralloc_driver::unlock(buffer_handle_t handle, int32_t *release_fence)
 {
 	std::lock_guard<std::mutex> lock(mutex_);
 
@@ -274,6 +272,13 @@ int32_t cros_gralloc_driver::unlock(buffer_handle_t handle)
 		return -EINVAL;
 	}
 
+	/*
+	 * From the ANativeWindow::dequeueBuffer documentation:
+	 *
+	 * "A value of -1 indicates that the caller may access the buffer immediately without
+	 * waiting on a fence."
+	 */
+	*release_fence = -1;
 	return buffer->unlock();
 }
 

@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 #include <cutils/log.h>
+#include <sync/sync.h>
 
 uint32_t cros_gralloc_convert_format(int format)
 {
@@ -52,6 +53,34 @@ cros_gralloc_handle_t cros_gralloc_convert_handle(buffer_handle_t handle)
 		return nullptr;
 
 	return hnd;
+}
+
+int32_t cros_gralloc_sync_wait(int32_t acquire_fence)
+{
+	if (acquire_fence < 0)
+		return 0;
+
+	/*
+	 * Wait initially for 1000 ms, and then wait indefinitely. The SYNC_IOC_WAIT
+	 * documentation states the caller waits indefinitely on the fence if timeout < 0.
+	 */
+	int err = sync_wait(acquire_fence, 1000);
+	if (err < 0) {
+		cros_gralloc_error("Timed out on sync wait, err = %s", strerror(errno));
+		err = sync_wait(acquire_fence, -1);
+		if (err < 0) {
+			cros_gralloc_error("sync wait error = %s", strerror(errno));
+			return -errno;
+		}
+	}
+
+	err = close(acquire_fence);
+	if (err) {
+		cros_gralloc_error("Unable to close fence fd, err = %s", strerror(errno));
+		return -errno;
+	}
+
+	return 0;
 }
 
 void cros_gralloc_log(const char *prefix, const char *file, int line, const char *format, ...)
