@@ -10,7 +10,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/wm/system_modal_container_layout_manager.h"

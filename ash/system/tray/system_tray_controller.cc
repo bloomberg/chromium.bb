@@ -6,7 +6,6 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/update/tray_update.h"

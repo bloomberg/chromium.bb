@@ -16,7 +16,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"

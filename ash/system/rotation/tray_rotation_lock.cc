@@ -7,7 +7,6 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_tray.h"

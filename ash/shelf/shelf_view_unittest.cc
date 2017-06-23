@@ -25,7 +25,6 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"

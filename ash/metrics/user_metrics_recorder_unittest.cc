@@ -11,7 +11,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/test/user_metrics_recorder_test_api.h"

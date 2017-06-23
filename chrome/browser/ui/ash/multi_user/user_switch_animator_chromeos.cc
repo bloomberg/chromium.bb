@@ -9,7 +9,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
