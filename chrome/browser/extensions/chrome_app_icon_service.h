@@ -91,6 +91,9 @@ class ChromeAppIconService : public KeyedService,
   std::unique_ptr<LauncherExtensionAppUpdater> app_updater_;
 #endif
 
+  // Deletes the icon set for |app_id| from the map if it is empty.
+  void MaybeCleanupIconSet(const std::string& app_id);
+
   IconMap icon_map_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
