@@ -1200,6 +1200,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Remove the web view now. Otherwise, delegate callbacks occur.
   [self removeWebViewAllowingCachedReconstruction:NO];
 
+  // Explicitly reset content to clean up views and avoid dangling KVO
+  // observers.
+  [_containerView resetContent];
+
   _webStateImpl = nullptr;
 
   DCHECK(!_webView);
