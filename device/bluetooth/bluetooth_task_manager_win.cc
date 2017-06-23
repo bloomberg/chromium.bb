@@ -864,8 +864,9 @@ void BluetoothTaskManagerWin::WriteGattCharacteristicValue(
     std::vector<uint8_t> new_value,
     const HResultCallback& callback) {
   ULONG length = (ULONG)(sizeof(ULONG) + new_value.size());
-  std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> win_new_value(
-      (PBTH_LE_GATT_CHARACTERISTIC_VALUE)(new UCHAR[length]));
+  std::vector<UCHAR> data(length);
+  auto* win_new_value =
+      reinterpret_cast<PBTH_LE_GATT_CHARACTERISTIC_VALUE>(&data[0]);
   win_new_value->DataSize = (ULONG)new_value.size();
   for (ULONG i = 0; i < new_value.size(); i++)
     win_new_value->Data[i] = new_value[i];
@@ -873,7 +874,7 @@ void BluetoothTaskManagerWin::WriteGattCharacteristicValue(
   HRESULT hr =
       win::BluetoothLowEnergyWrapper::GetInstance()->WriteCharacteristicValue(
           service_path, (PBTH_LE_GATT_CHARACTERISTIC)(&characteristic),
-          win_new_value.get());
+          win_new_value);
 
   ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, hr));
 }
