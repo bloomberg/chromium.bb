@@ -14,7 +14,6 @@ blink_modules_sources("websockets") {
     "DocumentWebSocketChannel.h",
     "InspectorWebSocketEvents.cpp",
     "InspectorWebSocketEvents.h",
-    "WebPepperSocket.cpp",
     "WebPepperSocketChannelClientProxy.h",
     "WebPepperSocketImpl.cpp",
     "WebPepperSocketImpl.h",

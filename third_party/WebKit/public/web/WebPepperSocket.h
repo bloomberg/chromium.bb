@@ -31,6 +31,7 @@
 #ifndef WebPepperSocket_h
 #define WebPepperSocket_h
 
+#include <memory>
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebString.h"
@@ -63,28 +64,15 @@ class WebPepperSocket {
     kCloseEventCodeMaximumUserDefined = 4999
   };
 
-  enum BinaryType { kBinaryTypeBlob = 0, kBinaryTypeArrayBuffer = 1 };
-
-  BLINK_EXPORT static WebPepperSocket* Create(const WebDocument&,
-                                              WebPepperSocketClient*);
+  BLINK_EXPORT static std::unique_ptr<WebPepperSocket> Create(
+      const WebDocument&,
+      WebPepperSocketClient*);
   virtual ~WebPepperSocket() {}
 
-  // These functions come from binaryType attribute of the WebSocket API
-  // specification. It specifies binary object type for receiving binary
-  // frames representation. Receiving text frames are always mapped to
-  // WebString type regardless of this attribute.
-  // Default type is BinaryTypeBlob. But currently it is not supported.
-  // Set BinaryTypeArrayBuffer here ahead of using binary communication.
-  // See also, The WebSocket API - http://www.w3.org/TR/websockets/ .
-  virtual BinaryType GetBinaryType() const = 0;
-  virtual bool SetBinaryType(BinaryType) = 0;
-
   virtual void Connect(const WebURL&, const WebString& protocol) = 0;
-  virtual WebString Subprotocol() { return WebString(); }
-  virtual WebString Extensions() { return WebString(); }
+  virtual WebString Subprotocol() = 0;
   virtual bool SendText(const WebString&) = 0;
   virtual bool SendArrayBuffer(const WebArrayBuffer&) = 0;
-  virtual unsigned long BufferedAmount() const { return 0; }
   virtual void Close(int code, const WebString& reason) = 0;
   virtual void Fail(const WebString& reason) = 0;
   virtual void Disconnect() = 0;

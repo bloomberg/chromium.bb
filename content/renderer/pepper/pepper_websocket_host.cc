@@ -18,7 +18,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebPepperSocket.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 using blink::WebArrayBuffer;
@@ -255,13 +254,11 @@ int32_t PepperWebSocketHost::OnHostMsgConnect(
       renderer_ppapi_host_->GetContainerForInstance(pp_instance());
   if (!container)
     return PP_ERROR_BADARGUMENT;
-  websocket_.reset(WebPepperSocket::Create(container->GetDocument(), this));
+  websocket_ = WebPepperSocket::Create(container->GetDocument(), this);
   DCHECK(websocket_.get());
   if (!websocket_)
     return PP_ERROR_NOTSUPPORTED;
 
-  // Set receiving binary object type.
-  websocket_->SetBinaryType(WebPepperSocket::kBinaryTypeArrayBuffer);
   websocket_->Connect(web_url, web_protocols);
 
   connect_reply_ = context->MakeReplyMessageContext();
