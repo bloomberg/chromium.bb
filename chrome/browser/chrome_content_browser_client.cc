@@ -611,47 +611,6 @@ bool HandleNewTabPageLocationOverride(
   return true;
 }
 
-// Handles rewriting Web UI URLs.
-bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
-  // Rewrite chrome://help and chrome://chrome to chrome://settings/help.
-  if (url->host() == chrome::kChromeUIHelpHost ||
-      (url->host() == chrome::kChromeUIUberHost &&
-       (url->path().empty() || url->path() == "/"))) {
-    *url = ReplaceURLHostAndPath(*url, chrome::kChromeUISettingsHost,
-                                 chrome::kChromeUIHelpHost);
-    return true;  // Return true to update the displayed URL.
-  }
-
-  if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
-          browser_context, *url)) {
-    return false;
-  }
-
-#if defined(OS_CHROMEOS)
-  // Special case : in ChromeOS in Guest mode bookmarks and history are
-  // disabled for security reasons. New tab page explains the reasons, so
-  // we redirect user to new tab page.
-  if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
-    if (url->SchemeIs(content::kChromeUIScheme) &&
-        (url->DomainIs(chrome::kChromeUIBookmarksHost) ||
-         url->DomainIs(chrome::kChromeUIHistoryHost))) {
-      // Rewrite with new tab URL
-      *url = GURL(chrome::kChromeUINewTabURL);
-    }
-  }
-#endif
-
-  return true;
-}
-
-// Reverse URL handler for Web UI. Maps "chrome://chrome/foo/" to
-// "chrome://foo/".
-bool HandleWebUIReverse(GURL* url, content::BrowserContext* browser_context) {
-  // No need to actually reverse-rewrite the URL, but return true to update the
-  // displayed URL when rewriting chrome://help to chrome://settings/help.
-  return url->host() == chrome::kChromeUISettingsHost;
-}
-
 bool CertMatchesFilter(const net::X509Certificate& cert,
                        const base::DictionaryValue& filter) {
   // TODO(markusheintz): This is the minimal required filter implementation.
@@ -2670,7 +2629,8 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 #endif
 
   // chrome: & friends.
-  handler->AddHandlerPair(&HandleWebUI, &HandleWebUIReverse);
+  handler->AddHandlerPair(&ChromeContentBrowserClient::HandleWebUI,
+                          &ChromeContentBrowserClient::HandleWebUIReverse);
 }
 
 base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
@@ -3464,6 +3424,53 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       safe_browsing_service_->database_manager(),
       safe_browsing_service_->ui_manager(), wc_getter));
   return result;
+}
+
+// Static; handles rewriting Web UI URLs.
+bool ChromeContentBrowserClient::HandleWebUI(
+    GURL* url,
+    content::BrowserContext* browser_context) {
+  // Rewrite chrome://help and chrome://chrome to chrome://settings/help.
+  if (url->SchemeIs(content::kChromeUIScheme) &&
+      (url->host() == chrome::kChromeUIHelpHost ||
+       (url->host() == chrome::kChromeUIUberHost &&
+        (url->path().empty() || url->path() == "/")))) {
+    *url = ReplaceURLHostAndPath(*url, chrome::kChromeUISettingsHost,
+                                 chrome::kChromeUIHelpHost);
+    return true;  // Return true to update the displayed URL.
+  }
+
+  if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+          browser_context, *url)) {
+    return false;
+  }
+
+#if defined(OS_CHROMEOS)
+  // Special case : in ChromeOS in Guest mode bookmarks and history are
+  // disabled for security reasons. New tab page explains the reasons, so
+  // we redirect user to new tab page.
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
+    if (url->SchemeIs(content::kChromeUIScheme) &&
+        (url->DomainIs(chrome::kChromeUIBookmarksHost) ||
+         url->DomainIs(chrome::kChromeUIHistoryHost))) {
+      // Rewrite with new tab URL
+      *url = GURL(chrome::kChromeUINewTabURL);
+    }
+  }
+#endif
+
+  return true;
+}
+
+// Static; reverse URL handler for Web UI. Maps "chrome://chrome/foo/" to
+// "chrome://foo/".
+bool ChromeContentBrowserClient::HandleWebUIReverse(
+    GURL* url,
+    content::BrowserContext* browser_context) {
+  // No need to actually reverse-rewrite the URL, but return true to update the
+  // displayed URL when rewriting chrome://help to chrome://settings/help.
+  return url->SchemeIs(content::kChromeUIScheme) &&
+         url->host() == chrome::kChromeUISettingsHost;
 }
 
 // static

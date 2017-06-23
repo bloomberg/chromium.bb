@@ -328,6 +328,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   CreateURLLoaderThrottles(
       const base::Callback<content::WebContents*()>& wc_getter) override;
 
+ protected:
+  static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
+  static bool HandleWebUIReverse(GURL* url,
+                                 content::BrowserContext* browser_context);
+
  private:
   friend class DisableWebRtcEncryptionFlagTest;
   friend class InProcessBrowserTest;

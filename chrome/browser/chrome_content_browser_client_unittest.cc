@@ -350,3 +350,32 @@ TEST_F(ChromeContentBrowserClientGetLoggingFileTest, GetLoggingFile) {
   base::FilePath log_file_name;
   EXPECT_FALSE(client.GetLoggingFileName().empty());
 }
+
+class TestChromeContentBrowserClient : public ChromeContentBrowserClient {
+ public:
+  using ChromeContentBrowserClient::HandleWebUI;
+  using ChromeContentBrowserClient::HandleWebUIReverse;
+};
+
+TEST(ChromeContentBrowserClientTest, HandleWebUI) {
+  TestChromeContentBrowserClient test_content_browser_client;
+  const GURL http_help("http://help/");
+  GURL should_not_redirect = http_help;
+  test_content_browser_client.HandleWebUI(&should_not_redirect, nullptr);
+  EXPECT_EQ(http_help, should_not_redirect);
+
+  const GURL chrome_help("chrome://help/");
+  GURL should_redirect = chrome_help;
+  test_content_browser_client.HandleWebUI(&should_redirect, nullptr);
+  EXPECT_NE(chrome_help, should_redirect);
+}
+
+TEST(ChromeContentBrowserClientTest, HandleWebUIReverse) {
+  TestChromeContentBrowserClient test_content_browser_client;
+  GURL http_settings("http://settings/");
+  EXPECT_FALSE(
+      test_content_browser_client.HandleWebUIReverse(&http_settings, nullptr));
+  GURL chrome_settings("chrome://settings/");
+  EXPECT_TRUE(test_content_browser_client.HandleWebUIReverse(&chrome_settings,
+                                                             nullptr));
+}
