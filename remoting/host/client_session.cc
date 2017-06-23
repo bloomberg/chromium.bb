@@ -201,20 +201,11 @@ void ClientSession::RequestPairing(
 void ClientSession::DeliverClientMessage(
     const protocol::ExtensionMessage& message) {
   if (message.has_type()) {
-    if (message.type() == "test-echo") {
-      protocol::ExtensionMessage reply;
-      reply.set_type("test-echo-reply");
-      if (message.has_data())
-        reply.set_data(message.data().substr(0, 16));
-      connection_->client_stub()->DeliverHostMessage(reply);
+    if (extension_manager_->OnExtensionMessage(message))
       return;
-    } else {
-      if (extension_manager_->OnExtensionMessage(message))
-        return;
 
-      DLOG(INFO) << "Unexpected message received: "
-                 << message.type() << ": " << message.data();
-    }
+    DLOG(INFO) << "Unexpected message received: " << message.type() << ": "
+               << message.data();
   }
 }
 
