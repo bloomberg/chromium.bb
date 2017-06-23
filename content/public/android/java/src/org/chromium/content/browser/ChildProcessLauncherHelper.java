@@ -365,13 +365,21 @@ public class ChildProcessLauncherHelper {
                     @Override
                     public void onChildProcessDied(ChildProcessConnection connection) {
                         assert LauncherThread.runningOnLauncherThread();
-                        if (connection.getPid() != 0) {
-                            stop(connection.getPid());
-                        }
+
                         // Forward the call to the provided callback if any. The spare connection
                         // uses that for clean-up.
                         if (deathCallback != null) {
                             deathCallback.onChildProcessDied(connection);
+                        }
+                        // TODO(jcivelli): make SparedChildConnection use an allocator instead of
+                        // calling this method, so it does not have to be static and we can retrieve
+                        // the launcher directly.
+                        int pid = connection.getPid();
+                        if (pid != 0) {
+                            // If the PID has not been set the connection has not been connected yet
+                            // and we don't need to notify the process stopped.
+                            ChildProcessLauncherHelper launcher = getLauncherForPid(pid);
+                            launcher.onChildProcessStopped();
                         }
                     }
                 };
@@ -513,7 +521,7 @@ public class ChildProcessLauncherHelper {
         mConnection.setupConnection(connectionBundle, getIBinderCallback(), connectionCallback);
     }
 
-    public void onChildProcessStarted() {
+    private void onChildProcessStarted() {
         assert LauncherThread.runningOnLauncherThread();
 
         int pid = mConnection.getPid();
@@ -538,6 +546,12 @@ public class ChildProcessLauncherHelper {
             nativeOnChildProcessStarted(mNativeChildProcessLauncherHelper, getPid());
         }
         mNativeChildProcessLauncherHelper = 0;
+    }
+
+    private void onChildProcessStopped() {
+        assert LauncherThread.runningOnLauncherThread();
+        onConnectionLost(mConnection, getPid());
+        sLauncherByPid.remove(getPid());
     }
 
     public int getPid() {
@@ -571,13 +585,11 @@ public class ChildProcessLauncherHelper {
     static void stop(int pid) {
         assert LauncherThread.runningOnLauncherThread();
         Log.d(TAG, "stopping child connection: pid=%d", pid);
-        ChildProcessLauncherHelper launcher = sLauncherByPid.remove(pid);
-        if (launcher == null) {
-            // Can happen for single process.
-            return;
+        ChildProcessLauncherHelper launcher = sLauncherByPid.get(pid);
+        // Launcher can be null for single process.
+        if (launcher != null) {
+            launcher.mConnection.stop();
         }
-        launcher.onConnectionLost(launcher.mConnection, pid);
-        launcher.mConnection.stop();
     }
 
     @CalledByNative

@@ -129,7 +129,8 @@ public class ChildProcessLauncherTest {
                 null /* packageName */, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
         Assert.assertEquals(1, getConnectedSandboxedServicesCount());
 
-        Assert.assertNotEquals(0, getPid(launcher));
+        int pid = getPid(launcher);
+        Assert.assertNotEquals(0, pid);
 
         // Crash the service.
         ChildProcessConnection connection = retrieveConnection(launcher);
@@ -140,6 +141,8 @@ public class ChildProcessLauncherTest {
 
         // Verify that the connection pid remains set after termination.
         Assert.assertTrue(ChildProcessLauncherTestUtils.getConnectionPid(connection) != 0);
+        // And that the launcher is cleared.
+        Assert.assertNull(ChildProcessLauncherHelper.getLauncherForPid(pid));
     }
 
     /**
@@ -349,9 +352,13 @@ public class ChildProcessLauncherTest {
         // The warm-up connection was used, so no new process should have been created.
         Assert.assertEquals(1, getConnectedSandboxedServicesCount());
 
+        int pid = getPid(launcherHelper);
+        Assert.assertNotEquals(0, pid);
+
         stopProcess(launcherHelper);
 
         waitForConnectedSandboxedServicesCount(0);
+        Assert.assertNull(ChildProcessLauncherHelper.getLauncherForPid(pid));
     }
 
     @Test
@@ -377,7 +384,7 @@ public class ChildProcessLauncherTest {
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
-    public void testWarmUpProcessCrash() throws RemoteException {
+    public void testWarmUpProcessCrashBeforeUse() throws RemoteException {
         Assert.assertEquals(0, getConnectedSandboxedServicesCount());
 
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -398,6 +405,32 @@ public class ChildProcessLauncherTest {
                 null /* packageName */, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
         Assert.assertEquals(1, getConnectedSandboxedServicesCount());
         Assert.assertNotNull(ChildProcessLauncherTestUtils.getConnection(launcher));
+    }
+
+    // Tests that the warm-up connection is freed from its allocator if it crashes after being used.
+    @Test
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testWarmUpProcessCrashAfterUse() throws RemoteException {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        warmUpOnUiThreadBlocking(context);
+
+        Assert.assertEquals(1, getConnectedSandboxedServicesCount());
+
+        ChildProcessLauncherHelper launcherHelper = startSandboxedChildProcessWithCreationParams(
+                null /* creationParams */, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
+
+        // The warm-up connection was used, so no new process should have been created.
+        Assert.assertEquals(1, getConnectedSandboxedServicesCount());
+
+        int pid = getPid(launcherHelper);
+        Assert.assertNotEquals(0, pid);
+
+        ChildProcessConnection connection = retrieveConnection(launcherHelper);
+        connection.crashServiceForTesting();
+
+        waitForConnectedSandboxedServicesCount(0);
+        Assert.assertNull(ChildProcessLauncherHelper.getLauncherForPid(pid));
     }
 
     @Test
