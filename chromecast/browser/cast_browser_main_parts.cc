@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -216,7 +217,7 @@ struct DefaultCommandLineSwitch {
   const char* const switch_value;
 };
 
-DefaultCommandLineSwitch g_default_switches[] = {
+const DefaultCommandLineSwitch kDefaultSwitches[] = {
 #if defined(OS_ANDROID)
     // TODO(714676): this should probably set the no restrictions autoplay
     // policy instead.
@@ -261,16 +262,21 @@ DefaultCommandLineSwitch g_default_switches[] = {
     {switches::kEnableNetworkInformation, ""},
     // TODO(halliwell): Remove after fixing b/35422666.
     {switches::kEnableUseZoomForDSF, "false"},
-    {nullptr, nullptr},  // Termination
 };
 
 void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
-  int i = 0;
-  while (g_default_switches[i].switch_name != NULL) {
-    command_line->AppendSwitchASCII(
-        std::string(g_default_switches[i].switch_name),
-        std::string(g_default_switches[i].switch_value));
-    ++i;
+  for (const auto& default_switch : kDefaultSwitches) {
+    // Don't override existing command line switch values with these defaults.
+    // This could occur primarily (or only) on Android, where the command line
+    // is initialized in Java first.
+    std::string name(default_switch.switch_name);
+    if (!command_line->HasSwitch(name)) {
+      std::string value(default_switch.switch_value);
+      VLOG(2) << "Set default switch '" << name << "' = '" << value << "'";
+      command_line->AppendSwitchASCII(name, value);
+    } else {
+      VLOG(2) << "Skip setting default switch '" << name << "', already set";
+    }
   }
 }
 
