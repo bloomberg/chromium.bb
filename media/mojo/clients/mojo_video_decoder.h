@@ -50,6 +50,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   // mojom::VideoDecoderClient implementation.
   void OnVideoFrameDecoded(
       const scoped_refptr<VideoFrame>& frame,
+      bool can_read_without_stalling,
       const base::Optional<base::UnguessableToken>& release_token) final;
 
  private:
@@ -90,6 +91,7 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   bool initialized_ = false;
   bool needs_bitstream_conversion_ = false;
+  bool can_read_without_stalling_ = true;
   int32_t max_decode_requests_ = 1;
 
   base::WeakPtr<MojoVideoDecoder> weak_this_;

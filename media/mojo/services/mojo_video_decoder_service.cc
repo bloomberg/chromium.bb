@@ -36,9 +36,10 @@ void MojoVideoDecoderService::Construct(
     mojom::CommandBufferIdPtr command_buffer_id) {
   DVLOG(1) << __func__;
 
-  // TODO(sandersd): Close the channel.
-  if (decoder_)
+  if (decoder_) {
+    // TODO(sandersd): Close the channel.
     return;
+  }
 
   decoder_ = mojo_media_client_->CreateVideoDecoder(
       base::ThreadTaskRunnerHandle::Get(), std::move(command_buffer_id),
@@ -106,8 +107,8 @@ void MojoVideoDecoderService::OnDecoderInitialized(
 void MojoVideoDecoderService::OnDecoderRead(
     const DecodeCallback& callback,
     scoped_refptr<DecoderBuffer> buffer) {
-  // TODO(sandersd): Close the channel.
   if (!buffer) {
+    // TODO(sandersd): Close the channel.
     callback.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
@@ -120,8 +121,6 @@ void MojoVideoDecoderService::OnDecoderRead(
 void MojoVideoDecoderService::OnDecoderDecoded(const DecodeCallback& callback,
                                                DecodeStatus status) {
   DVLOG(2) << __func__;
-  DCHECK(decoder_);
-  DCHECK(decoder_->CanReadWithoutStalling());
   callback.Run(status);
 }
 
@@ -135,6 +134,7 @@ void MojoVideoDecoderService::OnDecoderOutput(
     const scoped_refptr<VideoFrame>& frame) {
   DVLOG(2) << __func__;
   DCHECK(client_);
+  DCHECK(decoder_);
 
   base::Optional<base::UnguessableToken> release_token;
   if (release_cb) {
@@ -142,7 +142,8 @@ void MojoVideoDecoderService::OnDecoderOutput(
     release_mailbox_cbs_[*release_token] = std::move(release_cb);
   }
 
-  client_->OnVideoFrameDecoded(frame, std::move(release_token));
+  client_->OnVideoFrameDecoded(frame, decoder_->CanReadWithoutStalling(),
+                               std::move(release_token));
 }
 
 void MojoVideoDecoderService::OnReleaseMailbox(
