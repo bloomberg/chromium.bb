@@ -56,10 +56,15 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
     // Called if the power manager process restarts.
     virtual void PowerManagerRestarted() {}
 
-    // Called when the brightness is changed.
+    // Called when the screen brightness is changed.
     // |level| is of the range [0, 100].
     // |user_initiated| is true if the action is initiated by the user.
     virtual void BrightnessChanged(int level, bool user_initiated) {}
+
+    // Called when the keyboard brightness is changed.
+    // |level| is of the range [0, 100].
+    // |user_initiated| is true if the action is initiated by the user.
+    virtual void KeyboardBrightnessChanged(int level, bool user_initiated) {}
 
     // Called when peripheral device battery status is received.
     // |path| is the sysfs path for the battery of the peripheral device.
