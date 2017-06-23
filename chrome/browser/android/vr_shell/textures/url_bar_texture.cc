@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/vr_shell/textures/url_bar_texture.h"
 
-#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/vr_shell/color_scheme.h"
@@ -353,9 +352,6 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
       gurl_, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
       &parsed, nullptr, nullptr);
 
-  if (base::i18n::StringContainsStrongRTLChars(text))
-    failure_callback_.Run(UiUnsupportedMode::kURLWithStrongRTLChars);
-
   int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
 
   gfx::FontList font_list;
@@ -368,6 +364,7 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
   render_text->SetColor(SK_ColorBLACK);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);
+  render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_FORCE_LTR);
   render_text->SetText(text);
   render_text->SetDisplayRect(bounds);
 
@@ -391,6 +388,7 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
                   color_scheme());
 
   url_render_text_ = std::move(render_text);
+  url_text_ = text;
 }
 
 // This method replicates behavior in OmniboxView::UpdateTextStyle(), and
