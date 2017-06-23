@@ -539,7 +539,7 @@ TEST_F(PasswordProtectionServiceTest, VerifyCanGetReputationOfURL) {
   EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
       GURL("http://10.0.1.0/")));
   EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
-      GURL("http://FEED::BEEF")));
+      GURL("http://[FEED::BEEF]")));
 
   // Main frame URL is a no-yet-assigned y ICANN gTLD.
   EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(
