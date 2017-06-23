@@ -239,6 +239,10 @@ enum gbm_bo_flags {
     * buffer.
     */
    GBM_BO_USE_LINEAR    = (1 << 4),
+   /**
+    * The buffer will be used as a texture that will be sampled from.
+    */
+   GBM_BO_USE_TEXTURING    = (1 << 5),
 };
 
 int

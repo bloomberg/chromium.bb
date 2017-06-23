@@ -22,6 +22,8 @@ uint64_t gbm_convert_flags(uint32_t flags)
 		usage |= BO_USE_CURSOR_64X64;
 	if (flags & GBM_BO_USE_RENDERING)
 		usage |= BO_USE_RENDERING;
+	if (flags & GBM_BO_USE_TEXTURING)
+		usage |= BO_USE_TEXTURE;
 	if (flags & GBM_BO_USE_LINEAR)
 		usage |= BO_USE_LINEAR;
 
