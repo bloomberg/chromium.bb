@@ -11,16 +11,7 @@
 crbug.com/145940 [ Linux ] images/embed-does-not-propagate-dimensions-to-object-ancestor.html [ Skip ]
 crbug.com/145940 [ Linux ] fast/loader/loadInProgress.html [ Skip ]
 crbug.com/145940 [ Linux ] fast/replaced/border-radius-clip.html [ Skip ]
-crbug.com/145940 [ Linux ] plugins/crash-restoring-plugin-page-from-page-cache.html [ Skip ]
 crbug.com/145940 [ Linux ] plugins/iframe-shims.html [ Skip ]
-
-
-# Use-after-free in NPP_SetWindow, http://crbug.com/144118
-# ==15959== ERROR: AddressSanitizer: heap-use-after-free on address 0x7f6c187f8481
-# READ of size 1 at 0x7f6c187f8481 thread T0
-#    #0 0x7f6c1aec6c7a in NPP_SetWindow
-crbug.com/144118 [ Linux ] plugins/destroy-on-setwindow.html [ Skip ]
-
 
 # Use-after-free in NPP_DestroyStream, http://crbug.com/166932
 # ==17332== ERROR: AddressSanitizer: heap-use-after-free on address 0x7f48e8a05a58
@@ -28,32 +19,10 @@ crbug.com/144118 [ Linux ] plugins/destroy-on-setwindow.html [ Skip ]
 #    #0 0x7f48eb06f7c5 in DocumentOpenInDestroyStream::NPP_DestroyStream
 crbug.com/166932 [ Linux ] plugins/embed-attributes-setting.html [ Skip ]
 crbug.com/166932 [ Linux ] plugins/embed-attributes-style.html [ Skip ]
-crbug.com/166932 [ Linux ] plugins/embed-inside-object.html [ Skip ]
-crbug.com/166932 [ Linux ] plugins/embed-prefers-plugins-for-images.html [ Skip ]
-crbug.com/166932 [ Linux ] plugins/form-value.html [ Skip ]
 crbug.com/166932 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
-crbug.com/166932 [ Linux ] plugins/get-empty-url.html [ Skip ]
-crbug.com/166932 [ Linux ] plugins/get-file-url.html [ Skip ]
-
-
-# NULL deref in HandleURLRequestInternal, http://crbug.com/142301
-# ==17931== ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000
-# AddressSanitizer can not provide additional info.
-#    #0 0x2a054b2 in webkit::npapi::WebPluginImpl::HandleURLRequestInternal
-crbug.com/142301 [ Linux ] plugins/get-url-notify-with-url-that-fails-to-load.html [ Skip ]
-
-# Crash in fast/js/string-replacement-outofmemory.html, http://crbug.com/173366
-# ==5971== ERROR: AddressSanitizer: SEGV on unknown address 0x0000bbadbeef
-# AddressSanitizer can not provide additional info.
-#     #0 0x8c2ee4 in WebCore::reportFatalErrorInMainThread
-crbug.com/173366 [ Linux ] fast/js/string-replacement-outofmemory.html [ Skip ]
-
-# These tests consistently fail on slow bots.
-crbug.com/231357 [ Linux ] compositing/video-page-visibility.html [ Failure ]
 
 # These have been failing since at least chrome r203901, blink r151723 (no memory errors, just text failure):
 crbug.com/231357 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
-crbug.com/231357 [ Linux ] perf/mouse-event.html [ Crash ]
 
 crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1b.svg [ Pass Failure ]
 crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1d.svg [ Pass Failure ]
@@ -63,7 +32,6 @@ crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Fail
 
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-set-none.html [ Failure Pass ]
 crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ Failure Pass ]
-crbug.com/333901 [ Linux ] virtual/legacy-animations-engine/animations/timing-model.html [ Failure Pass ]
 crbug.com/339778 [ Linux ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/353746 [ Linux ] virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/opacity-transform-animation.html [ Timeout Pass ]
@@ -71,13 +39,8 @@ crbug.com/248938 [ Linux ] virtual/threaded/animations/missing-values-first-keyf
 
 crbug.com/385015 [ Linux ] editing/execCommand/window-open-insert-list-crash.html [ Failure ]
 crbug.com/385015 [ Linux ] fast/frames/iframe-onload-remove-self-no-crash.html [ Failure ]
-crbug.com/385015 [ Linux ] virtual/slimmingpaint/fast/frames/iframe-onload-remove-self-no-crash.html [ Failure ]
 crbug.com/385015 [ Linux ] fast/loader/create-frame-in-DOMContentLoaded.html [ Failure ]
 crbug.com/385015 [ Linux ] fast/loader/frame-creation-removal.html [ Failure ]
-
-# Flakily crash and timeout on Linux ASAN bots (crbug.com/395997 and crbug.com/395676 respectively).
-crbug.com/395997 [ Linux ] inspector/elements/styles/style-formatter.html [ Crash Pass Timeout ]
-crbug.com/395997 [ Linux ] inspector/sources/debugger/script-formatter.html [ Crash Pass ]
 
 # Stack use-after-return detection
 crbug.com/438499 [ Linux ] crypto/worker-random-values-limits.html [ Timeout ]
@@ -100,18 +63,10 @@ crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow.html [ Timeou
 crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow-2.html [ Timeout ]
 crbug.com/525975 [ Linux ] http/tests/websocket/workers/close-before-open.html [ Timeout Pass ]
 
-crbug.com/451577 [ Linux ] inspector/elements/user-properties.html [ Slow ]
-crbug.com/451577 [ Linux ] inspector/extensions/extensions-reload.html [ Slow ]
-crbug.com/451577 [ Linux ] inspector/extensions/extensions-resources.html [ Slow ]
-crbug.com/451577 [ Linux ] inspector/extensions/extensions-sidebar.html [ Slow ]
-crbug.com/451577 [ Linux ] inspector/layers/layer-canvas-log.html [ Slow ]
-
 crbug.com/572723 [ Linux ] inspector/sources/debugger/debugger-completions-on-call-frame.html [ Timeout Pass ]
 
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
-
-crbug.com/624712 [ Linux ] virtual/threaded/fast/compositorworker/compositor-attribute-change-worker.html [ Timeout ]
 
 crbug.com/717019 [ Linux ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
 crbug.com/717019 [ Linux ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Crash ]

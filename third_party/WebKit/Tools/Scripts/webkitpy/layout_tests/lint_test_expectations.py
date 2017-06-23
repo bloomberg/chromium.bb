@@ -29,14 +29,12 @@
 import json
 import logging
 import optparse
-import signal
 import traceback
 
-from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
+from webkitpy.common import exit_codes
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.port.factory import platform_options
-
 
 _log = logging.getLogger(__name__)
 
@@ -45,11 +43,31 @@ def lint(host, options):
     ports_to_lint = [host.port_factory.get(name) for name in host.port_factory.all_port_names(options.platform)]
     files_linted = set()
 
+    # In general, the set of TestExpectation files should be the same for
+    # all ports. However, the method used to list expectations files is
+    # in Port, and the TestExpectations constructor takes a Port.
+    # Perhaps this function could be changed to just use one Port
+    # (the default Port for this host) and it would work the same.
+
     failures = []
     for port_to_lint in ports_to_lint:
         expectations_dict = port_to_lint.all_expectations_dict()
 
-        for expectations_file in expectations_dict.keys():
+        # There are some TestExpectations files that are not loaded by default
+        # in any Port, and are instead passed via --additional-expectations on
+        # some builders. We also want to inspect these files if they're present.
+        extra_files = (
+            'ASANExpectations',
+            'LeakExpectations',
+            'MSANExpectations',
+        )
+        for name in extra_files:
+            path = port_to_lint.layout_tests_dir() + '/' + name
+            if host.filesystem.exists(path):
+                expectations_dict[path] = host.filesystem.read_text_file(path)
+
+        for expectations_file in expectations_dict:
+
             if expectations_file in files_linted:
                 continue
 
