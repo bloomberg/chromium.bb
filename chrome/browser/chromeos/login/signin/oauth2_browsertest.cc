@@ -538,8 +538,15 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_OverlappingContinueSessionRestore) {
   StartNewUserSession(true);
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_OverlappingContinueSessionRestore \
+  DISABLED_OverlappingContinueSessionRestore
+#else
+#define MAYBE_OverlappingContinueSessionRestore \
+  OverlappingContinueSessionRestore
+#endif
 // Tests that ContinueSessionRestore could be called multiple times.
-IN_PROC_BROWSER_TEST_F(OAuth2Test, OverlappingContinueSessionRestore) {
+IN_PROC_BROWSER_TEST_F(OAuth2Test, MAYBE_OverlappingContinueSessionRestore) {
   SetupGaiaServerForUnexpiredAccount();
   SimulateNetworkOnline();
 
