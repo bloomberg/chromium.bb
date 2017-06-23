@@ -29,7 +29,10 @@ class AvatarButton : public views::LabelButton,
                Profile* profile);
   ~AvatarButton() override;
 
+  void SetupThemeColorButton();
+
   // views::LabelButton:
+  void AddedToWidget() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size CalculatePreferredSize() const override;

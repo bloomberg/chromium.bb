@@ -22,6 +22,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -207,14 +208,8 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
     generic_avatar_ = gfx::CreateVectorIcon(kProfileSwitcherOutlineIcon,
                                             kIconSize, gfx::kPlaceholderColor);
 #elif defined(OS_WIN)
-    constexpr int kIconSize = 16;
     DCHECK_EQ(AvatarButtonStyle::NATIVE, button_style);
-    set_ink_drop_base_color(SK_ColorBLACK);
     SetBorder(views::CreateEmptyBorder(kBorderInsets));
-    constexpr SkColor kIconColor =
-        SkColorSetA(SK_ColorBLACK, static_cast<SkAlpha>(0.54 * 0xFF));
-    generic_avatar_ =
-        gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize, kIconColor);
 #endif  // defined(OS_WIN)
   } else if (button_style == AvatarButtonStyle::THEMED) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);
@@ -244,12 +239,33 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
   profile_shutdown_notifier_ =
       ShutdownNotifierFactory::GetInstance()->Get(profile_)->Subscribe(
           base::Bind(&AvatarButton::OnProfileShutdown, base::Unretained(this)));
-
-  Update();
-  SchedulePaint();
 }
 
 AvatarButton::~AvatarButton() {}
+
+void AvatarButton::SetupThemeColorButton() {
+#if defined(OS_WIN)
+  if (IsCondensible()) {
+    // TODO(bsep): This needs to also be called when the Windows accent color
+    // updates, but there is currently no signal for that.
+    const SkColor base_color = color_utils::IsDark(GetThemeProvider()->GetColor(
+                                   ThemeProperties::COLOR_FRAME))
+                                   ? SK_ColorWHITE
+                                   : SK_ColorBLACK;
+    set_ink_drop_base_color(base_color);
+    constexpr int kIconSize = 16;
+    const SkColor icon_color =
+        SkColorSetA(base_color, static_cast<SkAlpha>(0.54 * 0xFF));
+    generic_avatar_ =
+        gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize, icon_color);
+  }
+#endif  // defined(OS_WIN)
+}
+
+void AvatarButton::AddedToWidget() {
+  SetupThemeColorButton();
+  Update();
+}
 
 void AvatarButton::OnGestureEvent(ui::GestureEvent* event) {
   // TODO(wjmaclean): The check for ET_GESTURE_LONG_PRESS is done here since
