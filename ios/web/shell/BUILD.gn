@@ -4,6 +4,7 @@
 
 import("//build/config/ios/rules.gni")
 import("//ios/build/config.gni")
+import("//tools/grit/repack.gni")
 
 ios_app_bundle("ios_web_shell") {
   info_plist = "Info.plist"
@@ -34,6 +35,18 @@ bundle_data("shell_bundle_data") {
   ]
 }
 
+repack("packed_resources") {
+  visibility = [ ":shell" ]
+  sources = [
+    "$root_gen_dir/ios/web/ios_web_resources.pak",
+  ]
+  deps = [
+    "//ios/web:resources",
+  ]
+  output = "$target_gen_dir/web_shell_resources.pak"
+  copy_data_to_bundle = true
+}
+
 source_set("shell") {
   sources = [
     "app_delegate.h",
@@ -56,6 +69,7 @@ source_set("shell") {
   ]
 
   deps = [
+    ":packed_resources",
     ":shell_bundle_data",
     "//base",
     "//ios/net",
