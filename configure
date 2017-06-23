@@ -323,6 +323,7 @@ EXPERIMENT_LIST="
     rect_intra_pred
     lgt
     sbl_symbol
+    ncobmc_adapt_weight
 "
 CONFIG_LIST="
     dependency_tracking
@@ -533,6 +534,8 @@ post_process_cmdline() {
     enabled chroma_sub8x8 && enable_feature cb4x4
     enabled compound_singleref && enable_feature ext_inter
     enabled new_multisymbol && enable_feature ec_adapt
+    enabled warped_motion && disable_feature ncobmc_adapt_weight
+    enabled ncobmc_adapt_weight && enable_feature motion_var
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
