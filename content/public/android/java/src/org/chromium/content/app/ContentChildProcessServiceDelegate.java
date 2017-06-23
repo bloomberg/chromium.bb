@@ -24,7 +24,8 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
-import org.chromium.content.browser.ChildProcessConstants;
+import org.chromium.base.process_launcher.ChildProcessServiceDelegate;
+import org.chromium.content.browser.ContentChildProcessConstants;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.IGpuProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
@@ -52,6 +53,10 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     private SparseArray<String> mFdsIdsToKeys;
 
+    public ContentChildProcessServiceDelegate() {
+        KillChildUncaughtExceptionHandler.maybeInstallHandler();
+    }
+
     @Override
     public void onServiceCreated() {
         ContentProcessInfo.setInChildProcess(true);
@@ -60,7 +65,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     @Override
     public void onServiceBound(Intent intent) {
         mLinkerParams = (ChromiumLinkerParams) intent.getParcelableExtra(
-                ChildProcessConstants.EXTRA_LINKER_PARAMS);
+                ContentChildProcessConstants.EXTRA_LINKER_PARAMS);
         mLibraryProcessType = ChildProcessCreationParams.getLibraryProcessType(intent);
     }
 
@@ -68,8 +73,8 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     public void onConnectionSetup(Bundle connectionBundle, IBinder callback) {
         mGpuCallback = callback != null ? IGpuProcessCallback.Stub.asInterface(callback) : null;
 
-        mCpuCount = connectionBundle.getInt(ChildProcessConstants.EXTRA_CPU_COUNT);
-        mCpuFeatures = connectionBundle.getLong(ChildProcessConstants.EXTRA_CPU_FEATURES);
+        mCpuCount = connectionBundle.getInt(ContentChildProcessConstants.EXTRA_CPU_COUNT);
+        mCpuFeatures = connectionBundle.getLong(ContentChildProcessConstants.EXTRA_CPU_FEATURES);
         assert mCpuCount > 0;
 
         Bundle sharedRelros = connectionBundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);

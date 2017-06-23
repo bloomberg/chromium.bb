@@ -21,6 +21,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.Linker;
+import org.chromium.base.process_launcher.ChildProcessConstants;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.app.ChromiumLinkerParams;
@@ -660,8 +661,8 @@ public class ChildProcessLauncherHelper {
         initLinker();
         Bundle bundle = new Bundle();
         bundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCallerCheck);
-        bundle.putParcelable(
-                ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
+        bundle.putParcelable(ContentChildProcessConstants.EXTRA_LINKER_PARAMS,
+                getLinkerParamsForNewConnection());
         return bundle;
     }
 
@@ -688,8 +689,10 @@ public class ChildProcessLauncherHelper {
         }
 
         // Popuplate the bundle passed to the service setup call with content specific parameters.
-        connectionBundle.putInt(ChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
-        connectionBundle.putLong(ChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
+        connectionBundle.putInt(
+                ContentChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
+        connectionBundle.putLong(
+                ContentChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
         connectionBundle.putBundle(
                 Linker.EXTRA_LINKER_SHARED_RELROS, Linker.getInstance().getSharedRelros());
     }

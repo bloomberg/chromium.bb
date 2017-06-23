@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.app;
+package org.chromium.base.process_launcher;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
 /**
- * This is the base class for child services; the [Sandboxed|Privileged]ProcessService0, 1.. etc
- * subclasses provide the concrete service entry points, to enable the browser to connect
- * to more than one distinct process (i.e. one process per service number, up to limit of N).
+ * This is the base class for child services; the embedding application should contain
+ * ProcessService0, 1.. etc subclasses that provide the concrete service entry points, so it can
+ * connect to more than one distinct process (i.e. one process per service number, up to limit of
+ * N).
  * The embedding application must declare these service instances in the application section
  * of its AndroidManifest.xml, first with some meta-data describing the services:
- *     <meta-data android:name="org.chromium.content.browser.NUM_[SANDBOXED|PRIVILEGED]_SERVICES"
- *           android:value="N"/>
- *     <meta-data android:name="org.chromium.content.browser.[SANDBOXED|PRIVILEGED]_SERVICES_NAME"
- *           android:value="org.chromium.content.app.[Sandboxed|Privileged]ProcessService"/>
+ *     <meta-data android:name="org.chromium.test_app.SERVICES_NAME"
+ *           android:value="org.chromium.test_app.ProcessService"/>
  * and then N entries of the form:
- *     <service android:name="org.chromium.content.app.[Sandboxed|Privileged]ProcessServiceX"
- *              android:process=":[sandboxed|privileged]_processX" />
+ *     <service android:name="org.chromium.test_app.ProcessServiceX"
+ *              android:process=":processX" />
  *
  * Subclasses must also provide a delegate in this class constructor. That delegate is responsible
  * for loading native libraries and running the main entry point of the service.

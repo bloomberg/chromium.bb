@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.os.IBinder;
 
 import org.chromium.base.annotations.UsedByReflection;
-import org.chromium.content.app.ChildProcessServiceImpl;
+import org.chromium.base.process_launcher.ChildProcessServiceImpl;
 import org.chromium.content.app.ContentChildProcessServiceDelegate;
 
 /**
