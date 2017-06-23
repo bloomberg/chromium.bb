@@ -20,6 +20,27 @@ static const char kSupportedMethods[] = "supportedMethods";
 static const char kSupportedNetworks[] = "supportedNetworks";
 static const char kSupportedTypes[] = "supportedTypes";
 
+// Converts |supported_type| to |card_type| and returns true on success.
+bool ConvertCardTypeStringToEnum(const std::string& supported_type,
+                                 autofill::CreditCard::CardType* card_type) {
+  if (supported_type == "credit") {
+    *card_type = autofill::CreditCard::CARD_TYPE_CREDIT;
+    return true;
+  }
+
+  if (supported_type == "debit") {
+    *card_type = autofill::CreditCard::CARD_TYPE_DEBIT;
+    return true;
+  }
+
+  if (supported_type == "prepaid") {
+    *card_type = autofill::CreditCard::CARD_TYPE_PREPAID;
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 PaymentMethodData::PaymentMethodData() {}
@@ -84,7 +105,10 @@ bool PaymentMethodData::FromDictionaryValue(
             !base::IsStringASCII(supported_type)) {
           return false;
         }
-        this->supported_types.push_back(supported_type);
+        autofill::CreditCard::CardType card_type =
+            autofill::CreditCard::CARD_TYPE_UNKNOWN;
+        if (ConvertCardTypeStringToEnum(supported_type, &card_type))
+          this->supported_types.insert(card_type);
       }
     }
   }

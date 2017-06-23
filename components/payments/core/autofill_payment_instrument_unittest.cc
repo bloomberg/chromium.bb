@@ -164,8 +164,10 @@ class AutofillPaymentInstrumentTest : public testing::Test {
 
 // A valid local credit card is a valid instrument for payment.
 TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment) {
-  AutofillPaymentInstrument instrument("visa", local_credit_card(),
-                                       billing_profiles(), "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", local_credit_card(),
+      /*matches_merchant_card_type_exactly=*/true, billing_profiles(), "en-US",
+      nullptr);
   EXPECT_TRUE(instrument.IsCompleteForPayment());
   EXPECT_TRUE(instrument.GetMissingInfoLabel().empty());
 }
@@ -174,8 +176,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment) {
 TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_Expired) {
   autofill::CreditCard& card = local_credit_card();
   card.SetExpirationYear(2016);  // Expired.
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_TRUE(instrument.IsCompleteForPayment());
   EXPECT_EQ(base::string16(), instrument.GetMissingInfoLabel());
 }
@@ -186,8 +189,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_NoName) {
   card.SetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                base::ASCIIToUTF16(""), "en-US");
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_FALSE(instrument.IsCompleteForPayment());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_NAME_ON_CARD_REQUIRED),
             instrument.GetMissingInfoLabel());
@@ -198,8 +202,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_NoNumber) {
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_FALSE(instrument.IsCompleteForPayment());
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
@@ -212,8 +217,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_NoBillinbAddressId) {
   autofill::CreditCard& card = local_credit_card();
   card.set_billing_address_id("");
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_FALSE(instrument.IsCompleteForPayment());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED),
@@ -227,8 +233,9 @@ TEST_F(AutofillPaymentInstrumentTest,
   autofill::CreditCard& card = local_credit_card();
   card.set_billing_address_id("InvalidBillingAddressId");
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_FALSE(instrument.IsCompleteForPayment());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED),
@@ -243,8 +250,9 @@ TEST_F(AutofillPaymentInstrumentTest,
   card.SetNumber(base::ASCIIToUTF16(""));
   card.SetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                base::ASCIIToUTF16(""), "en-US");
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_FALSE(instrument.IsCompleteForPayment());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_MORE_INFORMATION_REQUIRED),
             instrument.GetMissingInfoLabel());
@@ -255,8 +263,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_MaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
   ASSERT_GT(billing_profiles().size(), 0UL);
   card.set_billing_address_id(billing_profiles()[0]->guid());
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_TRUE(instrument.IsCompleteForPayment());
   EXPECT_TRUE(instrument.GetMissingInfoLabel().empty());
 }
@@ -267,8 +276,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_ExpiredMaskedCard) {
   ASSERT_GT(billing_profiles().size(), 0UL);
   card.set_billing_address_id(billing_profiles()[0]->guid());
   card.SetExpirationYear(2016);  // Expired.
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_TRUE(instrument.IsCompleteForPayment());
   EXPECT_EQ(base::string16(), instrument.GetMissingInfoLabel());
 }
@@ -277,8 +287,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_ExpiredMaskedCard) {
 TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_Minimal) {
   autofill::CreditCard& card = local_credit_card();
   card.SetExpirationYear(2016);  // Expired.
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_TRUE(instrument.IsValidForCanMakePayment());
 }
 
@@ -286,8 +297,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_Minimal) {
 TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_MaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
   card.SetExpirationYear(2016);  // Expired.
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_TRUE(instrument.IsValidForCanMakePayment());
 }
 
@@ -296,8 +308,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_NoName) {
   autofill::CreditCard& card = local_credit_card();
   card.SetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                base::ASCIIToUTF16(""), "en-US");
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_FALSE(instrument.IsValidForCanMakePayment());
 }
 
@@ -305,8 +318,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_NoName) {
 TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_NoNumber) {
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", nullptr);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", nullptr);
   EXPECT_FALSE(instrument.IsValidForCanMakePayment());
 }
 
@@ -320,8 +334,9 @@ TEST_F(AutofillPaymentInstrumentTest,
 
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", &delegate);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", &delegate);
 
   FakePaymentInstrumentDelegate instrument_delegate;
 
@@ -348,8 +363,9 @@ TEST_F(AutofillPaymentInstrumentTest,
 
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
-  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
-                                       "en-US", &delegate);
+  AutofillPaymentInstrument instrument(
+      "visa", card, /*matches_merchant_card_type_exactly=*/true,
+      billing_profiles(), "en-US", &delegate);
 
   FakePaymentInstrumentDelegate instrument_delegate;
 

@@ -1678,6 +1678,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_enum("credit_card_javagen") {
+    sources = [
+      "../components/autofill/core/browser/credit_card.h",
+    ]
+  }
+
   java_cpp_enum("signin_metrics_enum_javagen") {
     sources = [
       "../components/signin/core/browser/signin_metrics.h",

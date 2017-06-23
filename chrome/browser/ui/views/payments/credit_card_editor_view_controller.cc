@@ -35,6 +35,7 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
@@ -186,8 +187,8 @@ CreditCardEditorViewController::CreateHeaderView() {
   view->SetLayoutManager(layout);
 
   // "Cards accepted" label is "hint" grey.
-  view->AddChildView(CreateHintLabel(l10n_util::GetStringUTF16(
-                                         IDS_PAYMENTS_ACCEPTED_CARDS_LABEL))
+  view->AddChildView(CreateHintLabel(GetAcceptedCardTypesText(
+                                         spec()->supported_card_types_set()))
                          .release());
 
   // 8dp padding is required between icons.

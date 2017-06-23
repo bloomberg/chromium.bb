@@ -1127,23 +1127,27 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     @Override
     public String getAdditionalText(PaymentRequestSection section) {
-        if (section != mShippingAddressSection) return null;
+        if (section == mShippingAddressSection) {
+            int selectedItemIndex = mShippingAddressSectionInformation.getSelectedItemIndex();
+            if (selectedItemIndex != SectionInformation.NO_SELECTION
+                    && selectedItemIndex != SectionInformation.INVALID_SELECTION) {
+                return null;
+            }
 
-        int selectedItemIndex = mShippingAddressSectionInformation.getSelectedItemIndex();
-        if (selectedItemIndex != SectionInformation.NO_SELECTION
-                && selectedItemIndex != SectionInformation.INVALID_SELECTION) {
+            String customErrorMessage = mShippingAddressSectionInformation.getErrorMessage();
+            if (selectedItemIndex == SectionInformation.INVALID_SELECTION
+                    && !TextUtils.isEmpty(customErrorMessage)) {
+                return customErrorMessage;
+            }
+
+            return mContext.getString(selectedItemIndex == SectionInformation.NO_SELECTION
+                            ? mShippingStrings.getSelectPrompt()
+                            : mShippingStrings.getUnsupported());
+        } else if (section == mPaymentMethodSection) {
+            return mPaymentMethodSectionInformation.getAdditionalText();
+        } else {
             return null;
         }
-
-        String customErrorMessage = mShippingAddressSectionInformation.getErrorMessage();
-        if (selectedItemIndex == SectionInformation.INVALID_SELECTION
-                && !TextUtils.isEmpty(customErrorMessage)) {
-            return customErrorMessage;
-        }
-
-        return mContext.getString(selectedItemIndex == SectionInformation.NO_SELECTION
-                        ? mShippingStrings.getSelectPrompt()
-                        : mShippingStrings.getUnsupported());
     }
 
     @Override
