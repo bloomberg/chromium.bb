@@ -586,19 +586,32 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
   sql.append(name);
   sql.append(
       "("
-      "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-      // Using AUTOINCREMENT is for sync propose. Sync uses this |id| as an
-      // unique key to identify the URLs. If here did not use AUTOINCREMENT, and
-      // Sync was not working somehow, a ROWID could be deleted and re-used
+      // The id uses AUTOINCREMENT is for sync propose. Sync uses this |id| as
+      // an unique key to identify the URLs. If here did not use AUTOINCREMENT,
+      // and Sync was not working somehow, a ROWID could be deleted and re-used
       // during this period. Once Sync come back, Sync would use ROWIDs and
       // timestamps to see if there are any updates need to be synced. And sync
-      //  will only see the new URL, but missed the deleted URL.
+      // will only see the new URL, but missed the deleted URL.
+      //
+      // IMPORTANT NOTE: Currently new tables are created with AUTOINCREMENT
+      // but the migration code is disabled. This means that you will not
+      // be able to count on AUTOINCREMENT behavior without adding
+      // additional migration steps.
+      //
+      // Along with this, an unused favicon_id column will exist for tables
+      // without AUTOINCREMENT. This should be removed everywhere.
+      //
+      // TODO(https://crbug.com/736136) figure out how to update users to use
+      // AUTOINCREMENT and remove the favicon_id column consistently.
+      "id INTEGER PRIMARY KEY AUTOINCREMENT,"
       "url LONGVARCHAR,"
       "title LONGVARCHAR,"
       "visit_count INTEGER DEFAULT 0 NOT NULL,"
       "typed_count INTEGER DEFAULT 0 NOT NULL,"
       "last_visit_time INTEGER NOT NULL,"
       "hidden INTEGER DEFAULT 0 NOT NULL)");
+  // IMPORTANT: If you change the colums, also update in_memory_database.cc
+  // where the values are copied (InitFromDisk).
 
   return GetDB().Execute(sql.c_str());
 }

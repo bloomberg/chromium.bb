@@ -24028,6 +24028,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.AttemptedToFixProfileError">
+  <owner>brettw@chromium.org</owner>
+  <summary>
+    Logged whenever history database initialization fails. The frequency of
+    logging will tell you the total failure rate. True indicate that we think
+    the database is non-recoverable and it will be deleted. It should be
+    re-created the next time Chrome is started. False indicates we think the
+    error is temporary (like out of disk space or file locked). Chrome will run
+    with no history database and nothing will be done to try to fix the error.
+    See History.InitializationFailureStep for which particular step of history
+    initialization failed.
+  </summary>
+</histogram>
+
 <histogram
     name="History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated"
     enum="BooleanShown">
@@ -24265,6 +24279,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.InitializationFailureStep" enum="HistoryInitStep">
+  <owner>brettw@chromium.org</owner>
+  <summary>
+    The phase of history initialization that failed. This histogram is only
+    logged on database initialization failure.
+    History.AttemptedToFixProfileError will tell how often initialization fails
+    overall.
+  </summary>
+</histogram>
+
 <histogram name="History.InMemoryDBItemCount">
   <owner>gab@chromium.org</owner>
   <summary>
@@ -24386,6 +24410,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Number of items in in-memory url index word_map_. Recorded on profile open
     when restoring from a cache file and again shortly after profile open when
     rebuilding the in-memory url index from history.
+  </summary>
+</histogram>
+
+<histogram name="History.MigrateFailureFromVersion">
+  <owner>brettw@chromium.org</owner>
+  <summary>
+    History database version from which history migration failed. If there are
+    higher than normal migration failures, this histogram will indicate which
+    migration step failed.
   </summary>
 </histogram>
 
