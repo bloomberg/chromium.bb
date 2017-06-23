@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#include "ios/web/public/browser_state.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -240,12 +241,25 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
       NSMutableAttributedString* feedbackString =
           [[NSMutableAttributedString alloc]
               initWithString:feedbackIntroductionString];
+
+      BOOL isAlreadyInIncognitoMode =
+          _navigationManager
+              ? _navigationManager->GetBrowserState()->IsOffTheRecord()
+              : NO;
+      NSMutableArray* stringsArray = [NSMutableArray
+          arrayWithObjects:l10n_util::GetNSString(
+                               IDS_SAD_TAB_RELOAD_RESTART_BROWSER),
+                           l10n_util::GetNSString(
+                               IDS_SAD_TAB_RELOAD_RESTART_DEVICE),
+                           nil];
+      if (!isAlreadyInIncognitoMode) {
+        NSString* incognitoSuggestionString =
+            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO);
+        [stringsArray insertObject:incognitoSuggestionString atIndex:0];
+      }
+
       NSAttributedString* bulletedListString =
-          [[self class] bulletedAttributedStringFromStrings:@[
-            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO),
-            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_RESTART_BROWSER),
-            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_RESTART_DEVICE)
-          ]];
+          [[self class] bulletedAttributedStringFromStrings:stringsArray];
       [feedbackString appendAttributedString:bulletedListString];
       label = feedbackString;
       break;
