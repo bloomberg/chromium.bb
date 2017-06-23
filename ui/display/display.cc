@@ -16,6 +16,7 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/icc_profile.h"
 
 namespace display {
 namespace {
@@ -56,6 +57,12 @@ float GetForcedDeviceScaleFactorImpl() {
 }
 
 int64_t internal_display_id_ = -1;
+
+gfx::ColorSpace GetForcedColorSpace() {
+  if (gfx::ICCProfile::HasForcedProfile())
+    return gfx::ICCProfile::GetForcedProfile().GetColorSpace();
+  return gfx::ColorSpace::CreateSRGB();
+}
 
 }  // namespace
 
@@ -108,6 +115,7 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
       bounds_(bounds),
       work_area_(bounds),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
+      color_space_(GetForcedColorSpace()),
       color_depth_(DEFAULT_BITS_PER_PIXEL),
       depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {

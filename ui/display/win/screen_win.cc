@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/icc_profile.h"
 
 namespace display {
 namespace win {
@@ -89,6 +90,11 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info) {
   display.set_bounds(gfx::ScaleToEnclosingRect(display_info.screen_rect(),
                      1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
+
+  // TODO(ccameron): Populate this based on this specific display.
+  // http://crbug.com/735613
+  display.set_color_space(gfx::ICCProfile::FromBestMonitor().GetColorSpace());
+
   return display;
 }
 

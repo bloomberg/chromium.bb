@@ -938,8 +938,12 @@ void SurfaceAggregator::SetFullDamageForSurface(const SurfaceId& surface_id) {
 void SurfaceAggregator::SetOutputColorSpace(
     const gfx::ColorSpace& blending_color_space,
     const gfx::ColorSpace& output_color_space) {
-  blending_color_space_ = blending_color_space;
-  output_color_space_ = output_color_space;
+  blending_color_space_ = blending_color_space.IsValid()
+                              ? blending_color_space
+                              : gfx::ColorSpace::CreateSRGB();
+  output_color_space_ = output_color_space.IsValid()
+                            ? output_color_space
+                            : gfx::ColorSpace::CreateSRGB();
 }
 
 }  // namespace cc

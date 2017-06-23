@@ -3354,8 +3354,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
       color_space = base::mac::GetSystemColorSpace();
     gfx::ICCProfile icc_profile =
         gfx::ICCProfile::FromCGColorSpace(color_space);
-    renderWidgetHostView_->browser_compositor_->SetDisplayColorProfile(
-        icc_profile);
+    renderWidgetHostView_->browser_compositor_->SetDisplayColorSpace(
+        icc_profile.GetColorSpace());
   }
 }
 

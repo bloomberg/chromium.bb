@@ -153,11 +153,11 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // The color space for the root render pass. If this is different from
   // |blending_color_space_|, then a final render pass to convert between
-  // the two will be added.
-  gfx::ColorSpace output_color_space_;
+  // the two will be added. This space must always be valid.
+  gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
   // The color space in which blending is done, used for all non-root render
-  // passes.
-  gfx::ColorSpace blending_color_space_;
+  // passes. This space must always be valid.
+  gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
   // The id for the final color conversion render pass.
   RenderPassId color_conversion_render_pass_id_ = 0;
 

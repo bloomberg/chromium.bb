@@ -306,10 +306,10 @@ void BrowserCompositorMac::SetHasTransparentBackground(bool transparent) {
   }
 }
 
-void BrowserCompositorMac::SetDisplayColorProfile(
-    const gfx::ICCProfile& icc_profile) {
+void BrowserCompositorMac::SetDisplayColorSpace(
+    const gfx::ColorSpace& color_space) {
   if (recyclable_compositor_)
-    recyclable_compositor_->compositor()->SetDisplayColorProfile(icc_profile);
+    recyclable_compositor_->compositor()->SetDisplayColorSpace(color_space);
 }
 
 void BrowserCompositorMac::UpdateVSyncParameters(

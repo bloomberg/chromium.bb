@@ -246,7 +246,7 @@ class COMPOSITOR_EXPORT Compositor
   void SetScaleAndSize(float scale, const gfx::Size& size_in_pixel);
 
   // Set the output color profile into which this compositor should render.
-  void SetDisplayColorProfile(const gfx::ICCProfile& icc_profile);
+  void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
 
   // Returns the size of the widget that is being drawn to in pixel coordinates.
   const gfx::Size& size() const { return size_; }

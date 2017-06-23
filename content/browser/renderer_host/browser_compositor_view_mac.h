@@ -61,7 +61,7 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
                              cc::CompositorFrame frame);
   void OnDidNotProduceFrame(const cc::BeginFrameAck& ack);
   void SetHasTransparentBackground(bool transparent);
-  void SetDisplayColorProfile(const gfx::ICCProfile& icc_profile);
+  void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
   void SetNeedsBeginFrames(bool needs_begin_frames);

@@ -11,8 +11,8 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/icc_profile.h"
 
 namespace display {
 
@@ -184,10 +184,10 @@ class DISPLAY_EXPORT Display final {
     maximum_cursor_size_ = size;
   }
 
-  // The full ICC profile of the display.
-  gfx::ICCProfile icc_profile() const { return icc_profile_; }
-  void set_icc_profile(const gfx::ICCProfile& icc_profile) {
-    icc_profile_ = icc_profile;
+  // The full color space of the display.
+  gfx::ColorSpace color_space() const { return color_space_; }
+  void set_color_space(const gfx::ColorSpace& color_space) {
+    color_space_ = color_space;
   }
 
   // The number of bits per pixel. Used by media query APIs.
@@ -226,7 +226,7 @@ class DISPLAY_EXPORT Display final {
   gfx::Size maximum_cursor_size_;
   // NOTE: this is not currently written to the mojom as it is not used in
   // aura.
-  gfx::ICCProfile icc_profile_;
+  gfx::ColorSpace color_space_;
   int color_depth_;
   int depth_per_component_;
   bool is_monochrome_ = false;

@@ -193,11 +193,6 @@ void WindowTreeHostMus::OnCloseRequest() {
   OnHostCloseRequested();
 }
 
-gfx::ICCProfile WindowTreeHostMus::GetICCProfileForCurrentDisplay() {
-  // TODO: This should read the profile from mus. crbug.com/647510
-  return gfx::ICCProfile();
-}
-
 void WindowTreeHostMus::MoveCursorToScreenLocationInPixels(
     const gfx::Point& location_in_pixels) {
   gfx::Point screen_location_in_pixels = location_in_pixels;
