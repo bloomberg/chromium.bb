@@ -49,7 +49,7 @@ string DecodeFile(const string &filename) {
   video.Init();
 
   aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
-  cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
+  cfg.allow_lowbitdepth = 1;
   libaom_test::AV1Decoder decoder(cfg, 0);
 
   libaom_test::MD5 md5;
