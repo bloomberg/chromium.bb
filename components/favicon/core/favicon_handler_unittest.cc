@@ -1460,10 +1460,11 @@ TEST_F(FaviconHandlerTest, TestRecordSkippedDownloadForKnownFailingUrl) {
                                /*expected_count=*/1)));
 }
 
-// Test that the support for Web Manifest is disabled by default, unless the
-// feature is enabled.
-TEST_F(FaviconHandlerTest, IgnoreWebManifestByDefault) {
+// Test that the feature for loading icons from Web Manifests can be disabled.
+TEST_F(FaviconHandlerTest, IgnoreWebManifest) {
   const GURL kManifestURL("http://www.google.com/manifest.json");
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndDisableFeature(kFaviconsFromWebManifest);
 
   RunHandlerWithSimpleFaviconCandidates({kIconURL16x16}, kManifestURL);
   EXPECT_THAT(favicon_service_.fake()->db_requests(),
@@ -1471,17 +1472,15 @@ TEST_F(FaviconHandlerTest, IgnoreWebManifestByDefault) {
   EXPECT_THAT(delegate_.downloads(), Not(Contains(kManifestURL)));
 }
 
+// Manifests are currently enabled by default. Leaving this fixture for
+// logical grouping and blame layer.
 class FaviconHandlerManifestsEnabledTest : public FaviconHandlerTest {
  protected:
   const GURL kManifestURL = GURL("http://www.google.com/manifest.json");
 
-  FaviconHandlerManifestsEnabledTest() {
-    override_features_.InitAndEnableFeature(kFaviconsFromWebManifest);
-  }
+  FaviconHandlerManifestsEnabledTest() = default;
 
  private:
-  base::test::ScopedFeatureList override_features_;
-
   DISALLOW_COPY_AND_ASSIGN(FaviconHandlerManifestsEnabledTest);
 };
 
