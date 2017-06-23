@@ -23,12 +23,15 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/custom_launcher_page_view.h"
+#include "ui/app_list/views/indicator_chip_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_container_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/tile_item_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -42,9 +45,12 @@ namespace app_list {
 namespace {
 
 // Layout constants.
+constexpr int kSearchBoxTopPadding = 24;
 constexpr int kInstantContainerSpacing = 24;
 constexpr int kSearchBoxAndTilesSpacing = 35;
+constexpr int kSearchBoxAndIndicatorSpacing = 21;
 constexpr int kStartPageSearchBoxWidth = 480;
+constexpr int kStartPageSearchBoxWidthFullscreen = 544;
 
 // WebView constants.
 constexpr int kWebViewWidth = 700;
@@ -285,14 +291,22 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
           app_list_main_view->contents_view(),
           new AllAppsTileItemView(app_list_main_view_->contents_view(),
                                   app_list_view),
-          view_delegate)) {
+          view_delegate)),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   search_box_spacer_view_->SetPreferredSize(gfx::Size(
-      kStartPageSearchBoxWidth,
+      is_fullscreen_app_list_enabled_ ? kStartPageSearchBoxWidthFullscreen
+                                      : kStartPageSearchBoxWidth,
       app_list_main_view->search_box_view()->GetPreferredSize().height()));
 
   // The view containing the start page WebContents and SearchBoxSpacerView.
   InitInstantContainer();
   AddChildView(instant_container_);
+
+  if (is_fullscreen_app_list_enabled_) {
+    indicator_ = new IndicatorChipView(
+        l10n_util::GetStringUTF16(IDS_SUGGESTED_APPS_INDICATOR));
+    AddChildView(indicator_);
+  }
 
   // The view containing the start page tiles.
   AddChildView(tiles_container_);
@@ -301,14 +315,18 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
   tiles_container_->SetResults(view_delegate_->GetModel()->results());
 }
 
-StartPageView::~StartPageView() {
-}
+StartPageView::~StartPageView() = default;
 
 void StartPageView::InitInstantContainer() {
   views::BoxLayout* instant_layout_manager = new views::BoxLayout(
       views::BoxLayout::kVertical, gfx::Insets(), kInstantContainerSpacing);
-  instant_layout_manager->set_inside_border_insets(
-      gfx::Insets(0, 0, kSearchBoxAndTilesSpacing, 0));
+  if (is_fullscreen_app_list_enabled_) {
+    instant_layout_manager->set_inside_border_insets(
+        gfx::Insets(kSearchBoxTopPadding, 0, kSearchBoxAndIndicatorSpacing, 0));
+  } else {
+    instant_layout_manager->set_inside_border_insets(
+        gfx::Insets(0, 0, kSearchBoxAndTilesSpacing, 0));
+  }
   instant_layout_manager->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   instant_layout_manager->set_cross_axis_alignment(
@@ -317,7 +335,7 @@ void StartPageView::InitInstantContainer() {
 
   // Create the view for the Google Doodle if the fullscreen launcher is not
   // enabled.
-  if (!features::IsFullscreenAppListEnabled()) {
+  if (!is_fullscreen_app_list_enabled_) {
     views::View* web_view = view_delegate_->CreateStartPageWebView(
         gfx::Size(kWebViewWidth, kWebViewHeight));
 
@@ -393,8 +411,17 @@ void StartPageView::Layout() {
   bounds.set_height(instant_container_->GetHeightForWidth(bounds.width()));
   instant_container_->SetBoundsRect(bounds);
 
-  // Tiles begin where the instant container ends.
+  // For old launcher, tiles begin where the instant container ends; for
+  // fullscreen app list launcher, tiles begin where the |indicator_| ends.
   bounds.set_y(bounds.bottom());
+  if (indicator_) {
+    gfx::Rect indicator_rect(bounds);
+    indicator_rect.Offset(
+        (indicator_rect.width() - indicator_->GetPreferredSize().width()) / 2,
+        0);
+    indicator_->SetBoundsRect(indicator_rect);
+    bounds.Inset(0, indicator_->GetPreferredSize().height(), 0, 0);
+  }
   bounds.set_height(tiles_container_->GetHeightForWidth(bounds.width()));
   tiles_container_->SetBoundsRect(bounds);
 
