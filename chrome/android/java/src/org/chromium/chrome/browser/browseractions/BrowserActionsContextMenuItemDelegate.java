@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.browseractions;
 
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -25,6 +26,8 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.widget.Toast;
@@ -50,9 +53,23 @@ public class BrowserActionsContextMenuItemDelegate {
     public static final String EXTRA_IS_SINGLE_URL =
             "org.chromium.chrome.browser.browseractions.is_single_url";
 
-    private final Context mContext;
+    private final Activity mActivity;
     private final NotificationManager mNotificationManager;
     private final SharedPreferences mSharedPreferences;
+    private final String mSourcePackageName;
+
+    /**
+     * Builds a {@link BrowserActionsContextMenuItemDelegate} instance.
+     * @param activity The activity displays the context menu.
+     * @param sourcePackageName The package name of the app which requests the Browser Actions.
+     */
+    public BrowserActionsContextMenuItemDelegate(Activity activity, String sourcePackageName) {
+        mActivity = activity;
+        mNotificationManager =
+                (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+        mSharedPreferences = ContextUtils.getAppSharedPreferences();
+        mSourcePackageName = sourcePackageName;
+    }
 
     private void sendBrowserActionsNotification() {
         ChromeNotificationBuilder builder = createNotificationBuilder();
@@ -72,20 +89,20 @@ public class BrowserActionsContextMenuItemDelegate {
                         .setLocalOnly(true)
                         .setAutoCancel(true)
                         .setContentText(
-                                mContext.getString(R.string.browser_actions_notification_text));
+                                mActivity.getString(R.string.browser_actions_notification_text));
         int titleResId = hasBrowserActionsNotification()
                 ? R.string.browser_actions_multi_links_open_notification_title
                 : R.string.browser_actions_single_link_open_notification_title;
-        builder.setContentTitle(mContext.getString(titleResId));
+        builder.setContentTitle(mActivity.getString(titleResId));
         Intent intent = buildNotificationIntent();
         PendingIntent notifyPendingIntent =
-                PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.getActivity(mActivity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(notifyPendingIntent);
         return builder;
     }
 
     private Intent buildNotificationIntent() {
-        Intent intent = new Intent(mContext, ChromeLauncherActivity.class);
+        Intent intent = new Intent(mActivity, ChromeLauncherActivity.class);
         intent.setAction(ACTION_BROWSER_ACTIONS_OPEN_IN_BACKGROUND);
         intent.putExtra(EXTRA_IS_SINGLE_URL, !hasBrowserActionsNotification());
         return intent;
@@ -96,22 +113,12 @@ public class BrowserActionsContextMenuItemDelegate {
     }
 
     /**
-     * Builds a {@link BrowserActionsContextMenuItemDelegate} instance.
-     */
-    public BrowserActionsContextMenuItemDelegate() {
-        mContext = ContextUtils.getApplicationContext();
-        mNotificationManager =
-                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        mSharedPreferences = ContextUtils.getAppSharedPreferences();
-    }
-
-    /**
      * Called when the {@code text} should be saved to the clipboard.
      * @param text The text to save to the clipboard.
      */
     public void onSaveToClipboard(String text) {
         ClipboardManager clipboardManager =
-                (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData data = ClipData.newPlainText("url", text);
         clipboardManager.setPrimaryClip(data);
     }
@@ -123,13 +130,13 @@ public class BrowserActionsContextMenuItemDelegate {
     public void onOpenInIncognitoTab(String linkUrl) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setPackage(mContext.getPackageName());
+        intent.setPackage(mActivity.getPackageName());
         intent.putExtra(ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-        intent.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, mActivity.getPackageName());
         IntentHandler.addTrustedIntentExtras(intent);
         IntentHandler.setTabLaunchType(intent, TabLaunchType.FROM_EXTERNAL_APP);
-        IntentUtils.safeStartActivity(mContext, intent);
+        IntentUtils.safeStartActivity(mActivity, intent);
     }
 
     /**
@@ -138,7 +145,7 @@ public class BrowserActionsContextMenuItemDelegate {
      */
     public void onOpenInBackground(String linkUrl) {
         sendBrowserActionsNotification();
-        Toast.makeText(mContext, R.string.browser_actions_open_in_background_toast_message,
+        Toast.makeText(mActivity, R.string.browser_actions_open_in_background_toast_message,
                      Toast.LENGTH_SHORT)
                 .show();
     }
@@ -163,9 +170,18 @@ public class BrowserActionsContextMenuItemDelegate {
 
     /**
      * Called when the {@code linkUrl} should be shared.
+     * @param shareDirectly Whether to share directly with the previous app shared with.
      * @param linkUrl The url to share.
      */
-    public void share(String linkUrl) {}
+    public void share(Boolean shareDirectly, String linkUrl) {
+        ShareParams params = new ShareParams.Builder(mActivity, linkUrl, linkUrl)
+                                     .setShareDirectly(shareDirectly)
+                                     .setSaveLastUsed(!shareDirectly)
+                                     .setSourcePackageName(mSourcePackageName)
+                                     .setIsExternalUrl(true)
+                                     .build();
+        ShareHelper.share(params);
+    }
 
     /**
      * Cancel Browser Actions notification.

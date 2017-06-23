@@ -43,6 +43,12 @@ import java.util.Set;
  */
 public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private static final String TAG = "CCMenuPopulator";
+    private static final ShareContextMenuItem SHARE_IMAGE =
+            new ShareContextMenuItem(R.drawable.ic_share_white_24dp,
+                    R.string.contextmenu_share_image, R.id.contextmenu_share_image, false);
+    private static final ShareContextMenuItem SHARE_LINK =
+            new ShareContextMenuItem(R.drawable.ic_share_white_24dp,
+                    R.string.contextmenu_share_link, R.id.contextmenu_share_link, true);
 
     /**
      * Defines the Groups of each Context Menu Item
@@ -77,8 +83,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     ChromeContextMenuItem.SEND_MESSAGE, ChromeContextMenuItem.ADD_TO_CONTACTS,
                     ChromeContextMenuItem.COPY, ChromeContextMenuItem.LOAD_ORIGINAL_IMAGE,
                     ChromeContextMenuItem.SAVE_LINK_AS, ChromeContextMenuItem.SAVE_IMAGE,
-                    ChromeContextMenuItem.SHARE_IMAGE, ChromeContextMenuItem.SAVE_VIDEO,
-                    ChromeContextMenuItem.SHARE_LINK));
+                    SHARE_IMAGE, ChromeContextMenuItem.SAVE_VIDEO, SHARE_LINK));
 
     // Items that are included for normal Chrome browser mode.
     private static final Set<? extends ContextMenuItem> NORMAL_MODE_WHITELIST =
@@ -113,13 +118,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             CollectionUtil.newArrayList(ChromeContextMenuItem.OPEN_IN_OTHER_WINDOW,
                     ChromeContextMenuItem.OPEN_IN_NEW_TAB,
                     ChromeContextMenuItem.OPEN_IN_INCOGNITO_TAB, ChromeContextMenuItem.SAVE_LINK_AS,
-                    ChromeContextMenuItem.COPY_LINK_ADDRESS, ChromeContextMenuItem.SHARE_LINK));
+                    ChromeContextMenuItem.COPY_LINK_ADDRESS, SHARE_LINK));
 
     private static final List<? extends ContextMenuItem> IMAGE_GROUP =
             Collections.unmodifiableList(CollectionUtil.newArrayList(
                     ChromeContextMenuItem.LOAD_ORIGINAL_IMAGE, ChromeContextMenuItem.OPEN_IMAGE,
                     ChromeContextMenuItem.OPEN_IMAGE_IN_NEW_TAB, ChromeContextMenuItem.SAVE_IMAGE,
-                    ChromeContextMenuItem.SEARCH_BY_IMAGE, ChromeContextMenuItem.SHARE_IMAGE));
+                    ChromeContextMenuItem.SEARCH_BY_IMAGE, SHARE_IMAGE));
 
     private static final List<? extends ContextMenuItem> MESSAGE_GROUP =
             Collections.unmodifiableList(CollectionUtil.newArrayList(ChromeContextMenuItem.CALL,
@@ -507,7 +512,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             disabledOptions.add(ChromeContextMenuItem.SAVE_IMAGE);
             disabledOptions.add(ChromeContextMenuItem.OPEN_IMAGE);
             disabledOptions.add(ChromeContextMenuItem.SEARCH_BY_IMAGE);
-            disabledOptions.add(ChromeContextMenuItem.SHARE_IMAGE);
+            disabledOptions.add(SHARE_IMAGE);
             recordSaveImageContextMenuResult(true, isSrcDownloadableScheme);
         } else if (params.isImage() && !params.imageWasFetchedLoFi()) {
             disabledOptions.add(ChromeContextMenuItem.LOAD_ORIGINAL_IMAGE);
@@ -533,8 +538,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         if (mMode == CUSTOM_TAB_MODE) {
             try {
-                URI uri = new URI(getUrl(params));
-                if (UrlUtilities.isInternalScheme(uri) || isEmptyUrl(getUrl(params))) {
+                URI uri = new URI(params.getUrl());
+                if (UrlUtilities.isInternalScheme(uri) || isEmptyUrl(params.getUrl())) {
                     disabledOptions.add(ChromeContextMenuItem.OPEN_IN_NEW_CHROME_TAB);
                     disabledOptions.add(ChromeContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
                     disabledOptions.add(ChromeContextMenuItem.OPEN_IN_BROWSER_ID);
@@ -630,9 +635,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_share_link) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SHARE_LINK);
             ShareParams linkShareParams =
-                    new ShareParams
-                            .Builder(helper.getActivity(), params.getLinkUrl(),
-                                    params.getTitleText())
+                    new ShareParams.Builder(helper.getActivity(), params.getUrl(), params.getUrl())
+                            .setShareDirectly(false)
+                            .setSaveLastUsed(true)
                             .build();
             ShareHelper.share(linkShareParams);
         } else if (itemId == R.id.contextmenu_search_by_image) {
@@ -646,13 +651,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onOpenInChrome(params.getLinkUrl(), params.getPageUrl());
         } else if (itemId == R.id.contextmenu_open_in_new_chrome_tab) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_NEW_CHROME_TAB);
-            mDelegate.onOpenInNewChromeTabFromCCT(getUrl(params), false);
+            mDelegate.onOpenInNewChromeTabFromCCT(params.getUrl(), false);
         } else if (itemId == R.id.contextmenu_open_in_chrome_incognito_tab) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_CHROME_INCOGNITO_TAB);
-            mDelegate.onOpenInNewChromeTabFromCCT(getUrl(params), true);
+            mDelegate.onOpenInNewChromeTabFromCCT(params.getUrl(), true);
         } else if (itemId == R.id.contextmenu_open_in_browser_id) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_BROWSER);
-            mDelegate.onOpenInDefaultBrowser(getUrl(params));
+            mDelegate.onOpenInDefaultBrowser(params.getUrl());
         } else {
             assert false;
         }
@@ -690,20 +695,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Return the valid url of a ContextMenuParams.
-     * If the ContextMenuParams is an anchor and its linkUrl is not empty, returns the linkUrl.
-     * Otherwise returns the srcUrl.
-     * @param params The {@link ContextMenuParams} to check.
-     */
-    private String getUrl(ContextMenuParams params) {
-        if (params.isAnchor()) {
-            return params.getLinkUrl();
-        } else {
-            return params.getSrcUrl();
-        }
     }
 
     /**
