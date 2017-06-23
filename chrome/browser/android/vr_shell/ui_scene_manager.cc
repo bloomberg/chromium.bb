@@ -436,7 +436,6 @@ void UiSceneManager::SetWebVrMode(bool web_vr,
   ConfigureScene();
   ConfigureSecurityWarnings();
   ConfigureTransientUrlBar();
-  ConfigureIndicators();
   ConfigurePresentationToast();
 }
 
@@ -498,6 +497,14 @@ void UiSceneManager::ConfigureScene() {
   scene_->SetBackgroundDistance(main_content_->translation().z() *
                                 -kBackgroundDistanceMultiplier);
   UpdateBackgroundColor();
+
+  // Configure other subsystems here as well. Ultimately, it would be nice if we
+  // could configure all elements through ConfigureScene(), as the exact
+  // conditions that control each element are getting complicated. More systems
+  // should move in here, such that a single method call can update the entire
+  // scene. The drawback is slightly more overhead for individual scene
+  // reconfigurations.
+  ConfigureIndicators();
 }
 
 void UiSceneManager::UpdateBackgroundColor() {
@@ -545,8 +552,7 @@ void UiSceneManager::SetIncognito(bool incognito) {
 void UiSceneManager::OnGLInitialized() {
   scene_->OnGLInitialized();
 
-  // Indicators don't know their position until they've rendered themselves.
-  ConfigureIndicators();
+  ConfigureScene();
 }
 
 void UiSceneManager::OnAppButtonClicked() {
@@ -579,10 +585,14 @@ void UiSceneManager::ConfigureSecurityWarnings() {
 }
 
 void UiSceneManager::ConfigureIndicators() {
-  audio_capture_indicator_->set_visible(!web_vr_mode_ && audio_capturing_);
-  video_capture_indicator_->set_visible(!web_vr_mode_ && video_capturing_);
-  screen_capture_indicator_->set_visible(!web_vr_mode_ && screen_capturing_);
-  location_access_indicator_->set_visible(!web_vr_mode_ && location_access_);
+  bool allowed = !web_vr_mode_ && !fullscreen_;
+  audio_capture_indicator_->set_visible(allowed && audio_capturing_);
+  video_capture_indicator_->set_visible(allowed && video_capturing_);
+  screen_capture_indicator_->set_visible(allowed && screen_capturing_);
+  location_access_indicator_->set_visible(allowed && location_access_);
+
+  if (!allowed)
+    return;
 
   // Position elements dynamically relative to each other, based on which
   // indicators are showing, and how big each one is.
