@@ -409,7 +409,7 @@ def BuildScript(status, context):
         else:
           flags += ' -m64'
           sysroot_arch = 'amd64'
-        flags += (' --sysroot=../../build/linux/debian_wheezy_%s-sysroot' %
+        flags += (' --sysroot=../../build/linux/debian_jessie_%s-sysroot' %
                   sysroot_arch)
         configure_args += [cc + flags, cxx + flags]
         configure_args += ['CXXFLAGS=-I../..']  # For third_party/lss

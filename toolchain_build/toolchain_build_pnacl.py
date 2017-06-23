@@ -97,7 +97,7 @@ CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
 CHROME_CLANG = os.path.join(CHROME_CLANG_DIR, 'clang')
 CHROME_CLANGXX = os.path.join(CHROME_CLANG_DIR, 'clang++')
 CHROME_SYSROOT_DIR = os.path.join(os.path.dirname(NACL_DIR), 'build',
-                                  'linux', 'debian_wheezy_amd64-sysroot')
+                                  'linux', 'debian_jessie_amd64-sysroot')
 
 try:
   # goma documentation recommends using (10 * cpu count)
