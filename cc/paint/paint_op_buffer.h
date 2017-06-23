@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "cc/base/math_util.h"
@@ -71,6 +73,8 @@ enum class PaintOpType : uint8_t {
   Translate,
   LastPaintOpType = Translate,
 };
+
+std::string PaintOpTypeToString(PaintOpType type);
 
 struct CC_PAINT_EXPORT PaintOp {
   uint32_t type : 8;
