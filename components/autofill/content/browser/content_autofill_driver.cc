@@ -40,9 +40,10 @@ ContentAutofillDriver::ContentAutofillDriver(
       key_press_handler_manager_(this),
       binding_(this) {
   // AutofillManager isn't used if provider is valid, Autofill provider is
-  // currently used by Android only.
+  // currently used by Android WebView only.
   if (provider) {
     autofill_handler_ = base::MakeUnique<AutofillHandlerProxy>(this, provider);
+    GetAutofillAgent()->SetUserGestureRequired(false);
   } else {
     autofill_handler_ = base::MakeUnique<AutofillManager>(
         this, client, app_locale, enable_download_manager);
