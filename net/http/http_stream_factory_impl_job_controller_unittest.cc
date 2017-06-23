@@ -2004,9 +2004,9 @@ class HttpStreamFactoryImplJobControllerPreconnectTest
       public ::testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitFromCommandLine("LimitEarlyPreconnects",
-                                               std::string());
+    if (!GetParam()) {
+      scoped_feature_list_.InitFromCommandLine(std::string(),
+                                               "LimitEarlyPreconnects");
     }
   }
 
