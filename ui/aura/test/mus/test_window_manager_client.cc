@@ -28,8 +28,10 @@ void TestWindowManagerClient::RemoveActivationParent(Id transport_window_id) {}
 
 void TestWindowManagerClient::ActivateNextWindow() {}
 
-void TestWindowManagerClient::SetExtendedHitArea(Id window_id,
-                                                 const gfx::Insets& hit_area) {}
+void TestWindowManagerClient::SetExtendedHitRegionForChildren(
+    Id window_id,
+    const gfx::Insets& mouse_insets,
+    const gfx::Insets& touch_insets) {}
 
 void TestWindowManagerClient::AddAccelerators(
     std::vector<ui::mojom::WmAcceleratorPtr> accelerators,

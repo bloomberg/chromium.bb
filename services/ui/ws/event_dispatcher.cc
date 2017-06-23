@@ -222,7 +222,8 @@ const ServerWindow* EventDispatcher::GetWindowForMouseCursor() const {
 void EventDispatcher::UpdateNonClientAreaForCurrentWindow() {
   if (mouse_cursor_source_window_) {
     event_targeter_->FindTargetForLocation(
-        mouse_pointer_last_location_, mouse_pointer_display_id_,
+        EventSource::MOUSE, mouse_pointer_last_location_,
+        mouse_pointer_display_id_,
         base::BindOnce(
             &EventDispatcher::UpdateNonClientAreaForCurrentWindowOnFoundWindow,
             base::Unretained(this)));
@@ -232,7 +233,8 @@ void EventDispatcher::UpdateNonClientAreaForCurrentWindow() {
 void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
   if (!mouse_button_down_) {
     event_targeter_->FindTargetForLocation(
-        mouse_pointer_last_location_, mouse_pointer_display_id_,
+        EventSource::MOUSE, mouse_pointer_last_location_,
+        mouse_pointer_display_id_,
         base::BindOnce(&EventDispatcher::
                            UpdateCursorProviderByLastKnownLocationOnFoundWindow,
                        base::Unretained(this)));
@@ -305,8 +307,10 @@ void EventDispatcher::ProcessEvent(const ui::Event& event,
   }
 
   DCHECK(event.IsPointerEvent());
+  const EventSource event_source =
+      event.IsMousePointerEvent() ? EventSource::MOUSE : EventSource::TOUCH;
   event_targeter_->FindTargetForLocation(
-      event.AsPointerEvent()->root_location(), event_display_id_,
+      event_source, event.AsPointerEvent()->root_location(), event_display_id_,
       base::BindOnce(&EventDispatcher::ProcessPointerEventOnFoundTarget,
                      base::Unretained(this), *event.AsPointerEvent()));
 }

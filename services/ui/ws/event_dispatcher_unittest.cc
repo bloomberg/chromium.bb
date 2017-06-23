@@ -1013,7 +1013,8 @@ TEST_P(EventDispatcherTest, MouseInExtendedHitTestRegion) {
 
   // Change the extended hit test region and send event in extended hit test
   // region. Should result in exit for root, followed by press for child.
-  child->set_extended_hit_test_region(gfx::Insets(5, 5, 5, 5));
+  root->set_extended_hit_test_regions_for_children(gfx::Insets(-5, -5, -5, -5),
+                                                   gfx::Insets(-5, -5, -5, -5));
   DispatchEvent(dispatcher, ui_event, 0,
                 EventDispatcher::AcceleratorMatchPhase::ANY);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();

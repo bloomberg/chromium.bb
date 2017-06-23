@@ -258,10 +258,13 @@ interface WindowManagerClient {
 
   ActivateNextWindow();
 
-  // Sets the additional hit area. The hit area is extended from the bounds of
-  // the window by |hit_area|. This is used to allow for resizes to start
-  // outside the bounds of the window.
-  SetExtendedHitArea(uint32 window_id, gfx.mojom.Insets hit_area);
+  // Extends the hit area for children of |window_id| by the specified amount.
+  // |mouse_insets| is used for mouse events, and |touch_insets| for touch
+  // events. NOTE: the insets are expected to be negative (or zero). If one
+  // of the sizes of an inset is a positive value the call is ignored.
+  SetExtendedHitRegionForChildren(uint32 window_id,
+                                  gfx.mojom.Insets mouse_insets,
+                                  gfx.mojom.Insets touch_insets);
 
   // Add and remove accelerators. When accelerators are registered the
   // WindowManager receives the event via OnAccelerator() rather than the

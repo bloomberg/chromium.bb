@@ -40,11 +40,6 @@ enum class WidgetCreationType {
 
 // Alphabetical sort.
 
-// If this is set to true, the hit region for children is slightly larger for
-// easier resizing.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kChildrenUseExtendedHitRegion;
-
 // If this is set to true, the window stays in the same root window even if the
 // bounds outside of its root window is set.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const kLockedToRootKey;

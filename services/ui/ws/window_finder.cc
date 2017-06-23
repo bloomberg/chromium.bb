@@ -34,6 +34,43 @@ bool IsLocationInNonclientArea(const ServerWindow* target,
   return true;
 }
 
+bool ShouldUseExtendedHitRegion(const ServerWindow* window) {
+  if (!window->parent())
+    return false;
+
+  const mojom::ShowState show_state = window->GetShowState();
+  if (show_state == mojom::ShowState::MAXIMIZED ||
+      show_state == mojom::ShowState::FULLSCREEN) {
+    return false;
+  }
+  // This matches the logic of EasyResizeWindowTargeter.
+  return !window->transient_parent() ||
+         window->transient_parent() == window->parent();
+}
+
+// Returns true if |location_in_window| is in the extended hit region and not
+// in the normal bounds of |window|.
+bool IsLocationInExtendedHitRegion(EventSource event_source,
+                                   const ServerWindow* window,
+                                   const gfx::Point& location_in_window) {
+  if (!ShouldUseExtendedHitRegion(window))
+    return false;
+
+  const gfx::Insets& extended_hit_insets =
+      event_source == EventSource::MOUSE
+          ? window->parent()->extended_mouse_hit_test_region()
+          : window->parent()->extended_touch_hit_test_region();
+  if (extended_hit_insets.IsEmpty())
+    return false;
+
+  gfx::Rect child_bounds(window->bounds().size());
+  if (child_bounds.Contains(location_in_window))
+    return false;
+
+  child_bounds.Inset(extended_hit_insets);
+  return child_bounds.Contains(location_in_window);
+}
+
 gfx::Transform TransformFromParent(const ServerWindow* window,
                                    const gfx::Transform& current_transform) {
   gfx::Transform transform = current_transform;
@@ -48,6 +85,7 @@ gfx::Transform TransformFromParent(const ServerWindow* window,
 
 bool FindDeepestVisibleWindowForLocationImpl(
     ServerWindow* window,
+    EventSource event_source,
     const gfx::Point& location_in_root,
     const gfx::Point& location_in_window,
     const gfx::Transform& transform_from_parent,
@@ -80,11 +118,13 @@ bool FindDeepestVisibleWindowForLocationImpl(
       child_transform.TransformPointReverse(&location_in_child3);
       const gfx::Point location_in_child =
           gfx::ToFlooredPoint(location_in_child3.AsPointF());
+      if (IsLocationInExtendedHitRegion(event_source, child,
+                                        location_in_child)) {
+        deepest_window->window = child;
+        deepest_window->in_non_client_area = true;
+        return true;
+      }
       gfx::Rect child_bounds(child->bounds().size());
-      child_bounds.Inset(-child->extended_hit_test_region().left(),
-                         -child->extended_hit_test_region().top(),
-                         -child->extended_hit_test_region().right(),
-                         -child->extended_hit_test_region().bottom());
       if (!child_bounds.Contains(location_in_child) ||
           (child->hit_test_mask() &&
            !child->hit_test_mask()->Contains(location_in_child))) {
@@ -92,8 +132,8 @@ bool FindDeepestVisibleWindowForLocationImpl(
       }
 
       if (FindDeepestVisibleWindowForLocationImpl(
-              child, location_in_root, location_in_child, child_transform,
-              deepest_window)) {
+              child, event_source, location_in_root, location_in_child,
+              child_transform, deepest_window)) {
         return true;
       }
     }
@@ -110,10 +150,11 @@ bool FindDeepestVisibleWindowForLocationImpl(
 }  // namespace
 
 DeepestWindow FindDeepestVisibleWindowForLocation(ServerWindow* root_window,
+                                                  EventSource event_source,
                                                   const gfx::Point& location) {
   DeepestWindow result;
-  FindDeepestVisibleWindowForLocationImpl(root_window, location, location,
-                                          gfx::Transform(), &result);
+  FindDeepestVisibleWindowForLocationImpl(root_window, event_source, location,
+                                          location, gfx::Transform(), &result);
   return result;
 }
 

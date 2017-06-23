@@ -44,6 +44,14 @@ using EventProperties = std::unordered_map<std::string, std::vector<uint8_t>>;
 
 namespace ui {
 namespace ws {
+namespace {
+
+bool HasPositiveInset(const gfx::Insets& insets) {
+  return insets.width() > 0 || insets.height() > 0 || insets.left() > 0 ||
+         insets.right() > 0;
+}
+
+}  // namespace
 
 class TargetedEvent : public ServerWindowObserver {
  public:
@@ -2235,19 +2243,28 @@ void WindowTree::ActivateNextWindow() {
   (*displays.begin())->ActivateNextWindow();
 }
 
-void WindowTree::SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) {
+void WindowTree::SetExtendedHitRegionForChildren(
+    Id window_id,
+    const gfx::Insets& mouse_insets,
+    const gfx::Insets& touch_insets) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   // Extended hit test region should only be set by the owner of the window.
   if (!window) {
-    DVLOG(1) << "SetExtendedHitArea failed (invalid window id)";
+    DVLOG(1) << "SetExtendedHitRegionForChildren failed (invalid window id)";
     return;
   }
   if (window->id().client_id != id_) {
-    DVLOG(1) << "SetExtendedHitArea failed (supplied window that client does "
-             << "not own)";
+    DVLOG(1) << "SetExtendedHitRegionForChildren failed (supplied window that "
+             << "client does not own)";
     return;
   }
-  window->set_extended_hit_test_region(hit_area);
+  if (HasPositiveInset(mouse_insets) || HasPositiveInset(touch_insets)) {
+    DVLOG(1) << "SetExtendedHitRegionForChildren failed (insets must be "
+             << "negative)";
+    return;
+  }
+  window->set_extended_hit_test_regions_for_children(mouse_insets,
+                                                     touch_insets);
 }
 
 void WindowTree::SetDisplayRoot(const display::Display& display,

@@ -4,7 +4,11 @@
 
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/env.h"
+#include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets_f.h"
@@ -16,12 +20,25 @@ EasyResizeWindowTargeter::EasyResizeWindowTargeter(
     aura::Window* container,
     const gfx::Insets& mouse_extend,
     const gfx::Insets& touch_extend)
-    : container_(container),
-      mouse_extend_(mouse_extend),
-      touch_extend_(touch_extend) {
+    : container_(container) {
+  SetInsets(mouse_extend, touch_extend);
 }
 
 EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {
+}
+
+void EasyResizeWindowTargeter::SetInsets(const gfx::Insets& mouse_extend,
+                                         const gfx::Insets& touch_extend) {
+  if (mouse_extend == mouse_extend_ && touch_extend_ == touch_extend)
+    return;
+
+  mouse_extend_ = mouse_extend;
+  touch_extend_ = touch_extend;
+  if (aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS)
+    return;
+
+  aura::WindowPortMus::Get(container_)
+      ->SetExtendedHitRegionForChildren(mouse_extend, touch_extend);
 }
 
 bool EasyResizeWindowTargeter::EventLocationInsideBounds(

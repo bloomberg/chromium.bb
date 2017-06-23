@@ -57,8 +57,10 @@ class AURA_EXPORT WindowManagerClient {
   virtual void AddActivationParent(Window* window) = 0;
   virtual void RemoveActivationParent(Window* window) = 0;
   virtual void ActivateNextWindow() = 0;
-  virtual void SetExtendedHitArea(Window* window,
-                                  const gfx::Insets& hit_area) = 0;
+  virtual void SetExtendedHitRegionForChildren(
+      Window* window,
+      const gfx::Insets& mouse_area,
+      const gfx::Insets& touch_area) = 0;
 
   // Queues changes to the cursor instead of applying them instantly. Queued
   // changes will be executed on UnlockCursor().

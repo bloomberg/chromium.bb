@@ -517,7 +517,10 @@ class WindowTree : public mojom::WindowTree,
   void AddActivationParent(Id transport_window_id) override;
   void RemoveActivationParent(Id transport_window_id) override;
   void ActivateNextWindow() override;
-  void SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) override;
+  void SetExtendedHitRegionForChildren(
+      Id window_id,
+      const gfx::Insets& mouse_insets,
+      const gfx::Insets& touch_insets) override;
   void SetDisplayRoot(const display::Display& display,
                       mojom::WmViewportMetricsPtr viewport_metrics,
                       bool is_primary_display,

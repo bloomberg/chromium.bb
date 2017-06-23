@@ -24,6 +24,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 
+namespace gfx {
+class Insets;
+}
+
 namespace viz {
 class ClientLayerTreeFrameSink;
 }
@@ -73,6 +77,11 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   // Sets whether this window can accept drops, defaults to false.
   void SetCanAcceptDrops(bool can_accept_drops);
+
+  // See description in mojom for details on this. Has no effect if not running
+  // in the window manager.
+  void SetExtendedHitRegionForChildren(const gfx::Insets& mouse_insets,
+                                       const gfx::Insets& touch_insets);
 
   // Embeds a new client in this Window. See WindowTreeClient::Embed() for
   // details on arguments.
