@@ -9,7 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
+#import "ios/clean/chrome/browser/ui/animators/zoom_transition_controller.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
 #import "ios/clean/chrome/browser/ui/find_in_page/find_in_page_coordinator.h"
@@ -29,9 +29,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabCoordinator ()<CRWWebStateObserver,
-                             TabCommands,
-                             UIViewControllerTransitioningDelegate>
+@interface TabCoordinator ()<CRWWebStateObserver, TabCommands>
+@property(nonatomic, strong) ZoomTransitionController* transitionController;
 @property(nonatomic, strong) TabContainerViewController* viewController;
 @property(nonatomic, weak) NTPCoordinator* ntpCoordinator;
 @property(nonatomic, weak) WebCoordinator* webCoordinator;
@@ -41,6 +40,7 @@
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 }
 
+@synthesize transitionController = _transitionController;
 @synthesize presentationKey = _presentationKey;
 @synthesize viewController = _viewController;
 @synthesize webState = _webState;
@@ -51,7 +51,9 @@
 
 - (void)start {
   self.viewController = [self newTabContainer];
-  self.viewController.transitioningDelegate = self;
+  self.transitionController = [[ZoomTransitionController alloc] init];
+  self.transitionController.presentationKey = self.presentationKey;
+  self.viewController.transitioningDelegate = self.transitionController;
   self.viewController.modalPresentationStyle = UIModalPresentationCustom;
   _webStateObserver =
       base::MakeUnique<web::WebStateObserverBridge>(self.webState, self);
@@ -180,28 +182,6 @@
     self.viewController.contentViewController =
         self.webCoordinator.viewController;
   }
-}
-
-#pragma mark - UIViewControllerTransitioningDelegate
-
-- (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForPresentedController:(UIViewController*)presented
-                     presentingController:(UIViewController*)presenting
-                         sourceController:(UIViewController*)source {
-  ZoomTransitionAnimator* animator = [[ZoomTransitionAnimator alloc] init];
-  animator.presenting = YES;
-  animator.presentationKey = self.presentationKey;
-  [animator selectDelegate:@[ source, presenting ]];
-  return animator;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForDismissedController:(UIViewController*)dismissed {
-  ZoomTransitionAnimator* animator = [[ZoomTransitionAnimator alloc] init];
-  animator.presenting = NO;
-  animator.presentationKey = self.presentationKey;
-  [animator selectDelegate:@[ dismissed.presentingViewController ]];
-  return animator;
 }
 
 #pragma mark - TabCommands
