@@ -114,6 +114,9 @@ class CHROMEOS_EXPORT DebugDaemonClient
   using GetLogsCallback =
       base::Callback<void(bool succeeded,
                           const std::map<std::string, std::string>& logs)>;
+  // Callback type for GetLog().
+  using GetLogCallback =
+      base::Callback<void(bool succeeded, const std::string& result)>;
 
   // Gets scrubbed logs from debugd.
   virtual void GetScrubbedLogs(const GetLogsCallback& callback) = 0;
@@ -128,6 +131,10 @@ class CHROMEOS_EXPORT DebugDaemonClient
 
   // Gets list of user log files that must be read by Chrome.
   virtual void GetUserLogFiles(const GetLogsCallback& callback) = 0;
+
+  // Gets an individual log source provided by debugd.
+  virtual void GetLog(const std::string& log_name,
+                      const GetLogCallback& callback) = 0;
 
   virtual void SetStopAgentTracingTaskRunner(
       scoped_refptr<base::TaskRunner> task_runner) = 0;
