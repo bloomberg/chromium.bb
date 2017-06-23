@@ -19,7 +19,6 @@ namespace app_list {
 namespace {
 
 constexpr int kSearchTileWidth = 80;
-constexpr int kSearchTileHeight = 92;
 constexpr int kSearchTileTopPadding = 4;
 constexpr int kSearchTitleSpacing = 6;
 

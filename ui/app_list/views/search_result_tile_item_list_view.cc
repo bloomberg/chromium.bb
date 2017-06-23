@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -27,9 +28,14 @@ constexpr int kBetweenTileSpacing = 2;
 constexpr int kTopBottomPadding = 8;
 
 // Layout constants used when fullscreen app list feature is enabled.
+constexpr size_t kMaxNumSearchResultTiles = 6;
 constexpr int kItemListVerticalSpacing = 16;
 constexpr int kItemListHorizontalSpacing = 12;
 constexpr int kBetweenItemSpacing = 8;
+constexpr int kSeparatorLeftRightPadding = 4;
+constexpr int kSeparatorHeight = 36;
+
+constexpr SkColor kSeparatorColor = SkColorSetARGBMacro(0x1F, 0x00, 0x00, 0x00);
 
 }  // namespace
 
@@ -45,22 +51,36 @@ SearchResultTileItemListView::SearchResultTileItemListView(
         views::BoxLayout::kHorizontal,
         gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
         kBetweenItemSpacing));
+    for (size_t i = 0; i < kMaxNumSearchResultTiles; ++i) {
+      views::Separator* separator = new views::Separator;
+      separator->SetVisible(false);
+      separator->SetBorder(views::CreateEmptyBorder(
+          0, kSeparatorLeftRightPadding, kSearchTileHeight - kSeparatorHeight,
+          kSeparatorLeftRightPadding));
+      separator->SetColor(kSeparatorColor);
+
+      separator_views_.push_back(separator);
+      AddChildView(separator);
+
+      SearchResultTileItemView* tile_item =
+          new SearchResultTileItemView(this, view_delegate);
+      tile_item->SetParentBackgroundColor(kCardBackgroundColor);
+      tile_views_.push_back(tile_item);
+      AddChildView(tile_item);
+    }
   } else {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, gfx::Insets(0, kHorizontalBorderSpacing),
         kBetweenTileSpacing));
-  }
-
-  for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
-    SearchResultTileItemView* tile_item =
-        new SearchResultTileItemView(this, view_delegate);
-    tile_item->SetParentBackgroundColor(kCardBackgroundColor);
-    if (!is_fullscreen_app_list_enabled_) {
+    for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
+      SearchResultTileItemView* tile_item =
+          new SearchResultTileItemView(this, view_delegate);
+      tile_item->SetParentBackgroundColor(kCardBackgroundColor);
       tile_item->SetBorder(
           views::CreateEmptyBorder(kTopBottomPadding, 0, kTopBottomPadding, 0));
+      tile_views_.push_back(tile_item);
+      AddChildView(tile_item);
     }
-    tile_views_.push_back(tile_item);
-    AddChildView(tile_item);
   }
 }
 
@@ -92,11 +112,42 @@ int SearchResultTileItemListView::GetYSize() {
 int SearchResultTileItemListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
-          results(), SearchResult::DISPLAY_TILE, kNumSearchResultTiles);
-  for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
-    SearchResult* item =
-        i < display_results.size() ? display_results[i] : nullptr;
-    tile_views_[i]->SetSearchResult(item);
+          results(), SearchResult::DISPLAY_TILE,
+          is_fullscreen_app_list_enabled_ ? kMaxNumSearchResultTiles
+                                          : kNumSearchResultTiles);
+
+  if (is_fullscreen_app_list_enabled_) {
+    SearchResult::ResultType previous_type = SearchResult::RESULT_UNKNOWN;
+
+    for (size_t i = 0; i < kMaxNumSearchResultTiles; ++i) {
+      if (i >= display_results.size()) {
+        separator_views_[i]->SetVisible(false);
+        tile_views_[i]->SetSearchResult(nullptr);
+        continue;
+      }
+
+      SearchResult* item = display_results[i];
+      tile_views_[i]->SetSearchResult(item);
+
+      if (i > 0 && item->result_type() != previous_type) {
+        // Add a separator to separate search results of different types.
+        // The strategy here is to only add a separator only if current search
+        // result type is different from the previous one. The strategy is
+        // based on the assumption that the search results are already
+        // separated in groups based on their result types.
+        separator_views_[i]->SetVisible(true);
+      } else {
+        separator_views_[i]->SetVisible(false);
+      }
+
+      previous_type = item->result_type();
+    }
+  } else {
+    for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
+      SearchResult* item =
+          i < display_results.size() ? display_results[i] : nullptr;
+      tile_views_[i]->SetSearchResult(item);
+    }
   }
 
   set_container_score(
