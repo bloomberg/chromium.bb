@@ -1166,7 +1166,8 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 
 static double search_switchable_restoration(
     const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi, int partial_frame, int plane,
-    RestorationInfo *rsi, double *tile_cost[RESTORE_SWITCHABLE_TYPES]) {
+    RestorationType *const restore_types[RESTORE_SWITCHABLE_TYPES],
+    double *const tile_cost[RESTORE_SWITCHABLE_TYPES], RestorationInfo *rsi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *x = &cpi->td.mb;
   double cost_switchable = 0;
@@ -1202,6 +1203,7 @@ static double search_switchable_restoration(
       if (force_restore_type != 0)
         if (r != force_restore_type) continue;
       int tilebits = 0;
+      if (restore_types[r][tile_idx] != r) continue;
       if (r == RESTORE_WIENER)
         tilebits +=
             count_wiener_bits(&rsi->wiener_info[tile_idx], &ref_wiener_info);
@@ -1274,8 +1276,8 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     }
     if (plane == AOM_PLANE_Y)
       cost_restore[RESTORE_SWITCHABLE] = search_switchable_restoration(
-          src, cpi, method == LPF_PICK_FROM_SUBIMAGE, plane,
-          &cm->rst_info[plane], tile_cost);
+          src, cpi, method == LPF_PICK_FROM_SUBIMAGE, plane, restore_types,
+          tile_cost, &cm->rst_info[plane]);
     else
       cost_restore[RESTORE_SWITCHABLE] = DBL_MAX;
     best_cost_restore = DBL_MAX;
