@@ -333,8 +333,6 @@ split_static_library("browser") {
     "dom_distiller/tab_utils.h",
     "domain_reliability/service_factory.cc",
     "domain_reliability/service_factory.h",
-    "doodle/doodle_service_factory.cc",
-    "doodle/doodle_service_factory.h",
     "download/chrome_download_manager_delegate.cc",
     "download/chrome_download_manager_delegate.h",
     "download/download_confirmation_reason.h",

@@ -928,56 +928,6 @@ const FeatureEntry::FeatureVariation
          arraysize(kAutofillCreditCardLastUsedDateFeatureVariationExpDate),
          nullptr}};
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest0[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android0.json"}};
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest1[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android1.json"}};
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest2[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android2.json"}};
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest3[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android3.json"}};
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest4[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android4.json"}};
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest5[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android5.json"}};
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest6[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android6.json"}};
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest7[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android7.json"}};
-const FeatureEntry::FeatureParam kUseNewDoodleApiTest8[] = {
-    {"doodle_override_url",
-     "https://www.gstatic.com/chrome/ntp/doodle_test/android8.json"}};
-
-const FeatureEntry::FeatureVariation kUseNewDoodleApiVariations[] = {
-    {"(force test doodle 0)", kUseNewDoodleApiTest0,
-     arraysize(kUseNewDoodleApiTest0), nullptr},
-    {"(force test doodle 1)", kUseNewDoodleApiTest1,
-     arraysize(kUseNewDoodleApiTest1), nullptr},
-    {"(force test doodle 2)", kUseNewDoodleApiTest2,
-     arraysize(kUseNewDoodleApiTest2), nullptr},
-    {"(force test doodle 3)", kUseNewDoodleApiTest3,
-     arraysize(kUseNewDoodleApiTest3), nullptr},
-    {"(force test doodle 4)", kUseNewDoodleApiTest4,
-     arraysize(kUseNewDoodleApiTest4), nullptr},
-    {"(force test doodle 5)", kUseNewDoodleApiTest5,
-     arraysize(kUseNewDoodleApiTest5), nullptr},
-    {"(force test doodle 6)", kUseNewDoodleApiTest6,
-     arraysize(kUseNewDoodleApiTest6), nullptr},
-    {"(force test doodle 7)", kUseNewDoodleApiTest7,
-     arraysize(kUseNewDoodleApiTest7), nullptr},
-    {"(force test doodle 8)", kUseNewDoodleApiTest8,
-     arraysize(kUseNewDoodleApiTest8), nullptr}};
-#endif  // OS_ANDROID
-
 const FeatureEntry::FeatureParam kMemoryAblation5MiB_512[] = {
     {kMemoryAblationFeatureSizeParam, "5242880"},
     {kMemoryAblationFeatureMaxRAMParam, "512"}};
@@ -2888,14 +2838,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceTabletModeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshForceTabletModeChoices)},
 #endif  // OS_CHROMEOS
-
-#if defined(OS_ANDROID)
-    {"use-new-doodle-api", flag_descriptions::kUseNewDoodleApiName,
-     flag_descriptions::kUseNewDoodleApiDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kUseNewDoodleApi,
-                                    kUseNewDoodleApiVariations,
-                                    chrome::android::kUseNewDoodleApi.name)},
-#endif  // OS_ANDROID
 
     {"memory-ablation", flag_descriptions::kMemoryAblationName,
      flag_descriptions::kMemoryAblationDescription, kOsAll,
