@@ -950,6 +950,7 @@
       field_group: "rare-non-inherited",
       default_value: "nullptr",
       wrapper_pointer_name: "RefPtr",
+      include_paths: ["core/style/ShadowList.h"],
     },
     {
       name: "box-sizing",
@@ -1216,6 +1217,7 @@
       field_template: "external",
       default_value: "Length(kAuto)",
       field_group: "rare-non-inherited->flexible-box",
+      include_paths: ["platform/Length.h"],
     },
     {
       name: "flex-direction",
@@ -1284,6 +1286,7 @@
       field_template: "external",
       default_value: "Vector<GridTrackSize>(1, GridTrackSize(Length(kAuto)))",
       field_group: "rare-non-inherited->grid",
+      include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
     },
     {
       name: "grid-auto-flow",
@@ -1306,6 +1309,7 @@
       field_template: "external",
       default_value: "Vector<GridTrackSize>(1, GridTrackSize(Length(kAuto)))",
       field_group: "rare-non-inherited->grid",
+      include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
     },
     {
       name: "grid-column-end",
@@ -1316,6 +1320,7 @@
       field_template: "external",
       default_value: "GridPosition()",
       field_group: "rare-non-inherited->grid-item",
+      include_paths: ["core/style/GridPosition.h"],
     },
     {
       name: "grid-column-gap",
@@ -1325,6 +1330,7 @@
       field_template: "external",
       default_value: "Length(kFixed)",
       field_group: "rare-non-inherited->grid",
+      include_paths: ["platform/Length.h"],
     },
     {
       name: "grid-column-start",
@@ -1335,6 +1341,7 @@
       field_template: "external",
       default_value: "GridPosition()",
       field_group: "rare-non-inherited->grid-item",
+      include_paths: ["core/style/GridPosition.h"],
     },
     {
       name: "grid-row-end",
@@ -1345,6 +1352,7 @@
       field_template: "external",
       default_value: "GridPosition()",
       field_group: "rare-non-inherited->grid-item",
+      include_paths: ["core/style/GridPosition.h"],
     },
     {
       name: "grid-row-gap",
@@ -1354,6 +1362,7 @@
       field_template: "external",
       default_value: "Length(kFixed)",
       field_group: "rare-non-inherited->grid",
+      include_paths: ["platform/Length.h"],
     },
     {
       name: "grid-row-start",
@@ -1364,6 +1373,7 @@
       field_template: "external",
       default_value: "GridPosition()",
       field_group: "rare-non-inherited->grid-item",
+      include_paths: ["core/style/GridPosition.h"],
     },
     {
       name: "grid-template-areas",
@@ -1380,6 +1390,7 @@
       type_name: "Vector<GridTrackSize>",
       field_group: "rare-non-inherited->grid",
       default_value: "Vector<GridTrackSize>()",
+      include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
     },
     {
       name: "grid-template-rows",
@@ -1390,6 +1401,7 @@
       type_name: "Vector<GridTrackSize>",
       field_group: "rare-non-inherited->grid",
       default_value: "Vector<GridTrackSize>()",
+      include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
     },
     {
       name: "height",
@@ -1548,6 +1560,7 @@
       wrapper_pointer_name: "Persistent",
       default_value: "nullptr",
       field_group: "rare-inherited",
+      include_paths: ["core/style/StyleImage.h"],
     },
     {
       name: "list-style-position",
