@@ -125,8 +125,14 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   bool IsContentRichlyEditable() const;
 
   bool IsValidFor(const Document&) const;
-  void SetWithoutValidation(const PositionTemplate<Strategy>&,
-                            const PositionTemplate<Strategy>&);
+
+  // TODO(editing-dev): |CreateWithoutValidationDeprecated()| is allowed
+  // only to use in |TypingCommand| to remove part of grapheme cluster.
+  // Note: |base| and |extent| can be disconnect position.
+  static VisibleSelectionTemplate<Strategy> CreateWithoutValidationDeprecated(
+      const PositionTemplate<Strategy>& base,
+      const PositionTemplate<Strategy>& extent,
+      TextAffinity);
 
   DECLARE_TRACE();
 
