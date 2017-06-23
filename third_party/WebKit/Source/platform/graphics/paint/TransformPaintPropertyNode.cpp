@@ -40,7 +40,7 @@ String TransformPaintPropertyNode::ToString() const {
       "parent=%p transform=%s origin=%s flattensInheritedTransform=%s "
       "renderingContextId=%x directCompositingReasons=%s "
       "compositorElementId=%lu",
-      parent_.Get(), matrix_.ToString().Ascii().data(),
+      Parent(), matrix_.ToString().Ascii().data(),
       origin_.ToString().Ascii().data(),
       flattens_inherited_transform_ ? "yes" : "no", rendering_context_id_,
       CompositingReasonsAsString(direct_compositing_reasons_).Ascii().data(),

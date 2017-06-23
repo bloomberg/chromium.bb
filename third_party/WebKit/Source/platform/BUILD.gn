@@ -1099,6 +1099,7 @@ component("platform") {
     "graphics/paint/PaintController.cpp",
     "graphics/paint/PaintController.h",
     "graphics/paint/PaintFlags.h",
+    "graphics/paint/PaintPropertyNode.h",
     "graphics/paint/PaintRecord.h",
     "graphics/paint/PaintRecordBuilder.cpp",
     "graphics/paint/PaintRecordBuilder.h",
