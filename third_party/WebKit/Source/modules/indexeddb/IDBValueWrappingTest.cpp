@@ -6,6 +6,8 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/fileapi/Blob.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBValue.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
@@ -27,11 +29,13 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   wrapper.ExtractBlobDataHandles(&blob_data_handles);
   Vector<WebBlobInfo>& blob_infos = wrapper.WrappedBlobInfo();
   RefPtr<SharedBuffer> wrapped_marker_buffer = wrapper.ExtractWireBytes();
+  IDBKey* key = IDBKey::CreateNumber(42.0);
+  IDBKeyPath key_path(String("primaryKey"));
 
   RefPtr<IDBValue> wrapped_value = IDBValue::Create(
       wrapped_marker_buffer,
       WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>(blob_data_handles),
-      WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos));
+      WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
   EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.Get()));
 
   Vector<char> wrapped_marker_bytes(wrapped_marker_buffer->size());
@@ -46,7 +50,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
     RefPtr<IDBValue> mutant_value = IDBValue::Create(
         SharedBuffer::Create(wrapped_marker_bytes.data(), i),
         WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>(blob_data_handles),
-        WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos));
+        WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
 
     EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.Get()));
   }
@@ -62,7 +66,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
           SharedBuffer::Create(wrapped_marker_bytes.data(),
                                wrapped_marker_bytes.size()),
           WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>(blob_data_handles),
-          WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos));
+          WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
       EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.Get()));
 
       wrapped_marker_bytes[i] ^= mask;
