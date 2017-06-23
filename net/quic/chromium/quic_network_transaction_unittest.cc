@@ -4300,6 +4300,77 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
   EXPECT_LT(0, pos);
 }
 
+// Regression test for http://crbug.com/719461 in which a promised stream
+// is closed before the pushed headers arrive, but after the connection
+// is closed and before the callbacks are executed.
+TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  // Initial SETTINGS frame.
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  // First request: GET https://mail.example.org/
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  QuicStreamOffset server_header_offset = 0;
+  // Server promise for: https://mail.example.org/pushed.jpg
+  mock_quic_data.AddRead(ConstructServerPushPromisePacket(
+      1, GetNthClientInitiatedStreamId(0), GetNthServerInitiatedStreamId(0),
+      false, GetRequestHeaders("GET", "https", "/pushed.jpg"),
+      &server_header_offset, &server_maker_));
+  // Response headers for first request.
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK"), &server_header_offset));
+  // Client ACKs the response headers.
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  // Response body for first request.
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      3, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  // Write error for the third request.
+  mock_quic_data.AddWrite(SYNCHRONOUS, ERR_FAILED);
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  // Send a request which triggers a push promise from the server.
+  SendRequestAndExpectQuicResponse("hello!");
+
+  // Start a push transaction that will be cancelled after the connection
+  // is closed, but before the callback is executed.
+  request_.url = GURL("https://mail.example.org/pushed.jpg");
+  auto trans2 = base::MakeUnique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         session_.get());
+  TestCompletionCallback callback2;
+  int rv = trans2->Start(&request_, callback2.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  base::RunLoop().RunUntilIdle();
+
+  // Cause the connection to close on a write error.
+  HttpRequestInfo request3;
+  request3.method = "GET";
+  request3.url = GURL("https://mail.example.org/");
+  request3.load_flags = 0;
+  HttpNetworkTransaction trans3(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback3;
+  EXPECT_THAT(trans3.Start(&request3, callback3.callback(), net_log_.bound()),
+              IsError(ERR_IO_PENDING));
+
+  base::RunLoop().RunUntilIdle();
+
+  // When |trans2| is destroyed, the underlying stream will be closed.
+  EXPECT_FALSE(callback2.have_result());
+  trans2 = nullptr;
+
+  EXPECT_THAT(callback3.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+}
+
 TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
   session_params_.quic_force_hol_blocking = true;
   session_params_.origins_to_force_quic_on.insert(

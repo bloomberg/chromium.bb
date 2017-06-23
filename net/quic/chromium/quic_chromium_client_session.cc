@@ -199,12 +199,19 @@ QuicChromiumClientSession::Handle::Handle(
       error_(OK),
       port_migration_detected_(false),
       server_id_(session_->server_id()),
-      quic_version_(session->connection()->version()) {
+      quic_version_(session->connection()->version()),
+      push_handle_(nullptr) {
   DCHECK(session_);
   session_->AddHandle(this);
 }
 
 QuicChromiumClientSession::Handle::~Handle() {
+  if (push_handle_) {
+    auto* push_handle = push_handle_;
+    push_handle_ = nullptr;
+    push_handle->Cancel();
+  }
+
   if (session_)
     session_->RemoveHandle(this);
 }
@@ -223,6 +230,7 @@ void QuicChromiumClientSession::Handle::OnSessionClosed(
   error_ = error;
   quic_version_ = quic_version;
   connect_timing_ = connect_timing;
+  push_handle_ = nullptr;
 }
 
 bool QuicChromiumClientSession::Handle::IsConnected() const {
@@ -289,6 +297,28 @@ bool QuicChromiumClientSession::Handle::SharesSameSession(
   return session_.get() == other.session_.get();
 }
 
+int QuicChromiumClientSession::Handle::RendezvousWithPromised(
+    const SpdyHeaderBlock& headers,
+    const CompletionCallback& callback) {
+  if (!session_)
+    return ERR_CONNECTION_CLOSED;
+
+  QuicAsyncStatus push_status =
+      session_->push_promise_index()->Try(headers, this, &push_handle_);
+
+  switch (push_status) {
+    case QUIC_FAILURE:
+      return ERR_FAILED;
+    case QUIC_SUCCESS:
+      return OK;
+    case QUIC_PENDING:
+      push_callback_ = callback;
+      return ERR_IO_PENDING;
+  }
+  NOTREACHED();
+  return ERR_UNEXPECTED;
+}
+
 int QuicChromiumClientSession::Handle::RequestStream(
     bool requires_confirmation,
     const CompletionCallback& callback) {
@@ -311,6 +341,12 @@ QuicChromiumClientSession::Handle::ReleaseStream() {
   auto handle = stream_request_->ReleaseStream();
   stream_request_.reset();
   return handle;
+}
+
+std::unique_ptr<QuicChromiumClientStream::Handle>
+QuicChromiumClientSession::Handle::ReleasePromisedStream() {
+  DCHECK(push_stream_);
+  return std::move(push_stream_);
 }
 
 int QuicChromiumClientSession::Handle::WaitForHandshakeConfirmation(
@@ -348,6 +384,51 @@ int QuicChromiumClientSession::Handle::GetPeerAddress(
 
   *address = session_->peer_address().impl().socket_address();
   return OK;
+}
+
+bool QuicChromiumClientSession::Handle::CheckVary(
+    const SpdyHeaderBlock& client_request,
+    const SpdyHeaderBlock& promise_request,
+    const SpdyHeaderBlock& promise_response) {
+  HttpRequestInfo promise_request_info;
+  ConvertHeaderBlockToHttpRequestHeaders(promise_request,
+                                         &promise_request_info.extra_headers);
+  HttpRequestInfo client_request_info;
+  ConvertHeaderBlockToHttpRequestHeaders(client_request,
+                                         &client_request_info.extra_headers);
+
+  HttpResponseInfo promise_response_info;
+  if (!SpdyHeadersToHttpResponse(promise_response, &promise_response_info)) {
+    DLOG(WARNING) << "Invalid headers";
+    return false;
+  }
+
+  HttpVaryData vary_data;
+  if (!vary_data.Init(promise_request_info,
+                      *promise_response_info.headers.get())) {
+    // Promise didn't contain valid vary info, so URL match was sufficient.
+    return true;
+  }
+  // Now compare the client request for matching.
+  return vary_data.MatchesRequest(client_request_info,
+                                  *promise_response_info.headers.get());
+}
+
+void QuicChromiumClientSession::Handle::OnRendezvousResult(
+    QuicSpdyStream* stream) {
+  DCHECK(!push_stream_);
+  int rv = ERR_FAILED;
+  if (stream) {
+    rv = OK;
+    push_stream_ =
+        static_cast<QuicChromiumClientStream*>(stream)->CreateHandle();
+  }
+
+  if (push_callback_) {
+    DCHECK(push_handle_);
+    push_handle_ = nullptr;
+    base::ResetAndReturn(&push_callback_).Run(rv);
+  }
 }
 
 QuicChromiumClientSession::StreamRequest::StreamRequest(
