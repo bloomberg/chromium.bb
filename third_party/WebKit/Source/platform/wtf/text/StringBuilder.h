@@ -145,6 +145,8 @@ class WTF_EXPORT StringBuilder {
   void AppendNumber(unsigned long long);
   void AppendNumber(double, unsigned precision = 6);
 
+  void erase(unsigned);
+
   String ToString();
   AtomicString ToAtomicString();
   String Substring(unsigned start, unsigned length) const;

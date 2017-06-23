@@ -210,6 +210,35 @@ TEST(StringBuilderTest, Resize) {
   ExpectEmpty(builder);
 }
 
+TEST(StringBuilderTest, Erase) {
+  StringBuilder builder;
+  builder.Append(String("01234"));
+  // Erase from String.
+  builder.erase(3);
+  ExpectBuilderContent("0124", builder);
+  // Erase from buffer.
+  builder.erase(1);
+  ExpectBuilderContent("024", builder);
+}
+
+TEST(StringBuilderTest, Erase16) {
+  StringBuilder builder;
+  builder.Append(String(u"\uFF10\uFF11\uFF12\uFF13\uFF14"));
+  // Erase from String.
+  builder.erase(3);
+  ExpectBuilderContent(u"\uFF10\uFF11\uFF12\uFF14", builder);
+  // Erase from buffer.
+  builder.erase(1);
+  ExpectBuilderContent(u"\uFF10\uFF12\uFF14", builder);
+}
+
+TEST(StringBuilderTest, EraseLast) {
+  StringBuilder builder;
+  builder.Append("01234");
+  builder.erase(4);
+  ExpectBuilderContent("0123", builder);
+}
+
 TEST(StringBuilderTest, Equal) {
   StringBuilder builder1;
   StringBuilder builder2;
