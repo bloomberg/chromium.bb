@@ -62,6 +62,14 @@ namespace crazy {
 
 namespace {
 
+int local_isnanf(float x) {
+  uint32_t bits;
+  memcpy(&bits, &x, sizeof bits);
+  if ((bits & 0x7f800000) != 0x7f800000)
+    return 0;
+  return (bits & 0x7fffff) ? 1 : 0;
+}
+
 typedef SharedLibrary::linker_function_t linker_function_t;
 typedef int (*JNI_OnLoadFunctionPtr)(void* vm, void* reserved);
 typedef void (*JNI_OnUnloadFunctionPtr)(void* vm, void* reserved);
@@ -157,10 +165,15 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
       // isnanf never need be resolved in gcc builds.
       //
       // http://code.google.com/p/chromium/issues/detail?id=376828
-      if (!address &&
-          !strcmp(symbol_name, "isnanf") &&
-          !strcmp(wrap->GetName(), "libm.so"))
+      if (!address && !strcmp(symbol_name, "isnanf") &&
+          !strcmp(wrap->GetName(), "libm.so")) {
         address = ::dlsym(wrap->GetSystem(), "__isnanf");
+        if (!address) {
+          // __isnanf only exists on Android 21+, so use a local fallback
+          // if that doesn't exist either.
+          address = reinterpret_cast<void*>(&local_isnanf);
+        }
+      }
       return address;
     }
 
