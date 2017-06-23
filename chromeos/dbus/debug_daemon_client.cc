@@ -281,6 +281,16 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
+  void GetLog(const std::string& log_name,
+              const GetLogCallback& callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface, debugd::kGetLog);
+    dbus::MessageWriter(&method_call).AppendString(log_name);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetLog,
+                   weak_ptr_factory_.GetWeakPtr(), log_name, callback));
+  }
+
   // base::trace_event::TracingAgent implementation.
   std::string GetTracingAgentName() override { return kCrOSTracingAgentName; }
 
@@ -627,6 +637,17 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   void OnGetUserLogFiles(const GetLogsCallback& callback,
                          dbus::Response* response) {
     return OnGetAllLogs(callback, response);
+  }
+
+  void OnGetLog(const std::string& log_name,
+                const GetLogCallback& callback,
+                dbus::Response* response) {
+    std::string result;
+    if (!response || !dbus::MessageReader(response).PopString(&result)) {
+      callback.Run(false, result);
+      return;
+    }
+    callback.Run(true, result);
   }
 
   void OnBigFeedbackLogsResponse(base::WeakPtr<PipeReaderWrapper> pipe_reader,

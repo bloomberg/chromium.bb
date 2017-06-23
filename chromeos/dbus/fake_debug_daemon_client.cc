@@ -143,6 +143,13 @@ void FakeDebugDaemonClient::GetUserLogFiles(const GetLogsCallback& callback) {
       FROM_HERE, base::Bind(callback, true, user_logs));
 }
 
+void FakeDebugDaemonClient::GetLog(const std::string& log_name,
+                                   const GetLogCallback& callback) {
+  std::string result = log_name + ": response from GetLog";
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, true, result));
+}
+
 void FakeDebugDaemonClient::TestICMP(const std::string& ip_address,
                                      const TestICMPCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
