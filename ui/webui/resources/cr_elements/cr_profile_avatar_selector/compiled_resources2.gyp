@@ -14,7 +14,6 @@
     {
       'target_name': 'cr_profile_avatar_selector_grid',
       'dependencies': [
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-menu-behavior/compiled_resources2.gyp:iron-menubar-behavior-extracted',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
       ],

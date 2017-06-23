@@ -54,7 +54,7 @@ cr.define('user_manager.create_profile_tests', function() {
 
       test('Handles available profile icons', function() {
         return browserProxy.whenCalled('getAvailableIcons').then(function() {
-          assertEquals('icon1.png', createProfileElement.profileIconUrl_);
+          assertEquals(2, createProfileElement.availableIcons_.length);
         });
       });
 

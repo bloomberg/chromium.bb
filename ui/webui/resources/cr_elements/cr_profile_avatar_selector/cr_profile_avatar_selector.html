@@ -1,5 +1,6 @@
-<link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="cr_profile_avatar_selector_grid.html">
 
@@ -42,12 +43,11 @@
       }
     </style>
     <cr-profile-avatar-selector-grid id="avatar-grid"
-        selected="{{selectedAvatarUrl}}" attr-for-selected="data-avatar-url"
         ignore-modified-key-events="[[ignoreModifiedKeyEvents]]">
       <template is="dom-repeat" items="[[avatars]]">
-        <paper-button class="avatar" data-avatar-url$="[[item.url]]"
-            title="[[item.label]]" data-is-gaia-avatar$="[[item.isGaiaAvatar]]"
-            style$="background-image: [[getIconImageset_(item.url)]]">
+        <paper-button class="avatar" title="[[item.label]]"
+            style$="background-image: [[getIconImageset_(item.url)]]"
+            on-tap="onAvatarTap_">
         </paper-button>
       </template>
     </cr-profile-avatar-selector-grid>

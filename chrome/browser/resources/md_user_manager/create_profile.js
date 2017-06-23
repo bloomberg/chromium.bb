@@ -41,10 +41,10 @@ Polymer({
     },
 
     /**
-     * The currently selected profile icon URL. May be a data URL.
-     * @private {string}
+     * The currently selected profile avatar, if any.
+     * @private {?AvatarIcon}
      */
-    profileIconUrl_: {type: String, value: ''},
+    selectedAvatar_: Object,
 
     /**
      * True if the existing supervised users are being loaded.
@@ -142,8 +142,9 @@ Polymer({
         'create-profile-warning', this.handleMessage_.bind(this));
     this.addWebUIListener(
         'create-profile-error', this.handleMessage_.bind(this));
-    this.addWebUIListener(
-        'profile-icons-received', this.handleProfileIcons_.bind(this));
+    this.addWebUIListener('profile-icons-received', function(icons) {
+      this.availableIcons_ = icons;
+    }.bind(this));
     this.addWebUIListener(
         'profile-defaults-received', this.handleProfileDefaults_.bind(this));
     this.addWebUIListener(
@@ -180,16 +181,6 @@ Polymer({
       this.hideMessage_();
       event.preventDefault();
     }
-  },
-
-  /**
-   * Handler for when the profile icons are pushed from the browser.
-   * @param {!Array<!AvatarIcon>} icons
-   * @private
-   */
-  handleProfileIcons_: function(icons) {
-    this.availableIcons_ = icons;
-    this.profileIconUrl_ = icons[0].url;
   },
 
   /**
@@ -365,8 +356,10 @@ Polymer({
     this.createInProgress_ = true;
     var createShortcut =
         this.isProfileShortcutsEnabled_ && this.createShortcut_;
+    // Select the 1st avatar if none selected.
+    var selectedAvatar = this.selectedAvatar_ || this.availableIcons_[0];
     this.browserProxy_.createProfile(
-        this.profileName_, this.profileIconUrl_, createShortcut,
+        this.profileName_, selectedAvatar.url, createShortcut,
         this.isSupervised_, '', custodianProfilePath);
   },
 
@@ -467,17 +460,6 @@ Polymer({
     };
 
     return this.i18nAdvanced(id, opts);
-  },
-
-  /**
-   * Computed binding determining which profile icon button is toggled on.
-   * @param {string} iconUrl icon URL of a given icon button.
-   * @param {string} profileIconUrl Currently selected icon URL.
-   * @return {boolean}
-   * @private
-   */
-  isActiveIcon_: function(iconUrl, profileIconUrl) {
-    return iconUrl == profileIconUrl;
   },
 
   /**

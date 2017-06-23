@@ -14,9 +14,15 @@ Polymer({
 
   properties: {
     /**
-     * The currently selected profile icon URL. May be a data URL.
+     * The newly selected avatar. Populated only if the user manually changes
+     * the avatar selection. The observer ensures that the changes are
+     * propagated to the C++.
+     * @private
      */
-    profileIconUrl: String,
+    profileAvatar_: {
+      type: Object,
+      observer: 'profileAvatarChanged_',
+    },
 
     /**
      * The current profile name.
@@ -114,20 +120,14 @@ Polymer({
   },
 
   /**
-   * Handler for when an avatar is activated.
-   * @param {!Event} event
+   * Handler for when the profile avatar is changed by the user.
    * @private
    */
-  onIconActivate_: function(event) {
-    // Explicitly test against undefined, because even when an element has the
-    // data-is-gaia-avatar attribute, dataset.isGaiaAvatar returns an empty
-    // string, which is falsy.
-    var isGaiaAvatar = event.detail.item.dataset.isGaiaAvatar !== undefined;
-
-    if (isGaiaAvatar)
+  profileAvatarChanged_: function() {
+    if (this.profileAvatar_.isGaiaAvatar)
       this.browserProxy_.setProfileIconToGaiaAvatar();
     else
-      this.browserProxy_.setProfileIconToDefaultAvatar(event.detail.selected);
+      this.browserProxy_.setProfileIconToDefaultAvatar(this.profileAvatar_.url);
   },
 
   /**
