@@ -15,6 +15,7 @@ source_set("browser_list") {
     "browser_list_session_service_factory.mm",
     "browser_list_session_service_impl.h",
     "browser_list_session_service_impl.mm",
+    "browser_user_data.h",
     "browser_web_state_list_delegate.h",
     "browser_web_state_list_delegate.mm",
   ]
