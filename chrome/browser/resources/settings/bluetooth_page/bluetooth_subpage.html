@@ -62,7 +62,7 @@
     <div id="pairedContainer" class="container"
         scrollable on-device-event="onDeviceEvent_"
         hidden="[[!showDevices_(bluetoothToggleState, pairedDeviceList_)]]">
-      <iron-list id="pairedDevices" class="vertical-list"
+      <iron-list id="pairedDevices" class="vertical-list" preserve-focus
           items="[[pairedDeviceList_]]"
           selection-enabled selected-item="{{selectedPairedItem_}}"
           scroll-target="pairedContainer">
@@ -87,7 +87,7 @@
     <div id="unpairedContainer" class="container"
         scrollable on-device-event="onDeviceEvent_"
         hidden="[[!showDevices_(bluetoothToggleState, unpairedDeviceList_)]]">
-      <iron-list id="unpairedDevices" class="vertical-list"
+      <iron-list id="unpairedDevices" class="vertical-list" preserve-focus
           items="[[unpairedDeviceList_]]"
           selection-enabled selected-item="{{selectedUnpairedItem_}}"
           scroll-target="unpairedContainer">

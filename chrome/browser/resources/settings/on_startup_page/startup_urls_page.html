@@ -32,7 +32,8 @@
     </style>
     <div id="outer" class="layout vertical flex vertical-list">
       <div id="container" class="scroll-container" scrollable>
-        <iron-list items="[[startupPages_]]" scroll-target="container">
+        <iron-list items="[[startupPages_]]" scroll-target="container"
+            preserve-focus>
           <template>
             <settings-startup-url-entry model="[[item]]"
                 tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"

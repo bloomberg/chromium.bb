@@ -58,7 +58,7 @@
           class$="scroll-container [[getHeightClass(scrollTarget)]]"
           scrollable$="[[isScrollable(scrollTarget)]]">
         <iron-list items="[[engines]]" scroll-target="[[scrollTarget]]"
-            scroll-offset="[[scrollOffset]]">
+            scroll-offset="[[scrollOffset]]" preserve-focus>
           <template>
             <settings-search-engine-entry engine="[[item]]"
                 tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
