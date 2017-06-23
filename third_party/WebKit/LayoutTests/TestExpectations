@@ -48,19 +48,16 @@ crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-
 # --- End SPV2 Tests ---
 
 ########## Ref tests can't be rebaselined ##########
-crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Failure ]
-crbug.com/504613 crbug.com/524248 virtual/disable-spinvalidation/paint/images/image-backgrounds-not-antialiased.html [ Failure ]
+crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
+crbug.com/504613 crbug.com/524248 [ Mac ] virtual/disable-spinvalidation/paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
-crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
-crbug.com/619103 virtual/disable-spinvalidation/paint/invalidation/background-resize-width.html [ Failure ]
+crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure Pass ]
+crbug.com/619103 virtual/disable-spinvalidation/paint/invalidation/background-resize-width.html [ Failure Pass ]
 
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Failure ]
 
 # Scanlines off by 1, but code path should be the same
 crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
-
-crbug.com/667045 paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
-crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
 
 crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
 crbug.com/702006 virtual/disable-spinvalidation/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
@@ -1513,9 +1510,6 @@ crbug.com/736319 [ Linux Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-c
 
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
-
-# Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
-crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
 
 # Disabled briefly until test runner support lands.
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
