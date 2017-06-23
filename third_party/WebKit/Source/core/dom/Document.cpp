@@ -3250,6 +3250,8 @@ void Document::DispatchUnloadEvents() {
     return;
 
   if (load_event_progress_ <= kUnloadEventInProgress) {
+    if (GetPage())
+      GetPage()->WillUnloadDocument(*this);
     Element* current_focused_element = FocusedElement();
     if (isHTMLInputElement(current_focused_element))
       toHTMLInputElement(*current_focused_element).EndEditing();

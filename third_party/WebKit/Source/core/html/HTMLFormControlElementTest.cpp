@@ -41,6 +41,8 @@ class MockValidationMessageClient
     return anchor_ == &anchor;
   }
 
+  void WillUnloadDocument(const Document&) override {}
+  void DocumentDetached(const Document&) override {}
   void WillBeDestroyed() override {}
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(anchor_);
