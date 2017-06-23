@@ -24,9 +24,6 @@
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshots_util.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/native_app_launcher/native_app_metadata.h"
-#import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
@@ -46,8 +43,6 @@ void DoNothing(int n) {}
 }
 
 @interface BrowsingDataRemovalController ()
-// Removes data used by the Google App Launcher.
-- (void)removeGALData;
 // Removes browsing data that is created by web views associated with
 // |browserState|. |mask| is obtained from
 // IOSChromeBrowsingDataRemover::RemoveDataMask. |deleteBegin| defines the begin
@@ -236,13 +231,6 @@ void DoNothing(int n) {}
     ClearIOSSnapshots();
   }
 
-  // TODO(crbug.com/227636): Support multiple profile.
-  // Google App Launcher data is tied to the normal profile.
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_GOOGLE_APP_LAUNCHER_DATA &&
-      !browserState->IsOffTheRecord()) {
-    [self removeGALData];
-  }
-
   if (browserState->IsOffTheRecord()) {
     // In incognito, only data removal for all time is currently supported.
     DCHECK_EQ(base::Time(), deleteBegin);
@@ -254,15 +242,6 @@ void DoNothing(int n) {}
                                                     mask:mask
                                              deleteBegin:deleteBegin
                                        completionHandler:browsingDataCleared];
-}
-
-- (void)removeGALData {
-  [ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
-      filteredAppsUsingBlock:^BOOL(const id<NativeAppMetadata> app,
-                                   BOOL* stop) {
-        [app resetInfobarHistory];
-        return NO;
-      }];
 }
 
 - (void)removeWebViewCreatedBrowsingDataFromBrowserState:
