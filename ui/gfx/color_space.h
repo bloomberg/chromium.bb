@@ -160,6 +160,12 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.
   bool FullRangeEncodedValues() const;
 
+  // Returns true if this color space can be represented parametrically.
+  bool IsParametric() const;
+  // Return a parametric approximation of this color space (if it is not already
+  // parametric).
+  gfx::ColorSpace GetParametricApproximation() const;
+
   // Return this color space with any range adjust or YUV to RGB conversion
   // stripped off.
   gfx::ColorSpace GetAsFullRangeRGB() const;

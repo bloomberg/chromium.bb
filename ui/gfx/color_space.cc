@@ -158,6 +158,25 @@ bool ColorSpace::FullRangeEncodedValues() const {
          transfer_ == TransferID::IEC61966_2_4;
 }
 
+bool ColorSpace::IsParametric() const {
+  return primaries_ != PrimaryID::ICC_BASED &&
+         transfer_ != TransferID::ICC_BASED;
+}
+
+ColorSpace ColorSpace::GetParametricApproximation() const {
+  // If this is parametric already, return it directly.
+  if (IsParametric())
+    return *this;
+
+  // Query the ICC profile, if available, for the parametric approximation.
+  ICCProfile icc_profile;
+  if (GetICCProfile(&icc_profile))
+    return icc_profile.GetParametricColorSpace();
+
+  // Fall back to sRGB if the ICC profile is no longer cached.
+  return CreateSRGB();
+}
+
 bool ColorSpace::operator!=(const ColorSpace& other) const {
   return !(*this == other);
 }

@@ -104,7 +104,8 @@ ICCProfile ICCProfile::FromDataWithId(const void* data,
   return icc_profile;
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(USE_X11)
+#if (!defined(OS_WIN) && !defined(USE_X11) && !defined(OS_MACOSX)) || \
+    defined(OS_IOS)
 // static
 ICCProfile ICCProfile::FromBestMonitor() {
   if (HasForcedProfile())

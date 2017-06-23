@@ -20,6 +20,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/gfx/color_space_switches.h"
+#include "ui/gfx/icc_profile.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 extern "C" {
@@ -88,7 +89,8 @@ Display BuildDisplayForScreen(NSScreen* screen) {
   if (base::mac::IsAtLeastOS10_12() && !color_correct_rendering_enabled)
     color_space = base::mac::GetSystemColorSpace();
 
-  display.set_icc_profile(gfx::ICCProfile::FromCGColorSpace(color_space));
+  display.set_color_space(
+      gfx::ICCProfile::FromCGColorSpace(color_space).GetColorSpace());
   display.set_color_depth(NSBitsPerPixelFromDepth([screen depth]));
   display.set_depth_per_component(NSBitsPerSampleFromDepth([screen depth]));
   display.set_is_monochrome(CGDisplayUsesForceToGray());

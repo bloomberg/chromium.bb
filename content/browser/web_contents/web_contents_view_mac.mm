@@ -89,7 +89,7 @@ content::ScreenInfo GetNSViewScreenInfo(NSView* view) {
 
   content::ScreenInfo results;
   results.device_scale_factor = static_cast<int>(display.device_scale_factor());
-  results.icc_profile = display.icc_profile();
+  display.color_space().GetICCProfile(&results.icc_profile);
   results.depth = display.color_depth();
   results.depth_per_component = display.depth_per_component();
   results.is_monochrome = display.is_monochrome();

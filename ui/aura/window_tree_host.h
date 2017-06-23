@@ -20,7 +20,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
-class ICCProfile;
 class Insets;
 class Point;
 class Rect;
@@ -224,8 +223,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Hides the WindowTreeHost.
   virtual void HideImpl() = 0;
-
-  virtual gfx::ICCProfile GetICCProfileForCurrentDisplay();
 
   // Overridden from ui::EventSource:
   ui::EventSink* GetEventSink() override;

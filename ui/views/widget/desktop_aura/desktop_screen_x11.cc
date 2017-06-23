@@ -26,6 +26,7 @@
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/icc_profile.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
@@ -373,6 +374,11 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
 
       if (is_primary_display)
         primary_display_index_ = displays.size();
+
+      // TODO(ccameron): Populate this based on this specific display.
+      // http://crbug.com/735613
+      display.set_color_space(
+          gfx::ICCProfile::FromBestMonitor().GetColorSpace());
 
       displays.push_back(display);
     }
