@@ -121,12 +121,12 @@ class BleConnectionManager : public BleScanner::Observer {
       std::unique_ptr<TimerFactory> timer_factory,
       cryptauth::BluetoothThrottler* bluetooth_throttler);
 
-  void SendMessageReceivedEvent(const cryptauth::RemoteDevice& remote_device,
-                                const std::string& payload);
+  void SendMessageReceivedEvent(cryptauth::RemoteDevice remote_device,
+                                std::string payload);
   void SendSecureChannelStatusChangeEvent(
-      const cryptauth::RemoteDevice& remote_device,
-      const cryptauth::SecureChannel::Status& old_status,
-      const cryptauth::SecureChannel::Status& new_status);
+      cryptauth::RemoteDevice remote_device,
+      cryptauth::SecureChannel::Status old_status,
+      cryptauth::SecureChannel::Status new_status);
 
  private:
   friend class BleConnectionManagerTest;
@@ -142,7 +142,7 @@ class BleConnectionManager : public BleScanner::Observer {
   class ConnectionMetadata : public cryptauth::SecureChannel::Observer {
    public:
     ConnectionMetadata(const cryptauth::RemoteDevice remote_device,
-                       std::shared_ptr<base::Timer> timer,
+                       std::unique_ptr<base::Timer> timer,
                        base::WeakPtr<BleConnectionManager> manager);
     ~ConnectionMetadata();
 
@@ -175,17 +175,16 @@ class BleConnectionManager : public BleScanner::Observer {
 
     cryptauth::RemoteDevice remote_device_;
     std::set<MessageType> active_connection_reasons_;
-    std::shared_ptr<cryptauth::SecureChannel> secure_channel_;
-    std::shared_ptr<base::Timer> connection_attempt_timeout_timer_;
+    std::unique_ptr<cryptauth::SecureChannel> secure_channel_;
+    std::unique_ptr<base::Timer> connection_attempt_timeout_timer_;
     base::WeakPtr<BleConnectionManager> manager_;
 
     base::WeakPtrFactory<ConnectionMetadata> weak_ptr_factory_;
   };
 
-
-  std::shared_ptr<ConnectionMetadata> GetConnectionMetadata(
+  ConnectionMetadata* GetConnectionMetadata(
       const cryptauth::RemoteDevice& remote_device) const;
-  std::shared_ptr<ConnectionMetadata> AddMetadataForDevice(
+  ConnectionMetadata* AddMetadataForDevice(
       const cryptauth::RemoteDevice& remote_device);
 
   void UpdateConnectionAttempts();
@@ -210,7 +209,7 @@ class BleConnectionManager : public BleScanner::Observer {
   cryptauth::BluetoothThrottler* bluetooth_throttler_;
 
   bool has_registered_observer_;
-  std::map<cryptauth::RemoteDevice, std::shared_ptr<ConnectionMetadata>>
+  std::map<cryptauth::RemoteDevice, std::unique_ptr<ConnectionMetadata>>
       device_to_metadata_map_;
 
   base::ObserverList<Observer> observer_list_;
