@@ -387,11 +387,13 @@ void SelectTabUsingUI(NSString* title) {
     GREYFail(error);
   };
 
+  chrome_test_util::CloseAllTabsInCurrentMode();
   GURL URL = web::test::HttpServer::MakeUrl(kTestUrl1);
   NewMainTabWithURL(URL, kURL1FirstWord);
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   SwitchToNormalMode();
   [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
+  chrome_test_util::AssertMainTabCount(1);
 
   histogramTester.ExpectUniqueSample(kEvictedTabReloadSuccessRate,
                                      TabUsageRecorder::LOAD_SUCCESS, 1,
