@@ -207,7 +207,11 @@ struct macroblock {
 #endif
 #if CONFIG_DAALA_DIST
 #if CONFIG_CB4X4
+#if CONFIG_HIGHBITDEPTH
+  DECLARE_ALIGNED(16, uint16_t, decoded_8x8[8 * 8]);
+#else
   DECLARE_ALIGNED(16, uint8_t, decoded_8x8[8 * 8]);
+#endif
 #endif  // CONFIG_CB4X4
 #endif  // CONFIG_DAALA_DIST
 #if CONFIG_CFL
