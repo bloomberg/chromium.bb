@@ -28,9 +28,9 @@ const char kEnableUrlLearningParamName[] = "enable-url-learning";
 const char kEnableManifestsParamName[] = "enable-manifests";
 const char kEnableOriginLearningParamName[] = "enable-origin-learning";
 
-const base::Feature kSpeculativeResourcePrefetchingFeature =
-    base::Feature(kSpeculativeResourcePrefetchingFeatureName,
-                  base::FEATURE_DISABLED_BY_DEFAULT);
+const base::Feature kSpeculativeResourcePrefetchingFeature{
+    kSpeculativeResourcePrefetchingFeatureName,
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace internal {
 
