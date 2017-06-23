@@ -70,6 +70,7 @@ WakeLock::WakeLock(mojom::WakeLockRequest request,
 WakeLock::~WakeLock() {}
 
 void WakeLock::AddClient(mojom::WakeLockRequest request) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   binding_set_.AddBinding(this, std::move(request),
                           base::MakeUnique<bool>(false));
 }
@@ -100,6 +101,31 @@ void WakeLock::CancelWakeLock() {
   *binding_set_.dispatch_context() = false;
   num_lock_requests_--;
   UpdateWakeLock();
+}
+
+void WakeLock::ChangeType(mojom::WakeLockType type,
+                          ChangeTypeCallback callback) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+
+#if defined(OS_ANDROID)
+  LOG(ERROR) << "WakeLock::ChangeType() has no effect on Android.";
+  std::move(callback).Run(false);
+  return;
+#endif
+  if (binding_set_.size() > 1) {
+    LOG(ERROR) << "WakeLock::ChangeType() is not allowed when the current wake "
+                  "lock is shared by more than one clients.";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  mojom::WakeLockType old_type = type_;
+  type_ = type;
+
+  if (type_ != old_type && wake_lock_)
+    SwapWakeLock();
+
+  std::move(callback).Run(true);
 }
 
 void WakeLock::HasWakeLockForTests(HasWakeLockForTestsCallback callback) {
@@ -149,6 +175,19 @@ void WakeLock::RemoveWakeLock() {
   wake_lock_.reset();
 }
 
+void WakeLock::SwapWakeLock() {
+  DCHECK(wake_lock_);
+
+  auto new_wake_lock = base::MakeUnique<PowerSaveBlocker>(
+      ToPowerSaveBlockerType(type_), ToPowerSaveBlockerReason(reason_),
+      *description_, main_task_runner_, file_task_runner_);
+
+  // Do a swap to ensure that there isn't a brief period where the old
+  // powersaveblocker is unblocked while the new powersaveblocker is not
+  // created.
+  wake_lock_.swap(new_wake_lock);
+}
+
 void WakeLock::OnConnectionError() {
   // If this client has an outstanding wake lock request, decrease the
   // num_lock_requests and call UpdateWakeLock().
@@ -157,8 +196,9 @@ void WakeLock::OnConnectionError() {
     UpdateWakeLock();
   }
 
-  if (binding_set_.empty())
+  if (binding_set_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  }
 }
 
 }  // namespace device

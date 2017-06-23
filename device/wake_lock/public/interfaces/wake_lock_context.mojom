@@ -6,30 +6,6 @@ module device.mojom;
 
 import "device/wake_lock/public/interfaces/wake_lock.mojom";
 
-enum WakeLockType {
-    // Prevent the application from being suspended. On some platforms, apps may
-    // be suspended when they are not visible to the user. This type of block
-    // requests that the app continue to run in that case, and on all platforms
-    // prevents the system from sleeping.
-    // Example use cases: downloading a file, playing audio.
-    PreventAppSuspension = 0,
-
-    // Prevent the display from going to sleep. This also has the side effect of
-    // preventing the system from sleeping, but does not necessarily prevent the
-    // app from being suspended on some platforms if the user hides it.
-    // Example use case: playing video.
-    PreventDisplaySleep = 1,
-};
-
-enum WakeLockReason {
-    // Audio is being played.
-    ReasonAudioPlayback = 0,
-    // Video is being played.
-    ReasonVideoPlayback = 1,
-    // WakeLock for some other reason.
-    ReasonOther = 2,
-};
-
 // Context in which WakeLock instances operate.
 interface WakeLockContext {
   // Gets a WakeLock within this context.

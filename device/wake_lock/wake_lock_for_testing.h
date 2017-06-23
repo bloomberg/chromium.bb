@@ -36,6 +36,7 @@ class WakeLockForTesting : public WakeLock {
   void UpdateWakeLock() override;
   void CreateWakeLock() override;
   void RemoveWakeLock() override;
+  void SwapWakeLock() override;
 
   bool has_wake_lock_;
 

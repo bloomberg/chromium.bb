@@ -32,9 +32,26 @@ class WakeLockTest : public DeviceServiceTestBase {
         mojo::MakeRequest(&wake_lock_));
   }
 
+  void OnChangeType(base::Closure quit_closure, bool result) {
+    result_ = result;
+    quit_closure.Run();
+  }
+
   void OnHasWakeLock(base::Closure quit_closure, bool has_wakelock) {
     has_wakelock_ = has_wakelock;
     quit_closure.Run();
+  }
+
+  bool ChangeType(device::mojom::WakeLockType type) {
+    result_ = false;
+
+    base::RunLoop run_loop;
+    wake_lock_->ChangeType(
+        type, base::Bind(&WakeLockTest::OnChangeType, base::Unretained(this),
+                         run_loop.QuitClosure()));
+    run_loop.Run();
+
+    return result_;
   }
 
   bool HasWakeLock() {
@@ -50,6 +67,7 @@ class WakeLockTest : public DeviceServiceTestBase {
   }
 
   bool has_wakelock_;
+  bool result_;
 
   mojom::WakeLockProviderPtr wake_lock_provider_;
   mojom::WakeLockPtr wake_lock_;
@@ -93,6 +111,41 @@ TEST_F(WakeLockTest, MultipleRequests) {
 
   wake_lock_->CancelWakeLock();
   EXPECT_FALSE(HasWakeLock());
+}
+
+// Test Change Type. ChangeType() has no effect when wake lock is shared by
+// multiple clients. Has no effect on Android either.
+TEST_F(WakeLockTest, ChangeType) {
+  EXPECT_FALSE(HasWakeLock());
+#if !defined(OS_ANDROID)
+  // Call ChangeType() on a wake lock that is in inactive status.
+  EXPECT_TRUE(ChangeType(device::mojom::WakeLockType::PreventAppSuspension));
+  EXPECT_TRUE(ChangeType(device::mojom::WakeLockType::PreventDisplaySleep));
+  EXPECT_FALSE(HasWakeLock());  // still inactive.
+
+  wake_lock_->RequestWakeLock();
+  EXPECT_TRUE(HasWakeLock());
+  // Call ChangeType() on a wake lock that is in active status.
+  EXPECT_TRUE(ChangeType(device::mojom::WakeLockType::PreventAppSuspension));
+  EXPECT_TRUE(ChangeType(device::mojom::WakeLockType::PreventDisplaySleep));
+  EXPECT_TRUE(HasWakeLock());  // still active.
+
+  // Send multiple requests, should be coalesced as usual.
+  wake_lock_->RequestWakeLock();
+  wake_lock_->RequestWakeLock();
+
+  mojom::WakeLockPtr wake_lock_1;
+  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_1));
+  // Not allowed to change type when shared by multiple clients.
+  EXPECT_FALSE(ChangeType(device::mojom::WakeLockType::PreventAppSuspension));
+
+  wake_lock_->CancelWakeLock();
+  wake_lock_1->CancelWakeLock();
+  EXPECT_FALSE(HasWakeLock());
+#else  // OS_ANDROID:
+  EXPECT_FALSE(ChangeType(device::mojom::WakeLockType::PreventAppSuspension));
+  EXPECT_FALSE(ChangeType(device::mojom::WakeLockType::PreventDisplaySleep));
+#endif
 }
 
 // WakeLockProvider connection broken doesn't affect WakeLock.

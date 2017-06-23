@@ -8,6 +8,7 @@
 #include <deque>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -98,6 +99,11 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void UpdatePowerProperties(
       const power_manager::PowerSupplyProperties& power_props);
 
+  // The PowerAPI requests system wake lock asynchronously. Test can run a
+  // RunLoop and set the quit closure by this function to make sure the wake
+  // lock has been created.
+  void SetPowerPolicyQuitClosure(base::OnceClosure quit_closure);
+
  private:
   // Callback that will be run by asynchronous suspend delays to report
   // readiness.
@@ -141,6 +147,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
 
   // Delegate for managing power consumption of Chrome's renderer processes.
   base::WeakPtr<RenderProcessManagerDelegate> render_process_manager_delegate_;
+
+  // If non-empty, called by SetPowerPolicy().
+  base::OnceClosure power_policy_quit_closure_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

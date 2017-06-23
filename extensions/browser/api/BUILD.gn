@@ -103,7 +103,6 @@ source_set("api") {
     "//device/base",
     "//device/bluetooth",
     "//device/hid",
-    "//device/power_save_blocker",
     "//device/serial",
   ]
 

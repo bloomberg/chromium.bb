@@ -491,7 +491,11 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   const char kExtensionId[] = "abcdefghijklmnopabcdefghijlkmnop";
   extensions::PowerAPI::Get(browser()->profile())
       ->AddRequest(kExtensionId, extensions::api::power::LEVEL_DISPLAY);
-  base::RunLoop().RunUntilIdle();
+
+  // The PowerAPI requests system wake lock asynchronously.
+  base::RunLoop run_loop;
+  power_manager_client_->SetPowerPolicyQuitClosure(run_loop.QuitClosure());
+  run_loop.Run();
 
   // Check that the lock is in effect (ignoring ac_idle_action,
   // battery_idle_action and reason).
