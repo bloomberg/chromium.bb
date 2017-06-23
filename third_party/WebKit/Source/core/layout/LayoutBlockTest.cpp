@@ -51,4 +51,16 @@ TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
   ASSERT_EQ(item_element->OffsetWidth(), 150);
 }
 
+TEST_F(LayoutBlockTest, OverflowWithTransformAndPerspective) {
+  SetBodyInnerHTML(
+      "<div id='target' style='width: 100px; height: 100px; overflow: scroll;"
+      "    perspective: 200px;'>"
+      "  <div style='transform: rotateY(-45deg); width: 140px; height: 100px'>"
+      "  </div>"
+      "</div>");
+  LayoutBox* scroller =
+      ToLayoutBox(GetDocument().getElementById("target")->GetLayoutObject());
+  EXPECT_EQ(119.5, scroller->LayoutOverflowRect().Width().ToFloat());
+}
+
 }  // namespace blink
