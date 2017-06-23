@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "build/build_config.h"
@@ -58,6 +59,9 @@ const size_t kIntermediateNameSuffixLength = sizeof(".crdownload") - 1;
 // that are mapped to the same path. This can happen if a reservation is created
 // that is supposed to overwrite an existing reservation.
 ReservationMap* g_reservation_map = NULL;
+
+base::LazySequencedTaskRunner g_sequenced_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER({base::MayBlock()});
 
 // Observes a DownloadItem for changes to its target path and state. Updates or
 // revokes associated download path reservations as necessary. Created, invoked
@@ -440,13 +444,5 @@ bool DownloadPathReservationTracker::IsPathInUseForTesting(
 // static
 scoped_refptr<base::SequencedTaskRunner>
 DownloadPathReservationTracker::GetTaskRunner() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  static scoped_refptr<base::SequencedTaskRunner>* task_runner = nullptr;
-
-  if (!task_runner) {
-    task_runner = new scoped_refptr<base::SequencedTaskRunner>(
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
-  }
-
-  return *task_runner;
+  return g_sequenced_task_runner.Get();
 }
