@@ -65,9 +65,6 @@ source_set("settings") {
     "import_data_collection_view_controller.mm",
     "material_cell_catalog_view_controller.h",
     "material_cell_catalog_view_controller.mm",
-    "native_apps_collection_view_controller.h",
-    "native_apps_collection_view_controller.mm",
-    "native_apps_collection_view_controller_private.h",
     "password_details_collection_view_controller.h",
     "password_details_collection_view_controller.mm",
     "physical_web_collection_view_controller.h",
@@ -151,7 +148,6 @@ source_set("settings") {
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui",
@@ -198,7 +194,6 @@ source_set("settings") {
   libs = [
     "CoreLocation.framework",
     "LocalAuthentication.framework",
-    "StoreKit.framework",
     "UIKit.framework",
   ]
 }
@@ -256,7 +251,6 @@ source_set("unit_tests") {
     "dataplan_usage_collection_view_controller_unittest.mm",
     "do_not_track_collection_view_controller_unittest.mm",
     "import_data_collection_view_controller_unittest.mm",
-    "native_apps_collection_view_controller_unittest.mm",
     "password_details_collection_view_controller_unittest.mm",
     "physical_web_collection_view_controller_unittest.mm",
     "privacy_collection_view_controller_unittest.mm",
