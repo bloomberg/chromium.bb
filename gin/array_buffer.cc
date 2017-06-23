@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/logging.h"
 #include "gin/array_buffer.h"
 #include "gin/per_isolate_data.h"
@@ -31,47 +30,8 @@ void* ArrayBufferAllocator::AllocateUninitialized(size_t length) {
   return malloc(length);
 }
 
-void* ArrayBufferAllocator::Reserve(size_t length) {
-  void* const hint = nullptr;
-  const size_t align = 64 << 10;  // Wasm page size
-  // TODO(eholk): On Windows this commits all the memory, rather than
-  // just reserving it. This is very bad and should be fixed, but we don't use
-  // this feature on Windows at all yet.
-  return base::AllocPages(hint, length, align, base::PageInaccessible);
-}
-
 void ArrayBufferAllocator::Free(void* data, size_t length) {
   free(data);
-}
-
-void ArrayBufferAllocator::Free(void* data,
-                                size_t length,
-                                AllocationMode mode) {
-  switch (mode) {
-    case AllocationMode::kNormal:
-      Free(data, length);
-      return;
-    case AllocationMode::kReservation:
-      base::FreePages(data, length);
-      return;
-    default:
-      NOTREACHED();
-  }
-}
-
-void ArrayBufferAllocator::SetProtection(void* data,
-                                         size_t length,
-                                         Protection protection) {
-  switch (protection) {
-    case Protection::kNoAccess:
-      base::SetSystemPagesInaccessible(data, length);
-      break;
-    case Protection::kReadWrite:
-      ignore_result(base::SetSystemPagesAccessible(data, length));
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
@@ -122,9 +82,6 @@ class ArrayBuffer::Private : public base::RefCounted<ArrayBuffer::Private> {
   v8::Isolate* isolate_;
   void* buffer_;
   size_t length_;
-  void* allocation_base_;
-  size_t allocation_length_;
-  v8::ArrayBuffer::Allocator::AllocationMode allocation_mode_;
 };
 
 scoped_refptr<ArrayBuffer::Private> ArrayBuffer::Private::From(
@@ -147,14 +104,6 @@ ArrayBuffer::Private::Private(v8::Isolate* isolate,
   v8::ArrayBuffer::Contents contents = array->Externalize();
   buffer_ = contents.Data();
   length_ = contents.ByteLength();
-  allocation_base_ = contents.AllocationBase();
-  allocation_length_ = contents.AllocationLength();
-  allocation_mode_ = contents.AllocationMode();
-
-  DCHECK(reinterpret_cast<uintptr_t>(allocation_base_) <=
-         reinterpret_cast<uintptr_t>(buffer_));
-  DCHECK(reinterpret_cast<uintptr_t>(buffer_) + length_ <=
-         reinterpret_cast<uintptr_t>(allocation_base_) + allocation_length_);
 
   array->SetAlignedPointerInInternalField(kWrapperInfoIndex,
                                           &g_array_buffer_wrapper_info);
@@ -166,8 +115,7 @@ ArrayBuffer::Private::Private(v8::Isolate* isolate,
 }
 
 ArrayBuffer::Private::~Private() {
-  PerIsolateData::From(isolate_)->allocator()->Free(
-      allocation_base_, allocation_length_, allocation_mode_);
+  PerIsolateData::From(isolate_)->allocator()->Free(buffer_, length_);
 }
 
 void ArrayBuffer::Private::FirstWeakCallback(
