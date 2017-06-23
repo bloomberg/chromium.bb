@@ -978,6 +978,7 @@ bool ResourceFetcher::IsReusableAlsoForPreloading(const FetchParameters& params,
 
   // Never reuse opaque responses from a service worker for requests that are
   // not no-cors. https://crbug.com/625575
+  // TODO(yhirano): Remove this.
   if (existing_resource->GetResponse().WasFetchedViaServiceWorker() &&
       existing_resource->GetResponse().ServiceWorkerResponseType() ==
           kWebServiceWorkerResponseTypeOpaque &&

@@ -882,6 +882,25 @@ void DocumentThreadableLoader::HandleResponse(
       LoadFallbackRequestForServiceWorker();
       return;
     }
+
+    // It's possible that we issue a fetch with request with non "no-cors"
+    // mode but get an opaque filtered response if a service worker is involved.
+    // We dispatch a CORS failure for the case.
+    // TODO(yhirano): This is probably not spec conformant. Fix it after
+    // https://github.com/w3c/preload/issues/100 is addressed.
+    if (options_.fetch_request_mode != WebURLRequest::kFetchRequestModeNoCORS &&
+        response.ServiceWorkerResponseType() ==
+            kWebServiceWorkerResponseTypeOpaque) {
+      StringBuilder builder;
+      CrossOriginAccessControl::AccessControlErrorString(
+          builder, CrossOriginAccessControl::kInvalidResponse, response,
+          GetSecurityOrigin(), request_context_);
+      DispatchDidFailAccessControlCheck(
+          ResourceError(kErrorDomainBlinkInternal, 0,
+                        response.Url().GetString(), builder.ToString()));
+      return;
+    }
+
     fallback_request_for_service_worker_ = ResourceRequest();
     client_->DidReceiveResponse(identifier, response, std::move(handle));
     return;
