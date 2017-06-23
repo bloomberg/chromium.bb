@@ -22,8 +22,15 @@ MediaEngagementContentsObserver::~MediaEngagementContentsObserver() = default;
 
 void MediaEngagementContentsObserver::WebContentsDestroyed() {
   playback_timer_->Stop();
+  ClearPlayerStates();
   service_->contents_observers_.erase(this);
   delete this;
+}
+
+void MediaEngagementContentsObserver::ClearPlayerStates() {
+  for (auto const& p : player_states_)
+    delete p.second;
+  player_states_.clear();
 }
 
 void MediaEngagementContentsObserver::DidFinishNavigation(
@@ -36,6 +43,8 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
 
   DCHECK(!playback_timer_->IsRunning());
   DCHECK(significant_players_.empty());
+
+  ClearPlayerStates();
 
   url::Origin new_origin(navigation_handle->GetURL());
   if (committed_origin_.IsSameOriginWith(new_origin))
@@ -60,32 +69,59 @@ void MediaEngagementContentsObserver::WasHidden() {
   UpdateTimer();
 }
 
+MediaEngagementContentsObserver::PlayerState*
+MediaEngagementContentsObserver::GetPlayerState(const MediaPlayerId& id) {
+  auto state = player_states_.find(id);
+  if (state != player_states_.end())
+    return state->second;
+
+  PlayerState* new_state = new PlayerState();
+  player_states_[id] = new_state;
+  return new_state;
+}
+
 void MediaEngagementContentsObserver::MediaStartedPlaying(
     const MediaPlayerInfo& media_player_info,
     const MediaPlayerId& media_player_id) {
   // TODO(mlamouri): check if:
   // - the playback has the minimum size requirements;
-  // - the playback isn't muted.
   if (!media_player_info.has_audio)
     return;
 
-  DCHECK(significant_players_.find(media_player_id) ==
-         significant_players_.end());
-  significant_players_.insert(media_player_id);
+  GetPlayerState(media_player_id)->playing = true;
+  MaybeInsertSignificantPlayer(media_player_id);
+  UpdateTimer();
+}
+
+void MediaEngagementContentsObserver::MediaMutedStateChanged(
+    const MediaPlayerId& id,
+    bool muted_state) {
+  GetPlayerState(id)->muted = muted_state;
+
+  if (muted_state)
+    MaybeRemoveSignificantPlayer(id);
+  else
+    MaybeInsertSignificantPlayer(id);
+
   UpdateTimer();
 }
 
 void MediaEngagementContentsObserver::MediaStoppedPlaying(
     const MediaPlayerInfo& media_player_info,
     const MediaPlayerId& media_player_id) {
-  DCHECK(significant_players_.find(media_player_id) !=
-         significant_players_.end());
-  significant_players_.erase(media_player_id);
+  GetPlayerState(media_player_id)->playing = false;
+  MaybeRemoveSignificantPlayer(media_player_id);
   UpdateTimer();
 }
 
 void MediaEngagementContentsObserver::DidUpdateAudioMutingState(bool muted) {
   UpdateTimer();
+}
+
+bool MediaEngagementContentsObserver::IsSignificantPlayer(
+    const MediaPlayerId& id) {
+  PlayerState* state = GetPlayerState(id);
+  return !state->muted && state->playing;
 }
 
 void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {
@@ -97,6 +133,24 @@ void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {
     return;
 
   // TODO(mlamouri): record the playback into content settings.
+}
+
+void MediaEngagementContentsObserver::MaybeInsertSignificantPlayer(
+    const MediaPlayerId& id) {
+  if (significant_players_.find(id) != significant_players_.end())
+    return;
+
+  if (IsSignificantPlayer(id))
+    significant_players_.insert(id);
+}
+
+void MediaEngagementContentsObserver::MaybeRemoveSignificantPlayer(
+    const MediaPlayerId& id) {
+  if (significant_players_.find(id) == significant_players_.end())
+    return;
+
+  if (!IsSignificantPlayer(id))
+    significant_players_.erase(id);
 }
 
 bool MediaEngagementContentsObserver::AreConditionsMet() const {
