@@ -91,8 +91,11 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void RunUntilCachedMetadataReceived();
   void RunUntilResponseBodyArrived();
   void RunUntilComplete();
+  void RunUntilConnectionError();
 
  private:
+  void OnConnectionError();
+
   mojo::Binding<mojom::URLLoaderClient> binding_;
   ResourceResponseHead response_head_;
   base::Optional<net::SSLInfo> ssl_info_;
@@ -106,12 +109,16 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   bool has_received_upload_progress_ = false;
   bool has_received_cached_metadata_ = false;
   bool has_received_completion_ = false;
+  bool has_received_connection_error_ = false;
+
   base::Closure quit_closure_for_on_receive_response_;
   base::Closure quit_closure_for_on_receive_redirect_;
   base::Closure quit_closure_for_on_data_downloaded_;
   base::Closure quit_closure_for_on_receive_cached_metadata_;
   base::Closure quit_closure_for_on_start_loading_response_body_;
   base::Closure quit_closure_for_on_complete_;
+  base::Closure quit_closure_for_on_connection_error_;
+
   mojom::URLLoaderFactoryPtr url_loader_factory_;
   int64_t download_data_length_ = 0;
   int64_t encoded_download_data_length_ = 0;

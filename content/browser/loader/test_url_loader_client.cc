@@ -25,6 +25,8 @@ void TestURLLoaderClient::OnReceiveResponse(
   ssl_info_ = ssl_info;
   if (quit_closure_for_on_receive_response_)
     quit_closure_for_on_receive_response_.Run();
+  binding_.set_connection_error_handler(base::Bind(
+      &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));
 }
 
 void TestURLLoaderClient::OnReceiveRedirect(
@@ -174,6 +176,21 @@ void TestURLLoaderClient::RunUntilComplete() {
   quit_closure_for_on_complete_ = run_loop.QuitClosure();
   run_loop.Run();
   quit_closure_for_on_complete_.Reset();
+}
+
+void TestURLLoaderClient::RunUntilConnectionError() {
+  if (has_received_connection_error_)
+    return;
+  base::RunLoop run_loop;
+  quit_closure_for_on_connection_error_ = run_loop.QuitClosure();
+  run_loop.Run();
+  quit_closure_for_on_connection_error_.Reset();
+}
+
+void TestURLLoaderClient::OnConnectionError() {
+  has_received_connection_error_ = true;
+  if (quit_closure_for_on_connection_error_)
+    quit_closure_for_on_connection_error_.Run();
 }
 
 }  // namespace content
