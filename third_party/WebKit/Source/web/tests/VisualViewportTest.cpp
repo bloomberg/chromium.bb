@@ -159,9 +159,7 @@ class VisualViewportTest
   }
 
   WebViewBase* WebViewImpl() const { return helper_.WebView(); }
-  LocalFrame* GetFrame() const {
-    return helper_.WebView()->MainFrameImpl()->GetFrame();
-  }
+  LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
   static void ConfigureSettings(WebSettings* settings) {
     settings->SetJavaScriptEnabled(true);

@@ -183,9 +183,7 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
 
   WebViewBase* WebView() { return helper_.WebView(); }
 
-  WebLocalFrameBase* MainFrameImpl() {
-    return helper_.WebView()->MainFrameImpl();
-  }
+  WebLocalFrameBase* MainFrameImpl() { return helper_.LocalMainFrame(); }
 
   HistogramTester histogram_tester_;
 

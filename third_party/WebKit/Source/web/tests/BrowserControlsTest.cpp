@@ -127,9 +127,7 @@ class BrowserControlsTest : public ::testing::Test {
   }
 
   WebViewBase* GetWebView() const { return helper_.WebView(); }
-  LocalFrame* GetFrame() const {
-    return helper_.WebView()->MainFrameImpl()->GetFrame();
-  }
+  LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
   VisualViewport& GetVisualViewport() const {
     return helper_.WebView()->GetPage()->GetVisualViewport();
   }

@@ -2882,7 +2882,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd) {
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 
-  ExecuteScript(web_view_helper.WebView()->MainFrameImpl(),
+  ExecuteScript(web_view_helper.LocalMainFrame(),
                 "originalDoctype = document.doctype;"
                 "document.removeChild(originalDoctype);");
 
@@ -2895,7 +2895,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd) {
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 
-  ExecuteScript(web_view_helper.WebView()->MainFrameImpl(),
+  ExecuteScript(web_view_helper.LocalMainFrame(),
                 "document.insertBefore(originalDoctype, document.firstChild);");
 
   constraints = RunViewportTest(page, 320, 352);

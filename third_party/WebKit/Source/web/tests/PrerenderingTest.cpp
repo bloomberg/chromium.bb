@@ -181,7 +181,7 @@ class PrerenderingTest : public ::testing::Test {
   }
 
   void Close() {
-    web_view_helper_.WebView()->MainFrameImpl()->CollectGarbage();
+    web_view_helper_.LocalMainFrame()->CollectGarbage();
     web_view_helper_.Reset();
 
     WebCache::Clear();
@@ -189,7 +189,7 @@ class PrerenderingTest : public ::testing::Test {
 
   Element& Console() {
     Document* document =
-        web_view_helper_.WebView()->MainFrameImpl()->GetFrame()->GetDocument();
+        web_view_helper_.LocalMainFrame()->GetFrame()->GetDocument();
     Element* console = document->getElementById("console");
     DCHECK(isHTMLUListElement(console));
     return *console;
@@ -210,7 +210,7 @@ class PrerenderingTest : public ::testing::Test {
   }
 
   void ExecuteScript(const char* code) {
-    web_view_helper_.WebView()->MainFrameImpl()->ExecuteScript(
+    web_view_helper_.LocalMainFrame()->ExecuteScript(
         WebScriptSource(WebString::FromUTF8(code)));
   }
 
