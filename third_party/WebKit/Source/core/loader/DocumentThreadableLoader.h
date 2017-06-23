@@ -136,9 +136,12 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void MakeCrossOriginAccessRequest(const ResourceRequest&);
   // Loads m_fallbackRequestForServiceWorker.
   void LoadFallbackRequestForServiceWorker();
-  // Loads m_actualRequest.
+  // Issues a CORS preflight.
+  void LoadPreflightRequest(const ResourceRequest&,
+                            const ResourceLoaderOptions&);
+  // Loads actual_request_.
   void LoadActualRequest();
-  // Clears m_actualRequest and reports access control check failure to
+  // Clears actual_request_ and reports access control check failure to
   // m_client.
   void HandlePreflightFailure(const String& url,
                               const String& error_description);
@@ -152,7 +155,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void LoadRequestAsync(const ResourceRequest&, ResourceLoaderOptions);
   void LoadRequestSync(const ResourceRequest&, ResourceLoaderOptions);
 
-  void PrepareCrossOriginRequest(ResourceRequest&);
+  void PrepareCrossOriginRequest(ResourceRequest&) const;
+
   // This method modifies the ResourceRequest by calling
   // SetAllowStoredCredentials() on it based on same-origin-ness and the
   // credentials mode.
