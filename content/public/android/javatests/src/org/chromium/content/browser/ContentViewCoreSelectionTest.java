@@ -867,7 +867,7 @@ public class ContentViewCoreSelectionTest {
         CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return mSelectionPopupController.isInsertion();
+                return mSelectionPopupController.isInsertionForTesting();
             }
         }));
     }
