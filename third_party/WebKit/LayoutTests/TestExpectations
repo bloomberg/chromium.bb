@@ -2877,9 +2877,6 @@ crbug.com/727991 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/visual
 
 crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
 
-# Sheriff failures 2017-06-07
-crbug.com/727014 [ Linux ] external/wpt/IndexedDB/large-nested-cloning.html [ Pass Timeout ]
-
 # Sensor tests fail on Mac swarming
 crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]

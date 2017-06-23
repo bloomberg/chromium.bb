@@ -62,10 +62,14 @@ IDBValue::IDBValue(const IDBValue* value,
 
 IDBValue::IDBValue(RefPtr<SharedBuffer> unwrapped_data,
                    std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data,
-                   std::unique_ptr<Vector<WebBlobInfo>> blob_info)
+                   std::unique_ptr<Vector<WebBlobInfo>> blob_info,
+                   const IDBKey* primary_key,
+                   const IDBKeyPath& key_path)
     : data_(std::move(unwrapped_data)),
       blob_data_(std::move(blob_data)),
-      blob_info_(std::move(blob_info)) {}
+      blob_info_(std::move(blob_info)),
+      primary_key_(primary_key),
+      key_path_(key_path) {}
 
 IDBValue::~IDBValue() {
   if (isolate_)
@@ -90,9 +94,11 @@ PassRefPtr<IDBValue> IDBValue::Create(const IDBValue* value,
 PassRefPtr<IDBValue> IDBValue::Create(
     PassRefPtr<SharedBuffer> unwrapped_data,
     std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data,
-    std::unique_ptr<Vector<WebBlobInfo>> blob_info) {
+    std::unique_ptr<Vector<WebBlobInfo>> blob_info,
+    const IDBKey* primary_key,
+    const IDBKeyPath& key_path) {
   return AdoptRef(new IDBValue(std::move(unwrapped_data), std::move(blob_data),
-                               std::move(blob_info)));
+                               std::move(blob_info), primary_key, key_path));
 }
 
 Vector<String> IDBValue::GetUUIDs() const {
