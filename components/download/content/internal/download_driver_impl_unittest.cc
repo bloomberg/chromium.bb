@@ -33,7 +33,7 @@ const char kFakeGuid[] = "fake_guid";
 // Matcher to compare driver entries. Not all the memeber fields are compared.
 // Currently no comparison in non test code, so no operator== override for
 // driver entry.
-MATCHER_P(DriverEntryEuqual, entry, "") {
+MATCHER_P(DriverEntryEqual, entry, "") {
   return entry.guid == arg.guid && entry.state == arg.state &&
          entry.bytes_downloaded == arg.bytes_downloaded &&
          entry.current_file_path.value() == arg.current_file_path.value();
@@ -45,7 +45,7 @@ class MockDriverClient : public DownloadDriver::Client {
  public:
   MOCK_METHOD1(OnDriverReady, void(bool));
   MOCK_METHOD1(OnDownloadCreated, void(const DriverEntry&));
-  MOCK_METHOD2(OnDownloadFailed, void(const DriverEntry&, int));
+  MOCK_METHOD2(OnDownloadFailed, void(const DriverEntry&, FailureType));
   MOCK_METHOD1(OnDownloadSucceeded, void(const DriverEntry&));
   MOCK_METHOD1(OnDownloadUpdated, void(const DriverEntry&));
 };
@@ -98,7 +98,7 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
   fake_item.SetTotalBytes(1024);
   DriverEntry entry = DownloadDriverImpl::CreateDriverEntry(&fake_item);
 
-  EXPECT_CALL(mock_client_, OnDownloadUpdated(DriverEntryEuqual(entry)))
+  EXPECT_CALL(mock_client_, OnDownloadUpdated(DriverEntryEqual(entry)))
       .Times(1)
       .RetiresOnSaturation();
   static_cast<content::DownloadItem::Observer*>(driver_.get())
@@ -112,7 +112,7 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
   fake_item.SetReceivedBytes(1024);
   fake_item.SetState(DownloadState::COMPLETE);
   entry = DownloadDriverImpl::CreateDriverEntry(&fake_item);
-  EXPECT_CALL(mock_client_, OnDownloadSucceeded(DriverEntryEuqual(entry)))
+  EXPECT_CALL(mock_client_, OnDownloadSucceeded(DriverEntryEqual(entry)))
       .Times(1)
       .RetiresOnSaturation();
   static_cast<content::DownloadItem::Observer*>(driver_.get())
@@ -122,9 +122,8 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
   fake_item.SetLastReason(
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT);
   entry = DownloadDriverImpl::CreateDriverEntry(&fake_item);
-  int reason = static_cast<int>(
-      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT);
-  EXPECT_CALL(mock_client_, OnDownloadFailed(DriverEntryEuqual(entry), reason))
+  EXPECT_CALL(mock_client_, OnDownloadFailed(DriverEntryEqual(entry),
+                                             FailureType::RECOVERABLE))
       .Times(1)
       .RetiresOnSaturation();
   static_cast<content::DownloadItem::Observer*>(driver_.get())

@@ -6,7 +6,7 @@
 
 namespace download {
 
-Entry::Entry() = default;
+Entry::Entry() : attempt_count(0) {}
 Entry::Entry(const Entry& other) = default;
 
 Entry::Entry(const DownloadParams& params)
@@ -14,7 +14,8 @@ Entry::Entry(const DownloadParams& params)
       guid(params.guid),
       create_time(base::Time::Now()),
       scheduling_params(params.scheduling_params),
-      request_params(params.request_params) {}
+      request_params(params.request_params),
+      attempt_count(0) {}
 
 Entry::~Entry() = default;
 
@@ -32,7 +33,8 @@ bool Entry::operator==(const Entry& other) const {
              other.request_params.request_headers.ToString() &&
          state == other.state && target_file_path == other.target_file_path &&
          create_time == other.create_time &&
-         completion_time == other.completion_time;
+         completion_time == other.completion_time &&
+         attempt_count == other.attempt_count;
 }
 
 }  // namespace download

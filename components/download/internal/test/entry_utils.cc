@@ -56,7 +56,8 @@ Entry BuildEntry(DownloadClient client,
                  Entry::State state,
                  const base::FilePath& target_file_path,
                  base::Time create_time,
-                 base::Time completion_time) {
+                 base::Time completion_time,
+                 int attempt_count) {
   Entry entry = BuildEntry(client, guid);
   entry.scheduling_params.cancel_time = cancel_time;
   entry.scheduling_params.network_requirements = network_requirements;
@@ -68,6 +69,7 @@ Entry BuildEntry(DownloadClient client,
   entry.target_file_path = target_file_path;
   entry.create_time = create_time;
   entry.completion_time = completion_time;
+  entry.attempt_count = attempt_count;
   return entry;
 }
 

@@ -115,7 +115,7 @@ void LogScheduledTaskStatus(DownloadTaskType task_type,
                             ScheduledTaskStatus status);
 
 // Logs download completion event.
-void LogDownloadCompletion(CompletionType type);
+void LogDownloadCompletion(CompletionType type, unsigned int attempt_count);
 
 // Logs recovery operations that happened when we had to move from one state
 // to another on startup.

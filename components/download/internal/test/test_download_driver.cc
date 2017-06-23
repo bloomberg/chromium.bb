@@ -37,10 +37,10 @@ void TestDownloadDriver::NotifyDownloadUpdate(const DriverEntry& entry) {
 }
 
 void TestDownloadDriver::NotifyDownloadFailed(const DriverEntry& entry,
-                                              int reason) {
+                                              FailureType failure_type) {
   if (client_) {
     entries_[entry.guid] = entry;
-    client_->OnDownloadFailed(entry, reason);
+    client_->OnDownloadFailed(entry, failure_type);
   }
 }
 
