@@ -393,23 +393,23 @@ void WebUIScreenLocker::LidEventReceived(PowerManagerClient::LidState state,
   if (state == PowerManagerClient::LidState::OPEN) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebUIScreenLocker::FocusUserPod,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&WebUIScreenLocker::FocusUserPod,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
 void WebUIScreenLocker::SuspendImminent() {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebUIScreenLocker::ResetAndFocusUserPod,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&WebUIScreenLocker::ResetAndFocusUserPod,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void WebUIScreenLocker::SuspendDone(const base::TimeDelta& sleep_duration) {
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&WebUIScreenLocker::FocusUserPod, weak_factory_.GetWeakPtr()));
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WebUIScreenLocker::FocusUserPod,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {

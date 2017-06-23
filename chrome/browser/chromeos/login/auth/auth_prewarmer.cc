@@ -91,10 +91,10 @@ void AuthPrewarmer::DoPrewarm() {
   const GURL& url = GaiaUrls::GetInstance()->service_login_url();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&content::PreconnectUrl,
-                 ProfileHelper::GetSigninProfile()->GetResourceContext(), url,
-                 url, kConnectionsNeeded, true,
-                 net::HttpRequestInfo::EARLY_LOAD_MOTIVATED));
+      base::BindOnce(&content::PreconnectUrl,
+                     ProfileHelper::GetSigninProfile()->GetResourceContext(),
+                     url, url, kConnectionsNeeded, true,
+                     net::HttpRequestInfo::EARLY_LOAD_MOTIVATED));
   if (!completion_callback_.is_null()) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      completion_callback_);

@@ -332,11 +332,12 @@ class WallpaperManager::PendingWallpaper :
     } else if (!wallpaper_path_.empty()) {
       manager->task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&WallpaperManager::GetCustomWallpaperInternal, account_id_,
-                     info_, wallpaper_path_, true /* update wallpaper */,
-                     base::ThreadTaskRunnerHandle::Get(),
-                     base::Passed(std::move(on_finish_)),
-                     manager->weak_factory_.GetWeakPtr()));
+          base::BindOnce(&WallpaperManager::GetCustomWallpaperInternal,
+                         account_id_, info_, wallpaper_path_,
+                         true /* update wallpaper */,
+                         base::ThreadTaskRunnerHandle::Get(),
+                         base::Passed(std::move(on_finish_)),
+                         manager->weak_factory_.GetWeakPtr()));
     } else if (!info_.location.empty()) {
       manager->LoadWallpaper(account_id_, info_, true, std::move(on_finish_));
     } else {
@@ -562,10 +563,9 @@ void WallpaperManager::Observe(int type,
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
       ClearDisposableWallpaperCache();
       BrowserThread::PostDelayedTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&WallpaperManager::MoveLoggedInUserCustomWallpaper,
-                     weak_factory_.GetWeakPtr()),
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&WallpaperManager::MoveLoggedInUserCustomWallpaper,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(kMoveCustomWallpaperDelaySeconds));
       break;
     }
@@ -573,8 +573,8 @@ void WallpaperManager::Observe(int type,
       if (!GetCommandLine()->HasSwitch(switches::kDisableBootAnimation)) {
         BrowserThread::PostDelayedTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&WallpaperManager::CacheUsersWallpapers,
-                       weak_factory_.GetWeakPtr()),
+            base::BindOnce(&WallpaperManager::CacheUsersWallpapers,
+                           weak_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kCacheWallpaperDelayMs));
       } else {
         should_cache_wallpaper_ = true;
@@ -586,8 +586,8 @@ void WallpaperManager::Observe(int type,
       if (should_cache_wallpaper_) {
         BrowserThread::PostDelayedTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&WallpaperManager::CacheUsersWallpapers,
-                       weak_factory_.GetWeakPtr()),
+            base::BindOnce(&WallpaperManager::CacheUsersWallpapers,
+                           weak_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kCacheWallpaperDelayMs));
         should_cache_wallpaper_ = false;
       }
@@ -683,10 +683,11 @@ void WallpaperManager::SetCustomWallpaper(
                 sequence_token_, base::SequencedWorkerPool::BLOCK_SHUTDOWN);
     // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
     blocking_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&WallpaperManager::SaveCustomWallpaper, wallpaper_files_id,
-                   base::FilePath(wallpaper_info.location),
-                   wallpaper_info.layout, base::Passed(std::move(deep_copy))));
+        FROM_HERE, base::BindOnce(&WallpaperManager::SaveCustomWallpaper,
+                                  wallpaper_files_id,
+                                  base::FilePath(wallpaper_info.location),
+                                  wallpaper_info.layout,
+                                  base::Passed(std::move(deep_copy))));
   }
 
   std::string relative_path =

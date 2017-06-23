@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_ExistingUserLogin) {
   profile_prepared_observer.Wait();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ClearNotifications));
+      FROM_HERE, base::BindOnce(&ClearNotifications));
   content::RunAllPendingInMessageLoop();
 }
 
@@ -820,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 
   profile_prepared_observer.Wait();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ClearNotifications));
+      FROM_HERE, base::BindOnce(&ClearNotifications));
   content::RunAllPendingInMessageLoop();
 }
 
@@ -840,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 
   profile_prepared_observer.Wait();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ClearNotifications));
+      FROM_HERE, base::BindOnce(&ClearNotifications));
   content::RunAllPendingInMessageLoop();
 }
 

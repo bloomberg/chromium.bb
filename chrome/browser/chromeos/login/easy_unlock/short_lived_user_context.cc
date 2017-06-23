@@ -32,7 +32,8 @@ ShortLivedUserContext::ShortLivedUserContext(
 
   task_runner->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ShortLivedUserContext::Reset, weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ShortLivedUserContext::Reset,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMinutes(kUserContextTimeToLiveMinutes));
 }
 

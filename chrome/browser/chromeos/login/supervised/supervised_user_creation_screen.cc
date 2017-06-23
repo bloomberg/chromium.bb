@@ -410,9 +410,9 @@ void SupervisedUserCreationScreen::OnCreationError(
     case SupervisedUserCreationController::CRYPTOHOME_NO_MOUNT:
     case SupervisedUserCreationController::CRYPTOHOME_FAILED_MOUNT:
     case SupervisedUserCreationController::CRYPTOHOME_FAILED_TPM:
-      ::login::GetSecureModuleUsed(
-          base::Bind(&SupervisedUserCreationScreen::UpdateSecureModuleMessages,
-                     weak_factory_.GetWeakPtr()));
+      ::login::GetSecureModuleUsed(base::BindOnce(
+          &SupervisedUserCreationScreen::UpdateSecureModuleMessages,
+          weak_factory_.GetWeakPtr()));
       return;
     case SupervisedUserCreationController::CLOUD_SERVER_ERROR:
     case SupervisedUserCreationController::TOKEN_WRITE_FAILED:

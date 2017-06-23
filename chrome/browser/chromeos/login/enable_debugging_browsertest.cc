@@ -84,7 +84,7 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
       bool succeeded) {
     LOG(WARNING) << "OnRemoveRootfsVerification: succeeded = " << succeeded;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(original_callback, succeeded));
+        FROM_HERE, base::BindOnce(original_callback, succeeded));
     if (runner_.get())
       runner_->Quit();
     else
@@ -100,7 +100,7 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
     LOG(WARNING) << "OnQueryDebuggingFeatures: succeeded = " << succeeded
                  << ", feature_mask = " << feature_mask;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(original_callback, succeeded, feature_mask));
+        FROM_HERE, base::BindOnce(original_callback, succeeded, feature_mask));
     if (runner_.get())
       runner_->Quit();
     else
@@ -115,7 +115,7 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
     LOG(WARNING) << "OnEnableDebuggingFeatures: succeeded = " << succeeded
                  << ", feature_mask = ";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(original_callback, succeeded));
+        FROM_HERE, base::BindOnce(original_callback, succeeded));
     if (runner_.get())
       runner_->Quit();
     else

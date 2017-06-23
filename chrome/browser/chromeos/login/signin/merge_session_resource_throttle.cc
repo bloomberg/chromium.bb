@@ -62,7 +62,7 @@ void MergeSessionResourceThrottle::WillStartRequest(bool* defer) {
       content::ResourceRequestInfo::ForRequest(request_);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &DelayXHRLoadOnUIThread, info->GetWebContentsGetterForRequest(),
           request_->url(),
           base::Bind(&MergeSessionResourceThrottle::OnBlockingPageComplete,

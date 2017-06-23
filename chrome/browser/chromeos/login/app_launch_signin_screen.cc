@@ -90,9 +90,8 @@ void AppLaunchSigninScreen::Login(const UserContext& user_context,
   authenticator_ = UserSessionManager::GetInstance()->CreateAuthenticator(this);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&Authenticator::AuthenticateToUnlock,
-                 authenticator_.get(),
-                 user_context));
+      base::BindOnce(&Authenticator::AuthenticateToUnlock, authenticator_.get(),
+                     user_context));
 }
 
 void AppLaunchSigninScreen::MigrateUserData(const std::string& old_password) {

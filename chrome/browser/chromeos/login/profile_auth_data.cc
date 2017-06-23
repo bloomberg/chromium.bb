@@ -179,8 +179,8 @@ void ProfileAuthDataTransferer::BeginTransfer() {
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ProfileAuthDataTransferer::BeginTransferOnIOThread,
-                 base::Unretained(this)));
+      base::BindOnce(&ProfileAuthDataTransferer::BeginTransferOnIOThread,
+                     base::Unretained(this)));
 }
 
 void ProfileAuthDataTransferer::BeginTransferOnIOThread() {

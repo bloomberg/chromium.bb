@@ -1217,13 +1217,12 @@ void SAMLPolicyTest::GetCookies() {
   ASSERT_TRUE(profile);
   base::RunLoop run_loop;
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&SAMLPolicyTest::GetCookiesOnIOThread,
-                 base::Unretained(this),
-                 scoped_refptr<net::URLRequestContextGetter>(
-                     profile->GetRequestContext()),
-                 run_loop.QuitClosure()));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SAMLPolicyTest::GetCookiesOnIOThread,
+                     base::Unretained(this),
+                     scoped_refptr<net::URLRequestContextGetter>(
+                         profile->GetRequestContext()),
+                     run_loop.QuitClosure()));
   run_loop.Run();
 }
 
