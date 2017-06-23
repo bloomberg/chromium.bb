@@ -39,7 +39,7 @@ settings.BatteryStatus;
  */
 settings.IdleBehavior = {
   DISPLAY_OFF_SLEEP: 0,
-  DISPLAY_OFF_STAY_AWAKE: 1,
+  DISPLAY_OFF: 1,
   DISPLAY_ON: 2,
   OTHER: 3,
 };

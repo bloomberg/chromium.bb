@@ -31,8 +31,8 @@ Polymer({
     idleControlled_: Boolean,
 
     /** @private {boolean} Whether the lid-closed behavior is controlled by
-      * policy.
-      */
+     * policy.
+     */
     lidClosedControlled_: Boolean,
 
     /** @private {boolean} Whether the system posesses a lid. */
@@ -155,8 +155,8 @@ Polymer({
         name: loadTimeData.getString('powerIdleDisplayOffSleep'),
       },
       {
-        value: settings.IdleBehavior.DISPLAY_OFF_STAY_AWAKE,
-        name: loadTimeData.getString('powerIdleDisplayOffStayAwake'),
+        value: settings.IdleBehavior.DISPLAY_OFF,
+        name: loadTimeData.getString('powerIdleDisplayOff'),
       },
       {
         value: settings.IdleBehavior.DISPLAY_ON,

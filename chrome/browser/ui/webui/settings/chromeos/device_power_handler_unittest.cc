@@ -200,12 +200,12 @@ TEST_F(PowerHandlerTest, SendIdleSettingForPrefChanges) {
       base::MakeUnique<base::Value>(PowerPolicyController::ACTION_DO_NOTHING));
   prefs_.SetUserPref(prefs::kPowerAcScreenOffDelayMs,
                      base::MakeUnique<base::Value>(10000));
-  EXPECT_EQ(
-      CreateSettingsChangedString(
-          PowerHandler::IdleBehavior::DISPLAY_OFF_STAY_AWAKE,
-          false /* idle_controlled */, PowerPolicyController::ACTION_SUSPEND,
-          false /* lid_closed_controlled */, true /* has_lid */),
-      GetLastSettingsChangedMessage());
+  EXPECT_EQ(CreateSettingsChangedString(PowerHandler::IdleBehavior::DISPLAY_OFF,
+                                        false /* idle_controlled */,
+                                        PowerPolicyController::ACTION_SUSPEND,
+                                        false /* lid_closed_controlled */,
+                                        true /* has_lid */),
+            GetLastSettingsChangedMessage());
 
   // Now set the delay to zero and check that the setting goes to "display on".
   prefs_.SetUserPref(prefs::kPowerAcScreenOffDelayMs,
@@ -254,7 +254,7 @@ TEST_F(PowerHandlerTest, SendLidSettingForPrefChanges) {
 // Verifies that requests from WebUI to update the idle behavior update prefs
 // appropriately.
 TEST_F(PowerHandlerTest, SetIdleBehavior) {
-  // Request the "display on" setting and check that prefs are set
+  // Request the "Keep display on" setting and check that prefs are set
   // appropriately.
   test_api_->SetIdleBehavior(PowerHandler::IdleBehavior::DISPLAY_ON);
   EXPECT_EQ(PowerPolicyController::ACTION_DO_NOTHING,
@@ -268,10 +268,9 @@ TEST_F(PowerHandlerTest, SetIdleBehavior) {
   EXPECT_EQ(0, GetIntPref(prefs::kPowerBatteryScreenOffDelayMs));
   EXPECT_EQ(0, GetIntPref(prefs::kPowerBatteryScreenLockDelayMs));
 
-  // "Turn the display off but stay awake" should set the idle prefs but clear
-  // the screen delays.
-  test_api_->SetIdleBehavior(
-      PowerHandler::IdleBehavior::DISPLAY_OFF_STAY_AWAKE);
+  // "Turn off display" should set the idle prefs but clear the screen
+  // delays.
+  test_api_->SetIdleBehavior(PowerHandler::IdleBehavior::DISPLAY_OFF);
   EXPECT_EQ(PowerPolicyController::ACTION_DO_NOTHING,
             GetIntPref(prefs::kPowerAcIdleAction));
   EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcScreenDimDelayMs));
@@ -283,8 +282,8 @@ TEST_F(PowerHandlerTest, SetIdleBehavior) {
   EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryScreenOffDelayMs));
   EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryScreenLockDelayMs));
 
-  // Now switch to the "display on" setting (to set the prefs again) and check
-  // that the "sleep" setting clears all the prefs.
+  // Now switch to the "Keep display on" setting (to set the prefs again) and
+  // check that the "Turn off display and sleep" setting clears all the prefs.
   test_api_->SetIdleBehavior(PowerHandler::IdleBehavior::DISPLAY_ON);
   test_api_->SetIdleBehavior(PowerHandler::IdleBehavior::DISPLAY_OFF_SLEEP);
   EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcIdleAction));
