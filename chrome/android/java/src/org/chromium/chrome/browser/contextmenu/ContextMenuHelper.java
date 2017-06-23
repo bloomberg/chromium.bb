@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextmenu;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -205,7 +204,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 ShareHelper.shareImage(activity, result, name);
             }
         };
-        nativeRetrieveImage(mNativeContextMenuHelper, callback, MAX_SHARE_DIMEN_PX);
+        nativeRetrieveImageForShare(mNativeContextMenuHelper, callback, MAX_SHARE_DIMEN_PX);
     }
 
     /**
@@ -216,15 +215,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         if (mNativeContextMenuHelper == 0) return;
         int maxSizePx = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.context_menu_header_image_max_size);
-        Callback<byte[]> rawDataCallback = new Callback<byte[]>() {
+        Callback<Bitmap> bitmapCallback = new Callback<Bitmap>() {
             @Override
-            public void onResult(byte[] result) {
-                // TODO(tedchoc): Decode in separate process before launch.
-                Bitmap bitmap = BitmapFactory.decodeByteArray(result, 0, result.length);
-                callback.onResult(bitmap);
+            public void onResult(Bitmap result) {
+                callback.onResult(result);
             }
         };
-        nativeRetrieveImage(mNativeContextMenuHelper, rawDataCallback, maxSizePx);
+        nativeRetrieveImageForContextMenu(mNativeContextMenuHelper, bitmapCallback, maxSizePx);
     }
 
     @Override
@@ -253,7 +250,9 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     private native void nativeOnStartDownload(
             long nativeContextMenuHelper, boolean isLink, boolean isDataReductionProxyEnabled);
     private native void nativeSearchForImage(long nativeContextMenuHelper);
-    private native void nativeRetrieveImage(
+    private native void nativeRetrieveImageForShare(
             long nativeContextMenuHelper, Callback<byte[]> callback, int maxSizePx);
+    private native void nativeRetrieveImageForContextMenu(
+            long nativeContextMenuHelper, Callback<Bitmap> callback, int maxSizePx);
     private native void nativeOnContextMenuClosed(long nativeContextMenuHelper);
 }

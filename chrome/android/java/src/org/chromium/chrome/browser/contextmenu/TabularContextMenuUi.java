@@ -273,7 +273,11 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
      */
     public void onImageThumbnailRetrieved(Bitmap bitmap) {
         if (mHeaderImageView != null) {
-            mHeaderImageView.setImageBitmap(bitmap);
+            if (bitmap != null) {
+                mHeaderImageView.setImageBitmap(bitmap);
+            } else {
+                mHeaderImageView.setImageResource(R.drawable.sad_tab);
+            }
         }
     }
 
