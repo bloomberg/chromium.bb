@@ -372,7 +372,7 @@ CSSInterpolationTypesMap::CreateCSSInterpolationTypesForSyntax(
       case CSSSyntaxType::kImage:
       case CSSSyntaxType::kUrl:
       case CSSSyntaxType::kInteger:
-      case CSSSyntaxType::kTransformFunction:
+      case CSSSyntaxType::kTransformList:
         // TODO(alancutter): Support smooth interpolation of these types.
         break;
       case CSSSyntaxType::kTokenStream:

@@ -18,6 +18,8 @@
 #include "core/css/CSSVariableData.h"
 #include "core/css/StyleColor.h"
 #include "core/css/parser/CSSParserContext.h"
+#include "core/css/parser/CSSParserLocalContext.h"
+#include "core/css/properties/CSSPropertyTransformUtils.h"
 #include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -1483,6 +1485,12 @@ void AddProperty(CSSPropertyID resolved_property,
   properties.push_back(CSSProperty(resolved_property, value, important,
                                    set_from_shorthand, shorthand_index,
                                    implicit == IsImplicitProperty::kImplicit));
+}
+
+CSSValue* ConsumeTransformList(CSSParserTokenRange& range,
+                               const CSSParserContext& context) {
+  return CSSPropertyTransformUtils::ConsumeTransformList(
+      range, context, CSSParserLocalContext());
 }
 
 }  // namespace CSSPropertyParserHelpers

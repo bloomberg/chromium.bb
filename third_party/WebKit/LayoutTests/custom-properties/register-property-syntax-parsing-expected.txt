@@ -8,7 +8,7 @@ PASS syntax:'<color>+', initialValue:'red' is valid
 PASS syntax:' <length>+ | <percentage>', initialValue:'2px 8px' is valid 
 PASS syntax:'<length>|<percentage>|<length-percentage>', initialValue:'2px' is valid 
 PASS syntax:'<color> | <image> | <url> | <integer> | <angle>', initialValue:'red' is valid 
-PASS syntax:'<time> | <resolution> | <transform-function> | <custom-ident>', initialValue:'red' is valid 
+PASS syntax:'<time> | <resolution> | <transform-list> | <custom-ident>', initialValue:'red' is valid 
 PASS syntax:'*', initialValue:':> hello' is valid 
 PASS syntax:'*', initialValue:'([ brackets ]) { yay (??)}' is valid 
 PASS syntax:'*', initialValue:'yep 'this is valid too'' is valid 
@@ -37,8 +37,8 @@ PASS syntax:'<time>', initialValue:'calc(2s - 9ms)' is valid
 PASS syntax:'<resolution>', initialValue:'10dpi' is valid 
 PASS syntax:'<resolution>', initialValue:'3dPpX' is valid 
 PASS syntax:'<resolution>', initialValue:'-5.3dpcm' is valid 
-FAIL syntax:'<transform-function>', initialValue:'scale(2)' is valid Failed to execute 'registerProperty' on 'CSS': The initial value provided does not parse for the given syntax.
-FAIL syntax:'<transform-function>+', initialValue:'translateX(2px) rotate(20deg)' is valid Failed to execute 'registerProperty' on 'CSS': The initial value provided does not parse for the given syntax.
+PASS syntax:'<transform-list>', initialValue:'scale(2)' is valid 
+PASS syntax:'<transform-list>', initialValue:'translateX(2px) rotate(20deg)' is valid 
 PASS syntax:'<color>', initialValue:'rgb(12, 34, 56)' is valid 
 PASS syntax:'<color>', initialValue:'lightgoldenrodyellow' is valid 
 PASS syntax:'<image>', initialValue:'url(a)' is valid 
@@ -116,7 +116,8 @@ PASS syntax:'<angle>', initialValue:'0' is invalid
 PASS syntax:'<angle>', initialValue:'10%' is invalid 
 PASS syntax:'<time>', initialValue:'2px' is invalid 
 PASS syntax:'<resolution>', initialValue:'10' is invalid 
-PASS syntax:'<transform-function>', initialValue:'scale()' is invalid 
+PASS syntax:'<transform-list>', initialValue:'scale()' is invalid 
+PASS syntax:'<transform-list>+', initialValue:'translateX(2px) rotate(20deg)' is invalid 
 PASS syntax:'<color>', initialValue:'fancy-looking' is invalid 
 PASS syntax:'<image>', initialValue:'banana.png' is invalid 
 PASS syntax:'<url>', initialValue:'banana.png' is invalid 
