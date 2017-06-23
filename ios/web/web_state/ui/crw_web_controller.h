@@ -190,11 +190,11 @@ class WebStateImpl;
 // Dismisses the soft keyboard.
 - (void)dismissKeyboard;
 
-// Requires that the next load rebuild the UIWebView. This is expensive, and
-// should be used only in the case where something has changed that UIWebView
+// Requires that the next load rebuild the web view. This is expensive, and
+// should be used only in the case where something has changed that the web view
 // only checks on creation, such that the whole object needs to be rebuilt.
-// TODO(stuartmorgan): Merge this and reinitializeWebViewAndReload:. They are
-// currently subtly different in terms of implementation, but are for
+// TODO(crbug.com/736102): Merge this and reinitializeWebViewAndReload:. They
+// are currently subtly different in terms of implementation, but are for
 // fundamentally the same purpose.
 - (void)requirePageReconstruction;
 
