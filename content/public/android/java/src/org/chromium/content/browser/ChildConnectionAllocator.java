@@ -53,6 +53,9 @@ public class ChildConnectionAllocator {
         }
     }
 
+    // Delay between the call to freeConnection and the connection actually beeing   freed.
+    private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
+
     // Connections to services. Indices of the array correspond to the service numbers.
     private final ChildProcessConnection[] mChildProcessConnections;
 
@@ -155,7 +158,7 @@ public class ChildConnectionAllocator {
 
     /** @return a connection ready to be bound, or null if there are no free slots. */
     public ChildProcessConnection allocate(Context context, Bundle serviceBundle,
-            ChildProcessConnection.DeathCallback deathCallback) {
+            final ChildProcessConnection.DeathCallback deathCallback) {
         assert LauncherThread.runningOnLauncherThread();
         if (mFreeConnectionIndices.isEmpty()) {
             Log.d(TAG, "Ran out of services to allocate.");
@@ -165,14 +168,40 @@ public class ChildConnectionAllocator {
         assert mChildProcessConnections[slot] == null;
         ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName + slot);
 
+        ChildProcessConnection.DeathCallback deathCallbackWrapper =
+                new ChildProcessConnection.DeathCallback() {
+                    @Override
+                    public void onChildProcessDied(final ChildProcessConnection connection) {
+                        assert LauncherThread.runningOnLauncherThread();
+
+                        // Forward the call to the provided callback if any.
+                        if (deathCallback != null) {
+                            deathCallback.onChildProcessDied(connection);
+                        }
+
+                        // Freeing a service should be delayed. This is so that we avoid immediately
+                        // reusing the freed service (see http://crbug.com/164069): the framework
+                        // might keep a service process alive when it's been unbound for a short
+                        // time. If a new connection to the same service is bound at that point, the
+                        // process is reused and bad things happen (mostly static variables are set
+                        // when we don't expect them to).
+                        LauncherThread.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                free(connection);
+                            }
+                        }, FREE_CONNECTION_DELAY_MILLIS);
+                    }
+                };
+
         mChildProcessConnections[slot] = mConnectionFactory.createConnection(context, serviceName,
-                mBindAsExternalService, serviceBundle, mCreationParams, deathCallback);
+                mBindAsExternalService, serviceBundle, mCreationParams, deathCallbackWrapper);
         Log.d(TAG, "Allocator allocated a connection, name: %s, slot: %d", mServiceClassName, slot);
         return mChildProcessConnections[slot];
     }
 
     /** Frees a connection and notifies listeners. */
-    public void free(ChildProcessConnection connection) {
+    private void free(ChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
 
         // mChildProcessConnections is relatively short (20 items at max at this point).
