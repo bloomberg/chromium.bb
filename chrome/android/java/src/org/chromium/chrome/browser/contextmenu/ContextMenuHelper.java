@@ -21,6 +21,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -83,7 +84,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * @param params          The {@link ContextMenuParams} that indicate what menu items to show.
      */
     @CalledByNative
-    private void showContextMenu(final ContentViewCore contentViewCore, ContextMenuParams params) {
+    private void showContextMenu(
+            final ContentViewCore contentViewCore, final ContextMenuParams params) {
         if (params.isFile()) return;
         View view = contentViewCore.getContainerView();
         final WindowAndroid windowAndroid = contentViewCore.getWindowAndroid();
@@ -126,10 +128,19 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 return;
             }
 
-            final TabularContextMenuUi menuUi = new TabularContextMenuUi(new Runnable() {
+            final TabularContextMenuUi menuUi = new TabularContextMenuUi(new Callback<Boolean>() {
                 @Override
-                public void run() {
-                    shareImageDirectly(ShareHelper.getLastShareComponentName());
+                public void onResult(Boolean isShareLink) {
+                    if (isShareLink) {
+                        ShareParams shareParams =
+                                new ShareParams.Builder(mActivity, params.getUrl(), params.getUrl())
+                                        .setShareDirectly(true)
+                                        .setSaveLastUsed(false)
+                                        .build();
+                        ShareHelper.share(shareParams);
+                    } else {
+                        shareImageDirectly(ShareHelper.getLastShareComponentName(null));
+                    }
                 }
             });
             menuUi.setRenderCoordinates(contentViewCore.getRenderCoordinates());

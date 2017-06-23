@@ -88,7 +88,7 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
     @Override
     public void openContextMenu(View view) {
         ContextMenuParams params = createContextMenuParams();
-        mHelper = new BrowserActionsContextMenuHelper(this, params, mActions);
+        mHelper = new BrowserActionsContextMenuHelper(this, params, mActions, mCreatorPackageName);
         mHelper.displayBrowserActionsMenu(view);
         return;
     }
@@ -154,5 +154,12 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
         if (mHelper != null) {
             mHelper.onContextMenuClosed();
         }
+    }
+
+    /**
+     * @return the package name of the requesting app.
+     */
+    public String getCreatorPackageName() {
+        return mCreatorPackageName;
     }
 }

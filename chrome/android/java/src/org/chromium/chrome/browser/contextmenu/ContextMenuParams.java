@@ -152,6 +152,17 @@ public class ContextMenuParams {
         return mTriggeringTouchYDp;
     }
 
+    /**
+     * @return The valid url of a ContextMenuParams.
+     */
+    public String getUrl() {
+        if (isAnchor() && !TextUtils.isEmpty(getLinkUrl())) {
+            return getLinkUrl();
+        } else {
+            return getSrcUrl();
+        }
+    }
+
     public ContextMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,
             String unfilteredLinkUrl, String srcUrl, String titleText, boolean imageWasFetchedLoFi,
             Referrer referrer, boolean canSaveMedia, int triggeringTouchXDp,

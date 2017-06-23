@@ -43,11 +43,11 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
     private Callback<Integer> mCallback;
     private int mMenuItemHeight;
     private ImageView mHeaderImageView;
-    private Runnable mOnShareItemClicked;
+    private Callback<Boolean> mOnShareItemClicked;
     private View mPagerView;
     private RenderCoordinates mRenderCoordinates;
 
-    public TabularContextMenuUi(Runnable onShareItemClicked) {
+    public TabularContextMenuUi(Callback<Boolean> onShareItemClicked) {
         mOnShareItemClicked = onShareItemClicked;
     }
 
@@ -172,10 +172,10 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         }
 
         // Set the list adapter and get the height to display it appropriately in a dialog.
-        Runnable onDirectShare = new Runnable() {
+        Callback<Boolean> onDirectShare = new Callback<Boolean>() {
             @Override
-            public void run() {
-                mOnShareItemClicked.run();
+            public void onResult(Boolean isShareLink) {
+                mOnShareItemClicked.onResult(isShareLink);
                 mContextMenuDialog.dismiss();
             }
         };
