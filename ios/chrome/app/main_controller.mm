@@ -382,8 +382,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     (ProceduralBlock)callback;
 // Shows the Sync encryption passphrase (part of Settings).
 - (void)showSyncEncryptionPassphrase;
-// Shows the Native Apps Settings UI (part of Settings).
-- (void)showNativeAppsSettings;
 // Shows the Clear Browsing Data Settings UI (part of Settings).
 - (void)showClearBrowsingDataSettingsController;
 // Shows the Contextual search UI (part of Settings).
@@ -1471,9 +1469,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_RESET_ALL_WEBVIEWS:
       [self.currentBVC resetAllWebViews];
       break;
-    case IDC_SHOW_GOOGLE_APPS_SETTINGS:
-      [self showNativeAppsSettings];
-      break;
     case IDC_SHOW_CLEAR_BROWSING_DATA_SETTINGS:
       [self showClearBrowsingDataSettingsController];
       break;
@@ -2141,18 +2136,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     if (signinManager->IsAuthenticated())
       callback();
   } copy];
-}
-
-- (void)showNativeAppsSettings {
-  if (_settingsNavigationController)
-    return;
-  _settingsNavigationController =
-      [SettingsNavigationController newNativeAppsController:_mainBrowserState
-                                                   delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
 }
 
 - (void)closeSettingsAnimated:(BOOL)animated

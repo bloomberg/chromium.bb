@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/contextual_search_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/native_apps_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
@@ -219,18 +218,6 @@ newSyncEncryptionPassphraseController:(ios::ChromeBrowserState*)browserState
                     browserState:browserState
                         delegate:delegate];
   [controller navigationItem].leftBarButtonItem = [nc closeButton];
-  return nc;
-}
-
-+ (SettingsNavigationController*)
-newNativeAppsController:(ios::ChromeBrowserState*)browserState
-               delegate:(id<SettingsNavigationControllerDelegate>)delegate {
-  UIViewController* controller = [[NativeAppsCollectionViewController alloc]
-      initWithURLRequestContextGetter:browserState->GetRequestContext()];
-  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
-      initWithRootViewController:controller
-                    browserState:browserState
-                        delegate:delegate];
   return nc;
 }
 
