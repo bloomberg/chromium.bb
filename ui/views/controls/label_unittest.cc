@@ -229,12 +229,25 @@ class LabelSelectionTest : public LabelTest {
     const std::vector<gfx::Rect> bounds =
         render_text->GetSubstringBoundsForTesting(gfx::Range(index, index + 1));
     DCHECK_EQ(1u, bounds.size());
+    const int mid_y = bounds[0].y() + bounds[0].height() / 2;
 
+    // For single-line text, use the glyph bounds since it's a better
+    // representation of the midpoint between glyphs when considering selection.
+    // TODO(tapted): When GetGlyphBounds() supports returning a vertical range
+    // as well as a horizontal range, just use that here.
+    if (!render_text->multiline())
+      return gfx::Point(render_text->GetGlyphBounds(index).start(), mid_y);
+
+    // Otherwise, GetGlyphBounds() will give incorrect results. Multiline
+    // editing is not supported (http://crbug.com/248597) so there hasn't been
+    // a need to draw a cursor. Instead, derive a point from the selection
+    // bounds, which always rounds up to an integer after the end of a glyph.
+    // This rounding differs to the glyph bounds, which rounds to nearest
+    // integer. See http://crbug.com/735346.
     const bool rtl =
         render_text->GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT;
     // Return Point corresponding to the leading edge of the character.
-    return gfx::Point(rtl ? bounds[0].right() - 1 : bounds[0].x() + 1,
-                      bounds[0].y() + bounds[0].height() / 2);
+    return gfx::Point(rtl ? bounds[0].right() - 1 : bounds[0].x() + 1, mid_y);
   }
 
   size_t GetLineCount() {
