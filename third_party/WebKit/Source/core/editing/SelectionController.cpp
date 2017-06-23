@@ -527,27 +527,36 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
     const HitTestResult& result,
     AppendTrailingWhitespace append_trailing_whitespace) {
   Node* inner_node = result.InnerNode();
-  VisibleSelectionInFlatTree new_selection;
 
   if (!inner_node || !inner_node->GetLayoutObject())
     return;
 
   const VisiblePositionInFlatTree& pos = VisiblePositionOfHitTestResult(result);
-  if (pos.IsNotNull()) {
-    const PositionInFlatTree& marker_position =
-        pos.DeepEquivalent().ParentAnchoredEquivalent();
-    const DocumentMarker* const marker =
-        inner_node->GetDocument().Markers().MarkerAtPosition(
-            ToPositionInDOMTree(marker_position),
-            DocumentMarker::MisspellingMarkers());
-    if (marker) {
-      Node* container_node = marker_position.ComputeContainerNode();
-      const PositionInFlatTree start(container_node, marker->StartOffset());
-      const PositionInFlatTree end(container_node, marker->EndOffset());
-      new_selection = CreateVisibleSelection(
-          SelectionInFlatTree::Builder().Collapse(start).Extend(end).Build());
-    }
+  if (pos.IsNull()) {
+    UpdateSelectionForMouseDownDispatchingSelectStart(
+        inner_node, VisibleSelectionInFlatTree(), kWordGranularity,
+        HandleVisibility::kNotVisible);
+    return;
   }
+
+  const PositionInFlatTree& marker_position =
+      pos.DeepEquivalent().ParentAnchoredEquivalent();
+  const DocumentMarker* const marker =
+      inner_node->GetDocument().Markers().MarkerAtPosition(
+          ToPositionInDOMTree(marker_position),
+          DocumentMarker::MisspellingMarkers());
+  if (!marker) {
+    UpdateSelectionForMouseDownDispatchingSelectStart(
+        inner_node, VisibleSelectionInFlatTree(), kWordGranularity,
+        HandleVisibility::kNotVisible);
+    return;
+  }
+
+  Node* container_node = marker_position.ComputeContainerNode();
+  const PositionInFlatTree start(container_node, marker->StartOffset());
+  const PositionInFlatTree end(container_node, marker->EndOffset());
+  VisibleSelectionInFlatTree new_selection = CreateVisibleSelection(
+      SelectionInFlatTree::Builder().Collapse(start).Extend(end).Build());
 
   if (append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend)
     new_selection.AppendTrailingWhitespace();
