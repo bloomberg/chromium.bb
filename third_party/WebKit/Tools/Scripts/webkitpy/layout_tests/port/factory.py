@@ -165,7 +165,7 @@ def _read_configuration_from_gn(fs, options):
     """Returns the configuration to used based on args.gn, if possible."""
 
     # TODO(qyearsley): Default to 'out' everywhere.
-    build_directory = getattr(options, 'build_directory', None) or 'out'
+    build_directory = getattr(options, 'build_directory', 'out')
 
     target = options.target
     finder = PathFinder(fs)

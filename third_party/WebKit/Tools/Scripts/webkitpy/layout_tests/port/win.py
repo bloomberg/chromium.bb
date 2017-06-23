@@ -56,8 +56,6 @@ class WinPort(base.Port):
     FALLBACK_PATHS = {'win10': ['win']}
     FALLBACK_PATHS['win7'] = ['win7'] + FALLBACK_PATHS['win10']
 
-    DEFAULT_BUILD_DIRECTORIES = ('build', 'out')
-
     BUILD_REQUIREMENTS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md'
 
     @classmethod

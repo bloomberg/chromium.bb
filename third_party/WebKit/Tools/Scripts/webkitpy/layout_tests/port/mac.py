@@ -54,8 +54,6 @@ class MacPort(base.Port):
     FALLBACK_PATHS['mac10.9'] = ['mac-mac10.9'] + FALLBACK_PATHS['mac10.10']
     FALLBACK_PATHS['retina'] = ['mac-retina', 'mac']
 
-    DEFAULT_BUILD_DIRECTORIES = ('xcodebuild', 'out')
-
     CONTENT_SHELL_NAME = 'Content Shell'
 
     BUILD_REQUIREMENTS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/docs/mac_build_instructions.md'

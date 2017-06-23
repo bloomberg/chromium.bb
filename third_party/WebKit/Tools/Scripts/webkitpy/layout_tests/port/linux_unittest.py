@@ -84,15 +84,6 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
     def test_operating_system(self):
         self.assertEqual('linux', self.make_port().operating_system())
 
-    def test_build_path(self):
-        # Test that optional paths are used regardless of whether they exist.
-        options = optparse.Values({'configuration': 'Release', 'build_directory': '/foo'})
-        self.assert_build_path(options, ['/mock-checkout/out/Release'], '/foo/Release')
-
-        # Test that optional relative paths are returned unmodified.
-        options = optparse.Values({'configuration': 'Release', 'build_directory': 'foo'})
-        self.assert_build_path(options, ['/mock-checkout/out/Release'], 'foo/Release')
-
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith('content_shell'))
         port = self.make_port(options=optparse.Values({'driver_name': 'OtherDriver'}))

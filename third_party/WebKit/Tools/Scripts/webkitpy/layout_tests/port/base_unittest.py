@@ -477,8 +477,14 @@ class PortTest(unittest.TestCase):
         self.assertNotIn('virtual/virtual_passes/passes/virtual_passes/passes/test-virtual-passes.html', tests)
 
     def test_build_path(self):
-        port = self.make_port(options=optparse.Values({'build_directory': '/my-build-directory/'}))
-        self.assertEqual(port._build_path(), '/my-build-directory/Release')
+        # Test for a protected method - pylint: disable=protected-access
+        # Test that optional paths are used regardless of whether they exist.
+        options = optparse.Values({'configuration': 'Release', 'build_directory': 'xcodebuild'})
+        self.assertEqual(self.make_port(options=options)._build_path(), '/mock-checkout/xcodebuild/Release')
+
+        # Test that "out" is used as the default.
+        options = optparse.Values({'configuration': 'Release', 'build_directory': None})
+        self.assertEqual(self.make_port(options=options)._build_path(), '/mock-checkout/out/Release')
 
     def test_dont_require_http_server(self):
         port = self.make_port()
