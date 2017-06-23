@@ -332,7 +332,7 @@ static size_t FindPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it,
   if (buffer.NeedsMoreContext()) {
     for (SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwards_iterator(
              PositionTemplate<Strategy>::FirstPositionInNode(
-                 it.OwnerDocument()),
+                 *it.OwnerDocument()),
              PositionTemplate<Strategy>(it.CurrentContainer(),
                                         it.StartOffset()));
          !backwards_iterator.AtEnd(); backwards_iterator.Advance()) {

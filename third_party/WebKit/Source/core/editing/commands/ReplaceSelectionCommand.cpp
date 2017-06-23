@@ -592,7 +592,7 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
           !context
               ? ToHTMLQuoteElement(context)
               : ToHTMLQuoteElement(EnclosingNodeOfType(
-                    Position::FirstPositionInNode(context),
+                    Position::FirstPositionInNode(*context),
                     IsMailHTMLBlockquoteElement, kCanCrossEditingBoundary));
 
       // EditingStyle::removeStyleFromRulesAndContext() uses StyleResolver,
@@ -1254,7 +1254,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
       SplitTextNode(ToText(insertion_pos.ComputeContainerNode()),
                     insertion_pos.OffsetInContainerNode());
       insertion_pos =
-          Position::FirstPositionInNode(insertion_pos.ComputeContainerNode());
+          Position::FirstPositionInNode(*insertion_pos.ComputeContainerNode());
     }
 
     if (HTMLElement* element_to_split_to =
@@ -1543,7 +1543,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
             return;
           SetEndingSelection(
               SelectionInDOMTree::Builder()
-                  .Collapse(Position::FirstPositionInNode(new_list_item))
+                  .Collapse(Position::FirstPositionInNode(*new_list_item))
                   .Build());
         } else {
           // Use a default paragraph element (a plain div) for the empty
@@ -1714,7 +1714,7 @@ void ReplaceSelectionCommand::AddSpacesForSmartReplace(
       InsertNodeBefore(node, start_node, editing_state);
       if (editing_state->IsAborted())
         return;
-      start_of_inserted_content_ = Position::FirstPositionInNode(node);
+      start_of_inserted_content_ = Position::FirstPositionInNode(*node);
     }
   }
 }

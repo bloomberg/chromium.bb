@@ -18,7 +18,7 @@ TEST_F(PositionTest, IsEquivalent) {
   EXPECT_TRUE(Position(sample, 0).IsEquivalent(Position(sample, 0)));
 
   EXPECT_TRUE(
-      Position(sample, 0).IsEquivalent(Position::FirstPositionInNode(sample)));
+      Position(sample, 0).IsEquivalent(Position::FirstPositionInNode(*sample)));
   EXPECT_TRUE(Position(sample, 0).IsEquivalent(
       Position::BeforeNode(*sample->firstChild())));
   EXPECT_TRUE(Position(sample, 1).IsEquivalent(

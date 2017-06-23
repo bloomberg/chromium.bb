@@ -279,7 +279,7 @@ void ApplyBlockElementCommand::RangeForParagraphSplittingTextNodesIfNeeded(
       SplitTextNode(start_text, start_offset);
       GetDocument().UpdateStyleAndLayoutTree();
 
-      start = Position::FirstPositionInNode(start_text);
+      start = Position::FirstPositionInNode(*start_text);
       if (is_start_and_end_on_same_node) {
         DCHECK_GE(end.OffsetInContainerNode(), start_offset);
         end = Position(start_text, end.OffsetInContainerNode() - start_offset);
@@ -360,7 +360,7 @@ ApplyBlockElementCommand::EndOfNextParagrahSplittingTextNodesIfNeeded(
   if (!style->PreserveNewline() ||
       !end_of_next_paragraph_position.OffsetInContainerNode() ||
       !IsNewLineAtPosition(
-          Position::FirstPositionInNode(end_of_next_paragraph_text)))
+          Position::FirstPositionInNode(*end_of_next_paragraph_text)))
     return end_of_next_paragraph;
 
   // \n at the beginning of the text node immediately following the current

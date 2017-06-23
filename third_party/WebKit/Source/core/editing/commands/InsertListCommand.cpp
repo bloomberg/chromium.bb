@@ -426,7 +426,7 @@ bool InsertListCommand::DoApplyForSingleParagraph(
       }
 
       SetEndingSelection(SelectionInDOMTree::Builder()
-                             .Collapse(Position::FirstPositionInNode(new_list))
+                             .Collapse(Position::FirstPositionInNode(*new_list))
                              .Build());
 
       return true;

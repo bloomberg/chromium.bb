@@ -169,7 +169,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     InsertNodeBefore(node_to_insert, text_node, editing_state);
     if (editing_state->IsAborted())
       return;
-    Position ending_position = Position::FirstPositionInNode(text_node);
+    Position ending_position = Position::FirstPositionInNode(*text_node);
 
     // Handle whitespace that occurs after the split
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -190,7 +190,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
         InsertNodeAt(nbsp_node, position_before_text_node, editing_state);
         if (editing_state->IsAborted())
           return;
-        ending_position = Position::FirstPositionInNode(nbsp_node);
+        ending_position = Position::FirstPositionInNode(*nbsp_node);
       }
     }
 

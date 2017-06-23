@@ -263,10 +263,10 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
   Node& scope = NodeTraversal::HighestAncestorOrSelf(
       *visible_start.DeepEquivalent().AnchorNode());
   Range* start_range =
-      Range::Create(GetDocument(), Position::FirstPositionInNode(&scope),
+      Range::Create(GetDocument(), Position::FirstPositionInNode(scope),
                     visible_start.DeepEquivalent().ParentAnchoredEquivalent());
   Range* end_range =
-      Range::Create(GetDocument(), Position::FirstPositionInNode(&scope),
+      Range::Create(GetDocument(), Position::FirstPositionInNode(scope),
                     visible_end.DeepEquivalent().ParentAnchoredEquivalent());
 
   const TextIteratorBehavior behavior =
@@ -303,8 +303,8 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
           block = new_block;
           if (paragraph_start.IsOrphan()) {
             GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-            paragraph_start =
-                CreateVisiblePosition(Position::FirstPositionInNode(new_block));
+            paragraph_start = CreateVisiblePosition(
+                Position::FirstPositionInNode(*new_block));
           }
         }
         DCHECK(!paragraph_start.IsOrphan()) << paragraph_start;
@@ -1552,7 +1552,7 @@ void ApplyStyleCommand::SplitTextAtStart(const Position& start,
 
   Text* text = ToText(start.ComputeContainerNode());
   SplitTextNode(text, start.OffsetInContainerNode());
-  UpdateStartEnd(Position::FirstPositionInNode(text), new_end);
+  UpdateStartEnd(Position::FirstPositionInNode(*text), new_end);
 }
 
 void ApplyStyleCommand::SplitTextAtEnd(const Position& start,

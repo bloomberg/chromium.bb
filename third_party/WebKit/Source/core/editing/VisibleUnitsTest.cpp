@@ -246,11 +246,11 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithInputElement) {
 
   EXPECT_EQ(Position::BeforeNode(*input),
             CanonicalPositionOf(Position::FirstPositionInNode(
-                GetDocument().documentElement())));
+                *GetDocument().documentElement())));
 
   EXPECT_EQ(PositionInFlatTree::BeforeNode(*input),
             CanonicalPositionOf(PositionInFlatTree::FirstPositionInNode(
-                GetDocument().documentElement())));
+                *GetDocument().documentElement())));
 }
 
 TEST_F(VisibleUnitsTest, characterBefore) {
@@ -1338,13 +1338,13 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionFirstLetter) {
 
   EXPECT_EQ(Position(GetDocument().body(), 0),
             MostForwardCaretPosition(
-                Position::FirstPositionInNode(GetDocument().body())));
+                Position::FirstPositionInNode(*GetDocument().body())));
   EXPECT_EQ(
       Position(sample, 1),
       MostForwardCaretPosition(Position::BeforeNode(*sample->parentNode())));
   EXPECT_EQ(Position(sample, 1),
             MostForwardCaretPosition(
-                Position::FirstPositionInNode(sample->parentNode())));
+                Position::FirstPositionInNode(*sample->parentNode())));
   EXPECT_EQ(Position(sample, 1), MostForwardCaretPosition(Position(sample, 0)));
   EXPECT_EQ(Position(sample, 1), MostForwardCaretPosition(Position(sample, 1)));
   EXPECT_EQ(Position(sample, 2), MostForwardCaretPosition(Position(sample, 2)));

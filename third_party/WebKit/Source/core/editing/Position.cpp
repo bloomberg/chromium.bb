@@ -490,10 +490,10 @@ int PositionTemplate<Strategy>::LastOffsetInNode(Node* node) {
 // static
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::FirstPositionInNode(
-    Node* anchor_node) {
-  if (anchor_node->IsTextNode())
+    const Node& anchor_node) {
+  if (anchor_node.IsTextNode())
     return PositionTemplate<Strategy>(anchor_node, 0);
-  return PositionTemplate<Strategy>(anchor_node,
+  return PositionTemplate<Strategy>(&anchor_node,
                                     PositionAnchorType::kBeforeChildren);
 }
 
@@ -515,7 +515,7 @@ PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(Node* node) {
   if (!node)
     return PositionTemplate<Strategy>();
   return EditingIgnoresContent(*node) ? BeforeNode(*node)
-                                      : FirstPositionInNode(node);
+                                      : FirstPositionInNode(*node);
 }
 
 // static

@@ -253,7 +253,7 @@ TEST_F(VisibleSelectionTest, SelectAllWithInputElement) {
 
   const VisibleSelection& visible_selectin_in_dom_tree = CreateVisibleSelection(
       SelectionInDOMTree::Builder()
-          .Collapse(Position::FirstPositionInNode(html_element))
+          .Collapse(Position::FirstPositionInNode(*html_element))
           .Extend(Position::LastPositionInNode(html_element))
           .Build());
   EXPECT_EQ(SelectionInDOMTree::Builder()
@@ -265,7 +265,7 @@ TEST_F(VisibleSelectionTest, SelectAllWithInputElement) {
   const VisibleSelectionInFlatTree& visible_selectin_in_flat_tree =
       CreateVisibleSelection(
           SelectionInFlatTree::Builder()
-              .Collapse(PositionInFlatTree::FirstPositionInNode(html_element))
+              .Collapse(PositionInFlatTree::FirstPositionInNode(*html_element))
               .Extend(PositionInFlatTree::LastPositionInNode(html_element))
               .Build());
   EXPECT_EQ(SelectionInFlatTree::Builder()
@@ -292,12 +292,12 @@ TEST_F(VisibleSelectionTest, ShadowCrossing) {
 
   VisibleSelection selection = CreateVisibleSelection(
       SelectionInDOMTree::Builder()
-          .Collapse(Position::FirstPositionInNode(one))
+          .Collapse(Position::FirstPositionInNode(*one))
           .Extend(Position::LastPositionInNode(shadow_root))
           .Build());
   VisibleSelectionInFlatTree selection_in_flat_tree = CreateVisibleSelection(
       SelectionInFlatTree::Builder()
-          .Collapse(PositionInFlatTree::FirstPositionInNode(one))
+          .Collapse(PositionInFlatTree::FirstPositionInNode(*one))
           .Extend(PositionInFlatTree::LastPositionInNode(host))
           .Build());
 
@@ -327,12 +327,12 @@ TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes) {
 
   VisibleSelection selection =
       CreateVisibleSelection(SelectionInDOMTree::Builder()
-                                 .Collapse(Position::FirstPositionInNode(one))
+                                 .Collapse(Position::FirstPositionInNode(*one))
                                  .Extend(Position::LastPositionInNode(two))
                                  .Build());
   VisibleSelectionInFlatTree selection_in_flat_tree = CreateVisibleSelection(
       SelectionInFlatTree::Builder()
-          .Collapse(PositionInFlatTree::FirstPositionInNode(one))
+          .Collapse(PositionInFlatTree::FirstPositionInNode(*one))
           .Extend(PositionInFlatTree::LastPositionInNode(two))
           .Build());
 
@@ -373,12 +373,12 @@ TEST_F(VisibleSelectionTest, ShadowNested) {
 
   VisibleSelection selection = CreateVisibleSelection(
       SelectionInDOMTree::Builder()
-          .Collapse(Position::FirstPositionInNode(one))
+          .Collapse(Position::FirstPositionInNode(*one))
           .Extend(Position::LastPositionInNode(shadow_root2))
           .Build());
   VisibleSelectionInFlatTree selection_in_flat_tree = CreateVisibleSelection(
       SelectionInFlatTree::Builder()
-          .Collapse(PositionInFlatTree::FirstPositionInNode(one))
+          .Collapse(PositionInFlatTree::FirstPositionInNode(*one))
           .Extend(PositionInFlatTree::AfterNode(*eight))
           .Build());
 

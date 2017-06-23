@@ -209,7 +209,7 @@ static HTMLElement* HighestAncestorToWrapMarkup(
   if (check_ancestor->GetLayoutObject()) {
     HTMLElement* new_special_common_ancestor =
         ToHTMLElement(HighestEnclosingNodeOfType(
-            Position::FirstPositionInNode(check_ancestor),
+            Position::FirstPositionInNode(*check_ancestor),
             &IsPresentationalHTMLElement, kCanCrossEditingBoundary,
             constraining_ancestor));
     if (new_special_common_ancestor)
@@ -229,8 +229,8 @@ static HTMLElement* HighestAncestorToWrapMarkup(
   if (HTMLAnchorElement* enclosing_anchor =
           toHTMLAnchorElement(EnclosingElementWithTag(
               Position::FirstPositionInNode(special_common_ancestor
-                                                ? special_common_ancestor
-                                                : common_ancestor),
+                                                ? *special_common_ancestor
+                                                : *common_ancestor),
               aTag)))
     special_common_ancestor = enclosing_anchor;
 
