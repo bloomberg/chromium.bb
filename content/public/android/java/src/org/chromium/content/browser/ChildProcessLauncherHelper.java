@@ -54,7 +54,7 @@ public class ChildProcessLauncherHelper {
     // Represents an invalid process handle; same as base/process/process.h kNullProcessHandle.
     private static final int NULL_PROCESS_HANDLE = 0;
 
-    // Delay between the call to freeConnection and the connection actually beeing   freed.
+    // Delay between the call to freeConnection and the connection actually beeing freed.
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
     // Factory used by the SpareConnection to create the actual ChildProcessConnection.
@@ -367,8 +367,6 @@ public class ChildProcessLauncherHelper {
                         assert LauncherThread.runningOnLauncherThread();
                         if (connection.getPid() != 0) {
                             stop(connection.getPid());
-                        } else {
-                            freeConnection(connectionAllocator, connection);
                         }
                         // Forward the call to the provided callback if any. The spare connection
                         // uses that for clean-up.
@@ -515,24 +513,6 @@ public class ChildProcessLauncherHelper {
         mConnection.setupConnection(connectionBundle, getIBinderCallback(), connectionCallback);
     }
 
-    private static void freeConnection(final ChildConnectionAllocator connectionAllocator,
-            final ChildProcessConnection connection) {
-        assert LauncherThread.runningOnLauncherThread();
-
-        // Freeing a service should be delayed. This is so that we avoid immediately reusing the
-        // freed service (see http://crbug.com/164069): the framework might keep a service process
-        // alive when it's been unbound for a short time. If a new connection to the same service
-        // is bound at that point, the process is reused and bad things happen (mostly static
-        // variables are set when we don't expect them to).
-        LauncherThread.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                assert connectionAllocator != null;
-                connectionAllocator.free(connection);
-            }
-        }, FREE_CONNECTION_DELAY_MILLIS);
-    }
-
     public void onChildProcessStarted() {
         assert LauncherThread.runningOnLauncherThread();
 
@@ -598,7 +578,6 @@ public class ChildProcessLauncherHelper {
         }
         launcher.onConnectionLost(launcher.mConnection, pid);
         launcher.mConnection.stop();
-        freeConnection(launcher.mConnectionAllocator, launcher.mConnection);
     }
 
     @CalledByNative
