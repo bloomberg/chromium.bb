@@ -3,18 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Certificate chain with 1 intermediate and a trust anchor. The trust anchor
-has an EKU that restricts it to clientAuth. Verification is expected to fail as
-the end-entity is verified for serverAuth, and the trust anchor enforces
-constraints."""
+"""Certificate chain where the root certificate restricts the extended key
+usage to clientAuth."""
 
 import sys
 sys.path += ['..']
 
 import common
 
-# Self-signed root certificate (used as trust anchor) with non-CA basic
-# constraints.
+# Self-signed root certificate with extended key usage of clientAuth.
 root = common.create_self_signed_root_certificate('Root')
 root.get_extensions().set_property('extendedKeyUsage', 'clientAuth')
 

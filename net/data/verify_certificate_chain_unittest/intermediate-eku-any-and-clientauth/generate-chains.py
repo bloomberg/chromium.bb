@@ -3,17 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Certificate chain with 1 intermediate and a trusted root. The intermediate
-restricts the EKU to clientAuth + any, and the target has serverAuth +
-clientAuth. Verification is expected to succeed because intermediate will match
-the "any"."""
+"""Certificate chain where the intermediate restricts the extended key usage to
+clientAuth + any, and the target sets serverAuth + clientAuth."""
 
 import sys
 sys.path += ['..']
 
 import common
 
-# Self-signed root certificate (used as trust anchor).
+# Self-signed root certificate.
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate certificate.
