@@ -58,7 +58,7 @@
       "requires": {
         "*": [ "app" ],
         // In classic ash, the browser supplies ash interfaces to itself.
-        "content_browser": [ "ash", "display", "memory_instrumentation" ],
+        "content_browser": [ "ash", "display", "memory_instrumentation", "url_keyed_metrics" ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],
         "content_renderer": [ "browser" ],
@@ -83,9 +83,8 @@
           "barcode_detection",
           "face_detection",
           "text_detection"
-
         ],
-        "resource_coordinator": [ "coordination_unit" ],
+        "resource_coordinator": [ "coordination_unit", "service_callbacks" ],
         "video_capture": [ "capture", "tests" ]
       }
     },

@@ -17,7 +17,9 @@
           "spellcheck::mojom::SpellCheckHost",
           "spellcheck::mojom::SpellCheckPanelHost",
           "startup_metric_utils::mojom::StartupMetricHost",
-          "translate::mojom::ContentTranslateDriver",
+          "translate::mojom::ContentTranslateDriver"
+	],
+        "url_keyed_metrics": [
           "ukm::mojom::UkmRecorderInterface"
         ],
         "gpu": [

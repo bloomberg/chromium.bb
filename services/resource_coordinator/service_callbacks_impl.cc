@@ -1,0 +1,50 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "services/resource_coordinator/service_callbacks_impl.h"
+
+#include <utility>
+
+#include "base/memory/ptr_util.h"
+#include "components/ukm/public/mojo_ukm_recorder.h"
+#include "services/resource_coordinator/resource_coordinator_service.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
+
+namespace resource_coordinator {
+
+ServiceCallbacksImpl::ServiceCallbacksImpl(
+    service_manager::ServiceContextRefFactory* service_ref_factory,
+    ResourceCoordinatorService* resource_coordinator_service)
+    : resource_coordinator_service_(resource_coordinator_service) {
+  DCHECK(service_ref_factory);
+  service_ref_ = service_ref_factory->CreateRef();
+}
+
+ServiceCallbacksImpl::~ServiceCallbacksImpl() = default;
+
+// static
+void ServiceCallbacksImpl::Create(
+    service_manager::ServiceContextRefFactory* service_ref_factory,
+    ResourceCoordinatorService* resource_coordinator_service,
+    const service_manager::BindSourceInfo& source_info,
+    resource_coordinator::mojom::ServiceCallbacksRequest request) {
+  mojo::MakeStrongBinding(
+      base::MakeUnique<ServiceCallbacksImpl>(service_ref_factory,
+                                             resource_coordinator_service),
+      std::move(request));
+}
+
+void ServiceCallbacksImpl::SetUkmRecorderInterface(
+    ukm::mojom::UkmRecorderInterfacePtr ukm_recorder_interface) {
+  resource_coordinator_service_->SetUkmRecorder(
+      base::MakeUnique<ukm::MojoUkmRecorder>(
+          std::move(ukm_recorder_interface)));
+}
+
+void ServiceCallbacksImpl::IsUkmRecorderInterfaceInitialized(
+    const IsUkmRecorderInterfaceInitializedCallback& callback) {
+  callback.Run(resource_coordinator_service_->ukm_recorder() != nullptr);
+}
+
+}  // namespace resource_coordinator

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/ukm/public/mojo_ukm_recorder.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -33,10 +34,19 @@ class ResourceCoordinatorService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  void SetUkmRecorder(std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder);
+
+  service_manager::BinderRegistry& registry() { return registry_; }
+  service_manager::ServiceContextRefFactory* ref_factory() {
+    return ref_factory_.get();
+  }
+  ukm::MojoUkmRecorder* ukm_recorder() { return ukm_recorder_.get(); }
+
  private:
   service_manager::BinderRegistry registry_;
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   CoordinationUnitManager coordination_unit_manager_;
+  std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
 
   // WeakPtrFactory members should always come last so WeakPtrs are destructed
   // before other members.

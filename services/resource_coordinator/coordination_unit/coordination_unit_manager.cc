@@ -9,12 +9,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "components/ukm/public/mojo_ukm_recorder.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
+
+namespace ukm {
+class UkmEntryBuilder;
+}  // namespace ukm
 
 namespace resource_coordinator {
 
@@ -48,6 +53,13 @@ void CoordinationUnitManager::OnCoordinationUnitCreated(
 void CoordinationUnitManager::OnCoordinationUnitWillBeDestroyed(
     CoordinationUnitImpl* coordination_unit) {
   coordination_unit->WillBeDestroyed();
+}
+
+std::unique_ptr<ukm::UkmEntryBuilder>
+CoordinationUnitManager::CreateUkmEntryBuilder(const char* event_name) {
+  DCHECK(ukm_recorder_ != nullptr);
+  return ukm_recorder_->GetEntryBuilder(ukm::UkmRecorder::GetNewSourceID(),
+                                        event_name);
 }
 
 }  // namespace resource_coordinator

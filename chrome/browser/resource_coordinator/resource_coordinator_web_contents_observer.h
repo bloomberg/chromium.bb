@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_WEB_CONTENTS_OBSERVER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_WEB_CONTENTS_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
+#include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
 
 class ResourceCoordinatorWebContentsObserver
     : public content::WebContentsObserver,
@@ -17,6 +20,7 @@ class ResourceCoordinatorWebContentsObserver
  public:
   ~ResourceCoordinatorWebContentsObserver() override;
 
+  static bool ukm_recorder_initialized;
   static bool IsEnabled();
 
   resource_coordinator::ResourceCoordinatorInterface*
@@ -30,6 +34,9 @@ class ResourceCoordinatorWebContentsObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
+  void EnsureUkmRecorderInterface();
+  void MaybeSetUkmRecorderInterface(bool ukm_recorder_already_initialized);
+
  private:
   explicit ResourceCoordinatorWebContentsObserver(
       content::WebContents* web_contents);
@@ -39,6 +46,8 @@ class ResourceCoordinatorWebContentsObserver
 
   std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
       tab_resource_coordinator_;
+
+  resource_coordinator::mojom::ServiceCallbacksPtr service_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorWebContentsObserver);
 };
