@@ -6,6 +6,7 @@
 
 #include "core/dom/UserGestureIndicator.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -14,10 +15,30 @@ class FrameTest : public ::testing::Test {
  public:
   void SetUp() override {
     dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    Navigate("https://example.com/");
+
     ASSERT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+    ASSERT_FALSE(
+        GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
   }
 
   Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
+
+  void Navigate(const String& destinationUrl) {
+    const KURL& url = KURL(KURL(), destinationUrl);
+    FrameLoadRequest request(
+        nullptr, ResourceRequest(url),
+        SubstituteData(SharedBuffer::Create(), "text/html", "UTF-8", KURL()));
+    GetDocument().GetFrame()->Loader().Load(request);
+    blink::testing::RunPendingTasks();
+    ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
+  }
+
+  void NavigateSameDomain(const String& page) {
+    Navigate("https://test.example.com/" + page);
+  }
+
+  void NavigateDifferentDomain() { Navigate("https://example.org/"); }
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
@@ -44,15 +65,85 @@ TEST_F(FrameTest, NewGesture) {
   EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
 }
 
-TEST_F(FrameTest, Navigate) {
+TEST_F(FrameTest, NavigateDifferentDomain) {
   UserGestureToken::Create(&GetDocument());
-  ASSERT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
 
   // Navigate to a different Document. In the main frame, user gesture state
-  // will get reset.
-  GetDocument().GetFrame()->Loader().Load(
-      FrameLoadRequest(nullptr, ResourceRequest()));
+  // will get reset. State will not persist since the domain has changed.
+  NavigateDifferentDomain();
   EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+}
+
+TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
+  UserGestureToken::Create(&GetDocument());
+  EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+
+  // Navigate to a different Document in the same domain.  In the main frame,
+  // user gesture state will get reset, but persisted state will be true.
+  NavigateSameDomain("page1");
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+
+  // Navigate to a different Document in the same domain, the persisted
+  // state will be true.
+  NavigateSameDomain("page2");
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+
+  // Navigate to the same URL in the same domain, the persisted state
+  // will be true, but the user gesture state will be reset.
+  NavigateSameDomain("page2");
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+
+  // Navigate to a different Document in the same domain, the persisted
+  // state will be true.
+  NavigateSameDomain("page3");
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+}
+
+TEST_F(FrameTest, NavigateSameDomainDifferentDomain) {
+  UserGestureToken::Create(&GetDocument());
+  EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+
+  // Navigate to a different Document in the same domain.  In the main frame,
+  // user gesture state will get reset, but persisted state will be true.
+  NavigateSameDomain("page1");
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+
+  // Navigate to a different Document in a different domain, the persisted
+  // state will be reset.
+  NavigateDifferentDomain();
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+}
+
+TEST_F(FrameTest, NavigateSameDomainNoGesture) {
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
+
+  NavigateSameDomain("page1");
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
 }
 
 }  // namespace blink

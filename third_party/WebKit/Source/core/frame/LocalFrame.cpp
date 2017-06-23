@@ -395,8 +395,6 @@ void LocalFrame::DocumentAttached() {
   Selection().DocumentAttached(GetDocument());
   GetInputMethodController().DocumentAttached(GetDocument());
   GetSpellChecker().DocumentAttached(GetDocument());
-  if (IsMainFrame())
-    has_received_user_gesture_ = false;
 }
 
 Frame* LocalFrame::FindFrameForNavigation(const AtomicString& name,
