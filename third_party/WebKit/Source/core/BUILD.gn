@@ -1264,6 +1264,8 @@ source_set("unit_tests") {
     "dom/shadow/ShadowDOMV0Test.cpp",
     "dom/shadow/SlotScopedTraversalTest.cpp",
     "editing/CaretDisplayItemClientTest.cpp",
+    "editing/KeyboardTest.cpp",
+    "editing/LinkSelectionTest.cpp",
     "editing/TextFinderTest.cpp",
     "events/EventPathTest.cpp",
     "events/EventTargetTest.cpp",
