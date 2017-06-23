@@ -181,8 +181,12 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     // Buttons and labels.
     case kColorId_ButtonEnabledColor:
     case kColorId_LabelEnabledColor:
-    case kColorId_ProminentButtonColor:
       return NSSystemColorToSkColor([NSColor controlTextColor]);
+    // NSColor doesn't offer a color for prominent buttons. Use the Aura color,
+    // but apply the system tint. This is a good match for the blue Cocoa uses
+    // to draw buttons that are given a \n key equivalent.
+    case kColorId_ProminentButtonColor:
+      return ApplySystemControlTint(GetAuraColor(color_id, this));
     case kColorId_ButtonDisabledColor:
     case kColorId_LabelDisabledColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
