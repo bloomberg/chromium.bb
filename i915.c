@@ -271,16 +271,13 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32
 	uint32_t stride;
 	struct drm_i915_gem_create gem_create;
 	struct drm_i915_gem_set_tiling gem_set_tiling;
+	struct combination *combo;
 
-	if (flags & (BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN))
-		bo->tiling = I915_TILING_NONE;
-	else if (flags & BO_USE_SCANOUT)
-		bo->tiling = I915_TILING_X;
-	else
-		bo->tiling = I915_TILING_Y;
+	combo = drv_get_combination(bo->drv, format, flags);
+	if (!combo)
+		return -EINVAL;
 
-	if (format == DRM_FORMAT_YVU420 || format == DRM_FORMAT_YVU420_ANDROID)
-		bo->tiling = I915_TILING_NONE;
+	bo->tiling = combo->metadata.tiling;
 
 	stride = drv_stride_from_format(format, width, 0);
 
