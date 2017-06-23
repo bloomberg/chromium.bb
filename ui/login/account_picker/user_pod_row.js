@@ -821,8 +821,6 @@ cr.define('login', function() {
           this.handlePasswordKeyPress_.bind(this));
       this.passwordElement.addEventListener('input',
           this.handleInputChanged_.bind(this));
-      this.passwordElement.addEventListener('mouseup',
-          this.handleInputMouseUp_.bind(this));
 
       if (this.submitButton) {
         this.submitButton.addEventListener('click',
@@ -1270,8 +1268,6 @@ cr.define('login', function() {
       // Change the password placeholder based on pin keyboard visibility.
       this.passwordElement.placeholder = loadTimeData.getString(visible ?
           'pinKeyboardPlaceholderPinPassword' : 'passwordHint');
-
-      chrome.send('setForceDisableVirtualKeyboard', [visible]);
     },
 
     isPinShown: function() {
@@ -2031,19 +2027,6 @@ cr.define('login', function() {
      */
     handleInputChanged_: function(e) {
       this.updateInput_();
-    },
-
-    /**
-     * Handles mouse up event on the password element.
-     * @param {Event} e Mouse up event.
-     */
-    handleInputMouseUp_: function(e) {
-      // If the PIN keyboard is shown and the user clicks on the password
-      // element, the virtual keyboard should pop up if it is enabled, so we
-      // must disable the virtual keyboard override.
-      if (this.isPinShown()) {
-        chrome.send('setForceDisableVirtualKeyboard', [false]);
-      }
     },
 
     /**

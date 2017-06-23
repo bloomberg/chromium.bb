@@ -141,8 +141,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableLargeCursor);
   AddCallback("enableVirtualKeyboard",
               &CoreOobeHandler::HandleEnableVirtualKeyboard);
-  AddCallback("setForceDisableVirtualKeyboard",
-              &CoreOobeHandler::HandleSetForceDisableVirtualKeyboard);
   AddCallback("enableScreenMagnifier",
               &CoreOobeHandler::HandleEnableScreenMagnifier);
   AddCallback("enableSpokenFeedback",
@@ -302,19 +300,6 @@ void CoreOobeHandler::HandleEnableLargeCursor(bool enabled) {
 
 void CoreOobeHandler::HandleEnableVirtualKeyboard(bool enabled) {
   AccessibilityManager::Get()->EnableVirtualKeyboard(enabled);
-}
-
-void CoreOobeHandler::HandleSetForceDisableVirtualKeyboard(bool disable) {
-  scoped_keyboard_disabler_.SetForceDisableVirtualKeyboard(disable);
-
-  if (disable) {
-    keyboard::KeyboardController* controller =
-        keyboard::KeyboardController::GetInstance();
-    if (controller) {
-      controller->HideKeyboard(
-          keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
-    }
-  }
 }
 
 void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {

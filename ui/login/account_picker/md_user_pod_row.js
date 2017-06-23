@@ -831,8 +831,6 @@ cr.define('login', function() {
           this.handlePasswordKeyPress_.bind(this));
       this.passwordElement.addEventListener('input',
           this.handleInputChanged_.bind(this));
-      this.passwordElement.addEventListener('mouseup',
-          this.handleInputMouseUp_.bind(this));
 
       if (this.submitButton) {
         this.submitButton.addEventListener('click',
@@ -1346,8 +1344,6 @@ cr.define('login', function() {
       // Adjust the vertical position based on the pin keyboard visibility.
       var podHeight = visible ? CROS_POD_HEIGHT_WITH_PIN : CROS_POD_HEIGHT;
       this.top = ($('pod-row').screenSize.height - podHeight) / 2;
-
-      chrome.send('setForceDisableVirtualKeyboard', [visible]);
     },
 
     isPinShown: function() {
@@ -2100,19 +2096,6 @@ cr.define('login', function() {
      */
     handleInputChanged_: function(e) {
       this.updateInput_();
-    },
-
-    /**
-     * Handles mouse up event on the password element.
-     * @param {Event} e Mouse up event.
-     */
-    handleInputMouseUp_: function(e) {
-      // If the PIN keyboard is shown and the user clicks on the password
-      // element, the virtual keyboard should pop up if it is enabled, so we
-      // must disable the virtual keyboard override.
-      if (this.isPinShown()) {
-        chrome.send('setForceDisableVirtualKeyboard', [false]);
-      }
     },
 
     /**
