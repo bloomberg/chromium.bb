@@ -778,6 +778,7 @@ cc_test("cc_unittests") {
     "paint/discardable_image_map_unittest.cc",
     "paint/display_item_list_unittest.cc",
     "paint/paint_op_buffer_unittest.cc",
+    "paint/solid_color_analyzer_unittest.cc",
     "quads/draw_polygon_unittest.cc",
     "quads/draw_quad_unittest.cc",
     "quads/nine_patch_generator_unittest.cc",

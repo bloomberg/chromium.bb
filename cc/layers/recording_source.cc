@@ -12,6 +12,7 @@
 #include "cc/base/region.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/solid_color_analyzer.h"
 #include "cc/raster/raster_source.h"
 #include "skia/ext/analysis_canvas.h"
 
@@ -142,15 +143,14 @@ void RecordingSource::DetermineIfSolidColor() {
   is_solid_color_ = false;
   solid_color_ = SK_ColorTRANSPARENT;
 
+  // TODO(vmpstr): We can probably remove this check.
   if (!display_list_->ShouldBeAnalyzedForSolidColor())
     return;
 
   TRACE_EVENT1("cc", "RecordingSource::DetermineIfSolidColor", "opcount",
                display_list_->op_count());
-  gfx::Size layer_size = GetSize();
-  skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
-  display_list_->Raster(&canvas);
-  is_solid_color_ = canvas.GetColorIfSolid(&solid_color_);
+  is_solid_color_ =
+      display_list_->GetColorIfSolidInRect(gfx::Rect(GetSize()), &solid_color_);
 }
 
 }  // namespace cc

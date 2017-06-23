@@ -27,6 +27,7 @@ class CC_PAINT_EXPORT PaintFlags {
     kStroke_Style = SkPaint::kStroke_Style,
     kStrokeAndFill_Style = SkPaint::kStrokeAndFill_Style,
   };
+  ALWAYS_INLINE bool nothingToDraw() const { return paint_.nothingToDraw(); }
   ALWAYS_INLINE Style getStyle() const {
     return static_cast<Style>(paint_.getStyle());
   }
