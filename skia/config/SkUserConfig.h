@@ -208,10 +208,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_DISABLE_DEFERRED_PROXIES
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_DITHERING
-#define SK_SUPPORT_LEGACY_DITHERING
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_TILED_BITMAPS
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
