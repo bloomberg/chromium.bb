@@ -2831,3 +2831,5 @@ crbug.com/736177 [ Mac ] virtual/mojo-loading/http/tests/misc/acid2-pixel.html [
 crbug.com/736177 [ Mac ] virtual/off-main-thread-fetch/http/tests/misc/acid2-pixel.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-with-incomplete-style.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] virtual/rootlayerscrolls/scrollbars/custom-scrollbar-with-incomplete-style.html [ Failure Pass ]
+
+crbug.com/734762 [ Mac Debug ] inspector-protocol/timeline/page-frames.js [ Failure ]
