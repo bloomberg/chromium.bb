@@ -182,7 +182,8 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         }
 
         // An optional page to select a default search engine.
-        if (mFreProperties.getBoolean(SHOW_SEARCH_ENGINE_PAGE)) {
+        if (mFreProperties.getBoolean(SHOW_SEARCH_ENGINE_PAGE)
+                && mFirstRunFlowSequencer.shouldShowSearchEnginePage()) {
             mPages.add(pageOf(DefaultSearchEngineFirstRunFragment.class));
             mFreProgressStates.add(FRE_PROGRESS_DEFAULT_SEARCH_ENGINE_SHOWN);
             notifyAdapter = true;
