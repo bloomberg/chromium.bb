@@ -1116,6 +1116,8 @@ std::string FieldTrialList::SerializeSharedMemoryHandleMetadata(
   // Tell the child process the name of the inherited HANDLE.
   uintptr_t uintptr_handle = reinterpret_cast<uintptr_t>(shm.GetHandle());
   ss << uintptr_handle << ",";
+#elif defined(OS_FUCHSIA)
+  ss << shm.GetHandle() << ",";
 #elif !defined(OS_POSIX)
 #error Unsupported OS
 #endif
