@@ -94,6 +94,13 @@ const base::Feature kTabsInCbd {
 #endif
 };
 
+// If enabled, we'll only take thumbnails of unknown URLs (i.e. URLs that are
+// not (yet) part of TopSites) if they have an interesting transition type, i.e.
+// one that qualifies for inclusion in TopSites.
+const base::Feature kCaptureThumbnailDependingOnTransitionType{
+    "CaptureThumbnailDependingOnTransitionType",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether to capture page thumbnails when the page load finishes (in addition
 // to any other times this might happen).
 const base::Feature kCaptureThumbnailOnLoadFinished{

@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/top_sites_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -91,23 +93,35 @@ class MockProfile : public TestingProfile {
 
 }  // namespace
 
-TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
+TEST_F(ThumbnailServiceTest, ShouldAcquireThumbnailOnlyForGoodUrl) {
   const GURL kGoodURL("http://www.google.com/");
   const GURL kBadURL("chrome://newtab");
+  const ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
 
   // Set up the mock profile along with mock top sites.
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   MockProfile profile;
 
   scoped_refptr<thumbnails::ThumbnailService> thumbnail_service(
       new thumbnails::ThumbnailServiceImpl(&profile));
 
   // Should be false because it's a bad URL.
-  EXPECT_FALSE(thumbnail_service->ShouldAcquirePageThumbnail(kBadURL));
+  EXPECT_FALSE(
+      thumbnail_service->ShouldAcquirePageThumbnail(kBadURL, transition));
 
   // Should be true, as it's a good URL.
-  EXPECT_TRUE(thumbnail_service->ShouldAcquirePageThumbnail(kGoodURL));
+  EXPECT_TRUE(
+      thumbnail_service->ShouldAcquirePageThumbnail(kGoodURL, transition));
+}
+
+TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
+  const GURL kGoodURL("http://www.google.com/");
+  const ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+
+  // Set up the mock profile along with mock top sites.
+  MockProfile profile;
+
+  scoped_refptr<thumbnails::ThumbnailService> thumbnail_service(
+      new thumbnails::ThumbnailServiceImpl(&profile));
 
   // Not checking incognito mode since the service wouldn't have been created
   // in that case anyway.
@@ -123,10 +137,12 @@ TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
   // Should be false, as the top sites data is full, and the new URL is
   // not known.
   const GURL kAnotherGoodURL("http://www.youtube.com/");
-  EXPECT_FALSE(thumbnail_service->ShouldAcquirePageThumbnail(kAnotherGoodURL));
+  EXPECT_FALSE(thumbnail_service->ShouldAcquirePageThumbnail(kAnotherGoodURL,
+                                                             transition));
 
   // Should be true, as the existing thumbnail is bad (i.e. need a better one).
-  EXPECT_TRUE(thumbnail_service->ShouldAcquirePageThumbnail(kGoodURL));
+  EXPECT_TRUE(
+      thumbnail_service->ShouldAcquirePageThumbnail(kGoodURL, transition));
 
   // Replace the thumbnail score with a really good one.
   ThumbnailScore good_score;
@@ -139,5 +155,53 @@ TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
 
   // Should be false, as the existing thumbnail is good enough (i.e. don't
   // need to replace the existing thumbnail which is new and good).
-  EXPECT_FALSE(thumbnail_service->ShouldAcquirePageThumbnail(kGoodURL));
+  EXPECT_FALSE(
+      thumbnail_service->ShouldAcquirePageThumbnail(kGoodURL, transition));
+}
+
+TEST_F(ThumbnailServiceTest,
+       ShouldAcquireTempThumbnailDependingOnTransitionType) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      features::kCaptureThumbnailDependingOnTransitionType);
+
+  const GURL kUnknownURL("http://www.google.com/");
+  const ui::PageTransition interesting_transition = ui::PAGE_TRANSITION_TYPED;
+  const ui::PageTransition uninteresting_transition = ui::PAGE_TRANSITION_LINK;
+
+  // Set up the mock profile along with mock top sites.
+  MockProfile profile;
+
+  scoped_refptr<thumbnails::ThumbnailService> thumbnail_service(
+      new thumbnails::ThumbnailServiceImpl(&profile));
+
+  // Top sites isn't full. We should acquire thumbnails of unknown URLs if they
+  // have an interesting page transition type.
+  EXPECT_TRUE(thumbnail_service->ShouldAcquirePageThumbnail(
+      kUnknownURL, interesting_transition));
+  EXPECT_FALSE(thumbnail_service->ShouldAcquirePageThumbnail(
+      kUnknownURL, uninteresting_transition));
+
+  // Add a known URL. This makes the top sites data full.
+  const GURL kKnownURL("http://www.known.com/");
+  ThumbnailScore bad_score;
+  bad_score.time_at_snapshot = base::Time::UnixEpoch();  // Ancient time stamp.
+  profile.AddKnownURL(kKnownURL, bad_score);
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(&profile);
+  ASSERT_TRUE(top_sites->IsNonForcedFull());
+
+  // Now top sites is full, so we shouldn't acquire any thumbnails of unknown
+  // URLs anymore, regardless of the transition type.
+  EXPECT_FALSE(thumbnail_service->ShouldAcquirePageThumbnail(
+      kUnknownURL, interesting_transition));
+  EXPECT_FALSE(thumbnail_service->ShouldAcquirePageThumbnail(
+      kUnknownURL, uninteresting_transition));
+
+  // We should still take thumbnails of known URLs though, regardless of the
+  // transition type.
+  EXPECT_TRUE(thumbnail_service->ShouldAcquirePageThumbnail(
+      kKnownURL, interesting_transition));
+  EXPECT_TRUE(thumbnail_service->ShouldAcquirePageThumbnail(
+      kKnownURL, uninteresting_transition));
 }

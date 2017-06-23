@@ -12,6 +12,7 @@
 #include "chrome/browser/thumbnails/thumbnailing_algorithm.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -35,7 +36,7 @@ class SkBitmap;
 //    current tab is closed or another tab is clicked), update the
 //    thumbnail for the tab rendered by the renderer, if needed. The
 //    heuristics to judge whether or not to update the thumbnail is
-//    implemented in ShouldUpdateThumbnail().
+//    implemented in ThumbnailService::ShouldAcquirePageThumbnail().
 //    If features::kCaptureThumbnailOnLoadFinished is enabled, then a thumbnail
 //    may also be captured when a page load finishes (subject to the same
 //    heuristics).
@@ -47,6 +48,7 @@ ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       capture_on_load_finished_(base::FeatureList::IsEnabled(
           features::kCaptureThumbnailOnLoadFinished)),
+      page_transition_(ui::PAGE_TRANSITION_LINK),
       load_interrupted_(false),
       weak_factory_(this) {
   // Even though we deal in RenderWidgetHosts, we only care about its
@@ -93,6 +95,28 @@ void ThumbnailTabHelper::RenderViewDeleted(
   }
 }
 
+void ThumbnailTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+  // Reset the page transition to some uninteresting type, since the actual
+  // type isn't available at this point. We'll get it in DidFinishNavigation
+  // (if that happens, which isn't guaranteed).
+  page_transition_ = ui::PAGE_TRANSITION_LINK;
+}
+
+void ThumbnailTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() ||
+      !navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+  page_transition_ = navigation_handle->GetPageTransition();
+}
+
 void ThumbnailTabHelper::DidStartLoading() {
   load_interrupted_ = false;
 }
@@ -135,8 +159,8 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
       ThumbnailServiceFactory::GetForProfile(profile);
 
   // Skip if we don't need to update the thumbnail.
-  if (thumbnail_service.get() == NULL ||
-      !thumbnail_service->ShouldAcquirePageThumbnail(url)) {
+  if (!thumbnail_service.get() ||
+      !thumbnail_service->ShouldAcquirePageThumbnail(url, page_transition_)) {
     return;
   }
 
