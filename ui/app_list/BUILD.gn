@@ -145,6 +145,8 @@ component("app_list") {
       "views/folder_header_view_delegate.h",
       "views/image_shadow_animator.cc",
       "views/image_shadow_animator.h",
+      "views/indicator_chip_view.cc",
+      "views/indicator_chip_view.h",
       "views/page_switcher.h",
       "views/page_switcher_horizontal.cc",
       "views/page_switcher_horizontal.h",

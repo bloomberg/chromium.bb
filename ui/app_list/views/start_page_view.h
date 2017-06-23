@@ -19,6 +19,7 @@ class AppListMainView;
 class AppListView;
 class AppListViewDelegate;
 class CustomLauncherPageBackgroundView;
+class IndicatorChipView;
 class SearchResultTileItemView;
 class TileItemView;
 
@@ -75,8 +76,11 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
 
   views::View* instant_container_;  // Owned by views hierarchy.
   CustomLauncherPageBackgroundView*
-      custom_launcher_page_background_;       // Owned by view hierarchy.
+      custom_launcher_page_background_;       // Owned by views hierarchy.
+  IndicatorChipView* indicator_ = nullptr;    // Owned by views hierarchy.
   StartPageTilesContainer* tiles_container_;  // Owned by views hierarchy.
+
+  const bool is_fullscreen_app_list_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageView);
 };
