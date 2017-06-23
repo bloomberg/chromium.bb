@@ -31,6 +31,7 @@ const int kNonTouchLargestIconSize = 192;
 
 // Size (along each axis) of a touch icon. This currently corresponds to
 // the apple touch icon for iPad.
+// TODO(crbug.com/736290): Consider changing this to 192x192 for Android.
 const int kTouchIconSize = 144;
 
 // Return true if |bitmap_result| is expired.
@@ -347,7 +348,8 @@ void FaviconHandler::OnUpdateCandidates(
 
   // If no manifest available, proceed with the regular candidates only.
   if (manifest_url_.is_empty()) {
-    OnGotFinalIconURLCandidates(candidates);
+    OnGotFinalIconURLCandidates(candidates,
+                                GetDesiredPixelSizes(handler_type_));
     return;
   }
 
@@ -396,7 +398,9 @@ void FaviconHandler::OnDidDownloadManifest(
   manifest_download_request_.Cancel();
 
   if (!candidates.empty()) {
-    OnGotFinalIconURLCandidates(candidates);
+    // When reading icons from web manifests, prefer kNonTouchLargestIconSize.
+    OnGotFinalIconURLCandidates(candidates,
+                                std::vector<int>(1U, kNonTouchLargestIconSize));
     return;
   }
 
@@ -409,14 +413,14 @@ void FaviconHandler::OnDidDownloadManifest(
   service_->UnableToDownloadFavicon(manifest_url_);
   manifest_url_ = GURL();
 
-  OnGotFinalIconURLCandidates(non_manifest_original_candidates_);
+  OnGotFinalIconURLCandidates(non_manifest_original_candidates_,
+                              GetDesiredPixelSizes(handler_type_));
 }
 
 void FaviconHandler::OnGotFinalIconURLCandidates(
-    const std::vector<FaviconURL>& candidates) {
+    const std::vector<FaviconURL>& candidates,
+    const std::vector<int>& desired_pixel_sizes) {
   std::vector<FaviconCandidate> sorted_candidates;
-  const std::vector<int> desired_pixel_sizes =
-      GetDesiredPixelSizes(handler_type_);
   for (const FaviconURL& candidate : candidates) {
     if (!candidate.icon_url.is_empty() && (candidate.icon_type & icon_types_)) {
       sorted_candidates.push_back(
