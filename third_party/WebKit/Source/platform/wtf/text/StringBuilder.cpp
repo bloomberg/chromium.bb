@@ -230,4 +230,18 @@ void StringBuilder::AppendNumber(double number, unsigned precision) {
   Append(NumberToFixedPrecisionString(number, precision, buffer));
 }
 
+void StringBuilder::erase(unsigned index) {
+  if (index >= length_)
+    return;
+
+  if (is8_bit_) {
+    EnsureBuffer8(0);
+    buffer8_->erase(index);
+  } else {
+    EnsureBuffer16(0);
+    buffer16_->erase(index);
+  }
+  --length_;
+}
+
 }  // namespace WTF
