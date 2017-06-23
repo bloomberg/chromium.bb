@@ -1757,21 +1757,20 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       const int eset =
           get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+      // eset == 0 should correspond to a set with only DCT_DCT and there
+      // is no need to send the tx_type
+      assert(eset > 0);
       if (is_inter) {
         assert(ext_tx_used_inter[eset][tx_type]);
-        if (eset > 0) {
-          aom_write_symbol(w, av1_ext_tx_inter_ind[eset][tx_type],
-                           ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
-                           ext_tx_cnt_inter[eset]);
-        }
+        aom_write_symbol(w, av1_ext_tx_inter_ind[eset][tx_type],
+                         ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
+                         ext_tx_cnt_inter[eset]);
       } else if (ALLOW_INTRA_EXT_TX) {
         assert(ext_tx_used_intra[eset][tx_type]);
-        if (eset > 0) {
-          aom_write_symbol(
-              w, av1_ext_tx_intra_ind[eset][tx_type],
-              ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
-              ext_tx_cnt_intra[eset]);
-        }
+        aom_write_symbol(
+            w, av1_ext_tx_intra_ind[eset][tx_type],
+            ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
+            ext_tx_cnt_intra[eset]);
       }
     }
 #else

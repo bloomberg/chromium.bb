@@ -932,23 +932,22 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       const int eset = get_ext_tx_set(tx_size, mbmi->sb_type, inter_block,
                                       cm->reduced_tx_set_used);
+      // eset == 0 should correspond to a set with only DCT_DCT and
+      // there is no need to read the tx_type
+      assert(eset != 0);
       FRAME_COUNTS *counts = xd->counts;
 
       if (inter_block) {
-        if (eset > 0) {
-          *tx_type = av1_ext_tx_inter_inv[eset][aom_read_symbol(
-              r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
-              ext_tx_cnt_inter[eset], ACCT_STR)];
-          if (counts) ++counts->inter_ext_tx[eset][square_tx_size][*tx_type];
-        }
+        *tx_type = av1_ext_tx_inter_inv[eset][aom_read_symbol(
+            r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
+            ext_tx_cnt_inter[eset], ACCT_STR)];
+        if (counts) ++counts->inter_ext_tx[eset][square_tx_size][*tx_type];
       } else if (ALLOW_INTRA_EXT_TX) {
-        if (eset > 0) {
-          *tx_type = av1_ext_tx_intra_inv[eset][aom_read_symbol(
-              r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
-              ext_tx_cnt_intra[eset], ACCT_STR)];
-          if (counts)
-            ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode][*tx_type];
-        }
+        *tx_type = av1_ext_tx_intra_inv[eset][aom_read_symbol(
+            r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
+            ext_tx_cnt_intra[eset], ACCT_STR)];
+        if (counts)
+          ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode][*tx_type];
       }
     } else {
       *tx_type = DCT_DCT;
