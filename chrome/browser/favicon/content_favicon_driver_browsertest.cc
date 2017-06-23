@@ -262,9 +262,6 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadBypassingCache) {
 // Test that loading a page that contains icons only in the Web Manifest causes
 // those icons to be used.
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, LoadIconFromWebManifest) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(favicon::kFaviconsFromWebManifest);
-
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/favicon/page_with_manifest.html");
   GURL icon_url = embedded_test_server()->GetURL("/favicon/icon.png");
@@ -296,8 +293,11 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
       "/favicon/page_with_manifest_without_icons.html");
   GURL icon_url = embedded_test_server()->GetURL("/favicon/icon.png");
 
-  // Initial visit with the feature still disabled, to populate the cache.
+  // Initial visit with the feature disabled, to populate the cache.
   {
+    base::test::ScopedFeatureList override_features;
+    override_features.InitAndDisableFeature(favicon::kFaviconsFromWebManifest);
+
     PendingTaskWaiter waiter(web_contents(), this);
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url, WindowOpenDisposition::CURRENT_TAB,
@@ -308,10 +308,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
 
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
-  // Enable the feature and visit the page again.
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(favicon::kFaviconsFromWebManifest);
-
+  // Visit the page again now that the feature is enabled (default).
   {
     PendingTaskWaiter waiter(web_contents(), this);
     ui_test_utils::NavigateToURLWithDisposition(
