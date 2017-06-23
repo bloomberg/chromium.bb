@@ -38,7 +38,7 @@ String EffectPaintPropertyNode::ToString() const {
       "parent=%p localTransformSpace=%p outputClip=%p opacity=%f filter=%s "
       "blendMode=%s directCompositingReasons=%s compositorElementId=%lu "
       "paintOffset=%s",
-      parent_.Get(), local_transform_space_.Get(), output_clip_.Get(), opacity_,
+      Parent(), local_transform_space_.Get(), output_clip_.Get(), opacity_,
       filter_.ToString().Ascii().data(), SkBlendMode_Name(blend_mode_),
       CompositingReasonsAsString(direct_compositing_reasons_).Ascii().data(),
       static_cast<unsigned long>(compositor_element_id_.id_),

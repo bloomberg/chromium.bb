@@ -25,16 +25,17 @@ namespace blink {
 // harden against use-after-free bugs. These paint properties are built/updated
 // by PaintPropertyTreeBuilder during the PrePaint lifecycle step.
 //
-// [update & clear implementation note] This class has update[property](...) and
-// clear[property]() helper functions for efficiently creating and updating
-// properties. These functions return true if the property tree structure
-// changes (e.g., a node is added or removed), and false otherwise. Property
-// nodes store parent pointers but not child pointers and these return values
-// are important for catching property tree structure changes which require
-// updating descendant's parent pointers. The update functions use a
-// create-or-update pattern of re-using existing properties for efficiency:
+// [update & clear implementation note] This class has Update[property](...) and
+// Clear[property]() helper functions for efficiently creating and updating
+// properties. The update functions returns a 3-state result to indicate whether
+// the value or the existence of the node has changed. They use a create-or-
+// update pattern of re-using existing properties for efficiency:
 // 1. It avoids extra allocations.
 // 2. It preserves existing child->parent pointers.
+// The clear functions return true if an existing node is removed. Property
+// nodes store parent pointers but not child pointers and these return values
+// are important for catching property tree structure changes which require
+// updating descendant's parent pointers.
 class CORE_EXPORT ObjectPaintProperties {
   WTF_MAKE_NONCOPYABLE(ObjectPaintProperties);
   USING_FAST_MALLOC(ObjectPaintProperties);
@@ -162,24 +163,32 @@ class CORE_EXPORT ObjectPaintProperties {
   bool ClearScrollTranslation() { return Clear(scroll_translation_); }
   bool ClearScrollbarPaintOffset() { return Clear(scrollbar_paint_offset_); }
 
-  // The following update* functions return true if the property tree structure
-  // changes (a new node was created), and false otherwise. See the class-level
-  // comment ("update & clear implementation note") for details about why this
-  // is needed for efficient updates.
+  class UpdateResult {
+   public:
+    bool ValueChanged() const { return result_ == kValueChanged; }
+    bool NewNodeCreated() const { return result_ == kNewNodeCreated; }
+
+   private:
+    friend class ObjectPaintProperties;
+    enum Result { kUnchanged, kValueChanged, kNewNodeCreated };
+    UpdateResult(Result r) : result_(r) {}
+    Result result_;
+  };
+
   template <typename... Args>
-  bool UpdatePaintOffsetTranslation(Args&&... args) {
+  UpdateResult UpdatePaintOffsetTranslation(Args&&... args) {
     return Update(paint_offset_translation_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateTransform(Args&&... args) {
+  UpdateResult UpdateTransform(Args&&... args) {
     return Update(transform_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdatePerspective(Args&&... args) {
+  UpdateResult UpdatePerspective(Args&&... args) {
     return Update(perspective_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateSvgLocalToBorderBoxTransform(Args&&... args) {
+  UpdateResult UpdateSvgLocalToBorderBoxTransform(Args&&... args) {
     DCHECK(!ScrollTranslation()) << "SVG elements cannot scroll so there "
                                     "should never be both a scroll translation "
                                     "and an SVG local to border box transform.";
@@ -187,52 +196,54 @@ class CORE_EXPORT ObjectPaintProperties {
                   std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateScrollTranslation(Args&&... args) {
+  UpdateResult UpdateScrollTranslation(Args&&... args) {
     DCHECK(!SvgLocalToBorderBoxTransform())
         << "SVG elements cannot scroll so there should never be both a scroll "
            "translation and an SVG local to border box transform.";
     if (scroll_translation_) {
-      scroll_translation_->UpdateScrollTranslation(std::forward<Args>(args)...);
-      return false;
+      return scroll_translation_->UpdateScrollTranslation(
+                 std::forward<Args>(args)...)
+                 ? UpdateResult::kValueChanged
+                 : UpdateResult::kUnchanged;
     }
     scroll_translation_ = TransformPaintPropertyNode::CreateScrollTranslation(
         std::forward<Args>(args)...);
-    return true;
+    return UpdateResult::kNewNodeCreated;
   }
   template <typename... Args>
-  bool UpdateScrollbarPaintOffset(Args&&... args) {
+  UpdateResult UpdateScrollbarPaintOffset(Args&&... args) {
     return Update(scrollbar_paint_offset_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateEffect(Args&&... args) {
+  UpdateResult UpdateEffect(Args&&... args) {
     return Update(effect_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateFilter(Args&&... args) {
+  UpdateResult UpdateFilter(Args&&... args) {
     return Update(filter_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateMask(Args&&... args) {
+  UpdateResult UpdateMask(Args&&... args) {
     return Update(mask_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateMaskClip(Args&&... args) {
+  UpdateResult UpdateMaskClip(Args&&... args) {
     return Update(mask_clip_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateCssClip(Args&&... args) {
+  UpdateResult UpdateCssClip(Args&&... args) {
     return Update(css_clip_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateCssClipFixedPosition(Args&&... args) {
+  UpdateResult UpdateCssClipFixedPosition(Args&&... args) {
     return Update(css_clip_fixed_position_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateInnerBorderRadiusClip(Args&&... args) {
+  UpdateResult UpdateInnerBorderRadiusClip(Args&&... args) {
     return Update(inner_border_radius_clip_, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  bool UpdateOverflowClip(Args&&... args) {
+  UpdateResult UpdateOverflowClip(Args&&... args) {
     return Update(overflow_clip_, std::forward<Args>(args)...);
   }
 
@@ -293,13 +304,14 @@ class CORE_EXPORT ObjectPaintProperties {
   // created), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode, typename... Args>
-  bool Update(RefPtr<PaintPropertyNode>& field, Args&&... args) {
+  UpdateResult Update(RefPtr<PaintPropertyNode>& field, Args&&... args) {
     if (field) {
-      field->Update(std::forward<Args>(args)...);
-      return false;
+      return field->Update(std::forward<Args>(args)...)
+                 ? UpdateResult::kValueChanged
+                 : UpdateResult::kUnchanged;
     }
     field = PaintPropertyNode::Create(std::forward<Args>(args)...);
-    return true;
+    return UpdateResult::kNewNodeCreated;
   }
 
   // ATTENTION! Make sure to keep FindPropertiesNeedingUpdate.h in sync when
