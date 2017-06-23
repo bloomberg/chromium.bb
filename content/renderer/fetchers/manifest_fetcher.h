@@ -16,7 +16,7 @@
 class GURL;
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace content {
@@ -38,7 +38,7 @@ class CONTENT_EXPORT ManifestFetcher {
   explicit ManifestFetcher(const GURL& url);
   virtual ~ManifestFetcher();
 
-  void Start(blink::WebFrame* frame,
+  void Start(blink::WebLocalFrame* frame,
              bool use_credentials,
              const Callback& callback);
   void Cancel();
@@ -54,6 +54,6 @@ class CONTENT_EXPORT ManifestFetcher {
   DISALLOW_COPY_AND_ASSIGN(ManifestFetcher);
 };
 
-} // namespace content
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_FETCHERS_MANIFEST_FETCHER_H_

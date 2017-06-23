@@ -21,7 +21,7 @@ class GURL;
 
 namespace blink {
 class WebAssociatedURLLoader;
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace content {
@@ -34,7 +34,7 @@ class AssociatedResourceFetcherImpl : public AssociatedResourceFetcher {
   void SetCachePolicy(blink::WebCachePolicy policy) override;
   void SetLoaderOptions(
       const blink::WebAssociatedURLLoaderOptions& options) override;
-  void Start(blink::WebFrame* frame,
+  void Start(blink::WebLocalFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
              blink::WebURLRequest::FrameType frame_type,
              const Callback& callback) override;

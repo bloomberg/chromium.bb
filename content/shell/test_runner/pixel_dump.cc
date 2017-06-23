@@ -75,10 +75,13 @@ void DrawSelectionRect(const PixelsDumpRequest& dump_request,
   // The rect should be drawn after everything is laid out and painted.
   if (!dump_request.layout_test_runtime_flags.dump_selection_rect())
     return;
-  // If there is a selection rect - draw a red 1px border enclosing rect
+
+  // TODO(lukasza): https://crbug.com/667551: Support OOPIFs in pixel dumps.
   CHECK(dump_request.web_view->MainFrame()->IsWebLocalFrame())
       << "This function cannot be called if the main frame is not a "
          "local frame.";
+
+  // If there is a selection rect - draw a red 1px border enclosing rect
   blink::WebRect wr = dump_request.web_view->MainFrame()
                           ->ToWebLocalFrame()
                           ->GetSelectionBoundsRectForTesting();
@@ -100,6 +103,7 @@ void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
 
   blink::WebSize page_size_in_pixels = dump_request->web_view->Size();
 
+  // TODO(lukasza): https://crbug.com/667551: Support OOPIFs in pixel dumps.
   CHECK(dump_request->web_view->MainFrame()->IsWebLocalFrame())
       << "This function cannot be called if the main frame is not a "
          "local frame.";

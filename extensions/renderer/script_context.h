@@ -177,7 +177,7 @@ class ScriptContext : public RequestSender::Source {
   // Returns the first non-about:-URL in the document hierarchy above and
   // including |frame|. The document hierarchy is only traversed if
   // |document_url| is an about:-URL and if |match_about_blank| is true.
-  static GURL GetEffectiveDocumentURL(const blink::WebLocalFrame* frame,
+  static GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
                                       const GURL& document_url,
                                       bool match_about_blank);
 

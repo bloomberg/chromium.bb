@@ -4,6 +4,8 @@
 
 #include "content/shell/test_runner/accessibility_controller.h"
 
+#include <string>
+
 #include "base/macros.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "gin/handle.h"
@@ -216,23 +218,25 @@ v8::Local<v8::Object> AccessibilityController::FocusedElement() {
   if (!frame)
     return v8::Local<v8::Object>();
 
+  // TODO(lukasza): Finish adding OOPIF support to the layout tests harness.
+  CHECK(frame->IsWebLocalFrame())
+      << "This function cannot be called if the main frame is not a "
+         "local frame.";
   blink::WebAXObject focused_element =
-      blink::WebAXObject::FromWebDocumentFocused(frame->GetDocument());
+      blink::WebAXObject::FromWebDocumentFocused(
+          frame->ToWebLocalFrame()->GetDocument());
   if (focused_element.IsNull())
-    focused_element = blink::WebAXObject::FromWebView(*web_view());
+    focused_element = GetAccessibilityObjectForMainFrame();
   return elements_.GetOrCreate(focused_element);
 }
 
 v8::Local<v8::Object> AccessibilityController::RootElement() {
-  blink::WebAXObject root_element =
-      blink::WebAXObject::FromWebView(*web_view());
-  return elements_.GetOrCreate(root_element);
+  return elements_.GetOrCreate(GetAccessibilityObjectForMainFrame());
 }
 
 v8::Local<v8::Object> AccessibilityController::AccessibleElementById(
     const std::string& id) {
-  blink::WebAXObject root_element =
-      blink::WebAXObject::FromWebView(*web_view());
+  blink::WebAXObject root_element = GetAccessibilityObjectForMainFrame();
 
   if (!root_element.UpdateLayoutAndCheckValidity())
     return v8::Local<v8::Object>();
@@ -269,6 +273,18 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
 
 blink::WebView* AccessibilityController::web_view() {
   return web_view_test_proxy_base_->web_view();
+}
+
+blink::WebAXObject
+AccessibilityController::GetAccessibilityObjectForMainFrame() {
+  blink::WebFrame* frame = web_view()->MainFrame();
+
+  // TODO(lukasza): Finish adding OOPIF support to the layout tests harness.
+  CHECK(frame && frame->IsWebLocalFrame())
+      << "This function cannot be called if the main frame is not a "
+         "local frame.";
+  return blink::WebAXObject::FromWebDocument(
+      web_view()->MainFrame()->ToWebLocalFrame()->GetDocument());
 }
 
 }  // namespace test_runner

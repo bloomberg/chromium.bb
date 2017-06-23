@@ -20,8 +20,8 @@
 #include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 
 namespace content {
@@ -152,7 +152,7 @@ void AssociatedResourceFetcherImpl::SetLoaderOptions(
 }
 
 void AssociatedResourceFetcherImpl::Start(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
     blink::WebURLRequest::FrameType frame_type,
     const Callback& callback) {

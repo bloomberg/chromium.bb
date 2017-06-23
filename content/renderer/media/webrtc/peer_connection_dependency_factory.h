@@ -33,7 +33,7 @@ class Thread;
 }
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 }
@@ -75,11 +75,10 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.
   // The PeerConnection object is owned by PeerConnectionHandler.
-  virtual scoped_refptr<webrtc::PeerConnectionInterface>
-      CreatePeerConnection(
-          const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-          blink::WebFrame* web_frame,
-          webrtc::PeerConnectionObserver* observer);
+  virtual scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
+      const webrtc::PeerConnectionInterface::RTCConfiguration& config,
+      blink::WebLocalFrame* web_frame,
+      webrtc::PeerConnectionObserver* observer);
 
   // Creates a libjingle representation of a Session description. Used by a
   // RTCPeerConnectionHandler instance.

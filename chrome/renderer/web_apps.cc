@@ -23,14 +23,14 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 using blink::WebDocument;
 using blink::WebElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebString;
 
@@ -121,7 +121,7 @@ bool ParseIconSizes(const base::string16& text,
   return (*is_any || !sizes->empty());
 }
 
-void ParseWebAppFromWebDocument(WebFrame* frame,
+void ParseWebAppFromWebDocument(WebLocalFrame* frame,
                                 WebApplicationInfo* app_info) {
   WebDocument document = frame->GetDocument();
   if (document.IsNull())

@@ -38,6 +38,7 @@
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
@@ -116,7 +117,7 @@ class TouchActionTest : public ::testing::Test {
   void RunShadowDOMTest(std::string file);
   void RunIFrameTest(std::string file);
   void SendTouchEvent(WebView*, WebInputEvent::Type, IntPoint client_point);
-  WebView* SetupTest(std::string file, TouchActionTrackingWebWidgetClient&);
+  WebViewBase* SetupTest(std::string file, TouchActionTrackingWebWidgetClient&);
   void RunTestOnTree(ContainerNode* root,
                      WebView*,
                      TouchActionTrackingWebWidgetClient&);
@@ -138,10 +139,10 @@ void TouchActionTest::RunTouchActionTest(std::string file) {
   // turn them into persistent, stack allocated references. This
   // workaround is sufficient to handle this artificial test
   // scenario.
-  WebView* web_view = SetupTest(file, client);
+  WebViewBase* web_view = SetupTest(file, client);
 
   Persistent<Document> document =
-      static_cast<Document*>(web_view->MainFrame()->GetDocument());
+      static_cast<Document*>(web_view->MainFrameImpl()->GetDocument());
   RunTestOnTree(document.Get(), web_view, client);
 
   // Explicitly reset to break dependency on locally scoped client.
@@ -151,14 +152,14 @@ void TouchActionTest::RunTouchActionTest(std::string file) {
 void TouchActionTest::RunShadowDOMTest(std::string file) {
   TouchActionTrackingWebWidgetClient client;
 
-  WebView* web_view = SetupTest(file, client);
+  WebViewBase* web_view = SetupTest(file, client);
 
   DummyExceptionStateForTesting es;
 
   // Oilpan: see runTouchActionTest() comment why these are persistent
   // references.
   Persistent<Document> document =
-      static_cast<Document*>(web_view->MainFrame()->GetDocument());
+      static_cast<Document*>(web_view->MainFrameImpl()->GetDocument());
   Persistent<StaticElementList> host_nodes =
       document->QuerySelectorAll("[shadow-host]", es);
   ASSERT_FALSE(es.HadException());
@@ -179,7 +180,7 @@ void TouchActionTest::RunShadowDOMTest(std::string file) {
 void TouchActionTest::RunIFrameTest(std::string file) {
   TouchActionTrackingWebWidgetClient client;
 
-  WebView* web_view = SetupTest(file, client);
+  WebViewBase* web_view = SetupTest(file, client);
   WebFrame* cur_frame = web_view->MainFrame()->FirstChild();
   ASSERT_TRUE(cur_frame);
 
@@ -187,7 +188,7 @@ void TouchActionTest::RunIFrameTest(std::string file) {
     // Oilpan: see runTouchActionTest() comment why these are persistent
     // references.
     Persistent<Document> content_doc =
-        static_cast<Document*>(cur_frame->GetDocument());
+        static_cast<Document*>(cur_frame->ToWebLocalFrame()->GetDocument());
     RunTestOnTree(content_doc.Get(), web_view, client);
   }
 
@@ -195,14 +196,14 @@ void TouchActionTest::RunIFrameTest(std::string file) {
   web_view_helper_.Reset();
 }
 
-WebView* TouchActionTest::SetupTest(
+WebViewBase* TouchActionTest::SetupTest(
     std::string file,
     TouchActionTrackingWebWidgetClient& client) {
   URLTestHelpers::RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
                                                 testing::WebTestDataPath(),
                                                 WebString::FromUTF8(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
-  WebView* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + file, nullptr, nullptr, &client);
 
   // Set size to enable hit testing, and avoid line wrapping for consistency
@@ -212,7 +213,7 @@ WebView* TouchActionTest::SetupTest(
   // Scroll to verify the code properly transforms windows to client co-ords.
   const int kScrollOffset = 100;
   Document* document =
-      static_cast<Document*>(web_view->MainFrame()->GetDocument());
+      static_cast<Document*>(web_view->MainFrameImpl()->GetDocument());
   document->GetFrame()->View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, kScrollOffset), kProgrammaticScroll);
 

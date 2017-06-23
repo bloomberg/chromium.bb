@@ -21,8 +21,6 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #endif
 
-using content::RenderViewHostTester;
-
 class WebApplicationTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
@@ -47,8 +45,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   content::RenderFrameHostTester::For(main_rfh())
       ->InitializeRenderFrameIfNeeded();
   content::RenderFrameHostTester::TestOnMessageReceived(
-      rvh()->GetMainFrame(),
-      ChromeFrameHostMsg_DidGetWebApplicationInfo(0, web_app_info));
+      main_rfh(), ChromeFrameHostMsg_DidGetWebApplicationInfo(0, web_app_info));
   std::unique_ptr<web_app::ShortcutInfo> info =
       web_app::GetShortcutInfoForTab(web_contents());
 

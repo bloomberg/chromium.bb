@@ -5,6 +5,8 @@
 #include "content/shell/test_runner/test_runner.h"
 
 #include <stddef.h>
+
+#include <algorithm>
 #include <limits>
 #include <utility>
 
@@ -1999,7 +2001,7 @@ void TestRunner::ShowDevTools(const std::string& settings,
 
 class WorkItemBackForward : public TestRunner::WorkItem {
  public:
-  WorkItemBackForward(int distance) : distance_(distance) {}
+  explicit WorkItemBackForward(int distance) : distance_(distance) {}
 
   bool Run(WebTestDelegate* delegate, WebView*) override {
     delegate->GoToOffset(distance_);
@@ -2037,7 +2039,7 @@ void TestRunner::QueueReload() {
 
 class WorkItemLoadingScript : public TestRunner::WorkItem {
  public:
-  WorkItemLoadingScript(const std::string& script) : script_(script) {}
+  explicit WorkItemLoadingScript(const std::string& script) : script_(script) {}
 
   bool Run(WebTestDelegate*, WebView* web_view) override {
     blink::WebFrame* main_frame = web_view->MainFrame();
@@ -2061,7 +2063,8 @@ void TestRunner::QueueLoadingScript(const std::string& script) {
 
 class WorkItemNonLoadingScript : public TestRunner::WorkItem {
  public:
-  WorkItemNonLoadingScript(const std::string& script) : script_(script) {}
+  explicit WorkItemNonLoadingScript(const std::string& script)
+      : script_(script) {}
 
   bool Run(WebTestDelegate*, WebView* web_view) override {
     blink::WebFrame* main_frame = web_view->MainFrame();
@@ -2102,8 +2105,17 @@ void TestRunner::QueueLoad(const std::string& url, const std::string& target) {
   if (!main_view_)
     return;
 
+  // TODO(lukasza): testRunner.queueLoad(...) should work even if the main frame
+  // is remote (ideally testRunner.queueLoad would bind to and execute in the
+  // context of a specific local frame - resolving relative urls should be done
+  // on relative to the calling frame's url).
+  CHECK(main_view_->MainFrame()->IsWebLocalFrame())
+      << "This function cannot be called if the main frame is not "
+         "a local frame.";
+
   // FIXME: Implement WebURL::resolve() and avoid GURL.
-  GURL current_url = main_view_->MainFrame()->GetDocument().Url();
+  GURL current_url =
+      main_view_->MainFrame()->ToWebLocalFrame()->GetDocument().Url();
   GURL full_url = current_url.Resolve(url);
   work_queue_.AddWork(new WorkItemLoad(full_url, target));
 }

@@ -38,7 +38,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   bool HasVisibleContent() const override;
   WebRect VisibleContentRect() const override;
   WebView* View() const override;
-  WebDocument GetDocument() const override;
   WebPerformance Performance() const override;
   void StopLoading() override;
   void EnableViewSourceMode(bool enable) override;

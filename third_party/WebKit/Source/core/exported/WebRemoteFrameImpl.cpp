@@ -113,12 +113,6 @@ WebView* WebRemoteFrameImpl::View() const {
   return GetFrame()->GetPage()->GetChromeClient().GetWebView();
 }
 
-WebDocument WebRemoteFrameImpl::GetDocument() const {
-  // TODO(dcheng): this should also ASSERT_NOT_REACHED, but a lot of
-  // code tries to access the document of a remote frame at the moment.
-  return WebDocument();
-}
-
 WebPerformance WebRemoteFrameImpl::Performance() const {
   NOTREACHED();
   return WebPerformance();

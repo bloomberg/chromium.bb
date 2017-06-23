@@ -36,8 +36,8 @@ using blink::WebElement;
 using blink::WebExceptionCode;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
-using blink::WebFrame;
 using blink::WebInputElement;
+using blink::WebLocalFrame;
 using blink::WebSelectElement;
 using blink::WebString;
 using blink::WebVector;
@@ -290,7 +290,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     LoadHTML(html);
 
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -355,7 +355,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     else
       LoadHTML(html);
 
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -608,7 +608,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     else
       LoadHTML(html);
 
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -618,7 +618,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestFindFormForInputElement(const char* html, bool unowned) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -673,7 +673,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestFindFormForTextAreaElement(const char* html, bool unowned) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -737,7 +737,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestFillFormMaxLength(const char* html, bool unowned) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -827,7 +827,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestFillFormNegativeMaxLength(const char* html, bool unowned) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -901,7 +901,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestFillFormEmptyName(const char* html, bool unowned) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -978,7 +978,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestFillFormEmptyFormNames(const char* html, bool unowned) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -1069,7 +1069,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
                                  const char* placeholder_lastname,
                                  const char* placeholder_email) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -1212,7 +1212,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestClearFormWithNode(const char* html, bool unowned) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -1315,7 +1315,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
   void TestClearFormWithNodeContainingSelectOne(const char* html,
                                                 bool unowned) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -1383,7 +1383,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestClearPreviewedFormWithElement(const char* html) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -1437,7 +1437,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestClearPreviewedFormWithNonEmptyInitiatingNode(const char* html) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -1490,7 +1490,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestClearPreviewedFormWithAutofilledInitiatingNode(const char* html) {
     LoadHTML(html);
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -1544,7 +1544,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
   void TestClearOnlyAutofilledFields(const char* html) {
     LoadHTML(html);
 
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);
@@ -1613,7 +1613,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 TEST_F(FormAutofillTest, WebFormControlElementToFormField) {
   LoadHTML("<INPUT type='text' id='element' value='value'/>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -1641,7 +1641,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompleteOff) {
   LoadHTML("<INPUT type='text' id='element' value='value'"
            "       autocomplete='off'/>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -1662,7 +1662,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldMaxLength) {
   LoadHTML("<INPUT type='text' id='element' value='value'"
            "       maxlength='5'/>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -1681,7 +1681,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldMaxLength) {
 TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutofilled) {
   LoadHTML("<INPUT type='text' id='element' value='value'/>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebInputElement element = GetInputElementById("element");
@@ -1704,7 +1704,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   LoadHTML("<INPUT type='checkbox' id='checkbox' value='mail' checked/>"
            "<INPUT type='radio' id='radio' value='male'/>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebInputElement element = GetInputElementById("checkbox");
@@ -1738,7 +1738,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldSelect) {
            "  <OPTION value='TX'>Texas</OPTION>"
            "</SELECT>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -1781,7 +1781,7 @@ TEST_F(FormAutofillTest,
            "  <OPTION value='TX'>Texas</OPTION>"
            "</SELECT>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -1816,7 +1816,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldLongSelect) {
   html += "</SELECT>";
   LoadHTML(html.c_str());
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_TRUE(frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -1834,7 +1834,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldTextArea) {
              "spans multiple lines."
            "</TEXTAREA>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -1860,7 +1860,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldTextArea) {
 TEST_F(FormAutofillTest, WebFormControlElementToFormFieldMonthInput) {
   LoadHTML("<INPUT type='month' id='element' value='2011-12'>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -1888,7 +1888,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldInvalidType) {
            "  <INPUT type='submit' id='submit' value='Send'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("hidden");
@@ -1915,7 +1915,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToPasswordFormField) {
            "  <INPUT type='password' id='password' value='secret'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("password");
@@ -1954,7 +1954,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
       std::string(10000, 'x') + "'/>";
   LoadHTML(html.c_str());
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   struct TestCase {
@@ -2017,7 +2017,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromDirectStyle) {
            "  <INPUT type='text' id='element'>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -2032,7 +2032,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromDirectDIRAttribute) {
            "  <INPUT dir='rtl' type='text' id='element'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -2048,7 +2048,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromParentStyle) {
            "  <INPUT type='text' id='element'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -2063,7 +2063,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromParentDIRAttribute) {
            "  <INPUT type='text' id='element'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -2079,7 +2079,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionWhenStyleAndDIRAttributMixed) {
            "  <INPUT type='text' id='element'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -2096,7 +2096,7 @@ TEST_F(FormAutofillTest, TextAlignOverridesDirection) {
            "  <INPUT type='text' id='element'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -2127,7 +2127,7 @@ TEST_F(FormAutofillTest,
            "  <INPUT type='text' id='element'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -2144,7 +2144,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionWhenAncestorHasInlineStyle) {
            "  </SPAN>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormControlElement element = GetFormControlElementById("element");
@@ -2180,7 +2180,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
            "    <INPUT type='hidden' id='notvisible' value='apple'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebVector<WebFormElement> forms;
@@ -2253,7 +2253,7 @@ TEST_F(FormAutofillTest, WebFormElementConsiderNonControlLabelableElements) {
            "  <input type='text' id='firstname' value='John'>"
            "</form>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormElement web_form =
@@ -2287,7 +2287,7 @@ TEST_F(FormAutofillTest, MAYBE_WebFormElementToFormDataTooManyFields) {
   html += "</FORM>";
   LoadHTML(html.c_str());
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebVector<WebFormElement> forms;
@@ -2316,7 +2316,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData_AutocompleteOff_OnForm) {
       "    <INPUT type='text' id='addressline1' value='123 Test st.'/>"
       "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormElement web_form =
@@ -2345,7 +2345,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData_AutocompleteOff_OnField) {
       "    <INPUT type='text' id='addressline1' value='123 Test st.'/>"
       "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormElement web_form =
@@ -2373,7 +2373,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData_CssClasses) {
       "    <INPUT type='text' id='addressline1'  />"
       "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormElement web_form =
@@ -2401,7 +2401,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData_IdAttributes) {
       "    <INPUT type='text' id='addressline1' />"
       "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebFormElement web_form =
@@ -2446,7 +2446,7 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
            "  <INPUT type='submit' name='reply-send' value='Send'/>"
            "</FORM>");
 
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
   FormCache form_cache(*web_frame);
@@ -2519,7 +2519,7 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
       "  <INPUT type='submit' name='reply-send' value='Send'/>"
       "</FORM>");
 
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
   FormCache form_cache(*web_frame);
@@ -2626,7 +2626,7 @@ TEST_F(FormAutofillTest, ExtractFormsTooFewFields) {
            "  <INPUT type='submit' name='reply-send' value='Send'/>"
            "</FORM>");
 
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
   FormCache form_cache(*web_frame);
@@ -2641,7 +2641,7 @@ TEST_F(FormAutofillTest, ExtractFormsSkippedForms) {
            "  <INPUT type='text' id='lastname' value='Smith'/>"
            "</FORM>");
 
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
   FormCache form_cache(*web_frame);
@@ -2654,7 +2654,7 @@ TEST_F(FormAutofillTest, ExtractFormsNoFields) {
   LoadHTML("<FORM name='TestForm' action='http://cnn.com' method='post'>"
            "</FORM>");
 
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
   FormCache form_cache(*web_frame);
@@ -2673,7 +2673,7 @@ TEST_F(FormAutofillTest, ExtractFormsTooFewFieldsSkipsCheckable) {
            "  <INPUT type='submit' name='reply-send' value='Send'/>"
            "</FORM>");
 
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
   FormCache form_cache(*web_frame);
@@ -2692,7 +2692,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormDataAutocomplete) {
              "  <INPUT type='submit' name='reply-send' value='Send'/>"
              "</FORM>");
 
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     WebVector<WebFormElement> web_forms;
@@ -3982,7 +3982,7 @@ TEST_F(FormAutofillTest, ThreePartPhone) {
            "  <input type='submit' name='reply-send' value='Send'>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebVector<WebFormElement> forms;
@@ -4037,7 +4037,7 @@ TEST_F(FormAutofillTest, MaxLengthFields) {
            "  <input type='submit' name='reply-send' value='Send'>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   WebVector<WebFormElement> forms;
@@ -4337,7 +4337,7 @@ TEST_F(FormAutofillTest, MultipleLabelsPerElement) {
 TEST_F(FormAutofillTest, ClickElement) {
   LoadHTML("<BUTTON id='link'>Button</BUTTON>"
            "<BUTTON name='button'>Button</BUTTON>");
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   // Successful retrieval by id.
@@ -4372,7 +4372,7 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
            "  <INPUT type='submit' name='reply-send' value='Send'/>"
            "</FORM>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   // Set the value of the select-one.
@@ -4475,7 +4475,7 @@ TEST_F(FormAutofillTest,
            "  </FIELDSET>"
            "</DIV>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   control_elements = GetUnownedAutofillableFormFieldElements(
@@ -4535,7 +4535,7 @@ TEST_F(FormAutofillTest,
            "  <INPUT type='text' id='email' value='john@example.com'/>"
            "</DIV>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   control_elements = GetUnownedAutofillableFormFieldElements(
@@ -4584,7 +4584,7 @@ TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
 
   LoadHTML(kFormHtml);
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
   control_elements = GetUnownedAutofillableFormFieldElements(
@@ -4656,7 +4656,7 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
   for (auto test_case : test_cases) {
     LoadHTML(test_case.html);
 
-    WebFrame* web_frame = GetMainFrame();
+    WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
 
     FormCache form_cache(*web_frame);

@@ -1340,7 +1340,7 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
 
   // Scroll the input field out of the viewport.
   Element* element = static_cast<Element*>(
-      web_view->MainFrame()->GetDocument().GetElementById("btn"));
+      web_view->MainFrameImpl()->GetDocument().GetElementById("btn"));
   element->scrollIntoView();
   float offset_height = web_view->MainFrameImpl()->GetScrollOffset().height;
   EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().width);
@@ -1540,7 +1540,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingTextInRichText) {
   underlines[0] = WebCompositionUnderline(0, 4, 0, false, 0);
   WebLocalFrameBase* frame = web_view->MainFrameImpl();
   frame->SetEditableSelectionOffsets(1, 1);
-  WebDocument document = web_view->MainFrame()->GetDocument();
+  WebDocument document = web_view->MainFrameImpl()->GetDocument();
   EXPECT_FALSE(document.GetElementById("bold").IsNull());
   frame->SetCompositionFromExistingText(0, 4, underlines);
   EXPECT_FALSE(document.GetElementById("bold").IsNull());
@@ -1961,12 +1961,12 @@ TEST_P(WebViewTest, DragDropURL) {
   // Drag and drop barUrl and verify that we've navigated to it.
   DragAndDropURL(web_view, bar_url);
   EXPECT_EQ(bar_url,
-            web_view->MainFrame()->GetDocument().Url().GetString().Utf8());
+            web_view->MainFrameImpl()->GetDocument().Url().GetString().Utf8());
 
   // Drag and drop fooUrl and verify that we've navigated back to it.
   DragAndDropURL(web_view, foo_url);
   EXPECT_EQ(foo_url,
-            web_view->MainFrame()->GetDocument().Url().GetString().Utf8());
+            web_view->MainFrameImpl()->GetDocument().Url().GetString().Utf8());
 
   // Disable navigation on drag-and-drop.
   web_view->SettingsImpl()->SetNavigateOnDragDrop(false);
@@ -1975,7 +1975,7 @@ TEST_P(WebViewTest, DragDropURL) {
   // occurred.
   DragAndDropURL(web_view, bar_url);
   EXPECT_EQ(foo_url,
-            web_view->MainFrame()->GetDocument().Url().GetString().Utf8());
+            web_view->MainFrameImpl()->GetDocument().Url().GetString().Utf8());
 }
 
 bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
@@ -2011,7 +2011,7 @@ bool WebViewTest::TapElementById(WebInputEvent::Type type,
                                  const WebString& id) {
   DCHECK(web_view_helper_.WebView());
   Element* element = static_cast<Element*>(
-      web_view_helper_.WebView()->MainFrame()->GetDocument().GetElementById(
+      web_view_helper_.WebView()->MainFrameImpl()->GetDocument().GetElementById(
           id));
   return TapElement(type, element);
 }
@@ -2138,8 +2138,8 @@ TEST_P(WebViewTest, LongPressObject) {
   EXPECT_NE(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
 
-  HTMLElement* element =
-      ToHTMLElement(web_view->MainFrame()->GetDocument().GetElementById("obj"));
+  HTMLElement* element = ToHTMLElement(
+      web_view->MainFrameImpl()->GetDocument().GetElementById("obj"));
   EXPECT_FALSE(element->CanStartSelection());
 }
 
@@ -2163,8 +2163,8 @@ TEST_P(WebViewTest, LongPressObjectFallback) {
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
 
-  HTMLElement* element =
-      ToHTMLElement(web_view->MainFrame()->GetDocument().GetElementById("obj"));
+  HTMLElement* element = ToHTMLElement(
+      web_view->MainFrameImpl()->GetDocument().GetElementById("obj"));
   EXPECT_TRUE(element->CanStartSelection());
 }
 
@@ -2250,11 +2250,11 @@ TEST_P(WebViewTest, showContextMenuOnLongPressingLinks) {
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, anchor_tag_id));
   EXPECT_STREQ("anchor contextmenu",
-               web_view->MainFrame()->GetDocument().Title().Utf8().data());
+               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, image_tag_id));
   EXPECT_STREQ("image contextmenu",
-               web_view->MainFrame()->GetDocument().Title().Utf8().data());
+               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
 }
 
 TEST_P(WebViewTest, LongPressEmptyEditableSelection) {
@@ -2385,7 +2385,8 @@ TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
   HTMLTextAreaElement* text_area_element = toHTMLTextAreaElement(
-      web_view->MainFrame()->GetDocument().GetElementById(blanklinestextbox));
+      web_view->MainFrameImpl()->GetDocument().GetElementById(
+          blanklinestextbox));
   text_area_element->setValue("hello");
 
   // Long-press past last word of textbox.
@@ -2740,7 +2741,7 @@ TEST_P(WebViewTest, FinishComposingTextDoesntTriggerAutofillTextChange) {
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
-  WebDocument document = web_view->MainFrame()->GetDocument();
+  WebDocument document = web_view->MainFrameImpl()->GetDocument();
   HTMLFormControlElement* form =
       ToHTMLFormControlElement(document.GetElementById("sample"));
 
@@ -2795,7 +2796,7 @@ TEST_P(WebViewTest,
 
   EXPECT_EQ(0, client.TextChanges());
 
-  WebDocument document = web_view->MainFrame()->GetDocument();
+  WebDocument document = web_view->MainFrameImpl()->GetDocument();
   EXPECT_EQ(WebString::FromUTF8("none"),
             document.GetElementById("inputEvent").FirstChild().NodeValue());
 
@@ -2882,7 +2883,7 @@ TEST_P(WebViewTest, FocusExistingFrameOnNavigate) {
 
 TEST_P(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
   RegisterMockedHttpURLLoad("focusout_focusin_events.html");
-  WebView* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "focusout_focusin_events.html");
 
   web_view->SetFocus(true);
@@ -2890,13 +2891,13 @@ TEST_P(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
   web_view->SetFocus(true);
 
   WebElement element =
-      web_view->MainFrame()->GetDocument().GetElementById("message");
+      web_view->MainFrameImpl()->GetDocument().GetElementById("message");
   EXPECT_STREQ("focusoutfocusin", element.TextContent().Utf8().data());
 }
 
 TEST_P(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
   RegisterMockedHttpURLLoad("domfocusout_domfocusin_events.html");
-  WebView* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "domfocusout_domfocusin_events.html");
 
   web_view->SetFocus(true);
@@ -2904,7 +2905,7 @@ TEST_P(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
   web_view->SetFocus(true);
 
   WebElement element =
-      web_view->MainFrame()->GetDocument().GetElementById("message");
+      web_view->MainFrameImpl()->GetDocument().GetElementById("message");
   EXPECT_STREQ("DOMFocusOutDOMFocusIn", element.TextContent().Utf8().data());
 }
 
@@ -3011,7 +3012,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
 
 TEST_P(WebViewTest, DispatchesFocusBlurOnViewToggle) {
   RegisterMockedHttpURLLoad("focus_blur_events.html");
-  WebView* web_view =
+  WebViewBase* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "focus_blur_events.html");
 
   web_view->SetFocus(true);
@@ -3019,7 +3020,7 @@ TEST_P(WebViewTest, DispatchesFocusBlurOnViewToggle) {
   web_view->SetFocus(true);
 
   WebElement element =
-      web_view->MainFrame()->GetDocument().GetElementById("message");
+      web_view->MainFrameImpl()->GetDocument().GetElementById("message");
   // Expect not to see duplication of events.
   EXPECT_STREQ("blurfocus", element.TextContent().Utf8().data());
 }
@@ -3605,9 +3606,9 @@ TEST_P(WebViewTest, PreferredSizeDirtyLayout) {
   std::string url = base_url_ + "specify_size.html?100px:100px";
   URLTestHelpers::RegisterMockedURLLoad(
       ToKURL(url), testing::WebTestDataPath("specify_size.html"));
-  WebView* web_view = web_view_helper_.InitializeAndLoad(url);
+  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(url);
   WebElement document_element =
-      web_view->MainFrame()->GetDocument().DocumentElement();
+      web_view->MainFrameImpl()->GetDocument().DocumentElement();
 
   WebSize size = web_view->ContentsPreferredMinimumSize();
   EXPECT_EQ(100, size.width);
@@ -3655,8 +3656,8 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeeded) {
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad(test_file);
   UnhandledTapWebViewClient client;
-  WebView* web_view = web_view_helper_.InitializeAndLoad(base_url_ + test_file,
-                                                         nullptr, &client);
+  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + test_file, nullptr, &client);
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
   RunPendingTasks();
@@ -3682,7 +3683,7 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeeded) {
   EXPECT_TRUE(client.GetWebNode().IsTextNode());
   // Make sure the returned text node has the parent element that was our
   // target.
-  EXPECT_EQ(web_view->MainFrame()->GetDocument().GetElementById("target"),
+  EXPECT_EQ(web_view->MainFrameImpl()->GetDocument().GetElementById("target"),
             client.GetWebNode().ParentNode());
 
   // Test correct conversion of coordinates to viewport space under pinch-zoom.

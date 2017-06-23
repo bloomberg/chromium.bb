@@ -29,7 +29,7 @@
 #include "third_party/WebKit/public/platform/WebRTCStatsResponse.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebRTCAnswerOptions;
 class WebRTCDataChannelHandler;
 class WebRTCLegacyStats;
@@ -102,7 +102,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Destroy all existing RTCPeerConnectionHandler objects.
   static void DestructAllHandlers();
 
-  void associateWithFrame(blink::WebFrame* frame);
+  void associateWithFrame(blink::WebLocalFrame* frame);
 
   // Initialize method only used for unit test.
   bool InitializeForTest(
@@ -252,7 +252,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // RenderThreadImpl.
   PeerConnectionDependencyFactory* const dependency_factory_;
 
-  blink::WebFrame* frame_ = nullptr;
+  blink::WebLocalFrame* frame_ = nullptr;
 
   // Map and owners of track adapters. Every track that is in use by the peer
   // connection has an associated blink and webrtc layer representation of it.

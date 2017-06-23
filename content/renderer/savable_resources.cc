@@ -37,10 +37,10 @@ namespace {
 
 // Returns |true| if |web_frame| contains (or should be assumed to contain)
 // a html document.
-bool DoesFrameContainHtmlDocument(const WebFrame& web_frame,
+bool DoesFrameContainHtmlDocument(WebFrame* web_frame,
                                   const WebElement& element) {
-  if (web_frame.IsWebLocalFrame()) {
-    WebDocument doc = web_frame.GetDocument();
+  if (web_frame->IsWebLocalFrame()) {
+    WebDocument doc = web_frame->ToWebLocalFrame()->GetDocument();
     return doc.IsHTMLDocument() || doc.IsXHTMLDocument();
   }
 
@@ -68,7 +68,7 @@ void GetSavableResourceLinkForElement(
 
   // See whether to report this element as a subframe.
   WebFrame* web_frame = WebFrame::FromFrameOwnerElement(element);
-  if (web_frame && DoesFrameContainHtmlDocument(*web_frame, element)) {
+  if (web_frame && DoesFrameContainHtmlDocument(web_frame, element)) {
     SavableSubframe subframe;
     subframe.original_url = element_url;
     subframe.routing_id = RenderFrame::GetRoutingIdForWebFrame(web_frame);
@@ -96,7 +96,7 @@ void GetSavableResourceLinkForElement(
 
 }  // namespace
 
-bool GetSavableResourceLinksForFrame(WebFrame* current_frame,
+bool GetSavableResourceLinksForFrame(WebLocalFrame* current_frame,
                                      SavableResourcesResult* result) {
   // Get current frame's URL.
   GURL current_frame_url = current_frame->GetDocument().Url();

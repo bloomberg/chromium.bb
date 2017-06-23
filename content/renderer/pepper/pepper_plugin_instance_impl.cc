@@ -3190,7 +3190,11 @@ void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
 bool PepperPluginInstanceImpl::IsFullPagePlugin() {
   WebLocalFrame* frame = container()->GetDocument().GetFrame();
   return frame->View()->MainFrame()->IsWebLocalFrame() &&
-         frame->View()->MainFrame()->GetDocument().IsPluginDocument();
+         frame->View()
+             ->MainFrame()
+             ->ToWebLocalFrame()
+             ->GetDocument()
+             .IsPluginDocument();
 }
 
 bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
@@ -3319,11 +3323,11 @@ bool PepperPluginInstanceImpl::CanAccessMainFrame() const {
       !containing_document.GetFrame()->View()->MainFrame()) {
     return false;
   }
-  blink::WebDocument main_document =
-      containing_document.GetFrame()->View()->MainFrame()->GetDocument();
+  blink::WebFrame* main_frame =
+      containing_document.GetFrame()->View()->MainFrame();
 
   return containing_document.GetSecurityOrigin().CanAccess(
-      main_document.GetSecurityOrigin());
+      main_frame->GetSecurityOrigin());
 }
 
 void PepperPluginInstanceImpl::KeepSizeAttributesBeforeFullscreen() {

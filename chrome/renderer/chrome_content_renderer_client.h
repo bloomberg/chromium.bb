@@ -159,8 +159,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const base::string16& source) const override;
   bool ShouldGatherSiteIsolationStats() const override;
   std::unique_ptr<blink::WebContentSettingsClient>
-  CreateWorkerContentSettingsClient(content::RenderFrame* render_frame,
-                                    blink::WebFrame* frame) override;
+  CreateWorkerContentSettingsClient(
+      content::RenderFrame* render_frame) override;
   bool AllowPepperMediaStreamAPI(const GURL& url) override;
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)

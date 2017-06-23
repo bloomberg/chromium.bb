@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -61,7 +62,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "third_party/webrtc/api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
@@ -277,14 +278,14 @@ bool PeerConnectionDependencyFactory::PeerConnectionFactoryCreated() {
 scoped_refptr<webrtc::PeerConnectionInterface>
 PeerConnectionDependencyFactory::CreatePeerConnection(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-    blink::WebFrame* web_frame,
+    blink::WebLocalFrame* web_frame,
     webrtc::PeerConnectionObserver* observer) {
   CHECK(web_frame);
   CHECK(observer);
   if (!GetPcFactory().get())
     return NULL;
 
-  // Copy the flag from Preference associated with this WebFrame.
+  // Copy the flag from Preference associated with this WebLocalFrame.
   P2PPortAllocator::Config port_config;
   uint16_t min_port = 0;
   uint16_t max_port = 0;

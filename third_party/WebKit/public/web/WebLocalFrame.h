@@ -32,6 +32,7 @@ class WebData;
 class WebDataSource;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
+class WebDocument;
 class WebDoubleSize;
 class WebDOMEvent;
 class WebFrameClient;
@@ -136,6 +137,8 @@ class WebLocalFrame : public WebFrame {
   // WebIconURL::Type values, used to select from the available set of icon
   // URLs
   virtual WebVector<WebIconURL> IconURLs(int icon_types_mask) const = 0;
+
+  virtual WebDocument GetDocument() const = 0;
 
   // Hierarchy ----------------------------------------------------------
 

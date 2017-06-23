@@ -32,8 +32,10 @@
 
 #include <stdarg.h>
 
+#include <limits>
 #include <map>
 #include <memory>
+#include <set>
 
 #include "SkBitmap.h"
 #include "SkCanvas.h"
@@ -622,7 +624,7 @@ TEST_P(ParameterizedWebFrameTest, FormWithNullFrame) {
   web_view_helper.InitializeAndLoad(base_url_ + "form.html");
 
   WebVector<WebFormElement> forms;
-  web_view_helper.WebView()->MainFrame()->GetDocument().Forms(forms);
+  web_view_helper.WebView()->MainFrameImpl()->GetDocument().Forms(forms);
   web_view_helper.Reset();
 
   EXPECT_EQ(forms.size(), 1U);
@@ -1010,7 +1012,8 @@ TEST_P(ParameterizedWebFrameTest, DispatchMessageEventWithOriginCheck) {
   // Send a message with the correct origin.
   WebSecurityOrigin correct_origin(
       WebSecurityOrigin::Create(ToKURL(base_url_)));
-  WebDocument document = web_view_helper.WebView()->MainFrame()->GetDocument();
+  WebDocument document =
+      web_view_helper.WebView()->MainFrameImpl()->GetDocument();
   WebSerializedScriptValue data(WebSerializedScriptValue::CreateInvalid());
   WebDOMMessageEvent message(data, "http://origin.com");
   web_view_helper.WebView()
@@ -3913,7 +3916,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest) {
   web_view_helper.WebView()->AdvanceFocus(false);
   // Set the caret to the end of the input box.
   web_view_helper.WebView()
-      ->MainFrame()
+      ->MainFrameImpl()
       ->GetDocument()
       .GetElementById("EditBoxWithText")
       .To<WebInputElement>()
@@ -4010,7 +4013,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditablePreservePageScaleTest) {
   web_view_helper.WebView()->AdvanceFocus(false);
   // Set the caret to the begining of the input box.
   web_view_helper.WebView()
-      ->MainFrame()
+      ->MainFrameImpl()
       ->GetDocument()
       .GetElementById("EditBoxWithText")
       .To<WebInputElement>()
@@ -5310,7 +5313,7 @@ static WebPoint BottomRightMinusOne(const WebRect& rect) {
   return WebPoint(rect.x + rect.width - 1, rect.y + rect.height - 1);
 }
 
-static WebRect ElementBounds(WebFrame* frame, const WebString& id) {
+static WebRect ElementBounds(WebLocalFrame* frame, const WebString& id) {
   return frame->GetDocument().GetElementById(id).BoundsInViewport();
 }
 
@@ -6702,9 +6705,8 @@ class StubbornTextCheckClient : public WebTextCheckClient {
   StubbornTextCheckClient() : completion_(0) {}
   virtual ~StubbornTextCheckClient() {}
 
-  virtual void RequestCheckingOfText(
-      const WebString&,
-      WebTextCheckingCompletion* completion) override {
+  void RequestCheckingOfText(const WebString&,
+                             WebTextCheckingCompletion* completion) override {
     completion_ = completion;
   }
 
@@ -7173,7 +7175,7 @@ TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "first_party_redirect.html");
   EXPECT_TRUE(web_view_helper.WebView()
-                  ->MainFrame()
+                  ->MainFrameImpl()
                   ->GetDocument()
                   .FirstPartyForCookies() == redirect_url);
 }
@@ -7216,12 +7218,12 @@ TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick) {
 
 class TestNewWindowWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
-  virtual WebView* CreateView(WebLocalFrame*,
-                              const WebURLRequest&,
-                              const WebWindowFeatures&,
-                              const WebString&,
-                              WebNavigationPolicy,
-                              bool) override {
+  WebView* CreateView(WebLocalFrame*,
+                      const WebURLRequest&,
+                      const WebWindowFeatures&,
+                      const WebString&,
+                      WebNavigationPolicy,
+                      bool) override {
     EXPECT_TRUE(false);
     return 0;
   }
@@ -7700,8 +7702,8 @@ TEST_P(ParameterizedWebFrameTest, FirstBlankSubframeNavigation) {
   frame->ExecuteScript(WebScriptSource(WebString::FromUTF8(
       "document.body.appendChild(document.createElement('iframe'))")));
 
-  WebLocalFrame* iframe = frame->FirstChild()->ToWebLocalFrame();
-  ASSERT_EQ(&client.ChildClient(), ToWebLocalFrameBase(iframe)->Client());
+  WebLocalFrameBase* iframe = ToWebLocalFrameBase(frame->FirstChild());
+  ASSERT_EQ(&client.ChildClient(), iframe->Client());
 
   std::string url1 = base_url_ + "history.html";
   FrameTestHelpers::LoadFrame(iframe, url1);
@@ -9454,8 +9456,7 @@ TEST_F(WebFrameTest, SwapWithOpenerCycle) {
 
 class CommitTypeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
-  explicit CommitTypeWebFrameClient()
-      : history_commit_type_(kWebHistoryInertCommit) {}
+  CommitTypeWebFrameClient() : history_commit_type_(kWebHistoryInertCommit) {}
 
   void DidCommitProvisionalLoad(
       const WebHistoryItem&,
@@ -10528,7 +10529,7 @@ TEST_F(WebFrameTest, CopyImageAt) {
           ->ReadRawImage(WebClipboard::Buffer());
 
   EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.GetSkBitmap().getColor(0, 0));
-};
+}
 
 TEST_F(WebFrameTest, CopyImageAtWithPinchZoom) {
   std::string url = base_url_ + "canvas-copy-image.html";
@@ -10555,7 +10556,7 @@ TEST_F(WebFrameTest, CopyImageAtWithPinchZoom) {
           ->ReadRawImage(WebClipboard::Buffer());
 
   EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.GetSkBitmap().getColor(0, 0));
-};
+}
 
 TEST_F(WebFrameTest, CopyImageWithImageMap) {
   SaveImageFromDataURLWebFrameClient client;
@@ -11856,7 +11857,7 @@ TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
 
 class ContextMenuWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
-  ContextMenuWebFrameClient(){};
+  ContextMenuWebFrameClient() {}
   // WebFrameClient methods
   void ShowContextMenu(const WebContextMenuData& data) override {
     menu_data_ = data;
@@ -11947,7 +11948,7 @@ TEST_F(WebFrameTest, LocalFrameWithRemoteParentIsTransparent) {
 
 class TestFallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
-  explicit TestFallbackWebFrameClient() : child_client_(nullptr) {}
+  TestFallbackWebFrameClient() : child_client_(nullptr) {}
 
   void SetChildWebFrameClient(TestFallbackWebFrameClient* client) {
     child_client_ = client;

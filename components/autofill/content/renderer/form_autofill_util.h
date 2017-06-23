@@ -25,8 +25,8 @@ class WebDocument;
 class WebElement;
 class WebFormControlElement;
 class WebFormElement;
-class WebFrame;
 class WebInputElement;
+class WebLocalFrame;
 class WebNode;
 }
 
@@ -87,7 +87,7 @@ bool ExtractFormData(const blink::WebFormElement& form_element, FormData* data);
 // equals |form_element|. If |form_element| is null, checks if forms action
 // equals |action|. Returns true if so. For forms with empty or unspecified
 // actions, all form data are used for comparison.
-bool IsFormVisible(blink::WebFrame* frame,
+bool IsFormVisible(blink::WebLocalFrame* frame,
                    const blink::WebFormElement& form_element,
                    const GURL& action,
                    const GURL& origin,
@@ -255,7 +255,7 @@ bool ClearPreviewedFormWithElement(const blink::WebFormControlElement& element,
 //    <body/>
 // <html/>
 // Meta, script and title tags don't influence the emptiness of a webpage.
-bool IsWebpageEmpty(const blink::WebFrame* frame);
+bool IsWebpageEmpty(const blink::WebLocalFrame* frame);
 
 // This function checks whether the children of |element|
 // are of the type <script>, <meta>, or <title>.

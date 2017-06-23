@@ -131,7 +131,7 @@ void ScriptContextSet::AddForTesting(std::unique_ptr<ScriptContext> context) {
 }
 
 const Extension* ScriptContextSet::GetExtensionFromFrameAndWorld(
-    const blink::WebLocalFrame* frame,
+    blink::WebLocalFrame* frame,
     int world_id,
     bool use_effective_url) {
   std::string extension_id;

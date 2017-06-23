@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 #include <unordered_set>
 
 #include "base/compiler_specific.h"
@@ -108,7 +109,7 @@ SafeBrowsingHostMsg_ThreatDOMDetails_Node* GetNodeForElement(
     const blink::WebNode& element,
     const safe_browsing::ElementToNodeMap& element_to_node_map,
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources) {
-  DCHECK(element_to_node_map.count(element) > 0);
+  DCHECK_GT(element_to_node_map.count(element), 0u);
   size_t resource_index = element_to_node_map.at(element);
   return &(resources->at(resource_index));
 }
@@ -280,7 +281,7 @@ void ThreatDOMDetails::OnGetThreatDOMDetails() {
 
 void ThreatDOMDetails::ExtractResources(
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources) {
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame)
     return;
   SafeBrowsingHostMsg_ThreatDOMDetails_Node details_node;

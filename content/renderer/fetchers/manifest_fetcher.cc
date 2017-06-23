@@ -9,7 +9,7 @@
 #include "content/public/renderer/associated_resource_fetcher.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoaderOptions.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
@@ -23,7 +23,7 @@ ManifestFetcher::~ManifestFetcher() {
     Cancel();
 }
 
-void ManifestFetcher::Start(blink::WebFrame* frame,
+void ManifestFetcher::Start(blink::WebLocalFrame* frame,
                             bool use_credentials,
                             const Callback& callback) {
   callback_ = callback;
@@ -57,4 +57,4 @@ void ManifestFetcher::OnLoadComplete(const blink::WebURLResponse& response,
   callback.Run(response, data);
 }
 
-} // namespace content
+}  // namespace content

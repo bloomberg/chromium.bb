@@ -54,7 +54,7 @@ GURL GetOriginOrURL(const WebFrame* frame) {
   // WebRemoteFrame which does not have a document(), and the WebRemoteFrame's
   // URL is not replicated.  See https://crbug.com/628759.
   if (top_origin.unique() && frame->Top()->IsWebLocalFrame())
-    return frame->Top()->GetDocument().Url();
+    return frame->Top()->ToWebLocalFrame()->GetDocument().Url();
   return top_origin.GetURL();
 }
 
@@ -182,7 +182,7 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
 void ContentSettingsObserver::DidCommitProvisionalLoad(
     bool is_new_navigation,
     bool is_same_document_navigation) {
-  WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (frame->Parent())
     return;  // Not a top-level navigation.
 
@@ -307,7 +307,7 @@ bool ContentSettingsObserver::AllowScript(bool enabled_per_settings) {
   if (is_interstitial_page_)
     return true;
 
-  WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const auto it = cached_script_permissions_.find(frame);
   if (it != cached_script_permissions_.end())
     return it->second;
@@ -347,7 +347,7 @@ bool ContentSettingsObserver::AllowScriptFromSource(
 }
 
 bool ContentSettingsObserver::AllowStorage(bool local) {
-  WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (frame->GetSecurityOrigin().IsUnique() ||
       frame->Top()->GetSecurityOrigin().IsUnique())
     return false;
@@ -423,7 +423,7 @@ bool ContentSettingsObserver::AllowAutoplay(bool default_value) {
   if (!content_setting_rules_)
     return default_value;
 
-  WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   return GetContentSettingFromRules(
              content_setting_rules_->autoplay_rules, frame,
              url::Origin(frame->GetDocument().GetSecurityOrigin()).GetURL()) ==
@@ -480,7 +480,7 @@ void ContentSettingsObserver::ClearBlockedContentSettings() {
 
 bool ContentSettingsObserver::IsPlatformApp() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   WebSecurityOrigin origin = frame->GetDocument().GetSecurityOrigin();
   const extensions::Extension* extension = GetExtension(origin);
   return extension && extension->is_platform_app();

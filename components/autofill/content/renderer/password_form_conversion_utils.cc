@@ -29,15 +29,15 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/re2/src/re2/re2.h"
 
 using blink::WebDocument;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
-using blink::WebFrame;
 using blink::WebInputElement;
+using blink::WebLocalFrame;
 using blink::WebString;
 
 namespace autofill {
@@ -711,7 +711,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
 }
 
 std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
-    const WebFrame& frame,
+    const WebLocalFrame& frame,
     const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     const FormsPredictionsMap* form_predictions) {
   SyntheticForm synthetic_form;

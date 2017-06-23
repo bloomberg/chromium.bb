@@ -298,11 +298,17 @@ void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
 
 void TestRunnerForSpecificView::GetManifestThen(
     v8::Local<v8::Function> callback) {
+  if (!web_view()->MainFrame()->IsWebLocalFrame()) {
+    CHECK(false) << "This function cannot be called if the main frame is not a "
+                    "local frame.";
+  }
+
   v8::UniquePersistent<v8::Function> persistent_callback(
       blink::MainThreadIsolate(), callback);
 
   delegate()->FetchManifest(
-      web_view(), web_view()->MainFrame()->GetDocument().ManifestURL(),
+      web_view(),
+      web_view()->MainFrame()->ToWebLocalFrame()->GetDocument().ManifestURL(),
       base::Bind(&TestRunnerForSpecificView::GetManifestCallback,
                  weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(persistent_callback))));

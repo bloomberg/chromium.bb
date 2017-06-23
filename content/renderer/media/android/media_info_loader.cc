@@ -13,11 +13,11 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 using blink::WebAssociatedURLLoader;
 using blink::WebAssociatedURLLoaderOptions;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebURLError;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
@@ -40,7 +40,7 @@ MediaInfoLoader::MediaInfoLoader(
 
 MediaInfoLoader::~MediaInfoLoader() {}
 
-void MediaInfoLoader::Start(blink::WebFrame* frame) {
+void MediaInfoLoader::Start(blink::WebLocalFrame* frame) {
   // Make sure we have not started.
   DCHECK(!ready_cb_.is_null());
   CHECK(frame);

@@ -16,7 +16,7 @@
 
 namespace blink {
 class WebElement;
-class WebFrame;
+class WebLocalFrame;
 class WebString;
 }
 
@@ -45,11 +45,11 @@ struct SavableResourcesResult {
   DISALLOW_COPY_AND_ASSIGN(SavableResourcesResult);
 };
 
-// Get all savable resource links from specified webframe.
+// Get all the savable resource links from the specified |frame|.
 // Returns true if the saved resources links have been saved successfully.
 // Otherwise returns false (i.e. if the frame contains a non-savable content).
 CONTENT_EXPORT bool GetSavableResourceLinksForFrame(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     SavableResourcesResult* result);
 
 // Returns the value in an elements resource url attribute. For IMG, SCRIPT or

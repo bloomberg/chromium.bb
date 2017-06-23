@@ -4,6 +4,8 @@
 
 #include "core/frame/VisualViewport.h"
 
+#include <memory>
+
 #include "core/dom/Document.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/FrameTestHelpers.h"
@@ -1876,7 +1878,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   WebViewImpl()->Resize(IntSize(500, 500));
   WebViewImpl()->UpdateAllLifecyclePhases();
 
-  WebDocument web_doc = WebViewImpl()->MainFrame()->GetDocument();
+  WebDocument web_doc = WebViewImpl()->MainFrameImpl()->GetDocument();
   LocalFrameView& frame_view = *WebViewImpl()->MainFrameImpl()->GetFrameView();
 
   WebViewImpl()->SetPageScaleFactor(2);

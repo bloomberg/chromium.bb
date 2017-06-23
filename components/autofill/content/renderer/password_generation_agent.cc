@@ -591,7 +591,7 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
     password_form = CreatePasswordFormFromWebForm(form, nullptr, nullptr);
     control_elements = form_util::ExtractAutofillableElementsInForm(form);
   } else {
-    const blink::WebFrame& frame = *render_frame()->GetWebFrame();
+    const blink::WebLocalFrame& frame = *render_frame()->GetWebFrame();
     blink::WebDocument doc = frame.GetDocument();
     if (doc.IsNull())
       return;

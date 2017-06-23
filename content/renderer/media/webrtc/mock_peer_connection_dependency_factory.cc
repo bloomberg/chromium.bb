@@ -329,7 +329,7 @@ MockPeerConnectionDependencyFactory::~MockPeerConnectionDependencyFactory() {}
 scoped_refptr<webrtc::PeerConnectionInterface>
 MockPeerConnectionDependencyFactory::CreatePeerConnection(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     webrtc::PeerConnectionObserver* observer) {
   return new rtc::RefCountedObject<MockPeerConnectionImpl>(this, observer);
 }

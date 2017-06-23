@@ -19,7 +19,7 @@
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebMediaConstraints;
 class WebRTCAnswerOptions;
 class WebRTCICECandidate;
@@ -68,18 +68,18 @@ class CONTENT_EXPORT PeerConnectionTracker
   // UnregisterPeerConnection, otherwise the Track* call has no effect.
   //
 
-  // Sends an update when a PeerConnection has been created in Javascript.
-  // This should be called once and only once for each PeerConnection.
-  // The |pc_handler| is the handler object associated with the PeerConnection,
-  // the |servers| are the server configurations used to establish the
-  // connection, the |constraints| are the media constraints used to initialize
-  // the PeerConnection, the |frame| is the WebFrame object representing the
+  // Sends an update when a PeerConnection has been created in Javascript.  This
+  // should be called once and only once for each PeerConnection.  The
+  // |pc_handler| is the handler object associated with the PeerConnection, the
+  // |servers| are the server configurations used to establish the connection,
+  // the |constraints| are the media constraints used to initialize the
+  // PeerConnection, the |frame| is the WebLocalFrame object representing the
   // page in which the PeerConnection is created.
   void RegisterPeerConnection(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       const blink::WebMediaConstraints& constraints,
-      const blink::WebFrame* frame);
+      const blink::WebLocalFrame* frame);
 
   // Sends an update when a PeerConnection has been destroyed.
   virtual void UnregisterPeerConnection(RTCPeerConnectionHandler* pc_handler);

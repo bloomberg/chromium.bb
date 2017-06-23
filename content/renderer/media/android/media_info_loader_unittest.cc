@@ -66,7 +66,7 @@ class MediaInfoLoaderTest : public testing::Test {
   void Start() {
     InSequence s;
     EXPECT_CALL(*url_loader_, LoadAsynchronously(_, _));
-    loader_->Start(view_->MainFrame());
+    loader_->Start(view_->MainFrame()->ToWebLocalFrame());
   }
 
   void Stop() {

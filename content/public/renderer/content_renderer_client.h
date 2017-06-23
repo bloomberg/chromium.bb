@@ -292,8 +292,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Creates a permission client for in-renderer worker.
   virtual std::unique_ptr<blink::WebContentSettingsClient>
-  CreateWorkerContentSettingsClient(RenderFrame* render_frame,
-                                    blink::WebFrame* frame);
+  CreateWorkerContentSettingsClient(RenderFrame* render_frame);
 
   // Returns true if the page at |url| can use Pepper CameraDevice APIs.
   virtual bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url);

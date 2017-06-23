@@ -15,7 +15,7 @@
 class GURL;
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebURLResponse;
 struct WebAssociatedURLLoaderOptions;
 }
@@ -53,7 +53,7 @@ class CONTENT_EXPORT AssociatedResourceFetcher {
 
   // Starts the request using the specified frame.  Calls |callback| when
   // done.
-  virtual void Start(blink::WebFrame* frame,
+  virtual void Start(blink::WebLocalFrame* frame,
                      blink::WebURLRequest::RequestContext request_context,
                      blink::WebURLRequest::FrameType frame_type,
                      const Callback& callback) = 0;

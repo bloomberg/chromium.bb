@@ -12,7 +12,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 struct WebApplicationInfo;
@@ -30,7 +30,7 @@ bool ParseIconSizes(const base::string16& text, std::vector<gfx::Size>* sizes,
 // Parses |app_info| information out of the document in WebFrame. Note that the
 // document may contain no web application information, in which case |app_info|
 // is unchanged.
-void ParseWebAppFromWebDocument(blink::WebFrame* frame,
+void ParseWebAppFromWebDocument(blink::WebLocalFrame* frame,
                                 WebApplicationInfo* app_info);
 
 }  // namespace web_apps

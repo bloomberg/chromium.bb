@@ -1559,16 +1559,6 @@ WebAXObject WebAXObject::FromWebNode(const WebNode& web_node) {
 }
 
 // static
-WebAXObject WebAXObject::FromWebView(WebView& web_view) {
-  auto main_frame = web_view.MainFrame();
-  if (!main_frame)
-    return WebAXObject();
-
-  Document* document = main_frame->GetDocument();
-  return WebAXObject(ToAXObjectCacheImpl(document->AxObjectCache())->Root());
-}
-
-// static
 WebAXObject WebAXObject::FromWebDocument(const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
   AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
