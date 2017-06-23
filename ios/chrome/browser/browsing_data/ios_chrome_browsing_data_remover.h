@@ -48,9 +48,8 @@ class IOSChromeBrowsingDataRemover {
     REMOVE_PASSWORDS = 1 << 8,
     REMOVE_WEBSQL = 1 << 9,
     REMOVE_CHANNEL_IDS = 1 << 10,
-    REMOVE_GOOGLE_APP_LAUNCHER_DATA = 1 << 11,
-    REMOVE_CACHE_STORAGE = 1 << 12,
-    REMOVE_VISITED_LINKS = 1 << 13,
+    REMOVE_CACHE_STORAGE = 1 << 11,
+    REMOVE_VISITED_LINKS = 1 << 12,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
     // storage, webSQL, service workers, cache storage, plugin data, and web app
