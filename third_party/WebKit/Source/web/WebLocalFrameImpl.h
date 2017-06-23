@@ -485,7 +485,7 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   // This is set if the frame is the root of a local frame tree, and requires a
   // widget for layout.
-  WebFrameWidgetBase* frame_widget_;
+  Member<WebFrameWidgetBase> frame_widget_;
 
   WebFrameClient* client_;
   WebAutofillClient* autofill_client_;

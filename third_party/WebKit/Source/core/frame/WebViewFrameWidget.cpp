@@ -13,7 +13,10 @@ namespace blink {
 WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
                                        WebViewBase& web_view,
                                        WebLocalFrameBase& main_frame)
-    : client_(&client), web_view_(&web_view), main_frame_(&main_frame) {
+    : client_(&client),
+      web_view_(&web_view),
+      main_frame_(&main_frame),
+      self_keep_alive_(this) {
   main_frame_->SetFrameWidget(this);
   web_view_->SetCompositorVisibility(true);
 }
@@ -33,8 +36,7 @@ void WebViewFrameWidget::Close() {
 
   // Note: this intentionally does not forward to WebView::close(), to make it
   // easier to untangle the cleanup logic later.
-
-  delete this;
+  self_keep_alive_.Clear();
 }
 
 WebSize WebViewFrameWidget::Size() {
@@ -251,6 +253,11 @@ CompositorAnimationHost* WebViewFrameWidget::AnimationHost() const {
 
 HitTestResult WebViewFrameWidget::CoreHitTestResultAt(const WebPoint& point) {
   return web_view_->CoreHitTestResultAt(point);
+}
+
+DEFINE_TRACE(WebViewFrameWidget) {
+  visitor->Trace(main_frame_);
+  WebFrameWidgetBase::Trace(visitor);
 }
 
 }  // namespace blink
