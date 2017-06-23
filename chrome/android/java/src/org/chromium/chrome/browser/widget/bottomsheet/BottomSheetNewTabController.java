@@ -166,8 +166,6 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
 
         mIsShowingNewTabUi = false;
 
-        showTabSwitcherToolbarIfNecessary();
-
         if (mLayoutManager.overviewVisible()
                 && mTabModelSelector.isIncognitoSelected() != mSelectIncognitoModelOnClose
                 && (!mSelectIncognitoModelOnClose
@@ -178,16 +176,22 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
             mBottomSheet.endTransitionAnimations();
         }
 
+        mHideOverviewOnClose = mHideOverviewOnClose
+                && mTabModelSelector.getCurrentModel().getCount() > 0
+                && mLayoutManager.overviewVisible();
+
         mTabModelSelector.getModel(false).setIsPendingTabAdd(false);
         mTabModelSelector.getModel(true).setIsPendingTabAdd(false);
 
         // Hide the overview after setting pendingTabAdd to false so that the StackLayout animation
         // knows which tab index is being selected and animates the tab stacks correctly.
-        if (mLayoutManager.overviewVisible() && mHideOverviewOnClose) {
+        if (mHideOverviewOnClose) {
             // TODO(twellington): Ideally we would start hiding the overview sooner. Modifications
             // are needed for the StackLayout to know which tab will be selected before the sheet is
             // closed so that it can animate properly.
             mLayoutManager.hideOverview(true);
+        } else {
+            showTabSwitcherToolbarIfNecessary();
         }
 
         mHideOverviewOnClose = false;
