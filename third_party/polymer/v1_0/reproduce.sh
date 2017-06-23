@@ -32,7 +32,7 @@ pushd "$(dirname "$0")" > /dev/null
 rm -rf components
 rm -rf ../../web-animations-js/sources
 
-bower install --no-color
+bower install --no-color --production
 
 rm components/*/.travis.yml
 

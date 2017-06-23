@@ -220,12 +220,6 @@ Tree: v1.0.10
 Revision: 34c1d82dc3048dff33c83047bfaa95414e36d673
 Tree link: https://github.com/PolymerElements/paper-drawer-panel/tree/v1.0.10
 
-Name: paper-dropdown-menu
-Repository: https://github.com/PolymerElements/paper-dropdown-menu.git
-Tree: v1.4.1
-Revision: d4178271f56b2237870e5761d3717ee6d99b3ab4
-Tree link: https://github.com/PolymerElements/paper-dropdown-menu/tree/v1.4.1
-
 Name: paper-fab
 Repository: https://github.com/PolymerElements/paper-fab.git
 Tree: v1.2.0
@@ -273,12 +267,6 @@ Repository: https://github.com/PolymerElements/paper-menu.git
 Tree: v1.3.0
 Revision: 7ca8ebfbdcca22fc98e5115c0ed72bf9d05848fe
 Tree link: https://github.com/PolymerElements/paper-menu/tree/v1.3.0
-
-Name: paper-menu-button
-Repository: https://github.com/PolymerElements/paper-menu-button.git
-Tree: v1.5.2
-Revision: 0f43421bc76ca863b16b82b8e4c67efb0267b818
-Tree link: https://github.com/PolymerElements/paper-menu-button/tree/v1.5.2
 
 Name: paper-progress
 Repository: https://github.com/PolymerElements/paper-progress.git
