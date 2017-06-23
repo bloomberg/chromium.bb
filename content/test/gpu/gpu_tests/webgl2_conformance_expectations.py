@@ -41,6 +41,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
     # All platforms.
+
+    # Remove the following when the test update is rolled into Chromium:
+    # https://github.com/KhronosGroup/WebGL/pull/2424/files
+    self.Fail('conformance2/rendering/instanced-arrays.html', bug=736070)
+    self.Fail('deqp/functional/gles3/negativevertexarrayapi.html', bug=736070)
+    # When remove the above entry, please uncomment the one for Mac NVidia.
+
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
@@ -416,8 +423,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    #self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
+    #    ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/shaderindexing/varying.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +

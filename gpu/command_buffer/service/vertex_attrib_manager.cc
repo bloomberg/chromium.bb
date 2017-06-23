@@ -272,11 +272,14 @@ bool VertexAttribManager::ValidateBindings(
     }
   }
 
-  // Instanced drawing needs at least one enabled attribute with divisor zero.
+  // Due to D3D9 limitation, in ES2/WebGL1, instanced drawing needs at least
+  // one enabled attribute with divisor zero. This does not apply to D3D11,
+  // therefore, it also does not apply to ES3/WebGL2.
   // Non-instanced drawing is fine with having no attributes at all, but if
   // there are attributes, at least one should have divisor zero.
   // (See ANGLE_instanced_arrays spec)
-  if (!divisor0 && (instanced || have_enabled_active_attribs)) {
+  if (feature_info->IsWebGL1OrES2Context() && !divisor0 &&
+      (instanced || have_enabled_active_attribs)) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION, function_name,
         "attempt to draw with all attributes having non-zero divisors");
