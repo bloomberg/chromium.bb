@@ -48,7 +48,6 @@
 #include "chrome/browser/extensions/install_verifier_factory.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/plugin_manager.h"
-#include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "chrome/browser/extensions/warning_badge_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
@@ -142,7 +141,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_CHROMEOS)
   file_manager::EventRouterFactory::GetInstance();
 #endif
-  TokenCacheServiceFactory::GetInstance();
   ToolbarActionsModelFactory::GetInstance();
   extensions::ExtensionGCMAppHandler::GetFactoryInstance();
 }
