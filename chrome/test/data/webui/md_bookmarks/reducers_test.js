@@ -106,16 +106,16 @@ suite('selection state', function() {
   });
 
   test('deselects items when they are deleted', function() {
-    var nodeMap = testTree(createFolder('0', [
-      createFolder(
-          '1',
-          [
-            createItem('2'),
-            createItem('3'),
-            createItem('4'),
-          ]),
-      createItem('5'),
-    ]));
+    var nodeMap = testTree(
+        createFolder(
+            '1',
+            [
+              createItem('2'),
+              createItem('3'),
+              createItem('4'),
+            ]),
+        createItem('5'),
+    );
 
     action = select(['2', '4', '5'], '4', true, false);
     selection = bookmarks.SelectionState.updateSelection(selection, action);
@@ -124,6 +124,24 @@ suite('selection state', function() {
     selection = bookmarks.SelectionState.updateSelection(selection, action);
 
     assertDeepEquals(['5'], normalizeSet(selection.items));
+    assertEquals(null, selection.anchor);
+  });
+
+  test('deselects items when they are moved to a different folder', function() {
+    var nodeMap = testTree(
+        createFolder('1', []),
+        createItem('2'),
+        createItem('3'),
+    );
+
+    action = select(['2', '3'], '2', true, false);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+
+    // Move item '2' from the 1st item in '0' to the 0th item in '1'.
+    action = bookmarks.actions.moveBookmark('2', '1', 0, '0', 1);
+    selection = bookmarks.SelectionState.updateSelection(selection, action);
+
+    assertDeepEquals(['3'], normalizeSet(selection.items));
     assertEquals(null, selection.anchor);
   });
 });
