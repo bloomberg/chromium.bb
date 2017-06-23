@@ -439,12 +439,6 @@ class PLATFORM_EXPORT TransformationMatrix {
     return result;
   }
 
-  bool IsFlat() const {
-    return matrix_[0][2] == 0.f && matrix_[1][2] == 0.f &&
-           matrix_[2][0] == 0.f && matrix_[2][1] == 0.f &&
-           matrix_[2][2] == 1.f && matrix_[2][3] == 0.f && matrix_[3][2] == 0.f;
-  }
-
   bool IsIdentityOrTranslation() const {
     return matrix_[0][0] == 1 && matrix_[0][1] == 0 && matrix_[0][2] == 0 &&
            matrix_[0][3] == 0 && matrix_[1][0] == 0 && matrix_[1][1] == 1 &&

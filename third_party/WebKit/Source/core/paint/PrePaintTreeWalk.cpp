@@ -140,7 +140,7 @@ LayoutRect PrePaintTreeWalk::ComputeClipRectForContext(
   PropertyTreeState local_state(context.transform, context.clip, effect);
 
   const auto& clip_rect =
-      GeometryMapper::LocalToAncestorClipRect(local_state, ancestor_state);
+      GeometryMapper::SourceToDestinationClipRect(local_state, ancestor_state);
   // HasRadius() is ignored because it doesn't affect descendants' visual rects.
   LayoutRect result(clip_rect.Rect());
   if (!clip_rect.IsInfinite())
