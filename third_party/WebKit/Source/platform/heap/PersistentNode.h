@@ -202,14 +202,27 @@ class CrossThreadPersistentRegion final {
     STACK_ALLOCATED();
 
    public:
-    LockScope(CrossThreadPersistentRegion& persistent_region)
-        : persistent_region_(persistent_region) {
-      persistent_region_.lock();
+    LockScope(CrossThreadPersistentRegion& persistent_region,
+              bool try_lock = false)
+        : persistent_region_(persistent_region), locked_(true) {
+      if (try_lock)
+        locked_ = persistent_region_.TryLock();
+      else
+        persistent_region_.lock();
     }
-    ~LockScope() { persistent_region_.unlock(); }
+    ~LockScope() {
+      if (locked_)
+        persistent_region_.unlock();
+    }
+
+    // If the lock scope is set up with |try_lock| set to |true|, caller/user
+    // is responsible for checking whether the GC lock was taken via
+    // |HasLock()|.
+    bool HasLock() const { return locked_; }
 
    private:
     CrossThreadPersistentRegion& persistent_region_;
+    bool locked_;
   };
 
   void TracePersistentNodes(Visitor* visitor) {
@@ -236,6 +249,8 @@ class CrossThreadPersistentRegion final {
   void lock() { mutex_.lock(); }
 
   void unlock() { mutex_.unlock(); }
+
+  bool TryLock() { return mutex_.TryLock(); }
 
   // We don't make CrossThreadPersistentRegion inherit from PersistentRegion
   // because we don't want to virtualize performance-sensitive methods
