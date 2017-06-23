@@ -69,7 +69,6 @@
 #include "core/layout/LayoutMedia.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
-#include "core/loader/FrameLoader.h"
 #include "core/page/ChromeClient.h"
 #include "platform/Histogram.h"
 #include "platform/LayoutTestSupport.h"
@@ -528,7 +527,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
   LocalFrame* frame = document.GetFrame();
   if (frame) {
     remote_playback_client_ =
-        frame->Loader().Client()->CreateWebRemotePlaybackClient(*this);
+        frame->Client()->CreateWebRemotePlaybackClient(*this);
   }
 
   SetHasCustomStyleCallbacks();
@@ -1252,7 +1251,7 @@ void HTMLMediaElement::StartPlayerLoad() {
   }
 
   web_media_player_ =
-      frame->Loader().Client()->CreateWebMediaPlayer(*this, source, this);
+      frame->Client()->CreateWebMediaPlayer(*this, source, this);
   if (!web_media_player_) {
     MediaLoadingFailed(WebMediaPlayer::kNetworkStateFormatError,
                        BuildElementErrorMessage(
