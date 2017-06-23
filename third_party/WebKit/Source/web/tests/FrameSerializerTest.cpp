@@ -118,7 +118,7 @@ class FrameSerializerTest : public ::testing::Test,
     FrameTestHelpers::LoadFrame(helper_.WebView()->MainFrameImpl(),
                                 KURL(base_url_, url).GetString().Utf8().data());
     FrameSerializer serializer(resources_, *this);
-    Frame* frame = helper_.WebView()->MainFrameImpl()->GetFrame();
+    Frame* frame = helper_.LocalMainFrame()->GetFrame();
     for (; frame; frame = frame->Tree().TraverseNext()) {
       // This is safe, because tests do not do cross-site navigation
       // (and therefore don't have remote frames).

@@ -60,7 +60,7 @@ Document* WebDocumentTest::TopDocument() const {
 }
 
 WebDocument WebDocumentTest::TopWebDocument() const {
-  return web_view_helper_.WebView()->MainFrameImpl()->GetDocument();
+  return web_view_helper_.LocalMainFrame()->GetDocument();
 }
 
 TEST_F(WebDocumentTest, InsertAndRemoveStyleSheet) {

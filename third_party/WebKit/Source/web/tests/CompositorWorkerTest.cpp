@@ -91,9 +91,7 @@ class CompositorWorkerTest
   }
 
   WebViewBase* GetWebView() const { return helper_.WebView(); }
-  LocalFrame* GetFrame() const {
-    return helper_.WebView()->MainFrameImpl()->GetFrame();
-  }
+  LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
  protected:
   String base_url_;

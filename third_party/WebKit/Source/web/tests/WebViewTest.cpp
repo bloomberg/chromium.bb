@@ -493,8 +493,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
 
   // Paint the root of the main frame in the way that CompositedLayerMapping
   // would.
-  LocalFrameView* view =
-      web_view_helper_.WebView()->MainFrameImpl()->GetFrameView();
+  LocalFrameView* view = web_view_helper_.LocalMainFrame()->GetFrameView();
   PaintLayer* root_layer = view->GetLayoutViewItem().Layer();
   LayoutRect paint_rect(0, 0, kWidth, kHeight);
   PaintLayerPaintingInfo painting_info(root_layer, paint_rect,
@@ -2011,8 +2010,7 @@ bool WebViewTest::TapElementById(WebInputEvent::Type type,
                                  const WebString& id) {
   DCHECK(web_view_helper_.WebView());
   Element* element = static_cast<Element*>(
-      web_view_helper_.WebView()->MainFrameImpl()->GetDocument().GetElementById(
-          id));
+      web_view_helper_.LocalMainFrame()->GetDocument().GetElementById(id));
   return TapElement(type, element);
 }
 
@@ -3192,7 +3190,7 @@ TEST_P(WebViewTest, AddFrameInCloseURLUnload) {
   RegisterMockedHttpURLLoad("add_frame_in_unload.html");
   web_view_helper_.InitializeAndLoad(base_url_ + "add_frame_in_unload.html",
                                      &frame_client);
-  web_view_helper_.WebView()->MainFrameImpl()->DispatchUnloadEvent();
+  web_view_helper_.LocalMainFrame()->DispatchUnloadEvent();
   EXPECT_EQ(0, frame_client.Count());
   web_view_helper_.Reset();
 }
@@ -3556,7 +3554,7 @@ TEST_P(WebViewTest, AutoResizeSubtreeLayout) {
   LoadFrame(web_view->MainFrameImpl(), url);
 
   LocalFrameView* frame_view =
-      web_view_helper_.WebView()->MainFrameImpl()->GetFrameView();
+      web_view_helper_.LocalMainFrame()->GetFrameView();
 
   // Auto-resizing used to DCHECK(needsLayout()) in LayoutBlockFlow::layout.
   // This EXPECT is merely a dummy. The real test is that we don't trigger
@@ -3960,7 +3958,7 @@ TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
   WebViewBase* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "single_iframe.html");
 
-  WebLocalFrame* frame = web_view_helper_.WebView()->MainFrameImpl();
+  WebLocalFrame* frame = web_view_helper_.LocalMainFrame();
   Document* document =
       ToLocalFrame(web_view_helper_.WebView()->GetPage()->MainFrame())
           ->GetDocument();
