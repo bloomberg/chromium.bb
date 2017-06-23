@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -24,6 +25,9 @@ class SigninClient;
 class ProfileOAuth2TokenService;
 class Profile;
 
+// Exposed for testing.
+extern const int kDiceTokenFetchTimeoutSeconds;
+
 // Processes the Dice responses from Gaia.
 class DiceResponseHandler : public KeyedService {
  public:
@@ -38,6 +42,9 @@ class DiceResponseHandler : public KeyedService {
 
   // Must be called when receiving a Dice response header.
   void ProcessDiceHeader(const signin::DiceResponseParams& dice_params);
+
+  // Returns the number of pending DiceTokenFetchers. Exposed for testing.
+  size_t GetPendingDiceTokenFetchersCountForTesting() const;
 
  private:
   // Helper class to fetch a refresh token from an authorization code.
@@ -57,6 +64,9 @@ class DiceResponseHandler : public KeyedService {
     }
 
    private:
+    // Called by |timeout_closure_| when the request times out.
+    void OnTimeout();
+
     // GaiaAuthConsumer implementation:
     void OnClientOAuthSuccess(
         const GaiaAuthConsumer::ClientOAuthResult& result) override;
@@ -66,6 +76,7 @@ class DiceResponseHandler : public KeyedService {
     std::string email_;
     std::string authorization_code_;
     DiceResponseHandler* dice_response_handler_;
+    base::CancelableClosure timeout_closure_;
     std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
 
     DISALLOW_COPY_AND_ASSIGN(DiceTokenFetcher);

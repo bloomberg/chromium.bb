@@ -4,8 +4,13 @@
 
 #include "chrome/browser/signin/dice_response_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -20,6 +25,8 @@
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+
+const int kDiceTokenFetchTimeoutSeconds = 10;
 
 namespace {
 
@@ -78,27 +85,45 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
     : gaia_id_(gaia_id),
       email_(email),
       authorization_code_(authorization_code),
-      dice_response_handler_(dice_response_handler) {
+      dice_response_handler_(dice_response_handler),
+      timeout_closure_(
+          base::Bind(&DiceResponseHandler::DiceTokenFetcher::OnTimeout,
+                     base::Unretained(this))) {
+  DCHECK(dice_response_handler_);
   gaia_auth_fetcher_ = signin_client->CreateGaiaAuthFetcher(
       this, GaiaConstants::kChromeSource,
       signin_client->GetURLRequestContext());
   gaia_auth_fetcher_->StartAuthCodeForOAuth2TokenExchange(authorization_code_);
-
-  // TODO(droger): The token exchange must complete quickly or be cancelled. Add
-  // a timeout logic.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, timeout_closure_.callback(),
+      base::TimeDelta::FromSeconds(kDiceTokenFetchTimeoutSeconds));
 }
 
 DiceResponseHandler::DiceTokenFetcher::~DiceTokenFetcher() {}
 
+void DiceResponseHandler::DiceTokenFetcher::OnTimeout() {
+  gaia_auth_fetcher_.reset();
+  timeout_closure_.Cancel();
+  dice_response_handler_->OnTokenExchangeFailure(
+      this, GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+  // |this| may be deleted at this point.
+}
+
 void DiceResponseHandler::DiceTokenFetcher::OnClientOAuthSuccess(
     const GaiaAuthConsumer::ClientOAuthResult& result) {
+  gaia_auth_fetcher_.reset();
+  timeout_closure_.Cancel();
   dice_response_handler_->OnTokenExchangeSuccess(this, gaia_id_, email_,
                                                  result);
+  // |this| may be deleted at this point.
 }
 
 void DiceResponseHandler::DiceTokenFetcher::OnClientOAuthFailure(
     const GoogleServiceAuthError& error) {
+  gaia_auth_fetcher_.reset();
+  timeout_closure_.Cancel();
   dice_response_handler_->OnTokenExchangeFailure(this, error);
+  // |this| may be deleted at this point.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +170,10 @@ void DiceResponseHandler::ProcessDiceHeader(
 
   NOTREACHED();
   return;
+}
+
+size_t DiceResponseHandler::GetPendingDiceTokenFetchersCountForTesting() const {
+  return token_fetchers_.size();
 }
 
 void DiceResponseHandler::ProcessDiceSigninHeader(
