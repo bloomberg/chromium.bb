@@ -19,19 +19,16 @@ class RapporService;
 namespace ntp_tiles {
 namespace metrics {
 
-struct TileImpression {
-  TileImpression(TileSource source, TileVisualType type, const GURL& url)
-      : source(source), type(type), url(url) {}
-
-  TileSource source;
-  TileVisualType type;
-  GURL url;
-};
-
 // Records an NTP impression, after all tiles have loaded.
-// Includes the visual types (see above) of all visible tiles. If
-// |rappor_service| is null, no rappor metrics will be reported.
-void RecordPageImpression(const std::vector<TileImpression>& tiles,
+void RecordPageImpression(int number_of_tiles);
+
+// Records a tile impression at |index| (zero based) created by |source|. This
+// should be called only after the visual |type| of the tile has been
+// determined. If |rappor_service| is null, no rappor metrics will be reported.
+void RecordTileImpression(int index,
+                          TileSource source,
+                          TileVisualType type,
+                          const GURL& url,
                           rappor::RapporService* rappor_service);
 
 // Records a click on a tile.

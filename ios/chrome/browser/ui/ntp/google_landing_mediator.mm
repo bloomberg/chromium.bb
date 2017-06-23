@@ -259,13 +259,13 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   if (data.size() && !_recordedPageImpression) {
     _recordedPageImpression = YES;
-    std::vector<ntp_tiles::metrics::TileImpression> tiles;
+    int index = 0;
     for (const ntp_tiles::NTPTile& ntpTile : data) {
-      tiles.emplace_back(ntpTile.source, ntp_tiles::UNKNOWN_TILE_TYPE,
-                         ntpTile.url);
+      ntp_tiles::metrics::RecordTileImpression(
+          index++, ntpTile.source, ntp_tiles::UNKNOWN_TILE_TYPE, ntpTile.url,
+          GetApplicationContext()->GetRapporServiceImpl());
     }
-    ntp_tiles::metrics::RecordPageImpression(
-        tiles, GetApplicationContext()->GetRapporServiceImpl());
+    ntp_tiles::metrics::RecordPageImpression(data.size());
   }
 }
 

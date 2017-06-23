@@ -44849,10 +44849,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="NewTabPage.NumberOfTiles">
   <owner>treib@chromium.org</owner>
   <summary>
-    The number of tiles that are displayed on the NTP, no matter if they are
-    thumbnails, gray tiles, or external tiles. Recorded before reloading the
-    suggestions, navigating to a URL, switching tabs, changing the active window
-    or closing the tab/shutting down Chrome.
+    The number of tiles that are on the NTP, no matter if they are thumbnails,
+    gray tiles, or external tiles. Recorded before reloading the suggestions,
+    navigating to a URL, switching tabs, changing the active window or closing
+    the tab/shutting down Chrome. The sum of this histogram does not have to
+    equal to the total count of tile impressions (such as the total count in
+    NewTabPage.TileType). The reason is that not all tiles have to be impressed
+    initially (e.g., the second row of tiles may be initially out of sight on
+    iOS).
   </summary>
 </histogram>
 

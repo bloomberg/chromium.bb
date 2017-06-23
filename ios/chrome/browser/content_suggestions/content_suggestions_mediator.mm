@@ -431,7 +431,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
   if (mostVisited.size() && !self.recordedPageImpression) {
     self.recordedPageImpression = YES;
-    RecordPageImpression(mostVisited);
+    RecordImpression(mostVisited);
   }
 }
 
