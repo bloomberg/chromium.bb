@@ -39635,6 +39635,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ResourceDispatcherHost.PeakOutstandingRequests"
+    units="requests">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    The largest number of outstanding requests handled by the resource
+    dispatcher host, during the last sample interval (60 seconds). Not logged if
+    there are no outstanding requests in the interval. This metric is temporary
+    for the Loading Dispatcher v0 (crbug.com/723233), and will be removed soon.
+  </summary>
+</histogram>
+
 <histogram name="Net.ResourceLoader.ExpectedContentSizeResult"
     enum="ResourceLoaderExpectedContentSizeResult">
   <owner>maksim.sisov@intel.com</owner>
@@ -90489,6 +90500,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </suffix>
   <affected-histogram name="ModuleIntegrityVerification.BytesModified"/>
   <affected-histogram name="ModuleIntegrityVerification.Difference"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MultiTabLoading" separator=".">
+  <suffix name="MultiTabLoading" label="There were multiple loading tabs."/>
+  <affected-histogram
+      name="Net.ResourceDispatcherHost.PeakOutstandingRequests"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NatType" separator=".">
