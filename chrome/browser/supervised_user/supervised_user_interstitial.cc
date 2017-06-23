@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -186,6 +187,10 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
     supervised_user_error_page::FilteringBehaviorReason reason) {
   bool is_child_account = profile->IsChild();
 
+  bool is_deprecated =
+      !is_child_account &&
+      !base::FeatureList::IsEnabled(features::kSupervisedUserCreation);
+
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
 
@@ -206,7 +211,8 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
   return supervised_user_error_page::BuildHtml(
       allow_access_requests, profile_image_url, profile_image_url2, custodian,
       custodian_email, second_custodian, second_custodian_email,
-      is_child_account, reason, g_browser_process->GetApplicationLocale());
+      is_child_account, is_deprecated, reason,
+      g_browser_process->GetApplicationLocale());
 }
 
 std::string SupervisedUserInterstitial::GetHTMLContents() {
@@ -251,13 +257,17 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
       base::UTF8ToUTF16(supervised_user_service->GetSecondCustodianName());
 
   if (command == "\"feedback\"") {
+    bool is_child_account = profile_->IsChild();
+    bool is_deprecated =
+        base::FeatureList::IsEnabled(features::kSupervisedUserCreation);
     base::string16 reason =
         l10n_util::GetStringUTF16(supervised_user_error_page::GetBlockMessageID(
-            reason_, true, second_custodian.empty()));
+            reason_, is_child_account, is_deprecated,
+            second_custodian.empty()));
     std::string message = l10n_util::GetStringFUTF8(
         IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT, reason);
 #if defined(OS_ANDROID)
-    DCHECK(profile_->IsChild());
+    DCHECK(is_child_account);
     ReportChildAccountFeedback(web_contents_, message, url_);
 #else
     chrome::ShowFeedbackPage(chrome::FindBrowserWithWebContents(web_contents_),

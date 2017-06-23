@@ -29,6 +29,7 @@ std::string BuildHtmlFromWebRestrictionsResult(
       result->stringParams["Second custodian"],
       result->stringParams["Second custodian email"],
       result->intParams["Is child account"],
+      /* is_deprecated = */ false,
       static_cast<FilteringBehaviorReason>(result->intParams["Reason"]),
       app_locale);
 }

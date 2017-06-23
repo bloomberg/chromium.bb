@@ -23,6 +23,7 @@ enum FilteringBehaviorReason {
 int GetBlockMessageID(
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool is_child_account,
+    bool is_deprecated,
     bool single_parent);
 
 std::string BuildHtml(bool allow_access_requests,
@@ -33,6 +34,7 @@ std::string BuildHtml(bool allow_access_requests,
                       const std::string& second_custodian,
                       const std::string& second_custodian_email,
                       bool is_child_account,
+                      bool is_deprecated,
                       FilteringBehaviorReason reason,
                       const std::string& app_locale);
 

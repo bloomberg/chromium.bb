@@ -46,7 +46,8 @@ function makeImageSet(url1x, url2x) {
 }
 
 function initialize() {
-  if (loadTimeData.getBoolean('allowAccessRequests')) {
+  var allowAccessRequests = loadTimeData.getBoolean('allowAccessRequests');
+  if (allowAccessRequests) {
     $('request-access-button').onclick = function(event) {
       $('request-access-button').hidden = true;
       if (window.domAutomationController) {
@@ -61,7 +62,7 @@ function initialize() {
   var avatarURL1x = loadTimeData.getString('avatarURL1x');
   var avatarURL2x = loadTimeData.getString('avatarURL2x');
   var custodianName = loadTimeData.getString('custodianName');
-  if (custodianName) {
+  if (custodianName && allowAccessRequests) {
     $('custodians-information').hidden = false;
     if (avatarURL1x) {
       $('custodian-avatar-img').style.content =

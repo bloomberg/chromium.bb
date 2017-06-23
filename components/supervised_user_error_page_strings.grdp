@@ -79,5 +79,8 @@
       <message name="IDS_SUPERVISED_USER_NOT_SIGNED_IN" desc="Message to be shown to a supervised user who is not signed in to Chrome">
         Please start and sign in to Chrome so that Chrome can check whether you are allowed to access this site.
       </message>
+      <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE_SUPERVISED_USERS_DEPRECATED" desc="Message to be shown to a supervised user to inform them that the feature is deprecated.">
+        Supervised users are deprecated. Restrictions remain in place and cannot be changed by the custodian after September 30, 2017.
+      </message>
 
 </grit-part>
