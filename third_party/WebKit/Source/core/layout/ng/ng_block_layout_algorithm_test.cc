@@ -2526,5 +2526,79 @@ TEST_F(NGBlockLayoutAlgorithmTest, NewFcAvoidsFloats) {
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(30)), child->Offset());
 }
 
+TEST_F(NGBlockLayoutAlgorithmTest, ZeroBlockSizeAboveEdge) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container { width: 200px; display: flow-root; }
+      #inflow { width: 50px; height: 50px; background: red; margin-top: -70px; }
+      #zero { width: 70px; margin: 10px 0 30px 0; }
+    </style>
+    <div id="container">
+      <div id="inflow"></div>
+      <div id="zero"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true);
+
+  RefPtr<const NGPhysicalFragment> fragment =
+      NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(10)), fragment->Size());
+
+  FragmentChildIterator iterator(ToNGPhysicalBoxFragment(fragment.Get()));
+
+  const NGPhysicalBoxFragment* child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(50), LayoutUnit(50)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(-70)), child->Offset());
+
+  child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(70), LayoutUnit(0)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(-10)), child->Offset());
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest, NewFcFirstChildIsZeroBlockSize) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container { width: 200px; display: flow-root; }
+      #zero1 { width: 50px; margin-top: -30px; margin-bottom: 10px; }
+      #zero2 { width: 70px; margin-top: 20px; margin-bottom: -40px; }
+      #inflow { width: 90px; height: 20px; margin-top: 30px; }
+    </style>
+    <div id="container">
+      <div id="zero1"></div>
+      <div id="zero2"></div>
+      <div id="inflow"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
+  RefPtr<NGConstraintSpace> space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true);
+
+  RefPtr<const NGPhysicalFragment> fragment =
+      NGBlockLayoutAlgorithm(node, space.Get()).Layout()->PhysicalFragment();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(10)), fragment->Size());
+
+  FragmentChildIterator iterator(ToNGPhysicalBoxFragment(fragment.Get()));
+
+  const NGPhysicalBoxFragment* child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(50), LayoutUnit(0)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(-30)), child->Offset());
+
+  child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(70), LayoutUnit(0)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(-10)), child->Offset());
+
+  child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(90), LayoutUnit(20)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(-10)), child->Offset());
+}
+
 }  // namespace
 }  // namespace blink
