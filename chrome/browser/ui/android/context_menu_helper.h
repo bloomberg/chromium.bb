@@ -12,6 +12,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "chrome/common/thumbnail_capturer.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/context_menu_params.h"
 
@@ -23,6 +24,13 @@ class WebContents;
 
 class ContextMenuHelper
     : public content::WebContentsUserData<ContextMenuHelper> {
+ protected:
+  using ImageRetrieveCallback = base::Callback<void(
+      chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer_ptr,
+      const base::android::JavaRef<jobject>& jcallback,
+      const std::vector<uint8_t>& thumbnail_data,
+      const gfx::Size& max_dimen_px)>;
+
  public:
   ~ContextMenuHelper() override;
 
@@ -42,10 +50,21 @@ class ContextMenuHelper
                        const base::android::JavaParamRef<jobject>& obj,
                        jboolean jis_link,
                        jboolean jis_data_reduction_proxy_enabled);
-  void RetrieveImage(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& obj,
-                     const base::android::JavaParamRef<jobject>& jcallback,
-                     jint max_dimen_px);
+  void RetrieveImageForShare(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jcallback,
+      jint max_dimen_px);
+  void RetrieveImageForContextMenu(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jcallback,
+      jint max_dimen_px);
+  void RetrieveImageInternal(
+      JNIEnv* env,
+      const ImageRetrieveCallback& retrieve_callback,
+      const base::android::JavaParamRef<jobject>& jcallback,
+      jint max_dimen_px);
   void SearchForImage(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
 
