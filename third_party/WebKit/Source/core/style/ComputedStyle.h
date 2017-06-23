@@ -633,10 +633,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // opacity (aka -webkit-opacity)
   static float InitialOpacity() { return 1.0f; }
-  float Opacity() const { return rare_non_inherited_data_->opacity_; }
+  float Opacity() const { return OpacityInternal(); }
   void SetOpacity(float f) {
     float v = clampTo<float>(f, 0, 1);
-    SET_VAR(rare_non_inherited_data_, opacity_, v);
+    SetOpacityInternal(v);
   }
 
   bool OpacityChangedStackingContext(const ComputedStyle& other) const {
@@ -659,12 +659,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // order (aka -webkit-order)
   static int InitialOrder() { return 0; }
-  int Order() const { return rare_non_inherited_data_->order_; }
+  int Order() const { return OrderInternal(); }
   // We restrict the smallest value to int min + 2 because we use int min and
   // int min + 1 as special values in a hash set.
   void SetOrder(int o) {
-    SET_VAR(rare_non_inherited_data_, order_,
-            max(std::numeric_limits<int>::min() + 2, o));
+    SetOrderInternal(max(std::numeric_limits<int>::min() + 2, o));
   }
 
   // Outline properties.
@@ -888,14 +887,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // shape-image-threshold (aka -webkit-shape-image-threshold)
   static float InitialShapeImageThreshold() { return 0; }
-  float ShapeImageThreshold() const {
-    return rare_non_inherited_data_->shape_image_threshold_;
-  }
+  float ShapeImageThreshold() const { return ShapeImageThresholdInternal(); }
   void SetShapeImageThreshold(float shape_image_threshold) {
     float clamped_shape_image_threshold =
         clampTo<float>(shape_image_threshold, 0, 1);
-    SET_VAR(rare_non_inherited_data_, shape_image_threshold_,
-            clamped_shape_image_threshold);
+    SetShapeImageThresholdInternal(clamped_shape_image_threshold);
   }
 
   // shape-outside (aka -webkit-shape-outside)
@@ -1010,10 +1006,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // -webkit-mask-box-image-width
   const BorderImageLengthBox& MaskBoxImageWidth() const {
-    return rare_non_inherited_data_->mask_box_image_.BorderSlices();
+    return MaskBoxImageInternal().BorderSlices();
   }
   void SetMaskBoxImageWidth(const BorderImageLengthBox& slices) {
-    rare_non_inherited_data_.Access()->mask_box_image_.SetBorderSlices(slices);
+    MutableMaskBoxImageInternal().SetBorderSlices(slices);
   }
 
   // Inherited properties.
@@ -1341,8 +1337,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   bool ColumnRuleEquivalent(const ComputedStyle* other_style) const;
   void InheritColumnPropertiesFrom(const ComputedStyle& parent) {
-    rare_non_inherited_data_.Access()->multi_col_data_ =
-        parent.rare_non_inherited_data_->multi_col_data_;
+    SetColumnGapInternal(parent.ColumnGapInternal());
+    SetColumnWidthInternal(parent.ColumnWidthInternal());
+    SetVisitedLinkColumnRuleColorInternal(
+        parent.VisitedLinkColumnRuleColorInternal());
+    SetColumnRuleColorInternal(parent.ColumnRuleColorInternal());
+    SetColumnCountInternal(parent.ColumnCountInternal());
+    SetColumnRuleStyle(parent.ColumnRuleStyle());
+    SetColumnAutoCountInternal(parent.ColumnAutoCountInternal());
+    SetColumnAutoWidthInternal(parent.ColumnAutoWidthInternal());
+    SetColumnFill(parent.GetColumnFill());
+    SetColumnNormalGapInternal(parent.ColumnNormalGapInternal());
+    SetColumnRuleColorIsCurrentColor(parent.ColumnRuleColorIsCurrentColor());
+    SetColumnSpan(parent.GetColumnSpan());
   }
 
   // Flex utility functions.
@@ -1361,35 +1368,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Mask utility functions.
   bool HasMask() const {
-    return rare_non_inherited_data_->mask_.HasImage() ||
-           rare_non_inherited_data_->mask_box_image_.HasImage();
+    return MaskInternal().HasImage() || MaskBoxImageInternal().HasImage();
   }
-  StyleImage* MaskImage() const {
-    return rare_non_inherited_data_->mask_.GetImage();
-  }
-  FillLayer& AccessMaskLayers() {
-    return rare_non_inherited_data_.Access()->mask_;
-  }
-  const FillLayer& MaskLayers() const {
-    return rare_non_inherited_data_->mask_;
-  }
-  const NinePieceImage& MaskBoxImage() const {
-    return rare_non_inherited_data_->mask_box_image_;
-  }
-  bool MaskBoxImageSlicesFill() const {
-    return rare_non_inherited_data_->mask_box_image_.Fill();
-  }
+  StyleImage* MaskImage() const { return MaskInternal().GetImage(); }
+  FillLayer& AccessMaskLayers() { return MutableMaskInternal(); }
+  const FillLayer& MaskLayers() const { return MaskInternal(); }
+  const NinePieceImage& MaskBoxImage() const { return MaskBoxImageInternal(); }
+  bool MaskBoxImageSlicesFill() const { return MaskBoxImageInternal().Fill(); }
   void AdjustMaskLayers() {
     if (MaskLayers().Next()) {
       AccessMaskLayers().CullEmptyLayers();
       AccessMaskLayers().FillUnsetProperties();
     }
   }
-  void SetMaskBoxImage(const NinePieceImage& b) {
-    SET_VAR(rare_non_inherited_data_, mask_box_image_, b);
-  }
+  void SetMaskBoxImage(const NinePieceImage& b) { SetMaskBoxImageInternal(b); }
   void SetMaskBoxImageSlicesFill(bool fill) {
-    rare_non_inherited_data_.Access()->mask_box_image_.SetFill(fill);
+    MutableMaskBoxImageInternal().SetFill(fill);
   }
 
   // Text-combine utility functions.
