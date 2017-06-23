@@ -32,7 +32,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Atomics.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
@@ -53,8 +52,7 @@ class PLATFORM_EXPORT ReverbInputBuffer {
   void Write(const float* source_p, size_t number_of_frames);
 
   // Background threads can call this to check if there's anything to read...
-  size_t WriteIndex() const { return AcquireLoad(&write_index_); }
-  void SetWriteIndex(size_t value) { ReleaseStore(&write_index_, value); }
+  size_t WriteIndex() const { return write_index_; }
 
   // The individual background threads read here (and hope that they can keep up
   // with the buffer writing).
@@ -68,10 +66,6 @@ class PLATFORM_EXPORT ReverbInputBuffer {
 
  private:
   AudioFloatArray buffer_;
-
-  // write_index_ can be accessed from several threads.  Only use the
-  // getter and the setter to access it atomically.  Don't access
-  // write_index_ directly!
   size_t write_index_;
 };
 

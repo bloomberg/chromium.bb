@@ -35,14 +35,19 @@ ReverbInputBuffer::ReverbInputBuffer(size_t length)
 
 void ReverbInputBuffer::Write(const float* source_p, size_t number_of_frames) {
   size_t buffer_length = buffer_.size();
-  size_t index = WriteIndex();
-  size_t new_index = index + number_of_frames;
+  bool is_copy_safe = write_index_ + number_of_frames <= buffer_length;
+  DCHECK(is_copy_safe);
+  if (!is_copy_safe)
+    return;
 
-  CHECK_LE(new_index, buffer_length);
+  memcpy(buffer_.Data() + write_index_, source_p,
+         sizeof(float) * number_of_frames);
 
-  memcpy(buffer_.Data() + index, source_p, sizeof(float) * number_of_frames);
+  write_index_ += number_of_frames;
+  DCHECK_LE(write_index_, buffer_length);
 
-  SetWriteIndex(new_index);
+  if (write_index_ >= buffer_length)
+    write_index_ = 0;
 }
 
 float* ReverbInputBuffer::DirectReadFrom(int* read_index,
@@ -70,7 +75,7 @@ float* ReverbInputBuffer::DirectReadFrom(int* read_index,
 
 void ReverbInputBuffer::Reset() {
   buffer_.Zero();
-  SetWriteIndex(0);
+  write_index_ = 0;
 }
 
 }  // namespace blink
