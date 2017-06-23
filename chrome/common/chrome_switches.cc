@@ -227,11 +227,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Disable the behavior that the second click on a launcher item (the click when
-// the item is already active) minimizes the item.
-const char kDisableMinimizeOnSecondLauncherItemClick[] =
-    "disable-minimize-on-second-launcher-item-click";
-
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[]      = "disable-offline-auto-reload";
 
@@ -399,12 +394,6 @@ const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 // (see SettingsWindowEnabled() below).
 const char kEnableSettingsWindow[]           = "enable-settings-window";
 
-// Enable the Site Engagement Eviction Policy which evicts temporary storage
-// using the site engagement service. Implicitly enables the site engagement
-// service.
-const char kEnableSiteEngagementEvictionPolicy[] =
-    "enable-site-engagement-eviction-policy";
-
 // Enables the site settings all sites list and site details pages in the Chrome
 // settings UI.
 const char kEnableSiteSettings[] = "enable-site-settings";
@@ -535,9 +524,6 @@ const char kInstallSupervisedUserWhitelists[] =
 
 // Marks a renderer as an Instant process.
 const char kInstantProcess[]                = "instant-process";
-
-// The URL for the interests API.
-const char kInterestsURL[]                  = "interests-url";
 
 // Used for testing - keeps browser alive after last browser window closes.
 const char kKeepAliveForTest[]              = "keep-alive-for-test";
@@ -861,9 +847,6 @@ const char kEnableAccessibilityTabSwitcher[] =
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
 
-// Enables chrome hosted mode for Android.
-const char kEnableHostedMode[] = "enable-hosted-mode";
-
 // Enables a hung renderer InfoBar allowing the user to close or wait on
 // unresponsive web content.
 const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
@@ -1050,20 +1033,12 @@ const char kShowIcons[]                     = "show-icons";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
-// Requests that Chrome launch the Metro viewer process via the given appid
-// (which is assumed to be registered as default browser) and synchronously
-// connect to it.
-const char kViewerLaunchViaAppId[]          = "viewer-launch-via-appid";
-
 // Causes the process to run as a watcher process.
 const char kWatcherProcess[]                = "watcher";
 
 // Enables custom-drawing the titlebar and tabstrip background so that it's not
 // a garish #FFFFFF like it is by default on Windows 10.
 const char kWindows10CustomTitlebar[]       = "windows10-custom-titlebar";
-
-// Indicates that chrome was launched to service a search request in Windows 8.
-const char kWindows8Search[]                = "windows8-search";
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
