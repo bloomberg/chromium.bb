@@ -45,7 +45,7 @@ editing.TextEditHandler = function(node) {
  * Flag set to indicate whether ChromeVox uses experimental rich text support.
  * @type {boolean}
  */
-editing.useRichText = false;
+editing.useRichText = true;
 
 editing.TextEditHandler.prototype = {
   /** @return {!AutomationNode} */

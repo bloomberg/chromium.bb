@@ -32,6 +32,7 @@ EditingTest.prototype = {
   },
 
   assertLineData: function(doc, data) {
+    editing.useRichText = false;
     this.runWithLoadedTree(doc, function(root) {
       var input = root.find({role: RoleType.TEXT_FIELD});
       input.addEventListener('focus', this.newCallback(function() {
@@ -213,7 +214,6 @@ TEST_F('EditingTest', 'SingleCharacterLine', function() {
 });
 
 TEST_F('EditingTest', 'RichTextMoveByLine', function() {
-  editing.useRichText = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>
@@ -261,7 +261,6 @@ TEST_F('EditingTest', 'RichTextMoveByLine', function() {
 });
 
 TEST_F('EditingTest', 'RichTextMoveByCharacter', function() {
-  editing.useRichText = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>This <b>is</b> a test.</div>
@@ -332,7 +331,6 @@ TEST_F('EditingTest', 'RichTextMoveByCharacter', function() {
 
 // Tests specifically for cursor workarounds.
 TEST_F('EditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
-  editing.useRichText = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>hello <b>world</b></div>
@@ -374,7 +372,6 @@ TEST_F('EditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
 });
 
 TEST_F('EditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
-  editing.useRichText = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>Test</div>
