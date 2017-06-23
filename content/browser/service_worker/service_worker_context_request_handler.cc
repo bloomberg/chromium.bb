@@ -21,26 +21,6 @@
 
 namespace content {
 
-namespace {
-
-bool IsInstalled(const ServiceWorkerVersion* version) {
-  switch (version->status()) {
-    case ServiceWorkerVersion::NEW:
-    case ServiceWorkerVersion::INSTALLING:
-      return false;
-    case ServiceWorkerVersion::INSTALLED:
-    case ServiceWorkerVersion::ACTIVATING:
-    case ServiceWorkerVersion::ACTIVATED:
-      return true;
-    case ServiceWorkerVersion::REDUNDANT:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-}  // namespace
-
 ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
@@ -110,7 +90,8 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
       MaybeCreateJobImpl(request, network_delegate, &status);
   const bool is_main_script = resource_type_ == RESOURCE_TYPE_SERVICE_WORKER;
   ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
-      status, IsInstalled(version_.get()), is_main_script);
+      status, ServiceWorkerVersion::IsInstalled(version_->status()),
+      is_main_script);
   if (job)
     return job;
 
@@ -170,7 +151,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
   int resource_id =
       version_->script_cache_map()->LookupResourceId(request->url());
   if (resource_id != kInvalidServiceWorkerResourceId) {
-    if (IsInstalled(version_.get())) {
+    if (ServiceWorkerVersion::IsInstalled(version_->status())) {
       // An installed worker is loading a stored script.
       if (is_main_script)
         version_->embedded_worker()->OnURLJobCreatedForMainScript();
@@ -186,7 +167,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
   }
 
   // An installed worker is importing a non-stored script.
-  if (IsInstalled(version_.get())) {
+  if (ServiceWorkerVersion::IsInstalled(version_->status())) {
     DCHECK(!is_main_script);
     *out_status = CreateJobStatus::ERROR_UNINSTALLED_SCRIPT_IMPORT;
     return nullptr;
