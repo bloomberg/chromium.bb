@@ -19,7 +19,7 @@ rather than make new ones. We already have a lot of threads that are difficult
 to keep track of. Each thread has a `MessageLoop` (see
 [`base/message_loop/message_loop.h`](https://cs.chromium.org/chromium/src/base/message_loop/message_loop.h)
 that processes messages for that thread. You can get the message loop for a
-thread using the `Thread.message_loop()` function.  More details about 
+thread using the `Thread.message_loop()` function.  More details about
 `MessageLoop` can be found in
 [Anatomy of Chromium MessageLoop](https://docs.google.com/document/d/1_pJUHO3f3VyRSQjEhKVvUU7NzCyuTCQshZvbWeQiCXU/view#).
 
@@ -242,15 +242,30 @@ raw pointer with `make_scoped_refptr()`:
      public:
       void DoSomething() {
         scoped_refptr<SomeParamObject> param(new SomeParamObject);
-        thread_->message_loop()->PostTask(FROM_HERE
-           base::Bind(&MyObject::DoSomethingOnAnotherThread, this, param));
+
+        // Without RetainedRef, the scoped_refptr would try to implicitly
+        // convert to a raw pointer and fail compilation.
+        thread_->message_loop()->PostTask(FROM_HERE,
+           base::Bind(&MyObject::DoSomethingOnAnotherThread, this,
+           base::RetainedRef(param)));
       }
+
       void DoSomething2() {
         SomeParamObject* param = new SomeParamObject;
-        thread_->message_loop()->PostTask(FROM_HERE
+        thread_->message_loop()->PostTask(FROM_HERE,
            base::Bind(&MyObject::DoSomethingOnAnotherThread, this,
-                             make_scoped_refptr(param)));
+                             base::RetainedRef(make_scoped_refptr(param))));
       }
+
+      void DoSomething3() {
+        scoped_refptr<SomeParamObject> param(new SomeParamObject);
+
+        // Moving |param| prevents an extra AddRef()/Release() pair.
+        thread_->message_loop()->PostTask(FROM_HERE,
+           base::Bind(&MyObject::DoSomethingOnAnotherThread, this,
+           base::RetainedRef(std::move(param))));
+      }
+
       // Note how this takes a raw pointer. The important part is that
       // base::Bind() was passed a scoped_refptr; using a scoped_refptr
       // here would result in an extra AddRef()/Release() pair.
