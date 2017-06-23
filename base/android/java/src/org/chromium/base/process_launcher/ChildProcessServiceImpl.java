@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.app;
+package org.chromium.base.process_launcher;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,10 +22,6 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.base.process_launcher.ICallbackInt;
-import org.chromium.base.process_launcher.IChildProcessService;
-import org.chromium.content.browser.ChildProcessConstants;
 
 import java.util.concurrent.Semaphore;
 
@@ -36,7 +32,7 @@ import javax.annotation.concurrent.GuardedBy;
  * object of {@link ChildProcessServiceImpl}.
  * It makes it possible for other consumer services (such as WebAPKs) to reuse that logic.
  */
-@JNINamespace("content")
+@JNINamespace("base::android")
 @MainDex
 public class ChildProcessServiceImpl {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
@@ -85,7 +81,6 @@ public class ChildProcessServiceImpl {
     private final Semaphore mActivitySemaphore = new Semaphore(1);
 
     public ChildProcessServiceImpl(ChildProcessServiceDelegate delegate) {
-        KillChildUncaughtExceptionHandler.maybeInstallHandler();
         mDelegate = delegate;
     }
 
@@ -171,7 +166,7 @@ public class ChildProcessServiceImpl {
         mMainThread = new Thread(new Runnable() {
             @Override
             @SuppressFBWarnings("DM_EXIT")
-            public void run()  {
+            public void run() {
                 try {
                     // CommandLine must be initialized before everything else.
                     synchronized (mMainThread) {
@@ -183,7 +178,7 @@ public class ChildProcessServiceImpl {
                     CommandLine.init(mCommandLineParams);
 
                     if (CommandLine.getInstance().hasSwitch(
-                            BaseSwitches.RENDERER_WAIT_FOR_JAVA_DEBUGGER)) {
+                                BaseSwitches.RENDERER_WAIT_FOR_JAVA_DEBUGGER)) {
                         android.os.Debug.waitForDebugger();
                     }
 

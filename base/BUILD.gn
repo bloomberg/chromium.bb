@@ -134,6 +134,8 @@ component("base") {
     "android/build_info.h",
     "android/callback_android.cc",
     "android/callback_android.h",
+    "android/child_process_service_impl.cc",
+    "android/child_process_service_impl.h",
     "android/command_line_android.cc",
     "android/command_line_android.h",
     "android/content_uri_utils.cc",
@@ -2528,6 +2530,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
       "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceImpl.java",
     ]
 
     public_deps = [
@@ -2625,7 +2628,11 @@ if (is_android) {
       "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
       "android/java/src/org/chromium/base/multidex/ChromiumMultiDexInstaller.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildProcessConstants.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessCreationParams.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceImpl.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceDelegate.java",
       "android/java/src/org/chromium/base/process_launcher/FileDescriptorInfo.java",
     ]
 
