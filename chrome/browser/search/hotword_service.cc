@@ -365,8 +365,14 @@ HotwordService::HotwordService(Profile* profile)
           &HotwordService::MaybeReinstallHotwordExtension),
                  weak_factory_.GetWeakPtr()));
 
+// This service is actually used only on ChromeOS, and the next function
+// results in a sequence of calls that triggers
+// HotwordAudioHistoryHandler::GetAudioHistoryEnabled which is not supported
+// on other platforms.
+#if defined(OS_CHROMEOS)
   SetAudioHistoryHandler(new HotwordAudioHistoryHandler(
       profile_, base::ThreadTaskRunnerHandle::Get()));
+#endif
 
   if (HotwordServiceFactory::IsAlwaysOnAvailable() &&
       IsHotwordAllowed()) {
