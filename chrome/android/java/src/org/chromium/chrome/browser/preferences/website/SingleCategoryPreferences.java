@@ -109,7 +109,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
             return;
         }
 
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(new ResultsPopulator());
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(new ResultsPopulator(), false);
         fetcher.fetchPreferencesForCategory(mCategory);
     }
 
