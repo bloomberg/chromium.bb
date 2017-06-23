@@ -10,6 +10,7 @@
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/interfaces/identity_manager.mojom.h"
 
+class AccountTrackerService;
 class SigninManagerBase;
 
 namespace identity {
@@ -17,10 +18,12 @@ namespace identity {
 class IdentityManager : public mojom::IdentityManager {
  public:
   static void Create(mojom::IdentityManagerRequest request,
+                     AccountTrackerService* account_tracker,
                      SigninManagerBase* signin_manager,
                      ProfileOAuth2TokenService* token_service);
 
-  IdentityManager(SigninManagerBase* signin_manager,
+  IdentityManager(AccountTrackerService* account_tracker,
+                  SigninManagerBase* signin_manager,
                   ProfileOAuth2TokenService* token_service);
   ~IdentityManager() override;
 
@@ -61,6 +64,9 @@ class IdentityManager : public mojom::IdentityManager {
 
   // mojom::IdentityManager:
   void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override;
+  void GetAccountInfoFromGaiaId(
+      const std::string& gaia_id,
+      GetAccountInfoFromGaiaIdCallback callback) override;
   void GetAccessToken(const std::string& account_id,
                       const ScopeSet& scopes,
                       const std::string& consumer_id,
@@ -69,6 +75,7 @@ class IdentityManager : public mojom::IdentityManager {
   // Deletes |request|.
   void AccessTokenRequestCompleted(AccessTokenRequest* request);
 
+  AccountTrackerService* account_tracker_;
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
 

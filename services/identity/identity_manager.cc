@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/time/time.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -57,22 +58,37 @@ void IdentityManager::AccessTokenRequest::OnRequestCompleted(
 
 // static
 void IdentityManager::Create(mojom::IdentityManagerRequest request,
+                             AccountTrackerService* account_tracker,
                              SigninManagerBase* signin_manager,
                              ProfileOAuth2TokenService* token_service) {
-  mojo::MakeStrongBinding(
-      base::MakeUnique<IdentityManager>(signin_manager, token_service),
-      std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<IdentityManager>(
+                              account_tracker, signin_manager, token_service),
+                          std::move(request));
 }
 
-IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
+IdentityManager::IdentityManager(AccountTrackerService* account_tracker,
+                                 SigninManagerBase* signin_manager,
                                  ProfileOAuth2TokenService* token_service)
-    : signin_manager_(signin_manager), token_service_(token_service) {}
+    : account_tracker_(account_tracker),
+      signin_manager_(signin_manager),
+      token_service_(token_service) {}
 
 IdentityManager::~IdentityManager() {}
 
 void IdentityManager::GetPrimaryAccountInfo(
     GetPrimaryAccountInfoCallback callback) {
+  // It's annoying that this can't be trivially implemented in terms of
+  // GetAccountInfoFromGaiaId(), but there's no SigninManagerBase method that
+  // directly returns the authenticated GAIA ID. We can of course get it from
+  // the AccountInfo but once we have the ACcountInfo we ... have the
+  // AccountInfo.
   std::move(callback).Run(signin_manager_->GetAuthenticatedAccountInfo());
+}
+
+void IdentityManager::GetAccountInfoFromGaiaId(
+    const std::string& gaia_id,
+    GetAccountInfoFromGaiaIdCallback callback) {
+  std::move(callback).Run(account_tracker_->FindAccountInfoByGaiaId(gaia_id));
 }
 
 void IdentityManager::GetAccessToken(const std::string& account_id,
