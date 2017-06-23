@@ -170,12 +170,12 @@ class CORE_EXPORT ComputedStyleBase {
 
   ~ComputedStyleBase() = default;
 
+ private:
   // Storage.
   {% for subgroup in computed_style.subgroups %}
   DataRef<{{subgroup.type_name}}> {{subgroup.member_name}};
   {% endfor %}
 
- private:
   {% for field in computed_style.fields %}
   {{declare_storage(field)}}
   {% endfor %}
