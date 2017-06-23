@@ -137,6 +137,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
     return viewport_intersection_rect_;
   }
 
+  bool is_inert() const { return is_inert_; }
+
   // Exposed for tests.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
     return GetRootRenderWidgetHostView();
@@ -149,6 +151,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   void OnFrameRectChanged(const gfx::Rect& frame_rect);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection);
   void OnVisibilityChanged(bool visible);
+  void OnSetIsInert(bool);
   void OnSatisfySequence(const cc::SurfaceSequence& sequence);
   void OnRequireSequence(const cc::SurfaceId& id,
                          const cc::SurfaceSequence& sequence);
@@ -164,6 +167,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
 
   gfx::Rect child_frame_rect_;
   gfx::Rect viewport_intersection_rect_;
+  bool is_inert_ = false;
 
   bool is_scroll_bubbling_;
 };

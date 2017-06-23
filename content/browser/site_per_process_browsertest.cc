@@ -10197,4 +10197,142 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(foo_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
 }
 
+// Class to sniff incoming IPCs for FrameHostMsg_SetIsInert messages.
+class SetIsInertMessageFilter : public content::BrowserMessageFilter {
+ public:
+  SetIsInertMessageFilter()
+      : content::BrowserMessageFilter(FrameMsgStart),
+        message_loop_runner_(new content::MessageLoopRunner),
+        msg_received_(false) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    IPC_BEGIN_MESSAGE_MAP(SetIsInertMessageFilter, message)
+      IPC_MESSAGE_HANDLER(FrameHostMsg_SetIsInert, OnSetIsInert)
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  bool is_inert() const { return is_inert_; }
+
+  void Wait() { message_loop_runner_->Run(); }
+
+ private:
+  ~SetIsInertMessageFilter() override {}
+
+  void OnSetIsInert(bool is_inert) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&SetIsInertMessageFilter::OnSetIsInertOnUI, this, is_inert));
+  }
+  void OnSetIsInertOnUI(bool is_inert) {
+    is_inert_ = is_inert;
+    if (!msg_received_) {
+      msg_received_ = true;
+      message_loop_runner_->Quit();
+    }
+  }
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool msg_received_;
+  bool is_inert_;
+  DISALLOW_COPY_AND_ASSIGN(SetIsInertMessageFilter);
+};
+
+// Tests that when a frame contains a modal <dialog> element, out-of-process
+// iframe children cannot take focus, because they are inert.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossProcessInertSubframe) {
+  // This uses a(b,b) instead of a(b) to preserve the b.com process even when
+  // the first subframe is navigated away from it.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(2U, root->child_count());
+
+  FrameTreeNode* iframe_node = root->child_at(0);
+
+  EXPECT_TRUE(ExecuteScript(
+      iframe_node,
+      "document.head.innerHTML = '';"
+      "document.body.innerHTML = '<input id=\"text1\"> <input id=\"text2\">';"
+      "text1.focus();"));
+
+  // Add a filter to the parent frame's process to monitor for inert bit
+  // updates. These are sent through the proxy for b.com child frame.
+  scoped_refptr<SetIsInertMessageFilter> filter = new SetIsInertMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Add a <dialog> to the root frame and call showModal on it.
+  EXPECT_TRUE(ExecuteScript(root,
+                            "let dialog = "
+                            "document.body.appendChild(document.createElement('"
+                            "dialog'));"
+                            "dialog.innerHTML = 'Modal dialog <input>';"
+                            "dialog.showModal();"));
+  filter->Wait();
+  EXPECT_TRUE(filter->is_inert());
+
+  // This yields the UI thread to ensure that the real SetIsInert message
+  // handler runs, in order to guarantee that the update arrives at the
+  // renderer process before the script below.
+  {
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
+  }
+
+  std::string focused_element;
+
+  // Attempt to change focus in the inert subframe. This should fail.
+  // The setTimeout ensures that the inert bit can propagate before the
+  // test JS code runs.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      iframe_node,
+      "window.setTimeout(() => {text2.focus();"
+      "domAutomationController.send(document.activeElement.id);}, 0)",
+      &focused_element));
+  EXPECT_EQ("", focused_element);
+
+  // Navigate the child frame to another site, so that it moves into a new
+  // process.
+  GURL site_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  NavigateFrameToURL(iframe_node, site_url);
+
+  EXPECT_TRUE(ExecuteScript(
+      iframe_node,
+      "document.head.innerHTML = '';"
+      "document.body.innerHTML = '<input id=\"text1\"> <input id=\"text2\">';"
+      "text1.focus();"));
+
+  // Verify that inertness was preserved across the navigation.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      iframe_node,
+      "text2.focus();"
+      "domAutomationController.send(document.activeElement.id);",
+      &focused_element));
+  EXPECT_EQ("", focused_element);
+
+  // Navigate the subframe back into its parent process to verify that the
+  // new local frame remains inert.
+  GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  NavigateFrameToURL(iframe_node, same_site_url);
+
+  EXPECT_TRUE(ExecuteScript(
+      iframe_node,
+      "document.head.innerHTML = '';"
+      "document.body.innerHTML = '<input id=\"text1\"> <input id=\"text2\">';"
+      "text1.focus();"));
+
+  // Verify that inertness was preserved across the navigation.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      iframe_node,
+      "text2.focus();"
+      "domAutomationController.send(document.activeElement.id);",
+      &focused_element));
+  EXPECT_EQ("", focused_element);
+}
+
 }  // namespace content

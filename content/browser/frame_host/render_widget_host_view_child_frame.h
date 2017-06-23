@@ -199,6 +199,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void UpdateViewportIntersection(const gfx::Rect& viewport_intersection);
 
+  void SetIsInert();
+
   bool has_frame() { return has_frame_; }
 
   ui::TextInputType GetTextInputType() const;

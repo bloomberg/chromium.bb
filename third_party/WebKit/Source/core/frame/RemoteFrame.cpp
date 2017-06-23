@@ -31,6 +31,7 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
     : Frame(client, page, owner, RemoteWindowProxyManager::Create(*this)),
       security_context_(RemoteSecurityContext::Create()) {
   dom_window_ = RemoteDOMWindow::Create(*this);
+  UpdateInertIfPossible();
 }
 
 RemoteFrame* RemoteFrame::Create(RemoteFrameClient* client,
@@ -119,6 +120,12 @@ bool RemoteFrame::ShouldClose() {
   // TODO(nasko): Implement running the beforeunload handler in the actual
   // LocalFrame running in a different process and getting back a real result.
   return true;
+}
+
+void RemoteFrame::SetIsInert(bool inert) {
+  if (inert != is_inert_)
+    Client()->SetIsInert(inert);
+  is_inert_ = inert;
 }
 
 void RemoteFrame::SetView(RemoteFrameView* view) {

@@ -109,6 +109,7 @@ class WebFrameWidgetImpl final
   void WillCloseLayerTreeView() override;
   bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
   void SetRemoteViewportIntersection(const WebRect&) override;
+  void SetIsInert(bool) override;
 
   // WebFrameWidget implementation.
   WebLocalFrameBase* LocalRoot() const override { return local_root_; }
