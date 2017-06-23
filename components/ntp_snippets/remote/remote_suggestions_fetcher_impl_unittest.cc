@@ -227,10 +227,10 @@ class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d,
+      net::URLFetcherDelegate* delegate,
       net::NetworkTrafficAnnotationTag traffic_annotation) override {
     return base::MakeUnique<net::FakeURLFetcher>(
-        url, d, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+        url, delegate, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
         net::URLRequestStatus::FAILED);
   }
 };
@@ -955,6 +955,8 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportInvalidListError) {
                           ToSnippetsAvailableCallback(&mock_callback()));
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(fetcher().GetLastJsonForDebugging(), Eq(kJsonStr));
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(),
+              StartsWith("Invalid / empty list"));
   EXPECT_THAT(
       histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
       ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
@@ -963,6 +965,65 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldReportInvalidListError) {
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
               Not(IsEmpty()));
+}
+
+TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+       ShouldReportInvalidListErrorForIncompleteSuggestionButValidJson) {
+  // This is valid json, but it does not represent a valid suggestion
+  // (fullPageUrl is missing).
+  const std::string kValidJsonStr =
+      "{\"categories\" : [{"
+      "  \"id\": 1,"
+      "  \"localizedTitle\": \"Articles for You\","
+      "  \"suggestions\" : [{"
+      "    \"ids\" : [\"http://localhost/foobar\"],"
+      "    \"title\" : \"Foo Barred from Baz\","
+      "    \"snippet\" : \"...\","
+      "    \"INVALID_fullPageUrl\" : \"http://localhost/foobar\","
+      "    \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
+      "    \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
+      "    \"attribution\" : \"Foo News\","
+      "    \"imageUrl\" : \"http://localhost/foobar.jpg\","
+      "    \"ampUrl\" : \"http://localhost/amp\","
+      "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
+      "  }]"
+      "}]}";
+  SetFakeResponse(/*response_data=*/kValidJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(
+      mock_callback(),
+      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+          /*fetched_categories=*/Property(
+              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+      .Times(1);
+  fetcher().FetchSnippets(test_params(),
+                          ToSnippetsAvailableCallback(&mock_callback()));
+  FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(),
+              StartsWith("Invalid / empty list"));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              Not(IsEmpty()));
+}
+
+TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+       ShouldReportRequestFailureAsTemporaryError) {
+  SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
+  EXPECT_CALL(
+      mock_callback(),
+      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+          /*fetched_categories=*/Property(
+              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+      .Times(1);
+  fetcher().FetchSnippets(test_params(),
+                          ToSnippetsAvailableCallback(&mock_callback()));
+  FastForwardUntilNoTasksRemain();
 }
 
 // This test actually verifies that the test setup itself is sane, to prevent
