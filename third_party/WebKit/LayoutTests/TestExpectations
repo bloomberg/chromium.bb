@@ -2575,6 +2575,7 @@ crbug.com/657748 external/wpt/css/css-display-3/display-contents-flex-003.html [
 # ====== End of display: contents tests ======
 
 crbug.com/676229 [ Win7 Linux ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
+crbug.com/736333 [ Win7 Linux ] plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
 
 crbug.com/678346 [ Debug ] fast/dom/shadow/selections-in-shadow.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeout ]
