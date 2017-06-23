@@ -7,7 +7,6 @@ window.onmessage = messageEvent => {
       connectEvent.device.open().then(() => {
         parent.postMessage('Success', '*');
       }).catch(error => {
-        console.log(error);
         parent.postMessage('FAIL: open rejected ' + error, '*');
       });
     });

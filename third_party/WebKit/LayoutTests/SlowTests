@@ -345,7 +345,7 @@ crbug.com/697735 external/wpt/editing/run/unlink.html [ Slow ]
 crbug.com/584807 printing/webgl-oversized-printing.html [ Slow ]
 crbug.com/584807 virtual/threaded/printing/webgl-oversized-printing.html [ Slow ]
 
-crbug.com/592183 usb/usbDevice.html [ Slow ]
+crbug.com/592183 external/wpt/webusb/usbDevice.https.html [ Slow ]
 
 crbug.com/594189 virtual/spv2/fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ]
 
