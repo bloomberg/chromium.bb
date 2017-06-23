@@ -342,8 +342,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
   for (auto set_function : kBoolSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      if (set_function == &blink::BooleanConstraint::SetIdeal &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+      // Using array elements instead of pointer values due to the comparison
+      // failing on some build configurations.
+      if (set_function == kBoolSetFunctions[1] &&
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       for (size_t i = 0; i < kMainSettings.size(); ++i) {
@@ -394,8 +396,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
   for (auto set_function : kBoolSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      if (set_function == &blink::BooleanConstraint::SetIdeal &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+      // Using array elements instead of pointer values due to the comparison
+      // failing on some build configurations.
+      if (set_function == kBoolSetFunctions[1] &&
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       for (size_t i = 0; i < kAudioProcessingProperties.size(); ++i) {
@@ -485,8 +489,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithSw) {
   for (auto set_function : kBoolSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      if (set_function == &blink::BooleanConstraint::SetIdeal &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+      // Using array elements instead of pointer values due to the comparison
+      // failing on some build configurations.
+      if (set_function == kBoolSetFunctions[1] &&
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       for (bool value : kBoolValues) {
@@ -547,8 +553,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithHw) {
   for (auto set_function : kBoolSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      if (set_function == &blink::BooleanConstraint::SetIdeal &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+      // Using array elements instead of pointer values due to the comparison
+      // failing on some build configurations.
+      if (set_function == kBoolSetFunctions[1] &&
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       for (bool value : kBoolValues) {
@@ -594,8 +602,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, GoogEchoCancellationWithSw) {
   for (auto set_function : kBoolSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      if (set_function == &blink::BooleanConstraint::SetIdeal &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+      // Using array elements instead of pointers due to the comparison failing
+      // on compilers.
+      if (set_function == kBoolSetFunctions[1] &&
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       for (bool value : kBoolValues) {
@@ -639,8 +649,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, GoogEchoCancellationWithHw) {
   for (auto set_function : kBoolSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      if (set_function == &blink::BooleanConstraint::SetIdeal &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+      // Using array elements instead of pointer values due to the comparison
+      // failing on some build configurations.
+      if (set_function == kBoolSetFunctions[1] &&
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       for (bool value : kBoolValues) {
@@ -721,8 +733,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
   for (auto set_function : kBoolSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      if (set_function == &blink::BooleanConstraint::SetIdeal &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+      // Using array elements instead of pointer values due to the comparison
+      // failing on some build configurations.
+      if (set_function == kBoolSetFunctions[1] &&
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       for (size_t i = 0; i < kAudioProcessingProperties.size(); ++i) {
@@ -818,12 +832,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ValidGeometry) {
   for (auto set_function : kStringSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      // Using kStringSetFunctions[1] instead of
-      // static_cast<StringSetFunction>(&blink::StringConstraint::SetIdeal)
-      // because the equality comparison provides the wrong result in the
-      // Windows Debug build, making the test fail.
+      // Using array elements instead of pointer values due to the comparison
+      // failing on some build configurations.
       if (set_function == kStringSetFunctions[1] &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       ResetFactory();
@@ -852,9 +864,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, InvalidGeometry) {
   for (auto set_function : kStringSetFunctions) {
     for (auto accessor : kFactoryAccessors) {
       // Ideal advanced is ignored by the SelectSettings algorithm.
-      if (set_function == static_cast<StringSetFunction>(
-                              &blink::StringConstraint::SetIdeal) &&
-          accessor == &MockConstraintFactory::AddAdvanced) {
+      // Using array elements instead of pointer values due to the comparison
+      // failing on some build configurations.
+      if (set_function == kStringSetFunctions[1] &&
+          accessor == kFactoryAccessors[1]) {
         continue;
       }
       ResetFactory();
