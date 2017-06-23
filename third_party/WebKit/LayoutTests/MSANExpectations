@@ -22,6 +22,7 @@ crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.ht
 crbug.com/522315 [ Linux ] virtual/gpu/fast/canvas/quadraticCurveTo.xml [ Crash ]
 
 crbug.com/517704 [ Linux ] external/wpt/encoding/api-invalid-label.html [ Timeout Pass ]
+crbug.com/708175 [ Linux ] external/wpt/IndexedDB/interleaved-cursors.html [ Timeout ]
 
 crbug.com/701433 [ Linux ] crypto/subtle/worker-subtle-crypto-concurrent.html [ Timeout Pass ]
 crbug.com/701563 [ Linux ] external/wpt/svg/interfaces.html [ Timeout Pass ]
