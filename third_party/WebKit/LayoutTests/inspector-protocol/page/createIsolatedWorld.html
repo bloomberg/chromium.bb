@@ -6,19 +6,33 @@
 function test()
 {
     var mainFrameId = "";
+    var executionContextId;
+    var createIsolatedWorldReturnValue;
     InspectorTest.eventHandler["Runtime.executionContextCreated"] =
             function(message) {
         if (message.params.context.auxData.frameId !== mainFrameId)
             return;
         if (message.params.context.auxData.isDefault === false &&
             message.params.context.name === "Test world") {
-            InspectorTest.log("PASS - isolated world created."); 
+            executionContextId = message.params.context.id;
+            maybeFinish();
         } else {
             InspectorTest.log("fail - main world created."); 
             InspectorTest.log(JSON.stringify(message.params)); 
+            InspectorTest.completeTest();
+        }
+    };
+
+    function maybeFinish() {
+        if (!executionContextId || !createIsolatedWorldReturnValue)
+          return;
+        if (executionContextId === createIsolatedWorldReturnValue) {
+            InspectorTest.log("PASS - execution context id match."); 
+        } else {
+            InspectorTest.log("fail - execution context id differ."); 
         }
         InspectorTest.completeTest();
-    };
+    }
 
     InspectorTest.sendCommandOrDie("Runtime.enable", {}, runtimeAgentEnabled);
 
@@ -42,7 +56,13 @@ function test()
     function onMainFrameId(mainFrameId) {
         InspectorTest.log("Main Frame obtained");
         InspectorTest.sendCommandOrDie("Page.createIsolatedWorld", {
-            frameId: mainFrameId, worldName: "Test world"});
+            frameId: mainFrameId, worldName: "Test world"},
+            isolatedWorldCreated);
+    }
+
+    function isolatedWorldCreated(payload) {
+        createIsolatedWorldReturnValue = payload.executionContextId;
+        maybeFinish();
     }
 }
 
