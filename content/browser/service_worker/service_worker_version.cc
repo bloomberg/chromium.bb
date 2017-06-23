@@ -135,21 +135,6 @@ void ClearTick(base::TimeTicks* time) {
   *time = base::TimeTicks();
 }
 
-bool IsInstalled(ServiceWorkerVersion::Status status) {
-  switch (status) {
-    case ServiceWorkerVersion::NEW:
-    case ServiceWorkerVersion::INSTALLING:
-    case ServiceWorkerVersion::REDUNDANT:
-      return false;
-    case ServiceWorkerVersion::INSTALLED:
-    case ServiceWorkerVersion::ACTIVATING:
-    case ServiceWorkerVersion::ACTIVATED:
-      return true;
-  }
-  NOTREACHED() << "Unexpected status: " << status;
-  return false;
-}
-
 std::string VersionStatusToString(ServiceWorkerVersion::Status status) {
   switch (status) {
     case ServiceWorkerVersion::NEW:
@@ -1074,6 +1059,21 @@ void ServiceWorkerVersion::CountFeature(uint32_t feature) {
     return;
   for (auto provider_host_by_uuid : controllee_map_)
     provider_host_by_uuid.second->CountFeature(feature);
+}
+
+bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
+  switch (status) {
+    case ServiceWorkerVersion::NEW:
+    case ServiceWorkerVersion::INSTALLING:
+    case ServiceWorkerVersion::REDUNDANT:
+      return false;
+    case ServiceWorkerVersion::INSTALLED:
+    case ServiceWorkerVersion::ACTIVATING:
+    case ServiceWorkerVersion::ACTIVATED:
+      return true;
+  }
+  NOTREACHED() << "Unexpected status: " << status;
+  return false;
 }
 
 void ServiceWorkerVersion::OnOpenNewTab(int request_id, const GURL& url) {
