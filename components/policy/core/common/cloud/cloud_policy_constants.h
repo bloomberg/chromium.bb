@@ -45,6 +45,7 @@ POLICY_EXPORT extern const char kValueRequestCheckAndroidManagement[];
 POLICY_EXPORT extern const char kValueRequestCertBasedRegister[];
 POLICY_EXPORT extern const char kValueRequestActiveDirectoryEnrollPlayUser[];
 POLICY_EXPORT extern const char kValueRequestActiveDirectoryPlayActivity[];
+POLICY_EXPORT extern const char kValueRequestCheckDeviceLicense[];
 
 // Policy type strings for the policy_type field in PolicyFetchRequest.
 POLICY_EXPORT extern const char kChromeDevicePolicyType[];
@@ -134,6 +135,14 @@ enum DeviceMode {
   DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,  // The device is locally owned as
                                           // consumer kiosk with ability to auto
                                           // launch a kiosk webapp.
+};
+
+// License types available for enrollment.
+enum class LicenseType {
+  UNKNOWN,    // Included for compatibility.
+  PERPETUAL,  // Perpetual license
+  ANNUAL,     // Annual license
+  KIOSK       // Single App Kiosk license
 };
 
 }  // namespace policy
