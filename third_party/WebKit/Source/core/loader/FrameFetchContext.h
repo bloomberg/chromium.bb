@@ -156,6 +156,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&) override;
 
+  bool IsDetached() const override { return frozen_state_; }
+
   FetchContext* Detach() override;
 
   DECLARE_VIRTUAL_TRACE();
@@ -209,8 +211,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   RefPtr<SecurityOrigin> GetRequestorOriginForFrameLoading();
   ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
-
-  bool IsDetached() const { return frozen_state_; }
 
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;
