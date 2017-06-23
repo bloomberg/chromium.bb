@@ -16,6 +16,8 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -105,9 +107,8 @@ void AddLineBreak(base::ListValue* list) {
 }
 
 void AddSharedModulePlatformsOnFileThread(base::ListValue* list,
-                                          const base::FilePath& path,
-                                          base::Closure callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+                                          const base::FilePath& path) {
+  base::ThreadRestrictions::AssertIOAllowed();
 
   if (!path.empty()) {
     // Display available platforms for shared module.
@@ -125,10 +126,6 @@ void AddSharedModulePlatformsOnFileThread(base::ListValue* list,
               files.empty() ? ASCIIToUTF16("undefined") : files);
     AddLineBreak(list);
   }
-
-  content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                   FROM_HERE,
-                                   callback);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,12 +199,12 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
         path = extension->path();
     }
     base::ListValue* raw_list = list.get();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&AddSharedModulePlatformsOnFileThread, raw_list, path,
-                   base::Bind(&VoiceSearchDomHandler::ReturnVoiceSearchInfo,
-                              weak_factory_.GetWeakPtr(),
-                              base::Passed(std::move(list)))));
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&AddSharedModulePlatformsOnFileThread, raw_list, path),
+        base::BindOnce(&VoiceSearchDomHandler::ReturnVoiceSearchInfo,
+                       weak_factory_.GetWeakPtr(),
+                       base::Passed(std::move(list))));
   }
 
   // Adds information regarding the system and chrome version info to list.

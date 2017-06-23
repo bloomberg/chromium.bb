@@ -13,18 +13,16 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/cryptuiapi_shim.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
 #include "ui/views/win/hwnd_util.h"
-
-using content::BrowserThread;
 
 namespace settings_utils {
 
@@ -98,10 +96,9 @@ void OpenConnectionDialogCallback() {
 }
 
 void ShowNetworkProxySettings(content::WebContents* web_contents) {
-  DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::FILE));
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&OpenConnectionDialogCallback));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+                           base::Bind(&OpenConnectionDialogCallback));
 }
 
 void ShowManageSSLCertificates(content::WebContents* web_contents) {
