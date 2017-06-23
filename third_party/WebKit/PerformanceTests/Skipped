@@ -32,6 +32,8 @@ Dromaeo
 inspector
 
 Canvas/drawimage.html
+# crbug.com/727919, crbug.com/736374
+Canvas/getImageDataColorManaged.html
 
 # Redundant with chromium's page cyclers.
 Replay
