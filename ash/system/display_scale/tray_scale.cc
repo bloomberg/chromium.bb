@@ -7,7 +7,6 @@
 #include "ash/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
-#include "ash/shell_port.h"
 #include "ash/system/display_scale/scale_detailed_view.h"
 #include "ash/system/display_scale/scale_view.h"
 #include "ash/system/tray/system_tray.h"

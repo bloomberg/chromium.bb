@@ -10,7 +10,6 @@
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/rotator/test/screen_rotation_animator_test_api.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"

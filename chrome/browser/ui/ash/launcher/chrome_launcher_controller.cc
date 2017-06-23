@@ -12,7 +12,6 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/memory/ptr_util.h"

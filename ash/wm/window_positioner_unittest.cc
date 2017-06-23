@@ -9,7 +9,6 @@
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_positioner.h"
