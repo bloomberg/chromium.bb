@@ -165,8 +165,8 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
            << "number of tiles: " << impression_was_logged_.count();
 
-  std::vector<ntp_tiles::metrics::TileImpression> tiles;
   bool has_server_side_suggestions = false;
+  int tiles_count = 0;
   for (int i = 0; i < kNumMostVisited; i++) {
     if (!impression_was_logged_[i]) {
       break;
@@ -175,14 +175,14 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
         ntp_tiles::TileSource::SUGGESTIONS_SERVICE) {
       has_server_side_suggestions = true;
     }
-    // No URL passed since we're not interested in favicon-related Rappor
-    // metrics.
-    tiles.emplace_back(impression_tile_source_[i], impression_tile_type_[i],
-                       GURL());
+    // No URL and rappor service passed - not interested in favicon-related
+    // Rappor metrics.
+    ntp_tiles::metrics::RecordTileImpression(i, impression_tile_source_[i],
+                                             impression_tile_type_[i], GURL(),
+                                             /*rappor_service=*/nullptr);
+    ++tiles_count;
   }
-
-  // Not interested in Rappor metrics.
-  ntp_tiles::metrics::RecordPageImpression(tiles, /*rappor_service=*/nullptr);
+  ntp_tiles::metrics::RecordPageImpression(tiles_count);
 
   UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime", tiles_received_time_);
   UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime", load_time);

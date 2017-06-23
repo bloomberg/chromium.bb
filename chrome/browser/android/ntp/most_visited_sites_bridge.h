@@ -39,12 +39,15 @@ class MostVisitedSitesBridge {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_url,
       jboolean add_url);
-  void RecordPageImpression(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jintArray>& jtile_types,
-      const base::android::JavaParamRef<jintArray>& jsources,
-      const base::android::JavaParamRef<jobjectArray>& jtile_urls);
+  void RecordPageImpression(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            jint jtiles_count);
+  void RecordTileImpression(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            jint jindex,
+                            jint jtype,
+                            jint jsource,
+                            const base::android::JavaParamRef<jstring>& jurl);
   void RecordOpenedMostVisitedItem(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
