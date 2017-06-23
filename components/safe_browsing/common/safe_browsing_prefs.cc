@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -139,6 +140,8 @@ void RecordExtendedReportingPrefChanged(
 }  // namespace
 
 namespace prefs {
+const char kSafeBrowsingExtendedReportingOptInAllowed[] =
+    "safebrowsing.extended_reporting_opt_in_allowed";
 const char kSafeBrowsingExtendedReportingEnabled[] =
     "safebrowsing.extended_reporting_enabled";
 const char kSafeBrowsingScoutReportingEnabled[] =
@@ -294,6 +297,10 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
   }
 }
 
+bool IsExtendedReportingOptInAllowed(const PrefService& prefs) {
+  return prefs.GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
+}
+
 bool IsExtendedReportingEnabled(const PrefService& prefs) {
   return prefs.GetBoolean(GetExtendedReportingPrefName(prefs));
 }
@@ -343,6 +350,21 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
         GetPrefValueOrNull(prefs, prefs::kSafeBrowsingScoutReportingEnabled),
         MAX_NULLABLE_BOOLEAN);
   }
+}
+
+void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  // TODO(lpz): Move other safe browsing prefs here from c/b/profiles/profile.cc
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingExtendedReportingEnabled,
+                                false);
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutReportingEnabled,
+                                false);
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutGroupSelected, false);
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingSawInterstitialExtendedReporting, false);
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
 }
 
 void SetExtendedReportingPrefAndMetric(

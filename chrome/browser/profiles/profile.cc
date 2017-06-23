@@ -147,21 +147,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSafeBrowsingEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kSafeBrowsingExtendedReportingEnabled,
-                                false);
-  registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutReportingEnabled,
-                                false);
-  registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutGroupSelected, false);
-  registry->RegisterBooleanPref(
-      prefs::kSafeBrowsingSawInterstitialExtendedReporting, false);
-  registry->RegisterBooleanPref(
-      prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingProceedAnywayDisabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kSSLErrorOverrideAllowed, true);
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
-  registry->RegisterBooleanPref(
-      prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
   // This pref is intentionally outside the above #if. That flag corresponds
   // to the Notifier extension and does not gate the launcher page.
   // TODO(skare): Remove or rename ENABLE_GOOGLE_NOW: http://crbug.com/459827.
