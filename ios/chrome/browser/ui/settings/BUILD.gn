@@ -142,7 +142,6 @@ source_set("settings") {
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/history",
-    "//ios/chrome/browser/native_app_launcher:native_app_launcher_internal",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/physical_web",
     "//ios/chrome/browser/prefs",
