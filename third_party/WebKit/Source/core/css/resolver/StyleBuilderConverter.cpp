@@ -842,6 +842,27 @@ void StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
   }
 }
 
+float StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
+                                                const CSSValue& value) {
+  if (value.IsIdentifierValue()) {
+    CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+    if (value_id == CSSValueThin)
+      return 1;
+    if (value_id == CSSValueMedium)
+      return 3;
+    if (value_id == CSSValueThick)
+      return 5;
+    NOTREACHED();
+    return 0;
+  }
+  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
+  double result =
+      primitive_value.ComputeLength<double>(state.CssToLengthConversionData());
+  return clampTo<float>(RoundForImpreciseConversion<float>(result),
+                        defaultMinimumForClamp<float>(),
+                        defaultMaximumForClamp<float>());
+}
+
 Length StyleBuilderConverter::ConvertLength(const StyleResolverState& state,
                                             const CSSValue& value) {
   return ToCSSPrimitiveValue(value).ConvertToLength(

@@ -37,11 +37,6 @@
         testElements[element.firstChild.nodeValue] = element;
       }
 
-      function sizeAsString(element) {
-        var rect = element.getBoundingClientRect();
-        return rect.width.toFixed(2) + 'x' + rect.height.toFixed(2);
-      }
-
       function borderAsString(element) {
         var style = window.getComputedStyle(element);
         return style.borderTopWidth + ' ' + style.borderRightWidth + ' ' +
@@ -49,32 +44,52 @@
       }
 
       test(function() {
-        var referenceSize = sizeAsString(testElements['1px']);
-        assert_equals(sizeAsString(testElements['0.25px']), referenceSize,
-            'Size of 0.25px box should match 1px reference.');
-        assert_equals(sizeAsString(testElements['0.5px']), referenceSize,
-            'Size of 0.5px box should match 1px reference.');
-        assert_equals(sizeAsString(testElements['0.75px']), referenceSize,
-            'Size of 0.75px box should match 1px reference.');
+        var refSize = testElements['0.25px'].getBoundingClientRect();
+        var testSize = testElements['0.5px'].getBoundingClientRect();
+        assert_greater_than(testSize.width, refSize.width,
+            'Size of 0.5px box should be larger than 0.25px box.');
+        assert_greater_than(testSize.height, refSize.height,
+            'Size of 0.5px box should be larger than 0.25px box.');
 
-        var refSize = testElements['1px'].getBoundingClientRect();
-        var testSize = testElements['1.25px'].getBoundingClientRect();
+        refSize = testSize;
+        testSize =  testElements['0.75px'].getBoundingClientRect();
+        assert_greater_than(testSize.width, refSize.width,
+            'Size of 0.75px box should be larger than 0.5px box.');
+        assert_greater_than(testSize.height, refSize.height,
+            'Size of 0.75px box should be larger than 0.5px box.');
+
+        refSize = testSize;
+        testSize =  testElements['1px'].getBoundingClientRect();
+        assert_greater_than(testSize.width, refSize.width,
+            'Size of 1px box should be larger than 0.75px box.');
+        assert_greater_than(testSize.height, refSize.height,
+            'Size of 1px box should be larger than 0.75px box.');
+
+        refSize = testSize;
+        testSize =  testElements['1.25px'].getBoundingClientRect();
         assert_greater_than(testSize.width, refSize.width,
             'Size of 1.25px box should be larger than 1px box.');
         assert_greater_than(testSize.height, refSize.height,
             'Size of 1.25px box should be larger than 1px box.');
+
+        refSize = testSize;
+        testSize =  testElements['1.5px'].getBoundingClientRect();
+        assert_greater_than(testSize.width, refSize.width,
+            'Size of 1.5px box should be larger than 1.25px box.');
+        assert_greater_than(testSize.height, refSize.height,
+            'Size of 1.5px box should be larger than 1.25px box.');
       }, 'Size of all elements are correct.');
 
       test(function() {
         assert_equals(borderAsString(testElements['0.25px']),
-            '1px 1px 1px 1px',
-            'Border thickness of 0.25px box should be 1px.');
+            '0.25px 0.25px 0.25px 0.25px',
+            'Border thickness of 0.25px box should be 0.25px.');
         assert_equals(borderAsString(testElements['0.5px']),
-            '1px 1px 1px 1px',
-            'Border thickness of 0.5px box should be 1px.');
+            '0.5px 0.5px 0.5px 0.5px',
+            'Border thickness of 0.5px box should be 0.5px.');
         assert_equals(borderAsString(testElements['0.75px']),
-            '1px 1px 1px 1px',
-            'Border thickness of 0.75px box should be 1px.');
+            '0.75px 0.75px 0.75px 0.75px',
+            'Border thickness of 0.75px box should be 0.75px.');
         assert_equals(borderAsString(testElements['1.25px']),
             '1.25px 1.25px 1.25px 1.25px',
             'Border thickness of 1.25px box should retain decimals.');

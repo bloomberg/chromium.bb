@@ -56,11 +56,16 @@ class CollapsedBorderValue {
                        const Color& color,
                        EBorderPrecedence precedence)
       : color_(color),
-        width_(ComputedStyle::BorderStyleIsVisible(border.Style())
-                   ? border.Width()
-                   : 0),
         style_(static_cast<unsigned>(border.Style())),
         precedence_(precedence) {
+    if (!ComputedStyle::BorderStyleIsVisible(border.Style())) {
+      width_ = 0;
+    } else {
+      if (border.Width() > 0.0f && border.Width() <= 1.0f)
+        width_ = 1;
+      else
+        width_ = border.Width();
+    }
     DCHECK(precedence != kBorderPrecedenceOff);
   }
 
@@ -69,9 +74,16 @@ class CollapsedBorderValue {
                        const Color& color,
                        EBorderPrecedence precedence)
       : color_(color),
-        width_(ComputedStyle::BorderStyleIsVisible(style) ? width : 0),
         style_(static_cast<unsigned>(style)),
         precedence_(precedence) {
+    if (!ComputedStyle::BorderStyleIsVisible(style)) {
+      width_ = 0;
+    } else {
+      if (width > 0.0f && width <= 1.0f)
+        width_ = 1;
+      else
+        width_ = width;
+    }
     DCHECK(precedence != kBorderPrecedenceOff);
   }
 
