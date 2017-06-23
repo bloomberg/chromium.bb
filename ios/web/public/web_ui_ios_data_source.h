@@ -9,6 +9,10 @@
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace web {
 class BrowserState;
 
@@ -33,6 +37,9 @@ class WebUIIOSDataSource : public base::SupportsUserData {
   // Adds a localized string with resource |ids| keyed to its name to our
   // dictionary.
   virtual void AddLocalizedString(const std::string& name, int ids) = 0;
+
+  virtual void AddLocalizedStrings(
+      const base::DictionaryValue& localized_strings) = 0;
 
   // Adds a boolean keyed to its name to our dictionary.
   virtual void AddBoolean(const std::string& name, bool value) = 0;

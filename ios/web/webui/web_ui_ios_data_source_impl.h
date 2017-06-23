@@ -16,6 +16,7 @@
 #include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/webui/url_data_manager_ios.h"
 #include "ios/web/webui/url_data_source_ios_impl.h"
+#include "ui/base/template_expressions.h"
 
 namespace web {
 
@@ -26,6 +27,8 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   void AddString(const std::string& name, const base::string16& value) override;
   void AddString(const std::string& name, const std::string& value) override;
   void AddLocalizedString(const std::string& name, int ids) override;
+  void AddLocalizedStrings(
+      const base::DictionaryValue& localized_strings) override;
   void AddBoolean(const std::string& name, bool value) override;
   void SetJsonPath(const std::string& path) override;
   void AddResourcePath(const std::string& path, int resource_id) override;
@@ -39,8 +42,10 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   void SendLocalizedStringsAsJSON(
       const URLDataSourceIOS::GotDataCallback& callback);
 
-  // Completes a request by sending the file specified by |idr|.
-  void SendFromResourceBundle(const URLDataSourceIOS::GotDataCallback& callback,
+  // Completes a request to |path| by sending the file specified by |idr| as the
+  // response.
+  void SendFromResourceBundle(const std::string& path,
+                              const URLDataSourceIOS::GotDataCallback& callback,
                               int idr);
 
  private:
@@ -50,6 +55,9 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   friend class WebUIIOSDataSource;
 
   explicit WebUIIOSDataSourceImpl(const std::string& source_name);
+
+  // Adds the locale to the load time data defaults. May be called repeatedly.
+  void EnsureLoadTimeDataDefaultsAdded();
 
   // Methods that match URLDataSource which are called by
   // InternalDataSource.
@@ -65,8 +73,14 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   int default_resource_;
   std::string json_path_;
   std::map<std::string, int> path_to_idr_map_;
+  // The replacements are initiallized in the main thread and then used in the
+  // IO thread. The map is safe to read from multiple threads as long as no
+  // futher changes are made to it after initialization.
+  ui::TemplateReplacements replacements_;
+  // The |replacements_| is intended to replace |localized_strings_|.
   base::DictionaryValue localized_strings_;
   bool deny_xframe_options_;
+  bool load_time_data_defaults_added_;
   bool replace_existing_source_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIIOSDataSourceImpl);
