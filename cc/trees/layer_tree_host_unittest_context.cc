@@ -352,7 +352,8 @@ class LayerTreeHostContextTestLostContextSucceeds
   bool first_initialized_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds);
+// Disabled because of crbug.com/736392
+// SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds);
 
 class LayerTreeHostClientNotVisibleDoesNotCreateLayerTreeFrameSink
     : public LayerTreeHostContextTest {
