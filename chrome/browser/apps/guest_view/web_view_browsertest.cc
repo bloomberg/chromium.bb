@@ -3930,7 +3930,7 @@ INSTANTIATE_TEST_CASE_P(WebViewScrollGuestContent,
                         WebViewScrollGuestContentTest,
                         testing::Values(false));
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_ScrollGuestContent DISABLED_ScrollGuestContent
 #else
 #define MAYBE_ScrollGuestContent ScrollGuestContent
