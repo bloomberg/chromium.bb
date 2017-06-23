@@ -234,12 +234,17 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
 }
 
 void CupsPrintJobNotification::UpdateNotificationBodyMessage() {
-  base::string16 message = l10n_util::GetStringFUTF16(
-      (print_job_->total_page_number() > 1)
-          ? IDS_PRINT_JOB_NOTIFICATION_MESSAGE
-          : IDS_PRINT_JOB_NOTIFICATION_SINGLE_PAGE_MESSAGE,
-      base::IntToString16(print_job_->total_page_number()),
-      base::UTF8ToUTF16(print_job_->printer().display_name()));
+  base::string16 message;
+  if (print_job_->total_page_number() > 1) {
+    message = l10n_util::GetStringFUTF16(
+        IDS_PRINT_JOB_NOTIFICATION_MESSAGE,
+        base::IntToString16(print_job_->total_page_number()),
+        base::UTF8ToUTF16(print_job_->printer().display_name()));
+  } else {
+    message = l10n_util::GetStringFUTF16(
+        IDS_PRINT_JOB_NOTIFICATION_SINGLE_PAGE_MESSAGE,
+        base::UTF8ToUTF16(print_job_->printer().display_name()));
+  }
   notification_->set_message(message);
 }
 
