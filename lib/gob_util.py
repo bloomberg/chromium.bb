@@ -114,6 +114,7 @@ def GetCookies(host, path, cookie_paths=None):
 
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   """Opens an https connection to a gerrit service, and sends a request."""
+  path = '/a/' + path.lstrip('/')
   headers = headers or {}
   bare_host = host.partition(':')[0]
   auth = NETRC.authenticators(bare_host)
@@ -124,7 +125,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     logging.debug('No netrc file found')
 
   if 'Cookie' not in headers:
-    cookies = GetCookies(host, '/a/%s' % path)
+    cookies = GetCookies(host, path)
     headers['Cookie'] = '; '.join('%s=%s' % (n, v) for n, v in cookies.items())
 
   if 'User-Agent' not in headers:
@@ -138,7 +139,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     body = json.JSONEncoder().encode(body)
     headers.setdefault('Content-Type', 'application/json')
   if logging.getLogger().isEnabledFor(logging.DEBUG):
-    logging.debug('%s https://%s/a/%s', reqtype, host, path)
+    logging.debug('%s https://%s%s', reqtype, host, path)
     for key, val in headers.iteritems():
       if key.lower() in ('authorization', 'cookie'):
         val = 'HIDDEN'
@@ -148,7 +149,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   conn = httplib.HTTPSConnection(host)
   conn.req_host = host
   conn.req_params = {
-      'url': '/a/%s' % path,
+      'url': path,
       'method': reqtype,
       'headers': headers,
       'body': body,
