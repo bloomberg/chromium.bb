@@ -51,9 +51,13 @@ class PDFiumPage {
 
   enum Area {
     NONSELECTABLE_AREA,
-    TEXT_AREA,
-    WEBLINK_AREA,  // Area is a hyperlink.
-    DOCLINK_AREA,  // Area is a link to a different part of the same document.
+    TEXT_AREA,       // Area contains regular, selectable text not
+                     // within form fields.
+    WEBLINK_AREA,    // Area is a hyperlink.
+    DOCLINK_AREA,    // Area is a link to a different part of the same
+                     // document.
+    FORM_TEXT_AREA,  // Area is a form text field or form combobox text
+                     // field.
   };
 
   struct LinkTarget {
@@ -72,6 +76,9 @@ class PDFiumPage {
                     int* char_index,
                     int* form_type,
                     LinkTarget* target);
+
+  // Converts a form type to its corresponding Area.
+  static Area FormTypeToArea(int form_type);
 
   // Gets the character at the given index.
   base::char16 GetCharAtIndex(int index);
