@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #import "ios/web/public/web_client.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -66,7 +65,6 @@ WebUIIOSDataSourceImpl::WebUIIOSDataSourceImpl(const std::string& source_name)
       source_name_(source_name),
       default_resource_(-1),
       deny_xframe_options_(true),
-      load_time_data_defaults_added_(true),
       replace_existing_source_(true) {}
 
 WebUIIOSDataSourceImpl::~WebUIIOSDataSourceImpl() {}
@@ -74,27 +72,16 @@ WebUIIOSDataSourceImpl::~WebUIIOSDataSourceImpl() {}
 void WebUIIOSDataSourceImpl::AddString(const std::string& name,
                                        const base::string16& value) {
   localized_strings_.SetString(name, value);
-  replacements_[name] = base::UTF16ToUTF8(value);
 }
 
 void WebUIIOSDataSourceImpl::AddString(const std::string& name,
                                        const std::string& value) {
   localized_strings_.SetString(name, value);
-  replacements_[name] = value;
 }
 
 void WebUIIOSDataSourceImpl::AddLocalizedString(const std::string& name,
                                                 int ids) {
   localized_strings_.SetString(name, GetWebClient()->GetLocalizedString(ids));
-  replacements_[name] =
-      base::UTF16ToUTF8(GetWebClient()->GetLocalizedString(ids));
-}
-
-void WebUIIOSDataSourceImpl::AddLocalizedStrings(
-    const base::DictionaryValue& localized_strings) {
-  localized_strings_.MergeDictionary(&localized_strings);
-  ui::TemplateReplacementsFromDictionaryValue(localized_strings,
-                                              &replacements_);
 }
 
 void WebUIIOSDataSourceImpl::AddBoolean(const std::string& name, bool value) {
@@ -141,22 +128,9 @@ std::string WebUIIOSDataSourceImpl::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
-void WebUIIOSDataSourceImpl::EnsureLoadTimeDataDefaultsAdded() {
-  if (!load_time_data_defaults_added_)
-    return;
-
-  load_time_data_defaults_added_ = false;
-  base::DictionaryValue defaults;
-  webui::SetLoadTimeDataDefaults(web::GetWebClient()->GetApplicationLocale(),
-                                 &defaults);
-  AddLocalizedStrings(defaults);
-}
-
 void WebUIIOSDataSourceImpl::StartDataRequest(
     const std::string& path,
     const URLDataSourceIOS::GotDataCallback& callback) {
-  EnsureLoadTimeDataDefaultsAdded();
-
   if (!json_path_.empty() && path == json_path_) {
     SendLocalizedStringsAsJSON(callback);
     return;
@@ -168,30 +142,24 @@ void WebUIIOSDataSourceImpl::StartDataRequest(
   if (result != path_to_idr_map_.end())
     resource_id = result->second;
   DCHECK_NE(resource_id, -1);
-  SendFromResourceBundle(path, callback, resource_id);
+  SendFromResourceBundle(callback, resource_id);
 }
 
 void WebUIIOSDataSourceImpl::SendLocalizedStringsAsJSON(
     const URLDataSourceIOS::GotDataCallback& callback) {
   std::string template_data;
+  webui::SetLoadTimeDataDefaults(web::GetWebClient()->GetApplicationLocale(),
+                                 &localized_strings_);
+
   webui::AppendJsonJS(&localized_strings_, &template_data);
   callback.Run(base::RefCountedString::TakeString(&template_data));
 }
 
 void WebUIIOSDataSourceImpl::SendFromResourceBundle(
-    const std::string& path,
     const URLDataSourceIOS::GotDataCallback& callback,
     int idr) {
   scoped_refptr<base::RefCountedMemory> response(
       GetWebClient()->GetDataResourceBytes(idr));
-
-  if (response.get() && GetMimeType(path) == "text/html") {
-    std::string replaced = ui::ReplaceTemplateExpressions(
-        base::StringPiece(response->front_as<char>(), response->size()),
-        replacements_);
-    response = base::RefCountedString::TakeString(&replaced);
-  }
-
   callback.Run(response);
 }
 
