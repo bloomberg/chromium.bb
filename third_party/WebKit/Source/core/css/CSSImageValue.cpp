@@ -53,8 +53,10 @@ CSSImageValue::CSSImageValue(const AtomicString& absolute_url)
 
 CSSImageValue::~CSSImageValue() {}
 
-StyleImage* CSSImageValue::CacheImage(const Document& document,
-                                      CrossOriginAttributeValue cross_origin) {
+StyleImage* CSSImageValue::CacheImage(
+    const Document& document,
+    FetchParameters::PlaceholderImageRequestType placeholder_image_request_type,
+    CrossOriginAttributeValue cross_origin) {
   if (!cached_image_) {
     if (absolute_url_.IsEmpty())
       ReResolveURL(document);
@@ -72,7 +74,8 @@ StyleImage* CSSImageValue::CacheImage(const Document& document,
                                          cross_origin);
     }
 
-    if (document.GetFrame())
+    if (document.GetFrame() &&
+        placeholder_image_request_type == FetchParameters::kAllowPlaceholder)
       document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
     if (ImageResourceContent* cached_image =

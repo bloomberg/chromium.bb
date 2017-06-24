@@ -29,6 +29,7 @@
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
 
@@ -71,6 +72,7 @@ class ElementStyleResources {
   StyleImage* LoadPendingImage(
       ComputedStyle*,
       StylePendingImage*,
+      FetchParameters::PlaceholderImageRequestType,
       CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
   Member<Document> document_;
