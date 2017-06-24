@@ -2177,17 +2177,14 @@ ChromeContentBrowserClient::CreateQuotaPermissionContext() {
 void ChromeContentBrowserClient::GetQuotaSettings(
     content::BrowserContext* context,
     content::StoragePartition* partition,
-    const storage::OptionalQuotaSettingsCallback& callback) {
+    storage::OptionalQuotaSettingsCallback callback) {
   if (g_default_quota_settings) {
     // For debugging tests harness can inject settings.
-    callback.Run(*g_default_quota_settings);
+    std::move(callback).Run(*g_default_quota_settings);
     return;
   }
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&storage::CalculateNominalDynamicSettings,
-                 partition->GetPath(), context->IsOffTheRecord()),
-      callback);
+  storage::GetNominalDynamicSettings(
+      partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(

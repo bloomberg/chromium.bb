@@ -25,7 +25,7 @@ class ViewsContentBrowserClient : public content::ContentBrowserClient {
   void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,
-      const storage::OptionalQuotaSettingsCallback& callback) override;
+      storage::OptionalQuotaSettingsCallback callback) override;
 
  private:
   ViewsContentClientMainParts* views_content_main_parts_;

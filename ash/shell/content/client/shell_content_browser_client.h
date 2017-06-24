@@ -31,7 +31,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,
-      const storage::OptionalQuotaSettingsCallback& callback) override;
+      storage::OptionalQuotaSettingsCallback callback) override;
 
  private:
   ShellBrowserMainParts* shell_browser_main_parts_;

@@ -990,9 +990,9 @@ void StoragePartitionImpl::SetMediaURLRequestContext(
 }
 
 void StoragePartitionImpl::GetQuotaSettings(
-    const storage::OptionalQuotaSettingsCallback& callback) {
+    storage::OptionalQuotaSettingsCallback callback) {
   GetContentClient()->browser()->GetQuotaSettings(browser_context_, this,
-                                                  callback);
+                                                  std::move(callback));
 }
 
 }  // namespace content

@@ -459,7 +459,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,
-      const storage::OptionalQuotaSettingsCallback& callback);
+      storage::OptionalQuotaSettingsCallback callback);
 
   // Informs the embedder that a certificate error has occured.  If
   // |overridable| is true and if |strict_enforcement| is false, the user
