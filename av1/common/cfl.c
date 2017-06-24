@@ -114,7 +114,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
 
 // CfL computes its own block-level DC_PRED. This is required to compute both
 // alpha_cb and alpha_cr before the prediction are computed.
-static void cfl_dc_pred(MACROBLOCKD *xd) {
+static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   const struct macroblockd_plane *const pd_u = &xd->plane[AOM_PLANE_U];
   const struct macroblockd_plane *const pd_v = &xd->plane[AOM_PLANE_V];
 
@@ -125,8 +125,13 @@ static void cfl_dc_pred(MACROBLOCKD *xd) {
   const int dst_v_stride = pd_v->dst.stride;
 
   CFL_CTX *const cfl = xd->cfl;
-  const int width = cfl->uv_width;
-  const int height = cfl->uv_height;
+
+  // Compute DC_PRED until block boundary. We can't assume the neighbor will use
+  // the same transform size.
+  const int width = max_block_wide(xd, plane_bsize, AOM_PLANE_U)
+                    << tx_size_wide_log2[0];
+  const int height = max_block_high(xd, plane_bsize, AOM_PLANE_U)
+                     << tx_size_high_log2[0];
   // Number of pixel on the top and left borders.
   const double num_pel = width + height;
 
@@ -297,7 +302,7 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
 
   // Compute block-level DC_PRED for both chromatic planes.
   // DC_PRED replaces beta in the linear model.
-  cfl_dc_pred(xd);
+  cfl_dc_pred(xd, plane_bsize);
   // Compute block-level average on reconstructed luma input.
   cfl_compute_average(cfl);
   cfl->are_parameters_computed = 1;
