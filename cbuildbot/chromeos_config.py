@@ -2030,8 +2030,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=True,
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
-      # Add betty smoke VMTest crbug.com/710629.
-      vm_tests=[config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      vm_tests=[],
       vm_tests_override=None,
   )
 
@@ -2101,6 +2100,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'reef',
   ])
+  _nyc_vmtest_boards = frozenset([
+      'betty',
+  ])
 
   # Android MNC slaves.
   # For historical reason, slave names do not contain "mnc".
@@ -2134,6 +2136,14 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           _nyc_no_hwtest_boards,
           board_configs,
           site_config.templates.nyc_android_pfq,
+      ) +
+      site_config.AddForBoards(
+          'nyc-android-pfq',
+          _nyc_vmtest_boards,
+          board_configs,
+          site_config.templates.nyc_android_pfq,
+          vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                    config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       )
   )
 
