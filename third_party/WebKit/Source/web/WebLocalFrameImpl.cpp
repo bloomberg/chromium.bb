@@ -1495,20 +1495,23 @@ WebString WebLocalFrameImpl::GetLayerTreeAsTextForTesting(
 
 // WebLocalFrameImpl public --------------------------------------------------
 
-WebLocalFrame* WebLocalFrame::Create(
-    WebTreeScopeType scope,
+WebLocalFrame* WebLocalFrame::CreateMainFrame(
+    WebView* web_view,
     WebFrameClient* client,
-    blink::InterfaceProvider* interface_provider,
-    blink::InterfaceRegistry* interface_registry,
-    WebFrame* opener) {
-  return WebLocalFrameImpl::Create(scope, client, interface_provider,
-                                   interface_registry, opener);
+    InterfaceProvider* interface_provider,
+    InterfaceRegistry* interface_registry,
+    WebFrame* opener,
+    const WebString& name,
+    WebSandboxFlags sandbox_flags) {
+  return WebLocalFrameImpl::CreateMainFrame(
+      web_view, client, interface_provider, interface_registry, opener, name,
+      sandbox_flags);
 }
 
 WebLocalFrame* WebLocalFrame::CreateProvisional(
     WebFrameClient* client,
-    blink::InterfaceProvider* interface_provider,
-    blink::InterfaceRegistry* interface_registry,
+    InterfaceProvider* interface_provider,
+    InterfaceRegistry* interface_registry,
     WebRemoteFrame* old_web_frame,
     WebSandboxFlags flags) {
   return WebLocalFrameImpl::CreateProvisional(
@@ -1524,6 +1527,27 @@ WebLocalFrameImpl* WebLocalFrameImpl::Create(
   WebLocalFrameImpl* frame = new WebLocalFrameImpl(
       scope, client, interface_provider, interface_registry);
   frame->SetOpener(opener);
+  return frame;
+}
+
+WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
+    WebView* web_view,
+    WebFrameClient* client,
+    InterfaceProvider* interface_provider,
+    InterfaceRegistry* interface_registry,
+    WebFrame* opener,
+    const WebString& name,
+    WebSandboxFlags sandbox_flags) {
+  WebLocalFrameImpl* frame =
+      new WebLocalFrameImpl(WebTreeScopeType::kDocument, client,
+                            interface_provider, interface_registry);
+  frame->SetOpener(opener);
+  Page& page = *static_cast<WebViewBase*>(web_view)->GetPage();
+  DCHECK(!page.MainFrame());
+  frame->InitializeCoreFrame(page, nullptr, name);
+  // Can't force sandbox flags until there's a core frame.
+  frame->GetFrame()->Loader().ForceSandboxFlags(
+      static_cast<SandboxFlags>(sandbox_flags));
   return frame;
 }
 
@@ -2368,10 +2392,6 @@ WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlags() const {
     return WebSandboxFlags::kNone;
   return static_cast<WebSandboxFlags>(
       GetFrame()->Loader().EffectiveSandboxFlags());
-}
-
-void WebLocalFrameImpl::ForceSandboxFlags(WebSandboxFlags flags) {
-  GetFrame()->Loader().ForceSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
 void WebLocalFrameImpl::ClearActiveFindMatch() {

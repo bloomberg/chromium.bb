@@ -52,7 +52,8 @@ blink::WebView* WebViewTestClient::CreateView(
     const blink::WebWindowFeatures& features,
     const blink::WebString& frame_name,
     blink::WebNavigationPolicy policy,
-    bool suppress_opener) {
+    bool suppress_opener,
+    blink::WebSandboxFlags sandbox_flags) {
   if (test_runner()->shouldDumpNavigationPolicy()) {
     delegate()->PrintMessage("Default policy for createView for '" +
                              URLDescription(request.Url()) + "' is '" +

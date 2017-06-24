@@ -28,6 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
+#include "core/dom/SandboxFlags.h"
 #include "core/html/forms/PopupMenu.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "core/loader/FrameLoader.h"
@@ -132,7 +133,8 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual Page* CreateWindow(LocalFrame*,
                              const FrameLoadRequest&,
                              const WebWindowFeatures&,
-                             NavigationPolicy) = 0;
+                             NavigationPolicy,
+                             SandboxFlags) = 0;
   virtual void Show(NavigationPolicy) = 0;
 
   // All the parameters should be in viewport space. That is, if an event

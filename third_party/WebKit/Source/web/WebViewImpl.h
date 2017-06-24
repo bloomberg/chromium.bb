@@ -154,7 +154,6 @@ class WEB_EXPORT WebViewImpl final
 
   // WebView methods:
   virtual bool IsWebView() const { return true; }
-  void SetMainFrame(WebFrame*) override;
   void SetCredentialManagerClient(WebCredentialManagerClient*) override;
   void SetPrerendererClient(WebPrerendererClient*) override;
   WebSettings* GetSettings() override;

@@ -46,7 +46,6 @@ namespace blink {
 
 class Frame;
 class OpenedFrameTracker;
-class Page;
 class Visitor;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
@@ -246,7 +245,6 @@ class BLINK_EXPORT WebFrame {
 
   bool InShadowTree() const { return scope_ == WebTreeScopeType::kShadow; }
 
-  static void InitializeCoreFrame(WebFrame&, Page&);
   static void TraceFrames(Visitor*, WebFrame*);
 
   // Detaches a frame from its parent frame if it has one.

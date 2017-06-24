@@ -353,15 +353,6 @@ void WebFrame::DetachFromParent() {
     Parent()->RemoveChild(this);
 }
 
-void WebFrame::InitializeCoreFrame(WebFrame& frame, Page& page) {
-  if (frame.IsWebLocalFrame())
-    ToWebLocalFrameBase(frame).InitializeCoreFrame(page, 0, g_null_atom);
-  else if (frame.IsWebRemoteFrame())
-    ToWebRemoteFrameBase(frame).InitializeCoreFrame(page, 0, g_null_atom);
-  else
-    NOTREACHED();
-}
-
 Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   if (frame.IsWebLocalFrame())
     return ToWebLocalFrameBase(frame).GetFrame();

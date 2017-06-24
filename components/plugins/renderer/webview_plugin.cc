@@ -259,9 +259,8 @@ WebViewPlugin::WebViewHelper::WebViewHelper(
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-  WebLocalFrame* web_frame = WebLocalFrame::Create(
-      blink::WebTreeScopeType::kDocument, this, nullptr, nullptr);
-  web_view_->SetMainFrame(web_frame);
+  WebLocalFrame* web_frame =
+      WebLocalFrame::CreateMainFrame(web_view_, this, nullptr, nullptr);
   WebFrameWidget::Create(this, web_frame);
 }
 

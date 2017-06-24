@@ -41,7 +41,8 @@ class WebViewTestClient : public blink::WebViewClient {
                              const blink::WebWindowFeatures& features,
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
-                             bool suppress_opener) override;
+                             bool suppress_opener,
+                             blink::WebSandboxFlags) override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebSpeechRecognizer* SpeechRecognizer() override;
   blink::WebString AcceptLanguages() override;

@@ -23,11 +23,21 @@ WebViewBase* WebFactoryImpl::CreateWebViewBase(
   return WebViewImpl::Create(client, state);
 }
 
+WebLocalFrameBase* WebFactoryImpl::CreateMainWebLocalFrameBase(
+    WebView* web_view,
+    WebFrameClient* client,
+    InterfaceProvider* provider,
+    InterfaceRegistry* registry) const {
+  return WebLocalFrameImpl::CreateMainFrame(web_view, client, provider,
+                                            registry, nullptr, g_empty_atom,
+                                            WebSandboxFlags::kNone);
+}
+
 WebLocalFrameBase* WebFactoryImpl::CreateWebLocalFrameBase(
     WebTreeScopeType type,
     WebFrameClient* client,
-    blink::InterfaceProvider* provider,
-    blink::InterfaceRegistry* registry,
+    InterfaceProvider* provider,
+    InterfaceRegistry* registry,
     WebFrame* opener) const {
   return WebLocalFrameImpl::Create(type, client, provider, registry, opener);
 }

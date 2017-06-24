@@ -35,7 +35,8 @@ WebView* SimWebViewClient::CreateView(WebLocalFrame* opener,
                                       const WebWindowFeatures&,
                                       const WebString& name,
                                       WebNavigationPolicy,
-                                      bool) {
+                                      bool,
+                                      WebSandboxFlags) {
   return web_view_helper_.InitializeWithOpener(opener);
 }
 

@@ -568,7 +568,8 @@ TEST_F(RenderViewImplTest, RenderFrameClearedAfterClose) {
   blink::WebURLRequest popup_request(GURL("http://foo.com"));
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
-      blink::kWebNavigationPolicyNewForegroundTab, false);
+      blink::kWebNavigationPolicyNewForegroundTab, false,
+      blink::WebSandboxFlags::kNone);
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
 
   // Checks that the frame is deleted properly and cleans up the view.
@@ -789,7 +790,8 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   blink::WebURLRequest popup_request(GURL("http://foo.com"));
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
-      blink::kWebNavigationPolicyNewForegroundTab, false);
+      blink::kWebNavigationPolicyNewForegroundTab, false,
+      blink::WebSandboxFlags::kNone);
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   blink::WebFrameClient::NavigationPolicyInfo popup_policy_info(popup_request);
   popup_policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;

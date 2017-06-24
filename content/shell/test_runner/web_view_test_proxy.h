@@ -190,12 +190,13 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
                              const blink::WebWindowFeatures& features,
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
-                             bool suppress_opener) override {
+                             bool suppress_opener,
+                             blink::WebSandboxFlags sandbox_flags) override {
     if (!view_test_client()->CreateView(creator, request, features, frame_name,
-                                        policy, suppress_opener))
+                                        policy, suppress_opener, sandbox_flags))
       return nullptr;
     return Base::CreateView(creator, request, features, frame_name, policy,
-                            suppress_opener);
+                            suppress_opener, sandbox_flags);
   }
   void PrintPage(blink::WebLocalFrame* frame) override {
     view_test_client()->PrintPage(frame);

@@ -288,7 +288,6 @@ class WEB_EXPORT WebLocalFrameImpl final
                          const WebSourceLocation&) override;
   void SendOrientationChangeEvent() override;
   WebSandboxFlags EffectiveSandboxFlags() const override;
-  void ForceSandboxFlags(WebSandboxFlags) override;
   void DidCallAddSearchProvider() override;
   void DidCallIsSearchProviderInstalled() override;
   void ReplaceSelection(const WebString&) override;
@@ -337,12 +336,19 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   static WebLocalFrameImpl* Create(WebTreeScopeType,
                                    WebFrameClient*,
-                                   blink::InterfaceProvider*,
-                                   blink::InterfaceRegistry*,
+                                   InterfaceProvider*,
+                                   InterfaceRegistry*,
                                    WebFrame* opener);
+  static WebLocalFrameImpl* CreateMainFrame(WebView*,
+                                            WebFrameClient*,
+                                            InterfaceProvider*,
+                                            InterfaceRegistry*,
+                                            WebFrame* opener,
+                                            const WebString& name,
+                                            WebSandboxFlags);
   static WebLocalFrameImpl* CreateProvisional(WebFrameClient*,
-                                              blink::InterfaceProvider*,
-                                              blink::InterfaceRegistry*,
+                                              InterfaceProvider*,
+                                              InterfaceRegistry*,
                                               WebRemoteFrame*,
                                               WebSandboxFlags);
 

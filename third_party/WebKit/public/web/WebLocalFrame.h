@@ -17,6 +17,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/site_engagement.mojom-shared.h"
+#include "public/web/WebSandboxFlags.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -47,7 +48,7 @@ class WebSharedWorkerRepositoryClient;
 class WebSpellCheckPanelHostClient;
 class WebTextCheckClient;
 class WebURLLoader;
-enum class WebSandboxFlags;
+class WebView;
 enum class WebTreeScopeType;
 struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
@@ -63,13 +64,20 @@ struct WebSourceLocation;
 // FIXME: Move lots of methods from WebFrame in here.
 class WebLocalFrame : public WebFrame {
  public:
-  // Creates a WebFrame. Delete this WebFrame by calling WebFrame::Close().
+  // Creates a main local frame for the WebView. Can only be invoked when no
+  // main frame exists yet. Call Close() to release the returned frame.
   // WebFrameClient may not be null.
-  BLINK_EXPORT static WebLocalFrame* Create(WebTreeScopeType,
-                                            WebFrameClient*,
-                                            blink::InterfaceProvider*,
-                                            blink::InterfaceRegistry*,
-                                            WebFrame* opener = nullptr);
+  // TODO(dcheng): The argument order should be more consistent with
+  // CreateLocalChild() and CreateRemoteChild() in WebRemoteFrame... but it's so
+  // painful...
+  BLINK_EXPORT static WebLocalFrame* CreateMainFrame(
+      WebView*,
+      WebFrameClient*,
+      blink::InterfaceProvider*,
+      blink::InterfaceRegistry*,
+      WebFrame* opener = nullptr,
+      const WebString& name = WebString(),
+      WebSandboxFlags = WebSandboxFlags::kNone);
 
   // Used to create a provisional local frame. Currently, it's possible for a
   // provisional navigation not to commit (i.e. it might turn into a download),
@@ -84,9 +92,9 @@ class WebLocalFrame : public WebFrame {
   // frame pointer, the parent frame's children list will not contain the
   // provisional frame. Thus, a provisional frame is invisible to the rest of
   // Blink unless the navigation commits and the provisional frame is fully
-  // attached to the frame tree by calling swap().
+  // attached to the frame tree by calling Swap().
   //
-  // Otherwise, if the load should not commit, call detach() to discard the
+  // Otherwise, if the load should not commit, call Detach() to discard the
   // frame.
   BLINK_EXPORT static WebLocalFrame* CreateProvisional(
       WebFrameClient*,
@@ -547,12 +555,6 @@ class WebLocalFrame : public WebFrame {
   // Returns the effective sandbox flags which are inherited from their parent
   // frame.
   virtual WebSandboxFlags EffectiveSandboxFlags() const = 0;
-
-  // Set sandbox flags that will always be forced on this frame.  This is
-  // used to inherit sandbox flags from cross-process opener frames in popups.
-  //
-  // TODO(dcheng): Remove this once we have WebLocalFrame::createMainFrame.
-  virtual void ForceSandboxFlags(WebSandboxFlags) = 0;
 
   // Find-in-page -----------------------------------------------------------
 

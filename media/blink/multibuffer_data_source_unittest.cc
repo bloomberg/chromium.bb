@@ -227,9 +227,8 @@ class MultibufferDataSourceTest : public testing::Test {
   MultibufferDataSourceTest()
       : view_(WebView::Create(nullptr, blink::kWebPageVisibilityStateVisible)),
         preload_(MultibufferDataSource::AUTO) {
-    WebLocalFrame* frame = WebLocalFrame::Create(
-        blink::WebTreeScopeType::kDocument, &client_, nullptr, nullptr);
-    view_->SetMainFrame(frame);
+    WebLocalFrame* frame =
+        WebLocalFrame::CreateMainFrame(view_, &client_, nullptr, nullptr);
     url_index_ = make_linked_ptr(new TestUrlIndex(frame));
   }
 

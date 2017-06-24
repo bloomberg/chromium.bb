@@ -74,7 +74,8 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   Page* CreateWindow(LocalFrame*,
                      const FrameLoadRequest&,
                      const WebWindowFeatures&,
-                     NavigationPolicy) override;
+                     NavigationPolicy,
+                     SandboxFlags) override;
   void Show(NavigationPolicy) override;
   void DidOverscroll(const FloatSize& overscroll_delta,
                      const FloatSize& accumulated_overscroll,
