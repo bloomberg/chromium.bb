@@ -205,76 +205,122 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
 
 ArgumentSpec::~ArgumentSpec() {}
 
+bool ArgumentSpec::IsCorrectType(v8::Local<v8::Value> value,
+                                 const APITypeReferenceMap& refs,
+                                 std::string* error) const {
+  bool is_valid_type = false;
+
+  switch (type_) {
+    case ArgumentType::INTEGER:
+      is_valid_type = value->IsInt32();
+      break;
+    case ArgumentType::DOUBLE:
+      is_valid_type = value->IsNumber();
+      break;
+    case ArgumentType::BOOLEAN:
+      is_valid_type = value->IsBoolean();
+      break;
+    case ArgumentType::STRING:
+      is_valid_type = value->IsString();
+      break;
+    case ArgumentType::OBJECT:
+      // Don't allow functions or arrays (even though they are technically
+      // objects). This is to make it easier to match otherwise-ambiguous
+      // signatures. For instance, if an API method has an optional object
+      // parameter and then an optional callback, we wouldn't necessarily be
+      // able to match the arguments if we allowed functions as objects.
+      // TODO(devlin): What about other subclasses of Object, like Map and Set?
+      is_valid_type =
+          value->IsObject() && !value->IsFunction() && !value->IsArray();
+      break;
+    case ArgumentType::LIST:
+      is_valid_type = value->IsArray();
+      break;
+    case ArgumentType::BINARY:
+      is_valid_type = value->IsArrayBuffer() || value->IsArrayBufferView();
+      break;
+    case ArgumentType::FUNCTION:
+      is_valid_type = value->IsFunction();
+      break;
+    case ArgumentType::ANY:
+      is_valid_type = true;
+      break;
+    case ArgumentType::REF: {
+      DCHECK(ref_);
+      const ArgumentSpec* reference = refs.GetSpec(ref_.value());
+      DCHECK(reference) << ref_.value();
+      is_valid_type = reference->IsCorrectType(value, refs, error);
+      break;
+    }
+    case ArgumentType::CHOICES:
+      for (const auto& choice : choices_) {
+        if (choice->IsCorrectType(value, refs, error)) {
+          is_valid_type = true;
+          break;
+        }
+      }
+      break;
+  }
+
+  if (!is_valid_type)
+    *error = GetInvalidTypeError(value);
+  return is_valid_type;
+}
+
 bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
                                  v8::Local<v8::Value> value,
                                  const APITypeReferenceMap& refs,
                                  std::unique_ptr<base::Value>* out_value,
                                  std::string* error) const {
-  if (type_ == ArgumentType::FUNCTION) {
-    if (!value->IsFunction()) {
-      *error = GetInvalidTypeError(value);
-      return false;
-    }
-
-    if (out_value) {
-      // Certain APIs (contextMenus) have functions as parameters other than the
-      // callback (contextMenus uses it for an onclick listener). Our generated
-      // types have adapted to consider functions "objects" and serialize them
-      // as dictionaries.
-      // TODO(devlin): It'd be awfully nice to get rid of this eccentricity.
-      *out_value = base::MakeUnique<base::DictionaryValue>();
-    }
-    return true;
-  }
-
-  if (type_ == ArgumentType::REF) {
-    DCHECK(ref_);
-    const ArgumentSpec* reference = refs.GetSpec(ref_.value());
-    DCHECK(reference) << ref_.value();
-    return reference->ParseArgument(context, value, refs, out_value, error);
-  }
-
-  if (type_ == ArgumentType::CHOICES) {
-    for (const auto& choice : choices_) {
-      if (choice->ParseArgument(context, value, refs, out_value, error))
-        return true;
-    }
-    *error = api_errors::InvalidChoice();
+  // Note: for top-level arguments (i.e., those passed directly to the function,
+  // as opposed to a property on an object, or the item of an array), we will
+  // have already checked the type. Doing so again should be nearly free, but
+  // if we do find this to be an issue, we could avoid the second call.
+  if (!IsCorrectType(value, refs, error))
     return false;
+
+  switch (type_) {
+    case ArgumentType::INTEGER:
+    case ArgumentType::DOUBLE:
+    case ArgumentType::BOOLEAN:
+    case ArgumentType::STRING:
+      return ParseArgumentToFundamental(context, value, out_value, error);
+    case ArgumentType::OBJECT:
+      return ParseArgumentToObject(context, value.As<v8::Object>(), refs,
+                                   out_value, error);
+    case ArgumentType::LIST:
+      return ParseArgumentToArray(context, value.As<v8::Array>(), refs,
+                                  out_value, error);
+    case ArgumentType::BINARY:
+      return ParseArgumentToAny(context, value, out_value, error);
+    case ArgumentType::FUNCTION:
+      if (out_value) {
+        // Certain APIs (contextMenus) have functions as parameters other than
+        // the callback (contextMenus uses it for an onclick listener). Our
+        // generated types have adapted to consider functions "objects" and
+        // serialize them as dictionaries.
+        // TODO(devlin): It'd be awfully nice to get rid of this eccentricity.
+        *out_value = base::MakeUnique<base::DictionaryValue>();
+      }
+      return true;
+    case ArgumentType::REF: {
+      DCHECK(ref_);
+      const ArgumentSpec* reference = refs.GetSpec(ref_.value());
+      DCHECK(reference) << ref_.value();
+      return reference->ParseArgument(context, value, refs, out_value, error);
+    }
+    case ArgumentType::CHOICES: {
+      for (const auto& choice : choices_) {
+        if (choice->ParseArgument(context, value, refs, out_value, error))
+          return true;
+      }
+      *error = api_errors::InvalidChoice();
+      return false;
+    }
+    case ArgumentType::ANY:
+      return ParseArgumentToAny(context, value, out_value, error);
   }
 
-  if (IsFundamentalType())
-    return ParseArgumentToFundamental(context, value, out_value, error);
-  if (type_ == ArgumentType::OBJECT) {
-    // Don't allow functions or arrays (even though they are technically
-    // objects). This is to make it easier to match otherwise-ambiguous
-    // signatures. For instance, if an API method has an optional object
-    // parameter and then an optional callback, we wouldn't necessarily be able
-    // to match the arguments if we allowed functions as objects.
-    if (!value->IsObject() || value->IsFunction() || value->IsArray()) {
-      *error = GetInvalidTypeError(value);
-      return false;
-    }
-    v8::Local<v8::Object> object = value.As<v8::Object>();
-    return ParseArgumentToObject(context, object, refs, out_value, error);
-  }
-  if (type_ == ArgumentType::LIST) {
-    if (!value->IsArray()) {
-      *error = GetInvalidTypeError(value);
-      return false;
-    }
-    v8::Local<v8::Array> array = value.As<v8::Array>();
-    return ParseArgumentToArray(context, array, refs, out_value, error);
-  }
-  if (type_ == ArgumentType::BINARY) {
-    if (!value->IsArrayBuffer() && !value->IsArrayBufferView()) {
-      *error = GetInvalidTypeError(value);
-      return false;
-    }
-    return ParseArgumentToAny(context, value, out_value, error);
-  }
-  if (type_ == ArgumentType::ANY)
-    return ParseArgumentToAny(context, value, out_value, error);
   NOTREACHED();
   return false;
 }
@@ -328,24 +374,14 @@ const std::string& ArgumentSpec::GetTypeName() const {
   return type_name_;
 }
 
-bool ArgumentSpec::IsFundamentalType() const {
-  return type_ == ArgumentType::INTEGER || type_ == ArgumentType::DOUBLE ||
-         type_ == ArgumentType::BOOLEAN || type_ == ArgumentType::STRING;
-}
-
 bool ArgumentSpec::ParseArgumentToFundamental(
     v8::Local<v8::Context> context,
     v8::Local<v8::Value> value,
     std::unique_ptr<base::Value>* out_value,
     std::string* error) const {
-  DCHECK(IsFundamentalType());
-
   switch (type_) {
     case ArgumentType::INTEGER: {
-      if (!value->IsInt32()) {
-        *error = GetInvalidTypeError(value);
-        return false;
-      }
+      DCHECK(value->IsInt32());
       int int_val = value.As<v8::Int32>()->Value();
       if (!CheckFundamentalBounds(int_val, minimum_, maximum_, error))
         return false;
@@ -354,10 +390,7 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       return true;
     }
     case ArgumentType::DOUBLE: {
-      if (!value->IsNumber()) {
-        *error = GetInvalidTypeError(value);
-        return false;
-      }
+      DCHECK(value->IsNumber());
       double double_val = value.As<v8::Number>()->Value();
       if (!CheckFundamentalBounds(double_val, minimum_, maximum_, error))
         return false;
@@ -366,10 +399,7 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       return true;
     }
     case ArgumentType::STRING: {
-      if (!value->IsString()) {
-        *error = GetInvalidTypeError(value);
-        return false;
-      }
+      DCHECK(value->IsString());
 
       v8::Local<v8::String> v8_string = value.As<v8::String>();
       size_t length = static_cast<size_t>(v8_string->Length());
@@ -404,10 +434,7 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       return true;
     }
     case ArgumentType::BOOLEAN: {
-      if (!value->IsBoolean()) {
-        *error = GetInvalidTypeError(value);
-        return false;
-      }
+      DCHECK(value->IsBoolean());
       if (out_value) {
         *out_value =
             base::MakeUnique<base::Value>(value.As<v8::Boolean>()->Value());

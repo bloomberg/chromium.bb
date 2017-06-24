@@ -123,6 +123,21 @@ std::unique_ptr<APISignature> RefEnum() {
   return base::MakeUnique<APISignature>(std::move(specs));
 }
 
+std::unique_ptr<APISignature> OptionalObjectAndCallback() {
+  SpecVector specs;
+  specs.push_back(
+      ArgumentSpecBuilder(ArgumentType::OBJECT, "obj")
+          .AddProperty(
+              "prop1",
+              ArgumentSpecBuilder(ArgumentType::INTEGER).MakeOptional().Build())
+          .MakeOptional()
+          .Build());
+  specs.push_back(ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback")
+                      .MakeOptional()
+                      .Build());
+  return base::MakeUnique<APISignature>(std::move(specs));
+}
+
 }  // namespace
 
 class APISignatureTest : public APIBindingTest {
@@ -301,6 +316,21 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
     ExpectFailure(*signature, "[4, function() {}]",
                   ArgumentError("any", UnserializableValue()));
     ExpectFailure(*signature, "[4]", MissingRequiredArgument("any"));
+  }
+
+  {
+    auto signature = OptionalObjectAndCallback();
+    ExpectPass(*signature, "[{prop1: 1}]", "[{'prop1':1}]", false);
+    ExpectPass(*signature, "[]", "[null]", false);
+    ExpectPass(*signature, "[null]", "[null]", false);
+    ExpectFailure(
+        *signature, "[{prop1: 'str'}]",
+        ArgumentError("obj", PropertyError("prop1", InvalidType(kTypeInteger,
+                                                                kTypeString))));
+    ExpectFailure(
+        *signature, "[{prop1: 'str'}, function() {}]",
+        ArgumentError("obj", PropertyError("prop1", InvalidType(kTypeInteger,
+                                                                kTypeString))));
   }
 }
 

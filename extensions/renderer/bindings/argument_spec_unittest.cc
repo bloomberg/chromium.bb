@@ -483,7 +483,8 @@ TEST_F(ArgumentSpecUnitTest, TypeChoicesTest) {
     ArgumentSpec spec(*ValueFromString(kSimpleChoices));
     ExpectSuccess(spec, "'alpha'", "'alpha'");
     ExpectSuccess(spec, "42", "42");
-    ExpectFailure(spec, "true", InvalidChoice());
+    const char kChoicesType[] = "[string|integer]";
+    ExpectFailure(spec, "true", InvalidType(kChoicesType, kTypeBoolean));
   }
 
   {
@@ -498,9 +499,11 @@ TEST_F(ArgumentSpecUnitTest, TypeChoicesTest) {
     ExpectSuccess(spec, "['alpha']", "['alpha']");
     ExpectSuccess(spec, "['alpha', 'beta']", "['alpha','beta']");
     ExpectSuccess(spec, "({prop1: 'alpha'})", "{'prop1':'alpha'}");
+
+    const char kChoicesType[] = "[array|object]";
     ExpectFailure(spec, "({prop1: 1})", InvalidChoice());
-    ExpectFailure(spec, "'alpha'", InvalidChoice());
-    ExpectFailure(spec, "42", InvalidChoice());
+    ExpectFailure(spec, "'alpha'", InvalidType(kChoicesType, kTypeString));
+    ExpectFailure(spec, "42", InvalidType(kChoicesType, kTypeInteger));
   }
 }
 
