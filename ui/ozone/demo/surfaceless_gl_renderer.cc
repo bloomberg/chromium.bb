@@ -11,11 +11,14 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
+#include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -79,7 +82,11 @@ SurfacelessGlRenderer::SurfacelessGlRenderer(
     gfx::AcceleratedWidget widget,
     const scoped_refptr<gl::GLSurface>& surface,
     const gfx::Size& size)
-    : GlRenderer(widget, surface, size), weak_ptr_factory_(this) {}
+    : GlRenderer(widget, surface, size),
+      overlay_checker_(ui::OzonePlatform::GetInstance()
+                           ->GetOverlayManager()
+                           ->CreateOverlayCandidates(widget)),
+      weak_ptr_factory_(this) {}
 
 SurfacelessGlRenderer::~SurfacelessGlRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in
@@ -112,6 +119,53 @@ bool SurfacelessGlRenderer::Initialize() {
   return true;
 }
 
+// OverlayChecker demonstrates how to use the
+// OverlayCandidatesOzone::CheckOverlaySupport to determine if a given overlay
+// can be successfully displayed.
+void SurfacelessGlRenderer::OverlayChecker(int z_order,
+                                           gfx::Rect bounds_rect,
+                                           gfx::RectF crop_rect) {
+  // The overlay checking interface is designed to satisfy the needs of CC which
+  // will be producing RectF target rectangles. But we use the bounds produced
+  // in RenderFrame for GLSurface::ScheduleOverlayPlane.
+  gfx::RectF display_rect(bounds_rect.x(), bounds_rect.y(), bounds_rect.width(),
+                          bounds_rect.height());
+
+  OverlayCandidatesOzone::OverlaySurfaceCandidate overlay_candidate;
+
+  // The bounds rectangle of the candidate overlay buffer.
+  overlay_candidate.buffer_size = bounds_rect.size();
+  // The same rectangle in floating point coordinates.
+  overlay_candidate.display_rect = display_rect;
+
+  // Show the entire buffer by setting the crop to a unity square.
+  overlay_candidate.crop_rect = gfx::RectF(0, 0, 1, 1);
+
+  // The quad rect is the rectangular bounds of the overlay demonstration
+  // rectangle.
+  overlay_candidate.quad_rect_in_target_space = bounds_rect;
+
+  // The clip region is the entire screen.
+  overlay_candidate.clip_rect = gfx::Rect(size_);
+
+  // The demo overlay instance is always ontop and not clipped. Clipped quads
+  // cannot be placed in overlays.
+  overlay_candidate.is_clipped = false;
+
+  OverlayCandidatesOzone::OverlaySurfaceCandidateList list;
+  list.push_back(overlay_candidate);
+
+  // Ask ozone platform to determine if this rect can be placed in an overlay.
+  // Ozone will update the list and return it.
+  overlay_checker_->CheckOverlaySupport(&list);
+
+  // Note what the checker decided.
+  // say more about it.
+  TRACE_EVENT2("hwoverlays", "SurfacelessGlRenderer::OverlayChecker", "canihaz",
+               list[0].overlay_handled, "display_rect",
+               list[0].display_rect.ToString());
+}
+
 void SurfacelessGlRenderer::RenderFrame() {
   TRACE_EVENT0("ozone", "SurfacelessGlRenderer::RenderFrame");
 
@@ -133,6 +187,11 @@ void SurfacelessGlRenderer::RenderFrame() {
     gfx::Vector2d offset(fraction * (size_.width() - overlay_rect.width()),
                          (size_.height() - overlay_rect.height()) / 2);
     overlay_rect += offset;
+
+    // TODO(rjkroege): Overlay checking should gate the following and will
+    // be added after solving http://crbug.com/735640
+    OverlayChecker(1, overlay_rect, gfx::RectF(0, 0, 1, 1));
+
     surface_->ScheduleOverlayPlane(1, gfx::OVERLAY_TRANSFORM_NONE,
                                    overlay_buffer_->image(), overlay_rect,
                                    gfx::RectF(0, 0, 1, 1));

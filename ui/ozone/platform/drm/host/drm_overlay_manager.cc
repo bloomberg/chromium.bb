@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/drm/host/drm_overlay_candidates_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
@@ -44,6 +45,7 @@ DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
 void DrmOverlayManager::CheckOverlaySupport(
     OverlayCandidatesOzone::OverlaySurfaceCandidateList* candidates,
     gfx::AcceleratedWidget widget) {
+  TRACE_EVENT0("hwoverlays", "DrmOverlayManager::CheckOverlaySupport");
   std::vector<OverlayCheck_Params> overlay_params;
   for (auto& candidate : *candidates) {
     // Reject candidates that don't fall on a pixel boundary.
@@ -118,7 +120,8 @@ void DrmOverlayManager::SendOverlayValidationRequest(
     gfx::AcceleratedWidget widget) const {
   if (!proxy_->IsConnected())
     return;
-
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "hwoverlays", "DrmOverlayManager::SendOverlayValidationRequest", this);
   proxy_->GpuCheckOverlayCapabilities(widget, new_params);
 }
 
@@ -126,6 +129,9 @@ void DrmOverlayManager::GpuSentOverlayResult(
     gfx::AcceleratedWidget widget,
     const std::vector<OverlayCheck_Params>& params,
     const std::vector<OverlayCheckReturn_Params>& returns) {
+  TRACE_EVENT_ASYNC_END0(
+      "hwoverlays", "DrmOverlayManager::SendOverlayValidationRequest response",
+      this);
   cache_.Put(params, returns);
 }
 
