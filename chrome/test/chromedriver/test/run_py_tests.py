@@ -1368,6 +1368,21 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       else:
         self.fail('unexpected cookie: %s' % json.dumps(cookie))
 
+  def testCookiePath(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/long_url/empty.html'))
+    self._driver.AddCookie({'name': 'a', 'value': 'b'})
+    self._driver.AddCookie({
+        'name': 'x', 'value': 'y', 'path': '/chromedriver/long_url'})
+    cookies = self._driver.GetCookies()
+    self.assertEquals(2, len(cookies))
+    for cookie in cookies:
+      self.assertIn('path', cookie)
+      if cookie['name'] == 'a':
+        self.assertEquals('/' , cookie['path'])
+      if cookie['name'] == 'x':
+        self.assertEquals('/chromedriver/long_url' , cookie['path'])
+
   def testGetUrlOnInvalidUrl(self):
     # Make sure we don't return 'data:text/html,chromewebdata' (see
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1272). RFC 6761
