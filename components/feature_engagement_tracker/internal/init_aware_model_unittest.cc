@@ -98,6 +98,7 @@ TEST_F(InitAwareModelTest, PassThroughIncrementEvent) {
 
   model_->IncrementEvent("foo", 0U);
   model_->IncrementEvent("bar", 1U);
+  EXPECT_EQ(0U, model_->GetQueuedEventCountForTesting());
 }
 
 TEST_F(InitAwareModelTest, QueuedIncrementEvent) {
@@ -130,6 +131,40 @@ TEST_F(InitAwareModelTest, QueuedIncrementEvent) {
   EXPECT_CALL(*mocked_model_, IsReady()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mocked_model_, IncrementEvent("qux", 3U)).Times(1);
   model_->IncrementEvent("qux", 3U);
+  EXPECT_EQ(0U, model_->GetQueuedEventCountForTesting());
+}
+
+TEST_F(InitAwareModelTest, QueuedIncrementEventWithUnsuccessfulInit) {
+  {
+    EXPECT_CALL(*mocked_model_, IsReady()).WillRepeatedly(Return(false));
+    EXPECT_CALL(*mocked_model_, IncrementEvent(_, _)).Times(0);
+
+    model_->IncrementEvent("foo", 0U);
+    model_->IncrementEvent("bar", 1U);
+  }
+
+  Model::OnModelInitializationFinished callback;
+  EXPECT_CALL(*mocked_model_, Initialize(_, 2U))
+      .WillOnce(SaveArg<0>(&callback));
+  model_->Initialize(load_callback_, 2U);
+
+  {
+    Sequence sequence;
+    EXPECT_CALL(*mocked_model_, IncrementEvent("foo", 0U))
+        .Times(0)
+        .InSequence(sequence);
+    EXPECT_CALL(*mocked_model_, IncrementEvent("bar", 1U))
+        .Times(0)
+        .InSequence(sequence);
+
+    callback.Run(false);
+    EXPECT_FALSE(load_success_.value());
+    EXPECT_EQ(0U, model_->GetQueuedEventCountForTesting());
+  }
+
+  EXPECT_CALL(*mocked_model_, IncrementEvent("qux", 3U)).Times(0);
+  model_->IncrementEvent("qux", 3U);
+  EXPECT_EQ(0U, model_->GetQueuedEventCountForTesting());
 }
 
 }  // namespace feature_engagement_tracker
