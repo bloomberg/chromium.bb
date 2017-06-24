@@ -415,8 +415,13 @@ void AppBannerManager::DidFinishLoad(
   // If the bypass flag is on, or if we require no engagement to trigger the
   // banner, the rest of the banner pipeline should operate as if the engagement
   // threshold has been met.
-  if (AppBannerSettingsHelper::HasSufficientEngagement(0))
+  // Additionally, if the page already has enough engagement, trigger the
+  // pipeline immediately.
+  if (AppBannerSettingsHelper::HasSufficientEngagement(0) ||
+      AppBannerSettingsHelper::HasSufficientEngagement(
+          GetSiteEngagementService()->GetScore(validated_url))) {
     has_sufficient_engagement_ = true;
+  }
 
   // Start the pipeline immediately if we pass (or bypass) the engagement check,
   // or if the feature to run the installability check on page load is enabled.
