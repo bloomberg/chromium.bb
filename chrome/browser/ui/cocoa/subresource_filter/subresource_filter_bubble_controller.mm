@@ -9,10 +9,12 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "components/strings/grit/components_strings.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 @interface SubresourceFilterBubbleController () {
   NSButton* manageCheckbox_;
+  NSButton* learnMoreLink_;
 }
 @end
 
@@ -61,6 +63,21 @@
   [self.window.contentView addSubview:messageLabel_];
   [messageLabel_ release];
 
+  // Set up the "Learn more" link.
+  NSString* linkText = base::SysUTF16ToNSString(
+      contentSettingBubbleModel_->bubble_content().learn_more_link);
+  learnMoreLink_ = [[NSButton alloc] initWithFrame:NSMakeRect(18, 76, 282, 28)];
+  base::scoped_nsobject<HyperlinkButtonCell> cell(
+      [[HyperlinkButtonCell alloc] initTextCell:linkText]);
+  [cell setAlignment:NSNaturalTextAlignment];
+  [cell setControlSize:NSSmallControlSize];
+  [learnMoreLink_ setCell:cell];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:learnMoreLink_];
+  [learnMoreLink_ setTarget:self];
+  [learnMoreLink_ setAction:@selector(learnMoreLinkClicked:)];
+  [self.window.contentView addSubview:learnMoreLink_];
+  [learnMoreLink_ release];
+
   manageCheckbox_ =
       [[NSButton alloc] initWithFrame:NSMakeRect(18, 35, 282, 28)];
   [manageCheckbox_ setButtonType:NSSwitchButton];
@@ -103,10 +120,20 @@
   [self layoutView];
 }
 
+// Callback for clicking on the "Learn more" link.
+- (void)learnMoreLinkClicked:(id)sender {
+  contentSettingBubbleModel_->OnCustomLinkClicked();
+  [self close];
+}
+
 // For testing.
 
 - (id)messageLabel {
   return messageLabel_;
+}
+
+- (id)learnMoreLink {
+  return learnMoreLink_;
 }
 
 - (id)manageCheckbox {

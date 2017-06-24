@@ -154,6 +154,10 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
       l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_EXPLANATION));
   EXPECT_NSEQ([[filterController messageLabel] stringValue], label);
 
+  NSString* link =
+      base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  EXPECT_NSEQ([[filterController learnMoreLink] title], link);
+
   EXPECT_TRUE([filterController manageCheckbox]);
   label = base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_ALLOW_ADS));
   EXPECT_NSEQ([[filterController manageCheckbox] title], label);
