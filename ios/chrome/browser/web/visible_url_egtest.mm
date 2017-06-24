@@ -230,6 +230,11 @@ class PausableResponseProvider : public HtmlResponseProvider {
   PurgeCachedWebViewPages();
   [self setServerPaused:YES];
 
+  // Re-enable synchronization here to synchronize EarlGrey LongPress and Tap
+  // actions.
+  [[GREYConfiguration sharedInstance]
+          setValue:@(YES)
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
   // Go back in history and verify that URL2 (committed URL) is displayed even
   // though URL1 is a pending URL.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
@@ -238,6 +243,11 @@ class PausableResponseProvider : public HtmlResponseProvider {
       base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(_testURL1));
   [[EarlGrey selectElementWithMatcher:grey_text(URL1Title)]
       performAction:grey_tap()];
+
+  [[GREYConfiguration sharedInstance]
+          setValue:@(NO)
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+
   GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
              @"Last request URL: %@", self.lastRequestURLSpec);
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]

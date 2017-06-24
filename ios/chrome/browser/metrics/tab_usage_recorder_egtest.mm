@@ -430,12 +430,19 @@ void SelectTabUsingUI(NSString* title) {
 
   SwitchToNormalMode();
 
+  // Turn off synchronization of GREYAssert to test the pending states.
+  [[GREYConfiguration sharedInstance]
+          setValue:@(NO)
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
   GREYAssert(
       [[GREYCondition conditionWithName:@"Wait for tab to restart loading."
                                   block:^BOOL() {
                                     return chrome_test_util::IsLoading();
                                   }] waitWithTimeout:kWaitElementTimeout],
       @"Tab did not start loading.");
+  [[GREYConfiguration sharedInstance]
+          setValue:@(YES)
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   // This method is not synced on EarlGrey.
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);

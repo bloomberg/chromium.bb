@@ -23,8 +23,9 @@ using web::test::ExecuteJavaScript;
 
 namespace {
 
-// Long press duration to trigger context menu.
-const NSTimeInterval kContextMenuLongPressDuration = 0.3;
+// Long press duration to trigger context menu.  EarlGrey LongPress action uses
+// 0.7 secs.  Use the same number to be consistent.
+const NSTimeInterval kContextMenuLongPressDuration = 0.7;
 
 // Duration to wait for verification of JavaScript action.
 // TODO(crbug.com/670910): Reduce duration if the time required for verification
