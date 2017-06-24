@@ -26,7 +26,6 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   View* GetSelectedViewForGroup(int group) override;
   bool IsGroupFocusTraversable() const override;
-  void OnFocus() override;
 
   // Overridden from Button:
   void NotifyClick(const ui::Event& event) override;

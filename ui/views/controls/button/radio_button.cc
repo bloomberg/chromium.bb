@@ -24,6 +24,7 @@ RadioButton::RadioButton(const base::string16& label, int group_id)
   SetGroup(group_id);
 
   if (!UseMd()) {
+    set_request_focus_on_press(true);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     // Unchecked/Unfocused images.
     SetCustomImage(false, false, STATE_NORMAL,
@@ -96,20 +97,11 @@ bool RadioButton::IsGroupFocusTraversable() const {
   return false;
 }
 
-void RadioButton::OnFocus() {
-  Checkbox::OnFocus();
-  SetChecked(true);
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                       ui::EventTimeForNow(), 0, 0);
-  LabelButton::NotifyClick(event);
-}
-
 void RadioButton::NotifyClick(const ui::Event& event) {
   // Set the checked state to true only if we are unchecked, since we can't
   // be toggled on and off like a checkbox.
   if (!checked())
     SetChecked(true);
-  RequestFocus();
   LabelButton::NotifyClick(event);
 }
 
