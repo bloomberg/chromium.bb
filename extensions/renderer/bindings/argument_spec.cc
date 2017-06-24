@@ -166,10 +166,6 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
       // Additional properties are always optional.
       additional_properties_->optional_ = true;
     }
-    std::string instance_of;
-    if (dict->GetString("isInstanceOf", &instance_of)) {
-      instance_of_ = instance_of;
-    }
   } else if (type_ == ArgumentType::LIST) {
     const base::DictionaryValue* item_value = nullptr;
     CHECK(dict->GetDictionary("items", &item_value));
@@ -201,6 +197,12 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
   // API), but it could potentially make sense for lists or functions as well.
   if (type_ == ArgumentType::OBJECT || type_ == ArgumentType::ANY)
     dict->GetBoolean("preserveNull", &preserve_null_);
+
+  if (type_ == ArgumentType::OBJECT || type_ == ArgumentType::BINARY) {
+    std::string instance_of;
+    if (dict->GetString("isInstanceOf", &instance_of))
+      instance_of_ = instance_of;
+  }
 }
 
 ArgumentSpec::~ArgumentSpec() {}
