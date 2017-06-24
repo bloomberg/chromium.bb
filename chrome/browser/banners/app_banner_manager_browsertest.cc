@@ -54,7 +54,9 @@ class AppBannerManagerTest : public AppBannerManager {
 
   void clear_will_show() { will_show_.reset(); }
 
-  bool is_active() { return AppBannerManager::is_active(); }
+  bool is_active_or_pending() {
+    return AppBannerManager::is_active_or_pending();
+  }
 
   bool is_complete() { return AppBannerManager::is_complete(); }
 
@@ -153,7 +155,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
                      bool expected_to_show) {
     RunBannerTest(browser, manager, url, engagement_scores,
                   expected_code_for_histogram, expected_to_show,
-                  base::string16());
+                  base::string16(), ui::PAGE_TRANSITION_TYPED);
   }
 
   void RunBannerTest(Browser* browser,
@@ -162,7 +164,8 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
                      const std::vector<double>& engagement_scores,
                      InstallableStatusCode expected_code_for_histogram,
                      bool expected_to_show,
-                     const base::string16 expected_tab_title) {
+                     const base::string16 expected_tab_title,
+                     ui::PageTransition transition) {
     base::HistogramTester histograms;
     GURL test_url = embedded_test_server()->GetURL(url);
 
@@ -179,7 +182,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
         ui_test_utils::NavigateToURL(browser, test_url);
 
         EXPECT_FALSE(manager->will_show());
-        EXPECT_FALSE(manager->is_active());
+        EXPECT_FALSE(manager->is_active_or_pending());
 
         histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
         histograms.ExpectTotalCount(banners::kInstallableStatusCodeHistogram,
@@ -195,11 +198,12 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     manager->clear_will_show();
     manager->Prepare(run_loop.QuitClosure());
-    ui_test_utils::NavigateToURL(browser, test_url);
+    chrome::NavigateParams nav_params(browser, test_url, transition);
+    ui_test_utils::NavigateToURL(&nav_params);
     run_loop.Run();
 
     EXPECT_EQ(expected_to_show, manager->will_show());
-    EXPECT_FALSE(manager->is_active());
+    EXPECT_FALSE(manager->is_active_or_pending());
 
     // Check the tab title; this allows the test page to send data back out to
     // be inspected by the test case.
@@ -238,7 +242,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
   RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
-                engagement_scores, SHOWING_WEB_APP_BANNER, true);
+                engagement_scores, SHOWING_WEB_APP_BANNER, true,
+                base::string16(), ui::PAGE_TRANSITION_LINK);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
@@ -328,7 +333,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, BeforeInstallPrompt) {
   RunBannerTest(browser(), manager.get(),
                 "/banners/beforeinstallprompt_test_page.html",
                 engagement_scores, SHOWING_WEB_APP_BANNER, true,
-                base::ASCIIToUTF16("Got beforeinstallprompt: listener, attr"));
+                base::ASCIIToUTF16("Got beforeinstallprompt: listener, attr"),
+                ui::PAGE_TRANSITION_TYPED);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CancelBannerDirect) {
@@ -460,7 +466,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   }
 
   EXPECT_FALSE(manager->will_show());
-  EXPECT_FALSE(manager->is_active());
   EXPECT_TRUE(manager->is_pending_engagement());
   EXPECT_TRUE(manager->need_to_log_status());
 
@@ -477,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   }
 
   EXPECT_TRUE(manager->will_show());
-  EXPECT_FALSE(manager->is_active());
+  EXPECT_FALSE(manager->is_active_or_pending());
   EXPECT_FALSE(manager->need_to_log_status());
   EXPECT_TRUE(manager->is_complete());
 
@@ -508,7 +513,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
   }
 
   EXPECT_FALSE(manager->will_show());
-  EXPECT_FALSE(manager->is_active());
   EXPECT_TRUE(manager->is_pending_engagement());
   EXPECT_TRUE(manager->need_to_log_status());
 
@@ -522,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
   }
 
   EXPECT_FALSE(manager->will_show());
-  EXPECT_FALSE(manager->is_active());
+  EXPECT_FALSE(manager->is_active_or_pending());
   EXPECT_FALSE(manager->need_to_log_status());
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
