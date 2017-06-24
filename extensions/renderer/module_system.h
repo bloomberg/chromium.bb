@@ -183,7 +183,12 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   void HandleException(const v8::TryCatch& try_catch);
 
   void RequireForJs(const v8::FunctionCallbackInfo<v8::Value>& args);
-  v8::Local<v8::Value> RequireForJsInner(v8::Local<v8::String> module_name);
+
+  // Returns the module with the given |module_name|. If |create| is true, the
+  // module will be loaded if it hasn't been already. Otherwise, the module
+  // will only be returned if it has already been loaded.
+  v8::Local<v8::Value> RequireForJsInner(v8::Local<v8::String> module_name,
+                                         bool create);
 
   typedef v8::MaybeLocal<v8::Object>(ModuleSystem::*RequireFunction)(
       const std::string&);
@@ -237,6 +242,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   void ClobberExistingNativeHandler(const std::string& name);
 
   // Returns the v8::Function associated with the given module and method name.
+  // This will *not* load a module if it hasn't been loaded already.
   v8::Local<v8::Function> GetModuleFunction(const std::string& module_name,
                                             const std::string& method_name);
 
