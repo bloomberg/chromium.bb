@@ -26,6 +26,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
         '<(DEPTH)/ui/webui/resources/cr_elements/compiled_resources2.gyp:cr_scrollable_behavior',
+        '<(EXTERNS_GYP):settings_private',
         'startup_urls_page_browser_proxy',
         'startup_url_entry',
       ],

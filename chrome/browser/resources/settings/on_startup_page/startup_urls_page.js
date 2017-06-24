@@ -86,4 +86,14 @@ Polymer({
   onUseCurrentPagesTap_: function() {
     this.browserProxy_.useCurrentPages();
   },
+
+  /**
+   * @return {boolean} Whether "Add new page" and "Use current pages" are
+   *     allowed.
+   * @private
+   */
+  shouldAllowUrlsEdit_: function() {
+    return this.get('prefs.session.startup_urls.enforcement') !=
+        chrome.settingsPrivate.Enforcement.ENFORCED;
+  },
 });
