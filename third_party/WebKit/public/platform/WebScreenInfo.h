@@ -34,7 +34,7 @@
 #include "WebRect.h"
 #include "public/platform/ShapeProperties.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
-#include "ui/gfx/icc_profile.h"
+#include "ui/gfx/color_space.h"
 
 namespace blink {
 
@@ -43,8 +43,8 @@ struct WebScreenInfo {
   // pixels.
   float device_scale_factor = 1.f;
 
-  // The ICC profile of the output display.
-  gfx::ICCProfile icc_profile;
+  // The color space of the output display.
+  gfx::ColorSpace color_space;
 
   // The screen depth in bits per pixel
   int depth = 0;
@@ -89,7 +89,7 @@ struct WebScreenInfo {
 
   bool operator==(const WebScreenInfo& other) const {
     return this->device_scale_factor == other.device_scale_factor &&
-           this->icc_profile == other.icc_profile &&
+           this->color_space == other.color_space &&
            this->depth == other.depth &&
            this->depth_per_component == other.depth_per_component &&
            this->is_monochrome == other.is_monochrome &&
