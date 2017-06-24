@@ -6459,6 +6459,9 @@ I don't think this site should be blocked!
         <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION" desc="A checkbox label, appearing on both the Chrome Cleanup dialog and web page, asking the user for permission to send some system information to Google in order to help with detection of harmful software. The word 'settings' refers to the user's operating system settings. The word 'applications' refers to any software that is installed or runs on the user's computer.">
           Send information about your system and applications to Google to help detect harmful software
         </message>
+        <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION_WITH_LINK" desc="A checkbox label, appearing on both the Chrome Cleanup dialog and web page, asking the user for permission to send some system information to Google in order to help with detection of harmful software. The word 'settings' refers to the user's operating system settings. The word 'applications' refers to any software that is installed or runs on the user's computer. The translation for this string should have the same meaning as IDS_CHROME_CLEANUP_LOGS_PERMISSION">
+          Send <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>information about your system and applications<ph name="END_LINK">&lt;/a&gt;</ph> to Google to help detect harmful software
+        </message>
       </if>
 
       <!-- Settings reset prompt dialog messages -->
