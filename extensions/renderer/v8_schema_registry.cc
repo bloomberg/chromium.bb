@@ -67,7 +67,7 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
     std::string type;
     if (args[0]->IsArray())
       type = "array";
-    else if (args[0]->IsArrayBuffer())
+    else if (args[0]->IsArrayBuffer() || args[0]->IsArrayBufferView())
       type = "binary";
     else
       type = "object";
