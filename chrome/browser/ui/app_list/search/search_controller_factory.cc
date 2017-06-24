@@ -28,10 +28,6 @@
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_controller.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
-#endif
-
 namespace app_list {
 
 namespace {
@@ -42,9 +38,6 @@ constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxWebstoreResults = 2;
 constexpr size_t kMaxSuggestionsResults = 6;
 constexpr size_t kMaxLauncherSearchResults = 2;
-#if defined(OS_CHROMEOS)
-constexpr size_t kMaxPlayStoreResults = 2;
-#endif
 
 // Constants related to the SuggestionsService in AppList field trial.
 constexpr char kSuggestionsProviderFieldTrialName[] =
@@ -120,13 +113,6 @@ std::unique_ptr<SearchController> CreateSearchController(
                             base::MakeUnique<LauncherSearchProvider>(profile));
   }
 
-#if defined(OS_CHROMEOS)
-  size_t playstore_api_group_id =
-      controller->AddGroup(kMaxPlayStoreResults, 1.0);
-  controller->AddProvider(playstore_api_group_id,
-                          base::MakeUnique<ArcPlayStoreSearchProvider>(
-                              kMaxPlayStoreResults, profile, list_controller));
-#endif
   return controller;
 }
 
