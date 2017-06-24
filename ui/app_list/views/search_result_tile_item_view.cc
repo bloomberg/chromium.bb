@@ -111,10 +111,6 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   if (!old_item || !item->icon().BackedBySameObjectAs(old_item->icon())) {
     OnIconChanged();
   }
-  if (!old_item ||
-      !item->badge_icon().BackedBySameObjectAs(old_item->badge_icon())) {
-    OnBadgeIconChanged();
-  }
 }
 
 void SearchResultTileItemView::SetRating(float rating) {
@@ -159,12 +155,10 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void SearchResultTileItemView::OnIconChanged() {
   SetIcon(item_->icon());
-  Layout();
 }
 
 void SearchResultTileItemView::OnBadgeIconChanged() {
   SetBadgeIcon(item_->badge_icon());
-  Layout();
 }
 
 void SearchResultTileItemView::OnRatingChanged() {

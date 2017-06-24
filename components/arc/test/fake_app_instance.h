@@ -112,10 +112,6 @@ class FakeAppInstance : public mojom::AppInstance {
   void SetNotificationsEnabled(const std::string& package_name,
                                bool enabled) override;
   void InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) override;
-  void GetRecentAndSuggestedAppsFromPlayStore(
-      const std::string& query,
-      int32_t max_results,
-      const GetRecentAndSuggestedAppsFromPlayStoreCallback& callback) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);
