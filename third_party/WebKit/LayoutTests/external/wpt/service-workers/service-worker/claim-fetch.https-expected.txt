@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL fetch() should be intercepted after the client is claimed. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'appendChild' of null"
+Harness: the test ran to completion.
+
