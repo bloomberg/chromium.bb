@@ -596,10 +596,13 @@ void UiSceneManager::ConfigureIndicators() {
 
   // Position elements dynamically relative to each other, based on which
   // indicators are showing, and how big each one is.
-  float total_width = kIndicatorGap * (system_indicators_.size() - 1);
+  float total_width = 0;
   for (const UiElement* indicator : system_indicators_) {
-    if (indicator->visible())
+    if (indicator->visible()) {
+      if (total_width > 0)
+        total_width += kIndicatorGap;
       total_width += indicator->size().x();
+    }
   }
   float x_position = -total_width / 2;
   for (UiElement* indicator : system_indicators_) {
