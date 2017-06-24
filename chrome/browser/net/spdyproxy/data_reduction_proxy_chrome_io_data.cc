@@ -62,6 +62,7 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   PreviewsInfoBarDelegate::Create(
       web_contents, previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
+      false /* is_reload */,
       base::Bind(&AddPreviewNavigationToBlackListCallback,
                  web_contents->GetBrowserContext(),
                  web_contents->GetController()

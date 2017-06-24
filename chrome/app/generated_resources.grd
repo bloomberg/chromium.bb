@@ -4983,6 +4983,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS" desc="The desciption stating how old a preview version of a page is in hours. This is shown on the infobar notifying the user that a preview page has been shown.">
          Updated <ph name="HOURS">$1<ex>4</ex></ph>hrs ago
+      </message>      
+      <message name="IDS_PREVIEWS_INFOBAR_TIMESTAMP_UPDATED_NOW" desc="The desciption stating that a preview version of a page was just updated. This is shown on the infobar notifying the user that a preview page has been shown.">
+         Updated just now
       </message>
 
       <!-- WebRTC logs -->

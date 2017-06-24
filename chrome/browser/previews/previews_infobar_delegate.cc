@@ -122,6 +122,7 @@ void PreviewsInfoBarDelegate::Create(
     previews::PreviewsType previews_type,
     base::Time previews_freshness,
     bool is_data_saver_user,
+    bool is_reload,
     const OnDismissPreviewsInfobarCallback& on_dismiss_callback) {
   PreviewsInfoBarTabHelper* infobar_tab_helper =
       PreviewsInfoBarTabHelper::FromWebContents(web_contents);
@@ -136,8 +137,8 @@ void PreviewsInfoBarDelegate::Create(
     return;
 
   std::unique_ptr<PreviewsInfoBarDelegate> delegate(new PreviewsInfoBarDelegate(
-      web_contents, previews_type, previews_freshness, is_data_saver_user,
-      on_dismiss_callback));
+      infobar_tab_helper, previews_type, previews_freshness, is_data_saver_user,
+      is_reload, on_dismiss_callback));
 
 #if defined(OS_ANDROID)
   std::unique_ptr<infobars::InfoBar> infobar_ptr(
@@ -163,14 +164,17 @@ void PreviewsInfoBarDelegate::Create(
 }
 
 PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
-    content::WebContents* web_contents,
+    PreviewsInfoBarTabHelper* infobar_tab_helper,
     previews::PreviewsType previews_type,
     base::Time previews_freshness,
     bool is_data_saver_user,
+    bool is_reload,
     const OnDismissPreviewsInfobarCallback& on_dismiss_callback)
     : ConfirmInfoBarDelegate(),
+      infobar_tab_helper_(infobar_tab_helper),
       previews_type_(previews_type),
       previews_freshness_(previews_freshness),
+      is_reload_(is_reload),
       infobar_dismissed_action_(INFOBAR_DISMISSED_BY_TAB_CLOSURE),
       message_text_(l10n_util::GetStringUTF16(
           is_data_saver_user ? IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE
@@ -283,6 +287,13 @@ base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
 
   int staleness_in_minutes = (network_time - previews_freshness_).InMinutes();
   if (staleness_in_minutes < min_staleness_in_minutes) {
+    if (is_reload_) {
+      RecordStaleness(TIMESTAMP_UPDATED_NOW_SHOWN);
+      if (infobar_tab_helper_)
+        infobar_tab_helper_->set_displayed_preview_timestamp(true);
+      return l10n_util::GetStringUTF16(
+          IDS_PREVIEWS_INFOBAR_TIMESTAMP_UPDATED_NOW);
+    }
     RecordStaleness(TIMESTAMP_NOT_SHOWN_PREVIEW_NOT_STALE);
     return base::string16();
   }
@@ -292,6 +303,8 @@ base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
   }
 
   RecordStaleness(TIMESTAMP_SHOWN);
+  if (infobar_tab_helper_)
+    infobar_tab_helper_->set_displayed_preview_timestamp(true);
 
   if (staleness_in_minutes < 60) {
     return l10n_util::GetStringFUTF16(

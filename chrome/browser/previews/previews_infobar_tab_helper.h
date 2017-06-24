@@ -31,6 +31,13 @@ class PreviewsInfoBarTabHelper
     displayed_preview_infobar_ = displayed;
   }
 
+  // Sets whether the timestamp on the InfoBar for a preview has been shown for
+  // the page. |displayed_preview_timestamp_| is reset to false on
+  // DidStartProvisionalLoadForFrame for the main frame.
+  void set_displayed_preview_timestamp(bool displayed_preview_timestamp) {
+    displayed_preview_timestamp_ = displayed_preview_timestamp;
+  }
+
   // The data saver page identifier of the current page load.
   const base::Optional<data_reduction_proxy::NavigationID>&
   committed_data_saver_navigation_id() {
@@ -55,6 +62,9 @@ class PreviewsInfoBarTabHelper
 
   // True if the InfoBar for a preview has been shown for the page.
   bool displayed_preview_infobar_;
+
+  // True if the InfoBar with a timestamp was shown for the page.
+  bool displayed_preview_timestamp_;
 
   // The data saver page identifier of the current page load.
   base::Optional<data_reduction_proxy::NavigationID>

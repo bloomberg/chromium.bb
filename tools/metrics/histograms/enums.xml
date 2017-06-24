@@ -18773,7 +18773,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Transaction begin"/>
   <int value="2" label="Meta table init"/>
   <int value="3" label="Create tables"/>
-  <int value="4" label="Version check and migration (check History.MigrateFailureToVersion)"/>
+  <int value="4"
+      label="Version check and migration (check
+             History.MigrateFailureToVersion)"/>
   <int value="5" label="Commit"/>
 </enum>
 
@@ -29797,10 +29799,12 @@ from previous Chrome versions.
   <int value="0" label="Timestamp shown"/>
   <int value="1" label="Timestamp not shown because the preview was not stale"/>
   <int value="2"
-      label="Timestamp not shown because the staleness was negative."/>
+      label="Timestamp not shown because the staleness was negative"/>
   <int value="3"
       label="Timestamp not shown because the staleness was greater than the
              max"/>
+  <int value="4"
+      label="Timestamp shown indicating the page was just updated on reload"/>
 </enum>
 
 <enum name="PreviewsUserOptedOut">

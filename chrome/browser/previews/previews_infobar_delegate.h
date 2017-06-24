@@ -11,6 +11,8 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/previews/core/previews_experiments.h"
 
+class PreviewsInfoBarTabHelper;
+
 namespace content {
 class WebContents;
 }
@@ -43,6 +45,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
     TIMESTAMP_NOT_SHOWN_PREVIEW_NOT_STALE = 1,
     TIMESTAMP_NOT_SHOWN_STALENESS_NEGATIVE = 2,
     TIMESTAMP_NOT_SHOWN_STALENESS_GREATER_THAN_MAX = 3,
+    TIMESTAMP_UPDATED_NOW_SHOWN = 4,
     TIMESTAMP_INDEX_BOUNDARY
   };
 
@@ -55,6 +58,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
       previews::PreviewsType previews_type,
       base::Time previews_freshness,
       bool is_data_saver_user,
+      bool is_reload,
       const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
   // ConfirmInfoBarDelegate overrides:
@@ -66,10 +70,11 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   PreviewsInfoBarDelegate(
-      content::WebContents* web_contents,
+      PreviewsInfoBarTabHelper* infobar_tab_helper,
       previews::PreviewsType previews_type,
       base::Time previews_freshness,
       bool is_data_saver_user,
+      bool is_reload,
       const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
   // ConfirmInfoBarDelegate overrides:
@@ -79,10 +84,12 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
+  PreviewsInfoBarTabHelper* infobar_tab_helper_;
   previews::PreviewsType previews_type_;
   // The time at which the preview associated with this infobar was created. A
   // value of zero means that the creation time is unknown.
   const base::Time previews_freshness_;
+  const bool is_reload_;
   mutable PreviewsInfoBarAction infobar_dismissed_action_;
 
   const base::string16 message_text_;
