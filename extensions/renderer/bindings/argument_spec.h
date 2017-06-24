@@ -50,6 +50,12 @@ class ArgumentSpec {
   explicit ArgumentSpec(ArgumentType type);
   ~ArgumentSpec();
 
+  // Returns true if the given |value| is of the correct type to match this
+  // spec. If it is not, populates |error|.
+  bool IsCorrectType(v8::Local<v8::Value> value,
+                     const APITypeReferenceMap& refs,
+                     std::string* error) const;
+
   // Returns true if the passed |value| matches this specification. If
   // |out_value| is non-null, converts the value to a base::Value and populates
   // |out_value|. Otherwise, no conversion is performed.
@@ -92,9 +98,6 @@ class ArgumentSpec {
  private:
   // Initializes this object according to |type_string| and |dict|.
   void InitializeType(const base::DictionaryValue* dict);
-
-  // Returns true if this argument refers to a fundamental type.
-  bool IsFundamentalType() const;
 
   // Conversion functions. These should only be used if the spec is of the given
   // type (otherwise, they will DCHECK).

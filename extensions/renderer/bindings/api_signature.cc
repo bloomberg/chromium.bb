@@ -210,8 +210,7 @@ bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
     return true;
   }
 
-  if (!spec.ParseArgument(context_, value, type_refs_, GetBuffer(),
-                          &parse_error_)) {
+  if (!spec.IsCorrectType(value, type_refs_, &parse_error_)) {
     if (!spec.optional()) {
       *error_ = api_errors::ArgumentError(spec.name(), parse_error_);
       return false;
@@ -219,6 +218,12 @@ bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
 
     AddNull();
     return true;
+  }
+
+  if (!spec.ParseArgument(context_, value, type_refs_, GetBuffer(),
+                          &parse_error_)) {
+    *error_ = api_errors::ArgumentError(spec.name(), parse_error_);
+    return false;
   }
 
   ConsumeArgument();
