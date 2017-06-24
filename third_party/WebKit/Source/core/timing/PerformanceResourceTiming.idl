@@ -33,7 +33,7 @@
 // TODO(foolip): This interface should be [Exposed=(Window,Worker)].
 interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMString initiatorType;
-    // TODO(foolip): readonly attribute DOMString nextHopProtocol;
+    readonly attribute DOMString nextHopProtocol;
     readonly attribute DOMHighResTimeStamp workerStart;
     readonly attribute DOMHighResTimeStamp redirectStart;
     readonly attribute DOMHighResTimeStamp redirectEnd;

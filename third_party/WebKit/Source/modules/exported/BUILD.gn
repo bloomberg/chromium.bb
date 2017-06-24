@@ -33,7 +33,7 @@ static_library("test_support") {
     "//skia",
     "//third_party/WebKit/Source/core:testing",
     "//third_party/WebKit/Source/modules:modules_testing",
-    "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/WebKit/Source/platform",
     "//v8",
   ]
 

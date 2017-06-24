@@ -80,6 +80,9 @@ class CORE_EXPORT PerformanceNavigationTiming final
 
   bool GetAllowRedirectDetails() const;
 
+  AtomicString AlpnNegotiatedProtocol() const override;
+  AtomicString ConnectionInfo() const override;
+
   double time_origin_;
   RefPtr<ResourceTimingInfo> resource_timing_info_;
 };

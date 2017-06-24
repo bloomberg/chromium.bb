@@ -4441,11 +4441,10 @@ void RenderFrameImpl::DidReceiveResponse(
         extra_data->was_fetched_via_spdy());
     document_state->set_was_alpn_negotiated(extra_data->was_alpn_negotiated());
     document_state->set_alpn_negotiated_protocol(
-        extra_data->alpn_negotiated_protocol());
+        response.AlpnNegotiatedProtocol().Utf8());
     document_state->set_was_alternate_protocol_available(
         extra_data->was_alternate_protocol_available());
-    document_state->set_connection_info(
-        extra_data->connection_info());
+    document_state->set_connection_info(response.ConnectionInfo());
   }
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);

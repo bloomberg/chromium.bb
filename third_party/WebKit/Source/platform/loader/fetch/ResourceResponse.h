@@ -341,6 +341,22 @@ class PLATFORM_EXPORT ResourceResponse final {
   unsigned short RemotePort() const { return remote_port_; }
   void SetRemotePort(unsigned short value) { remote_port_ = value; }
 
+  const AtomicString& AlpnNegotiatedProtocol() const {
+    return alpn_negotiated_protocol_;
+  }
+  void SetAlpnNegotiatedProtocol(const AtomicString& value) {
+    alpn_negotiated_protocol_ = value;
+  }
+
+  net::HttpResponseInfo::ConnectionInfo ConnectionInfo() const {
+    return connection_info_;
+  }
+  void SetConnectionInfo(net::HttpResponseInfo::ConnectionInfo value) {
+    connection_info_ = value;
+  }
+
+  AtomicString ConnectionInfoString() const;
+
   long long EncodedDataLength() const { return encoded_data_length_; }
   void SetEncodedDataLength(long long value);
 
@@ -476,6 +492,12 @@ class PLATFORM_EXPORT ResourceResponse final {
   // The time at which the response headers were received.  For cached
   // responses, this time could be "far" in the past.
   int64_t response_time_;
+
+  // ALPN negotiated protocol of the socket which fetched this resource.
+  AtomicString alpn_negotiated_protocol_;
+
+  // Information about the type of connection used to fetch this resource.
+  net::HttpResponseInfo::ConnectionInfo connection_info_;
 
   // Size of the response in bytes prior to decompression.
   long long encoded_data_length_;

@@ -20,13 +20,8 @@ namespace content {
 class CONTENT_EXPORT WebURLResponseExtraDataImpl :
     public NON_EXPORTED_BASE(blink::WebURLResponse::ExtraData) {
  public:
-  explicit WebURLResponseExtraDataImpl(
-      const std::string& alpn_negotiated_protocol);
+  WebURLResponseExtraDataImpl();
   ~WebURLResponseExtraDataImpl() override;
-
-  const std::string& alpn_negotiated_protocol() const {
-    return alpn_negotiated_protocol_;
-  }
 
   /// Flag whether this request was loaded via the SPDY protocol or not.
   // SPDY is an experimental web protocol, see http://dev.chromium.org/spdy
@@ -35,15 +30,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
   }
   void set_was_fetched_via_spdy(bool was_fetched_via_spdy) {
     was_fetched_via_spdy_ = was_fetched_via_spdy;
-  }
-
-  // Information about the type of connection used to fetch this response.
-  net::HttpResponseInfo::ConnectionInfo connection_info() const {
-    return connection_info_;
-  }
-  void set_connection_info(
-      net::HttpResponseInfo::ConnectionInfo connection_info) {
-    connection_info_ = connection_info;
   }
 
   // Flag whether this request was loaded after the
@@ -84,11 +70,9 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
   }
 
  private:
-  std::string alpn_negotiated_protocol_;
   bool is_ftp_directory_listing_;
   bool was_fetched_via_spdy_;
   bool was_alpn_negotiated_;
-  net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_alternate_protocol_available_;
   PreviewsState previews_state_;
   net::EffectiveConnectionType effective_connection_type_;

@@ -108,7 +108,7 @@ source_set("prerequisites") {
     "//skia",
     "//third_party/WebKit/Source/core/inspector:generated",
     "//third_party/WebKit/Source/core/probe:generated",
-    "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/WebKit/Source/platform",
     "//third_party/angle:translator",
     "//third_party/iccjpeg",
     "//third_party/icu",
@@ -129,7 +129,6 @@ source_set("prerequisites") {
 
     # FIXME: don't depend on bindings_modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_v8_generated",
-    "//third_party/WebKit/Source/platform",
   ]
 
   public_configs = [
@@ -1504,6 +1503,7 @@ source_set("unit_tests") {
     "timing/PerformanceBaseTest.cpp",
     "timing/PerformanceNavigationTimingTest.cpp",
     "timing/PerformanceObserverTest.cpp",
+    "timing/PerformanceResourceTimingTest.cpp",
     "timing/PerformanceTest.cpp",
     "workers/DedicatedWorkerTest.cpp",
     "workers/MainThreadWorkletTest.cpp",

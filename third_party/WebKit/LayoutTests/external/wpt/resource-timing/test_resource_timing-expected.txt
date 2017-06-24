@@ -3,22 +3,22 @@ PASS window.performance.getEntriesByName() and window.performance.getEntriesByNa
 PASS PerformanceEntry has correct name, initiatorType, startTime, and duration (iframe) 
 PASS PerformanceEntry has correct order of timing attributes (iframe) 
 PASS PerformanceEntry has correct network transfer attributes (iframe) 
-FAIL PerformanceEntry has correct protocol attribute (iframe) assert_equals: expected protocol expected (string) "http/1.1" but got (undefined) undefined
+PASS PerformanceEntry has correct protocol attribute (iframe) 
 PASS window.performance.getEntriesByName() and window.performance.getEntriesByNameType() return same data (img) 
 PASS PerformanceEntry has correct name, initiatorType, startTime, and duration (img) 
 PASS PerformanceEntry has correct order of timing attributes (img) 
 PASS PerformanceEntry has correct network transfer attributes (img) 
-FAIL PerformanceEntry has correct protocol attribute (img) assert_equals: expected protocol expected (string) "http/1.1" but got (undefined) undefined
+PASS PerformanceEntry has correct protocol attribute (img) 
 PASS window.performance.getEntriesByName() and window.performance.getEntriesByNameType() return same data (link) 
 PASS PerformanceEntry has correct name, initiatorType, startTime, and duration (link) 
 PASS PerformanceEntry has correct order of timing attributes (link) 
 PASS PerformanceEntry has correct network transfer attributes (link) 
-FAIL PerformanceEntry has correct protocol attribute (link) assert_equals: expected protocol expected (string) "http/1.1" but got (undefined) undefined
+PASS PerformanceEntry has correct protocol attribute (link) 
 PASS window.performance.getEntriesByName() and window.performance.getEntriesByNameType() return same data (script) 
 PASS PerformanceEntry has correct name, initiatorType, startTime, and duration (script) 
 PASS PerformanceEntry has correct order of timing attributes (script) 
 PASS PerformanceEntry has correct network transfer attributes (script) 
-FAIL PerformanceEntry has correct protocol attribute (script) assert_equals: expected protocol expected (string) "http/1.1" but got (undefined) undefined
+PASS PerformanceEntry has correct protocol attribute (script) 
 FAIL window.performance.getEntriesByName() and window.performance.getEntriesByNameType() return same data (xmlhttprequest) assert_equals: should have a single entry for each resource (without type) expected 1 but got 0
 FAIL PerformanceEntry has correct name, initiatorType, startTime, and duration (xmlhttprequest) Cannot read property 'name' of undefined
 FAIL PerformanceEntry has correct order of timing attributes (xmlhttprequest) Cannot read property 'connectStart' of undefined

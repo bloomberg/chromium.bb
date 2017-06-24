@@ -31,13 +31,14 @@
 #ifndef WebURLResponse_h
 #define WebURLResponse_h
 
+#include <memory>
+#include "net/http/http_response_info.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebSecurityStyle.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
-#include <memory>
 
 namespace blink {
 
@@ -268,6 +269,16 @@ class WebURLResponse {
   // Remote port number of the socket which fetched this resource.
   BLINK_PLATFORM_EXPORT unsigned short RemotePort() const;
   BLINK_PLATFORM_EXPORT void SetRemotePort(unsigned short);
+
+  // ALPN negotiated protocol of the socket which fetched this resource.
+  BLINK_PLATFORM_EXPORT WebString AlpnNegotiatedProtocol() const;
+  BLINK_PLATFORM_EXPORT void SetAlpnNegotiatedProtocol(const WebString&);
+
+  // Information about the type of connection used to fetch this resource.
+  BLINK_PLATFORM_EXPORT net::HttpResponseInfo::ConnectionInfo ConnectionInfo()
+      const;
+  BLINK_PLATFORM_EXPORT void SetConnectionInfo(
+      net::HttpResponseInfo::ConnectionInfo);
 
   // Original size of the response before decompression.
   BLINK_PLATFORM_EXPORT void SetEncodedDataLength(long long);

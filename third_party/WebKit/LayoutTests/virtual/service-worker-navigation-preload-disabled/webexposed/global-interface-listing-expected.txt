@@ -4857,6 +4857,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter encodedBodySize
     getter fetchStart
     getter initiatorType
+    getter nextHopProtocol
     getter redirectEnd
     getter redirectStart
     getter requestStart

@@ -640,6 +640,7 @@ source_set("blink_headers") {
   ]
 
   public_deps = [
+    "//net",
     "//skia",
     "//url",
   ]
