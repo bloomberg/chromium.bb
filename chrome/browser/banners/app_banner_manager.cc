@@ -37,13 +37,6 @@ InstallableParams ParamsToGetManifest() {
   return InstallableParams();
 }
 
-// Returns whether or not the URLs match for everything except for the ref.
-bool URLsAreForTheSamePage(const GURL& first, const GURL& second) {
-  return first.GetWithEmptyPath() == second.GetWithEmptyPath() &&
-         first.path_piece() == second.path_piece() &&
-         first.query_piece() == second.query_piece();
-}
-
 }  // anonymous namespace
 
 namespace banners {
@@ -68,13 +61,11 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
                                         bool is_debug_mode) {
   content::WebContents* contents = web_contents();
 
-  // Don't start a redundant banner request. Otherwise, if one is running,
-  // invalidate our weak pointers so it terminates.
-  if (is_active()) {
-    if (URLsAreForTheSamePage(validated_url, contents->GetLastCommittedURL()))
-      return;
-    else
-      weak_factory_.InvalidateWeakPtrs();
+  // The only time we should start the pipeline while it is already running is
+  // if it's been triggered from devtools.
+  if (is_active_or_pending()) {
+    DCHECK(is_debug_mode);
+    weak_factory_.InvalidateWeakPtrs();
   }
 
   UpdateState(State::ACTIVE);
@@ -211,10 +202,8 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   if (data.error_code != NO_ERROR_DETECTED) {
     ReportStatus(web_contents(), data.error_code);
     Stop();
-  }
-
-  if (!is_active())
     return;
+  }
 
   DCHECK(!data.manifest_url.is_empty());
   DCHECK(!data.manifest.IsEmpty());
@@ -268,10 +257,8 @@ void AppBannerManager::OnDidPerformInstallableCheck(
 
     ReportStatus(web_contents(), data.error_code);
     Stop();
-  }
-
-  if (!is_active())
     return;
+  }
 
   DCHECK(data.is_installable);
   DCHECK(!data.primary_icon_url.is_empty());
@@ -433,9 +420,10 @@ void AppBannerManager::DidFinishLoad(
 
   // Start the pipeline immediately if we pass (or bypass) the engagement check,
   // or if the feature to run the installability check on page load is enabled.
-  if (has_sufficient_engagement_ ||
-      base::FeatureList::IsEnabled(
-          features::kCheckInstallabilityForBannerOnLoad)) {
+  if (!is_active_or_pending() &&
+      (has_sufficient_engagement_ ||
+       base::FeatureList::IsEnabled(
+           features::kCheckInstallabilityForBannerOnLoad))) {
     RequestAppBanner(validated_url, false /* is_debug_mode */);
   }
 }
@@ -478,9 +466,10 @@ void AppBannerManager::OnEngagementIncreased(content::WebContents* contents,
       // directly to sending the banner prompt request.
       UpdateState(State::ACTIVE);
       SendBannerPromptRequest();
-    } else if (load_finished_) {
+    } else if (load_finished_ && !is_active_or_pending()) {
       // This performs some simple tests and starts async checks to test
       // installability. It should be safe to start in response to user input.
+      // Don't call if we're already working on processing a banner request.
       RequestAppBanner(url, false /* is_debug_mode */);
     }
   }
