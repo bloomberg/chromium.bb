@@ -58,7 +58,8 @@ PreviewsInfoBarTabHelper::PreviewsInfoBarTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       browser_context_(web_contents->GetBrowserContext()),
-      displayed_preview_infobar_(false) {
+      displayed_preview_infobar_(false),
+      displayed_preview_timestamp_(false) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -68,7 +69,14 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
+  // The infobar should only be told if the page was a reload if the previous
+  // page displayed a timestamp.
+  bool is_reload =
+      displayed_preview_timestamp_
+          ? navigation_handle->GetReloadType() != content::ReloadType::NONE
+          : false;
   displayed_preview_infobar_ = false;
+  displayed_preview_timestamp_ = false;
   ClearLastNavigationAsync();
   committed_data_saver_navigation_id_.reset();
 
@@ -105,7 +113,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
                 web_contents()->GetBrowserContext());
     PreviewsInfoBarDelegate::Create(
         web_contents(), previews::PreviewsType::OFFLINE,
-        base::Time() /* previews_freshness */,
+        base::Time() /* previews_freshness */, false /* is_reload */,
         data_reduction_proxy_settings &&
             data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
         base::Bind(&AddPreviewNavigationCallback, browser_context_,
@@ -123,7 +131,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
     headers->GetDateValue(&previews_freshness);
     PreviewsInfoBarDelegate::Create(
         web_contents(), previews::PreviewsType::LITE_PAGE, previews_freshness,
-        true /* is_data_saver_user */,
+        true /* is_data_saver_user */, is_reload,
         base::Bind(&AddPreviewNavigationCallback, browser_context_,
                    navigation_handle->GetRedirectChain()[0],
                    previews::PreviewsType::LITE_PAGE));
