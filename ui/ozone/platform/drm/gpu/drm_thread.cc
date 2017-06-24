@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot_mojo.h"
 #include "ui/ozone/common/display_snapshot_proxy.h"
@@ -225,6 +226,8 @@ void DrmThread::CheckOverlayCapabilities(
                             const std::vector<OverlayCheck_Params>&,
                             const std::vector<OverlayCheckReturn_Params>&)>
         callback) {
+  TRACE_EVENT0("drm,hwoverlays", "DrmThread::CheckOverlayCapabilities");
+
   std::move(callback).Run(
       widget, overlays,
       screen_manager_->GetWindow(widget)->TestPageFlip(overlays));

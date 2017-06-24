@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/ozone/demo/gl_renderer.h"
 
 namespace gl {
@@ -15,6 +16,7 @@ class GLImage;
 }
 
 namespace ui {
+class OverlayCandidatesOzone;
 
 class SurfacelessGlRenderer : public GlRenderer {
  public:
@@ -30,6 +32,7 @@ class SurfacelessGlRenderer : public GlRenderer {
   // GlRenderer:
   void RenderFrame() override;
   void PostRenderFrameTask(gfx::SwapResult result) override;
+  void OverlayChecker(int z_order, gfx::Rect bounds_rect, gfx::RectF crop_rect);
 
   class BufferWrapper {
    public:
@@ -55,6 +58,8 @@ class SurfacelessGlRenderer : public GlRenderer {
   std::unique_ptr<BufferWrapper> buffers_[2];
 
   std::unique_ptr<BufferWrapper> overlay_buffer_;
+
+  std::unique_ptr<OverlayCandidatesOzone> overlay_checker_;
 
   int back_buffer_ = 0;
 
