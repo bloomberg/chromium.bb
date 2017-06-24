@@ -9,7 +9,9 @@
 namespace feature_engagement_tracker {
 
 InitAwareModel::InitAwareModel(std::unique_ptr<Model> model)
-    : model_(std::move(model)), weak_ptr_factory_(this) {
+    : model_(std::move(model)),
+      initialization_complete_(false),
+      weak_ptr_factory_(this) {
   DCHECK(model_);
 }
 
@@ -37,19 +39,27 @@ void InitAwareModel::IncrementEvent(const std::string& event_name,
     return;
   }
 
+  if (initialization_complete_)
+    return;
+
   queued_events_.push_back(std::tie(event_name, current_day));
 }
 
 void InitAwareModel::OnInitializeComplete(
     const OnModelInitializationFinished& callback,
     bool success) {
+  initialization_complete_ = true;
   if (success) {
     for (auto& event : queued_events_)
       model_->IncrementEvent(std::get<0>(event), std::get<1>(event));
-    queued_events_.clear();
   }
+  queued_events_.clear();
 
   callback.Run(success);
+}
+
+size_t InitAwareModel::GetQueuedEventCountForTesting() {
+  return queued_events_.size();
 }
 
 }  // namespace feature_engagement_tracker

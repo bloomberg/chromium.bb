@@ -30,12 +30,19 @@ class InitAwareModel : public Model {
   void IncrementEvent(const std::string& event_name,
                       uint32_t current_day) override;
 
+  size_t GetQueuedEventCountForTesting();
+
  private:
   void OnInitializeComplete(const OnModelInitializationFinished& callback,
                             bool success);
 
   std::unique_ptr<Model> model_;
   std::vector<std::tuple<std::string, uint32_t>> queued_events_;
+
+  // Whether the initialization has completed. This will be set to true once
+  // the underlying model has been initialized, regardless of whether the
+  // result was a success or not.
+  bool initialization_complete_;
 
   base::WeakPtrFactory<InitAwareModel> weak_ptr_factory_;
 
