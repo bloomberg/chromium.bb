@@ -190,7 +190,8 @@ void TestThatReloadIsStartedThenServeReload(const KURL& test_url,
                                             ImageResource* image_resource,
                                             ImageResourceContent* content,
                                             MockImageResourceObserver* observer,
-                                            WebCachePolicy policy_for_reload) {
+                                            WebCachePolicy policy_for_reload,
+                                            bool placeholder_before_reload) {
   const char* data = reinterpret_cast<const char*>(kJpegImage2);
   constexpr size_t kDataLength = sizeof(kJpegImage2);
   constexpr int kImageWidth = 50;
@@ -200,7 +201,7 @@ void TestThatReloadIsStartedThenServeReload(const KURL& test_url,
   // reloading.
   EXPECT_EQ(ResourceStatus::kPending, image_resource->GetStatus());
   EXPECT_FALSE(image_resource->ResourceBuffer());
-  EXPECT_FALSE(image_resource->ShouldShowPlaceholder());
+  EXPECT_EQ(placeholder_before_reload, image_resource->ShouldShowPlaceholder());
   EXPECT_EQ(g_null_atom,
             image_resource->GetResourceRequest().HttpHeaderField("range"));
   EXPECT_EQ(policy_for_reload,
@@ -243,7 +244,6 @@ void TestThatReloadIsStartedThenServeReload(const KURL& test_url,
   EXPECT_FALSE(content->GetImage()->IsNull());
   EXPECT_EQ(kImageWidth, content->GetImage()->width());
   EXPECT_EQ(kImageHeight, content->GetImage()->height());
-  EXPECT_TRUE(content->GetImage()->IsBitmapImage());
   EXPECT_FALSE(content->GetImage()->PaintImageForCurrentFrame().is_multipart());
 }
 
@@ -599,7 +599,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   EXPECT_EQ(3, observer->ImageChangedCount());
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache);
+      WebCachePolicy::kBypassingCache, false);
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinishedWithOldHeaders) {
@@ -642,7 +642,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinishedWithOldHeaders) {
   EXPECT_EQ(3, observer->ImageChangedCount());
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache);
+      WebCachePolicy::kBypassingCache, false);
 }
 
 TEST(ImageResourceTest,
@@ -725,9 +725,9 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
 
   EXPECT_EQ(3, observer->ImageChangedCount());
 
-  TestThatReloadIsStartedThenServeReload(test_url, image_resource, content,
-                                         observer.get(),
-                                         WebCachePolicy::kBypassingCache);
+  TestThatReloadIsStartedThenServeReload(
+      test_url, image_resource, content, observer.get(),
+      WebCachePolicy::kBypassingCache, false);
 
   GetMemoryCache()->Remove(image_resource);
 }
@@ -775,7 +775,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache);
+      WebCachePolicy::kBypassingCache, false);
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
@@ -799,7 +799,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache);
+      WebCachePolicy::kBypassingCache, false);
 }
 
 TEST(ImageResourceTest, SVGImage) {
@@ -1329,21 +1329,71 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   // loading.
   EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
   EXPECT_EQ(2, observer->ImageChangedCount());
+  EXPECT_FALSE(image_resource->ShouldShowPlaceholder());
 
   TestThatReloadIsStartedThenServeReload(
       test_url, image_resource, image_resource->GetContent(), observer.get(),
-      WebCachePolicy::kBypassingCache);
+      WebCachePolicy::kBypassingCache, false);
+}
+
+TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
+  KURL test_url(kParsedURLString, kTestURL);
+  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
+
+  ResourceRequest request = ResourceRequest(test_url);
+  request.SetPreviewsState(WebURLRequest::kClientLoFiOn);
+  FetchParameters params{request};
+  params.SetAllowImagePlaceholder();
+  ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
+  EXPECT_EQ(FetchParameters::kAllowPlaceholder,
+            params.GetPlaceholderImageRequestType());
+  EXPECT_EQ("bytes=0-2047",
+            image_resource->GetResourceRequest().HttpHeaderField("range"));
+  EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
+  std::unique_ptr<MockImageResourceObserver> observer =
+      MockImageResourceObserver::Create(image_resource->GetContent());
+
+  const char kBadData[] = "notanimageresponse";
+
+  ResourceResponse bad_response(test_url, "image/jpeg", sizeof(kBadData),
+                                g_null_atom);
+  bad_response.SetHTTPStatusCode(206);
+  bad_response.SetHTTPHeaderField(
+      "content-range", BuildContentRange(sizeof(kBadData), sizeof(kJpegImage)));
+
+  image_resource->Loader()->DidReceiveResponse(
+      WrappedResourceResponse(bad_response));
+
+  EXPECT_EQ(0, observer->ImageChangedCount());
+
+  image_resource->Loader()->DidReceiveData(kBadData, sizeof(kBadData));
+
+  // The dimensions could not be extracted, so the full original image should be
+  // loading.
+  EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
+  EXPECT_EQ(2, observer->ImageChangedCount());
+
+  TestThatReloadIsStartedThenServeReload(
+      test_url, image_resource, image_resource->GetContent(), observer.get(),
+      WebCachePolicy::kBypassingCache, true);
+
+  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsBitmapImage());
+  EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
   const struct {
     WebURLRequest::PreviewsState initial_previews_state;
     WebURLRequest::PreviewsState expected_reload_previews_state;
+    bool placeholder_before_reload;
+    bool placeholder_after_reload;
   } tests[] = {
-      {WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kPreviewsNoTransform},
-      {WebURLRequest::kClientLoFiOn, WebURLRequest::kPreviewsNoTransform |
-                                         WebURLRequest::kClientLoFiAutoReload},
+      {WebURLRequest::kPreviewsUnspecified, WebURLRequest::kPreviewsNoTransform,
+       false},
+      {WebURLRequest::kClientLoFiOn,
+       WebURLRequest::kPreviewsNoTransform |
+           WebURLRequest::kClientLoFiAutoReload,
+       true},
   };
 
   for (const auto& test : tests) {
@@ -1394,7 +1444,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
 
     TestThatReloadIsStartedThenServeReload(
         test_url, image_resource, image_resource->GetContent(), observer.get(),
-        WebCachePolicy::kBypassingCache);
+        WebCachePolicy::kBypassingCache, test.placeholder_before_reload);
 
     EXPECT_EQ(test.expected_reload_previews_state,
               image_resource->GetResourceRequest().GetPreviewsState());
@@ -1624,7 +1674,7 @@ TEST(ImageResourceTest,
     // error, so the full original image should be loading.
     TestThatReloadIsStartedThenServeReload(
         test_url, image_resource, image_resource->GetContent(), observer.get(),
-        WebCachePolicy::kBypassingCache);
+        WebCachePolicy::kBypassingCache, false);
   }
 }
 
