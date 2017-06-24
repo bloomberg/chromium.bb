@@ -1697,6 +1697,7 @@ test("browser_tests") {
       "//third_party/accessibility-audit/axs_testing.js",
       "//third_party/chaijs/chai.js",
       "//third_party/mocha/mocha.js",
+      "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
       "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
       "//third_party/simplejson/",

@@ -69,6 +69,4 @@ var tests = [
   }
 ];
 
-importTestHelpers().then(function() {
-  chrome.test.runTests(tests);
-});
+chrome.test.runTests(tests);
