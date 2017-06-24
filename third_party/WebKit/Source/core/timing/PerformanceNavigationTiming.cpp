@@ -125,6 +125,14 @@ bool PerformanceNavigationTiming::GetAllowRedirectDetails() const {
       resource_timing_info_->FinalResponse(), *security_origin, context);
 }
 
+AtomicString PerformanceNavigationTiming::AlpnNegotiatedProtocol() const {
+  return resource_timing_info_->FinalResponse().AlpnNegotiatedProtocol();
+}
+
+AtomicString PerformanceNavigationTiming::ConnectionInfo() const {
+  return resource_timing_info_->FinalResponse().ConnectionInfoString();
+}
+
 DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventStart() const {
   bool allow_redirect_details = GetAllowRedirectDetails();
   DocumentLoadTiming* timing = GetDocumentLoadTiming();

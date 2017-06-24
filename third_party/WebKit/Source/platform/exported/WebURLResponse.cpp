@@ -372,6 +372,24 @@ void WebURLResponse::AppendRedirectResponse(const WebURLResponse& response) {
   resource_response_->AppendRedirectResponse(response.ToResourceResponse());
 }
 
+WebString WebURLResponse::AlpnNegotiatedProtocol() const {
+  return resource_response_->AlpnNegotiatedProtocol();
+}
+
+void WebURLResponse::SetAlpnNegotiatedProtocol(
+    const WebString& alpn_negotiated_protocol) {
+  resource_response_->SetAlpnNegotiatedProtocol(alpn_negotiated_protocol);
+}
+
+net::HttpResponseInfo::ConnectionInfo WebURLResponse::ConnectionInfo() const {
+  return resource_response_->ConnectionInfo();
+}
+
+void WebURLResponse::SetConnectionInfo(
+    net::HttpResponseInfo::ConnectionInfo connection_info) {
+  resource_response_->SetConnectionInfo(connection_info);
+}
+
 WebURLResponse::WebURLResponse(ResourceResponse& r) : resource_response_(&r) {}
 
 }  // namespace blink

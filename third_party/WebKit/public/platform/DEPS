@@ -18,6 +18,7 @@ include_rules = [
     # http://crbug.com/582327
     "+media/midi/midi_service.mojom-shared.h",
     "+mojo/public",
+    "+net/http",
     "+platform",
     "+platform/weborigin",
     "+public/platform",

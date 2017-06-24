@@ -6,11 +6,8 @@
 
 namespace content {
 
-WebURLResponseExtraDataImpl::WebURLResponseExtraDataImpl(
-    const std::string& alpn_negotiated_protocol)
-    : alpn_negotiated_protocol_(alpn_negotiated_protocol),
-      is_ftp_directory_listing_(false),
-      connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
+WebURLResponseExtraDataImpl::WebURLResponseExtraDataImpl()
+    : is_ftp_directory_listing_(false),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
 
 WebURLResponseExtraDataImpl::~WebURLResponseExtraDataImpl() {

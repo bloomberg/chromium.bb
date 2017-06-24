@@ -101,6 +101,8 @@ ResourceResponse::ResourceResponse()
       last_modified_(0.0),
       app_cache_id_(0),
       response_time_(0),
+      connection_info_(
+          net::HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_UNKNOWN),
       encoded_data_length_(0),
       encoded_body_length_(0),
       decoded_body_length_(0) {}
@@ -570,6 +572,14 @@ KURL ResourceResponse::OriginalURLViaServiceWorker() const {
   if (url_list_via_service_worker_.IsEmpty())
     return KURL();
   return url_list_via_service_worker_.back();
+}
+
+AtomicString ResourceResponse::ConnectionInfoString() const {
+  std::string connection_info_string =
+      net::HttpResponseInfo::ConnectionInfoToString(connection_info_);
+  return AtomicString(
+      reinterpret_cast<const LChar*>(connection_info_string.data()),
+      connection_info_string.length());
 }
 
 void ResourceResponse::SetEncodedDataLength(long long value) {

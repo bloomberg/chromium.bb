@@ -57,6 +57,8 @@ PerformanceResourceTiming::PerformanceResourceTiming(
                            info.LoadFinishTime(),
                            info.NegativeAllowed())),
       initiator_type_(info.InitiatorType()),
+      alpn_negotiated_protocol_(info.FinalResponse().AlpnNegotiatedProtocol()),
+      connection_info_(info.FinalResponse().ConnectionInfoString()),
       time_origin_(time_origin),
       timing_(info.FinalResponse().GetResourceLoadTiming()),
       last_redirect_end_time_(last_redirect_end_time),
@@ -104,6 +106,37 @@ unsigned long long PerformanceResourceTiming::GetDecodedBodySize() const {
 
 AtomicString PerformanceResourceTiming::initiatorType() const {
   return initiator_type_;
+}
+
+AtomicString PerformanceResourceTiming::AlpnNegotiatedProtocol() const {
+  return alpn_negotiated_protocol_;
+}
+
+AtomicString PerformanceResourceTiming::ConnectionInfo() const {
+  return connection_info_;
+}
+
+AtomicString PerformanceResourceTiming::GetNextHopProtocol(
+    const AtomicString& alpn_negotiated_protocol,
+    const AtomicString& connection_info) {
+  // Fallback to connection_info when alpn_negotiated_protocol is unknown.
+  AtomicString returnedProtocol = (alpn_negotiated_protocol == "unknown")
+                                      ? connection_info
+                                      : alpn_negotiated_protocol;
+  // If connection_info is also unknown, return empty string.
+  // (https://github.com/w3c/navigation-timing/issues/71)
+  returnedProtocol = (returnedProtocol == "unknown") ? "" : returnedProtocol;
+  // If the protocol is http over quic (e.g. http/2+quic/37), convert it to the
+  // alpn id "hq". (https://github.com/w3c/navigation-timing/issues/71)
+  if (returnedProtocol.Contains("quic"))
+    returnedProtocol = "hq";
+
+  return returnedProtocol;
+}
+
+AtomicString PerformanceResourceTiming::nextHopProtocol() const {
+  return PerformanceResourceTiming::GetNextHopProtocol(AlpnNegotiatedProtocol(),
+                                                       ConnectionInfo());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::workerStart() const {
@@ -277,6 +310,7 @@ unsigned long long PerformanceResourceTiming::decodedBodySize() const {
 void PerformanceResourceTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
   builder.AddString("initiatorType", initiatorType());
+  builder.AddString("nextHopProtocol", nextHopProtocol());
   builder.AddNumber("workerStart", workerStart());
   builder.AddNumber("redirectStart", redirectStart());
   builder.AddNumber("redirectEnd", redirectEnd());

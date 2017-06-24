@@ -206,7 +206,7 @@ source_set("testing") {
   deps = [
     ":bindings_core_impl_generated",
     "//skia",
-    "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/WebKit/Source/platform",
     "//v8",
   ]
 }
