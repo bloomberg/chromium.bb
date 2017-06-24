@@ -65,7 +65,7 @@ struct text_input_manager {
 	struct wl_global *text_input_manager_global;
 	struct wl_listener destroy_listener;
 
-	struct text_input *current_panel;
+	struct text_input *current_text_input;
 
 	struct weston_compositor *ec;
 };
@@ -141,11 +141,15 @@ deactivate_input_method(struct input_method *input_method)
 	input_method->context = NULL;
 
 	if (wl_list_empty(&text_input->input_methods) &&
-	    text_input->input_panel_visible) {
+	    text_input->input_panel_visible &&
+	    text_input->manager->current_text_input == text_input) {
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
 		text_input->input_panel_visible = false;
-		text_input->manager->current_panel = NULL;
 	}
+
+	if (text_input->manager->current_text_input == text_input)
+		text_input->manager->current_text_input = NULL;
+
 	zwp_text_input_v1_send_leave(text_input->resource);
 }
 
@@ -207,12 +211,11 @@ text_input_activate(struct wl_client *client,
 
 	input_method_context_create(text_input, input_method);
 
-	current = text_input->manager->current_panel;
+	current = text_input->manager->current_text_input;
 
 	if (current && current != text_input) {
 		current->input_panel_visible = false;
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
-		text_input->manager->current_panel = NULL;
 	}
 
 	if (text_input->input_panel_visible) {
@@ -220,8 +223,8 @@ text_input_activate(struct wl_client *client,
 			       text_input->surface);
 		wl_signal_emit(&ec->update_input_panel_signal,
 			       &text_input->cursor_rectangle);
-		text_input->manager->current_panel = text_input;
 	}
+	text_input->manager->current_text_input = text_input;
 
 	zwp_text_input_v1_send_enter(text_input->resource,
 				     text_input->surface->resource);
@@ -336,7 +339,8 @@ text_input_show_input_panel(struct wl_client *client,
 
 	text_input->input_panel_visible = true;
 
-	if (!wl_list_empty(&text_input->input_methods)) {
+	if (!wl_list_empty(&text_input->input_methods) &&
+	    text_input == text_input->manager->current_text_input) {
 		wl_signal_emit(&ec->show_input_panel_signal,
 			       text_input->surface);
 		wl_signal_emit(&ec->update_input_panel_signal,
@@ -354,10 +358,8 @@ text_input_hide_input_panel(struct wl_client *client,
 	text_input->input_panel_visible = false;
 
 	if (!wl_list_empty(&text_input->input_methods) &&
-	    text_input == text_input->manager->current_panel) {
-		text_input->manager->current_panel = NULL;
+	    text_input == text_input->manager->current_text_input)
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
-	}
 }
 
 static void
