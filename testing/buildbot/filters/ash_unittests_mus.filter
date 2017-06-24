@@ -1,8 +1,6 @@
 # TODO: fix these. They fail because wm::CursorManager isn't created.
 # http://crbug.com/734806.
 # The following fail as they use wm::CursorManager:
--NativeCursorManagerAshTest.LockCursor
--ExtendedDesktopTest.TestCursor
 -LockStateControllerTest.LegacyLockAndShutDown
 -LockStateControllerTest.RequestShutdownFromLockScreen
 -LockStateControllerTest.RequestShutdownFromLoginScreen
