@@ -1223,7 +1223,6 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-crbug.com/474987 [ Win Mac ] external/wpt/css/css-flexbox-1/auto-margins-001.html [ Failure ]
 
 crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
@@ -2023,6 +2022,7 @@ crbug.com/626703 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/workers/name-property.html [ Timeout ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_disabled_form_control-manual.html [ Timeout Pass ]
 crbug.com/626703 external/wpt/css/CSS2/text/text-align-white-space-003.xht [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/text-align-white-space-007.xht [ Failure ]
