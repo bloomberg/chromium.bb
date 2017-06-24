@@ -5,22 +5,35 @@
 #include "modules/shapedetection/BarcodeDetector.h"
 
 #include "core/dom/DOMException.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/workers/WorkerThread.h"
 #include "modules/imagecapture/Point2D.h"
 #include "modules/shapedetection/DetectedBarcode.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
-BarcodeDetector* BarcodeDetector::Create() {
-  return new BarcodeDetector();
+BarcodeDetector* BarcodeDetector::Create(ExecutionContext* context) {
+  return new BarcodeDetector(context);
 }
 
-BarcodeDetector::BarcodeDetector() : ShapeDetector() {
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&barcode_service_));
+BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {
+  auto request = mojo::MakeRequest(&barcode_service_);
+  if (context->IsDocument()) {
+    LocalFrame* frame = ToDocument(context)->GetFrame();
+    if (frame)
+      frame->Client()->GetInterfaceProvider()->GetInterface(std::move(request));
+  } else if (context->IsWorkerGlobalScope()) {
+    WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
+    if (thread)
+      thread->GetInterfaceProvider()->GetInterface(std::move(request));
+  }
+
   barcode_service_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&BarcodeDetector::OnBarcodeServiceConnectionError,
                 WrapWeakPersistent(this))));

@@ -5,31 +5,46 @@
 #include "modules/shapedetection/FaceDetector.h"
 
 #include "core/dom/DOMException.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/workers/WorkerThread.h"
 #include "modules/imagecapture/Point2D.h"
 #include "modules/shapedetection/DetectedFace.h"
 #include "modules/shapedetection/FaceDetectorOptions.h"
 #include "modules/shapedetection/Landmark.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom-blink.h"
 
 namespace blink {
 
-FaceDetector* FaceDetector::Create(const FaceDetectorOptions& options) {
-  return new FaceDetector(options);
+FaceDetector* FaceDetector::Create(ExecutionContext* context,
+                                   const FaceDetectorOptions& options) {
+  return new FaceDetector(context, options);
 }
 
-FaceDetector::FaceDetector(const FaceDetectorOptions& options)
+FaceDetector::FaceDetector(ExecutionContext* context,
+                           const FaceDetectorOptions& options)
     : ShapeDetector() {
-  shape_detection::mojom::blink::FaceDetectorOptionsPtr face_detector_options =
+  auto face_detector_options =
       shape_detection::mojom::blink::FaceDetectorOptions::New();
   face_detector_options->max_detected_faces = options.maxDetectedFaces();
   face_detector_options->fast_mode = options.fastMode();
+
   shape_detection::mojom::blink::FaceDetectionProviderPtr provider;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&provider));
+  auto request = mojo::MakeRequest(&provider);
+  if (context->IsDocument()) {
+    LocalFrame* frame = ToDocument(context)->GetFrame();
+    if (frame)
+      frame->Client()->GetInterfaceProvider()->GetInterface(std::move(request));
+  } else if (context->IsWorkerGlobalScope()) {
+    WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
+    if (thread)
+      thread->GetInterfaceProvider()->GetInterface(std::move(request));
+  }
   provider->CreateFaceDetection(mojo::MakeRequest(&face_service_),
                                 std::move(face_detector_options));
 

@@ -5,21 +5,34 @@
 #include "modules/shapedetection/TextDetector.h"
 
 #include "core/dom/DOMException.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/workers/WorkerThread.h"
 #include "modules/shapedetection/DetectedText.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
-TextDetector* TextDetector::Create() {
-  return new TextDetector();
+TextDetector* TextDetector::Create(ExecutionContext* context) {
+  return new TextDetector(context);
 }
 
-TextDetector::TextDetector() : ShapeDetector() {
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&text_service_));
+TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {
+  auto request = mojo::MakeRequest(&text_service_);
+  if (context->IsDocument()) {
+    LocalFrame* frame = ToDocument(context)->GetFrame();
+    if (frame)
+      frame->Client()->GetInterfaceProvider()->GetInterface(std::move(request));
+  } else if (context->IsWorkerGlobalScope()) {
+    WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
+    if (thread)
+      thread->GetInterfaceProvider()->GetInterface(std::move(request));
+  }
+
   text_service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
       &TextDetector::OnTextServiceConnectionError, WrapWeakPersistent(this))));
 }

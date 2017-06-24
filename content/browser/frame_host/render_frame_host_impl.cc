@@ -117,6 +117,10 @@
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
+#include "services/shape_detection/public/interfaces/constants.mojom.h"
+#include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/interfaces/textdetection.mojom.h"
 #include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
@@ -332,6 +336,18 @@ void LookupRenderFrameHostOrProxy(int process_id,
   *rfh = RenderFrameHostImpl::FromID(process_id, routing_id);
   if (*rfh == nullptr)
     *rfph = RenderFrameProxyHost::FromID(process_id, routing_id);
+}
+
+// Forwards service requests to Service Manager since the renderer cannot launch
+// out-of-process services on its own.
+template <typename R>
+void ForwardShapeDetectionRequest(const service_manager::BindSourceInfo&,
+                                  R request) {
+  // TODO(beng): This should really be using the per-profile connector.
+  service_manager::Connector* connector =
+      ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(shape_detection::mojom::kServiceName,
+                           std::move(request));
 }
 
 }  // namespace
@@ -2880,6 +2896,16 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   GetInterfaceRegistry()->AddInterface(base::Bind(
       &KeyboardLockServiceImpl::CreateMojoService));
+
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&ForwardShapeDetectionRequest<
+                 shape_detection::mojom::BarcodeDetectionRequest>));
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&ForwardShapeDetectionRequest<
+                 shape_detection::mojom::FaceDetectionProviderRequest>));
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&ForwardShapeDetectionRequest<
+                 shape_detection::mojom::TextDetectionRequest>));
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

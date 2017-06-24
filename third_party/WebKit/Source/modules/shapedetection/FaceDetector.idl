@@ -6,6 +6,7 @@
 
 [
     Constructor(optional FaceDetectorOptions faceDetectorOptions),
+    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     MeasureAs=ShapeDetection_FaceDetectorConstructor,
     RuntimeEnabled=ShapeDetection

@@ -15,17 +15,19 @@
 
 namespace blink {
 
+class ExecutionContext;
+
 class MODULES_EXPORT BarcodeDetector final : public ShapeDetector,
                                              public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BarcodeDetector* Create();
+  static BarcodeDetector* Create(ExecutionContext*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  BarcodeDetector();
+  explicit BarcodeDetector(ExecutionContext*);
   ~BarcodeDetector() override = default;
 
   ScriptPromise DoDetect(ScriptPromiseResolver*,
