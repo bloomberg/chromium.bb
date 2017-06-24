@@ -163,6 +163,11 @@ class CORE_EXPORT ImageResource final
     // Do not show or reload placeholder.
     kDoNotReloadPlaceholder,
 
+    // Show placeholder, and do not reload. The original image will still be
+    // loaded and shown if the image is explicitly reloaded, e.g. when
+    // ReloadIfLoFiOrPlaceholderImage is called with kReloadAlways.
+    kShowAndDoNotReloadPlaceholder,
+
     // Do not show placeholder, reload only when decode error occurs.
     kReloadPlaceholderOnDecodeError,
 

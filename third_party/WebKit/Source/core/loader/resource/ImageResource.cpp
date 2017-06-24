@@ -461,6 +461,7 @@ void ImageResource::ResponseReceived(
 bool ImageResource::ShouldShowPlaceholder() const {
   switch (placeholder_option_) {
     case PlaceholderOption::kShowAndReloadPlaceholderAlways:
+    case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
       return true;
     case PlaceholderOption::kReloadPlaceholderOnDecodeError:
     case PlaceholderOption::kDoNotReloadPlaceholder:
@@ -476,6 +477,7 @@ bool ImageResource::ShouldReloadBrokenPlaceholder() const {
       return ErrorOccurred();
     case PlaceholderOption::kReloadPlaceholderOnDecodeError:
       return GetStatus() == ResourceStatus::kDecodeError;
+    case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
     case PlaceholderOption::kDoNotReloadPlaceholder:
       return false;
   }
@@ -518,6 +520,8 @@ void ImageResource::ReloadIfLoFiOrPlaceholderImage(
   // The reloaded image should not use any previews transformations.
   WebURLRequest::PreviewsState previews_state_for_reload =
       WebURLRequest::kPreviewsNoTransform;
+  WebURLRequest::PreviewsState old_previews_state =
+      GetResourceRequest().GetPreviewsState();
 
   if (policy == kReloadIfNeeded && (GetResourceRequest().GetPreviewsState() &
                                     WebURLRequest::kClientLoFiOn)) {
@@ -532,7 +536,13 @@ void ImageResource::ReloadIfLoFiOrPlaceholderImage(
 
   if (placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
     ClearRangeRequestHeader();
-  placeholder_option_ = PlaceholderOption::kDoNotReloadPlaceholder;
+
+  if (old_previews_state & WebURLRequest::kClientLoFiOn &&
+      policy != kReloadAlways) {
+    placeholder_option_ = PlaceholderOption::kShowAndDoNotReloadPlaceholder;
+  } else {
+    placeholder_option_ = PlaceholderOption::kDoNotReloadPlaceholder;
+  }
 
   if (IsLoading()) {
     Loader()->Cancel();
