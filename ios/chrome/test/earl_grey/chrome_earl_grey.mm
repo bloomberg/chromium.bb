@@ -107,8 +107,6 @@ id ExecuteJavaScript(NSString* javascript,
 
 + (void)loadURL:(const GURL&)URL {
   chrome_test_util::LoadUrl(URL);
-  // Make sure that the page started loading.
-  GREYAssert(chrome_test_util::IsLoading(), @"Page did not start loading.");
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   web::WebState* webState = chrome_test_util::GetCurrentWebState();

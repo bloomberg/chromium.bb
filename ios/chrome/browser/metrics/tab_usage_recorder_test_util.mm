@@ -83,12 +83,21 @@ void SwitchToNormalMode() {
     [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
         performAction:grey_tap()];
   }
+
+  // Turn off synchronization of GREYAssert to test the pending states.
+  [[GREYConfiguration sharedInstance]
+          setValue:@(NO)
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
   ConditionBlock condition = ^bool {
     return !chrome_test_util::IsIncognitoMode();
   };
   GREYAssert(
       testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
       @"Waiting switch to normal mode.");
+
+  [[GREYConfiguration sharedInstance]
+          setValue:@(YES)
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
 }
 
 }  // namespace tab_usage_recorder_test_util

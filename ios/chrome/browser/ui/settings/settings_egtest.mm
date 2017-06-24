@@ -39,6 +39,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
@@ -436,6 +437,18 @@ bool IsCertificateCleared() {
   // Login to page and click to save password and check that its saved.
   [ChromeEarlGrey loadURL:URL];
   chrome_test_util::TapWebViewElementWithId("Login");
+
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for save button"
+                  block:^BOOL {
+                    NSError* error = nil;
+                    [[EarlGrey selectElementWithMatcher:SavePasswordButton()]
+                        assertWithMatcher:grey_notNil()
+                                    error:&error];
+                    return !error;
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed waiting for save button");
   [[EarlGrey selectElementWithMatcher:SavePasswordButton()]
       performAction:grey_tap()];
 }
