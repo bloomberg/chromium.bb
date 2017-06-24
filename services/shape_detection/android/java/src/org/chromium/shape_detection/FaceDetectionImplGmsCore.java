@@ -74,7 +74,7 @@ public class FaceDetectionImplGmsCore implements FaceDetection {
 
         Frame frame = BitmapUtils.convertToFrame(bitmapData);
         if (frame == null) {
-            Log.e(TAG, "Error converting SharedMemory to Frame");
+            Log.e(TAG, "Error converting Mojom Bitmap to Frame");
             callback.call(new FaceDetectionResult[0]);
             return;
         }
