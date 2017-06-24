@@ -1196,7 +1196,8 @@ void DocumentThreadableLoader::LoadRequestSync(
     data->ForEachSegment([this](const char* segment, size_t segment_size,
                                 size_t segment_offset) -> bool {
       HandleReceivedData(segment, segment_size);
-      return true;
+      // The client may cancel this loader in handleReceivedData().
+      return client_;
     });
   }
 
