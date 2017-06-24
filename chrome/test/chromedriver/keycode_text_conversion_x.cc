@@ -184,6 +184,11 @@ bool GetXModifierMask(Display* display, int modifier, int* x_modifier) {
 bool ConvertKeyCodeToText(
     ui::KeyboardCode key_code, int modifiers, std::string* text,
     std::string* error_msg) {
+  XDisplay* display = gfx::GetXDisplay();
+  if (!display) {
+    return ConvertKeyCodeToTextOzone(key_code, modifiers, text, error_msg);
+  }
+
   *error_msg = std::string();
   int x_key_code = KeyboardCodeToXKeyCode(key_code);
   if (x_key_code == -1) {
@@ -194,13 +199,6 @@ bool ConvertKeyCodeToText(
   XEvent event;
   memset(&event, 0, sizeof(XEvent));
   XKeyEvent* key_event = &event.xkey;
-  XDisplay* display = gfx::GetXDisplay();
-  if (!display) {
-    *error_msg =
-        "an X display is required for keycode conversions, consider using Xvfb";
-    *text = std::string();
-    return false;
-  }
   key_event->display = display;
   key_event->keycode = x_key_code;
   if (modifiers & kShiftKeyModifierMask)
@@ -237,6 +235,12 @@ bool ConvertCharToKeyCode(
     ui::KeyboardCode* key_code,
     int* necessary_modifiers,
     std::string* error_msg) {
+  XDisplay* display = gfx::GetXDisplay();
+  if (!display) {
+    return ConvertCharToKeyCodeOzone(key, key_code, necessary_modifiers,
+                                     error_msg);
+  }
+
   std::string key_string(base::UTF16ToUTF8(base::string16(1, key)));
   bool found = false;
   ui::KeyboardCode test_code;

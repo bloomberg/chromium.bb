@@ -273,7 +273,7 @@ source_set("lib") {
   if (!use_x11) {
     sources -= [ "keycode_text_conversion_x.cc" ]
   }
-  if (!use_ozone) {
+  if (!use_ozone && !use_x11) {
     sources -= [ "keycode_text_conversion_ozone.cc" ]
   }
 
