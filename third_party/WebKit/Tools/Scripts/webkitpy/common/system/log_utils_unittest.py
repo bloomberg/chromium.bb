@@ -47,7 +47,7 @@ class ConfigureLoggingTestBase(unittest.TestCase):
         logger.propagate = False
 
         logging_level = self._logging_level()
-        self._handlers = configure_logging(logging_level=logging_level, logger=logger, stream=log_stream)
+        self._handlers = configure_logging(logging_level=logging_level, logger=logger, stream=log_stream, include_time=False)
         self._log = logger
         self._log_stream = log_stream
 
