@@ -1249,6 +1249,8 @@ component("base") {
     # below, rather than using the generic POSIX or Linux-y ones.
     sources -= [
       "debug/stack_trace_posix.cc",
+      "memory/shared_memory_handle_posix.cc",
+      "memory/shared_memory_posix.cc",
       "message_loop/message_pump_libevent.cc",
       "message_loop/message_pump_libevent.h",
       "process/kill_posix.cc",
@@ -1262,6 +1264,8 @@ component("base") {
       "base_paths_fuchsia.cc",
       "debug/stack_trace_fuchsia.cc",
       "files/file_path_watcher_fuchsia.cc",
+      "memory/shared_memory_fuchsia.cc",
+      "memory/shared_memory_handle_fuchsia.cc",
       "message_loop/message_pump_fuchsia.cc",
       "message_loop/message_pump_fuchsia.h",
       "process/kill_fuchsia.cc",
