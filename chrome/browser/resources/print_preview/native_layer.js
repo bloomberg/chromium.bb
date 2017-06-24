@@ -88,9 +88,6 @@ cr.define('print_preview', function() {
     // Bind global handlers
     global.setUseCloudPrint = this.onSetUseCloudPrint_.bind(this);
     global.reloadPrintersList = this.onReloadPrintersList_.bind(this);
-    global.printToCloud = this.onPrintToCloud_.bind(this);
-    global.fileSelectionCancelled = this.onFileSelectionCancelled_.bind(this);
-    global.fileSelectionCompleted = this.onFileSelectionCompleted_.bind(this);
     global.printPreviewFailed = this.onPrintPreviewFailed_.bind(this);
     global.invalidPrinterSettings = this.onInvalidPrinterSettings_.bind(this);
     global.onDidGetDefaultPageLayout =
@@ -137,9 +134,6 @@ cr.define('print_preview', function() {
     CLOUD_PRINT_ENABLE: 'print_preview.NativeLayer.CLOUD_PRINT_ENABLE',
     DESTINATIONS_RELOAD: 'print_preview.NativeLayer.DESTINATIONS_RELOAD',
     DISABLE_SCALING: 'print_preview.NativeLayer.DISABLE_SCALING',
-    FILE_SELECTION_CANCEL: 'print_preview.NativeLayer.FILE_SELECTION_CANCEL',
-    FILE_SELECTION_COMPLETE:
-        'print_preview.NativeLayer.FILE_SELECTION_COMPLETE',
     MANIPULATE_SETTINGS_FOR_TEST:
         'print_preview.NativeLayer.MANIPULATE_SETTINGS_FOR_TEST',
     PAGE_COUNT_READY: 'print_preview.NativeLayer.PAGE_COUNT_READY',
@@ -149,7 +143,6 @@ cr.define('print_preview', function() {
         'print_preview.NativeLayer.PREVIEW_GENERATION_DONE',
     PREVIEW_GENERATION_FAIL:
         'print_preview.NativeLayer.PREVIEW_GENERATION_FAIL',
-    PRINT_TO_CLOUD: 'print_preview.NativeLayer.PRINT_TO_CLOUD',
     SETTINGS_INVALID: 'print_preview.NativeLayer.SETTINGS_INVALID',
     PRINT_PRESET_OPTIONS: 'print_preview.NativeLayer.PRINT_PRESET_OPTIONS',
   };
@@ -420,8 +413,10 @@ cr.define('print_preview', function() {
      *     system's preview application.
      * @param {boolean=} opt_showSystemDialog Whether to open system dialog for
      *     advanced settings.
+     * @return {!Promise} Promise that will resolve when the print request is
+     *     finished or rejected.
      */
-    startPrint: function(
+    print: function(
         destination, printTicketStore, cloudPrintInterface, documentInfo,
         opt_isOpenPdfInPreview, opt_showSystemDialog) {
       assert(
@@ -497,7 +492,7 @@ cr.define('print_preview', function() {
         ticket['OpenPDFInPreview'] = true;
       }
 
-      chrome.send('print', [JSON.stringify(ticket)]);
+      return cr.sendWithPromise('print', JSON.stringify(ticket));
     },
 
     /** Requests that the current pending print request be cancelled. */
@@ -511,9 +506,16 @@ cr.define('print_preview', function() {
       chrome.send('showSystemDialog');
     },
 
-    /** Closes the print preview dialog. */
-    startCloseDialog: function() {
-      chrome.send('closePrintPreviewDialog');
+    /**
+     * Closes the print preview dialog.
+     * If |isCancel| is true, also sends a message to Print Preview Handler in
+     * order to update UMA statistics.
+     * @param {boolean} isCancel whether this was called due to the user
+     *     closing the dialog without printing.
+     */
+    startCloseDialog: function(isCancel) {
+      if (isCancel)
+        chrome.send('closePrintPreviewDialog');
       chrome.send('dialogClose');
     },
 
@@ -570,41 +572,6 @@ cr.define('print_preview', function() {
     onReloadPrintersList_: function() {
       cr.dispatchSimpleEvent(
           this.eventTarget_, NativeLayer.EventType.DESTINATIONS_RELOAD);
-    },
-
-    /**
-     * Called from the C++ layer.
-     * Take the PDF data handed to us and submit it to the cloud, closing the
-     * print preview dialog once the upload is successful.
-     * @param {string} data Data to send as the print job.
-     * @private
-     */
-    onPrintToCloud_: function(data) {
-      var printToCloudEvent = new Event(NativeLayer.EventType.PRINT_TO_CLOUD);
-      printToCloudEvent.data = data;
-      this.eventTarget_.dispatchEvent(printToCloudEvent);
-    },
-
-    /**
-     * Called from PrintPreviewUI::OnFileSelectionCancelled to notify the print
-     * preview dialog regarding the file selection cancel event.
-     * @private
-     */
-    onFileSelectionCancelled_: function() {
-      cr.dispatchSimpleEvent(
-          this.eventTarget_, NativeLayer.EventType.FILE_SELECTION_CANCEL);
-    },
-
-    /**
-     * Called from PrintPreviewUI::OnFileSelectionCompleted to notify the print
-     * preview dialog regarding the file selection completed event.
-     * @private
-     */
-    onFileSelectionCompleted_: function() {
-      // If the file selection is completed and the dialog is not already closed
-      // it means that a pending print to pdf request exists.
-      cr.dispatchSimpleEvent(
-          this.eventTarget_, NativeLayer.EventType.FILE_SELECTION_COMPLETE);
     },
 
     /**

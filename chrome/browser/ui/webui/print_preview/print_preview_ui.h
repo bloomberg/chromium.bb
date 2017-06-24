@@ -119,9 +119,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // controls that need the initiator for generating the preview data.
   void OnInitiatorClosed();
 
-  // Notifies the Web UI renderer that file selection has been cancelled.
-  void OnFileSelectionCancelled();
-
   // Notifies the Web UI that the printer is unavailable or its settings are
   // invalid.
   void OnInvalidPrinterSettings();

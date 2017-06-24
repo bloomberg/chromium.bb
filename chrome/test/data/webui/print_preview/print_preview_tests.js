@@ -1307,9 +1307,9 @@ cr.define('print_preview_test', function() {
               // Has active print button and successfully 'prints', indicating
               // recovery from error state.
               expectFalse(printButton.disabled);
-              expectFalse(nativeLayer.isPrintStarted());
               printButton.click();
-              expectTrue(nativeLayer.isPrintStarted());
+              // This should result in a call to print.
+              return nativeLayer.whenCalled('print');
             });
       });
     });
