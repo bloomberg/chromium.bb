@@ -115,6 +115,12 @@ source_set("win") {
     "//remoting/build/config:version",
   ]
 
+  if (is_clang) {
+    # TODO(thakis): Remove this once midl.exe no longer produces nonstandard
+    # C++ (see the enums in com_imported_mstscax.tlh).
+    cflags = [ "-Wno-microsoft-enum-forward-reference" ]
+  }
+
   defines = [ "WEBRTC_CHROMIUM_BUILD" ]
 
   deps = [
