@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/download/internal/driver_entry.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -79,11 +80,14 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
 }
 
 DownloadDriverImpl::DownloadDriverImpl(content::DownloadManager* manager)
-    : download_manager_(manager), client_(nullptr) {
+    : download_manager_(manager), client_(nullptr), weak_ptr_factory_(this) {
   DCHECK(download_manager_);
 }
 
 DownloadDriverImpl::~DownloadDriverImpl() {
+  // TODO(xingliu): We should maintain a list of observing download items, and
+  // remove the observer here. This can be fixed if we use
+  // AllDownloadItemNotifier.
   if (download_manager_)
     download_manager_->RemoveObserver(this);
 }
@@ -144,12 +148,21 @@ void DownloadDriverImpl::Start(
 }
 
 void DownloadDriverImpl::Remove(const std::string& guid) {
+  guid_to_remove_.emplace(guid);
+
+  // DownloadItem::Remove will cause the item object removed from memory, post
+  // the remove task to avoid the object being accessed in the same call stack.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DownloadDriverImpl::DoRemoveDownload,
+                            weak_ptr_factory_.GetWeakPtr(), guid));
+}
+
+void DownloadDriverImpl::DoRemoveDownload(const std::string& guid) {
   if (!download_manager_)
     return;
   content::DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
   // Cancels the download and removes the persisted records in content layer.
   if (item) {
-    item->RemoveObserver(this);
     item->Remove();
   }
 }
@@ -198,6 +211,9 @@ std::set<std::string> DownloadDriverImpl::GetActiveDownloads() {
 
 void DownloadDriverImpl::OnDownloadUpdated(content::DownloadItem* item) {
   DCHECK(client_);
+  // Blocks the observer call if we asked to remove the download.
+  if (guid_to_remove_.find(item->GetGuid()) != guid_to_remove_.end())
+    return;
 
   using DownloadState = content::DownloadItem::DownloadState;
   DownloadState state = item->GetState();
@@ -206,16 +222,17 @@ void DownloadDriverImpl::OnDownloadUpdated(content::DownloadItem* item) {
 
   if (state == DownloadState::COMPLETE) {
     client_->OnDownloadSucceeded(entry);
-    item->RemoveObserver(this);
   } else if (state == DownloadState::IN_PROGRESS) {
     client_->OnDownloadUpdated(entry);
   } else if (reason !=
              content::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE) {
     client_->OnDownloadFailed(entry, FailureTypeFromInterruptReason(reason));
-    // TODO(dtrainor, xingliu): This actually might not be correct.  What if we
-    // restart the download?
-    item->RemoveObserver(this);
   }
+}
+
+void DownloadDriverImpl::OnDownloadRemoved(content::DownloadItem* download) {
+  guid_to_remove_.erase(download->GetGuid());
+  // |download| is about to be deleted.
 }
 
 void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
@@ -225,8 +242,8 @@ void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
   DCHECK(client_);
   DriverEntry entry = CreateDriverEntry(item);
 
-  // Only notifies the client about new downloads. Exsting download data will be
-  // loaded before the driver is ready.
+  // Only notifies the client about new downloads. Existing download data will
+  // be loaded before the driver is ready.
   if (IsReady())
     client_->OnDownloadCreated(entry);
 }

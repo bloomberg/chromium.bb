@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_DOWNLOAD_CONTENT_INTERNAL_DOWNLOAD_DRIVER_IMPL_H_
 #define COMPONENTS_DOWNLOAD_CONTENT_INTERNAL_DOWNLOAD_DRIVER_IMPL_H_
 
+#include <set>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "components/download/internal/download_driver.h"
 #include "components/download/public/download_params.h"
 #include "content/public/browser/browser_context.h"
@@ -48,6 +50,7 @@ class DownloadDriverImpl : public DownloadDriver,
  private:
   // content::DownloadItem::Observer implementation.
   void OnDownloadUpdated(content::DownloadItem* item) override;
+  void OnDownloadRemoved(content::DownloadItem* download) override;
 
   // content::DownloadManager::Observer implementation.
   void OnDownloadCreated(content::DownloadManager* manager,
@@ -55,11 +58,20 @@ class DownloadDriverImpl : public DownloadDriver,
   void OnManagerInitialized() override;
   void ManagerGoingDown(content::DownloadManager* manager) override;
 
+  // Remove the download, used to be posted to the task queue.
+  void DoRemoveDownload(const std::string& guid);
+
   // Low level download handle.
   content::DownloadManager* download_manager_;
 
   // The client that receives updates from low level download logic.
   DownloadDriver::Client* client_;
+
+  // Pending guid set of downloads that will be removed soon.
+  std::set<std::string> guid_to_remove_;
+
+  // Only used to post tasks on the same thread.
+  base::WeakPtrFactory<DownloadDriverImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDriverImpl);
 };
