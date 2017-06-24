@@ -18,7 +18,7 @@ class FrameSinkId;
 namespace viz {
 
 // Handles creating new cc::Displays and related classes for
-// MojoFrameSinkManager.
+// FrameSinkManagerImpl.
 class DisplayProvider {
  public:
   virtual ~DisplayProvider() {}

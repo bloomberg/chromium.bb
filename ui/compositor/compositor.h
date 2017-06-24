@@ -62,7 +62,7 @@ class GpuMemoryBufferManager;
 }
 
 namespace viz {
-class FrameSinkManagerHost;
+class HostFrameSinkManager;
 }
 
 namespace ui {
@@ -109,7 +109,7 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 
   // Gets the frame sink manager host instance.
-  virtual viz::FrameSinkManagerHost* GetFrameSinkManagerHost() = 0;
+  virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;
 
   // Inform the display corresponding to this compositor if it is visible. When
   // false it does not need to produce any frames. Visibility is reset for each

@@ -23,7 +23,7 @@
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -135,7 +135,7 @@ struct InProcessContextFactory::PerCompositorData {
 };
 
 InProcessContextFactory::InProcessContextFactory(
-    viz::FrameSinkManagerHost* frame_sink_manager,
+    viz::HostFrameSinkManager* frame_sink_manager,
     cc::SurfaceManager* surface_manager)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
@@ -321,7 +321,7 @@ cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {
   return surface_manager_;
 }
 
-viz::FrameSinkManagerHost* InProcessContextFactory::GetFrameSinkManagerHost() {
+viz::HostFrameSinkManager* InProcessContextFactory::GetHostFrameSinkManager() {
   return frame_sink_manager_;
 }
 

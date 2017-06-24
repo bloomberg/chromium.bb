@@ -82,8 +82,8 @@ class ClientNativePixmapFactory;
 #endif
 
 namespace viz {
-class FrameSinkManagerHost;
-class MojoFrameSinkManager;
+class HostFrameSinkManager;
+class FrameSinkManagerImpl;
 }
 
 namespace content {
@@ -171,10 +171,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
 
 #if !defined(OS_ANDROID)
-  // TODO(fsamuel): We should find an object to own FrameSinkManagerHost on all
+  // TODO(fsamuel): We should find an object to own HostFrameSinkManager on all
   // platforms including Android. See http://crbug.com/732507.
-  viz::FrameSinkManagerHost* frame_sink_manager_host() const {
-    return frame_sink_manager_host_.get();
+  viz::HostFrameSinkManager* host_frame_sink_manager() const {
+    return host_frame_sink_manager_.get();
   }
 
   // TODO(crbug.com/657959): This will be removed once there are no users, as
@@ -346,13 +346,13 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<memory_instrumentation::CoordinatorImpl>
       memory_instrumentation_coordinator_;
 #if !defined(OS_ANDROID)
-  std::unique_ptr<viz::FrameSinkManagerHost> frame_sink_manager_host_;
+  std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
   // This is owned here so that SurfaceManager will be accessible in process
   // when display is in the same process. Other than using SurfaceManager,
   // access to |in_process_frame_sink_manager_| should happen via
-  // |frame_sink_manager_host_| instead which uses Mojo. See
+  // |host_frame_sink_manager_| instead which uses Mojo. See
   // http://crbug.com/657959.
-  std::unique_ptr<viz::MojoFrameSinkManager> frame_sink_manager_;
+  std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
 #endif
 
   // DO NOT add members here. Add them to the right categories above.

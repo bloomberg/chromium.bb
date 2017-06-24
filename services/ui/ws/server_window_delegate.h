@@ -25,7 +25,7 @@ class ServerWindow;
 class ServerWindowDelegate {
  public:
   // Returns a frame sink manager interface pointer. There is only one
-  // MojoFrameSinkManager running in the system.
+  // FrameSinkManagerImpl running in the system.
   virtual cc::mojom::FrameSinkManager* GetFrameSinkManager() = 0;
 
   // Returns the root of the window tree to which this |window| is attached.

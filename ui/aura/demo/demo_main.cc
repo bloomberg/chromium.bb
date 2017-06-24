@@ -14,7 +14,7 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -138,7 +138,7 @@ int DemoMain() {
 #endif
 
   // The ContextFactory must exist before any Compositors are created.
-  viz::FrameSinkManagerHost frame_sink_manager;
+  viz::HostFrameSinkManager frame_sink_manager;
   cc::SurfaceManager surface_manager;
   auto context_factory = base::MakeUnique<ui::InProcessContextFactory>(
       &frame_sink_manager, &surface_manager);

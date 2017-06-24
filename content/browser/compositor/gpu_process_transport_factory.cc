@@ -30,7 +30,7 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_compositor/compositor_overlay_candidate_validator.h"
 #include "components/viz/service/display_compositor/gl_helper.h"
 #include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
@@ -730,9 +730,9 @@ cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
   return BrowserMainLoop::GetInstance()->GetSurfaceManager();
 }
 
-viz::FrameSinkManagerHost*
-GpuProcessTransportFactory::GetFrameSinkManagerHost() {
-  return BrowserMainLoop::GetInstance()->frame_sink_manager_host();
+viz::HostFrameSinkManager*
+GpuProcessTransportFactory::GetHostFrameSinkManager() {
+  return BrowserMainLoop::GetInstance()->host_frame_sink_manager();
 }
 
 void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,

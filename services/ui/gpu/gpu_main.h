@@ -19,7 +19,7 @@ class GpuMemoryBufferFactory;
 
 namespace viz {
 class DisplayProvider;
-class MojoFrameSinkManager;
+class FrameSinkManagerImpl;
 }
 
 namespace ui {
@@ -82,7 +82,7 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
       pending_frame_sink_manager_client_info_;
 
   // Provides mojo interfaces for creating and managing FrameSinks.
-  std::unique_ptr<viz::MojoFrameSinkManager> frame_sink_manager_;
+  std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<viz::DisplayProvider> display_provider_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;

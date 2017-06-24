@@ -32,13 +32,13 @@ component("service") {
     "frame_sinks/frame_eviction_manager.h",
     "frame_sinks/frame_evictor.cc",
     "frame_sinks/frame_evictor.h",
+    "frame_sinks/frame_sink_manager_impl.cc",
+    "frame_sinks/frame_sink_manager_impl.h",
     "frame_sinks/gpu_compositor_frame_sink.cc",
     "frame_sinks/gpu_compositor_frame_sink.h",
     "frame_sinks/gpu_compositor_frame_sink_delegate.h",
     "frame_sinks/gpu_root_compositor_frame_sink.cc",
     "frame_sinks/gpu_root_compositor_frame_sink.h",
-    "frame_sinks/mojo_frame_sink_manager.cc",
-    "frame_sinks/mojo_frame_sink_manager.h",
     "viz_service_export.h",
   ]
 

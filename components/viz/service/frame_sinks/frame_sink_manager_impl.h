@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_MOJO_FRAME_SINK_MANAGER_H_
-#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_MOJO_FRAME_SINK_MANAGER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_SINK_MANAGER_IMPL_H_
+#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_SINK_MANAGER_IMPL_H_
 
 #include <stdint.h>
 
@@ -25,7 +25,7 @@ namespace viz {
 
 class DisplayProvider;
 
-// MojoFrameSinkManager manages state associated with CompositorFrameSinks. It
+// FrameSinkManagerImpl manages state associated with CompositorFrameSinks. It
 // provides a Mojo interface to create CompositorFrameSinks, manages BeginFrame
 // hierarchy and manages surface lifetime.
 //
@@ -33,14 +33,14 @@ class DisplayProvider;
 // will be true after the mus process split. For non-mus Chrome this will be
 // created in the browser process, at least until GPU implementations can be
 // unified.
-class VIZ_SERVICE_EXPORT MojoFrameSinkManager
+class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     : public cc::SurfaceObserver,
       public NON_EXPORTED_BASE(GpuCompositorFrameSinkDelegate),
       public NON_EXPORTED_BASE(cc::mojom::FrameSinkManager) {
  public:
-  MojoFrameSinkManager(bool use_surface_references,
+  FrameSinkManagerImpl(bool use_surface_references,
                        DisplayProvider* display_provider);
-  ~MojoFrameSinkManager() override;
+  ~FrameSinkManagerImpl() override;
 
   cc::SurfaceManager* surface_manager() { return &manager_; }
 
@@ -115,9 +115,9 @@ class VIZ_SERVICE_EXPORT MojoFrameSinkManager
   cc::mojom::FrameSinkManagerClientPtr client_;
   mojo::Binding<cc::mojom::FrameSinkManager> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoFrameSinkManager);
+  DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerImpl);
 };
 
 }  // namespace viz
 
-#endif  //  COMPONENTS_VIZ_SERVICE_FRAME_SINKS_MOJO_FRAME_SINK_MANAGER_H_
+#endif  //  COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_SINK_MANAGER_IMPL_H_

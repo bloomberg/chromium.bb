@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/sys_info.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/test/in_process_context_factory.h"
@@ -14,7 +14,7 @@
 
 namespace {
 
-static viz::FrameSinkManagerHost* g_frame_sink_manager = nullptr;
+static viz::HostFrameSinkManager* g_frame_sink_manager = nullptr;
 static cc::SurfaceManager* g_surface_manager = nullptr;
 static ui::InProcessContextFactory* g_implicit_factory = nullptr;
 static gl::DisableNullDrawGLBindings* g_disable_null_draw = nullptr;
@@ -35,7 +35,7 @@ void InitializeContextFactoryForTests(
     enable_pixel_output = true;
   if (enable_pixel_output)
     g_disable_null_draw = new gl::DisableNullDrawGLBindings;
-  g_frame_sink_manager = new viz::FrameSinkManagerHost;
+  g_frame_sink_manager = new viz::HostFrameSinkManager;
   g_surface_manager = new cc::SurfaceManager;
   g_implicit_factory =
       new InProcessContextFactory(g_frame_sink_manager, g_surface_manager);

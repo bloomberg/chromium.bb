@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_HOST_FRAME_SINK_MANAGER_HOST_H_
-#define COMPONENTS_VIZ_HOST_FRAME_SINK_MANAGER_HOST_H_
+#ifndef COMPONENTS_VIZ_HOST_HOST_FRAME_SINK_MANAGER_H_
+#define COMPONENTS_VIZ_HOST_HOST_FRAME_SINK_MANAGER_H_
 
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
@@ -19,17 +19,17 @@
 namespace cc {
 class SurfaceInfo;
 class SurfaceManager;
-}
+}  // namespace cc
 
 namespace viz {
 
-// Browser side implementation of mojom::FrameSinkManager, to be used from the
+// Browser side wrapper of mojom::FrameSinkManager, to be used from the
 // UI thread. Manages frame sinks and is intended to replace SurfaceManager.
-class VIZ_HOST_EXPORT FrameSinkManagerHost
+class VIZ_HOST_EXPORT HostFrameSinkManager
     : NON_EXPORTED_BASE(cc::mojom::FrameSinkManagerClient) {
  public:
-  FrameSinkManagerHost();
-  ~FrameSinkManagerHost() override;
+  HostFrameSinkManager();
+  ~HostFrameSinkManager() override;
 
   // Binds |this| as a FrameSinkManagerClient to the |request|. May only be
   // called once.
@@ -98,9 +98,9 @@ class VIZ_HOST_EXPORT FrameSinkManagerHost
   // Local observers to that receive OnSurfaceCreated() messages from IPC.
   base::ObserverList<FrameSinkObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerHost);
+  DISALLOW_COPY_AND_ASSIGN(HostFrameSinkManager);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_HOST_FRAME_SINK_MANAGER_HOST_H_
+#endif  // COMPONENTS_VIZ_HOST_HOST_FRAME_SINK_MANAGER_H_

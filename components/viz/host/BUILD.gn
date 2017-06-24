@@ -6,9 +6,9 @@ component("host") {
   defines = [ "VIZ_HOST_IMPLEMENTATION" ]
 
   sources = [
-    "frame_sink_manager_host.cc",
-    "frame_sink_manager_host.h",
     "frame_sink_observer.h",
+    "host_frame_sink_manager.cc",
+    "host_frame_sink_manager.h",
     "viz_host_export.h",
   ]
 
@@ -23,7 +23,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "frame_sink_manager_host_unittests.cc",
+    "host_frame_sink_manager_unittests.cc",
   ]
 
   deps = [

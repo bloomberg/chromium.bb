@@ -9,19 +9,19 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 
 namespace content {
 
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
-    viz::FrameSinkManagerHost* frame_sink_manager_host,
+    viz::HostFrameSinkManager* host_frame_sink_manager,
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& frame_sink_id,
     blink::mojom::OffscreenCanvasSurfaceClientPtr client,
     blink::mojom::OffscreenCanvasSurfaceRequest request,
     DestroyCallback destroy_callback)
-    : frame_sink_manager_host_(frame_sink_manager_host),
+    : host_frame_sink_manager_(host_frame_sink_manager),
       client_(std::move(client)),
       binding_(this, std::move(request)),
       destroy_callback_(std::move(destroy_callback)),
@@ -30,16 +30,16 @@ OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
   binding_.set_connection_error_handler(
       base::Bind(&OffscreenCanvasSurfaceImpl::OnSurfaceConnectionClosed,
                  base::Unretained(this)));
-  frame_sink_manager_host_->AddObserver(this);
+  host_frame_sink_manager_->AddObserver(this);
 }
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
   if (has_created_compositor_frame_sink_) {
-    frame_sink_manager_host_->UnregisterFrameSinkHierarchy(
+    host_frame_sink_manager_->UnregisterFrameSinkHierarchy(
         parent_frame_sink_id_, frame_sink_id_);
-    frame_sink_manager_host_->DestroyCompositorFrameSink(frame_sink_id_);
+    host_frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id_);
   }
-  frame_sink_manager_host_->RemoveObserver(this);
+  host_frame_sink_manager_->RemoveObserver(this);
 }
 
 void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
@@ -50,10 +50,10 @@ void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
     return;
   }
 
-  frame_sink_manager_host_->CreateCompositorFrameSink(
+  host_frame_sink_manager_->CreateCompositorFrameSink(
       frame_sink_id_, std::move(request), std::move(client));
 
-  frame_sink_manager_host_->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
+  host_frame_sink_manager_->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                        frame_sink_id_);
   has_created_compositor_frame_sink_ = true;
 }

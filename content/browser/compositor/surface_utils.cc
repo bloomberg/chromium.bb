@@ -10,9 +10,9 @@
 #include "build/build_config.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_compositor/gl_helper.h"
-#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -175,11 +175,11 @@ cc::SurfaceManager* GetSurfaceManager() {
 #endif
 }
 
-viz::FrameSinkManagerHost* GetFrameSinkManagerHost() {
+viz::HostFrameSinkManager* GetHostFrameSinkManager() {
 #if defined(OS_ANDROID)
-  return CompositorImpl::GetFrameSinkManagerHost();
+  return CompositorImpl::GetHostFrameSinkManager();
 #else
-  return BrowserMainLoop::GetInstance()->frame_sink_manager_host();
+  return BrowserMainLoop::GetInstance()->host_frame_sink_manager();
 #endif
 }
 
@@ -214,8 +214,8 @@ void CopyFromCompositingSurfaceHasResult(
 
 namespace surface_utils {
 
-void ConnectWithInProcessFrameSinkManager(viz::FrameSinkManagerHost* host,
-                                          viz::MojoFrameSinkManager* manager) {
+void ConnectWithInProcessFrameSinkManager(viz::HostFrameSinkManager* host,
+                                          viz::FrameSinkManagerImpl* manager) {
   // A mojo pointer to |host| which is the FrameSinkManager's client.
   cc::mojom::FrameSinkManagerClientPtr host_mojo;
   // A mojo pointer to |manager|.

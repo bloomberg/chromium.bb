@@ -46,11 +46,11 @@
 #include "cc/surfaces/frame_sink_id_allocator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_android.h"
 #include "components/viz/service/display_compositor/gl_helper.h"
 #include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
-#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
@@ -99,23 +99,23 @@ class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
 
 struct CompositorDependencies {
   CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
-    // TODO(danakj): Don't make a MojoFrameSinkManager when display is in the
+    // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
     frame_sink_manager =
-        base::MakeUnique<viz::MojoFrameSinkManager>(false, nullptr);
+        base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
     surface_utils::ConnectWithInProcessFrameSinkManager(
-        &frame_sink_manager_host, frame_sink_manager.get());
+        &host_frame_sink_manager, frame_sink_manager.get());
   }
 
   SingleThreadTaskGraphRunner task_graph_runner;
-  viz::FrameSinkManagerHost frame_sink_manager_host;
+  viz::HostFrameSinkManager host_frame_sink_manager;
   cc::FrameSinkIdAllocator frame_sink_id_allocator;
   // This is owned here so that SurfaceManager will be accessible in process
   // when display is in the same process. Other than using SurfaceManager,
   // access to |in_process_frame_sink_manager_| should happen via
-  // |frame_sink_manager_host_| instead which uses Mojo. See
+  // |host_frame_sink_manager_| instead which uses Mojo. See
   // http://crbug.com/657959.
-  std::unique_ptr<viz::MojoFrameSinkManager> frame_sink_manager;
+  std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider;
@@ -419,8 +419,8 @@ cc::SurfaceManager* CompositorImpl::GetSurfaceManager() {
 }
 
 // static
-viz::FrameSinkManagerHost* CompositorImpl::GetFrameSinkManagerHost() {
-  return &g_compositor_dependencies.Get().frame_sink_manager_host;
+viz::HostFrameSinkManager* CompositorImpl::GetHostFrameSinkManager() {
+  return &g_compositor_dependencies.Get().host_frame_sink_manager;
 }
 
 // static

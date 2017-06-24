@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/surfaces/frame_sink_id_allocator.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ui/compositor/compositor.h"
@@ -64,7 +64,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   void RemoveCompositor(ui::Compositor* compositor) override;
   cc::FrameSinkId AllocateFrameSinkId() override;
   cc::SurfaceManager* GetSurfaceManager() override;
-  viz::FrameSinkManagerHost* GetFrameSinkManagerHost() override;
+  viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
   void SetDisplayVisible(ui::Compositor* compositor, bool visible) override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;

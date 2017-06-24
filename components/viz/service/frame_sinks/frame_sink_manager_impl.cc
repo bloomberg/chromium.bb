@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
 #include <utility>
 
@@ -18,7 +18,7 @@
 
 namespace viz {
 
-MojoFrameSinkManager::MojoFrameSinkManager(bool use_surface_references,
+FrameSinkManagerImpl::FrameSinkManagerImpl(bool use_surface_references,
                                            DisplayProvider* display_provider)
     : manager_(use_surface_references
                    ? cc::SurfaceManager::LifetimeType::REFERENCES
@@ -31,14 +31,14 @@ MojoFrameSinkManager::MojoFrameSinkManager(bool use_surface_references,
   manager_.SetDependencyTracker(dependency_tracker_.get());
 }
 
-MojoFrameSinkManager::~MojoFrameSinkManager() {
+FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   manager_.SetDependencyTracker(nullptr);
   dependency_tracker_.reset();
   manager_.RemoveObserver(this);
 }
 
-void MojoFrameSinkManager::BindPtrAndSetClient(
+void FrameSinkManagerImpl::BindPtrAndSetClient(
     cc::mojom::FrameSinkManagerRequest request,
     cc::mojom::FrameSinkManagerClientPtr client) {
   DCHECK(!binding_.is_bound());
@@ -46,7 +46,7 @@ void MojoFrameSinkManager::BindPtrAndSetClient(
   client_ = std::move(client);
 }
 
-void MojoFrameSinkManager::CreateRootCompositorFrameSink(
+void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     cc::mojom::CompositorFrameSinkAssociatedRequest request,
@@ -70,7 +70,7 @@ void MojoFrameSinkManager::CreateRootCompositorFrameSink(
           std::move(display_private_request));
 }
 
-void MojoFrameSinkManager::CreateCompositorFrameSink(
+void FrameSinkManagerImpl::CreateCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest private_request,
@@ -84,30 +84,30 @@ void MojoFrameSinkManager::CreateCompositorFrameSink(
           std::move(private_request), std::move(client));
 }
 
-void MojoFrameSinkManager::RegisterFrameSinkHierarchy(
+void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& child_frame_sink_id) {
   manager_.RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                       child_frame_sink_id);
 }
 
-void MojoFrameSinkManager::UnregisterFrameSinkHierarchy(
+void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& child_frame_sink_id) {
   manager_.UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                         child_frame_sink_id);
 }
 
-void MojoFrameSinkManager::DropTemporaryReference(
+void FrameSinkManagerImpl::DropTemporaryReference(
     const cc::SurfaceId& surface_id) {
   manager_.DropTemporaryReference(surface_id);
 }
 
-void MojoFrameSinkManager::DestroyCompositorFrameSink(cc::FrameSinkId sink_id) {
+void FrameSinkManagerImpl::DestroyCompositorFrameSink(cc::FrameSinkId sink_id) {
   compositor_frame_sinks_.erase(sink_id);
 }
 
-void MojoFrameSinkManager::OnSurfaceCreated(
+void FrameSinkManagerImpl::OnSurfaceCreated(
     const cc::SurfaceInfo& surface_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
@@ -121,22 +121,22 @@ void MojoFrameSinkManager::OnSurfaceCreated(
     client_->OnSurfaceCreated(surface_info);
 }
 
-bool MojoFrameSinkManager::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
+bool FrameSinkManagerImpl::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                                             const cc::BeginFrameAck& ack) {
   return false;
 }
 
-void MojoFrameSinkManager::OnSurfaceDiscarded(const cc::SurfaceId& surface_id) {
+void FrameSinkManagerImpl::OnSurfaceDiscarded(const cc::SurfaceId& surface_id) {
 }
 
-void MojoFrameSinkManager::OnSurfaceDestroyed(const cc::SurfaceId& surface_id) {
+void FrameSinkManagerImpl::OnSurfaceDestroyed(const cc::SurfaceId& surface_id) {
 }
 
-void MojoFrameSinkManager::OnSurfaceDamageExpected(
+void FrameSinkManagerImpl::OnSurfaceDamageExpected(
     const cc::SurfaceId& surface_id,
     const cc::BeginFrameArgs& args) {}
 
-void MojoFrameSinkManager::OnClientConnectionLost(
+void FrameSinkManagerImpl::OnClientConnectionLost(
     const cc::FrameSinkId& frame_sink_id,
     bool destroy_compositor_frame_sink) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -147,9 +147,9 @@ void MojoFrameSinkManager::OnClientConnectionLost(
   // client instance to create a new CompositorFrameSink.
 }
 
-void MojoFrameSinkManager::OnSurfaceWillDraw(const cc::SurfaceId& surface_id) {}
+void FrameSinkManagerImpl::OnSurfaceWillDraw(const cc::SurfaceId& surface_id) {}
 
-void MojoFrameSinkManager::OnPrivateConnectionLost(
+void FrameSinkManagerImpl::OnPrivateConnectionLost(
     const cc::FrameSinkId& frame_sink_id,
     bool destroy_compositor_frame_sink) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
