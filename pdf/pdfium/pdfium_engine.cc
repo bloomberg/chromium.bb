@@ -1627,7 +1627,30 @@ void PDFiumEngine::FitContentsToPrintableAreaIfRequired(
 
 void PDFiumEngine::SaveSelectedFormForPrint() {
   FORM_ForceToKillFocus(form_);
-  client_->FormTextFieldFocusChange(false);
+  SetInFormTextArea(false);
+}
+
+void PDFiumEngine::SetFormSelectedText(FPDF_FORMHANDLE form_handle,
+                                       FPDF_PAGE page) {
+  unsigned long form_sel_text_len =
+      FORM_GetSelectedText(form_handle, page, nullptr, 0);
+
+  // Check to see if there is selected text in the form. When
+  // |form_sel_text_len| is 2, that represents a wide string with just a
+  // NUL-terminator.
+  if (form_sel_text_len <= 2)
+    return;
+
+  base::string16 selected_form_text16;
+  PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> string_adapter(
+      &selected_form_text16, form_sel_text_len, false);
+  string_adapter.Close(FORM_GetSelectedText(
+      form_handle, page, string_adapter.GetData(), form_sel_text_len));
+
+  std::string selected_form_text = base::UTF16ToUTF8(selected_form_text16);
+  if (!selected_form_text.empty()) {
+    pp::PDF::SetSelectedText(GetPluginInstance(), selected_form_text.c_str());
+  }
 }
 
 void PDFiumEngine::PrintEnd() {
@@ -1724,18 +1747,21 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
 
     FORM_OnLButtonDown(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
     if (form_type > FPDF_FORMFIELD_UNKNOWN) {  // returns -1 sometimes...
-      mouse_down_state_.Set(PDFiumPage::NONSELECTABLE_AREA, target);
+      mouse_down_state_.Set(PDFiumPage::FormTypeToArea(form_type), target);
+
       bool is_valid_control = (form_type == FPDF_FORMFIELD_TEXTFIELD ||
                                form_type == FPDF_FORMFIELD_COMBOBOX);
+
+// TODO(bug_62400): figure out selection and copying
+// for XFA fields
 #if defined(PDF_ENABLE_XFA)
       is_valid_control |= (form_type == FPDF_FORMFIELD_XFA);
 #endif
-      client_->FormTextFieldFocusChange(is_valid_control);
+      SetInFormTextArea(is_valid_control);
       return true;  // Return now before we get into the selection code.
     }
   }
-
-  client_->FormTextFieldFocusChange(false);
+  SetInFormTextArea(false);
 
   if (area != PDFiumPage::TEXT_AREA)
     return true;  // Return true so WebKit doesn't do its own highlighting.
@@ -1810,12 +1836,12 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
           middle_button, alt_key, ctrl_key, meta_key, shift_key);
 
       client_->NavigateTo(target.url, disposition);
-      client_->FormTextFieldFocusChange(false);
+      SetInFormTextArea(false);
       return true;
     }
     if (area == PDFiumPage::DOCLINK_AREA) {
       client_->ScrollToPage(target.page);
-      client_->FormTextFieldFocusChange(false);
+      SetInFormTextArea(false);
       return true;
     }
   }
@@ -1830,6 +1856,9 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
     DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
     FORM_OnLButtonUp(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
   }
+
+  if (area == PDFiumPage::FORM_TEXT_AREA)
+    SetFormSelectedText(form_, pages_[last_page_mouse_down_]->GetPage());
 
   if (!selecting_)
     return false;
@@ -1862,6 +1891,7 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
         cursor = PP_CURSORTYPE_HAND;
         break;
       case PDFiumPage::NONSELECTABLE_AREA:
+      case PDFiumPage::FORM_TEXT_AREA:
       default:
         switch (form_type) {
           case FPDF_FORMFIELD_PUSHBUTTON:
@@ -1988,12 +2018,25 @@ bool PDFiumEngine::OnKeyDown(const pp::KeyboardInputEvent& event) {
     OnChar(synthesized);
   }
 
+  // If form selected text is empty and key pressed within form text area,
+  // plugin text selection should be cleared.
+  if (in_form_text_area_ &&
+      FORM_GetSelectedText(form_, pages_[last_page_mouse_down_]->GetPage(),
+                           nullptr, 0) <= 2) {
+    pp::PDF::SetSelectedText(GetPluginInstance(), "");
+  }
+
   return rv;
 }
 
 bool PDFiumEngine::OnKeyUp(const pp::KeyboardInputEvent& event) {
   if (last_page_mouse_down_ == -1)
     return false;
+
+  if (in_form_text_area_) {
+    if (event.GetKeyCode() == ui::VKEY_SHIFT)
+      SetFormSelectedText(form_, pages_[last_page_mouse_down_]->GetPage());
+  }
 
   return !!FORM_OnKeyUp(form_, pages_[last_page_mouse_down_]->GetPage(),
                         event.GetKeyCode(), event.GetModifiers());
@@ -3554,6 +3597,11 @@ void PDFiumEngine::SetSelecting(bool selecting) {
   selecting_ = selecting;
   if (selecting_ != was_selecting)
     client_->IsSelectingChanged(selecting);
+}
+
+void PDFiumEngine::SetInFormTextArea(bool in_form_text_area) {
+  client_->FormTextFieldFocusChange(in_form_text_area);
+  in_form_text_area_ = in_form_text_area;
 }
 
 void PDFiumEngine::ScheduleTouchTimer(const pp::TouchInputEvent& evt) {

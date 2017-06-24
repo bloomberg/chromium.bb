@@ -318,6 +318,10 @@ class PDFiumEngine : public PDFEngine,
       const PP_PrintSettings_Dev& print_settings);
   void SaveSelectedFormForPrint();
 
+  // Checks if |page| has selected text in a form element. If so, sets that as
+  // the plugin's text selection.
+  void SetFormSelectedText(FPDF_FORMHANDLE form_handle, FPDF_PAGE page);
+
   // Given a mouse event, returns which page and character location it's closest
   // to.
   PDFiumPage::Area GetCharIndex(const pp::MouseInputEvent& event,
@@ -437,8 +441,13 @@ class PDFiumEngine : public PDFEngine,
   // Common code shared by RotateClockwise() and RotateCounterclockwise().
   void RotateInternal();
 
-  // Setting selection status of document.
+  // Sets text selection status of document. This does not include text
+  // within form text fields.
   void SetSelecting(bool selecting);
+
+  // Sets whether or not focus is in form text field or form combobox text
+  // field.
+  void SetInFormTextArea(bool in_form_text_area);
 
   bool PageIndexInBounds(int index) const;
 
@@ -640,11 +649,14 @@ class PDFiumEngine : public PDFEngine,
   bool defer_page_unload_;
   std::vector<int> deferred_page_unloads_;
 
-  // Used for selection.  There could be more than one range if selection spans
-  // more than one page.
+  // Used for text selection, but does not include text within form text fields.
+  // There could be more than one range if selection spans more than one page.
   std::vector<PDFiumRange> selection_;
-  // True if we're in the middle of selection.
+  // True if we're in the middle of text selection.
   bool selecting_;
+
+  // True if focus is in form text field or form combobox text field.
+  bool in_form_text_area_;
 
   MouseDownState mouse_down_state_;
 
