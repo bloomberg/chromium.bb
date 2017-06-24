@@ -433,6 +433,7 @@ void UiSceneManager::SetWebVrMode(bool web_vr,
   web_vr_mode_ = web_vr;
   web_vr_autopresented_ = auto_presented;
   web_vr_show_toast_ = show_toast;
+  toast_state_ = SET_FOR_WEB_VR;
   ConfigureScene();
   ConfigureSecurityWarnings();
   ConfigureTransientUrlBar();
@@ -568,7 +569,9 @@ void UiSceneManager::SetFullscreen(bool fullscreen) {
   if (fullscreen_ == fullscreen)
     return;
   fullscreen_ = fullscreen;
+  toast_state_ = SET_FOR_FULLSCREEN;
   ConfigureScene();
+  ConfigurePresentationToast();
 }
 
 void UiSceneManager::ConfigureSecurityWarnings() {
@@ -617,14 +620,26 @@ void UiSceneManager::ConfigureIndicators() {
 }
 
 void UiSceneManager::ConfigurePresentationToast() {
-  presentation_toast_->set_visible(web_vr_show_toast_);
-  if (web_vr_show_toast_) {
+  bool toast_visible = false;
+  switch (toast_state_) {
+    case SET_FOR_WEB_VR:
+      toast_visible = web_vr_show_toast_;
+      break;
+    case SET_FOR_FULLSCREEN:
+      toast_visible = fullscreen_;
+      break;
+    case UNCHANGED:
+      return;
+  }
+  presentation_toast_->set_visible(toast_visible);
+  if (toast_visible) {
     presentation_toast_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kToastTimeoutSeconds), this,
         &UiSceneManager::OnPresentationToastTimer);
   } else {
     presentation_toast_timer_.Stop();
   }
+  toast_state_ = UNCHANGED;
 }
 
 void UiSceneManager::OnSecurityWarningTimer() {
