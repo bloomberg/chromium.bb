@@ -202,15 +202,10 @@ const char kLocalPdfPrinterId[] = "Save as PDF";
 // Timeout for searching for privet printers, in seconds.
 const int kPrivetTimeoutSec = 5;
 
-// Get the print job settings dictionary from |args|. The caller takes
-// ownership of the returned DictionaryValue. Returns NULL on failure.
+// Get the print job settings dictionary from |json_str|. Returns NULL on
+// failure.
 std::unique_ptr<base::DictionaryValue> GetSettingsDictionary(
-    const base::ListValue* args) {
-  std::string json_str;
-  if (!args->GetString(0, &json_str)) {
-    NOTREACHED() << "Could not read JSON argument";
-    return NULL;
-  }
+    const std::string& json_str) {
   if (json_str.empty()) {
     NOTREACHED() << "Empty print job settings";
     return NULL;
@@ -698,8 +693,8 @@ void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
   using local_discovery::ServiceDiscoverySharedClient;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
       ServiceDiscoverySharedClient::GetInstance();
-  DCHECK(privet_callback_id_.empty());
-  privet_callback_id_ = callback_id;
+  DCHECK(privet_search_callback_id_.empty());
+  privet_search_callback_id_ = callback_id;
   StartPrivetLister(service_discovery);
 #endif
 }
@@ -710,8 +705,9 @@ void PrintPreviewHandler::StopPrivetLister() {
   if (PrivetPrintingEnabled() && printer_lister_) {
     printer_lister_->Stop();
   }
-  ResolveJavascriptCallback(base::Value(privet_callback_id_), base::Value());
-  privet_callback_id_ = "";
+  ResolveJavascriptCallback(base::Value(privet_search_callback_id_),
+                            base::Value());
+  privet_search_callback_id_.clear();
 #endif
 }
 
@@ -789,7 +785,11 @@ void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   DCHECK_EQ(2U, args->GetSize());
-  std::unique_ptr<base::DictionaryValue> settings = GetSettingsDictionary(args);
+  std::string json_str;
+  if (!args->GetString(0, &json_str))
+    return;
+  std::unique_ptr<base::DictionaryValue> settings =
+      GetSettingsDictionary(json_str);
   if (!settings)
     return;
   int request_id = -1;
@@ -875,9 +875,19 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
                        regenerate_preview_request_count_);
 
-  std::unique_ptr<base::DictionaryValue> settings = GetSettingsDictionary(args);
+  AllowJavascript();
+
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  CHECK(!callback_id.empty());
+  std::string json_str;
+  if (!args->GetString(1, &json_str))
+    RejectJavascriptCallback(base::Value(callback_id), base::Value(-1));
+
+  std::unique_ptr<base::DictionaryValue> settings =
+      GetSettingsDictionary(json_str);
   if (!settings)
-    return;
+    RejectJavascriptCallback(base::Value(callback_id), base::Value(-1));
 
   ReportPrintSettingsStats(*settings);
 
@@ -909,6 +919,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   if (print_to_pdf) {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF", page_count);
     ReportUserActionHistogram(PRINT_TO_PDF);
+    DCHECK(pdf_callback_id_.empty());
+    pdf_callback_id_ = callback_id;
     PrintToPdf();
     return;
   }
@@ -930,12 +942,14 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
         !settings->GetInteger(printing::kSettingPageHeight, &height) ||
         width <= 0 || height <= 0) {
       NOTREACHED();
-      FireWebUIListener("print-failed", base::Value(-1));
+      RejectJavascriptCallback(base::Value(callback_id), base::Value(-1));
       return;
     }
 
-    PrintToPrivetPrinter(
-        printer_name, print_ticket, capabilities, gfx::Size(width, height));
+    DCHECK(privet_print_callback_id_.empty());
+    privet_print_callback_id_ = callback_id;
+    PrintToPrivetPrinter(callback_id, printer_name, print_ticket, capabilities,
+                         gfx::Size(width, height));
     return;
   }
 #endif
@@ -957,7 +971,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
         !settings->GetInteger(printing::kSettingPageHeight, &height) ||
         width <= 0 || height <= 0) {
       NOTREACHED();
-      OnExtensionPrintResult(false, "FAILED");
+      RejectJavascriptCallback(base::Value(callback_id), base::Value("FAILED"));
       return;
     }
 
@@ -965,7 +979,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     scoped_refptr<base::RefCountedBytes> data;
     if (!GetPreviewDataAndTitle(&data, &title)) {
       LOG(ERROR) << "Nothing to print; no preview available.";
-      OnExtensionPrintResult(false, "NO_DATA");
+      RejectJavascriptCallback(base::Value(callback_id),
+                               base::Value("NO_DATA"));
       return;
     }
 
@@ -974,7 +989,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
         destination_id, capabilities, title, print_ticket,
         gfx::Size(width, height), data,
         base::Bind(&PrintPreviewHandler::OnExtensionPrintResult,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(), callback_id));
     return;
   }
 
@@ -982,6 +997,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   base::string16 title;
   if (!GetPreviewDataAndTitle(&data, &title)) {
     // Nothing to print, no preview available.
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
 
@@ -989,7 +1005,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrint",
                          page_count);
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
-    SendCloudPrintJob(data.get());
+    SendCloudPrintJob(callback_id, data.get());
     return;
   }
 
@@ -1004,13 +1020,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     ReportUserActionHistogram(PRINT_TO_PRINTER);
   }
 
-  // This tries to activate the initiator as well, so do not clear the
-  // association with the initiator yet.
-  print_preview_ui()->OnHidePreviewDialog();
-
-  // Grab the current initiator before calling ClearInitiatorDetails() below.
-  // Otherwise calling GetInitiator() later will return the wrong WebContents.
-  // https://crbug.com/407080
   WebContents* initiator = GetInitiator();
   if (initiator) {
     // Save initiator IDs. PrintMsg_PrintForPrintPreview below should cause
@@ -1023,24 +1032,24 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
                          main_render_frame->GetRoutingID());
   }
 
-  // Do this so the initiator can open a new print preview dialog, while the
-  // current print preview dialog is still handling its print job.
-  ClearInitiatorDetails();
-
   // Set ID to know whether printing is for preview.
   settings->SetInteger(printing::kPreviewUIID,
                        print_preview_ui()->GetIDForPrintPreviewUI());
   RenderFrameHost* rfh = preview_web_contents()->GetMainFrame();
   rfh->Send(new PrintMsg_PrintForPrintPreview(rfh->GetRoutingID(), *settings));
 
-  // For all other cases above, the preview dialog will stay open until the
-  // printing has finished. Then the dialog closes and PrintPreviewDone() gets
-  // called. In the case below, since the preview dialog will be hidden and
-  // not closed, we need to make this call.
-  if (initiator) {
-    auto* print_view_manager = PrintViewManager::FromWebContents(initiator);
-    print_view_manager->PrintPreviewDone();
-  }
+  // Set this so when print preview sends "hidePreviewDialog" we clear the
+  // initiator and call PrintPreviewDone(). In the cases above, the preview
+  // dialog stays open until printing is finished and we do this when the
+  // dialog is closed. In this case, we set this so that these tasks are
+  // done in HandleHidePreview().
+  printing_started_ = true;
+
+  // This will ultimately try to activate the initiator as well, so do not
+  // clear the association with the initiator until "hidePreviewDialog" is
+  // received from JS.
+  ResolveJavascriptCallback(base::Value(callback_id), base::Value());
+
 #else
   NOTREACHED();
 #endif   // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -1049,6 +1058,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 void PrintPreviewHandler::PrintToPdf() {
   if (!print_to_pdf_path_.empty()) {
     // User has already selected a path, no need to show the dialog again.
+    ResolveJavascriptCallback(base::Value(pdf_callback_id_), base::Value());
+    pdf_callback_id_.clear();
     PostPrintToPdfTask();
   } else if (!select_file_dialog_.get() ||
              !select_file_dialog_->IsRunning(platform_util::GetTopLevel(
@@ -1076,6 +1087,24 @@ void PrintPreviewHandler::PrintToPdf() {
 }
 
 void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
+  if (printing_started_) {
+    // Printing has started, so clear the initiator so that it can open a new
+    // print preview dialog, while the current print preview dialog is still
+    // handling its print job.
+    WebContents* initiator = GetInitiator();
+    ClearInitiatorDetails();
+
+    // Since the preview dialog will be hidden and not closed, we need to make
+    // this call.
+    if (initiator) {
+      auto* print_view_manager = PrintViewManager::FromWebContents(initiator);
+      print_view_manager->PrintPreviewDone();
+    }
+
+    // Since the initiator is cleared, only want to do this once.
+    printing_started_ = false;
+  }
+
   print_preview_ui()->OnHidePreviewDialog();
 }
 
@@ -1412,15 +1441,15 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
   }
 }
 
-void PrintPreviewHandler::SendCloudPrintJob(const base::RefCountedBytes* data) {
+void PrintPreviewHandler::SendCloudPrintJob(const std::string& callback_id,
+                                            const base::RefCountedBytes* data) {
   // BASE64 encode the job data.
   const base::StringPiece raw_data(reinterpret_cast<const char*>(data->front()),
                                    data->size());
   std::string base64_data;
   base::Base64Encode(raw_data, &base64_data);
-  base::Value data_value(base64_data);
 
-  web_ui()->CallJavascriptFunctionUnsafe("printToCloud", data_value);
+  ResolveJavascriptCallback(base::Value(callback_id), base::Value(base64_data));
 }
 
 WebContents* PrintPreviewHandler::GetInitiator() const {
@@ -1443,7 +1472,9 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename,
     ChromeSelectFilePolicy policy(GetInitiator());
     if (!policy.CanOpenSelectFileDialog()) {
       policy.SelectFileDenied();
-      return ClosePreviewDialog();
+      RejectJavascriptCallback(base::Value(pdf_callback_id_), base::Value());
+      pdf_callback_id_.clear();
+      return;
     }
   }
 
@@ -1526,7 +1557,8 @@ void PrintPreviewHandler::FileSelected(const base::FilePath& path,
   sticky_settings->SaveInPrefs(
       Profile::FromBrowserContext(preview_web_contents()->GetBrowserContext())
           ->GetPrefs());
-  web_ui()->CallJavascriptFunctionUnsafe("fileSelectionCompleted");
+  ResolveJavascriptCallback(base::Value(pdf_callback_id_), base::Value());
+  pdf_callback_id_.clear();
   print_to_pdf_path_ = path;
   PostPrintToPdfTask();
 }
@@ -1548,7 +1580,8 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
 }
 
 void PrintPreviewHandler::FileSelectionCanceled(void* params) {
-  print_preview_ui()->OnFileSelectionCancelled();
+  RejectJavascriptCallback(base::Value(pdf_callback_id_), base::Value());
+  pdf_callback_id_.clear();
 }
 
 void PrintPreviewHandler::ClearInitiatorDetails() {
@@ -1636,13 +1669,10 @@ bool PrintPreviewHandler::PrivetUpdateClient(
     const std::string& callback_id,
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!http_client) {
-    if (callback_id.empty()) {
-      // This was an attempt to print to a privet printer and has failed.
-      FireWebUIListener("print-failed", base::Value(-1));
-    } else {  // Capabilities update failed
-      RejectJavascriptCallback(base::Value(callback_id), base::Value());
-    }
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
     privet_http_resolution_.reset();
+    if (callback_id == privet_print_callback_id_)
+      privet_print_callback_id_.clear();
     return false;
   }
 
@@ -1657,11 +1687,12 @@ bool PrintPreviewHandler::PrivetUpdateClient(
 }
 
 void PrintPreviewHandler::PrivetLocalPrintUpdateClient(
+    const std::string& callback_id,
     std::string print_ticket,
     std::string capabilities,
     gfx::Size page_size,
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
-  if (!PrivetUpdateClient("", std::move(http_client)))
+  if (!PrivetUpdateClient(callback_id, std::move(http_client)))
     return;
 
   StartPrivetLocalPrint(print_ticket, capabilities, page_size);
@@ -1680,7 +1711,9 @@ void PrintPreviewHandler::StartPrivetLocalPrint(const std::string& print_ticket,
   base::string16 title;
 
   if (!GetPreviewDataAndTitle(&data, &title)) {
-    FireWebUIListener("print-failed", base::Value(-1));
+    RejectJavascriptCallback(base::Value(privet_print_callback_id_),
+                             base::Value(-1));
+    privet_print_callback_id_.clear();
     return;
   }
 
@@ -1733,16 +1766,19 @@ void PrintPreviewHandler::OnPrivetCapabilities(
   privet_capabilities_operation_.reset();
 }
 
-void PrintPreviewHandler::PrintToPrivetPrinter(const std::string& device_name,
+void PrintPreviewHandler::PrintToPrivetPrinter(const std::string& callback_id,
+                                               const std::string& device_name,
                                                const std::string& ticket,
                                                const std::string& capabilities,
                                                const gfx::Size& page_size) {
   if (!CreatePrivetHTTP(
           device_name,
           base::Bind(&PrintPreviewHandler::PrivetLocalPrintUpdateClient,
-                     weak_factory_.GetWeakPtr(), ticket, capabilities,
-                     page_size))) {
-    FireWebUIListener("print-failed", base::Value(-1));
+                     weak_factory_.GetWeakPtr(), callback_id, ticket,
+                     capabilities, page_size))) {
+    RejectJavascriptCallback(base::Value(privet_print_callback_id_),
+                             base::Value(-1));
+    privet_print_callback_id_.clear();
   }
 }
 
@@ -1767,13 +1803,17 @@ bool PrintPreviewHandler::CreatePrivetHTTP(
 
 void PrintPreviewHandler::OnPrivetPrintingDone(
     const cloud_print::PrivetLocalPrintOperation* print_operation) {
-  ClosePreviewDialog();
+  ResolveJavascriptCallback(base::Value(privet_print_callback_id_),
+                            base::Value());
+  privet_print_callback_id_.clear();
 }
 
 void PrintPreviewHandler::OnPrivetPrintingError(
     const cloud_print::PrivetLocalPrintOperation* print_operation,
     int http_code) {
-  FireWebUIListener("print-failed", base::Value(http_code));
+  RejectJavascriptCallback(base::Value(privet_print_callback_id_),
+                           base::Value(http_code));
+  privet_print_callback_id_.clear();
 }
 
 void PrintPreviewHandler::FillPrinterDescription(
@@ -1834,13 +1874,14 @@ void PrintPreviewHandler::OnGotExtensionPrinterCapabilities(
   ResolveJavascriptCallback(base::Value(callback_id), capabilities);
 }
 
-void PrintPreviewHandler::OnExtensionPrintResult(bool success,
+void PrintPreviewHandler::OnExtensionPrintResult(const std::string& callback_id,
+                                                 bool success,
                                                  const std::string& status) {
   if (success) {
-    ClosePreviewDialog();
+    ResolveJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
-  FireWebUIListener("print-failed", base::Value(status));
+  RejectJavascriptCallback(base::Value(callback_id), base::Value(status));
 }
 
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {

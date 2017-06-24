@@ -352,18 +352,6 @@ cr.define('print_preview', function() {
           this.onCloudPrintEnable_.bind(this));
       this.tracker.add(
           nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PRINT_TO_CLOUD,
-          this.onPrintToCloud_.bind(this));
-      this.tracker.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.FILE_SELECTION_CANCEL,
-          this.onFileSelectionCancel_.bind(this));
-      this.tracker.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.FILE_SELECTION_COMPLETE,
-          this.onFileSelectionComplete_.bind(this));
-      this.tracker.add(
-          nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.SETTINGS_INVALID,
           this.onSettingsInvalid_.bind(this));
       this.tracker.add(
@@ -544,9 +532,8 @@ cr.define('print_preview', function() {
       this.setIsEnabled_(false);
       this.printHeader_.isCancelButtonEnabled = true;
       var printAttemptResult = this.printIfReady_();
-      if (printAttemptResult == print_preview.PrintAttemptResult_.PRINTED ||
-          printAttemptResult ==
-              print_preview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW) {
+      if (printAttemptResult ==
+          print_preview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW) {
         if ((this.destinationStore_.selectedDestination.isLocal &&
              !this.destinationStore_.selectedDestination.isPrivet &&
              !this.destinationStore_.selectedDestination.isExtension &&
@@ -590,23 +577,54 @@ cr.define('print_preview', function() {
                 print_preview.Metrics.PrintSettingsUiBucket
                     .PRINT_WITH_SETTINGS_COLLAPSED);
       }
-      this.nativeLayer_.startPrint(
-          assert(this.destinationStore_.selectedDestination),
-          this.printTicketStore_, this.cloudPrintInterface_, this.documentInfo_,
+      var destination = assert(this.destinationStore_.selectedDestination);
+      var whenPrintDone = this.nativeLayer_.print(
+          destination, this.printTicketStore_, this.cloudPrintInterface_,
+          this.documentInfo_,
           this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW,
           this.showSystemDialogBeforeNextPrint_);
+
+      if (!destination.isLocal) {
+        // Cloud print resolves when print data is returned to submit to cloud
+        // print, or if setings are invalid.
+        whenPrintDone.then(
+            this.onPrintToCloud_.bind(this),
+            this.onSettingsInvalid_.bind(this));
+      } else if (destination.isPrivet || destination.isExtension) {
+        // Privet and extension resolve when printing is complete or if there
+        // is an error printing.
+        whenPrintDone.then(
+            this.close_.bind(this, false),
+            this.onPrintFailed_.bind(this));
+      } else if (
+          destination.id ==
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+        // Save as PDF resolves when file selection is completed or cancelled.
+        whenPrintDone.then(
+            this.onFileSelectionComplete_.bind(this),
+            this.onFileSelectionCancel_.bind(this));
+      } else {  // standard local printer
+        var boundHideDialog = function () {
+          this.nativeLayer_.startHideDialog();
+        }.bind(this);
+        // Local printers resolve when print is started. Hide the dialog.
+        whenPrintDone.then(boundHideDialog, boundHideDialog);
+      }
+
       this.showSystemDialogBeforeNextPrint_ = false;
       return print_preview.PrintAttemptResult_.PRINTED;
     },
 
     /**
      * Closes the print preview.
+     * @param {boolean} isCancel Whether this was called due to the user
+     *     closing the dialog without printing.
      * @private
      */
-    close_: function() {
+    close_: function(isCancel) {
       this.exitDocument();
       this.uiState_ = PrintPreviewUiState_.CLOSING;
-      this.nativeLayer_.startCloseDialog();
+      this.nativeLayer_.startCloseDialog(isCancel);
     },
 
     /**
@@ -707,10 +725,10 @@ cr.define('print_preview', function() {
 
     /**
      * Called from the native layer when ready to print to Google Cloud Print.
-     * @param {Event} event Contains the body to send in the HTTP request.
+     * @param {string} data The body to send in the HTTP request.
      * @private
      */
-    onPrintToCloud_: function(event) {
+    onPrintToCloud_: function(data) {
       assert(
           this.uiState_ == PrintPreviewUiState_.PRINTING,
           'Document ready to be sent to the cloud when not in printing ' +
@@ -721,7 +739,7 @@ cr.define('print_preview', function() {
       assert(this.destinationStore_.selectedDestination != null);
       this.cloudPrintInterface_.submit(
           this.destinationStore_.selectedDestination, this.printTicketStore_,
-          this.documentInfo_, event.data);
+          this.documentInfo_, data);
     },
 
     /**
@@ -762,7 +780,7 @@ cr.define('print_preview', function() {
           this.uiState_ == PrintPreviewUiState_.PRINTING,
           'Submited job to Google Cloud Print but not in printing state ' +
               this.uiState_);
-      this.close_();
+      this.close_(false);
     },
 
     /**
@@ -857,7 +875,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onCancelButtonClick_: function() {
-      this.close_();
+      this.close_(true);
     },
 
     /**
@@ -885,7 +903,7 @@ cr.define('print_preview', function() {
         // On non-mac with toolkit-views, ESC key is handled by C++-side instead
         // of JS-side.
         if (cr.isMac) {
-          this.close_();
+          this.close_(true);
           e.preventDefault();
         }
         return;
@@ -893,7 +911,7 @@ cr.define('print_preview', function() {
 
       // On Mac, Cmd-. should close the print dialog.
       if (cr.isMac && e.keyCode == 190 && e.metaKey) {
-        this.close_();
+        this.close_(true);
         e.preventDefault();
         return;
       }
@@ -1027,8 +1045,8 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printing to a privet or extension printer fails.
-     * @param {number | string} httpError The HTTP error code, or -1 if not an
-     *     HTTP error.
+     * @param {*} httpError The HTTP error code, or -1 or a string describing
+     *     the error, if not an HTTP error.
      * @private
      */
     onPrintFailed_: function(httpError) {
@@ -1256,7 +1274,7 @@ cr.define('print_preview', function() {
       window.open(
           this.cloudPrintInterface_.baseUrl +
           '?user=' + this.userInfo_.activeUser + '#printers');
-      this.close_();
+      this.close_(false);
     }
   };
 

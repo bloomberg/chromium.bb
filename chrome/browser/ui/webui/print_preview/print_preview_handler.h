@@ -253,7 +253,8 @@ class PrintPreviewHandler
   void SendCloudPrintEnabled();
 
   // Send the PDF data to the cloud to print.
-  void SendCloudPrintJob(const base::RefCountedBytes* data);
+  void SendCloudPrintJob(const std::string& callback_id,
+                         const base::RefCountedBytes* data);
 
   // Gets the initiator for the print preview dialog.
   content::WebContents* GetInitiator() const;
@@ -301,6 +302,7 @@ class PrintPreviewHandler
       const std::string& callback_id,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   void PrivetLocalPrintUpdateClient(
+      const std::string& callback_id,
       std::string print_ticket,
       std::string capabilities,
       gfx::Size page_size,
@@ -312,7 +314,8 @@ class PrintPreviewHandler
                              const std::string& capabilities,
                              const gfx::Size& page_size);
   void SendPrivetCapabilitiesError(const std::string& id);
-  void PrintToPrivetPrinter(const std::string& printer_name,
+  void PrintToPrivetPrinter(const std::string& callback_id,
+                            const std::string& printer_name,
                             const std::string& print_ticket,
                             const std::string& capabilities,
                             const gfx::Size& page_size);
@@ -357,10 +360,13 @@ class PrintPreviewHandler
       const base::DictionaryValue& capabilities);
 
   // Called when an extension print job is completed.
+  // |callback_id|: The javascript callback to run.
   // |success|: Whether the job succeeded.
   // |status|: The returned print job status. Useful for reporting a specific
   //     error.
-  void OnExtensionPrintResult(bool success, const std::string& status);
+  void OnExtensionPrintResult(const std::string& callback_id,
+                              bool success,
+                              const std::string& status);
 
   // Register/unregister from notifications of changes done to the GAIA
   // cookie.
@@ -415,8 +421,18 @@ class PrintPreviewHandler
   // notify the test if it was a successful save, only that it was attempted.
   base::Closure pdf_file_saved_closure_;
 
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   // Callback ID to be used to notify UI that privet search is finished.
-  std::string privet_callback_id_ = "";
+  std::string privet_search_callback_id_;
+
+  // Callback ID to be used to notify UI that privet printing is finished.
+  std::string privet_print_callback_id_;
+#endif
+
+  // Callback ID to be used to notify UI that PDF file selection has finished.
+  std::string pdf_callback_id_;
+
+  bool printing_started_ = false;
 
   // Proxy for calls to the print backend.  Lazily initialized since web_ui() is
   // not available at construction time.
