@@ -233,6 +233,7 @@ using blink::WebPluginAction;
 using blink::WebPoint;
 using blink::WebRect;
 using blink::WebReferrerPolicy;
+using blink::WebSandboxFlags;
 using blink::WebScriptSource;
 using blink::WebSearchableFormData;
 using blink::WebSecurityOrigin;
@@ -629,9 +630,13 @@ void RenderViewImpl::Initialize(
   if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, params.main_frame_routing_id, params.main_frame_widget_routing_id,
-        params.hidden, screen_info(), compositor_deps_, opener_frame);
+        params.hidden, screen_info(), compositor_deps_, opener_frame,
+        params.replicated_frame_state);
   }
 
+  // TODO(dcheng): Shouldn't these be mutually exclusive at this point? See
+  // https://crbug.com/720116 where the browser is apparently sending both
+  // routing IDs...
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);
     RenderFrameProxy::CreateFrameProxy(params.proxy_routing_id, GetRoutingID(),
@@ -649,15 +654,6 @@ void RenderViewImpl::Initialize(
   if (!was_created_by_renderer)
     did_show_ = true;
 
-  // Set the main frame's name.  Only needs to be done for WebLocalFrames,
-  // since the remote case was handled as part of SetReplicatedState on the
-  // proxy above.
-  if (!params.replicated_frame_state.name.empty() &&
-      webview()->MainFrame()->IsWebLocalFrame()) {
-    webview()->MainFrame()->SetName(
-        blink::WebString::FromUTF8(params.replicated_frame_state.name));
-  }
-
   // TODO(davidben): Move this state from Blink into content.
   if (params.window_was_created_with_opener)
     webview()->SetOpenedByDOM();
@@ -674,14 +670,6 @@ void RenderViewImpl::Initialize(
   idle_user_detector_.reset(new IdleUserDetector(this));
 
   GetContentClient()->renderer()->RenderViewCreated(this);
-
-  // Ensure that sandbox flags are inherited from an opener in a different
-  // process.  In that case, the browser process will set any inherited sandbox
-  // flags in |replicated_frame_state|, so apply them here.
-  if (!was_created_by_renderer && webview()->MainFrame()->IsWebLocalFrame()) {
-    webview()->MainFrame()->ToWebLocalFrame()->ForceSandboxFlags(
-        params.replicated_frame_state.sandbox_flags);
-  }
 
   page_zoom_level_ = params.page_zoom_level;
 }
@@ -1369,7 +1357,8 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
                                     const WebWindowFeatures& features,
                                     const WebString& frame_name,
                                     WebNavigationPolicy policy,
-                                    bool suppress_opener) {
+                                    bool suppress_opener,
+                                    WebSandboxFlags sandbox_flags) {
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();
   params->user_gesture = WebUserGestureIndicator::IsProcessingUserGesture();
@@ -1377,10 +1366,9 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
     params->user_gesture = true;
   params->window_container_type = WindowFeaturesToContainerType(features);
   params->session_storage_namespace_id = session_storage_namespace_id_;
-  if (frame_name != "_blank")
-    params->frame_name = frame_name.Utf8(
-        WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
-
+  const std::string& frame_name_utf8 = frame_name.Utf8(
+      WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
+  params->frame_name = frame_name_utf8;
   params->opener_suppressed = suppress_opener;
   params->disposition = NavigationPolicyToDisposition(policy);
   if (!request.IsNull()) {
@@ -1438,8 +1426,10 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   view_params.session_storage_namespace_id =
       reply->cloned_session_storage_namespace_id;
   view_params.swapped_out = false;
-  // WebCore will take care of setting the correct name.
-  view_params.replicated_frame_state = FrameReplicationState();
+  view_params.replicated_frame_state.sandbox_flags = sandbox_flags;
+  view_params.replicated_frame_state.name = frame_name_utf8;
+  // Even if the main frame has a name, the main frame's unique name is always
+  // the empty string.
   view_params.hidden = is_background_tab;
   view_params.never_visible = never_visible;
   view_params.initial_size = initial_size;

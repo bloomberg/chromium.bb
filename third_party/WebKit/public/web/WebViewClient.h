@@ -50,6 +50,7 @@ class WebURL;
 class WebURLRequest;
 class WebView;
 class WebWidget;
+enum class WebSandboxFlags;
 struct WebDateTimeChooserParams;
 struct WebPoint;
 struct WebRect;
@@ -76,7 +77,8 @@ class WebViewClient : protected WebWidgetClient {
                               const WebWindowFeatures& features,
                               const WebString& name,
                               WebNavigationPolicy policy,
-                              bool suppress_opener) {
+                              bool suppress_opener,
+                              WebSandboxFlags) {
     return 0;
   }
 

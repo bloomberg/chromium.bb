@@ -138,10 +138,8 @@ void WebSharedWorkerImpl::InitializeLoader(bool data_saver_enabled) {
   // FIXME: Settings information should be passed to the Worker process from
   // Browser process when the worker is created (similar to
   // RenderThread::OnCreateNewView).
-  main_frame_ = WebFactory::GetInstance().CreateWebLocalFrameBase(
-      WebTreeScopeType::kDocument, this,
-      Platform::Current()->GetInterfaceProvider(), nullptr);
-  web_view_->SetMainFrame(main_frame_.Get());
+  main_frame_ = WebFactory::GetInstance().CreateMainWebLocalFrameBase(
+      web_view_, this, Platform::Current()->GetInterfaceProvider(), nullptr);
   main_frame_->SetDevToolsAgentClient(this);
 
   // If we were asked to pause worker context on start and wait for debugger

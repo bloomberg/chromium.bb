@@ -286,9 +286,8 @@ void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
   settings->SetStrictMixedContentChecking(true);
   settings->SetAllowRunningOfInsecureContent(false);
   settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
-  main_frame_ = WebFactory::GetInstance().CreateWebLocalFrameBase(
-      WebTreeScopeType::kDocument, this, nullptr, nullptr);
-  web_view_->SetMainFrame(main_frame_.Get());
+  main_frame_ = WebFactory::GetInstance().CreateMainWebLocalFrameBase(
+      web_view_, this, nullptr, nullptr);
   main_frame_->SetDevToolsAgentClient(this);
 
   // If we were asked to wait for debugger then it is the good time to do that.

@@ -304,10 +304,6 @@ void WebView::DidExitModalLoop() {
   PageSuspenderStack().pop_back();
 }
 
-void WebViewImpl::SetMainFrame(WebFrame* frame) {
-  WebFrame::InitializeCoreFrame(*frame, *GetPage());
-}
-
 void WebViewImpl::SetCredentialManagerClient(
     WebCredentialManagerClient* web_credential_manager_client) {
   DCHECK(page_);

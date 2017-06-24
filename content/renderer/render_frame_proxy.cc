@@ -108,9 +108,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   if (!parent) {
     // Create a top level WebRemoteFrame.
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);
-    web_frame = blink::WebRemoteFrame::Create(replicated_state.scope,
-                                              proxy.get(), opener);
-    render_view->webview()->SetMainFrame(web_frame);
+    web_frame = blink::WebRemoteFrame::CreateMainFrame(
+        render_view->GetWebView(), proxy.get(), opener);
     render_widget = render_view->GetWidget();
 
     // If the RenderView is reused by this proxy after having been used for a

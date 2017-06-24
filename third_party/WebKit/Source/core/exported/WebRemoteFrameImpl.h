@@ -21,13 +21,16 @@ class RemoteFrameClientImpl;
 enum class WebFrameLoadType;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
+class WebView;
 
 class CORE_EXPORT WebRemoteFrameImpl final
     : NON_EXPORTED_BASE(public WebRemoteFrameBase) {
  public:
-  static WebRemoteFrameImpl* Create(WebTreeScopeType,
-                                    WebRemoteFrameClient*,
-                                    WebFrame* opener = nullptr);
+  static WebRemoteFrameImpl* Create(WebTreeScopeType, WebRemoteFrameClient*);
+  static WebRemoteFrameImpl* CreateMainFrame(WebView*,
+                                             WebRemoteFrameClient*,
+                                             WebFrame* opener = nullptr);
+
   ~WebRemoteFrameImpl() override;
 
   // WebFrame methods:

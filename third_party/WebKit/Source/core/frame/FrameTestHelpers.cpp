@@ -255,11 +255,10 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
     update_settings_func(web_view_->GetSettings());
 
   auto owned_web_frame_client = CreateDefaultClientIfNeeded(web_frame_client);
-  WebLocalFrame* frame = WebLocalFrameBase::Create(
-      WebTreeScopeType::kDocument, web_frame_client,
+  WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
+      web_view_, web_frame_client,
       web_frame_client->GetInterfaceProviderForTesting(), nullptr, opener);
   web_frame_client->Bind(frame, std::move(owned_web_frame_client));
-  web_view_->SetMainFrame(frame);
 
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
@@ -308,11 +307,10 @@ WebViewBase* WebViewHelper::InitializeRemote(
 
   auto owned_web_remote_frame_client =
       CreateDefaultClientIfNeeded(web_remote_frame_client);
-  WebRemoteFrameImpl* frame = WebRemoteFrameImpl::Create(
-      WebTreeScopeType::kDocument, web_remote_frame_client);
+  WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
+      web_view_, web_remote_frame_client, nullptr);
   web_remote_frame_client->Bind(frame,
                                 std::move(owned_web_remote_frame_client));
-  web_view_->SetMainFrame(frame);
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUnique();
   frame->GetFrame()->GetSecurityContext()->SetReplicatedOrigin(

@@ -211,12 +211,11 @@ class WebMediaPlayerImplTest : public testing::Test {
             blink::WebView::Create(nullptr,
                                    blink::kWebPageVisibilityStateVisible)),
         web_local_frame_(
-            blink::WebLocalFrame::Create(blink::WebTreeScopeType::kDocument,
-                                         &web_frame_client_,
-                                         nullptr,
-                                         nullptr)),
+            blink::WebLocalFrame::CreateMainFrame(web_view_,
+                                                  &web_frame_client_,
+                                                  nullptr,
+                                                  nullptr)),
         audio_parameters_(TestAudioParameters::Normal()) {
-    web_view_->SetMainFrame(web_local_frame_);
     media_thread_.StartAndWaitForTesting();
   }
 

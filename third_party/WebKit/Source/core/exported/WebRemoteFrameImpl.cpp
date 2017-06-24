@@ -36,16 +36,39 @@
 namespace blink {
 
 WebRemoteFrame* WebRemoteFrame::Create(WebTreeScopeType scope,
-                                       WebRemoteFrameClient* client,
-                                       WebFrame* opener) {
-  return WebRemoteFrameImpl::Create(scope, client, opener);
+                                       WebRemoteFrameClient* client) {
+  return WebRemoteFrameImpl::Create(scope, client);
+}
+
+WebRemoteFrame* WebRemoteFrame::CreateMainFrame(WebView* web_view,
+                                                WebRemoteFrameClient* client,
+                                                WebFrame* opener) {
+  return WebRemoteFrameImpl::CreateMainFrame(web_view, client, opener);
 }
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::Create(WebTreeScopeType scope,
-                                               WebRemoteFrameClient* client,
-                                               WebFrame* opener) {
+                                               WebRemoteFrameClient* client) {
   WebRemoteFrameImpl* frame = new WebRemoteFrameImpl(scope, client);
+  return frame;
+}
+
+WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
+    WebView* web_view,
+    WebRemoteFrameClient* client,
+    WebFrame* opener) {
+  WebRemoteFrameImpl* frame =
+      new WebRemoteFrameImpl(WebTreeScopeType::kDocument, client);
   frame->SetOpener(opener);
+  Page& page = *static_cast<WebViewBase*>(web_view)->GetPage();
+  // It would be nice to DCHECK that the main frame is not set yet here.
+  // Unfortunately, there is an edge case with a pending RenderFrameHost that
+  // violates this: the embedder may create a pending RenderFrameHost for
+  // navigating to a new page in a popup. If the navigation ends up redirecting
+  // to a site that requires a process swap, it doesn't go through the standard
+  // swapping path and instead directly overwrites the main frame.
+  // TODO(dcheng): Remove the need for this and strongly enforce this condition
+  // with a DCHECK.
+  frame->InitializeCoreFrame(page, nullptr, g_null_atom);
   return frame;
 }
 
@@ -185,7 +208,8 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     const WebParsedFeaturePolicy& container_policy,
     WebRemoteFrameClient* client,
     WebFrame* opener) {
-  WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(scope, client, opener);
+  WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(scope, client);
+  child->SetOpener(opener);
   AppendChild(child);
   RemoteFrameOwner* owner =
       RemoteFrameOwner::Create(static_cast<SandboxFlags>(sandbox_flags),

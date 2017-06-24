@@ -41,8 +41,7 @@ class MediaInfoLoaderTest : public testing::Test {
  public:
   MediaInfoLoaderTest()
       : view_(WebView::Create(nullptr, blink::kWebPageVisibilityStateVisible)) {
-    view_->SetMainFrame(WebLocalFrame::Create(
-        blink::WebTreeScopeType::kDocument, &client_, nullptr, nullptr));
+    WebLocalFrame::CreateMainFrame(view_, &client_, nullptr, nullptr);
   }
 
   virtual ~MediaInfoLoaderTest() { view_->Close(); }

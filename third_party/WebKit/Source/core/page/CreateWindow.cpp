@@ -292,8 +292,14 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
       policy, old_page->GetChromeClient().GetCurrentInputEvent(),
       features.tool_bar_visible);
 
-  Page* page = old_page->GetChromeClient().CreateWindow(&opener_frame, request,
-                                                        features, policy);
+  const SandboxFlags sandbox_flags =
+      opener_frame.GetDocument()->IsSandboxed(
+          kSandboxPropagatesToAuxiliaryBrowsingContexts)
+          ? opener_frame.GetSecurityContext()->GetSandboxFlags()
+          : kSandboxNone;
+
+  Page* page = old_page->GetChromeClient().CreateWindow(
+      &opener_frame, request, features, policy, sandbox_flags);
   if (!page)
     return nullptr;
 
@@ -302,9 +308,6 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
 
   DCHECK(page->MainFrame());
   LocalFrame& frame = *ToLocalFrame(page->MainFrame());
-
-  if (!EqualIgnoringASCIICase(request.FrameName(), "_blank"))
-    frame.Tree().SetName(request.FrameName());
 
   page->SetWindowFeatures(features);
 
@@ -330,11 +333,6 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
 
   page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, frame);
   page->GetChromeClient().Show(policy);
-
-  if (opener_frame.GetDocument()->IsSandboxed(
-          kSandboxPropagatesToAuxiliaryBrowsingContexts))
-    frame.Loader().ForceSandboxFlags(
-        opener_frame.GetSecurityContext()->GetSandboxFlags());
 
   // This call may suspend the execution by running nested run loop.
   probe::windowCreated(&opener_frame, &frame);

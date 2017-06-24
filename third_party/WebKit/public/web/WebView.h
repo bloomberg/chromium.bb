@@ -115,18 +115,14 @@ class WebView : protected WebWidget {
 
   // Initialization ------------------------------------------------------
 
-  // Creates a WebView that is NOT yet initialized. You will need to
-  // call setMainFrame to finish the initialization. It is valid
-  // to pass a null client pointer. The WebPageVisibilityState defines the
-  // initial visibility of the page.
+  // Creates a WebView that is NOT yet initialized. To complete initialization,
+  // call WebLocalFrame::CreateMainFrame() or WebRemoteFrame::CreateMainFrame()
+  // as appropriate. It is legal to modify settings before completing
+  // initialization.
+  //
+  // client may be null, while WebPageVisibilityState defines the initial
+  // visibility of the page.
   BLINK_EXPORT static WebView* Create(WebViewClient*, WebPageVisibilityState);
-
-  // After creating a WebView, you should immediately call this method.
-  // You can optionally modify the settings before calling this method.
-  // This WebFrame will receive events for the main frame and must not
-  // be null.
-  // TODO(mustaq): The non-null param should be a reference.
-  virtual void SetMainFrame(WebFrame*) = 0;
 
   // Initializes the various client interfaces.
   virtual void SetCredentialManagerClient(WebCredentialManagerClient*) = 0;

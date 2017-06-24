@@ -71,7 +71,8 @@ class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
                       const WebWindowFeatures&,
                       const WebString& name,
                       WebNavigationPolicy,
-                      bool) override {
+                      bool,
+                      WebSandboxFlags) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
 
@@ -100,9 +101,9 @@ TEST_F(CreateWindowTest, CreateWindowFromSuspendedPage) {
   LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
   FrameLoadRequest request(frame->GetDocument());
   WebWindowFeatures features;
-  EXPECT_EQ(nullptr,
-            chrome_client_impl_->CreateWindow(
-                frame, request, features, kNavigationPolicyNewForegroundTab));
+  EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
+                         frame, request, features,
+                         kNavigationPolicyNewForegroundTab, kSandboxNone));
 }
 
 class FakeColorChooserClient

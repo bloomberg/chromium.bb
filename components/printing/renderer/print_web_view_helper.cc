@@ -590,9 +590,8 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
     }
   };
   HeaderAndFooterClient frame_client;
-  blink::WebLocalFrame* frame = blink::WebLocalFrame::Create(
-      blink::WebTreeScopeType::kDocument, &frame_client, nullptr, nullptr);
-  web_view->SetMainFrame(frame);
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::CreateMainFrame(
+      web_view, &frame_client, nullptr, nullptr);
   blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::Create(&web_widget_client, frame);
 
@@ -817,9 +816,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
       blink::WebView::Create(this, blink::kWebPageVisibilityStateVisible);
   owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);
-  blink::WebLocalFrame* main_frame = blink::WebLocalFrame::Create(
-      blink::WebTreeScopeType::kDocument, this, nullptr, nullptr);
-  web_view->SetMainFrame(main_frame);
+  blink::WebLocalFrame* main_frame =
+      blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);
   blink::WebFrameWidget::Create(this, main_frame);
   frame_.Reset(web_view->MainFrame()->ToWebLocalFrame());
   node_to_print_.Reset();
