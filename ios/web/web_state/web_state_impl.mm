@@ -7,10 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
@@ -38,6 +40,7 @@
 #include "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #include "ios/web/webui/web_ui_ios_impl.h"
 #include "net/http/http_response_headers.h"
+#include "ui/gfx/image/image.h"
 
 namespace web {
 
@@ -670,6 +673,23 @@ id<CRWWebViewProxy> WebStateImpl::GetWebViewProxy() const {
 
 bool WebStateImpl::HasOpener() const {
   return created_with_opener_;
+}
+
+void WebStateImpl::TakeSnapshot(const SnapshotCallback& callback,
+                                CGSize target_size) const {
+  UIView* view = [web_controller_ view];
+  UIImage* snapshot = nil;
+  if (view && !CGRectIsEmpty(view.bounds)) {
+    CGFloat scaled_height =
+        view.bounds.size.height * target_size.width / view.bounds.size.width;
+    CGRect scaled_rect = CGRectMake(0, 0, target_size.width, scaled_height);
+    UIGraphicsBeginImageContextWithOptions(target_size, YES, 0);
+    [view drawViewHierarchyInRect:scaled_rect afterScreenUpdates:NO];
+    snapshot = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+  }
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, gfx::Image(snapshot)));
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {

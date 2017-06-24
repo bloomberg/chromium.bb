@@ -6,9 +6,12 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -228,6 +231,12 @@ WebStateInterfaceProvider* TestWebState::GetWebStateInterfaceProvider() {
 
 bool TestWebState::HasOpener() const {
   return false;
+}
+
+void TestWebState::TakeSnapshot(const SnapshotCallback& callback,
+                                CGSize target_size) const {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, gfx::Image()));
 }
 
 base::WeakPtr<WebState> TestWebState::AsWeakPtr() {

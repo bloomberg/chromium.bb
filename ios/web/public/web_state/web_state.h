@@ -35,6 +35,10 @@ class DictionaryValue;
 class Value;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace web {
 
 class BrowserState;
@@ -247,6 +251,14 @@ class WebState : public base::SupportsUserData {
   // Returns whether this WebState was created with an opener.  See
   // CreateParams::created_with_opener for more details.
   virtual bool HasOpener() const = 0;
+
+  // Callback used to handle snapshots. The parameter is the snapshot image.
+  typedef base::Callback<void(const gfx::Image&)> SnapshotCallback;
+
+  // Takes a snapshot of this WebState with |target_size|. |callback| is
+  // asynchronously invoked after performing the snapshot.
+  virtual void TakeSnapshot(const SnapshotCallback& callback,
+                            CGSize target_size) const = 0;
 
  protected:
   friend class WebStateObserver;

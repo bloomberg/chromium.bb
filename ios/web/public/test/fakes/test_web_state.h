@@ -76,6 +76,8 @@ class TestWebState : public WebState {
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override {}
   WebStateInterfaceProvider* GetWebStateInterfaceProvider() override;
   bool HasOpener() const override;
+  void TakeSnapshot(const SnapshotCallback& callback,
+                    CGSize target_size) const override;
   base::WeakPtr<WebState> AsWeakPtr() override;
 
   // Setters for test data.
