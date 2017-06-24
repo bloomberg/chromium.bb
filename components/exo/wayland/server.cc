@@ -2020,17 +2020,36 @@ void remote_surface_set_top_inset(wl_client* client,
   GetUserDataAs<ShellSurface>(resource)->SetTopInset(height);
 }
 
+// Helper class used to temporarily ignore window activation. Sets the
+// ignore window actiavated property to false when instance is destroyed.
+class ScopedIgnoreWindowActivated {
+ public:
+  explicit ScopedIgnoreWindowActivated(ShellSurface* shell_surface)
+      : widget_(shell_surface->GetWidget()) {
+    if (widget_)
+      widget_->GetNativeWindow()->SetProperty(kIgnoreWindowActivated, true);
+  }
+  ~ScopedIgnoreWindowActivated() {
+    if (widget_)
+      widget_->GetNativeWindow()->SetProperty(kIgnoreWindowActivated, false);
+  }
+
+ private:
+  views::Widget* const widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedIgnoreWindowActivated);
+};
+
 void remote_surface_activate(wl_client* client,
                              wl_resource* resource,
                              uint32_t serial) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
 
   // Activation on Aura is synchronous, so activation callbacks will be called
   // before the flag is reset.
-  window->SetProperty(kIgnoreWindowActivated, true);
+  ScopedIgnoreWindowActivated scoped_ignore_window_activated(shell_surface);
+
   shell_surface->Activate();
-  window->SetProperty(kIgnoreWindowActivated, false);
 }
 
 void remote_surface_maximize(wl_client* client, wl_resource* resource) {
