@@ -2906,6 +2906,9 @@ crbug.com/733448 virtual/mojo-loading/http/tests/inspector/extensions/extensions
 crbug.com/733448 http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733524 [ Mac ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.php [ Timeout Pass ]
 
+# Sheriff failures 2017-06-23
+crbug.com/736548 [ Mac ] css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
+
 # Rebaselining a newly-passing test fixed by v8
 crbug.com/v8/6504 fast/js/mozilla/strict/B.1.2.html [ NeedsManualRebaseline ]
 
