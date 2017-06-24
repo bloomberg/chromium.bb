@@ -207,7 +207,10 @@
             "important": true,
             "manifest_version": true,
             "overlays": "both",
-            "uprev": false
+            "uprev": false,
+            "vm_tests": [
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            ]
         },
         "asan": {
             "_template": "asan",
@@ -766,7 +769,10 @@
             "important": true,
             "manifest_version": true,
             "overlays": "both",
-            "uprev": false
+            "uprev": false,
+            "vm_tests": [
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            ]
         },
         "paladin": {
             "_template": "paladin",

@@ -2030,7 +2030,8 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=True,
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+      # Add betty smoke VMTest crbug.com/710629.
+      vm_tests=[#config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
   )
