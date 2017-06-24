@@ -162,14 +162,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean}
-   * @private
-   */
-  showIPEditFields_: function() {
-    return this.editable && !this.automatic_;
-  },
-
-  /**
    * @return {Object} An object with the edit type for each editable field.
    * @private
    */

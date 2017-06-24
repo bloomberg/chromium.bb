@@ -49,14 +49,6 @@
         -webkit-margin-start: var(--settings-controlled-by-spacing);
       }
 
-      .indented {
-        -webkit-margin-start: var(--settings-box-row-padding);
-      }
-
-      .settings-box.stretch {
-        align-items: stretch;
-      }
-
       .settings-box:first-of-type {
         border-top: none;
       }
@@ -132,77 +124,74 @@
         </div>
       </div>
     </template>
+
     <template is="dom-if" if="[[!isSecondaryUser_]]">
-      <!-- Top level properties -->
-      <div class="layout vertical">
-        <!-- Prefer this network. -->
-        <template is="dom-if" if="[[showPreferNetwork_(networkProperties)]]">
-          <div class="settings-box">
-            <div id="preferNetworkToggleLabel"class="start">
-              $i18n{networkPrefer}
-            </div>
-            <cr-policy-network-indicator
-                property="[[networkProperties.Priority]]">
-            </cr-policy-network-indicator>
-            <paper-toggle-button checked="{{preferNetwork_}}"
-                disabled="[[isNetworkPolicyEnforced(
-                          networkProperties.Priority)]]"
-                aria-labelledby="preferNetworkToggleLabel">
-            </paper-toggle-button>
+      <!-- Prefer this network. -->
+      <template is="dom-if" if="[[showPreferNetwork_(networkProperties)]]">
+        <div class="settings-box">
+          <div id="preferNetworkToggleLabel"class="start">
+            $i18n{networkPrefer}
           </div>
-        </template>
-        <!-- Autoconnect. -->
-        <template is="dom-if" if="[[showAutoConnect_(networkProperties)]]">
-          <div class="settings-box">
-            <div id="autoConnectToggleLabel" class="start">
-              $i18n{networkAutoConnect}
-            </div>
-            <cr-policy-network-indicator
-                property="[[getManagedAutoConnect_(networkProperties)]]">
-            </cr-policy-network-indicator>
-            <paper-toggle-button checked="{{autoConnect_}}"
-                disabled="[[!enableAutoConnect_(networkProperties,
-                          globalPolicy)]]"
-                aria-labelledby="autoConnectToggleLabel">
-            </paper-toggle-button>
+          <cr-policy-network-indicator
+              property="[[networkProperties.Priority]]">
+          </cr-policy-network-indicator>
+          <paper-toggle-button checked="{{preferNetwork_}}"
+              disabled="[[isNetworkPolicyEnforced(networkProperties.Priority)]]"
+              aria-labelledby="preferNetworkToggleLabel">
+          </paper-toggle-button>
+        </div>
+      </template>
+      <!-- Autoconnect. -->
+      <template is="dom-if" if="[[showAutoConnect_(networkProperties)]]">
+        <div class="settings-box">
+          <div id="autoConnectToggleLabel" class="start">
+            $i18n{networkAutoConnect}
           </div>
-        </template>
-        <!-- Data roaming (Cellular only). -->
-        <template is="dom-if" if="[[isCellular_(networkProperties)]]">
-          <div class="settings-box">
-            <settings-toggle-button id="allowDataRoaming" class="start"
-                pref="{{prefs.cros.signed.data_roaming_enabled}}"
-                label="$i18n{networkAllowDataRoaming}">
-            </settings-toggle-button>
-          </div>
-        </template>
-        <!-- SIM Info (Cellular only). -->
-        <template is="dom-if" if="[[showCellularSim_(networkProperties)]]">
-          <div class="settings-box single-column stretch">
-            <network-siminfo
-                editable on-siminfo-change="onNetworkPropertyChange_"
-                network-properties="[[networkProperties]]"
-                networking-private="[[networkingPrivate]]">
-            </network-siminfo>
-          </div>
-        </template>
-        <!-- IP Address. -->
-        <template is="dom-if" if="[[IPAddress_]]">
-          <div class="settings-box two-line single-column stretch">
-            <div>$i18n{networkIPAddress}</div>
-            <div class="secondary">[[IPAddress_]]</div>
-          </div>
-        </template>
-        <!-- Properties to always show if present. -->
-        <template is="dom-if" if="[[hasInfoFields_(networkProperties)]]">
-          <div class="settings-box single-column stretch">
-            <network-property-list
-                fields="[[getInfoFields_(networkProperties)]]"
-                property-dict="[[networkProperties]]">
-            </network-property-list>
-          </div>
-        </template>
-      </div>
+          <cr-policy-network-indicator
+              property="[[getManagedAutoConnect_(networkProperties)]]">
+          </cr-policy-network-indicator>
+          <paper-toggle-button checked="{{autoConnect_}}"
+              disabled="[[!enableAutoConnect_(networkProperties,
+                  globalPolicy)]]"
+              aria-labelledby="autoConnectToggleLabel">
+          </paper-toggle-button>
+        </div>
+      </template>
+      <!-- Data roaming (Cellular only). -->
+      <template is="dom-if" if="[[isCellular_(networkProperties)]]">
+        <div class="settings-box">
+          <settings-toggle-button id="allowDataRoaming" class="start"
+              pref="{{prefs.cros.signed.data_roaming_enabled}}"
+              label="$i18n{networkAllowDataRoaming}">
+          </settings-toggle-button>
+        </div>
+      </template>
+      <!-- SIM Info (Cellular only). -->
+      <template is="dom-if" if="[[showCellularSim_(networkProperties)]]">
+        <div class="settings-box single-column stretch">
+          <network-siminfo
+              editable on-siminfo-change="onNetworkPropertyChange_"
+              network-properties="[[networkProperties]]"
+              networking-private="[[networkingPrivate]]">
+          </network-siminfo>
+        </div>
+      </template>
+      <!-- IP Address. -->
+      <template is="dom-if" if="[[IPAddress_]]">
+        <div class="settings-box two-line single-column stretch">
+          <div>$i18n{networkIPAddress}</div>
+          <div class="secondary">[[IPAddress_]]</div>
+        </div>
+      </template>
+      <!-- Properties to always show if present. -->
+      <template is="dom-if" if="[[hasInfoFields_(networkProperties)]]">
+        <div class="settings-box single-column stretch">
+          <network-property-list
+              fields="[[getInfoFields_(networkProperties)]]"
+              property-dict="[[networkProperties]]">
+          </network-property-list>
+        </div>
+      </template>
 
       <template is="dom-if" if="[[showAdvanced_(networkProperties)]]">
         <!-- Advanced toggle. -->
@@ -215,22 +204,20 @@
 
         <!-- Advanced section -->
         <iron-collapse opened="[[advancedExpanded_]]">
-          <div class="layout vertical indented">
-            <div class="settings-box single-column stretch"
-                hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
-              <!-- Advanced properties -->
-              <network-property-list
-                  hidden$="[[!hasAdvancedFields_(networkProperties)]]"
-                  fields="[[getAdvancedFields_(networkProperties)]]"
-                  property-dict="[[networkProperties]]">
-              </network-property-list>
-              <!-- Device properties -->
-              <network-property-list
-                  hidden$="[[!hasDeviceFields_(networkProperties)]]"
-                  fields="[[getDeviceFields_(networkProperties)]]"
-                  property-dict="[[networkProperties]]">
-              </network-property-list>
-            </div>
+          <div class="settings-box single-column stretch indented"
+              hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
+            <!-- Advanced properties -->
+            <network-property-list
+                hidden$="[[!hasAdvancedFields_(networkProperties)]]"
+                fields="[[getAdvancedFields_(networkProperties)]]"
+                property-dict="[[networkProperties]]">
+            </network-property-list>
+            <!-- Device properties -->
+            <network-property-list
+                hidden$="[[!hasDeviceFields_(networkProperties)]]"
+                fields="[[getDeviceFields_(networkProperties)]]"
+                property-dict="[[networkProperties]]">
+            </network-property-list>
           </div>
         </iron-collapse>
       </template>
@@ -245,7 +232,7 @@
         </div>
 
         <iron-collapse opened="[[networkExpanded_]]">
-          <div class="layout vertical indented">
+          <div class="settings-box single-column stretch">
             <!-- APN -->
             <template is="dom-if" if="[[isCellular_(networkProperties)]]">
               <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
@@ -276,7 +263,7 @@
         </div>
 
         <iron-collapse opened="[[proxyExpanded_]]">
-          <div class="layout vertical indented">
+          <div class="settings-box single-column stretch">
             <network-proxy editable prefs="{{prefs}}"
                 on-proxy-change="onProxyChange_"
                 network-properties="[[networkProperties]]">
