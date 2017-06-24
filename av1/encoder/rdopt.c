@@ -5267,7 +5267,6 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   int ite, ref;
   struct scale_factors sf;
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-  struct macroblockd_plane *const pd = &xd->plane[0];
   // ic and ir are the 4x4 coordiantes of the sub8x8 at index "block"
   const int ic = block & 1;
   const int ir = (block - ic) >> 1;
