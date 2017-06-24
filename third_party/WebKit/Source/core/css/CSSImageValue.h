@@ -24,6 +24,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/CrossOriginAttributeValue.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -63,6 +64,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   }
   StyleImage* CacheImage(
       const Document&,
+      FetchParameters::PlaceholderImageRequestType,
       CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
   const String& Url() const { return absolute_url_; }
