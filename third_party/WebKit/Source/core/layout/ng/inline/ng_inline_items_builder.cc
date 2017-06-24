@@ -21,8 +21,7 @@ String NGInlineItemsBuilder::ToString() {
   // lines and collapsible spaces in Phase I.
   // [1] https://drafts.csswg.org/css-text-3/#line-break-transform
   // [2] https://drafts.csswg.org/css-text-3/#white-space-phase-2
-  unsigned next_start_offset = text_.length();
-  RemoveTrailingCollapsibleSpaceIfExists(&next_start_offset);
+  RemoveTrailingCollapsibleSpaceIfExists();
 
   return text_.ToString();
 }
@@ -174,7 +173,8 @@ void NGInlineItemsBuilder::AppendWithWhiteSpaceCollapsing(
     }
 
     if (last_collapsible_space_ == CollapsibleSpace::kNewline) {
-      RemoveTrailingCollapsibleNewlineIfNeeded(&start_offset, string, i, style);
+      RemoveTrailingCollapsibleNewlineIfNeeded(string, i, style);
+      start_offset = std::min(start_offset, text_.length());
     }
 
     size_t end_of_non_space = string.Find(IsCollapsibleSpace, i + 1);
@@ -240,8 +240,7 @@ void NGInlineItemsBuilder::AppendWithPreservingNewlines(
 void NGInlineItemsBuilder::AppendForcedBreak(const ComputedStyle* style,
                                              LayoutObject* layout_object) {
   // Remove collapsible spaces immediately before a preserved newline.
-  unsigned start_offset = text_.length();
-  RemoveTrailingCollapsibleSpaceIfExists(&start_offset);
+  RemoveTrailingCollapsibleSpaceIfExists();
 
   Append(NGInlineItem::kControl, kNewlineCharacter, style, layout_object);
 
@@ -262,15 +261,23 @@ void NGInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
   last_collapsible_space_ = CollapsibleSpace::kNone;
 }
 
-void NGInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
-                                  const ComputedStyle* style,
-                                  LayoutObject* layout_object) {
+void NGInlineItemsBuilder::AppendOpaque(NGInlineItem::NGInlineItemType type,
+                                        UChar character) {
+  text_.Append(character);
+  unsigned end_offset = text_.length();
+  AppendItem(items_, type, end_offset - 1, end_offset, nullptr, nullptr);
+}
+
+void NGInlineItemsBuilder::AppendOpaque(NGInlineItem::NGInlineItemType type,
+                                        const ComputedStyle* style,
+                                        LayoutObject* layout_object) {
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset, end_offset, style, layout_object);
 }
 
+// Removes the collapsible newline at the end of |text_| if exists and the
+// removal conditions met.
 void NGInlineItemsBuilder::RemoveTrailingCollapsibleNewlineIfNeeded(
-    unsigned* next_start_offset,
     const String& after,
     unsigned after_index,
     const ComputedStyle* after_style) {
@@ -287,57 +294,67 @@ void NGInlineItemsBuilder::RemoveTrailingCollapsibleNewlineIfNeeded(
   }
 
   if (ShouldRemoveNewline(text_, before_style, after, after_index, after_style))
-    RemoveTrailingCollapsibleSpace(next_start_offset);
+    RemoveTrailingCollapsibleSpace(text_.length() - 1);
 }
 
-void NGInlineItemsBuilder::RemoveTrailingCollapsibleSpaceIfExists(
-    unsigned* next_start_offset) {
-  if (last_collapsible_space_ != CollapsibleSpace::kNone && !text_.IsEmpty() &&
-      text_[text_.length() - 1] == kSpaceCharacter)
-    RemoveTrailingCollapsibleSpace(next_start_offset);
+// Removes the collapsible space at the end of |text_| if exists.
+void NGInlineItemsBuilder::RemoveTrailingCollapsibleSpaceIfExists() {
+  if (last_collapsible_space_ == CollapsibleSpace::kNone || text_.IsEmpty())
+    return;
+
+  // Look for the last space character since characters that are opaque to
+  // whitespace collapsing may be appended.
+  for (unsigned i = text_.length(); i;) {
+    UChar ch = text_[--i];
+    if (ch == kSpaceCharacter) {
+      RemoveTrailingCollapsibleSpace(i);
+      return;
+    }
+
+    // AppendForcedBreak sets CollapsibleSpace::kSpace to ignore leading
+    // spaces. In this case, the trailing collapsible space does not exist.
+    if (ch == kNewlineCharacter)
+      return;
+  }
+  NOTREACHED();
 }
 
-void NGInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
-    unsigned* next_start_offset) {
+// Removes the collapsible space at the specified index.
+void NGInlineItemsBuilder::RemoveTrailingCollapsibleSpace(unsigned index) {
   DCHECK_NE(last_collapsible_space_, CollapsibleSpace::kNone);
   DCHECK(!text_.IsEmpty());
-  DCHECK_EQ(text_[text_.length() - 1], kSpaceCharacter);
+  DCHECK_EQ(text_[index], kSpaceCharacter);
 
-  unsigned new_size = text_.length() - 1;
-  text_.Resize(new_size);
+  text_.erase(index);
   last_collapsible_space_ = CollapsibleSpace::kNone;
 
-  if (*next_start_offset <= new_size)
-    return;
-  *next_start_offset = new_size;
-
-  // Adjust the last item if the removed space is already appended.
+  // Adjust items if the removed space is already included.
   for (unsigned i = items_->size(); i > 0;) {
     NGInlineItem& item = (*items_)[--i];
-    DCHECK_EQ(item.EndOffset(), new_size + 1);
-    if (item.Type() == NGInlineItem::kText) {
-      DCHECK_GE(item.Length(), 1u);
-      if (item.Length() > 1)
-        item.SetEndOffset(new_size);
-      else
+    if (index >= item.EndOffset())
+      return;
+    if (item.StartOffset() <= index) {
+      if (item.Length() == 1) {
+        DCHECK_EQ(item.StartOffset(), index);
+        DCHECK_EQ(item.Type(), NGInlineItem::kText);
         items_->erase(i);
-      break;
+      } else {
+        item.SetEndOffset(item.EndOffset() - 1);
+      }
+      return;
     }
-    if (!item.Length()) {
-      // Trailing spaces can be removed across non-character items.
-      item.SetOffset(new_size, new_size);
-      continue;
-    }
-    NOTREACHED();
-    break;
+
+    // Trailing spaces can be removed across non-character items.
+    // Adjust their offsets if after the removed index.
+    item.SetOffset(item.StartOffset() - 1, item.EndOffset() - 1);
   }
 }
 
 void NGInlineItemsBuilder::AppendBidiControl(const ComputedStyle* style,
                                              UChar ltr,
                                              UChar rtl) {
-  Append(NGInlineItem::kBidiControl,
-         style->Direction() == TextDirection::kRtl ? rtl : ltr);
+  AppendOpaque(NGInlineItem::kBidiControl,
+               IsLtr(style->Direction()) ? ltr : rtl);
 }
 
 void NGInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {
@@ -389,11 +406,11 @@ void NGInlineItemsBuilder::EnterInline(LayoutObject* node) {
       Enter(node, kPopDirectionalIsolateCharacter);
       break;
     case UnicodeBidi::kPlaintext:
-      Append(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
+      AppendOpaque(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
       Enter(node, kPopDirectionalIsolateCharacter);
       break;
     case UnicodeBidi::kIsolateOverride:
-      Append(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
+      AppendOpaque(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
       AppendBidiControl(style, kLeftToRightOverrideCharacter,
                         kRightToLeftOverrideCharacter);
       Enter(node, kPopDirectionalIsolateCharacter);
@@ -401,7 +418,7 @@ void NGInlineItemsBuilder::EnterInline(LayoutObject* node) {
       break;
   }
 
-  Append(NGInlineItem::kOpenTag, style, node);
+  AppendOpaque(NGInlineItem::kOpenTag, style, node);
 }
 
 void NGInlineItemsBuilder::Enter(LayoutObject* node, UChar character_to_exit) {
@@ -416,14 +433,14 @@ void NGInlineItemsBuilder::ExitBlock() {
 void NGInlineItemsBuilder::ExitInline(LayoutObject* node) {
   DCHECK(node);
 
-  Append(NGInlineItem::kCloseTag, node->Style(), node);
+  AppendOpaque(NGInlineItem::kCloseTag, node->Style(), node);
 
   Exit(node);
 }
 
 void NGInlineItemsBuilder::Exit(LayoutObject* node) {
   while (!exits_.IsEmpty() && exits_.back().node == node) {
-    Append(NGInlineItem::kBidiControl, exits_.back().character);
+    AppendOpaque(NGInlineItem::kBidiControl, exits_.back().character);
     exits_.pop_back();
   }
 }
