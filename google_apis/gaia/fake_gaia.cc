@@ -245,10 +245,7 @@ void FakeGaia::Initialize() {
       gaia_urls->service_login_url(), HandleServiceLogin);
 
   // Handles /embedded/setup/chromeos GAIA call.
-  REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_url(1),
-                            HandleEmbeddedSetupChromeos);
-  // Handles /embedded/setup/v2/chromeos GAIA call.
-  REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_url(2),
+  REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_url(),
                             HandleEmbeddedSetupChromeos);
 
   // Handles /OAuthLogin GAIA call.
