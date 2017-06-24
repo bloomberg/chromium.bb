@@ -8835,23 +8835,12 @@ namespace {
 class SwapMainFrameWhenTitleChangesWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  SwapMainFrameWhenTitleChangesWebFrameClient() : remote_frame_(nullptr) {}
-
-  ~SwapMainFrameWhenTitleChangesWebFrameClient() override {
-    if (remote_frame_)
-      remote_frame_->Close();
-  }
+  SwapMainFrameWhenTitleChangesWebFrameClient() {}
 
   void DidReceiveTitle(const WebString&, WebTextDirection) override {
-    if (!Frame()->Parent()) {
-      remote_frame_ =
-          WebRemoteFrame::Create(WebTreeScopeType::kDocument, nullptr);
-      Frame()->Swap(remote_frame_);
-    }
+    if (!Frame()->Parent())
+      Frame()->Swap(FrameTestHelpers::CreateRemote());
   }
-
- private:
-  WebRemoteFrame* remote_frame_;
 };
 
 }  // anonymous namespace
