@@ -5,14 +5,18 @@ let mockTextDetectionReady = define(
   ['services/shape_detection/public/interfaces/textdetection.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/core',
+   'content/public/renderer/frame_interfaces',
    'content/public/renderer/interfaces',
-  ], (textDetection, bindings, mojo, interfaces) => {
+  ], (textDetection, bindings, mojo, frameInterfaces, processInterfaces) => {
 
   class MockTextDetection {
     constructor() {
       this.bindingSet_ = new bindings.BindingSet(textDetection.TextDetection);
 
-      interfaces.addInterfaceOverrideForTesting(
+      frameInterfaces.addInterfaceOverrideForTesting(
+          textDetection.TextDetection.name,
+          handle => this.bindingSet_.addBinding(this, handle));
+      processInterfaces.addInterfaceOverrideForTesting(
           textDetection.TextDetection.name,
           handle => this.bindingSet_.addBinding(this, handle));
     }
