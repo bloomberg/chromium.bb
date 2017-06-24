@@ -10,10 +10,17 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
+#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
+#include "components/sync/model/fake_sync_change_processor.h"
+#include "components/sync/model/sync_error_factory.h"
+#include "components/sync/model/sync_error_factory_mock.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
+
+using namespace crx_file::id_util;
 
 namespace {
 
@@ -46,6 +53,111 @@ std::string CreateNextAppId(const std::string& app_id) {
   return next_app_id;
 }
 
+constexpr char kUnset[] = "__unset__";
+constexpr char kDefault[] = "__default__";
+
+// These constants are defined as functions so their values can be derived via
+// function calls.  The constant naming scheme is kept to maintain readability.
+const std::string kInvalidOrdinalsId() {
+  return GenerateId("invalid_ordinals");
+}
+const std::string kEmptyItemNameId() {
+  return GenerateId("empty_item_name");
+}
+const std::string kEmptyItemNameUnsetId() {
+  return GenerateId("empty_item_name_unset");
+}
+const std::string kEmptyParentId() {
+  return GenerateId("empty_parent_id");
+}
+const std::string kEmptyParentUnsetId() {
+  return GenerateId("empty_parent_id_unset");
+}
+const std::string kEmptyOrdinalsId() {
+  return GenerateId("empty_ordinals");
+}
+const std::string kEmptyOrdinalsUnsetId() {
+  return GenerateId("empty_ordinals_unset");
+}
+const std::string kDupeItemId() {
+  return GenerateId("dupe_item_id");
+}
+const std::string kParentId() {
+  return GenerateId("parent_id");
+}
+
+syncer::SyncData CreateAppRemoteData(const std::string& id,
+                                     const std::string& name,
+                                     const std::string& parent_id,
+                                     const std::string& item_ordinal,
+                                     const std::string& item_pin_ordinal) {
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AppListSpecifics* app_list = specifics.mutable_app_list();
+  if (id != kUnset)
+    app_list->set_item_id(id);
+  app_list->set_item_type(sync_pb::AppListSpecifics_AppListItemType_TYPE_APP);
+  if (name != kUnset)
+    app_list->set_item_name(name);
+  if (parent_id != kUnset)
+    app_list->set_parent_id(parent_id);
+  if (item_ordinal != kUnset)
+    app_list->set_item_ordinal(item_ordinal);
+  if (item_pin_ordinal != kUnset)
+    app_list->set_item_pin_ordinal(item_pin_ordinal);
+
+  return syncer::SyncData::CreateRemoteData(
+      std::hash<std::string>{}(id), specifics, base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create());
+}
+
+syncer::SyncDataList CreateBadAppRemoteData(const std::string& id) {
+  syncer::SyncDataList sync_list;
+  // Invalid item_ordinal and item_pin_ordinal.
+  sync_list.push_back(CreateAppRemoteData(
+      id == kDefault ? kInvalidOrdinalsId() : id, "item_name", kParentId(),
+      "$$invalid_ordinal$$", "$$invalid_ordinal$$"));
+  // Empty item name.
+  sync_list.push_back(
+      CreateAppRemoteData(id == kDefault ? kEmptyItemNameId() : id, "",
+                          kParentId(), "ordinal", "pinordinal"));
+  sync_list.push_back(
+      CreateAppRemoteData(id == kDefault ? kEmptyItemNameUnsetId() : id, kUnset,
+                          kParentId(), "ordinal", "pinordinal"));
+  // Empty parent ID.
+  sync_list.push_back(
+      CreateAppRemoteData(id == kDefault ? kEmptyParentId() : id, "item_name",
+                          "", "ordinal", "pinordinal"));
+  sync_list.push_back(
+      CreateAppRemoteData(id == kDefault ? kEmptyParentUnsetId() : id,
+                          "item_name", kUnset, "ordinal", "pinordinal"));
+  // Empty item_ordinal and item_pin_ordinal.
+  sync_list.push_back(
+      CreateAppRemoteData(id == kDefault ? kEmptyOrdinalsId() : id, "item_name",
+                          kParentId(), "", ""));
+  sync_list.push_back(
+      CreateAppRemoteData(id == kDefault ? kEmptyOrdinalsUnsetId() : id,
+                          "item_name", kParentId(), kUnset, kUnset));
+  // Duplicate item_id.
+  sync_list.push_back(CreateAppRemoteData(id == kDefault ? kDupeItemId() : id,
+                                          "item_name", kParentId(), "ordinal",
+                                          "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(id == kDefault ? kDupeItemId() : id,
+                                          "item_name_dupe", kParentId(),
+                                          "ordinal", "pinordinal"));
+  // Empty item_id.
+  sync_list.push_back(CreateAppRemoteData("", "item_name", kParentId(),
+                                          "ordinal", "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(kUnset, "item_name", kParentId(),
+                                          "ordinal", "pinordinal"));
+  // All fields empty.
+  sync_list.push_back(CreateAppRemoteData("", "", "", "", ""));
+  sync_list.push_back(
+      CreateAppRemoteData(kUnset, kUnset, kUnset, kUnset, kUnset));
+
+  return sync_list;
+}
+
 }  // namespace
 
 class AppListSyncableServiceTest : public AppListTestBase {
@@ -72,6 +184,16 @@ class AppListSyncableServiceTest : public AppListTestBase {
 
   app_list::AppListModel* model() {
     return app_list_syncable_service_->GetModel();
+  }
+
+  const app_list::AppListSyncableService::SyncItem* GetSyncItem(
+      const std::string& id) const {
+    return app_list_syncable_service_->GetSyncItem(id);
+  }
+
+ protected:
+  app_list::AppListSyncableService* app_list_syncable_service() {
+    return app_list_syncable_service_.get();
   }
 
  private:
@@ -130,4 +252,164 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
   // Ensure right item sequence.
   EXPECT_EQ(some_app_index, web_store_app_index + 1);
   EXPECT_EQ(oem_folder_index, web_store_app_index + 2);
+}
+
+TEST_F(AppListSyncableServiceTest, InitialMerge) {
+  const std::string kItemId1 = GenerateId("item_id1");
+  const std::string kItemId2 = GenerateId("item_id2");
+
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(kItemId1, "item_name1",
+                                          GenerateId("parent_id1"), "ordinal",
+                                          "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(kItemId2, "item_name2",
+                                          GenerateId("parent_id2"), "ordinal",
+                                          "pinordinal"));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
+      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  ASSERT_TRUE(GetSyncItem(kItemId1));
+  EXPECT_EQ("item_name1", GetSyncItem(kItemId1)->item_name);
+  EXPECT_EQ(GenerateId("parent_id1"), GetSyncItem(kItemId1)->parent_id);
+  EXPECT_EQ("ordinal", GetSyncItem(kItemId1)->item_ordinal.ToDebugString());
+  EXPECT_EQ("pinordinal",
+            GetSyncItem(kItemId1)->item_pin_ordinal.ToDebugString());
+
+  ASSERT_TRUE(GetSyncItem(kItemId2));
+  EXPECT_EQ("item_name2", GetSyncItem(kItemId2)->item_name);
+  EXPECT_EQ(GenerateId("parent_id2"), GetSyncItem(kItemId2)->parent_id);
+  EXPECT_EQ("ordinal", GetSyncItem(kItemId2)->item_ordinal.ToDebugString());
+  EXPECT_EQ("pinordinal",
+            GetSyncItem(kItemId2)->item_pin_ordinal.ToDebugString());
+}
+
+TEST_F(AppListSyncableServiceTest, InitialMerge_BadData) {
+  const syncer::SyncDataList sync_list = CreateBadAppRemoteData(kDefault);
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
+      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  // Invalid item_ordinal and item_pin_ordinal.
+  // Invalid item_ordinal is fixed up.
+  ASSERT_TRUE(GetSyncItem(kInvalidOrdinalsId()));
+  EXPECT_EQ("n",
+            GetSyncItem(kInvalidOrdinalsId())->item_ordinal.ToDebugString());
+  EXPECT_EQ(
+      "INVALID[$$invalid_ordinal$$]",
+      GetSyncItem(kInvalidOrdinalsId())->item_pin_ordinal.ToDebugString());
+
+  // Empty item name.
+  ASSERT_TRUE(GetSyncItem(kEmptyItemNameId()));
+  EXPECT_EQ("", GetSyncItem(kEmptyItemNameId())->item_name);
+  EXPECT_TRUE(GetSyncItem(kEmptyItemNameUnsetId()));
+  EXPECT_EQ("", GetSyncItem(kEmptyItemNameUnsetId())->item_name);
+
+  // Empty parent ID.
+  ASSERT_TRUE(GetSyncItem(kEmptyParentId()));
+  EXPECT_EQ("", GetSyncItem(kEmptyParentId())->parent_id);
+  EXPECT_TRUE(GetSyncItem(kEmptyParentUnsetId()));
+  EXPECT_EQ("", GetSyncItem(kEmptyParentUnsetId())->parent_id);
+
+  // Empty item_ordinal and item_pin_ordinal.
+  // Empty item_ordinal is fixed up.
+  ASSERT_TRUE(GetSyncItem(kEmptyOrdinalsId()));
+  EXPECT_EQ("n", GetSyncItem(kEmptyOrdinalsId())->item_ordinal.ToDebugString());
+  EXPECT_EQ("INVALID[]",
+            GetSyncItem(kEmptyOrdinalsId())->item_pin_ordinal.ToDebugString());
+  ASSERT_TRUE(GetSyncItem(kEmptyOrdinalsUnsetId()));
+  EXPECT_EQ("n",
+            GetSyncItem(kEmptyOrdinalsUnsetId())->item_ordinal.ToDebugString());
+  EXPECT_EQ(
+      "INVALID[]",
+      GetSyncItem(kEmptyOrdinalsUnsetId())->item_pin_ordinal.ToDebugString());
+
+  // Duplicate item_id overrides previous.
+  ASSERT_TRUE(GetSyncItem(kDupeItemId()));
+  EXPECT_EQ("item_name_dupe", GetSyncItem(kDupeItemId())->item_name);
+}
+
+TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate) {
+  const std::string kItemId1 = GenerateId("item_id1");
+  const std::string kItemId2 = GenerateId("item_id2");
+
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(kItemId1, "item_name1", kParentId(),
+                                          "ordinal", "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(kItemId2, "item_name2", kParentId(),
+                                          "ordinal", "pinordinal"));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
+      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  ASSERT_TRUE(GetSyncItem(kItemId1));
+  ASSERT_TRUE(GetSyncItem(kItemId2));
+
+  syncer::SyncChangeList change_list;
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+      CreateAppRemoteData(kItemId1, "item_name1x", GenerateId("parent_id1x"),
+                          "ordinalx", "pinordinalx")));
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+      CreateAppRemoteData(kItemId2, "item_name2x", GenerateId("parent_id2x"),
+                          "ordinalx", "pinordinalx")));
+
+  app_list_syncable_service()->ProcessSyncChanges(tracked_objects::Location(),
+                                                  change_list);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  ASSERT_TRUE(GetSyncItem(kItemId1));
+  EXPECT_EQ("item_name1x", GetSyncItem(kItemId1)->item_name);
+  EXPECT_EQ(GenerateId("parent_id1x"), GetSyncItem(kItemId1)->parent_id);
+  EXPECT_EQ("ordinalx", GetSyncItem(kItemId1)->item_ordinal.ToDebugString());
+  EXPECT_EQ("pinordinalx",
+            GetSyncItem(kItemId1)->item_pin_ordinal.ToDebugString());
+
+  ASSERT_TRUE(GetSyncItem(kItemId2));
+  EXPECT_EQ("item_name2x", GetSyncItem(kItemId2)->item_name);
+  EXPECT_EQ(GenerateId("parent_id2x"), GetSyncItem(kItemId2)->parent_id);
+  EXPECT_EQ("ordinalx", GetSyncItem(kItemId2)->item_ordinal.ToDebugString());
+  EXPECT_EQ("pinordinalx",
+            GetSyncItem(kItemId2)->item_pin_ordinal.ToDebugString());
+}
+
+TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate_BadData) {
+  const std::string kItemId = GenerateId("item_id");
+
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(kItemId, "item_name", kParentId(),
+                                          "ordinal", "pinordinal"));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
+      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  ASSERT_TRUE(GetSyncItem(kItemId));
+
+  syncer::SyncChangeList change_list;
+  const syncer::SyncDataList update_list = CreateBadAppRemoteData(kItemId);
+  for (syncer::SyncDataList::const_iterator iter = update_list.begin();
+       iter != update_list.end(); ++iter) {
+    change_list.push_back(syncer::SyncChange(
+        FROM_HERE, syncer::SyncChange::ACTION_UPDATE, *iter));
+  }
+
+  // Validate items with bad data are processed without crashing.
+  app_list_syncable_service()->ProcessSyncChanges(tracked_objects::Location(),
+                                                  change_list);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  ASSERT_TRUE(GetSyncItem(kItemId));
 }
