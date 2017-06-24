@@ -56,12 +56,12 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-#include "ui/gfx/icc_profile.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
@@ -164,7 +164,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
-  IPC_STRUCT_TRAITS_MEMBER(icc_profile)
+  IPC_STRUCT_TRAITS_MEMBER(color_space)
   IPC_STRUCT_TRAITS_MEMBER(depth)
   IPC_STRUCT_TRAITS_MEMBER(depth_per_component)
   IPC_STRUCT_TRAITS_MEMBER(is_monochrome)

@@ -1219,7 +1219,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
     compositor_->SetViewportSize(params.physical_backing_size);
     compositor_->setBottomControlsHeight(params.bottom_controls_height);
     compositor_->SetRasterColorSpace(
-        screen_info_.icc_profile.GetParametricColorSpace());
+        screen_info_.color_space.GetParametricApproximation());
     // If surface synchronization is enable, then this will use the provided
     // |local_surface_id_| to submit the next generated CompositorFrame.
     // If the ID is not valid, then the compositor will defer commits until
@@ -1317,7 +1317,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   compositor_->SetViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
   compositor_->SetRasterColorSpace(
-      screen_info_.icc_profile.GetParametricColorSpace());
+      screen_info_.color_space.GetParametricApproximation());
   compositor_->SetContentSourceId(current_content_source_id_);
   compositor_->SetLocalSurfaceId(local_surface_id_);
   // For background pages and certain tests, we don't want to trigger
@@ -2168,7 +2168,7 @@ bool RenderWidget::CanComposeInline() {
 blink::WebScreenInfo RenderWidget::GetScreenInfo() {
   blink::WebScreenInfo web_screen_info;
   web_screen_info.device_scale_factor = screen_info_.device_scale_factor;
-  web_screen_info.icc_profile = screen_info_.icc_profile;
+  web_screen_info.color_space = screen_info_.color_space;
   web_screen_info.depth = screen_info_.depth;
   web_screen_info.depth_per_component = screen_info_.depth_per_component;
   web_screen_info.is_monochrome = screen_info_.is_monochrome;

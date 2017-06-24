@@ -12,12 +12,12 @@ namespace blink {
 namespace ColorSpaceUtilities {
 
 ColorSpaceGamut GetColorSpaceGamut(const WebScreenInfo& screen_info) {
-  const gfx::ICCProfile& profile = screen_info.icc_profile;
-  if (profile == gfx::ICCProfile())
+  const gfx::ColorSpace& color_space = screen_info.color_space;
+  if (!color_space.IsValid())
     return ColorSpaceGamut::kUnknown;
 
   return ColorSpaceUtilities::GetColorSpaceGamut(
-      profile.GetColorSpace().ToSkColorSpace().get());
+      color_space.ToSkColorSpace().get());
 }
 
 ColorSpaceGamut GetColorSpaceGamut(SkColorSpace* color_space) {

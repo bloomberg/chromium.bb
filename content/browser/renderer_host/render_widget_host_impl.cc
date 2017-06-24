@@ -680,10 +680,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   // coloring.
   // TODO(ccameron): Disable this once color correct rasterization is functional
   // https://crbug.com/701942
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {
-    gfx::ColorSpace::CreateSRGB().GetICCProfile(
-        &resize_params->screen_info.icc_profile);
-  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR))
+    resize_params->screen_info.color_space = gfx::ColorSpace::CreateSRGB();
 
   if (delegate_) {
     resize_params->is_fullscreen_granted =

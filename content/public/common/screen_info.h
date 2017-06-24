@@ -7,8 +7,8 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/screen_orientation_values.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/icc_profile.h"
 
 namespace content {
 
@@ -23,8 +23,8 @@ struct CONTENT_EXPORT ScreenInfo {
     // pixels.
     float device_scale_factor = 1.f;
 
-    // The ICC profile of the output display.
-    gfx::ICCProfile icc_profile;
+    // The color space of the output display.
+    gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
     // The screen depth in bits per pixel
     uint32_t depth = 0;
