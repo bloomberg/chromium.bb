@@ -61,22 +61,23 @@ struct QuotaSettings {
 // GetQuotaSettingsFunc invocation. If the embedder cannot
 // produce a settings values, base::nullopt can be returned.
 using OptionalQuotaSettingsCallback =
-    base::Callback<void(base::Optional<QuotaSettings>)>;
+    base::OnceCallback<void(base::Optional<QuotaSettings>)>;
 
 // Function type used to query the embedder about the quota manager settings.
 // This function is invoked on the UI thread.
 using GetQuotaSettingsFunc =
-    base::Callback<void(const OptionalQuotaSettingsCallback& callback)>;
+    base::RepeatingCallback<void(OptionalQuotaSettingsCallback callback)>;
 
-// Returns settings based on the size of the volume containing the storage
+// Posts a background task to calculate and report quota settings to the
+// |callback| function based on the size of the volume containing the storage
 // partition and a guestimate of the size required for the OS. The refresh
 // interval is 60 seconds to accomodate changes to the size of the volume.
 // Except, in the case of incognito, the poolize and quota values are based
 // on the amount of physical memory and the rerfresh interval is max'd out.
 STORAGE_EXPORT
-base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
-    const base::FilePath& partition_path,
-    bool is_incognito);
+void GetNominalDynamicSettings(const base::FilePath& partition_path,
+                               bool is_incognito,
+                               OptionalQuotaSettingsCallback callback);
 
 // Returns settings with a poolsize of zero and no per host quota.
 inline QuotaSettings GetNoQuotaSettings() {

@@ -126,12 +126,9 @@ bool ShellContentBrowserClient::ShouldUseProcessPerSite(
 void ShellContentBrowserClient::GetQuotaSettings(
     content::BrowserContext* context,
     content::StoragePartition* partition,
-    const storage::OptionalQuotaSettingsCallback& callback) {
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&storage::CalculateNominalDynamicSettings,
-                 partition->GetPath(), context->IsOffTheRecord()),
-      callback);
+    storage::OptionalQuotaSettingsCallback callback) {
+  storage::GetNominalDynamicSettings(
+      partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {

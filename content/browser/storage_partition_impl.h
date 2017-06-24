@@ -225,7 +225,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
 
   // Function used by the quota system to ask the embedder for the
   // storage configuration info.
-  void GetQuotaSettings(const storage::OptionalQuotaSettingsCallback& callback);
+  void GetQuotaSettings(storage::OptionalQuotaSettingsCallback callback);
 
   base::FilePath partition_path_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;

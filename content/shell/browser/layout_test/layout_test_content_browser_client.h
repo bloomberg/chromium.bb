@@ -42,7 +42,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,
-      const storage::OptionalQuotaSettingsCallback& callback) override;
+      storage::OptionalQuotaSettingsCallback callback) override;
   bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
 
