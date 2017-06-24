@@ -57,7 +57,7 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
 
         Frame frame = BitmapUtils.convertToFrame(bitmapData);
         if (frame == null) {
-            Log.e(TAG, "Error converting SharedMemory to Frame");
+            Log.e(TAG, "Error converting Mojom Bitmap to Frame");
             callback.call(new BarcodeDetectionResult[0]);
             return;
         }

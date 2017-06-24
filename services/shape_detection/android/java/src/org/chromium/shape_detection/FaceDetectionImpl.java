@@ -11,6 +11,7 @@ import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 import android.os.AsyncTask;
 
+import org.chromium.base.Log;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.shape_detection.mojom.FaceDetection;
@@ -35,10 +36,12 @@ public class FaceDetectionImpl implements FaceDetection {
 
     @Override
     public void detect(org.chromium.skia.mojom.Bitmap bitmapData, final DetectResponse callback) {
-        // TODO(junwei.fu): Use |bitmapData| directly for |unPremultipliedBitmap| to spare a copy
-        // if the bitmap pixel format is RGB_565, the ARGB_8888 Bitmap doesn't need to be created
-        // in this case, https://crbug.com/684930.
         Bitmap bitmap = BitmapUtils.convertToBitmap(bitmapData);
+        if (bitmap == null) {
+            Log.e(TAG, "Error converting Mojom Bitmap to Android Bitmap");
+            callback.call(new FaceDetectionResult[0]);
+            return;
+        }
 
         // FaceDetector requires an even width, so pad the image if the width is odd.
         // https://developer.android.com/reference/android/media/FaceDetector.html#FaceDetector(int, int, int)
