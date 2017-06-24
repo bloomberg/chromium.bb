@@ -44,6 +44,11 @@ void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
   // event targeting issue.
   ShellPort::Get()->SetGlobalOverrideCursor(mojo_cursor);
 
+  // Make sure the local state is set properly, so that local queries show that
+  // we set the cursor.
+  for (aura::Window* root : Shell::Get()->GetAllRootWindows())
+    root->GetHost()->SetCursor(cursor);
+
   Shell::Get()
       ->window_tree_host_manager()
       ->cursor_window_controller()
