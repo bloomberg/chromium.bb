@@ -359,6 +359,8 @@ WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
     : WebRemoteFrameBase(scope),
       frame_client_(RemoteFrameClientImpl::Create(this)),
       client_(client),
-      self_keep_alive_(this) {}
+      self_keep_alive_(this) {
+  DCHECK(client);
+}
 
 }  // namespace blink
