@@ -222,6 +222,9 @@ void ApiTestEnvironment::RunTestInner(const std::string& test_name,
       FAIL() << "Failed to run test \"" << test_name << "\"";
     }
   };
+
+  ASSERT_FALSE(
+      env()->module_system()->Require("testBody").ToLocalChecked().IsEmpty());
   env()->module_system()->CallModuleMethodSafe(
       "testBody", test_name, 0, nullptr,
       base::Bind(callback, &did_run, quit_closure, test_name));

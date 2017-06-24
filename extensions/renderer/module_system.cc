@@ -239,8 +239,8 @@ v8::MaybeLocal<v8::Object> ModuleSystem::Require(
   if (!ToV8String(GetIsolate(), module_name, &v8_module_name))
     return v8::MaybeLocal<v8::Object>();
   v8::EscapableHandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Value> value = RequireForJsInner(
-      v8_module_name);
+  v8::Local<v8::Value> value =
+      RequireForJsInner(v8_module_name, true /* create */);
   if (value.IsEmpty() || !value->IsObject())
     return v8::MaybeLocal<v8::Object>();
   return handle_scope.Escape(value.As<v8::Object>());
@@ -253,11 +253,12 @@ void ModuleSystem::RequireForJs(
     return;
   }
   v8::Local<v8::String> module_name = args[0].As<v8::String>();
-  args.GetReturnValue().Set(RequireForJsInner(module_name));
+  args.GetReturnValue().Set(RequireForJsInner(module_name, true /* create */));
 }
 
 v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
-    v8::Local<v8::String> module_name) {
+    v8::Local<v8::String> module_name,
+    bool create) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Local<v8::Context> v8_context = context()->v8_context();
   v8::Context::Scope context_scope(v8_context);
@@ -279,6 +280,9 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
   if (!GetPrivateProperty(v8_context, modules, module_name, &exports) ||
       !exports->IsUndefined())
     return handle_scope.Escape(exports);
+
+  if (!create)
+    return v8::Undefined(GetIsolate());
 
   exports = LoadModule(*v8::String::Utf8Value(module_name));
   SetPrivateProperty(v8_context, modules, module_name, exports);
@@ -325,7 +329,12 @@ void ModuleSystem::CallModuleMethodSafe(
   v8::Local<v8::Function> function =
       GetModuleFunction(module_name, method_name);
   if (function.IsEmpty()) {
-    NOTREACHED() << "GetModuleFunction() returns empty function handle";
+    // This can legitimately happen when the module hasn't been loaded in the
+    // context (since GetModuleFunction() does not load an unloaded module).
+    // Typically, we won't do this, but we can in the case of, e.g., dispatching
+    // events (where we'll try to dispatch to each context in a process). In
+    // these cases, though, we can know that there are no listeners registered,
+    // since the event module hasn't been loaded.
     return;
   }
 
@@ -601,7 +610,7 @@ v8::MaybeLocal<v8::Object> ModuleSystem::RequireNativeFromString(
 
   if (overridden_native_handlers_.count(native_name) > 0u) {
     v8::Local<v8::Value> value = RequireForJsInner(
-        ToV8StringUnsafe(GetIsolate(), native_name.c_str()));
+        ToV8StringUnsafe(GetIsolate(), native_name.c_str()), true /* create */);
     if (value.IsEmpty() || !value->IsObject())
       return v8::MaybeLocal<v8::Object>();
     return value.As<v8::Object>();
@@ -858,22 +867,28 @@ v8::Local<v8::Function> ModuleSystem::GetModuleFunction(
     const std::string& method_name) {
   v8::Local<v8::String> v8_module_name;
   v8::Local<v8::String> v8_method_name;
-  v8::Local<v8::Function> function;
   if (!ToV8String(GetIsolate(), module_name.c_str(), &v8_module_name) ||
       !ToV8String(GetIsolate(), method_name.c_str(), &v8_method_name)) {
-    return function;
+    return v8::Local<v8::Function>();
   }
 
   v8::Local<v8::Value> module;
-  {
-    NativesEnabledScope natives_enabled(this);
-    module = RequireForJsInner(v8_module_name);
-  }
+  // Important: don't create the module if it doesn't exist. Doing so would
+  // force a call into JS, which is something we want to avoid in case it has
+  // been suspended. Additionally, we should only be calling module methods for
+  // modules that have been instantiated.
+  bool create = false;
+  module = RequireForJsInner(v8_module_name, create);
+
+  // RequireForJsInner() returns Undefined in the case of a module not being
+  // loaded, since we don't create it here.
+  if (!module.IsEmpty() && module->IsUndefined())
+    return v8::Local<v8::Function>();
 
   if (module.IsEmpty() || !module->IsObject()) {
     Fatal(context_,
           "Failed to get module " + module_name + " to call " + method_name);
-    return function;
+    return v8::Local<v8::Function>();
   }
 
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(module);
@@ -881,11 +896,10 @@ v8::Local<v8::Function> ModuleSystem::GetModuleFunction(
   if (!GetProperty(context()->v8_context(), object, v8_method_name, &value) ||
       !value->IsFunction()) {
     Fatal(context_, module_name + "." + method_name + " is not a function");
-    return function;
+    return v8::Local<v8::Function>();
   }
 
-  function = v8::Local<v8::Function>::Cast(value);
-  return function;
+  return v8::Local<v8::Function>::Cast(value);
 }
 
 }  // namespace extensions

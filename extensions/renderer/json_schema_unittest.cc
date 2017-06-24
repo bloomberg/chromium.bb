@@ -25,6 +25,15 @@ class JsonSchemaTest : public ModuleSystemTest {
 
  protected:
   void TestFunction(const std::string& test_name) {
+    {
+      ModuleSystem::NativesEnabledScope natives_enabled_scope(
+          env()->module_system());
+      ASSERT_FALSE(env()
+                       ->module_system()
+                       ->Require("json_schema_test")
+                       .ToLocalChecked()
+                       .IsEmpty());
+    }
     env()->module_system()->CallModuleMethodSafe("json_schema_test", test_name);
   }
 
