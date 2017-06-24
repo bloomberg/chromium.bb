@@ -53,9 +53,9 @@
 #include "components/tracing/common/trace_config_file.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
-#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -1202,7 +1202,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
 #if !defined(OS_ANDROID)
   frame_sink_manager_.reset();
-  frame_sink_manager_host_.reset();
+  host_frame_sink_manager_.reset();
 #endif
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
@@ -1458,14 +1458,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if !defined(OS_ANDROID)
   if (!service_manager::ServiceManagerIsRemote()) {
-    frame_sink_manager_host_ = base::MakeUnique<viz::FrameSinkManagerHost>();
+    host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
 
-    // TODO(danakj): Don't make a MojoFrameSinkManager when display is in the
+    // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
     frame_sink_manager_ =
-        base::MakeUnique<viz::MojoFrameSinkManager>(false, nullptr);
+        base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
     surface_utils::ConnectWithInProcessFrameSinkManager(
-        frame_sink_manager_host_.get(), frame_sink_manager_.get());
+        host_frame_sink_manager_.get(), frame_sink_manager_.get());
   }
 #endif
 

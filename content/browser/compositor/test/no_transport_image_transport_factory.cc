@@ -19,9 +19,9 @@ namespace content {
 
 NoTransportImageTransportFactory::NoTransportImageTransportFactory()
     : frame_sink_manager_(false /* use surface references */, nullptr),
-      context_factory_(&frame_sink_manager_host_,
+      context_factory_(&host_frame_sink_manager_,
                        frame_sink_manager_.surface_manager()) {
-  surface_utils::ConnectWithInProcessFrameSinkManager(&frame_sink_manager_host_,
+  surface_utils::ConnectWithInProcessFrameSinkManager(&host_frame_sink_manager_,
                                                       &frame_sink_manager_);
 
   // The context factory created here is for unit tests, thus using a higher

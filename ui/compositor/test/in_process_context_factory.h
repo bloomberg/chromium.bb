@@ -24,7 +24,7 @@ class SurfaceManager;
 }
 
 namespace viz {
-class FrameSinkManagerHost;
+class HostFrameSinkManager;
 }
 
 namespace ui {
@@ -33,11 +33,11 @@ class InProcessContextProvider;
 class InProcessContextFactory : public ContextFactory,
                                 public ContextFactoryPrivate {
  public:
-  // Both |frame_sink_manager_host| and |surface_manager| must outlive the
+  // Both |host_frame_sink_manager| and |surface_manager| must outlive the
   // ContextFactory.
   // TODO(crbug.com/657959): |surface_manager| should go away and we should use
-  // the LayerTreeFrameSink from the FrameSinkManagerHost.
-  InProcessContextFactory(viz::FrameSinkManagerHost* frame_sink_manager_host,
+  // the LayerTreeFrameSink from the HostFrameSinkManager.
+  InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
                           cc::SurfaceManager* surface_manager);
   ~InProcessContextFactory() override;
 
@@ -69,7 +69,7 @@ class InProcessContextFactory : public ContextFactory,
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   cc::FrameSinkId AllocateFrameSinkId() override;
   cc::SurfaceManager* GetSurfaceManager() override;
-  viz::FrameSinkManagerHost* GetFrameSinkManagerHost() override;
+  viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
   void SetDisplayVisible(ui::Compositor* compositor, bool visible) override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
@@ -101,7 +101,7 @@ class InProcessContextFactory : public ContextFactory,
   cc::FrameSinkIdAllocator frame_sink_id_allocator_;
   bool use_test_surface_;
   double refresh_rate_ = 60.0;
-  viz::FrameSinkManagerHost* frame_sink_manager_;
+  viz::HostFrameSinkManager* frame_sink_manager_;
   cc::SurfaceManager* surface_manager_;
   base::ObserverList<ContextFactoryObserver> observer_list_;
 

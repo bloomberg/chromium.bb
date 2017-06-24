@@ -148,21 +148,21 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
     ImageTransportFactory::InitializeForUnitTests(
         base::MakeUnique<NoTransportImageTransportFactory>());
 #endif
-    frame_sink_manager_host_ = base::MakeUnique<viz::FrameSinkManagerHost>();
+    host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
 
     // The FrameSinkManager implementation is in-process here for tests.
     frame_sink_manager_ =
-        base::MakeUnique<viz::MojoFrameSinkManager>(false, nullptr);
+        base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
     surface_utils::ConnectWithInProcessFrameSinkManager(
-        frame_sink_manager_host_.get(), frame_sink_manager_.get());
+        host_frame_sink_manager_.get(), frame_sink_manager_.get());
 
     provider_ = base::MakeUnique<OffscreenCanvasProviderImpl>(
-        frame_sink_manager_host_.get(), kRendererClientId);
+        host_frame_sink_manager_.get(), kRendererClientId);
   }
   void TearDown() override {
     provider_.reset();
     frame_sink_manager_.reset();
-    frame_sink_manager_host_.reset();
+    host_frame_sink_manager_.reset();
 #if !defined(OS_ANDROID)
     ImageTransportFactory::Terminate();
 #endif
@@ -172,8 +172,8 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
   // A MessageLoop is required for mojo bindings which are used to
   // connect to graphics services.
   base::MessageLoop message_loop_;
-  std::unique_ptr<viz::FrameSinkManagerHost> frame_sink_manager_host_;
-  std::unique_ptr<viz::MojoFrameSinkManager> frame_sink_manager_;
+  std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
+  std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<OffscreenCanvasProviderImpl> provider_;
 };
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 
 #include <memory>
 #include <utility>
@@ -95,21 +95,21 @@ class MockFrameSinkManagerImpl : public cc::mojom::FrameSinkManager {
 
 }  // namespace
 
-class FrameSinkManagerHostTest : public testing::Test {
+class HostFrameSinkManagerTest : public testing::Test {
  public:
-  FrameSinkManagerHostTest() = default;
-  ~FrameSinkManagerHostTest() override = default;
+  HostFrameSinkManagerTest() = default;
+  ~HostFrameSinkManagerTest() override = default;
 
-  FrameSinkManagerHost& manager_host() { return *manager_host_; }
+  HostFrameSinkManager& host_manager() { return *host_manager_; }
 
   MockFrameSinkManagerImpl& manager_impl() { return *manager_impl_; }
 
   // testing::Test:
   void SetUp() override {
     manager_impl_ = base::MakeUnique<MockFrameSinkManagerImpl>();
-    manager_host_ = base::MakeUnique<FrameSinkManagerHost>();
+    host_manager_ = base::MakeUnique<HostFrameSinkManager>();
 
-    // Connect FrameSinkManagerHost and MojoFrameSinkManager.
+    // Connect HostFrameSinkManager and FrameSinkManagerImpl.
     cc::mojom::FrameSinkManagerClientPtr host_mojo;
     cc::mojom::FrameSinkManagerClientRequest host_mojo_request =
         mojo::MakeRequest(&host_mojo);
@@ -118,30 +118,30 @@ class FrameSinkManagerHostTest : public testing::Test {
         mojo::MakeRequest(&manager_mojo);
     manager_impl_->BindAndSetClient(std::move(manager_impl_request),
                                     std::move(host_mojo));
-    manager_host_->BindManagerClientAndSetManagerPtr(
+    host_manager_->BindManagerClientAndSetManagerPtr(
         std::move(host_mojo_request), std::move(manager_mojo));
   }
 
  private:
   base::MessageLoop message_loop_;
-  std::unique_ptr<FrameSinkManagerHost> manager_host_;
+  std::unique_ptr<HostFrameSinkManager> host_manager_;
   std::unique_ptr<MockFrameSinkManagerImpl> manager_impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerHostTest);
+  DISALLOW_COPY_AND_ASSIGN(HostFrameSinkManagerTest);
 };
 
 // Verify that when destroying a CompositorFrameSink with registered FrameSink
 // hierarchy, the hierarchy is automatically unregistered.
-TEST_F(FrameSinkManagerHostTest, UnregisterHierarchyOnDestroy) {
+TEST_F(HostFrameSinkManagerTest, UnregisterHierarchyOnDestroy) {
   base::RunLoop run_loop;
 
   cc::mojom::CompositorFrameSinkPtr frame_sink;
   StubCompositorFrameSinkClient frame_sink_client;
-  manager_host().CreateCompositorFrameSink(kFrameSinkId1,
+  host_manager().CreateCompositorFrameSink(kFrameSinkId1,
                                            mojo::MakeRequest(&frame_sink),
                                            frame_sink_client.GetInterfacePtr());
-  manager_host().RegisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1);
-  manager_host().DestroyCompositorFrameSink(kFrameSinkId1);
+  host_manager().RegisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1);
+  host_manager().DestroyCompositorFrameSink(kFrameSinkId1);
 
   // Register is called explicitly.
   EXPECT_CALL(manager_impl(),

@@ -43,7 +43,7 @@ class VulkanContextProvider;
 }
 
 namespace viz {
-class FrameSinkManagerHost;
+class HostFrameSinkManager;
 }
 
 namespace content {
@@ -65,7 +65,7 @@ class CONTENT_EXPORT CompositorImpl
   static bool IsInitialized();
 
   static cc::SurfaceManager* GetSurfaceManager();
-  static viz::FrameSinkManagerHost* GetFrameSinkManagerHost();
+  static viz::HostFrameSinkManager* GetHostFrameSinkManager();
   static cc::FrameSinkId AllocateFrameSinkId();
 
   // ui::ResourceProvider implementation.

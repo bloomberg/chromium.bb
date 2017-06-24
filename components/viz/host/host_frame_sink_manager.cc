@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 
 #include <utility>
 
@@ -11,11 +11,11 @@
 
 namespace viz {
 
-FrameSinkManagerHost::FrameSinkManagerHost() : binding_(this) {}
+HostFrameSinkManager::HostFrameSinkManager() : binding_(this) {}
 
-FrameSinkManagerHost::~FrameSinkManagerHost() = default;
+HostFrameSinkManager::~HostFrameSinkManager() = default;
 
-void FrameSinkManagerHost::BindManagerClientAndSetManagerPtr(
+void HostFrameSinkManager::BindManagerClientAndSetManagerPtr(
     cc::mojom::FrameSinkManagerClientRequest request,
     cc::mojom::FrameSinkManagerPtr ptr) {
   DCHECK(!binding_.is_bound());
@@ -23,15 +23,15 @@ void FrameSinkManagerHost::BindManagerClientAndSetManagerPtr(
   frame_sink_manager_ptr_ = std::move(ptr);
 }
 
-void FrameSinkManagerHost::AddObserver(FrameSinkObserver* observer) {
+void HostFrameSinkManager::AddObserver(FrameSinkObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void FrameSinkManagerHost::RemoveObserver(FrameSinkObserver* observer) {
+void HostFrameSinkManager::RemoveObserver(FrameSinkObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FrameSinkManagerHost::CreateCompositorFrameSink(
+void HostFrameSinkManager::CreateCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkClientPtr client) {
@@ -44,7 +44,7 @@ void FrameSinkManagerHost::CreateCompositorFrameSink(
       mojo::MakeRequest(&data.private_interface), std::move(client));
 }
 
-void FrameSinkManagerHost::DestroyCompositorFrameSink(
+void HostFrameSinkManager::DestroyCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id) {
   auto iter = frame_sink_data_map_.find(frame_sink_id);
   DCHECK(iter != frame_sink_data_map_.end());
@@ -57,7 +57,7 @@ void FrameSinkManagerHost::DestroyCompositorFrameSink(
   frame_sink_data_map_.erase(iter);
 }
 
-void FrameSinkManagerHost::RegisterFrameSinkHierarchy(
+void HostFrameSinkManager::RegisterFrameSinkHierarchy(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& child_frame_sink_id) {
   // Register and store the parent.
@@ -66,7 +66,7 @@ void FrameSinkManagerHost::RegisterFrameSinkHierarchy(
   frame_sink_data_map_[child_frame_sink_id].parent = parent_frame_sink_id;
 }
 
-void FrameSinkManagerHost::UnregisterFrameSinkHierarchy(
+void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& child_frame_sink_id) {
   auto iter = frame_sink_data_map_.find(child_frame_sink_id);
@@ -86,20 +86,20 @@ void FrameSinkManagerHost::UnregisterFrameSinkHierarchy(
     frame_sink_data_map_.erase(iter);
 }
 
-void FrameSinkManagerHost::OnSurfaceCreated(
+void HostFrameSinkManager::OnSurfaceCreated(
     const cc::SurfaceInfo& surface_info) {
   for (auto& observer : observers_)
     observer.OnSurfaceCreated(surface_info);
 }
 
-FrameSinkManagerHost::FrameSinkData::FrameSinkData() = default;
+HostFrameSinkManager::FrameSinkData::FrameSinkData() = default;
 
-FrameSinkManagerHost::FrameSinkData::FrameSinkData(FrameSinkData&& other) =
+HostFrameSinkManager::FrameSinkData::FrameSinkData(FrameSinkData&& other) =
     default;
 
-FrameSinkManagerHost::FrameSinkData::~FrameSinkData() = default;
+HostFrameSinkManager::FrameSinkData::~FrameSinkData() = default;
 
-FrameSinkManagerHost::FrameSinkData& FrameSinkManagerHost::FrameSinkData::
+HostFrameSinkManager::FrameSinkData& HostFrameSinkManager::FrameSinkData::
 operator=(FrameSinkData&& other) = default;
 
 }  // namespace viz

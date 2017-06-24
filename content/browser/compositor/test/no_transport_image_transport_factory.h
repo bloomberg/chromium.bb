@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/host/frame_sink_manager_host.h"
-#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 
@@ -44,8 +44,8 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
 
  private:
   // The FrameSinkManager implementation lives in-process here for tests.
-  viz::MojoFrameSinkManager frame_sink_manager_;
-  viz::FrameSinkManagerHost frame_sink_manager_host_;
+  viz::FrameSinkManagerImpl frame_sink_manager_;
+  viz::HostFrameSinkManager host_frame_sink_manager_;
   ui::InProcessContextFactory context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
