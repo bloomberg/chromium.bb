@@ -267,6 +267,13 @@ void FakeAppInstance::InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) {
   app_host_->OnPackageAdded(std::move(arcPackageInfo));
 }
 
+void FakeAppInstance::GetRecentAndSuggestedAppsFromPlayStore(
+    const std::string& query,
+    int32_t max_results,
+    const GetRecentAndSuggestedAppsFromPlayStoreCallback& callback) {
+  callback.Run(std::vector<arc::mojom::AppDiscoveryResultPtr>());
+}
+
 void FakeAppInstance::LaunchIntent(
     const std::string& intent_uri,
     const base::Optional<gfx::Rect>& dimension_on_screen) {
