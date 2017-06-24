@@ -37,4 +37,16 @@ bool ConvertCharToKeyCode(base::char16 key,
 bool SwitchToUSKeyboardLayout();
 #endif
 
+#if defined(USE_X11)
+// Use the ozone implementation when there is no X display.
+bool ConvertKeyCodeToTextOzone(ui::KeyboardCode key_code,
+                               int modifiers,
+                               std::string* text,
+                               std::string* error_msg);
+bool ConvertCharToKeyCodeOzone(base::char16 key,
+                               ui::KeyboardCode* key_code,
+                               int* necessary_modifiers,
+                               std::string* error_msg);
+#endif
+
 #endif  // CHROME_TEST_CHROMEDRIVER_KEYCODE_TEXT_CONVERSION_H_
