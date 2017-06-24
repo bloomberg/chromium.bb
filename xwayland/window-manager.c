@@ -1619,13 +1619,15 @@ weston_wm_window_handle_state(struct weston_wm_window *window,
 	struct weston_wm *wm = window->wm;
 	const struct weston_desktop_xwayland_interface *xwayland_interface =
 		wm->server->compositor->xwayland_interface;
-	uint32_t action, property;
+	uint32_t action, property1, property2;
 	int maximized = weston_wm_window_is_maximized(window);
 
 	action = client_message->data.data32[0];
-	property = client_message->data.data32[1];
+	property1 = client_message->data.data32[1];
+	property2 = client_message->data.data32[2];
 
-	if (property == wm->atom.net_wm_state_fullscreen &&
+	if ((property1 == wm->atom.net_wm_state_fullscreen ||
+	     property2 == wm->atom.net_wm_state_fullscreen) &&
 	    update_state(action, &window->fullscreen)) {
 		weston_wm_window_set_net_wm_state(window);
 		if (window->fullscreen) {
@@ -1640,10 +1642,12 @@ weston_wm_window_handle_state(struct weston_wm_window *window,
 				weston_wm_window_set_toplevel(window);
 		}
 	} else {
-		if (property == wm->atom.net_wm_state_maximized_vert &&
+		if ((property1 == wm->atom.net_wm_state_maximized_vert ||
+		     property2 == wm->atom.net_wm_state_maximized_vert) &&
 		    update_state(action, &window->maximized_vert))
 			weston_wm_window_set_net_wm_state(window);
-		if (property == wm->atom.net_wm_state_maximized_horz &&
+		if ((property1 == wm->atom.net_wm_state_maximized_horz ||
+		     property2 == wm->atom.net_wm_state_maximized_horz) &&
 		    update_state(action, &window->maximized_horz))
 			weston_wm_window_set_net_wm_state(window);
 
