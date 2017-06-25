@@ -116,6 +116,24 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
 }
 
+// Checks that a GaiaAuthFetcher failure is handled correctly.
+TEST_F(DiceResponseHandlerTest, SigninFailure) {
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
+  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  dice_response_handler_.ProcessDiceHeader(dice_params);
+  // Check that a GaiaAuthFetcher has been created.
+  ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
+  EXPECT_EQ(
+      1u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  // Simulate GaiaAuthFetcher failure.
+  signin_client_.consumer_->OnClientOAuthFailure(
+      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+  EXPECT_EQ(
+      0u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  // Check that the token has not been inserted in the token service.
+  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+}
+
 // Checks that a second token for the same account is not requested when a
 // request is already in flight.
 TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
@@ -180,6 +198,8 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
       base::TimeDelta::FromSeconds(kDiceTokenFetchTimeoutSeconds + 1));
   EXPECT_EQ(
       0u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  // Check that the token has not been inserted in the token service.
+  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
 }
 
 // Tests that the DiceResponseHandler is created for a normal profile but not
