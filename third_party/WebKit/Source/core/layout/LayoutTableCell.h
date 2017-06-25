@@ -26,16 +26,17 @@
 #ifndef LayoutTableCell_h
 #define LayoutTableCell_h
 
+#include <memory>
 #include "core/CoreExport.h"
+#include "core/layout/CollapsedBorderValue.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTableSection.h"
 #include "platform/LengthFunctions.h"
-#include <memory>
 
 namespace blink {
 
-#define BITS_OF_ABSOLUTE_COLUMN_INDEX 27
+#define BITS_OF_ABSOLUTE_COLUMN_INDEX 28
 static const unsigned kUnsetColumnIndex =
     (1u << BITS_OF_ABSOLUTE_COLUMN_INDEX) - 1;
 static const unsigned kMaxColumnIndex = kUnsetColumnIndex - 1;
@@ -289,52 +290,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   const char* GetName() const override { return "LayoutTableCell"; }
 
   bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
-  void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
-  void EnsureIsReadyForPaintInvalidation() override;
 
-  // TODO(wkorman): Consider renaming to more clearly differentiate from
-  // CollapsedBorderValue.
-  class CollapsedBorderValues : public DisplayItemClient {
-   public:
-    CollapsedBorderValues(const LayoutTableCell& cell,
-                          const CollapsedBorderValue& start,
-                          const CollapsedBorderValue& end,
-                          const CollapsedBorderValue& before,
-                          const CollapsedBorderValue& after)
-        : cell_(cell) {
-      borders_[0] = start;
-      borders_[1] = end;
-      borders_[2] = before;
-      borders_[3] = after;
-    }
-
-    const CollapsedBorderValue& StartBorder() const { return borders_[0]; }
-    const CollapsedBorderValue& EndBorder() const { return borders_[1]; }
-    const CollapsedBorderValue& BeforeBorder() const { return borders_[2]; }
-    const CollapsedBorderValue& AfterBorder() const { return borders_[3]; }
-
-    // Returns all borders. The caller should not assume that the returned
-    // borders are in any particular order.
-    const CollapsedBorderValue* Borders() const { return borders_; }
-
-    void SetBorders(const CollapsedBorderValues& other) {
-      std::copy(other.borders_, other.borders_ + 4, borders_);
-    }
-
-    // DisplayItemClient methods.
-    String DebugName() const;
-    LayoutRect VisualRect() const;
-
-    LayoutRect LocalVisualRect() const { return local_visual_rect_; }
-    void SetLocalVisualRect(const LayoutRect& r) { local_visual_rect_ = r; }
-
-   private:
-    const LayoutTableCell& cell_;
-    CollapsedBorderValue borders_[4];
-    LayoutRect local_visual_rect_;
-  };
-
-  bool UsesCompositedCellDisplayItemClients() const;
   const CollapsedBorderValues* GetCollapsedBorderValues() const {
     UpdateCollapsedBorderValues();
     return collapsed_border_values_.get();
@@ -431,7 +387,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   void ComputeOverflow(LayoutUnit old_client_after_edge,
                        bool recompute_floats = false) override;
-  LayoutRect LocalVisualRect() const override;
 
   unsigned CollapsedBorderHalfLeft(bool outer) const;
   unsigned CollapsedBorderHalfRight(bool outer) const;
@@ -503,9 +458,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   // This is set when collapsed_border_values_ needs recalculation.
   mutable unsigned collapsed_border_values_valid_ : 1;
-  // This is set by UpdateCollapsedBorderValues() if the newly calculated
-  // collapsed borders are visually different from the previous values.
-  mutable unsigned collapsed_borders_visually_changed_ : 1;
   mutable std::unique_ptr<CollapsedBorderValues> collapsed_border_values_;
 
   // The intrinsic padding.

@@ -333,4 +333,11 @@ void LayoutTableRow::AddOverflowFromCell(const LayoutTableCell* cell) {
   AddLayoutOverflow(cell_layout_overflow_rect);
 }
 
+bool LayoutTableRow::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
+  return LayoutTableBoxComponent::
+             PaintedOutputOfObjectHasNoEffectRegardlessOfSize() &&
+         // Row paints collapsed borders.
+         !Table()->HasCollapsedBorders();
+}
+
 }  // namespace blink

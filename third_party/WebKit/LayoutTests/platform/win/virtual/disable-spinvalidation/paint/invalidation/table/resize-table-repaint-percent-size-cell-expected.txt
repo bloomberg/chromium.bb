@@ -8,6 +8,11 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableRow TR",
+          "rect": [0, 52, 106, 238],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutTableRow TR",
           "rect": [0, 292, 106, 236],
           "reason": "geometry"
         },
@@ -63,6 +68,10 @@
     {
       "object": "LayoutTableRow TR",
       "reason": "incremental"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "invalidate paint rectangle"
     },
     {
       "object": "LayoutTableCell TD",

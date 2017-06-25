@@ -24,8 +24,6 @@ class CollapsedBorderPainter {
   void PaintCollapsedBorders(const PaintInfo&, const LayoutPoint&);
 
  private:
-  const DisplayItemClient& DisplayItemClientForBorders() const;
-
   void SetupBorders();
   void AdjustJoints();
   void AdjustForWritingModeAndDirection();

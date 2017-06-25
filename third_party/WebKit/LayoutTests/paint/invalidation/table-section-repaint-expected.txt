@@ -7,22 +7,22 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD class='half'",
+          "object": "LayoutTableRow TR",
           "rect": [8, 353, 60, 38],
           "reason": "geometry"
         },
         {
-          "object": "LayoutTableCell TD class='half'",
+          "object": "LayoutTableRow TR",
           "rect": [8, 338, 60, 38],
           "reason": "geometry"
         },
         {
-          "object": "LayoutTableCell TD class='half'",
+          "object": "LayoutTableRow TR",
           "rect": [8, 323, 60, 38],
           "reason": "geometry"
         },
         {
-          "object": "LayoutTableCell TD class='half'",
+          "object": "LayoutTableRow TR",
           "rect": [8, 308, 60, 38],
           "reason": "geometry"
         },
@@ -105,6 +105,26 @@
           "object": "LayoutTable TABLE",
           "rect": [8, 372, 60, 19],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD class='half'",
+          "rect": [12, 357, 52, 30],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutTableCell TD class='half'",
+          "rect": [12, 342, 52, 30],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutTableCell TD class='half'",
+          "rect": [12, 327, 52, 30],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutTableCell TD class='half'",
+          "rect": [12, 312, 52, 30],
+          "reason": "geometry"
         }
       ]
     }

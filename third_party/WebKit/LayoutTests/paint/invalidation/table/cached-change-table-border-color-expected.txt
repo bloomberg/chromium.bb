@@ -10,17 +10,22 @@
           "object": "LayoutTable TABLE id='tbl'",
           "rect": [8, 8, 60, 54],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 60, 54],
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
+      "object": "LayoutTable TABLE id='tbl'",
       "reason": "style change"
     },
     {
-      "object": "LayoutTable TABLE id='tbl'",
+      "object": "LayoutTableRow TR",
       "reason": "style change"
     }
   ]

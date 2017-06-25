@@ -245,7 +245,7 @@ TEST_F(LayoutTableCellTest, HasBorderAdjoiningTableRTL) {
   EXPECT_FALSE(HasEndBorderAdjoiningTable(cell32));
 }
 
-TEST_F(LayoutTableCellTest, LocalVisualRectWithCollapsedBorders) {
+TEST_F(LayoutTableCellTest, BorderWidthsWithCollapsedBorders) {
   SetBodyInnerHTML(
       "<style>"
       "  table { border-collapse: collapse }"
@@ -273,19 +273,23 @@ TEST_F(LayoutTableCellTest, LocalVisualRectWithCollapsedBorders) {
   EXPECT_EQ(2, cell2->BorderTop());
   EXPECT_EQ(1, cell2->BorderBottom());
 
-  LayoutRect expected_visual_rect1 = cell1->BorderBoxRect();
-  // Expand top, left for outline, right and bottom for collapsed border.
-  expected_visual_rect1.ExpandEdges(LayoutUnit(3), LayoutUnit(8), LayoutUnit(5),
-                                    LayoutUnit(3));
-  EXPECT_EQ(expected_visual_rect1, LocalVisualRect(cell1));
+  EXPECT_EQ(0u, cell1->CollapsedInnerBorderStart());
+  EXPECT_EQ(7u, cell1->CollapsedInnerBorderEnd());
+  EXPECT_EQ(0u, cell1->CollapsedInnerBorderBefore());
+  EXPECT_EQ(5u, cell1->CollapsedInnerBorderAfter());
+  EXPECT_EQ(8u, cell2->CollapsedInnerBorderStart());
+  EXPECT_EQ(7u, cell2->CollapsedInnerBorderEnd());
+  EXPECT_EQ(2u, cell2->CollapsedInnerBorderBefore());
+  EXPECT_EQ(1u, cell2->CollapsedInnerBorderAfter());
 
-  LayoutRect expected_visual_rect2 = cell2->BorderBoxRect();
-  // Expand outer half border width at each side. For the bottom side, expand
-  // more because the left border is lengthened to cover the joint with the
-  // bottom border of the cell to the left.
-  expected_visual_rect2.ExpandEdges(LayoutUnit(1), LayoutUnit(8), LayoutUnit(5),
-                                    LayoutUnit(7));
-  EXPECT_EQ(expected_visual_rect2, LocalVisualRect(cell2));
+  EXPECT_EQ(0u, cell1->CollapsedOuterBorderStart());
+  EXPECT_EQ(8u, cell1->CollapsedOuterBorderEnd());
+  EXPECT_EQ(0u, cell1->CollapsedOuterBorderBefore());
+  EXPECT_EQ(5u, cell1->CollapsedOuterBorderAfter());
+  EXPECT_EQ(7u, cell2->CollapsedOuterBorderStart());
+  EXPECT_EQ(8u, cell2->CollapsedOuterBorderEnd());
+  EXPECT_EQ(1u, cell2->CollapsedOuterBorderBefore());
+  EXPECT_EQ(2u, cell2->CollapsedOuterBorderAfter());
 }
 
 }  // namespace blink

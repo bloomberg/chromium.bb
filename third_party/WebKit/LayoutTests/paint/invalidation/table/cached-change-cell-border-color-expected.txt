@@ -7,8 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 114, 54],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutTableCell TD id='foo'",
-          "rect": [8, 8, 60, 54],
+          "rect": [10, 10, 56, 50],
           "reason": "style change"
         }
       ]
@@ -16,11 +21,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD id='foo'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
+      "object": "LayoutTableRow TR",
       "reason": "style change"
     },
     {

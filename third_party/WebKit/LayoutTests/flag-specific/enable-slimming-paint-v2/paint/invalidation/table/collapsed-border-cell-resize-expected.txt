@@ -7,7 +7,7 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "CollapsedBorderValues",
+          "object": "LayoutTableRow TR",
           "rect": [8, 8, 104, 204],
           "reason": "geometry"
         }
@@ -16,12 +16,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD id='target'",
+      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
-      "object": "CollapsedBorderValues",
-      "reason": "geometry"
+      "object": "LayoutTableCell TD id='target'",
+      "reason": "incremental"
     }
   ]
 }

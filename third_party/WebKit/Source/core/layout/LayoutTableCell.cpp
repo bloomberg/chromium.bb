@@ -61,21 +61,12 @@ LayoutTableCell::LayoutTableCell(Element* element)
       absolute_column_index_(kUnsetColumnIndex),
       cell_width_changed_(false),
       collapsed_border_values_valid_(false),
-      collapsed_borders_visually_changed_(false),
       intrinsic_padding_before_(0),
       intrinsic_padding_after_(0) {
   // We only update the flags when notified of DOM changes in
   // colSpanOrRowSpanChanged() so we need to set their initial values here in
   // case something asks for colSpan()/rowSpan() before then.
   UpdateColAndRowSpanFlags();
-}
-
-String LayoutTableCell::CollapsedBorderValues::DebugName() const {
-  return "CollapsedBorderValues";
-}
-
-LayoutRect LayoutTableCell::CollapsedBorderValues::VisualRect() const {
-  return cell_.Table()->VisualRect();
 }
 
 void LayoutTableCell::WillBeRemovedFromTree() {
@@ -451,13 +442,6 @@ void LayoutTableCell::ComputeOverflow(LayoutUnit old_client_after_edge,
   rect.ExpandEdges(LayoutUnit(top), LayoutUnit(right), LayoutUnit(bottom),
                    LayoutUnit(left));
   collapsed_border_values_->SetLocalVisualRect(rect);
-}
-
-LayoutRect LayoutTableCell::LocalVisualRect() const {
-  LayoutRect rect = SelfVisualOverflowRect();
-  if (collapsed_border_values_)
-    rect.Unite(collapsed_border_values_->LocalVisualRect());
-  return rect;
 }
 
 int LayoutTableCell::CellBaselinePosition() const {
@@ -1234,56 +1218,41 @@ void LayoutTableCell::Paint(const PaintInfo& paint_info,
 }
 
 void LayoutTableCell::UpdateCollapsedBorderValues() const {
+  bool changed = false;
+
   if (!Table()->ShouldCollapseBorders()) {
     if (collapsed_border_values_) {
-      collapsed_borders_visually_changed_ = true;
+      changed = true;
       collapsed_border_values_ = nullptr;
     }
-    return;
-  }
+  } else {
+    Table()->InvalidateCollapsedBordersForAllCellsIfNeeded();
+    if (collapsed_border_values_valid_)
+      return;
 
-  Table()->InvalidateCollapsedBordersForAllCellsIfNeeded();
-  if (collapsed_border_values_valid_)
-    return;
+    collapsed_border_values_valid_ = true;
 
-  collapsed_border_values_valid_ = true;
+    auto new_values = WTF::MakeUnique<CollapsedBorderValues>(
+        ComputeCollapsedStartBorder(), ComputeCollapsedEndBorder(),
+        ComputeCollapsedBeforeBorder(), ComputeCollapsedAfterBorder());
 
-  CollapsedBorderValues new_values(
-      *this, ComputeCollapsedStartBorder(), ComputeCollapsedEndBorder(),
-      ComputeCollapsedBeforeBorder(), ComputeCollapsedAfterBorder());
-
-  // We need to save collapsed border if has a non-zero width even if it's
-  // invisible because the width affects table layout.
-  if (!new_values.StartBorder().Width() && !new_values.EndBorder().Width() &&
-      !new_values.BeforeBorder().Width() && !new_values.AfterBorder().Width()) {
-    if (collapsed_border_values_) {
-      collapsed_borders_visually_changed_ = true;
-      collapsed_border_values_ = nullptr;
+    // We need to save collapsed border if has a non-zero width even if it's
+    // invisible because the width affects table layout.
+    if (!new_values->HasNonZeroWidthBorder()) {
+      if (collapsed_border_values_) {
+        changed = true;
+        collapsed_border_values_ = nullptr;
+      }
+    } else if (!collapsed_border_values_ ||
+               !collapsed_border_values_->VisuallyEquals(*new_values)) {
+      changed = true;
+      collapsed_border_values_ = std::move(new_values);
     }
-    return;
   }
 
-  if (!collapsed_border_values_) {
-    collapsed_borders_visually_changed_ = true;
-    collapsed_border_values_ = WTF::WrapUnique(new CollapsedBorderValues(
-        *this, new_values.StartBorder(), new_values.EndBorder(),
-        new_values.BeforeBorder(), new_values.AfterBorder()));
-    return;
-  }
-
-  // We check VisuallyEquals so that the table cell is invalidated only if a
-  // changed collapsed border is visible in the first place.
-  if (!collapsed_border_values_->StartBorder().VisuallyEquals(
-          new_values.StartBorder()) ||
-      !collapsed_border_values_->EndBorder().VisuallyEquals(
-          new_values.EndBorder()) ||
-      !collapsed_border_values_->BeforeBorder().VisuallyEquals(
-          new_values.BeforeBorder()) ||
-      !collapsed_border_values_->AfterBorder().VisuallyEquals(
-          new_values.AfterBorder())) {
-    collapsed_border_values_->SetBorders(new_values);
-    collapsed_borders_visually_changed_ = true;
-  }
+  // Invalidate the row which will paint the collapsed borders.
+  if (changed)
+    Row()->SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
 }
 
 void LayoutTableCell::PaintBoxDecorationBackground(
@@ -1362,26 +1331,6 @@ bool LayoutTableCell::BackgroundIsKnownToBeOpaqueInRect(
   return LayoutBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
 }
 
-bool LayoutTableCell::UsesCompositedCellDisplayItemClients() const {
-  // In certain cases such as collapsed borders for composited table cells we
-  // paint content for the cell into the table graphics layer backing and so
-  // must use the table's visual rect.
-  return (HasLayer() && Layer()->GetCompositingState() != kNotComposited) ||
-         RuntimeEnabledFeatures::SlimmingPaintV2Enabled();
-}
-
-void LayoutTableCell::InvalidateDisplayItemClients(
-    PaintInvalidationReason reason) const {
-  LayoutBlockFlow::InvalidateDisplayItemClients(reason);
-
-  if (!UsesCompositedCellDisplayItemClients())
-    return;
-
-  ObjectPaintInvalidator invalidator(*this);
-  if (collapsed_border_values_)
-    invalidator.InvalidateDisplayItemClient(*collapsed_border_values_, reason);
-}
-
 // TODO(loonybear): Deliberately dump the "inner" box of table cells, since that
 // is what current results reflect.  We'd like to clean up the results to dump
 // both the outer box and the intrinsic padding so that both bits of information
@@ -1407,20 +1356,6 @@ bool LayoutTableCell::HasLineIfEmpty() const {
     return true;
 
   return LayoutBlock::HasLineIfEmpty();
-}
-
-void LayoutTableCell::EnsureIsReadyForPaintInvalidation() {
-  LayoutBlockFlow::EnsureIsReadyForPaintInvalidation();
-
-  UpdateCollapsedBorderValues();
-  // If collapsed borders changed, invalidate the cell's display item client on
-  // the table's backing.
-  if (collapsed_borders_visually_changed_) {
-    ObjectPaintInvalidator(*Table())
-        .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
-            *this, PaintInvalidationReason::kStyle);
-    collapsed_borders_visually_changed_ = false;
-  }
 }
 
 PaintInvalidationReason LayoutTableCell::InvalidatePaint(

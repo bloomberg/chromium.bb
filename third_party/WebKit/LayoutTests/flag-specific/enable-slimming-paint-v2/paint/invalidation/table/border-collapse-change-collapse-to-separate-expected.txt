@@ -7,12 +7,7 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 212, 108],
-          "reason": "disappeared"
-        },
-        {
-          "object": "CollapsedBorderValues",
+          "object": "LayoutTableRow TR",
           "rect": [8, 8, 212, 108],
           "reason": "disappeared"
         },
@@ -40,14 +35,6 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
       "reason": "style change"
     },
     {
