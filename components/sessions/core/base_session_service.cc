@@ -34,7 +34,7 @@ void PostOrRunInternalGetCommandsCallback(
     base::TaskRunner* task_runner,
     const BaseSessionService::GetCommandsCallback& callback,
     std::vector<std::unique_ptr<SessionCommand>> commands) {
-  if (task_runner->RunsTasksOnCurrentThread()) {
+  if (task_runner->RunsTasksInCurrentSequence()) {
     callback.Run(std::move(commands));
   } else {
     task_runner->PostTask(FROM_HERE,

@@ -27,7 +27,7 @@ PolicyHeaderIOHelper::~PolicyHeaderIOHelper() {
 // Sets any necessary policy headers on the passed request.
 void PolicyHeaderIOHelper::AddPolicyHeaders(const GURL& url,
                                             net::URLRequest* request) const {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (!policy_header_.empty() &&
       url.spec().compare(0, server_url_.size(), server_url_) == 0) {
     request->SetExtraRequestHeaderByName(kChromePolicyHeader,
@@ -46,7 +46,7 @@ void PolicyHeaderIOHelper::UpdateHeader(const std::string& new_header) {
 
 void PolicyHeaderIOHelper::UpdateHeaderOnIOThread(
     const std::string& new_header) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   policy_header_ = new_header;
 }
 
@@ -59,7 +59,7 @@ void PolicyHeaderIOHelper::SetServerURLForTest(const std::string& server_url) {
 
 void PolicyHeaderIOHelper::SetServerURLOnIOThread(
     const std::string& server_url) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   server_url_ = server_url;
 }
 

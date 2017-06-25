@@ -203,7 +203,7 @@ V4Store::V4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       task_runner_(task_runner) {}
 
 V4Store::~V4Store() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
 std::string V4Store::DebugString() const {
@@ -528,7 +528,7 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
                                        const HashPrefixMap& additions_map,
                                        const RepeatedField<int32>* raw_removals,
                                        const std::string& expected_checksum) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(hash_prefix_map_.empty());
 
   bool calculate_checksum = !expected_checksum.empty();
@@ -660,7 +660,7 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
 }
 
 StoreReadResult V4Store::ReadFromDisk() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   V4StoreFileFormat file_format;
   int64_t file_size;
@@ -796,7 +796,7 @@ bool V4Store::HashPrefixMatches(const HashPrefix& hash_prefix,
 }
 
 bool V4Store::VerifyChecksum() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (expected_checksum_.empty()) {
     // Nothing to check here folks!

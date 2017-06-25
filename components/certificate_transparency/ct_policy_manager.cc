@@ -89,7 +89,7 @@ void CTPolicyManager::CTDelegate::UpdateFromPrefs(
 
 net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel
 CTPolicyManager::CTDelegate::IsCTRequiredForHost(const std::string& hostname) {
-  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
   // Scheme and port are ignored by the policy, so it's OK to construct a
   // new GURL here. However, |hostname| is in network form, not URL form,
@@ -125,7 +125,7 @@ CTPolicyManager::CTDelegate::IsCTRequiredForHost(const std::string& hostname) {
 
 void CTPolicyManager::CTDelegate::Update(base::ListValue* required_hosts,
                                          base::ListValue* excluded_hosts) {
-  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
   url_matcher_.reset(new url_matcher::URLMatcher);
   filters_.clear();

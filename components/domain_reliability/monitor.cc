@@ -152,7 +152,7 @@ void DomainReliabilityMonitor::InitURLRequestContext(
   // Make sure the URLRequestContext actually lives on what was declared to be
   // the network thread.
   DCHECK(url_request_context_getter->GetNetworkTaskRunner()->
-         RunsTasksOnCurrentThread());
+         RunsTasksInCurrentSequence());
 
   uploader_ = DomainReliabilityUploader::Create(time_.get(),
                                                 url_request_context_getter);

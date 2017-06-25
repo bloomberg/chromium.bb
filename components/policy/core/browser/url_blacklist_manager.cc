@@ -452,7 +452,7 @@ URLBlacklistManager::URLBlacklistManager(
 }
 
 void URLBlacklistManager::ShutdownOnUIThread() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   // Cancel any pending updates, and stop listening for pref change updates.
   ui_weak_ptr_factory_.InvalidateWeakPtrs();
   pref_change_registrar_.RemoveAll();
@@ -462,7 +462,7 @@ URLBlacklistManager::~URLBlacklistManager() {
 }
 
 void URLBlacklistManager::ScheduleUpdate() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   // Cancel pending updates, if any. This can happen if two preferences that
   // change the blacklist are updated in one message loop cycle. In those cases,
   // only rebuild the blacklist after all the preference updates are processed.
@@ -474,7 +474,7 @@ void URLBlacklistManager::ScheduleUpdate() {
 }
 
 void URLBlacklistManager::Update() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
   // The preferences can only be read on the UI thread.
   std::unique_ptr<base::ListValue> block(
@@ -494,7 +494,7 @@ void URLBlacklistManager::Update() {
 
 void URLBlacklistManager::UpdateOnIO(std::unique_ptr<base::ListValue> block,
                                      std::unique_ptr<base::ListValue> allow) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   // The URLBlacklist is built on a worker thread. Once it's ready, it is passed
   // to the URLBlacklistManager on IO.
   base::PostTaskAndReplyWithResult(
@@ -509,24 +509,24 @@ void URLBlacklistManager::UpdateOnIO(std::unique_ptr<base::ListValue> block,
 
 void URLBlacklistManager::SetBlacklist(
     std::unique_ptr<URLBlacklist> blacklist) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   blacklist_ = std::move(blacklist);
 }
 
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   return blacklist_->IsURLBlocked(url);
 }
 
 URLBlacklist::URLBlacklistState URLBlacklistManager::GetURLBlacklistState(
     const GURL& url) const {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   return blacklist_->GetURLBlacklistState(url);
 }
 
 bool URLBlacklistManager::ShouldBlockRequestForFrame(const GURL& url,
                                                      int* reason) const {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   bool block = false;
   if (override_blacklist_.Run(url, &block, reason))

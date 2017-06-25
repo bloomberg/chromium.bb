@@ -88,7 +88,7 @@ ExternalPolicyDataFetcher::ExternalPolicyDataFetcher(
 }
 
 ExternalPolicyDataFetcher::~ExternalPolicyDataFetcher() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   for (JobSet::iterator it = jobs_.begin(); it != jobs_.end(); ++it)
     CancelJob(*it);
 }
@@ -97,7 +97,7 @@ ExternalPolicyDataFetcher::Job* ExternalPolicyDataFetcher::StartJob(
     const GURL& url,
     int64_t max_size,
     const FetchCallback& callback) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   Job* job = new Job(
       url, max_size,
       base::Bind(&ForwardJobFinished,
@@ -113,7 +113,7 @@ ExternalPolicyDataFetcher::Job* ExternalPolicyDataFetcher::StartJob(
 }
 
 void ExternalPolicyDataFetcher::CancelJob(Job* job) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(jobs_.find(job) != jobs_.end());
   jobs_.erase(job);
   // Post a task that will cancel the |job| in the |backend_|. The |job| is
@@ -137,7 +137,7 @@ void ExternalPolicyDataFetcher::OnJobFinished(
     Job* job,
     Result result,
     std::unique_ptr<std::string> data) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   JobSet::iterator it = jobs_.find(job);
   if (it == jobs_.end()) {
     // The |job| has been canceled and removed from |jobs_| already. This can
@@ -165,7 +165,7 @@ ExternalPolicyDataFetcherBackend::ExternalPolicyDataFetcherBackend(
 }
 
 ExternalPolicyDataFetcherBackend::~ExternalPolicyDataFetcherBackend() {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 }
 
 std::unique_ptr<ExternalPolicyDataFetcher>
@@ -177,7 +177,7 @@ ExternalPolicyDataFetcherBackend::CreateFrontend(
 
 void ExternalPolicyDataFetcherBackend::StartJob(
     ExternalPolicyDataFetcher::Job* job) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("external_policy_fetcher", R"(
         semantics {
@@ -220,7 +220,7 @@ void ExternalPolicyDataFetcherBackend::StartJob(
 void ExternalPolicyDataFetcherBackend::CancelJob(
     ExternalPolicyDataFetcher::Job* job,
     const base::Closure& callback) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   for (auto it = job_map_.begin(); it != job_map_.end();) {
     if (it->second.job == job) {
       job_map_.erase(it++);
@@ -233,7 +233,7 @@ void ExternalPolicyDataFetcherBackend::CancelJob(
 
 void ExternalPolicyDataFetcherBackend::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   auto it = job_map_.find(const_cast<net::URLFetcher*>(source));
   if (it == job_map_.end()) {
     NOTREACHED();
@@ -280,7 +280,7 @@ void ExternalPolicyDataFetcherBackend::OnURLFetchDownloadProgress(
     int64_t current,
     int64_t total,
     int64_t current_network_bytes) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   auto it = job_map_.find(source);
   DCHECK(it != job_map_.end());
   if (it == job_map_.end())

@@ -41,7 +41,7 @@ Time AsyncPolicyLoader::LastModificationTime() {
 }
 
 void AsyncPolicyLoader::Reload(bool force) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   TimeDelta delay;
   Time now = Time::Now();
@@ -80,7 +80,7 @@ std::unique_ptr<PolicyBundle> AsyncPolicyLoader::InitialLoad(
 }
 
 void AsyncPolicyLoader::Init(const UpdateCallback& update_callback) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(update_callback_.is_null());
   DCHECK(!update_callback.is_null());
   update_callback_ = update_callback;
@@ -97,13 +97,13 @@ void AsyncPolicyLoader::Init(const UpdateCallback& update_callback) {
 }
 
 void AsyncPolicyLoader::RefreshPolicies(scoped_refptr<SchemaMap> schema_map) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   schema_map_ = schema_map;
   Reload(true);
 }
 
 void AsyncPolicyLoader::ScheduleNextReload(TimeDelta delay) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   weak_factory_.InvalidateWeakPtrs();
   task_runner_->PostDelayedTask(FROM_HERE,
                                 base::Bind(&AsyncPolicyLoader::Reload,
