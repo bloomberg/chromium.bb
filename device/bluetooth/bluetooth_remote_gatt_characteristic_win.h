@@ -43,10 +43,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   std::vector<BluetoothRemoteGattDescriptor*> GetDescriptors() const override;
   BluetoothRemoteGattDescriptor* GetDescriptor(
       const std::string& identifier) const override;
-  void StartNotifySession(const NotifySessionCallback& callback,
-                          const ErrorCallback& error_callback) override;
-  void StopNotifySession(BluetoothGattNotifySession* session,
-                         const base::Closure& callback) override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
@@ -92,7 +88,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   BluetoothRemoteGattService::GattErrorCode HRESULTToGattErrorCode(HRESULT hr);
   void OnGattCharacteristicValueChanged(
       std::unique_ptr<std::vector<uint8_t>> new_value);
-  void GattEventRegistrationCallback(PVOID event_handle, HRESULT hr);
+  void GattEventRegistrationCallback(const base::Closure& callback,
+                                     const ErrorCallback& error_callback,
+                                     PVOID event_handle,
+                                     HRESULT hr);
   void ClearIncludedDescriptors();
 
   BluetoothRemoteGattServiceWin* parent_service_;
@@ -127,9 +126,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   // Vector stores StartNotifySession request callbacks.
   std::vector<std::pair<NotifySessionCallback, ErrorCallback>>
       start_notify_session_callbacks_;
-
-  // Flag indicates if GATT event registration is in progress.
-  bool gatt_event_registeration_in_progress_;
 
   // GATT event handle returned by GattEventRegistrationCallback.
   PVOID gatt_event_handle_;

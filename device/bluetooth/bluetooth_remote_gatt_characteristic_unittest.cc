@@ -1463,49 +1463,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
 #if defined(OS_WIN)
 // Tests StartNotifySession reentrant in start notify session error callback
-// and the reentrant start notify session success.
-TEST_F(BluetoothRemoteGattCharacteristicTest,
-       StartNotifySession_Reentrant_Error_Success) {
-  ASSERT_NO_FATAL_FAILURE(
-      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
-  SimulateGattDescriptor(
-      characteristic1_,
-      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid().value());
-  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
-
-  SimulateGattNotifySessionStartError(
-      characteristic1_, BluetoothRemoteGattService::GATT_ERROR_UNKNOWN);
-  base::RunLoop().RunUntilIdle();
-
-  characteristic1_->StartNotifySession(
-      GetReentrantStartNotifySessionSuccessCallback(Call::NOT_EXPECTED,
-                                                    characteristic1_),
-      GetReentrantStartNotifySessionErrorCallback(
-          Call::EXPECTED, characteristic1_, false /* error_in_reentrant */));
-  EXPECT_EQ(0, callback_count_);
-  SimulateGattNotifySessionStarted(characteristic1_);
-  base::RunLoop().RunUntilIdle();
-  ExpectedChangeNotifyValueAttempts(0);
-  EXPECT_EQ(1, error_callback_count_);
-
-  // Simulate reentrant StartNotifySession request from
-  // BluetoothTestBase::ReentrantStartNotifySessionErrorCallback.
-  SimulateGattNotifySessionStarted(characteristic1_);
-  base::RunLoop().RunUntilIdle();
-  ExpectedChangeNotifyValueAttempts(1);
-  ExpectedNotifyValue(NotifyValueState::NOTIFY);
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_EQ(1, error_callback_count_);
-  ASSERT_EQ(1u, notify_sessions_.size());
-  ASSERT_TRUE(notify_sessions_[0]);
-  EXPECT_EQ(characteristic1_->GetIdentifier(),
-            notify_sessions_[0]->GetCharacteristicIdentifier());
-  EXPECT_TRUE(notify_sessions_[0]->IsActive());
-}
-#endif  // defined(OS_WIN)
-
-#if defined(OS_WIN)
-// Tests StartNotifySession reentrant in start notify session error callback
 // and the reentrant start notify session error.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        StartNotifySession_Reentrant_Error_Error) {
