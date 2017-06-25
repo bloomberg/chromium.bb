@@ -4679,9 +4679,6 @@ weston_output_set_scale(struct weston_output *output,
  * \param output    The weston_output object that the transform is set for.
  * \param transform Transform value for the given output.
  *
- * It only supports setting transform for an output that is
- * not enabled and it can only be ran once.
- *
  * Refer to wl_output::transform section located at
  * https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_output
  * for list of values that can be passed to this function.
@@ -4692,13 +4689,62 @@ WL_EXPORT void
 weston_output_set_transform(struct weston_output *output,
 			    uint32_t transform)
 {
-	/* We can only set transform on a disabled output */
-	assert(!output->enabled);
+	struct weston_pointer_motion_event ev;
+	struct wl_resource *resource;
+	struct weston_seat *seat;
+	pixman_region32_t old_region;
+	int mid_x, mid_y;
 
-	/* We only want to set transform once */
-	assert(output->transform == UINT32_MAX);
+	if (!output->enabled && output->transform == UINT32_MAX) {
+		output->transform = transform;
+		return;
+	}
 
-	output->transform = transform;
+	weston_output_transform_scale_init(output, transform, output->scale);
+
+	pixman_region32_init(&old_region);
+	pixman_region32_copy(&old_region, &output->region);
+
+	pixman_region32_fini(&output->region);
+	pixman_region32_fini(&output->previous_damage);
+
+	weston_output_init_geometry(output, output->x, output->y);
+
+	output->dirty = 1;
+
+	/* Notify clients of the change for output transform. */
+	wl_resource_for_each(resource, &output->resource_list) {
+		wl_output_send_geometry(resource,
+					output->x,
+					output->y,
+					output->mm_width,
+					output->mm_height,
+					output->subpixel,
+					output->make,
+					output->model,
+					output->transform);
+
+		if (wl_resource_get_version(resource) >= WL_OUTPUT_DONE_SINCE_VERSION)
+			wl_output_send_done(resource);
+	}
+
+	/* we must ensure that pointers are inside output, otherwise they disappear */
+	mid_x = output->x + output->width / 2;
+	mid_y = output->y + output->height / 2;
+
+	ev.mask = WESTON_POINTER_MOTION_ABS;
+	ev.x = wl_fixed_to_double(wl_fixed_from_int(mid_x));
+	ev.y = wl_fixed_to_double(wl_fixed_from_int(mid_y));
+
+	wl_list_for_each(seat, &output->compositor->seat_list, link) {
+		struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+
+		if (pointer && pixman_region32_contains_point(&old_region,
+							      wl_fixed_to_int(pointer->x),
+							      wl_fixed_to_int(pointer->y),
+							      NULL))
+			weston_pointer_move(pointer, &ev);
+	}
 }
 
 /** Initializes a weston_output object with enough data so
