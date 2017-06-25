@@ -186,16 +186,10 @@ void TranslatePrefs::ResetToDefaults() {
   ClearBlockedLanguages();
   ClearBlacklistedSites();
   ClearWhitelistedLanguagePairs();
+  prefs_->ClearPref(kPrefTranslateDeniedCount);
+  prefs_->ClearPref(kPrefTranslateIgnoredCount);
+  prefs_->ClearPref(kPrefTranslateAcceptedCount);
 
-  std::vector<std::string> languages;
-  GetLanguageList(&languages);
-  for (std::vector<std::string>::const_iterator it = languages.begin();
-       it != languages.end(); ++it) {
-    const std::string& language = *it;
-    ResetTranslationAcceptedCount(language);
-    ResetTranslationDeniedCount(language);
-    ResetTranslationIgnoredCount(language);
-  }
 #if defined(OS_ANDROID)
   prefs_->ClearPref(kPrefTranslateAutoAlwaysCount);
   prefs_->ClearPref(kPrefTranslateAutoNeverCount);
