@@ -13,6 +13,7 @@
 #include "ui/android/screen_android.h"
 #include "ui/android/window_android.h"
 #include "ui/display/display.h"
+#include "ui/gfx/icc_profile.h"
 
 namespace ui {
 
@@ -91,6 +92,10 @@ void DisplayAndroidManager::UpdateDisplay(
   display::Display display(sdkDisplayId, bounds_in_dip);
   if (!Display::HasForceDeviceScaleFactor())
     display.set_device_scale_factor(dipScale);
+  // TODO(ccameron): Know the ideal color profile to use here.
+  // https://crbug.com/735658
+  if (!gfx::ICCProfile::HasForcedProfile())
+    display.set_color_space(gfx::ColorSpace::CreateSRGB());
 
   display.set_size_in_pixels(bounds_in_pixels.size());
   display.SetRotationAsDegree(rotationDegrees);
