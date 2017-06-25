@@ -386,12 +386,12 @@ TEST_F(AnimationCompositorAnimationsTest,
   keyframe->SetOffset(0);
   keyframe->SetPropertyValue(CSSPropertyColor, AnimatableDouble::Create(0));
   keyframe->SetPropertyValue(CSSPropertyOpacity, AnimatableDouble::Create(0));
-  frames_mixed_properties.push_back(keyframe.Release());
+  frames_mixed_properties.push_back(std::move(keyframe));
   keyframe = AnimatableValueKeyframe::Create();
   keyframe->SetOffset(1);
   keyframe->SetPropertyValue(CSSPropertyColor, AnimatableDouble::Create(1));
   keyframe->SetPropertyValue(CSSPropertyOpacity, AnimatableDouble::Create(1));
-  frames_mixed_properties.push_back(keyframe.Release());
+  frames_mixed_properties.push_back(std::move(keyframe));
   EXPECT_FALSE(CanStartEffectOnCompositor(
       timing_,
       *AnimatableValueKeyframeEffectModel::Create(frames_mixed_properties)));

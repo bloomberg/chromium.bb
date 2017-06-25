@@ -127,7 +127,7 @@ class Canvas2DLayerBridgeTest : public Test {
         new Canvas2DLayerBridge(std::move(provider), size, 0, kNonOpaque,
                                 acceleration_mode, CanvasColorParams()));
     bridge->DontUseIdleSchedulingForTesting();
-    return bridge.Release();
+    return bridge;
   }
 
  protected:

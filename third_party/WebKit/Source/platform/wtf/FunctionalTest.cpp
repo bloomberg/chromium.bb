@@ -365,7 +365,7 @@ TEST(FunctionalTest, RefCountedStorage) {
 
   RefPtr<Number> six = Number::Create(6);
   std::unique_ptr<Function<int()>> multiply_six_by_two_function =
-      Bind(MultiplyNumberByTwo, six.Release());
+      Bind(MultiplyNumberByTwo, std::move(six));
   EXPECT_FALSE(six);
   EXPECT_EQ(12, (*multiply_six_by_two_function)());
 }
