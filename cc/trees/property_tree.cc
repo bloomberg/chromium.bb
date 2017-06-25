@@ -1248,9 +1248,6 @@ gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
     scale_factor = transform_tree.page_scale_factor();
 
   gfx::SizeF scaled_scroll_bounds = gfx::ScaleSize(scroll_bounds, scale_factor);
-  scaled_scroll_bounds.SetSize(std::floor(scaled_scroll_bounds.width()),
-                               std::floor(scaled_scroll_bounds.height()));
-
   gfx::Size clip_layer_bounds = scroll_clip_layer_bounds(scroll_node->id);
 
   gfx::ScrollOffset max_offset(
