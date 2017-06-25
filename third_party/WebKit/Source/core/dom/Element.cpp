@@ -3248,17 +3248,6 @@ bool Element::IsInDescendantTreeOf(const Element* shadow_host) const {
   return false;
 }
 
-LayoutSize Element::MinimumSizeForResizing() const {
-  return HasRareData() ? GetElementRareData()->MinimumSizeForResizing()
-                       : DefaultMinimumSizeForResizing();
-}
-
-void Element::SetMinimumSizeForResizing(const LayoutSize& size) {
-  if (!HasRareData() && size == DefaultMinimumSizeForResizing())
-    return;
-  EnsureElementRareData().SetMinimumSizeForResizing(size);
-}
-
 const ComputedStyle* Element::EnsureComputedStyle(
     PseudoId pseudo_element_specifier) {
   if (PseudoElement* element = GetPseudoElement(pseudo_element_specifier))

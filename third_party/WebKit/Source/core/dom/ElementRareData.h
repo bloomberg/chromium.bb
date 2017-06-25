@@ -106,13 +106,6 @@ class ElementRareData : public NodeRareData {
     ScriptWrappableVisitor::WriteBarrier(this, dataset_);
   }
 
-  LayoutSize MinimumSizeForResizing() const {
-    return minimum_size_for_resizing_;
-  }
-  void SetMinimumSizeForResizing(LayoutSize size) {
-    minimum_size_for_resizing_ = size;
-  }
-
   ScrollOffset SavedLayerScrollOffset() const {
     return saved_layer_scroll_offset_;
   }
@@ -187,7 +180,6 @@ class ElementRareData : public NodeRareData {
   DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
  private:
-  LayoutSize minimum_size_for_resizing_;
   ScrollOffset saved_layer_scroll_offset_;
   AtomicString nonce_;
 
@@ -222,7 +214,6 @@ inline LayoutSize DefaultMinimumSizeForResizing() {
 
 inline ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
     : NodeRareData(node_layout_data),
-      minimum_size_for_resizing_(DefaultMinimumSizeForResizing()),
       class_list_(nullptr) {
   is_element_rare_data_ = true;
 }
