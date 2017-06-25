@@ -140,19 +140,6 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
     return;
   }
 
-// After we migrate each platform to the new way of starting and stopping
-// notifications, we can remove them from this #if check. The goal is to get
-// rid of the entire check, and run SubscribeToNotifications on all
-// platforms.
-//
-// TODO(http://crbug.com/636270): Remove OS_WIN from this check.
-#if defined(OS_WIN)
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
-                 GetWeakPtr(), error_callback,
-                 BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
-#else   // defined(OS_WIN))
   // Find the Client Characteristic Configuration descriptor.
   std::vector<BluetoothRemoteGattDescriptor*> ccc_descriptor =
       GetDescriptorsByUUID(BluetoothRemoteGattDescriptor::
@@ -182,7 +169,6 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
           GetWeakPtr(), callback),
       base::Bind(&BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
                  GetWeakPtr(), error_callback));
-#endif  // defined(OS_WIN)
 }
 
 void BluetoothRemoteGattCharacteristic::CancelStartNotifySession(
@@ -273,19 +259,6 @@ void BluetoothRemoteGattCharacteristic::ExecuteStopNotifySession(
     return;
   }
 
-// After we migrate each platform to the new way of starting and stopping
-// notifications, we can remove them from this #if check. The goal is to get
-// rid of the entire check, and run SubscribeToNotifications on all
-// platforms.
-//
-// TODO(http://crbug.com/636270): Remove OS_WIN from this check.
-#if defined(OS_WIN)
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&BluetoothRemoteGattCharacteristic::OnStopNotifySessionError,
-                 GetWeakPtr(), session, callback,
-                 BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
-#else   // defined(OS_WIN))
   // Find the Client Characteristic Configuration descriptor.
   std::vector<BluetoothRemoteGattDescriptor*> ccc_descriptor =
       GetDescriptorsByUUID(BluetoothRemoteGattDescriptor::
@@ -308,7 +281,6 @@ void BluetoothRemoteGattCharacteristic::ExecuteStopNotifySession(
                  GetWeakPtr(), session, callback),
       base::Bind(&BluetoothRemoteGattCharacteristic::OnStopNotifySessionError,
                  GetWeakPtr(), session, callback));
-#endif  // defined(OS_WIN)
 }
 
 void BluetoothRemoteGattCharacteristic::CancelStopNotifySession(
