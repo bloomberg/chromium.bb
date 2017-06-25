@@ -27,16 +27,6 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 75, 132, 82],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 75, 132, 82],
-          "reason": "disappeared"
-        },
-        {
           "object": "LayoutTableRow TR",
           "rect": [8, 75, 132, 82],
           "reason": "appeared"
@@ -47,23 +37,33 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutTableRow TR",
           "rect": [8, 8, 132, 82],
           "reason": "appeared"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutTableRow TR",
           "rect": [8, 8, 132, 82],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 8, 132, 82],
+          "object": "LayoutTableCell TD",
+          "rect": [15, 82, 117, 67],
           "reason": "appeared"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 8, 132, 82],
+          "object": "LayoutTableCell TD",
+          "rect": [15, 82, 117, 67],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [15, 15, 117, 67],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [15, 15, 117, 67],
           "reason": "disappeared"
         }
       ]
@@ -93,14 +93,6 @@
     {
       "object": "LayoutTable TABLE id='table'",
       "reason": "disappeared"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
     },
     {
       "object": "LayoutTable TABLE id='table' class='green'",

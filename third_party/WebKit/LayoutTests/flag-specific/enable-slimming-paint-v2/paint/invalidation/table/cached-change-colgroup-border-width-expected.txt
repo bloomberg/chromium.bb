@@ -7,63 +7,24 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 167, 104],
-          "reason": "geometry"
+          "object": "LayoutTableRow TR",
+          "rect": [8, 59, 167, 53],
+          "reason": "style change"
         },
         {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 167, 104],
-          "reason": "geometry"
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 167, 53],
+          "reason": "style change"
         },
         {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 167, 104],
-          "reason": "geometry"
-        },
-        {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 167, 104],
-          "reason": "geometry"
-        },
-        {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 167, 104],
-          "reason": "geometry"
-        },
-        {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 167, 104],
-          "reason": "geometry"
+          "object": "LayoutTableRow TR",
+          "rect": [8, 58, 162, 52],
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
     {
       "object": "LayoutTable TABLE",
       "reason": "geometry"
@@ -78,6 +39,10 @@
     },
     {
       "object": "LayoutTableRow TR",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
     {
@@ -85,27 +50,15 @@
       "reason": "geometry"
     },
     {
-      "object": "CollapsedBorderValues",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "CollapsedBorderValues",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "CollapsedBorderValues",
       "reason": "geometry"
     },
     {
       "object": "LayoutTableRow TR",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
     {
@@ -113,23 +66,7 @@
       "reason": "geometry"
     },
     {
-      "object": "CollapsedBorderValues",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "CollapsedBorderValues",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "CollapsedBorderValues",
       "reason": "geometry"
     }
   ]

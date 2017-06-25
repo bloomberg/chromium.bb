@@ -144,8 +144,15 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
 
   CellSpan dirtied_rows;
   CellSpan dirtied_columns;
-  layout_table_section_.DirtiedRowsAndEffectiveColumns(
-      table_aligned_rect, dirtied_rows, dirtied_columns);
+  if (UNLIKELY(
+          layout_table_section_.Table()->ShouldPaintAllCollapsedBorders())) {
+    // Ignore paint cull rect to simplify paint invalidation in such rare case.
+    dirtied_rows = layout_table_section_.FullSectionRowSpan();
+    dirtied_columns = layout_table_section_.FullTableEffectiveColumnSpan();
+  } else {
+    layout_table_section_.DirtiedRowsAndEffectiveColumns(
+        table_aligned_rect, dirtied_rows, dirtied_columns);
+  }
 
   if (dirtied_columns.Start() >= dirtied_columns.End())
     return;
@@ -153,19 +160,9 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
   // Collapsed borders are painted from the bottom right to the top left so that
   // precedence due to cell position is respected.
   for (unsigned r = dirtied_rows.End(); r > dirtied_rows.Start(); r--) {
-    unsigned row = r - 1;
-    unsigned n_cols = layout_table_section_.NumCols(row);
-    for (unsigned c = std::min(dirtied_columns.End(), n_cols);
-         c > dirtied_columns.Start(); c--) {
-      unsigned col = c - 1;
-      if (const LayoutTableCell* cell =
-              layout_table_section_.OriginatingCellAt(row, col)) {
-        LayoutPoint cell_point =
-            layout_table_section_.FlipForWritingModeForChild(
-                cell, adjusted_paint_offset);
-        CollapsedBorderPainter(*cell).PaintCollapsedBorders(paint_info,
-                                                            cell_point);
-      }
+    if (const auto* row = layout_table_section_.RowLayoutObjectAt(r - 1)) {
+      TableRowPainter(*row).PaintCollapsedBorders(
+          paint_info, adjusted_paint_offset, dirtied_columns);
     }
   }
 }

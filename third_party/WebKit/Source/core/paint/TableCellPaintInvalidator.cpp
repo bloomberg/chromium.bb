@@ -16,24 +16,66 @@
 
 namespace blink {
 
+void TableCellPaintInvalidator::InvalidateContainerForCellGeometryChange(
+    const LayoutObject& container,
+    const PaintInvalidatorContext* container_context) {
+  // We only need to do this if the container hasn't been fully invalidated.
+  DCHECK(
+      !IsFullPaintInvalidationReason(container.GetPaintInvalidationReason()));
+
+  // At this time we have already walked the container for paint invalidation,
+  // so we should invalidate the container immediately here instead of setting
+  // paint invalidation flags.
+  ObjectPaintInvalidator invalidator(container);
+  if (!container_context) {
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
+    ObjectPaintInvalidator(container).InvalidatePaintRectangle(
+        container.LocalVisualRect(), nullptr);
+    return;
+  }
+
+  container_context->painting_layer->SetNeedsRepaint();
+  container.InvalidateDisplayItemClients(PaintInvalidationReason::kGeometry);
+
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      context_.paint_invalidation_container !=
+          container_context->paint_invalidation_container) {
+    ObjectPaintInvalidatorWithContext(container, *container_context)
+        .InvalidatePaintRectangleWithContext(
+            container.VisualRect(), PaintInvalidationReason::kGeometry);
+  }
+}
+
 PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
-  // The cell's containing row and section paint backgrounds behind the cell.
-  // If the cell's geometry changed, invalidate the background display items.
+  // The cell's containing row and section paint backgrounds behind the cell,
+  // and the row or table paints collapsed borders. If the cell's geometry
+  // changed and the containers which will paint backgrounds and/or collapsed
+  // borders haven't been full invalidated, invalidate the containers.
   if (context_.old_location != context_.new_location ||
       cell_.Size() != cell_.PreviousSize()) {
     const auto& row = *cell_.Row();
-    if (row.GetPaintInvalidationReason() == PaintInvalidationReason::kNone &&
-        row.StyleRef().HasBackground()) {
-      if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-        context_.parent_context->painting_layer->SetNeedsRepaint();
-      else
-        ObjectPaintInvalidator(row).SlowSetPaintingLayerNeedsRepaint();
-      row.InvalidateDisplayItemClients(PaintInvalidationReason::kGeometry);
+    const auto& section = *row.Section();
+    const auto& table = *section.Table();
+    if (!IsFullPaintInvalidationReason(row.GetPaintInvalidationReason()) &&
+        (row.StyleRef().HasBackground() ||
+         (table.HasCollapsedBorders() &&
+          LIKELY(!table.ShouldPaintAllCollapsedBorders())))) {
+      InvalidateContainerForCellGeometryChange(
+          row, RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()
+                   ? context_.parent_context
+                   : nullptr);
     }
 
-    const auto& section = *row.Section();
-    if (section.GetPaintInvalidationReason() ==
-        PaintInvalidationReason::kNone) {
+    if (UNLIKELY(table.ShouldPaintAllCollapsedBorders()) &&
+        !IsFullPaintInvalidationReason(table.GetPaintInvalidationReason())) {
+      DCHECK(table.HasCollapsedBorders());
+      InvalidateContainerForCellGeometryChange(
+          table, RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()
+                     ? context_.parent_context->parent_context->parent_context
+                     : nullptr);
+    }
+
+    if (!IsFullPaintInvalidationReason(section.GetPaintInvalidationReason())) {
       bool section_paints_background = section.StyleRef().HasBackground();
       if (!section_paints_background) {
         auto col_and_colgroup = section.Table()->ColElementAtAbsoluteColumn(
@@ -45,14 +87,10 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
           section_paints_background = true;
       }
       if (section_paints_background) {
-        if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
-          context_.parent_context->parent_context->painting_layer
-              ->SetNeedsRepaint();
-        } else {
-          ObjectPaintInvalidator(section).SlowSetPaintingLayerNeedsRepaint();
-        }
-        section.InvalidateDisplayItemClients(
-            PaintInvalidationReason::kGeometry);
+        InvalidateContainerForCellGeometryChange(
+            section, RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()
+                         ? context_.parent_context->parent_context
+                         : nullptr);
       }
     }
   }

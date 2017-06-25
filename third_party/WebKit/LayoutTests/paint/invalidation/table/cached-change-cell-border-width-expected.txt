@@ -7,24 +7,34 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 114, 54],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutTable TABLE",
           "rect": [8, 58, 114, 4],
           "reason": "incremental"
         },
         {
           "object": "LayoutTableCell TD id='foo'",
-          "rect": [8, 8, 60, 54],
+          "rect": [10, 10, 56, 50],
           "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [64, 8, 58, 54],
+          "rect": [66, 10, 55, 50],
           "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [62, 8, 55, 52],
+          "rect": [62, 9, 54, 50],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutTableCell TD id='foo'",
+          "rect": [9, 9, 53, 50],
+          "reason": "style change"
         },
         {
           "object": "LayoutTable TABLE",
@@ -36,20 +46,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD id='foo'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
       "object": "LayoutTable TABLE",
       "reason": "incremental"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutTableCell TD id='foo'",

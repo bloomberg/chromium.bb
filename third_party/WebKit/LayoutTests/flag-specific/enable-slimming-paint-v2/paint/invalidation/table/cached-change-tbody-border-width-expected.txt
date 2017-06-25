@@ -7,63 +7,29 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 114, 153],
-          "reason": "geometry"
+          "object": "LayoutTableRow TR",
+          "rect": [8, 108, 114, 53],
+          "reason": "style change"
         },
         {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 114, 153],
-          "reason": "geometry"
+          "object": "LayoutTableRow TR",
+          "rect": [8, 59, 114, 53],
+          "reason": "style change"
         },
         {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 114, 153],
-          "reason": "geometry"
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 114, 53],
+          "reason": "style change"
         },
         {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 114, 153],
-          "reason": "geometry"
-        },
-        {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 114, 153],
-          "reason": "geometry"
-        },
-        {
-          "object": "CollapsedBorderValues",
-          "rect": [8, 8, 114, 153],
-          "reason": "geometry"
+          "object": "LayoutTableRow TR",
+          "rect": [8, 58, 109, 52],
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
     {
       "object": "LayoutTable TABLE",
       "reason": "geometry"
@@ -74,42 +40,26 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
     {
-      "object": "CollapsedBorderValues",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "CollapsedBorderValues",
       "reason": "geometry"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
     {
-      "object": "CollapsedBorderValues",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "CollapsedBorderValues",
       "reason": "geometry"
     },
     {
@@ -118,22 +68,14 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
     {
-      "object": "CollapsedBorderValues",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "CollapsedBorderValues",
       "reason": "geometry"
     }
   ]

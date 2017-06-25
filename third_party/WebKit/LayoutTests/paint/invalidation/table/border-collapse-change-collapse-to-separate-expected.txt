@@ -33,17 +33,17 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [112, 8, 108, 108],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 8, 107, 108],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [10, 10, 106, 108],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [113, 9, 105, 105],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [9, 9, 104, 105],
           "reason": "style change"
         }
       ]
@@ -60,14 +60,6 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
       "reason": "style change"
     },
     {

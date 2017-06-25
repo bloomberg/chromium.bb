@@ -16,7 +16,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableCell TD id='target'",
-          "rect": [0, 0, 38, 22],
+          "rect": [0, 0, 38, 21],
           "reason": "style change"
         }
       ]

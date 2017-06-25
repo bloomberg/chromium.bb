@@ -5,7 +5,6 @@
 #include "core/paint/CollapsedBorderPainter.h"
 
 #include "core/paint/BlockPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 
@@ -102,7 +101,7 @@ void CollapsedBorderPainter::SetupBorders() {
   }
 }
 
-static const LayoutTableCell::CollapsedBorderValues* GetCollapsedBorderValues(
+static const CollapsedBorderValues* GetCollapsedBorderValues(
     const LayoutTableCell* cell) {
   return cell ? cell->GetCollapsedBorderValues() : nullptr;
 }
@@ -321,16 +320,6 @@ static EBorderStyle CollapsedBorderStyle(EBorderStyle style) {
   return style;
 }
 
-const DisplayItemClient& CollapsedBorderPainter::DisplayItemClientForBorders()
-    const {
-  // TODO(wkorman): We may need to handle PaintInvalidationDelayedFull.
-  // http://crbug.com/657186
-  return cell_.UsesCompositedCellDisplayItemClients()
-             ? static_cast<const DisplayItemClient&>(
-                   *cell_.GetCollapsedBorderValues())
-             : cell_;
-}
-
 void CollapsedBorderPainter::PaintCollapsedBorders(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
@@ -341,10 +330,6 @@ void CollapsedBorderPainter::PaintCollapsedBorders(
     return;
 
   GraphicsContext& context = paint_info.context;
-  const DisplayItemClient& client = DisplayItemClientForBorders();
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, client, DisplayItem::kTableCollapsedBorders))
-    return;
 
   SetupBorders();
   if (table_.NeedsAdjustCollapsedBorderJoints())
@@ -359,8 +344,6 @@ void CollapsedBorderPainter::PaintCollapsedBorders(
   IntRect paint_rect = rect;
   paint_rect.Expand(IntRectOutsets(before_.outer_width, end_.outer_width,
                                    after_.outer_width, start_.outer_width));
-  DrawingRecorder recorder(context, client, DisplayItem::kTableCollapsedBorders,
-                           paint_rect);
 
   // We never paint diagonals at the joins.  We simply let the border with the
   // highest precedence paint on top of borders with lower precedence.

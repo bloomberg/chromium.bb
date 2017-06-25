@@ -10,37 +10,31 @@
           "object": "LayoutTableCol COLGROUP id='colgroup'",
           "rect": [8, 8, 167, 104],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 59, 167, 53],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 167, 53],
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
       "object": "LayoutTableCol COLGROUP id='colgroup'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableRow TR",
       "reason": "style change"
     }
   ]

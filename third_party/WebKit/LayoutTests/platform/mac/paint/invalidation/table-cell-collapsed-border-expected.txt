@@ -7,43 +7,38 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE id='table'",
-          "rect": [8, 8, 220, 112],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [8, 8, 220, 112],
+          "object": "LayoutTableRow TR",
+          "rect": [3, 260, 441, 110],
           "reason": "style change"
         },
         {
           "object": "LayoutTableRow TR",
-          "rect": [8, 10, 220, 108],
+          "rect": [3, 162, 441, 108],
           "reason": "style change"
         },
         {
           "object": "LayoutTableRow TR",
-          "rect": [8, 8, 212, 108],
+          "rect": [3, 360, 441, 105],
           "reason": "style change"
         },
         {
-          "object": "LayoutTableCell TD",
-          "rect": [118, 10, 108, 108],
+          "object": "LayoutTableRow TR",
+          "rect": [8, 60, 436, 108],
           "reason": "style change"
         },
         {
-          "object": "LayoutTableCell TD",
-          "rect": [112, 8, 108, 108],
+          "object": "LayoutTableCell TD id='t3'",
+          "rect": [225, 265, 112, 100],
           "reason": "style change"
         },
         {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 8, 107, 108],
+          "object": "LayoutTableCell TD id='t1'",
+          "rect": [225, 65, 112, 100],
           "reason": "style change"
         },
         {
-          "object": "LayoutTableCell TD",
-          "rect": [10, 10, 106, 108],
+          "object": "LayoutTableCell TD id='t2'",
+          "rect": [8, 265, 110, 100],
           "reason": "style change"
         }
       ]
@@ -51,19 +46,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
+      "object": "LayoutTableRow TR",
       "reason": "style change"
     },
     {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTable TABLE id='table'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
+      "object": "LayoutTableCell TD id='t1'",
       "reason": "style change"
     },
     {
@@ -71,11 +58,19 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutTableCell TD",
+      "object": "LayoutTableRow TR",
       "reason": "style change"
     },
     {
-      "object": "LayoutTableCell TD",
+      "object": "LayoutTableCell TD id='t2'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD id='t3'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableRow TR",
       "reason": "style change"
     }
   ]

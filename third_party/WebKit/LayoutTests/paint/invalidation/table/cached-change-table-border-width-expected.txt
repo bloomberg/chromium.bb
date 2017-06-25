@@ -12,8 +12,18 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutTableRow TR",
           "rect": [8, 8, 60, 54],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 10, 56, 50],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [9, 9, 54, 50],
           "reason": "geometry"
         }
       ]
@@ -21,16 +31,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
       "object": "LayoutTable TABLE id='tbl'",
       "reason": "style change"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutTableCell TD",

@@ -26,6 +26,7 @@
 #define CollapsedBorderValue_h
 
 #include "core/style/ComputedStyle.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -174,6 +175,54 @@ class CollapsedBorderValue {
   unsigned width_ : 25;
   unsigned style_ : 4;       // EBorderStyle
   unsigned precedence_ : 3;  // EBorderPrecedence
+};
+
+// Holds 4 CollapsedBorderValue's for 4 sides of a table cell.
+// The logical directions 'start', 'end', 'before', 'after' are according to
+// the table's writing mode and direction.
+// TODO(crbug.com/128227,crbug.com/727173): The direction is incorrect in some
+// cases.
+class CollapsedBorderValues {
+  USING_FAST_MALLOC(CollapsedBorderValues);
+
+ public:
+  CollapsedBorderValues(const CollapsedBorderValue& start,
+                        const CollapsedBorderValue& end,
+                        const CollapsedBorderValue& before,
+                        const CollapsedBorderValue& after) {
+    borders_[0] = start;
+    borders_[1] = end;
+    borders_[2] = before;
+    borders_[3] = after;
+  }
+
+  const CollapsedBorderValue& StartBorder() const { return borders_[0]; }
+  const CollapsedBorderValue& EndBorder() const { return borders_[1]; }
+  const CollapsedBorderValue& BeforeBorder() const { return borders_[2]; }
+  const CollapsedBorderValue& AfterBorder() const { return borders_[3]; }
+
+  // Returns all borders. The caller should not assume that the returned
+  // borders are in any particular order.
+  const CollapsedBorderValue* Borders() const { return borders_; }
+
+  LayoutRect LocalVisualRect() const { return local_visual_rect_; }
+  void SetLocalVisualRect(const LayoutRect& r) { local_visual_rect_ = r; }
+
+  bool HasNonZeroWidthBorder() const {
+    return StartBorder().Width() || EndBorder().Width() ||
+           BeforeBorder().Width() || AfterBorder().Width();
+  }
+
+  bool VisuallyEquals(const CollapsedBorderValues& other) const {
+    return StartBorder().VisuallyEquals(other.StartBorder()) &&
+           EndBorder().VisuallyEquals(other.EndBorder()) &&
+           BeforeBorder().VisuallyEquals(other.BeforeBorder()) &&
+           AfterBorder().VisuallyEquals(other.AfterBorder());
+  }
+
+ private:
+  CollapsedBorderValue borders_[4];
+  LayoutRect local_visual_rect_;
 };
 
 }  // namespace blink
