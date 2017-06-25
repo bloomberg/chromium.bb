@@ -105,7 +105,14 @@ class CORE_EXPORT NGLineBreaker {
   ShapeResultSpacing<String> spacing_;
 
   bool auto_wrap_;
+
+  // We don't create "certain zero-height line boxes".
+  // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
+  // Such line boxes do not prevent two margins being "adjoining", and thus
+  // collapsing.
+  // https://drafts.csswg.org/css2/box.html#collapsing-margins
   bool should_create_line_box_;
+
   bool is_after_forced_break_;
 };
 
