@@ -48,7 +48,7 @@ PassRefPtr<EncodedFormData> ComplexFormData() {
   Vector<char> boundary;
   boundary.Append("\0", 1);
   data->SetBoundary(boundary);
-  return data.Release();
+  return data;
 }
 
 class NoopClient final : public GarbageCollectedFinalized<NoopClient>,

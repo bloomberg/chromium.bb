@@ -385,7 +385,7 @@ class DrawingBufferForTests : public DrawingBuffer {
       drawing_buffer->BeginDestruction();
       return nullptr;
     }
-    return drawing_buffer.Release();
+    return drawing_buffer;
   }
 
   DrawingBufferForTests(

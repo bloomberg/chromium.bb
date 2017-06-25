@@ -66,7 +66,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
                                 "100%",
                                 GetDocument().ElementSheet().Contents());
   StringKeyframeVector keyframes;
-  keyframes.push_back(keyframe.Release());
+  keyframes.push_back(std::move(keyframe));
   Timing timing;
   timing.iteration_duration = 1;  // Seconds.
   ElementAnimation::animateInternal(
@@ -86,7 +86,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
                                 "100%",
                                 GetDocument().ElementSheet().Contents());
   keyframes.clear();
-  keyframes.push_back(keyframe.Release());
+  keyframes.push_back(std::move(keyframe));
   timing = Timing::Defaults();
   timing.iteration_duration = 1;  // Seconds.
   ElementAnimation::animateInternal(
