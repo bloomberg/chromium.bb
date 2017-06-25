@@ -633,9 +633,6 @@ class CORE_EXPORT Element : public ContainerNode {
   // used only in UA stylesheet.
   void SetShadowPseudoId(const AtomicString&);
 
-  LayoutSize MinimumSizeForResizing() const;
-  void SetMinimumSizeForResizing(const LayoutSize&);
-
   // Called by the parser when this element's close tag is reached, signaling
   // that all child tags have been parsed and added.  This is needed for
   // <applet> and <object> elements, which can't lay themselves out until they

@@ -88,6 +88,15 @@
 
 namespace blink {
 
+namespace {
+
+// Default value is set to 15 as the default
+// minimum size used by firefox is 15x15.
+static const int kDefaultMinimumWidthForResizing = 15;
+static const int kDefaultMinimumHeightForResizing = 15;
+
+}  // namespace
+
 static LayoutRect LocalToAbsolute(LayoutBox& offset, LayoutRect rect) {
   return LayoutRect(
       offset.LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
@@ -1672,6 +1681,18 @@ IntSize PaintLayerScrollableArea::OffsetFromResizeCorner(
   return local_point - resizer_point;
 }
 
+LayoutSize PaintLayerScrollableArea::MinimumSizeForResizing(float zoom_factor) {
+  LayoutUnit min_width = MinimumValueForLength(
+      Box().StyleRef().MinWidth(), Box().ContainingBlock()->Size().Width());
+  LayoutUnit min_height = MinimumValueForLength(
+      Box().StyleRef().MinHeight(), Box().ContainingBlock()->Size().Height());
+  min_width = std::max(LayoutUnit(min_width / zoom_factor),
+                       LayoutUnit(kDefaultMinimumWidthForResizing));
+  min_height = std::max(LayoutUnit(min_height / zoom_factor),
+                        LayoutUnit(kDefaultMinimumHeightForResizing));
+  return LayoutSize(min_width, min_height);
+}
+
 void PaintLayerScrollableArea::Resize(const IntPoint& pos,
                                       const LayoutSize& old_offset) {
   // FIXME: This should be possible on generated content but is not right now.
@@ -1692,9 +1713,6 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
 
   LayoutSize current_size = Box().Size();
   current_size.Scale(1 / zoom_factor);
-  LayoutSize minimum_size =
-      element->MinimumSizeForResizing().ShrunkTo(current_size);
-  element->SetMinimumSizeForResizing(minimum_size);
 
   LayoutSize adjusted_old_offset = LayoutSize(
       old_offset.Width() / zoom_factor, old_offset.Height() / zoom_factor);
@@ -1704,7 +1722,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
   }
 
   LayoutSize difference((current_size + new_offset - adjusted_old_offset)
-                            .ExpandedTo(minimum_size) -
+                            .ExpandedTo(MinimumSizeForResizing(zoom_factor)) -
                         current_size);
 
   bool is_box_sizing_border =
