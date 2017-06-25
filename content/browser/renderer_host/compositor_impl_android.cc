@@ -74,6 +74,7 @@
 #include "ui/android/window_android.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/swap_result.h"
 
 namespace gpu {
@@ -794,6 +795,8 @@ void CompositorImpl::InitializeDisplay(
   cc::RendererSettings renderer_settings;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
+  renderer_settings.enable_color_correct_rendering =
+      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
   display_.reset(new cc::Display(
       viz::HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(), renderer_settings,
@@ -812,6 +815,11 @@ void CompositorImpl::InitializeDisplay(
 
   display_->SetVisible(true);
   display_->Resize(size_);
+  const gfx::ColorSpace& display_color_space =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(root_window_)
+          .color_space();
+  display_->SetColorSpace(display_color_space, display_color_space);
   GetSurfaceManager()->RegisterBeginFrameSource(
       root_window_->GetBeginFrameSource(), frame_sink_id_);
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
