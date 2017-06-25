@@ -83,40 +83,6 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"
 
-template <typename T, typename U>
-inline bool compareEqual(const T& t, const U& u) {
-  return t == static_cast<T>(u);
-}
-
-template <typename T>
-inline bool compareEqual(const T& a, const T& b) {
-  return a == b;
-}
-
-#define SET_VAR(group, variable, value)      \
-  if (!compareEqual(group->variable, value)) \
-  group.Access()->variable = value
-
-#define SET_NESTED_VAR(group, base, variable, value) \
-  if (!compareEqual(group->base->variable, value))   \
-  group.Access()->base.Access()->variable = value
-
-#define SET_VAR_WITH_SETTER(group, getter, setter, value) \
-  if (!compareEqual(group->getter(), value))              \
-  group.Access()->setter(value)
-
-#define SET_BORDERVALUE_COLOR(group, variable, value)   \
-  if (!compareEqual(group->variable.GetColor(), value)) \
-  group.Access()->variable.SetColor(value)
-
-#define SET_BORDER_WIDTH(group, variable, value) \
-  if (!group->variable.WidthEquals(value))       \
-  group.Access()->variable.SetWidth(value)
-
-#define SET_NESTED_BORDER_WIDTH(group, base, variable, value) \
-  if (!group->base->variable.WidthEquals(value))              \
-  group.Access()->base.Access()->variable.SetWidth(value)
-
 namespace blink {
 
 using std::max;
@@ -483,7 +449,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Border color properties.
   // border-left-color
   void SetBorderLeftColor(const StyleColor& color) {
-    if (!compareEqual(BorderLeftColor(), color)) {
+    if (BorderLeftColor() != color) {
       SetBorderLeftColorInternal(color.Resolve(Color()));
       SetBorderLeftColorIsCurrentColor(color.IsCurrentColor());
     }
@@ -491,7 +457,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // border-right-color
   void SetBorderRightColor(const StyleColor& color) {
-    if (!compareEqual(BorderRightColor(), color)) {
+    if (BorderRightColor() != color) {
       SetBorderRightColorInternal(color.Resolve(Color()));
       SetBorderRightColorIsCurrentColor(color.IsCurrentColor());
     }
@@ -499,7 +465,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // border-top-color
   void SetBorderTopColor(const StyleColor& color) {
-    if (!compareEqual(BorderTopColor(), color)) {
+    if (BorderTopColor() != color) {
       SetBorderTopColorInternal(color.Resolve(Color()));
       SetBorderTopColorIsCurrentColor(color.IsCurrentColor());
     }
@@ -507,7 +473,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // border-bottom-color
   void SetBorderBottomColor(const StyleColor& color) {
-    if (!compareEqual(BorderBottomColor(), color)) {
+    if (BorderBottomColor() != color) {
       SetBorderBottomColorInternal(color.Resolve(Color()));
       SetBorderBottomColorIsCurrentColor(color.IsCurrentColor());
     }
@@ -562,7 +528,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // column-rule-color (aka -webkit-column-rule-color)
   void SetColumnRuleColor(const StyleColor& c) {
-    if (!compareEqual(ColumnRuleColor(), c)) {
+    if (ColumnRuleColor() != c) {
       SetColumnRuleColorInternal(c.Resolve(Color()));
       SetColumnRuleColorIsCurrentColor(c.IsCurrentColor());
     }
@@ -682,7 +648,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // outline-color
   void SetOutlineColor(const StyleColor& v) {
-    if (!compareEqual(OutlineColor(), v)) {
+    if (OutlineColor() != v) {
       SetOutlineColorInternal(v.Resolve(Color()));
       SetOutlineColorIsCurrentColor(v.IsCurrentColor());
     }
@@ -2647,7 +2613,7 @@ inline float AdjustScrollForAbsoluteZoom(float scroll_offset,
 }
 
 inline bool ComputedStyle::SetZoom(float f) {
-  if (compareEqual(ZoomInternal(), f))
+  if (ZoomInternal() == f)
     return false;
   SetZoomInternal(f);
   SetEffectiveZoom(EffectiveZoom() * Zoom());
@@ -2658,7 +2624,7 @@ inline bool ComputedStyle::SetEffectiveZoom(float f) {
   // Clamp the effective zoom value to a smaller (but hopeful still large
   // enough) range, to avoid overflow in derived computations.
   float clamped_effective_zoom = clampTo<float>(f, 1e-6, 1e6);
-  if (compareEqual(EffectiveZoomInternal(), clamped_effective_zoom))
+  if (EffectiveZoomInternal() == clamped_effective_zoom)
     return false;
   SetEffectiveZoomInternal(clamped_effective_zoom);
   return true;
