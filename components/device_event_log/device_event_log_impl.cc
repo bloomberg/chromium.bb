@@ -259,7 +259,7 @@ void DeviceEventLogImpl::AddEntry(const char* file,
                                   LogLevel log_level,
                                   const std::string& event) {
   LogEntry entry(file, file_line, log_type, log_level, event);
-  if (!task_runner_->RunsTasksOnCurrentThread()) {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&DeviceEventLogImpl::AddLogEntry,
                                       weak_ptr_factory_.GetWeakPtr(), entry));
@@ -269,7 +269,7 @@ void DeviceEventLogImpl::AddEntry(const char* file,
 }
 
 void DeviceEventLogImpl::AddLogEntry(const LogEntry& entry) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!entries_.empty()) {
     LogEntry& last = entries_.back();
     if (LogEntryMatches(last, entry)) {
@@ -307,7 +307,7 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
                                             const std::string& types,
                                             LogLevel max_level,
                                             size_t max_events) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (entries_.empty())
     return "No Log Entries.";
 

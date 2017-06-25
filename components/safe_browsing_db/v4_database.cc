@@ -79,7 +79,7 @@ void V4Database::CreateOnTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
     NewDatabaseReadyCallback new_db_callback,
     const TimeTicks create_start_time) {
-  DCHECK(db_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 
   if (!g_store_factory.Get())
     g_store_factory.Get() = base::MakeUnique<V4StoreFactory>();
@@ -133,7 +133,7 @@ V4Database::V4Database(
       db_task_runner_(db_task_runner),
       pending_store_updates_(0),
       weak_factory_on_io_(this) {
-  DCHECK(db_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 }
 
 // static
@@ -147,7 +147,7 @@ void V4Database::Destroy(std::unique_ptr<V4Database> v4_database) {
 }
 
 V4Database::~V4Database() {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 }
 
 void V4Database::ApplyUpdate(

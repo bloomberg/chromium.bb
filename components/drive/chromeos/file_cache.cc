@@ -194,7 +194,7 @@ base::FilePath FileCache::GetCacheFilePath(const std::string& id) const {
 }
 
 void FileCache::AssertOnSequencedWorkerPool() {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
 }
 
 bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {

@@ -70,7 +70,7 @@ CrxInstaller::Result DoInstallOnBlockingTaskRunner(
     const std::string& fingerprint,
     const scoped_refptr<CrxInstaller>& installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
-  DCHECK(blocking_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(blocking_task_runner->RunsTasksInCurrentSequence());
 
   if (static_cast<int>(fingerprint.size()) !=
       base::WriteFile(
@@ -93,7 +93,7 @@ void InstallOnBlockingTaskRunner(
     const std::string& fingerprint,
     const scoped_refptr<CrxInstaller>& installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
-  DCHECK(blocking_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(blocking_task_runner->RunsTasksInCurrentSequence());
 
   DCHECK(base::DirectoryExists(unpack_path));
   const auto result = DoInstallOnBlockingTaskRunner(
@@ -117,7 +117,7 @@ void UnpackCompleteOnBlockingTaskRunner(
     const scoped_refptr<CrxInstaller>& installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback,
     const ComponentUnpacker::Result& result) {
-  DCHECK(blocking_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(blocking_task_runner->RunsTasksInCurrentSequence());
 
   update_client::DeleteFileAndEmptyParentDirectory(crx_path);
 
@@ -144,7 +144,7 @@ void StartInstallOnBlockingTaskRunner(
     const scoped_refptr<CrxInstaller>& installer,
     const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
-  DCHECK(blocking_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(blocking_task_runner->RunsTasksInCurrentSequence());
 
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
       pk_hash, crx_path, installer, oop_patcher, blocking_task_runner);

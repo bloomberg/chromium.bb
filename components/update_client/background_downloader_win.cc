@@ -457,7 +457,7 @@ void BackgroundDownloader::DoStartDownload(const GURL& url) {
 
 // Called one time when this class is asked to do a download.
 void BackgroundDownloader::BeginDownload(const GURL& url) {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
   download_start_time_ = base::TimeTicks::Now();
   job_stuck_begin_time_ = download_start_time_;
@@ -503,7 +503,7 @@ HRESULT BackgroundDownloader::BeginDownloadHelper(const GURL& url) {
 
 // Called any time the timer fires.
 void BackgroundDownloader::OnDownloading() {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
   HRESULT hr = UpdateInterfacePointers();
   if (FAILED(hr)) {
@@ -568,7 +568,7 @@ void BackgroundDownloader::OnDownloading() {
 // Completes the BITS download, picks up the file path of the response, and
 // notifies the CrxDownloader. The function should be called only once.
 void BackgroundDownloader::EndDownload(HRESULT error) {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
   const base::TimeTicks download_end_time(base::TimeTicks::Now());
   const base::TimeDelta download_time =
@@ -709,7 +709,7 @@ bool BackgroundDownloader::OnStateTransferring() {
 // install a job observer but continues on if an observer can't be set up.
 HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url,
                                            IBackgroundCopyJob** job) {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
   ScopedComPtr<IBackgroundCopyJob> p;
   HRESULT hr = CreateOrOpenJob(url, p.GetAddressOf());
@@ -830,7 +830,7 @@ HRESULT BackgroundDownloader::CompleteJob() {
 }
 
 HRESULT BackgroundDownloader::UpdateInterfacePointers() {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
   ScopedComPtr<IGlobalInterfaceTable> git;
   HRESULT hr = GetGit(&git);
@@ -857,7 +857,7 @@ void BackgroundDownloader::ResetInterfacePointers() {
 }
 
 HRESULT BackgroundDownloader::ClearGit() {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
   ResetInterfacePointers();
 

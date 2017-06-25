@@ -86,7 +86,7 @@ void FakeGCMClient::Initialize(
 }
 
 void FakeGCMClient::Start(StartMode start_mode) {
-  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+  DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   if (started_)
     return;
@@ -109,14 +109,14 @@ void FakeGCMClient::DoStart() {
 }
 
 void FakeGCMClient::Stop() {
-  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+  DCHECK(io_thread_->RunsTasksInCurrentSequence());
   started_ = false;
   delegate_->OnDisconnected();
 }
 
 void FakeGCMClient::Register(
     const linked_ptr<RegistrationInfo>& registration_info) {
-  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+  DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   std::string registration_id;
 
@@ -149,7 +149,7 @@ bool FakeGCMClient::ValidateRegistration(
 
 void FakeGCMClient::Unregister(
     const linked_ptr<RegistrationInfo>& registration_info) {
-  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+  DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FakeGCMClient::UnregisterFinished,
@@ -159,7 +159,7 @@ void FakeGCMClient::Unregister(
 void FakeGCMClient::Send(const std::string& app_id,
                          const std::string& receiver_id,
                          const OutgoingMessage& message) {
-  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+  DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FakeGCMClient::SendFinished,
@@ -236,7 +236,7 @@ void FakeGCMClient::RemoveHeartbeatInterval(const std::string& scope) {
 }
 
 void FakeGCMClient::PerformDelayedStart() {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+  DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
   io_thread_->PostTask(
       FROM_HERE,
@@ -245,7 +245,7 @@ void FakeGCMClient::PerformDelayedStart() {
 
 void FakeGCMClient::ReceiveMessage(const std::string& app_id,
                                    const IncomingMessage& message) {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+  DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
   io_thread_->PostTask(
       FROM_HERE,
@@ -256,7 +256,7 @@ void FakeGCMClient::ReceiveMessage(const std::string& app_id,
 }
 
 void FakeGCMClient::DeleteMessages(const std::string& app_id) {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+  DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
   io_thread_->PostTask(
       FROM_HERE,

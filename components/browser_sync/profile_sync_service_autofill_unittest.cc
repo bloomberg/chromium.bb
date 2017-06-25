@@ -196,11 +196,11 @@ class MockAutofillBackend : public autofill::AutofillWebDataBackend {
       autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
   void RemoveExpiredFormElements() override {}
   void NotifyOfMultipleAutofillChanges() override {
-    DCHECK(!ui_thread_->RunsTasksOnCurrentThread());
+    DCHECK(!ui_thread_->RunsTasksInCurrentSequence());
     ui_thread_->PostTask(FROM_HERE, on_changed_);
   }
   void NotifyThatSyncHasStarted(syncer::ModelType model_type) override {
-    DCHECK(!ui_thread_->RunsTasksOnCurrentThread());
+    DCHECK(!ui_thread_->RunsTasksInCurrentSequence());
     ui_thread_->PostTask(FROM_HERE, base::Bind(on_sync_started_, model_type));
   }
 
@@ -332,7 +332,7 @@ class WebDataServiceFake : public AutofillWebDataService {
   void CreateSyncableService(
       const base::Closure& on_changed_callback,
       const base::Callback<void(syncer::ModelType)>& on_sync_started) {
-    ASSERT_TRUE(db_thread_->RunsTasksOnCurrentThread());
+    ASSERT_TRUE(db_thread_->RunsTasksInCurrentSequence());
     // These services are deleted in DestroySyncableService().
     backend_ = base::MakeUnique<MockAutofillBackend>(
         GetDatabase(), on_changed_callback, on_sync_started, ui_thread_.get());
@@ -350,7 +350,7 @@ class WebDataServiceFake : public AutofillWebDataService {
   }
 
   void DestroySyncableService() {
-    ASSERT_TRUE(db_thread_->RunsTasksOnCurrentThread());
+    ASSERT_TRUE(db_thread_->RunsTasksInCurrentSequence());
     autocomplete_syncable_service_ = nullptr;
     autofill_profile_syncable_service_ = nullptr;
     backend_.reset();
@@ -740,7 +740,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
 
   void Update() {
     // This gets called in a modelsafeworker thread.
-    ASSERT_TRUE(db_thread_->RunsTasksOnCurrentThread());
+    ASSERT_TRUE(db_thread_->RunsTasksInCurrentSequence());
 
     syncer::UserShare* user_share = service_->GetUserShare();
     syncer::syncable::Directory* directory = user_share->directory.get();
@@ -789,7 +789,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
 
   void CreateNewEntry(const AutofillEntry& entry) {
     entry_ = entry;
-    ASSERT_FALSE(db_thread_->RunsTasksOnCurrentThread());
+    ASSERT_FALSE(db_thread_->RunsTasksInCurrentSequence());
     if (!db_thread_->PostTask(FROM_HERE,
                               base::Bind(&FakeServerUpdater::Update, this))) {
       NOTREACHED() << "Failed to post task to the db thread.";

@@ -300,11 +300,11 @@ ExternalPolicyDataUpdater::ExternalPolicyDataUpdater(
       max_parallel_jobs_(max_parallel_fetches),
       running_jobs_(0),
       shutting_down_(false) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
 ExternalPolicyDataUpdater::~ExternalPolicyDataUpdater() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   shutting_down_ = true;
 }
 
@@ -312,7 +312,7 @@ void ExternalPolicyDataUpdater::FetchExternalData(
     const std::string key,
     const Request& request,
     const FetchSuccessCallback& callback) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // Check whether a job exists for this |key| already.
   FetchJob* job = job_map_[key].get();
@@ -336,7 +336,7 @@ void ExternalPolicyDataUpdater::FetchExternalData(
 
 void ExternalPolicyDataUpdater::CancelExternalDataFetch(
     const std::string& key) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // If a |job| exists for this |key|, delete it. If the |job| is on the queue,
   // its WeakPtr will be invalidated and skipped by StartNextJobs(). If |job| is

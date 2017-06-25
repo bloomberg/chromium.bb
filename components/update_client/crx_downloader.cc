@@ -152,7 +152,7 @@ void CrxDownloader::OnDownloadProgress(const Result& result) {
 void CrxDownloader::VerifyResponse(bool is_handled,
                                    Result result,
                                    DownloadMetrics download_metrics) {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
   DCHECK_EQ(0, result.error);
   DCHECK_EQ(0, download_metrics.error);
   DCHECK(is_handled);

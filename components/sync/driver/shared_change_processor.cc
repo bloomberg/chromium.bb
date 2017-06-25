@@ -36,7 +36,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
   // |generic_change_processor_|, if non-null, must be deleted on
   // |backend_task_runner_|.
   if (backend_task_runner_.get()) {
-    if (backend_task_runner_->RunsTasksOnCurrentThread()) {
+    if (backend_task_runner_->RunsTasksInCurrentSequence()) {
       delete generic_change_processor_;
     } else {
       DCHECK(frontend_task_runner_->BelongsToCurrentThread());
@@ -189,7 +189,7 @@ ChangeProcessor* SharedChangeProcessor::generic_change_processor() {
 
 int SharedChangeProcessor::GetSyncCount() {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     LOG(ERROR) << "Change processor disconnected.";
@@ -202,7 +202,7 @@ SyncError SharedChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& list_of_changes) {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     // The DTC that disconnects us must ensure it posts a StopSyncing task.
@@ -225,7 +225,7 @@ SyncError SharedChangeProcessor::GetAllSyncDataReturnError(
     ModelType type,
     SyncDataList* data) const {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
@@ -240,7 +240,7 @@ SyncError SharedChangeProcessor::UpdateDataTypeContext(
     SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
@@ -254,7 +254,7 @@ SyncError SharedChangeProcessor::UpdateDataTypeContext(
 void SharedChangeProcessor::AddLocalChangeObserver(
     LocalChangeObserver* observer) {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
 
   generic_change_processor_->AddLocalChangeObserver(observer);
 }
@@ -262,14 +262,14 @@ void SharedChangeProcessor::AddLocalChangeObserver(
 void SharedChangeProcessor::RemoveLocalChangeObserver(
     LocalChangeObserver* observer) {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
 
   generic_change_processor_->RemoveLocalChangeObserver(observer);
 }
 
 bool SharedChangeProcessor::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     LOG(ERROR) << "Change processor disconnected.";
@@ -280,7 +280,7 @@ bool SharedChangeProcessor::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 bool SharedChangeProcessor::CryptoReadyIfNecessary() {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     LOG(ERROR) << "Change processor disconnected.";
@@ -291,7 +291,7 @@ bool SharedChangeProcessor::CryptoReadyIfNecessary() {
 
 bool SharedChangeProcessor::GetDataTypeContext(std::string* context) const {
   DCHECK(backend_task_runner_.get());
-  DCHECK(backend_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     LOG(ERROR) << "Change processor disconnected.";
