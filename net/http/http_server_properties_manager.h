@@ -208,11 +208,11 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // Starts the update of cached prefs in |http_server_properties_impl_| on the
   // network thread. Protected for testing.
   void UpdateCacheFromPrefsOnNetworkSequence(
-      std::vector<std::string>* spdy_servers,
-      AlternativeServiceMap* alternative_service_map,
-      IPAddress* last_quic_address,
-      ServerNetworkStatsMap* server_network_stats_map,
-      QuicServerInfoMap* quic_server_info_map,
+      std::unique_ptr<SpdyServersMap> spdy_servers_map,
+      std::unique_ptr<AlternativeServiceMap> alternative_service_map,
+      std::unique_ptr<IPAddress> last_quic_address,
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
       bool detected_corrupted_prefs);
 
   // These are used to delay updating the preferences when cached data in
@@ -234,16 +234,15 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
 
   // Update prefs::kHttpServerProperties preferences on pref thread. Executes an
   // optional |completion| callback when finished. Protected for testing.
-  void UpdatePrefsOnPrefThread(base::ListValue* spdy_server_list,
-                               AlternativeServiceMap* alternative_service_map,
-                               IPAddress* last_quic_address,
-                               ServerNetworkStatsMap* server_network_stats_map,
-                               QuicServerInfoMap* quic_server_info_map,
-                               const base::Closure& completion);
+  void UpdatePrefsOnPrefThread(
+      std::unique_ptr<std::vector<std::string>> spdy_servers,
+      std::unique_ptr<AlternativeServiceMap> alternative_service_map,
+      std::unique_ptr<IPAddress> last_quic_address,
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+      const base::Closure& completion);
 
  private:
-  typedef std::vector<std::string> ServerList;
-
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            AddToAlternativeServiceMap);
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
@@ -253,7 +252,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void OnHttpServerPropertiesChanged();
 
   bool AddServersData(const base::DictionaryValue& server_dict,
-                      ServerList* spdy_servers,
+                      SpdyServersMap* spdy_servers_map,
                       AlternativeServiceMap* alternative_service_map,
                       ServerNetworkStatsMap* network_stats_map,
                       int version);
@@ -274,16 +273,16 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
                               QuicServerInfoMap* quic_server_info_map);
 
   void SaveAlternativeServiceToServerPrefs(
-      const AlternativeServiceInfoVector* alternative_service_info_vector,
+      const AlternativeServiceInfoVector& alternative_service_info_vector,
       base::DictionaryValue* server_pref_dict);
   void SaveSupportsQuicToPrefs(
-      const IPAddress* last_quic_address,
+      const IPAddress& last_quic_address,
       base::DictionaryValue* http_server_properties_dict);
   void SaveNetworkStatsToServerPrefs(
-      const ServerNetworkStats* server_network_stats,
+      const ServerNetworkStats& server_network_stats,
       base::DictionaryValue* server_pref_dict);
   void SaveQuicServerInfoMapToServerPrefs(
-      QuicServerInfoMap* quic_server_info_map,
+      const QuicServerInfoMap& quic_server_info_map,
       base::DictionaryValue* http_server_properties_dict);
   void SetInitialized();
 
