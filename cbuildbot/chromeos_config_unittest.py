@@ -211,10 +211,10 @@ class UnifiedBuildConfigTestCase(object):
       "arch": "X86_INTERNAL",
       "models" : [
         {
-          "board_name": "reef"
+          "name": "reef"
         },
         {
-          "board_name": "pyro"
+          "name": "pyro"
         }
       ]
     }

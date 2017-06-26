@@ -3106,7 +3106,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   for unibuild in config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config):
     active_waterfall = _GetConfigWaterfall(
         unibuild[config_lib.CONFIG_TEMPLATE_BUILDER])
-    models = [m[config_lib.CONFIG_TEMPLATE_BOARD_NAME]
+    models = [m[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
               for m in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]]
     reference_board_name = unibuild[
         config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]

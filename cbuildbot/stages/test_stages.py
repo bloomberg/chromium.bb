@@ -292,7 +292,11 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
   def __init__(
       self, builder_run, board, model, suite_config, suffix=None, **kwargs):
     if board is not model:
-      suffix = '%s [%s]' % (suffix, model)
+      if suffix is None:
+        suffix = ' [%s]' % (model)
+      else:
+        suffix = '%s [%s]' % (suffix, model)
+
     suffix = self.UpdateSuffix(suite_config.suite, suffix)
     super(HWTestStage, self).__init__(builder_run, board,
                                       suffix=suffix,
