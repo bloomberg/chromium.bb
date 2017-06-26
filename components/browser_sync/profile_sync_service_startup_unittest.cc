@@ -195,6 +195,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   auto sync_blocker = sync_service_->GetSetupInProgressHandle();
 
+  // Confirmation isn't needed before sign in occurs.
+  EXPECT_FALSE(sync_service_->IsSyncConfirmationNeeded());
+
   // Simulate successful signin as test_user.
   std::string account_id = SimulateTestUserSignin(sync_service_.get());
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));

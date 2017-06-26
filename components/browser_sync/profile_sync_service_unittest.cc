@@ -222,6 +222,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     prefs()->SetBoolean(syncer::prefs::kEnableLocalSyncBackend, true);
     init_params.oauth2_token_service = nullptr;
     init_params.gaia_cookie_manager_service = nullptr;
+    init_params.signin_wrapper.reset();
 
     service_ = base::MakeUnique<ProfileSyncService>(std::move(init_params));
     service_->RegisterDataTypeController(
@@ -392,6 +393,7 @@ TEST_F(ProfileSyncServiceTest, SuccessfulLocalBackendInitialization) {
   InitializeForNthSync();
   EXPECT_FALSE(service()->IsManaged());
   EXPECT_TRUE(service()->IsSyncActive());
+  EXPECT_FALSE(service()->IsSyncConfirmationNeeded());
 }
 
 // Verify that an initialization where first setup is not complete does not
@@ -401,12 +403,14 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
                           base::MakeUnique<base::Value>(false));
   IssueTestTokens();
   CreateService(ProfileSyncService::MANUAL_START);
+
   syncer::SyncPrefs sync_prefs(prefs());
   base::Time now = base::Time::Now();
   sync_prefs.SetLastSyncedTime(now);
   sync_prefs.SetKeepEverythingSynced(true);
   service()->Initialize();
   EXPECT_FALSE(service()->IsSyncActive());
+  EXPECT_TRUE(service()->IsSyncConfirmationNeeded());
 
   // The last sync time shouldn't be cleared.
   // TODO(zea): figure out a way to check that the directory itself wasn't
