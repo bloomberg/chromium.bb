@@ -35,8 +35,8 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
 
   bool Fetch() {
     getter_->GetNetworkTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SyncUrlFetcher::FetchOnIOThread, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&SyncUrlFetcher::FetchOnIOThread,
+                                  base::Unretained(this)));
     event_.Wait();
     return success_;
   }

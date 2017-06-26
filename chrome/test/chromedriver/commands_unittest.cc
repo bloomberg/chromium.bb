@@ -231,7 +231,7 @@ TEST(CommandsTest, ExecuteSessionCommand) {
   std::string id("id");
   thread->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
+      base::BindOnce(&internal::CreateSessionOnSessionThreadForTesting, id));
   map[id] = thread;
 
   base::DictionaryValue params;
@@ -719,7 +719,7 @@ TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   std::string id("id");
   thread->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
+      base::BindOnce(&internal::CreateSessionOnSessionThreadForTesting, id));
 
   map[id] = thread;
 
@@ -810,7 +810,7 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   std::string id("id");
   thread->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
+      base::BindOnce(&internal::CreateSessionOnSessionThreadForTesting, id));
   map[id] = thread;
 
   // In SuccessNotifyingCommandListenersBeforeCommand, we verified BeforeCommand
@@ -818,8 +818,8 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   // verify this again, so we can just add |listener| with PostTask.
   auto listener = base::MakeUnique<FailingCommandListener>();
   thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AddListenerToSessionIfSessionExists,
-                            base::Passed(&listener)));
+      FROM_HERE, base::BindOnce(&AddListenerToSessionIfSessionExists,
+                                base::Passed(&listener)));
 
   base::DictionaryValue params;
   // The command should never be executed if BeforeCommand fails for a listener.
@@ -838,5 +838,5 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   run_loop.Run();
 
   thread->task_runner()->PostTask(FROM_HERE,
-                                  base::Bind(&VerifySessionWasDeleted));
+                                  base::BindOnce(&VerifySessionWasDeleted));
 }

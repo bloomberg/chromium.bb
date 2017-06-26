@@ -42,8 +42,8 @@ bool TestHttpServer::Start() {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&TestHttpServer::StartOnServerThread,
-                            base::Unretained(this), &success, &event));
+      FROM_HERE, base::BindOnce(&TestHttpServer::StartOnServerThread,
+                                base::Unretained(this), &success, &event));
   event.Wait();
   return success;
 }
@@ -54,8 +54,8 @@ void TestHttpServer::Stop() {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&TestHttpServer::StopOnServerThread,
-                            base::Unretained(this), &event));
+      FROM_HERE, base::BindOnce(&TestHttpServer::StopOnServerThread,
+                                base::Unretained(this), &event));
   event.Wait();
   thread_.Stop();
 }

@@ -132,8 +132,8 @@ class PortServerTest : public testing::Test {
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&RunServerOnThread, path, response, &listen_event, request));
+        FROM_HERE, base::BindOnce(&RunServerOnThread, path, response,
+                                  &listen_event, request));
     ASSERT_TRUE(listen_event.TimedWait(base::TimeDelta::FromSeconds(5)));
   }
 

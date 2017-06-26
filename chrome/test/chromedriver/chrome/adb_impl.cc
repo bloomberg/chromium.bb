@@ -230,9 +230,9 @@ Status AdbImpl::ExecuteCommand(
     const std::string& command, std::string* response) {
   scoped_refptr<ResponseBuffer> response_buffer = new ResponseBuffer;
   VLOG(1) << "Sending adb command: " << command;
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ExecuteCommandOnIOThread, command, response_buffer, port_));
+  io_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&ExecuteCommandOnIOThread, command,
+                                           response_buffer, port_));
   Status status = response_buffer->GetResponse(
       response, base::TimeDelta::FromSeconds(30));
   if (status.IsOk()) {

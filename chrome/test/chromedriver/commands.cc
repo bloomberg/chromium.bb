@@ -71,7 +71,8 @@ void ExecuteCreateSession(
   }
 
   thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SetThreadLocalSession, base::Passed(&session)));
+      FROM_HERE,
+      base::BindOnce(&SetThreadLocalSession, base::Passed(&session)));
   session_thread_map
       ->insert(std::make_pair(new_id, make_linked_ptr(thread.release())));
   init_session_cmd.Run(params, new_id, callback);
@@ -209,11 +210,10 @@ void ExecuteSessionCommandOnSessionThread(
   if (!session) {
     cmd_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(callback_on_cmd,
-                   Status(return_ok_without_session ? kOk : kNoSuchSession),
-                   base::Passed(std::unique_ptr<base::Value>()),
-                   std::string(),
-                   false));
+        base::BindOnce(callback_on_cmd,
+                       Status(return_ok_without_session ? kOk : kNoSuchSession),
+                       base::Passed(std::unique_ptr<base::Value>()),
+                       std::string(), false));
     return;
   }
 
@@ -289,9 +289,8 @@ void ExecuteSessionCommandOnSessionThread(
   }
 
   cmd_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(callback_on_cmd, status, base::Passed(&value), session->id,
-                 session->w3c_compliant));
+      FROM_HERE, base::BindOnce(callback_on_cmd, status, base::Passed(&value),
+                                session->id, session->w3c_compliant));
 
   if (session->quit) {
     SetThreadLocalSession(std::unique_ptr<Session>());
@@ -316,12 +315,13 @@ void ExecuteSessionCommand(
     callback.Run(status, std::unique_ptr<base::Value>(), session_id, false);
   } else {
     iter->second->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ExecuteSessionCommandOnSessionThread,
-                              command_name, command, return_ok_without_session,
-                              base::Passed(base::WrapUnique(params.DeepCopy())),
-                              base::ThreadTaskRunnerHandle::Get(), callback,
-                              base::Bind(&TerminateSessionThreadOnCommandThread,
-                                         session_thread_map, session_id)));
+        FROM_HERE,
+        base::BindOnce(&ExecuteSessionCommandOnSessionThread, command_name,
+                       command, return_ok_without_session,
+                       base::Passed(base::WrapUnique(params.DeepCopy())),
+                       base::ThreadTaskRunnerHandle::Get(), callback,
+                       base::Bind(&TerminateSessionThreadOnCommandThread,
+                                  session_thread_map, session_id)));
   }
 }
 
