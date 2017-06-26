@@ -44,6 +44,8 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);
 
+  TestAXNodeWrapper* HitTestSyncInternal(int x, int y);
+
   AXTree* tree_;
   AXNode* node_;
   AXPlatformNode* platform_node_;

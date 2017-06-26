@@ -278,6 +278,14 @@ int AXPlatformNodeWin::GetIndexInParent() {
 STDMETHODIMP AXPlatformNodeWin::accHitTest(
     LONG x_left, LONG y_top, VARIANT* child) {
   COM_OBJECT_VALIDATE_1_ARG(child);
+
+  gfx::Point point(x_left, y_top);
+  if (!delegate_->GetScreenBoundsRect().Contains(point)) {
+    // Return S_FALSE and VT_EMPTY when outside the object's boundaries.
+    child->vt = VT_EMPTY;
+    return S_FALSE;
+  }
+
   gfx::NativeViewAccessible hit_child = delegate_->HitTestSync(x_left, y_top);
   if (!hit_child) {
     child->vt = VT_EMPTY;
