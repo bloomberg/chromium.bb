@@ -7,12 +7,11 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutTable.h"
 #include "core/paint/PaintResult.h"
 #include "platform/graphics/paint/CullRect.h"
 
 namespace blink {
-
-class LayoutTable;
 
 // Common super class for LayoutTableCol, LayoutTableSection and LayoutTableRow.
 // Also provides utility functions for all table parts.
@@ -42,6 +41,22 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
     return MutableForPainting(*this);
   }
 
+  // Should use TableStyle() instead of own style to determine cell order.
+  const ComputedStyle& TableStyle() const { return Table()->StyleRef(); }
+
+  BorderValue BorderStartInTableDirection() const {
+    return StyleRef().BorderStartUsing(TableStyle());
+  }
+  BorderValue BorderEndInTableDirection() const {
+    return StyleRef().BorderEndUsing(TableStyle());
+  }
+  BorderValue BorderBeforeInTableDirection() const {
+    return StyleRef().BorderBeforeUsing(TableStyle());
+  }
+  BorderValue BorderAfterInTableDirection() const {
+    return StyleRef().BorderAfterUsing(TableStyle());
+  }
+
  protected:
   explicit LayoutTableBoxComponent(Element* element)
       : LayoutBox(element), last_paint_result_(kFullyPainted) {}
@@ -67,6 +82,8 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
   const LayoutObjectChildList* VirtualChildren() const override {
     return Children();
   }
+
+  virtual LayoutTable* Table() const = 0;
 
   LayoutObjectChildList children_;
 

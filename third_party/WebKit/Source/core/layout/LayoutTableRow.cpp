@@ -98,26 +98,6 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
   }
 }
 
-BorderValue LayoutTableRow::BorderAdjoiningStartCell(
-    const LayoutTableCell* cell) const {
-#if DCHECK_IS_ON()
-  DCHECK(cell->IsFirstOrLastCellInRow());
-#endif
-  // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at
-  // the cell level.
-  return Style()->BorderStart();
-}
-
-BorderValue LayoutTableRow::BorderAdjoiningEndCell(
-    const LayoutTableCell* cell) const {
-#if DCHECK_IS_ON()
-  DCHECK(cell->IsFirstOrLastCellInRow());
-#endif
-  // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at
-  // the cell level.
-  return Style()->BorderEnd();
-}
-
 void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
   if (!child->IsTableCell()) {
     LayoutObject* last = before_child;

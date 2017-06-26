@@ -73,11 +73,11 @@ TEST_F(LayoutTableCellDeathTest, CrashIfSettingUnsetColumnIndex) {
 
 class LayoutTableCellTest : public RenderingTest {
  protected:
-  bool HasStartBorderAdjoiningTable(const LayoutTableCell* cell) {
-    return cell->HasStartBorderAdjoiningTable();
+  bool IsInStartColumn(const LayoutTableCell* cell) {
+    return cell->IsInStartColumn();
   }
-  bool HasEndBorderAdjoiningTable(const LayoutTableCell* cell) {
-    return cell->HasEndBorderAdjoiningTable();
+  bool IsInEndColumn(const LayoutTableCell* cell) {
+    return cell->IsInEndColumn();
   }
   LayoutRect LocalVisualRect(const LayoutTableCell* cell) {
     return cell->LocalVisualRect();
@@ -145,7 +145,7 @@ TEST_F(LayoutTableCellTest, RepaintContentInTableCell) {
   EXPECT_EQ(LayoutRect(-1, -1, 24, 24), rect);
 }
 
-TEST_F(LayoutTableCellTest, HasBorderAdjoiningTable) {
+TEST_F(LayoutTableCellTest, IsInStartAndEndColumn) {
   SetBodyInnerHTML(
       "<table id='table'>"
       "  <tr>"
@@ -173,27 +173,27 @@ TEST_F(LayoutTableCellTest, HasBorderAdjoiningTable) {
   const auto* cell31 = GetCellByElementId("cell31");
   const auto* cell32 = GetCellByElementId("cell32");
 
-  EXPECT_TRUE(HasStartBorderAdjoiningTable(cell11));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell11));
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell12));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell12));
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell13));
-  EXPECT_TRUE(HasEndBorderAdjoiningTable(cell13));
+  EXPECT_TRUE(IsInStartColumn(cell11));
+  EXPECT_FALSE(IsInEndColumn(cell11));
+  EXPECT_FALSE(IsInStartColumn(cell12));
+  EXPECT_FALSE(IsInEndColumn(cell12));
+  EXPECT_FALSE(IsInStartColumn(cell13));
+  EXPECT_TRUE(IsInEndColumn(cell13));
 
-  EXPECT_TRUE(HasStartBorderAdjoiningTable(cell21));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell21));
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell22));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell22));
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell23));
-  EXPECT_TRUE(HasEndBorderAdjoiningTable(cell23));
+  EXPECT_TRUE(IsInStartColumn(cell21));
+  EXPECT_FALSE(IsInEndColumn(cell21));
+  EXPECT_FALSE(IsInStartColumn(cell22));
+  EXPECT_FALSE(IsInEndColumn(cell22));
+  EXPECT_FALSE(IsInStartColumn(cell23));
+  EXPECT_TRUE(IsInEndColumn(cell23));
 
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell31));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell31));
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell32));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell32));
+  EXPECT_FALSE(IsInStartColumn(cell31));
+  EXPECT_FALSE(IsInEndColumn(cell31));
+  EXPECT_FALSE(IsInStartColumn(cell32));
+  EXPECT_FALSE(IsInEndColumn(cell32));
 }
 
-TEST_F(LayoutTableCellTest, HasBorderAdjoiningTableRTL) {
+TEST_F(LayoutTableCellTest, IsInStartAndEndColumnRTL) {
   SetBodyInnerHTML(
       "<style>"
       "  table { direction: rtl }"
@@ -225,24 +225,24 @@ TEST_F(LayoutTableCellTest, HasBorderAdjoiningTableRTL) {
   const auto* cell31 = GetCellByElementId("cell31");
   const auto* cell32 = GetCellByElementId("cell32");
 
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell11));
-  EXPECT_TRUE(HasEndBorderAdjoiningTable(cell11));
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell12));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell12));
-  EXPECT_TRUE(HasStartBorderAdjoiningTable(cell13));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell13));
+  EXPECT_TRUE(IsInStartColumn(cell11));
+  EXPECT_FALSE(IsInEndColumn(cell11));
+  EXPECT_FALSE(IsInStartColumn(cell12));
+  EXPECT_FALSE(IsInEndColumn(cell12));
+  EXPECT_FALSE(IsInStartColumn(cell13));
+  EXPECT_TRUE(IsInEndColumn(cell13));
 
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell21));
-  EXPECT_TRUE(HasEndBorderAdjoiningTable(cell21));
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell22));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell22));
-  EXPECT_TRUE(HasStartBorderAdjoiningTable(cell23));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell23));
+  EXPECT_TRUE(IsInStartColumn(cell21));
+  EXPECT_FALSE(IsInEndColumn(cell21));
+  EXPECT_FALSE(IsInStartColumn(cell22));
+  EXPECT_FALSE(IsInEndColumn(cell22));
+  EXPECT_FALSE(IsInStartColumn(cell23));
+  EXPECT_TRUE(IsInEndColumn(cell23));
 
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell31));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell31));
-  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell32));
-  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell32));
+  EXPECT_FALSE(IsInStartColumn(cell31));
+  EXPECT_FALSE(IsInEndColumn(cell31));
+  EXPECT_FALSE(IsInStartColumn(cell32));
+  EXPECT_FALSE(IsInEndColumn(cell32));
 }
 
 TEST_F(LayoutTableCellTest, BorderWidthsWithCollapsedBorders) {

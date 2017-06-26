@@ -239,53 +239,22 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return CreateAnonymousWithParent(parent);
   }
 
-  // This function is used to unify which table part's style we use for
-  // computing direction and writing mode. Writing modes are not allowed on row
-  // group and row but direction is. This means we can safely use the same style
-  // in all cases to simplify our code.
-  // FIXME: Eventually this function should replaced by style() once we support
-  // direction on all table parts and writing-mode on cells.
-  const ComputedStyle& StyleForCellFlow() const { return Row()->StyleRef(); }
+  // The table's style determines cell order and cell adjacency in the table.
+  // Collapsed borders also use in table's inline and block directions.
+  const ComputedStyle& TableStyle() const { return Table()->StyleRef(); }
 
-  BorderValue BorderAdjoiningTableStart() const {
-#if DCHECK_IS_ON()
-    DCHECK(IsFirstOrLastCellInRow());
-#endif
-    if (Section()->HasSameDirectionAs(Table()))
-      return Style()->BorderStart();
-
-    return Style()->BorderEnd();
+  BorderValue BorderStartInTableDirection() const {
+    return StyleRef().BorderStartUsing(TableStyle());
   }
-
-  BorderValue BorderAdjoiningTableEnd() const {
-#if DCHECK_IS_ON()
-    DCHECK(IsFirstOrLastCellInRow());
-#endif
-    if (Section()->HasSameDirectionAs(Table()))
-      return Style()->BorderEnd();
-
-    return Style()->BorderStart();
+  BorderValue BorderEndInTableDirection() const {
+    return StyleRef().BorderEndUsing(TableStyle());
   }
-
-  BorderValue BorderAdjoiningCellBefore(const LayoutTableCell& cell) {
-    DCHECK_EQ(Table()->CellFollowing(cell), this);
-    // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality
-    // at the cell level.
-    return Style()->BorderStart();
+  BorderValue BorderBeforeInTableDirection() const {
+    return StyleRef().BorderBeforeUsing(TableStyle());
   }
-
-  BorderValue BorderAdjoiningCellAfter(const LayoutTableCell& cell) {
-    DCHECK_EQ(Table()->CellPreceding(cell), this);
-    // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality
-    // at the cell level.
-    return Style()->BorderEnd();
+  BorderValue BorderAfterInTableDirection() const {
+    return StyleRef().BorderAfterUsing(TableStyle());
   }
-
-#if DCHECK_IS_ON()
-  bool IsFirstOrLastCellInRow() const {
-    return !Table()->CellFollowing(*this) || !Table()->CellPreceding(*this);
-  }
-#endif
 
   const char* GetName() const override { return "LayoutTableCell"; }
 
@@ -316,6 +285,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return cell1->RowIndex() < cell2->RowIndex();
   }
 
+  // For the following methods, the 'start', 'end', 'before', 'after' directions
+  // are all in the table's inline and block directions.
   unsigned CollapsedOuterBorderBefore() const {
     return CollapsedBorderHalfBefore(true);
   }
@@ -393,6 +364,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   unsigned CollapsedBorderHalfTop(bool outer) const;
   unsigned CollapsedBorderHalfBottom(bool outer) const;
 
+  // For the following methods, the 'start', 'end', 'before', 'after' directions
+  // are all in the table's inline and block directions.
   unsigned CollapsedBorderHalfStart(bool outer) const;
   unsigned CollapsedBorderHalfEnd(bool outer) const;
   unsigned CollapsedBorderHalfBefore(bool outer) const;
@@ -405,28 +378,14 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     SetIntrinsicPaddingAfter(after);
   }
 
-  inline bool IsInStartColumn() const;
-  inline bool IsInEndColumn() const;
-  bool HasStartBorderAdjoiningTable() const;
-  bool HasEndBorderAdjoiningTable() const;
+  bool IsInStartColumn() const { return AbsoluteColumnIndex() == 0; }
+  bool IsInEndColumn() const;
 
-  // Those functions implement the CSS collapsing border conflict
-  // resolution algorithm.
-  // http://www.w3.org/TR/CSS2/tables.html#border-conflict-resolution
-  //
-  // The code is pretty complicated as it needs to handle mixed directionality
-  // between the table and the different table parts (cell, row, row group,
-  // column, column group).
-  // TODO(jchaffraix): It should be easier to compute all the borders in
-  // physical coordinates. However this is not the design of the current code.
-  //
-  // Blink's support for mixed directionality is currently partial. We only
-  // support the directionality up to |styleForCellFlow|. See comment on the
-  // function above for more details.
-  // See also https://code.google.com/p/chromium/issues/detail?id=128227 for
-  // some history.
-  //
-  // Those functions are called during UpdateCollapsedBorderValues().
+  // These functions implement the CSS collapsing border conflict resolution
+  // algorithm http://www.w3.org/TR/CSS2/tables.html#border-conflict-resolution.
+  // They are called during UpdateCollapsedBorderValues(). The 'start', 'end',
+  // 'before', 'after' directions are all in the table's inline and block
+  // directions.
   inline CSSPropertyID ResolveBorderProperty(CSSPropertyID) const;
   CollapsedBorderValue ComputeCollapsedStartBorder() const;
   CollapsedBorderValue ComputeCollapsedEndBorder() const;

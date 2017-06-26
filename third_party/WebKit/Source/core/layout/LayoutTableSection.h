@@ -124,7 +124,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   void MarkAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::WhatToMarkAllCells);
 
-  LayoutTable* Table() const { return ToLayoutTable(Parent()); }
+  LayoutTable* Table() const final { return ToLayoutTable(Parent()); }
 
   typedef Vector<LayoutTableCell*, 2> SpanningLayoutTableCells;
 
@@ -143,26 +143,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     int spanning_cell_height_ignoring_border_spacing;
     bool is_any_row_with_only_spanning_cells;
   };
-
-  BorderValue BorderAdjoiningTableStart() const {
-    if (HasSameDirectionAs(Table()))
-      return Style()->BorderStart();
-
-    return Style()->BorderEnd();
-  }
-
-  BorderValue BorderAdjoiningTableEnd() const {
-    if (HasSameDirectionAs(Table()))
-      return Style()->BorderEnd();
-
-    return Style()->BorderStart();
-  }
-
-  BorderValue BorderAdjoiningStartCell(const LayoutTableCell*) const;
-  BorderValue BorderAdjoiningEndCell(const LayoutTableCell*) const;
-
-  const LayoutTableCell* FirstRowCellAdjoiningTableStart() const;
-  const LayoutTableCell* FirstRowCellAdjoiningTableEnd() const;
 
   TableGridCell& GridCellAt(unsigned row, unsigned effective_column) {
     return grid_[row].grid_cells[effective_column];
