@@ -83,24 +83,22 @@ void SetupOnUI(
         void(std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
              bool wait_for_debugger)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
-  int worker_devtools_agent_route_id = MSG_ROUTING_NONE;
-  bool wait_for_debugger = false;
-  if (RenderProcessHost* rph = RenderProcessHost::FromID(process_id)) {
-    // |rph| may be NULL in unit tests.
-    worker_devtools_agent_route_id = rph->GetNextRoutingID();
-    wait_for_debugger =
-        ServiceWorkerDevToolsManager::GetInstance()->WorkerCreated(
-            process_id, worker_devtools_agent_route_id,
-            ServiceWorkerDevToolsManager::ServiceWorkerIdentifier(
-                service_worker_context, service_worker_context_weak,
-                service_worker_version_id, url, scope),
-            is_installed);
-    if (request.is_pending())
-      BindInterface(rph, std::move(request));
-    devtools_proxy = base::MakeUnique<EmbeddedWorkerInstance::DevToolsProxy>(
-        process_id, worker_devtools_agent_route_id);
-  }
+  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
+  // TODO(shimazu): Temporary CHECK to debug https://crbug.com/736649.
+  CHECK(rph);
+  int worker_devtools_agent_route_id = rph->GetNextRoutingID();
+  bool wait_for_debugger =
+      ServiceWorkerDevToolsManager::GetInstance()->WorkerCreated(
+          process_id, worker_devtools_agent_route_id,
+          ServiceWorkerDevToolsManager::ServiceWorkerIdentifier(
+              service_worker_context, service_worker_context_weak,
+              service_worker_version_id, url, scope),
+          is_installed);
+  if (request.is_pending())
+    BindInterface(rph, std::move(request));
+  std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy =
+      base::MakeUnique<EmbeddedWorkerInstance::DevToolsProxy>(
+          process_id, worker_devtools_agent_route_id);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(callback, base::Passed(&devtools_proxy), wait_for_debugger));
@@ -591,7 +589,8 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
     std::unique_ptr<EmbeddedWorkerStartParams> params) {
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
-  DCHECK(pending_dispatcher_request_.is_pending());
+  // TODO(shimazu): Temporary CHECK to debug https://crbug.com/736649.
+  CHECK(pending_dispatcher_request_.is_pending());
 
   DCHECK(!instance_host_binding_.is_bound());
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo host_ptr_info;
