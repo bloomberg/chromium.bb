@@ -60,8 +60,13 @@ bool ConstructTranslateEvent(const int64_t navigation_id,
     case TranslateEventProto::USER_REVERT:
       translation->set_interaction(sync_pb::Translation::TRANSLATION_REVERTED);
       break;
-    case TranslateEventProto::AUTOMATICALLY_TRANSLATED:
-      translation->set_interaction(sync_pb::Translation::AUTOMATIC_TRANSLATION);
+    case TranslateEventProto::AUTO_TRANSLATION_BY_PREF:
+      translation->set_interaction(
+          sync_pb::Translation::AUTO_TRANSLATION_BY_PREF);
+      break;
+    case TranslateEventProto::AUTO_TRANSLATION_BY_LINK:
+      translation->set_interaction(
+          sync_pb::Translation::AUTO_TRANSLATION_BY_LINK);
       break;
     default:  // We don't care about other events.
       return false;

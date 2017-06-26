@@ -67,6 +67,7 @@ message TranslateEventProto {
   optional RankerResponse ranker_response = 9;
 
   // The action performed by the user in the translate UI.
+  // Next tag 27.
   enum EventType {
     // The feedback event does not correspond to any of the enumerated
     // cases.
@@ -92,9 +93,15 @@ message TranslateEventProto {
     // The user reverted the translation.
     USER_REVERT = 9;
 
+    // Deprecated. Use AUTO_TRANSLATION_BY_PREF or AUTO_TRANSLATION_BY_LINK
+    // instead.
+    AUTOMATICALLY_TRANSLATED = 10;
     // Automated feedback.
     // An automatic translation was triggered.
-    AUTOMATICALLY_TRANSLATED = 10;
+    // User sets always translate in user settings.
+    AUTO_TRANSLATION_BY_PREF = 25;
+    // User navigated through a click from a translated page.
+    AUTO_TRANSLATION_BY_LINK = 26;
     // The translation was not offered because translate is disabled
     // globally in the user preferences.
     DISABLED_BY_PREF = 11;
