@@ -126,6 +126,15 @@ scoped_refptr<ManagedDisplayMode> GetDefaultDisplayMode(
   return *iter;
 }
 
+bool ContainsDisplayWithId(const std::vector<Display>& displays,
+                           int64_t display_id) {
+  for (auto& display : displays) {
+    if (display.id() == display_id)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 using std::string;
@@ -906,10 +915,7 @@ size_t DisplayManager::GetNumDisplays() const {
 }
 
 bool DisplayManager::IsActiveDisplayId(int64_t display_id) const {
-  return std::find_if(active_display_list_.begin(), active_display_list_.end(),
-                      [display_id](const Display& display) {
-                        return display.id() == display_id;
-                      }) != active_display_list_.end();
+  return ContainsDisplayWithId(active_display_list_, display_id);
 }
 
 bool DisplayManager::IsInMirrorMode() const {
@@ -1110,7 +1116,19 @@ bool DisplayManager::UpdateDisplayBounds(int64_t display_id,
     // Don't notify observers if the mirrored window has changed.
     if (software_mirroring_enabled() && mirroring_display_id_ == display_id)
       return false;
+
+    // In unified mode then |active_display_list_| won't have a display for
+    // |display_id| but |software_mirroring_display_list_| should. Reconfigure
+    // the displays so the unified display size is recomputed.
+    if (IsInUnifiedMode() &&
+        ContainsDisplayWithId(software_mirroring_display_list_, display_id)) {
+      DCHECK(!IsActiveDisplayId(display_id));
+      ReconfigureDisplays();
+      return true;
+    }
+
     Display* display = FindDisplayForId(display_id);
+    DCHECK(display);
     display->SetSize(display_info_[display_id].size_in_pixel());
     NotifyMetricsChanged(*display, DisplayObserver::DISPLAY_METRIC_BOUNDS);
     return true;
@@ -1329,7 +1347,7 @@ Display* DisplayManager::FindDisplayForId(int64_t id) {
   // TODO(oshima): This happens when windows in unified desktop have
   // been moved to a normal window. Fix this.
   if (id != kUnifiedDisplayId)
-    DLOG(WARNING) << "Could not find display:" << id;
+    DLOG(ERROR) << "Could not find display:" << id;
   return nullptr;
 }
 
