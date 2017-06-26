@@ -203,10 +203,7 @@ views::Widget* CreateWallpaper(aura::Window* root_window, int container_id) {
   params.name = "WallpaperView";
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  RootWindowController* root_window_controller =
-      RootWindowController::ForWindow(root_window);
-  root_window_controller->ConfigureWidgetInitParamsForContainer(
-      wallpaper_widget, container_id, &params);
+  params.parent = root_window->GetChildById(container_id);
   wallpaper_widget->Init(params);
   wallpaper_widget->SetContentsView(new LayerControlView(new WallpaperView()));
   int animation_type = wallpaper_delegate->GetAnimationType();
@@ -219,7 +216,8 @@ views::Widget* CreateWallpaper(aura::Window* root_window, int container_id) {
   // 3. From an empty background, chrome transit to a logged in user session.
   // 4. From an empty background, guest user logged in.
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
-      root_window_controller->animating_wallpaper_widget_controller() ||
+      RootWindowController::ForWindow(root_window)
+          ->animating_wallpaper_widget_controller() ||
       Shell::Get()->session_controller()->NumberOfLoggedInUsers()) {
     ::wm::SetWindowVisibilityAnimationTransition(wallpaper_window,
                                                  ::wm::ANIMATE_SHOW);

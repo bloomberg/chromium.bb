@@ -220,8 +220,7 @@ class PanelCalloutWidget : public views::Widget {
     params.bounds.set_width(kArrowWidth);
     params.bounds.set_height(kArrowHeight);
     params.accept_events = false;
-    RootWindowController::ForWindow(parent)
-        ->ConfigureWidgetInitParamsForContainer(this, parent->id(), &params);
+    params.parent = parent;
     set_focus_on_creation(false);
     Init(params);
     Window* widget_window = this->GetNativeWindow();

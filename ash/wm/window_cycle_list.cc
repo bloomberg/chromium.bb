@@ -8,7 +8,6 @@
 #include <map>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_mirror_view.h"
@@ -534,9 +533,7 @@ void WindowCycleList::InitWindowCycleView() {
   // TODO(estade): make sure nothing untoward happens when the lock screen
   // or a system modal dialog is shown.
   aura::Window* root_window = Shell::GetRootWindowForNewWindows();
-  RootWindowController::ForWindow(root_window)
-      ->ConfigureWidgetInitParamsForContainer(
-          widget, kShellWindowId_OverlayContainer, &params);
+  params.parent = root_window->GetChildById(kShellWindowId_OverlayContainer);
   gfx::Rect widget_rect = display::Screen::GetScreen()
                               ->GetDisplayNearestWindow(root_window)
                               .bounds();

@@ -36,8 +36,6 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
 
   // views::BubbleDialogDelegateView overrides:
   int GetDialogButtons() const override;
-  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
-                                views::Widget* bubble_widget) const override;
   gfx::Rect GetBubbleBounds() override;
 
  private:

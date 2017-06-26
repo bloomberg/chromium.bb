@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/root_window_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_mirror_view.h"
@@ -483,10 +482,8 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   params.name = "OverviewModeMinimized";
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.accept_events = true;
-  minimized_widget_.reset(new views::Widget);
-  RootWindowController::ForWindow(window_->GetRootWindow())
-      ->ConfigureWidgetInitParamsForContainer(minimized_widget_.get(),
-                                              window_->parent()->id(), &params);
+  params.parent = window_->parent();
+  minimized_widget_ = base::MakeUnique<views::Widget>();
   minimized_widget_->set_focus_on_creation(false);
   minimized_widget_->Init(params);
 

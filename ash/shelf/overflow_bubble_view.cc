@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -69,7 +68,11 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 
-  // Calls into OnBeforeBubbleWidgetInit to set the window parent container.
+  // Place the bubble in the same root window as the anchor.
+  set_parent_window(
+      anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
+          kShellWindowId_ShelfBubbleContainer));
+
   views::BubbleDialogDelegateView::CreateBubble(this);
   AddChildView(shelf_view_);
 }
@@ -156,15 +159,6 @@ void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
 
 int OverflowBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
-}
-
-void OverflowBubbleView::OnBeforeBubbleWidgetInit(
-    views::Widget::InitParams* params,
-    views::Widget* bubble_widget) const {
-  // Place the bubble in the same root window as the anchor.
-  RootWindowController::ForWindow(anchor_widget()->GetNativeWindow())
-      ->ConfigureWidgetInitParamsForContainer(
-          bubble_widget, kShellWindowId_ShelfBubbleContainer, params);
 }
 
 gfx::Rect OverflowBubbleView::GetBubbleBounds() {

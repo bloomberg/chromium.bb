@@ -321,13 +321,6 @@ RootWindowController* RootWindowController::ForTargetRootWindow() {
   return ForWindow(Shell::GetRootWindowForNewWindows());
 }
 
-void RootWindowController::ConfigureWidgetInitParamsForContainer(
-    views::Widget* widget,
-    int shell_container_id,
-    views::Widget::InitParams* init_params) {
-  init_params->parent = GetContainer(shell_container_id);
-}
-
 aura::WindowTreeHost* RootWindowController::GetHost() {
   return window_tree_host_;
 }

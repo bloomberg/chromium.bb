@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -47,9 +46,7 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
   params.delegate = status_area_widget_delegate_;
   params.name = "StatusAreaWidget";
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  RootWindowController::ForWindow(status_container)
-      ->ConfigureWidgetInitParamsForContainer(this, status_container->id(),
-                                              &params);
+  params.parent = status_container;
   Init(params);
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);

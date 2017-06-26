@@ -323,10 +323,8 @@ void UserView::ToggleUserDropdownWidget() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.name = "AddUserMenuOption";
-  RootWindowController::ForWindow(GetWidget()->GetNativeWindow())
-      ->ConfigureWidgetInitParamsForContainer(
-          user_dropdown_widget_.get(),
-          kShellWindowId_DragImageAndTooltipContainer, &params);
+  params.parent = GetWidget()->GetNativeWindow()->GetRootWindow()->GetChildById(
+      kShellWindowId_DragImageAndTooltipContainer);
   user_dropdown_widget_->Init(params);
 
   const SessionController* const session_controller =

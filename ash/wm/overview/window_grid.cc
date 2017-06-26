@@ -13,7 +13,6 @@
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
@@ -227,9 +226,7 @@ views::Widget* CreateBackgroundWidget(aura::Window* root_window,
   // the shield and selection widgets. Since that container is created with
   // USE_LOCAL_COORDINATES BoundsInScreenBehavior local bounds in |root_window_|
   // need to be provided.
-  RootWindowController::ForWindow(root_window)
-      ->ConfigureWidgetInitParamsForContainer(
-          widget, kShellWindowId_WallpaperContainer, &params);
+  params.parent = root_window->GetChildById(kShellWindowId_WallpaperContainer);
   widget->Init(params);
   aura::Window* widget_window = widget->GetNativeWindow();
   // Disable the "bounce in" animation when showing the window.

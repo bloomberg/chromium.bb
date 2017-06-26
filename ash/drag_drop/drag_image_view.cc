@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "skia/ext/image_operations.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -31,10 +30,8 @@ std::unique_ptr<Widget> CreateDragWidget(aura::Window* root_window) {
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
-  RootWindowController::ForWindow(root_window)
-      ->ConfigureWidgetInitParamsForContainer(
-          drag_widget.get(), kShellWindowId_DragImageAndTooltipContainer,
-          &params);
+  params.parent =
+      root_window->GetChildById(kShellWindowId_DragImageAndTooltipContainer);
   drag_widget->Init(params);
   drag_widget->SetOpacity(1.f);
   return drag_widget;
