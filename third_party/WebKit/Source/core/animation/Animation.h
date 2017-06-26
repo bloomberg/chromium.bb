@@ -38,6 +38,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/CompositorAnimations.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
 #include "core/events/EventTarget.h"
@@ -167,7 +168,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void SetOutdated();
   bool Outdated() { return outdated_; }
 
-  bool CanStartAnimationOnCompositor(
+  CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositor(
       const Optional<CompositorElementIdSet>& composited_element_ids) const;
   void StartAnimationOnCompositor(
       const Optional<CompositorElementIdSet>& composited_element_ids);
@@ -231,7 +232,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void BeginUpdatingState();
   void EndUpdatingState();
 
-  bool CanStartAnimationOnCompositorInternal(
+  CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositorInternal(
       const Optional<CompositorElementIdSet>&) const;
   void CreateCompositorPlayer();
   void DestroyCompositorPlayer();

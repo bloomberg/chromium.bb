@@ -120,8 +120,9 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
   }
   bool CanStartEffectOnCompositor(const Timing& timing,
                                   const EffectModel& effect) {
-    return CompositorAnimations::CanStartEffectOnCompositor(
-        timing, *element_.Get(), nullptr, effect, 1);
+    return CompositorAnimations::CheckCanStartEffectOnCompositor(
+               timing, *element_.Get(), nullptr, effect, 1)
+        .Ok();
   }
   void GetAnimationOnCompositor(
       Timing& timing,
@@ -1214,8 +1215,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   KeyframeEffect* keyframe_effect1 =
       KeyframeEffect::Create(element.Get(), animation_effect1, timing);
   Animation* animation1 = timeline_->Play(keyframe_effect1);
-  EXPECT_TRUE(CompositorAnimations::CanStartEffectOnCompositor(
-      timing, *element.Get(), animation1, *animation_effect1, 1));
+  EXPECT_TRUE(CompositorAnimations::CheckCanStartEffectOnCompositor(
+                  timing, *element.Get(), animation1, *animation_effect1, 1)
+                  .Ok());
 
   // simulate KeyframeEffect::maybeStartAnimationOnCompositor
   Vector<int> compositor_animation_ids;
@@ -1228,8 +1230,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   KeyframeEffect* keyframe_effect2 =
       KeyframeEffect::Create(element.Get(), animation_effect2, timing);
   Animation* animation2 = timeline_->Play(keyframe_effect2);
-  EXPECT_FALSE(CompositorAnimations::CanStartEffectOnCompositor(
-      timing, *element.Get(), animation2, *animation_effect2, 1));
+  EXPECT_FALSE(CompositorAnimations::CheckCanStartEffectOnCompositor(
+                   timing, *element.Get(), animation2, *animation_effect2, 1)
+                   .Ok());
   EXPECT_FALSE(animation2->HasActiveAnimationsOnCompositor());
 
   // A fallback to blink implementation needed, so cancel all compositor-side
@@ -1282,15 +1285,18 @@ TEST_F(AnimationCompositorAnimationsTest,
   // Add a transform with a compositing reason, which should allow starting
   // animation.
   UpdateDummyTransformNode(properties, kCompositingReasonActiveAnimation);
-  EXPECT_TRUE(CompositorAnimations::CanStartElementOnCompositor(*element));
+  EXPECT_TRUE(
+      CompositorAnimations::CheckCanStartElementOnCompositor(*element).Ok());
 
   // Setting to CompositingReasonNone should produce false.
   UpdateDummyTransformNode(properties, kCompositingReasonNone);
-  EXPECT_FALSE(CompositorAnimations::CanStartElementOnCompositor(*element));
+  EXPECT_FALSE(
+      CompositorAnimations::CheckCanStartElementOnCompositor(*element).Ok());
 
   // Clearing the transform node entirely should also produce false.
   properties.ClearTransform();
-  EXPECT_FALSE(CompositorAnimations::CanStartElementOnCompositor(*element));
+  EXPECT_FALSE(
+      CompositorAnimations::CheckCanStartElementOnCompositor(*element).Ok());
 
   element->SetLayoutObject(nullptr);
   LayoutObjectProxy::Dispose(layout_object);
@@ -1309,15 +1315,18 @@ TEST_F(AnimationCompositorAnimationsTest,
   // Add an effect with a compositing reason, which should allow starting
   // animation.
   UpdateDummyEffectNode(properties, kCompositingReasonActiveAnimation);
-  EXPECT_TRUE(CompositorAnimations::CanStartElementOnCompositor(*element));
+  EXPECT_TRUE(
+      CompositorAnimations::CheckCanStartElementOnCompositor(*element).Ok());
 
   // Setting to CompositingReasonNone should produce false.
   UpdateDummyEffectNode(properties, kCompositingReasonNone);
-  EXPECT_FALSE(CompositorAnimations::CanStartElementOnCompositor(*element));
+  EXPECT_FALSE(
+      CompositorAnimations::CheckCanStartElementOnCompositor(*element).Ok());
 
   // Clearing the effect node entirely should also produce false.
   properties.ClearEffect();
-  EXPECT_FALSE(CompositorAnimations::CanStartElementOnCompositor(*element));
+  EXPECT_FALSE(
+      CompositorAnimations::CheckCanStartElementOnCompositor(*element).Ok());
 
   element->SetLayoutObject(nullptr);
   LayoutObjectProxy::Dispose(layout_object);

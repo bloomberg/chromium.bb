@@ -322,7 +322,7 @@ bool Animation::PreCommit(
   if (should_start) {
     compositor_group_ = compositor_group;
     if (start_on_compositor) {
-      if (CanStartAnimationOnCompositor(composited_element_ids)) {
+      if (CheckCanStartAnimationOnCompositor(composited_element_ids).Ok()) {
         CreateCompositorPlayer();
         StartAnimationOnCompositor(composited_element_ids);
         compositor_state_ = WTF::WrapUnique(new CompositorState(*this));
@@ -755,25 +755,59 @@ void Animation::ForceServiceOnNextFrame() {
   timeline_->Wake();
 }
 
-bool Animation::CanStartAnimationOnCompositor(
+CompositorAnimations::FailureCode Animation::CheckCanStartAnimationOnCompositor(
     const Optional<CompositorElementIdSet>& composited_element_ids) const {
-  return CanStartAnimationOnCompositorInternal(composited_element_ids) &&
-         ToKeyframeEffectReadOnly(content_.Get())
-             ->CanStartAnimationOnCompositor(playback_rate_);
+  CompositorAnimations::FailureCode code =
+      CheckCanStartAnimationOnCompositorInternal(composited_element_ids);
+  if (!code.Ok()) {
+    return code;
+  }
+  return ToKeyframeEffectReadOnly(content_.Get())
+      ->CheckCanStartAnimationOnCompositor(playback_rate_);
 }
 
-bool Animation::CanStartAnimationOnCompositorInternal(
+CompositorAnimations::FailureCode
+Animation::CheckCanStartAnimationOnCompositorInternal(
     const Optional<CompositorElementIdSet>& composited_element_ids) const {
-  if (is_composited_animation_disabled_for_testing_ || EffectSuppressed())
-    return false;
+  if (is_composited_animation_disabled_for_testing_) {
+    return CompositorAnimations::FailureCode::NonActionable(
+        "Accelerated animations disabled for testing");
+  }
+  if (EffectSuppressed()) {
+    return CompositorAnimations::FailureCode::NonActionable(
+        "Animation effect suppressed by DevTools");
+  }
+
+  if (playback_rate_ == 0) {
+    return CompositorAnimations::FailureCode::Actionable(
+        "Animation is not playing");
+  }
+
+  if (std::isinf(EffectEnd()) && playback_rate_ < 0) {
+    return CompositorAnimations::FailureCode::Actionable(
+        "Accelerated animations do not support reversed infinite duration "
+        "animations");
+  }
 
   // FIXME: Timeline playback rates should be compositable
-  if (playback_rate_ == 0 || (std::isinf(EffectEnd()) && playback_rate_ < 0) ||
-      (timeline() && timeline()->PlaybackRate() != 1))
-    return false;
+  if (timeline() && timeline()->PlaybackRate() != 1) {
+    return CompositorAnimations::FailureCode::NonActionable(
+        "Accelerated animations do not support timelines with playback rates "
+        "other than 1");
+  }
 
-  if (!timeline_ || !content_ || !content_->IsKeyframeEffectReadOnly())
-    return false;
+  if (!timeline_) {
+    return CompositorAnimations::FailureCode::Actionable(
+        "Animation is not attached to a timeline");
+  }
+  if (!content_) {
+    return CompositorAnimations::FailureCode::Actionable(
+        "Animation has no animation effect");
+  }
+  if (!content_->IsKeyframeEffectReadOnly()) {
+    return CompositorAnimations::FailureCode::NonActionable(
+        "Animation effect is not keyframe-based");
+  }
 
   // If the optional element id set has no value we must be in SPv1 mode in
   // which case we trust the compositing logic will create a layer if needed.
@@ -781,9 +815,12 @@ bool Animation::CanStartAnimationOnCompositorInternal(
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     Element* target_element =
         ToKeyframeEffectReadOnly(content_.Get())->Target();
-    if (!target_element)
-      return false;
+    if (!target_element) {
+      return CompositorAnimations::FailureCode::Actionable(
+          "Animation is not attached to an element");
+    }
 
+    bool has_own_layer_id = false;
     if (target_element->GetLayoutObject() &&
         target_element->GetLayoutObject()->IsBoxModelObject() &&
         target_element->GetLayoutObject()->HasLayer()) {
@@ -791,23 +828,27 @@ bool Animation::CanStartAnimationOnCompositorInternal(
           CompositorElementIdFromLayoutObjectId(
               target_element->GetLayoutObject()->UniqueId(),
               CompositorElementIdNamespace::kPrimary);
-      if (!composited_element_ids->Contains(target_element_id))
-        return false;
-    } else {
-      return false;
+      if (composited_element_ids->Contains(target_element_id)) {
+        has_own_layer_id = true;
+      }
+    }
+    if (!has_own_layer_id) {
+      return CompositorAnimations::FailureCode::NonActionable(
+          "Target element does not have its own compositing layer");
     }
   }
 
   if (!Playing()) {
-    return false;
+    return CompositorAnimations::FailureCode::Actionable(
+        "Animation is not playing");
   }
 
-  return true;
+  return CompositorAnimations::FailureCode::None();
 }
 
 void Animation::StartAnimationOnCompositor(
     const Optional<CompositorElementIdSet>& composited_element_ids) {
-  DCHECK(CanStartAnimationOnCompositor(composited_element_ids));
+  DCHECK(CheckCanStartAnimationOnCompositor(composited_element_ids).Ok());
 
   bool reversed = playback_rate_ < 0;
 
