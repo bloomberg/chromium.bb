@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
@@ -222,14 +222,14 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           guid);
   if (!network || network->IsConnectedState() || network->IsConnectingState()) {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS
             : UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS);
     Shell::Get()->system_tray_controller()->ShowNetworkSettings(
         network ? network->guid() : std::string());
   } else {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_CONNECT_TO_VPN
             : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
@@ -272,7 +272,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
 }
 
 void NetworkStateListDetailedView::ShowSettings() {
-  ShellPort::Get()->RecordUserMetricsAction(
+  Shell::Get()->metrics()->RecordUserMetricsAction(
       list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
   Shell::Get()->system_tray_controller()->ShowNetworkSettings(std::string());

@@ -6,11 +6,11 @@
 
 #include <string>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -125,12 +125,12 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
         // TODO(simonhong): Use ShelfItemDelegate::Close().
         controller_->Close(item_.id);
       }
-      ash::ShellPort::Get()->RecordUserMetricsAction(
+      ash::Shell::Get()->metrics()->RecordUserMetricsAction(
           ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
       if (ash::Shell::Get()
               ->maximize_mode_controller()
               ->IsMaximizeModeWindowManagerEnabled()) {
-        ash::ShellPort::Get()->RecordUserMetricsAction(
+        ash::Shell::Get()->metrics()->RecordUserMetricsAction(
             ash::UMA_TABLET_WINDOW_CLOSE_THROUGH_CONTXT_MENU);
       }
       break;

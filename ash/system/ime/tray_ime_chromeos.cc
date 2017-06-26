@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "ash/ime/ime_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -128,7 +128,7 @@ class IMEDetailedView : public ImeListView {
   }
 
   void ShowSettings() {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_IME_SHOW_DETAILED);
     Shell::Get()->system_tray_controller()->ShowIMESettings();
     if (owner()->system_tray())

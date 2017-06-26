@@ -10,6 +10,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/cancel_mode.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/shell.h"
@@ -300,7 +301,8 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
 void LockStateController::OnRealPowerTimeout() {
   VLOG(1) << "OnRealPowerTimeout";
   DCHECK(shutting_down_);
-  ShellPort::Get()->RecordUserMetricsAction(UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
   // Shut down or reboot based on device policy.
   shutdown_controller_->ShutDownOrReboot();
 }
@@ -465,7 +467,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
   }
 
   if (request_lock) {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         shutdown_after_lock_ ? UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON
                              : UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON);
     chromeos::DBusThreadManager::Get()

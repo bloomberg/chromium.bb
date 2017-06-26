@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "ash/metrics/user_metrics_action.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_animation_type.h"
@@ -531,11 +531,12 @@ void WindowSelectorItem::SetDimmed(bool dimmed) {
 void WindowSelectorItem::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == close_button_) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_CLOSE_BUTTON);
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_WINDOW_OVERVIEW_CLOSE_BUTTON);
     if (ash::Shell::Get()
             ->maximize_mode_controller()
             ->IsMaximizeModeWindowManagerEnabled()) {
-      ash::ShellPort::Get()->RecordUserMetricsAction(
+      ash::Shell::Get()->metrics()->RecordUserMetricsAction(
           ash::UMA_TABLET_WINDOW_CLOSE_THROUGH_OVERVIEW_CLOSE_BUTTON);
     }
     CloseWindow();

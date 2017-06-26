@@ -9,8 +9,9 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
+#include "ash/touch/touch_uma.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -334,7 +335,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
     }
 
     if (event.IsGestureEvent())
-      ShellPort::Get()->RecordGestureAction(GESTURE_FRAMEMAXIMIZE_TAP);
+      TouchUMA::GetInstance()->RecordGestureAction(GESTURE_FRAMEMAXIMIZE_TAP);
   } else if (sender == close_button_) {
     frame_->Close();
     action = UMA_WINDOW_CLOSE_BUTTON_CLICK;
@@ -346,7 +347,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
   } else {
     return;
   }
-  ShellPort::Get()->RecordUserMetricsAction(action);
+  Shell::Get()->metrics()->RecordUserMetricsAction(action);
 }
 
 bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {

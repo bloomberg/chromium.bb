@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "ash/metrics/user_metrics_action.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -68,12 +68,12 @@ std::string ScreenCaptureTrayItem::GetNotificationId() {
 }
 
 void ScreenCaptureTrayItem::RecordStoppedFromDefaultViewMetric() {
-  ShellPort::Get()->RecordUserMetricsAction(
+  Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_SCREEN_CAPTURE_DEFAULT_STOP);
 }
 
 void ScreenCaptureTrayItem::RecordStoppedFromNotificationViewMetric() {
-  ShellPort::Get()->RecordUserMetricsAction(
+  Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
 }
 

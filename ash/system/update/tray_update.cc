@@ -5,11 +5,11 @@
 #include "ash/system/update/tray_update.h"
 
 #include "ash/metrics/user_metrics_action.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/interfaces/update.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -124,7 +124,7 @@ class TrayUpdate::UpdateView : public ActionableView {
     DCHECK(update_required_ || update_over_cellular_available_);
     if (update_required_) {
       Shell::Get()->system_tray_controller()->RequestRestartForUpdate();
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED);
     } else {
       // Shows the about chrome OS page and checks for update after the page is

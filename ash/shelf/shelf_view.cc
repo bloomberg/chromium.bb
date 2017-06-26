@@ -9,6 +9,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/drag_drop/drag_image_view.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -442,11 +443,12 @@ void ShelfView::ButtonPressed(views::Button* sender,
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
-      ShellPort::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
+      Shell::Get()->metrics()->RecordUserMetricsAction(
+          UMA_LAUNCHER_CLICK_ON_APP);
       break;
 
     case TYPE_APP_LIST:
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
       break;
 

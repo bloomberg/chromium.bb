@@ -10,6 +10,7 @@
 
 #include "ash/key_event_watcher.h"
 #include "ash/login_status.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -307,7 +308,8 @@ std::vector<SystemTrayItem*> SystemTray::GetTrayItems() const {
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
   if (creation_type != BUBBLE_USE_EXISTING)
-    ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_MENU_OPENED);
   ShowItems(GetTrayItems(), false, true, creation_type, false);
 }
 

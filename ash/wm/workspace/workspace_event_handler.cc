@@ -4,7 +4,9 @@
 
 #include "ash/wm/workspace/workspace_event_handler.h"
 
-#include "ash/shell_port.h"
+#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/shell.h"
+#include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -49,7 +51,7 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event,
         if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {
           int component = wm::GetNonClientComponent(target, event->location());
           if (component == HTCAPTION && component == click_component_) {
-            ShellPort::Get()->RecordUserMetricsAction(
+            Shell::Get()->metrics()->RecordUserMetricsAction(
                 UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK);
             const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
             target_state->OnWMEvent(&wm_event);
@@ -81,14 +83,14 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event,
     return;
 
   if (event->details().tap_count() != 2) {
-    ShellPort::Get()->RecordGestureAction(GESTURE_FRAMEVIEW_TAP);
+    TouchUMA::GetInstance()->RecordGestureAction(GESTURE_FRAMEVIEW_TAP);
     return;
   }
 
   if (click_component_ == previous_target_component) {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE);
-    ShellPort::Get()->RecordGestureAction(GESTURE_MAXIMIZE_DOUBLETAP);
+    TouchUMA::GetInstance()->RecordGestureAction(GESTURE_MAXIMIZE_DOUBLETAP);
     const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
     wm::GetWindowState(target)->OnWMEvent(&wm_event);
     event->StopPropagation();
@@ -103,13 +105,13 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
   if ((event->flags() & ui::EF_IS_DOUBLE_CLICK) != 0 && target->delegate()) {
     const int component = wm::GetNonClientComponent(target, event->location());
     if (component == HTBOTTOM || component == HTTOP) {
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);
       const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE);
       target_state->OnWMEvent(&wm_event);
       event->StopPropagation();
     } else if (component == HTLEFT || component == HTRIGHT) {
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);
       const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE);
       target_state->OnWMEvent(&wm_event);

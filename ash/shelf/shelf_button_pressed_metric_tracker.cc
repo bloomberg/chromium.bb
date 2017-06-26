@@ -4,7 +4,8 @@
 
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 
-#include "ash/shell_port.h"
+#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "ui/views/controls/button/button.h"
@@ -48,10 +49,10 @@ void ShelfButtonPressedMetricTracker::ButtonPressed(
 void ShelfButtonPressedMetricTracker::RecordButtonPressedSource(
     const ui::Event& event) {
   if (event.IsMouseEvent()) {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_LAUNCHER_BUTTON_PRESSED_WITH_MOUSE);
   } else if (event.IsGestureEvent()) {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_LAUNCHER_BUTTON_PRESSED_WITH_TOUCH);
   }
 }
@@ -63,13 +64,16 @@ void ShelfButtonPressedMetricTracker::RecordButtonPressedAction(
     case SHELF_ACTION_APP_LIST_SHOWN:
       break;
     case SHELF_ACTION_NEW_WINDOW_CREATED:
-      ShellPort::Get()->RecordUserMetricsAction(UMA_LAUNCHER_LAUNCH_TASK);
+      Shell::Get()->metrics()->RecordUserMetricsAction(
+          UMA_LAUNCHER_LAUNCH_TASK);
       break;
     case SHELF_ACTION_WINDOW_ACTIVATED:
-      ShellPort::Get()->RecordUserMetricsAction(UMA_LAUNCHER_SWITCH_TASK);
+      Shell::Get()->metrics()->RecordUserMetricsAction(
+          UMA_LAUNCHER_SWITCH_TASK);
       break;
     case SHELF_ACTION_WINDOW_MINIMIZED:
-      ShellPort::Get()->RecordUserMetricsAction(UMA_LAUNCHER_MINIMIZE_TASK);
+      Shell::Get()->metrics()->RecordUserMetricsAction(
+          UMA_LAUNCHER_MINIMIZE_TASK);
       break;
   }
 }

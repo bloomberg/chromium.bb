@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -216,7 +216,7 @@ views::View* TrayBrightness::CreateDefaultView(LoginStatus status) {
 
 views::View* TrayBrightness::CreateDetailedView(LoginStatus status) {
   CHECK(brightness_view_ == nullptr);
-  ShellPort::Get()->RecordUserMetricsAction(
+  Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_BRIGHTNESS_VIEW);
   brightness_view_ = new tray::BrightnessView(false, current_percent_);
   return brightness_view_;
@@ -239,7 +239,8 @@ bool TrayBrightness::ShouldShowShelf() const {
 }
 
 void TrayBrightness::BrightnessChanged(int level, bool user_initiated) {
-  ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_BRIGHTNESS_CHANGED);
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_BRIGHTNESS_CHANGED);
   double percent = static_cast<double>(level);
   HandleBrightnessChanged(percent, user_initiated);
 }

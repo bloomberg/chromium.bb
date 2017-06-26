@@ -13,12 +13,12 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/metrics/user_metrics_action.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_delegate.h"
@@ -310,7 +310,7 @@ void WindowSelector::Init(const WindowList& windows) {
   Shell::Get()->activation_client()->AddObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
-  ShellPort::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
+  Shell::Get()->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   // Send an a11y alert.
   Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
       A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
@@ -428,7 +428,7 @@ void WindowSelector::SelectWindow(WindowSelectorItem* item) {
     // a window other than the window that was active prior to entering overview
     // mode (i.e., the window at the front of the MRU list).
     if (window_list[0] != window) {
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED);
     }
     const auto it = std::find(window_list.begin(), window_list.end(), window);
@@ -481,7 +481,8 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
         // Allow the textfield to handle 'W' key when not used with Ctrl.
         return false;
       }
-      ShellPort::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_CLOSE_KEY);
+      Shell::Get()->metrics()->RecordUserMetricsAction(
+          UMA_WINDOW_OVERVIEW_CLOSE_KEY);
       grid_list_[selected_grid_index_]->SelectedWindow()->CloseWindow();
       break;
     case ui::VKEY_RETURN:
@@ -493,7 +494,8 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
       UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
                                   (num_key_presses_ * 100) / num_items_, 1, 300,
                                   30);
-      ShellPort::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_ENTER_KEY);
+      Shell::Get()->metrics()->RecordUserMetricsAction(
+          UMA_WINDOW_OVERVIEW_ENTER_KEY);
       SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
       break;
     default:

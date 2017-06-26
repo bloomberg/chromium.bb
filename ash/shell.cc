@@ -628,8 +628,7 @@ Shell::~Shell() {
 
   const Config config = shell_port_->GetAshConfig();
 
-  if (config != Config::MASH)
-    user_metrics_recorder_->OnShellShuttingDown();
+  user_metrics_recorder_->OnShellShuttingDown();
 
   shell_delegate_->PreShutdown();
 
@@ -1112,8 +1111,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   for (auto& observer : shell_observers_)
     observer.OnShellInitialized();
 
-  if (config != Config::MASH)
-    user_metrics_recorder_->OnShellInitialized();
+  user_metrics_recorder_->OnShellInitialized();
 }
 
 void Shell::InitRootWindow(aura::Window* root_window) {

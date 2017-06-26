@@ -4,10 +4,10 @@
 
 #include "ash/system/audio/tray_audio.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/audio/volume_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -69,7 +69,7 @@ views::View* TrayAudio::CreateDetailedView(LoginStatus status) {
     volume_view_ = new tray::VolumeView(this, false);
     return volume_view_;
   } else {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DETAILED_AUDIO_VIEW);
     audio_detail_view_ = new tray::AudioDetailedView(this);
     return audio_detail_view_;

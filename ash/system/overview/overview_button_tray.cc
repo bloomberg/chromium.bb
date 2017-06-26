@@ -4,11 +4,11 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
@@ -81,7 +81,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   // screen is locked, a modal dialog is open or is running in kiosk app
   // session.
   bool performed = controller->ToggleOverview();
-  ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
+  Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
   return performed;
 }
 

@@ -7,9 +7,9 @@
 #include <memory>
 #include <vector>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -95,12 +95,12 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
     // If the user clicks on a provider entry, request that the "add network"
     // dialog for this provider be shown.
     if (vpn_provider_.third_party) {
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
       Shell::Get()->system_tray_controller()->ShowThirdPartyVpnCreate(
           vpn_provider_.extension_id);
     } else {
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
       Shell::Get()->system_tray_controller()->ShowNetworkCreate(
           shill::kTypeVPN);

@@ -4,11 +4,11 @@
 
 #include "ash/accelerators/exit_warning_handler.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -100,13 +100,13 @@ void ExitWarningHandler::HandleAccelerator() {
       state_ = WAIT_FOR_DOUBLE_PRESS;
       Show();
       StartTimer();
-      ShellPort::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_FIRST_Q);
+      Shell::Get()->metrics()->RecordUserMetricsAction(UMA_ACCEL_EXIT_FIRST_Q);
       break;
     case WAIT_FOR_DOUBLE_PRESS:
       state_ = EXITING;
       CancelTimer();
       Hide();
-      ShellPort::Get()->RecordUserMetricsAction(UMA_ACCEL_EXIT_SECOND_Q);
+      Shell::Get()->metrics()->RecordUserMetricsAction(UMA_ACCEL_EXIT_SECOND_Q);
       Shell::Get()->shell_delegate()->Exit();
       break;
     case EXITING:

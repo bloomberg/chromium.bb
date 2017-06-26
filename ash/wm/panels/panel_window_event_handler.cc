@@ -4,7 +4,8 @@
 
 #include "ash/wm/panels/panel_window_event_handler.h"
 
-#include "ash/shell_port.h"
+#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
@@ -24,7 +25,8 @@ void PanelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       event->flags() & ui::EF_IS_DOUBLE_CLICK &&
       event->IsOnlyLeftMouseButton() &&
       wm::GetNonClientComponent(target, event->location()) == HTCAPTION) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_PANEL_MINIMIZE_CAPTION_CLICK);
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_PANEL_MINIMIZE_CAPTION_CLICK);
     wm::GetWindowState(target)->Minimize();
     event->StopPropagation();
     return;
@@ -36,7 +38,7 @@ void PanelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   if (!event->handled() && event->type() == ui::ET_GESTURE_TAP &&
       event->details().tap_count() == 2 &&
       wm::GetNonClientComponent(target, event->location()) == HTCAPTION) {
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_PANEL_MINIMIZE_CAPTION_GESTURE);
     wm::GetWindowState(target)->Minimize();
     event->StopPropagation();
