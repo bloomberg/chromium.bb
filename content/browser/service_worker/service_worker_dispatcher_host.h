@@ -18,9 +18,8 @@
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 
 class GURL;
 
@@ -48,8 +47,9 @@ struct ServiceWorkerVersionAttributes;
 // content::ServiceWorkerDispatcherHost. This can be overridden only for
 // testing.
 class CONTENT_EXPORT ServiceWorkerDispatcherHost
-    : public mojom::ServiceWorkerDispatcherHost,
-      public BrowserMessageFilter {
+    : public BrowserMessageFilter,
+      public BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>,
+      public mojom::ServiceWorkerDispatcherHost {
  public:
   ServiceWorkerDispatcherHost(
       int render_process_id,
@@ -115,10 +115,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
   enum class ProviderStatus { OK, NO_CONTEXT, DEAD_HOST, NO_HOST, NO_URL };
-
-  // Called when mojom::ServiceWorkerDispatcherHostPtr is created on the
-  // renderer-side.
-  void AddMojoBinding(mojo::ScopedInterfaceEndpointHandle handle);
 
   // mojom::ServiceWorkerDispatcherHost implementation
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
@@ -276,8 +272,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.
   std::vector<std::unique_ptr<IPC::Message>> pending_messages_;
-
-  mojo::AssociatedBindingSet<mojom::ServiceWorkerDispatcherHost> bindings_;
 
   base::WeakPtrFactory<ServiceWorkerDispatcherHost> weak_factory_;
 

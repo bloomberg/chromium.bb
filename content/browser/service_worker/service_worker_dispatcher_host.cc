@@ -87,15 +87,12 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     ResourceContext* resource_context)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
+      BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>(this,
+                                                                     this),
       render_process_id_(render_process_id),
       resource_context_(resource_context),
       channel_ready_(false),
-      weak_factory_(this) {
-  AddAssociatedInterface(
-      mojom::ServiceWorkerDispatcherHost::Name_,
-      base::Bind(&ServiceWorkerDispatcherHost::AddMojoBinding,
-                 base::Unretained(this)));
-}
+      weak_factory_(this) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
   if (GetContext())
@@ -186,13 +183,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
   }
 
   return handled;
-}
-
-void ServiceWorkerDispatcherHost::AddMojoBinding(
-    mojo::ScopedInterfaceEndpointHandle handle) {
-  bindings_.AddBinding(
-      this,
-      mojom::ServiceWorkerDispatcherHostAssociatedRequest(std::move(handle)));
 }
 
 bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
