@@ -9,10 +9,6 @@
 
 @interface ServiceDelegate
     : NSObject<NSXPCListenerDelegate, NSUserNotificationCenterDelegate>
-
-// The connection used to talk back to Chrome.
-@property(assign, nonatomic, nullable) NSXPCConnection* connection;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_NOTIFICATION_SERVICE_DELEGATE_H_
