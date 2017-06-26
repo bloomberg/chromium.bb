@@ -15,7 +15,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/memory/ref_counted.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
 #include "content/public/common/resource_type.h"
@@ -40,7 +40,7 @@ class V4GetHashProtocolManager;
 
 // Base class to either the locally-managed or a remotely-managed database.
 class SafeBrowsingDatabaseManager
-    : public base::RefCountedDeleteOnSequence<SafeBrowsingDatabaseManager> {
+    : public base::RefCountedThreadSafe<SafeBrowsingDatabaseManager> {
  public:
   // Callers requesting a result should derive from this class.
   // The destructor should call db_manager->CancelCheck(client) if a
@@ -259,8 +259,7 @@ class SafeBrowsingDatabaseManager
 
   virtual ~SafeBrowsingDatabaseManager();
 
-  friend class base::RefCountedDeleteOnSequence<SafeBrowsingDatabaseManager>;
-  friend class base::DeleteHelper<SafeBrowsingDatabaseManager>;
+  friend class base::RefCountedThreadSafe<SafeBrowsingDatabaseManager>;
 
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
                            CheckApiBlacklistUrlPrefixes);
