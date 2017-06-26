@@ -13,8 +13,9 @@ class StyleImage;
 
 class CSSImageInterpolationType : public CSSInterpolationType {
  public:
-  CSSImageInterpolationType(PropertyHandle property)
-      : CSSInterpolationType(property) {}
+  CSSImageInterpolationType(PropertyHandle property,
+                            const PropertyRegistration* registration = nullptr)
+      : CSSInterpolationType(property, registration) {}
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;
@@ -37,8 +38,6 @@ class CSSImageInterpolationType : public CSSInterpolationType {
   static PairwiseInterpolationValue StaticMergeSingleConversions(
       InterpolationValue&& start,
       InterpolationValue&& end);
-  static CSSValue* CreateCSSValue(const InterpolableValue&,
-                                  const NonInterpolableValue*);
   static StyleImage* ResolveStyleImage(CSSPropertyID,
                                        const InterpolableValue&,
                                        const NonInterpolableValue*,
@@ -62,6 +61,12 @@ class CSSImageInterpolationType : public CSSInterpolationType {
       InterpolationValue&& end) const final {
     return StaticMergeSingleConversions(std::move(start), std::move(end));
   }
+
+  static const CSSValue* StaticCreateCSSValue(const InterpolableValue&,
+                                              const NonInterpolableValue*);
+  const CSSValue* CreateCSSValue(const InterpolableValue&,
+                                 const NonInterpolableValue*,
+                                 const StyleResolverState&) const final;
 };
 
 }  // namespace blink

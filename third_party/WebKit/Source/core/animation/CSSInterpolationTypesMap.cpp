@@ -376,6 +376,9 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
             WTF::MakeUnique<CSSTimeInterpolationType>(property, &registration));
         break;
       case CSSSyntaxType::kImage:
+        result.push_back(WTF::MakeUnique<CSSImageInterpolationType>(
+            property, &registration));
+        break;
       case CSSSyntaxType::kUrl:
       case CSSSyntaxType::kInteger:
       case CSSSyntaxType::kTransformList:

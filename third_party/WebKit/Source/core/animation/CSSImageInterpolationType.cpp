@@ -106,7 +106,14 @@ CSSImageInterpolationType::StaticMergeSingleConversions(
                                           end.non_interpolable_value));
 }
 
-CSSValue* CSSImageInterpolationType::CreateCSSValue(
+const CSSValue* CSSImageInterpolationType::CreateCSSValue(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value,
+    const StyleResolverState&) const {
+  return StaticCreateCSSValue(interpolable_value, non_interpolable_value);
+}
+
+const CSSValue* CSSImageInterpolationType::StaticCreateCSSValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {
   return ToCSSImageNonInterpolableValue(non_interpolable_value)
@@ -118,7 +125,8 @@ StyleImage* CSSImageInterpolationType::ResolveStyleImage(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) {
-  CSSValue* image = CreateCSSValue(interpolable_value, non_interpolable_value);
+  const CSSValue* image =
+      StaticCreateCSSValue(interpolable_value, non_interpolable_value);
   return state.GetStyleImage(property, *image);
 }
 
