@@ -1393,11 +1393,11 @@
       "models": [
         {
           "board_name": "reef-uni",
-          "name": "snappy"
+          "name": "pyro"
         },
         {
           "board_name": "reef-uni",
-          "name": "sand"
+          "name": "snappy"
         },
         {
           "board_name": "reef-uni",
@@ -1405,7 +1405,7 @@
         },
         {
           "board_name": "reef-uni",
-          "name": "pyro"
+          "name": "sand"
         }
       ]
     }
