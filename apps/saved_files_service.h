@@ -16,6 +16,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/api/file_system/saved_files_service_interface.h"
 
 namespace content {
 class BrowserContext;
@@ -28,38 +29,15 @@ FORWARD_DECLARE_TEST(SavedFilesServiceUnitTest, SequenceNumberCompactionTest);
 
 namespace extensions {
 class Extension;
+struct SavedFileEntry;
 }
 
 namespace apps {
 
-// Represents a file entry that a user has given an app permission to
-// access. Will be persisted to disk (in the Preferences file), so should remain
-// serializable.
-struct SavedFileEntry {
-  SavedFileEntry();
-
-  SavedFileEntry(const std::string& id,
-                 const base::FilePath& path,
-                 bool is_directory,
-                 int sequence_number);
-
-  // The opaque id of this file entry.
-  std::string id;
-
-  // The path to a file entry that the app had permission to access.
-  base::FilePath path;
-
-  // Whether or not the entry refers to a directory.
-  bool is_directory;
-
-  // The sequence number in the LRU of the file entry. The value 0 indicates
-  // that the entry is not in the LRU.
-  int sequence_number;
-};
-
 // Tracks the files that apps have retained access to both while running and
 // when suspended.
-class SavedFilesService : public KeyedService,
+class SavedFilesService : public extensions::SavedFilesServiceInterface,
+                          public KeyedService,
                           public content::NotificationObserver {
  public:
   explicit SavedFilesService(content::BrowserContext* context);
@@ -67,31 +45,21 @@ class SavedFilesService : public KeyedService,
 
   static SavedFilesService* Get(content::BrowserContext* context);
 
-  // Registers a file entry with the saved files service, making it eligible to
-  // be put into the queue. File entries that are in the retained files queue at
-  // object construction are automatically registered.
+  // extensions::SavedFilesServiceInterface:
   void RegisterFileEntry(const std::string& extension_id,
                          const std::string& id,
                          const base::FilePath& file_path,
-                         bool is_directory);
-
-  // If the file with |id| is not in the queue of files to be retained
-  // permanently, adds the file to the back of the queue, evicting the least
-  // recently used entry at the front of the queue if it is full. If it is
-  // already present, moves it to the back of the queue. The |id| must have been
-  // registered.
-  void EnqueueFileEntry(const std::string& extension_id, const std::string& id);
-
-  // Returns whether the file entry with the given |id| has been registered.
-  bool IsRegistered(const std::string& extension_id, const std::string& id);
-
-  // Gets a borrowed pointer to the file entry with the specified |id|. Returns
-  // NULL if the file entry has not been registered.
-  const SavedFileEntry* GetFileEntry(const std::string& extension_id,
-                                     const std::string& id);
+                         bool is_directory) override;
+  void EnqueueFileEntry(const std::string& extension_id,
+                        const std::string& id) override;
+  bool IsRegistered(const std::string& extension_id,
+                    const std::string& id) override;
+  const extensions::SavedFileEntry* GetFileEntry(
+      const std::string& extension_id,
+      const std::string& id) override;
 
   // Returns all registered file entries.
-  std::vector<SavedFileEntry> GetAllFileEntries(
+  std::vector<extensions::SavedFileEntry> GetAllFileEntries(
       const std::string& extension_id);
 
   // Clears all retained files if the app does not have the

@@ -57,6 +57,7 @@ source_set("api") {
     "//extensions/browser/api/dns",
     "//extensions/browser/api/document_scan",
     "//extensions/browser/api/file_handlers",
+    "//extensions/browser/api/file_system",
     "//extensions/browser/api/hid",
     "//extensions/browser/api/idle",
     "//extensions/browser/api/management",

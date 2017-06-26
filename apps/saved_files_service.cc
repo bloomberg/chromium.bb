@@ -16,6 +16,7 @@
 #include "base/value_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/api/file_system/saved_file_entry.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -30,6 +31,7 @@ using extensions::APIPermission;
 using extensions::Extension;
 using extensions::ExtensionHost;
 using extensions::ExtensionPrefs;
+using extensions::SavedFileEntry;
 
 namespace {
 
@@ -139,17 +141,6 @@ std::vector<SavedFileEntry> GetSavedFileEntries(
 }
 
 }  // namespace
-
-SavedFileEntry::SavedFileEntry() : is_directory(false), sequence_number(0) {}
-
-SavedFileEntry::SavedFileEntry(const std::string& id,
-                               const base::FilePath& path,
-                               bool is_directory,
-                               int sequence_number)
-    : id(id),
-      path(path),
-      is_directory(is_directory),
-      sequence_number(sequence_number) {}
 
 class SavedFilesService::SavedFiles {
  public:
