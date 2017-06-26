@@ -912,6 +912,18 @@ GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32_t route_id) {
   return it->second.get();
 }
 
+bool GpuChannel::HasActiveWebGLContext() const {
+  for (auto& kv : stubs_) {
+    gles2::ContextType context_type =
+        kv.second->GetFeatureInfo()->context_type();
+    if (context_type == gles2::CONTEXT_TYPE_WEBGL1 ||
+        context_type == gles2::CONTEXT_TYPE_WEBGL2) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void GpuChannel::LoseAllContexts() {
   gpu_channel_manager_->LoseAllContexts();
 }
