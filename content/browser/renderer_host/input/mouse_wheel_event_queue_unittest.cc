@@ -13,10 +13,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/base_event_utils.h"
@@ -135,19 +137,43 @@ const float kWheelScrollGlobalY = 72;
 #define EXPECT_MOUSE_WHEEL(event) \
   EXPECT_EQ(WebInputEvent::kMouseWheel, event->GetType());
 
+enum WheelScrollingMode {
+  kWheelScrollingModeNone,
+  kWheelScrollLatching,
+  kAsyncWheelEvents,
+};
+
 }  // namespace
 
-class MouseWheelEventQueueTest : public testing::TestWithParam<bool>,
-                                 public MouseWheelEventQueueClient {
+class MouseWheelEventQueueTest
+    : public testing::TestWithParam<WheelScrollingMode>,
+      public MouseWheelEventQueueClient {
  public:
   MouseWheelEventQueueTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
-    scroll_latching_enabled_ = GetParam();
+    scroll_latching_enabled_ = GetParam() != kWheelScrollingModeNone;
+    switch (GetParam()) {
+      case kWheelScrollingModeNone:
+        feature_list_.InitWithFeatures(
+            {}, {features::kTouchpadAndWheelScrollLatching,
+                 features::kAsyncWheelEvents});
+        break;
+      case kWheelScrollLatching:
+        feature_list_.InitWithFeatures(
+            {features::kTouchpadAndWheelScrollLatching},
+            {features::kAsyncWheelEvents});
+        break;
+      case kAsyncWheelEvents:
+        feature_list_.InitWithFeatures(
+            {features::kTouchpadAndWheelScrollLatching,
+             features::kAsyncWheelEvents},
+            {});
+    }
+
     queue_.reset(new MouseWheelEventQueue(this, scroll_latching_enabled_));
-    scroll_end_timeout_ms_ = scroll_latching_enabled_ ? 100 : 0;
   }
 
   ~MouseWheelEventQueueTest() override {}
@@ -175,10 +201,6 @@ class MouseWheelEventQueueTest : public testing::TestWithParam<bool>,
     ++acked_event_count_;
     last_acked_event_ = event.event;
     last_acked_event_state_ = ack_result;
-  }
-
-  base::TimeDelta DefaultScrollEndTimeoutDelay() {
-    return base::TimeDelta::FromMilliseconds(scroll_end_timeout_ms_);
   }
 
   bool scroll_latching_enabled() { return scroll_latching_enabled_; }
@@ -507,21 +529,27 @@ class MouseWheelEventQueueTest : public testing::TestWithParam<bool>,
   size_t acked_event_count_;
   InputEventAckState last_acked_event_state_;
   WebMouseWheelEvent last_acked_event_;
-  int64_t scroll_end_timeout_ms_;
   bool scroll_latching_enabled_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that mouse wheel events are queued properly.
 TEST_P(MouseWheelEventQueueTest, Basic) {
-  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
-                 kWheelScrollGlobalY, 1, 1, 0, false);
+  SendMouseWheelPossiblyIncludingPhase(
+      !scroll_latching_enabled_, kWheelScrollX, kWheelScrollY,
+      kWheelScrollGlobalX, kWheelScrollGlobalY, 1, 1, 0, false,
+      WebMouseWheelEvent::kPhaseBegan, WebMouseWheelEvent::kPhaseNone);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The second mouse wheel should not be sent since one is already in queue.
-  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
-                 kWheelScrollGlobalY, 5, 5, 0, false);
+  SendMouseWheelPossiblyIncludingPhase(
+      !scroll_latching_enabled_, kWheelScrollX, kWheelScrollY,
+      kWheelScrollGlobalX, kWheelScrollGlobalY, 5, 5, 0, false,
+      WebMouseWheelEvent::kPhaseChanged, WebMouseWheelEvent::kPhaseNone);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -784,6 +812,8 @@ TEST_P(MouseWheelEventQueueTest, WheelScrollLatching) {
 
 INSTANTIATE_TEST_CASE_P(MouseWheelEventQueueTests,
                         MouseWheelEventQueueTest,
-                        testing::Bool());
+                        testing::Values(kWheelScrollingModeNone,
+                                        kWheelScrollLatching,
+                                        kAsyncWheelEvents));
 
 }  // namespace content

@@ -90,8 +90,16 @@ class CONTENT_EXPORT MouseWheelEventQueue {
   // GSB has been sent in the past.
   bool needs_scroll_end_;
 
-  // True if the touchpad and wheel scroll latching is enabled.
+  // True if the touchpad and wheel scroll latching flag is enabled.
   bool enable_scroll_latching_;
+
+  // True if the async wheel events flag is enabled.
+  bool enable_async_wheel_events_;
+
+  // True if the ack for the first wheel event in a scroll sequence is not
+  // consumed. This lets us to send the rest of the wheel events in the sequence
+  // as non-blocking.
+  bool send_wheel_events_async_;
 
   blink::WebGestureDevice scrolling_device_;
 

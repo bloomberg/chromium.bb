@@ -678,6 +678,24 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     CancelCurrentFling();
 
   InputHandlerProxy::EventDisposition result = DROP_EVENT;
+
+  if (wheel_event.dispatch_type == WebInputEvent::kEventNonBlocking) {
+    // The first wheel event in the sequence should be cancellable.
+    DCHECK(wheel_event.phase != WebMouseWheelEvent::kPhaseBegan);
+
+    DCHECK(mouse_wheel_result_ != kEventDispositionUndefined);
+    result = static_cast<EventDisposition>(mouse_wheel_result_);
+
+    if (wheel_event.phase == WebMouseWheelEvent::kPhaseEnded ||
+        wheel_event.phase == WebMouseWheelEvent::kPhaseCancelled ||
+        wheel_event.momentum_phase == WebMouseWheelEvent::kPhaseEnded ||
+        wheel_event.momentum_phase == WebMouseWheelEvent::kPhaseCancelled) {
+      mouse_wheel_result_ = kEventDispositionUndefined;
+    }
+    if (mouse_wheel_result_ != kEventDispositionUndefined)
+      return result;
+  }
+
   cc::EventListenerProperties properties =
       input_handler_->GetEventListenerProperties(
           cc::EventListenerClass::kMouseWheel);
