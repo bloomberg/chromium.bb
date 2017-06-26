@@ -47,12 +47,15 @@ class GFX_EXPORT ImageSkia {
 
   // Creates an instance that will use the |source| to get the image
   // for scale factors. |size| specifes the size of the image in DIP.
-  // ImageSkia owns |source|.
-  ImageSkia(ImageSkiaSource* source, const gfx::Size& size);
+  ImageSkia(std::unique_ptr<ImageSkiaSource> source, const gfx::Size& size);
 
   // Creates an instance that uses the |source|. The constructor loads the image
-  // at |scale| and uses its dimensions to calculate the size in DIP. ImageSkia
-  // owns |source|.
+  // at |scale| and uses its dimensions to calculate the size in DIP.
+  ImageSkia(std::unique_ptr<ImageSkiaSource> source, float scale);
+
+  // Deprecated versions of the above constructors. ImageSkia takes ownership of
+  // |source|.
+  ImageSkia(ImageSkiaSource* source, const gfx::Size& size);
   ImageSkia(ImageSkiaSource* source, float scale);
 
   explicit ImageSkia(const gfx::ImageSkiaRep& image_rep);
