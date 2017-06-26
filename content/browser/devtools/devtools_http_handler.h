@@ -80,9 +80,9 @@ class DevToolsHttpHandler {
   void OnWebSocketMessage(int connection_id, const std::string& data);
   void OnClose(int connection_id);
 
-  void ServerStarted(base::Thread* thread,
-                     ServerWrapper* server_wrapper,
-                     DevToolsSocketFactory* socket_factory,
+  void ServerStarted(std::unique_ptr<base::Thread> thread,
+                     std::unique_ptr<ServerWrapper> server_wrapper,
+                     std::unique_ptr<DevToolsSocketFactory> socket_factory,
                      std::unique_ptr<net::IPEndPoint> ip_address);
 
   void SendJson(int connection_id,
@@ -109,17 +109,17 @@ class DevToolsHttpHandler {
       const std::string& host);
 
   // The thread used by the devtools handler to run server socket.
-  base::Thread* thread_;
+  std::unique_ptr<base::Thread> thread_;
   std::string frontend_url_;
   std::string product_name_;
   std::string user_agent_;
-  ServerWrapper* server_wrapper_;
+  std::unique_ptr<ServerWrapper> server_wrapper_;
   std::unique_ptr<net::IPEndPoint> server_ip_address_;
   using ConnectionToClientMap =
       std::map<int, std::unique_ptr<DevToolsAgentHostClientImpl>>;
   ConnectionToClientMap connection_to_client_;
   DevToolsManagerDelegate* delegate_;
-  DevToolsSocketFactory* socket_factory_;
+  std::unique_ptr<DevToolsSocketFactory> socket_factory_;
   base::WeakPtrFactory<DevToolsHttpHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandler);
