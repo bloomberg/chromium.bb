@@ -3290,15 +3290,21 @@ PDFiumEngine::SelectionChangeInvalidator::~SelectionChangeInvalidator() {
     }
   }
 
+  bool selection_changed = false;
   for (const auto& old_selection : old_selections_) {
-    if (!old_selection.IsEmpty())
+    if (!old_selection.IsEmpty()) {
       engine_->client_->Invalidate(old_selection);
+      selection_changed = true;
+    }
   }
   for (const auto& new_selection : new_selections) {
-    if (!new_selection.IsEmpty())
+    if (!new_selection.IsEmpty()) {
       engine_->client_->Invalidate(new_selection);
+      selection_changed = true;
+    }
   }
-  engine_->OnSelectionChanged();
+  if (selection_changed)
+    engine_->OnSelectionChanged();
 }
 
 void PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelectionsScreenRects(
