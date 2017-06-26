@@ -1629,7 +1629,6 @@ bool BrowserMainLoop::InitializeToolkit() {
   // See also GTK setup in EarlyInitialization, above, and associated comments.
 
 #if defined(OS_WIN)
-  // Init common control sex.
   INITCOMMONCONTROLSEX config;
   config.dwSize = sizeof(config);
   config.dwICC = ICC_WIN95_CLASSES;
