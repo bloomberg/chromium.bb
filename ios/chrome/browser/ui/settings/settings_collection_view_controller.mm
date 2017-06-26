@@ -73,6 +73,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
+#import "ios/shared/chrome/browser/ui/settings/settings_main_page_commands.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -176,13 +177,14 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 #pragma mark - SettingsCollectionViewController
 
-@interface SettingsCollectionViewController ()<SettingsControllerProtocol,
-                                               SyncObserverModelBridge,
+@interface SettingsCollectionViewController ()<BooleanObserver,
                                                ChromeIdentityServiceObserver,
-                                               BooleanObserver,
                                                PrefObserverDelegate,
+                                               SettingsControllerProtocol,
+                                               SettingsMainPageCommands,
                                                SigninPromoViewConsumer,
-                                               SigninPromoViewDelegate> {
+                                               SigninPromoViewDelegate,
+                                               SyncObserverModelBridge> {
   // The current browser state that hold the settings. Never off the record.
   ios::ChromeBrowserState* _browserState;  // weak
 
@@ -231,6 +233,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 @end
 
 @implementation SettingsCollectionViewController
+@synthesize dispatcher = _dispatcher;
 
 #pragma mark Initialization
 
@@ -274,6 +277,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
         &_prefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(
         autofill::prefs::kAutofillEnabled, &_prefChangeRegistrar);
+
+    _dispatcher = self;
 
     [self loadModel];
   }
@@ -761,7 +766,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       // and only the switch is tappable.
       break;
     case ItemTypeCellCatalog:
-      controller = [[MaterialCellCatalogViewController alloc] init];
+      [self.dispatcher showMaterialCellCatalog];
       break;
     default:
       break;
@@ -980,6 +985,14 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // The sign-in is done. The sign-in promo cell or account cell can be
   // reloaded.
   [self reloadData];
+}
+
+#pragma mark Material Cell Catalog
+
+- (void)showMaterialCellCatalog {
+  [self.navigationController
+      pushViewController:[[MaterialCellCatalogViewController alloc] init]
+                animated:YES];
 }
 
 #pragma mark NotificationBridgeDelegate
