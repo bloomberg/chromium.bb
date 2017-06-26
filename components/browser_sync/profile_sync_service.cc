@@ -788,8 +788,8 @@ void ProfileSyncService::SetFirstSetupComplete() {
 
 bool ProfileSyncService::IsSyncConfirmationNeeded() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return IsSignedIn() && !IsFirstSetupInProgress() && !IsFirstSetupComplete() &&
-         IsSyncRequested();
+  return (!IsLocalSyncEnabled() && IsSignedIn()) && !IsFirstSetupInProgress() &&
+         !IsFirstSetupComplete() && IsSyncRequested();
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
