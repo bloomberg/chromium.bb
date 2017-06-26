@@ -81,10 +81,19 @@ DispatchEventResult DispatchSelectStart(Node* node) {
 VisibleSelectionInFlatTree ExpandSelectionToRespectUserSelectAll(
     Node* target_node,
     const VisibleSelectionInFlatTree& selection) {
+  if (selection.IsNone())
+    return selection;
   Node* const root_user_select_all =
       EditingInFlatTreeStrategy::RootUserSelectAllForNode(target_node);
-  if (!root_user_select_all)
-    return selection;
+  if (!root_user_select_all) {
+    SelectionInFlatTree::Builder builder;
+    if (selection.IsBaseFirst())
+      builder.SetBaseAndExtent(selection.Start(), selection.End());
+    else
+      builder.SetBaseAndExtent(selection.End(), selection.Start());
+    builder.SetAffinity(selection.Affinity());
+    return CreateVisibleSelection(builder.Build());
+  }
 
   return CreateVisibleSelection(
       SelectionInFlatTree::Builder(selection.AsSelection())
