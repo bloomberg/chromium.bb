@@ -899,6 +899,11 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
     window_tree->ProcessWindowSurfaceChanged(window, surface_info);
 }
 
+void WindowServer::OnClientConnectionClosed(
+    const cc::FrameSinkId& frame_sink_id) {
+  // TODO(kylechar): Notify observers
+}
+
 void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,
                                          const UserId& active_id) {
 }

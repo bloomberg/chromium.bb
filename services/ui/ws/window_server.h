@@ -359,6 +359,7 @@ class WindowServer : public ServerWindowDelegate,
 
   // cc::mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
+  void OnClientConnectionClosed(const cc::FrameSinkId& frame_sink_id) override;
 
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,

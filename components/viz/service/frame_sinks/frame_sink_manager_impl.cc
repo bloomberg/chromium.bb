@@ -136,25 +136,19 @@ void FrameSinkManagerImpl::OnSurfaceDamageExpected(
     const cc::SurfaceId& surface_id,
     const cc::BeginFrameArgs& args) {}
 
-void FrameSinkManagerImpl::OnClientConnectionLost(
-    const cc::FrameSinkId& frame_sink_id,
-    bool destroy_compositor_frame_sink) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (destroy_compositor_frame_sink)
-    DestroyCompositorFrameSink(frame_sink_id);
-  // TODO(fsamuel): Tell the frame sink manager host that the client connection
-  // has been lost so that it can drop its private connection and allow a new
-  // client instance to create a new CompositorFrameSink.
-}
-
 void FrameSinkManagerImpl::OnSurfaceWillDraw(const cc::SurfaceId& surface_id) {}
 
-void FrameSinkManagerImpl::OnPrivateConnectionLost(
-    const cc::FrameSinkId& frame_sink_id,
-    bool destroy_compositor_frame_sink) {
+void FrameSinkManagerImpl::OnClientConnectionLost(
+    const cc::FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (destroy_compositor_frame_sink)
-    DestroyCompositorFrameSink(frame_sink_id);
+  if (client_)
+    client_->OnClientConnectionClosed(frame_sink_id);
+}
+
+void FrameSinkManagerImpl::OnPrivateConnectionLost(
+    const cc::FrameSinkId& frame_sink_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DestroyCompositorFrameSink(frame_sink_id);
 }
 
 }  // namespace viz

@@ -4,6 +4,8 @@
 
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink.h"
 
+#include <utility>
+
 namespace viz {
 
 GpuCompositorFrameSink::GpuCompositorFrameSink(
@@ -87,17 +89,11 @@ void GpuCompositorFrameSink::WillDrawSurface(
     const gfx::Rect& damage_rect) {}
 
 void GpuCompositorFrameSink::OnClientConnectionLost() {
-  client_connection_lost_ = true;
-  // Request destruction of |this| only if both connections are lost.
-  delegate_->OnClientConnectionLost(support_->frame_sink_id(),
-                                    private_connection_lost_);
+  delegate_->OnClientConnectionLost(support_->frame_sink_id());
 }
 
 void GpuCompositorFrameSink::OnPrivateConnectionLost() {
-  private_connection_lost_ = true;
-  // Request destruction of |this| only if both connections are lost.
-  delegate_->OnPrivateConnectionLost(support_->frame_sink_id(),
-                                     client_connection_lost_);
+  delegate_->OnPrivateConnectionLost(support_->frame_sink_id());
 }
 
 }  // namespace viz

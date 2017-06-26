@@ -82,4 +82,8 @@ interface FrameSinkManagerClient {
   // Called by the frame sink manager immediately upon receiving a
   // CompositorFrame with a new SurfaceId for the first time.
   OnSurfaceCreated(SurfaceInfo surface_info);
+
+  // The CompositorFrameSink pipe for |frame_sink_id| was closed. The client
+  // cannot submit any CompositorFrames to viz after this occurs.
+  OnClientConnectionClosed(cc.mojom.FrameSinkId frame_sink_id);
 };

@@ -90,10 +90,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void OnSurfaceWillDraw(const cc::SurfaceId& surface_id) override;
 
   // GpuCompositorFrameSinkDelegate implementation.
-  void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id,
-                              bool destroy_compositor_frame_sink) override;
-  void OnPrivateConnectionLost(const cc::FrameSinkId& frame_sink_id,
-                               bool destroy_compositor_frame_sink) override;
+  void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id) override;
+  void OnPrivateConnectionLost(const cc::FrameSinkId& frame_sink_id) override;
 
   // SurfaceManager should be the first object constructed and the last object
   // destroyed in order to ensure that all other objects that depend on it have

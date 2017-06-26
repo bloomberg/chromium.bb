@@ -57,9 +57,10 @@ interface CompositorFrameSinkClient {
   ReclaimResources(ReturnedResourceArray resources);
 };
 
-// CompositorFrameSinkPrivate is used by the display compositor host to
-// perform privilieged operations on a CompositorFrameSink such as
-// CopyOutputRequests.
+// CompositorFrameSinkPrivate connects the host process to viz and allows the
+// host process to perform priviledged operations for a CompositorFrameSink such
+// as add CopyOutputRequests. The corresponding CompositorFrameSink pipe will be
+// closed when this pipe is closed.
 interface CompositorFrameSinkPrivate {
   // Claims this FrameSinkId will embed |surface_id| so it should own the
   // temporary reference to |surface_id|.
