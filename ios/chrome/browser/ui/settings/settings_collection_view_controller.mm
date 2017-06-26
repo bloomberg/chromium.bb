@@ -235,9 +235,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 #pragma mark Initialization
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  // Checks that |browserState| is not an Incognito browser state.
-  DCHECK(browserState);
-  DCHECK_EQ(browserState, browserState->GetOriginalChromeBrowserState());
+  DCHECK(!browserState->IsOffTheRecord());
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
       [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];

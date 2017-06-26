@@ -112,12 +112,11 @@
 
 #pragma mark - SettingsNavigationController methods.
 
-// clang-format off
-+ (SettingsNavigationController*)newSettingsMainControllerWithMainBrowserState:
-    (ios::ChromeBrowserState*)browserState
-                                                                      delegate:
-    (id<SettingsNavigationControllerDelegate>)delegate {
-  // clang-format on
++ (SettingsNavigationController*)
+newSettingsMainControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
+                                 delegate:
+                                     (id<SettingsNavigationControllerDelegate>)
+                                         delegate {
   UIViewController* controller = [[SettingsCollectionViewController alloc]
       initWithBrowserState:browserState];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
