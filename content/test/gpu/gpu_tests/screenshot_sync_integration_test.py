@@ -6,6 +6,7 @@ import os
 import random
 import sys
 
+from gpu_tests import color_profile_manager
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import screenshot_sync_expectations
@@ -28,6 +29,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def SetUpProcess(cls):
+    color_profile_manager.ForceUntilExitSRGB()
     super(cls, ScreenshotSyncIntegrationTest).SetUpProcess()
     cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
@@ -37,7 +39,10 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _AddDefaultArgs(browser_args):
     # --test-type=gpu is used to suppress the "Google API Keys are
     # missing" infobar, which causes flakiness in tests.
-    return ['--test-type=gpu'] + browser_args
+    return [
+      '--force-color-profile=srgb',
+      '--enable-features=ColorCorrectRendering',
+      '--test-type=gpu'] + browser_args
 
   @classmethod
   def _CreateExpectations(cls):
@@ -68,7 +73,9 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _CheckColorMatchAtLocation(self, expectedRGB, screenshot, x, y):
     pixel_value = image_util.GetPixelColor(screenshot, x, y)
-    if not expectedRGB.IsEqual(pixel_value):
+    # Allow for off-by-one errors due to color conversion.
+    tolerance = 1
+    if not expectedRGB.IsEqual(pixel_value, tolerance):
       error_message = ('Color mismatch at (%d, %d): expected (%d, %d, %d), ' +
                        'got (%d, %d, %d)') % (
                          x, y, expectedRGB.r, expectedRGB.g, expectedRGB.b,
