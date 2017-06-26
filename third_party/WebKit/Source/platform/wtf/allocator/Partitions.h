@@ -34,6 +34,7 @@
 #include <string.h>
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
+#include "base/numerics/checked_math.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/WTFExport.h"
@@ -68,9 +69,16 @@ class WTF_EXPORT Partitions {
     NOTREACHED();
     return nullptr;
   }
+
   ALWAYS_INLINE static base::PartitionRoot* LayoutPartition() {
     DCHECK(initialized_);
     return layout_allocator_.root();
+  }
+
+  ALWAYS_INLINE static size_t ComputeAllocationSize(size_t count, size_t size) {
+    base::CheckedNumeric<size_t> total = count;
+    total *= size;
+    return total.ValueOrDie();
   }
 
   static size_t CurrentDOMMemoryUsage() {
