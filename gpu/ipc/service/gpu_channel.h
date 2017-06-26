@@ -149,6 +149,7 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
 
   GpuCommandBufferStub* LookupCommandBuffer(int32_t route_id);
 
+  bool HasActiveWebGLContext() const;
   void LoseAllContexts();
   void MarkAllContextsLost();
 

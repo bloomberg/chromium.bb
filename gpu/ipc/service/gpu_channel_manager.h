@@ -32,6 +32,10 @@
 #include "ui/gl/gl_surface.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
+
 namespace gl {
 class GLShareGroup;
 }
@@ -123,6 +127,12 @@ class GPU_EXPORT GpuChannelManager {
 
 #if defined(OS_ANDROID)
   void DidAccessGpu();
+
+  void OnApplicationStateChange(base::android::ApplicationState state);
+
+  void set_low_end_mode_for_testing(bool mode) {
+    is_running_on_low_end_mode_ = mode;
+  }
 #endif
 
   bool is_exiting_for_lost_context() { return exiting_for_lost_context_; }
@@ -178,6 +188,9 @@ class GPU_EXPORT GpuChannelManager {
   // transport surfaces.
   base::TimeTicks last_gpu_access_time_;
   base::TimeTicks begin_wake_up_time_;
+
+  base::android::ApplicationStatusListener application_status_listener_;
+  bool is_running_on_low_end_mode_;
 #endif
 
   // Set during intentional GPU process shutdown.

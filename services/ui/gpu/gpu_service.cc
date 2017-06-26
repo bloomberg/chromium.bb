@@ -186,8 +186,8 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
   // initialization has succeeded.
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
       gpu_preferences_, gpu_workarounds_, this, watchdog_thread_.get(),
-      base::ThreadTaskRunnerHandle::Get(), io_runner_, scheduler_.get(),
-      sync_point_manager_, gpu_memory_buffer_factory_.get(), gpu_feature_info_,
+      main_runner_, io_runner_, scheduler_.get(), sync_point_manager_,
+      gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags)));
 
   media_gpu_channel_manager_.reset(

@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -69,10 +70,19 @@ GpuChannelManager::GpuChannelManager(
       shader_translator_cache_(gpu_preferences_),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
+#if defined(OS_ANDROID)
+      // Runs on GPU main thread and unregisters when the listener is destroyed,
+      // So, Unretained is fine here.
+      application_status_listener_(
+          base::Bind(&GpuChannelManager::OnApplicationStateChange,
+                     base::Unretained(this))),
+      is_running_on_low_end_mode_(base::SysInfo::IsLowEndDevice()),
+#endif
       exiting_for_lost_context_(false),
       activity_flags_(std::move(activity_flags)),
       weak_factory_(this) {
-  DCHECK(task_runner);
+  // |application_status_listener_| must be created on the right task runner.
+  DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   if (gpu_preferences.ui_prioritize_in_gpu_process)
     preemption_flag_ = new PreemptionFlag;
@@ -234,6 +244,37 @@ void GpuChannelManager::DoWakeUpGpu() {
     return;
   glFinish();
   DidAccessGpu();
+}
+
+void GpuChannelManager::OnApplicationStateChange(
+    base::android::ApplicationState state) {
+  if (state != base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES ||
+      !is_running_on_low_end_mode_) {
+    return;
+  }
+
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuChannelManager::OnApplicationStateChange,
+                              weak_factory_.GetWeakPtr(), state));
+    return;
+  }
+
+  // Delete all the GL contexts when the channel does not use WebGL and Chrome
+  // goes to background on low-end devices.
+  std::vector<int> channels_to_clear;
+  for (auto& kv : gpu_channels_) {
+    // TODO(ssid): WebGL context loss event notification must be sent before
+    // clearing WebGL contexts crbug.com/725306.
+    if (kv.second->HasActiveWebGLContext())
+      continue;
+    channels_to_clear.push_back(kv.first);
+    kv.second->MarkAllContextsLost();
+  }
+  for (int channel : channels_to_clear)
+    RemoveChannel(channel);
+
+  program_cache_.reset();
 }
 #endif
 
