@@ -58,10 +58,10 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
 
   // Calls into authpolicyd to fetch policy. Reports success or failure via
   // |callback|.
-  void DoRefresh(PolicyScheduler::TaskCallback callback);
+  void DoFetch(PolicyScheduler::TaskCallback callback);
 
   // Called by scheduler with result of policy fetch.
-  void OnPolicyRefreshed(bool success);
+  void OnPolicyFetched(bool success);
 
   const AccountId account_id_;
   std::unique_ptr<CloudPolicyStore> store_;
