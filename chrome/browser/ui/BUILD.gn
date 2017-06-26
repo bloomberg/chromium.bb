@@ -3332,6 +3332,10 @@ split_static_library("ui") {
       "app_list/search/app_result.h",
       "app_list/search/app_search_provider.cc",
       "app_list/search/app_search_provider.h",
+      "app_list/search/arc/arc_playstore_search_provider.cc",
+      "app_list/search/arc/arc_playstore_search_provider.h",
+      "app_list/search/arc/arc_playstore_search_result.cc",
+      "app_list/search/arc/arc_playstore_search_result.h",
       "app_list/search/common/json_response_fetcher.cc",
       "app_list/search/common/json_response_fetcher.h",
       "app_list/search/common/url_icon_source.cc",
@@ -3413,6 +3417,8 @@ split_static_library("ui") {
         "app_list/arc/arc_package_syncable_service.h",
         "app_list/arc/arc_package_syncable_service_factory.cc",
         "app_list/arc/arc_package_syncable_service_factory.h",
+        "app_list/arc/arc_playstore_app_context_menu.cc",
+        "app_list/arc/arc_playstore_app_context_menu.h",
         "app_list/search/arc_app_result.cc",
         "app_list/search/arc_app_result.h",
         "ash/launcher/arc_app_deferred_launcher_controller.cc",
@@ -3434,7 +3440,10 @@ split_static_library("ui") {
         "views/arc_app_dialog_view.cc",
       ]
     }
-    deps += [ "//ui/app_list" ]
+    deps += [
+      "//ui/app_list",
+      "//ui/app_list/vector_icons",
+    ]
   } else {
     sources += [
       "app_list/app_list_service.h",
