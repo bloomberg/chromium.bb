@@ -1842,6 +1842,16 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   EXPECT_SIZE_EQ(FloatSize(300, 200), visual_viewport.GetScrollOffset());
 
   // Send a scroll event on the main thread path.
+  WebGestureEvent gsb(WebInputEvent::kGestureScrollBegin,
+                      WebInputEvent::kNoModifiers,
+                      WebInputEvent::kTimeStampForTesting);
+  gsb.SetFrameScale(1);
+  gsb.source_device = kWebGestureDeviceTouchpad;
+  gsb.data.scroll_begin.delta_x_hint = -50;
+  gsb.data.scroll_begin.delta_x_hint = -60;
+  gsb.data.scroll_begin.delta_hint_units = WebGestureEvent::kPrecisePixels;
+  GetFrame()->GetEventHandler().HandleGestureEvent(gsb);
+
   WebGestureEvent gsu(WebInputEvent::kGestureScrollUpdate,
                       WebInputEvent::kNoModifiers,
                       WebInputEvent::kTimeStampForTesting);

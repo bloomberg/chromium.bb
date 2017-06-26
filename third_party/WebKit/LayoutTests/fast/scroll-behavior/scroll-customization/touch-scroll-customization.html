@@ -208,6 +208,8 @@ if ('ScrollState' in window) {
 
     var frame_actions = [
       function() {
+        // Touchscreen GFS arrives when there is an ongoing scroll.
+        eventSender.gestureScrollBegin(10, 10);
         eventSender.gestureFlingStart(10, 10, -1000000, -1000000, "touchscreen");
       },
       flingTest.step_func(function() {

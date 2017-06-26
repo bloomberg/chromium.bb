@@ -74,6 +74,7 @@ class CONTENT_EXPORT SyntheticSmoothMoveGesture : public SyntheticGesture {
 
   void ForwardMouseWheelEvent(SyntheticGestureTarget* target,
                               const gfx::Vector2dF& delta,
+                              const blink::WebMouseWheelEvent::Phase phase,
                               const base::TimeTicks& timestamp) const;
 
   void PressPoint(SyntheticGestureTarget* target,

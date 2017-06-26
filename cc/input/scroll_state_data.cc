@@ -10,6 +10,8 @@ namespace cc {
 ScrollStateData::ScrollStateData()
     : delta_x(0),
       delta_y(0),
+      delta_x_hint(0),
+      delta_y_hint(0),
       position_x(0),
       position_y(0),
       velocity_x(0),

@@ -2808,6 +2808,15 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   // scroll customization callbacks are invoked.
   DistributeScrollDelta(scroll_state);
 
+  // If the CurrentlyScrollingNode doesn't exist after distributing scroll
+  // delta, no scroller can scroll in the given delta hint direction(s).
+  if (!active_tree_->CurrentlyScrollingNode()) {
+    scroll_status.thread = InputHandler::SCROLL_IGNORED;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNotScrollingOnMain;
+    return scroll_status;
+  }
+
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
@@ -2935,7 +2944,7 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
-    const gfx::Point& viewport_point) {
+    ScrollState* scroll_state) {
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
@@ -2953,16 +2962,12 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
     }
     return scroll_status;
   }
-  ScrollStateData scroll_state_data;
-  scroll_state_data.position_x = viewport_point.x();
-  scroll_state_data.position_y = viewport_point.y();
-  ScrollState scroll_state(scroll_state_data);
 
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
   // that can scroll and set up an animation of its scroll offset. Note that
   // this does not currently go through the scroll customization machinery
   // that ScrollBy uses for non-animated wheel scrolls.
-  scroll_status = ScrollBegin(&scroll_state, WHEEL);
+  scroll_status = ScrollBegin(scroll_state, WHEEL);
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
     scroll_animating_latched_node_id_ = ScrollTree::kInvalidNodeId;
     ScrollStateData scroll_state_end_data;
@@ -3136,15 +3141,17 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   return scroll_status;
 }
 
-gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
-    ScrollNode* scroll_node,
+bool LayerTreeHostImpl::CalculateLocalScrollDeltaAndStartPoint(
+    const ScrollNode& scroll_node,
     const gfx::PointF& viewport_point,
     const gfx::Vector2dF& viewport_delta,
-    ScrollTree* scroll_tree) {
+    const ScrollTree& scroll_tree,
+    gfx::Vector2dF* out_local_scroll_delta,
+    gfx::PointF* out_local_start_point /*= nullptr*/) {
   // Layers with non-invertible screen space transforms should not have passed
   // the scroll hit test in the first place.
   const gfx::Transform screen_space_transform =
-      scroll_tree->ScreenSpaceTransform(scroll_node->id);
+      scroll_tree.ScreenSpaceTransform(scroll_node.id);
   DCHECK(screen_space_transform.IsInvertible());
   gfx::Transform inverse_screen_space_transform(
       gfx::Transform::kSkipInitialization);
@@ -3162,26 +3169,43 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
   gfx::Vector2dF screen_space_delta = viewport_delta;
   screen_space_delta.Scale(scale_from_viewport_to_screen_space);
 
-  // First project the scroll start and end points to local layer space to find
-  // the scroll delta in layer coordinates.
+  // Project the scroll start and end points to local layer space to find the
+  // scroll delta in layer coordinates.
   bool start_clipped, end_clipped;
   gfx::PointF screen_space_end_point = screen_space_point + screen_space_delta;
   gfx::PointF local_start_point = MathUtil::ProjectPoint(
       inverse_screen_space_transform, screen_space_point, &start_clipped);
   gfx::PointF local_end_point = MathUtil::ProjectPoint(
       inverse_screen_space_transform, screen_space_end_point, &end_clipped);
+  DCHECK(out_local_scroll_delta);
+  *out_local_scroll_delta = local_end_point - local_start_point;
 
-  // In general scroll point coordinates should not get clipped.
-  DCHECK(!start_clipped);
-  DCHECK(!end_clipped);
+  if (out_local_start_point)
+    *out_local_start_point = local_start_point;
+
   if (start_clipped || end_clipped)
+    return false;
+
+  return true;
+}
+
+gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
+    ScrollNode* scroll_node,
+    const gfx::PointF& viewport_point,
+    const gfx::Vector2dF& viewport_delta,
+    ScrollTree* scroll_tree) {
+  gfx::PointF local_start_point;
+  gfx::Vector2dF local_scroll_delta;
+  if (!CalculateLocalScrollDeltaAndStartPoint(
+          *scroll_node, viewport_point, viewport_delta, *scroll_tree,
+          &local_scroll_delta, &local_start_point)) {
     return gfx::Vector2dF();
+  }
 
   // Apply the scroll delta.
   gfx::ScrollOffset previous_offset =
       scroll_tree->current_scroll_offset(scroll_node->element_id);
-  scroll_tree->ScrollBy(scroll_node, local_end_point - local_start_point,
-                        active_tree());
+  scroll_tree->ScrollBy(scroll_node, local_scroll_delta, active_tree());
   gfx::ScrollOffset scrolled =
       scroll_tree->current_scroll_offset(scroll_node->element_id) -
       previous_offset;
@@ -3192,11 +3216,17 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
       local_start_point + gfx::Vector2dF(scrolled.x(), scrolled.y());
 
   // Calculate the applied scroll delta in viewport space coordinates.
+  bool end_clipped;
+  const gfx::Transform screen_space_transform =
+      scroll_tree->ScreenSpaceTransform(scroll_node->id);
   gfx::PointF actual_screen_space_end_point = MathUtil::MapPoint(
       screen_space_transform, actual_local_end_point, &end_clipped);
   DCHECK(!end_clipped);
   if (end_clipped)
     return gfx::Vector2dF();
+
+  float scale_from_viewport_to_screen_space =
+      active_tree_->device_scale_factor();
   gfx::PointF actual_viewport_end_point = gfx::ScalePoint(
       actual_screen_space_end_point, 1.f / scale_from_viewport_to_screen_space);
   return actual_viewport_end_point - viewport_point;
@@ -3327,7 +3357,10 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   std::list<ScrollNode*> current_scroll_chain;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-  ScrollNode* viewport_scroll_node = OuterViewportScrollNode();
+  ScrollNode* viewport_scroll_node =
+      viewport()->MainScrollLayer()
+          ? scroll_tree.Node(viewport()->MainScrollLayer()->scroll_tree_index())
+          : nullptr;
   if (scroll_node) {
     // TODO(bokan): The loop checks for a null parent but don't we still want to
     // distribute to the root scroll node?
@@ -3345,12 +3378,48 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
       if (!scroll_node->scrollable)
         continue;
 
-      current_scroll_chain.push_front(scroll_node);
+      if (CanConsumeDelta(scroll_node, *scroll_state))
+        current_scroll_chain.push_front(scroll_node);
     }
   }
+  active_tree_->SetCurrentlyScrollingNode(
+      current_scroll_chain.empty() ? nullptr : current_scroll_chain.back());
   scroll_state->set_scroll_chain_and_layer_tree(current_scroll_chain,
                                                 active_tree());
   scroll_state->DistributeToScrollChainDescendant();
+}
+
+bool LayerTreeHostImpl::CanConsumeDelta(ScrollNode* scroll_node,
+                                        const ScrollState& scroll_state) {
+  DCHECK(scroll_node);
+  gfx::Vector2dF delta_to_scroll;
+  if (scroll_state.is_beginning()) {
+    delta_to_scroll = gfx::Vector2dF(scroll_state.delta_x_hint(),
+                                     scroll_state.delta_y_hint());
+  } else {
+    delta_to_scroll =
+        gfx::Vector2dF(scroll_state.delta_x(), scroll_state.delta_y());
+  }
+
+  if (delta_to_scroll == gfx::Vector2dF())
+    return true;
+
+  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
+  if (scroll_state.is_direct_manipulation()) {
+    gfx::Vector2dF local_scroll_delta;
+    if (!CalculateLocalScrollDeltaAndStartPoint(
+            *scroll_node,
+            gfx::PointF(scroll_state.position_x(), scroll_state.position_y()),
+            delta_to_scroll, scroll_tree, &local_scroll_delta)) {
+      return false;
+    }
+    delta_to_scroll = local_scroll_delta;
+  }
+
+  if (ComputeScrollDelta(scroll_node, delta_to_scroll) != gfx::Vector2dF())
+    return true;
+
+  return false;
 }
 
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(

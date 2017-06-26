@@ -101,7 +101,7 @@ class CORE_EXPORT ScrollManager
 
   void ClearGestureScrollState();
 
-  void CustomizedScroll(const Node& start_node, ScrollState&);
+  void CustomizedScroll(ScrollState&);
 
   Page* GetPage() const;
 
@@ -110,7 +110,9 @@ class CORE_EXPORT ScrollManager
   bool HandleScrollGestureOnResizer(Node*, const WebGestureEvent&);
 
   void RecomputeScrollChain(const Node& start_node,
+                            const ScrollState&,
                             std::deque<int>& scroll_chain);
+  bool CanScroll(const ScrollState&, const Element& current_element);
 
   // scroller_size is set only when scrolling non root scroller.
   void ComputeScrollRelatedMetrics(

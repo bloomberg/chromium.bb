@@ -6260,7 +6260,8 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
     host_impl_->ScrollBy(UpdateState(gfx::Point(), gesture_scroll_delta).get());
     host_impl_->ScrollEnd(EndState().get());
 
-    // The child layer shouldn't have scrolled.
+    // The child layer should have scrolled down in its local coordinates an
+    // amount proportional to the angle between it and the input scroll delta.
     gfx::Vector2d expected_scroll_delta(
         0, -gesture_scroll_delta.x() *
                std::sin(MathUtil::Deg2Rad(child_layer_angle)));
@@ -10947,12 +10948,14 @@ TEST_F(LayerTreeHostImplTest, SecondScrollAnimatedBeginNotIgnored) {
   const gfx::Size viewport_size(50, 100);
   CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
-            host_impl_->ScrollAnimatedBegin(gfx::Point()).thread);
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimatedBegin(BeginState(gfx::Point()).get()).thread);
 
   // The second ScrollAnimatedBegin should not get ignored.
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
-            host_impl_->ScrollAnimatedBegin(gfx::Point()).thread);
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimatedBegin(BeginState(gfx::Point()).get()).thread);
 }
 
 // Verfify that a smooth scroll animation doesn't jump when UpdateTarget gets

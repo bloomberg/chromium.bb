@@ -34,6 +34,10 @@ class CC_EXPORT ScrollState {
   double delta_x() const { return data_.delta_x; }
   // Positive when scrolling down.
   double delta_y() const { return data_.delta_y; }
+  // Positive when scrolling right.
+  double delta_x_hint() const { return data_.delta_x_hint; }
+  // Positive when scrolling down.
+  double delta_y_hint() const { return data_.delta_y_hint; }
   // The location associated with this scroll update. For touch, this is the
   // position of the finger. For mouse, the location of the cursor.
   int position_x() const { return data_.position_x; }

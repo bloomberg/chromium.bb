@@ -7,6 +7,8 @@
 dictionary ScrollStateInit {
     double deltaX = 0;
     double deltaY = 0;
+    double deltaXHint = 0;
+    double deltaYHint = 0;
     long positionX = 0;
     long positionY = 0;
     double velocityX = 0;
