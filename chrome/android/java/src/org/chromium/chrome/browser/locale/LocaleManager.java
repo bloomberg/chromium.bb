@@ -78,6 +78,7 @@ public class LocaleManager {
 
     private boolean mSearchEnginePromoCompleted;
     private boolean mSearchEnginePromoShownThisSession;
+    private boolean mSearchEnginePromoCheckedThisSession;
 
     // LocaleManager is a singleton and it should not have strong reference to UI objects.
     // SnackbarManager is owned by ChromeActivity and is not null as long as the activity is alive.
@@ -244,8 +245,15 @@ public class LocaleManager {
             final Activity activity, final @Nullable Callback<Boolean> onSearchEngineFinalized) {
         assert TemplateUrlService.getInstance().isLoaded();
 
+        final Callback<Boolean> finalizeInternalCallback = new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                if (result != null && result) mSearchEnginePromoCheckedThisSession = true;
+                if (onSearchEngineFinalized != null) onSearchEngineFinalized.onResult(result);
+            }
+        };
         if (TemplateUrlService.getInstance().isDefaultSearchManaged()) {
-            if (onSearchEngineFinalized != null) onSearchEngineFinalized.onResult(true);
+            finalizeInternalCallback.onResult(true);
             return;
         }
 
@@ -253,14 +261,14 @@ public class LocaleManager {
         Callable<PromoDialog> dialogCreator;
         switch (shouldShow) {
             case SEARCH_ENGINE_PROMO_DONT_SHOW:
-                if (onSearchEngineFinalized != null) onSearchEngineFinalized.onResult(true);
+                finalizeInternalCallback.onResult(true);
                 return;
             case SEARCH_ENGINE_PROMO_SHOW_SOGOU:
                 dialogCreator = new Callable<PromoDialog>() {
                     @Override
                     public PromoDialog call() throws Exception {
                         return new SogouPromoDialog(
-                                activity, LocaleManager.this, onSearchEngineFinalized);
+                                activity, LocaleManager.this, finalizeInternalCallback);
                     }
                 };
                 break;
@@ -270,20 +278,20 @@ public class LocaleManager {
                     @Override
                     public PromoDialog call() throws Exception {
                         return new DefaultSearchEnginePromoDialog(
-                                activity, shouldShow, onSearchEngineFinalized);
+                                activity, shouldShow, finalizeInternalCallback);
                     }
                 };
                 break;
             default:
                 assert false;
-                if (onSearchEngineFinalized != null) onSearchEngineFinalized.onResult(true);
+                finalizeInternalCallback.onResult(true);
                 return;
         }
 
         // If the activity has been destroyed by the time the TemplateUrlService has
         // loaded, then do not attempt to show the dialog.
         if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED) {
-            if (onSearchEngineFinalized != null) onSearchEngineFinalized.onResult(false);
+            finalizeInternalCallback.onResult(false);
             return;
         }
 
@@ -466,7 +474,7 @@ public class LocaleManager {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-        return state == SEARCH_ENGINE_PROMO_SHOULD_CHECK;
+        return !mSearchEnginePromoCheckedThisSession && state == SEARCH_ENGINE_PROMO_SHOULD_CHECK;
     }
 
     /**
