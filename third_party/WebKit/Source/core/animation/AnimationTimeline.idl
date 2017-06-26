@@ -8,7 +8,4 @@
     RuntimeEnabled=WebAnimationsAPI
 ] interface AnimationTimeline {
     readonly attribute double? currentTime;
-
-    // TODO(crbug.com/624639): Move getAnimations() to DocumentAnimatable
-    sequence<Animation> getAnimations();
 };

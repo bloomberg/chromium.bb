@@ -11,7 +11,7 @@
   <script>
     function checkRunning()
     {
-      var current = document.timeline.getAnimations().length;
+      var current = document.getAnimations().length;
       if (current == 0)
         document.getElementById('result').innerHTML = "PASS: Number of active transitions is (0) as expected";
       else

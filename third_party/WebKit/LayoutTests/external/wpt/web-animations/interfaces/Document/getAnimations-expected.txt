@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-FAIL Test document.getAnimations for non-animated content document.getAnimations is not a function
-FAIL Test document.getAnimations for script-generated animations document.getAnimations is not a function
-FAIL Test the order of document.getAnimations with script generated animations document.getAnimations is not a function
-FAIL Test document.getAnimations with null target document.getAnimations is not a function
+PASS Test document.getAnimations for non-animated content 
+PASS Test document.getAnimations for script-generated animations 
+PASS Test the order of document.getAnimations with script generated animations 
+FAIL Test document.getAnimations with null target assert_equals: document.getAnimations() only returns animations targeting elements in this document expected 0 but got 3
 Harness: the test ran to completion.
 

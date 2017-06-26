@@ -20,14 +20,14 @@ onload = function() {
 };
 function step1() {
   target.offsetTop;
-  result = document.timeline.getAnimations().length == 0 ?
+  result = document.getAnimations().length == 0 ?
       'PASS - No transition started.' :
       'FAIL - Unexpected transition started.';
   target.style.webkitClipPath = 'circle(200px at 0px 0px)';
   requestAnimationFrame(step2);
 }
 function step2() {
-  result += document.timeline.getAnimations().length == 1 ?
+  result += document.getAnimations().length == 1 ?
       '\nPASS - Transition started.' :
       '\nFAIL - Transition did not start.';
   document.documentElement.style.whiteSpace = 'pre';
