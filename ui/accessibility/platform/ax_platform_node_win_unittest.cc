@@ -124,6 +124,46 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   EXPECT_EQ(E_FAIL, root_obj->get_accName(SELF, name2.Receive()));
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
+  AXNodeData root;
+  root.id = 0;
+  root.child_ids.push_back(1);
+  root.child_ids.push_back(2);
+  root.location = gfx::RectF(0, 0, 30, 30);
+
+  AXNodeData node1;
+  node1.id = 1;
+  node1.location = gfx::RectF(0, 0, 10, 10);
+  node1.AddStringAttribute(AX_ATTR_NAME, "Name1");
+
+  AXNodeData node2;
+  node2.id = 2;
+  node2.location = gfx::RectF(20, 20, 10, 10);
+  node2.AddStringAttribute(AX_ATTR_NAME, "Name2");
+
+  Init(root, node1, node2);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+
+  ScopedVariant obj;
+
+  // This is way outside of the root node
+  EXPECT_EQ(S_FALSE, root_obj->accHitTest(50, 50, obj.Receive()));
+  EXPECT_EQ(VT_EMPTY, obj.type());
+
+  // this is directly on node 1.
+  EXPECT_EQ(S_OK, root_obj->accHitTest(5, 5, obj.Receive()));
+  ASSERT_NE(nullptr, obj.ptr());
+
+  // We got something back, make sure that it has the correct name.
+  base::win::ScopedComPtr<IAccessible> accessible;
+  HRESULT hr = V_DISPATCH(obj.ptr())->QueryInterface(IID_PPV_ARGS(&accessible));
+  EXPECT_EQ(S_OK, hr);
+  ScopedBstr name;
+  EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+  EXPECT_STREQ(L"Name1", name);
+}
+
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
   AXNodeData root;
   root.id = 1;

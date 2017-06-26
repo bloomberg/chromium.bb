@@ -111,8 +111,30 @@ gfx::Rect TestAXNodeWrapper::GetScreenBoundsRect() const {
   return gfx::ToEnclosingRect(bounds);
 }
 
+TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
+  // Here we find the deepest child whose bounding box contains the given point.
+  // The assuptions are that there are no overlapping bounding rects and that
+  // all children have smaller bounding rects than their parents.
+  if (!GetScreenBoundsRect().Contains(gfx::Rect(x, y)))
+    return nullptr;
+
+  for (int i = 0; i < GetChildCount(); i++) {
+    TestAXNodeWrapper* child = GetOrCreate(tree_, node_->children()[i]);
+    if (!child)
+      return nullptr;
+
+    TestAXNodeWrapper* result = child->HitTestSyncInternal(x, y);
+    if (result) {
+      return result;
+    }
+  }
+  return this;
+}
+
 gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(int x, int y) {
-  return nullptr;
+  TestAXNodeWrapper* wrapper = HitTestSyncInternal(x, y);
+  return wrapper ? wrapper->ax_platform_node()->GetNativeViewAccessible()
+                 : nullptr;
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {

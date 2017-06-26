@@ -1130,8 +1130,11 @@ gfx::Rect BrowserAccessibility::GetScreenBoundsRect() const {
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x, int y) {
-  NOTREACHED();
-  return nullptr;
+  auto* accessible = manager_->CachingAsyncHitTest(gfx::Point(x, y));
+  if (!accessible)
+    return nullptr;
+
+  return accessible->GetNativeViewAccessible();
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetFocus() {

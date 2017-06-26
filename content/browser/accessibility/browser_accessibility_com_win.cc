@@ -441,30 +441,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accHitTest(LONG x_left,
   if (!owner())
     return E_FAIL;
 
-  auto* manager = Manager();
-  if (!manager)
-    return E_FAIL;
-
-  if (!child)
-    return E_INVALIDARG;
-
-  gfx::Point point(x_left, y_top);
-  if (!owner()->GetScreenBoundsRect().Contains(point)) {
-    // Return S_FALSE and VT_EMPTY when outside the object's boundaries.
-    child->vt = VT_EMPTY;
-    return S_FALSE;
-  }
-
-  BrowserAccessibility* result = manager->CachingAsyncHitTest(point);
-  if (result == owner()) {
-    // Point is within this object.
-    child->vt = VT_I4;
-    child->lVal = CHILDID_SELF;
-  } else {
-    child->vt = VT_DISPATCH;
-    child->pdispVal = ToBrowserAccessibilityComWin(result)->NewReference();
-  }
-  return S_OK;
+  return AXPlatformNodeWin::accHitTest(x_left, y_top, child);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::accLocation(LONG* x_left,
