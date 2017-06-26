@@ -81,6 +81,12 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "menuSort", IDS_MD_BOOKMARK_MANAGER_MENU_SORT);
   AddLocalizedString(source, "noSearchResults",
                      IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS);
+  AddLocalizedString(source, "openDialogBody",
+                     IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL);
+  AddLocalizedString(source, "openDialogConfirm",
+                     IDS_MD_BOOKMARK_MANAGER_OPEN_DIALOG_CONFIRM);
+  AddLocalizedString(source, "openDialogTitle",
+                     IDS_MD_BOOKMARK_MANAGER_OPEN_DIALOG_TITLE);
   AddLocalizedString(source, "renameFolderTitle",
                      IDS_MD_BOOKMARK_MANAGER_FOLDER_RENAME_TITLE);
   AddLocalizedString(source, "searchPrompt",

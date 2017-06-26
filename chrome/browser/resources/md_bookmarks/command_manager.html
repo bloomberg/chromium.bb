@@ -48,6 +48,20 @@
     <template is="cr-lazy-render" id="editDialog">
       <bookmarks-edit-dialog></bookmarks-edit-dialog>
     </template>
+    <template is="cr-lazy-render" id="openDialog">
+      <dialog is="cr-dialog">
+        <div class="title">$i18n{openDialogTitle}</div>
+        <div class="body"></div>
+        <div class="button-container">
+          <paper-button class="cancel-button" on-tap="onOpenCancelTap_">
+            $i18n{cancel}
+          </paper-button>
+          <paper-button class="action-button" on-tap="onOpenConfirmTap_">
+            $i18n{openDialogConfirm}
+          </paper-button>
+        </div>
+      </dialog>
+    </template>
   </template>
   <script src="chrome://bookmarks/command_manager.js"></script>
 </dom-module>

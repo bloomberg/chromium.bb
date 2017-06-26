@@ -53,3 +53,6 @@ var LOCAL_STORAGE_TREE_WIDTH_KEY = 'treeWidth';
 
 /** @const */
 var ROOT_NODE_ID = '0';
+
+/** @const {number} */
+var OPEN_CONFIRMATION_LIMIT = 15;
