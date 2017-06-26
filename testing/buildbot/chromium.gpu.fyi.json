@@ -3434,30 +3434,6 @@
             }
           ]
         }
-      },
-      {
-        "args": [
-          "context_lost",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Ubuntu"
-            }
-          ]
-        }
       }
     ]
   },

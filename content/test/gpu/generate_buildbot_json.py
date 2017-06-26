@@ -1584,6 +1584,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
     'disabled_tester_configs': [
