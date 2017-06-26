@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/child/blob_storage/webblobregistry_impl.h"
@@ -411,7 +412,7 @@ RendererBlinkPlatformImpl::PrescientNetworking() {
 }
 
 void RendererBlinkPlatformImpl::CacheMetadata(const blink::WebURL& url,
-                                              int64_t response_time,
+                                              base::Time response_time,
                                               const char* data,
                                               size_t size) {
   // Let the browser know we generated cacheable metadata for this resource. The
@@ -419,13 +420,13 @@ void RendererBlinkPlatformImpl::CacheMetadata(const blink::WebURL& url,
   // the processing of this resource.
   std::vector<char> copy(data, data + size);
   RenderThread::Get()->Send(
-      new RenderProcessHostMsg_DidGenerateCacheableMetadata(
-          url, base::Time::FromInternalValue(response_time), copy));
+      new RenderProcessHostMsg_DidGenerateCacheableMetadata(url, response_time,
+                                                            copy));
 }
 
 void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
     const blink::WebURL& url,
-    int64_t response_time,
+    base::Time response_time,
     const char* data,
     size_t size,
     const blink::WebSecurityOrigin& cacheStorageOrigin,
@@ -436,8 +437,8 @@ void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
   std::vector<char> copy(data, data + size);
   RenderThread::Get()->Send(
       new RenderProcessHostMsg_DidGenerateCacheableMetadataInCacheStorage(
-          url, base::Time::FromInternalValue(response_time), copy,
-          cacheStorageOrigin, cacheStorageCacheName.Utf8()));
+          url, response_time, copy, cacheStorageOrigin,
+          cacheStorageCacheName.Utf8()));
 }
 
 WebString RendererBlinkPlatformImpl::DefaultLocale() {

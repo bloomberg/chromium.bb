@@ -11,6 +11,7 @@
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -80,7 +81,7 @@ class MODULES_EXPORT FetchResponseData final
   // returns |m_buffer|.
   BodyStreamBuffer* InternalBuffer() const;
   String InternalMIMEType() const;
-  int64_t ResponseTime() const { return response_time_; }
+  Time ResponseTime() const { return response_time_; }
   String CacheStorageCacheName() const { return cache_storage_cache_name_; }
   const HTTPHeaderSet& CorsExposedHeaderNames() const {
     return cors_exposed_header_names_;
@@ -95,9 +96,7 @@ class MODULES_EXPORT FetchResponseData final
     status_message_ = status_message;
   }
   void SetMIMEType(const String& type) { mime_type_ = type; }
-  void SetResponseTime(int64_t response_time) {
-    response_time_ = response_time;
-  }
+  void SetResponseTime(Time response_time) { response_time_ = response_time; }
   void SetCacheStorageCacheName(const String& cache_storage_cache_name) {
     cache_storage_cache_name_ = cache_storage_cache_name;
   }
@@ -130,7 +129,7 @@ class MODULES_EXPORT FetchResponseData final
   Member<FetchResponseData> internal_response_;
   Member<BodyStreamBuffer> buffer_;
   String mime_type_;
-  int64_t response_time_;
+  Time response_time_;
   String cache_storage_cache_name_;
   HTTPHeaderSet cors_exposed_header_names_;
 };

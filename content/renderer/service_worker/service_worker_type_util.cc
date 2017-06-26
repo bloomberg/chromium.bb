@@ -87,7 +87,7 @@ ServiceWorkerResponse GetServiceWorkerResponseFromWebResponse(
       web_response.StatusText().Utf8(), web_response.ResponseType(),
       GetHeaderMap(web_response), web_response.BlobUUID().Utf8(),
       web_response.BlobSize(), web_response.GetError(),
-      base::Time::FromInternalValue(web_response.ResponseTime()),
+      web_response.ResponseTime(),
       !web_response.CacheStorageCacheName().IsNull(),
       web_response.CacheStorageCacheName().Utf8(),
       GetHeaderList(web_response.CorsExposedHeaderNames()));

@@ -245,7 +245,7 @@ void ToWebServiceWorkerResponse(const ServiceWorkerResponse& response,
                           response.blob_size);
   }
   web_response->SetError(response.error);
-  web_response->SetResponseTime(response.response_time.ToInternalValue());
+  web_response->SetResponseTime(response.response_time);
   if (response.is_in_cache_storage) {
     web_response->SetCacheStorageCacheName(
         blink::WebString::FromUTF8(response.cache_storage_cache_name));

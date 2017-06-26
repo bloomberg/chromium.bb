@@ -36,6 +36,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/WebURLResponse.h"
@@ -328,10 +329,8 @@ class PLATFORM_EXPORT ResourceResponse final {
     did_service_worker_navigation_preload_ = value;
   }
 
-  int64_t ResponseTime() const { return response_time_; }
-  void SetResponseTime(int64_t response_time) {
-    response_time_ = response_time;
-  }
+  Time ResponseTime() const { return response_time_; }
+  void SetResponseTime(Time response_time) { response_time_ = response_time; }
 
   const AtomicString& RemoteIPAddress() const { return remote_ip_address_; }
   void SetRemoteIPAddress(const AtomicString& value) {
@@ -491,7 +490,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // The time at which the response headers were received.  For cached
   // responses, this time could be "far" in the past.
-  int64_t response_time_;
+  Time response_time_;
 
   // ALPN negotiated protocol of the socket which fetched this resource.
   AtomicString alpn_negotiated_protocol_;
@@ -564,7 +563,7 @@ struct CrossThreadResourceResponseData {
   Vector<KURL> url_list_via_service_worker_;
   String cache_storage_cache_name_;
   bool did_service_worker_navigation_preload_;
-  int64_t response_time_;
+  Time response_time_;
   String remote_ip_address_;
   unsigned short remote_port_;
   long long encoded_data_length_;

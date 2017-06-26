@@ -8,6 +8,7 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 
 namespace blink {
@@ -18,8 +19,7 @@ class WebServiceWorkerResponsePrivate
   WebServiceWorkerResponsePrivate()
       : status(0),
         response_type(kWebServiceWorkerResponseTypeDefault),
-        error(kWebServiceWorkerResponseErrorUnknown),
-        response_time(0) {}
+        error(kWebServiceWorkerResponseErrorUnknown) {}
   WebVector<WebURL> url_list;
   unsigned short status;
   WebString status_text;
@@ -27,7 +27,7 @@ class WebServiceWorkerResponsePrivate
   HTTPHeaderMap headers;
   RefPtr<BlobDataHandle> blob_data_handle;
   WebServiceWorkerResponseError error;
-  int64_t response_time;
+  Time response_time;
   WebString cache_storage_cache_name;
   WebVector<WebString> cors_exposed_header_names;
 };
@@ -135,11 +135,11 @@ WebServiceWorkerResponseError WebServiceWorkerResponse::GetError() const {
   return private_->error;
 }
 
-void WebServiceWorkerResponse::SetResponseTime(int64_t time) {
+void WebServiceWorkerResponse::SetResponseTime(base::Time time) {
   private_->response_time = time;
 }
 
-int64_t WebServiceWorkerResponse::ResponseTime() const {
+base::Time WebServiceWorkerResponse::ResponseTime() const {
   return private_->response_time;
 }
 

@@ -630,7 +630,7 @@ void CacheStorageDispatcher::PopulateWebResponseFromResponse(
   web_response->SetStatus(response.status_code);
   web_response->SetStatusText(WebString::FromASCII(response.status_text));
   web_response->SetResponseType(response.response_type);
-  web_response->SetResponseTime(response.response_time.ToInternalValue());
+  web_response->SetResponseTime(response.response_time);
   web_response->SetCacheStorageCacheName(
       response.is_in_cache_storage
           ? blink::WebString::FromUTF8(response.cache_storage_cache_name)

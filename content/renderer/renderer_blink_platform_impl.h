@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
@@ -93,12 +94,12 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       std::unique_ptr<blink::WebMessagePortChannel>* channel2) override;
   blink::WebPrescientNetworking* PrescientNetworking() override;
   void CacheMetadata(const blink::WebURL&,
-                     int64_t,
+                     base::Time,
                      const char*,
                      size_t) override;
   void CacheMetadataInCacheStorage(
       const blink::WebURL&,
-      int64_t,
+      base::Time,
       const char*,
       size_t,
       const blink::WebSecurityOrigin& cacheStorageOrigin,

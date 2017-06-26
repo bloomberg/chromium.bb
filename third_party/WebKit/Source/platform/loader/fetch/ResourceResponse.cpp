@@ -100,7 +100,6 @@ ResourceResponse::ResourceResponse()
       expires_(0.0),
       last_modified_(0.0),
       app_cache_id_(0),
-      response_time_(0),
       connection_info_(
           net::HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_UNKNOWN),
       encoded_data_length_(0),
@@ -140,7 +139,6 @@ ResourceResponse::ResourceResponse(const KURL& url,
       expires_(0.0),
       last_modified_(0.0),
       app_cache_id_(0),
-      response_time_(0),
       encoded_data_length_(0),
       encoded_body_length_(0),
       decoded_body_length_(0) {}

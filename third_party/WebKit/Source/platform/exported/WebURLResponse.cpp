@@ -134,8 +134,8 @@ void WebURLResponse::SetHTTPLoadInfo(const WebHTTPLoadInfo& value) {
   resource_response_->SetResourceLoadInfo(value);
 }
 
-void WebURLResponse::SetResponseTime(long long response_time) {
-  resource_response_->SetResponseTime(static_cast<int64_t>(response_time));
+void WebURLResponse::SetResponseTime(base::Time response_time) {
+  resource_response_->SetResponseTime(response_time);
 }
 
 WebString WebURLResponse::MimeType() const {

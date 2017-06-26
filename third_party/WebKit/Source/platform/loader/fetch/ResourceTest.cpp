@@ -10,6 +10,7 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +25,7 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
   ~MockPlatform() override {}
 
   // From blink::Platform:
-  void CacheMetadata(const WebURL& url, int64_t, const char*, size_t) override {
+  void CacheMetadata(const WebURL& url, Time, const char*, size_t) override {
     cached_urls_.push_back(url);
   }
 
