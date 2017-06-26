@@ -15,8 +15,6 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/automation_internal.h"
-#include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
-#include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/common/stack_frame.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/accessibility/ax_enums.h"
@@ -28,13 +26,6 @@
 #include "url/gurl.h"
 
 #define IPC_MESSAGE_START ChromeExtensionMsgStart
-
-// TODO(crbug.com/725275): Remove these ipc enums once all ipc messages here are
-// converted to mojo.
-IPC_ENUM_TRAITS_MAX_VALUE(extensions::api::webstore::InstallStage,
-                          extensions::api::webstore::INSTALL_STAGE_INSTALLING)
-IPC_ENUM_TRAITS_MAX_VALUE(extensions::webstore_install::Result,
-                          extensions::webstore_install::RESULT_LAST)
 
 // Messages sent from the browser to the renderer.
 

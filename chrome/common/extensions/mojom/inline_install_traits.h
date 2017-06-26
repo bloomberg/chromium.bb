@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MOJOM_INLINE_INSTALL_TRAITS_H_
-#define CHROME_COMMON_EXTENSIONS_MOJOM_INLINE_INSTALL_TRAITS_H_
+// Multiply-included file, hence no include guard.
 
 #include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
 #include "chrome/common/extensions/webstore_install_result.h"
@@ -15,4 +14,3 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::webstore_install::Result,
                           extensions::webstore_install::RESULT_LAST)
 
-#endif  // CHROME_COMMON_EXTENSIONS_MOJOM_INLINE_INSTALL_TRAITS_H_
