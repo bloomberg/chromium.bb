@@ -1104,10 +1104,10 @@ TEST_F(FrameFetchContextTest, DispatchDidFailWhenDetached) {
 TEST_F(FrameFetchContextTest, ShouldLoadNewResourceWhenDetached) {
   dummy_page_holder = nullptr;
 
-  EXPECT_TRUE(fetch_context->ShouldLoadNewResource(Resource::kImage));
-  EXPECT_TRUE(fetch_context->ShouldLoadNewResource(Resource::kRaw));
-  EXPECT_TRUE(fetch_context->ShouldLoadNewResource(Resource::kScript));
-  EXPECT_TRUE(fetch_context->ShouldLoadNewResource(Resource::kMainResource));
+  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(Resource::kImage));
+  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(Resource::kRaw));
+  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(Resource::kScript));
+  EXPECT_FALSE(fetch_context->ShouldLoadNewResource(Resource::kMainResource));
 }
 
 TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
