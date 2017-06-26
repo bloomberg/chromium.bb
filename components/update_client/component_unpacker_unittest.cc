@@ -17,6 +17,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/test_installer.h"
@@ -146,7 +147,8 @@ TEST_F(ComponentUnpackerTest, UnpackFileNotFound) {
   RunThreads();
 
   EXPECT_EQ(UnpackerError::kInvalidFile, result_.error);
-  EXPECT_EQ(0, result_.extended_error);
+  EXPECT_EQ(static_cast<int>(crx_file::VerifierResult::ERROR_FILE_NOT_READABLE),
+            result_.extended_error);
 
   EXPECT_TRUE(result_.unpack_path.empty());
 }
@@ -162,7 +164,9 @@ TEST_F(ComponentUnpackerTest, UnpackFileHashMismatch) {
   RunThreads();
 
   EXPECT_EQ(UnpackerError::kInvalidFile, result_.error);
-  EXPECT_EQ(0, result_.extended_error);
+  EXPECT_EQ(
+      static_cast<int>(crx_file::VerifierResult::ERROR_REQUIRED_PROOF_MISSING),
+      result_.extended_error);
 
   EXPECT_TRUE(result_.unpack_path.empty());
 }

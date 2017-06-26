@@ -90,6 +90,7 @@ bool ComponentUnpacker::Verify() {
   if (result != crx_file::VerifierResult::OK_FULL &&
       result != crx_file::VerifierResult::OK_DELTA) {
     error_ = UnpackerError::kInvalidFile;
+    extended_error_ = static_cast<int>(result);
     return false;
   }
   is_delta_ = result == crx_file::VerifierResult::OK_DELTA;
