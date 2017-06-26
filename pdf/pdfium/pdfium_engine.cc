@@ -3266,10 +3266,9 @@ void PDFiumEngine::Highlight(void* buffer,
 
 PDFiumEngine::SelectionChangeInvalidator::SelectionChangeInvalidator(
     PDFiumEngine* engine)
-    : engine_(engine) {
-  previous_origin_ = engine_->GetVisibleRect().point();
-  GetVisibleSelectionsScreenRects(&old_selections_);
-}
+    : engine_(engine),
+      previous_origin_(engine_->GetVisibleRect().point()),
+      old_selections_(GetVisibleSelections()) {}
 
 PDFiumEngine::SelectionChangeInvalidator::~SelectionChangeInvalidator() {
   // Offset the old selections if the document scrolled since we recorded them.
@@ -3277,8 +3276,7 @@ PDFiumEngine::SelectionChangeInvalidator::~SelectionChangeInvalidator() {
   for (auto& old_selection : old_selections_)
     old_selection.Offset(offset);
 
-  std::vector<pp::Rect> new_selections;
-  GetVisibleSelectionsScreenRects(&new_selections);
+  std::vector<pp::Rect> new_selections = GetVisibleSelections();
   for (auto& new_selection : new_selections) {
     for (auto& old_selection : old_selections_) {
       if (!old_selection.IsEmpty() && new_selection == old_selection) {
@@ -3307,19 +3305,20 @@ PDFiumEngine::SelectionChangeInvalidator::~SelectionChangeInvalidator() {
     engine_->OnSelectionChanged();
 }
 
-void PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelectionsScreenRects(
-    std::vector<pp::Rect>* rects) {
-  pp::Rect visible_rect = engine_->GetVisibleRect();
+std::vector<pp::Rect>
+PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelections() const {
+  std::vector<pp::Rect> rects;
+  pp::Point visible_point = engine_->GetVisibleRect().point();
   for (auto& range : engine_->selection_) {
-    int page_index = range.page_index();
-    if (!engine_->IsPageVisible(page_index))
-      continue;  // This selection is on a page that's not currently visible.
+    // Exclude selections on pages that's not currently visible.
+    if (!engine_->IsPageVisible(range.page_index()))
+      continue;
 
-    std::vector<pp::Rect> selection_rects =
-        range.GetScreenRects(visible_rect.point(), engine_->current_zoom_,
-                             engine_->current_rotation_);
-    rects->insert(rects->end(), selection_rects.begin(), selection_rects.end());
+    std::vector<pp::Rect> selection_rects = range.GetScreenRects(
+        visible_point, engine_->current_zoom_, engine_->current_rotation_);
+    rects.insert(rects.end(), selection_rects.begin(), selection_rects.end());
   }
+  return rects;
 }
 
 PDFiumEngine::MouseDownState::MouseDownState(
