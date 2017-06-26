@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "core/animation/Animation.h"
-#include "core/animation/CompositorAnimations.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/Interpolation.h"
@@ -261,18 +260,33 @@ void KeyframeEffectReadOnly::NotifySampledEffectRemovedFromEffectStack() {
   sampled_effect_ = nullptr;
 }
 
-bool KeyframeEffectReadOnly::CanStartAnimationOnCompositor(
+CompositorAnimations::FailureCode
+KeyframeEffectReadOnly::CheckCanStartAnimationOnCompositor(
     double animation_playback_rate) const {
-  // Do not put transforms on compositor if more than one of them are defined
-  // in computed style because they need to be explicitly ordered
-  if (!Model() || !target_ ||
-      (target_->GetComputedStyle() &&
-       target_->GetComputedStyle()->HasOffset()) ||
-      HasMultipleTransformProperties()) {
-    return false;
+  if (!Model()) {
+    return CompositorAnimations::FailureCode::Actionable(
+        "Animation effect has no keyframes");
   }
 
-  return CompositorAnimations::CanStartAnimationOnCompositor(
+  if (!target_) {
+    return CompositorAnimations::FailureCode::Actionable(
+        "Animation effect has no target element");
+  }
+
+  if (target_->GetComputedStyle() && target_->GetComputedStyle()->HasOffset()) {
+    return CompositorAnimations::FailureCode::Actionable(
+        "Accelerated animations do not support elements with offset-position "
+        "or offset-path CSS properties");
+  }
+
+  // Do not put transforms on compositor if more than one of them are defined
+  // in computed style because they need to be explicitly ordered
+  if (HasMultipleTransformProperties()) {
+    return CompositorAnimations::FailureCode::Actionable(
+        "Animation effect applies to multiple transform-related properties");
+  }
+
+  return CompositorAnimations::CheckCanStartAnimationOnCompositor(
       SpecifiedTiming(), *target_, GetAnimation(), *Model(),
       animation_playback_rate);
 }
@@ -283,7 +297,7 @@ void KeyframeEffectReadOnly::StartAnimationOnCompositor(
     double current_time,
     double animation_playback_rate) {
   DCHECK(!HasActiveAnimationsOnCompositor());
-  DCHECK(CanStartAnimationOnCompositor(animation_playback_rate));
+  DCHECK(CheckCanStartAnimationOnCompositor(animation_playback_rate).Ok());
 
   CompositorAnimations::StartAnimationOnCompositor(
       *target_, group, start_time, current_time, SpecifiedTiming(),

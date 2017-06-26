@@ -824,10 +824,14 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
       timeline->Play(keyframe_effect_not_composited);
 
   SimulateFrame(0, composited_element_ids);
-  EXPECT_TRUE(animation_composited->CanStartAnimationOnCompositorInternal(
-      composited_element_ids));
-  EXPECT_FALSE(animation_not_composited->CanStartAnimationOnCompositorInternal(
-      composited_element_ids));
+  EXPECT_TRUE(
+      animation_composited
+          ->CheckCanStartAnimationOnCompositorInternal(composited_element_ids)
+          .Ok());
+  EXPECT_FALSE(
+      animation_not_composited
+          ->CheckCanStartAnimationOnCompositorInternal(composited_element_ids)
+          .Ok());
 }
 
 }  // namespace blink
