@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/open_in_controller.h"
 #import "ios/chrome/browser/ui/open_in_controller_testing.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -180,6 +181,7 @@ class TabTest : public BlockCleanupTest {
     web_controller_view_ = [[UIView alloc] init];
     [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
         andReturn:web_controller_view_] view];
+    TabIdTabHelper::CreateForWebState(web_state_impl_.get());
     LegacyTabHelper::CreateForWebState(web_state_impl_.get());
     tab_ = LegacyTabHelper::GetTabForWebState(web_state_impl_.get());
     web::NavigationManager::WebLoadParams load_params(
