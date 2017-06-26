@@ -112,6 +112,10 @@
       <message name="IDS_INSTALL_HOST_BROWSER_DIALOG_INSTALL_BUTTON" desc="Text for the install button on the dialog. ">
         INSTALL
       </message>
+      <message name="IDS_NAME" desc="The name of the WebAPK." translateable="false">
+      </message>
+      <message name="IDS_SHORT_NAME" desc="The short name of the WebAPK." translateable="false">
+      </message>
     </messages>
   </release>
 </grit>

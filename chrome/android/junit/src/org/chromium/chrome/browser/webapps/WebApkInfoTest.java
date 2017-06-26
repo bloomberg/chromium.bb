@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.os.Bundle;
 
 import org.junit.Assert;
@@ -24,6 +26,7 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.test.WebApkTestHelper;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,6 +51,48 @@ public class WebApkInfoTest {
     private static final String ICON_URL = "https://www.google.com/scope/worm.png";
     private static final String ICON_MURMUR2_HASH = "5";
     private static final int SOURCE = ShortcutSource.NOTIFICATION;
+
+    /** Fakes the Resources object, allowing lookup of String value. */
+    private static class FakeResources extends Resources {
+        private final Map<String, Integer> mStringIdMap;
+        private final Map<Integer, String> mIdValueMap;
+
+        // Do not warn about deprecated call to Resources(); the documentation says code is not
+        // supposed to create its own Resources object, but we are using it to fake out the
+        // Resources, and there is no other way to do that.
+        @SuppressWarnings("deprecation")
+        public FakeResources() {
+            super(new AssetManager(), null, null);
+            mStringIdMap = new HashMap<>();
+            mIdValueMap = new HashMap<>();
+        }
+
+        @Override
+        public int getIdentifier(String name, String defType, String defPackage) {
+            String key = getKey(name, defType, defPackage);
+            return mStringIdMap.containsKey(key) ? mStringIdMap.get(key) : 0;
+        }
+
+        @Override
+        public String getString(int id) {
+            if (!mIdValueMap.containsKey(id)) {
+                throw new Resources.NotFoundException("id 0x" + Integer.toHexString(id));
+            }
+
+            return mIdValueMap.get(id);
+        }
+
+        public void addStringForTesting(
+                String name, String defType, String defPackage, int identifier, String value) {
+            String key = getKey(name, defType, defPackage);
+            mStringIdMap.put(key, identifier);
+            mIdValueMap.put(identifier, value);
+        }
+
+        private String getKey(String name, String defType, String defPackage) {
+            return defPackage + ":" + defType + "/" + name;
+        }
+    }
 
     @Before
     public void setUp() {
@@ -247,5 +292,56 @@ public class WebApkInfoTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
         Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
+    }
+
+    /**
+     * Test that {@link WebApkInfo#name()} and {@link WebApkInfo#shortName()} return the name and
+     * short name from the meta data before they are moved to strings in resources.
+     */
+    @Test
+    public void testNameAndShortNameFromMetadataWhenStringResourcesDoNotExist() {
+        String name = "WebAPK name";
+        String shortName = "WebAPK short name";
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        bundle.putString(WebApkMetaDataKeys.NAME, name);
+        bundle.putString(WebApkMetaDataKeys.SHORT_NAME, shortName);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
+
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(name, info.name());
+        Assert.assertEquals(shortName, info.shortName());
+    }
+
+    /**
+     * Test that {@link WebApkInfo#name()} and {@link WebApkInfo#shortName()} return the string
+     * values from the WebAPK resources if exist.
+     */
+    @Test
+    public void testNameAndShortNameFromWebApkStrings() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
+
+        String name = "WebAPK name";
+        String shortName = "WebAPK short name";
+        FakeResources res = new FakeResources();
+        res.addStringForTesting(WebApkInfo.RESOURCE_NAME, WebApkInfo.RESOURCE_STRING_TYPE,
+                WEBAPK_PACKAGE_NAME, 1, name);
+        res.addStringForTesting(WebApkInfo.RESOURCE_SHORT_NAME, WebApkInfo.RESOURCE_STRING_TYPE,
+                WEBAPK_PACKAGE_NAME, 2, shortName);
+        WebApkTestHelper.setResource(WEBAPK_PACKAGE_NAME, res);
+
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(name, info.name());
+        Assert.assertEquals(shortName, info.shortName());
     }
 }
