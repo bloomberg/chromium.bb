@@ -61,10 +61,10 @@ void DeviceLocalAccountExternalDataService::OnDeviceLocalAccountsChanged() {
       ++it;
     }
   }
-  backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &ResourceCache::PurgeOtherKeys,
-      base::Unretained(resource_cache_.get()),
-      account_ids));
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ResourceCache::PurgeOtherKeys,
+                     base::Unretained(resource_cache_.get()), account_ids));
 }
 
 scoped_refptr<DeviceLocalAccountExternalDataManager>

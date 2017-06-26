@@ -152,8 +152,8 @@ void HeartbeatRegistrationHelper::OnRegisterAttemptComplete(
       // Transient error - try again after a delay.
       task_runner_->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&HeartbeatRegistrationHelper::AttemptRegistration,
-                     weak_factory_.GetWeakPtr()),
+          base::BindOnce(&HeartbeatRegistrationHelper::AttemptRegistration,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kRegistrationRetryDelayMs));
       break;
 

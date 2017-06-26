@@ -106,13 +106,13 @@ void MockUploadJob::Start() {
   EXPECT_EQ(kMockUploadUrl, upload_url_.spec());
   if (error_code_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&UploadJob::Delegate::OnFailure,
-                              base::Unretained(delegate_), *error_code_));
+        FROM_HERE, base::BindOnce(&UploadJob::Delegate::OnFailure,
+                                  base::Unretained(delegate_), *error_code_));
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&UploadJob::Delegate::OnSuccess, base::Unretained(delegate_)));
+      FROM_HERE, base::BindOnce(&UploadJob::Delegate::OnSuccess,
+                                base::Unretained(delegate_)));
 }
 
 scoped_refptr<base::RefCountedBytes> GenerateTestPNG(const int& width,
@@ -177,8 +177,8 @@ void MockScreenshotDelegate::TakeSnapshot(
   const int height = source_rect.height();
   scoped_refptr<base::RefCountedBytes> test_png =
       GenerateTestPNG(width, height);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, test_png));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, test_png));
 }
 
 std::unique_ptr<UploadJob> MockScreenshotDelegate::CreateUploadJob(

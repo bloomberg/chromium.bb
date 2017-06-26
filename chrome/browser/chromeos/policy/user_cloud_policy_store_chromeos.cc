@@ -305,10 +305,11 @@ void UserCloudPolicyStoreChromeOS::ReloadPolicyKey(
 
   std::string* key = new std::string();
   background_task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&UserCloudPolicyStoreChromeOS::LoadPolicyKey,
-                            cached_policy_key_path_, key),
-      base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyKeyReloaded,
-                 weak_factory_.GetWeakPtr(), base::Owned(key), callback));
+      FROM_HERE,
+      base::BindOnce(&UserCloudPolicyStoreChromeOS::LoadPolicyKey,
+                     cached_policy_key_path_, key),
+      base::BindOnce(&UserCloudPolicyStoreChromeOS::OnPolicyKeyReloaded,
+                     weak_factory_.GetWeakPtr(), base::Owned(key), callback));
 }
 
 // static

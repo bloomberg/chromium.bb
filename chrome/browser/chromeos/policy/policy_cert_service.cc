@@ -89,11 +89,9 @@ void PolicyCertService::OnTrustAnchorsChanged(
   // Note: ProfileIOData, which owns the CertVerifier is deleted by a
   // DeleteSoon on IO, i.e. after all pending tasks on IO are finished.
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PolicyCertVerifier::SetTrustAnchors,
-                 base::Unretained(cert_verifier_),
-                 trust_anchors));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PolicyCertVerifier::SetTrustAnchors,
+                     base::Unretained(cert_verifier_), trust_anchors));
 }
 
 bool PolicyCertService::UsedPolicyCertificates() const {

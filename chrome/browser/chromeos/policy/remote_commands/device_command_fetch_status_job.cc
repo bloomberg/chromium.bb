@@ -62,12 +62,12 @@ void DeviceCommandFetchStatusJob::RunImpl(
     manager->GetStatusUploader()->ScheduleNextStatusUploadImmediately();
     manager->GetSystemLogUploader()->ScheduleNextSystemLogUploadImmediately();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(succeeded_callback, nullptr));
+        FROM_HERE, base::BindOnce(succeeded_callback, nullptr));
     return;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(failed_callback, nullptr));
+      FROM_HERE, base::BindOnce(failed_callback, nullptr));
 }
 
 }  // namespace policy

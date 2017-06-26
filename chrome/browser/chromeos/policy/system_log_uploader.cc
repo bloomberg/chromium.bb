@@ -341,10 +341,11 @@ void SystemLogUploader::ScheduleNextSystemLogUpload(base::TimeDelta frequency) {
   // Ensure that we never have more than one pending delayed task
   // (InvalidateWeakPtrs() will cancel any pending log uploads).
   weak_factory_.InvalidateWeakPtrs();
-  task_runner_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&SystemLogUploader::StartLogUpload,
-                                           weak_factory_.GetWeakPtr()),
-                                delay);
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&SystemLogUploader::StartLogUpload,
+                     weak_factory_.GetWeakPtr()),
+      delay);
 }
 
 }  // namespace policy

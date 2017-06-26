@@ -97,8 +97,8 @@ void ServerBackedStateKeysBroker::StoreStateKeys(
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ServerBackedStateKeysBroker::FetchStateKeys,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ServerBackedStateKeysBroker::FetchStateKeys,
+                     weak_factory_.GetWeakPtr()),
       kPollInterval);
 }
 

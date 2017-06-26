@@ -118,9 +118,10 @@ void MockOAuth2TokenService::FetchOAuth2Token(
     token_replies_.pop();
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&OAuth2TokenService::RequestImpl::InformConsumer,
-                            request->AsWeakPtr(), response_error, access_token,
-                            response_expiration));
+      FROM_HERE,
+      base::BindOnce(&OAuth2TokenService::RequestImpl::InformConsumer,
+                     request->AsWeakPtr(), response_error, access_token,
+                     response_expiration));
 }
 
 void MockOAuth2TokenService::AddTokenToQueue(const std::string& token) {

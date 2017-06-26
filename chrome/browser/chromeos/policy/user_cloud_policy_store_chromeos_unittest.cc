@@ -57,7 +57,7 @@ const char kDefaultHomepage[] = "http://chromium.org";
 
 ACTION_P2(SendSanitizedUsername, call_status, sanitized_username) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg1, call_status, sanitized_username));
+      FROM_HERE, base::BindOnce(arg1, call_status, sanitized_username));
 }
 
 class UserCloudPolicyStoreChromeOSTest : public testing::Test {

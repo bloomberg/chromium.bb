@@ -302,7 +302,7 @@ void PowerPolicyLoginScreenBrowserTest::SetUpOnMainThread() {
 
 void PowerPolicyLoginScreenBrowserTest::TearDownOnMainThread() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&chrome::AttemptExit));
+      FROM_HERE, base::BindOnce(&chrome::AttemptExit));
   base::RunLoop().RunUntilIdle();
   PowerPolicyBrowserTestBase::TearDownOnMainThread();
 }
