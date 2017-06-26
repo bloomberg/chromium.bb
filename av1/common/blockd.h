@@ -737,6 +737,10 @@ typedef struct macroblockd {
 #endif
 } MACROBLOCKD;
 
+static INLINE int get_bitdepth_data_path_index(const MACROBLOCKD *xd) {
+  return xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH ? 1 : 0;
+}
+
 static INLINE BLOCK_SIZE get_subsize(BLOCK_SIZE bsize,
                                      PARTITION_TYPE partition) {
   if (partition == PARTITION_INVALID)

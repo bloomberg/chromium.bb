@@ -1314,7 +1314,6 @@ void aom_idct32x32_1_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 void aom_highbd_iwht4x4_16_add_c(const tran_low_t *input, uint8_t *dest8,
                                  int stride, int bd) {
   /* 4-point reversible, orthonormal inverse Walsh-Hadamard in 3.5 adds,
@@ -1474,4 +1473,3 @@ void aom_highbd_idct4x4_1_add_c(const tran_low_t *input, uint8_t *dest8,
     dest += dest_stride;
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH

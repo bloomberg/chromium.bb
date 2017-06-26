@@ -66,7 +66,6 @@ void aom_iadst4_c(const tran_low_t *input, tran_low_t *output);
 void aom_iadst8_c(const tran_low_t *input, tran_low_t *output);
 void aom_iadst16_c(const tran_low_t *input, tran_low_t *output);
 
-#if CONFIG_HIGHBITDEPTH
 void aom_highbd_idct4_c(const tran_low_t *input, tran_low_t *output, int bd);
 void aom_highbd_idct8_c(const tran_low_t *input, tran_low_t *output, int bd);
 void aom_highbd_idct16_c(const tran_low_t *input, tran_low_t *output, int bd);
@@ -75,7 +74,6 @@ void aom_highbd_idct32_c(const tran_low_t *input, tran_low_t *output, int bd);
 void aom_highbd_iadst4_c(const tran_low_t *input, tran_low_t *output, int bd);
 void aom_highbd_iadst8_c(const tran_low_t *input, tran_low_t *output, int bd);
 void aom_highbd_iadst16_c(const tran_low_t *input, tran_low_t *output, int bd);
-#endif  // CONFIG_HIGHBITDEPTH
 
 static INLINE uint16_t highbd_clip_pixel_add(uint16_t dest, tran_high_t trans,
                                              int bd) {
