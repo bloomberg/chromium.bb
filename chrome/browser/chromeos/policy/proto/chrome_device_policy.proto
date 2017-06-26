@@ -799,15 +799,18 @@ message DeviceEcryptfsMigrationStrategyProto {
 // functionality.
 message DeviceSecondFactorAuthenticationProto {
   enum U2fMode {
+    // Default value, unspecified.
+    UNSET = 0;
     // Feature disabled.
-    DISABLED = 0;
-    // U2F as defined by the FIDO Alliance specification.
-    U2F = 1;
+    DISABLED = 1;
+    // U2F as defined by the FIDO Alliance specification:
+    // https://fidoalliance.org/specs/fido-u2f-v1.1-id-20160915.zip
+    U2F = 2;
     // U2F plus extensions for individual attestation certificate.
-    U2F_EXTENDED = 2;
+    U2F_EXTENDED = 3;
   };
 
-  optional U2fMode mode = 1 [default = DISABLED];
+  optional U2fMode mode = 1;
 }
 
 message ChromeDeviceSettingsProto {
