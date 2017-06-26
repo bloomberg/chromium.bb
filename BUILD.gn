@@ -557,7 +557,6 @@ group("gn_all") {
       "//sandbox/win:sbox_unittests",
       "//sandbox/win:sbox_validation_tests",
       "//testing/gtest:gtest_main",
-      "//third_party/pdfium/samples:pdfium_diff",
       "//third_party/tcmalloc:addr2line-pdb",
       "//tools/win/chromeexts:chromeexts",
     ]
