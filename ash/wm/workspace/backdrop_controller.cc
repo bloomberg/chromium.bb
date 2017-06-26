@@ -7,7 +7,6 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
@@ -164,9 +163,7 @@ void BackdropController::EnsureBackdropWidget() {
   // activateable.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   DCHECK_NE(kShellWindowId_Invalid, container_->id());
-  RootWindowController::ForWindow(container_)
-      ->ConfigureWidgetInitParamsForContainer(backdrop_, container_->id(),
-                                              &params);
+  params.parent = container_;
   backdrop_->Init(params);
   backdrop_window_ = backdrop_->GetNativeWindow();
   backdrop_window_->SetName("Backdrop");

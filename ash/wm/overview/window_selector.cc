@@ -15,7 +15,6 @@
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -165,9 +164,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   params.bounds = GetTextFilterPosition(root_window);
   params.name = "OverviewModeTextFilter";
   *text_filter_bottom = params.bounds.bottom() + kTextFieldBottomMargin;
-  RootWindowController::ForWindow(root_window)
-      ->ConfigureWidgetInitParamsForContainer(
-          widget, kShellWindowId_StatusContainer, &params);
+  params.parent = root_window->GetChildById(kShellWindowId_StatusContainer);
   widget->Init(params);
 
   // Use |container| to specify the padding surrounding the text and to give

@@ -26,6 +26,7 @@
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace mus {

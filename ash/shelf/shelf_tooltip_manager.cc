@@ -5,7 +5,6 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell_port.h"
@@ -15,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "ui/aura/window.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -89,6 +89,11 @@ class ShelfTooltipManager::ShelfTooltipBubble
       insets += gfx::Insets(-kBubblePaddingHorizontalBottom);
     set_anchor_view_insets(insets);
 
+    // Place the bubble in the same display as the anchor.
+    set_parent_window(
+        anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
+            kShellWindowId_SettingBubbleContainer));
+
     views::BubbleDialogDelegateView::CreateBubble(this);
     if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
       // These must both be called after CreateBubble.
@@ -104,14 +109,6 @@ class ShelfTooltipManager::ShelfTooltipBubble
     const int kTooltipMinHeight = kTooltipHeight - 2 * kTooltipTopBottomMargin;
     return gfx::Size(std::min(size.width(), kTooltipMaxWidth),
                      std::max(size.height(), kTooltipMinHeight));
-  }
-
-  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
-                                views::Widget* bubble_widget) const override {
-    // Place the bubble in the same display as the anchor.
-    RootWindowController::ForWindow(anchor_widget()->GetNativeWindow())
-        ->ConfigureWidgetInitParamsForContainer(
-            bubble_widget, kShellWindowId_SettingBubbleContainer, params);
   }
 
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }

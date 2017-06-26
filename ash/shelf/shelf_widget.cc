@@ -7,7 +7,6 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
@@ -140,9 +139,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = delegate_view_;
-  RootWindowController::ForWindow(shelf_container)
-      ->ConfigureWidgetInitParamsForContainer(this, shelf_container->id(),
-                                              &params);
+  params.parent = shelf_container;
   Init(params);
 
   // The shelf should not take focus when initially shown.

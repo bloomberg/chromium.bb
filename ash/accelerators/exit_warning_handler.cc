@@ -6,10 +6,10 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -151,10 +151,9 @@ void ExitWarningHandler::Show() {
   params.delegate = delegate;
   params.bounds = bounds;
   params.name = "ExitWarningWindow";
-  widget_.reset(new views::Widget);
-  RootWindowController::ForWindow(root_window)
-      ->ConfigureWidgetInitParamsForContainer(
-          widget_.get(), kShellWindowId_SettingBubbleContainer, &params);
+  params.parent =
+      root_window->GetChildById(kShellWindowId_SettingBubbleContainer);
+  widget_ = base::MakeUnique<views::Widget>();
   widget_->Init(params);
   widget_->Show();
 

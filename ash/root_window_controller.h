@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/views/widget/widget.h"
 
 namespace aura {
 class Window;
@@ -39,6 +38,7 @@ class WindowTreeHost;
 namespace views {
 class MenuModelAdapter;
 class MenuRunner;
+class Widget;
 }
 
 namespace wm {
@@ -105,14 +105,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
     return root_window_controllers_ ? *root_window_controllers_
                                     : std::vector<RootWindowController*>();
   }
-
-  // Configures |init_params| prior to initializing |widget|.
-  // |shell_container_id| is the id of the container to parent |widget| to.
-  // TODO(sky): remove this, http://crbug.com/671246.
-  void ConfigureWidgetInitParamsForContainer(
-      views::Widget* widget,
-      int shell_container_id,
-      views::Widget::InitParams* init_params);
 
   // TODO(sky): move these to a separate class or use AshWindowTreeHost in
   // mash. http://crbug.com/671246.

@@ -115,9 +115,8 @@ void AshPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
   init_params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
   init_params->shadow_elevation = ::wm::ShadowElevation::MEDIUM;
   // On ash, popups go in the status container.
-  RootWindowController::ForWindow(shelf_->GetWindow())
-      ->ConfigureWidgetInitParamsForContainer(
-          widget, kShellWindowId_StatusContainer, init_params);
+  init_params->parent = shelf_->GetWindow()->GetRootWindow()->GetChildById(
+      kShellWindowId_StatusContainer);
 }
 
 bool AshPopupAlignmentDelegate::IsPrimaryDisplayForNotification() const {

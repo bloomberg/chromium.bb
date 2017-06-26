@@ -49,9 +49,8 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params =
       GetDialogWidgetInitParams(this, nullptr, nullptr, gfx::Rect());
-  Shell::GetPrimaryRootWindowController()
-      ->ConfigureWidgetInitParamsForContainer(
-          widget, kShellWindowId_SystemModalContainer, &params);
+  params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
+      kShellWindowId_SystemModalContainer);
   widget->Init(params);
   widget->Show();
 

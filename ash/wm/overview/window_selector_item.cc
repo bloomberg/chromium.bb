@@ -11,7 +11,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
@@ -617,10 +616,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
       views::Widget::InitParams::Activatable::ACTIVATABLE_DEFAULT;
   params_label.accept_events = true;
   item_widget_.reset(new views::Widget);
-  RootWindowController::ForWindow(root_window_)
-      ->ConfigureWidgetInitParamsForContainer(
-          item_widget_.get(), transform_window_.window()->parent()->id(),
-          &params_label);
+  params_label.parent = transform_window_.window()->parent();
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(params_label);
   aura::Window* widget_window = item_widget_->GetNativeWindow();
