@@ -20,14 +20,13 @@ ShortcutInfo::~ShortcutInfo() {
 }
 
 void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
-  if (!manifest.short_name.is_null())
+  if (!manifest.short_name.string().empty() ||
+      !manifest.name.string().empty()) {
     short_name = manifest.short_name.string();
-  if (!manifest.name.is_null())
     name = manifest.name.string();
-  if (manifest.short_name.is_null() != manifest.name.is_null()) {
-    if (manifest.short_name.is_null())
+    if (short_name.empty())
       short_name = name;
-    else
+    else if (name.empty())
       name = short_name;
   }
   user_title = short_name;
