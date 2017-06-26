@@ -194,8 +194,16 @@ IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, MAYBE_PeerConnection) {
                   kMediaRecorderHtmlFile);
 }
 
+// Flaky on Linux Tsan (crbug.com/736268)
+#if defined(OS_LINUX)
+#define MAYBE_AddingTrackToMediaStreamFiresErrorEvent \
+  DISABLED_AddingTrackToMediaStreamFiresErrorEvent
+#else
+#define MAYBE_AddingTrackToMediaStreamFiresErrorEvent \
+  AddingTrackToMediaStreamFiresErrorEvent
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
-                       AddingTrackToMediaStreamFiresErrorEvent) {
+                       MAYBE_AddingTrackToMediaStreamFiresErrorEvent) {
   MakeTypicalCall("testAddingTrackToMediaStreamFiresErrorEvent();",
                   kMediaRecorderHtmlFile);
 }
