@@ -105,7 +105,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
   TextAffinity Affinity() const { return position_with_affinity_.Affinity(); }
 
   static VisiblePositionTemplate<Strategy> AfterNode(const Node&);
-  static VisiblePositionTemplate<Strategy> BeforeNode(Node*);
+  static VisiblePositionTemplate<Strategy> BeforeNode(const Node&);
   static VisiblePositionTemplate<Strategy> FirstPositionInNode(Node*);
   static VisiblePositionTemplate<Strategy> InParentAfterNode(const Node&);
   static VisiblePositionTemplate<Strategy> InParentBeforeNode(const Node&);

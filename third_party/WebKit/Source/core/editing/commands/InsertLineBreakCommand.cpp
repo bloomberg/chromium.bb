@@ -137,7 +137,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
     // Insert an extra br or '\n' if the just inserted one collapsed.
-    if (!IsStartOfParagraph(VisiblePosition::BeforeNode(node_to_insert))) {
+    if (!IsStartOfParagraph(VisiblePosition::BeforeNode(*node_to_insert))) {
       InsertNodeBefore(node_to_insert->cloneNode(false), node_to_insert,
                        editing_state);
       if (editing_state->IsAborted())

@@ -431,7 +431,7 @@ bool DeleteSelectionCommand::HandleSpecialCaseBRDelete(
   if (upstream_start_is_br && downstream_start_is_br) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     if (!(IsStartOfBlock(
-              VisiblePosition::BeforeNode(node_after_upstream_start)) &&
+              VisiblePosition::BeforeNode(*node_after_upstream_start)) &&
           IsEndOfBlock(
               VisiblePosition::AfterNode(*node_after_upstream_start)))) {
       starts_at_empty_line_ = true;

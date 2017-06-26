@@ -1729,7 +1729,7 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  VisiblePosition at_br = VisiblePosition::BeforeNode(br);
+  VisiblePosition at_br = VisiblePosition::BeforeNode(*br);
   // If the br we inserted collapsed, for example:
   //   foo<br><blockquote>...</blockquote>
   // insert a second one.

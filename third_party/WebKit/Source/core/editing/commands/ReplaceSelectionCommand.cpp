@@ -934,7 +934,7 @@ void ReplaceSelectionCommand::MergeEndIfNeeded(EditingState* editing_state) {
     // needs to be audited.  See http://crbug.com/590369 for more details.
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-    destination = VisiblePosition::BeforeNode(placeholder);
+    destination = VisiblePosition::BeforeNode(*placeholder);
     start_of_paragraph_to_move = CreateVisiblePosition(
         start_of_paragraph_to_move.ToPositionWithAffinity());
   }
@@ -1184,9 +1184,10 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
                 MostForwardCaretPosition(insertion_pos).AnchorNode())
           : 0;
   VisiblePosition original_vis_pos_before_end_br;
-  if (end_br)
+  if (end_br) {
     original_vis_pos_before_end_br =
-        PreviousPositionOf(VisiblePosition::BeforeNode(end_br));
+        PreviousPositionOf(VisiblePosition::BeforeNode(*end_br));
+  }
 
   Element* enclosing_block_of_insertion_pos =
       EnclosingBlock(insertion_pos.AnchorNode());
@@ -1597,7 +1598,7 @@ bool ReplaceSelectionCommand::ShouldRemoveEndBR(
   if (!end_br || !end_br->isConnected())
     return false;
 
-  VisiblePosition visible_pos = VisiblePosition::BeforeNode(end_br);
+  VisiblePosition visible_pos = VisiblePosition::BeforeNode(*end_br);
 
   // Don't remove the br if nothing was inserted.
   if (PreviousPositionOf(visible_pos).DeepEquivalent() ==
@@ -1980,7 +1981,7 @@ bool ReplaceSelectionCommand::PerformTrivialReplace(
       isHTMLBRElement(*node_after_insertion_pos) &&
       ShouldRemoveEndBR(
           toHTMLBRElement(node_after_insertion_pos),
-          VisiblePosition::BeforeNode(node_after_insertion_pos))) {
+          VisiblePosition::BeforeNode(*node_after_insertion_pos))) {
     RemoveNodeAndPruneAncestors(node_after_insertion_pos, editing_state);
     if (editing_state->IsAborted())
       return false;
