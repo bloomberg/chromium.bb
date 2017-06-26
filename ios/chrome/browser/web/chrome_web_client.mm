@@ -58,7 +58,7 @@ NSString* GetPageScript(NSString* script_file_name) {
   DCHECK(content);
   return content;
 }
-}
+}  // namespace
 
 ChromeWebClient::ChromeWebClient() {}
 
@@ -188,4 +188,8 @@ void ChromeWebClient::AllowCertificateError(
 std::unique_ptr<base::TaskScheduler::InitParams>
 ChromeWebClient::GetTaskSchedulerInitParams() {
   return task_scheduler_util::GetBrowserTaskSchedulerInitParamsFromVariations();
+}
+
+bool ChromeWebClient::IsSlimNavigationManagerEnabled() const {
+  return experimental_flags::IsSlimNavigationManagerEnabled();
 }

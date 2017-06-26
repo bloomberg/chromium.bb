@@ -129,6 +129,12 @@ class WebClient {
   // params are used if this returns nullptr.
   virtual std::unique_ptr<base::TaskScheduler::InitParams>
   GetTaskSchedulerInitParams();
+
+  // Allows upper layers to inject experimental flags to the web layer.
+  // TODO(crbug.com/734150): Clean up this flag after experiment. If need for a
+  // second flag arises before clean up, consider generalizing to an experiment
+  // flags struct instead of adding a bool method for each experiment.
+  virtual bool IsSlimNavigationManagerEnabled() const;
 };
 
 }  // namespace web

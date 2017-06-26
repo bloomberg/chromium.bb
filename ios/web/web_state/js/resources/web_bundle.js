@@ -10,5 +10,4 @@ goog.require('__crWeb.contextMenu');
 goog.require('__crWeb.error');
 goog.require('__crWeb.form');
 goog.require('__crWeb.legacy');
-goog.require('__crWeb.navigation');
 goog.require('__crWeb.scrollWorkaround');

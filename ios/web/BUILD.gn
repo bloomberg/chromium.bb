@@ -839,14 +839,23 @@ js_compile_bundle("web_bundle") {
     "web_state/js/resources/form.js",
     "web_state/js/resources/legacy.js",
     "web_state/js/resources/message.js",
-    "web_state/js/resources/navigation.js",
     "web_state/js/resources/scroll_workaround.js",
     "web_state/js/resources/web_bundle.js",
   ]
 }
 
+js_compile_bundle("nav_bundle") {
+  visibility = [ ":js_resources" ]
+  closure_entry_point = "__crWeb.navigation"
+
+  sources = [
+    "web_state/js/resources/navigation.js",
+  ]
+}
+
 js_compile_checked("js_resources") {
   public_deps = [
+    ":nav_bundle",
     ":web_bundle",
     ":web_ui_bundle",
   ]

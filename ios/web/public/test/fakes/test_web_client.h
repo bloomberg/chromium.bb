@@ -34,6 +34,7 @@ class TestWebClient : public web::WebClient {
                              const GURL&,
                              bool overridable,
                              const base::Callback<void(bool)>&) override;
+  bool IsSlimNavigationManagerEnabled() const override;
 
   // Changes Early Page Script for testing purposes.
   void SetEarlyPageScript(NSString* page_script);
@@ -48,6 +49,9 @@ class TestWebClient : public web::WebClient {
   }
   bool last_cert_error_overridable() { return last_cert_error_overridable_; }
 
+  // Makes |IsSlimNavigationManagerEnabled| return the given flag value.
+  void SetIsSlimNavigationManager(bool flag);
+
  private:
   NSString* early_page_script_;
   // Last arguments passed to AllowCertificateError.
@@ -55,6 +59,7 @@ class TestWebClient : public web::WebClient {
   net::SSLInfo last_cert_error_ssl_info_;
   GURL last_cert_error_request_url_;
   bool last_cert_error_overridable_;
+  bool is_slim_navigation_manager_enabled_;
 };
 
 }  // namespace web

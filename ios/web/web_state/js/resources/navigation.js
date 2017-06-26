@@ -8,9 +8,6 @@
 
 goog.provide('__crWeb.navigation');
 
-goog.require('__crWeb.common');
-goog.require('__crWeb.message');
-
 /** Beginning of anonymouse object */
 (function() {
 
