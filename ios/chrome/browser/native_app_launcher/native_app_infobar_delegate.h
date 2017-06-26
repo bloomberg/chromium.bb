@@ -64,7 +64,7 @@ class NativeAppInfoBarDelegate : public infobars::InfoBarDelegate {
 
  private:
   bool ShouldExpire(const NavigationDetails& details) const override;
-  id<NativeAppNavigationControllerProtocol> controller_;
+  __weak id<NativeAppNavigationControllerProtocol> controller_;
   net::URLRequestContextGetter* requestContextGetter_;
   GURL page_url_;
   NativeAppControllerType type_;
