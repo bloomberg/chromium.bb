@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
+#include "chrome/browser/extensions/api/storage/backend_task_runner.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -532,10 +533,15 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
       return new syncer::SequencedModelWorker(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
           syncer::GROUP_DB);
+    // TODO(stanisc): crbug.com/731903: Rename GROUP_FILE to reflect that it is
+    // used only for app and extension settings.
     case syncer::GROUP_FILE:
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       return new syncer::SequencedModelWorker(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
-          syncer::GROUP_FILE);
+          extensions::GetBackendTaskRunner(), syncer::GROUP_FILE);
+#else
+      return nullptr;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
