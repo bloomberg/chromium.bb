@@ -282,6 +282,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
      */
     @VisibleForTesting
     public static List<String> convertToImageMimeTypes(List<String> fileTypes) {
+        if (fileTypes.size() == 0) return null;
         List<String> mimeTypes = new ArrayList<>();
         for (String type : fileTypes) {
             String mimeType = ensureMimeType(type);

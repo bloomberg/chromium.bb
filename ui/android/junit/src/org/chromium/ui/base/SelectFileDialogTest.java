@@ -106,6 +106,7 @@ public class SelectFileDialogTest {
         // Unknown extension, expect default response:
         assertEquals("application/octet-stream", SelectFileDialog.ensureMimeType(".flv"));
 
+        assertEquals(null, SelectFileDialog.convertToImageMimeTypes(new ArrayList<>()));
         assertEquals(null, SelectFileDialog.convertToImageMimeTypes(Arrays.asList("")));
         assertEquals(null, SelectFileDialog.convertToImageMimeTypes(Arrays.asList("foo/bar")));
         assertEquals(Arrays.asList("image/jpeg"),
