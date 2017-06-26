@@ -2052,6 +2052,38 @@ TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
             program->GetUniformFakeLocation(kUniform3NameWithArrayIndex));
 }
 
+TEST_F(ProgramManagerWithShaderTest, ZeroSizeUniformMarkedInvalid) {
+  UniformInfo kInvalidUniforms[] = {
+      {
+          kUniform1Name, 0 /* invalid size */, kUniform1Type,
+          kUniform1FakeLocation, kUniform1RealLocation,
+          kUniform1DesiredLocation, kUniform1Name,
+      },
+  };
+  const size_t kNumInvalidUniforms = arraysize(kInvalidUniforms);
+
+  SetupShaderExpectations(kAttribs, kNumAttribs, kInvalidUniforms,
+                          kNumInvalidUniforms, kServiceProgramId);
+
+  Shader* vertex_shader = shader_manager_.CreateShader(
+      kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
+  Shader* fragment_shader = shader_manager_.CreateShader(
+      kFragmentShaderClientId, kFragmentShaderServiceId, GL_FRAGMENT_SHADER);
+  EXPECT_TRUE(vertex_shader != NULL);
+  EXPECT_TRUE(fragment_shader != NULL);
+  TestHelper::SetShaderStates(gl_.get(), vertex_shader, true);
+  TestHelper::SetShaderStates(gl_.get(), fragment_shader, true);
+
+  Program* program =
+      manager_->CreateProgram(kClientProgramId, kServiceProgramId);
+  ASSERT_TRUE(program != NULL);
+  program->AttachShader(&shader_manager_, vertex_shader);
+  program->AttachShader(&shader_manager_, fragment_shader);
+  program->Link(NULL, Program::kCountOnlyStaticallyUsed, this);
+
+  EXPECT_FALSE(program->IsValid());
+}
+
 class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
  public:
   static const GLuint kClientProgramId = 1;
