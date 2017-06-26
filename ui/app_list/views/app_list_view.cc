@@ -521,7 +521,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
   // fling.
   int const new_y_position = location.y() - initial_drag_point_.y() +
                              fullscreen_widget_->GetWindowBoundsInScreen().y();
-  if (std::abs(last_fling_velocity_) > kAppListDragVelocityThreshold) {
+  if (std::abs(last_fling_velocity_) >= kAppListDragVelocityThreshold) {
     // If the user releases drag with velocity over the threshold, snap to
     // the next state, ignoring the drag release position.
 
@@ -724,12 +724,13 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   switch (event->type()) {
+    case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
       StartDrag(event->location());
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      last_fling_velocity_ = event->details().velocity_y();
+      last_fling_velocity_ = event->details().scroll_y();
       UpdateDrag(event->location());
       event->SetHandled();
       break;
