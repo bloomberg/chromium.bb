@@ -335,12 +335,13 @@ size_t CSSInterpolationTypesMap::Version() const {
   return registry_ ? registry_->RegistrationCount() : 0;
 }
 
-CSSInterpolationTypes
-CSSInterpolationTypesMap::CreateCSSInterpolationTypesForSyntax(
+InterpolationTypes
+CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
     const AtomicString& property_name,
-    const CSSSyntaxDescriptor& descriptor) {
+    const CSSSyntaxDescriptor& descriptor,
+    const PropertyRegistration& registration) {
   PropertyHandle property(property_name);
-  CSSInterpolationTypes result;
+  InterpolationTypes result;
   for (const CSSSyntaxComponent& component : descriptor.Components()) {
     if (component.repeatable_) {
       // TODO(alancutter): Support animation of repeatable types.
@@ -349,25 +350,30 @@ CSSInterpolationTypesMap::CreateCSSInterpolationTypesForSyntax(
 
     switch (component.type_) {
       case CSSSyntaxType::kAngle:
-        result.push_back(WTF::MakeUnique<CSSAngleInterpolationType>(property));
+        result.push_back(WTF::MakeUnique<CSSAngleInterpolationType>(
+            property, &registration));
         break;
       case CSSSyntaxType::kColor:
-        result.push_back(WTF::MakeUnique<CSSColorInterpolationType>(property));
+        result.push_back(WTF::MakeUnique<CSSColorInterpolationType>(
+            property, &registration));
         break;
       case CSSSyntaxType::kLength:
       case CSSSyntaxType::kLengthPercentage:
       case CSSSyntaxType::kPercentage:
-        result.push_back(WTF::MakeUnique<CSSLengthInterpolationType>(property));
+        result.push_back(WTF::MakeUnique<CSSLengthInterpolationType>(
+            property, &registration));
         break;
       case CSSSyntaxType::kNumber:
-        result.push_back(WTF::MakeUnique<CSSNumberInterpolationType>(property));
+        result.push_back(WTF::MakeUnique<CSSNumberInterpolationType>(
+            property, &registration));
         break;
       case CSSSyntaxType::kResolution:
-        result.push_back(
-            WTF::MakeUnique<CSSResolutionInterpolationType>(property));
+        result.push_back(WTF::MakeUnique<CSSResolutionInterpolationType>(
+            property, &registration));
         break;
       case CSSSyntaxType::kTime:
-        result.push_back(WTF::MakeUnique<CSSTimeInterpolationType>(property));
+        result.push_back(
+            WTF::MakeUnique<CSSTimeInterpolationType>(property, &registration));
         break;
       case CSSSyntaxType::kImage:
       case CSSSyntaxType::kUrl:

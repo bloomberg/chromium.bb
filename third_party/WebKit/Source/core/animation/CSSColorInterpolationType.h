@@ -17,8 +17,9 @@ struct OptionalStyleColor;
 
 class CSSColorInterpolationType : public CSSInterpolationType {
  public:
-  CSSColorInterpolationType(PropertyHandle property)
-      : CSSInterpolationType(property) {}
+  CSSColorInterpolationType(PropertyHandle property,
+                            const PropertyRegistration* registration = nullptr)
+      : CSSInterpolationType(property, registration) {}
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;

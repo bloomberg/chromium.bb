@@ -15,7 +15,8 @@ class ComputedStyle;
 
 class CSSLengthInterpolationType : public CSSInterpolationType {
  public:
-  CSSLengthInterpolationType(PropertyHandle);
+  CSSLengthInterpolationType(PropertyHandle,
+                             const PropertyRegistration* = nullptr);
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;

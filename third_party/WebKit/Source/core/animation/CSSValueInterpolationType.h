@@ -13,8 +13,9 @@ namespace blink {
 // A catch all for default for CSSValues.
 class CSSValueInterpolationType : public CSSInterpolationType {
  public:
-  CSSValueInterpolationType(PropertyHandle property)
-      : CSSInterpolationType(property) {}
+  CSSValueInterpolationType(PropertyHandle property,
+                            const PropertyRegistration* registration = nullptr)
+      : CSSInterpolationType(property, registration) {}
 
   PairwiseInterpolationValue MaybeConvertPairwise(
       const PropertySpecificKeyframe& start_keyframe,

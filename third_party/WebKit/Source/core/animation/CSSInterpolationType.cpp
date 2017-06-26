@@ -97,16 +97,11 @@ class InheritedCustomPropertyChecker
   Persistent<const CSSValue> initial_value_;
 };
 
-CSSInterpolationType::CSSInterpolationType(PropertyHandle property)
-    : InterpolationType(property) {
+CSSInterpolationType::CSSInterpolationType(
+    PropertyHandle property,
+    const PropertyRegistration* registration)
+    : InterpolationType(property), registration_(registration) {
   DCHECK(!isShorthandProperty(CssProperty()));
-}
-
-void CSSInterpolationType::SetCustomPropertyRegistration(
-    const PropertyRegistration& registration) {
-  DCHECK(GetProperty().IsCSSCustomProperty());
-  DCHECK(!registration_);
-  registration_ = &registration;
 }
 
 InterpolationValue CSSInterpolationType::MaybeConvertSingle(

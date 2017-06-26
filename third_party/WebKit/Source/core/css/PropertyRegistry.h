@@ -15,12 +15,7 @@ class PropertyRegistry : public GarbageCollected<PropertyRegistry> {
  public:
   static PropertyRegistry* Create() { return new PropertyRegistry(); }
 
-  void RegisterProperty(const AtomicString&,
-                        const CSSSyntaxDescriptor&,
-                        bool inherits,
-                        const CSSValue* initial,
-                        PassRefPtr<CSSVariableData> initial_variable_data,
-                        CSSInterpolationTypes);
+  void RegisterProperty(const AtomicString&, PropertyRegistration&);
   const PropertyRegistration* Registration(const AtomicString&) const;
   size_t RegistrationCount() const { return registrations_.size(); }
 
