@@ -5849,8 +5849,8 @@ void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
 
 }  // namespace anonymous
 
-// Flaky under TSan. https://crbug.com/592320
-#if defined(THREAD_SANITIZER)
+// Flaky under Linux and Tsan. https://crbug.com/592320
+#if defined(THREAD_SANITIZER) || defined(OS_LINUX)
 #define MAYBE_SubframeGestureEventRouting DISABLED_SubframeGestureEventRouting
 #else
 #define MAYBE_SubframeGestureEventRouting SubframeGestureEventRouting
