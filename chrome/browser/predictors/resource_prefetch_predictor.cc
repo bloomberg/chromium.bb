@@ -54,6 +54,8 @@ const char* kFontMimeTypes[] = {"font/woff2",
 const size_t kMaxManifestByteSize = 16 * 1024;
 const size_t kNumSampleHosts = 50;
 const size_t kReportReadinessThreshold = 50;
+const float kMinOriginConfidenceToTriggerPreconnect = 0.75;
+const float kMinOriginConfidenceToTriggerPreresolve = 0.2;
 
 // For reporting events of interest that are not tied to any navigation.
 enum ReportingEvent {
@@ -180,6 +182,11 @@ bool ManifestCompare::operator()(const precache::PrecacheManifest& lhs,
 }
 
 }  // namespace internal
+
+PreconnectPrediction::PreconnectPrediction() = default;
+PreconnectPrediction::PreconnectPrediction(
+    const PreconnectPrediction& prediction) = default;
+PreconnectPrediction::~PreconnectPrediction() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor static functions.
@@ -713,6 +720,41 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
     }
   }
   return false;
+}
+
+bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
+    const GURL& url,
+    PreconnectPrediction* prediction) const {
+  DCHECK(prediction);
+  DCHECK(prediction->preconnect_origins.empty());
+  DCHECK(prediction->preresolve_hosts.empty());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (initialization_state_ != INITIALIZED)
+    return false;
+
+  std::string host = url.host();
+  std::string redirect_endpoint;
+  if (!GetRedirectEndpoint(host, *host_redirect_data_, &redirect_endpoint))
+    return false;
+
+  OriginData data;
+  if (!origin_data_->TryGetData(redirect_endpoint, &data))
+    return false;
+
+  prediction->host = redirect_endpoint;
+  prediction->is_redirected = (host != redirect_endpoint);
+  for (const OriginStat& origin : data.origins()) {
+    float confidence = static_cast<float>(origin.number_of_hits()) /
+                       (origin.number_of_hits() + origin.number_of_misses());
+    if (confidence > kMinOriginConfidenceToTriggerPreconnect) {
+      prediction->preconnect_origins.emplace_back(origin.origin());
+    } else if (confidence > kMinOriginConfidenceToTriggerPreresolve) {
+      prediction->preresolve_hosts.emplace_back(origin.origin());
+    }
+  }
+
+  return !prediction->preconnect_origins.empty() ||
+         !prediction->preresolve_hosts.empty();
 }
 
 bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
