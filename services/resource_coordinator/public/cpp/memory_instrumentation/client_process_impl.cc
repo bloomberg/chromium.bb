@@ -33,7 +33,7 @@ ClientProcessImpl::ClientProcessImpl(const Config& config)
                                   mojo::MakeRequest(&coordinator_));
   mojom::ClientProcessPtr process;
   binding_.Bind(mojo::MakeRequest(&process));
-  coordinator_->RegisterClientProcess(std::move(process));
+  coordinator_->RegisterClientProcess(std::move(process), config.process_type);
 
   // Initialize the public-facing MemoryInstrumentation helper.
   MemoryInstrumentation::CreateInstance(config.connector, config.service_name);
@@ -69,7 +69,6 @@ void ClientProcessImpl::OnProcessMemoryDumpDone(
     const base::Optional<base::trace_event::MemoryDumpCallbackResult>& result) {
   mojom::RawProcessMemoryDumpPtr process_memory_dump(
       mojom::RawProcessMemoryDump::New());
-  process_memory_dump->process_type = process_type_;
   if (result) {
     process_memory_dump->os_dump = result->os_dump;
     process_memory_dump->chrome_dump = result->chrome_dump;

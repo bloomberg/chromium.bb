@@ -43,7 +43,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
       mojom::CoordinatorRequest) override;
 
   // mojom::Coordinator implementation.
-  void RegisterClientProcess(mojom::ClientProcessPtr) override;
+  void RegisterClientProcess(mojom::ClientProcessPtr,
+                             mojom::ProcessType) override;
   void UnregisterClientProcess(mojom::ClientProcess*);
   void RequestGlobalMemoryDump(const base::trace_event::MemoryDumpRequestArgs&,
                                const RequestGlobalMemoryDumpCallback&) override;
@@ -51,6 +52,9 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
  protected:
   // virtual for testing.
   virtual service_manager::Identity GetClientIdentityForCurrentRequest() const;
+  // virtual for testing.
+  virtual base::ProcessId GetProcessIdForClientIdentity(
+      service_manager::Identity identity) const;
   ~CoordinatorImpl() override;
 
  private:
@@ -66,18 +70,29 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     const base::trace_event::MemoryDumpRequestArgs args;
     const RequestGlobalMemoryDumpCallback callback;
 
+    struct Response {
+      Response(mojom::ProcessType, mojom::RawProcessMemoryDumpPtr);
+      ~Response();
+
+      const mojom::ProcessType process_type;
+      const mojom::RawProcessMemoryDumpPtr dump_ptr;
+    };
+
     // Collects the data received from OnProcessMemoryDumpResponse().
-    std::vector<std::pair<base::ProcessId, mojom::RawProcessMemoryDumpPtr>>
-        process_memory_dumps;
+    std::vector<std::pair<base::ProcessId, std::unique_ptr<Response>>>
+        responses;
   };
 
-  // Holds the identy and remote reference of registered clients.
+  // Holds the identity and remote reference of registered clients.
   struct ClientInfo {
-    ClientInfo(const service_manager::Identity&, mojom::ClientProcessPtr);
+    ClientInfo(const service_manager::Identity&,
+               mojom::ClientProcessPtr,
+               mojom::ProcessType);
     ~ClientInfo();
 
     const service_manager::Identity identity;
     const mojom::ClientProcessPtr client;
+    const mojom::ProcessType process_type;
   };
 
   // Callback of RequestProcessMemoryInternalDump.
