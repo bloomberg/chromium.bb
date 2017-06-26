@@ -227,7 +227,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
 
   // The selection is inside a blockquote i.e. enclosingNode is a blockquote
   VisiblePosition position_in_enclosing_block =
-      VisiblePosition::FirstPositionInNode(enclosing_element);
+      VisiblePosition::FirstPositionInNode(*enclosing_element);
   // If the blockquote is inline, the start of the enclosing block coincides
   // with positionInEnclosingBlock.
   VisiblePosition start_of_enclosing_block =

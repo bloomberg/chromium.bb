@@ -116,9 +116,9 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::BeforeNode(
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy>
-VisiblePositionTemplate<Strategy>::FirstPositionInNode(Node* node) {
+VisiblePositionTemplate<Strategy>::FirstPositionInNode(const Node& node) {
   return Create(PositionWithAffinityTemplate<Strategy>(
-      PositionTemplate<Strategy>::FirstPositionInNode(*node)));
+      PositionTemplate<Strategy>::FirstPositionInNode(node)));
 }
 
 template <typename Strategy>

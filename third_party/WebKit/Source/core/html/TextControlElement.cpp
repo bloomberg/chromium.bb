@@ -459,7 +459,7 @@ bool TextControlElement::CacheSelection(unsigned start,
 
 VisiblePosition TextControlElement::VisiblePositionForIndex(int index) const {
   if (index <= 0)
-    return VisiblePosition::FirstPositionInNode(InnerEditorElement());
+    return VisiblePosition::FirstPositionInNode(*InnerEditorElement());
   Position start, end;
   bool selected = Range::selectNodeContents(InnerEditorElement(), start, end);
   if (!selected)

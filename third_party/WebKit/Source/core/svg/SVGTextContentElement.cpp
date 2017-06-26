@@ -215,7 +215,7 @@ void SVGTextContentElement::selectSubString(unsigned charnum,
 
   // Find selection start
   VisiblePosition start = VisiblePosition::FirstPositionInNode(
-      const_cast<SVGTextContentElement*>(this));
+      *const_cast<SVGTextContentElement*>(this));
   for (unsigned i = 0; i < charnum; ++i)
     start = NextPositionOf(start);
 

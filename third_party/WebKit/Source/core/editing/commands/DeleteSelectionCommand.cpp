@@ -47,8 +47,9 @@ namespace blink {
 using namespace HTMLNames;
 
 static bool IsTableCellEmpty(Node* cell) {
+  DCHECK(cell);
   DCHECK(IsTableCell(cell)) << cell;
-  return VisiblePosition::FirstPositionInNode(cell).DeepEquivalent() ==
+  return VisiblePosition::FirstPositionInNode(*cell).DeepEquivalent() ==
          VisiblePosition::LastPositionInNode(cell).DeepEquivalent();
 }
 
@@ -513,7 +514,7 @@ void DeleteSelectionCommand::RemoveNode(
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (node == start_block_) {
     VisiblePosition previous = PreviousPositionOf(
-        VisiblePosition::FirstPositionInNode(start_block_.Get()));
+        VisiblePosition::FirstPositionInNode(*start_block_.Get()));
     if (previous.IsNotNull() && !IsEndOfBlock(previous))
       need_placeholder_ = true;
   }

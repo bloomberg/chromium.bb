@@ -1052,10 +1052,11 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   if (visible_paragraph_end.IsNull())
     return nullptr;
 
-  HTMLElement* new_block =
+  HTMLElement* const new_block =
       InsertNewDefaultParagraphElementAt(upstream_start, editing_state);
   if (editing_state->IsAborted())
     return nullptr;
+  DCHECK(new_block);
 
   bool end_was_br =
       isHTMLBRElement(*visible_paragraph_end.DeepEquivalent().AnchorNode());
@@ -1067,7 +1068,7 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   visible_paragraph_start = StartOfParagraph(visible_pos);
   visible_paragraph_end = EndOfParagraph(visible_pos);
   MoveParagraphs(visible_paragraph_start, visible_paragraph_end,
-                 VisiblePosition::FirstPositionInNode(new_block),
+                 VisiblePosition::FirstPositionInNode(*new_block),
                  editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -1798,7 +1799,7 @@ Position CompositeEditCommand::PositionAvoidingSpecialElementBoundary(
   // wrong paragraph.
   if (enclosing_anchor && !IsEnclosingBlock(enclosing_anchor)) {
     VisiblePosition first_in_anchor =
-        VisiblePosition::FirstPositionInNode(enclosing_anchor);
+        VisiblePosition::FirstPositionInNode(*enclosing_anchor);
     VisiblePosition last_in_anchor =
         VisiblePosition::LastPositionInNode(enclosing_anchor);
     // If visually just after the anchor, insert *inside* the anchor unless it's
@@ -1882,7 +1883,7 @@ Node* CompositeEditCommand::SplitTreeToNode(Node* start,
 
     // Do not split a node when doing so introduces an empty node.
     VisiblePosition position_in_parent =
-        VisiblePosition::FirstPositionInNode(parent_element);
+        VisiblePosition::FirstPositionInNode(*parent_element);
     VisiblePosition position_in_node =
         CreateVisiblePosition(FirstPositionInOrBeforeNode(node));
     if (position_in_parent.DeepEquivalent() !=

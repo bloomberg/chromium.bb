@@ -769,7 +769,7 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
       if (enclosing_table_cell &&
           visible_start.DeepEquivalent() ==
               VisiblePosition::FirstPositionInNode(
-                  const_cast<Node*>(enclosing_table_cell))
+                  *const_cast<Node*>(enclosing_table_cell))
                   .DeepEquivalent())
         return;
 
