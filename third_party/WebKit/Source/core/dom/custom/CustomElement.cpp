@@ -62,7 +62,7 @@ bool CustomElement::IsHyphenatedSpecElementName(const AtomicString& name) {
 }
 
 bool CustomElement::ShouldCreateCustomElement(const AtomicString& name) {
-  return RuntimeEnabledFeatures::CustomElementsV1Enabled() && IsValidName(name);
+  return IsValidName(name);
 }
 
 bool CustomElement::ShouldCreateCustomElement(const QualifiedName& tag_name) {
