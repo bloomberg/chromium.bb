@@ -57,7 +57,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize editing = _editing;
 
 - (instancetype)init {
-  if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  if ((self = [super initWithLayout:layout
+                              style:CollectionViewControllerStyleAppBar])) {
     _editing = NO;
 
     // Set up leading (back) button.

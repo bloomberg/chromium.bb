@@ -158,7 +158,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize pickerViews = _pickerViews;
 
 - (instancetype)init {
-  self = [self initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self = [self initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     // Set up leading (cancel) button.
     UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
@@ -191,8 +192,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
-  self = [super initWithStyle:style];
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style {
+  self = [super initWithLayout:layout style:style];
   if (self) {
     _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
     _options = [[NSMutableDictionary alloc] init];

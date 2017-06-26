@@ -51,7 +51,8 @@ class CollectionViewControllerTest : public BlockCleanupTest {
   void TestReconfigureBlock(ReconfigureBlock block) {
     // Setup.
     CollectionViewController* controller = [[CollectionViewController alloc]
-        initWithStyle:CollectionViewControllerStyleDefault];
+        initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
+                 style:CollectionViewControllerStyleDefault];
     [controller loadModel];
 
     CollectionViewModel* model = [controller collectionViewModel];
@@ -114,19 +115,22 @@ class CollectionViewControllerTest : public BlockCleanupTest {
 
 TEST_F(CollectionViewControllerTest, InitDefaultStyle) {
   CollectionViewController* controller = [[CollectionViewController alloc]
-      initWithStyle:CollectionViewControllerStyleDefault];
+      initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
+               style:CollectionViewControllerStyleDefault];
   EXPECT_EQ(nil, controller.appBar);
 }
 
 TEST_F(CollectionViewControllerTest, InitAppBarStyle) {
   CollectionViewController* controller = [[CollectionViewController alloc]
-      initWithStyle:CollectionViewControllerStyleAppBar];
+      initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
+               style:CollectionViewControllerStyleAppBar];
   EXPECT_NE(nil, controller.appBar);
 }
 
 TEST_F(CollectionViewControllerTest, CellForItemAtIndexPath) {
   CollectionViewController* controller = [[CollectionViewController alloc]
-      initWithStyle:CollectionViewControllerStyleDefault];
+      initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
+               style:CollectionViewControllerStyleDefault];
   [controller loadModel];
 
   [[controller collectionViewModel]

@@ -16,7 +16,12 @@ class ChromeBrowserState;
     : SettingsRootCollectionViewController
 
 // The designated initializer. |browserState| must not be nil.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
+    NS_UNAVAILABLE;
 
 @end
 

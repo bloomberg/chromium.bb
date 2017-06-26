@@ -58,7 +58,8 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView {
 // Designated initializer. |bridge| must not be null.
 - (instancetype)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 // Shows the form that allows the user to input their CVC.

@@ -51,7 +51,8 @@ extern NSString* const kPaymentItemsDisplayItemID;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 @end

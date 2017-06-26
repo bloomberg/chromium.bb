@@ -19,7 +19,8 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 // Given the current Physical Web preference state, determine whether the

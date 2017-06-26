@@ -54,7 +54,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Initialization
 
 - (instancetype)initWithPrefs:(PrefService*)prefs {
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_VOICE_SEARCH_SETTING_TITLE);
     _prefs = prefs;

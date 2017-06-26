@@ -147,7 +147,9 @@ const CGFloat kSeparatorInset = 10;
                   browserState:(ios::ChromeBrowserState*)browserState
                       delegate:(id<HistoryCollectionViewControllerDelegate>)
                                    delegate {
-  self = [super initWithStyle:CollectionViewControllerStyleDefault];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleDefault];
   if (self) {
     _historyServiceFacade.reset(new HistoryServiceFacade(browserState, self));
     _browserState = browserState;

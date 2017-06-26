@@ -51,7 +51,8 @@ class ChromeBrowserState;
 - (instancetype)initWithBookmark:(const bookmarks::BookmarkNode*)bookmark
                     browserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 // Closes the edit view as if close button was pressed.

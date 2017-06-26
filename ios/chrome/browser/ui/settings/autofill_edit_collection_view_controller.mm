@@ -43,8 +43,9 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 
 @implementation AutofillEditCollectionViewController
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
-  self = [super initWithStyle:style];
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style {
+  self = [super initWithLayout:layout style:style];
   if (!self) {
     return nil;
   }

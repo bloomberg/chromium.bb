@@ -31,7 +31,8 @@
 - (instancetype)initWithIdentity:(ChromeIdentity*)identity
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 // Scrolls the confirmation view to the bottom of its content.

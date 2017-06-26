@@ -56,7 +56,8 @@
   self.alerter.baseViewController = self.baseViewController;
 
   self.selectorViewController = [[PaymentRequestSelectorViewController alloc]
-      initWithStyle:CollectionViewControllerStyleAppBar];
+      initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
+               style:CollectionViewControllerStyleAppBar];
   [self.selectorViewController setTitle:@"Select an item"];
   [self.selectorViewController setDataSource:self];
   [self.selectorViewController loadModel];

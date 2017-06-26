@@ -23,7 +23,8 @@ extern NSString* const kAutofillProfileEditCollectionViewId;
                   personalDataManager:
                       (autofill::PersonalDataManager*)dataManager;
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 @end

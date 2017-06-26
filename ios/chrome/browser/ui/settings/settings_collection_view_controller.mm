@@ -238,7 +238,9 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // Checks that |browserState| is not an Incognito browser state.
   DCHECK(browserState);
   DCHECK_EQ(browserState, browserState->GetOriginalChromeBrowserState());
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _browserState = browserState;
     self.title = l10n_util::GetNSStringWithFixup(IDS_IOS_SETTINGS_TITLE);

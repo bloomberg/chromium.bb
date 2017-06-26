@@ -59,7 +59,9 @@ typedef NS_ENUM(NSUInteger, ItemType) {
 
 - (instancetype)initWithPermissions:
     (TouchToSearchPermissionsMediator*)touchToSearchPermissions {
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_CONTEXTUAL_SEARCH_TITLE);
     _touchToSearchPermissions = touchToSearchPermissions;

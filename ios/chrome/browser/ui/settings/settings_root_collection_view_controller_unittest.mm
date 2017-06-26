@@ -57,7 +57,8 @@ class SettingsRootCollectionViewControllerTest : public PlatformTest {
  public:
   SettingsRootCollectionViewControllerTest()
       : controller_([[TestSettingsRootCollectionViewController alloc]
-            initWithStyle:CollectionViewControllerStyleDefault]) {
+            initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
+                     style:CollectionViewControllerStyleDefault]) {
     item1_ = [[CollectionViewItem alloc] initWithType:kItemTypeEnumZero];
     item2_ = [[CollectionViewItem alloc] initWithType:kItemTypeEnumZero + 10];
   }
