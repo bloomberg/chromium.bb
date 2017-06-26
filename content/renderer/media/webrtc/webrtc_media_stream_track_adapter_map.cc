@@ -21,7 +21,6 @@ WebRtcMediaStreamTrackAdapterMap::AdapterEntry::AdapterEntry(
 }
 
 WebRtcMediaStreamTrackAdapterMap::AdapterEntry::~AdapterEntry() {
-  DCHECK(!adapter || !adapter->is_initialized());
 }
 
 WebRtcMediaStreamTrackAdapterMap::AdapterRef::AdapterRef(
@@ -35,14 +34,23 @@ WebRtcMediaStreamTrackAdapterMap::AdapterRef::AdapterRef(
 
 WebRtcMediaStreamTrackAdapterMap::AdapterRef::~AdapterRef() {
   DCHECK(map_->main_thread_->BelongsToCurrentThread());
-  base::AutoLock scoped_lock(map_->lock_);
-  adapter_ = nullptr;
-  if (entry()->adapter->HasOneRef()) {
-    entry()->adapter->Dispose();
-    if (type_ == Type::kLocal)
-      map_->local_track_adapters_.erase(it_);
-    else
-      map_->remote_track_adapters_.erase(it_);
+  scoped_refptr<WebRtcMediaStreamTrackAdapter> removed_adapter;
+  {
+    base::AutoLock scoped_lock(map_->lock_);
+    adapter_ = nullptr;
+    if (entry()->adapter->HasOneRef()) {
+      removed_adapter = entry()->adapter;
+      if (type_ == Type::kLocal)
+        map_->local_track_adapters_.erase(it_);
+      else
+        map_->remote_track_adapters_.erase(it_);
+    }
+  }
+  // Dispose the adapter if it was removed. This is performed after releasing
+  // the lock so that it is safe for any disposal mechanism to do synchronous
+  // invokes to the signaling thread without any risk of deadlock.
+  if (removed_adapter) {
+    removed_adapter->Dispose();
   }
 }
 
