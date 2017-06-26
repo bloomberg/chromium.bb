@@ -80,8 +80,10 @@ class UiScene {
 
   bool is_exiting() const { return is_exiting_; }
   void set_is_exiting();
-  bool is_prompting_to_exit() { return is_prompting_to_exit_; }
+  bool is_prompting_to_exit() const { return is_prompting_to_exit_; }
   void set_is_prompting_to_exit(bool prompting);
+  bool showing_splash_screen() const { return showing_splash_screen_; }
+  void set_showing_splash_screen(bool showing);
 
   void OnGLInitialized();
 
@@ -98,6 +100,7 @@ class UiScene {
   bool gl_initialized_ = false;
   bool is_exiting_ = false;
   bool is_prompting_to_exit_ = false;
+  bool showing_splash_screen_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

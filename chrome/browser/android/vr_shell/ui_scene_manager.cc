@@ -17,6 +17,7 @@
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/presentation_toast.h"
 #include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
+#include "chrome/browser/android/vr_shell/ui_elements/splash_screen_icon.h"
 #include "chrome/browser/android/vr_shell/ui_elements/system_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_url_bar.h"
@@ -89,6 +90,15 @@ static constexpr float kToastWidth = 0.512 * kToastDistance;
 static constexpr float kToastHeight = 0.16 * kToastDistance;
 static constexpr int kToastTimeoutSeconds = kTransientUrlBarTimeoutSeconds;
 
+static constexpr float kSplashScreenDistance = 1;
+static constexpr float kSplashScreenIconDMM = 0.12;
+static constexpr float kSplashScreenIconHeight =
+    kSplashScreenIconDMM * kSplashScreenDistance;
+static constexpr float kSplashScreenIconWidth =
+    kSplashScreenIconDMM * kSplashScreenDistance;
+static constexpr float kSplashScreenIconVerticalOffset =
+    0.2 * kSplashScreenDistance;
+
 static constexpr float kCloseButtonDistance = 2.4;
 static constexpr float kCloseButtonHeight =
     kUrlBarHeightDMM * kCloseButtonDistance;
@@ -122,13 +132,14 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
                                bool in_cct,
                                bool in_web_vr,
-                               bool web_vr_autopresented)
+                               bool web_vr_autopresentation_expected)
     : browser_(browser),
       scene_(scene),
       in_cct_(in_cct),
       web_vr_mode_(in_web_vr),
-      web_vr_autopresented_(web_vr_autopresented),
+      web_vr_autopresentation_expected_(web_vr_autopresentation_expected),
       weak_ptr_factory_(this) {
+  CreateSplashScreen();
   CreateBackground();
   CreateContentQuad();
   CreateSecurityWarnings();
@@ -142,7 +153,6 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
 
   ConfigureScene();
   ConfigureSecurityWarnings();
-  ConfigureTransientUrlBar();
 }
 
 UiSceneManager::~UiSceneManager() {}
@@ -274,6 +284,20 @@ void UiSceneManager::CreateContentQuad() {
   // Limit reticle distance to a sphere based on content distance.
   scene_->SetBackgroundDistance(main_content_->translation().z() *
                                 -kBackgroundDistanceMultiplier);
+}
+
+void UiSceneManager::CreateSplashScreen() {
+  // Chrome icon.
+  std::unique_ptr<SplashScreenIcon> icon =
+      base::MakeUnique<SplashScreenIcon>(256);
+  icon->set_debug_id(kSplashScreenIcon);
+  icon->set_id(AllocateId());
+  icon->set_hit_testable(false);
+  icon->set_size({kSplashScreenIconWidth, kSplashScreenIconHeight, 1.0});
+  icon->set_translation(
+      {0, kSplashScreenIconVerticalOffset, -kSplashScreenDistance});
+  splash_screen_icon_ = icon.get();
+  scene_->AddUiElement(std::move(icon));
 }
 
 void UiSceneManager::CreateBackground() {
@@ -423,49 +447,55 @@ base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void UiSceneManager::SetWebVrMode(bool web_vr,
-                                  bool auto_presented,
-                                  bool show_toast) {
-  if (web_vr_mode_ == web_vr && web_vr_autopresented_ == auto_presented &&
-      web_vr_show_toast_ == show_toast) {
+void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
+  if (web_vr_mode_ == web_vr && web_vr_show_toast_ == show_toast) {
     return;
   }
   web_vr_mode_ = web_vr;
-  web_vr_autopresented_ = auto_presented;
+  ConfigureTransientUrlBar();
+  scene_->set_showing_splash_screen(false);
+  web_vr_autopresentation_expected_ = false;
   web_vr_show_toast_ = show_toast;
   toast_state_ = SET_FOR_WEB_VR;
   ConfigureScene();
   ConfigureSecurityWarnings();
-  ConfigureTransientUrlBar();
   ConfigurePresentationToast();
 }
 
 void UiSceneManager::ConfigureScene() {
+  // Splash screen.
+  scene_->set_showing_splash_screen(web_vr_autopresentation_expected_);
+  splash_screen_icon_->SetEnabled(!web_vr_mode_ &&
+                                  web_vr_autopresentation_expected_);
+
+  // Exit warning.
   exit_warning_->SetEnabled(scene_->is_exiting());
   screen_dimmer_->SetEnabled(scene_->is_exiting());
 
+  bool browsing_mode = !web_vr_mode_ && !scene_->showing_splash_screen();
+
   // Controls (URL bar, loading progress, etc).
-  bool controls_visible = !web_vr_mode_ && !fullscreen_;
+  bool controls_visible = browsing_mode && !fullscreen_;
   for (UiElement* element : control_elements_) {
     element->SetEnabled(controls_visible && !scene_->is_prompting_to_exit());
   }
 
   // Close button is a special control element that needs to be hidden when in
   // WebVR, but it needs to be visible when in cct or fullscreen.
-  close_button_->SetEnabled(!web_vr_mode_ && (fullscreen_ || in_cct_));
+  close_button_->SetEnabled(browsing_mode && (fullscreen_ || in_cct_));
 
   // Content elements.
   for (UiElement* element : content_elements_) {
-    element->SetEnabled(!web_vr_mode_ && !scene_->is_prompting_to_exit());
+    element->SetEnabled(browsing_mode && !scene_->is_prompting_to_exit());
   }
 
   // Background elements.
   for (UiElement* element : background_elements_) {
-    element->SetEnabled(!web_vr_mode_);
+    element->SetEnabled(browsing_mode);
   }
 
   // Exit prompt.
-  bool showExitPrompt = !web_vr_mode_ && scene_->is_prompting_to_exit();
+  bool showExitPrompt = browsing_mode && scene_->is_prompting_to_exit();
   exit_prompt_->SetEnabled(showExitPrompt);
   exit_prompt_backplane_->SetEnabled(showExitPrompt);
 
@@ -516,6 +546,11 @@ void UiSceneManager::UpdateBackgroundColor() {
   floor_->set_center_color(color_scheme().floor);
   floor_->set_edge_color(color_scheme().world_background);
   floor_->set_grid_color(color_scheme().floor_grid);
+}
+
+void UiSceneManager::SetSplashScreenIcon(const SkBitmap& bitmap) {
+  splash_screen_icon_->SetSplashScreenIconBitmap(bitmap);
+  ConfigureScene();
 }
 
 void UiSceneManager::SetAudioCapturingIndicator(bool enabled) {
@@ -647,7 +682,7 @@ void UiSceneManager::OnSecurityWarningTimer() {
 }
 
 void UiSceneManager::ConfigureTransientUrlBar() {
-  bool enabled = web_vr_mode_ && web_vr_autopresented_;
+  bool enabled = web_vr_mode_ && web_vr_autopresentation_expected_;
   transient_url_bar_->set_visible(enabled);
   if (enabled) {
     transient_url_bar_timer_.Start(

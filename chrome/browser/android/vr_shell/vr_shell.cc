@@ -56,6 +56,7 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -94,7 +95,7 @@ VrShell::VrShell(JNIEnv* env,
                  jobject obj,
                  ui::WindowAndroid* window,
                  bool for_web_vr,
-                 bool web_vr_autopresented,
+                 bool web_vr_autopresentation_expected,
                  bool in_cct,
                  VrShellDelegate* delegate,
                  gvr_context* gvr_api,
@@ -113,13 +114,20 @@ VrShell::VrShell(JNIEnv* env,
 
   gl_thread_ = base::MakeUnique<VrGLThread>(
       weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
-      for_web_vr, web_vr_autopresented, in_cct, reprojected_rendering_,
-      HasDaydreamSupport(env));
+      for_web_vr, web_vr_autopresentation_expected, in_cct,
+      reprojected_rendering_, HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
   gl_thread_->StartWithOptions(options);
+}
+
+void VrShell::SetSplashScreenIcon(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj,
+                                  const JavaParamRef<jobject>& bitmap) {
+  ui_->SetSplashScreenIcon(
+      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap)));
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -337,7 +345,6 @@ void VrShell::SetSurface(JNIEnv* env,
 void VrShell::SetWebVrMode(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            bool enabled,
-                           bool auto_presented,
                            bool show_toast) {
   webvr_mode_ = enabled;
   if (metrics_helper_)
@@ -345,7 +352,7 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   WaitForGlThread();
   PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::SetWebVrMode,
                                        gl_thread_->GetVrShellGl(), enabled));
-  ui_->SetWebVrMode(enabled, auto_presented, show_toast);
+  ui_->SetWebVrMode(enabled, show_toast);
 }
 
 void VrShell::OnFullscreenChanged(bool enabled) {
@@ -708,13 +715,13 @@ jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& delegate,
            jlong window_android,
            jboolean for_web_vr,
-           jboolean web_vr_autopresented,
+           jboolean web_vr_autopresentation_expected,
            jboolean in_cct,
            jlong gvr_api,
            jboolean reprojected_rendering) {
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, reinterpret_cast<ui::WindowAndroid*>(window_android),
-      for_web_vr, web_vr_autopresented, in_cct,
+      for_web_vr, web_vr_autopresentation_expected, in_cct,
       VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
       reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering));
 }

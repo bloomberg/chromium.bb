@@ -580,14 +580,18 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             return false;
         }
 
-        if (mListeningForWebVrActivateBeforePause && !mRequestedWebVr) {
+        // If the page is listening for vrdisplayactivate we assume it wants to request
+        // presentation. Go into WebVR mode tentatively. If the page doesn't request presentation
+        // in the vrdisplayactivate handler we will exit presentation later. Note that in the
+        // case of autopresentation, we don't want to enter WebVR mode so that we can show the
+        // splash screen. In this case, we enter WebVR mode when the site requests presentation.
+        boolean tentativeWebVrMode =
+                mListeningForWebVrActivateBeforePause && !mRequestedWebVr && !mAutopresentWebVr;
+        if (tentativeWebVrMode) {
             nativeDisplayActivate(mNativeVrShellDelegate);
         }
 
-        // If the page is listening for vrdisplayactivate we assume it wants to request
-        // presentation. Go into WebVR mode tentatively. If the page doesn't request presentation
-        // in the vrdisplayactivate handler we will exit presentation later.
-        enterVr(mListeningForWebVrActivateBeforePause && !mRequestedWebVr);
+        enterVr(tentativeWebVrMode);
 
         // The user has successfully completed a DON flow.
         RecordUserAction.record("VR.DON");
@@ -648,11 +652,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         addVrViews();
-        boolean webVrMode = mRequestedWebVr || tentativeWebVrMode;
+        boolean webVrMode = mRequestedWebVr || tentativeWebVrMode && !mAutopresentWebVr;
         mVrShell.initializeNative(mActivity.getActivityTab(), webVrMode, mAutopresentWebVr,
                 mActivity instanceof CustomTabActivity);
-        mVrShell.setWebVrModeEnabled(webVrMode, mAutopresentWebVr, false);
-        mAutopresentWebVr = false;
+        mVrShell.setWebVrModeEnabled(webVrMode, false);
 
         // We're entering VR, but not in WebVr mode.
         mVrBrowserUsed = !webVrMode;
@@ -676,6 +679,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // we're not in vr.
         assert !mInVr;
         mAutopresentWebVr = true;
+        mDonSucceeded = true;
     }
 
     /**
@@ -748,7 +752,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mRequestedWebVr = true;
         switch (enterVrInternal()) {
             case ENTER_VR_NOT_NECESSARY:
-                mVrShell.setWebVrModeEnabled(true, mAutopresentWebVr, true);
+                mVrShell.setWebVrModeEnabled(true, true);
                 maybeSetPresentResult(true);
                 break;
             case ENTER_VR_CANCELLED:
@@ -762,6 +766,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             default:
                 Log.e(TAG, "Unexpected enum.");
         }
+        mAutopresentWebVr = false;
     }
 
     /**
@@ -803,7 +808,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         } else {
             mVrBrowserUsed = true;
             mAutopresentWebVr = false;
-            mVrShell.setWebVrModeEnabled(false, false, false);
+            mVrShell.setWebVrModeEnabled(false, false);
         }
         return true;
     }

@@ -30,6 +30,7 @@ enum UiElementDebugId {
   kTransientUrlBar,
   kLocationAccessIndicator,
   kPresentationToast,
+  kSplashScreenIcon,
 };
 
 }  // namespace vr_shell

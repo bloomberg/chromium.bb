@@ -13,10 +13,12 @@
 #include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace vr_shell {
 
 class LoadingIndicator;
+class SplashScreenIcon;
 class TransientUrlBar;
 class UiBrowserInterface;
 class UiElement;
@@ -29,7 +31,7 @@ class UiSceneManager {
                  UiScene* scene,
                  bool in_cct,
                  bool in_web_vr,
-                 bool web_vr_autopresented);
+                 bool web_vr_autopresentation_expected);
   ~UiSceneManager();
 
   base::WeakPtr<UiSceneManager> GetWeakPtr();
@@ -38,7 +40,7 @@ class UiSceneManager {
   void SetIncognito(bool incognito);
   void SetURL(const GURL& gurl);
   void SetWebVrSecureOrigin(bool secure);
-  void SetWebVrMode(bool web_vr, bool auto_presented, bool show_toast);
+  void SetWebVrMode(bool web_vr, bool show_toast);
   void SetSecurityInfo(security_state::SecurityLevel level, bool malware);
   void SetLoading(bool loading);
   void SetLoadProgress(float progress);
@@ -47,6 +49,7 @@ class UiSceneManager {
   void SetScreenCapturingIndicator(bool enabled);
   void SetAudioCapturingIndicator(bool enabled);
   void SetLocationAccessIndicator(bool enabled);
+  void SetSplashScreenIcon(const SkBitmap& bitmap);
 
   // These methods are currently stubbed.
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
@@ -68,6 +71,7 @@ class UiSceneManager {
   void CreateSecurityWarnings();
   void CreateSystemIndicators();
   void CreateContentQuad();
+  void CreateSplashScreen();
   void CreateBackground();
   void CreateUrlBar();
   void CreateTransientUrlBar();
@@ -115,6 +119,7 @@ class UiSceneManager {
   UiElement* ceiling_ = nullptr;
   UiElement* floor_ = nullptr;
   UiElement* close_button_ = nullptr;
+  SplashScreenIcon* splash_screen_icon_ = nullptr;
   UrlBar* url_bar_ = nullptr;
   TransientUrlBar* transient_url_bar_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
@@ -123,8 +128,8 @@ class UiSceneManager {
 
   bool in_cct_;
   bool web_vr_mode_;
-  bool web_vr_autopresented_ = false;
   bool web_vr_show_toast_ = false;
+  bool web_vr_autopresentation_expected_ = false;
   bool secure_origin_ = false;
   bool fullscreen_ = false;
   bool incognito_ = false;
