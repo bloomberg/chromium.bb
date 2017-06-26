@@ -64,15 +64,15 @@ void PaintWorkletGlobalScope::Dispose() {
 void PaintWorkletGlobalScope::registerPaint(const String& name,
                                             const ScriptValue& ctor_value,
                                             ExceptionState& exception_state) {
+  if (name.IsEmpty()) {
+    exception_state.ThrowTypeError("The empty string is not a valid name.");
+    return;
+  }
+
   if (paint_definitions_.Contains(name)) {
     exception_state.ThrowDOMException(
         kNotSupportedError,
         "A class with name:'" + name + "' is already registered.");
-    return;
-  }
-
-  if (name.IsEmpty()) {
-    exception_state.ThrowTypeError("The empty string is not a valid name.");
     return;
   }
 
