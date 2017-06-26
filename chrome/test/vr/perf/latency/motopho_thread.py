@@ -16,7 +16,7 @@ class MotophoThread(threading.Thread):
     self._correlations = []
     # Threads can't be restarted, so in order to gather multiple samples, we
     # need to either re-create the thread for every iteration or use a loop
-    # and locks in a single thread -> use the latter solution
+    # and locks in a single thread -> use the latter solution.
     self._start_lock = threading.Event()
     self._finish_lock = threading.Event()
     self.BlockNextIteration()

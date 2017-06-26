@@ -29,7 +29,7 @@ class RobotArm():
       return
     # If the servo stopped very close to the desired position, it can just
     # vibrate instead of moving, so move away before going to the reset
-    # position
+    # position.
     self._connection.write('5 300 0 5\n')
     time.sleep(0.5)
     self._connection.write('5 250 0 5\n')

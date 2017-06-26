@@ -2,33 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script for automatically measuring motion-to-photon latency for VR.
+"""Script for automatically measuring FPS for VR via VrCore perf logging.
 
-Doing so requires two specialized pieces of hardware. The first is a Motopho,
-which when used with a VR flicker app, finds the delay between movement and
-the test device's screen updating in response to the movement. The second is
-a set of servos, which physically moves the test device and Motopho during the
-latency test.
+Android only.
+VrCore has a developer option to log performance data to logcat. This test
+visits various WebVR URLs and collects the FPS data reported by VrCore.
 """
-# Must be first import in order to add parent directory to system path.
-import latency_test_config
-import android_webvr_latency_test
+
+# Needs to be imported first in order to add the parent directory to path.
+import vrcore_fps_test_config
+import vrcore_fps_test
 
 import argparse
 import logging
 import os
-import sys
 
 DEFAULT_ADB_PATH = os.path.realpath('../../third_party/android_tools/sdk/'
                                     'platform-tools/adb')
-# TODO(bsheedy): See about adding tool via DEPS instead of relying on it
-# existing on the bot already.
-DEFAULT_MOTOPHO_PATH = os.path.join(os.path.expanduser('~'), 'motopho/Motopho')
-DEFAULT_NUM_SAMPLES = 10
+DEFAULT_DURATION_SECONDS = 30
 DEFAULT_RESULTS_FILE = 'results-chart.json'
-DEFAULT_VRCORE_VERSION_FILE = 'vrcore_version.txt'
 
 
+# TODO(bsheedy): Move common arg parsing code to shared file.
 def GetParsedArgs():
   """Parses the command line arguments passed to the script.
 
@@ -42,32 +37,23 @@ def GetParsedArgs():
                       type=os.path.realpath,
                       help='The absolute path to adb',
                       default=DEFAULT_ADB_PATH)
-  parser.add_argument('--motopho-path',
-                      type=os.path.realpath,
-                      help='The absolute path to the directory with Motopho '
-                           'scripts',
-                      default=DEFAULT_MOTOPHO_PATH)
+  parser.add_argument('--duration',
+                      default=DEFAULT_DURATION_SECONDS,
+                      type=int,
+                      help='The duration spent collecting data from each URL')
   parser.add_argument('--output-dir',
                       type=os.path.realpath,
                       help='The directory where the script\'s output files '
                            'will be saved')
-  parser.add_argument('--platform',
-                      help='The platform the test is being run on, either '
-                           '"android" or "windows"')
   parser.add_argument('--results-file',
                       default=DEFAULT_RESULTS_FILE,
                       help='The name of the JSON file the results will be '
                            'saved to')
-  parser.add_argument('--num-samples',
-                      default=DEFAULT_NUM_SAMPLES,
-                      type=int,
-                      help='The number of times to run the test before '
-                           'the results are averaged')
   parser.add_argument('--url',
                       action='append',
                       default=[],
                       dest='urls',
-                      help='The URL of a flicker app to use. Defaults to a '
+                      help='The URL of a WebVR app to use. Defaults to a '
                            'set of URLs with various CPU and GPU loads')
   parser.add_argument('-v', '--verbose',
                       dest='verbose_count', default=0, action='count',
@@ -92,15 +78,9 @@ def SetLogLevel(verbose_count):
 
 def main():
   args = GetParsedArgs()
-  latency_test = None
-  if args.platform == 'android':
-    latency_test = android_webvr_latency_test.AndroidWebVrLatencyTest(args)
-  elif args.platform == 'win':
-    raise NotImplementedError('WebVR not currently supported on Windows')
-  else:
-    raise RuntimeError('Given platform %s not recognized' % args.platform)
-  latency_test.RunTests()
+  test = vrcore_fps_test.VrCoreFpsTest(args)
+  test.RunTests()
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  main()

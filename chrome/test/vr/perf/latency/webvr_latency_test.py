@@ -20,28 +20,28 @@ MOTOPHO_THREAD_TIMEOUT = 15
 DEFAULT_URLS = [
     # TODO(bsheedy): See about having versioned copies of the flicker app
     # instead of using personal github.
-    # Purely a flicker app - no additional CPU/GPU load
+    # Purely a flicker app - no additional CPU/GPU load.
     'https://weableandbob.github.io/Motopho/'
     'flicker_apps/webvr/webvr-flicker-app-klaus.html?'
     'polyfill=0\&canvasClickPresents=1',
-    # URLs that render 3D scenes in addition to the Motopho patch
-    # Heavy CPU load, moderate GPU load
+    # URLs that render 3D scenes in addition to the Motopho patch.
+    # Heavy CPU load, moderate GPU load.
     'https://webvr.info/samples/test-slow-render.html?'
     'latencyPatch=1\&canvasClickPresents=1\&'
     'heavyGpu=1\&workTime=20\&cubeCount=8\&cubeScale=0.4',
-    # Moderate CPU load, light GPU load
+    # Moderate CPU load, light GPU load.
     'https://webvr.info/samples/test-slow-render.html?'
     'latencyPatch=1\&canvasClickPresents=1\&'
     'heavyGpu=1\&workTime=12\&cubeCount=8\&cubeScale=0.3',
-    # Light CPU load, moderate GPU load
+    # Light CPU load, moderate GPU load.
     'https://webvr.info/samples/test-slow-render.html?'
     'latencyPatch=1\&canvasClickPresents=1\&'
     'heavyGpu=1\&workTime=5\&cubeCount=8\&cubeScale=0.4',
-    # Heavy CPU load, very light GPU load
+    # Heavy CPU load, very light GPU load.
     'https://webvr.info/samples/test-slow-render.html?'
     'latencyPatch=1\&canvasClickPresents=1\&'
     'workTime=20',
-    # No additional CPU load, very light GPU load
+    # No additional CPU load, very light GPU load.
     'https://webvr.info/samples/test-slow-render.html?'
     'latencyPatch=1\&canvasClickPresents=1',
 ]
@@ -90,49 +90,21 @@ def GetTtyDevices(tty_pattern, vendor_ids):
 class WebVrLatencyTest(object):
   """Base class for all WebVR latency tests.
 
-  This is meant to be subclassed for each platform the test is run on. While
-  the latency test itself is cross-platform, the setup and teardown for
-  tests is platform-dependent.
+  This handles the platform-independent _Run and _SaveResultsToFile functions.
+  Platform-specific setup and teardown should be somehow handled by classes
+  that inherit from this one.
   """
   def __init__(self, args):
-    self.args = args
+    super(WebVrLatencyTest, self).__init__(args)
     self._num_samples = args.num_samples
     self._test_urls = args.urls or DEFAULT_URLS
     assert (self._num_samples > 0),'Number of samples must be greater than 0'
-    self._device_name = 'generic_device'
     self._test_results = {}
 
-    # Connect to the Arduino that drives the servos
+    # Connect to the Arduino that drives the servos.
     devices = GetTtyDevices(r'ttyACM\d+', [0x2a03, 0x2341])
     assert (len(devices) == 1),'Found %d devices, expected 1' % len(devices)
     self.robot_arm = ra.RobotArm(devices[0])
-
-  def RunTests(self):
-    """Runs latency tests on all the URLs provided to the test on creation.
-
-    Repeatedly runs the steps to start Chrome, measure/store latency, and
-    clean up before storing all results to a single file for dashboard
-    uploading.
-    """
-    try:
-      self._OneTimeSetup()
-      for url in self._test_urls:
-        self._Setup(url)
-        self._Run(url)
-        self._Teardown()
-      self._SaveResultsToFile()
-    finally:
-      self._OneTimeTeardown()
-
-  def _OneTimeSetup(self):
-    """Performs any platform-specific setup once before any tests."""
-    raise NotImplementedError(
-        'Platform-specific setup must be implemented in subclass')
-
-  def _Setup(self, url):
-    """Performs any platform-specific setup before each test."""
-    raise NotImplementedError(
-        'Platform-specific setup must be implemented in subclass')
 
   def _Run(self, url):
     """Run the latency test.
@@ -140,22 +112,22 @@ class WebVrLatencyTest(object):
     Handles the actual latency measurement, which is identical across
     different platforms, as well as result storing.
     """
-    # Motopho scripts use relative paths, so switch to the Motopho directory
-    os.chdir(self.args.motopho_path)
+    # Motopho scripts use relative paths, so switch to the Motopho directory.
+    os.chdir(self._args.motopho_path)
 
-    # Set up the thread that runs the Motopho script
+    # Set up the thread that runs the Motopho script.
     motopho_thread = mt.MotophoThread(self._num_samples)
     motopho_thread.start()
 
-    # Run multiple times so we can get an average and standard deviation
+    # Run multiple times so we can get an average and standard deviation.
     for _ in xrange(self._num_samples):
       self.robot_arm.ResetPosition()
-      # Start the Motopho script
+      # Start the Motopho script.
       motopho_thread.StartIteration()
-      # Let the Motopho be stationary so the script can calculate the bias
+      # Let the Motopho be stationary so the script can calculate the bias.
       time.sleep(3)
       motopho_thread.BlockNextIteration()
-      # Move so we can measure latency
+      # Move so we can measure latency.
       self.robot_arm.StartMotophoMovement()
       if not motopho_thread.WaitForIterationEnd(MOTOPHO_THREAD_TIMEOUT):
         # TODO(bsheedy): Look into ways to prevent Motopho from not sending any
@@ -166,34 +138,6 @@ class WebVrLatencyTest(object):
       time.sleep(1)
     self._StoreResults(motopho_thread.latencies, motopho_thread.correlations,
                        url)
-
-  def _Teardown(self):
-    """Performs any platform-specific teardown after each test."""
-    raise NotImplementedError(
-        'Platform-specific teardown must be implemented in subclass')
-
-  def _OneTimeTeardown(self):
-    """Performs any platform-specific teardown after all tests."""
-    raise NotImplementedError(
-        'Platform-specific teardown must be implemented in sublcass')
-
-  def _RunCommand(self, cmd):
-    """Runs the given cmd list and returns its output.
-
-    Prints the command's output and exits if any error occurs.
-
-    Returns:
-      A string containing the stdout and stderr of the command.
-    """
-    try:
-      return subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-      logging.error('Failed command output: %s', e.output)
-      raise e
-
-  def _SetChromeCommandLineFlags(self, flags):
-    raise NotImplementedError(
-        'Command-line flag setting must be implemented in subclass')
 
   def _StoreResults(self, latencies, correlations, url):
     """Temporarily stores the results of a test.
@@ -220,7 +164,7 @@ class WebVrLatencyTest(object):
     }
 
   def _SaveResultsToFile(self):
-    if not (self.args.output_dir and os.path.isdir(self.args.output_dir)):
+    if not (self._args.output_dir and os.path.isdir(self._args.output_dir)):
       logging.warning('No output directory set, not saving results to file')
       return
 
@@ -279,6 +223,6 @@ class WebVrLatencyTest(object):
       'charts': charts,
     }
 
-    with file(os.path.join(self.args.output_dir,
-                           self.args.results_file), 'w') as outfile:
+    with file(os.path.join(self._args.output_dir,
+                           self._args.results_file), 'w') as outfile:
       json.dump(results, outfile)
