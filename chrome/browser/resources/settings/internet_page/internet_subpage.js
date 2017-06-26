@@ -219,9 +219,9 @@ Polymer({
         } else {
           builtinNetworkStates.push(state);
         }
-        networkStates = builtinNetworkStates;
-        this.thirdPartyVpns_ = thirdPartyVpns;
       }
+      networkStates = builtinNetworkStates;
+      this.thirdPartyVpns_ = thirdPartyVpns;
     }
 
     this.networkStateList_ = networkStates;
