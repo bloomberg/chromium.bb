@@ -44,8 +44,10 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
                                        public CloudPolicyService::Observer,
                                        public KeyedService {
  public:
-  // If |wait_for_policy_fetch| is true, IsInitializationComplete() will return
-  // false as long as there hasn't been a successful policy fetch.
+  // If |wait_for_policy_fetch| is true, IsInitializationComplete() is forced to
+  // false until either there has been a successful policy fetch from the server
+  // or |initial_policy_fetch_timeout| has expired. (The timeout may be set to
+  // TimeDelta::Max() to block permanently.)
   // |task_runner| is the runner for policy refresh tasks.
   // |file_task_runner| is used for file operations. Currently this must be the
   // FILE BrowserThread.
@@ -164,7 +166,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // A timer that puts a hard limit on the maximum time to wait for the initial
   // policy fetch.
-  base::Timer policy_fetch_timeout_;
+  base::Timer policy_fetch_timeout_{false, false};
 
   // The pref service to pass to the refresh scheduler on initialization.
   PrefService* local_state_;
