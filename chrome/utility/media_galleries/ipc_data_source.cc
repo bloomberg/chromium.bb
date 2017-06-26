@@ -37,8 +37,9 @@ void IPCDataSource::Read(int64_t position,
   DCHECK(data_source_thread_checker_.CalledOnValidThread());
 
   utility_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&IPCDataSource::ReadBlob, base::Unretained(this),
-                            destination, callback, position, size));
+      FROM_HERE,
+      base::BindOnce(&IPCDataSource::ReadBlob, base::Unretained(this),
+                     destination, callback, position, size));
 }
 
 bool IPCDataSource::GetSize(int64_t* size_out) {
@@ -72,8 +73,8 @@ void IPCDataSource::ReadBlob(uint8_t* destination,
 
   media_data_source_->ReadBlob(
       position, clamped_size,
-      base::Bind(&IPCDataSource::ReadDone, base::Unretained(this), destination,
-                 callback));
+      base::BindOnce(&IPCDataSource::ReadDone, base::Unretained(this),
+                     destination, callback));
 }
 
 void IPCDataSource::ReadDone(uint8_t* destination,
