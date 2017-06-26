@@ -75,47 +75,39 @@ void CastReceiverSession::Start(
   video_config_ = video_config;
   format_ = capture_format;
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&CastReceiverSessionDelegate::Start,
-                 base::Unretained(delegate_.get()),
-                 audio_config,
-                 video_config,
-                 local_endpoint,
-                 remote_endpoint,
-                 base::Passed(&options),
-                 format_,
-                 media::BindToCurrentLoop(error_callback)));
+      FROM_HERE, base::BindOnce(&CastReceiverSessionDelegate::Start,
+                                base::Unretained(delegate_.get()), audio_config,
+                                video_config, local_endpoint, remote_endpoint,
+                                base::Passed(&options), format_,
+                                media::BindToCurrentLoop(error_callback)));
   scoped_refptr<media::AudioCapturerSource> audio(
       new CastReceiverSession::AudioCapturerSource(this));
   std::unique_ptr<media::VideoCapturerSource> video(
       new CastReceiverSession::VideoCapturerSource(this));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(start_callback, audio, base::Passed(&video)));
+      FROM_HERE, base::BindOnce(start_callback, audio, base::Passed(&video)));
 }
 
 void CastReceiverSession::StartAudio(
     scoped_refptr<CastReceiverAudioValve> audio_valve) {
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CastReceiverSessionDelegate::StartAudio,
-                 base::Unretained(delegate_.get()),
-                 audio_valve));
+      base::BindOnce(&CastReceiverSessionDelegate::StartAudio,
+                     base::Unretained(delegate_.get()), audio_valve));
 }
 
 void CastReceiverSession::StartVideo(
     content::VideoCaptureDeliverFrameCB frame_callback) {
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CastReceiverSessionDelegate::StartVideo,
-                 base::Unretained(delegate_.get()),
-                 frame_callback));
+      base::BindOnce(&CastReceiverSessionDelegate::StartVideo,
+                     base::Unretained(delegate_.get()), frame_callback));
 }
 
 void CastReceiverSession::StopVideo() {
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&CastReceiverSessionDelegate::StopVideo,
-                 base::Unretained(delegate_.get())));
+      FROM_HERE, base::BindOnce(&CastReceiverSessionDelegate::StopVideo,
+                                base::Unretained(delegate_.get())));
 }
 
 CastReceiverSession::VideoCapturerSource::VideoCapturerSource(

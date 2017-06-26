@@ -26,10 +26,9 @@ void ChromeWebRtcLogMessageDelegate::LogMessage(const std::string& message) {
   WebRtcLoggingMessageData data(base::Time::Now(), message);
 
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(
-          &ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread,
-          base::Unretained(this),
-          data));
+      FROM_HERE,
+      base::BindOnce(&ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread,
+                     base::Unretained(this), data));
 }
 
 void ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread(
@@ -52,8 +51,8 @@ void ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread(
     } else {
       io_task_runner_->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&ChromeWebRtcLogMessageDelegate::SendLogBuffer,
-                     base::Unretained(this)),
+          base::BindOnce(&ChromeWebRtcLogMessageDelegate::SendLogBuffer,
+                         base::Unretained(this)),
           base::TimeDelta::FromMilliseconds(200));
     }
   }
