@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<title>Test document user gesture autoplay policy across navigation</title>
+<script src="/js-test-resources/js-test.js"></script>
+<script src='../../../media-resources/media-file.js'></script>
+<script>
+function tearDown(result) {
+  window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+  testRunner.notifyDone();
+
+  shouldBeUndefined(result);
+  finishJSTest();
+}
+
+function runVideoTest() {
+  var video = document.createElement('video');
+  video.src = findMediaFile("video", "/resources/test");
+  video.play().then(tearDown, tearDown);
+
+  var jsTestIsAsync = true;
+}
+
+window.addEventListener('load', function() {
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+    runVideoTest();
+    testRunner.dumpBackForwardList();
+  }
+}, false);
+</script>
+<body>
+</body>

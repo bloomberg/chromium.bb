@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<title>Test document user gesture autoplay policy across navigation with no gesture.</title>
+<body>
+  <div id='target'>target</div>
+</body>
+<script>
+  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+
+  if (window.testRunner) {
+    testRunner.clearBackForwardList();
+    testRunner.waitUntilDone();
+  }
+
+  document.location.href = 'resources/test-autoplay.html';
+</script>

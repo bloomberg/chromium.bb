@@ -1,0 +1,13 @@
+CONSOLE WARNING: line 17: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+FAIL NotAllowedError: play() can only be initiated by a user gesture. should be undefined. Was NotAllowedError: play() can only be initiated by a user gesture.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+
+============== Back Forward List ==============
+curr->  http://127.0.0.1:8000/media/autoplay/resources/test-autoplay.html
+===============================================

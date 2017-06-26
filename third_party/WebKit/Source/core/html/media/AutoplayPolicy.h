@@ -34,6 +34,7 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   };
 
   CORE_EXPORT static Type GetAutoplayPolicyForDocument(const Document&);
+  CORE_EXPORT static bool IsDocumentAllowedToPlay(const Document&);
 
   explicit AutoplayPolicy(HTMLMediaElement*);
 
