@@ -24,3 +24,15 @@ static_library("renderer") {
     "//v8",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "translate_helper_unittest.cc",
+  ]
+  deps = [
+    ":renderer",
+    "//base",
+    "//testing/gtest",
+  ]
+}
