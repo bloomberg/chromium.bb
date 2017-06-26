@@ -16,82 +16,93 @@
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync_sessions/synced_tab_delegate.h"
 #include "ui/base/page_transition_types.h"
 
 namespace sync_sessions {
 
-// Class to generate and manage task ids for navigations of a tab. For each
-// current navigation of a tab, UpdateWithNavigation(int navigation_index,
-//            ui::PageTransition transition)
-// needs to be called to update the object.
-//
-// TODO(shenchao): If the tab is restored, then the input navigation is not
-// necessarily the first navigation in this case. Need to fix it by initalizing
-// the object with restored data.
-// TODO(shenchao): Support to track tasks cross tabs.
+// Default/invalid global id. These are internal timestamp representations of
+// a navigation (see base::Time::ToInternalValue()). Note that task ids are
+// a subset of global ids.
+static constexpr int64_t kInvalidGlobalID = -1;
+
+// Default/invalid id for a navigation.
+static constexpr int kInvalidNavID = 0;
+
+// The maximum number of tasks we track in a tab.
+static constexpr int kMaxNumTasksPerTab = 100;
+
+// Class to generate and manage task ids for navigations of a tab. It is
+// expected that there is only 1 TabTasks object for every tab, although Task
+// ids can be duplicated across TabTasks (see copy constructor).
 class TabTasks {
  public:
   TabTasks();
+  explicit TabTasks(const TabTasks& rhs);
   virtual ~TabTasks();
 
-  // Gets top-down task id list of ancestors and itself for
-  // |navigation_index|-th navigation of the tab.
-  std::vector<int64_t> GetTaskIdsForNavigation(int navigation_index) const;
+  // Gets root->leaf task id list for the navigation denoted by |nav_id|.
+  // Returns an empty vector if |nav_id| is not found.
+  std::vector<int64_t> GetTaskIdsForNavigation(int nav_id) const;
 
-  int GetNavigationsCount() const;
-
-  // Updates the current task of the tab, given current navigation index of the
-  // tab as |navigation_index|, and its |transition|.
-  // If the navigation is from going back/forward of the tab, we set its first
-  // visit as current task; if the navigation is new, we create a subtask of the
-  // previous navigation if it's linked from the previous one or a root task
-  // otherwise, and use |navigation_id| as new task id.
-  void UpdateWithNavigation(int navigation_index,
+  void UpdateWithNavigation(int nav_id,
                             ui::PageTransition transition,
-                            int64_t navigation_id);
+                            int64_t global_id);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TaskTrackerTest, LimitMaxNumberOfTasksPerTab);
-
   FRIEND_TEST_ALL_PREFIXES(TaskTrackerTest,
                            CreateSubTaskFromExcludedAncestorTask);
 
-  struct TaskIdAndRoot {
-    // Root task index in task_ids_. Negative value means it's an invalid task
-    // just for filling the task_ids_.
-    int root_navigation_index;
-    int64_t task_id;
+  // The task id and and immediate parent for a navigation (see
+  // |nav_to_task_id_map_|).
+  struct TaskIdAndParent {
+    // The task id for this navigation. Should always be present.
+    int64_t task_id = kInvalidGlobalID;
+
+    // The most recent global id for this navigation. This is used to determine
+    // the age of this navigation when expiring old navigations. Should always
+    // be present.
+    int64_t global_id = kInvalidGlobalID;
+
+    // If present, the nav id that this task is a continuation of. If this is
+    // the first navigation in a new task, may not be present.
+    int parent_nav_id = kInvalidNavID;
   };
 
-  // Task ids (with root task) for the navigations of the tab. The vector is
-  // corresponding to the sequence of navigations of the tab.
-  std::vector<TaskIdAndRoot> task_ids_;
-  // Index of current navigation in task_ids_.
-  int current_navigation_index_ = -1;
-  // Number of oldest ancestors which have been excluded from being tracked in
-  // task_ids_;
-  int excluded_navigation_num_ = 0;
+  // Map converting navigation ids to a TaskIdAndParent. To find the root to
+  // leaf chain for a navigation, start with its navigation id, and reindex into
+  // the map using the parent id, until the parent id is kInvalidNavID.
+  std::map<int, TaskIdAndParent> nav_to_task_id_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabTasks);
+  // The most recent navigation id seen for this tab.
+  int most_recent_nav_id_ = kInvalidNavID;
+
+  DISALLOW_ASSIGN(TabTasks);
 };
 
-// Tracks tasks of current session.
+// Tracks tasks of current session. Tasks are a set of navigations that are
+// related by explicit user actions (as determined by transition type. See
+// |UpdateWithNavigation| above). Each task is composed of a tree of task ids
+// that identify the navigations of that task (see |GetTaskIdsForNavigation|).
 class TaskTracker {
  public:
-  // Constructs with a clock to get timestamp as new task ids.
   TaskTracker();
   virtual ~TaskTracker();
 
   // Returns a TabTasks pointer, which is owned by this object, for the tab of
-  // given |tab_id|.
-  TabTasks* GetTabTasks(SessionID::id_type tab_id);
+  // given |tab_id|. |parent_id|, if set, can be used to link the task ids
+  // from one tab to another (e.g. when opening a navigation in a new tab, the
+  // task ids from the original tab are necessary to continue tracking the
+  // task chain).
+  TabTasks* GetTabTasks(SessionID::id_type tab_id,
+                        SessionID::id_type parent_id);
 
   // Cleans tracked task ids of navigations in the tab of |tab_id|.
   void CleanTabTasks(SessionID::id_type tab_id);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TaskTrackerTest, CleanTabTasks);
+
   std::map<SessionID::id_type, std::unique_ptr<TabTasks>> local_tab_tasks_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskTracker);
