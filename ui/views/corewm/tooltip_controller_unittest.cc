@@ -577,10 +577,10 @@ TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
   EXPECT_TRUE(helper_->GetTooltipWindow() == NULL);
 }
 
-// Disabled on linux as DesktopScreenX11::GetWindowAtScreenPoint() doesn't
+// Disabled on X11 as DesktopScreenX11::GetWindowAtScreenPoint() doesn't
 // consider z-order.
 // Disabled on Windows due to failing bots. http://crbug.com/604479
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_WIN)
+#if (defined(USE_X11) && !defined(OS_CHROMEOS)) || defined(OS_WIN)
 #define MAYBE_Capture DISABLED_Capture
 #else
 #define MAYBE_Capture Capture

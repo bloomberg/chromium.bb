@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   // but it might also be because the non-global shortcuts unexpectedly
   // worked.
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   host->RemoveObserver(&observer);
 #endif
 }

@@ -10,7 +10,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
@@ -32,7 +32,7 @@ void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry) {
 
 void RegisterBrowserViewProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-#if !defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
                                 ui::GetCustomFramePrefDefault());
 #endif
