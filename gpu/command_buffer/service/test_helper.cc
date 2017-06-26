@@ -923,6 +923,10 @@ void TestHelper::SetupProgramSuccessExpectations(
                               info.name, info.name + strlen(info.name) + 1)))
           .RetiresOnSaturation();
 
+      // Corresponds to early out in Program::UpdateUniforms
+      if (!info.size)
+        return;
+
       if (info.real_location != -1) {
         EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(info.name)))
             .WillOnce(Return(info.real_location))

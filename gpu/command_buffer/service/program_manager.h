@@ -488,7 +488,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // Updates the program info after a successful link.
   void Update();
-  void UpdateUniforms();
+  bool UpdateUniforms();
   void UpdateFragmentInputs();
   void UpdateProgramOutputs();
   void UpdateFragmentOutputBaseTypes();

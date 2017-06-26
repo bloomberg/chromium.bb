@@ -753,7 +753,8 @@ void Program::Update() {
     }
   }
 
-  UpdateUniforms();
+  if (!UpdateUniforms())
+    return;
 
   if (manager_->gpu_preferences_.enable_gpu_service_logging_gpu) {
     DVLOG(1) << "----: uniforms for service_id: " << service_id();
@@ -776,7 +777,7 @@ void Program::Update() {
   valid_ = true;
 }
 
-void Program::UpdateUniforms() {
+bool Program::UpdateUniforms() {
   // Reserve each client-bound uniform location. This way unbound uniforms will
   // not be allocated to locations that user expects bound uniforms to be, even
   // if the expected uniforms are optimized away by the driver.
@@ -792,7 +793,7 @@ void Program::UpdateUniforms() {
   GLint num_uniforms = 0;
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
   if (num_uniforms <= 0)
-    return;
+    return true;
 
   uniform_infos_.resize(num_uniforms);
 
@@ -810,6 +811,9 @@ void Program::UpdateUniforms() {
     GLenum type = GL_NONE;
     glGetActiveUniform(service_id_, uniform_index, name_buffer_length,
                        &name_length, &size, &type, name_buffer.get());
+    // Avoid immediately crashing if glGetActiveUniform misbehaves.
+    if (!size)
+      return false;
     DCHECK(name_length < name_buffer_length);
     DCHECK(name_length == 0 || name_buffer[name_length] == '\0');
     std::string service_name(name_buffer.get(), name_length);
@@ -949,6 +953,7 @@ void Program::UpdateUniforms() {
     max_uniform_name_length_ = std::max(max_uniform_name_length_,
                                         static_cast<GLsizei>(info.name.size()));
   }
+  return true;
 }
 
 void Program::UpdateFragmentInputs() {
