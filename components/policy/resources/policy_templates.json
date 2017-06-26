@@ -9638,22 +9638,22 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2 ],
+        'enum': [ 0, 1, 2, 3 ],
       },
       'items': [
         {
           'name': 'Disabled',
-          'value': 0,
+          'value': 1,
           'caption': '''Second factor disabled''',
         },
         {
           'name': 'U2F',
-          'value': 1,
+          'value': 2,
           'caption': '''U2F (Universal Second Factor)''',
         },
         {
           'name': 'U2F_EXTENDED',
-          'value': 2,
+          'value': 3,
           'caption': '''U2F plus extensions for individual attestation''',
         },
       ],
@@ -9662,13 +9662,13 @@
       'features': {
         'dynamic_refresh': False,
       },
-      'example_value': 1,
+      'example_value': 2,
       'id': 372,
       'caption': '''Integrated second factor authentication mode''',
       'tags': ['system-security'],
       'desc': '''Specifies how the on-board secure element hardware can be used to provide a second-factor authentication if it is compatible with this feature. The machine power button is used to detect the user physical presence.
 
-      If 'Disabled' is selected or the policy is left unset, no second factor is provided.
+      If 'Disabled' is selected, no second factor is provided.
 
       If 'U2F' is selected, the integrated second factor will behave according the FIDO U2F specification.
 
