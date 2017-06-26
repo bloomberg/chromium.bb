@@ -41,13 +41,15 @@ _TEST_APP_PACKAGE_NAME = 'org.chromium.customtabs.test'
 _INVALID_VALUE = -1
 
 
-def RunOnce(device, url, warmup, speculation_mode, delay_to_may_launch_url,
-            delay_to_launch_url, cold, chrome_args, reset_chrome_state):
+def RunOnce(device, url, speculated_url, warmup, speculation_mode,
+            delay_to_may_launch_url, delay_to_launch_url, cold, chrome_args,
+            reset_chrome_state):
   """Runs a test on a device once.
 
   Args:
     device: (DeviceUtils) device to run the tests on.
     url: (str) URL to load.
+    speculated_url: (str) Speculated URL.
     warmup: (bool) Whether to call warmup.
     speculation_mode: (str) Speculation Mode.
     delay_to_may_launch_url: (int) Delay to mayLaunchUrl() in ms.
@@ -77,7 +79,9 @@ def RunOnce(device, url, warmup, speculation_mode, delay_to_may_launch_url,
         action='android.intent.action.MAIN',
         package=_TEST_APP_PACKAGE_NAME,
         activity='org.chromium.customtabs.test.MainActivity',
-        extras={'url': str(url), 'warmup': warmup,
+        extras={'url': str(url),
+                'speculated_url': str(speculated_url),
+                'warmup': warmup,
                 'speculation_mode': str(speculation_mode),
                 'delay_to_may_launch_url': delay_to_may_launch_url,
                 'delay_to_launch_url': delay_to_launch_url,
@@ -167,8 +171,8 @@ def LoopOnDevice(device, configs, output_filename, wpr_archive_path=None,
               '--force-fieldtrial-params=trial.group:mode/external-prefetching',
               '--enable-features=SpeculativeResourcePrefetching<trial'])
 
-        result = RunOnce(device, config['url'], config['warmup'],
-                         config['speculation_mode'],
+        result = RunOnce(device, config['url'], config['speculated_url'],
+                         config['warmup'], config['speculation_mode'],
                          config['delay_to_may_launch_url'],
                          config['delay_to_launch_url'], config['cold'],
                          chrome_args, reset_chrome_state=True)
@@ -218,6 +222,8 @@ def _CreateOptionParser():
                                  'device, and outputs the navigation timings '
                                  'in a CSV file.')
   parser.add_option('--device', help='Device ID')
+  parser.add_option('--speculated_url',
+                    help='URL to call mayLaunchUrl() with.',)
   parser.add_option('--url', help='URL to navigate to.',
                     default='https://www.android.com')
   parser.add_option('--warmup', help='Call warmup.', default=False,
@@ -289,6 +295,7 @@ def main():
 
   config = {
       'url': options.url,
+      'speculated_url': options.speculated_url or options.url,
       'warmup': options.warmup,
       'speculation_mode': options.speculation_mode,
       'delay_to_may_launch_url': options.delay_to_may_launch_url,
