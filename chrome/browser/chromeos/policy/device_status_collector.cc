@@ -393,9 +393,9 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
   // async query, the query holds a reference to us, so the destructor is
   // not called.
   ~GetStatusState() {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(response_, base::Passed(&device_status_),
-                                      base::Passed(&session_status_)));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(response_, base::Passed(&device_status_),
+                                  base::Passed(&session_status_)));
   }
 
   void OnVolumeInfoReceived(const std::vector<em::VolumeInfo>& volume_info) {

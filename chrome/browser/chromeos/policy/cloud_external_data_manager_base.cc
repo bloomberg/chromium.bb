@@ -319,8 +319,8 @@ size_t CloudExternalDataManagerBase::Backend::GetMaxExternalDataSize(
 void CloudExternalDataManagerBase::Backend::RunCallback(
     const ExternalDataFetcher::FetchCallback& callback,
     std::unique_ptr<std::string> data) const {
-  callback_task_runner_->PostTask(FROM_HERE,
-                                  base::Bind(callback, base::Passed(&data)));
+  callback_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(callback, base::Passed(&data)));
 }
 
 void CloudExternalDataManagerBase::Backend::StartDownload(
@@ -362,10 +362,10 @@ CloudExternalDataManagerBase::~CloudExternalDataManagerBase() {
 void CloudExternalDataManagerBase::SetExternalDataStore(
     std::unique_ptr<CloudExternalDataStore> external_data_store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::SetExternalDataStore,
-      base::Unretained(backend_.get()),
-      base::Passed(&external_data_store)));
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Backend::SetExternalDataStore,
+                                base::Unretained(backend_.get()),
+                                base::Passed(&external_data_store)));
 }
 
 void CloudExternalDataManagerBase::SetPolicyStore(
@@ -404,10 +404,10 @@ void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
     }
   }
 
-  backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::OnMetadataUpdated,
-      base::Unretained(backend_.get()),
-      base::Passed(&metadata)));
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Backend::OnMetadataUpdated,
+                                base::Unretained(backend_.get()),
+                                base::Passed(&metadata)));
 }
 
 void CloudExternalDataManagerBase::Connect(
@@ -417,27 +417,31 @@ void CloudExternalDataManagerBase::Connect(
   external_policy_data_fetcher_backend_.reset(
       new ExternalPolicyDataFetcherBackend(io_task_runner_,
                                            request_context));
-  backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::Connect,
-      base::Unretained(backend_.get()),
-      base::Passed(external_policy_data_fetcher_backend_->CreateFrontend(
-          backend_task_runner_))));
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &Backend::Connect, base::Unretained(backend_.get()),
+          base::Passed(external_policy_data_fetcher_backend_->CreateFrontend(
+              backend_task_runner_))));
 }
 
 void CloudExternalDataManagerBase::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   io_task_runner_->DeleteSoon(FROM_HERE,
                               external_policy_data_fetcher_backend_.release());
-  backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::Disconnect, base::Unretained(backend_.get())));
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Backend::Disconnect, base::Unretained(backend_.get())));
 }
 
 void CloudExternalDataManagerBase::Fetch(
     const std::string& policy,
     const ExternalDataFetcher::FetchCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::Fetch, base::Unretained(backend_.get()), policy, callback));
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Backend::Fetch, base::Unretained(backend_.get()), policy,
+                     callback));
 }
 
 // static
@@ -448,8 +452,9 @@ void CloudExternalDataManagerBase::SetMaxExternalDataSizeForTesting(
 
 void CloudExternalDataManagerBase::FetchAll() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::FetchAll, base::Unretained(backend_.get())));
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Backend::FetchAll, base::Unretained(backend_.get())));
 }
 
 }  // namespace policy

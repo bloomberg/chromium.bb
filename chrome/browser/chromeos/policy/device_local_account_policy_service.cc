@@ -391,12 +391,10 @@ void DeviceLocalAccountPolicyService::OnObsoleteExtensionCacheShutdown(
   // be removed. The directory must stay marked as busy while the removal is in
   // progress.
   extension_cache_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&DeleteObsoleteExtensionCache, account_id),
-      base::Bind(&DeviceLocalAccountPolicyService::
-                     OnObsoleteExtensionCacheDeleted,
-                 weak_factory_.GetWeakPtr(),
-                 account_id));
+      FROM_HERE, base::BindOnce(&DeleteObsoleteExtensionCache, account_id),
+      base::BindOnce(
+          &DeviceLocalAccountPolicyService::OnObsoleteExtensionCacheDeleted,
+          weak_factory_.GetWeakPtr(), account_id));
 }
 
 void DeviceLocalAccountPolicyService::OnObsoleteExtensionCacheDeleted(
@@ -509,9 +507,9 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
                            &cache_root_dir));
     extension_cache_task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(
-            &DeleteOrphanedCaches, cache_root_dir, subdirectories_to_keep),
-        base::Bind(
+        base::BindOnce(&DeleteOrphanedCaches, cache_root_dir,
+                       subdirectories_to_keep),
+        base::BindOnce(
             &DeviceLocalAccountPolicyService::OnOrphanedExtensionCachesDeleted,
             weak_factory_.GetWeakPtr()));
 
@@ -536,10 +534,10 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
   // TODO(joaodasilva): for now this must be posted to the FILE thread,
   // to avoid racing with the ComponentCloudPolicyStore. Use a task runner
   // once that class supports another background thread too.
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-                                   base::Bind(&DeleteOrphanedCaches,
-                                              component_policy_cache_root_,
-                                              subdirectories_to_keep));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&DeleteOrphanedCaches, component_policy_cache_root_,
+                     subdirectories_to_keep));
 
   for (auto& observer : observers_)
     observer.OnDeviceLocalAccountsChanged();

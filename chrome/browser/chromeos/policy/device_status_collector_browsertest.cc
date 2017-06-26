@@ -245,8 +245,8 @@ bool GetFakeAndroidStatus(
     const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CallAndroidStatusReceiver, receiver,
-          status, droid_guard_info));
+      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, status,
+                                droid_guard_info));
   return true;
 }
 
@@ -254,7 +254,7 @@ bool GetEmptyAndroidStatus(
     const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CallAndroidStatusReceiver, receiver, "", ""));
+      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, "", ""));
   return true;
 }
 

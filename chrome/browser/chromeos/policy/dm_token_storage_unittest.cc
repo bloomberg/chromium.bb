@@ -67,8 +67,8 @@ class DMTokenStorageTest : public testing::Test {
     base::RunLoop run_loop;
     dm_token_storage_->StoreDMToken(
         "test-token",
-        base::Bind(&DMTokenStorageTest::OnStoreCallback, base::Unretained(this),
-                   run_loop.QuitClosure(), true));
+        base::BindOnce(&DMTokenStorageTest::OnStoreCallback,
+                       base::Unretained(this), run_loop.QuitClosure(), true));
     run_loop.Run();
   }
 
@@ -100,7 +100,7 @@ TEST_F(DMTokenStorageTest, SaveEncryptedToken) {
 
   {
     base::RunLoop run_loop;
-    dm_token_storage_->RetrieveDMToken(base::Bind(
+    dm_token_storage_->RetrieveDMToken(base::BindOnce(
         &DMTokenStorageTest::OnRetrieveCallback, base::Unretained(this),
         run_loop.QuitClosure(), "test-token"));
     run_loop.Run();
@@ -109,7 +109,7 @@ TEST_F(DMTokenStorageTest, SaveEncryptedToken) {
   CreateDMStorage();
   {
     base::RunLoop run_loop;
-    dm_token_storage_->RetrieveDMToken(base::Bind(
+    dm_token_storage_->RetrieveDMToken(base::BindOnce(
         &DMTokenStorageTest::OnRetrieveCallback, base::Unretained(this),
         run_loop.QuitClosure(), "test-token"));
     run_loop.Run();
@@ -117,7 +117,7 @@ TEST_F(DMTokenStorageTest, SaveEncryptedToken) {
   {
     // Subsequent retrieving DM token should succeed.
     base::RunLoop run_loop;
-    dm_token_storage_->RetrieveDMToken(base::Bind(
+    dm_token_storage_->RetrieveDMToken(base::BindOnce(
         &DMTokenStorageTest::OnRetrieveCallback, base::Unretained(this),
         run_loop.QuitClosure(), "test-token"));
     run_loop.Run();
@@ -133,7 +133,7 @@ TEST_F(DMTokenStorageTest, RetrieveEncryptedTokenWithPendingSalt) {
 
   {
     base::RunLoop run_loop;
-    dm_token_storage_->RetrieveDMToken(base::Bind(
+    dm_token_storage_->RetrieveDMToken(base::BindOnce(
         &DMTokenStorageTest::OnRetrieveCallback, base::Unretained(this),
         run_loop.QuitClosure(), "test-token"));
     SetSaltAvailable();
@@ -147,8 +147,8 @@ TEST_F(DMTokenStorageTest, StoreEncryptedTokenWithPendingSalt) {
   base::RunLoop run_loop;
   dm_token_storage_->StoreDMToken(
       "test-token",
-      base::Bind(&DMTokenStorageTest::OnStoreCallback, base::Unretained(this),
-                 run_loop.QuitClosure(), true));
+      base::BindOnce(&DMTokenStorageTest::OnStoreCallback,
+                     base::Unretained(this), run_loop.QuitClosure(), true));
   SetSaltAvailable();
   run_loop.Run();
 }
@@ -159,7 +159,7 @@ TEST_F(DMTokenStorageTest, MultipleRetrieveTokenCalls) {
   {
     base::RunLoop run_loop;
     for (int i = 0; i < 3; ++i) {
-      dm_token_storage_->RetrieveDMToken(base::Bind(
+      dm_token_storage_->RetrieveDMToken(base::BindOnce(
           &DMTokenStorageTest::OnRetrieveCallback, base::Unretained(this),
           run_loop.QuitClosure(), "test-token"));
     }
@@ -173,8 +173,8 @@ TEST_F(DMTokenStorageTest, StoreWithSaltError) {
   base::RunLoop run_loop;
   dm_token_storage_->StoreDMToken(
       "test-token",
-      base::Bind(&DMTokenStorageTest::OnStoreCallback, base::Unretained(this),
-                 run_loop.QuitClosure(), false));
+      base::BindOnce(&DMTokenStorageTest::OnStoreCallback,
+                     base::Unretained(this), run_loop.QuitClosure(), false));
   run_loop.Run();
 }
 
@@ -185,8 +185,8 @@ TEST_F(DMTokenStorageTest, RetrieveWithSaltError) {
   CreateDMStorage();
   base::RunLoop run_loop;
   dm_token_storage_->RetrieveDMToken(
-      base::Bind(&DMTokenStorageTest::OnRetrieveCallback,
-                 base::Unretained(this), run_loop.QuitClosure(), ""));
+      base::BindOnce(&DMTokenStorageTest::OnRetrieveCallback,
+                     base::Unretained(this), run_loop.QuitClosure(), ""));
   SetSaltError();
   run_loop.Run();
 }
@@ -195,8 +195,8 @@ TEST_F(DMTokenStorageTest, RetrieveWithNoToken) {
   CreateDMStorage();
   base::RunLoop run_loop;
   dm_token_storage_->RetrieveDMToken(
-      base::Bind(&DMTokenStorageTest::OnRetrieveCallback,
-                 base::Unretained(this), run_loop.QuitClosure(), ""));
+      base::BindOnce(&DMTokenStorageTest::OnRetrieveCallback,
+                     base::Unretained(this), run_loop.QuitClosure(), ""));
   run_loop.Run();
 }
 
@@ -206,11 +206,11 @@ TEST_F(DMTokenStorageTest, RetrieveFailIfStoreRunning) {
   base::RunLoop run_loop;
   dm_token_storage_->StoreDMToken(
       "test-token",
-      base::Bind(&DMTokenStorageTest::OnStoreCallback, base::Unretained(this),
-                 run_loop.QuitClosure(), true));
+      base::BindOnce(&DMTokenStorageTest::OnStoreCallback,
+                     base::Unretained(this), run_loop.QuitClosure(), true));
   dm_token_storage_->RetrieveDMToken(
-      base::Bind(&DMTokenStorageTest::OnRetrieveCallback,
-                 base::Unretained(this), base::Closure(), ""));
+      base::BindOnce(&DMTokenStorageTest::OnRetrieveCallback,
+                     base::Unretained(this), base::Closure(), ""));
   SetSaltAvailable();
   run_loop.Run();
 }
@@ -221,11 +221,12 @@ TEST_F(DMTokenStorageTest, StoreFailIfAnotherStoreRunning) {
   base::RunLoop run_loop;
   dm_token_storage_->StoreDMToken(
       "test-token",
-      base::Bind(&DMTokenStorageTest::OnStoreCallback, base::Unretained(this),
-                 run_loop.QuitClosure(), true));
+      base::BindOnce(&DMTokenStorageTest::OnStoreCallback,
+                     base::Unretained(this), run_loop.QuitClosure(), true));
   dm_token_storage_->StoreDMToken(
-      "test-token", base::Bind(&DMTokenStorageTest::OnStoreCallback,
-                               base::Unretained(this), base::Closure(), false));
+      "test-token",
+      base::BindOnce(&DMTokenStorageTest::OnStoreCallback,
+                     base::Unretained(this), base::Closure(), false));
   SetSaltAvailable();
   run_loop.Run();
 }

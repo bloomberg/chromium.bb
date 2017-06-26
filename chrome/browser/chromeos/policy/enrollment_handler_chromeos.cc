@@ -539,8 +539,9 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
         LOG(WARNING) << "Install Attributes not ready yet will retry in "
                      << kLockRetryIntervalMs << "ms.";
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE, base::Bind(&EnrollmentHandlerChromeOS::StartLockDevice,
-                                  weak_ptr_factory_.GetWeakPtr()),
+            FROM_HERE,
+            base::BindOnce(&EnrollmentHandlerChromeOS::StartLockDevice,
+                           weak_ptr_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
         lockbox_init_duration_ += kLockRetryIntervalMs;
       } else {
@@ -567,8 +568,8 @@ void EnrollmentHandlerChromeOS::StartStoreDMToken() {
       g_browser_process->local_state());
   dm_token_storage_->StoreDMToken(
       client_->dm_token(),
-      base::Bind(&EnrollmentHandlerChromeOS::HandleDMTokenStoreResult,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnrollmentHandlerChromeOS::HandleDMTokenStoreResult,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentHandlerChromeOS::StartStoreRobotAuth() {
@@ -605,7 +606,7 @@ void EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult(bool result) {
         install_attributes_->GetMode());
     chromeos::DBusThreadManager::Get()
         ->GetAuthPolicyClient()
-        ->RefreshDevicePolicy(base::Bind(
+        ->RefreshDevicePolicy(base::BindOnce(
             &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,
             weak_ptr_factory_.GetWeakPtr()));
   } else {

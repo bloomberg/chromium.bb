@@ -62,7 +62,7 @@ void RunStoreScreenshotOnTaskRunner(
     scoped_refptr<base::TaskRunner> task_runner,
     scoped_refptr<base::RefCountedMemory> png_data) {
   task_runner->PostTask(FROM_HERE,
-                        base::Bind(store_screenshot_callback, png_data));
+                        base::BindOnce(store_screenshot_callback, png_data));
 }
 
 }  // namespace
@@ -112,8 +112,9 @@ enterprise_management::RemoteCommand_Type DeviceCommandScreenshotJob::GetType()
 void DeviceCommandScreenshotJob::OnSuccess() {
   SYSLOG(INFO) << "Upload successful.";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(succeeded_callback_,
-                            base::Passed(base::MakeUnique<Payload>(SUCCESS))));
+      FROM_HERE,
+      base::BindOnce(succeeded_callback_,
+                     base::Passed(base::MakeUnique<Payload>(SUCCESS))));
 }
 
 void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
@@ -130,8 +131,8 @@ void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(failed_callback_,
-                 base::Passed(base::MakeUnique<Payload>(result_code))));
+      base::BindOnce(failed_callback_,
+                     base::Passed(base::MakeUnique<Payload>(result_code))));
 }
 
 bool DeviceCommandScreenshotJob::IsExpired(base::TimeTicks now) {
@@ -199,8 +200,8 @@ void DeviceCommandScreenshotJob::RunImpl(
     SYSLOG(ERROR) << "Screenshots are not allowed.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(failed_callback_, base::Passed(base::MakeUnique<Payload>(
-                                         FAILURE_USER_INPUT))));
+        base::BindOnce(failed_callback_, base::Passed(base::MakeUnique<Payload>(
+                                             FAILURE_USER_INPUT))));
   }
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
@@ -210,8 +211,8 @@ void DeviceCommandScreenshotJob::RunImpl(
     SYSLOG(ERROR) << upload_url_ << " is not a valid URL.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(failed_callback_, base::Passed(base::MakeUnique<Payload>(
-                                         FAILURE_INVALID_URL))));
+        base::BindOnce(failed_callback_, base::Passed(base::MakeUnique<Payload>(
+                                             FAILURE_INVALID_URL))));
     return;
   }
 
@@ -220,8 +221,8 @@ void DeviceCommandScreenshotJob::RunImpl(
     SYSLOG(ERROR) << "No attached screens.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(failed_callback_, base::Passed(base::MakeUnique<Payload>(
-                                         FAILURE_SCREENSHOT_ACQUISITION))));
+        base::BindOnce(failed_callback_, base::Passed(base::MakeUnique<Payload>(
+                                             FAILURE_SCREENSHOT_ACQUISITION))));
     return;
   }
 
