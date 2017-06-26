@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/testing/wait_util.h"
+#include "ios/web/grit/ios_web_resources.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
@@ -98,8 +99,8 @@ class TestUI : public WebUIIOSController {
         web::WebUIIOSDataSource::Create(kTestWebUIURLHost);
 
     source->AddResourcePath("mojo_test.js", IDR_MOJO_TEST_JS);
-    source->AddResourcePath("ios/web/test/mojo_test.mojom",
-                            IDR_MOJO_TEST_MOJO_JS);
+    source->AddResourcePath("mojo_bindings.js", IDR_IOS_MOJO_BINDINGS_JS);
+    source->AddResourcePath("mojo_test.mojom.js", IDR_MOJO_TEST_MOJO_JS);
     source->SetDefaultResource(IDR_MOJO_TEST_HTML);
 
     web::WebState* web_state = web_ui->GetWebState();

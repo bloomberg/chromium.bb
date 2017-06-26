@@ -34,8 +34,7 @@ namespace {
 // Wraps an integer into |base::Value| as |Type::INTEGER|.
 template <typename IntegerT>
 std::unique_ptr<base::Value> ValueFromInteger(IntegerT handle) {
-  return std::unique_ptr<base::Value>(
-      new base::Value(static_cast<int>(handle)));
+  return base::MakeUnique<base::Value>(static_cast<int>(handle));
 }
 
 }  // namespace
@@ -62,20 +61,20 @@ std::string MojoFacade::HandleMojoMessage(
   GetMessageNameAndArguments(mojo_message_as_json, &name, &args);
 
   std::unique_ptr<base::Value> result;
-  if (name == "interface_provider.getInterface") {
-    result = HandleInterfaceProviderGetInterface(args.get());
-  } else if (name == "core.close") {
-    result = HandleCoreClose(args.get());
-  } else if (name == "core.createMessagePipe") {
-    result = HandleCoreCreateMessagePipe(args.get());
-  } else if (name == "core.writeMessage") {
-    result = HandleCoreWriteMessage(args.get());
-  } else if (name == "core.readMessage") {
-    result = HandleCoreReadMessage(args.get());
-  } else if (name == "support.watch") {
-    result = HandleSupportWatch(args.get());
-  } else if (name == "support.cancelWatch") {
-    result = HandleSupportCancelWatch(args.get());
+  if (name == "Mojo.bindInterface") {
+    result = HandleMojoBindInterface(args.get());
+  } else if (name == "MojoHandle.close") {
+    result = HandleMojoHandleClose(args.get());
+  } else if (name == "Mojo.createMessagePipe") {
+    result = HandleMojoCreateMessagePipe(args.get());
+  } else if (name == "MojoHandle.writeMessage") {
+    result = HandleMojoHandleWriteMessage(args.get());
+  } else if (name == "MojoHandle.readMessage") {
+    result = HandleMojoHandleReadMessage(args.get());
+  } else if (name == "MojoHandle.watch") {
+    result = HandleMojoHandleWatch(args.get());
+  } else if (name == "MojoWatcher.cancel") {
+    result = HandleMojoWatcherCancel(args.get());
   }
 
   if (!result) {
@@ -110,55 +109,49 @@ void MojoFacade::GetMessageNameAndArguments(
   *out_args = args->CreateDeepCopy();
 }
 
-std::unique_ptr<base::Value> MojoFacade::HandleInterfaceProviderGetInterface(
+std::unique_ptr<base::Value> MojoFacade::HandleMojoBindInterface(
     const base::DictionaryValue* args) {
   const base::Value* interface_name_as_value = nullptr;
   CHECK(args->Get("interfaceName", &interface_name_as_value));
+  int raw_handle = 0;
+  CHECK(args->GetInteger("requestHandle", &raw_handle));
+
+  mojo::ScopedMessagePipeHandle handle(
+      static_cast<mojo::MessagePipeHandle>(raw_handle));
 
   // By design interface_provider.getInterface either succeeds or crashes, so
   // check if interface name is a valid string is intentionally omitted.
   std::string interface_name_as_string;
   interface_name_as_value->GetAsString(&interface_name_as_string);
 
-  mojo::MessagePipe pipe;
   interface_provider_->GetInterface(interface_name_as_string,
-                                    std::move(pipe.handle0));
-
-  return ValueFromInteger(pipe.handle1.release().value());
+                                    std::move(handle));
+  return nullptr;
 }
 
-std::unique_ptr<base::Value> MojoFacade::HandleCoreClose(
+std::unique_ptr<base::Value> MojoFacade::HandleMojoHandleClose(
     const base::DictionaryValue* args) {
   int handle = 0;
   CHECK(args->GetInteger("handle", &handle));
 
   mojo::Handle(handle).Close();
-
-  return ValueFromInteger(MOJO_RESULT_OK);
+  return nullptr;
 }
 
-std::unique_ptr<base::Value> MojoFacade::HandleCoreCreateMessagePipe(
+std::unique_ptr<base::Value> MojoFacade::HandleMojoCreateMessagePipe(
     base::DictionaryValue* args) {
-  const base::Value* options_as_value = nullptr;
-  CHECK(args->Get("optionsDict", &options_as_value));
-
-  if (options_as_value->IsType(base::Value::Type::DICTIONARY)) {
-    // There are no options defined for CreateMessagePipe yet.
-    const base::DictionaryValue* options_as_dict;
-    options_as_value->GetAsDictionary(&options_as_dict);
-    CHECK(options_as_dict->empty());
+  mojo::ScopedMessagePipeHandle handle0, handle1;
+  MojoResult mojo_result = mojo::CreateMessagePipe(nullptr, &handle0, &handle1);
+  auto result = base::MakeUnique<base::DictionaryValue>();
+  result->SetInteger("result", mojo_result);
+  if (mojo_result == MOJO_RESULT_OK) {
+    result->SetInteger("handle0", handle0.release().value());
+    result->SetInteger("handle1", handle1.release().value());
   }
-
-  CHECK(options_as_value->IsType(base::Value::Type::NONE));
-
-  mojo::MessagePipe message_pipe;
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-  result->SetInteger("handle0", message_pipe.handle0.release().value());
-  result->SetInteger("handle1", message_pipe.handle1.release().value());
   return std::unique_ptr<base::Value>(result.release());
 }
 
-std::unique_ptr<base::Value> MojoFacade::HandleCoreWriteMessage(
+std::unique_ptr<base::Value> MojoFacade::HandleMojoHandleWriteMessage(
     base::DictionaryValue* args) {
   int handle = 0;
   CHECK(args->GetInteger("handle", &handle));
@@ -169,13 +162,7 @@ std::unique_ptr<base::Value> MojoFacade::HandleCoreWriteMessage(
   base::DictionaryValue* buffer = nullptr;
   CHECK(args->GetDictionary("buffer", &buffer));
 
-  const base::Value* flags_as_value = nullptr;
-  CHECK(args->Get("flags", &flags_as_value));
-
   int flags = MOJO_WRITE_MESSAGE_FLAG_NONE;
-  if (!flags_as_value->GetAsInteger(&flags)) {
-    flags = MOJO_WRITE_MESSAGE_FLAG_NONE;
-  }
 
   std::vector<MojoHandle> handles(handles_list->GetSize());
   for (size_t i = 0; i < handles_list->GetSize(); i++) {
@@ -199,7 +186,7 @@ std::unique_ptr<base::Value> MojoFacade::HandleCoreWriteMessage(
   return ValueFromInteger(result);
 }
 
-std::unique_ptr<base::Value> MojoFacade::HandleCoreReadMessage(
+std::unique_ptr<base::Value> MojoFacade::HandleMojoHandleReadMessage(
     const base::DictionaryValue* args) {
   const base::Value* handle_as_value = nullptr;
   CHECK(args->Get("handle", &handle_as_value));
@@ -208,39 +195,33 @@ std::unique_ptr<base::Value> MojoFacade::HandleCoreReadMessage(
     handle_as_int = 0;
   }
 
-  const base::Value* flags_as_value = nullptr;
-  CHECK(args->Get("flags", &flags_as_value));
-
   int flags = MOJO_READ_MESSAGE_FLAG_NONE;
-  if (!flags_as_value->GetAsInteger(&flags)) {
-    flags = MOJO_READ_MESSAGE_FLAG_NONE;
-  }
 
   std::vector<uint8_t> bytes;
   std::vector<mojo::ScopedHandle> handles;
   mojo::MessagePipeHandle handle(static_cast<MojoHandle>(handle_as_int));
   MojoResult mojo_result =
       mojo::ReadMessageRaw(handle, &bytes, &handles, flags);
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  auto result = base::MakeUnique<base::DictionaryValue>();
   if (mojo_result == MOJO_RESULT_OK) {
-    base::ListValue* handles_list = new base::ListValue;
+    auto handles_list = base::MakeUnique<base::ListValue>();
     for (uint32_t i = 0; i < handles.size(); i++) {
       handles_list->AppendInteger(handles[i].release().value());
     }
-    result->Set("handles", std::unique_ptr<base::Value>(handles_list));
+    result->Set("handles", std::move(handles_list));
 
-    base::ListValue* buffer = new base::ListValue;
+    auto buffer = base::MakeUnique<base::ListValue>();
     for (uint32_t i = 0; i < bytes.size(); i++) {
       buffer->AppendInteger(bytes[i]);
     }
-    result->Set("buffer", std::unique_ptr<base::Value>(buffer));
+    result->Set("buffer", std::move(buffer));
   }
   result->SetInteger("result", mojo_result);
 
   return std::unique_ptr<base::Value>(result.release());
 }
 
-std::unique_ptr<base::Value> MojoFacade::HandleSupportWatch(
+std::unique_ptr<base::Value> MojoFacade::HandleMojoHandleWatch(
     const base::DictionaryValue* args) {
   int handle = 0;
   CHECK(args->GetInteger("handle", &handle));
@@ -249,21 +230,22 @@ std::unique_ptr<base::Value> MojoFacade::HandleSupportWatch(
   int callback_id;
   CHECK(args->GetInteger("callbackId", &callback_id));
 
-  mojo::SimpleWatcher::ReadyCallback callback = base::BindBlockArc(^(
-      MojoResult result) {
-    NSString* script =
-        [NSString stringWithFormat:@"__crWeb.mojo.signalWatch(%d, %d)",
-                                   callback_id, result];
-    [script_evaluator_ executeJavaScript:script completionHandler:nil];
-  });
-  mojo::SimpleWatcher* watcher = new mojo::SimpleWatcher(
+  mojo::SimpleWatcher::ReadyCallback callback =
+      base::BindBlockArc(^(MojoResult result) {
+        NSString* script = [NSString
+            stringWithFormat:
+                @"Mojo.internal.watchCallbacksHolder.callCallback(%d, %d)",
+                callback_id, result];
+        [script_evaluator_ executeJavaScript:script completionHandler:nil];
+      });
+  auto watcher = base::MakeUnique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
-  watchers_.insert(std::make_pair(++last_watch_id_, base::WrapUnique(watcher)));
   watcher->Watch(static_cast<mojo::Handle>(handle), signals, callback);
+  watchers_.insert(std::make_pair(++last_watch_id_, std::move(watcher)));
   return ValueFromInteger(last_watch_id_);
 }
 
-std::unique_ptr<base::Value> MojoFacade::HandleSupportCancelWatch(
+std::unique_ptr<base::Value> MojoFacade::HandleMojoWatcherCancel(
     const base::DictionaryValue* args) {
   int watch_id = 0;
   CHECK(args->GetInteger("watchId", &watch_id));
