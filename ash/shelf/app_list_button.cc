@@ -43,6 +43,9 @@
 
 namespace ash {
 
+constexpr uint8_t kVoiceInteractionRunningAlpha = 255;     // 100% alpha
+constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
+
 AppListButton::AppListButton(InkDropButtonListener* listener,
                              ShelfView* shelf_view,
                              Shelf* shelf)
@@ -245,6 +248,13 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     fg_flags.setAntiAlias(true);
     fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
     fg_flags.setColor(kShelfIconColor);
+
+    if (chromeos::switches::IsVoiceInteractionEnabled())
+      // active: 100% alpha, inactive: 54% alpha
+      fg_flags.setAlpha(voice_interaction_running_
+                            ? kVoiceInteractionRunningAlpha
+                            : kVoiceInteractionNotRunningAlpha);
+
     const float thickness = std::ceil(ring_thickness_dp * dsf);
     const float radius = std::ceil(ring_outer_radius_dp * dsf) - thickness / 2;
     fg_flags.setStrokeWidth(thickness);
@@ -252,6 +262,7 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     canvas->DrawCircle(circle_center, radius, fg_flags);
 
     if (chromeos::switches::IsVoiceInteractionEnabled()) {
+      fg_flags.setAlpha(255);
       const float kCircleRadiusDp = 5.f;
       fg_flags.setStyle(cc::PaintFlags::kFill_Style);
       canvas->DrawCircle(circle_center, std::ceil(kCircleRadiusDp * dsf),
@@ -289,6 +300,11 @@ void AppListButton::OnAppListVisibilityChanged(bool shown,
     OnAppListShown();
   else
     OnAppListDismissed();
+}
+
+void AppListButton::OnVoiceInteractionStatusChanged(bool running) {
+  voice_interaction_running_ = running;
+  SchedulePaint();
 }
 
 }  // namespace ash

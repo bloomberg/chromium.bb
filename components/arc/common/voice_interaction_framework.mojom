@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 6
+// Next MinVersion: 7
 
 module arc.mojom;
 
 import "screen_rect.mojom";
 
 // Handles voice interaction queries from Android.
-// Next method ID: 4
+// Next method ID: 5
 interface VoiceInteractionFrameworkHost {
   // Returns a screenshot of currently focused window or empty array if
   // no window is focused. |data| represents the image encoded in JPEG
@@ -25,6 +25,9 @@ interface VoiceInteractionFrameworkHost {
 
   // Enables/disables screenshot taking.
   [MinVersion=3]SetMetalayerEnabled@3(bool enabled);
+
+  // Notifies Chrome whether voice interaction session is running.
+  [MinVersion=6]SetVoiceInteractionRunning@4(bool running);
 };
 
 // Connects with Android system server.

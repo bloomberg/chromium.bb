@@ -54,6 +54,7 @@ class ArcVoiceInteractionFrameworkService
   void CaptureFullscreen(const CaptureFullscreenCallback& callback) override;
   void OnMetalayerClosed() override;
   void SetMetalayerEnabled(bool enabled) override;
+  void SetVoiceInteractionRunning(bool running) override;
 
   bool IsMetalayerSupported();
   void ShowMetalayer(const base::Closure& closed);

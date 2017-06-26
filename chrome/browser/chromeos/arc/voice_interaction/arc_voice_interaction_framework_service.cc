@@ -273,6 +273,11 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
                  base::Passed(std::move(old_layer_owner))));
 }
 
+void ArcVoiceInteractionFrameworkService::SetVoiceInteractionRunning(
+    bool running) {
+  ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(running);
+}
+
 void ArcVoiceInteractionFrameworkService::OnMetalayerClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CallAndResetMetalayerCallback();

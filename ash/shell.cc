@@ -566,10 +566,15 @@ void Shell::SetIsBrowserProcessWithMash() {
   g_is_browser_process_with_mash = true;
 }
 
-void Shell::OnAppListVisibilityChanged(bool visible,
-                                       aura::Window* root_window) {
+void Shell::NotifyAppListVisibilityChanged(bool visible,
+                                           aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnAppListVisibilityChanged(visible, root_window);
+}
+
+void Shell::NotifyVoiceInteractionStatusChanged(bool running) {
+  for (auto& observer : shell_observers_)
+    observer.OnVoiceInteractionStatusChanged(running);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
