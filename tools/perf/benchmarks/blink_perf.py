@@ -399,7 +399,25 @@ class BlinkPerfSVG(_BlinkPerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.DisableStory('Debian.html', [story.expectations.ANDROID_NEXUS5X],
+                          'crbug.com/736817')
+        self.DisableStory('FlowerFromMyGarden.html',
+                          [story.expectations.ANDROID_NEXUS5X],
+                          'crbug.com/736817')
+        self.DisableStory('HarveyRayner.html',
+                          [story.expectations.ANDROID_NEXUS5X],
+                          'crbug.com/736817')
+        self.DisableStory('SvgCubics.html',
+                          [story.expectations.ANDROID_NEXUS5X],
+                          'crbug.com/736817')
+        self.DisableStory('SvgNestedUse.html',
+                          [story.expectations.ANDROID_NEXUS5X],
+                          'crbug.com/736817')
+        self.DisableStory('Worldcup.html', [story.expectations.ANDROID_NEXUS5X],
+                          'crbug.com/736817')
+        self.DisableStory('CrawFishGanson.html',
+                          [story.expectations.ANDROID_NEXUS5X],
+                          'crbug.com/736817')
     return StoryExpectations()
 
 
