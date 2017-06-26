@@ -61,8 +61,9 @@ bool CloudPrintConnector::InitPrintSystem() {
 
 void CloudPrintConnector::ScheduleStatsReport() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&CloudPrintConnector::ReportStats,
-                            stats_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&CloudPrintConnector::ReportStats,
+                     stats_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromHours(1));
 }
 
@@ -494,7 +495,8 @@ void CloudPrintConnector::AddPendingTask(const PendingTask& task) {
   // If this is the only pending task, we need to start the process.
   if (pending_tasks_.size() == 1) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
+        FROM_HERE,
+        base::BindOnce(&CloudPrintConnector::ProcessPendingTask, this));
   }
 }
 
@@ -532,7 +534,8 @@ void CloudPrintConnector::ContinuePendingTaskProcessing() {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
+      FROM_HERE,
+      base::BindOnce(&CloudPrintConnector::ProcessPendingTask, this));
 }
 
 void CloudPrintConnector::OnPrintersAvailable() {

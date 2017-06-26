@@ -107,7 +107,7 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
     bool succeeded) {
   if (IsTerminalJobState(last_job_details_.status)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&JobStatusUpdater::Stop, this));
+        FROM_HERE, base::BindOnce(&JobStatusUpdater::Stop, this));
   }
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
