@@ -68,7 +68,6 @@ struct RawOSMemDump {
 // This struct is used for internal communication between the memory
 // service (Coordinator) and the client library (ClientProcessImpl).
 struct RawProcessMemoryDump {
-  ProcessType process_type;
   RawOSMemDump os_dump;
   ChromeMemDump chrome_dump;
 
@@ -118,7 +117,7 @@ interface ClientProcess {
 // processes and polls them whenever a global dump is required.
 interface Coordinator {
   // Registers a client process.
-  RegisterClientProcess(ClientProcess client_process);
+  RegisterClientProcess(ClientProcess client_process, ProcessType process_type);
 
   // Broadcasts a dump request to all registered client processes, injects the
   // dump in the trace buffer (if tracing is enabled) and returns a summarized

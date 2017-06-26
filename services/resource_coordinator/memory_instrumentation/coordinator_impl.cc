@@ -96,6 +96,17 @@ CoordinatorImpl::~CoordinatorImpl() {
   g_coordinator_impl = nullptr;
 }
 
+base::ProcessId CoordinatorImpl::GetProcessIdForClientIdentity(
+    service_manager::Identity identity) const {
+  // TODO(primiano): the browser process registers bypassing mojo and ends up
+  // with an invalid identity. Fix that (crbug.com/733165) and remove the
+  // special case in the else branch below.
+  if (!identity.IsValid()) {
+    return base::GetCurrentProcId();
+  }
+  return process_map_->GetProcessId(identity);
+}
+
 service_manager::Identity CoordinatorImpl::GetClientIdentityForCurrentRequest()
     const {
   return bindings_.dispatch_context();
@@ -154,14 +165,16 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
 }
 
 void CoordinatorImpl::RegisterClientProcess(
-    mojom::ClientProcessPtr client_process_ptr) {
+    mojom::ClientProcessPtr client_process_ptr,
+    mojom::ProcessType process_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   mojom::ClientProcess* client_process = client_process_ptr.get();
   client_process_ptr.set_connection_error_handler(
       base::Bind(&CoordinatorImpl::UnregisterClientProcess,
                  base::Unretained(this), client_process));
-  auto client_info = base::MakeUnique<ClientInfo>(
-      GetClientIdentityForCurrentRequest(), std::move(client_process_ptr));
+  auto client_info =
+      base::MakeUnique<ClientInfo>(GetClientIdentityForCurrentRequest(),
+                                   std::move(client_process_ptr), process_type);
   auto iterator_and_inserted =
       clients_.emplace(client_process, std::move(client_info));
   DCHECK(iterator_and_inserted.second);
@@ -231,20 +244,15 @@ void CoordinatorImpl::OnProcessMemoryDumpResponse(
 
   if (process_memory_dump) {
     const service_manager::Identity& client_identity = iter->second->identity;
-    base::ProcessId pid = base::kNullProcessId;
+    const mojom::ProcessType& process_type = iter->second->process_type;
+    const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
 
-    // TODO(primiano): the browser process registers bypassing mojo and ends up
-    // with an invalid identity. Fix that (crbug.com/733165) and remove the
-    // special case in the else branch below.
-    if (client_identity.IsValid()) {
-      pid = process_map_->GetProcessId(client_identity);
-    } else {
-      pid = base::GetCurrentProcId();
-    }
+    auto response = base::MakeUnique<QueuedMemoryDumpRequest::Response>(
+        process_type, std::move(process_memory_dump));
 
     if (pid != base::kNullProcessId) {
-      queued_memory_dump_requests_.front().process_memory_dumps.push_back(
-          std::make_pair(pid, std::move(process_memory_dump)));
+      queued_memory_dump_requests_.front().responses.push_back(
+          std::make_pair(pid, std::move(response)));
     } else {
       VLOG(1) << "Couldn't find a PID for client \"" << client_identity.name()
               << "." << client_identity.instance() << "\"";
@@ -276,9 +284,9 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   // opening /proc pseudo files.
 
   std::map<base::ProcessId, OSMemDump> os_dumps;
-  for (auto& result : request->process_memory_dumps) {
-    const base::ProcessId pid = result.first;
-    const OSMemDump dump = result.second->os_dump;
+  for (auto& response : request->responses) {
+    const base::ProcessId pid = response.first;
+    const OSMemDump dump = response.second->dump_ptr->os_dump;
 
     // TODO(hjd): We should have a better way to tell if os_dump is filled.
     if (dump.resident_set_kb > 0) {
@@ -286,7 +294,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
       os_dumps[pid] = dump;
     }
 
-    for (auto& extra : result.second->extra_processes_dumps) {
+    for (auto& extra : response.second->dump_ptr->extra_processes_dumps) {
       const base::ProcessId extra_pid = extra.first;
       const OSMemDump extra_dump = extra.second;
       DCHECK_EQ(0u, os_dumps.count(extra_pid));
@@ -295,14 +303,14 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   }
 
   std::map<base::ProcessId, mojom::ProcessMemoryDumpPtr> finalized_pmds;
-  for (auto& result : request->process_memory_dumps) {
-    const base::ProcessId pid = result.first;
+  for (auto& response : request->responses) {
+    const base::ProcessId pid = response.first;
     mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
     if (!pmd)
       pmd = mojom::ProcessMemoryDump::New();
 
-    pmd->process_type = result.second->process_type;
-    pmd->chrome_dump = result.second->chrome_dump;
+    pmd->process_type = response.second->process_type;
+    pmd->chrome_dump = response.second->dump_ptr->chrome_dump;
     pmd->os_dump = CreatePublicOSDump(os_dumps[pid]);
   }
 
@@ -342,6 +350,13 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   }
 }
 
+CoordinatorImpl::QueuedMemoryDumpRequest::Response::Response(
+    mojom::ProcessType process_type,
+    mojom::RawProcessMemoryDumpPtr dump_ptr)
+    : process_type(process_type), dump_ptr(std::move(dump_ptr)) {}
+
+CoordinatorImpl::QueuedMemoryDumpRequest::Response::~Response() {}
+
 CoordinatorImpl::QueuedMemoryDumpRequest::QueuedMemoryDumpRequest(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const RequestGlobalMemoryDumpCallback callback)
@@ -351,8 +366,11 @@ CoordinatorImpl::QueuedMemoryDumpRequest::~QueuedMemoryDumpRequest() {}
 
 CoordinatorImpl::ClientInfo::ClientInfo(
     const service_manager::Identity& identity,
-    mojom::ClientProcessPtr client)
-    : identity(identity), client(std::move(client)) {}
+    mojom::ClientProcessPtr client,
+    mojom::ProcessType process_type)
+    : identity(identity),
+      client(std::move(client)),
+      process_type(process_type) {}
 CoordinatorImpl::ClientInfo::~ClientInfo() {}
 
 }  // namespace memory_instrumentation
