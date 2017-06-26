@@ -100,7 +100,7 @@ public class WebappSplashScreenTest {
     @RetryOnFailure
     public void testHidesAfterFirstPaint() throws Exception {
         mActivityTestRule.startWebappActivity();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -119,7 +119,7 @@ public class WebappSplashScreenTest {
     @RetryOnFailure
     public void testHidesAfterCrash() throws Throwable {
         mActivityTestRule.startWebappActivity();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -137,7 +137,7 @@ public class WebappSplashScreenTest {
     @RetryOnFailure
     public void testHidesAfterLoadCompletes() throws Exception {
         mActivityTestRule.startWebappActivity();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -156,7 +156,7 @@ public class WebappSplashScreenTest {
     @RetryOnFailure
     public void testHidesAfterLoadFails() throws Exception {
         mActivityTestRule.startWebappActivity();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -175,7 +175,7 @@ public class WebappSplashScreenTest {
     @RetryOnFailure
     public void testHidesAfterMultipleEvents() throws Exception {
         mActivityTestRule.startWebappActivity();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -290,7 +290,7 @@ public class WebappSplashScreenTest {
 
         mActivityTestRule.startWebappActivity();
         ViewGroup splashScreen = mActivityTestRule.waitUntilSplashScreenAppears();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         ImageView splashImage =
                 (ImageView) splashScreen.findViewById(R.id.webapp_splash_screen_icon);
@@ -324,7 +324,7 @@ public class WebappSplashScreenTest {
 
         mActivityTestRule.startWebappActivity();
         ViewGroup splashScreen = mActivityTestRule.waitUntilSplashScreenAppears();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         // The icon is centered within a fixed-size area on the splash screen.
         ImageView splashImage =
@@ -359,7 +359,7 @@ public class WebappSplashScreenTest {
         mActivityTestRule.startWebappActivity(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_IS_ICON_GENERATED, true));
         ViewGroup splashScreen = mActivityTestRule.waitUntilSplashScreenAppears();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         // There's no icon displayed.
         ImageView splashImage =
@@ -386,7 +386,7 @@ public class WebappSplashScreenTest {
         // home screen before splash screen images were downloaded.
         mActivityTestRule.startWebappActivity();
         ViewGroup splashScreen = mActivityTestRule.waitUntilSplashScreenAppears();
-        Assert.assertTrue(mActivityTestRule.getActivity().isSplashScreenVisibleForTests());
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         // There's no icon displayed.
         ImageView splashImage =

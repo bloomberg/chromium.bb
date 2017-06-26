@@ -145,7 +145,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !getActivity().isSplashScreenVisibleForTests();
+                return !isSplashScreenVisible();
             }
         });
     }
@@ -163,5 +163,9 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
             Assert.fail("No splash screen available.");
         }
         return splashScreen;
+    }
+
+    public boolean isSplashScreenVisible() {
+        return getActivity().getSplashScreenForTests() != null;
     }
 }

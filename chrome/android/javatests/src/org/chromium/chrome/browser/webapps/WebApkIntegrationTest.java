@@ -75,7 +75,7 @@ public class WebApkIntegrationTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !mActivityTestRule.getActivity().isSplashScreenVisibleForTests();
+                return mActivityTestRule.getActivity().getSplashScreenForTests() == null;
             }
         });
     }
