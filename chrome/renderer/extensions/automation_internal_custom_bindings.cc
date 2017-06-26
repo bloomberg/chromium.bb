@@ -694,6 +694,35 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
                   ui::AX_TEXT_STYLE_LINE_THROUGH) != 0;
     result.Set(v8::Boolean::New(isolate, value));
   });
+  RouteNodeIDFunction(
+      "GetCustomActions",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         TreeCache* cache, ui::AXNode* node) {
+        const std::vector<int32_t>& custom_action_ids =
+            node->data().GetIntListAttribute(ui::AX_ATTR_CUSTOM_ACTION_IDS);
+        if (custom_action_ids.empty()) {
+          result.SetUndefined();
+          return;
+        }
+
+        const std::vector<std::string>& custom_action_descriptions =
+            node->data().GetStringListAttribute(
+                ui::AX_ATTR_CUSTOM_ACTION_DESCRIPTIONS);
+        if (custom_action_ids.size() != custom_action_descriptions.size()) {
+          NOTREACHED();
+          return;
+        }
+
+        v8::Local<v8::Array> custom_actions(
+            v8::Array::New(isolate, custom_action_ids.size()));
+        for (size_t i = 0; i < custom_action_ids.size(); i++) {
+          gin::DataObjectBuilder custom_action(isolate);
+          custom_action.Set("id", custom_action_ids[i]);
+          custom_action.Set("description", custom_action_descriptions[i]);
+          custom_actions->Set(static_cast<uint32_t>(i), custom_action.Build());
+        }
+        result.Set(custom_actions);
+      });
   RouteNodeIDFunction("GetChecked", [](v8::Isolate* isolate,
                                        v8::ReturnValue<v8::Value> result,
                                        TreeCache* cache, ui::AXNode* node) {

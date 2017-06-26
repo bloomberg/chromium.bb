@@ -83,6 +83,12 @@ class AX_EXPORT AXTreeDelegate {
       AXIntListAttribute attr,
       const std::vector<int32_t>& old_value,
       const std::vector<int32_t>& new_value) {}
+  virtual void OnStringListAttributeChanged(
+      AXTree* tree,
+      AXNode* node,
+      AXStringListAttribute attr,
+      const std::vector<std::string>& old_value,
+      const std::vector<std::string>& new_value) {}
 
   // Called when tree data changes.
   virtual void OnTreeDataChanged(AXTree* tree,

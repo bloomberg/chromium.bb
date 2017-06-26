@@ -208,10 +208,19 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
 
 void ArcAccessibilityHelperBridge::OnAction(
     const ui::AXActionData& data) const {
-  arc::mojom::AccessibilityActionType mojo_action;
+  arc::mojom::AccessibilityActionDataPtr action_data =
+      arc::mojom::AccessibilityActionData::New();
+
+  action_data->node_id = data.target_node_id;
+
   switch (data.action) {
     case ui::AX_ACTION_DO_DEFAULT:
-      mojo_action = arc::mojom::AccessibilityActionType::CLICK;
+      action_data->action_type = arc::mojom::AccessibilityActionType::CLICK;
+      break;
+    case ui::AX_ACTION_CUSTOM_ACTION:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::CUSTOM_ACTION;
+      action_data->custom_action_id = data.custom_action_id;
       break;
     default:
       return;
@@ -219,7 +228,7 @@ void ArcAccessibilityHelperBridge::OnAction(
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->accessibility_helper(), PerformAction);
-  instance->PerformAction(data.target_node_id, mojo_action);
+  instance->PerformAction(std::move(action_data));
 }
 
 void ArcAccessibilityHelperBridge::OnWindowActivated(

@@ -86,6 +86,12 @@ struct AX_EXPORT AXNodeData {
   bool GetIntListAttribute(AXIntListAttribute attribute,
                            std::vector<int32_t>* value) const;
 
+  bool HasStringListAttribute(AXStringListAttribute attribute) const;
+  const std::vector<std::string>& GetStringListAttribute(
+      AXStringListAttribute attribute) const;
+  bool GetStringListAttribute(AXStringListAttribute attribute,
+                              std::vector<std::string>* value) const;
+
   bool GetHtmlAttribute(const char* attr, base::string16* value) const;
   bool GetHtmlAttribute(const char* attr, std::string* value) const;
 
@@ -97,6 +103,8 @@ struct AX_EXPORT AXNodeData {
   void AddBoolAttribute(AXBoolAttribute attribute, bool value);
   void AddIntListAttribute(AXIntListAttribute attribute,
                            const std::vector<int32_t>& value);
+  void AddStringListAttribute(AXStringListAttribute attribute,
+                              const std::vector<std::string>& value);
 
   // Convenience functions, mainly for writing unit tests.
   // Equivalent to AddStringAttribute(ATTR_NAME, name).
@@ -129,6 +137,8 @@ struct AX_EXPORT AXNodeData {
   std::vector<std::pair<AXBoolAttribute, bool>> bool_attributes;
   std::vector<std::pair<AXIntListAttribute, std::vector<int32_t>>>
       intlist_attributes;
+  std::vector<std::pair<AXStringListAttribute, std::vector<std::string>>>
+      stringlist_attributes;
   base::StringPairs html_attributes;
   std::vector<int32_t> child_ids;
 

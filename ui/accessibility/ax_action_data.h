@@ -45,6 +45,9 @@ struct AX_EXPORT AXActionData {
   int focus_node_id;
   int focus_offset;
 
+  // For custom action.
+  int custom_action_id;
+
   // The target rect for the action.
   gfx::Rect target_rect;
 

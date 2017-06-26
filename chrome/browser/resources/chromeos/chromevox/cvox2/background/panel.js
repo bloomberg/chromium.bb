@@ -446,6 +446,17 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     Panel.addNodeMenu(menuTitle, node, predicate, async);
   }
 
+  // Add actions menu if there are custom actions.
+  if (node.customActions && node.customActions.length > 0) {
+    var actionsMenu = Panel.addMenu('panel_menu_actions');
+    for (var i = 0; i < node.customActions.length; i++) {
+      var customAction = node.customActions[i];
+      actionsMenu.addMenuItem(customAction.description,
+          '' /* menuItemShortcut */, '' /* menuItemBraille */,
+          node.performCustomAction.bind(node, customAction.id));
+    }
+  }
+
   // Activate either the specified menu or the first menu.
   var selectedMenu = Panel.menus_[0];
   for (var i = 0; i < Panel.menus_.length; i++) {

@@ -29,8 +29,9 @@ namespace automationInternal {
 
   // All possible actions that can be performed on automation nodes.
   enum ActionType {
-    focus,
+    customAction,
     doDefault,
+    focus,
     getImageData,
     hitTest,
     makeVisible,
@@ -38,10 +39,10 @@ namespace automationInternal {
     setAccessibilityFocus,
     setSequentialFocusNavigationStartingPoint,
     setSelection,
+    showContextMenu,
     startDuckingMedia,
     stopDuckingMedia,
-    suspendMedia,
-    showContextMenu
+    suspendMedia
   };
 
   // Arguments required for all actions supplied to performAction.
@@ -49,6 +50,12 @@ namespace automationInternal {
     long treeID;
     long automationNodeID;
     ActionType actionType;
+  };
+
+  // Arguments for the customAction action. Those args are passed to
+  // performAction as opt_args.
+  dictionary PerformCustomActionParams {
+    long customActionID;
   };
 
   // Arguments for the setSelection action supplied to performAction.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -69,7 +69,16 @@ enum AccessibilityActionType {
   EXPAND,
   COLLAPSE,
   DISMISS,
-  SET_TEXT
+  SET_TEXT,
+  CONTEXT_CLICK,
+  SCROLL_DOWN,
+  SCROLL_LEFT,
+  SCROLL_RIGHT,
+  SCROLL_TO_POSITION,
+  SCROLL_UP,
+  SET_PROGRESS,
+  SHOW_ON_SCREEN,
+  CUSTOM_ACTION  // Not a standard action.
 };
 
 // Possible boolean properties set on an AccessibilityNodeInfo.
@@ -130,7 +139,12 @@ enum AccessibilityIntProperty {
 [Extensible]
 enum AccessibilityIntListProperty {
   CHILD_NODE_IDS,
-  ACTIONS
+  CUSTOM_ACTION_IDS
+};
+
+[Extensible]
+enum AccessibilityStringListProperty {
+  CUSTOM_ACTION_DESCRIPTIONS
 };
 
 // AccessibilityNodeInfoData is a struct to contain info of
@@ -144,6 +158,8 @@ struct AccessibilityNodeInfoData {
   [MinVersion=1]map<AccessibilityIntProperty, int32>? int_properties;
   [MinVersion=1]
       map<AccessibilityIntListProperty, array<int32>>? int_list_properties;
+  [MinVersion=3]map<AccessibilityStringListProperty, array<string>>?
+      string_list_properties;
 };
 
 // Filters the event type (and implicitly the data) sent by the ARC
@@ -172,6 +188,18 @@ struct AccessibilityEventData {
   array<AccessibilityNodeInfoData> node_data;
 };
 
+// AccessibilityActionData is a struct to contain info of AccessibilityAction in
+// Android.
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.AccessibilityAction.html
+struct AccessibilityActionData {
+  int32 node_id;
+
+  AccessibilityActionType action_type;
+
+  // custom_action_id must be set if action_type is CUSTOM_ACTION.
+  int32 custom_action_id;
+};
+
 // Next method ID: 2
 interface AccessibilityHelperHost {
   OnAccessibilityEventDeprecated@0(AccessibilityEventType event_type,
@@ -182,13 +210,15 @@ interface AccessibilityHelperHost {
   OnAccessibilityEvent@1(AccessibilityEventData event_data);
 };
 
-// Next method ID: 3
+// Next method ID: 4
 interface AccessibilityHelperInstance {
   Init@0(AccessibilityHelperHost host);
 
-  // Perform the specified action on a node requested by a Chrome client.
-  PerformAction@1(int32 id, AccessibilityActionType action);
+  PerformActionDeprecated@1(int32 id, AccessibilityActionType action);
 
   // Set a filter on the event types received.
   SetFilter@2(AccessibilityFilterType filter_type);
+
+  // Perform an action on a node requested by a Chrome client.
+  [MinVersion=3]PerformAction@3(AccessibilityActionData action_data);
 };
