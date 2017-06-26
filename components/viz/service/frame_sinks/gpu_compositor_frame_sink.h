@@ -62,9 +62,6 @@ class GpuCompositorFrameSink
   GpuCompositorFrameSinkDelegate* const delegate_;
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
 
-  bool client_connection_lost_ = false;
-  bool private_connection_lost_ = false;
-
   cc::mojom::CompositorFrameSinkClientPtr client_;
   mojo::Binding<cc::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
   mojo::Binding<cc::mojom::CompositorFrameSinkPrivate>

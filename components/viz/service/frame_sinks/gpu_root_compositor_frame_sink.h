@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
 
+#include <memory>
+
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
@@ -90,9 +92,6 @@ class GpuRootCompositorFrameSink
   // it was created with a non-null gpu::SurfaceHandle.
   std::unique_ptr<cc::BeginFrameSource> display_begin_frame_source_;
   std::unique_ptr<cc::Display> display_;
-
-  bool client_connection_lost_ = false;
-  bool private_connection_lost_ = false;
 
   cc::mojom::CompositorFrameSinkClientPtr client_;
   mojo::AssociatedBinding<cc::mojom::CompositorFrameSink>

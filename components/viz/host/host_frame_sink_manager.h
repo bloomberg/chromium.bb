@@ -85,6 +85,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   // cc::mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
+  void OnClientConnectionClosed(const cc::FrameSinkId& frame_sink_id) override;
 
   // Mojo connection to the FrameSinkManager.
   cc::mojom::FrameSinkManagerPtr frame_sink_manager_ptr_;
