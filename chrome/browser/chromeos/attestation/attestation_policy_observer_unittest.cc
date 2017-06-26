@@ -38,28 +38,28 @@ const int64_t kCertExpired = -20;
 
 void DBusCallbackFalse(const BoolDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
+      FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS, false));
 }
 
 void DBusCallbackTrue(const BoolDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
 void DBusCallbackError(const BoolDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_FAILURE, false));
+      FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_FAILURE, false));
 }
 
 void CertCallbackSuccess(const AttestationFlow::CertificateCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true, "fake_cert"));
+      FROM_HERE, base::BindOnce(callback, true, "fake_cert"));
 }
 
 void StatusCallbackSuccess(
     const policy::CloudPolicyClient::StatusCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
+                                                base::BindOnce(callback, true));
 }
 
 class FakeDBusData {
@@ -68,7 +68,8 @@ class FakeDBusData {
 
   void operator() (const CryptohomeClient::DataMethodCallback& callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true, data_));
+        FROM_HERE,
+        base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS, true, data_));
   }
 
  private:
