@@ -55,6 +55,10 @@ web::WebUIIOSDataSource* CreateFlagsUIHTMLSource(
   source->AddLocalizedString(flags_ui::kFlagsWarningHeader,
                              IDS_FLAGS_UI_WARNING_HEADER);
   source->AddLocalizedString(flags_ui::kFlagsBlurb, IDS_FLAGS_UI_WARNING_TEXT);
+  source->AddLocalizedString(flags_ui::kChannelPromoBeta,
+                             IDS_FLAGS_UI_PROMOTE_BETA_CHANNEL);
+  source->AddLocalizedString(flags_ui::kChannelPromoDev,
+                             IDS_FLAGS_UI_PROMOTE_DEV_CHANNEL);
   source->AddLocalizedString(flags_ui::kFlagsUnsupportedTableTitle,
                              IDS_FLAGS_UI_UNSUPPORTED_TABLE_TITLE);
   source->AddLocalizedString(flags_ui::kFlagsNotSupported,
