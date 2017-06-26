@@ -28,7 +28,8 @@ static const CGFloat kFabInset = 15.f;
 static const CGFloat kKeyboardAnimationTime = 0.3;
 
 @interface HostViewController ()<ClientKeyboardDelegate,
-                                 ClientGesturesDelegate> {
+                                 ClientGesturesDelegate,
+                                 RemotingSettingsViewControllerDelegate> {
   RemotingClient* _client;
   MDCActionImageView* _actionImageView;
   MDCFloatingButton* _floatingButton;
@@ -226,6 +227,32 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [self hideKeyboard];
 }
 
+#pragma mark - RemotingSettingsViewControllerDelegate
+
+- (void)setShrinkToFit:(BOOL)shrinkToFit {
+  NSLog(@"TODO: shrinkToFit %d", shrinkToFit);
+}
+
+- (void)setResizeToFit:(BOOL)resizeToFit {
+  NSLog(@"TODO: resizeToFit %d", resizeToFit);
+}
+
+- (void)useDirectInputMode {
+  NSLog(@"TODO: useDirectInputMode");
+}
+
+- (void)useTrackpadInputMode {
+  NSLog(@"TODO: useTrackpadInputMode");
+}
+
+- (void)sendCtrAltDel {
+  NSLog(@"TODO: sendCtrAltDel");
+}
+
+- (void)sendPrintScreen {
+  NSLog(@"TODO: sendPrintScreen");
+}
+
 #pragma mark - Private
 
 - (void)didTap:(id)sender {
@@ -265,6 +292,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
         currentInputMode == remoting::GestureInterpreter::DIRECT_INPUT_MODE
             ? remoting::GestureInterpreter::TRACKPAD_INPUT_MODE
             : remoting::GestureInterpreter::DIRECT_INPUT_MODE);
+    [_actionImageView setActive:NO animated:YES];
   };
   [alert addAction:[UIAlertAction actionWithTitle:switchInputModeTitle
                                             style:UIAlertActionStyleDefault
@@ -273,6 +301,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   void (^disconnectHandler)(UIAlertAction*) = ^(UIAlertAction*) {
     [_client disconnectFromHost];
     [self.navigationController popViewControllerAnimated:YES];
+    [_actionImageView setActive:NO animated:YES];
   };
   [alert addAction:[UIAlertAction actionWithTitle:@"Disconnect"
                                             style:UIAlertActionStyleDefault
@@ -282,9 +311,12 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   void (^settingsHandler)(UIAlertAction*) = ^(UIAlertAction*) {
     RemotingSettingsViewController* settingsViewController =
         [[RemotingSettingsViewController alloc] init];
-    [weakSelf presentViewController:settingsViewController
-                           animated:YES
-                         completion:nil];
+    settingsViewController.delegate = weakSelf;
+    settingsViewController.inputMode = currentInputMode;
+    UINavigationController* navController = [[UINavigationController alloc]
+        initWithRootViewController:settingsViewController];
+    [weakSelf presentViewController:navController animated:YES completion:nil];
+    [_actionImageView setActive:NO animated:YES];
   };
   [alert addAction:[UIAlertAction actionWithTitle:@"Settings"
                                             style:UIAlertActionStyleDefault

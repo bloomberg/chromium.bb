@@ -10,6 +10,7 @@
 
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/setting_option.h"
 
@@ -25,6 +26,9 @@ static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
 @end
 
 @implementation RemotingSettingsViewController
+
+@synthesize delegate = _delegate;
+@synthesize inputMode = _inputMode;
 
 - (id)init {
   self = [super init];
@@ -73,68 +77,13 @@ static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
   _sections = @[
     @"Display options", @"Mouse options", @"Keyboard controls", @"Support"
   ];
-
-  _content = [NSMutableArray array];
-
-  SettingOption* shrinkOption = [[SettingOption alloc] init];
-  shrinkOption.title = @"Shrink to fit";
-  // TODO(nicholss): I think this text changes based on value. Confirm.
-  shrinkOption.subtext = @"Don't change resolution to match window";
-  shrinkOption.style = OptionCheckbox;
-  shrinkOption.checked = NO;
-
-  SettingOption* resizeOption = [[SettingOption alloc] init];
-  resizeOption.title = @"Resize to fit";
-  // TODO(nicholss): I think this text changes based on value. Confirm.
-  resizeOption.subtext = @"Update remote resolution to match window";
-  resizeOption.style = OptionCheckbox;
-  resizeOption.checked = YES;
-
-  [_content addObject:@[ shrinkOption, resizeOption ]];
-
-  SettingOption* directMode = [[SettingOption alloc] init];
-  directMode.title = @"Touch mode";
-  // TODO(nicholss): I think this text changes based on value. Confirm.
-  directMode.subtext = @"Screen acts like a touch screen";
-  directMode.style = OptionSelector;
-  directMode.checked = YES;
-
-  SettingOption* trackpadMode = [[SettingOption alloc] init];
-  trackpadMode.title = @"Trackpad mode";
-  // TODO(nicholss): I think this text changes based on value. Confirm.
-  trackpadMode.subtext = @"Screen acts like a trackpad";
-  trackpadMode.style = OptionSelector;
-  trackpadMode.checked = NO;
-
-  [_content addObject:@[ directMode, trackpadMode ]];
-
-  SettingOption* ctrlAltDelOption = [[SettingOption alloc] init];
-  ctrlAltDelOption.title = @"Press \"Ctrl+Alt+Del\"";
-  ctrlAltDelOption.style = FlatButton;
-
-  SettingOption* printScreenOption = [[SettingOption alloc] init];
-  printScreenOption.title = @"Press \"Print Screen\"";
-  printScreenOption.style = FlatButton;
-
-  [_content addObject:@[ ctrlAltDelOption, printScreenOption ]];
-
-  SettingOption* helpCenterOption = [[SettingOption alloc] init];
-  helpCenterOption.title = @"Help center";
-  helpCenterOption.style = FlatButton;
-
-  SettingOption* faqsOption = [[SettingOption alloc] init];
-  faqsOption.title = @"FAQs";
-  faqsOption.style = FlatButton;
-
-  SettingOption* sendFeedbackOption = [[SettingOption alloc] init];
-  sendFeedbackOption.title = @"Send feedback";
-  sendFeedbackOption.style = FlatButton;
-
-  [_content addObject:@[ helpCenterOption, faqsOption, sendFeedbackOption ]];
-
-  DCHECK_EQ(_content.count, _sections.count);
-
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  [self.navigationController setNavigationBarHidden:YES animated:animated];
+  [self loadContent];
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -208,10 +157,34 @@ static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
   [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
 
-  MDCCollectionViewTextCell* cell = (MDCCollectionViewTextCell*)[collectionView
-      cellForItemAtIndexPath:indexPath];
+  SettingOption* setting = _content[indexPath.section][indexPath.item];
 
-  NSLog(@"Tapped: %@", cell);
+  NSMutableArray* updatedIndexPaths = [NSMutableArray arrayWithCapacity:1];
+  int i = 0;
+  switch (setting.style) {
+    case OptionCheckbox:
+      setting.checked = !setting.checked;
+      [updatedIndexPaths
+          addObject:[NSIndexPath indexPathForItem:indexPath.item
+                                        inSection:indexPath.section]];
+      break;
+    case OptionSelector:
+      for (SettingOption* s in _content[indexPath.section]) {
+        s.checked = NO;
+        [updatedIndexPaths
+            addObject:[NSIndexPath indexPathForItem:i
+                                          inSection:indexPath.section]];
+        i++;
+      }
+      setting.checked = YES;
+      break;
+    case FlatButton:
+      break;
+  }
+  [self.collectionView reloadItemsAtIndexPaths:updatedIndexPaths];
+  if (setting.action) {
+    setting.action();
+  }
 }
 
 - (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
@@ -243,6 +216,117 @@ static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
 
 - (void)didTapClose:(id)button {
   [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)loadContent {
+  _content = [NSMutableArray array];
+
+  __weak RemotingSettingsViewController* weakSelf = self;
+
+  SettingOption* shrinkOption = [[SettingOption alloc] init];
+  shrinkOption.title = @"Shrink to fit";
+  // TODO(nicholss): I think this text changes based on value. Confirm.
+  shrinkOption.subtext = @"Don't change resolution to match window";
+  shrinkOption.style = OptionCheckbox;
+  shrinkOption.checked = NO;
+  __weak SettingOption* weakShrinkOption = shrinkOption;
+  shrinkOption.action = ^{
+    if ([weakSelf.delegate respondsToSelector:@selector(setShrinkToFit:)]) {
+      [weakSelf.delegate setShrinkToFit:weakShrinkOption.checked];
+    }
+  };
+
+  SettingOption* resizeOption = [[SettingOption alloc] init];
+  resizeOption.title = @"Resize to fit";
+  // TODO(nicholss): I think this text changes based on value. Confirm.
+  resizeOption.subtext = @"Update remote resolution to match window";
+  resizeOption.style = OptionCheckbox;
+  resizeOption.checked = YES;
+  __weak SettingOption* weakResizeOption = resizeOption;
+  resizeOption.action = ^{
+    if ([weakSelf.delegate respondsToSelector:@selector(setResizeToFit:)]) {
+      [weakSelf.delegate setResizeToFit:weakResizeOption.checked];
+    }
+  };
+
+  [_content addObject:@[ shrinkOption, resizeOption ]];
+
+  SettingOption* directMode = [[SettingOption alloc] init];
+  directMode.title = @"Touch mode";
+  // TODO(nicholss): I think this text changes based on value. Confirm.
+  directMode.subtext = @"Screen acts like a touch screen";
+  directMode.style = OptionSelector;
+  directMode.checked =
+      self.inputMode == remoting::GestureInterpreter::DIRECT_INPUT_MODE;
+  directMode.action = ^{
+    if ([weakSelf.delegate respondsToSelector:@selector(useDirectInputMode)]) {
+      [weakSelf.delegate useDirectInputMode];
+    }
+  };
+
+  SettingOption* trackpadMode = [[SettingOption alloc] init];
+  trackpadMode.title = @"Trackpad mode";
+  // TODO(nicholss): I think this text changes based on value. Confirm.
+  trackpadMode.subtext = @"Screen acts like a trackpad";
+  trackpadMode.style = OptionSelector;
+  trackpadMode.checked =
+      self.inputMode == remoting::GestureInterpreter::TRACKPAD_INPUT_MODE;
+  trackpadMode.action = ^{
+    if ([weakSelf.delegate
+            respondsToSelector:@selector(useTrackpadInputMode)]) {
+      [weakSelf.delegate useTrackpadInputMode];
+    }
+  };
+
+  [_content addObject:@[ directMode, trackpadMode ]];
+
+  SettingOption* ctrlAltDelOption = [[SettingOption alloc] init];
+  ctrlAltDelOption.title = @"Press \"Ctrl+Alt+Del\"";
+  ctrlAltDelOption.style = FlatButton;
+  ctrlAltDelOption.action = ^{
+    if ([weakSelf.delegate respondsToSelector:@selector(sendCtrAltDel)]) {
+      [weakSelf.delegate sendCtrAltDel];
+    }
+  };
+
+  SettingOption* printScreenOption = [[SettingOption alloc] init];
+  printScreenOption.title = @"Press \"Print Screen\"";
+  printScreenOption.style = FlatButton;
+  printScreenOption.action = ^{
+    if ([weakSelf.delegate respondsToSelector:@selector(sendPrintScreen)]) {
+      [weakSelf.delegate sendPrintScreen];
+    }
+  };
+
+  [_content addObject:@[ ctrlAltDelOption, printScreenOption ]];
+
+  SettingOption* helpCenterOption = [[SettingOption alloc] init];
+  helpCenterOption.title = @"Help center";
+  helpCenterOption.style = FlatButton;
+  helpCenterOption.action = ^{
+    [AppDelegate.instance navigateToHelpCenter:weakSelf.navigationController];
+    [weakSelf.navigationController setNavigationBarHidden:NO animated:YES];
+  };
+
+  SettingOption* faqsOption = [[SettingOption alloc] init];
+  faqsOption.title = @"FAQs";
+  faqsOption.style = FlatButton;
+  faqsOption.action = ^{
+    [AppDelegate.instance navigateToFAQs:weakSelf.navigationController];
+    [weakSelf.navigationController setNavigationBarHidden:NO animated:YES];
+  };
+
+  SettingOption* sendFeedbackOption = [[SettingOption alloc] init];
+  sendFeedbackOption.title = @"Send feedback";
+  sendFeedbackOption.style = FlatButton;
+  sendFeedbackOption.action = ^{
+    [AppDelegate.instance navigateToSendFeedback:self.navigationController];
+    [weakSelf.navigationController setNavigationBarHidden:NO animated:YES];
+  };
+
+  [_content addObject:@[ helpCenterOption, faqsOption, sendFeedbackOption ]];
+
+  DCHECK_EQ(_content.count, _sections.count);
 }
 
 @end
