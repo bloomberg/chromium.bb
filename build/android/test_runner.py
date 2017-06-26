@@ -216,9 +216,9 @@ def AddDeviceOptions(parser):
       type=os.path.realpath,
       help='Device blacklist file.')
   parser.add_argument(
-      '-d', '--device',
-      dest='test_device',
-      help='Target device for the test suite to run on.')
+      '-d', '--device', nargs='+',
+      dest='test_devices',
+      help='Target device(s) for the test suite to run on.')
   parser.add_argument(
       '--enable-concurrent-adb',
       action='store_true',
