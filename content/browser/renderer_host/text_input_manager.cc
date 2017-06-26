@@ -81,7 +81,10 @@ const TextInputManager::TextSelection* TextInputManager::GetTextSelection(
   DCHECK(!view || IsRegistered(view));
   if (!view)
     view = active_view_;
-  return !!view ? &text_selection_map_.at(view) : nullptr;
+  // A crash occurs when we end up here with an unregistered view.
+  // See crbug.com/735980
+  // TODO(ekaramad): Take a deeper look why this is happening.
+  return (view && IsRegistered(view)) ? &text_selection_map_.at(view) : nullptr;
 }
 
 void TextInputManager::UpdateTextInputState(
