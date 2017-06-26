@@ -509,7 +509,8 @@ bind_linux_dmabuf(struct wl_client *client,
 							  modifier_hi,
 							  modifier_lo);
 		}
-		free(modifiers);
+		if (modifiers != &modifier_invalid)
+			free(modifiers);
 	}
 	free(formats);
 }
