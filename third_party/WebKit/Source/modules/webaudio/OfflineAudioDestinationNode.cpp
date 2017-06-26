@@ -182,8 +182,14 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
     // already held, simply delay rendering until the next quantum.
     CrossThreadPersistentRegion::LockScope gc_lock(
         ProcessHeap::GetCrossThreadPersistentRegion(), true);
-    if (!gc_lock.HasLock())
+    if (!gc_lock.HasLock()) {
+      // To ensure that the rendering step eventually happens, repost.
+      render_thread_->GetWebTaskRunner()->PostTask(
+          BLINK_FROM_HERE,
+          Bind(&OfflineAudioDestinationHandler::DoOfflineRendering,
+               WrapPassRefPtr(this)));
       return;
+    }
 
     number_of_channels = render_target_->numberOfChannels();
     destinations.ReserveInitialCapacity(number_of_channels);
