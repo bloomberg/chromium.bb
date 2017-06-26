@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("native_app_launcher") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_appstore_ids.h",
     "ios_appstore_ids.mm",

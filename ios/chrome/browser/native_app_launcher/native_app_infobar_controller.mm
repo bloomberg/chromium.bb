@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/native_app_launcher/native_app_infobar_controller.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/native_app_launcher/native_app_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view.h"
@@ -13,6 +12,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_types.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface NativeAppInfoBarController ()
 
@@ -36,11 +39,11 @@
 
 - (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
                           frame:(CGRect)frame {
-  base::scoped_nsobject<InfoBarView> infoBarView;
+  InfoBarView* infoBarView;
   nativeAppInfoBarDelegate_ = static_cast<NativeAppInfoBarDelegate*>(delegate);
   DCHECK(nativeAppInfoBarDelegate_);
-  infoBarView.reset(
-      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate]);
+  infoBarView =
+      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate];
 
   // Lays out widgets common to all NativeAppInfobars.
   [infoBarView
@@ -96,7 +99,7 @@
       break;
     }
   }
-  return [[infoBarView retain] autorelease];
+  return infoBarView;
 }
 
 - (void)infoBarButtonDidPress:(UIButton*)button {

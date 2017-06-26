@@ -4,6 +4,10 @@
 
 #include "ios/chrome/browser/native_app_launcher/ios_appstore_ids.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 const char kIOSAppStoreGmail[] = "422689480";
 const char kIOSAppStoreGoogleDocs[] = "842842640";
 const char kIOSAppStoreGoogleDrive[] = "507874739";

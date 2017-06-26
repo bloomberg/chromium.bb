@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -17,6 +16,10 @@
 #import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller_protocol.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace native_app_infobar {
 const CGSize kSmallIconSize = {29.0, 29.0};
@@ -40,8 +43,8 @@ bool NativeAppInfoBarDelegate::Create(
   auto infobar =
       base::MakeUnique<InfoBarIOS>(base::MakeUnique<NativeAppInfoBarDelegate>(
           controller_protocol, page_url, type));
-  base::scoped_nsobject<NativeAppInfoBarController> controller(
-      [[NativeAppInfoBarController alloc] initWithDelegate:infobar.get()]);
+  NativeAppInfoBarController* controller =
+      [[NativeAppInfoBarController alloc] initWithDelegate:infobar.get()];
   infobar->SetController(controller);
   return !!manager->AddInfoBar(std::move(infobar));
 }
