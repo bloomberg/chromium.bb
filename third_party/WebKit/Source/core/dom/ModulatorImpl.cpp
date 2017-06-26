@@ -30,7 +30,7 @@ ModulatorImpl::ModulatorImpl(RefPtr<ScriptState> script_state,
       fetcher_(fetcher),
       map_(this, ModuleMap::Create(this)),
       loader_registry_(ModuleScriptLoaderRegistry::Create()),
-      tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
+      tree_linker_registry_(this, ModuleTreeLinkerRegistry::Create()),
       script_module_resolver_(ScriptModuleResolverImpl::Create(
           this,
           ExecutionContext::From(script_state_.Get()))) {
@@ -221,6 +221,7 @@ DEFINE_TRACE(ModulatorImpl) {
 
 DEFINE_TRACE_WRAPPERS(ModulatorImpl) {
   visitor->TraceWrappers(map_);
+  visitor->TraceWrappers(tree_linker_registry_);
 }
 
 }  // namespace blink

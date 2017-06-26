@@ -26,15 +26,14 @@ namespace blink {
 
 namespace {
 
-class TestModuleTreeClient final
-    : public GarbageCollectedFinalized<TestModuleTreeClient>,
-      public ModuleTreeClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestModuleTreeClient);
-
+class TestModuleTreeClient final : public ModuleTreeClient {
  public:
   TestModuleTreeClient() = default;
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(module_script_); }
+  DEFINE_INLINE_TRACE() {
+    visitor->Trace(module_script_);
+    ModuleTreeClient::Trace(visitor);
+  }
 
   void NotifyModuleTreeLoadFinished(ModuleScript* module_script) override {
     was_notify_finished_ = true;

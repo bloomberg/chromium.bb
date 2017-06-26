@@ -71,7 +71,9 @@ ModuleTreeLinker::ModuleTreeLinker(const AncestorList& ancestor_list_with_url,
     : modulator_(modulator),
       registry_(registry),
       client_(client),
-      ancestor_list_with_url_(ancestor_list_with_url) {
+      ancestor_list_with_url_(ancestor_list_with_url),
+      module_script_(this, nullptr),
+      descendants_module_script_(this, nullptr) {
   CHECK(modulator);
   CHECK(registry);
   CHECK(client);
@@ -85,6 +87,11 @@ DEFINE_TRACE(ModuleTreeLinker) {
   visitor->Trace(descendants_module_script_);
   visitor->Trace(dependency_clients_);
   SingleModuleClient::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(ModuleTreeLinker) {
+  visitor->TraceWrappers(module_script_);
+  visitor->TraceWrappers(descendants_module_script_);
 }
 
 #if DCHECK_IS_ON()
@@ -193,12 +200,7 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* result) {
   FetchDescendants();
 }
 
-class ModuleTreeLinker::DependencyModuleClient
-    : public GarbageCollectedFinalized<
-          ModuleTreeLinker::DependencyModuleClient>,
-      public ModuleTreeClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ModuleTreeLinker::DependencyModuleClient);
-
+class ModuleTreeLinker::DependencyModuleClient : public ModuleTreeClient {
  public:
   static DependencyModuleClient* Create(ModuleTreeLinker* module_tree_linker) {
     return new DependencyModuleClient(module_tree_linker);

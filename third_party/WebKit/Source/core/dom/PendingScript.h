@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Script.h"
 #include "core/dom/ScriptElementBase.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Noncopyable.h"
@@ -40,7 +41,8 @@ namespace blink {
 class Document;
 class PendingScript;
 
-class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
+class CORE_EXPORT PendingScriptClient
+    : public GarbageCollectedFinalized<PendingScriptClient> {
  public:
   virtual ~PendingScriptClient() {}
 
@@ -57,7 +59,8 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
 // This is used to receive a notification of "script is ready"
 // https://html.spec.whatwg.org/#the-script-is-ready via PendingScriptClient.
 class CORE_EXPORT PendingScript
-    : public GarbageCollectedFinalized<PendingScript> {
+    : public GarbageCollectedFinalized<PendingScript>,
+      public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(PendingScript);
 
  public:

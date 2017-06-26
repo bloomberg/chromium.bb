@@ -44,10 +44,11 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document,
                                             bool was_inserted_by_parser,
                                             bool already_started,
                                             bool created_during_document_write)
-    : HTMLElement(scriptTag, document) {
-  InitializeScriptLoader(was_inserted_by_parser, already_started,
-                         created_during_document_write);
-}
+    : HTMLElement(scriptTag, document),
+      loader_(this,
+              InitializeScriptLoader(was_inserted_by_parser,
+                                     already_started,
+                                     created_during_document_write)) {}
 
 HTMLScriptElement* HTMLScriptElement::Create(
     Document& document,
@@ -236,8 +237,14 @@ Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren() {
 }
 
 DEFINE_TRACE(HTMLScriptElement) {
+  visitor->Trace(loader_);
   HTMLElement::Trace(visitor);
   ScriptElementBase::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(HTMLScriptElement) {
+  visitor->TraceWrappers(loader_);
+  HTMLElement::TraceWrappers(visitor);
 }
 
 }  // namespace blink

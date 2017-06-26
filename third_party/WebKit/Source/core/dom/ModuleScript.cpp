@@ -245,6 +245,7 @@ bool ModuleScript::CheckMIMETypeBeforeRunScript(Document* context_document,
 }
 
 void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
+  DVLOG(1) << "ModuleScript[" << this << "]::RunScript()";
   settings_object_->ExecuteModule(this);
 }
 

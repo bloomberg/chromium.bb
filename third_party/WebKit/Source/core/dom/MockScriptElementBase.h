@@ -18,6 +18,7 @@ class MockScriptElementBase
   static MockScriptElementBase* Create() {
     return new testing::StrictMock<MockScriptElementBase>();
   }
+  virtual ~MockScriptElementBase() {}
 
   MOCK_METHOD0(DispatchLoadEvent, void());
   MOCK_METHOD0(DispatchErrorEvent, void());
@@ -47,6 +48,7 @@ class MockScriptElementBase
   MOCK_CONST_METHOD0(GetDocument, Document&());
   MOCK_METHOD1(SetScriptElementForBinding,
                void(HTMLScriptElementOrSVGScriptElement&));
+  MOCK_CONST_METHOD0(Loader, ScriptLoader*());
 
   DEFINE_INLINE_VIRTUAL_TRACE() { ScriptElementBase::Trace(visitor); }
 };

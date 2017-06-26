@@ -35,9 +35,12 @@ namespace blink {
 inline SVGScriptElement::SVGScriptElement(Document& document,
                                           bool was_inserted_by_parser,
                                           bool already_started)
-    : SVGElement(SVGNames::scriptTag, document), SVGURIReference(this) {
-  InitializeScriptLoader(was_inserted_by_parser, already_started, false);
-}
+    : SVGElement(SVGNames::scriptTag, document),
+      SVGURIReference(this),
+      loader_(this,
+              InitializeScriptLoader(was_inserted_by_parser,
+                                     already_started,
+                                     false)) {}
 
 SVGScriptElement* SVGScriptElement::Create(Document& document,
                                            bool inserted_by_parser) {
@@ -179,9 +182,15 @@ bool SVGScriptElement::IsAnimatableAttribute(const QualifiedName& name) const {
 #endif
 
 DEFINE_TRACE(SVGScriptElement) {
+  visitor->Trace(loader_);
   SVGElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
   ScriptElementBase::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(SVGScriptElement) {
+  visitor->TraceWrappers(loader_);
+  SVGElement::TraceWrappers(visitor);
 }
 
 }  // namespace blink

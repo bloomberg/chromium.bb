@@ -131,9 +131,13 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-error
   //
-  // |error_| is TraceWrappers()ed and kept alive via the path of
-  // v8::Context -> PerContextData -> Modulator/ModulatorImpl
-  // -> ModuleMap -> ModuleMap::Entry -> ModuleScript -> error_.
+  // |record_| and |error_| are TraceWrappers()ed and kept alive via the path of
+  // DOMWindow -> Modulator/ModulatorImpl -> ModuleMap -> ModuleMap::Entry
+  // -> ModuleScript, or
+  // Modulator/ModulatorImpl -> ModuleTreeLinkerRegistry -> ModuleTreeLinker
+  // -> ModuleScript, or
+  // ScriptLoader -> PendingScript -> ModulePendingScript ->
+  // ModulePendingScriptTreeClient -> ModuleScript.
   // All the classes/references on the path above should be
   // TraceWrapperBase/TraceWrapperMember<>/etc.,
   // but other references to those classes can be normal Member<>.

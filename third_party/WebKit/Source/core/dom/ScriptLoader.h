@@ -26,6 +26,8 @@
 #include "core/dom/Script.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/html/CrossOriginAttribute.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -44,10 +46,8 @@ class ScriptResource;
 class Modulator;
 class ModulePendingScriptTreeClient;
 
-class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
-                                 public PendingScriptClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
-
+class CORE_EXPORT ScriptLoader : public PendingScriptClient,
+                                 public TraceWrapperBase {
  public:
   static ScriptLoader* Create(ScriptElementBase* element,
                               bool created_by_parser,
@@ -59,6 +59,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   ~ScriptLoader() override;
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
   enum LegacyTypeSupport {
     kDisallowLegacyTypeInTypeAttribute,
@@ -226,8 +227,8 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   DocumentWriteIntervention document_write_intervention_;
 
-  Member<PendingScript> pending_script_;
-  Member<ModulePendingScriptTreeClient> module_tree_client_;
+  TraceWrapperMember<PendingScript> pending_script_;
+  TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
 };
 
 }  // namespace blink

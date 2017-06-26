@@ -36,8 +36,6 @@ class ScriptLoader;
 
 class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
  public:
-  virtual ~ScriptElementBase() {}
-
   static ScriptElementBase* FromElementIfPossible(Element*);
 
   virtual void DispatchLoadEvent() = 0;
@@ -70,16 +68,12 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) = 0;
 
-  ScriptLoader* Loader() const { return loader_.Get(); }
-
-  DECLARE_VIRTUAL_TRACE();
+  virtual ScriptLoader* Loader() const = 0;
 
  protected:
-  void InitializeScriptLoader(bool parser_inserted,
-                              bool already_started,
-                              bool created_during_document_write);
-
-  Member<ScriptLoader> loader_;
+  ScriptLoader* InitializeScriptLoader(bool parser_inserted,
+                                       bool already_started,
+                                       bool created_during_document_write);
 };
 
 }  // namespace blink
