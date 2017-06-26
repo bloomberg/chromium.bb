@@ -56,9 +56,8 @@ bool SyncWebSocketImpl::Core::Connect(const GURL& url) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   context_getter_->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncWebSocketImpl::Core::ConnectOnIO,
-                 this, url, &success, &event));
+      FROM_HERE, base::BindOnce(&SyncWebSocketImpl::Core::ConnectOnIO, this,
+                                url, &success, &event));
   event.Wait();
   return success;
 }
@@ -68,9 +67,8 @@ bool SyncWebSocketImpl::Core::Send(const std::string& message) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   context_getter_->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncWebSocketImpl::Core::SendOnIO,
-                 this, message, &success, &event));
+      FROM_HERE, base::BindOnce(&SyncWebSocketImpl::Core::SendOnIO, this,
+                                message, &success, &event));
   event.Wait();
   return success;
 }

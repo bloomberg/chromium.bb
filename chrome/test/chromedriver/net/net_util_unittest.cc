@@ -40,8 +40,8 @@ class FetchUrlTest : public testing::Test,
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&FetchUrlTest::InitOnIO, base::Unretained(this), &event));
+        FROM_HERE, base::BindOnce(&FetchUrlTest::InitOnIO,
+                                  base::Unretained(this), &event));
     event.Wait();
   }
 
@@ -49,8 +49,8 @@ class FetchUrlTest : public testing::Test,
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&FetchUrlTest::DestroyServerOnIO,
-                              base::Unretained(this), &event));
+        FROM_HERE, base::BindOnce(&FetchUrlTest::DestroyServerOnIO,
+                                  base::Unretained(this), &event));
     event.Wait();
   }
 
