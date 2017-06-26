@@ -24,26 +24,12 @@ void TextKeyboardInputStrategy::HandleTextEvent(const std::string& text,
   input_injector_->SendTextEvent(text);
 }
 
-void TextKeyboardInputStrategy::HandleDeleteEvent(uint8_t modifiers) {
-  std::queue<KeyEvent> keys = ConvertDeleteEvent(modifiers);
+void TextKeyboardInputStrategy::HandleKeysEvent(std::queue<KeyEvent> keys) {
   while (!keys.empty()) {
     KeyEvent key = keys.front();
     input_injector_->SendKeyEvent(0, key.keycode, key.keydown);
     keys.pop();
   }
-}
-
-std::queue<KeyEvent> TextKeyboardInputStrategy::ConvertDeleteEvent(
-    uint8_t modifiers) {
-  std::queue<KeyEvent> keys;
-  // TODO(nicholss): Handle modifers.
-  // Key press.
-  keys.push({static_cast<uint32_t>(ui::DomCode::BACKSPACE), true});
-
-  // Key release.
-  keys.push({static_cast<uint32_t>(ui::DomCode::BACKSPACE), false});
-
-  return keys;
 }
 
 }  // namespace remoting

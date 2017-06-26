@@ -230,27 +230,35 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 #pragma mark - RemotingSettingsViewControllerDelegate
 
 - (void)setShrinkToFit:(BOOL)shrinkToFit {
+  // TODO(nicholss): I don't think this option makes sense for mobile.
   NSLog(@"TODO: shrinkToFit %d", shrinkToFit);
 }
 
 - (void)setResizeToFit:(BOOL)resizeToFit {
+  // TODO(nicholss): I don't think this option makes sense for phones. Maybe
+  // for an iPad. Maybe we add a native screen size mimimum before enabling
+  // this option? Ask Jon.
   NSLog(@"TODO: resizeToFit %d", resizeToFit);
 }
 
 - (void)useDirectInputMode {
-  NSLog(@"TODO: useDirectInputMode");
+  // TODO(nicholss): Store this as a preference.
+  _client.gestureInterpreter->SetInputMode(
+      remoting::GestureInterpreter::DIRECT_INPUT_MODE);
 }
 
 - (void)useTrackpadInputMode {
-  NSLog(@"TODO: useTrackpadInputMode");
+  // TODO(nicholss): Store this as a preference.
+  _client.gestureInterpreter->SetInputMode(
+      remoting::GestureInterpreter::TRACKPAD_INPUT_MODE);
 }
 
 - (void)sendCtrAltDel {
-  NSLog(@"TODO: sendCtrAltDel");
+  _client.keyboardInterpreter->HandleCtrlAltDeleteEvent();
 }
 
 - (void)sendPrintScreen {
-  NSLog(@"TODO: sendPrintScreen");
+  _client.keyboardInterpreter->HandlePrintScreenEvent();
 }
 
 #pragma mark - Private
@@ -268,6 +276,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   if ([self isKeyboardActive]) {
     void (^hideKeyboardHandler)(UIAlertAction*) = ^(UIAlertAction*) {
       [self hideKeyboard];
+      [_actionImageView setActive:NO animated:YES];
     };
     [alert addAction:[UIAlertAction actionWithTitle:@"Hide Keyboard"
                                               style:UIAlertActionStyleDefault
@@ -275,6 +284,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   } else {
     void (^showKeyboardHandler)(UIAlertAction*) = ^(UIAlertAction*) {
       [self showKeyboard];
+      [_actionImageView setActive:NO animated:YES];
     };
     [alert addAction:[UIAlertAction actionWithTitle:@"Show Keyboard"
                                               style:UIAlertActionStyleDefault

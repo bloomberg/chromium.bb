@@ -21,7 +21,7 @@ class TextKeyboardInputStrategy : public KeyboardInputStrategy {
 
   // KeyboardInputStrategy overrides.
   void HandleTextEvent(const std::string& text, uint8_t modifiers) override;
-  void HandleDeleteEvent(uint8_t modifiers) override;
+  void HandleKeysEvent(std::queue<KeyEvent> keys) override;
 
  private:
   std::queue<KeyEvent> ConvertDeleteEvent(uint8_t modifiers);

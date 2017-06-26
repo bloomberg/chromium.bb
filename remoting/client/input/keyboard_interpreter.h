@@ -26,6 +26,12 @@ class KeyboardInterpreter {
   void HandleTextEvent(const std::string& text, uint8_t modifiers);
   // Delegates to |KeyboardInputStrategy| to covert and send the delete.
   void HandleDeleteEvent(uint8_t modifiers);
+  // Assembles CTRL+ALT+DEL key event and then delegates to
+  // |KeyboardInputStrategy| send the keys.
+  void HandleCtrlAltDeleteEvent();
+  // Assembles PRINT_SCREEN key event and then delegates to
+  // |KeyboardInputStrategy| send the keys.
+  void HandlePrintScreenEvent();
 
  private:
   std::unique_ptr<KeyboardInputStrategy> input_strategy_;

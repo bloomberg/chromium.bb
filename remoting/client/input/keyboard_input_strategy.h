@@ -23,8 +23,8 @@ class KeyboardInputStrategy {
 
   // Handle a text event.
   virtual void HandleTextEvent(const std::string& text, uint8_t modifiers) = 0;
-  // Handle delete event.
-  virtual void HandleDeleteEvent(uint8_t modifiers) = 0;
+  // Handle keys event as keycodes.
+  virtual void HandleKeysEvent(std::queue<KeyEvent> keys) = 0;
 };
 
 }  // namespace remoting
