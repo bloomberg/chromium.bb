@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -19,6 +20,118 @@
 #include "url/url_constants.h"
 
 namespace payments {
+namespace {
+
+const size_t kMaximumNumberOfEntries = 100U;
+const char* const kDefaultApplications = "default_applications";
+const char* const kSupportedOrigins = "supported_origins";
+
+// Parses the "default_applications": ["https://some/url"] from |dict| into
+// |web_app_manifest_urls|. Returns 'false' for invalid data.
+bool ParseDefaultApplications(base::DictionaryValue* dict,
+                              std::vector<GURL>* web_app_manifest_urls) {
+  DCHECK(dict);
+  DCHECK(web_app_manifest_urls);
+
+  base::ListValue* list = nullptr;
+  if (!dict->GetList(kDefaultApplications, &list)) {
+    LOG(ERROR) << "\"" << kDefaultApplications << "\" must be a list.";
+    return false;
+  }
+
+  size_t apps_number = list->GetSize();
+  if (apps_number > kMaximumNumberOfEntries) {
+    LOG(ERROR) << "\"" << kDefaultApplications << "\" must contain at most "
+               << kMaximumNumberOfEntries << " entries.";
+    return false;
+  }
+
+  std::string item;
+  for (size_t i = 0; i < apps_number; ++i) {
+    if (!list->GetString(i, &item) && item.empty()) {
+      LOG(ERROR) << "Each entry in \"" << kDefaultApplications
+                 << "\" must be a string.";
+      web_app_manifest_urls->clear();
+      return false;
+    }
+
+    GURL url(item);
+    if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme)) {
+      LOG(ERROR) << "\"" << item << "\" entry in \"" << kDefaultApplications
+                 << "\" is not a valid URL with HTTPS scheme.";
+      web_app_manifest_urls->clear();
+      return false;
+    }
+
+    web_app_manifest_urls->push_back(url);
+  }
+
+  return true;
+}
+
+// Parses the "supported_origins": "*" (or ["https://some.origin"]) from |dict|
+// into |supported_origins| and |all_origins_supported|. Returns 'false' for
+// invalid data.
+bool ParseSupportedOrigins(base::DictionaryValue* dict,
+                           std::vector<url::Origin>* supported_origins,
+                           bool* all_origins_supported) {
+  DCHECK(dict);
+  DCHECK(supported_origins);
+  DCHECK(all_origins_supported);
+
+  *all_origins_supported = false;
+
+  std::string item;
+  if (dict->GetString(kSupportedOrigins, &item)) {
+    if (item != "*") {
+      LOG(ERROR) << "\"" << item << "\" is not a valid value for \""
+                 << kSupportedOrigins
+                 << "\". Must be either \"*\" or a list of origins.";
+      return false;
+    }
+
+    *all_origins_supported = true;
+    return true;
+  }
+
+  base::ListValue* list = nullptr;
+  if (!dict->GetList(kSupportedOrigins, &list)) {
+    LOG(ERROR) << "\"" << kSupportedOrigins
+               << "\" must be either \"*\" or a list of origins.";
+    return false;
+  }
+
+  size_t supported_origins_number = list->GetSize();
+  if (supported_origins_number > kMaximumNumberOfEntries) {
+    LOG(ERROR) << "\"" << kSupportedOrigins << "\" must contain at most "
+               << kMaximumNumberOfEntries << " entires.";
+    return false;
+  }
+
+  for (size_t i = 0; i < supported_origins_number; ++i) {
+    if (!list->GetString(i, &item) && item.empty()) {
+      LOG(ERROR) << "Each entry in \"" << kSupportedOrigins
+                 << "\" must be a string.";
+      supported_origins->clear();
+      return false;
+    }
+
+    GURL url(item);
+    if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme) ||
+        url.path() != "/" || url.has_query() || url.has_ref()) {
+      LOG(ERROR) << "\"" << item << "\" entry in \"" << kSupportedOrigins
+                 << "\" is not a valid origin with HTTPS scheme.";
+      supported_origins->clear();
+      return false;
+    }
+
+    supported_origins->push_back(url::Origin(url));
+  }
+
+  return true;
+}
+
+}  // namespace
 
 // static
 void PaymentManifestParser::Create(
@@ -29,44 +142,40 @@ void PaymentManifestParser::Create(
 }
 
 // static
-std::vector<GURL> PaymentManifestParser::ParsePaymentMethodManifestIntoVector(
-    const std::string& input) {
-  std::vector<GURL> output;
+void PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
+    const std::string& input,
+    std::vector<GURL>* web_app_manifest_urls,
+    std::vector<url::Origin>* supported_origins,
+    bool* all_origins_supported) {
+  DCHECK(web_app_manifest_urls);
+  DCHECK(supported_origins);
+  DCHECK(all_origins_supported);
+
+  *all_origins_supported = false;
+
   std::unique_ptr<base::Value> value(base::JSONReader::Read(input));
-  if (!value)
-    return output;
+  if (!value) {
+    LOG(ERROR) << "Payment method manifest must be in JSON format.";
+    return;
+  }
 
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(std::move(value));
-  if (!dict)
-    return output;
-
-  base::ListValue* list = nullptr;
-  if (!dict->GetList("default_applications", &list))
-    return output;
-
-  size_t apps_number = list->GetSize();
-  const size_t kMaximumNumberOfApps = 100U;
-  if (apps_number > kMaximumNumberOfApps)
-    return output;
-
-  std::string item;
-  for (size_t i = 0; i < apps_number; ++i) {
-    if (!list->GetString(i, &item) && item.empty()) {
-      output.clear();
-      return output;
-    }
-
-    GURL url(item);
-    if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme)) {
-      output.clear();
-      return output;
-    }
-
-    output.push_back(url);
+  if (!dict) {
+    LOG(ERROR) << "Payment method manifest must be a JSON dictionary.";
+    return;
   }
 
-  return output;
+  if (dict->HasKey(kDefaultApplications) &&
+      !ParseDefaultApplications(dict.get(), web_app_manifest_urls)) {
+    return;
+  }
+
+  if (dict->HasKey(kSupportedOrigins) &&
+      !ParseSupportedOrigins(dict.get(), supported_origins,
+                             all_origins_supported)) {
+    web_app_manifest_urls->clear();
+  }
 }
 
 // static
@@ -74,22 +183,29 @@ std::vector<mojom::WebAppManifestSectionPtr>
 PaymentManifestParser::ParseWebAppManifestIntoVector(const std::string& input) {
   std::vector<mojom::WebAppManifestSectionPtr> output;
   std::unique_ptr<base::Value> value(base::JSONReader::Read(input));
-  if (!value)
+  if (!value) {
+    LOG(ERROR) << "Web app manifest must be in JSON format.";
     return output;
+  }
 
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(std::move(value));
-  if (!dict)
+  if (!dict) {
+    LOG(ERROR) << "Web app manifest must be a JSON dictionary.";
     return output;
+  }
 
   base::ListValue* list = nullptr;
-  if (!dict->GetList("related_applications", &list))
+  if (!dict->GetList("related_applications", &list)) {
+    LOG(ERROR) << "\"related_applications\" must be a list.";
     return output;
+  }
 
   size_t related_applications_size = list->GetSize();
   for (size_t i = 0; i < related_applications_size; ++i) {
     base::DictionaryValue* related_application = nullptr;
     if (!list->GetDictionary(i, &related_application) || !related_application) {
+      LOG(ERROR) << "\"related_applications\" must be a list of dictionaries.";
       output.clear();
       return output;
     }
@@ -100,8 +216,10 @@ PaymentManifestParser::ParseWebAppManifestIntoVector(const std::string& input) {
       continue;
     }
 
-    const size_t kMaximumNumberOfRelatedApplications = 100U;
-    if (output.size() >= kMaximumNumberOfRelatedApplications) {
+    if (output.size() >= kMaximumNumberOfEntries) {
+      LOG(ERROR) << "\"related_applications\" must contain at most "
+                 << kMaximumNumberOfEntries
+                 << " entries with \"platform\": \"play\".";
       output.clear();
       return output;
     }
@@ -112,7 +230,10 @@ PaymentManifestParser::ParseWebAppManifestIntoVector(const std::string& input) {
     if (!related_application->HasKey(kId) ||
         !related_application->HasKey(kMinVersion) ||
         !related_application->HasKey(kFingerprints)) {
-      output.clear();
+      LOG(ERROR) << "Each \"platform\": \"play\" entry in "
+                    "\"related_applications\" must contain \""
+                 << kId << "\", \"" << kMinVersion << "\", and \""
+                 << kFingerprints << "\".";
       return output;
     }
 
@@ -122,6 +243,7 @@ PaymentManifestParser::ParseWebAppManifestIntoVector(const std::string& input) {
 
     if (!related_application->GetString(kId, &section->id) ||
         section->id.empty() || !base::IsStringASCII(section->id)) {
+      LOG(ERROR) << "\"" << kId << "\" must be a non-empty ASCII string.";
       output.clear();
       return output;
     }
@@ -130,15 +252,19 @@ PaymentManifestParser::ParseWebAppManifestIntoVector(const std::string& input) {
     if (!related_application->GetString(kMinVersion, &min_version) ||
         min_version.empty() || !base::IsStringASCII(min_version) ||
         !base::StringToInt64(min_version, &section->min_version)) {
+      LOG(ERROR) << "\"" << kMinVersion
+                 << "\" must be a string convertible into a number.";
       output.clear();
       return output;
     }
 
-    const size_t kMaximumNumberOfFingerprints = 100U;
     base::ListValue* fingerprints_list = nullptr;
     if (!related_application->GetList(kFingerprints, &fingerprints_list) ||
         fingerprints_list->empty() ||
-        fingerprints_list->GetSize() > kMaximumNumberOfFingerprints) {
+        fingerprints_list->GetSize() > kMaximumNumberOfEntries) {
+      LOG(ERROR) << "\"" << kFingerprints
+                 << "\" must be a non-empty list of at most "
+                 << kMaximumNumberOfEntries << " items.";
       output.clear();
       return output;
     }
@@ -153,7 +279,11 @@ PaymentManifestParser::ParseWebAppManifestIntoVector(const std::string& input) {
           !fingerprint_dict->GetString("type", &fingerprint_type) ||
           fingerprint_type != "sha256_cert" ||
           !fingerprint_dict->GetString("value", &fingerprint_value) ||
-          fingerprint_value.empty()) {
+          fingerprint_value.empty() ||
+          !base::IsStringASCII(fingerprint_value)) {
+        LOG(ERROR) << "Each entry in \"" << kFingerprints
+                   << "\" must be a dictionary with \"type\": "
+                      "\"sha256_cert\" and a non-empty ASCII string \"value\".";
         output.clear();
         return output;
       }
@@ -181,7 +311,16 @@ PaymentManifestParser::~PaymentManifestParser() {}
 void PaymentManifestParser::ParsePaymentMethodManifest(
     const std::string& content,
     ParsePaymentMethodManifestCallback callback) {
-  std::move(callback).Run(ParsePaymentMethodManifestIntoVector(content));
+  std::vector<GURL> web_app_manifest_urls;
+  std::vector<url::Origin> supported_origins;
+  bool all_origins_supported = false;
+
+  ParsePaymentMethodManifestIntoVectors(content, &web_app_manifest_urls,
+                                        &supported_origins,
+                                        &all_origins_supported);
+
+  std::move(callback).Run(web_app_manifest_urls, supported_origins,
+                          all_origins_supported);
 }
 
 void PaymentManifestParser::ParseWebAppManifest(

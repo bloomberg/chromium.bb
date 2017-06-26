@@ -24,11 +24,17 @@ uint8_t HexDigitToByte(char c) {
 
 std::vector<uint8_t> FingerprintStringToByteArray(const std::string& input) {
   std::vector<uint8_t> output;
-  if (input.size() != 32 * 3 - 1)
+  const size_t kLength = 32 * 3 - 1;
+  if (input.size() != kLength) {
+    LOG(ERROR) << "Fingerprint \"" << input << "\" should contain exactly "
+               << kLength << " characters.";
     return output;
+  }
 
   for (size_t i = 0; i < input.size(); i += 3) {
     if (i < input.size() - 2 && input[i + 2] != ':') {
+      LOG(ERROR) << "Bytes in fingerprint \"" << input
+                 << "\" should separated by \":\" characters.";
       output.clear();
       return output;
     }
@@ -36,6 +42,8 @@ std::vector<uint8_t> FingerprintStringToByteArray(const std::string& input) {
     char big_end = input[i];
     char little_end = input[i + 1];
     if (!IsUpperCaseHexDigit(big_end) || !IsUpperCaseHexDigit(little_end)) {
+      LOG(ERROR) << "Bytes in fingerprint \"" << input
+                 << "\" should be upper case hex digits 0-9 and A-F.";
       output.clear();
       return output;
     }

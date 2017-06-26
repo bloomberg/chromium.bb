@@ -26,7 +26,10 @@ class ParseCallback {
   ~ParseCallback() {}
 
   // Copies payment method manifest into Java.
-  void OnPaymentMethodManifestParsed(std::vector<GURL> web_app_manifest_urls) {
+  void OnPaymentMethodManifestParsed(
+      const std::vector<GURL>& web_app_manifest_urls,
+      const std::vector<url::Origin>& unused_supported_origins,
+      bool unused_all_origins_supported) {
     DCHECK_GE(100U, web_app_manifest_urls.size());
     JNIEnv* env = base::android::AttachCurrentThread();
 

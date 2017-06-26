@@ -5,6 +5,7 @@
 [JavaPackage="org.chromium.payments.mojom"]
 module payments.mojom;
 
+import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
 
 struct WebAppManifestSection {
@@ -19,7 +20,9 @@ struct WebAppManifestSection {
 
 interface PaymentManifestParser {
   ParsePaymentMethodManifest(string content)
-      => (array<url.mojom.Url> webAppManifestUrls);
+      => (array<url.mojom.Url> web_app_manifest_urls,
+          array<url.mojom.Origin> supported_origins,
+          bool all_origins_supported);
   ParseWebAppManifest(string content)
       => (array<WebAppManifestSection> manifest);
 };
