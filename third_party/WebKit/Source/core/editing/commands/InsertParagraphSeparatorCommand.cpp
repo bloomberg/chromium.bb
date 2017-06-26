@@ -538,7 +538,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
 
   // Move the start node and the siblings of the start node.
   if (CreateVisiblePosition(insertion_position).DeepEquivalent() !=
-      VisiblePosition::BeforeNode(block_to_insert).DeepEquivalent()) {
+      VisiblePosition::BeforeNode(*block_to_insert).DeepEquivalent()) {
     Node* n;
     if (insertion_position.ComputeContainerNode() == start_block) {
       n = insertion_position.ComputeNodeAfterPosition();
@@ -554,7 +554,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
       for (n = start_block->firstChild(); n; n = n->nextSibling()) {
-        VisiblePosition before_node_position = VisiblePosition::BeforeNode(n);
+        VisiblePosition before_node_position = VisiblePosition::BeforeNode(*n);
         if (!before_node_position.IsNull() &&
             ComparePositions(CreateVisiblePosition(insertion_position),
                              before_node_position) <= 0)

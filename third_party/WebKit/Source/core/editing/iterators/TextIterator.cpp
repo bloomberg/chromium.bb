@@ -737,7 +737,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
   // for them either.
   VisiblePosition start_pos =
       CreateVisiblePosition(Position(start_container_, start_offset_));
-  VisiblePosition curr_pos = VisiblePosition::BeforeNode(node_);
+  VisiblePosition curr_pos = VisiblePosition::BeforeNode(*node_);
   return start_pos.IsNotNull() && curr_pos.IsNotNull() &&
          !InSameLine(start_pos, curr_pos);
 }

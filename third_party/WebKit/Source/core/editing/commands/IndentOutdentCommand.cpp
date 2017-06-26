@@ -333,7 +333,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
   end_of_paragraph_to_move =
       CreateVisiblePosition(end_of_paragraph_to_move.ToPositionWithAffinity());
   MoveParagraph(start_of_paragraph_to_move, end_of_paragraph_to_move,
-                VisiblePosition::BeforeNode(placeholder), editing_state,
+                VisiblePosition::BeforeNode(*placeholder), editing_state,
                 kPreserveSelection);
 }
 

@@ -528,7 +528,7 @@ void InsertListCommand::UnlistifyParagraph(
   start = CreateVisiblePosition(start_position);
   end = CreateVisiblePosition(end_position);
 
-  VisiblePosition insertion_point = VisiblePosition::BeforeNode(placeholder);
+  VisiblePosition insertion_point = VisiblePosition::BeforeNode(*placeholder);
   MoveParagraphs(start, end, insertion_point, editing_state, kPreserveSelection,
                  kPreserveStyle, list_child_node);
 }
@@ -681,7 +681,7 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
       StartOfParagraph(valid_pos, kCanSkipOverEditingBoundary);
   const VisiblePosition& end =
       EndOfParagraph(valid_pos, kCanSkipOverEditingBoundary);
-  MoveParagraph(start, end, VisiblePosition::BeforeNode(placeholder),
+  MoveParagraph(start, end, VisiblePosition::BeforeNode(*placeholder),
                 editing_state, kPreserveSelection);
 }
 
