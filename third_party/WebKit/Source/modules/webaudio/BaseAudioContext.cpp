@@ -38,6 +38,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "modules/mediastream/MediaStream.h"
@@ -722,8 +723,7 @@ bool BaseAudioContext::AreAutoplayRequirementsFulfilled() const {
     case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
       return UserGestureIndicator::ProcessingUserGesture();
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
-      return GetDocument()->GetFrame() &&
-             GetDocument()->GetFrame()->HasReceivedUserGesture();
+      return AutoplayPolicy::IsDocumentAllowedToPlay(*GetDocument());
   }
 
   NOTREACHED();

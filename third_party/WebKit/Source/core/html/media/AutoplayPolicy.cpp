@@ -73,6 +73,14 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
   return document.GetSettings()->GetAutoplayPolicy();
 }
 
+// static
+bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
+  if (!document.GetFrame())
+    return false;
+  return document.GetFrame()->HasReceivedUserGesture() ||
+         document.GetFrame()->HasReceivedUserGestureBeforeNavigation();
+}
+
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
     : locked_pending_user_gesture_(false),
       locked_pending_user_gesture_if_cross_origin_experiment_enabled_(true),
@@ -230,9 +238,7 @@ bool AutoplayPolicy::IsOrWillBeAutoplayingMutedInternal(bool muted) const {
 bool AutoplayPolicy::IsLockedPendingUserGesture() const {
   if (GetAutoplayPolicyForDocument(element_->GetDocument()) ==
       AutoplayPolicy::Type::kDocumentUserActivationRequired) {
-    if (!element_->GetDocument().GetFrame())
-      return true;
-    return !element_->GetDocument().GetFrame()->HasReceivedUserGesture();
+    return !IsDocumentAllowedToPlay(element_->GetDocument());
   }
 
   return locked_pending_user_gesture_;

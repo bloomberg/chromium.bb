@@ -701,6 +701,35 @@ TEST_P(BaseAudioContextAutoplayTest,
   }
 }
 
+// Attempts to autoplay an AudioContext in a main child frame when the
+// document received a user gesture before navigation.
+TEST_P(BaseAudioContextAutoplayTest,
+       AutoplayMetrics_DocumentReceivedGesture_BeforeNavigation) {
+  HistogramTester histogram_tester;
+
+  GetDocument().GetFrame()->SetDocumentHasReceivedUserGestureBeforeNavigation(
+      true);
+
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  RecordAutoplayStatus(audio_context);
+
+  switch (GetParam()) {
+    case AutoplayPolicy::Type::kNoUserGestureRequired:
+    case AutoplayPolicy::Type::kUserGestureRequired:
+    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
+      histogram_tester.ExpectTotalCount(kAutoplayMetric, 0);
+      histogram_tester.ExpectTotalCount(kAutoplayCrossOriginMetric, 0);
+      break;
+    case AutoplayPolicy::Type::kDocumentUserActivationRequired:
+      histogram_tester.ExpectBucketCount(
+          kAutoplayMetric, AutoplayStatus::kAutoplayStatusSucceeded, 1);
+      histogram_tester.ExpectTotalCount(kAutoplayMetric, 1);
+      histogram_tester.ExpectTotalCount(kAutoplayCrossOriginMetric, 0);
+      break;
+  }
+}
+
 INSTANTIATE_TEST_CASE_P(
     BaseAudioContextAutoplayTest,
     BaseAudioContextAutoplayTest,
