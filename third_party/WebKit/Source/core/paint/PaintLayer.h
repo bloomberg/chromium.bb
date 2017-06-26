@@ -857,7 +857,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* EnclosingTransformedAncestor() const;
   LayoutPoint ComputeOffsetFromTransformedAncestor() const;
 
-  void DidUpdateNeedsCompositedScrolling();
+  void DidUpdateScrollsOverflow();
 
   bool HasSelfPaintingLayerDescendant() const {
     if (has_self_painting_layer_descendant_dirty_)
