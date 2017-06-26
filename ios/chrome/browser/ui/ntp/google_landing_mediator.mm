@@ -5,10 +5,14 @@
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 
 #import "base/ios/weak_nsobject.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
+#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon_base/fallback_icon_style.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
@@ -19,6 +23,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/favicon/large_icon_cache.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
@@ -37,11 +42,13 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "skia/ext/skia_utils_ios.h"
 
 using base::UserMetricsAction;
 
 namespace {
 
+const CGFloat kFaviconMinSize = 32;
 const NSInteger kMaxNumMostVisitedFavicons = 8;
 
 }  // namespace
@@ -115,6 +122,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   // What's new promo.
   std::unique_ptr<NotificationPromoWhatsNew> _notification_promo;
+
+  // Used to cancel tasks for the LargeIconService.
+  base::CancelableTaskTracker _cancelable_task_tracker;
 }
 
 // Consumer to handle google landing update notifications.
@@ -277,6 +287,54 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       break;
     }
   }
+}
+
+- (void)getFaviconForURL:(GURL)URL
+                    size:(CGFloat)size
+                useCache:(BOOL)useCache
+           imageCallback:(void (^)(UIImage*))imageCallback
+        fallbackCallback:(void (^)(UIColor*, UIColor*, BOOL))fallbackCallback {
+  base::WeakNSObject<GoogleLandingMediator> weakSelf(self);
+
+  void (^faviconBlock)(const favicon_base::LargeIconResult&) = ^(
+      const favicon_base::LargeIconResult& result) {
+    if (result.bitmap.is_valid()) {
+      scoped_refptr<base::RefCountedMemory> data =
+          result.bitmap.bitmap_data.get();
+      UIImage* favicon = [UIImage
+          imageWithData:[NSData dataWithBytes:data->front() length:data->size()]
+                  scale:[UIScreen mainScreen].scale];
+      imageCallback(favicon);
+    } else if (result.fallback_icon_style) {
+      UIColor* backgroundColor = skia::UIColorFromSkColor(
+          result.fallback_icon_style->background_color);
+      UIColor* textColor =
+          skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
+      BOOL isDefaultColor =
+          result.fallback_icon_style->is_default_background_color;
+      fallbackCallback(backgroundColor, textColor, isDefaultColor);
+    }
+
+    base::scoped_nsobject<GoogleLandingMediator> strongSelf([weakSelf retain]);
+    if (strongSelf &&
+        (result.bitmap.is_valid() || result.fallback_icon_style)) {
+      [strongSelf largeIconCache]->SetCachedResult(URL, result);
+    }
+  };
+
+  if (useCache) {
+    std::unique_ptr<favicon_base::LargeIconResult> cached_result =
+        [self largeIconCache]->GetCachedResult(URL);
+    if (cached_result) {
+      faviconBlock(*cached_result);
+    }
+  }
+
+  CGFloat faviconSize = [UIScreen mainScreen].scale * size;
+  CGFloat faviconMinSize = [UIScreen mainScreen].scale * kFaviconMinSize;
+  [self largeIconService]->GetLargeIconOrFallbackStyle(
+      URL, faviconMinSize, faviconSize, base::BindBlock(faviconBlock),
+      &_cancelable_task_tracker);
 }
 
 #pragma mark - WebStateListObserving
