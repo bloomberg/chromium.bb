@@ -165,8 +165,8 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     binding_.Bind(spellcheck::mojom::SpellCheckerRequest(std::move(handle)));
     binding_.set_connection_error_handler(
-        base::Bind(&SpellcheckServiceBrowserTest::BoundConnectionClosed,
-                   base::Unretained(this)));
+        base::BindOnce(&SpellcheckServiceBrowserTest::BoundConnectionClosed,
+                       base::Unretained(this)));
   }
 
   // The requester closes (disconnects) when done.
@@ -245,8 +245,8 @@ class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
     base::UTF8ToUTF16("hello", 5, &word_);
     interface->CallSpellingService(
         word_,
-        base::Bind(&SpellcheckServiceHostBrowserTest::SpellingServiceDone,
-                   base::Unretained(this)));
+        base::BindOnce(&SpellcheckServiceHostBrowserTest::SpellingServiceDone,
+                       base::Unretained(this)));
 
     base::RunLoop run_loop;
     quit_ = run_loop.QuitClosure();

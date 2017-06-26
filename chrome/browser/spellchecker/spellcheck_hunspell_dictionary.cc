@@ -81,10 +81,8 @@ SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile() {
 
 SpellcheckHunspellDictionary::DictionaryFile::~DictionaryFile() {
   if (file.IsValid()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&CloseDictionary, Passed(&file)));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::BindOnce(&CloseDictionary, Passed(&file)));
   }
 }
 
