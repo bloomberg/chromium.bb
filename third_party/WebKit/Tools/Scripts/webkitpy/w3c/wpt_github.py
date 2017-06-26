@@ -22,7 +22,7 @@ class WPTGitHub(object):
     This class contains methods for sending requests to the GitHub API.
     """
 
-    def __init__(self, host, user=None, token=None, pr_history_window=30):
+    def __init__(self, host, user=None, token=None, pr_history_window=100):
         self.host = host
         self.user = user
         self.token = token

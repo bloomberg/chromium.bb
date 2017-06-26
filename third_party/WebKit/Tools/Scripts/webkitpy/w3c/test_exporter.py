@@ -15,14 +15,12 @@ from webkitpy.w3c.wpt_github import WPTGitHub, MergeError
 
 _log = logging.getLogger(__name__)
 
-PR_HISTORY_WINDOW = 100
-
 
 class TestExporter(object):
 
     def __init__(self, host, gh_user, gh_token, gerrit_user, gerrit_token, dry_run=False):
         self.host = host
-        self.wpt_github = WPTGitHub(host, gh_user, gh_token, pr_history_window=PR_HISTORY_WINDOW)
+        self.wpt_github = WPTGitHub(host, gh_user, gh_token)
 
         self.gerrit = GerritAPI(self.host, gerrit_user, gerrit_token)
 
