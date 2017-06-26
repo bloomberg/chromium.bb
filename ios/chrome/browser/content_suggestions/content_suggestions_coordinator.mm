@@ -29,10 +29,12 @@
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -54,9 +56,14 @@
     ContentSuggestionsViewController* suggestionsViewController;
 @property(nonatomic, strong)
     ContentSuggestionsMediator* contentSuggestionsMediator;
-@property(nonatomic, strong)
-    ContentSuggestionsHeaderController* headerController;
 @property(nonatomic, strong) GoogleLandingMediator* googleLandingMediator;
+
+// Redefined as readwrite.
+@property(nonatomic, strong, readwrite)
+    ContentSuggestionsHeaderController* headerController;
+
+// |YES| if the fakebox header should be animated on scroll.
+@property(nonatomic, assign) BOOL animateHeader;
 
 // Opens the |URL| in a new tab |incognito| or not.
 - (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito;
@@ -80,6 +87,8 @@
 @synthesize googleLandingMediator = _googleLandingMediator;
 @synthesize webStateList = _webStateList;
 @synthesize dispatcher = _dispatcher;
+@synthesize delegate = _delegate;
+@synthesize animateHeader = _animateHeader;
 
 - (void)start {
   if (self.visible || !self.browserState) {
@@ -89,6 +98,7 @@
   }
 
   _visible = YES;
+  self.animateHeader = YES;
 
   ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
@@ -145,6 +155,10 @@
   [self.googleLandingMediator shutdown];
   self.googleLandingMediator = nil;
   _visible = NO;
+}
+
+- (UIViewController*)viewController {
+  return self.suggestionsViewController;
 }
 
 #pragma mark - ContentSuggestionsCommands
@@ -358,6 +372,39 @@
     return;
   }
   NOTREACHED();
+}
+
+#pragma mark - NewTabPagePanelProtocol
+
+- (CGFloat)alphaForBottomShadow {
+  // TODO(crbug.com/700375): implement this.
+  return 0;
+}
+
+- (UIView*)view {
+  return self.suggestionsViewController.view;
+}
+
+- (void)reload {
+  // TODO(crbug.com/700375): implement this.
+}
+
+- (void)wasShown {
+  // TODO(crbug.com/700375): implement this.
+}
+
+- (void)wasHidden {
+  // TODO(crbug.com/700375): implement this.
+}
+
+- (void)dismissModals {
+  // TODO(crbug.com/700375): implement this.
+}
+
+- (void)dismissKeyboard {
+}
+
+- (void)setScrollsToTop:(BOOL)enable {
 }
 
 #pragma mark - Private

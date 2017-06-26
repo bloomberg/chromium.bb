@@ -31,9 +31,6 @@ const CGFloat kHintLabelSidePadding = 12;
 
 @interface ContentSuggestionsHeaderController ()
 
-// Whether the Google logo or doodle is being shown.
-@property(nonatomic, assign) BOOL logoIsShowing;
-
 // |YES| if this consumer is has voice search enabled.
 @property(nonatomic, assign) BOOL voiceSearchIsEnabled;
 
@@ -61,9 +58,6 @@ const CGFloat kHintLabelSidePadding = 12;
 // |YES| if this NTP panel is visible.  When set to |NO| various UI updates are
 // ignored.
 @property(nonatomic, assign) BOOL isShowing;
-
-// |YES| when notifications indicate the omnibox is focused.
-@property(nonatomic, assign) BOOL omniboxFocused;
 
 // The number of tabs to show in the google landing fake toolbar.
 @property(nonatomic, assign) int tabCount;
@@ -110,6 +104,20 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
 @synthesize logoIsShowing = _logoIsShowing;
 @synthesize logoFetched = _logoFetched;
+
+#pragma mark - Public
+
+- (void)updateSearchFieldForOffset:(CGFloat)offset {
+  NSArray* constraints =
+      @[ self.hintLabelLeadingConstraint, self.voiceTapTrailingConstraint ];
+
+  [self.headerView updateSearchFieldWidth:self.fakeOmniboxWidthConstraint
+                                   height:self.fakeOmniboxHeightConstraint
+                                topMargin:self.fakeOmniboxTopMarginConstraint
+                       subviewConstraints:constraints
+                            logoIsShowing:self.logoIsShowing
+                                forOffset:offset];
+}
 
 #pragma mark - ContentSuggestionsHeaderProvider
 
@@ -256,6 +264,22 @@ const CGFloat kHintLabelSidePadding = 12;
     [fakeOmnibox.centerXAnchor
         constraintEqualToAnchor:headerView.centerXAnchor],
   ]];
+}
+
+#pragma mark - ToolbarOwner
+
+- (ToolbarController*)relinquishedToolbarController {
+  return [self.headerView relinquishedToolbarController];
+}
+
+- (void)reparentToolbarController {
+  [self.headerView reparentToolbarController];
+}
+
+#pragma mark - LogoAnimationControllerOwnerOwner
+
+- (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
+  return [self.logoVendor logoAnimationControllerOwner];
 }
 
 #pragma mark - GoogleLandingConsumer

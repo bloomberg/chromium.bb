@@ -364,7 +364,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
       NSInteger orderedSectionIdentifier =
           SectionIdentifierForInfo(orderedSectionInfo);
       if (orderedSectionIdentifier == sectionIdentifier) {
-        continue;
+        break;
       }
       if ([model hasSectionForSectionIdentifier:orderedSectionIdentifier]) {
         sectionIndex++;
