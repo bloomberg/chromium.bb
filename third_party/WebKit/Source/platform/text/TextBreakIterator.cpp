@@ -390,6 +390,12 @@ int LazyLineBreakIterator::NextBreakablePositionKeepAll(int pos) const {
                                               string_.length(), pos);
 }
 
+int LazyLineBreakIterator::NextBreakablePositionBreakCharacter(int pos) const {
+  NonSharedCharacterBreakIterator iterator(string_);
+  int next = iterator.Following(std::max(pos - 1, 0));
+  return next != kTextBreakDone ? next : string_.length();
+}
+
 unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
   int next_break = -1;
   IsBreakable(offset, next_break);
@@ -404,6 +410,21 @@ unsigned LazyLineBreakIterator::PreviousBreakOpportunity(unsigned offset,
       return pos;
   }
   return min;
+}
+
+std::ostream& operator<<(std::ostream& ostream, LineBreakType line_break_type) {
+  switch (line_break_type) {
+    case LineBreakType::kNormal:
+      return ostream << "Normal";
+    case LineBreakType::kBreakAll:
+      return ostream << "BreakAll";
+    case LineBreakType::kBreakCharacter:
+      return ostream << "BreakCharacter";
+    case LineBreakType::kKeepAll:
+      return ostream << "KeepAll";
+  }
+  NOTREACHED();
+  return ostream << "LineBreakType::" << static_cast<int>(line_break_type);
 }
 
 }  // namespace blink
