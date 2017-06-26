@@ -192,7 +192,6 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-#line 759 "interface_base.cpp.tmpl"
 void V8TestConstants::installFeatureName1(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
   const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst1Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1", 6, 0, V8DOMConfiguration::kConstantTypeShort};
   V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst1Configuration);

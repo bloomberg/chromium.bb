@@ -478,7 +478,6 @@ void V8TestInterfacePartial::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-#line 759 "interface_base.cpp.tmpl"
 void V8TestInterfacePartial::installOriginTrialPartialFeature(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
   v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestInterface::wrapperTypeInfo.domTemplate(isolate, world);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
