@@ -144,6 +144,7 @@
       Hvis denne innstillingen er slått av eller ikke konfigurert, kan bedriftsbrukere
       ikke bruke ARC.</translation>
 <translation id="1561424797596341174">Overstyring av regler for delversjoner for feilsøking på fjerntilgangsverten</translation>
+<translation id="1561967320164410511">U2F samt utvidelser for individuell attestering</translation>
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
@@ -178,6 +179,7 @@
       Hvis innstillingen ikke er konfigurert, vises ingen vilkår.
 
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME" /> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
+<translation id="1750315445671978749">Blokkér alle nedlastinger</translation>
 <translation id="1781356041596378058">Denne regelen kontrollerer også tilgangen til utvikleralternativene for Android. Hvis du angir denne regelen som «true» (sann), fjerner du brukernes tilgang til utvikleralternativene. Hvis du angir denne regelen som «false» (usann) eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på delversjonsnummeret i appen for Android-innstillinger.</translation>
 <translation id="1803646570632580723">Liste over programmer som er festet i programlisten</translation>
 <translation id="1808715480127969042">Blokkér informasjonskapsler på disse nettstedene</translation>
@@ -550,6 +552,9 @@
       Hvis du slår på denne regelen, blir alle obligatoriske autentiseringssider (det vil si alle nettsider fra den obligatoriske påloggingssiden og frem til <ph name="PRODUCT_NAME" /> registrerer at enheten er koblet til Internett) vist i separate vinduer, og alle administratorinnstillinger og begrensninger for den aktive brukeren blir ignorert.
 
       Hvis du slår av denne regelen eller ikke spesifiserer den, blir alle obligatoriske autentiseringssider vist i (vanlige) nye nettleserfaner, med den aktive brukerens proxy-tjenerinnstillinger.</translation>
+<translation id="3001534538097271560">Hvis denne regelen settes til «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Google-tjenere. Hvis denne regelen settes til «true» (sann) eller ikke konfigureres, kan brukerne sende enkelte typer systeminformasjon og sideinnhold til Safe Browsing for å bidra til å oppdage farlige apper og nettsteder.
+
+      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="3021409116652377124">Deaktiver programtilleggssøk</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
@@ -690,6 +695,11 @@
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
+<translation id="3687282113223807271">Safe Browsing-tjenesten viser en advarselsside når brukere navigerer til nettsteder som er merket som potensielt skadelige. Hvis du slår på denne innstillingen, hindres brukerne i å ignorere advarselssiden og gå videre til det skadelige nettstedet.
+
+      Hvis denne innstillingen er slått av eller ikke er konfigurert, kan brukerne velge å gå videre til det rapporterte nettstedet etter å ha sett advarselen.
+
+      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
@@ -773,6 +783,7 @@
       Oppfører utvidelser som automatisk installeres for demo-brukeren, for enheter i detaljistmodus. Disse utvidelsene lagres på enheten og kan installeres utenfor nettet, etter installeringen.
 
       Hver oppføring på listen inneholder en ordliste som må inkludere utvidelse-ID-en i feltet for utvidelse-ID samt dets oppdateringsnettadresse i feltet for oppdateringsnettadresse.</translation>
+<translation id="3877517141460819966">Modus for integrert tofaktor-autentisering</translation>
 <translation id="388237772682176890">Denne regelen ble avviklet i M53 og fjernet i M54, fordi støtten for SPDY/3.1 ble fjernet.
 
       Slår av bruken av SPDY-protokollen i <ph name="PRODUCT_NAME" />.
@@ -870,6 +881,23 @@
 <translation id="4239720644496144453">Bufferen brukes ikke til Android-apper. Hvis flere brukere installerer den samme Android-appen, blir den lastet ned på nytt for hver bruker.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4261820385751181068">Lokalitet for påloggingsskjermen på enheten</translation>
+<translation id="4275782538576261754">Konfigurerer hvilken type nedlasting <ph name="PRODUCT_NAME" /> skal blokkere fullstendig. Brukerne kan ikke overstyre sikkerhetsbestemmelsen.
+
+      Hvis du angir denne regelen, forhindrer <ph name="PRODUCT_NAME" /> enkelte typer nedlastinger, og brukeren kan ikke omgå sikkerhetsadvarslene.
+
+      Når «Blokkér farlige nedlastinger»-alternativet er valgt, blokkeres alle nedlastinger, bortsett fra de som er tilknyttet Safe Browsing-advarsler.
+
+      Når «Blokkér potensielt farlige nedlastinger»-alternativer er valgt, tillates alle nedlastinger, bortsett fra de som er tilknyttet Safe Browsing-advarsler om potensielt farlige nedlastinger.
+
+      Når «Blokkér alle nedlastinger»-alternativet er valgt, blokkeres alle nedlastinger.
+
+      Hvis denne regelen ikke er angitt (eller hvis «Ingen spesielle begrensninger»-alternativet er valgt, er nedlastingene underlagt de vanlige sikkerhetsbegrensningene, som er basert på Safe Browsing-analyseresultater.
+
+      Vær oppmerksom på at disse begrensningene gjelder for nedlastinger som startes via nettsideinnhold, samt «Last ned linken»-alternativet i den kontekstuelle menyen.
+
+       Disse begrensningene gjelder ikke for nedlasting/lagring av siden som i øyeblikket vises, og heller ikke for lagring av nettsteder som PDF-filer via utskriftsalternativene.
+
+      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="427632463972968153">Angir parameterene som brukes når du utfører et bildesøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {imageThumbnail} i eksempelet ovenfor, blir den erstattet med virkelige miniatyrbildedata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om bildesøk sendt via GET-metoden.
@@ -1089,6 +1117,7 @@
 <translation id="5219844027738217407">For Android-apper har denne regelen bare innvirkning på mikrofonen. Når denne regelen er angitt som «true» (sann), slås mikrofonen av for alle Android-apper – uten unntak.</translation>
 <translation id="5226033722357981948">Angir hvorvidt programtilleggssøket skal deaktiveres</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
+<translation id="5247006254130721952">Blokkér farlige nedlastinger</translation>
 <translation id="5255162913209987122">Kan anbefales</translation>
 <translation id="527237119693897329">Lar deg spesifisere hvilke innebygde meldingsverter som ikke skal lastes inn.
 
@@ -1177,6 +1206,7 @@
       Hvis du ikke spesifiserer noen periode, bruker <ph name="PRODUCT_OS_NAME" /> standardverdien på 3 timer.
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdien denne regelen er satt til), fordi det forventes at varsler om brudd på reglene fremtvinger ny innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
+<translation id="5530347722229944744">Blokkér potensielt farlige nedlastinger</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
 <translation id="555077880566103058">Tillat at <ph name="FLASH_PLUGIN_NAME" />-programtillegget kan kjøres automatisk på alle nettsteder</translation>
 <translation id="5559079916187891399">Denne regelen har ingen innvirkning på Android-apper.</translation>
@@ -1305,6 +1335,17 @@
 <translation id="5966615072639944554">Utvidelser kan bruke API-et for ekstern attestasjon</translation>
 <translation id="5983708779415553259">Standard atferd for nettsteder som ikke inngår i noen innholdspakker.</translation>
 <translation id="5997543603646547632">Bruk 24-timersklokken som standard</translation>
+<translation id="6005179188836322782">Slår på Safe Browsing-funksjonen for <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
+
+      Hvis du slår på denne innstillingen, er Safe Browsing alltid aktiv.
+
+      Hvis du slår av denne innstillingen, er Safe Browsing aldri aktiv.
+
+      Hvis du slår denne innstillingen av eller på, kan ikke brukeren endre eller overstyre innstillingen for beskyttelse mot nettfisking og skadelig programvare for <ph name="PRODUCT_NAME" />.
+
+      Hvis innstillingen ikke angis, aktiveres dette, men brukeren kan endre det.
+
+      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="6017568866726630990">Vis utskriftsdialogen for systemet i stedet for utskriftsforhåndsvisning.
 
       Når denne innstillingen aktiveres, åpner <ph name="PRODUCT_NAME" /> utskriftsdialogen for systemet i stedet for den innebygde utskriftsforhåndsvisningen når en bruker ber om å skrive ut en side.
@@ -1379,6 +1420,11 @@
 <translation id="6281043242780654992">Konfigurer innstillinger for innebygde meldinger. Innebygde meldingsverter som er svartelistet tillates ikke med mindre de godkjennes.</translation>
 <translation id="6282799760374509080">Tillat eller avvis lydopptak</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Slår på komponentoppdateringer for alle komponenter i <ph name="PRODUCT_NAME" /> når regelen ikke er angitt eller er angitt som «True» (sann).
+
+      Hvis regelen angis som «False» (usann), slås komponentoppdateringer av. Enkelte komponenter er imidlertid unntatt fra denne regelen, og oppdateringer slås ikke av for disse. Dette gjelder oppdateringer av komponenter som er avgjørende for sikkerheten, eller som ikke inneholder kjørbar kode eller endrer nettleserens atferd betydelig.
+      Noen eksempler på slike komponenter er Safe Browsing-data og listene over tilbaketrukne sertifikater.
+      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="6310223829319187614">Slå på autofullføring av domenenavn ved brukerpålogging</translation>
 <translation id="6315673513957120120">Brukerne ser advarselssider i Chrome når de åpner nettsteder med SSL-feil. Som standard, eller når denne regelen er satt til true (sann), kan brukerne klikke seg forbi disse advarselssidene.
       Hvis denne regelen settes til false (usann), kan ikke brukerne klikke seg forbi advarselssider.</translation>
@@ -1586,6 +1632,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Vær oppmerksom på at hvis <ph name="PRODUCT_NAME" /> kjører i «bakgrunnsmodus», kan det hende økten ikke avsluttes når det siste nettleservinduet lukkes, og at den fortsetter å være aktiv til nettleseren avsluttes. Du finner mer informasjon om hvordan du konfigurerer denne atferden i «BackgroundModeEnabled»-regelen.
 
           Hvis «RestoreOnStartup»-regelen er konfigurert til å gjenopprette nettadressene fra forrige økt, overstyrer den denne regelen, og informasjonskapslene for slike nettsteder lagres permanent.</translation>
+<translation id="7202925763179776247">Tillat begrensninger for nedlastinger</translation>
 <translation id="7207095846245296855">Fremtving bruk av Google Sikkert Søk</translation>
 <translation id="7216442368414164495">Tillat at brukere velger utvidet rapportering for sikker surfing</translation>
 <translation id="7234280155140786597">Navnene på de forbudte innebygde meldingsvertene (eller * for alle)</translation>
@@ -1714,6 +1761,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Denne regelen er bare for intern bruk i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7712109699186360774">Spør hver gang et nettsted ønsker å bruke kameraet og/eller mikrofonen min</translation>
+<translation id="7713608076604149344">Begrensninger for nedlastinger</translation>
 <translation id="7715711044277116530">Prosentandelen det skaleres etter for forsinkelse av skjermdemping i presentasjonsmodus</translation>
 <translation id="7717938661004793600">Konfigurer tilgjengelighetfunksjonene for <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Kontrollerer om bruksberegninger rapporteres til Google. Hvis innstillingen er angitt som Sann, rapporterer <ph name="PRODUCT_OS_NAME" /> bruksberegninger. Hvis innstillingen ikke konfigureres eller angis som Usann, deaktiveres rapportering av beregninger.</translation>
@@ -1813,6 +1861,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
+<translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
 <translation id="8044493735196713914">Rapportering av oppstartsmodus for enhet</translation>
 <translation id="8050080920415773384">Integrert utskrift</translation>
@@ -1934,6 +1983,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Når DeviceIdleLogoutTimeout er spesifisert, definerer denne retningslinjen varigheten av advarselfeltet med en nedtellingsklokke som vises til brukeren før den blir logget av.
 
       Retningslinjeverdien må angis i millisekunder.</translation>
+<translation id="8339420913453596618">Bruk av en andre faktor er slått av</translation>
 <translation id="8344454543174932833">Importer bokmerker fra standard nettleser ved første kjøring</translation>
 <translation id="8359734107661430198">Slå på ExampleDeprecatedFeature API frem til og med 2008/09/02</translation>
 <translation id="8369602308428138533">Forsinkelse for avslått skjerm når du bruker strømadapteren</translation>
@@ -1979,6 +2029,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis du ikke spesifiserer denne regelen, forsøker <ph name="PRODUCT_NAME" /> å oppdage om en tjener er på intranett og bare svare på IWA-forespørsler hvis den er det. Hvis en tjener registreres som Internett, ignorerer <ph name="PRODUCT_NAME" /> IWA-forespørsler fra tjeneren.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
+<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
 <translation id="8711086062295757690">Angir nøkkelordet, som er snarveien som brukes i søkefeltet for å utløse søket for denne leverandøren.

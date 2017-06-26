@@ -141,6 +141,7 @@
       Ha ez a beállítás le van tiltva, illetve nincs konfigurálva, akkor a vállalati
       felhasználók nem használhatják az ARC szolgáltatást.</translation>
 <translation id="1561424797596341174">A házirend felülírja a távoli elérésű gazdagép hibakeresés végzésére szolgáló buildjeit</translation>
+<translation id="1561967320164410511">U2F plusz bővítmények az egyéni hitelesítéshez</translation>
 <translation id="1583248206450240930">A <ph name="PRODUCT_FRAME_NAME" /> használata alapértelmezés szerint</translation>
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
 <translation id="1617235075406854669">Böngészési és letöltési előzmények törlésének engedélyezése</translation>
@@ -175,6 +176,7 @@
       Ha a házirend nincs beállítva, a rendszer nem jeleníti meg Általános Szerződési Feltételeket.
 
       A házirend beállításánál egy URL-t kell megadni, amelyről a(z) <ph name="PRODUCT_OS_NAME" /> letöltheti az Általános Szerződési Feltételeket. Az Általános Szerződési Feltételek egyszerű szöveg formátumban legyenek, amelyet text/plain MIME típusként kell megjeleníteni. HTML-kódok nem engedélyezettek.</translation>
+<translation id="1750315445671978749">Az összes letöltés letiltása</translation>
 <translation id="1781356041596378058">A házirend meghatározza az Android fejlesztői beállításokhoz való hozzáférést is. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára koppintanak az Android Beállítások alkalmazásában.</translation>
 <translation id="1803646570632580723">Az indítóban megjeleníteni kívánt rögzített alkalmazások listája</translation>
 <translation id="1808715480127969042">Cookie-k letiltása ezeken a webhelyeken</translation>
@@ -535,6 +537,9 @@
       Ha engedélyezi ezt a beállítást, a hitelesítési portál mindegyik hitelesítési oldala (azaz az összes weboldal a hitelesítési portál bejelentkezési oldalától addig, amíg a <ph name="PRODUCT_NAME" /> sikeresen felállított internetkapcsolatot észlel) külön ablakban jelenik meg, figyelmen kívül hagyva a házirendek beállításait és az aktuális felhasználóra vonatkozó korlátozásokat.
 
       Ha letiltja a beállítást, vagy ha nem állítja be, akkor a hitelesítési portál hitelesítési oldalai új (normál) böngészőlapon jelennek meg, figyelembe véve az aktuális felhasználó proxybeállításait</translation>
+<translation id="3001534538097271560">Ha ennek a házirendnek az értéke hamis, akkor a felhasználók nem dönthetik el, hogy elküldjenek-e bizonyos rendszer-információkat és oldaltartalmakat a Google szervereinek. Ha a beállítás értéke igaz, vagy ha nincs megadva, akkor a felhasználók elküldhetnek bizonyos rendszer-információkat és oldaltartalmakat a Biztonságos Böngészés szolgáltatásnak, hogy segítsék a veszélyes alkalmazások és webhelyek észlelését.
+
+      Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="3021409116652377124">Bővítménykereső letiltása</translation>
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
 <translation id="3034580675120919256">Meghatározhatja, hogy a webhelyek futtathatnak-e JavaScriptet. A JavaScript futtatását engedélyezheti vagy letilthatja minden webhely számára. Ha a házirend beállítatlanul marad, a rendszer az "AllowJavaScript" értéket használja, amelyet a felhasználó módosíthat.</translation>
@@ -672,6 +677,11 @@
 <translation id="3646859102161347133">Nagyító típusának beállítása</translation>
 <translation id="3653237928288822292">Alapértelmezett keresési szolgáltató ikonja</translation>
 <translation id="3660562134618097814">SAML IdP cookie-k átadása a bejelentkezés során</translation>
+<translation id="3687282113223807271">A Biztonságos Böngészés szolgáltatás figyelmeztető oldalt jelenít meg, ha a felhasználó esetlegesen rosszindulatúként megjelölt oldalra lép. A beállítás engedélyezése megakadályozza, hogy a felhasználó a figyelmeztető oldalról továbblépjen a rosszindulatú webhelyre.
+
+      Ha a beállítás le van tiltva vagy nincs megadva, akkor a felhasználók dönthetik el, hogy a figyelmeztetés megtekintése után továbblépnek-e a megjelölt webhelyre.
+
+      Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
 <translation id="3711895659073496551">Felfüggesztés</translation>
 <translation id="3736879847913515635">Engedélyezi a személyek hozzáadását a felhasználókezelőben</translation>
@@ -752,6 +762,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Felsorolja azokat a bővítményeket, amelyeket a kiállító módban lévő eszközök esetében automatikusan telepít a rendszer a bemutatófelhasználó részére. A bővítményeket a rendszer az eszközre menti, így azok offline módban, a telepítés után is telepíthetők.
 
       A listabejegyzések szótárának tartalmaznia kell a bővítményazonosítót az „extension-id” mezőben, valamint annak frissített URL-jét az „update-url” mezőben.</translation>
+<translation id="3877517141460819966">Integrált kétlépcsős azonosítási mód</translation>
 <translation id="388237772682176890">Ez az irányelv megszűnt az M53-ban, valamint eltávolításra került az M54-ben, mivel a SPDY/3.1  támogatását megszüntettük.
 
       Letiltja a SPDY protokoll használatát a(z) <ph name="PRODUCT_NAME" /> termékben.
@@ -846,6 +857,23 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4239720644496144453">Az Android-alkalmazások nem használják a gyorsítótárat. Ha több felhasználó telepíti ugyanazt az Android-alkalmazást, akkor az mindegyik felhasználó számára újonnan töltődik le.</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4261820385751181068">Az eszköz bejelentkezési képernyőjének nyelv- és országkódja</translation>
+<translation id="4275782538576261754">Konfigurálja azokat a letöltéseket, amelyeket a(z) <ph name="PRODUCT_NAME" /> teljeskörűen letilt; anélkül, hogy megadná a felhasználóknak a biztonsági döntés felülbírálásának lehetőségét.
+
+      A házirend beállítása esetén a(z) <ph name="PRODUCT_NAME" /> megakadályoz bizonyos típusú letöltéseket, és nem hagyja, hogy a felhasználók elvessék a biztonsági figyelmeztetéseket.
+
+      A „Veszélyes letöltések letiltása” beállítás kiválasztása esetén minden letöltés engedélyezett azokon kívül, amelyek a Biztonságos Böngészés figyelmeztetéseit jelenítik meg.
+
+      A „Potenciálisan veszélyes letöltések letiltása” beállítás kiválasztása esetén minden letöltés engedélyezett, kivéve azokat, amelyek a Biztonságos Böngészés potenciálisan veszélyes letöltésekre vonatkozó figyelmeztetéseit jelenítik meg.
+
+      „Az összes letöltés letiltása” lehetőség kiválasztása esetén az összes letöltést letiltja a rendszer.
+
+      Ha ez a házirend nincs beállítva (vagy a „Speciális korlátozás nélkül” beállítás van kiválasztva), akkor a letöltésekre a szokásos biztonsági korlátozások érvényesek a Biztonságos Böngészés elemzésének eredményei alapján.
+
+      Kérjük, vegye figyelembe, hogy ezek a korlátozások érvényesek a weboldaltartalmak által indított letöltésekre, valamint a „link letöltése…” helyi menüpont letöltéseire is.
+
+      Ezek a korlátozások nem érvényesek az aktuálisan megjelenített oldal mentésére és letöltésére, illetve a PDF-ként való mentésre a nyomtatási beállítások között.
+
+      Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="427632463972968153">Megadja a POST segítségével történő képkeresésekor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában az {imageThumbnail}, valódi indexképadatok kerülnek a helyére.
 
           Ez egy opcionális házirend. Ha nincs beállítva, a képkeresési kérelmet a rendszer a GET metódus segítségével továbbítja.
@@ -1047,6 +1075,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5219844027738217407">Az Android-alkalmazások esetében ez a házirend csak a mikrofonra vonatkozik. Ha a házirend beállítása igaz, a rendszer kivétel nélkül valamennyi Android-alkalmazásra vonatkozóan némítja a mikrofont.</translation>
 <translation id="5226033722357981948">Adja meg, hogy a bővítménykereső le legyen-e tiltva</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>
+<translation id="5247006254130721952">Veszélyes letöltések letiltása</translation>
 <translation id="5255162913209987122">Ajánlható</translation>
 <translation id="527237119693897329">Lehetővé teszi annak meghatározását, hogy mely natív üzenetkezelő gazdagépeket ne töltse be a rendszer.
 
@@ -1126,6 +1155,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha nem állítja be a házirendet, akkor a <ph name="PRODUCT_OS_NAME" /> az alapértelmezett 3 órás értéket fogja használni.
 
       Felhívjuk figyelmét, hogy ha az operációs rendszer támogatja a házirendekkel kapcsolatos értesítéseket, akkor a frissítési időszak 24 órás lesz (azaz a böngésző nem veszi figyelembe sem az alapértelmezett, sem a beállított értékeket), ugyanis a házirenddel kapcsolatos értesítéseknek automatikusan ki kell kényszeríteniük a frissítést, amikor egy házirend megváltozik, így szükségtelen gyakrabban frissíteni.</translation>
+<translation id="5530347722229944744">Potenciálisan veszélyes letöltések letiltása</translation>
 <translation id="5535973522252703021">Kerberos felhatalmazási szerver kivétellistája</translation>
 <translation id="555077880566103058">A(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul automatikus futtatásának engedélyezése minden webhelyen</translation>
 <translation id="5559079916187891399">A házirend nem vonatkozik az Android-alkalmazásokra.</translation>
@@ -1249,6 +1279,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5966615072639944554">A távoli tanúsítási API használatára engedélyezett bővítmények</translation>
 <translation id="5983708779415553259">Alapértelmezett viselkedés a tartalomcsomagban nem lévő webhelyek esetében</translation>
 <translation id="5997543603646547632">24 órás formátum használata alapértelmezés szerint</translation>
+<translation id="6005179188836322782">Engedélyezi a(z) <ph name="PRODUCT_NAME" /> Biztonságos Böngészés funkcióját, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
+
+      Ha engedélyezi, akkor a Biztonságos Böngészés mindig aktív lesz.
+
+      Ha letiltja, akkor a Biztonságos Böngészés sosem lesz aktív.
+
+      Amennyiben engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és bírálhatják felül a(z) <ph name="PRODUCT_NAME" /> „Adathalászat és rosszindulatú programok elleni védelem bekapcsolása” beállítását.
+
+      Ha a házirend nincs beállítva, akkor a beállítás engedélyezett lesz, ám a felhasználók módosíthatják azt.
+
+      Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="6017568866726630990">A rendszer nyomtatási párbeszédpaneljének megjelenítése a nyomtatási előnézet helyett.
 
       Amikor a beállítás engedélyezett, és a felhasználó egy oldal nyomtatását kéri, akkor a <ph name="PRODUCT_NAME" /> a rendszer nyomtatási párbeszédpaneljét nyitja meg a beépített nyomtatási előnézet helyett.
@@ -1317,6 +1358,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6281043242780654992">A Natív üzenetküldés házirendjeit konfigurálja. A tiltólistán szereplő natív üzenetkezelő gazdagépeket a rendszer nem engedélyezi, hacsak nem szerepelnek az engedélyezőlistán.</translation>
 <translation id="6282799760374509080">Hangrögzítés engedélyezése vagy tiltása</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Engedélyezi a komponensek frissítését minden komponens esetén a(z) <ph name="PRODUCT_NAME" /> termékben, ha a beállítás nincs megadva, vagy ha igazra van állítva.
+
+      Ha a beállítás hamisra van állítva, a komponensek frissítése ki van kapcsolva. Egyes komponensek azonban mentesülnek a házirend alól: az olyan komponensek frissítései, amelyek nem tartalmaznak végrehajtható kódot, nem változtatják meg jelentősen a böngésző viselkedését, vagy kiemelkedően fontosak a komponens biztonsága érdekében, nem lesznek kikapcsolva.
+      Ilyen komponensek például a tanúsítványok visszavonási listái és a biztonságos böngészési adatok.
+      Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="6310223829319187614">A domainnév felhasználói bejelentkezés közbeni automatikus kiegészítésének engedélyezése</translation>
 <translation id="6315673513957120120">A Chrome figyelmeztető oldalt jelenít meg, amikor a felhasználó SSL-hibával rendelkező webhelyre navigál. Alapértelmezés szerint, illetve a házirend igaz értékre állításakor a felhasználók továbbléphetnek az ilyen figyelmeztető oldalakról.
       Ha a házirend értéke hamis, akkor a felhasználók nem juthatnak tovább a figyelmeztető oldalon.</translation>
@@ -1507,6 +1553,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Fontos, hogy amennyiben a <ph name="PRODUCT_NAME" /> „háttérmódban” fut, akkor a munkamenetet nem lehet bezárni az utolsó böngészőablak bezárásakor, mivel a munkamenet mindaddig aktív marad, amíg a böngésző telepítve van. A viselkedés konfigurálásával kapcsolatos további információkért tekintse át a „BackgroundModeEnabled” házirendet.
 
           Ha a „RestoreOnStartup” házirend úgy van beállítva, hogy helyreállítsa a korábbi munkamenetek URL-jeit, a rendszer nem tartja be ezt a házirendet, és az érintett webhelyek vonatkozásában állandó jelleggel tárolja a cookie-kat.</translation>
+<translation id="7202925763179776247">Letöltési korlátozások engedélyezése</translation>
 <translation id="7207095846245296855">A Google Biztonságos Keresés kényszerítése</translation>
 <translation id="7216442368414164495">Lehetővé teszi a felhasználók számára a Biztonságos Böngészés bővített jelentéseinek elérését</translation>
 <translation id="7234280155140786597">A letiltott natív üzenetkezelő gazdagépek nevei (vagy * az összes esetén)</translation>
@@ -1627,6 +1674,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ez a házirend belső használatra készült a <ph name="PRODUCT_NAME" /> számára.</translation>
 <translation id="7712109699186360774">Kérdezzen rá minden alkalommal, amikor egy webhely megpróbálja elérni a kamerát és/vagy mikrofont</translation>
+<translation id="7713608076604149344">Letöltési korlátozások</translation>
 <translation id="7715711044277116530">Az a százalék, amellyel a képernyő-sötétedési késleltetés skálázódik prezentációs módban</translation>
 <translation id="7717938661004793600">A <ph name="PRODUCT_OS_NAME" /> kisegítő funkcióinak konfigurálása.</translation>
 <translation id="7719251660743813569">Beállítja, hogy a használati mutatókat jelentse-e a szolgáltatás a Google-nak. Ha az értéke igaz, akkor a(z) <ph name="PRODUCT_OS_NAME" /> jelenti a felhasználói mutatókat. Ha nincs beállítva, vagy a beállítás hamis, akkor a rendszer letiltja a mutató jelentését.</translation>
@@ -1724,6 +1772,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>
+<translation id="7980227303582973781">Speciális korlátozás nélkül</translation>
 <translation id="802147957407376460">Képernyő elforgatása 0 fokkal</translation>
 <translation id="8044493735196713914">Az eszköz indítási módjának jelentése</translation>
 <translation id="8050080920415773384">Natív nyomtatás</translation>
@@ -1835,6 +1884,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha meg van határozva a DeviceIdleLogoutTimeout, akkor ez a házirend adja meg, hogy mennyi ideig legyen látható a figyelmeztető mező a visszaszámlálóval, mielőtt megtörténne a felhasználó kijelentkeztetése.
 
       A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="8339420913453596618">Kétlépcsős azonosítás letiltva</translation>
 <translation id="8344454543174932833">Könyvjelzők importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="8359734107661430198">Az ExampleDeprecatedFeature API engedélyezése 2008. 09. 02-ig</translation>
 <translation id="8369602308428138533">Képernyő kikapcsolásának késleltetése hálózati áramról való működés során</translation>
@@ -1881,6 +1931,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> megpróbálja érzékelni, hogy egy szerver az intraneten van-e, és csak akkor válaszol az IWA-kérésekre. Ha a szervert az interneten lévőnek észleli, a <ph name="PRODUCT_NAME" /> figyelmen kívül hagyja annak IWA-kéréseit.</translation>
 <translation id="8672321184841719703">Cél automatikus frissítési verziója</translation>
+<translation id="867410340948518937">U2F (univerzális kétlépcsős azonosítás)</translation>
 <translation id="8693243869659262736">Beépített DNS-ügyfél használata</translation>
 <translation id="8704831857353097849">Tiltott bővítmények listája</translation>
 <translation id="8711086062295757690">Megadja a kulcsszót, amely az ezzel a szolgáltatóval való keresés gyors elérésére használatos a cím- és keresősávban. Nem kötelező házirend. Ha nincs beállítva, kulcsszóval nem lehet aktiválni a keresési szolgáltatót. A házirend csak akkor érvényesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>

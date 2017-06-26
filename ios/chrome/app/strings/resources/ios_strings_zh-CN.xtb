@@ -65,7 +65,6 @@
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="2149973817440762519">修改书签</translation>
-<translation id="2154710561487035718">复制网址</translation>
 <translation id="2230173723195178503">已加载网页</translation>
 <translation id="2241634353105152135">仅一次</translation>
 <translation id="2267753748892043616">添加帐号</translation>
@@ -322,7 +321,6 @@
 <translation id="7336264872878993241">已下载<ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">知道了</translation>
 <translation id="7400418766976504921">网址</translation>
-<translation id="7419187830569376338">在 <ph name="SEARCH_ENGINE" /> 中搜索此图片</translation>
 <translation id="7425346204213733349">对您的书签、历史记录、密码及其他设置所做的更改将不再同步到您的 Google 帐号。但现有数据将继续存储在您的 Google 帐号中。</translation>
 <translation id="744343212394640790">不是 <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">省/区/县</translation>

@@ -145,6 +145,7 @@
       Om inställningen är inaktiverad eller inte konfigurerad kan företagsanvändare
       inte använda ARC.</translation>
 <translation id="1561424797596341174">Åsidosättningar av policyn för felsökningsversioner av fjärråtkomstvärden</translation>
+<translation id="1561967320164410511">U2F plus tillägg för enskild attestering</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
@@ -179,6 +180,7 @@
       Om policyn inte ställs in visas inga användarvillkor.
 
       Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME" /> kan ladda ned användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
+<translation id="1750315445671978749">Blockera alla nedladdningar</translation>
 <translation id="1781356041596378058">Den här principen styr även tillgången till Androids utvecklaralternativ. Om principen är inställd på sant kan användarna inte öppna utvecklaralternativen. Om principen är inställd på falskt eller lämnas utan inställning kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
 <translation id="1803646570632580723">Lista över fasta appar som ska visas i startfönstret</translation>
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
@@ -563,6 +565,9 @@
       Om du aktiverar inställningen kommer autentiseringssidor för en infångstportal (dvs. alla webbsidor som startar från en inloggningssida för en infångstportal tills <ph name="PRODUCT_NAME" /> kan identifiera en lyckad internetanslutning) att visas i ett separat fönster och ignorera alla policyinställningar och begränsningar för den aktuella användaren.
 
       Om du inaktiverar inställningen eller inte anger den kommer autentiseringssidor för infångstportaler att visas på en (vanlig) ny flik i webbläsaren med den aktuella användarens proxyinställningar.</translation>
+<translation id="3001534538097271560">Om den här principen är inställd på falskt kan inte användare skicka systeminformation eller innehåll på sidan till Googles servrar. Om inställningen är inställd på sant eller inte har konfigurerats kan användare skicka systeminformation och innehåll på sidan till Säker webbsökning och bidra till att farliga appar och webbplatser identifieras.
+
+      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="3021409116652377124">Inaktivera plugin-sökaren</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
 <translation id="3034580675120919256">Policyn gör att du kan ange om webbplatser får köra JavaScript. Du kan tillåta JavaScript på alla webbplatser eller blockera JavaScript på alla webbplatser.
@@ -712,6 +717,11 @@
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
+<translation id="3687282113223807271">Med tjänsten Säker webbsökning visas en varningssida när användare navigerar till webbplatser som flaggats som skadliga. Om du aktiverar inställningen kan användare inte fortsätta från varningssidan till den skadliga webbplatsen.
+
+      Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.
+
+      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="3711895659073496551">Stäng av</translation>
 <translation id="3736879847913515635">Gör att en person kan läggas till i användarhanteraren</translation>
@@ -803,6 +813,7 @@
       Anger tillägg som installeras automatiskt för demoanvändaren för enheter i återförsäljarläge. Dessa tillägg sparas i enheten och kan installeras offline efter installationen.
 
       Varje post i listan innehåller en ordbok som måste innehålla tilläggets ID i fältet extension-id och dess uppdateringsadress i fältet update-url.</translation>
+<translation id="3877517141460819966">Läget för integrerad tvåfaktorsautentisering</translation>
 <translation id="388237772682176890">Den här principen har fasats ut i M53 och tagits bort från M54, eftersom stödet för SPDY/3.1 har tagits bort.
 
       Inaktiverar användning av SPDY-protokollet i <ph name="PRODUCT_NAME" />.
@@ -899,6 +910,23 @@
 <translation id="4239720644496144453">Cacheminnet används inte för Android-appar. Om flera användare installerar samma Android-app laddas den ned på nytt varje gång.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4261820385751181068">Språkkod för enhetens inloggningsskärm</translation>
+<translation id="4275782538576261754">Konfigurerar typen av nedladdningar som helt blockeras av <ph name="PRODUCT_NAME" /> utan att användarna kan åsidosätta säkerhetsinställningen.
+
+      Om du anger den här principen hindrar <ph name="PRODUCT_NAME" /> vissa typer av nedladdningar och användarna kan inte åsidosätta säkerhetsvarningarna.
+
+      När alternativet Blockera farliga nedladdningar har valts tillåts alla nedladdningar utom de med varningar från Säker webbsökning.
+
+      När alternativet Blockera potentiellt farliga nedladdningar har valts tillåts alla nedladdningar utom de med varningar om potentiellt farliga nedladdningar från Säker webbsökning.
+
+      När alternativet Blockera alla nedladdningar har valts blockeras alla nedladdningar.
+
+      När du inte har angett den här principen (eller om du har valt alternativet Inga särskilda begränsningar) går alla nedladdningar igenom de vanliga säkerhetsbegränsningarna som baseras på analysresultaten från Säker webbsökning.
+
+      Observera att begränsningarna tillämpas på nedladdningar som görs från webbsidesinnehåll och från snabbmenyalternativet för nedladdningslänken.
+
+      Begränsningarna tillämpas inte på spara/ladda ned på den aktuella sidan och inte heller på alternativet att spara som PDF i utskriftsalternativen.
+
+      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Anger parametrarna som används vid bildsökning med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {imageThumbnail} i ovanstående exempel, ersätts det av en riktig miniatyrbild.
 
           Den här policyn är valfri. Om den inte anges kommer begäran om bildsökning att skickas via GET-metoden.
@@ -1128,6 +1156,7 @@
 <translation id="5219844027738217407">För Android-appar påverkar den här principen endast mikrofonen. När principen är inställd på sant är mikrofonen avstängd i alla Android-appar utan undantag.</translation>
 <translation id="5226033722357981948">Ange om plugin-sökaren ska inaktiveras</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
+<translation id="5247006254130721952">Blockera farliga nedladdningar</translation>
 <translation id="5255162913209987122">Kan rekommenderas</translation>
 <translation id="527237119693897329">Låter dig ange vilka värdar för Native Messaging (kommunikation med inbyggda appar) som inte ska läsas in.
 
@@ -1215,6 +1244,7 @@
       Om denna policy inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_OS_NAME" />.
 
       Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
+<translation id="5530347722229944744">Blockera potentiellt farliga nedladdningar</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
 <translation id="555077880566103058">Tillåt att pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> körs på alla webbplatser</translation>
 <translation id="5559079916187891399">Den här principen gäller inte Android-appar.</translation>
@@ -1344,6 +1374,17 @@
 <translation id="5966615072639944554">Tilläggen får använda API:et för fjärrattestering</translation>
 <translation id="5983708779415553259">Standardbeteende för webbplatser som inte ingår i ett innehållspaket</translation>
 <translation id="5997543603646547632">Använd 24-timmarsklocka som standard</translation>
+<translation id="6005179188836322782">Aktiverar funktionen Säker webbsökning i <ph name="PRODUCT_NAME" /> och hindrar användarna från att ändra inställningen.
+
+      Om du aktiverar inställningen är Säker webbsökning alltid aktiverad.
+
+      Om du inaktiverar inställningen är Säker webbsökning aldrig aktiverad.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta inställningen Aktivera skydd mot lösenordsfiske och skadlig programvara i <ph name="PRODUCT_NAME" />.
+
+      Om principen inte anges är den aktiverad, men användarna kan ändra den.
+
+      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="6017568866726630990">Visa systemets utskriftsdialogruta istället för förhandsgranskning av utskriften.
 
       När inställningen är aktiverad öppnar <ph name="PRODUCT_NAME" /> systemets utskriftsdialogruta istället för den inbyggda förhandsgranskningen av utskriften när en användare skriver ut en sida.
@@ -1418,6 +1459,11 @@
 <translation id="6281043242780654992">Konfigurerar principer för Native Messaging. Om en värd för Native Messaging står på svarta listan är den förbjuden såvida den inte står på vitlistan.</translation>
 <translation id="6282799760374509080">Tillåta eller neka ljudinspelning</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Aktiverar komponentuppdateringar för alla komponenter i <ph name="PRODUCT_NAME" /> när principen inte är angiven eller när den är inställd på sant.
+
+      Om den är inställd på falskt är komponentuppdateringar inaktiverade. Vissa komponenter undantas dock från principen. Uppdateringar för komponenter som inte innehåller körbar kod eller inte märkbart förändrar webbläsarens funktion eller är viktiga för dess säkerhet inaktiveras inte.
+      Exempel på sådana komponenter är uppgifter om listor över återkallade certifikat och uppgifter från Säker webbsökning.
+      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Aktivera autoslutförande av domännamn vid användarinloggning</translation>
 <translation id="6315673513957120120">Chrome visar en varningssida när användare besöker webbplatser med SSL-fel. Som standardinställning eller om den här principen är inställd på sant ges användare möjligheten att klicka sig förbi dessa varningssidor.
       Om principen är inställd på falskt hindras användare från att klicka sig förbi varningssidor.</translation>
@@ -1630,6 +1676,7 @@
           Tänk på att om <ph name="PRODUCT_NAME" /> körs i bakgrundsläge kanske sessionen inte stängs när det sista webbläsarfönstret stängs, utan i stället är aktivt tills webbläsaren stängs. Mer information om hur du konfigurerar detta finns i policyn BackgroundModeEnabled.
 
           Om policyn RestoreOnStartup är inställd på att återställa webbadresser från tidigare sessioner fungerar inte den här policyn och cookies sparas inte permanent för dessa webbplatser.</translation>
+<translation id="7202925763179776247">Tillåt nedladdningsbegränsningar</translation>
 <translation id="7207095846245296855">Tvinga fram användning av Google SafeSearch</translation>
 <translation id="7216442368414164495">Tillåt användare att välja utökad rapportering i Säker webbsökning</translation>
 <translation id="7234280155140786597">Namn på de värdar för Native Messaging som ska vara förbjudna (* betyder alla)</translation>
@@ -1757,6 +1804,7 @@
 
           Denna princip är endast för intern användning i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7712109699186360774">Fråga varje gång en webbplats vill komma åt min kamera och/eller mikrofon</translation>
+<translation id="7713608076604149344">Nedladdningsbegränsningar</translation>
 <translation id="7715711044277116530">Procentsats med vilken fördröjningen av skärmdämpningen ska skalanpassas i presentationsläge</translation>
 <translation id="7717938661004793600">Konfigurera tillgänglighetsfunktioner i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Styr om användarstatistik rapporteras till Google. Om värdet är sant rapporterar <ph name="PRODUCT_OS_NAME" /> användarstatistik. Om policyn inte är konfigurerad eller inställd på falskt inaktiveras statistikrapportering.</translation>
@@ -1861,6 +1909,7 @@
           Om inställningen är aktiverad kan datorn identifiera och ansluta till fjärrvärdenheter även om det finns en brandvägg mellan dem.
 
           Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras av brandväggen kan den här datorn bara ansluta till värddatorer inom det lokala nätverket.</translation>
+<translation id="7980227303582973781">Inga särskilda begränsningar</translation>
 <translation id="802147957407376460">Rotera skärmen 0 grader</translation>
 <translation id="8044493735196713914">Rapportera omstartsläge för enhet</translation>
 <translation id="8050080920415773384">Integrerad utskrift</translation>
@@ -1980,6 +2029,7 @@
       När DeviceIdleLogoutTimeout har angetts definierar den här policyn hur länge en varningsruta med nedräkning ska visas för användaren innan utloggningen genomförs.
 
       Policyns värde anges i millisekunder.</translation>
+<translation id="8339420913453596618">Tvåfaktorsautentisering har inaktiverats</translation>
 <translation id="8344454543174932833">Importera bokmärken från standardwebbläsaren första gången den körs</translation>
 <translation id="8359734107661430198">Aktivera API:et ExampleDeprecatedFeature sedan 2008-09-02.</translation>
 <translation id="8369602308428138533">Skärmavstängningstid när enheten är ansluten till elnätet</translation>
@@ -2026,6 +2076,7 @@
 
           Om du inte ställer in den här principen kommer <ph name="PRODUCT_NAME" /> att försöka identifiera om en server finns i intranätet och endast då kommer den att svara på IWA-förfrågningar. Om en server identifieras som internet kommer IWA-förfrågningar därifrån att ignoreras av <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
+<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8693243869659262736">Använd en inbyggd DNS-klient</translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
 <translation id="8711086062295757690">Policyn anger nyckelordet, som är ett kortkommando som används i adressfältet för att aktivera sökning för den här leverantören.

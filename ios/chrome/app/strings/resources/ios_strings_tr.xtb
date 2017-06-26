@@ -65,7 +65,6 @@
 <translation id="2103075008456228677">history.google.com'u aç</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe taşındı</translation>
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
-<translation id="2154710561487035718">URL'yi Kopyala</translation>
 <translation id="2230173723195178503">Web sayfası yüklendi</translation>
 <translation id="2241634353105152135">Sadece bir defa</translation>
 <translation id="2267753748892043616">Hesap Ekle</translation>
@@ -322,7 +321,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7336264872878993241">Yüzde <ph name="PERCENT" /> indirildi</translation>
 <translation id="7346909386216857016">Tamam, anladım</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Bu Resmi <ph name="SEARCH_ENGINE" /> Üzerinde Ara</translation>
 <translation id="7425346204213733349">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızda yaptığınız değişiklikler artık Google Hesabınız ile senkronize edilmeyecek. Ancak, mevcut verileriniz Google Hesabınızda saklanmaya devam edecek.</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> değilim</translation>
 <translation id="7454057999980797137">Eyalet / İlçe</translation>

@@ -69,6 +69,7 @@
 <translation id="1506687042165942984">Hiển thị bản sao đã lưu (nghĩa là đã lỗi thời) của trang này.</translation>
 <translation id="1517433312004943670">Phải có số điện thoại</translation>
 <translation id="1519264250979466059">Ngày tạo</translation>
+<translation id="1527263332363067270">Đang chờ kết nối…</translation>
 <translation id="153384715582417236">Hiện đã hoàn tất</translation>
 <translation id="1549470594296187301">Bạn phải bật JavaScript để sử dụng tính năng này.</translation>
 <translation id="1555130319947370107">Xanh lam</translation>
@@ -119,6 +120,7 @@
 <translation id="187918866476621466">Mở trang khởi động</translation>
 <translation id="1883255238294161206">Thu gọn danh sách</translation>
 <translation id="1898423065542865115">Lọc</translation>
+<translation id="1919345977826869612">Quảng cáo</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Không có}=1{1 trang web}other{# trang web}}</translation>
 <translation id="194030505837763158">Truy cập <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Dấu trang của <ph name="DOMAIN" /></translation>
@@ -271,12 +273,10 @@
 <translation id="3167968892399408617">Các trang bạn xem trong tab ẩn danh sẽ không bị lưu lại trong lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả các tab ẩn danh của mình. Mọi tệp bạn tải xuống hoặc dấu trang mà bạn tạo sẽ được giữ nguyên.</translation>
 <translation id="3169472444629675720">Khám phá</translation>
 <translation id="3174168572213147020">Đảo</translation>
-<translation id="317583078218509884">Cài đặt giấy phép trang web mới sẽ có hiệu lực sau khi tải lại trang.</translation>
 <translation id="3176929007561373547">Kiểm tra cài đặt proxy của bạn hoặc liên hệ với quản trị viên mạng để
       đảm bảo rằng máy chủ proxy đang hoạt động. Nếu bạn cho rằng mình không cần
       sử dụng máy chủ proxy:
       <ph name="PLATFORM_TEXT" /></translation>
-<translation id="3200379322500587640">Mở trang ở chế độ ẩn danh</translation>
 <translation id="320323717674993345">Hủy thanh toán</translation>
 <translation id="3207960819495026254">Đã được đánh dấu trang</translation>
 <translation id="3225919329040284222">Máy chủ đưa ra chứng chỉ không khớp với kỳ vọng được tích hợp sẵn. Các kỳ vọng này có trong một số trang web nhất định, có tính bảo mật cao với mục đích bảo vệ bạn.</translation>
@@ -289,6 +289,7 @@
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="3282497668470633863">Thêm tên trên thẻ</translation>
 <translation id="3286538390144397061">Khởi động lại Ngay bây giờ</translation>
+<translation id="3287510313208355388">Tải xuống khi trực tuyến</translation>
 <translation id="3303855915957856445">Không tìm thấy kết quả tìm kiếm nào</translation>
 <translation id="3305707030755673451">Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng bộ hóa của bạn vào <ph name="TIME" />. Nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="3320021301628644560">Thêm địa chỉ thanh toán</translation>
@@ -321,7 +322,6 @@
 <translation id="3452404311384756672">Khoảng thời gian tìm nạp:</translation>
 <translation id="3462200631372590220">Ẩn chi tiết</translation>
 <translation id="3467763166455606212">Yêu cầu tên chủ thẻ</translation>
-<translation id="3478058380795961209">Tháng hết hạn</translation>
 <translation id="3479539252931486093">Trang web này có như bạn mong đợi không? Hãy <ph name="BEGIN_LINK" />cho chúng tôi biết<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="3498215018399854026">Chúng tôi không thể liên lạc với cha mẹ của bạn vào thời điểm này. Vui lòng thử lại.</translation>
@@ -410,6 +410,7 @@
 <translation id="4165986682804962316">Cài đặt trang web</translation>
 <translation id="4169947484918424451">Bạn có muốn Chromium lưu thẻ này không?</translation>
 <translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
+<translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kiểm tra tường lửa và cấu hình diệt vi-rút<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Sự cố</translation>
@@ -506,7 +507,6 @@
 <translation id="5095208057601539847">Tỉnh/thành phố</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5141240743006678641">Mã hóa mật khẩu đã đồng bộ hóa với thông tin đăng nhập Google của bạn</translation>
-<translation id="514421653919133810">Mở trang ở chế độ ẩn danh (Ctrl-Shift-N)</translation>
 <translation id="5145883236150621069">Mã lỗi có trong phản hồi chính sách</translation>
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="5172758083709347301">Máy</translation>
@@ -536,6 +536,7 @@
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> của <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="5457113250005438886">Không hợp lệ</translation>
 <translation id="5470861586879999274">&amp;Làm lại chỉnh sửa</translation>
+<translation id="5481076368049295676">Nội dung này có thể tìm cách cài đặt phần mềm nguy hiểm trên thiết bị của bạn để lấy cắp hoặc xóa thông tin. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Thêm địa chỉ hợp lệ</translation>
 <translation id="5492298309214877701">Trang web trên mạng nội bộ của công ty, tổ chức hoặc trường học này có URL tương tự như trang web bên ngoài.
     <ph name="LINE_BREAK" />
@@ -561,6 +562,7 @@
 <translation id="5629630648637658800">Không thể tải cài đặt chính sách</translation>
 <translation id="5631439013527180824">Mã thông báo quản lý thiết bị không hợp lệ</translation>
 <translation id="5633066919399395251">Những kẻ tấn công hiện ở trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng cài đặt các chương trình nguy hiểm vào máy tính của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="563324245173044180">Đã chặn nội dung lừa đảo.</translation>
 <translation id="5646376287012673985">Vị trí</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Nhận nội dung được cá nhân hóa</translation>
@@ -599,6 +601,7 @@
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6042308850641462728">Thêm</translation>
 <translation id="6047233362582046994">Nếu bạn hiểu các rủi ro về bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang này<ph name="END_LINK" /> trước khi các ứng dụng có hại bị xóa.</translation>
+<translation id="6047927260846328439">Nội dung này có thể tìm cách đánh lừa bạn cài đặt phần mềm hoặc tiết lộ thông tin cá nhân. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ do trang web sử dụng tính năng ghim chứng chỉ. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="6060685159320643512">Hãy cẩn thận, thử nghiệm này có thể gây lỗi</translation>
 <translation id="6080696365213338172">Bạn đã truy cập nội dung bằng chứng chỉ do quản trị viên cấp. Dữ liệu mà bạn cung cấp cho <ph name="DOMAIN" /> có thể bị quản trị viên của bạn chặn.</translation>
@@ -612,7 +615,6 @@
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6169916984152623906">Giờ đây, bạn có thể duyệt web riêng tư và người khác sử dụng thiết bị này sẽ không thấy hoạt động của bạn. Tuy nhiên, tài nguyên đã tải xuống và dấu trang sẽ được lưu.</translation>
 <translation id="6177128806592000436">Kết nối của bạn tới trang web này không an toàn</translation>
-<translation id="6184817833369986695">(nhóm thuần tập: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Kiểm tra kết nối Internet của bạn</translation>
 <translation id="6218753634732582820">Bạn muốn xóa địa chỉ khỏi Chromium?</translation>
 <translation id="6221345481584921695">Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK" />đã phát hiện phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại. Nội dung độc hại xuất phát từ <ph name="SUBRESOURCE_HOST" />, một nguồn phát tán phần mềm độc hại đã xác định.</translation>
@@ -785,6 +787,7 @@
 <translation id="7714464543167945231">Chứng chỉ</translation>
 <translation id="7716147886133743102">Bị quản trị viên của bạn chặn</translation>
 <translation id="7716424297397655342">Không thể tải trang web này từ bộ nhớ cache</translation>
+<translation id="774634243536837715">Đã chặn nội dung nguy hiểm.</translation>
 <translation id="7752995774971033316">Không được quản lý</translation>
 <translation id="7755287808199759310">Cha mẹ của bạn có thể bỏ chặn trang web cho bạn</translation>
 <translation id="7758069387465995638">Tường lửa hoặc phần mềm diệt vi-rút có thể đã chặn kết nối.</translation>
@@ -832,10 +835,12 @@
 <translation id="8194797478851900357">&amp;Hoàn tác di chuyển</translation>
 <translation id="8201077131113104583">URL cập nhật không hợp lệ cho tiện ích có ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Tóm tắt đơn đặt hàng</translation>
+<translation id="8205463626947051446">Trang web thường hiển thị quảng cáo xâm nhập</translation>
 <translation id="8218327578424803826">Vị trí được gán:</translation>
 <translation id="8225771182978767009">Người thiết lập máy tính này đã chọn chặn trang web này.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Trang mà bạn đang tìm sử dụng thông tin bạn đã nhập vào. Việc quay lại trang đó có thể lặp lại bất kỳ tác vụ nào bạn đã thực hiện. Bạn có muốn tiếp tục không?</translation>
+<translation id="8241712895048303527">Chặn trên trang web này</translation>
 <translation id="8249320324621329438">Tìm nạp lần cuối:</translation>
 <translation id="8253091569723639551">Yêu cầu địa chỉ thanh toán</translation>
 <translation id="8261506727792406068">Xóa</translation>
@@ -846,7 +851,6 @@
 <translation id="8308427013383895095">Không thể dịch do kết nối mạng có sự cố.</translation>
 <translation id="8332188693563227489">Quyền truy cập <ph name="HOST_NAME" /> bị từ chối</translation>
 <translation id="834457929814110454">Nếu bạn hiểu các rủi ro về bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang này<ph name="END_LINK" /> trước khi các chương trình độc hại bị xóa.</translation>
-<translation id="8344669043927012510">Mở trang ở chế độ ẩn danh (⇧⌘N)</translation>
 <translation id="8349305172487531364">Thanh dấu trang</translation>
 <translation id="8363502534493474904">Tắt chế độ trên máy bay</translation>
 <translation id="8364627913115013041">Chưa được đặt.</translation>
@@ -856,6 +860,7 @@
 <translation id="8398259832188219207">Báo cáo sự cố được tải lên vào <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Sự cố (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Bạn phải nhập cùng một cụm mật khẩu hai lần.</translation>
+<translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
 <translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
@@ -863,7 +868,6 @@
 <translation id="8483780878231876732">Để sử dụng thẻ từ Tài khoản Google, hãy đăng nhập vào Chrome</translation>
 <translation id="8488350697529856933">Áp dụng cho</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mất quá nhiều thời gian để phản hồi.</translation>
-<translation id="8532105204136943229">Năm hết hạn</translation>
 <translation id="8543181531796978784">Bạn có thể <ph name="BEGIN_ERROR_LINK" />báo cáo sự cố đã phát hiện<ph name="END_ERROR_LINK" /> hoặc nếu bạn hiểu rủi ro với bảo mật của mình, hãy <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
 <translation id="8571890674111243710">Đang dịch trang sang <ph name="LANGUAGE" />...</translation>

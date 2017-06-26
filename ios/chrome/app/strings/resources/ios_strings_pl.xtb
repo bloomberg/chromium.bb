@@ -65,7 +65,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2103075008456228677">Otwórz history.google.com</translation>
 <translation id="2116625576999540962">Przeniesione elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
-<translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="2230173723195178503">Wczytano stronę internetową</translation>
 <translation id="2241634353105152135">Tylko raz</translation>
 <translation id="2267753748892043616">Dodaj konto</translation>
@@ -322,7 +321,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7336264872878993241">Pobrano <ph name="PERCENT" /> procent</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">Adres URL</translation>
-<translation id="7419187830569376338">Szukaj tego obrazu w <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje istniejące dane będą jednak nadal na nim przechowywane.</translation>
 <translation id="744343212394640790">Konto <ph name="EMAIL" /> nie jest moje</translation>
 <translation id="7454057999980797137">Stan/region</translation>

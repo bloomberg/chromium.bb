@@ -769,6 +769,7 @@
 <translation id="2150661552845026580">"<ph name="EXTENSION_NAME" />"ను జోడించాలా?</translation>
 <translation id="2151576029659734873">చెల్లని టాబ్ సూచిక ఎంటర్ చెయ్యబడింది.</translation>
 <translation id="2152580633399033274">అన్ని చిత్రాలను చూపించు (సిఫార్సు చేయబడినది)</translation>
+<translation id="2154484045852737596">కార్డ్‌ను సవరించండి</translation>
 <translation id="2154710561487035718">URLను కాపీ చెయ్యి</translation>
 <translation id="2155931291251286316"><ph name="HOST" /> నుండి ఎల్లప్పుడూ పాప్-అప్‌లను అనుమతించు</translation>
 <translation id="215753907730220065">పూర్తి స్క్రీన్‌ను నిష్క్రమించు</translation>
@@ -951,6 +952,7 @@
 <translation id="2424091190911472304">ఎల్లప్పుడూ <ph name="ORIGIN" />లో అమలు చేయి</translation>
 <translation id="2425665904502185219">మొత్తం ఫైల్ పరిమాణం</translation>
 <translation id="2428510569851653187">ట్యాబ్ క్రాష్ అయిన సమయంలో మీరు ఏం చేస్తున్నారో వివరించండి</translation>
+<translation id="2432876185343582491">కార్డ్‌ను జోడించండి</translation>
 <translation id="2433452467737464329">పేజీని స్వీయ రీఫ్రెష్ చేయడానికి URLలో ప్రశ్న పరామితిని జోడించండి: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">కనిపించే తీరు</translation>
 <translation id="2435248616906486374">నెట్‌వర్క్ డిస్‌కనెక్ట్ అయింది</translation>
@@ -962,7 +964,6 @@
 <translation id="2440300961915670171"><ph name="REASON" />
 ఈ సైట్ బ్లాక్ చేయబడి ఉండకూడదని నా అభిప్రాయం!</translation>
 <translation id="2440604414813129000">&amp;సోర్స్‌ను చూడండి</translation>
-<translation id="2441722919115465484">మీ క్రెడిట్ కార్డ్ గడువు ముగిసింది</translation>
 <translation id="2444664589142010199"><ph name="LINK_TEXT" />లో ఏ పరికరం నుండైనా మీ పాస్‌వర్డ్‌లను ప్రాప్యత చేయండి</translation>
 <translation id="2445081178310039857">పొడిగింపు మూలం డైరెక్టరీ అవసరం.</translation>
 <translation id="2448046586580826824">సురక్షిత HTTP ప్రాక్సీ</translation>
@@ -1081,6 +1082,7 @@
 <translation id="2609896558069604090">సత్వరమార్గాలను సృష్టించండి...</translation>
 <translation id="2610260699262139870">&amp;సాధారణ పరిమాణం</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
+<translation id="2612676031748830579">కార్డ్ సంఖ్య</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1" />లో ఉన్న మీ డేటాని చదవడం మరియు మార్చడం</translation>
 <translation id="2617342710774726426">SIM కార్డ్ లాక్ అయింది</translation>
 <translation id="2617919205928008385">సరిపోని ఖాళీ</translation>
@@ -1091,7 +1093,7 @@
 <translation id="2624142942574147739">ఈ పేజీ మీ కెమెరా మరియు మైక్రోఫోన్‌ను ప్రాప్యత చేస్తోంది.</translation>
 <translation id="2626799779920242286">దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="2630681426381349926">ప్రారంభించడానికి Wi-Fiకి కనెక్ట్ చేయండి</translation>
-<translation id="2631006050119455616">సేవ్ చేయబడింది</translation>
+<translation id="2631006050119455616">ఆదా చేయబడింది</translation>
 <translation id="2631498379019108537">అరలో ఇన్‌పుట్ ఎంపికలను చూపు</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> డిస్క్ ఖాళీలో <ph name="USAGE" /> MBని ఉపయోగిస్తున్నారు.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />"ను తీసివేయాలా?</translation>
@@ -1446,7 +1448,6 @@
 <translation id="3108967419958202225">ఎంచుకోండి...</translation>
 <translation id="3112378005171663295">కుదించు</translation>
 <translation id="3115147772012638511">కాష్ కోసం వేచి ఉంది...</translation>
-<translation id="3116902203001917540">కాంతి తక్కువగా ఉన్నప్పుడు మీ స్క్రీన్‌ని చూడటం లేదా చదవడాన్ని సులభతరం చేస్తుంది</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> సహాయం</translation>
 <translation id="3120430004221004537">దీనిలో నిర్దిష్ట చర్య కోసం తగిన గుప్తీకరణ లేదు: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">ఈ <ph name="IDS_SHORT_PRODUCT_NAME" /> పరికరాన్ని రీసెట్ చేయండి</translation>
@@ -2521,7 +2522,6 @@
 <translation id="4821935166599369261">&amp;ప్రొఫైలింగ్ అనుమతించబడింది</translation>
 <translation id="4823484602432206655">వినియోగదారు మరియు పరికర సెట్టింగ్‌లను చదవడానికి మరియు మార్చడానికి అనుమతి</translation>
 <translation id="4823651846660089135">పరికరం చదవడానికి మాత్రమే</translation>
-<translation id="4827948050554950725">క్రెడిట్ కార్డ్‌ను జోడించు</translation>
 <translation id="4828493911650550108">Wi-Fi నెట్‌వర్క్‌లు మరియు బ్లూటూత్ పరికరాల కోసం స్కాన్ చేయడానికి అనువర్తనాలు మరియు సేవలను అనుమతించడం ద్వారా స్థాన ఖచ్చితత్వాన్ని మెరుగుపరచండి.</translation>
 <translation id="4828937774870308359">ఆస్ట్రేలియన్</translation>
 <translation id="4829768588131278040">PINని సెటప్ చేయి</translation>
@@ -2696,6 +2696,7 @@
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">డిఫాల్ట్ హోమ్ పేజీని పునరుద్ధరించాలా?</translation>
 <translation id="5087249366037322692">మూడవ పక్షం ద్వారా జోడించబడింది</translation>
+<translation id="5087580092889165836">కార్డ్‌ను జోడించు</translation>
 <translation id="5087864757604726239">వెనుకకు</translation>
 <translation id="508794495705880051">క్రొత్త క్రెడిట్ కార్డ్‌ను జోడించండి...</translation>
 <translation id="5088534251099454936">RSA గుప్తీకరణతో PKCS #1 SHA-512</translation>
@@ -3089,7 +3090,6 @@
 <translation id="5659593005791499971">ఇమెయిల్</translation>
 <translation id="5661272705528507004">ఈ SIM కార్డ్ నిలిపివెయ్యబడింది మరియు ఉపయోగించకూడనిది. దయచేసి తిరిగి భర్తీ చెయ్యడం కోసం మీ సేవ ప్రొవైడర్‌ను సంప్రదించండి.</translation>
 <translation id="5669267381087807207">సక్రియం చేస్తోంది</translation>
-<translation id="5669462439438204699">క్రెడిట్ కార్డ్‌ను సేవ్ చేయండి</translation>
 <translation id="5669691691057771421">కొత్త PINని నమోదు చేయండి</translation>
 <translation id="5677503058916217575">పేజీ భాష:</translation>
 <translation id="5677928146339483299">బ్లాక్ చెయ్యబడింది</translation>
@@ -3270,7 +3270,6 @@
 <translation id="5941343993301164315">దయచేసి <ph name="TOKEN_NAME" />కు సైన్ ఇన్ చెయ్యండి.</translation>
 <translation id="5941711191222866238">కనిష్టీకరించు</translation>
 <translation id="5941907479813014493">ఇన్‌పుట్ పద్ధతుల మధ్య మారడానికి Ctrl+Shift+Space నొక్కండి.</translation>
-<translation id="5946106656820696578">మరింత తీక్షణం</translation>
 <translation id="5946591249682680882">నివేదిక ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948205789991352045">తెరవవద్దు</translation>
 <translation id="5948544841277865110">ప్రైవేట్ నెట్‌వర్క్‌ని జోడించు</translation>
@@ -3443,7 +3442,6 @@
 <translation id="6232017090690406397">బ్యాటరీ</translation>
 <translation id="6232116551750539448"><ph name="NAME" />కి కనెక్షన్ కోల్పోయింది</translation>
 <translation id="6237816943013845465">మీ స్క్రీన్ రిజల్యూషన్‌ను సర్దుబాటు చేయడానికి మిమ్మల్ని అనుమతిస్తుంది</translation>
-<translation id="6238730967087877808">అనుకూల షెడ్యూల్</translation>
 <translation id="6239558157302047471">&amp;ఫ్రేమ్ మళ్లీ లోడ్ చేయి</translation>
 <translation id="6241530762627360640">మీ సిస్టమ్‌తో జత చేయబడిన బ్లూటూత్ పరికరాలకు సంబంధించిన సమాచారాన్ని ప్రాప్యత చేయడానికి మరియు సమీపంలోని బ్లూటూత్ పరికరాలను కనుగొనడానికి అనుమతి.</translation>
 <translation id="6243774244933267674">సర్వర్ అందుబాటులో లేదు</translation>
@@ -3686,7 +3684,6 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />"ని తొలగిస్తోంది...</translation>
 <translation id="6565108107088666812">దీని వలన అన్ని పరికరాల నుండి సమకాలీకరించిన డేటా తీసివేయబడుతుంది.</translation>
 <translation id="6567688344210276845">పేజీ చర్య కోసం '<ph name="ICON" />' చిహ్నం లోడ్ చేయబడలేదు.</translation>
-<translation id="6571070086367343653">క్రెడిట్ కార్డ్‌ను సవరించు</translation>
 <translation id="657402800789773160">ఈ పేజీని &amp;రీలోడ్ చెయ్యి</translation>
 <translation id="6575134580692778371">కాన్ఫిగర్ చెయ్యలేదు</translation>
 <translation id="6575251558004911012">సైట్ మీ కెమెరాకు ప్రాప్యత కావాలనుకున్నప్పుడు అడగాలి (సిఫార్సు చేయబడింది)</translation>
@@ -3978,7 +3975,6 @@
 <translation id="7025325401470358758">తదుపరి పేన్</translation>
 <translation id="7027125358315426638">డేటాబేస్ పేరు:</translation>
 <translation id="7029809446516969842">పాస్‌వర్డ్‌లు</translation>
-<translation id="7029916574452167660">తక్కువ తీక్షణం</translation>
 <translation id="7030031465713069059">పాస్‌వర్డ్ సేవ్ చేయండి</translation>
 <translation id="7031962166228839643">TPM అనేది సిద్ధం అవుతోంది, దయచేసి వేచి ఉంచండి (దీనికి కొన్ని నిమిషాల సమయం పట్టవచ్చు)...</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> అందించిన USB పరికరాలకు ప్రాప్యత</translation>
@@ -3995,7 +3991,6 @@
 <translation id="7053983685419859001">నిరోధించు</translation>
 <translation id="7054808953701320293">అర్థమైంది, నాకు దీన్ని మళ్లీ చూపవద్దు.</translation>
 <translation id="7056526158851679338">&amp;పరికరాలను పర్యవేక్షించు</translation>
-<translation id="7057058088140140610">Google చెల్లింపులను ఉపయోగించే క్రెడిట్ కార్డ్‌లు మరియు చిరునామాలు</translation>
 <translation id="7059858479264779982">స్వీయ-ప్రారంభానికి సెట్ చేయి</translation>
 <translation id="7062222374113411376">డేటాను పంపడం మరియు స్వీకరించడం పూర్తి చేయడానికి ఇటీవల మూసివేసిన సైట్‌లను అనుమతించు (సిఫార్సు చేయబడింది)</translation>
 <translation id="7063129466199351735">సత్వరమార్గాలను ప్రాసెస్ చేస్తోంది...</translation>
@@ -4670,7 +4665,6 @@
 <translation id="8104696615244072556">మీ <ph name="IDS_SHORT_PRODUCT_NAME" /> పరికరాన్ని పవర్‌వాష్ చేసి, మునుపటి సంస్కరణకు తిరిగి మార్చండి.</translation>
 <translation id="8105368624971345109">ఆఫ్ చేయి</translation>
 <translation id="8106045200081704138">నాతో భాగస్వామ్యం చేసినవి</translation>
-<translation id="8106211421800660735">క్రెడిట్ కార్డ్ నంబర్</translation>
 <translation id="8107015733319732394">మీ <ph name="DEVICE_TYPE" />లో Google Play స్టోర్‌ని ఇన్‌స్టాల్ చేస్తోంది. ఇందుకు కొన్ని నిమిషాలు పట్టవచ్చు.</translation>
 <translation id="8109930990200908494">వినియోగదారు ప్రమాణపత్రం కోసం సైన్-ఇన్ చేయడం అవసరం.</translation>
 <translation id="8111155949205007504">మీ iPhoneతో ఈ పాస్‌వర్డ్‌ను భాగస్వామ్యం చేయండి</translation>
@@ -5096,7 +5090,6 @@
 <translation id="8791534160414513928">మీ బ్రౌజింగ్ రద్దీతో ‘ట్రాక్ చేయవద్దు’ అభ్యర్థనను పంపండి</translation>
 <translation id="8794025342371547160">పరిమితం చేయబడిన IP</translation>
 <translation id="879413103056696865">హాట్‌స్పాట్ ఆన్‌లో ఉన్నప్పుడు, మీ <ph name="PHONE_NAME" /> ఇలా చేస్తుంది:</translation>
-<translation id="8795668016723474529">క్రెడిట్ కార్డ్‌ను జోడించండి</translation>
 <translation id="8795916974678578410">క్రొత్త విండో</translation>
 <translation id="8797459392481275117">ఈ సైట్‌ను ఎన్నడూ అనువదించవద్దు</translation>
 <translation id="8798099450830957504">డిఫాల్ట్</translation>

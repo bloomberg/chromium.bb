@@ -65,7 +65,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2103075008456228677">Obre history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements desplaçats</translation>
 <translation id="2149973817440762519">Edició de l'adreça d'interès</translation>
-<translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
 <translation id="2241634353105152135">Només una vegada</translation>
 <translation id="2267753748892043616">Afegeix un compte</translation>
@@ -322,7 +321,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7336264872878993241"><ph name="PERCENT" /> per cent baixat</translation>
 <translation id="7346909386216857016">D'acord</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Cerca aquesta imatge a <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Els canvis fets a les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració es deixaran de sincronitzar amb el vostre compte de Google. No obstant això, les dades actuals hi continuaran emmagatzemades.</translation>
 <translation id="744343212394640790">No soc <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Província</translation>

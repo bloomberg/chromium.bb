@@ -69,6 +69,7 @@
 <translation id="1506687042165942984">Tunjukkan salinan yang disimpan (iaitu diketahui telah lapuk) bagi halaman ini.</translation>
 <translation id="1517433312004943670">Nombor telefon diperlukan</translation>
 <translation id="1519264250979466059">Tarikh Bina</translation>
+<translation id="1527263332363067270">Menunggu sambungan...</translation>
 <translation id="153384715582417236">Itu sahaja buat masa ini</translation>
 <translation id="1549470594296187301">Javascript mesti didayakan untuk menggunakan ciri ini.</translation>
 <translation id="1555130319947370107">Biru</translation>
@@ -119,6 +120,7 @@
 <translation id="187918866476621466">Buka halaman permulaan</translation>
 <translation id="1883255238294161206">Runtuhkan senarai</translation>
 <translation id="1898423065542865115">Penapisan</translation>
+<translation id="1919345977826869612">Iklan</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Tiada}=1{1 tapak}other{# tapak}}</translation>
 <translation id="194030505837763158">Pergi ke <ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Penanda halaman</translation>
@@ -271,12 +273,10 @@
 <translation id="3167968892399408617">Halaman yang anda lihat dalam tab inkognito tidak akan kekal dalam sejarah, simpanan kuki atau sejarah carian penyemak imbas anda selepas anda menutup semua tab inkognito anda. Sebarang fail yang anda muat turun atau penanda halaman yang anda buat akan disimpan.</translation>
 <translation id="3169472444629675720">Temui</translation>
 <translation id="3174168572213147020">Pulau</translation>
-<translation id="317583078218509884">Tetapan kebenaran tapak baharu akan dilaksanakan selepas memuatkan semula halaman.</translation>
 <translation id="3176929007561373547">Semak tetapan proksi anda atau hubungi pentadbir rangkaian anda untuk
       memastikan pelayan proksi berfungsi. Jika anda tidak percaya anda perlu 
       menggunakan pelayan proksi:
       <ph name="PLATFORM_TEXT" /></translation>
-<translation id="3200379322500587640">Buka halaman dalam mod Inkognito</translation>
 <translation id="320323717674993345">Batal Pembayaran</translation>
 <translation id="3207960819495026254">Ditandai halaman</translation>
 <translation id="3225919329040284222">Pelayan memberikan sijil yang tidak sepadan dengan jangkaan terbina dalam. Jangkaan ini disertakan untuk tapak web dengan keselamatan tinggi tertentu untuk melindungi anda.</translation>
@@ -289,6 +289,7 @@
 <translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
 <translation id="3282497668470633863">Tambahkan nama pada kad</translation>
 <translation id="3286538390144397061">Mulakan Semula Sekarang</translation>
+<translation id="3287510313208355388">Muat turun semasa dalam talian</translation>
 <translation id="3303855915957856445">Tiada hasil carian ditemui</translation>
 <translation id="3305707030755673451">Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />. Masukkannya untuk memulakan penyegerakan.</translation>
 <translation id="3320021301628644560">Tambahkan alamat pengebilan</translation>
@@ -321,7 +322,6 @@
 <translation id="3452404311384756672">Selang masa ambil:</translation>
 <translation id="3462200631372590220">Menyembunyikan butiran</translation>
 <translation id="3467763166455606212">Nama pemegang kad diperlukan</translation>
-<translation id="3478058380795961209">Bulan Tamat Tempoh</translation>
 <translation id="3479539252931486093">Adakah hal ini tidak dijangka? <ph name="BEGIN_LINK" />Beritahu kami<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="3498215018399854026">Kami tidak dapat menghubungi ibu bapa anda pada masa ini. Sila cuba lagi.</translation>
@@ -411,6 +411,7 @@
 <translation id="4165986682804962316">Tetapan tapak</translation>
 <translation id="4169947484918424451">Adakah anda mahu Chromium menyimpan kad ini?</translation>
 <translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
+<translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4196861286325780578">&amp;Buat semula pindahkan</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Menyemak konfigurasi tembok api dan antivirus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Nahas</translation>
@@ -507,7 +508,6 @@
 <translation id="5095208057601539847">Wilayah</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5141240743006678641">Sulitkan kata laluan yang disegerakkan dengan bukti kelayakan Google anda</translation>
-<translation id="514421653919133810">Buka halaman dalam mod Inkognito (Ctrl-Shift-N)</translation>
 <translation id="5145883236150621069">Terdapat kod ralat dalam balasan dasar</translation>
 <translation id="5171045022955879922">Buat carian atau taipkan URL</translation>
 <translation id="5172758083709347301">Mesin</translation>
@@ -537,6 +537,7 @@
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> daripada <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="5457113250005438886">Tidak sah</translation>
 <translation id="5470861586879999274">&amp;Buat semula edit</translation>
+<translation id="5481076368049295676">Kandungan ini mungkin cuba memasang perisian berbahaya pada peranti anda yang mencuri atau memadamkan maklumat anda. <ph name="BEGIN_LINK" />Tunjukkan juga<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Tambahkan alamat yang sah</translation>
 <translation id="5492298309214877701">Tapak ini yang berada di intranet syarikat, organisasi atau sekolah mempunyai URL yang sama dengan tapak web luar.
     <ph name="LINE_BREAK" />
@@ -562,6 +563,7 @@
 <translation id="5629630648637658800">Gagal memuatkan tetapan dasar</translation>
 <translation id="5631439013527180824">Token pengurusan peranti tidak sah</translation>
 <translation id="5633066919399395251">Penyerang yang sedang berada di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin cuba memasang atur cara berbahaya pada komputer anda. Atur cara tersebut boleh mencuri atau memadamkan maklumat anda (contohnya, foto, kata laluan, mesej dan kad kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="563324245173044180">Kandungan mengelirukan disekat.</translation>
 <translation id="5646376287012673985">Lokasi</translation>
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5669703222995421982">Dapatkan kandungan yang diperibadikan</translation>
@@ -600,6 +602,7 @@
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lagi</translation>
 <translation id="6047233362582046994">Jika anda memahami risiko terhadap keselamatan anda, anda boleh <ph name="BEGIN_LINK" />melawat tapak ini<ph name="END_LINK" /> sebelum program yang berbahaya ini dialih keluar.</translation>
+<translation id="6047927260846328439">Kandungan ini mungkin menggunakan tipu muslihat supaya anda memasang perisian atau mendedahkan maklumat peribadi. <ph name="BEGIN_LINK" />Tunjukkan juga<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menggunakan penyematan sijil. Ralat dan serangan rangkaian biasanya bersifat sementara. Oleh sebab itu, halaman ini mungkin akan berfungsi semula kemudian.</translation>
 <translation id="6060685159320643512">Berhati-hati, percubaan ini mungkin memudaratkan</translation>
 <translation id="6080696365213338172">Anda telah mengakses kandungan menggunakan perakuan yang disediakan oleh pentadbir. Data yang anda berikan kepada <ph name="DOMAIN" /> boleh dipintas oleh pentadbir anda.</translation>
@@ -613,7 +616,6 @@
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6169916984152623906">Kini, anda boleh menyemak imbas secara sulit dan orang lain yang menggunakan peranti ini tidak akan melihat aktiviti anda. Namun begitu, muat turun dan penanda halaman akan disimpan.</translation>
 <translation id="6177128806592000436">Sambungan anda ke tapak ini tidak selamat</translation>
-<translation id="6184817833369986695">(kohort: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Semak sambungan Internet anda</translation>
 <translation id="6218753634732582820">Alih keluar alamat daripada Chromium?</translation>
 <translation id="6221345481584921695">Penyemakan Selamat Google <ph name="BEGIN_LINK" />telah mengesan perisian hasad<ph name="END_LINK" /> pada <ph name="SITE" /> baru-baru ini. Tapak web yang lazimnya selamat kadangkala dijangkiti oleh perisian hasad. Kandungan berniat jahat datang dari <ph name="SUBRESOURCE_HOST" />, pengedar perisian hasad yang diketahui.</translation>
@@ -786,6 +788,7 @@
 <translation id="7714464543167945231">Sijil</translation>
 <translation id="7716147886133743102">Disekat oleh pentadbir anda</translation>
 <translation id="7716424297397655342">Tapak ini tidak dapat dimuatkan daripada cache</translation>
+<translation id="774634243536837715">Kandungan berbahaya disekat.</translation>
 <translation id="7752995774971033316">Tidak Diurus</translation>
 <translation id="7755287808199759310">Ibu bapa anda boleh menyahsekatnya untuk anda</translation>
 <translation id="7758069387465995638">Tembok api atau perisian antivirus mungkin telah menyekat sambungan.</translation>
@@ -833,10 +836,12 @@
 <translation id="8194797478851900357">&amp;Buat Asal Pindahkan</translation>
 <translation id="8201077131113104583">URL kemas kini tidak sah untuk sambungan dengan ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Ringkasan pesanan</translation>
+<translation id="8205463626947051446">Tapak cenderung menyiarkan iklan yang mengganggu</translation>
 <translation id="8218327578424803826">Lokasi yang Ditentukan:</translation>
 <translation id="8225771182978767009">Orang yang menyediakan komputer ini telah memilih untuk menyekat tapak ini.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Halaman yang anda cari untuk maklumat terpakai yang anda masukkan. Kembali ke halaman tersebut mungkin menyebabkan mana-mana tindakan yang anda ambil akan diulang. Adakah anda mahu teruskan?</translation>
+<translation id="8241712895048303527">Sekat di tapak ini</translation>
 <translation id="8249320324621329438">Diambil kali terakhir:</translation>
 <translation id="8253091569723639551">Alamat pengebilan diperlukan</translation>
 <translation id="8261506727792406068">Padam</translation>
@@ -847,7 +852,6 @@
 <translation id="8308427013383895095">Gagal terjemahan kerana masalah dengan sambungan rangkaian.</translation>
 <translation id="8332188693563227489">Akses ke <ph name="HOST_NAME" /> dinafikan</translation>
 <translation id="834457929814110454">Jika anda memahami risiko terhadap keselamatan anda, anda boleh <ph name="BEGIN_LINK" />lawati tapak ini<ph name="END_LINK" /> sebelum atur cara berbahaya dialih keluar.</translation>
-<translation id="8344669043927012510">Buka halaman dalam mod Inkognito (⇧⌘N)</translation>
 <translation id="8349305172487531364">Bar penanda halaman</translation>
 <translation id="8363502534493474904">Matikan mod pesawat</translation>
 <translation id="8364627913115013041">Tidak ditetapkan.</translation>
@@ -857,6 +861,7 @@
 <translation id="8398259832188219207">Laporan ranap sistem dimuat naik pada <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Nahas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Anda mesti memasukkan frasa laluan yang sama dua kali.</translation>
+<translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8433057134996913067">Pemadaman ini akan membuatkan anda dilog keluar daripada kebanyakan tapak web.</translation>
 <translation id="8437238597147034694">&amp;Buat asal pindahkan</translation>
@@ -864,7 +869,6 @@
 <translation id="8483780878231876732">Log masuk ke Chrome untuk menggunakan kad daripada Akaun Google anda</translation>
 <translation id="8488350697529856933">Diguna pakai untuk</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mengambil masa terlalu lama untuk bertindak balas.</translation>
-<translation id="8532105204136943229">Tahun Tamat Tempoh</translation>
 <translation id="8543181531796978784">Anda boleh <ph name="BEGIN_ERROR_LINK" />laporkan masalah pengesanan<ph name="END_ERROR_LINK" /> atau jika anda memahami risikonya kepada keselamatan anda, <ph name="BEGIN_LINK" />lawati tapak yang tidak selamat ini<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Gagal terjemahan kerana bahasa halaman tidak dapat ditentukan.</translation>
 <translation id="8571890674111243710">Menterjemah halaman ke <ph name="LANGUAGE" />...</translation>

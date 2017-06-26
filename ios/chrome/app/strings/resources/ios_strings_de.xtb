@@ -65,7 +65,6 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2103075008456228677">history.google.com öffnen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen verschoben</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
-<translation id="2154710561487035718">URL kopieren</translation>
 <translation id="2230173723195178503">Webseite geladen</translation>
 <translation id="2241634353105152135">Nur einmal</translation>
 <translation id="2267753748892043616">Konto hinzufügen</translation>
@@ -322,7 +321,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7336264872878993241"><ph name="PERCENT" /> % heruntergeladen</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Auf <ph name="SEARCH_ENGINE" /> nach dem Bild suchen</translation>
 <translation id="7425346204213733349">Änderungen an Ihren Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Ihre vorhandenen Daten bleiben aber in Ihrem Google-Konto gespeichert.</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> ist nicht mein Konto</translation>
 <translation id="7454057999980797137">Bundesl./Landkr.</translation>

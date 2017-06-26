@@ -65,7 +65,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2103075008456228677">Åbn history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev flyttet</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
-<translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
 <translation id="2241634353105152135">Kun én gang</translation>
 <translation id="2267753748892043616">Tilføj konto</translation>
@@ -322,7 +321,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent er downloadet</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">Webadresse</translation>
-<translation id="7419187830569376338">Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Ændringer af dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto. Dine eksisterende data er dog stadig gemt på din Google-konto.</translation>
 <translation id="744343212394640790">Ikke <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Delstat/amt</translation>

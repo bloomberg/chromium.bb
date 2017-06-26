@@ -130,6 +130,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, können
       Enterprise-Nutzer kein ARC verwenden.</translation>
 <translation id="1561424797596341174">Überschreiben von Richtlinien für Fehlerbehebungs-Builds des Hosts für den Remote-Zugriff</translation>
+<translation id="1561967320164410511">U2F plus Erweiterungen zur individuellen Bestätigung</translation>
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME" /> verwenden</translation>
 <translation id="1608755754295374538">URLs, denen ohne Nachfrage Zugriff auf Audioaufnahmegeräte gestattet wird</translation>
 <translation id="1617235075406854669">Löschen des Browserverlaufs und des Downloadverlaufs aktivieren</translation>
@@ -164,6 +165,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Ist diese Richtlinie nicht konfiguriert, werden keine Nutzungsbedingungen angezeigt.
 
       In der Richtlinie muss eine URL angegeben werden, von der <ph name="PRODUCT_OS_NAME" /> die Nutzungsbedingungen herunterladen kann. Die Nutzungsbedingungen müssen als unformatierter Text mit dem MIME-Typ "text/plain" vorliegen. Markups sind nicht zulässig.</translation>
+<translation id="1750315445671978749">Alle Downloads blockieren</translation>
 <translation id="1781356041596378058">Diese Richtlinie steuert zudem den Zugriff auf Android-Entwickleroptionen. Wenn Sie diese Richtlinie auf "true" setzen, können Nutzer nicht auf die Entwickleroptionen zugreifen. Wenn Sie diese Richtlinie auf "false" setzen oder nicht konfigurieren, können Nutzer auf die Entwickleroptionen zugreifen, indem sie siebenmal auf die Build-Nummer in der Android-App "Einstellungen" tippen.</translation>
 <translation id="1803646570632580723">Liste der in der Übersicht angezeigten Apps ansehen</translation>
 <translation id="1808715480127969042">Cookies auf diesen Websites blockieren</translation>
@@ -525,6 +527,9 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wenn diese Einstellung aktiviert ist, werden alle Seiten der Captive-Portal-Authentifizierung – also alle Webseiten ab der Anmeldeseite, bis <ph name="PRODUCT_NAME" /> eine funktionierende Internetverbindung erkennt – in einem separaten Fenster angezeigt und alle Richtlinieneinstellungen und -beschränkungen für den aktuellen Nutzer ignoriert.
 
       Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, werden alle Seiten der Captive-Portal-Authentifizierung auf einem regulären neuen Browsertab angezeigt und es kommen die Proxy-Einstellungen des aktuellen Nutzers zum Einsatz.</translation>
+<translation id="3001534538097271560">Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer nicht mehr auswählen, ob sie einige Systeminformationen und Seiteninhalte an die Google-Server senden möchten. Ist die Richtlinie auf "true" eingestellt oder nicht konfiguriert, können Nutzer einige Systeminformationen und Seiteninhalte an Safe Browsing senden, um bei der Erfassung schädlicher Apps und Websites zu helfen.
+
+      Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
 <translation id="3021409116652377124">Plug-in-Suchfunktion deaktivieren</translation>
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
@@ -661,6 +666,11 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3646859102161347133">Lupentyp festlegen</translation>
 <translation id="3653237928288822292">Symbol der Standardsuchmaschine</translation>
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
+<translation id="3687282113223807271">Der Safe Browsing-Dienst zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die als potenziell schädlich eingestuft sind. Bei Aktivierung dieser Einstellung können Nutzer von der Hinweisseite aus nicht die schädliche Website besuchen.
+
+      Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer die gekennzeichnete Website besuchen, nachdem sie die Warnmeldung gesehen haben.
+
+      Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
@@ -741,6 +751,7 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Führt Erweiterungen auf, die bei Geräten im Händlermodus automatisch für den Demo-Nutzer installiert werden. Diese Erweiterungen werden auf dem Gerät gespeichert und können anschließend offline installiert werden.
 
        Jeder Eintrag enthält ein Verzeichnis, in dem im Feld "extension-id" die Erweiterungs-ID und im Feld "update-url" die Aktualisierungs-URL angegeben werden müssen.</translation>
+<translation id="3877517141460819966">Integrierter Zwei-Faktor-Authentifizierungsmodus</translation>
 <translation id="388237772682176890">Da SPDY/3.1 nicht mehr unterstützt wird, wurde diese Richtlinie in M53 eingestellt und in M54 entfernt.
 
       Sie verhindert die Verwendung des SPDY-Protokolls in <ph name="PRODUCT_NAME" />.
@@ -837,6 +848,23 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4239720644496144453">Der Cache wird nicht für Android-Apps verwendet. Wenn mehrere Nutzer die gleiche Android-App installieren, wird sie für jeden Nutzer neu heruntergeladen.</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4261820385751181068">Sprache der Anmeldeseite</translation>
+<translation id="4275782538576261754">Hiermit wird die Art von Downloads konfiguriert, die von <ph name="PRODUCT_NAME" /> vollständig blockiert werden, ohne dass Nutzer die Sicherheitseinstellung außer Kraft setzen können.
+
+      Wenn Sie diese Richtlinie konfigurieren, verhindert <ph name="PRODUCT_NAME" /> bestimmte Arten von Downloads und erlaubt es dem Nutzer nicht, die Sicherheitswarnungen zu umgehen.
+
+      Wenn die Option "Gefährliche Downloads blockieren" ausgewählt ist, sind alle Downloads zulässig, die keine Safe Browsing-Warnung enthalten.
+
+      Wenn die Option "Potenziell gefährliche Downloads blockieren" ausgewählt ist, sind alle Downloads zulässig, die keine Safe Browsing-Warnung vor potenziell gefährlichen Downloads enthalten.
+
+      Wenn die Option "Alle Downloads blockieren" ausgewählt ist, werden alle Downloads blockiert.
+
+      Wenn die Richtlinie nicht konfiguriert wurde oder die Option "Keine besonderen Einschränkungen" ausgewählt ist, unterliegen Downloads den üblichen, auf Safe Browsing-Analyseergebnissen beruhenden Sicherheitseinschränkungen.
+
+      Beachten Sie, dass diese Einschränkungen für Downloads, die durch Websiteinhalte ausgelöst werden, sowie für die Kontextmenüoption "Download-Link…" gelten.
+
+      Die Einschränkungen gelten weder für die Speicherung oder das Herunterladen der gerade angezeigten Seite noch für die Speicherung als PDF in den Druckoptionen.
+
+      Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Gibt die Parameter für die Bildsuche mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {imageThumbnail} im obigen Beispiel ist, wird er durch echte Miniaturansichtsdaten ersetzt.
 
           Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Bildsuchanfrage mithilfe der GET-Methode gesendet.
@@ -1039,6 +1067,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5219844027738217407">Bei Android-Apps betrifft diese Richtlinie nur das Mikrofon. Wenn diese Richtlinie auf "true" gesetzt ist, wird das Mikrofon ohne Ausnahme für alle Android-Apps stummgeschaltet.</translation>
 <translation id="5226033722357981948">Angeben, ob Plug-in-Suchfunktion deaktiviert werden soll</translation>
 <translation id="523505283826916779">Zugänglichkeitseinstellungen</translation>
+<translation id="5247006254130721952">Gefährliche Downloads blockieren</translation>
 <translation id="5255162913209987122">Empfehlenswert</translation>
 <translation id="527237119693897329">Ermöglicht Ihnen, festzulegen, welche Hosts für natives Messaging nicht geladen werden sollen
 
@@ -1118,6 +1147,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Wenn diese Richtlinie nicht konfiguriert ist, gilt in <ph name="PRODUCT_OS_NAME" /> der Standardwert von 3 Stunden.
 
       Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
+<translation id="5530347722229944744">Potenziell gefährliche Downloads blockieren</translation>
 <translation id="5535973522252703021">Weiße Liste für Kerberos-Bevollmächtigungs-Server</translation>
 <translation id="555077880566103058">Automatische Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" für alle Websites zulassen</translation>
 <translation id="5559079916187891399">Diese Richtlinie hat keine Auswirkung auf Android-Apps.</translation>
@@ -1240,6 +1270,17 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="5966615072639944554">Erweiterungen, die die Remote Attestation API zur Bestätigung der Nutzeridentität verwenden dürfen</translation>
 <translation id="5983708779415553259">Standardverhalten für Websites, die nicht zu einem Inhaltspaket gehören</translation>
 <translation id="5997543603646547632">Standardmäßig 24-Stunden-Uhr verwenden</translation>
+<translation id="6005179188836322782">Hiermit wird die Safe Browsing-Funktion von <ph name="PRODUCT_NAME" /> aktiviert und verhindert, dass Nutzer diese Einstellung ändern können.
+
+      Wenn Sie diese Einstellung aktivieren, ist Safe Browsing immer aktiv.
+
+      Wenn Sie diese Einstellung deaktivieren, ist Safe Browsing nie aktiv.
+
+      Wenn Sie diese Einstellung aktivieren oder deaktivieren, können Nutzer die Einstellung "Phishing- und Malware-Schutz aktivieren" in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen.
+
+      Ist die Richtlinie nicht konfiguriert, wird Safe Browsing aktiviert, aber die Einstellung kann von Nutzern geändert werden.
+
+      Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
 <translation id="6017568866726630990">Druckdialogfeld des Systems anstelle der Druckvorschau anzeigen
 
       Wenn diese Einstellung aktiviert ist, öffnet <ph name="PRODUCT_NAME" /> das Druckdialogfeld des Systems statt der eingerichteten Druckvorschau, sobald ein Nutzer einen Druckauftrag startet.
@@ -1308,6 +1349,11 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6281043242780654992">Konfiguriert Richtlinien für das native Messaging. Hosts für natives Messaging auf der schwarzen Liste können nur geladen werden, wenn sie auch auf der weißen Liste stehen.</translation>
 <translation id="6282799760374509080">Audioaufzeichnung gestatten oder ablehnen</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Hiermit werden Komponentenupdates für alle Komponenten in <ph name="PRODUCT_NAME" /> aktiviert, sofern diese nicht festgelegt sind oder auf "true" eingestellt wurden.
+
+      Wurde "false" eingestellt, sind Komponentenupdates deaktiviert. Für einige Komponenten gelten diese Richtlinien jedoch nicht: Updates von Komponenten, die keinen ausführbaren Code enthalten, das Browserverhalten nicht maßgeblich verändern oder die Sicherheit nicht gefährden, werden nicht deaktiviert.
+      Beispiele für solche Komponenten sind die "Certificate Revocation Lists" sowie sichere Browserdaten.
+      Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Automatische Vervollständigung des Domainnamens während der Nutzeranmeldung aktivieren</translation>
 <translation id="6315673513957120120">Chrome zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die SSL-Fehler aufweisen. Standardmäßig oder bei Festlegung von "true" für diese Richtlinie ist es Nutzern gestattet, durch diese Seiten mit Warnmeldung zu klicken.
       Wenn für die Richtlinie "false" festgelegt wird, können Nutzer nicht mehr durch diese Seiten klicken.</translation>
@@ -1497,6 +1543,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
           Wenn <ph name="PRODUCT_NAME" /> im Hintergrundmodus ausgeführt wird, wird die Sitzung unter Umständen nicht geschlossen, wenn das letzte Browserfenster geschlossen wird, sondern bleibt aktiv, bis der Browser beendet wird. Weitere Informationen zur Konfiguration dieses Verhaltens finden Sie unter der Richtlinie "BackgroundModeEnabled".
 
           Falls die Richtlinie "RestoreOnStartup" zur Wiederherstellung von URLs aus vorherigen Sitzungen festgelegt ist, wird diese Richtlinie ignoriert und Cookies werden dauerhaft für die jeweiligen Websites gespeichert.</translation>
+<translation id="7202925763179776247">Download-Einschränkungen zulassen</translation>
 <translation id="7207095846245296855">Google SafeSearch erzwingen</translation>
 <translation id="7216442368414164495">Ermöglicht Nutzern die Aktivierung erweiterter Berichterstellung bei Verwendung von Safe Browsing</translation>
 <translation id="7234280155140786597">Namen der unzulässigen Hosts für natives Messaging (oder "*" für alle)</translation>
@@ -1617,6 +1664,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
           Diese Richtlinie dient ausschließlich zur internen Verwendung in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7712109699186360774">Nachfragen, wenn eine Website auf meine Kamera bzw. mein Mikrofon zugreifen möchte</translation>
+<translation id="7713608076604149344">Download-Einschränkungen</translation>
 <translation id="7715711044277116530">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung im Präsentationsmodus</translation>
 <translation id="7717938661004793600">Hiermit konfigurieren Sie die Zugänglichkeitsfunktionen für <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Legt fest, ob Nutzungsdaten an Google gesendet werden. Bei Einstellung auf "true" werden Nutzungsdatenberichte von <ph name="PRODUCT_OS_NAME" /> gesendet. Ist die Richtlinie nicht konfiguriert oder auf "false" gesetzt, ist das Senden von Datenberichten deaktiviert.</translation>
@@ -1714,6 +1762,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>
+<translation id="7980227303582973781">Keine besonderen Einschränkungen</translation>
 <translation id="802147957407376460">Bildschirm um 0 Grad drehen</translation>
 <translation id="8044493735196713914">Startmodus von Geräten melden</translation>
 <translation id="8050080920415773384">Natives Drucken</translation>
@@ -1816,6 +1865,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       Falls die Richtlinie "DeviceIdleLogoutTimeout" konfiguriert ist, wird mithilfe der vorliegenden Richtlinie festgelegt, wie lange das Warnfenster mit Countdown für Nutzer zu sehen sein soll, bevor sie abgemeldet werden.
 
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
+<translation id="8339420913453596618">Zweiter Authentifizierungsfaktor deaktiviert</translation>
 <translation id="8344454543174932833">Lesezeichen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API bis zum 02.09.2008 aktivieren</translation>
 <translation id="8369602308428138533">Verzögerung für die Bildschirmabschaltung im Netzbetrieb</translation>
@@ -1862,6 +1912,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 
           Wenn Sie diese Richtlinie nicht konfigurieren, versucht <ph name="PRODUCT_NAME" /> zu ermitteln, ob der fragliche Server sich im Intranet befindet, und reagiert nur dann auf IWA-Anfragen. Wenn der Server sich dagegen im Internet befindet, werden dessen IWA-Anfragen von <ph name="PRODUCT_NAME" /> ignoriert.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
+<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>

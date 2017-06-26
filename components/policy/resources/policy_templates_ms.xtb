@@ -144,6 +144,7 @@
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasikan, maka pengguna
       perusahaan tidak dapat menggunakan ARC.</translation>
 <translation id="1561424797596341174">Pembatalan dasar untuk binaan Nyahpepijat bagi hos akses jauh</translation>
+<translation id="1561967320164410511">Sambungan U2F tambah untuk pembuktian individu</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> secara lalai</translation>
 <translation id="1608755754295374538">URL yang akan diberikan akses kepada peranti tangkapan audio tanpa gesaan</translation>
 <translation id="1617235075406854669">Dayakan pemadaman sejarah penyemak imbas dan muat turun</translation>
@@ -178,6 +179,7 @@
       Jika dasar ini tidak ditetapkan, tiada Syarat Perkhidmatan akan dipaparkan.
 
       Dasar ini harus ditetapkan kepada URL yang <ph name="PRODUCT_OS_NAME" /> boleh gunakan untuk memuat turun Syarat Perkhidmatan. Syarat Perkhidmatan mestilah dalam teks biasa, bertindak sebagai teks jenis MIME/biasa. Penanda tidak dibenarkan.</translation>
+<translation id="1750315445671978749">Sekat semua muat turun</translation>
 <translation id="1781356041596378058">Dasar ini turut mengawal akses ke Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada benar, pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada palsu atau membiarkannya tidak ditetapkan, pengguna dapat mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
 <translation id="1803646570632580723">Senarai apl berpin untuk dipaparkan dalam pelancar</translation>
 <translation id="1808715480127969042">Sekat kuki pada tapak ini</translation>
@@ -560,6 +562,9 @@
       Jika anda mendayakan tetapan ini, mana-mana halaman pengesahan portal tawanan (iaitu semua halaman web bermula daripada halaman log masuk portal tawanan sehingga <ph name="PRODUCT_NAME" /> mengesan sambungan internet yang berjaya dilakukan) akan dipaparkan dalam tetingkap yang lain dengan mengabaikan semua tetapan dasar dan sekatan untuk pengguna semasa.
 
       Jika anda melumpuhkan tetapan ini atau membiarkannya tidak ditetapkan, mana-mana halaman pengesahan portal tawanan akan ditunjukkan dalam tab penyemak imbas yang baharu (biasa), menggunakan tetapan proksi pengguna semasa.</translation>
+<translation id="3001534538097271560">Penetapan dasar ini kepada palsu akan menghentikan pengguna daripada memilih untuk menghantar beberapa maklumat sistem dan kandungan halaman kepada pelayan Google. Jika tetapan ini benar atau tidak dikonfigurasikan, maka pengguna akan dibenarkan menghantar beberapa maklumat sistem dan kandungan halaman kepada Penyemakan Imbas Selamat untuk mengesan apl dan tapak yang berbahaya.
+
+      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat tentang Penyemakan Imbas Selamat.</translation>
 <translation id="3021409116652377124">Lumpuhkan pencari pemalam</translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
 <translation id="3034580675120919256">Membolehkan anda menetapkan sama ada laman web dibenarkan untuk menjalankan JavaScript. Menjalankan JavaScript boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
@@ -709,6 +714,11 @@
 <translation id="3646859102161347133">Tetapkan jenis penggadang skrin</translation>
 <translation id="3653237928288822292">Ikon pembekal carian lalai</translation>
 <translation id="3660562134618097814">Pindahkan kuki IdP SAML semasa log masuk</translation>
+<translation id="3687282113223807271">Perkhidmatan Penyemakan Imbas Selamat memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang dibenderakan sebagai berkemungkinan bersifat hasad. Tindakan mendayakan tetapan ini akan menghalang pengguna daripada tetap meneruskan daripada halaman amaran ke tapak yang bersifat hasad tersebut.
+
+      Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk meneruskan ke tapak yang dibenderakan selepas amaran dipaparkan.
+
+      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
 <translation id="3711895659073496551">Gantung</translation>
 <translation id="3736879847913515635">Dayakan tambah orang dalam pengurus pengguna</translation>
@@ -799,6 +809,7 @@
       Senarai sambungan yang dipasang secara automatik untuk pengguna Tunjuk Cara, bagi peranti dalam mod runcit. Sambungan ini disimpan dalam peranti dan boleh dipasang semasa di luar talian selepas pemasangan.
 
       Setiap masukan senarai mengandungi kamus yang mesti merangkumi ID sambungan dalam medan 'extension-id' dan URL kemas kininya dalam medan 'update-url'.</translation>
+<translation id="3877517141460819966">Mod pengesahan faktor kedua bersepadu</translation>
 <translation id="388237772682176890">Dasar ini ditamatkan dalam M53 dan dialih keluar dalam M54 kerana sokongan SPDY/3.1 dialih keluar.
 
       Melumpuhkan penggunaan protokol SPDY dalam <ph name="PRODUCT_NAME" />.
@@ -895,6 +906,23 @@
 <translation id="4239720644496144453">Cache tidak digunakan untuk apl Android. Jika beberapa orang pengguna memasang apl Android yang sama, apl yang baharu akan dimuat turun untuk setiap pengguna.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Tempat peristiwa skrin log masuk peranti</translation>
+<translation id="4275782538576261754">Mengkonfigurasi jenis muat turun yang akan disekat sepenuhnya oleh <ph name="PRODUCT_NAME" /> tanpa membenarkan pengguna mengatasi keputusan keselamatan.
+
+      Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menghalang jenis muat turun tertentu dan tidak akan membenarkan pengguna memintas amaran keselamatan.
+
+      Apabila pilihan 'Sekat muat turun berbahaya' dipilih, semua muat turun dibenarkan kecuali muat turun yang mengandungi amaran Penyemakan Imbas Selamat.
+
+      Apabila pilihan 'Sekat muat turun yang mungkin berbahaya' dipilih, semua muat turun dibenarkan kecuali  muat turun yang mengandungi amaran Penyemakan Imbas Selamat terhadap muat turun yang mungkin berbahaya.
+
+      Apabila pilihan 'Sekat semua muat turun' dipilih, semua muat turun disekat.
+
+      Apabila dasar ini tidak ditetapkan (atau pilihan 'Tiada sekatan khas' dipilih), muat turun akan melalui sekatan keselamatan biasa bardasarkan keputusan analisis Penyemakan Imbas Selamat.
+
+      Sila ambil perhatian bahawa sekatan ini hanya dikenakan terhadap muat turun yang dicetus daripada kandungan halaman web serta pilihan menu konteks 'muat turun pautan...'.
+
+      Sekatan ini tidak dikenakan terhadap penyimpanan / muat turun halaman yang sedang dipaparkan dan turut tidak dikenakan terhadap penyimpanan sebagai PDF daripada pilihan pencetakan.
+
+      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="427632463972968153">Menentukan parameter yang digunakan apabila melakukan carian imej dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {imageThumbnail} dalam contoh di atas, nilai ini akan digantikan dengan data lakaran kecil imej yang sebenar.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, permintaan carian imej akan dihantar menggunakan kaedah GET.
@@ -1119,6 +1147,7 @@
 <translation id="5219844027738217407">Untuk apl Android, dasar ini memberi kesan kepada mikrofon sahaja. Apabila dasar ini ditetapkan kepada benar, mikrofon akan diredam untuk semua apl Android, tanpa pengecualian.</translation>
 <translation id="5226033722357981948">Tentukan sama ada pencari pemalam perlu dilumpuhkan</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>
+<translation id="5247006254130721952">Sekat muat turun berbahaya</translation>
 <translation id="5255162913209987122">Boleh Disyorkan</translation>
 <translation id="527237119693897329">Membolehkan anda menentukan hos pemesejan natif yang tidak seharusnya disekat.
 
@@ -1207,6 +1236,7 @@
       Apabila dasar ini dibiarkan tanpa ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan menggunakan nilai lalai 3 jam.
 
       Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
+<translation id="5530347722229944744">Sekat muat turun yang mungkin berbahaya</translation>
 <translation id="5535973522252703021">Senarai putih pelayan penugasan Kerberos</translation>
 <translation id="555077880566103058">Benarkan semua tapak menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik</translation>
 <translation id="5559079916187891399">Dasar ini tidak berkesan terhadap apl Android.</translation>
@@ -1335,6 +1365,18 @@
 <translation id="5966615072639944554">Sambungan dibenarkan untuk mengguna API pembuktian jauh</translation>
 <translation id="5983708779415553259">Gelagat lalai untuk tapak yang tidak didapati dalam mana-mana pek kandungan</translation>
 <translation id="5997543603646547632">Gunakan jam 24 jam secara lalai</translation>
+<translation id="6005179188836322782">Mendayakan ciri Penyemakan Imbas Selamat <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
+
+      Jika anda mendayakan tetapan ini, Penyemakan Imbas Selamat akan sentiasa aktif.
+
+      Jika anda melumpuhkan tetapan ini, Penyemakan Imbas Selamat tidak akan aktif.
+
+      Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan "Dayakan perlindungan pancingan data dan perlindungan perisian hasad" dalam <ph name="PRODUCT_NAME" />.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan tetapi pengguna akan dapat mengubahnya.
+.
+
+      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="6017568866726630990">Paparkan dialog cetakan sistem dan bukannya pratonton cetakan.
 
       Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> akan membuka dialog cetakan sistem dan bukannya pratonton cetakan terbina dalam apabila pengguna meminta untuk mencetak halaman.
@@ -1409,6 +1451,11 @@
 <translation id="6281043242780654992">Konfigurasi dasar untuk Pemesejan Natif. Hos pemesejan natif yang disenaraihitamkan tidak akan dibenarkan melainkan hos ini disenaraiputihkan.</translation>
 <translation id="6282799760374509080">Benarkan atau nafikan rakaman audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Mendayakan kemas kini komponen untuk semua komponen dalam <ph name="PRODUCT_NAME" /> apabila tidak ditetapkan atau ditetapkan kepada Benar.
+
+      Jika ditetapkan kepada Palsu, pengemaskinian komponen akan dilumpuhkan. Walau bagaimanapun, sesetengah komponen dikecualikan daripada dasar ini: pengemaskinian mana-mana komponen yang tidak mengandungi kod boleh laksana atau tidak mengubah gelagat penyemak imbas dengan ketara atau yang penting untuk keselamatannya tidak akan dilumpuhkan.
+      Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan imbas selamat.
+      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="6310223829319187614">Dayakan autolengkap nama domain semasa log masuk pengguna</translation>
 <translation id="6315673513957120120">Chrome memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang mempunyai ralat SSL. Secara lalai atau apabila dasar ini ditetapkan kepada benar, pengguna dibenarkan mengklik lalu halaman amaran ini.
       Pengguna tidak dibenarkan mengklik lalu sebarang halaman amaran apabila dasar ini ditetapkan kepada palsu.</translation>
@@ -1620,6 +1667,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Harap maklum bahawa jika <ph name="PRODUCT_NAME" /> dijalankan dalam 'mod latar belakang', sesi mungkin tidak ditutup apabila tetingkap penyemak imbas terakhir ditutup, tetapi sebaliknya akan kekal aktif sehingga keluar daripada penyemak imbas. Sila lihat dasar 'BackgroundModeEnabled' untuk mendapatkan maklumat lanjut tentang cara mengkonfigurasikan gelagat ini.
 
           Jika dasar "RestoreOnStartup" ditetapkan untuk memulihkan URL daripada sesi sebelumnya, dasar ini tidak akan dilaksanakan dan kuki akan disimpan secara kekal untuk tapak tersebut.</translation>
+<translation id="7202925763179776247">Benarkan sekatan muat turun</translation>
 <translation id="7207095846245296855">Paksa Google SafeSearch</translation>
 <translation id="7216442368414164495">Benarkan pengguna ikut serta untuk pelaporan lanjutan Penyemakan Imbas Selamat</translation>
 <translation id="7234280155140786597">Nama hos pemesejan natif yang dilarang (atau * untuk semua)</translation>
@@ -1748,6 +1796,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Dasar ini adalah untuk kegunaan dalaman oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
 <translation id="7712109699186360774">Tanya setiap kali tapak ingin mengakses kamera dan/atau mikrofon</translation>
+<translation id="7713608076604149344">Sekatan muat turun</translation>
 <translation id="7715711044277116530">Peratusan yang digunakan untuk skala kelewatan pemalapan skrin dalam mod penyampaian</translation>
 <translation id="7717938661004793600">Konfigurasi ciri kebolehcapaian <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Mengawal sama ada metrik penggunaan dilaporkan kembali kepada Google. Jika ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan. Jika tidak dikonfigurasi atau ditetapkan kepada palsu, laporan metrik akan dilumpuhkan.</translation>
@@ -1852,6 +1901,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika tetapan ini didayakan, maka mesin ini boleh menjumpai dan bersambung dengan mesin hos jauh walaupun ia dipisahkan oleh firewall.
 
           Jika tetapan ini dilumpuhkan dan sambungan UDP keluar ditapis oleh firewall, maka mesin ini hanya boleh bersambung dengan mesin hos di dalam rangkaian setempat sahaja.</translation>
+<translation id="7980227303582973781">Tiada sekatan khas</translation>
 <translation id="802147957407376460">Putar skrin 0 darjah</translation>
 <translation id="8044493735196713914">Laporkan mod but peranti</translation>
 <translation id="8050080920415773384">Pencetakan Natif</translation>
@@ -1971,6 +2021,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Apabila DeviceIdleLogoutTimeout ditetapkan, dasar ini mentakrifkan tempoh kotak amaran dengan pemasa kira turun yang dipaparkan kepada pengguna sebelum log keluar dilaksanakan.
 
       Nilai dasar ini harus ditetapkan dalam milisaat.</translation>
+<translation id="8339420913453596618">Faktor kedua dilumpuhkan</translation>
 <translation id="8344454543174932833">Import penanda halaman daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="8359734107661430198">Dayakan API ExampleDeprecatedFeature sehingga 2008/09/02</translation>
 <translation id="8369602308428138533">Kelewatan pemadaman skrin apabila dijalankan dengan kuasa AC</translation>
@@ -2018,6 +2069,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           
           Jika anda membiarkan dasar ini tanpa ditetapkan <ph name="PRODUCT_NAME" /> akan cuba mengesan jika pelayan berada di Intranet dan hanya selepas itu permintaan IWA akan dibalas.   Jika pelayan dikesan sebagai Internet, maka permintaan IWA daripadanya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
+<translation id="867410340948518937">U2F (Faktor Kedua Universal)</translation>
 <translation id="8693243869659262736">Gunakan pelanggan DNS terbina dalam</translation>
 <translation id="8704831857353097849">Senarai pemalam yang dilumpuhkan</translation>
 <translation id="8711086062295757690">Menentukan kata kunci iaitu pintasan yang digunakan dalam kotak omni untuk mencetuskan carian bagi penyedia ini.

@@ -65,7 +65,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="2103075008456228677">Otevřít history.google.com</translation>
 <translation id="2116625576999540962">Počet přesunutých položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Upravit záložku</translation>
-<translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2230173723195178503">Webová stránka byla načtena</translation>
 <translation id="2241634353105152135">Pouze jednou</translation>
 <translation id="2267753748892043616">Přidat účet</translation>
@@ -322,7 +321,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7336264872878993241">Staženo <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">OK, rozumím</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
-<translation id="7419187830569376338">Vyhledat tento obrázek ve službě <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Změny záložek, historie, hesel a dalších nastavení se již nebudou synchronizovat do vašeho účtu Google. Vaše existující data však v účtu Google uložena zůstanou.</translation>
 <translation id="744343212394640790">Nejsem <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stát / země</translation>

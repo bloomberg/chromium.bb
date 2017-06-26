@@ -144,6 +144,7 @@
       If this setting is disabled or not configured then enterprise users are
       unable to use ARC.</translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
+<translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
@@ -178,6 +179,7 @@
       If this policy is not set, no Terms of Service are shown.
 
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME" /> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
+<translation id="1750315445671978749">Block all downloads</translation>
 <translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
@@ -562,6 +564,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you enable this setting, any captive portal authentication pages (i.e. all web pages starting from captive portal sign in page until <ph name="PRODUCT_NAME" /> detects successful Internet connection) will be displayed in a separate window ignoring all policy settings and restrictions for the current user.
 
       If you disable this setting or leave it unset, any captive portal authentication pages will be shown in a (regular) new browser tab, using the current user's proxy settings.</translation>
+<translation id="3001534538097271560">Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
+
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="3021409116652377124">Disable plug-in finder</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
@@ -711,6 +716,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3646859102161347133">Set screen magnifier type</translation>
 <translation id="3653237928288822292">Default search provider icon</translation>
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
+<translation id="3687282113223807271">The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
+
+      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
+
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
@@ -802,6 +812,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
 
       Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.</translation>
+<translation id="3877517141460819966">Integrated second factor authentication mode</translation>
 <translation id="388237772682176890">This policy is deprecated in M53 and removed in M54, because SPDY/3.1 support is removed.
 
       Disables use of the SPDY protocol in <ph name="PRODUCT_NAME" />.
@@ -898,6 +909,23 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4239720644496144453">The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Device sign-in screen locale</translation>
+<translation id="4275782538576261754">Configures the type of downloads that <ph name="PRODUCT_NAME" /> will completely block, without letting users override the security decision.
+
+      If you set this policy, <ph name="PRODUCT_NAME" /> will prevent certain types of downloads, and won't let user bypass the security warnings.
+
+      When the 'Block dangerous downloads' option is chosen, all downloads are allowed, except for those that carry SafeBrowsing warnings.
+
+      When the 'Block potentially dangerous downloads' option is chosen, all downloads allowed, except for those that carry SafeBrowsing warnings of potentially dangerous downloads.
+
+      When the 'Block all downloads' option is chosen, all downloads are blocked.
+
+      When this policy is not set, (or the 'No special restrictions' option is chosen), the downloads will go through the usual security restrictions based on SafeBrowsing analysis results.
+
+      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option.
+
+      These restrictions do not apply to the save/download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
+
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="427632463972968153">Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
 
           This policy is optional. If not set, image search request will be sent using the GET method.
@@ -1127,6 +1155,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5219844027738217407">For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.</translation>
 <translation id="5226033722357981948"> finder should be disabled</translation>
 <translation id="523505283826916779">Accessibility settings</translation>
+<translation id="5247006254130721952">Block dangerous downloads</translation>
 <translation id="5255162913209987122">Can be Recommended</translation>
 <translation id="527237119693897329">Allows you to specify which native messaging hosts should not be loaded.
 
@@ -1215,6 +1244,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Leaving this policy not set will make <ph name="PRODUCT_OS_NAME" /> use the default value of 3 hours.
 
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
+<translation id="5530347722229944744">Block potentially dangerous downloads</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
 <translation id="555077880566103058">Allow all sites to automatically run the <ph name="FLASH_PLUGIN_NAME" /> plug-in</translation>
 <translation id="5559079916187891399">This policy has no effect on Android apps.</translation>
@@ -1343,6 +1373,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5966615072639944554">Extensions allowed to to use the remote attestation API</translation>
 <translation id="5983708779415553259">Default behaviour for sites not in any content pack</translation>
 <translation id="5997543603646547632">Use 24 hour clock by default</translation>
+<translation id="6005179188836322782">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
+
+      If you enable this setting, Safe Browsing is always active.
+
+      If you disable this setting, Safe Browsing is never active.
+
+      If you enable or disable this setting, users cannot change or override the 'Enable phishing and malware protection' setting in <ph name="PRODUCT_NAME" />.
+
+      If this policy is left unset, this will be enabled but the user will be able to change it.
+
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="6017568866726630990">Show the system print dialogue instead of print preview.
 
       When this setting is enabled, <ph name="PRODUCT_NAME" /> will open the system print dialogue instead of the built-in print preview when a user requests a page to be printed.
@@ -1413,6 +1454,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6281043242780654992">Configures policies for Native Messaging. Blacklisted native messaging hosts won't be allowed unless they are whitelisted.</translation>
 <translation id="6282799760374509080">Allow or deny audio capture</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Enables component updates for all components in <ph name="PRODUCT_NAME" /> when unset or set to True.
+
+      If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, or does not significantly alter the behaviour of the browser, or is critical for its security, will not be disabled.
+      Examples of such components include the certificate revocation lists and safe browsing data.
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="6310223829319187614">Enable domain name autocomplete during user sign in</translation>
 <translation id="6315673513957120120">Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
       Setting this policy to false disallows users to click through any warning page.</translation>
@@ -1625,6 +1671,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           Note that if <ph name="PRODUCT_NAME" /> is running in 'background mode', the session may not be closed when the last browser window is closed, but will instead stay active until the browser exits. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behaviour.
 
           If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.</translation>
+<translation id="7202925763179776247">Allow download restrictions</translation>
 <translation id="7207095846245296855">Force Google SafeSearch</translation>
 <translation id="7216442368414164495">Allow users to opt in to Safe Browsing extended reporting</translation>
 <translation id="7234280155140786597">Names of the forbidden native messaging hosts (or * for all)</translation>
@@ -1753,6 +1800,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           This policy is for internal use by <ph name="PRODUCT_NAME" /> itself.</translation>
 <translation id="7712109699186360774">Ask every time a site wants to access the camera and/or microphone</translation>
+<translation id="7713608076604149344">Download restrictions</translation>
 <translation id="7715711044277116530">Percentage by which to scale the screen dim delay in presentation mode</translation>
 <translation id="7717938661004793600">Configure <ph name="PRODUCT_OS_NAME" /> accessibility features.</translation>
 <translation id="7719251660743813569">Controls whether usage metrics are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME" /> will report usage metrics. If not configured or set to false, metrics reporting will be disabled.</translation>
@@ -1857,6 +1905,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this setting is enabled, then this machine can discover and connect to remote host machines even if they are separated by a firewall.
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
+<translation id="7980227303582973781">No special restrictions</translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>
 <translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="8050080920415773384">Native Printing</translation>
@@ -1976,6 +2025,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       When DeviceIdleLogoutTimeout is specified, this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
 
       The policy value should be specified in milliseconds.</translation>
+<translation id="8339420913453596618">Second factor disabled</translation>
 <translation id="8344454543174932833">Import bookmarks from default browser on first run</translation>
 <translation id="8359734107661430198">Enable ExampleDeprecatedFeature API through 2008/09/02</translation>
 <translation id="8369602308428138533">Screen off delay when running on AC power</translation>
@@ -2022,6 +2072,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If you leave this policy unset <ph name="PRODUCT_NAME" /> will try to detect if a server is on the Intranet and only then will it respond to IWA requests. If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
+<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
 <translation id="8711086062295757690">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.

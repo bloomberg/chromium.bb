@@ -66,7 +66,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
 <translation id="2149973817440762519">Editar favoritos</translation>
-<translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2230173723195178503">Página da Web carregada</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
 <translation id="2267753748892043616">Adicionar conta</translation>
@@ -322,7 +321,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento baixados</translation>
 <translation id="7346909386216857016">Ok, entendi.</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Pesquisar esta imagem no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Alterações feitas nos seus favoritos, histórico, senhas e outras configurações não serão mais sincronizadas com sua Conta do Google. No entanto, os dados já existentes permanecerão armazenados na Conta do Google.</translation>
 <translation id="744343212394640790">Não sou <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Estado/Prov.</translation>

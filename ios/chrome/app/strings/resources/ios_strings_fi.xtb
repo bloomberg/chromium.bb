@@ -65,7 +65,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2103075008456228677">Avaa history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kohdetta siirretty</translation>
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
-<translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="2230173723195178503">Verkkosivu ladattiin.</translation>
 <translation id="2241634353105152135">Vain kerran</translation>
 <translation id="2267753748892043616">Lisää tili</translation>
@@ -322,7 +321,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosenttia ladattu</translation>
 <translation id="7346909386216857016">OK!</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
-<translation id="7419187830569376338">Hae tätä kuvaa palvel. <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Kirjanmerkkeihin, historiaan, salasanoihin ja muihin asetuksiin tehtäviä muutoksia ei enää synkronoida Google-tilillesi. Olemassa olevia tietojasi säilytetään kuitenkin Google-tililläsi.</translation>
 <translation id="744343212394640790">Ei <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Alue/maa</translation>

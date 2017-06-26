@@ -139,6 +139,7 @@
 
      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen zakelijke gebruikers ARC niet gebruiken.</translation>
 <translation id="1561424797596341174">Beleid overschrijft Debug-builds van de host voor externe toegang</translation>
+<translation id="1561967320164410511">U2F plus extensies voor individuele bevestiging</translation>
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
 <translation id="1617235075406854669">Verwijderen van browser- en downloadgeschiedenis inschakelen</translation>
@@ -174,6 +175,7 @@
       Als dit beleid niet is ingesteld, worden er geen Servicevoorwaarden weergegeven.
 
       Het beleid moet op een URL worden ingesteld vanaf waar de Servicevoorwaarden door <ph name="PRODUCT_OS_NAME" /> kunnen worden gedownload. De Servicevoorwaarden moeten platte tekst zijn die als tekst met MIME-type/plat wordt weergegeven. Er is geen opmaak toegestaan.</translation>
+<translation id="1750315445671978749">Alle downloads blokkeren</translation>
 <translation id="1781356041596378058">Met dit beleid wordt ook de toegang tot de ontwikkelaarsopties van Android beheerd. Als je dit beleid instelt op True (Waar), hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op False (Onwaar) of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer op het buildnummer te tikken in de app Instellingen van Android.</translation>
 <translation id="1803646570632580723">Lijst met vastgezette apps om weer te geven in het opstartprogramma</translation>
 <translation id="1808715480127969042">Cookies blokkeren op deze sites</translation>
@@ -560,6 +562,9 @@
       Als je deze instelling inschakelt, worden captive portal-verificatiepagina's (alle webpagina's vanaf de captive portal-inlogpagina totdat <ph name="PRODUCT_NAME" /> een internetverbinding detecteert) in een afzonderlijk venster weergegeven, waarbij alle beleidsinstellingen en beperkingen voor de huidige gebruiker worden genegeerd.
 
       Als je deze instelling uitschakelt of niet instelt, worden captive portal-verificatiepagina's weergegeven in een (normaal) nieuw browsertabblad, waarbij de proxy-instellingen van de huidige gebruiker worden gebruikt.</translation>
+<translation id="3001534538097271560">Als dit beleid wordt ingesteld op false (onwaar), kunnen gebruikers geen systeeminformatie en paginacontent meer naar Google-servers verzenden. Als deze instelling wordt ingesteld op true (waar) of niet wordt geconfigureerd, kunnen gebruikers bepaalde systeeminformatie en paginacontent naar Safe Browsing verzenden om te helpen bij de detectie van gevaarlijke apps en sites
+
+      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="3021409116652377124">Plug-inzoeker uitschakelen</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
 <translation id="3034580675120919256">Hiermee kun je instellen of JavaScript op websites mag worden uitgevoerd. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.
@@ -709,6 +714,11 @@
 <translation id="3646859102161347133">Het type vergrootglas instellen</translation>
 <translation id="3653237928288822292">Pictogram voor standaardzoekprovider</translation>
 <translation id="3660562134618097814">SAML IdP-cookies overdragen tijdens het inloggen</translation>
+<translation id="3687282113223807271">De service Safe Browsing geeft een waarschuwingspagina weer wanneer gebruikers naar sites gaan die zijn gemarkeerd als potentieel schadelijk. Als je deze instelling inschakelt, voorkom je dat gebruikers vanaf de waarschuwingspagina toch doorgaan naar de schadelijke site.
+
+      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers ervoor kiezen door te gaan naar de gemarkeerde site nadat de waarschuwing is weergegeven.
+
+      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="3709266154059827597">Zwarte lijst voor het installeren van extensies configureren</translation>
 <translation id="3711895659073496551">Onderbreken</translation>
 <translation id="3736879847913515635">'Persoon toevoegen' inschakelen in gebruikersbeheer</translation>
@@ -800,6 +810,7 @@
       Hiermee vermeld je extensies die automatisch worden geïnstalleerd voor de demogebruiker, voor apparaten in de commerciële modus. Deze extensies worden opgeslagen op het apparaat en kunnen worden geïnstalleerd in de offline modus, na de installatie.
 
       Elke lijstvermelding bevat een woordenboek dat de extensie-ID moet bevatten in het veld 'Extensie-ID' en de update-URL in het veld 'Update-URL'.</translation>
+<translation id="3877517141460819966">Geïntegreerde modus voor authenticatie met twee factoren</translation>
 <translation id="388237772682176890">Dit beleid is beëindigd in M53 en is verwijderd in M54, omdat de ondersteuning voor SPDY/3.1 is verwijderd.
 
       Hiermee wordt het gebruik van het SPDY-protocol in <ph name="PRODUCT_NAME" /> uitgeschakeld.
@@ -895,6 +906,23 @@
 <translation id="4239720644496144453">Het cachegeheugen wordt niet gebruikt voor Android-apps. Als meerdere gebruikers dezelfde Android-app installeren, wordt deze voor elke gebruiker opnieuw gedownload.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4261820385751181068">Taal voor inlogscherm van apparaat</translation>
+<translation id="4275782538576261754">Hiermee stel je in welk type downloads volledig door <ph name="PRODUCT_NAME" /> worden geblokkeerd, zonder dat gebruikers het beveiligingsbesluit kunnen overschrijven.
+
+      Als je dit beleid instelt, voorkomt <ph name="PRODUCT_NAME" /> bepaalde typen downloads en kan de gebruiker de beveiligingswaarschuwingen niet omzeilen.
+
+      Als de optie 'Gevaarlijke downloads blokkeren' is gekozen, zijn alle downloads toegestaan, met uitzondering van de downloads die zijn voorzien van Safe Browsing-waarschuwingen.
+
+      Als de optie 'Potentieel gevaarlijke downloads blokkeren' is gekozen, zijn alle downloads toegestaan, met uitzondering van de downloads die zijn voorzien van Safe Browsing-waarschuwingen voor potentieel gevaarlijke downloads.
+
+      Als de optie 'Alle downloads blokkeren' is gekozen, worden alle downloads geblokkeerd.
+
+      Als dit beleid niet is ingesteld (of als de optie 'Geen speciale beperkingen' is gekozen), worden op basis van de Safe Browsing-analyse de gebruikelijke beveiligingsbeperkingen toegepast.
+
+      Houd er rekening mee dat deze beperkingen zowel van toepassing zijn op downloads die zijn geactiveerd via de webpaginacontent als op downloads via de contextmenuoptie 'Link downloaden...'.
+
+      Deze beperkingen zijn niet van toepassing op het opslaan/downloaden van de huidige pagina die wordt weergegeven, of op de afdrukoptie 'Opslaan als pdf'.
+
+      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="427632463972968153">Specificeert de parameters die worden gebruikt voor het uitvoeren van een zoekopdracht naar afbeeldingen met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een templateparameter, zoals {imageThumbnail} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte afbeeldingsminiatuurgegevens.
 
           Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt de voorgestelde zoekopdracht verzonden met de GET-methode.
@@ -1118,6 +1146,7 @@
 <translation id="5219844027738217407">Voor Android-apps is dit beleid alleen van invloed op de microfoon. Wanneer dit beleid is ingesteld op true (waar), wordt voor alle Android-apps, zonder uitzondering, de microfoon gedempt.</translation>
 <translation id="5226033722357981948">Aangeven of de plug-inzoeker moet worden uitgeschakeld</translation>
 <translation id="523505283826916779">Toegankelijkheidsinstellingen</translation>
+<translation id="5247006254130721952">Gevaarlijke downloads blokkeren</translation>
 <translation id="5255162913209987122">Kan worden aanbevolen</translation>
 <translation id="527237119693897329">Hiermee kun je opgeven welke hosts voor systeemeigen berichten niet moeten worden geladen.
 
@@ -1206,6 +1235,7 @@
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_OS_NAME" /> de standaardwaarde van 3 uur.
 
       Houd er rekening mee dat als het platform beleidsmeldingen ondersteunt, de vernieuwingsvertraging wordt ingesteld op 24 uur (hierbij worden alle standaardinstellingen en de waarde van dit beleid genegeerd) omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd, waardoor frequentere vernieuwingen overbodig zijn.</translation>
+<translation id="5530347722229944744">Potentieel gevaarlijke downloads blokkeren</translation>
 <translation id="5535973522252703021">Witte lijst voor Kerberos-delegatieserver</translation>
 <translation id="555077880566103058">Alle sites toestaan om de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch uit te voeren</translation>
 <translation id="5559079916187891399">Dit beleid is niet van invloed op Android-apps.</translation>
@@ -1335,6 +1365,17 @@
 <translation id="5966615072639944554">Extensies die toestemming hebben de API voor externe bevestiging te gebruiken</translation>
 <translation id="5983708779415553259">Standaardgedrag voor sites die zich niet in een inhoudspakket bevinden</translation>
 <translation id="5997543603646547632">Klok met 24-uursnotatie standaard gebruiken</translation>
+<translation id="6005179188836322782">Hiermee schakel je de functie Safe Browsing van <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze instelling kunnen wijzigen.
+
+      Als je deze instelling inschakelt, is Safe Browsing altijd actief.
+
+      Als je deze instelling uitschakelt, is Safe Browsing nooit actief.
+
+      Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling 'Bescherming tegen phishing en malware inschakelen' in <ph name="PRODUCT_NAME" /> niet wijzigen of overschrijven.
+
+      Als dit beleid niet wordt ingesteld, wordt het beleid ingeschakeld, maar kan de gebruiker dit wijzigen.
+
+      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="6017568866726630990">Het systeemdialoogvenster voor afdrukken weergeven in plaats van een afdrukvoorbeeld.
 
       Wanneer deze instelling is ingeschakeld, opent <ph name="PRODUCT_NAME" /> het systeemdialoogvenster voor afdrukken in plaats van het ingebouwde afdrukvoorbeeld wanneer een gebruiker een pagina wil laten afdrukken.
@@ -1409,6 +1450,11 @@
 <translation id="6281043242780654992">Configureert beleid voor systeemeigen berichten. Hosts voor systeemeigen berichten op de zwarte lijst worden niet toegestaan, tenzij ze op de witte lijst worden gezet.</translation>
 <translation id="6282799760374509080">Het opnemen van audio toestaan of weigeren</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Hiermee schakel je onderdelenupdates voor alle onderdelen in <ph name="PRODUCT_NAME" /> in wanneer de optie niet is ingesteld of is ingesteld op Waar (True).
+
+      Als deze optie is ingesteld op Onwaar (False), zijn de updates voor onderdelen uitgeschakeld. Bepaalde onderdelen worden echter uitgesloten van dit beleid: updates voor onderdelen worden niet uitgeschakeld als deze geen uitvoerbare code bevatten, het gedrag van de browser niet aanzienlijk veranderen of essentieel zijn voor de beveiliging.
+      Voorbeelden van dergelijk onderdelen zijn Certificate Revocation Lists en de Safe Browsing-gegevens.
+      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="6310223829319187614">Automatisch aanvullen van domeinnaam bij inloggen van gebruiker inschakelen</translation>
 <translation id="6315673513957120120">Chrome toont een waarschuwingspagina wanneer gebruikers naar sites met SSL-fouten navigeren. Gebruikers kunnen standaard, of wanneer dit beleid is ingesteld op 'waar', door deze waarschuwingspagina's klikken.
       Als dit beleid wordt ingesteld op 'onwaar', kunnen gebruikers niet door waarschuwingspagina's klikken.</translation>
@@ -1619,6 +1665,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Let op: Als <ph name="PRODUCT_NAME" /> op de achtergrond wordt uitgevoerd, wordt de sessie wellicht niet afgesloten wanneer het laatste browservenster wordt gesloten. In plaats daarvan blijft de sessie actief tot de browser wordt afgesloten. Zie het beleid 'BackgroundModeEnabled' voor meer informatie over het configureren van dit gedragspatroon.
 
           Als het beleid 'RestoreOnStartup' zo is ingesteld dat URL's van eerdere sessies worden hersteld, geldt dit beleid niet en worden cookies voor deze sites permanent opgeslagen.</translation>
+<translation id="7202925763179776247">Downloadbeperkingen toestaan</translation>
 <translation id="7207095846245296855">Google SafeSearch afdwingen</translation>
 <translation id="7216442368414164495">Hiermee kunnen gebruikers zich aanmelden voor uitgebreide rapportage van Safe Browsing</translation>
 <translation id="7234280155140786597">Namen van de verboden hosts voor systeemeigen berichten (of * voor alle)</translation>
@@ -1747,6 +1794,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Dit beleid is bedoeld voor intern gebruik door <ph name="PRODUCT_NAME" /> zelf.</translation>
 <translation id="7712109699186360774">Altijd goedkeuring vragen wanneer een site toegang wil hebben tot de camera en/of microfoon</translation>
+<translation id="7713608076604149344">Downloadbeperkingen</translation>
 <translation id="7715711044277116530">Percentage waarmee de dimvertraging van het scherm in de presentatiemodus wordt geschaald</translation>
 <translation id="7717938661004793600">Toegankelijkheidsfuncties van <ph name="PRODUCT_OS_NAME" /> configureren.</translation>
 <translation id="7719251660743813569">Controleert of gebruiksstatistieken worden gerapporteerd aan Google. Als dit is ingesteld op 'true', rapporteert <ph name="PRODUCT_OS_NAME" /> gebruiksstatistieken. Als het niet is geconfigureerd of is ingesteld op 'false', wordt de rapportage van statistieken uitgeschakeld.</translation>
@@ -1851,6 +1899,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als deze instelling is ingeschakeld, kan dit apparaat externe hosts zien en hier verbinding mee maken, zelfs als ze worden gescheiden door een firewall.
 
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, kan dit apparaat alleen verbinding maken met hosts binnen het lokale netwerk.</translation>
+<translation id="7980227303582973781">Geen speciale beperkingen</translation>
 <translation id="802147957407376460">Scherm 0 graden draaien</translation>
 <translation id="8044493735196713914">Opstartmodus van apparaat melden</translation>
 <translation id="8050080920415773384">Systeemeigen printer</translation>
@@ -1970,6 +2019,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als DeviceIdleLogoutTimeout is gespecificeerd, bepaalt dit beleid hoe lang het waarschuwingsvenster met afteltimer wordt weergegeven dat de gebruiker te zien krijgt voordat deze wordt afgemeld.
 
       De beleidswaarde moet worden opgegeven in milliseconden.</translation>
+<translation id="8339420913453596618">Tweede factor uitgeschakeld</translation>
 <translation id="8344454543174932833">Bladwijzers importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="8359734107661430198">API voor ExampleDeprecatedFeature tot en met 02-09-2008 inschakelen</translation>
 <translation id="8369602308428138533">Vertraging van scherm uitschakelen wanneer op netstroom wordt gewerkt</translation>
@@ -2016,6 +2066,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als je dit beleid niet instelt, probeert <ph name="PRODUCT_NAME" /> te detecteren of een server zich in het intranet bevindt en wordt daarna pas gereageerd op IWA-verzoeken. Als een server wordt gedetecteerd als intranet, worden IWA-verzoeken van de server genegeerd door <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Doelversie voor automatische updates</translation>
+<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8693243869659262736">Ingebouwde DNS-client gebruiken</translation>
 <translation id="8704831857353097849">Lijst met uitgeschakelde plug-ins</translation>
 <translation id="8711086062295757690">Hiermee wordt het zoekwoord gespecificeerd dat in de omnibox wordt gebruikt om de zoekfunctie voor deze provider te activeren.

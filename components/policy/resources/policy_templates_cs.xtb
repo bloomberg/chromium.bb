@@ -134,6 +134,7 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
 
 Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživatelé rozšíření ARC nebudou moci používat.</translation>
 <translation id="1561424797596341174">Přepsání zásad pro ladicí sestavení hostitele vzdáleného přístupu</translation>
+<translation id="1561967320164410511">U2F plus rozšíření pro individuální atestaci</translation>
 <translation id="1583248206450240930">Ve výchozím nastavení používat plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">Adresy URL, kterým bude udělen přístup pro záznam zvuku bez zobrazení výzvy</translation>
 <translation id="1617235075406854669">Aktivovat smazání historie prohlížeče a stahování</translation>
@@ -164,6 +165,7 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Není-li tato zásada nastavena, žádné smluvní podmínky se nezobrazí.
 
       Jako hodnotu této zásady zadejte adresu URL, ze které může systém <ph name="PRODUCT_OS_NAME" /> smluvní podmínky stáhnout. Smluvní podmínky musejí být uloženy ve formátu prostého textu s typem MIME „text/plain“. Nejsou povoleny žádné značky.</translation>
+<translation id="1750315445671978749">Blokovat veškerá stahování</translation>
 <translation id="1781356041596378058">Tato zásada také ovládá přístup k možnostem Pro vývojáře v systému Android. Pokud tuto zásadu nastavíte na hodnotu True, uživatelé nebudou mít přístup k sekci Pro vývojáře. Pokud tuto zásadu nastavíte na hodnotu False nebo ji nenastavíte, uživatelé budou moci možnosti Pro vývojáře otevřít tak, že v aplikaci Nastavení Android sedmkrát klepnou na číslo sestavení.</translation>
 <translation id="1803646570632580723">Seznam připnutých aplikací, které se zobrazují ve spouštěči</translation>
 <translation id="1808715480127969042">Blokovat soubory cookie na těchto stránkách</translation>
@@ -541,6 +543,9 @@ Tato zásada bude použita pouze v případě, že je proxy server nakonfigurov�
 Pokud toto nastavení povolíte, všechny stránky ověření captive portálu (tj. všechny webové stránky počínaje přihlašovací stránkou captive portálu až do doby, dokud prohlížeč <ph name="PRODUCT_NAME" /> nezjistí úspěšné připojení k internetu) budou zobrazeny v samostatném okně ignorujícím všechna nastavení zásad a omezení aktuálního uživatele.
 
 Pokud toto nastavení zakážete nebo ponecháte bez nastavení, stránky ověření captive portálu budou zobrazeny v běžné nové kartě prohlížeče s použitím nastavení proxy serveru aktuálního uživatele.</translation>
+<translation id="3001534538097271560">Pokud tuto zásadu nastavíte na hodnotu false, uživatelé nebudou moci zvolit, že se mají některé informace o systému a obsahu stránek odeslat na servery Google. Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, uživatelé budou moci odesílat část informací o systému a obsahu stránek do Bezpečného prohlížení a pomoci tak zjišťovat nebezpečné aplikace a weby.
+
+      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="3021409116652377124">Deaktivovat nástroj pro vyhledávání pluginů</translation>
 <translation id="3030000825273123558">Povolit hlášení o metrikách</translation>
 <translation id="3034580675120919256">Umožňuje nastavit, zda mohou webové stránky spouštět JavaScript. Spouštění JavaScriptu lze buď povolit pro všechny weby, nebo naopak pro všechny weby zakázat.
@@ -688,6 +693,11 @@ Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správc
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
 <translation id="3653237928288822292">Ikona výchozího poskytovatele vyhledávání</translation>
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
+<translation id="3687282113223807271">Když uživatel přejde na web, který je označen jako potenciálně škodlivý, zobrazí služba Bezpečné prohlížení stránku s upozorněním. Pokud aktivujete toto nastavení, uživatelé ze stránky s upozorněním na škodlivý web nebudou moci pokračovat.
+
+      Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, uživatelé mohou po zobrazení upozornění pokračovat na označený web.
+
+      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
@@ -776,6 +786,7 @@ Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správc
       Seznam rozšíření, která se automaticky nainstalují pro uživatele ukázky v zařízeních v režimu prodeje. Tato rozšíření se uloží v zařízení a po instalaci mohou být nainstalována v režimu offline.
 
       Každý záznam v seznamu obsahuje adresář, který musí zahrnovat ID rozšíření v poli „extension-id“ a jeho webovou adresu pro aktualizace v poli „update-url“.</translation>
+<translation id="3877517141460819966">Režim integrovaného dvoufaktorového ověření</translation>
 <translation id="388237772682176890">Ve verzi M53 byla podpora této zásady ukončena a ve verzi M54 byla tato zásada zcela odstraněna, protože byla odstraněna podpora protokolu SPDY/3.1.
 
       Zakáže v prohlížeči <ph name="PRODUCT_NAME" /> použití protokolu SPDY.
@@ -870,6 +881,23 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="4239720644496144453">Pro aplikace Android se mezipaměť nepoužívá. Pokud několik uživatelů nainstaluje stejnou aplikaci Android, stáhne se aplikace pro každého uživatele znovu.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jazyk přihlašovací obrazovky zařízení</translation>
+<translation id="4275782538576261754">Určuje, jaký typ stahování bude prohlížeč <ph name="PRODUCT_NAME" /> zcela blokovat, aniž by uživatelům umožnil bezpečnostní rozhodnutí přepsat.
+
+      Pokud nastavíte tuto zásadu, bude prohlížeč <ph name="PRODUCT_NAME" /> určitým typům stahování bránit a nenechá uživatele bezpečnostní upozornění obejít.
+
+      Když je vybrána možnost Blokovat nebezpečná stahování, jsou povolena všechna stahování s výjimkou těch, u nichž se zobrazují upozornění Bezpečného prohlížení.
+
+      Když je vybrána možnost Blokovat potenciálně nebezpečná stahování, jsou povolena všechna stahování s výjimkou těch, u nichž se zobrazují upozornění Bezpečného prohlížení o potenciálně nebezpečném stahování.
+
+      Když je vybrána možnost Blokovat veškerá stahování, jsou blokována veškerá stahování.
+
+      Když tato zásada není nastavena (nebo je vybrána možnost Bez zvláštních omezení), použijí se na stahování běžná bezpečnostní omezení založená na výsledcích analýzy Bezpečného prohlížení.
+
+      Tato omezení se vztahují na stahování spuštěná z obsahu webových stránek i pomocí možnosti Uložit odkaz v kontextové nabídce.
+
+      Tato omezení se nevztahují na uložení či stažení aktuálně zobrazené stránky ani na uložení do souboru PDF v možnostech tisku.
+
+      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Udává parametry, které se použijí při vyhledávání podle obrázku pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {imageThumbnail} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
 
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání podle obrázku bude odeslán pomocí metody GET.
@@ -1096,6 +1124,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="5219844027738217407">U aplikací Android má tato zásada vliv pouze na mikrofon. Když je tato zásada nastavena na hodnotu True, je mikrofon pro všechny aplikace Android bez výjimky ztlumen.</translation>
 <translation id="5226033722357981948">Určuje, zda má být deaktivován nástroj pro vyhledávání pluginů</translation>
 <translation id="523505283826916779">Nastavení usnadnění přístupu</translation>
+<translation id="5247006254130721952">Blokovat nebezpečná stahování</translation>
 <translation id="5255162913209987122">Doporučuje se</translation>
 <translation id="527237119693897329">Umožňuje zadat, kteří hostitelé zasílání nativních zpráv se nemají načítat.
 
@@ -1182,6 +1211,7 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
       Pokud tato zásada nebude nastavena, použije systém <ph name="PRODUCT_OS_NAME" /> výchozí hodnotu, což jsou 3 hodiny.
 
       Upozorňujeme, že pokud platforma podporuje oznámení o zásadách, budou všechna výchozí nastavení i hodnota této zásady ignorovány a interval aktualizací bude nastaven na 24 hodin. Očekává se totiž, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.</translation>
+<translation id="5530347722229944744">Blokovat potenciálně nebezpečná stahování</translation>
 <translation id="5535973522252703021">Seznam povolených serverů pro delegování ověření protokolu Kerberos</translation>
 <translation id="555077880566103058">Povolit všem webům automatické spouštění pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Tato zásada nemá vliv na aplikace Android.</translation>
@@ -1310,6 +1340,17 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="5966615072639944554">Rozšíření, která mohou používat rozhraní API vzdáleného ověření identity</translation>
 <translation id="5983708779415553259">Výchozí chování pro stránky, které nejsou součástí žádného obsahového balíčku</translation>
 <translation id="5997543603646547632">Ve výchozím nastavení použít 24hodinový formát</translation>
+<translation id="6005179188836322782">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Bezpečné prohlížení a brání uživatelům ve změně tohoto nastavení.
+
+      Pokud toto nastavení aktivujete, Bezpečné prohlížení bude vždy aktivní.
+
+      Pokud toto nastavení deaktivujete, Bezpečné prohlížení nebude nikdy aktivní.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat nastavení Povolit ochranu proti phishingu a malwaru.
+
+      Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována, ale uživatelé budou moci nastavení změnit.
+
+      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="6017568866726630990">Zobrazí místo náhledu tisku systémové dialogové okno tisku.
 
       Pokud je toto nastavení aktivované, prohlížeč <ph name="PRODUCT_NAME" /> zobrazí při požadavku uživatele na tisk stránky systémové dialogové okno tisku (namísto integrovaného náhledu tisku).
@@ -1384,6 +1425,11 @@ Není-li zásada nastavena, může se uživatelům zobrazit výzva, zda chtějí
 <translation id="6281043242780654992">Konfiguruje zásady pro zasílání nativních zpráv. Hostitelé zasílání nativních zpráv uvedení na seznamu zakázaných nebudou povoleni (pokud nebudou uvedeni na seznamu povolených hostitelů).</translation>
 <translation id="6282799760374509080">Povolit nebo zakázat záznam zvuku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Pokud tato zásada není nastavena nebo je nastavena na hodnotu True, je v prohlížeči <ph name="PRODUCT_NAME" /> povolena aktualizace všech komponent.
+
+      Pokud je nastavena na hodnotu False, jsou aktualizace komponent zakázány. Na některé komponenty se však tato zásada nevztahuje: nebudou zakázány aktualizace komponent, které neobsahují spustitelný kód, nemění významně chování prohlížeče nebo jsou nezbytně nutné z důvodu bezpečnosti.
+      Mezi takové komponenty patří například seznamy zneplatněných certifikátů a údaje Bezpečného prohlížení.
+      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Aktivovat automatické doplňování názvu domény při přihlášení uživatele</translation>
 <translation id="6315673513957120120">Pokud uživatel přejde na web, který obsahuje chyby protokolu SSL, Chrome zobrazí stránku s upozorněním. Když je tato zásada nastavena na hodnotu True, mohou uživatelé stránky s upozorněním přeskočit a pokračovat. Platí to také ve výchozím nastavení.
 Nastavením této zásady na hodnotu False přeskočení stránky s upozorněním zakážete.</translation>
@@ -1592,6 +1638,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 Pokud je prohlížeč <ph name="PRODUCT_NAME" /> spuštěn na pozadí, relace se po zavření posledního okna prohlížeče nemusí ukončit. Namísto toho zůstane aktivní, dokud se prohlížeč neukončí. Další informace o konfiguraci tohoto chování naleznete v podrobnostech o zásadě BackgroundModeEnabled.
 
 Pokud je zásada „RestoreOnStartup“ nastavena na obnovení adres URL z předcházejících relací, nebude tato zásada dodržována a soubory cookie se pro tyto webové stránky budou ukládat natrvalo.</translation>
+<translation id="7202925763179776247">Povolit omezení stahování</translation>
 <translation id="7207095846245296855">Vynutit Bezpečné vyhledávání Google</translation>
 <translation id="7216442368414164495">Umožnit uživatelům přihlášení k rozšířeným přehledům Bezpečného prohlížení</translation>
 <translation id="7234280155140786597">Názvy zakázaných hostitelů zasílání nativních zpráv (nebo * pro vše)</translation>
@@ -1720,6 +1767,7 @@ Poznámka: V současnosti jsou automatické restarty povoleny pouze tehdy, když
 
 Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7712109699186360774">Dotázat se vždy, když se web snaží získat přístup ke kameře nebo mikrofonu</translation>
+<translation id="7713608076604149344">Omezení stahování</translation>
 <translation id="7715711044277116530">Procento prodloužení prodlevy ztmavení obrazovky v režimu prezentace</translation>
 <translation id="7717938661004793600">Konfiguruje funkce usnadnění přístupu v systému <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Určuje, zda se budou Googlu nahlašovat metriky využití. Je-li tato zásada nastavena na hodnotu True, bude systém <ph name="PRODUCT_OS_NAME" /> hlásit metriky využití. Pokud není nastavena, nebo je nastavena na hodnotu False, budou hlášení o metrikách vypnuta.</translation>
@@ -1822,6 +1870,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
           Pokud je toto nastavení zapnuto, může tento počítač objevit vzdálené hostitelské počítače a připojit se k nim i v případě, že jsou odděleny bránou firewall.
 
           Pokud je toto nastavení vypnuto a odchozí připojení UDP jsou filtrována bránou firewall, může se tento počítač připojit pouze k hostitelským počítačům v místní síti.</translation>
+<translation id="7980227303582973781">Bez zvláštních omezení</translation>
 <translation id="802147957407376460">Otočit obrazovku o 0 stupňů</translation>
 <translation id="8044493735196713914">Hlásit režim spuštění zařízení</translation>
 <translation id="8050080920415773384">Nativní tisk</translation>
@@ -1931,6 +1980,7 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
       Pokud je určena zásada DeviceIdleLogoutTimeout, určuje tato zásada, jak dlouho před odhlášením se bude uživateli zobrazovat okno s upozorněním a časovačem.
 
       Hodnota zásady se určuje v milisekundách.</translation>
+<translation id="8339420913453596618">Druhý faktor je vypnut</translation>
 <translation id="8344454543174932833">Importování záložek z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="8359734107661430198">Aktivovat API PříkladZastaraléFunkce do 2. 9. 2008</translation>
 <translation id="8369602308428138533">Prodleva vypnutí obrazovky při napájení ze sítě</translation>
@@ -1977,6 +2027,7 @@ Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné zna
 
 Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjistit, zda se server nachází v intranetu, a teprve poté bude reagovat na požadavky IWA. Pokud bude server zjištěn jako internet, bude <ph name="PRODUCT_NAME" /> požadavky IWA ignorovat.</translation>
 <translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
+<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8693243869659262736">Použít integrovaného klienta DNS</translation>
 <translation id="8704831857353097849">Seznam deaktivovaných pluginů</translation>
 <translation id="8711086062295757690">Určuje klíčové slovo, které v adresním řádku spouští vyhledávání tohoto poskytovatele.

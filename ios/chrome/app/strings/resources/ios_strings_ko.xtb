@@ -65,7 +65,6 @@
 <translation id="2103075008456228677">history.google.com 열기</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 이동함</translation>
 <translation id="2149973817440762519">북마크 수정</translation>
-<translation id="2154710561487035718">URL 복사</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
 <translation id="2241634353105152135">한 번만</translation>
 <translation id="2267753748892043616">계정 추가</translation>
@@ -322,7 +321,6 @@
 <translation id="7336264872878993241"><ph name="PERCENT" />% 다운로드됨</translation>
 <translation id="7346909386216857016">확인</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
 <translation id="7425346204213733349">북마크, 방문 기록, 비밀번호, 기타 설정이 더 이상 Google 계정에 동기화되지 않습니다. 하지만 기존 데이터는 Google 계정에 계속 저장됩니다.</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> 아님</translation>
 <translation id="7454057999980797137">도/군</translation>

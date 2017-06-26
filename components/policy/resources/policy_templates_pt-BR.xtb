@@ -138,6 +138,7 @@
       Se essa configuração estiver desativada ou não for configurada, os usuários corporativos não
       conseguirão usar o ARC.</translation>
 <translation id="1561424797596341174">A política modifica as versões de depuração do host de acesso remoto</translation>
+<translation id="1561967320164410511">U2F e extensões para declaração individual</translation>
 <translation id="1583248206450240930">Usar o <ph name="PRODUCT_FRAME_NAME" /> por padrão</translation>
 <translation id="1608755754295374538">URLs que terão acesso a dispositivos de captura de áudio sem solicitação</translation>
 <translation id="1617235075406854669">Ativar exclusão do histórico do navegador e de downloads</translation>
@@ -172,6 +173,7 @@
       Se esta política não for definida, os Termos de Serviço não serão mostrados.
 
       A política deve ser definida para um URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> possa fazer o download dos Termos de Serviço. Os Termos de Serviço devem estar em texto sem formação, com tipo de texto MIME text/plain. Não são permitidas marcações.</translation>
+<translation id="1750315445671978749">Bloquear todos os downloads</translation>
 <translation id="1781356041596378058">Esta política também controla o acesso às Opções do desenvolvedor do Android. Se você configurar essa política como true, os usuários não poderão acessar as Opções do desenvolvedor. Se configurá-la como false ou deixá-la sem definição, os usuários poderão acessar as Opções do desenvolvedor tocado sete vezes no número da versão no app Config. do Android.</translation>
 <translation id="1803646570632580723">Lista de aplicativos fixados a serem mostrados no iniciador</translation>
 <translation id="1808715480127969042">Bloquear cookies nestes sites</translation>
@@ -531,6 +533,9 @@
       Se você ativa esta configuração, todas as páginas de autenticação de portal cativo (ou seja, todas as páginas da Web iniciadas por uma página de login de portal cativo até que o <ph name="PRODUCT_NAME" /> detecte uma conexão com a Internet) são exibidas em uma janela separada, ignorando todas as configurações e restrições de política para o usuário atual.
 
       Se você desativa esta configuração ou não a define, todas as páginas de autenticação de portal cativo são exibidas em uma nova guia (normal) do navegador, usando as configurações de proxy de usuário atuais.</translation>
+<translation id="3001534538097271560">A configuração desta política como False impede que os usuários optem por enviar informações do sistema e conteúdo de páginas aos servidores do Google. Se essa configuração for definida como True ou não for configurada, os usuários terão permissão para enviar informações do sistema e conteúdo de página ao recurso "Navegação segura" para ajudar a detectar apps e sites perigosos.
+
+      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="3021409116652377124">Desativar localizador de plug-ins</translation>
 <translation id="3030000825273123558">Ativa relatórios de métricas</translation>
 <translation id="3034580675120919256">Permite que você defina se os websites estão autorizados a executar JavaScript. O JavaScript em execução pode ser permitido ou negado para todos os websites. Se esta política for deixada sem definição, a política "AllowJavaScript" será utilizada, podendo ser modificada pelo usuário.</translation>
@@ -668,6 +673,11 @@
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do provedor de pesquisa padrão</translation>
 <translation id="3660562134618097814">Transferir cookies do IDP de SAML durante o login</translation>
+<translation id="3687282113223807271">O serviço "Navegação segura" mostra uma página de aviso quando os usuários navegam em sites que são sinalizados como potencialmente mal-intencionados. A ativação dessa configuração impede que os usuários prossigam de qualquer forma da página de aviso para o site mal-intencionado.
+
+      Se essa configuração for desativada ou não for configurada, os usuários poderão optar por prosseguir para o site sinalizado após o aviso ser exibido.
+
+      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="3709266154059827597">Configurar a lista negra de instalação da extensão</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Ativar adição de uma pessoa no gerenciador de usuários</translation>
@@ -751,6 +761,7 @@
       Lista extensões que são instaladas automaticamente para o usuário Demo, para dispositivos em modo de varejo. Essas extensões são salvas no dispositivo e podem ser instaladas off-line, após a instalação.
 
       Cada entrada da lista contém um dicionário que deve incluir a identificação de extensão no campo 'extensão-id', e o URL de atualização no campo 'update-url'.</translation>
+<translation id="3877517141460819966">Modo de autenticação de segundo fator integrado</translation>
 <translation id="388237772682176890">O uso dessa política foi suspenso no M53 e removido no M54, porque a compatibilidade com o SPDY/3.1 foi removida.
 
       Desativa o uso do protocolo SPDY no <ph name="PRODUCT_NAME" />.
@@ -845,6 +856,23 @@
 <translation id="4239720644496144453">O cache não é usado para apps Android. Se vários usuários instalarem o mesmo app Android, o download dele será feito novamente para cada usuário.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4261820385751181068">Localidade da tela de login do dispositivo</translation>
+<translation id="4275782538576261754">Configura o tipo de downloads que o <ph name="PRODUCT_NAME" /> bloqueará completamente, sem permitir que os usuários modifiquem a decisão de segurança.
+
+      Se esta política for definida, o <ph name="PRODUCT_NAME" /> impedirá determinados tipos de downloads e não permitirá que o usuário ignore os avisos de segurança.
+
+      Quando a opção Bloquear downloads perigosos é escolhida, todos os downloads são permitidos, exceto aqueles que têm avisos do "Navegação segura".
+
+      Quando a opção Bloquear downloads potencialmente perigosos é escolhida, todos os downloads são permitidos, exceto aqueles que têm avisos de downloads potencialmente perigosos do "Navegação segura".
+
+      Quando a opção Bloquear todos os downloads é escolhida, todos os downloads são bloqueados.
+
+      Quando esta política for deixada sem definição, ou a opção Nenhuma restrição especial for escolhida, os downloads passarão pelas restrições de segurança normais com base nos resultados de análise do "Navegação segura".
+
+      Essas restrições se aplicam aos downloads acionados pelo conteúdo da página da Web, assim como pela opção do menu de contexto Fazer o download do link.
+
+      Essas restrições não se aplicam à opção de salvar / fazer o download da página exibida no momento, nem se aplicam à opção de salvar como PDF das opções de impressão.
+
+      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="427632463972968153">Especifica os parâmetros usados ao pesquisar imagens com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelo, como {imageThumbnail} no exemplo acima, ele será substituído por dados de miniaturas de pesquisa reais.
 
           Esta política é opcional. Se não for definida, a solicitação de pesquisa de imagens será enviada usando o método GET.
@@ -1044,6 +1072,7 @@
 <translation id="5219844027738217407">Em apps Android, esta política afeta somente o microfone. Quando esta política é definida como true, o microfone é silenciado para todos os apps Android, sem exceções.</translation>
 <translation id="5226033722357981948">Especificar se o localizador de plug-ins deve ser desativado</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
+<translation id="5247006254130721952">Bloquear downloads perigosos</translation>
 <translation id="5255162913209987122">Pode ser recomendada</translation>
 <translation id="527237119693897329">Permite especificar quais hosts de mensagens nativas não devem ser carregados.
 
@@ -1119,6 +1148,7 @@
       Deixar a política sem definição fará o <ph name="PRODUCT_OS_NAME" /> utilizar o valor padrão de três horas.
 
       Se a plataforma for compatível com notificações sobre políticas, o atraso de atualização será configurado para 24 horas (ignorando todos os padrões e o valor da política), pois espera-se que as notificações sobre políticas forcem uma atualização automaticamente sempre que a política for alterada, tornando as atualizações mais frequentes desnecessárias.</translation>
+<translation id="5530347722229944744">Bloquear downloads potencialmente perigosos</translation>
 <translation id="5535973522252703021">Lista branca do servidor de delegação Kerberos</translation>
 <translation id="555077880566103058">Permitir que todos os sites executem o plug-in <ph name="FLASH_PLUGIN_NAME" /> automaticamente</translation>
 <translation id="5559079916187891399">Esta política não tem nenhum efeito sobre apps Android.</translation>
@@ -1241,6 +1271,17 @@
 <translation id="5966615072639944554">Extensões que podem usar a API de declaração remota</translation>
 <translation id="5983708779415553259">Comportamento padrão para sites fora de pacotes de conteúdo</translation>
 <translation id="5997543603646547632">Usar relógido de 24 horas por padrão</translation>
+<translation id="6005179188836322782">Ativa o recurso "Navegação segura" do <ph name="PRODUCT_NAME" /> e impede os usuários de alterarem essa configuração.
+
+      Se você ativar essa configuração, o "Navegação segura" estará sempre ativo.
+
+      Se você desativar essa configuração, o "Navegação segura" nunca estará ativo.
+
+      Se você ativar ou desativar essa configuração, os usuários não poderão alterar ou modificar a configuração Ativar proteção contra phishing e malware no <ph name="PRODUCT_NAME" />.
+
+      Se esta política não for definida, ela ficará ativada, mas o usuário poderá alterá-la.
+
+      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="6017568866726630990">Mostrar a caixa de diálogo de impressão do sistema em vez da visualização de impressão.
 
       Quando esta configuração estiver ativada, o <ph name="PRODUCT_NAME" /> abrirá a caixa de diálogo de impressão do sistema em vez da visualização de impressão integrada, quando um usuário solicitar a impressão de uma página.
@@ -1309,6 +1350,11 @@
 <translation id="6281043242780654992">Configura políticas para as mensagens nativas. Os hosts de mensagens nativas presentes na lista negra não serão permitidos, a menos que estejam na lista de permissões.</translation>
 <translation id="6282799760374509080">Permitir ou negar captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Ativa atualizações de todos os componentes no <ph name="PRODUCT_NAME" /> quando não está definida ou se definida como True.
+
+      Se a política é definida como False, as atualizações dos componentes são desativadas. Entretanto, alguns componentes são isentos desta política: atualizações em quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a segurança não serão desativadas.
+      Entre os exemplos desses componentes estão as listas de revogação de certificado e os dados de navegação segura.
+      Consulte https://developers.google.com/safe-browsing (em inglês) para saber mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="6310223829319187614">Ativar preenchimento automático do nome de domínio durante login do usuário</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os usuários navegam para sites que têm erros de SSL. Por padrão ou quando esta política é definida como "true", os usuários têm permissão para clicar nessas páginas de aviso.
       A definição desta política como "false" não permite que os usuários cliquem em qualquer página de aviso.</translation>
@@ -1497,6 +1543,7 @@
           Observe que, se o <ph name="PRODUCT_NAME" /> está em execução no "modo de segundo plano", a sessão pode continuar aberta mesmo quando a última janela do navegador é fechada, permanecendo ativa até a saída do navegador. Consulte a política "BackgroundModeEnabled" para ver outras informações sobre como configurar este comportamento.
 
           Se a política "RestoreOnStartup" é definida para recuperar URLs de sessões anteriores, ela não é respeitada, e os cookies desses sites são armazenados permanentemente.</translation>
+<translation id="7202925763179776247">Permitir restrições de downloads</translation>
 <translation id="7207095846245296855">Forçar o Google SafeSearch</translation>
 <translation id="7216442368414164495">Permitir que os usuários ativem os relatórios estendidos do Navegação segura</translation>
 <translation id="7234280155140786597">Nomes dos hosts de mensagens nativas proibidos (ou "*" para todos)</translation>
@@ -1617,6 +1664,7 @@
 
           Esta política é destinada a uso interno do próprio <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7712109699186360774">Perguntar toda vez que um site quiser acessar minha câmera e/ou meu microfone</translation>
+<translation id="7713608076604149344">Restrições de downloads</translation>
 <translation id="7715711044277116530">Percentual pelo qual calcular o intervalo de escurecimento da tela no modo de apresentação</translation>
 <translation id="7717938661004793600">Configurar recursos de acessibilidade do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Controla se as métricas de uso são informadas ao Google. Se configurada como true, o <ph name="PRODUCT_OS_NAME" /> informará as métricas de uso. Se não for configurada ou for configurada como false, a elaboração de relatórios de métricas será desativada.</translation>
@@ -1714,6 +1762,7 @@
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>
+<translation id="7980227303582973781">Nenhuma restrição especial</translation>
 <translation id="802147957407376460">Girar tela em 0 graus</translation>
 <translation id="8044493735196713914">Informar modo de inicialização do dispositivo</translation>
 <translation id="8050080920415773384">Impressão nativa</translation>
@@ -1821,6 +1870,7 @@
 
           Se esta política não for definida, será usada a política "BlockKeygen", mas o usuário poderá modificá-la.</translation>
 <translation id="8329984337216493753">Esta política é ativa somente no modo de varejo. Quando o DeviceIdleLogoutTimeout for especificado, esta política definirá a duração da caixa de aviso com contagem regressiva que será mostrada ao usuário antes da desconexão. O valor da política deve ser especificado em milésimos de segundos.</translation>
+<translation id="8339420913453596618">Segundo fator desativado</translation>
 <translation id="8344454543174932833">Importar favoritos do navegador padrão na primeira execução</translation>
 <translation id="8359734107661430198">Ativar a API ExampleDeprecatedFeature até 02/09/2008</translation>
 <translation id="8369602308428138533">Intervalo de desligamento da tela no funcionamento com alimentação CA</translation>
@@ -1867,6 +1917,7 @@
 
           Se esta política não é definida, o <ph name="PRODUCT_NAME" /> tenta detectar se um servidor está na Intranet e, só então, responde às solicitações IWA. Se um servidor é detectado como Internet, as solicitações IWA que partem dele são ignoradas pelo <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Versão de atualização automática de destino</translation>
+<translation id="867410340948518937">Segundo fator universal (U2F, na sigla em inglês)</translation>
 <translation id="8693243869659262736">Usar cliente DNS integrado</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave, que é o atalho utilizado na omnibox para acionar a pesquisa por este provedor. Esta política é opcional. Se não estiver definida, palavra-chave alguma ativará o mecanismo de pesquisa. Esta política só é considerada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>

@@ -65,7 +65,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2103075008456228677">Otvori history.google.com</translation>
 <translation id="2116625576999540962">Broj premještenih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
-<translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2230173723195178503">Web-stranica učitana</translation>
 <translation id="2241634353105152135">Samo jednom</translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
@@ -322,7 +321,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7336264872878993241"><ph name="PERCENT" /> posto preuzeto</translation>
 <translation id="7346909386216857016">Dobro, shvaćam</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Potraži sliku na usluzi <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Promjene oznaka, povijesti, zaporki i drugih postavki više se neće sinkronizirati s vašim Google računom. No vaši postojeći podaci ostat će pohranjeni na vašem Google računu.</translation>
 <translation id="744343212394640790">Nisam <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Županija</translation>

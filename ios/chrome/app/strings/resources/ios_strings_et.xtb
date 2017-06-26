@@ -65,7 +65,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="2103075008456228677">Ava history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> üksust on teisaldatud</translation>
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
-<translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="2230173723195178503">Veebileht laaditi</translation>
 <translation id="2241634353105152135">Ainult ühe korra</translation>
 <translation id="2267753748892043616">Lisa konto</translation>
@@ -322,7 +321,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7336264872878993241"><ph name="PERCENT" /> protsenti on alla laaditud</translation>
 <translation id="7346909386216857016">Selge, sain aru!</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Otsi teen. <ph name="SEARCH_ENGINE" /> seda kujutist</translation>
 <translation id="7425346204213733349">Järjehoidjates, ajaloos, paroolides ja muudes seadetes tehtud muudatusi ei sünkroonita enam teie Google'i kontoga. Teie olemasolevad andmed jäävad siiski teie Google'i kontole.</translation>
 <translation id="744343212394640790">Pole <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Osariik/maakond</translation>

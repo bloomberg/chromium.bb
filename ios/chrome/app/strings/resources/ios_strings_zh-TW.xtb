@@ -65,7 +65,6 @@
 <translation id="2103075008456228677">開啟 history.google.com</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
-<translation id="2154710561487035718">複製網址</translation>
 <translation id="2230173723195178503">已載入網頁</translation>
 <translation id="2241634353105152135">只有這一次</translation>
 <translation id="2267753748892043616">新增帳戶</translation>
@@ -322,7 +321,6 @@
 <translation id="7336264872878993241">已下載 <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">好，我瞭解了</translation>
 <translation id="7400418766976504921">網址</translation>
-<translation id="7419187830569376338">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
 <translation id="7425346204213733349">您更改過的書籤、歷史紀錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
 <translation id="744343212394640790">不是 <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">州/縣</translation>
