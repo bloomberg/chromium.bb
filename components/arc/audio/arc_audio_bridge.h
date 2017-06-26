@@ -28,6 +28,7 @@ class ArcAudioBridge : public ArcService,
 
   // InstanceHolder<mojom::AudioInstance>::Observer overrides.
   void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   // mojom::AudioHost overrides.
   void ShowVolumeControls() override;
@@ -37,13 +38,6 @@ class ArcAudioBridge : public ArcService,
   static const char kArcServiceName[];
 
  private:
-  mojo::Binding<mojom::AudioHost> binding_;
-
-  chromeos::CrasAudioHandler* cras_audio_handler_ = nullptr;
-
-  int volume_ = 0;  // Volume range: 0-100.
-  bool muted_ = false;
-
   // chromeos::CrasAudioHandler::AudioObserver overrides.
   void OnAudioNodesChanged() override;
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
@@ -51,6 +45,17 @@ class ArcAudioBridge : public ArcService,
 
   void SendSwitchState(bool headphone_inserted, bool microphone_inserted);
   void SendVolumeState();
+
+  mojo::Binding<mojom::AudioHost> binding_;
+
+  chromeos::CrasAudioHandler* cras_audio_handler_ = nullptr;
+
+  int volume_ = 0;  // Volume range: 0-100.
+  bool muted_ = false;
+
+  // Avoids sending requests when the instance is unavailable.
+  // TODO(crbug.com/549195): Remove once the root cause is fixed.
+  bool available_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAudioBridge);
 };
