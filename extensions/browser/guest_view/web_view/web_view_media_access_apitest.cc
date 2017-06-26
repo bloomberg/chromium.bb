@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/guest_view/web_view/web_view_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "media/base/media_switches.h"
 
 namespace {
 
@@ -79,6 +81,14 @@ class WebViewMediaAccessAPITest : public WebViewAPITest {
         embedder_web_contents_,
         base::StringPrintf("runTest('%s');", test_name.c_str())));
     ASSERT_TRUE(test_run_listener.WaitUntilSatisfied());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Enable fake devices to make sure there is at least one device in the
+    // system. Otherwise, this test would fail on machines without physical
+    // media devices since getUserMedia fails early in those cases.
+    WebViewAPITest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 };
 

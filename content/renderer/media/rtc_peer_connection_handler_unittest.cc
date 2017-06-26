@@ -301,7 +301,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                              media::AudioParameters::kAudioCDSampleRate,
                              media::CHANNEL_LAYOUT_STEREO,
                              media::AudioParameters::kAudioCDSampleRate / 100),
-            MockConstraintFactory().CreateWebMediaConstraints(),
+            AudioProcessingProperties(),
             base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
             mock_dependency_factory_.get());
     audio_source->SetAllowInvalidRenderFrameIdForTesting(true);

@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_PROCESSED_LOCAL_AUDIO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_PROCESSED_LOCAL_AUDIO_SOURCE_H_
 
+#include <string>
+
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -36,11 +38,12 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // |consumer_render_frame_id| references the RenderFrame that will consume the
   // audio data. Audio parameters and (optionally) a pre-existing audio session
   // ID are derived from |device_info|. |factory| must outlive this instance.
-  ProcessedLocalAudioSource(int consumer_render_frame_id,
-                            const StreamDeviceInfo& device_info,
-                            const blink::WebMediaConstraints& constraints,
-                            const ConstraintsCallback& started_callback,
-                            PeerConnectionDependencyFactory* factory);
+  ProcessedLocalAudioSource(
+      int consumer_render_frame_id,
+      const StreamDeviceInfo& device_info,
+      const AudioProcessingProperties& audio_processing_properties,
+      const ConstraintsCallback& started_callback,
+      PeerConnectionDependencyFactory* factory);
 
   ~ProcessedLocalAudioSource() final;
 
@@ -55,10 +58,8 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
     allow_invalid_render_frame_id_for_testing_ = allowed;
   }
 
-  // Gets/Sets source constraints. Using this is optional, but must be done
-  // before the first call to ConnectToTrack().
-  const blink::WebMediaConstraints& source_constraints() const {
-    return constraints_;
+  const AudioProcessingProperties& audio_processing_properties() const {
+    return audio_processing_properties_;
   }
 
   // The following accessors are not valid until after the source is started
@@ -112,8 +113,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // or data flow changes are being called on the main thread.
   base::ThreadChecker thread_checker_;
 
-  // Cached audio constraints for the capturer.
-  const blink::WebMediaConstraints constraints_;
+  AudioProcessingProperties audio_processing_properties_;
 
   // Callback that's called when the audio source has been initialized.
   ConstraintsCallback started_callback_;

@@ -61,7 +61,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
                            media::AudioParameters::kAudioCDSampleRate,
                            media::CHANNEL_LAYOUT_STEREO,
                            media::AudioParameters::kAudioCDSampleRate / 50),
-          MockConstraintFactory().CreateWebMediaConstraints(),
+          AudioProcessingProperties(),
           base::Bind(&WebRtcMediaStreamAdapterTest::OnAudioSourceStarted),
           dependency_factory_.get());
       source->SetAllowInvalidRenderFrameIdForTesting(true);

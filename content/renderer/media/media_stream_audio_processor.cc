@@ -6,7 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <algorithm>
+#include <limits>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -20,13 +24,11 @@
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
-#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 
@@ -126,6 +128,19 @@ base::Optional<int> GetStartupMinVolumeForAgc() {
 bool UseAecRefinedAdaptiveFilter() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAecRefinedAdaptiveFilter);
+}
+
+webrtc::Point WebrtcPointFromMediaPoint(const media::Point& point) {
+  return webrtc::Point(point.x(), point.y(), point.z());
+}
+
+std::vector<webrtc::Point> WebrtcPointsFromMediaPoints(
+    const std::vector<media::Point>& points) {
+  std::vector<webrtc::Point> webrtc_points;
+  webrtc_points.reserve(webrtc_points.size());
+  for (const auto& point : points)
+    webrtc_points.push_back(WebrtcPointFromMediaPoint(point));
+  return webrtc_points;
 }
 
 }  // namespace
@@ -292,8 +307,7 @@ class MediaStreamAudioFifo {
 };
 
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
-    const blink::WebMediaConstraints& constraints,
-    const MediaStreamDevice::AudioDeviceParameters& input_params,
+    const AudioProcessingProperties& properties,
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       has_echo_cancellation_(false),
@@ -305,7 +319,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
   DCHECK(main_thread_runner_);
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
-  InitializeAudioProcessingModule(constraints, input_params);
+  InitializeAudioProcessingModule(properties);
 
   aec_dump_message_filter_ = AecDumpMessageFilter::Get();
   // In unit tests not creating a message filter, |aec_dump_message_filter_|
@@ -491,34 +505,30 @@ void MediaStreamAudioProcessor::OnIpcClosing() {
 
 // static
 bool MediaStreamAudioProcessor::WouldModifyAudio(
-    const blink::WebMediaConstraints& constraints,
-    int effects_flags) {
+    const AudioProcessingProperties& properties) {
   // Note: This method should by kept in-sync with any changes to the logic in
   // MediaStreamAudioProcessor::InitializeAudioProcessingModule().
 
-  const MediaAudioConstraints audio_constraints(constraints, effects_flags);
-
-  if (audio_constraints.GetGoogAudioMirroring())
+  if (properties.goog_audio_mirroring)
     return true;
 
 #if !defined(OS_IOS)
-  if (audio_constraints.GetEchoCancellationProperty() ||
-      audio_constraints.GetGoogAutoGainControl()) {
+  if (properties.enable_sw_echo_cancellation ||
+      properties.goog_auto_gain_control) {
     return true;
   }
 #endif
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-  if (audio_constraints.GetGoogExperimentalEchoCancellation() ||
-      audio_constraints.GetGoogTypingNoiseDetection()) {
+  if (properties.goog_experimental_echo_cancellation ||
+      properties.goog_typing_noise_detection) {
     return true;
   }
 #endif
 
-  if (audio_constraints.GetGoogNoiseSuppression() ||
-      audio_constraints.GetGoogExperimentalNoiseSuppression() ||
-      audio_constraints.GetGoogBeamforming() ||
-      audio_constraints.GetGoogHighpassFilter()) {
+  if (properties.goog_noise_suppression ||
+      properties.goog_experimental_noise_suppression ||
+      properties.goog_beamforming || properties.goog_highpass_filter) {
     return true;
   }
 
@@ -578,78 +588,63 @@ void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
-    const blink::WebMediaConstraints& constraints,
-    const MediaStreamDevice::AudioDeviceParameters& input_params) {
+    const AudioProcessingProperties& properties) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   DCHECK(!audio_processing_);
-
-  MediaAudioConstraints audio_constraints(constraints, input_params.effects);
 
   // Note: The audio mirroring constraint (i.e., swap left and right channels)
   // is handled within this MediaStreamAudioProcessor and does not, by itself,
   // require webrtc::AudioProcessing.
-  audio_mirroring_ = audio_constraints.GetGoogAudioMirroring();
-
-  const bool echo_cancellation =
-      audio_constraints.GetEchoCancellationProperty();
-  has_echo_cancellation_ = echo_cancellation;
-  const bool goog_agc = audio_constraints.GetGoogAutoGainControl();
+  audio_mirroring_ = properties.goog_audio_mirroring;
+  has_echo_cancellation_ = properties.enable_sw_echo_cancellation;
 
 #if defined(OS_ANDROID)
   const bool goog_experimental_aec = false;
   const bool goog_typing_detection = false;
 #else
   const bool goog_experimental_aec =
-      audio_constraints.GetGoogExperimentalEchoCancellation();
-  const bool goog_typing_detection =
-      audio_constraints.GetGoogTypingNoiseDetection();
+      properties.goog_experimental_echo_cancellation;
+  const bool goog_typing_detection = properties.goog_typing_noise_detection;
 #endif
-
-  const bool goog_ns = audio_constraints.GetGoogNoiseSuppression();
-  const bool goog_experimental_ns =
-      audio_constraints.GetGoogExperimentalNoiseSuppression();
-  const bool goog_beamforming = audio_constraints.GetGoogBeamforming();
-  const bool goog_high_pass_filter = audio_constraints.GetGoogHighpassFilter();
 
   // Return immediately if none of the goog constraints requiring
   // webrtc::AudioProcessing are enabled.
-  if (!echo_cancellation && !goog_experimental_aec && !goog_ns &&
-      !goog_high_pass_filter && !goog_typing_detection &&
-      !goog_agc && !goog_experimental_ns && !goog_beamforming) {
+  if (!properties.enable_sw_echo_cancellation && !goog_experimental_aec &&
+      !properties.goog_noise_suppression && !properties.goog_highpass_filter &&
+      !goog_typing_detection && !properties.goog_auto_gain_control &&
+      !properties.goog_experimental_noise_suppression &&
+      !properties.goog_beamforming) {
     // Sanity-check: WouldModifyAudio() should return true iff
     // |audio_mirroring_| is true.
-    DCHECK_EQ(audio_mirroring_, WouldModifyAudio(constraints,
-                                                 input_params.effects));
+    DCHECK_EQ(audio_mirroring_, WouldModifyAudio(properties));
     RecordProcessingState(AUDIO_PROCESSING_DISABLED);
     return;
   }
 
   // Sanity-check: WouldModifyAudio() should return true because the above logic
   // has determined webrtc::AudioProcessing will be used.
-  DCHECK(WouldModifyAudio(constraints, input_params.effects));
+  DCHECK(WouldModifyAudio(properties));
 
   // Experimental options provided at creation.
   webrtc::Config config;
   config.Set<webrtc::ExtendedFilter>(
       new webrtc::ExtendedFilter(goog_experimental_aec));
-  config.Set<webrtc::ExperimentalNs>(
-      new webrtc::ExperimentalNs(goog_experimental_ns));
+  config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(
+      properties.goog_experimental_noise_suppression));
   config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
   if (UseAecRefinedAdaptiveFilter()) {
     config.Set<webrtc::RefinedAdaptiveFilter>(
         new webrtc::RefinedAdaptiveFilter(true));
   }
-  if (goog_beamforming) {
-    const auto& geometry =
-        GetArrayGeometryPreferringConstraints(audio_constraints, input_params);
-
+  if (properties.goog_beamforming) {
     // Only enable beamforming if we have at least two mics.
-    config.Set<webrtc::Beamforming>(
-        new webrtc::Beamforming(geometry.size() > 1, geometry));
+    config.Set<webrtc::Beamforming>(new webrtc::Beamforming(
+        properties.goog_array_geometry.size() > 1,
+        WebrtcPointsFromMediaPoints(properties.goog_array_geometry)));
   }
 
   // If the experimental AGC is enabled, check for overridden config params.
-  if (audio_constraints.GetGoogExperimentalAutoGainControl()) {
+  if (properties.goog_experimental_auto_gain_control) {
     auto startup_min_volume = GetStartupMinVolumeForAgc();
     constexpr int kClippingLevelMin = 70;
     // TODO(hlundin) Make this value default in WebRTC and clean up here.
@@ -667,7 +662,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     playout_data_source_->AddPlayoutSink(this);
   }
 
-  if (echo_cancellation) {
+  if (properties.enable_sw_echo_cancellation) {
     EnableEchoCancellation(audio_processing_.get());
 
     apm_config.echo_canceller3.enabled = override_aec3_.value_or(
@@ -686,7 +681,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     apm_config.echo_canceller3.enabled = false;
   }
 
-  if (goog_ns) {
+  if (properties.goog_noise_suppression) {
     // The beamforming postfilter is effective at suppressing stationary noise,
     // so reduce the single-channel NS aggressiveness when enabled.
     const NoiseSuppression::Level ns_level =
@@ -696,7 +691,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     EnableNoiseSuppression(audio_processing_.get(), ns_level);
   }
 
-  apm_config.high_pass_filter.enabled = goog_high_pass_filter;
+  apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
 
   if (goog_typing_detection) {
     // TODO(xians): Remove this |typing_detector_| after the typing suppression
@@ -705,7 +700,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     EnableTypingDetection(audio_processing_.get(), typing_detector_.get());
   }
 
-  if (goog_agc)
+  if (properties.goog_auto_gain_control)
     EnableAutomaticGainControl(audio_processing_.get());
 
   audio_processing_->ApplyConfig(apm_config);

@@ -9,9 +9,9 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
+#include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/mock_audio_device_factory.h"
-#include "content/renderer/media/mock_constraint_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/processed_local_audio_source.h"
 #include "media/base/audio_bus.h"
@@ -96,13 +96,13 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   }
 
   void CreateProcessedLocalAudioSource(
-      const blink::WebMediaConstraints& constraints) {
+      const AudioProcessingProperties& properties) {
     ProcessedLocalAudioSource* const source = new ProcessedLocalAudioSource(
         -1 /* consumer_render_frame_id is N/A for non-browser tests */,
         StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device",
                          "mock_audio_device_id", kSampleRate, kChannelLayout,
                          kRequestedBufferSize),
-        constraints,
+        properties,
         base::Bind(&ProcessedLocalAudioSourceTest::OnAudioSourceStarted,
                    base::Unretained(this)),
         &mock_dependency_factory_);
@@ -161,11 +161,9 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
 
   // Turn off the default constraints so the sink will get audio in chunks of
   // the native buffer size.
-  MockConstraintFactory constraint_factory;
-  constraint_factory.DisableDefaultAudioConstraints();
-
-  CreateProcessedLocalAudioSource(
-      constraint_factory.CreateWebMediaConstraints());
+  AudioProcessingProperties properties;
+  properties.DisableDefaultPropertiesForTesting();
+  CreateProcessedLocalAudioSource(properties);
 
   // Connect the track, and expect the MockCapturerSource to be initialized and
   // started by ProcessedLocalAudioSource.
@@ -206,35 +204,5 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
   MediaStreamAudioTrack::From(blink_audio_track())->Stop();
 }
 
-// Tests that the source is not started when invalid audio constraints are
-// present.
-TEST_F(ProcessedLocalAudioSourceTest, FailToStartWithWrongConstraints) {
-  MockConstraintFactory constraint_factory;
-  const std::string dummy_constraint = "dummy";
-  // Set a non-audio constraint.
-  constraint_factory.basic().width.SetExact(240);
-
-  CreateProcessedLocalAudioSource(
-      constraint_factory.CreateWebMediaConstraints());
-
-  // Expect the MockCapturerSource is never initialized/started and the
-  // ConnectToTrack() operation fails due to the invalid constraint.
-  EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(),
-              Initialize(_, capture_source_callback(), -1))
-      .Times(0);
-  EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(),
-              SetAutomaticGainControl(true)).Times(0);
-  EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(), Start())
-      .Times(0);
-  EXPECT_FALSE(audio_source()->ConnectToTrack(blink_audio_track()));
-
-  // Even though ConnectToTrack() failed, there should still have been a new
-  // MediaStreamAudioTrack instance created, owned by the
-  // blink::WebMediaStreamTrack.
-  EXPECT_TRUE(MediaStreamAudioTrack::From(blink_audio_track()));
-}
-
-// TODO(miu): There's a lot of logic in ProcessedLocalAudioSource around
-// constraints processing and validation that should have unit testing.
 
 }  // namespace content
