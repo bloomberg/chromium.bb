@@ -194,7 +194,6 @@ interface AnimationTimeline
     attribute @@toStringTag
     getter currentTime
     method constructor
-    method getAnimations
 interface AppBannerPromptResult
     attribute @@toStringTag
     getter outcome
@@ -1583,6 +1582,7 @@ interface Document : Node
     method execCommand
     method exitFullscreen
     method exitPointerLock
+    method getAnimations
     method getElementById
     method getElementsByClassName
     method getElementsByName

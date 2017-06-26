@@ -16,8 +16,8 @@ t.step(function() {
     element.style.background = "green";
     element.offsetTop; // Force recalc
 
-    assert_equals(document.timeline.getAnimations().length, 1);
-    var animation = document.timeline.getAnimations()[0];
+    assert_equals(document.getAnimations().length, 1);
+    var animation = document.getAnimations()[0];
     animation.onfinish = function() {
         requestAnimationFrame(function() {
             requestAnimationFrame(function() {

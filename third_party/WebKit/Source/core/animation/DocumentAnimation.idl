@@ -8,4 +8,6 @@
     RuntimeEnabled=WebAnimationsAPI
 ] partial interface Document {
     readonly attribute DocumentTimeline timeline;
+
+    sequence<Animation> getAnimations();
 };

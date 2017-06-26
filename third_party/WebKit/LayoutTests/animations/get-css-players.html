@@ -15,20 +15,20 @@
 
 <script>
 async_test(function(t) {
-    assert_equals(document.timeline.getAnimations().length, 0);
+    assert_equals(document.getAnimations().length, 0);
     assert_equals(container.getAnimations().length, 0);
     assert_equals(element.getAnimations().length, 0);
 
     element.className = 'cssAnimation';
     onload = function () {
         t.step(function() {
-            var animations = document.timeline.getAnimations();
+            var animations = document.getAnimations();
             assert_equals(animations.length, 1);
             assert_equals(container.getAnimations().length, 0);
             assert_equals(element.getAnimations().length, 1);
 
             animations[0].finish();
-            assert_equals(document.timeline.getAnimations().length, 0);
+            assert_equals(document.getAnimations().length, 0);
             assert_equals(container.getAnimations().length, 0);
             assert_equals(element.getAnimations().length, 0);
             t.done();

@@ -45,7 +45,7 @@ requestAnimationFrame(function() {
         input.id = "target2";
         // Insert the element again.
         document.body.appendChild(input);
-        shouldBe("document.timeline.getAnimations().length", "0");
+        shouldBe("document.getAnimations().length", "0");
         finishJSTest();
     });
 });
