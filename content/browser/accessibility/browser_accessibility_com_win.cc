@@ -662,50 +662,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accSelection(VARIANT* selected) {
   if (!owner())
     return E_FAIL;
 
-  if (owner()->GetRole() != ui::AX_ROLE_LIST_BOX)
-    return E_NOTIMPL;
-
-  unsigned long selected_count = 0;
-  for (size_t i = 0; i < owner()->InternalChildCount(); ++i) {
-    if (owner()->InternalGetChild(i)->HasState(ui::AX_STATE_SELECTED))
-      ++selected_count;
-  }
-
-  if (selected_count == 0) {
-    selected->vt = VT_EMPTY;
-    return S_OK;
-  }
-
-  if (selected_count == 1) {
-    for (size_t i = 0; i < owner()->InternalChildCount(); ++i) {
-      if (owner()->InternalGetChild(i)->HasState(ui::AX_STATE_SELECTED)) {
-        selected->vt = VT_DISPATCH;
-        selected->pdispVal =
-            ToBrowserAccessibilityComWin(owner()->InternalGetChild(i))
-                ->NewReference();
-        return S_OK;
-      }
-    }
-  }
-
-  // Multiple items are selected.
-  base::win::EnumVariant* enum_variant =
-      new base::win::EnumVariant(selected_count);
-  enum_variant->AddRef();
-  unsigned long index = 0;
-  for (size_t i = 0; i < owner()->InternalChildCount(); ++i) {
-    if (owner()->InternalGetChild(i)->HasState(ui::AX_STATE_SELECTED)) {
-      enum_variant->ItemAt(index)->vt = VT_DISPATCH;
-      enum_variant->ItemAt(index)->pdispVal =
-          ToBrowserAccessibilityComWin(owner()->InternalGetChild(i))
-              ->NewReference();
-      ++index;
-    }
-  }
-  selected->vt = VT_UNKNOWN;
-  selected->punkVal = static_cast<IUnknown*>(
-      static_cast<base::win::IUnknownImpl*>(enum_variant));
-  return S_OK;
+  return AXPlatformNodeWin::get_accSelection(selected);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::accSelect(LONG flags_sel,
