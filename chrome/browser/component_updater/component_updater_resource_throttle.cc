@@ -80,9 +80,8 @@ void CUResourceThrottle::Unblock() {
 }
 
 void UnblockThrottleOnUIThread(base::WeakPtr<CUResourceThrottle> rt) {
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&CUResourceThrottle::Unblock, rt));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&CUResourceThrottle::Unblock, rt));
 }
 
 }  // namespace
@@ -97,12 +96,10 @@ content::ResourceThrottle* GetOnDemandResourceThrottle(
   // from the UI thread without having to track lifetime directly.
   CUResourceThrottle* rt = new CUResourceThrottle;
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ComponentUpdateService::MaybeThrottle,
-                 base::Unretained(cus),
-                 crx_id,
-                 base::Bind(&UnblockThrottleOnUIThread, rt->AsWeakPtr())));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ComponentUpdateService::MaybeThrottle,
+                     base::Unretained(cus), crx_id,
+                     base::Bind(&UnblockThrottleOnUIThread, rt->AsWeakPtr())));
   return rt;
 }
 
