@@ -38,7 +38,7 @@ void RendererURLLoaderThrottle::WillStartRequest(
                      weak_factory_.GetWeakPtr()));
   safe_browsing_ = nullptr;
 
-  url_checker_.set_connection_error_handler(base::Bind(
+  url_checker_.set_connection_error_handler(base::BindOnce(
       &RendererURLLoaderThrottle::OnConnectionError, base::Unretained(this)));
 }
 
