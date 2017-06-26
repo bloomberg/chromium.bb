@@ -366,6 +366,11 @@
   // A listener for changes on the <code>AutomationNode</code> tree.
   callback TreeChangeObserver = void(TreeChange treeChange);
 
+  dictionary CustomAction {
+    long id;
+    DOMString description;
+  };
+
   // A single node in an Automation tree.
   [nocompile, noinline_doc] dictionary AutomationNode {
     // The root node of the tree containing this AutomationNode.
@@ -448,6 +453,9 @@
 
     // The target of an in-page link.
     AutomationNode? inPageLinkTarget;
+
+    // An array of custom actions.
+    CustomAction[]? customActions;
 
     //
     // Link attributes.
@@ -721,6 +729,9 @@
 
     // Scrolls this node to make it visible.
     static void makeVisible();
+
+    // Performs custom action.
+    static void performCustomAction(long customActionId);
 
     // Sets selection within a text field.
     static void setSelection(long startIndex, long endIndex);

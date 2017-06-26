@@ -393,6 +393,17 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
           ui::AX_ACTION_SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT;
       break;
     }
+    case api::automation_internal::ACTION_TYPE_CUSTOMACTION: {
+      api::automation_internal::PerformCustomActionParams
+          perform_custom_action_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::PerformCustomActionParams::Populate(
+              params->opt_args.additional_properties,
+              &perform_custom_action_params));
+      action->action = ui::AX_ACTION_CUSTOM_ACTION;
+      action->custom_action_id = perform_custom_action_params.custom_action_id;
+      break;
+    }
     default:
       NOTREACHED();
   }

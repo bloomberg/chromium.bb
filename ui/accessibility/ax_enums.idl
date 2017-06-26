@@ -246,6 +246,8 @@
   enum AXAction {
     blur,
 
+    custom_action,
+
     // Decrement a slider or range control by one step value.
     decrement,
 
@@ -529,7 +531,19 @@
     // For inline text. These int lists must be the same size; they represent
     // the start and end character offset of each word within this text.
     word_starts,
-    word_ends
+    word_ends,
+
+    // Used for an UI element to define custom actions for it. For example, a
+    // list UI will allow a user to reorder items in the list by dragging the
+    // items. Developer can expose those actions as custom actions. Currently
+    // custom actions are used only in Android window.
+    custom_action_ids
+  };
+
+  [cpp_enum_prefix_override="ax_attr"] enum AXStringListAttribute {
+    // Descriptions for custom actions. This must be aligned with
+    // custom_action_ids.
+    custom_action_descriptions
   };
 
   // TODO(dmazzoni, nektar): make this list not grow exponentially as new

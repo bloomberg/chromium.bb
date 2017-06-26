@@ -2515,6 +2515,9 @@
       <message desc="Title displayed in the panel for the ChromeVox menu." name="IDS_CHROMEVOX_PANEL_MENU_CHROMEVOX">
         ChromeVox
       </message>
+      <message desc="Title displayed in the panel for the actions menu." name="IDS_CHROMEVOX_PANEL_MENU_ACTIONS">
+        Actions
+      </message>
       <message desc="Title displayed in the panel when there are no menu items." name="IDS_CHROMEVOX_PANEL_MENU_ITEM_NONE">
         No items.
       </message>

@@ -266,6 +266,14 @@ var GetUnderline = requireNative('automationInternal').GetUnderline;
  */
 var GetLineThrough = requireNative('automationInternal').GetLineThrough;
 
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {?Array.<automation.CustomAction>} List of custom actions of the
+ *     node.
+ */
+var GetCustomActions = requireNative('automationInternal').GetCustomActions;
+
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var utils = require('utils');
@@ -424,6 +432,10 @@ AutomationNodeImpl.prototype = {
     return GetLineThrough(this.treeID, this.id);
   },
 
+  get customActions() {
+    return GetCustomActions(this.treeID, this.id);
+  },
+
   doDefault: function() {
     this.performAction_('doDefault');
   },
@@ -449,6 +461,10 @@ AutomationNodeImpl.prototype = {
 
   makeVisible: function() {
     this.performAction_('makeVisible');
+  },
+
+  performCustomAction: function(customActionId) {
+    this.performAction_('customAction', { customActionID: customActionId });
   },
 
   resumeMedia: function() {
@@ -1151,6 +1167,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'hitTest',
     'makeVisible',
     'matches',
+    'performCustomAction',
     'resumeMedia',
     'setSelection',
     'setSequentialFocusNavigationStartingPoint',
@@ -1185,6 +1202,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
       'italic',
       'underline',
       'lineThrough',
+      'customActions',
   ]),
 });
 

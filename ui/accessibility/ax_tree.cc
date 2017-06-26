@@ -466,6 +466,17 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
   CallIfAttributeValuesChanged(old_data.intlist_attributes,
                                new_data.intlist_attributes,
                                std::vector<int32_t>(), intlist_callback);
+
+  auto stringlist_callback =
+      [this, node](AXStringListAttribute attr,
+                   const std::vector<std::string>& old_stringlist,
+                   const std::vector<std::string>& new_stringlist) {
+        delegate_->OnStringListAttributeChanged(this, node, attr,
+                                                old_stringlist, new_stringlist);
+      };
+  CallIfAttributeValuesChanged(old_data.stringlist_attributes,
+                               new_data.stringlist_attributes,
+                               std::vector<std::string>(), stringlist_callback);
 }
 
 void AXTree::DestroySubtree(AXNode* node,

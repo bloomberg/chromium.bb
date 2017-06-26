@@ -115,6 +115,34 @@ bool GetStringProperty(arc::mojom::AccessibilityNodeInfoData* node,
   return true;
 }
 
+bool GetIntListProperty(arc::mojom::AccessibilityNodeInfoData* node,
+                        arc::mojom::AccessibilityIntListProperty prop,
+                        std::vector<int32_t>* out_value) {
+  if (!node->int_list_properties)
+    return false;
+
+  auto it = node->int_list_properties->find(prop);
+  if (it == node->int_list_properties->end())
+    return false;
+
+  *out_value = it->second;
+  return true;
+}
+
+bool GetStringListProperty(arc::mojom::AccessibilityNodeInfoData* node,
+                           arc::mojom::AccessibilityStringListProperty prop,
+                           std::vector<std::string>* out_value) {
+  if (!node->string_list_properties)
+    return false;
+
+  auto it = node->string_list_properties->find(prop);
+  if (it == node->string_list_properties->end())
+    return false;
+
+  *out_value = it->second;
+  return true;
+}
+
 void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
                     ui::AXNodeData* out_data) {
   std::string class_name;
@@ -364,8 +392,11 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
     return;
   out_data->id = node->id;
 
+  using AXIntListProperty = arc::mojom::AccessibilityIntListProperty;
   using AXIntProperty = arc::mojom::AccessibilityIntProperty;
+  using AXStringListProperty = arc::mojom::AccessibilityStringListProperty;
   using AXStringProperty = arc::mojom::AccessibilityStringProperty;
+
   std::string text;
   if (GetStringProperty(node, AXStringProperty::TEXT, &text))
     out_data->SetName(text);
@@ -397,6 +428,25 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
 
   if (GetIntProperty(node, AXIntProperty::TEXT_SELECTION_END, &val) && val >= 0)
     out_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, val);
+
+  // Custom actions.
+  std::vector<int32_t> custom_action_ids;
+  if (GetIntListProperty(node, AXIntListProperty::CUSTOM_ACTION_IDS,
+                         &custom_action_ids)) {
+    std::vector<std::string> custom_action_descriptions;
+
+    CHECK(GetStringListProperty(
+        node, AXStringListProperty::CUSTOM_ACTION_DESCRIPTIONS,
+        &custom_action_descriptions));
+    CHECK(!custom_action_ids.empty());
+    CHECK_EQ(custom_action_ids.size(), custom_action_descriptions.size());
+
+    out_data->AddAction(ui::AX_ACTION_CUSTOM_ACTION);
+    out_data->AddIntListAttribute(ui::AX_ATTR_CUSTOM_ACTION_IDS,
+                                  custom_action_ids);
+    out_data->AddStringListAttribute(ui::AX_ATTR_CUSTOM_ACTION_DESCRIPTIONS,
+                                     custom_action_descriptions);
+  }
 }
 
 void AXTreeSourceArc::PerformAction(const ui::AXActionData& data) {
