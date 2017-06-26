@@ -1802,13 +1802,13 @@ import_yuv_dmabuf(struct gl_renderer *gr,
 
 	if (!format) {
 		weston_log("Error during import, and no known conversion for format "
-		           "%.4s in the renderer",
+		           "%.4s in the renderer\n",
 		           dump_format(attributes->format, fmt));
 		return false;
 	}
 
 	if (attributes->n_planes != format->input_planes) {
-		weston_log("%.4s dmabuf must contain %d plane%s (%d provided)",
+		weston_log("%.4s dmabuf must contain %d plane%s (%d provided)\n",
 		           dump_format(format->format, fmt),
 		           format->input_planes,
 		           (format->input_planes > 1) ? "s" : "",
@@ -3165,7 +3165,7 @@ gl_renderer_create_pbuffer_surface(struct gl_renderer *gr) {
 	};
 
 	if (egl_choose_config(gr, pbuffer_config_attribs, NULL, 0, &pbuffer_config) < 0) {
-		weston_log("failed to choose EGL config for PbufferSurface");
+		weston_log("failed to choose EGL config for PbufferSurface\n");
 		return -1;
 	}
 
