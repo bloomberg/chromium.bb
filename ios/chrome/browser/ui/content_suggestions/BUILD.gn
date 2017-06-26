@@ -10,6 +10,8 @@ source_set("content_suggestions") {
     "content_suggestions_data_sink.h",
     "content_suggestions_data_source.h",
     "content_suggestions_image_fetcher.h",
+    "content_suggestions_layout.h",
+    "content_suggestions_layout.mm",
     "content_suggestions_view_controller.h",
     "content_suggestions_view_controller.mm",
   ]
@@ -23,6 +25,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
+    "//ios/chrome/browser/ui/ntp:ntp_header",
     "//ui/base",
   ]
   public_deps = [
