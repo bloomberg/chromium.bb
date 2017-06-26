@@ -483,6 +483,8 @@ bind_linux_dmabuf(struct wl_client *client,
 	wl_resource_set_implementation(resource, &linux_dmabuf_implementation,
 				       compositor, NULL);
 
+	if (version < ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION)
+		return;
 	/*
 	 * Use EGL_EXT_image_dma_buf_import_modifiers to query and advertise
 	 * format/modifier codes.
