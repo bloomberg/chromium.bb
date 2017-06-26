@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -225,37 +226,35 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (void)setAppGroupMetricsEnabled:(BOOL)enabled {
-  metrics::MetricsService* metrics =
-      GetApplicationContext()->GetMetricsService();
+  app_group::ProceduralBlockWithData callback;
   if (enabled) {
     PrefService* prefs = GetApplicationContext()->GetLocalState();
     NSString* brandCode =
         base::SysUTF8ToNSString(ios::GetChromeBrowserProvider()
                                     ->GetAppDistributionProvider()
                                     ->GetDistributionBrandCode());
+
     app_group::main_app::EnableMetrics(
-        base::SysUTF8ToNSString(metrics->GetClientId()), brandCode,
-        prefs->GetInt64(metrics::prefs::kInstallDate),
+        base::SysUTF8ToNSString(
+            GetApplicationContext()->GetMetricsService()->GetClientId()),
+        brandCode, prefs->GetInt64(metrics::prefs::kInstallDate),
         prefs->GetInt64(metrics::prefs::kMetricsReportingEnabledTimestamp));
+
+    // If metrics are enabled, process the logs. Otherwise, just delete them.
+    callback = ^(NSData* log_content) {
+      std::string log(static_cast<const char*>([log_content bytes]),
+                      static_cast<size_t>([log_content length]));
+      web::WebThread::PostTask(
+          web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+            GetApplicationContext()->GetMetricsService()->PushExternalLog(log);
+          }));
+    };
   } else {
     app_group::main_app::DisableMetrics();
   }
 
-  // If metrics are enabled, process the logs. Otherwise, just delete them.
-  app_group::ProceduralBlockWithData callback;
-  if (enabled) {
-    callback = [^(NSData* log_content) {
-      std::string log(static_cast<const char*>([log_content bytes]),
-                      static_cast<size_t>([log_content length]));
-      web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                               base::BindBlockArc(^{
-                                 metrics->PushExternalLog(log);
-                               }));
-    } copy];
-  }
-
-  web::WebThread::PostTask(
-      web::WebThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&app_group::main_app::ProcessPendingLogs, callback));
 }
 

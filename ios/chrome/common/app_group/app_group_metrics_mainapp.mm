@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 
@@ -19,6 +20,7 @@ namespace app_group {
 namespace main_app {
 
 void ProcessPendingLogs(ProceduralBlockWithData callback) {
+  base::ThreadRestrictions::AssertIOAllowed();
   NSFileManager* file_manager = [NSFileManager defaultManager];
   NSURL* store_url = [file_manager
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
