@@ -37,6 +37,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DEFINE_WEB_STATE_USER_DATA_KEY(ChromeIOSTranslateClient);
 
 ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
@@ -75,24 +79,24 @@ std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
   translate::TranslateStep step = delegate->translate_step();
 
   std::unique_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
-  base::scoped_nsobject<InfoBarController> controller;
+  InfoBarController* controller;
   switch (step) {
     case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
-      controller.reset([[AfterTranslateInfoBarController alloc]
-          initWithDelegate:infobar.get()]);
+      controller = [[AfterTranslateInfoBarController alloc]
+          initWithDelegate:infobar.get()];
       break;
     case translate::TRANSLATE_STEP_BEFORE_TRANSLATE:
-      controller.reset([[BeforeTranslateInfoBarController alloc]
-          initWithDelegate:infobar.get()]);
+      controller = [[BeforeTranslateInfoBarController alloc]
+          initWithDelegate:infobar.get()];
       break;
     case translate::TRANSLATE_STEP_NEVER_TRANSLATE:
-      controller.reset([[NeverTranslateInfoBarController alloc]
-          initWithDelegate:infobar.get()]);
+      controller = [[NeverTranslateInfoBarController alloc]
+          initWithDelegate:infobar.get()];
       break;
     case translate::TRANSLATE_STEP_TRANSLATING:
     case translate::TRANSLATE_STEP_TRANSLATE_ERROR:
-      controller.reset([[TranslateMessageInfoBarController alloc]
-          initWithDelegate:infobar.get()]);
+      controller = [[TranslateMessageInfoBarController alloc]
+          initWithDelegate:infobar.get()];
       break;
     default:
       NOTREACHED();

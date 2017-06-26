@@ -4,13 +4,16 @@
 
 #include "ios/chrome/browser/translate/translate_message_infobar_controller.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
 #include "ui/gfx/image/image.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface TranslateMessageInfoBarController ()
 
@@ -23,11 +26,11 @@
 
 - (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
                           frame:(CGRect)frame {
-  base::scoped_nsobject<InfoBarView> infoBarView;
+  InfoBarView* infoBarView;
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
-  infoBarView.reset(
-      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate]);
+  infoBarView =
+      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate];
   // Icon
   gfx::Image icon = translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
@@ -48,7 +51,7 @@
                     target:self
                     action:@selector(infoBarButtonDidPress:)];
   }
-  return [[infoBarView retain] autorelease];
+  return infoBarView;
 }
 
 #pragma mark - Handling of User Events
