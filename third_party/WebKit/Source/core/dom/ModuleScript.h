@@ -137,14 +137,18 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-pre-instantiation-error
   //
   // |record_| and |preinstantiation_error_| are TraceWrappers()ed and kept
-  // alive via the path of
-  // DOMWindow -> Modulator/ModulatorImpl -> ModuleMap -> ModuleMap::Entry
-  // -> ModuleScript, or
-  // Modulator/ModulatorImpl -> ModuleTreeLinkerRegistry -> ModuleTreeLinker
-  // -> ModuleScript, or
-  // ScriptLoader -> PendingScript -> ModulePendingScript ->
-  // ModulePendingScriptTreeClient -> ModuleScript.
-  // All the classes/references on the path above should be
+  // alive via one or more of following reference graphs:
+  // * non-inline module script case
+  //   DOMWindow -> Modulator/ModulatorImpl -> ModuleMap -> ModuleMap::Entry
+  //   -> ModuleScript
+  // * inline module script case, before the PendingScript is created.
+  //   DOMWindow -> Modulator/ModulatorImpl -> ModuleTreeLinkerRegistry
+  //   -> ModuleTreeLinker -> ModuleScript
+  // * inline module script case, after the PendingScript is created.
+  //   HTMLScriptElement -> ScriptLoader -> PendingScript -> ModulePendingScript
+  //   -> ModulePendingScriptTreeClient -> ModuleScript.
+  //
+  // All the classes/references on the graphs above should be
   // TraceWrapperBase/TraceWrapperMember<>/etc.,
   TraceWrapperV8Reference<v8::Value> preinstantiation_error_;
 
