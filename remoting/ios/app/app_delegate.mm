@@ -8,6 +8,8 @@
 
 #import "remoting/ios/app/app_delegate.h"
 
+#import <WebKit/WebKit.h>
+
 #include "base/logging.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -20,6 +22,13 @@
   AppViewController* _appViewController;
 }
 @end
+
+// TODO(nicholss): These urls should come from a global config.
+static NSString* const kHelpCenterUrl =
+    @"https://support.google.com/chrome/answer/1649523?co=GENIE.Platform%3DiOS";
+// TODO(nicholss): There is no FAQ page at the moment.
+static NSString* const kFAQsUrl =
+    @"https://support.google.com/chrome/answer/1649523?co=GENIE.Platform%3DiOS";
 
 @implementation AppDelegate
 
@@ -82,7 +91,9 @@
 #pragma mark - Properties
 
 + (AppDelegate*)instance {
-  return (AppDelegate*)UIApplication.sharedApplication.delegate;
+  id<UIApplicationDelegate> delegate = UIApplication.sharedApplication.delegate;
+  DCHECK([delegate isKindOfClass:AppDelegate.class]);
+  return (AppDelegate*)delegate;
 }
 
 #pragma mark - Private
@@ -96,6 +107,44 @@
       [[AppViewController alloc] initWithMainViewController:navController];
   self.window.rootViewController = _appViewController;
   [self.window makeKeyAndVisible];
+}
+
+#pragma mark - AppDelegate
+
+- (void)navigateToFAQs:(UINavigationController*)navigationController {
+  [self navigateToUrl:kFAQsUrl
+                     title:@"FAQs"
+      navigationController:navigationController];
+}
+
+- (void)navigateToHelpCenter:(UINavigationController*)navigationController {
+  [self navigateToUrl:kHelpCenterUrl
+                     title:@"Help Center"
+      navigationController:navigationController];
+}
+
+- (void)navigateToSendFeedback:(UINavigationController*)navigationController {
+  UIViewController* feedbackController = [[UIViewController alloc] init];
+  feedbackController.title = @"Feedback";
+  [navigationController pushViewController:feedbackController animated:YES];
+}
+
+#pragma mark - Private
+
+- (void)navigateToUrl:(NSString*)url
+                   title:(NSString*)title
+    navigationController:(UINavigationController*)navigationController {
+  UIViewController* viewController = [[UIViewController alloc] init];
+  viewController.title = title;
+
+  NSURLRequest* request =
+      [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+  WKWebView* webView =
+      [[WKWebView alloc] initWithFrame:viewController.view.frame
+                         configuration:[[WKWebViewConfiguration alloc] init]];
+  [viewController.view addSubview:webView];
+  [navigationController pushViewController:viewController animated:YES];
+  [webView loadRequest:request];
 }
 
 @end
