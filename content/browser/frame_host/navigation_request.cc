@@ -262,7 +262,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
     int current_history_list_offset,
-    int current_history_list_length) {
+    int current_history_list_length,
+    bool override_user_agent) {
   // Only normal navigations to a different document or reloads are expected.
   // - Renderer-initiated fragment-navigations never take place in the browser,
   //   even with PlzNavigate.
@@ -274,12 +275,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
          common_params.navigation_type ==
              FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT);
 
-  // TODO(clamy): See how we should handle override of the user agent when the
-  // navigation may start in a renderer and commit in another one.
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
   RequestNavigationParams request_params(
-      false,                // is_overriding_user_agent
+      override_user_agent,
       std::vector<GURL>(),  // redirects
       common_params.url, common_params.method,
       false,                          // can_load_local_resources
@@ -358,13 +357,14 @@ NavigationRequest::NavigationRequest(
                                 common_params_.method == "POST");
 
   // Add necessary headers that may not be present in the BeginNavigationParams.
-  std::string user_agent_override;
-  if (entry) {
+  if (entry)
     nav_entry_id_ = entry->GetUniqueID();
-    if (entry->GetIsOverridingUserAgent()) {
-      user_agent_override =
-          frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
-    }
+
+  std::string user_agent_override;
+  if (request_params.is_overriding_user_agent ||
+      (entry && entry->GetIsOverridingUserAgent())) {
+    user_agent_override =
+        frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
   }
 
   net::HttpRequestHeaders headers;

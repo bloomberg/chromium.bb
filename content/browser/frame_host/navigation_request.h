@@ -98,7 +98,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const CommonNavigationParams& common_params,
       const BeginNavigationParams& begin_params,
       int current_history_list_offset,
-      int current_history_list_length);
+      int current_history_list_length,
+      bool override_user_agent);
 
   ~NavigationRequest() override;
 
