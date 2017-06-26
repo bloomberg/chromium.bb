@@ -15,6 +15,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_sessions/synced_session.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_coordinator.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
@@ -179,6 +182,17 @@ enum {
 // to be used by the reuabled NTP panels.
 @property(nonatomic, weak) id dispatcher;
 
+// Panel displaying the "Home" view, with the logo and the fake omnibox.
+@property(nonatomic, strong) id<NewTabPagePanelProtocol> homePanel;
+
+// Coordinator for the ContentSuggestions.
+@property(nonatomic, strong)
+    ContentSuggestionsCoordinator* contentSuggestionsCoordinator;
+
+// Controller for the header of the Home panel.
+@property(nonatomic, strong) id<LogoAnimationControllerOwnerOwner, ToolbarOwner>
+    headerController;
+
 @end
 
 @implementation NewTabPageController
@@ -187,6 +201,9 @@ enum {
 @synthesize swipeRecognizerProvider = _swipeRecognizerProvider;
 @synthesize parentViewController = _parentViewController;
 @synthesize dispatcher = _dispatcher;
+@synthesize homePanel = _homePanel;
+@synthesize contentSuggestionsCoordinator = _contentSuggestionsCoordinator;
+@synthesize headerController = _headerController;
 
 - (id)initWithUrl:(const GURL&)url
                   loader:(id<UrlLoader>)loader
@@ -312,8 +329,12 @@ enum {
   // open tabs and incognito here.
   [_googleLandingController removeFromParentViewController];
   [_bookmarkController removeFromParentViewController];
+  [[self.contentSuggestionsCoordinator viewController]
+      removeFromParentViewController];
 
-  [_googleLandingController setDelegate:nil];
+  [self.contentSuggestionsCoordinator stop];
+
+  [self.homePanel setDelegate:nil];
   [_bookmarkController setDelegate:nil];
   [_openTabsController setDelegate:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -329,6 +350,8 @@ enum {
   // open tabs and incognito here.
   [_googleLandingController willMoveToParentViewController:nil];
   [_bookmarkController willMoveToParentViewController:nil];
+  [[self.contentSuggestionsCoordinator viewController]
+      willMoveToParentViewController:nil];
 }
 
 - (void)reload {
@@ -543,19 +566,39 @@ enum {
     view = [_bookmarkController view];
     [_bookmarkController setDelegate:self];
   } else if (item.identifier == NewTabPage::kMostVisitedPanel) {
-    if (!_googleLandingController) {
-      _googleLandingController = [[GoogleLandingViewController alloc] init];
-      [_googleLandingController setDispatcher:self.dispatcher];
-      _googleLandingMediator = [[GoogleLandingMediator alloc]
-          initWithConsumer:_googleLandingController
-              browserState:_browserState
-                dispatcher:self.dispatcher
-              webStateList:[_tabModel webStateList]];
-      [_googleLandingController setDataSource:_googleLandingMediator];
+    if (experimental_flags::IsSuggestionsUIEnabled()) {
+      if (!self.contentSuggestionsCoordinator) {
+        self.contentSuggestionsCoordinator =
+            [[ContentSuggestionsCoordinator alloc]
+                initWithBaseViewController:nil];
+        self.contentSuggestionsCoordinator.URLLoader = _loader;
+        self.contentSuggestionsCoordinator.browserState = _browserState;
+        self.contentSuggestionsCoordinator.dispatcher = self.dispatcher;
+        self.contentSuggestionsCoordinator.webStateList =
+            [_tabModel webStateList];
+        [self.contentSuggestionsCoordinator start];
+        self.headerController =
+            self.contentSuggestionsCoordinator.headerController;
+      }
+      panelController = [self.contentSuggestionsCoordinator viewController];
+      self.homePanel = self.contentSuggestionsCoordinator;
+    } else {
+      if (!_googleLandingController) {
+        _googleLandingController = [[GoogleLandingViewController alloc] init];
+        [_googleLandingController setDispatcher:self.dispatcher];
+        _googleLandingMediator = [[GoogleLandingMediator alloc]
+            initWithConsumer:_googleLandingController
+                browserState:_browserState
+                  dispatcher:self.dispatcher
+                webStateList:[_tabModel webStateList]];
+        [_googleLandingController setDataSource:_googleLandingMediator];
+        self.headerController = _googleLandingController;
+      }
+      panelController = _googleLandingController;
+      self.homePanel = _googleLandingController;
     }
-    panelController = _googleLandingController;
-    view = [_googleLandingController view];
-    [_googleLandingController setDelegate:self];
+    view = panelController.view;
+    [self.homePanel setDelegate:self];
   } else if (item.identifier == NewTabPage::kOpenTabsPanel) {
     if (!_openTabsController)
       _openTabsController =
@@ -662,7 +705,7 @@ enum {
   if (item.identifier == NewTabPage::kBookmarksPanel)
     _currentController = _bookmarkController;
   else if (item.identifier == NewTabPage::kMostVisitedPanel)
-    _currentController = _googleLandingController;
+    _currentController = self.homePanel;
   else if (item.identifier == NewTabPage::kOpenTabsPanel)
     _currentController = _openTabsController;
   else if (item.identifier == NewTabPage::kIncognitoPanel)
@@ -670,8 +713,7 @@ enum {
 
   [_bookmarkController
       setScrollsToTop:(_currentController == _bookmarkController)];
-  [_googleLandingController
-      setScrollsToTop:(_currentController == _googleLandingController)];
+  [self.homePanel setScrollsToTop:(_currentController == self.homePanel)];
   [_openTabsController
       setScrollsToTop:(_currentController == _openTabsController)];
   [self.ntpView.tabBar
@@ -714,24 +756,24 @@ enum {
 #pragma mark - LogoAnimationControllerOwnerOwner
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
-  return [_googleLandingController logoAnimationControllerOwner];
+  return [self.headerController logoAnimationControllerOwner];
 }
 
 #pragma mark -
 #pragma mark ToolbarOwner
 
 - (ToolbarController*)relinquishedToolbarController {
-  return [_googleLandingController relinquishedToolbarController];
+  return [self.headerController relinquishedToolbarController];
 }
 
 - (void)reparentToolbarController {
-  [_googleLandingController reparentToolbarController];
+  [self.headerController reparentToolbarController];
 }
 
 - (CGFloat)toolbarHeight {
   // If the google landing controller is nil, there is no toolbar visible in the
   // native content view, finally there is no toolbar on iPad.
-  return _googleLandingController && !IsIPadIdiom() ? kToolbarHeight : 0.0;
+  return self.headerController && !IsIPadIdiom() ? kToolbarHeight : 0.0;
 }
 
 #pragma mark - NewTabPagePanelControllerDelegate
