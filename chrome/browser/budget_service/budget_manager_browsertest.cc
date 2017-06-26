@@ -106,8 +106,8 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
     budget_manager()->Consume(
         url::Origin(https_server_->GetURL(kTestURL)),
         blink::mojom::BudgetOperationType::SILENT_PUSH,
-        base::Bind(&BudgetManagerBrowserTest::DidConsume,
-                   base::Unretained(this), run_loop.QuitClosure()));
+        base::BindOnce(&BudgetManagerBrowserTest::DidConsume,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

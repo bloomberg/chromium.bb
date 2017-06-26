@@ -85,9 +85,9 @@ class BudgetManagerTest : public testing::Test {
   bool GetBudget(Profile* profile, double* out_budget_value) {
     base::RunLoop run_loop;
     GetManager(profile)->GetBudget(
-        origin(), base::Bind(&BudgetManagerTest::GetBudgetCallback,
-                             base::Unretained(this), out_budget_value,
-                             run_loop.QuitClosure()));
+        origin(), base::BindOnce(&BudgetManagerTest::GetBudgetCallback,
+                                 base::Unretained(this), out_budget_value,
+                                 run_loop.QuitClosure()));
     run_loop.Run();
     return success_;
   }
@@ -96,8 +96,8 @@ class BudgetManagerTest : public testing::Test {
     base::RunLoop run_loop;
     GetManager(profile)->Reserve(
         origin(), type,
-        base::Bind(&BudgetManagerTest::ReserveCallback, base::Unretained(this),
-                   run_loop.QuitClosure()));
+        base::BindOnce(&BudgetManagerTest::ReserveCallback,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return success_;
   }
@@ -106,8 +106,8 @@ class BudgetManagerTest : public testing::Test {
     base::RunLoop run_loop;
     GetManager(profile)->Consume(
         origin(), type,
-        base::Bind(&BudgetManagerTest::ConsumeCallback, base::Unretained(this),
-                   run_loop.QuitClosure()));
+        base::BindOnce(&BudgetManagerTest::ConsumeCallback,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return success_;
   }
