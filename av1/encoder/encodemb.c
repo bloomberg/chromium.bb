@@ -906,13 +906,9 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
 #endif  // !CONFIG_PVQ
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-        av1_highbd_iwht4x4_add(dqcoeff, dst, pd->dst.stride, p->eobs[block],
-                               xd->bd);
-      } else {
-        av1_highbd_idct4x4_add(dqcoeff, dst, pd->dst.stride, p->eobs[block],
-                               xd->bd);
-      }
+      av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride, p->eobs[block],
+                                  xd->bd, DCT_DCT,
+                                  xd->lossless[xd->mi[0]->mbmi.segment_id]);
       return;
     }
 #endif  //  CONFIG_HIGHBITDEPTH
