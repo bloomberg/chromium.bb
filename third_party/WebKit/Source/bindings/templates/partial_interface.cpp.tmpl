@@ -4,13 +4,14 @@
 {% block partial_interface %}
 void {{v8_class_or_partial}}::initialize() {
   // Should be invoked from ModulesInitializer.
-  {{v8_class}}::updateWrapperTypeInfo(
+  {{v8_class}}::UpdateWrapperTypeInfo(
       &{{v8_class_or_partial}}::install{{v8_class}}Template,
       {% if needs_runtime_enabled_installer %}
-      &{{v8_class_or_partial}}::installRuntimeEnabledFeatures,
+      &{{v8_class_or_partial}}::InstallRuntimeEnabledFeatures,
       {% else %}
       nullptr,
       {% endif %}
+      &{{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate,
       {{prepare_prototype_and_interface_object_func or 'nullptr'}});
   {% for method in methods %}
   {% if method.overloads and method.overloads.has_partial_overloads %}

@@ -42,13 +42,17 @@ class {{v8_class_or_partial}} {
   {% endfor %}
 
   {% if needs_runtime_enabled_installer %}
-  static void installRuntimeEnabledFeatures(
-      v8::Isolate* isolate,
-      const DOMWrapperWorld& world,
+  static void InstallRuntimeEnabledFeatures(
+      v8::Isolate*,
+      const DOMWrapperWorld&,
       v8::Local<v8::Object> instance,
       v8::Local<v8::Object> prototype,
       v8::Local<v8::Function> interface);
   {% endif %}
+  static void InstallRuntimeEnabledFeaturesOnTemplate(
+      v8::Isolate*,
+      const DOMWrapperWorld&,
+      v8::Local<v8::FunctionTemplate> interface_template);
 
   // Callback functions
   {% for attribute in attributes %}

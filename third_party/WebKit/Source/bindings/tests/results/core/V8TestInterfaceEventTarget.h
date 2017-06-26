@@ -55,6 +55,11 @@ class V8TestInterfaceEventTarget {
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 1;
 
   // Callback functions
+
+  static void InstallRuntimeEnabledFeaturesOnTemplate(
+      v8::Isolate*,
+      const DOMWrapperWorld&,
+      v8::Local<v8::FunctionTemplate> interface_template);
 };
 
 template <>

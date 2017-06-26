@@ -65,6 +65,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
+#line 759 "interface_base.cpp.tmpl"
 TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsDataView());
   ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
