@@ -87,7 +87,7 @@ void FileTypePoliciesComponentInstallerTraits::ComponentReady(
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&LoadFileTypesFromDisk, GetInstalledPath(install_dir)));
+      base::BindOnce(&LoadFileTypesFromDisk, GetInstalledPath(install_dir)));
 }
 
 // Called during startup and installation before ComponentReady().

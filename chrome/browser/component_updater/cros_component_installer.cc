@@ -95,7 +95,7 @@ CrOSComponentInstallerTraits::OnCustomInstall(
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ImageLoaderRegistration, version, install_dir, name));
+      base::BindOnce(&ImageLoaderRegistration, version, install_dir, name));
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
@@ -160,7 +160,7 @@ static void LoadResult(
     const std::string& result) {
   PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           load_callback,
           call_status != chromeos::DBUS_METHOD_CALL_SUCCESS ? "" : result));
 }
@@ -175,7 +175,7 @@ static void LoadComponentInternal(
   if (loader) {
     loader->LoadComponent(name, base::Bind(&LoadResult, load_callback));
   } else {
-    base::PostTask(FROM_HERE, base::Bind(load_callback, ""));
+    base::PostTask(FROM_HERE, base::BindOnce(load_callback, ""));
   }
 }
 
@@ -217,7 +217,7 @@ void CrOSComponent::InstallComponent(
   const ConfigMap components = CONFIG_MAP_CONTENT;
   const auto it = components.find(name);
   if (name.empty() || it == components.end()) {
-    base::PostTask(FROM_HERE, base::Bind(load_callback, ""));
+    base::PostTask(FROM_HERE, base::BindOnce(load_callback, ""));
     return;
   }
   ComponentConfig config(it->first, it->second.find("env_version")->second,

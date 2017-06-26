@@ -115,7 +115,7 @@ base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
 void RecordUncleanUninstall() {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &base::RecordAction,
           base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall")));
 }
@@ -449,8 +449,8 @@ bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
   DCHECK(result);
 
   cus_->GetSequencedTaskRunner()->PostTask(
-    FROM_HERE,
-    base::Bind(&DeleteFileOnTaskRunner, GetSanitizedWhitelistPath(crx_id)));
+      FROM_HERE, base::BindOnce(&DeleteFileOnTaskRunner,
+                                GetSanitizedWhitelistPath(crx_id)));
 
   return removed;
 }
@@ -462,7 +462,7 @@ void SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady(
     const base::FilePath& whitelist_path) {
   cus_->GetSequencedTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &CheckForSanitizedWhitelistOnTaskRunner, crx_id, whitelist_path,
           base::ThreadTaskRunnerHandle::Get(),
           base::Bind(
@@ -517,8 +517,8 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
     whitelists->RemoveWithoutPathExpansion(id, nullptr);
 
   cus_->GetSequencedTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&RemoveUnregisteredWhitelistsOnTaskRunner,
-                            registered_whitelists));
+      FROM_HERE, base::BindOnce(&RemoveUnregisteredWhitelistsOnTaskRunner,
+                                registered_whitelists));
 }
 
 void SupervisedUserWhitelistInstallerImpl::Subscribe(

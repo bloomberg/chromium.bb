@@ -45,7 +45,7 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
+        base::BindOnce(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
     run_loop.Run();
@@ -58,7 +58,7 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
+        base::BindOnce(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
     run_loop.Run();
@@ -84,9 +84,9 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
 
     content::BrowserThread::PostBlockingPoolSequencedTask(
         "OutOfProcessPatchTest::PatchAsyncSequencedTaskRunner", FROM_HERE,
-        base::Bind(&OutOfProcessPatchTest::PatchAsyncSequencedTaskRunner,
-                   base::Unretained(this), operation, input, patch, output,
-                   expected_result));
+        base::BindOnce(&OutOfProcessPatchTest::PatchAsyncSequencedTaskRunner,
+                       base::Unretained(this), operation, input, patch, output,
+                       expected_result));
 
     run_loop.Run();
     EXPECT_TRUE(done_called_);

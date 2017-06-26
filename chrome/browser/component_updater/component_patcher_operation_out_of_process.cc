@@ -46,7 +46,7 @@ void ChromeOutOfProcessPatcher::Patch(
 
   if (!input_file.IsValid() || !patch_file.IsValid() ||
       !output_file.IsValid()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback_, -1));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, -1));
     return;
   }
 
@@ -75,7 +75,7 @@ void ChromeOutOfProcessPatcher::Patch(
 
 void ChromeOutOfProcessPatcher::PatchDone(int result) {
   utility_process_mojo_client_.reset();  // Terminate the utility process.
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, result));
 }
 
 }  // namespace component_updater
