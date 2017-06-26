@@ -38,7 +38,6 @@ std::set<UiElementDebugId> kElementsVisibleInBrowsing = {
     kContentQuad, kBackplane, kCeiling, kFloor, kUrlBar};
 std::set<UiElementDebugId> kElementsVisibleWithExitPrompt = {
     kExitPrompt, kExitPromptBackplane, kCeiling, kFloor};
-
 }  // namespace
 
 class UiSceneManagerTest : public testing::Test {
@@ -70,7 +69,7 @@ class UiSceneManagerTest : public testing::Test {
   void MakeAutoPresentedManager() {
     scene_ = base::MakeUnique<UiScene>();
     manager_ = base::MakeUnique<UiSceneManager>(
-        browser_.get(), scene_.get(), kNotInCct, kInWebVr, kAutopresented);
+        browser_.get(), scene_.get(), kNotInCct, kNotInWebVr, kAutopresented);
   }
 
   bool IsVisible(UiElementDebugId debug_id) {
@@ -133,7 +132,7 @@ TEST_F(UiSceneManagerTest, WebVrWarningsShowWhenInitiallyInWebVr) {
   EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
 
-  manager_->SetWebVrMode(false, false, false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_FALSE(IsVisible(kWebVrTransientHttpSecurityWarning));
 }
@@ -144,7 +143,7 @@ TEST_F(UiSceneManagerTest, WebVrWarningsDoNotShowWhenInitiallyOutsideWebVr) {
   EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_FALSE(IsVisible(kWebVrTransientHttpSecurityWarning));
 
-  manager_->SetWebVrMode(true, false, false);
+  manager_->SetWebVrMode(true, false);
   EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
 }
@@ -176,19 +175,19 @@ TEST_F(UiSceneManagerTest, ToastVisibility) {
   manager_->SetFullscreen(true);
   EXPECT_TRUE(IsVisible(kPresentationToast));
 
-  manager_->SetWebVrMode(true, false, true);
+  manager_->SetWebVrMode(true, true);
   EXPECT_TRUE(IsVisible(kPresentationToast));
 
-  manager_->SetWebVrMode(false, false, false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_FALSE(IsVisible(kPresentationToast));
 
   manager_->SetFullscreen(false);
   EXPECT_FALSE(IsVisible(kPresentationToast));
 
-  manager_->SetWebVrMode(true, false, false);
+  manager_->SetWebVrMode(true, false);
   EXPECT_FALSE(IsVisible(kPresentationToast));
 
-  manager_->SetWebVrMode(false, false, true);
+  manager_->SetWebVrMode(false, true);
   EXPECT_TRUE(IsVisible(kPresentationToast));
 }
 
@@ -210,7 +209,7 @@ TEST_F(UiSceneManagerTest, CloseButtonVisibleInCctFullscreen) {
   // Button should not be visible when in WebVR.
   MakeManager(kInCct, kInWebVr);
   EXPECT_FALSE(IsVisible(kCloseButton));
-  manager_->SetWebVrMode(false, false, false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_TRUE(IsVisible(kCloseButton));
 
   // Button should be visible in Cct across transistions in fullscreen.
@@ -277,23 +276,17 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   }
 }
 
-TEST_F(UiSceneManagerTest, WebVrAutopresentedInitially) {
-  MakeAutoPresentedManager();
-  manager_->SetWebVrSecureOrigin(true);
-  VerifyElementsVisible("Autopresented",
-                        std::set<UiElementDebugId>{kTransientUrlBar});
-}
-
 TEST_F(UiSceneManagerTest, WebVrAutopresented) {
-  MakeManager(kNotInCct, kNotInWebVr);
+  MakeAutoPresentedManager();
 
   manager_->SetWebVrSecureOrigin(true);
 
-  // Initial state.
-  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
+  // Initially, we should only show the splash screen.
+  VerifyElementsVisible("Initial",
+                        std::set<UiElementDebugId>{kSplashScreenIcon});
 
   // Enter WebVR with autopresentation.
-  manager_->SetWebVrMode(true, true, false);
+  manager_->SetWebVrMode(true, false);
 
   VerifyElementsVisible("Autopresented",
                         std::set<UiElementDebugId>{kTransientUrlBar});
@@ -386,7 +379,7 @@ TEST_F(UiSceneManagerTest, UiUpdateTransitionToWebVR) {
   manager_->SetLocationAccessIndicator(true);
 
   // Transition to WebVR mode
-  manager_->SetWebVrMode(true, false, false);
+  manager_->SetWebVrMode(true, false);
   manager_->SetWebVrSecureOrigin(true);
 
   // All elements should be hidden.
@@ -409,9 +402,9 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
   EXPECT_TRUE(VerifyVisibility(indicators, true));
 
   // Go into non-browser modes and make sure all indicators are hidden.
-  manager_->SetWebVrMode(true, false, false);
+  manager_->SetWebVrMode(true, false);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
-  manager_->SetWebVrMode(false, false, false);
+  manager_->SetWebVrMode(false, false);
   manager_->SetFullscreen(true);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
   manager_->SetFullscreen(false);

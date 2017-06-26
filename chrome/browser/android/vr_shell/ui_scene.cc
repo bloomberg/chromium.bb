@@ -188,7 +188,9 @@ ColorScheme::Mode UiScene::mode() const {
 }
 
 SkColor UiScene::GetWorldBackgroundColor() const {
-  return ColorScheme::GetColorScheme(mode_).world_background;
+  return showing_splash_screen_
+             ? ColorScheme::GetColorScheme(mode_).splash_screen_background
+             : ColorScheme::GetColorScheme(mode_).world_background;
 }
 
 void UiScene::SetBackgroundDistance(float distance) {
@@ -213,6 +215,10 @@ void UiScene::set_is_exiting() {
 
 void UiScene::set_is_prompting_to_exit(bool prompting) {
   is_prompting_to_exit_ = prompting;
+}
+
+void UiScene::set_showing_splash_screen(bool showing) {
+  showing_splash_screen_ = showing;
 }
 
 const std::vector<std::unique_ptr<UiElement>>& UiScene::GetUiElements() const {

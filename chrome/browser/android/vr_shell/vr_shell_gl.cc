@@ -1194,7 +1194,9 @@ void VrShellGl::DrawWorldElements(const gfx::Transform& head_pose) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   std::vector<const UiElement*> elements = scene_->GetWorldElements();
-  const bool draw_reticle = !(scene_->is_exiting() || ShouldDrawWebVr());
+  const bool draw_reticle =
+      !(scene_->is_exiting() || scene_->showing_splash_screen() ||
+        ShouldDrawWebVr());
   DrawUiView(head_pose, elements, render_size_primary_,
              kViewportListPrimaryOffset, draw_reticle);
 }

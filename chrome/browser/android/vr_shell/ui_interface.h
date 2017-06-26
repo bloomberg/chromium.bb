@@ -8,6 +8,7 @@
 #include "components/security_state/core/security_state.h"
 
 class GURL;
+class SkBitmap;
 
 namespace vr_shell {
 
@@ -25,9 +26,7 @@ class UiInterface {
 
   virtual ~UiInterface() {}
 
-  virtual void SetWebVrMode(bool enabled,
-                            bool auto_presented,
-                            bool show_toast) = 0;
+  virtual void SetWebVrMode(bool enabled, bool show_toast) = 0;
   virtual void SetURL(const GURL& url) = 0;
   virtual void SetFullscreen(bool enabled) = 0;
   virtual void SetSecurityInfo(security_state::SecurityLevel level,
@@ -42,6 +41,7 @@ class UiInterface {
   virtual void SetVideoCapturingIndicator(bool enabled) = 0;
   virtual void SetScreenCapturingIndicator(bool enabled) = 0;
   virtual void SetAudioCapturingIndicator(bool enabled) = 0;
+  virtual void SetSplashScreenIcon(const SkBitmap& bitmap) = 0;
 
   // Tab handling.
   virtual void InitTabList() {}

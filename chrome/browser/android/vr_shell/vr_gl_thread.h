@@ -35,7 +35,7 @@ class VrGLThread : public base::Thread,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       gvr_context* gvr_api,
       bool initially_web_vr,
-      bool web_vr_autopresented,
+      bool web_vr_autopresentation_expected,
       bool in_cct,
       bool reprojected_rendering,
       bool daydream_support);
@@ -78,14 +78,13 @@ class VrGLThread : public base::Thread,
   void SetSecurityInfo(security_state::SecurityLevel level,
                        bool malware) override;
   void SetURL(const GURL& gurl) override;
-  void SetWebVrMode(bool enabled,
-                    bool auto_presented,
-                    bool show_toast) override;
+  void SetWebVrMode(bool enabled, bool show_toast) override;
   void SetWebVrSecureOrigin(bool secure) override;
   void SetVideoCapturingIndicator(bool enabled) override;
   void SetScreenCapturingIndicator(bool enabled) override;
   void SetAudioCapturingIndicator(bool enabled) override;
   void SetIsExiting() override;
+  void SetSplashScreenIcon(const SkBitmap& bitmap) override;
 
  protected:
   void Init() override;
@@ -104,7 +103,7 @@ class VrGLThread : public base::Thread,
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
   bool initially_web_vr_;
-  bool web_vr_autopresented_;
+  bool web_vr_autopresentation_expected_;
   bool in_cct_;
   bool reprojected_rendering_;
   bool daydream_support_;

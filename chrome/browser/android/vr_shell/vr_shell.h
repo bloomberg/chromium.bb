@@ -68,7 +68,7 @@ class VrShell : public device::GvrDelegate,
           jobject obj,
           ui::WindowAndroid* window,
           bool for_web_vr,
-          bool web_vr_autopresented,
+          bool web_vr_autopresentation_expected,
           bool in_cct,
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
@@ -86,13 +86,15 @@ class VrShell : public device::GvrDelegate,
                       bool touched);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void SetSplashScreenIcon(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           const base::android::JavaParamRef<jobject>& bitmap);
   void SetSurface(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   const base::android::JavaParamRef<jobject>& surface);
   void SetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     bool enabled,
-                    bool auto_presented,
                     bool show_toast);
   bool GetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj);

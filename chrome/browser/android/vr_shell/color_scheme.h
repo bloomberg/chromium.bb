@@ -78,6 +78,9 @@ struct ColorScheme {
   // Screen dimmer colors.
   SkColor dimmer_outer;
   SkColor dimmer_inner;
+
+  // Splash screen colors.
+  SkColor splash_screen_background;
 };
 
 }  // namespace vr_shell

@@ -5,8 +5,12 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -20,10 +24,12 @@ import android.widget.FrameLayout.LayoutParams;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.NativePage;
@@ -209,8 +215,7 @@ public class VrShellImpl
             }
 
             @Override
-            public void onWebContentsSwapped(
-                    Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+            public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
                 onContentChanged(tab);
             }
 
@@ -310,13 +315,38 @@ public class VrShellImpl
         addView(mRenderToSurfaceLayoutParent);
     }
 
+    private void setSplashScreenIcon() {
+        new AsyncTask<Void, Void, Bitmap>() {
+            @Override
+            protected Bitmap doInBackground(Void... params) {
+                Drawable drawable = ApiCompatibilityUtils.getDrawable(
+                        mActivity.getResources(), R.mipmap.app_icon);
+                if (drawable instanceof BitmapDrawable) {
+                    BitmapDrawable bd = (BitmapDrawable) drawable;
+                    return bd.getBitmap();
+                }
+                assert false : "The drawable was not a bitmap drawable as expected";
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                nativeSetSplashScreenIcon(mNativeVrShell, bitmap);
+            }
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     @Override
-    public void initializeNative(
-            Tab currentTab, boolean forWebVr, boolean webVrAutopresented, boolean inCct) {
+    public void initializeNative(Tab currentTab, boolean forWebVr,
+            boolean webVrAutopresentationExpected, boolean inCct) {
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
         mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid.getNativePointer(), forWebVr,
-                webVrAutopresented, inCct, getGvrApi().getNativeGvrContext(),
+                webVrAutopresentationExpected, inCct, getGvrApi().getNativeGvrContext(),
                 mReprojectedRendering);
+
+        // We need to set the icon bitmap from here because we can't read the app icon from native
+        // code.
+        setSplashScreenIcon();
 
         // Set the UI and content sizes before we load the UI.
         updateWebVrDisplaySize(forWebVr);
@@ -538,10 +568,9 @@ public class VrShellImpl
     }
 
     @Override
-    public void setWebVrModeEnabled(boolean enabled, boolean autoPresented, boolean showToast) {
+    public void setWebVrModeEnabled(boolean enabled, boolean showToast) {
         mContentVrWindowAndroid.setVSyncPaused(enabled);
-        nativeSetWebVrMode(mNativeVrShell, enabled, autoPresented, showToast);
-
+        nativeSetWebVrMode(mNativeVrShell, enabled, showToast);
         updateWebVrDisplaySize(enabled);
     }
 
@@ -706,9 +735,10 @@ public class VrShellImpl
     }
 
     private native long nativeInit(VrShellDelegate delegate, long nativeWindowAndroid,
-            boolean forWebVR, boolean webVRAutopresented, boolean inCct, long gvrApi,
+            boolean forWebVR, boolean webVrAutopresentationExpected, boolean inCct, long gvrApi,
             boolean reprojectedRendering);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
+    private native void nativeSetSplashScreenIcon(long nativeVrShell, Bitmap bitmap);
     private native void nativeSwapContents(
             long nativeVrShell, WebContents webContents, MotionEventSynthesizer eventSynthesizer);
     private native void nativeDestroy(long nativeVrShell);
@@ -720,8 +750,7 @@ public class VrShellImpl
             long nativeVrShell, WebContents webContents, int width, int height);
     private native void nativeContentPhysicalBoundsChanged(long nativeVrShell, int width,
             int height, float dpr);
-    private native void nativeSetWebVrMode(
-            long nativeVrShell, boolean enabled, boolean autoPresented, boolean showToast);
+    private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled, boolean showToast);
     private native boolean nativeGetWebVrMode(long nativeVrShell);
     private native void nativeOnTabListCreated(long nativeVrShell, Tab[] mainTabs,
             Tab[] incognitoTabs);

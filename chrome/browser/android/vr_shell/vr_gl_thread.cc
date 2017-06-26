@@ -12,6 +12,7 @@
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace vr_shell {
 
@@ -20,7 +21,7 @@ VrGLThread::VrGLThread(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
     bool initially_web_vr,
-    bool web_vr_autopresented,
+    bool web_vr_autopresentation_expected,
     bool in_cct,
     bool reprojected_rendering,
     bool daydream_support)
@@ -29,7 +30,7 @@ VrGLThread::VrGLThread(
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       gvr_api_(gvr_api),
       initially_web_vr_(initially_web_vr),
-      web_vr_autopresented_(web_vr_autopresented),
+      web_vr_autopresentation_expected_(web_vr_autopresentation_expected),
       in_cct_(in_cct),
       reprojected_rendering_(reprojected_rendering),
       daydream_support_(daydream_support) {}
@@ -44,7 +45,8 @@ void VrGLThread::Init() {
                                              reprojected_rendering_,
                                              daydream_support_, scene_.get());
   scene_manager_ = base::MakeUnique<UiSceneManager>(
-      this, scene_.get(), in_cct_, initially_web_vr_, web_vr_autopresented_);
+      this, scene_.get(), in_cct_, initially_web_vr_,
+      web_vr_autopresentation_expected_);
 
   weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
   weak_scene_manager_ = scene_manager_->GetWeakPtr();
@@ -191,13 +193,11 @@ void VrGLThread::SetURL(const GURL& gurl) {
                                                 weak_scene_manager_, gurl));
 }
 
-void VrGLThread::SetWebVrMode(bool enabled,
-                              bool auto_presented,
-                              bool show_toast) {
+void VrGLThread::SetWebVrMode(bool enabled, bool show_toast) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&UiSceneManager::SetWebVrMode, weak_scene_manager_,
-                            enabled, auto_presented, show_toast));
+                            enabled, show_toast));
 }
 
 void VrGLThread::SetWebVrSecureOrigin(bool secure) {
@@ -229,6 +229,13 @@ void VrGLThread::SetIsExiting() {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetIsExiting,
                                                 weak_scene_manager_));
+}
+
+void VrGLThread::SetSplashScreenIcon(const SkBitmap& bitmap) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&UiSceneManager::SetSplashScreenIcon,
+                                     weak_scene_manager_, bitmap));
 }
 
 void VrGLThread::CleanUp() {
