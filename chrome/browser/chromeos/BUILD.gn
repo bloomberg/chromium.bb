@@ -134,6 +134,7 @@ source_set("chromeos") {
     "//device/media_transfer_protocol",
     "//device/usb/public/cpp",
     "//device/usb/public/interfaces",
+    "//device/wake_lock/public/interfaces",
     "//extensions/browser",
     "//extensions/browser/kiosk",
     "//gpu",
@@ -144,6 +145,7 @@ source_set("chromeos") {
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
     "//services/device/public/interfaces",
+    "//services/device/public/interfaces:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/runner/common",
     "//services/ui/public/interfaces/display",

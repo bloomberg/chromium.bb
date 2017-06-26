@@ -75,11 +75,9 @@ void OperationTestBase::SetUp() {
   fake_drive_service_.reset(new FakeDriveService);
   ASSERT_TRUE(test_util::SetUpTestEntries(fake_drive_service_.get()));
 
-  scheduler_.reset(new JobScheduler(
-      pref_service_.get(),
-      logger_.get(),
-      fake_drive_service_.get(),
-      blocking_task_runner_.get()));
+  scheduler_.reset(new JobScheduler(pref_service_.get(), logger_.get(),
+                                    fake_drive_service_.get(),
+                                    blocking_task_runner_.get(), nullptr));
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       temp_dir_.GetPath(), blocking_task_runner_.get()));

@@ -52,13 +52,18 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/service_manager_connection.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_url_generator.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/common/fileapi/file_system_util.h"
 
@@ -266,6 +271,7 @@ void SyncEngine::Reset() {
 }
 
 void SyncEngine::Initialize() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Reset();
 
   if (!signin_manager_ || !signin_manager_->IsAuthenticated())
@@ -275,8 +281,17 @@ void SyncEngine::Initialize() {
   std::unique_ptr<drive::DriveServiceInterface> drive_service =
       drive_service_factory_->CreateDriveService(
           token_service_, request_context_.get(), drive_task_runner_.get());
+
+  device::mojom::WakeLockProviderPtr wake_lock_provider(nullptr);
+  DCHECK(content::ServiceManagerConnection::GetForProcess());
+  auto* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(device::mojom::kServiceName,
+                           mojo::MakeRequest(&wake_lock_provider));
+
   std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
-      new drive::DriveUploader(drive_service.get(), drive_task_runner_.get()));
+      new drive::DriveUploader(drive_service.get(), drive_task_runner_.get(),
+                               std::move(wake_lock_provider)));
 
   InitializeInternal(std::move(drive_service), std::move(drive_uploader),
                      nullptr);

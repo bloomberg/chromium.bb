@@ -58,7 +58,7 @@ class RegisterAppTaskTest : public testing::Test {
         new drive::FakeDriveService);
     std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
         new drive::DriveUploader(fake_drive_service.get(),
-                                 base::ThreadTaskRunnerHandle::Get()));
+                                 base::ThreadTaskRunnerHandle::Get(), nullptr));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service.get(), drive_uploader.get(),

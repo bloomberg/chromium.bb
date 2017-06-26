@@ -438,7 +438,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId, local_path, kTestMimeType,
@@ -471,7 +471,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId, local_path, kTestMimeType,
@@ -506,7 +506,7 @@ TEST_F(DriveUploaderTest, UploadExisting2MB) {
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId, local_path, kTestMimeType,
@@ -541,7 +541,7 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
 
   MockDriveServiceNoConnectionAtInitiate mock_service;
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId, local_path, kTestMimeType,
       UploadExistingFileOptions(),
@@ -566,7 +566,7 @@ TEST_F(DriveUploaderTest, MultipartUploadFail) {
 
   MockDriveServiceNoConnectionAtInitiate mock_service;
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId, local_path, kTestMimeType,
       UploadExistingFileOptions(),
@@ -591,7 +591,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   UploadExistingFileOptions options;
   options.etag = kTestETag;
   uploader.UploadExistingFile(kTestInitiateUploadResourceId,
@@ -620,7 +620,7 @@ TEST_F(DriveUploaderTest, MultipartUploadConflict) {
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   UploadExistingFileOptions options;
   options.etag = kDestinationETag;
   uploader.UploadExistingFile(kTestInitiateUploadResourceId,
@@ -649,7 +649,7 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   UploadExistingFileOptions options;
   options.etag = kDestinationETag;
   uploader.UploadExistingFile(
@@ -674,7 +674,7 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
 
   MockDriveServiceNoConnectionAtResume mock_service;
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId, local_path, kTestMimeType,
       UploadExistingFileOptions(),
@@ -698,7 +698,7 @@ TEST_F(DriveUploaderTest, GetUploadStatusFail) {
 
   MockDriveServiceNoConnectionAtGetUploadStatus mock_service;
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   uploader.ResumeUploadFile(GURL(kTestUploadExistingFileURL),
                             local_path,
                             kTestMimeType,
@@ -716,8 +716,8 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
   GURL upload_location;
   std::unique_ptr<FileResource> entry;
 
-  DriveUploader uploader(NULL,  // NULL, the service won't be used.
-                         base::ThreadTaskRunnerHandle::Get().get());
+  DriveUploader uploader(nullptr,  // nullptr, the service won't be used.
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
       temp_dir_.GetPath().AppendASCII("_this_path_should_not_exist_"),
@@ -743,7 +743,7 @@ TEST_F(DriveUploaderTest, ResumeUpload) {
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
-                         base::ThreadTaskRunnerHandle::Get().get());
+                         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
   // Emulate the situation that the only first part is successfully uploaded,
   // but not the latter half.
   mock_service.set_received_bytes(512 * 1024);
@@ -867,7 +867,8 @@ TEST_F(DriveUploaderTest, BatchProcessing) {
 
   // Prepare test target.
   MockDriveServiceForBatchProcessing service;
-  DriveUploader uploader(&service, base::ThreadTaskRunnerHandle::Get().get());
+  DriveUploader uploader(&service, base::ThreadTaskRunnerHandle::Get().get(),
+                         nullptr);
 
   struct {
     DriveApiErrorCode error;
@@ -922,7 +923,8 @@ TEST_F(DriveUploaderTest, BatchProcessing) {
 TEST_F(DriveUploaderTest, BatchProcessingWithError) {
   // Prepare test target.
   MockDriveServiceForBatchProcessing service;
-  DriveUploader uploader(&service, base::ThreadTaskRunnerHandle::Get().get());
+  DriveUploader uploader(&service, base::ThreadTaskRunnerHandle::Get().get(),
+                         nullptr);
 
   struct {
     DriveApiErrorCode error;

@@ -1,3 +1,5 @@
 include_rules = [
   "+components/drive",
+  "+device/wake_lock/public/interfaces",
+  "+services/device/public/interfaces",
 ]

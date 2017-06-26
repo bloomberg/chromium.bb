@@ -91,10 +91,8 @@ class ChangeListLoaderTest : public testing::Test {
     ASSERT_TRUE(test_util::SetUpTestEntries(drive_service_.get()));
 
     scheduler_.reset(new JobScheduler(
-        pref_service_.get(),
-        logger_.get(),
-        drive_service_.get(),
-        base::ThreadTaskRunnerHandle::Get().get()));
+        pref_service_.get(), logger_.get(), drive_service_.get(),
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());

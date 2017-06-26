@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -220,6 +221,7 @@ class ExternalFileURLRequestJobTest : public testing::Test {
   drive::FileSystemInterface* GetFileSystem() { return fake_file_system_; }
 
   content::TestBrowserThreadBundle thread_bundle_;
+  content::TestServiceManagerContext context_;
   drive::DriveIntegrationServiceFactory::FactoryCallback
       integration_service_factory_callback_;
   std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>

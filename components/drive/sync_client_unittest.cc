@@ -117,10 +117,8 @@ class SyncClientTest : public testing::Test {
     drive_service_.reset(new SyncClientTestDriveService);
 
     scheduler_.reset(new JobScheduler(
-        pref_service_.get(),
-        logger_.get(),
-        drive_service_.get(),
-        base::ThreadTaskRunnerHandle::Get().get()));
+        pref_service_.get(), logger_.get(), drive_service_.get(),
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
 
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
