@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/api/device_permissions_manager.h"
+#include "extensions/browser/api/file_system/saved_file_entry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -296,9 +297,9 @@ AppInfoPermissionsPanel::GetRetainedFilePaths() const {
     apps::SavedFilesService* service = apps::SavedFilesService::Get(profile_);
     // The SavedFilesService can be null for incognito profiles.
     if (service) {
-      std::vector<apps::SavedFileEntry> retained_file_entries =
+      std::vector<extensions::SavedFileEntry> retained_file_entries =
           service->GetAllFileEntries(app_->id());
-      for (std::vector<apps::SavedFileEntry>::const_iterator it =
+      for (std::vector<extensions::SavedFileEntry>::const_iterator it =
                retained_file_entries.begin();
            it != retained_file_entries.end(); ++it) {
         retained_file_paths.push_back(it->path.LossyDisplayName());

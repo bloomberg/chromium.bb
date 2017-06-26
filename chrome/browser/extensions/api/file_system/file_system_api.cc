@@ -40,6 +40,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
+#include "extensions/browser/api/file_system/saved_file_entry.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_prefs.h"
@@ -75,7 +76,6 @@
 #include "url/url_constants.h"
 #endif
 
-using apps::SavedFileEntry;
 using apps::SavedFilesService;
 using storage::IsolatedContext;
 
