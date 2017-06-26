@@ -31,7 +31,8 @@ class CastDialogPage(media_router_page.CastPage):
   """Cast page to open a cast-enabled page and open media router dialog."""
 
   def __init__(self, page_set, url='file://basic_test.html',
-               shared_page_state_class=shared_page_state.SharedPageState):
+               shared_page_state_class=shared_page_state.SharedPageState,
+               name='basic_test.html'):
     super(CastDialogPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state_class)
@@ -56,7 +57,8 @@ class CastIdlePage(CastDialogPage):
     super(CastIdlePage, self).__init__(
         page_set=page_set,
         url='file://basic_test.html',
-        shared_page_state_class=SharedState)
+        shared_page_state_class=SharedState,
+        name='basic_test.html')
 
   def RunPageInteractions(self, action_runner):
     # Wait for 5s after Chrome is opened in order to get consistent results.
@@ -73,7 +75,8 @@ class CastFlingingPage(media_router_page.CastPage):
     super(CastFlingingPage, self).__init__(
         page_set=page_set,
         url='file://basic_test.html#flinging',
-        shared_page_state_class=SharedState)
+        shared_page_state_class=SharedState,
+        name='basic_test.html#flinging')
 
   def RunPageInteractions(self, action_runner):
     sink_name = self._GetDeviceName()
@@ -135,7 +138,8 @@ class CastMirroringPage(media_router_page.CastPage):
     super(CastMirroringPage, self).__init__(
         page_set=page_set,
         url='file://mirroring.html',
-        shared_page_state_class=SharedState)
+        shared_page_state_class=SharedState,
+        name='mirroring.html')
 
   def RunPageInteractions(self, action_runner):
     sink_name = self._GetDeviceName()
@@ -180,7 +184,7 @@ class MediaRouterDialogPageSet(story.StorySet):
 
   def __init__(self):
     super(MediaRouterDialogPageSet, self).__init__(
-        cloud_storage_bucket=story.PARTNER_BUCKET, verify_names=False)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
     self.AddStory(CastDialogPage(self))
 
 
@@ -189,7 +193,7 @@ class MediaRouterCPUMemoryPageSet(story.StorySet):
 
   def __init__(self):
     super(MediaRouterCPUMemoryPageSet, self).__init__(
-        cloud_storage_bucket=story.PARTNER_BUCKET, verify_names=False)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
     self.AddStory(CastIdlePage(self))
     self.AddStory(CastFlingingPage(self))
     self.AddStory(CastMirroringPage(self))
@@ -200,5 +204,5 @@ class CPUMemoryPageSet(story.StorySet):
 
   def __init__(self):
     super(CPUMemoryPageSet, self).__init__(
-        cloud_storage_bucket=story.PARTNER_BUCKET, verify_names=False)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
     self.AddStory(CastIdlePage(self))
