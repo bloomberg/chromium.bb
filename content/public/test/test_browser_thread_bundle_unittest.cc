@@ -27,9 +27,12 @@ TEST(TestBrowserThreadBundleTest, MessageLoopTypeMismatch) {
 }
 
 TEST(TestBrowserThreadBundleTest, MultipleTestBrowserThreadBundle) {
-  TestBrowserThreadBundle test_browser_thread_bundle;
-  EXPECT_DEATH({ TestBrowserThreadBundle other_test_browser_thread_bundle; },
-               "");
+  EXPECT_DEATH(
+      {
+        TestBrowserThreadBundle test_browser_thread_bundle;
+        TestBrowserThreadBundle other_test_browser_thread_bundle;
+      },
+      "");
 }
 
 }  // namespace content
