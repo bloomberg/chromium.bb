@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/translate/never_translate_infobar_controller.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -15,6 +14,10 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface NeverTranslateInfoBarController ()
 
@@ -30,11 +33,11 @@
 
 - (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
                           frame:(CGRect)frame {
-  base::scoped_nsobject<InfoBarView> infoBarView;
+  InfoBarView* infoBarView;
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
-  infoBarView.reset(
-      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate]);
+  infoBarView =
+      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate];
   // Icon
   gfx::Image icon = translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
@@ -60,7 +63,7 @@
                      tag2:TranslateInfoBarIOSTag::DENY_WEBSITE
                    target:self
                    action:@selector(infoBarButtonDidPress:)];
-  return [[infoBarView retain] autorelease];
+  return infoBarView;
 }
 
 #pragma mark - Handling of User Events

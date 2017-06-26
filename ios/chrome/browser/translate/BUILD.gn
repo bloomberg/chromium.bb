@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("translate") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "after_translate_infobar_controller.h",
     "after_translate_infobar_controller.mm",
