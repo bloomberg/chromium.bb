@@ -39,8 +39,8 @@ void HotwordAudioHistoryHandler::UpdateAudioHistoryState() {
   // Set the function to update in a day.
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&HotwordAudioHistoryHandler::UpdateAudioHistoryState,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HotwordAudioHistoryHandler::UpdateAudioHistoryState,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromHours(kHoursUntilNextAudioHistoryCheck));
 }
 
