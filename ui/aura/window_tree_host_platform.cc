@@ -39,6 +39,7 @@ WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
     : WindowTreeHostPlatform() {
+  bounds_ = bounds;
   CreateCompositor();
 #if defined(USE_OZONE)
   platform_window_ =
