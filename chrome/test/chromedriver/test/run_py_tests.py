@@ -219,8 +219,9 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         # The WebView shell that we test against (on Kitkat) does not yet
         # support Network.setCookie DevTools command.
         # TODO(gmanikpure): reenable when it does.
-        'ChromeDriverTest.testGetHttpOnlyCookie',
         'ChromeDriverLogTest.testDisablingDriverLogsSuppressesChromeDriverLog',
+        'ChromeDriverTest.testCookiePath',
+        'ChromeDriverTest.testGetHttpOnlyCookie',
     ]
 )
 
